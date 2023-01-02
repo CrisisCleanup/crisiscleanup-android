@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+import "com/crisiscleanup/data/dark_theme_config.proto";
+import "com/crisiscleanup/data/theme_brand.proto";
+
+option java_package = "com.crisiscleanup.core.datastore";
+option java_multiple_files = true;
+
+// Read docs at https://developers.google.com/protocol-buffers/docs/proto
+// See original file for naming conventions, (deleted) reserved fields, and storing sets/maps of data
+message UserPreferences {
+    ThemeBrandProto theme_brand = 1;
+    DarkThemeConfigProto dark_theme_config = 2;
+    bool should_hide_onboarding = 3;
+}
