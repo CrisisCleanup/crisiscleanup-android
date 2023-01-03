@@ -2,25 +2,35 @@
     <!-- Allows us to override night specific attributes in the
          values-night folder. -->
     <style name="NightAdjusted.Theme.CrisisCleanup" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:windowLightStatusBar" tools:targetApi="23">true</item>
-        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorAccent">@color/secondary</item>
+        <item name="colorControlNormal">@color/control</item>
+        <item name="colorControlHighlight">@color/control_highlight</item>
+        <item name="colorControlActivated">@color/control_activated</item>
+        <item name="colorError">@color/error</item>
+        <!-- Customize your theme here. -->
+        <item name="android:statusBarColor">@color/status_bar_color</item>
     </style>
 
     <!-- Allows us to override platform level specific attributes in their
          respective values-vXX folder. -->
     <style name="PlatformAdjusted.Theme.CrisisCleanup" parent="NightAdjusted.Theme.CrisisCleanup">
-        <item name="android:statusBarColor">@color/black30</item>
     </style>
 
     <!-- The final theme we use -->
     <style name="Theme.CrisisCleanup" parent="PlatformAdjusted.Theme.CrisisCleanup" />
 
     <style name="NightAdjusted.Theme.Splash" parent="Theme.SplashScreen">
-        <item name="android:windowLightStatusBar" tools:targetApi="23">true</item>
-        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
     </style>
 
     <style name="Theme.CrisisCleanup.Splash" parent="NightAdjusted.Theme.Splash">
+        <!--TODO Create animated splash?-->
         <!--<item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash</item>-->
         <item name="postSplashScreenTheme">@style/Theme.CrisisCleanup</item>
     </style>
