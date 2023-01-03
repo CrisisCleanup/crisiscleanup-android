@@ -8,7 +8,7 @@
       android:translateX="42.24"
       android:translateY="42.24">
     <path android:name="square"
-        android:fillColor="#FFFFFF"
+        android:fillColor="#000000"
         android:pathData="M-200,-200 L500,-200 L500,500 L-200,500 z" />
     <path
         android:pathData="M125.5,69.09a45,45.09 0,1 0,90 0a45,45.09 0,1 0,-90 0z"
