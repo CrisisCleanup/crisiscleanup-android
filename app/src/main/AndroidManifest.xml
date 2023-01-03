@@ -15,7 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.CrisisCleanup"
         tools:targetApi="31" >
-        <profileable android:shell="true" tools:targetApi="q" />
+        <profileable android:shell="true" tools:targetApi="31" />
 
         <activity
             android:name=".MainActivity"
