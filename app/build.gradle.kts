@@ -7,13 +7,15 @@ plugins {
     id("nowinandroid.android.hilt")
     id("jacoco")
     id("nowinandroid.firebase-perf")
+    // For Firebase support
+    id("com.google.gms.google-services")
 }
 
 android {
     defaultConfig {
         applicationId = "com.crisiscleanup"
-        versionCode = 3
-        versionName = "0.0.3" // X.Y.Z; X = Major, Y = minor, Z = Patch level
+        versionCode = 4
+        versionName = "0.0.4" // X.Y.Z; X = Major, Y = minor, Z = Patch level
 
         // Custom test runner to set up Hilt dependency graph
         testInstrumentationRunner = "com.google.samples.apps.nowinandroid.core.testing.NiaTestRunner"
@@ -33,7 +35,7 @@ android {
 
             // To publish on the Play store a private signing key is required, but to allow anyone
             // who clones the code to sign and run the release variant, use the debug signing key.
-            // Uncomment to install locally. Change to build for Play store. Can also configure Android Studio to build for Play store.
+            // Uncomment to install locally. Change to build for Play store.
             // signingConfig = signingConfigs.getByName("debug")
         }
     }
@@ -88,6 +90,9 @@ dependencies {
 
     implementation(libs.coil.kt)
     implementation(libs.coil.kt.svg)
+
+    // For Firebase support
+    implementation(platform("com.google.firebase:firebase-bom:31.1.1"))
 }
 
 // androidx.test is forcing JUnit, 4.12. This forces it to use 4.13

@@ -23,12 +23,12 @@ APP_OUT=$DIR/app/build/outputs
 
 if [[ -z "${JAVA_HOME}" ]]; then
   echo "Set JAVA_HOME to continue building"
-  return 1
+  exit 1
 fi
 
 if [[ -z "${ANDROID_HOME}" ]]; then
   echo "Set ANDROID_HOME to continue building"
-  return 1
+  exit 1
 fi
 
 cd $DIR
@@ -66,7 +66,7 @@ cp $APP_OUT/bundle/prodDebug/app-prod-debug.aab $DIST_DIR/app-prod-debug.aab
 
 # Prod release
 cp $APP_OUT/bundle/prodRelease/app-prod-release.aab $DIST_DIR/app-prod-release.aab
-#cp $APP_OUT/mapping/prodRelease/mapping.txt $DIST_DIR/mobile-release-aab-mapping.txt
+cp $APP_OUT/mapping/prodRelease/mapping.txt $DIST_DIR/mobile-release-aab-mapping.txt
 BUILD_RESULT=$?
 
 exit $BUILD_RESULT

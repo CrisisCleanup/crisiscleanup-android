@@ -16,7 +16,7 @@ enum class FlavorDimension {
 // These two product flavors reflect this behaviour.
 @Suppress("EnumEntryName")
 enum class NiaFlavor(val dimension: FlavorDimension, val applicationIdSuffix: String? = null) {
-    demo(FlavorDimension.contentType),
+    demo(FlavorDimension.contentType, ".demo"),
     prod(FlavorDimension.contentType, ".prod")
 }
 

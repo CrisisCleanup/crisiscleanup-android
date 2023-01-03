@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "928842574362",
+    "project_id": "crisis-cleanup",
+    "storage_bucket": "crisis-cleanup.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:928842574362:android:ad5b65ac1f666b47a6ffa3",
+        "android_client_info": {
+          "package_name": "com.crisiscleanup.prod"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "928842574362-ggd60nnj6me37u74779oc65pllusis50.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACvuK0s30rBf9ah7vVg2B8tazX1R5RuQY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "928842574362-ggd60nnj6me37u74779oc65pllusis50.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
