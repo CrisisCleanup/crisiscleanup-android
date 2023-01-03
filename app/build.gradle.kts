@@ -36,7 +36,7 @@ android {
             // To publish on the Play store a private signing key is required, but to allow anyone
             // who clones the code to sign and run the release variant, use the debug signing key.
             // Uncomment to install locally. Change to build for Play store.
-            // signingConfig = signingConfigs.getByName("debug")
+             signingConfig = signingConfigs.getByName("debug")
         }
     }
 
