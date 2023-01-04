@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.*
@@ -17,11 +16,7 @@ import androidx.metrics.performance.JankStats
 import com.crisiscleanup.MainActivityUiState.Loading
 import com.crisiscleanup.MainActivityUiState.Success
 import com.crisiscleanup.core.data.util.NetworkMonitor
-import com.crisiscleanup.core.model.data.DarkThemeConfig
-import com.crisiscleanup.core.model.data.ThemeBrand
-import com.crisiscleanup.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.ui.CrisisCleanupApp
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -75,24 +70,10 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
-            val systemUiController = rememberSystemUiController()
-            val darkTheme = shouldUseDarkTheme(uiState)
-
-            // Update the dark content of the system bars to match the theme
-            DisposableEffect(systemUiController, darkTheme) {
-                systemUiController.systemBarsDarkContentEnabled = !darkTheme
-                onDispose {}
-            }
-
-            CrisisCleanupTheme(
-                darkTheme = darkTheme,
-                androidTheme = shouldUseAndroidTheme(uiState)
-            ) {
-                CrisisCleanupApp(
-                    networkMonitor = networkMonitor,
-                    windowSizeClass = calculateWindowSizeClass(this),
-                )
-            }
+            CrisisCleanupApp(
+                networkMonitor = networkMonitor,
+                windowSizeClass = calculateWindowSizeClass(this),
+            )
         }
     }
 
@@ -104,35 +85,5 @@ class MainActivity : ComponentActivity() {
     override fun onPause() {
         super.onPause()
         lazyStats.get().isTrackingEnabled = false
-    }
-}
-
-/**
- * Returns `true` if the Android theme should be used, as a function of the [uiState].
- */
-@Composable
-private fun shouldUseAndroidTheme(
-    uiState: MainActivityUiState,
-): Boolean = when (uiState) {
-    Loading -> false
-    is Success -> when (uiState.userData.themeBrand) {
-        ThemeBrand.DEFAULT -> false
-        ThemeBrand.ANDROID -> true
-    }
-}
-
-/**
- * Returns `true` if dark theme should be used, as a function of the [uiState] and the
- * current system context.
- */
-@Composable
-private fun shouldUseDarkTheme(
-    uiState: MainActivityUiState,
-): Boolean = when (uiState) {
-    Loading -> isSystemInDarkTheme()
-    is Success -> when (uiState.userData.darkThemeConfig) {
-        DarkThemeConfig.FOLLOW_SYSTEM -> isSystemInDarkTheme()
-        DarkThemeConfig.LIGHT -> false
-        DarkThemeConfig.DARK -> true
     }
 }

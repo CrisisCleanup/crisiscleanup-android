@@ -33,7 +33,7 @@ enum class TopLevelDestination(
     TEAM(
         selectedIcon = DrawableResourceIcon(CrisisCleanupIcons.Team),
         unselectedIcon = DrawableResourceIcon(CrisisCleanupIcons.Team),
-        iconTextId = teamR.string.dashboard,
-        titleTextId = teamR.string.dashboard,
+        iconTextId = teamR.string.team,
+        titleTextId = teamR.string.team,
     ),
 }

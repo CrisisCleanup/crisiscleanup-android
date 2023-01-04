@@ -9,13 +9,14 @@ plugins {
     id("nowinandroid.firebase-perf")
     // For Firebase support
     id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
 }
 
 android {
     defaultConfig {
         applicationId = "com.crisiscleanup"
-        versionCode = 4
-        versionName = "0.0.4" // X.Y.Z; X = Major, Y = minor, Z = Patch level
+        versionCode = 5
+        versionName = "0.0.5" // X.Y.Z; X = Major, Y = minor, Z = Patch level
 
         // Custom test runner to set up Hilt dependency graph
         testInstrumentationRunner = "com.google.samples.apps.nowinandroid.core.testing.NiaTestRunner"
@@ -93,6 +94,8 @@ dependencies {
 
     // For Firebase support
     implementation(platform("com.google.firebase:firebase-bom:31.1.1"))
+    implementation("com.google.firebase:firebase-crashlytics")
+    implementation("com.google.firebase:firebase-analytics")
 }
 
 // androidx.test is forcing JUnit, 4.12. This forces it to use 4.13
