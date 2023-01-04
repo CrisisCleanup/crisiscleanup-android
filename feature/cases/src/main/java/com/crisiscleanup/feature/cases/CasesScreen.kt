@@ -1,6 +1,8 @@
 package com.crisiscleanup.feature.cases
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,13 +28,18 @@ internal fun CasesScreen(
     modifier: Modifier = Modifier
 ) {
     Box(Modifier.fillMaxSize()) {
-        Text(
-            text = "Cases",
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(48.dp),
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.bodyMedium
-        )
+        Column(Modifier.fillMaxWidth()) {
+            Text(
+                text = "Cases",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(48.dp),
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Button(onClick = { Log.i("Button", "Pressed") }) {
+                Text("Press")
+            }
+        }
     }
 }
