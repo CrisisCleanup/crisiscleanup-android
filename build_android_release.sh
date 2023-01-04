@@ -45,7 +45,7 @@ cp $APP_OUT/apk/demo/debug/app-demo-debug.apk $DIST_DIR
 cp $APP_OUT/apk/demo/release/app-demo-release.apk $DIST_DIR
 
 # Prod debug
-cp $APP_OUT/apk/prod/debug/app-prod-debug.apk $DIST_DIR/app-prod-debug.apk
+#cp $APP_OUT/apk/prod/debug/app-prod-debug.apk $DIST_DIR/app-prod-debug.apk
 
 # Prod release
 #cp $APP_OUT/apk/prod/release/app-prod-release.apk $DIST_DIR/app-prod-release.apk
@@ -61,7 +61,7 @@ cp $APP_OUT/bundle/demoDebug/app-demo-debug.aab $DIST_DIR/app-demo-debug.aab
 cp $APP_OUT/bundle/demoRelease/app-demo-release.aab $DIST_DIR/app-demo-release.aab
 
 # Prod debug
-cp $APP_OUT/bundle/prodDebug/app-prod-debug.aab $DIST_DIR/app-prod-debug.aab
+#cp $APP_OUT/bundle/prodDebug/app-prod-debug.aab $DIST_DIR/app-prod-debug.aab
 
 # Prod release
 #cp $APP_OUT/bundle/prodRelease/app-prod-release.aab $DIST_DIR/app-prod-release.aab

@@ -19,7 +19,8 @@ android {
         versionName = "0.0.5" // X.Y.Z; X = Major, Y = minor, Z = Patch level
 
         // Custom test runner to set up Hilt dependency graph
-        testInstrumentationRunner = "com.google.samples.apps.nowinandroid.core.testing.NiaTestRunner"
+        testInstrumentationRunner =
+            "com.google.samples.apps.nowinandroid.core.testing.NiaTestRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -52,6 +53,15 @@ android {
         }
     }
     namespace = "com.crisiscleanup"
+}
+
+androidComponents {
+    beforeVariants { variantBuilder ->
+        // Unnecessary variants
+        if (variantBuilder.name == "prodDebug") {
+            variantBuilder.enable = false
+        }
+    }
 }
 
 dependencies {

@@ -62,35 +62,6 @@
           ]
         }
       }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:1067310599740:android:afeb9c891fa90b78cdbd39",
-        "android_client_info": {
-          "package_name": "com.crisiscleanup.prod.debug"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "1067310599740-nijdtdhiq6m894rl041qlj5he88r2sca.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyAyTq79XEHhzymXR7QVs6vFLlywCs_FHrY"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "1067310599740-nijdtdhiq6m894rl041qlj5he88r2sca.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
-        }
-      }
     }
   ],
   "configuration_version": "1"
