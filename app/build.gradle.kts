@@ -33,12 +33,15 @@ android {
         val release by getting {
             isMinifyEnabled = true
             applicationIdSuffix = NiaBuildType.RELEASE.applicationIdSuffix
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
 
             // To publish on the Play store a private signing key is required, but to allow anyone
             // who clones the code to sign and run the release variant, use the debug signing key.
             // Uncomment to install locally. Change to build for Play store.
-             signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 
@@ -67,6 +70,7 @@ androidComponents {
 dependencies {
     implementation(project(":feature:cases"))
     implementation(project(":feature:dashboard"))
+    implementation(project(":feature:settings"))
     implementation(project(":feature:team"))
 
     implementation(project(":core:common"))

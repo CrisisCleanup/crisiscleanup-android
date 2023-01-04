@@ -1,4 +1,4 @@
-package com.crisiscleanup.designsystem.component
+package com.crisiscleanup.core.designsystem.component
 
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.RowScope

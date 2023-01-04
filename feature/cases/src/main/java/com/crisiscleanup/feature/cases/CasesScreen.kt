@@ -30,7 +30,7 @@ internal fun CasesScreen(
             text = "Cases",
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp, start = 16.dp, end = 16.dp),
+                .padding(48.dp),
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.bodyMedium
         )

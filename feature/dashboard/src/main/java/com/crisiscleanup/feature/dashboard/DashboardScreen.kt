@@ -13,7 +13,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 
-
 @OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 internal fun DashboardRoute(
@@ -34,7 +33,7 @@ internal fun DashboardScreen(
             text = "Dash",
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp, start = 16.dp, end = 16.dp),
+                .padding(48.dp),
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.bodyMedium
         )
