@@ -48,7 +48,7 @@ cp $APP_OUT/apk/demo/release/app-demo-release.apk $DIST_DIR
 cp $APP_OUT/apk/prod/debug/app-prod-debug.apk $DIST_DIR/app-prod-debug.apk
 
 # Prod release
-cp $APP_OUT/apk/prod/release/app-prod-release.apk $DIST_DIR/app-prod-release.apk
+#cp $APP_OUT/apk/prod/release/app-prod-release.apk $DIST_DIR/app-prod-release.apk
 
 # Build App Bundles
 # Don't clean here, otherwise all apks are gone.
@@ -64,11 +64,11 @@ cp $APP_OUT/bundle/demoRelease/app-demo-release.aab $DIST_DIR/app-demo-release.a
 cp $APP_OUT/bundle/prodDebug/app-prod-debug.aab $DIST_DIR/app-prod-debug.aab
 
 # Prod release
-cp $APP_OUT/bundle/prodRelease/app-prod-release.aab $DIST_DIR/app-prod-release.aab
+#cp $APP_OUT/bundle/prodRelease/app-prod-release.aab $DIST_DIR/app-prod-release.aab
 
 # Mappings
 cp $APP_OUT/mapping/demoRelease/mapping.txt $DIST_DIR/demo-release-apk-mapping.txt
-cp $APP_OUT/mapping/prodRelease/mapping.txt $DIST_DIR/release-aab-mapping.txt
+#cp $APP_OUT/mapping/prodRelease/mapping.txt $DIST_DIR/release-aab-mapping.txt
 
 BUILD_RESULT=$?
 
