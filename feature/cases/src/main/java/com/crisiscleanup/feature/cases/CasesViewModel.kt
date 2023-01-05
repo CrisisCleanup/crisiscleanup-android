@@ -8,7 +8,5 @@ import javax.inject.Inject
 @HiltViewModel
 class CasesViewModel @Inject constructor(
     private val userDataRepository: UserDataRepository,
-
-    ) : ViewModel() {
-
+) : ViewModel() {
 }

@@ -21,16 +21,6 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 APP_OUT=$DIR/app/build/outputs
 
-if [[ -z "${JAVA_HOME}" ]]; then
-  echo "Set JAVA_HOME to continue building"
-  exit 1
-fi
-
-if [[ -z "${ANDROID_HOME}" ]]; then
-  echo "Set ANDROID_HOME to continue building"
-  exit 1
-fi
-
 cd $DIR
 
 # Build
@@ -39,7 +29,7 @@ $DIR/gradlew :app:clean :app:assemble ${GRADLE_PARAMS}
 BUILD_RESULT=$?
 
 # Demo debug
-cp $APP_OUT/apk/demo/debug/app-demo-debug.apk $DIST_DIR
+#cp $APP_OUT/apk/demo/debug/app-demo-debug.apk $DIST_DIR
 
 # Demo release
 cp $APP_OUT/apk/demo/release/app-demo-release.apk $DIST_DIR
@@ -52,13 +42,13 @@ cp $APP_OUT/apk/demo/release/app-demo-release.apk $DIST_DIR
 
 # Build App Bundles
 # Don't clean here, otherwise all apks are gone.
-$DIR/gradlew :app:bundle ${GRADLE_PARAMS}
+#$DIR/gradlew :app:bundle ${GRADLE_PARAMS}
 
 # Demo debug
-cp $APP_OUT/bundle/demoDebug/app-demo-debug.aab $DIST_DIR/app-demo-debug.aab
+#cp $APP_OUT/bundle/demoDebug/app-demo-debug.aab $DIST_DIR/app-demo-debug.aab
 
 # Demo release
-cp $APP_OUT/bundle/demoRelease/app-demo-release.aab $DIST_DIR/app-demo-release.aab
+#cp $APP_OUT/bundle/demoRelease/app-demo-release.aab $DIST_DIR/app-demo-release.aab
 
 # Prod debug
 #cp $APP_OUT/bundle/prodDebug/app-prod-debug.aab $DIST_DIR/app-prod-debug.aab
@@ -67,7 +57,7 @@ cp $APP_OUT/bundle/demoRelease/app-demo-release.aab $DIST_DIR/app-demo-release.a
 #cp $APP_OUT/bundle/prodRelease/app-prod-release.aab $DIST_DIR/app-prod-release.aab
 
 # Mappings
-cp $APP_OUT/mapping/demoRelease/mapping.txt $DIST_DIR/demo-release-apk-mapping.txt
+#cp $APP_OUT/mapping/demoRelease/mapping.txt $DIST_DIR/demo-release-apk-mapping.txt
 #cp $APP_OUT/mapping/prodRelease/mapping.txt $DIST_DIR/release-aab-mapping.txt
 
 BUILD_RESULT=$?
