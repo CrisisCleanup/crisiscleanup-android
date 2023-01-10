@@ -1,0 +1,520 @@
+{
+  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzUxMiJ9.eyJ1c2VybmFtZSI6ImRlbW9AY3Jpc2lzY2xlYW51cC5vcmciLCJpYXQiOjE2NzMzNzQ2NDIsImV4cCI6MTY3MzQ2MTA0MiwianRpIjoiZjI3Y2Y4ZTItYjNkNi00YTJjLTkzMjgtZmVhODQxMjQ5NzU4IiwidXNlcl9pZCI6MTg2MDIsIm9yaWdfaWF0IjoxNjczMzc0NjQyLCJhdWQiOiJodHRwczovL2Rldi5jcmlzaXNjbGVhbnVwLmlvIiwiaXNzIjoiVGVtY2tmdEp0S1RmZzhDcWg4bXBnM29BRkdpVDFURFIifQ.ouHPjdWIAp-92VsyHBA-CDIviqzaWNTbxA_tW137gPQnpbziBjn2infhQjJznh5fX__jqjdtOdAaaonUbPVYHXKDWW-iAEEg6z3FTEPF9G4g-_1r55uhA8sTvdzrzBaFRNhkoYYXHQjP-KKuETJdkKXSiYAPWldK5qFRkhbhEIcRe7fawctxnSo0J7TMC9TLrjDicC7ykcrzEyfhtOKD4FBuE_85op6xuqzr-6i2UKh4grw_TkZ6CzD98LSsBHqIDjQEU0rHgY-8mTEV803P3pVQMU6_0rB4UtWuNetvZafFI9CD2lQtAUyw2LgZEu-J0WNPniAyoR8Tg1P089CKiO2LWfu2E20QDY9qP_hYpnd6w3_wb20U_gf92uNBY-J2MSlqkY4EepmmlKVI01ZT31-8B-4UQRwLG5S2G1gYeOK6UKWGCovotkyrVTs-tGkbz-Z-ROTwiS9RCKLmPtcZna44TH9mKYkY3UN_CUmM0i1qwDLO1FOjPgawISejfIAmrjU0tMDg7KPA7fpA92_UUSRULY-tu6bOLWQctaduQPSV5Iq38cMbmYwDBkZHNmT9xBvrdk_CXRRAOokWht41fM6VGkCjDWdALsnG0OkNRgthQJhceXcj1WIFRRnACXPHwBxq7mfT-XwHL9KbfFtLSBBTr924lR42We161TNyMyI",
+  "user_claims": {
+    "id": 18602,
+    "email": "demo@crisiscleanup.org",
+    "permissions": {
+      "create_incident": false,
+      "approve_orgs_full": false,
+      "approve_orgs_preliminary": false,
+      "edit_portal_settings": false,
+      "affiliate_org": true,
+      "invite_users": true,
+      "invite_orgs": true,
+      "remove_workers": true,
+      "phone_agent": true,
+      "advanced_maps": false,
+      "translate": true,
+      "support_agent": true,
+      "manage_crew": false,
+      "manage_cases": true,
+      "view_user_contacts": true,
+      "submit_edu": true,
+      "view_sensitive": "inherit",
+      "move_orgs": true,
+      "view_own_volunteer_locations": true,
+      "view_other_volunteer_locations": "approx",
+      "move_other_users_worksites": false,
+      "approve_new_user_requests": true,
+      "approve_work_type_transfers": true,
+      "receive_work_type_transfer_requests": true,
+      "unclaim_from_anyone": false,
+      "access_all_incidents": false,
+      "manage_team": true,
+      "is_public_facing": true,
+      "read_work_details": true,
+      "write_work_details": true
+    },
+    "first_name": "Demo",
+    "last_name": "User",
+    "states": {
+      "filters": {
+        "flags": {
+          "data": {},
+          "name": "flags"
+        },
+        "teams": {
+          "data": {},
+          "name": "teams"
+        },
+        "fields": {
+          "data": {},
+          "name": "fields"
+        },
+        "my_team": {
+          "data": {},
+          "name": "my_team"
+        },
+        "statuses": {
+          "data": {},
+          "name": "statuses"
+        },
+        "locations": {
+          "data": {},
+          "name": "locations"
+        },
+        "statusGroups": {
+          "data": {},
+          "name": "statusGroups"
+        },
+        "missingWorkType": {
+          "data": {},
+          "name": "missingWorkType"
+        }
+      },
+      "incident": 60,
+      "sviLevel": 100,
+      "incidents": {
+        "60": {
+          "filters": {
+            "flags": {
+              "data": {},
+              "name": "flags"
+            },
+            "teams": {
+              "data": {},
+              "name": "teams"
+            },
+            "fields": {
+              "data": {},
+              "name": "fields"
+            },
+            "my_team": {
+              "data": {},
+              "name": "my_team"
+            },
+            "statuses": {
+              "data": {},
+              "name": "statuses"
+            },
+            "locations": {
+              "data": {},
+              "name": "locations"
+            },
+            "statusGroups": {
+              "data": {},
+              "name": "statusGroups"
+            },
+            "missingWorkType": {
+              "data": {},
+              "name": "missingWorkType"
+            }
+          },
+          "sviLevel": 100,
+          "showingMap": true,
+          "mapViewPort": {
+            "_northEast": {
+              "lat": 29.730871380380236,
+              "lng": -95.73040008544923
+            },
+            "_southWest": {
+              "lat": 29.72326879601984,
+              "lng": -95.7451629638672
+            }
+          },
+          "showingTable": false,
+          "appliedFilters": {}
+        },
+        "151": {
+          "filters": {
+            "dates": {
+              "data": {},
+              "name": "dates"
+            },
+            "flags": {
+              "data": {},
+              "name": "flags"
+            },
+            "teams": {
+              "data": {},
+              "name": "teams"
+            },
+            "fields": {
+              "data": {
+                "trees": true
+              },
+              "name": "fields"
+            },
+            "my_team": {
+              "data": {},
+              "name": "my_team"
+            },
+            "statuses": {
+              "data": {},
+              "name": "statuses"
+            },
+            "form_data": {
+              "data": {},
+              "name": "flags"
+            },
+            "locations": {
+              "data": {},
+              "name": "locations"
+            },
+            "survivors": {
+              "data": {},
+              "name": "survivors"
+            },
+            "statusGroups": {
+              "data": {},
+              "name": "statusGroups"
+            },
+            "missingWorkType": {
+              "data": {},
+              "name": "missingWorkType"
+            }
+          },
+          "sviLevel": 100,
+          "showingMap": true,
+          "mapViewPort": {
+            "_northEast": {
+              "lat": 52.833303039162274,
+              "lng": -73.29199433326723
+            },
+            "_southWest": {
+              "lat": 36.03666182246063,
+              "lng": -116.88574433326723
+            }
+          },
+          "showingTable": false,
+          "appliedFilters": {
+            "work_type__work_type__in": "trees"
+          }
+        },
+        "158": {
+          "filters": {
+            "flags": {
+              "data": {},
+              "name": "flags"
+            },
+            "teams": {
+              "data": {},
+              "name": "teams"
+            },
+            "fields": {
+              "data": {},
+              "name": "fields"
+            },
+            "my_team": {
+              "data": {},
+              "name": "my_team"
+            },
+            "statuses": {
+              "data": {},
+              "name": "statuses"
+            },
+            "locations": {
+              "data": {},
+              "name": "locations"
+            },
+            "statusGroups": {
+              "data": {},
+              "name": "statusGroups"
+            },
+            "missingWorkType": {
+              "data": {},
+              "name": "missingWorkType"
+            }
+          },
+          "sviLevel": 1,
+          "showingMap": true,
+          "mapViewPort": {
+            "_northEast": {
+              "lat": 45.00996231899567,
+              "lng": -91.25930786132814
+            },
+            "_southWest": {
+              "lat": 44.81983792793673,
+              "lng": -91.75437927246095
+            }
+          },
+          "showingTable": false,
+          "appliedFilters": {}
+        },
+        "199": {
+          "filters": {
+            "dates": {
+              "data": {},
+              "name": "dates"
+            },
+            "flags": {
+              "data": {},
+              "name": "flags"
+            },
+            "teams": {
+              "data": {},
+              "name": "teams"
+            },
+            "fields": {
+              "data": {
+                "trees": true,
+                "rebuild": false,
+                "prescription": true
+              },
+              "name": "fields"
+            },
+            "my_team": {
+              "data": {},
+              "name": "my_team"
+            },
+            "statuses": {
+              "data": {},
+              "name": "statuses"
+            },
+            "form_data": {
+              "data": {},
+              "name": "flags"
+            },
+            "locations": {
+              "data": {},
+              "name": "locations"
+            },
+            "survivors": {
+              "data": {},
+              "name": "survivors"
+            },
+            "statusGroups": {
+              "data": {},
+              "name": "statusGroups"
+            },
+            "missingWorkType": {
+              "data": {},
+              "name": "missingWorkType"
+            }
+          },
+          "sviLevel": 100,
+          "showingMap": true,
+          "mapViewPort": {
+            "_northEast": {
+              "lat": 39.38435580009902,
+              "lng": -76.56501889228822
+            },
+            "_southWest": {
+              "lat": 39.38098071539155,
+              "lng": -76.5724003314972
+            }
+          },
+          "showingTable": false,
+          "appliedFilters": {
+            "work_type__work_type__in": "trees,prescription"
+          }
+        },
+        "200": {
+          "filters": {
+            "dates": {
+              "data": {},
+              "name": "dates"
+            },
+            "flags": {
+              "data": {},
+              "name": "flags"
+            },
+            "teams": {
+              "data": {},
+              "name": "teams"
+            },
+            "fields": {
+              "data": {
+                "trees": true,
+                "rebuild": false
+              },
+              "name": "fields"
+            },
+            "my_team": {
+              "data": {},
+              "name": "my_team"
+            },
+            "statuses": {
+              "data": {},
+              "name": "statuses"
+            },
+            "form_data": {
+              "data": {},
+              "name": "flags"
+            },
+            "locations": {
+              "data": {},
+              "name": "locations"
+            },
+            "survivors": {
+              "data": {},
+              "name": "survivors"
+            },
+            "statusGroups": {
+              "data": {},
+              "name": "statusGroups"
+            },
+            "missingWorkType": {
+              "data": {},
+              "name": "missingWorkType"
+            }
+          },
+          "sviLevel": 100,
+          "showingMap": true,
+          "mapViewPort": {
+            "_northEast": {
+              "lat": 34.71424245002155,
+              "lng": -82.85888671875001
+            },
+            "_southWest": {
+              "lat": 34.656651135028945,
+              "lng": -82.97698974609376
+            }
+          },
+          "showingTable": false,
+          "appliedFilters": {
+            "work_type__work_type__in": "trees"
+          }
+        }
+      },
+      "userAgent": {
+        "os": {
+          "name": "Windows",
+          "version": "NT 10.0",
+          "versionName": "10"
+        },
+        "engine": {
+          "name": "Blink"
+        },
+        "browser": {
+          "name": "Chrome",
+          "version": "106.0.0.0"
+        },
+        "platform": {
+          "type": "desktop"
+        }
+      },
+      "showingMap": true,
+      "mapViewPort": {
+        "_northEast": {
+          "lat": 29.730871380380236,
+          "lng": -95.73040008544923
+        },
+        "_southWest": {
+          "lat": 29.72326879601984,
+          "lng": -95.7451629638672
+        }
+      },
+      "showingTable": false,
+      "showingLegend": true,
+      "appliedFilters": {},
+      "chat_last_seen": "2022-10-19T17:39:29.597Z",
+      "currentAgentId": "1594673",
+      "loggedInAgents": [
+        "1594673"
+      ],
+      "news_last_seen": "2022-10-20T14:40:23.585Z"
+    },
+    "preferences": {},
+    "organization": {
+      "id": 12,
+      "name": "Demo Recovery Organization",
+      "is_active": true,
+      "roles": [
+        8,
+        5,
+        4,
+        8
+      ],
+      "type_t": "",
+      "affiliates": [
+        12
+      ],
+      "all_affiliates_and_groups": [
+        12
+      ]
+    },
+    "roles": [
+      7,
+      6,
+      3,
+      7,
+      6,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      5,
+      6,
+      7,
+      3,
+      6,
+      14,
+      7
+    ],
+    "active_roles": [
+      5,
+      7
+    ],
+    "pending_roles": [
+      3
+    ],
+    "mobile": "1 (234) 567-8900",
+    "social": null,
+    "lineage": [
+      14,
+      2,
+      null
+    ],
+    "primary_language": 2,
+    "secondary_language": null,
+    "files": [
+      {
+        "tag": null,
+        "title": null,
+        "notes": null,
+        "created_at": "2020-05-13T05:53:45Z",
+        "id": 5,
+        "file": 5,
+        "filename": "6645713-b99b0bfba6a04d24879b35538d1c8b9f.jpg",
+        "url": "https://crisiscleanup-user-files.s3.amazonaws.com/6645713-b99b0bfba6a04d24879b35538d1c8b9f.jpg?AWSAccessKeyId=AKIASU3RMDS2EGFBJH5O&Signature=Ez3PS71Gedweed%2BWZLT0rF%2BU9AY%3D&Expires=1673376442",
+        "full_url": null,
+        "blog_url": null,
+        "large_thumbnail_url": null,
+        "small_thumbnail_url": null,
+        "filename_original": "6645713.jpg",
+        "file_type_t": "fileTypes.user_profile_picture",
+        "mime_content_type": "image/jpeg"
+      }
+    ],
+    "referring_user": 14,
+    "accepted_terms": true,
+    "accepted_terms_timestamp": "2021-10-05T23:14:04Z",
+    "beta_features": [
+      "connect_first_integration",
+      "aws_connect_phone"
+    ]
+  },
+  "organizations": {
+    "id": 12,
+    "name": "Demo Recovery Organization",
+    "is_active": true,
+    "roles": [
+      8,
+      5,
+      4,
+      8
+    ],
+    "type_t": "",
+    "affiliates": [
+      12
+    ],
+    "all_affiliates_and_groups": [
+      12
+    ]
+  }
+}
