@@ -14,7 +14,7 @@ class DesignSystemIssueRegistry : IssueRegistry() {
 
     override val api: Int = CURRENT_API
 
-    override val minApi: Int = 29
+    override val minApi: Int = 12
 
     override val vendor: Vendor = Vendor(
         vendorName = "Crisis Cleanup",

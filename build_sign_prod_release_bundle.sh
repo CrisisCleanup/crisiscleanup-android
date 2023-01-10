@@ -54,7 +54,9 @@ $GRADLEW bundleProdRelease
 
 # Copy build (and related) to build dir
 APP_OUT=$DIR/app/build/outputs
-DIST_DIR=$DIR/app/build
+if [[ -z "$DIST_DIR" ]]; then
+  DIST_DIR=$DIR/app/build
+fi
 DIST_AAB=$DIST_DIR/app-prod-release.aab
 MAPPING_FILE_NAME=release-aab-mapping.txt
 cp $APP_OUT/bundle/prodRelease/app-prod-release.aab $DIST_AAB

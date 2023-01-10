@@ -21,6 +21,10 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 APP_OUT=$DIR/app/build/outputs
 
+if [[ -z "$DIST_DIR" ]]; then
+  DIST_DIR=$DIR/app/build
+fi
+
 cd $DIR
 
 # Build
