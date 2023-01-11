@@ -1,31 +1,34 @@
-package com.crisiscleanup.core.data.di
+package com.crisiscleanup.core.data.test
 
+import com.crisiscleanup.core.data.di.DataModule
 import com.crisiscleanup.core.data.repository.AccountDataRepository
-import com.crisiscleanup.core.data.repository.CrisisCleanupAccountDataRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.OfflineFirstLocalAppPreferencesRepository
-import com.crisiscleanup.core.data.util.ConnectivityManagerNetworkMonitor
+import com.crisiscleanup.core.data.repository.fake.FakeAccountRepository
 import com.crisiscleanup.core.data.util.NetworkMonitor
 import dagger.Binds
 import dagger.Module
-import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dagger.hilt.testing.TestInstallIn
 
 @Module
-@InstallIn(SingletonComponent::class)
-interface DataModule {
+@TestInstallIn(
+    components = [SingletonComponent::class],
+    replaces = [DataModule::class]
+)
+interface TestDataModule {
     @Binds
     fun bindsLocalAppPreferencesRepository(
-        repository: OfflineFirstLocalAppPreferencesRepository
+        localAppPreferencesRepository: OfflineFirstLocalAppPreferencesRepository
     ): LocalAppPreferencesRepository
 
     @Binds
     fun bindsAccountDataRepository(
-        repository: CrisisCleanupAccountDataRepository
+        repository: FakeAccountRepository
     ): AccountDataRepository
 
     @Binds
     fun bindsNetworkMonitor(
-        networkMonitor: ConnectivityManagerNetworkMonitor
+        networkMonitor: AlwaysOnlineNetworkMonitor
     ): NetworkMonitor
 }

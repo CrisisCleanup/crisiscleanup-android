@@ -10,10 +10,10 @@ import javax.inject.Inject
  * Stores info/data related to the authenticated account
  */
 class AccountInfoDataSource @Inject constructor(
-    // Update AccountInfoDataSourceTest when changing below
-
     private val dataStore: DataStore<AccountInfo>
 ) {
+    /* UPDATE [AccountInfoDataSourceTest] when changing below */
+
     val accountData = dataStore.data
         .map {
             AccountData(
@@ -23,9 +23,7 @@ class AccountInfoDataSource @Inject constructor(
             )
         }
 
-    suspend fun clearAccount() {
-        setAccount("", "", "", "", 0)
-    }
+    suspend fun clearAccount() = setAccount("", "", "", "", 0)
 
     suspend fun setAccount(
         accessToken: String,

@@ -33,7 +33,7 @@ class OfflineFirstLocalAppPreferencesRepositoryTest {
     }
 
     @Test
-    fun offlineFirstUserDataRepository_default() = runTest {
+    fun defaultValues() = runTest {
         assertEquals(
             UserData(
                 darkThemeConfig = DarkThemeConfig.FOLLOW_SYSTEM,
@@ -44,7 +44,7 @@ class OfflineFirstLocalAppPreferencesRepositoryTest {
     }
 
     @Test
-    fun offlineFirstUserDataRepository_setDarkThemeConfig_delegatesTo_localAppPreferences() =
+    fun setDarkThemeConfig_delegatesTo_localAppPreferences() =
         runTest {
             subject.setDarkThemeConfig(DarkThemeConfig.DARK)
 
