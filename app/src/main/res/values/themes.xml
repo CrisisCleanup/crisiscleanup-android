@@ -1,4 +1,4 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <!-- Allows us to override night specific attributes in the
          values-night folder. -->
     <style name="NightAdjusted.Theme.CrisisCleanup" parent="android:Theme.Material.Light.NoActionBar">
@@ -8,8 +8,7 @@
 
     <!-- Allows us to override platform level specific attributes in their
          respective values-vXX folder. -->
-    <style name="PlatformAdjusted.Theme.CrisisCleanup" parent="NightAdjusted.Theme.CrisisCleanup">
-    </style>
+    <style name="PlatformAdjusted.Theme.CrisisCleanup" parent="NightAdjusted.Theme.CrisisCleanup" />
 
     <!-- The final theme we use -->
     <style name="Theme.CrisisCleanup" parent="PlatformAdjusted.Theme.CrisisCleanup" />
@@ -20,8 +19,7 @@
     </style>
 
     <style name="Theme.CrisisCleanup.Splash" parent="NightAdjusted.Theme.Splash">
-        <!--TODO Create animated splash?-->
-        <!--<item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash</item>-->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash</item>
         <item name="postSplashScreenTheme">@style/Theme.CrisisCleanup</item>
     </style>
 </resources>
