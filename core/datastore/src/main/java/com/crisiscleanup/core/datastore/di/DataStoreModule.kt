@@ -6,8 +6,7 @@ import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.dataStoreFile
 import com.crisiscleanup.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.common.network.Dispatcher
-import com.crisiscleanup.core.datastore.UserPreferences
-import com.crisiscleanup.core.datastore.UserPreferencesSerializer
+import com.crisiscleanup.core.datastore.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -34,5 +33,19 @@ object DataStoreModule {
             scope = CoroutineScope(ioDispatcher + SupervisorJob()),
         ) {
             context.dataStoreFile("user_preferences.pb")
+        }
+
+    @Provides
+    @Singleton
+    fun providesAccountInfoProtoDataStore(
+        @ApplicationContext context: Context,
+        @Dispatcher(IO) ioDispatcher: CoroutineDispatcher,
+        serializer: AccountInfoProtoSerializer
+    ): DataStore<AccountInfo> =
+        DataStoreFactory.create(
+            serializer = serializer,
+            scope = CoroutineScope(ioDispatcher + SupervisorJob()),
+        ) {
+            context.dataStoreFile("account_info.pb")
         }
 }

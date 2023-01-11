@@ -1,6 +1,6 @@
 package com.crisiscleanup.core.data.repository
 
-import com.crisiscleanup.core.datastore.CrisisCleanupPreferencesDataSource
+import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.core.datastore.test.testUserPreferencesDataStore
 import com.crisiscleanup.core.model.data.DarkThemeConfig
 import com.crisiscleanup.core.model.data.UserData
@@ -13,39 +13,38 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import kotlin.test.assertEquals
 
-class OfflineFirstUserDataRepositoryTest {
-    private lateinit var subject: OfflineFirstUserDataRepository
+class OfflineFirstLocalAppPreferencesRepositoryTest {
+    private lateinit var subject: OfflineFirstLocalAppPreferencesRepository
 
-    private lateinit var preferencesDataSource: CrisisCleanupPreferencesDataSource
+    private lateinit var preferencesDataSource: LocalAppPreferencesDataSource
 
     @get:Rule
     val tmpFolder: TemporaryFolder = TemporaryFolder.builder().assureDeletion().build()
 
     @Before
     fun setup() {
-        preferencesDataSource = CrisisCleanupPreferencesDataSource(
+        preferencesDataSource = LocalAppPreferencesDataSource(
             tmpFolder.testUserPreferencesDataStore()
         )
 
-        subject = OfflineFirstUserDataRepository(
+        subject = OfflineFirstLocalAppPreferencesRepository(
             preferencesDataSource = preferencesDataSource
         )
     }
 
     @Test
-    fun offlineFirstUserDataRepository_default_user_data_is_correct() =
-        runTest {
-            assertEquals(
-                UserData(
-                    darkThemeConfig = DarkThemeConfig.FOLLOW_SYSTEM,
-                    shouldHideOnboarding = false
-                ),
-                subject.userData.first()
-            )
-        }
+    fun offlineFirstUserDataRepository_default() = runTest {
+        assertEquals(
+            UserData(
+                darkThemeConfig = DarkThemeConfig.FOLLOW_SYSTEM,
+                shouldHideOnboarding = false
+            ),
+            subject.userData.first()
+        )
+    }
 
     @Test
-    fun offlineFirstUserDataRepository_set_dark_theme_config_delegates_to_CrisisCleanup_preferences() =
+    fun offlineFirstUserDataRepository_setDarkThemeConfig_delegatesTo_localAppPreferences() =
         runTest {
             subject.setDarkThemeConfig(DarkThemeConfig.DARK)
 

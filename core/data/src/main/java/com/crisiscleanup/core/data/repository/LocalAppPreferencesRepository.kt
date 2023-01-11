@@ -4,7 +4,7 @@ import com.crisiscleanup.core.model.data.DarkThemeConfig
 import com.crisiscleanup.core.model.data.UserData
 import kotlinx.coroutines.flow.Flow
 
-interface UserDataRepository {
+interface LocalAppPreferencesRepository {
 
     /**
      * Stream of [UserData]

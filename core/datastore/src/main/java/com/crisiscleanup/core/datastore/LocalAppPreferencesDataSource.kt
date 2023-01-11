@@ -6,10 +6,12 @@ import com.crisiscleanup.core.model.data.UserData
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class CrisisCleanupPreferencesDataSource @Inject constructor(
+/**
+ * Stores data and preferences related to the local app (on each device)
+ */
+class LocalAppPreferencesDataSource @Inject constructor(
     private val userPreferences: DataStore<UserPreferences>
 ) {
-
     val userData = userPreferences.data
         .map {
             UserData(

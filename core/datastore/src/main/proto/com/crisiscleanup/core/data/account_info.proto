@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+option java_package = "com.crisiscleanup.core.datastore";
+option java_multiple_files = true;
+
+message AccountInfo {
+  string access_token = 1;
+  string email = 2;
+  string first_name = 3;
+  string last_name = 4;
+  int64 expirySeconds = 5;
+}

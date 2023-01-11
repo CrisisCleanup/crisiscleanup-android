@@ -46,6 +46,7 @@ dependencies {
     testImplementation(project(":core:datastore-test"))
 
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.datetime)
 
     implementation(libs.androidx.dataStore.core)
     implementation(libs.protobuf.kotlin.lite)

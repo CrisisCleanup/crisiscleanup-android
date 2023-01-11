@@ -2,6 +2,8 @@ package com.crisiscleanup.core.datastore.test
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
+import com.crisiscleanup.core.datastore.AccountInfo
+import com.crisiscleanup.core.datastore.AccountInfoProtoSerializer
 import com.crisiscleanup.core.datastore.UserPreferences
 import com.crisiscleanup.core.datastore.UserPreferencesSerializer
 import com.crisiscleanup.core.datastore.di.DataStoreModule
@@ -18,7 +20,6 @@ import javax.inject.Singleton
     replaces = [DataStoreModule::class]
 )
 object TestDataStoreModule {
-
     @Provides
     @Singleton
     fun providesUserPreferencesDataStore(
@@ -26,6 +27,13 @@ object TestDataStoreModule {
         tmpFolder: TemporaryFolder
     ): DataStore<UserPreferences> =
         tmpFolder.testUserPreferencesDataStore(userPreferencesSerializer)
+
+    @Provides
+    @Singleton
+    fun providesAccountInfoDataStore(
+        serializer: AccountInfoProtoSerializer,
+        tmpFolder: TemporaryFolder
+    ): DataStore<AccountInfo> = tmpFolder.testAccountInfoDataStore(serializer)
 }
 
 fun TemporaryFolder.testUserPreferencesDataStore(
@@ -34,4 +42,12 @@ fun TemporaryFolder.testUserPreferencesDataStore(
     serializer = userPreferencesSerializer,
 ) {
     newFile("user_preferences_test.pb")
+}
+
+fun TemporaryFolder.testAccountInfoDataStore(
+    serializer: AccountInfoProtoSerializer = AccountInfoProtoSerializer()
+) = DataStoreFactory.create(
+    serializer = serializer,
+) {
+    newFile("account_info_test.pb")
 }

@@ -9,4 +9,9 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:datastore"))
+
+    implementation(libs.kotlinx.datetime)
+
+    implementation(libs.jwt.decode)
 }

@@ -10,7 +10,7 @@ class NetworkAuthTest {
     private val json = Json { ignoreUnknownKeys = true }
 
     @Test
-    fun test_networkAuthSuccessResultDeserialize() {
+    fun networkAuthSuccessResultDeserialize() {
         val contents =
             NetworkAuthResult::class.java.getResource("/authResponseSuccess.json")?.readText()!!
         val result = json.decodeFromString<NetworkAuthResult>(contents)
@@ -30,7 +30,7 @@ class NetworkAuthTest {
     }
 
     @Test
-    fun test_networkAuthFailResultDeserialize() {
+    fun networkAuthFailResultDeserialize() {
         val contents =
             NetworkAuthResult::class.java.getResource("/authResponseFail.json")?.readText()!!
         val result = json.decodeFromString<NetworkAuthResult>(contents)

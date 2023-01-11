@@ -19,8 +19,7 @@ android {
         versionName = "0.0.7"
 
         // Custom test runner to set up Hilt dependency graph
-        testInstrumentationRunner =
-            "com.google.samples.apps.nowinandroid.core.testing.NiaTestRunner"
+        testInstrumentationRunner = "com.crisiscleanup.core.testing.CrisisCleanupTestRunner"
         vectorDrawables {
             useSupportLibrary = true
         }

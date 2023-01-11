@@ -1,7 +1,7 @@
 package com.crisiscleanup.core.data.di
 
-import com.crisiscleanup.core.data.repository.OfflineFirstUserDataRepository
-import com.crisiscleanup.core.data.repository.UserDataRepository
+import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
+import com.crisiscleanup.core.data.repository.OfflineFirstLocalAppPreferencesRepository
 import com.crisiscleanup.core.data.util.ConnectivityManagerNetworkMonitor
 import com.crisiscleanup.core.data.util.NetworkMonitor
 import dagger.Binds
@@ -14,9 +14,9 @@ import dagger.hilt.components.SingletonComponent
 interface DataModule {
 
     @Binds
-    fun bindsUserDataRepository(
-        userDataRepository: OfflineFirstUserDataRepository
-    ): UserDataRepository
+    fun bindsLocalAppPreferencesRepository(
+        localAppPreferencesRepository: OfflineFirstLocalAppPreferencesRepository
+    ): LocalAppPreferencesRepository
 
     @Binds
     fun bindsNetworkMonitor(
