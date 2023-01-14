@@ -1,8 +1,8 @@
 package com.crisiscleanup.core.testing.di
 
-import com.crisiscleanup.common.di.DispatchersModule
-import com.crisiscleanup.common.network.CrisisCleanupDispatchers.IO
-import com.crisiscleanup.common.network.Dispatcher
+import com.crisiscleanup.core.common.di.DispatchersModule
+import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
+import com.crisiscleanup.core.common.network.Dispatcher
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.components.SingletonComponent

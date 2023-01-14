@@ -67,16 +67,18 @@ androidComponents {
 }
 
 dependencies {
+    implementation(project(":feature:authentication"))
     implementation(project(":feature:cases"))
     implementation(project(":feature:dashboard"))
     implementation(project(":feature:settings"))
     implementation(project(":feature:team"))
 
     implementation(project(":core:common"))
-    implementation(project(":core:ui"))
-    implementation(project(":core:designsystem"))
     implementation(project(":core:data"))
+    implementation(project(":core:designsystem"))
     implementation(project(":core:model"))
+    implementation(project(":core:network"))
+    implementation(project(":core:ui"))
 
     androidTestImplementation(project(":core:testing"))
     androidTestImplementation(project(":core:datastore-test"))

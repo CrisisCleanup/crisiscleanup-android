@@ -4,7 +4,7 @@ import com.crisiscleanup.core.datastore.AccountInfoDataSource
 import com.crisiscleanup.core.model.data.AccountData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import javax.inject.Inject
 
 class CrisisCleanupAccountDataRepository @Inject constructor(
@@ -14,9 +14,13 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
 
     override val accountData: Flow<AccountData> = dataSource.accountData
 
+    // TODO Test coverage including at feature/app level
     override val isAuthenticated: Flow<Boolean> = accountData.map {
-        it.accessToken.isNotEmpty() && it.tokenExpiry > Clock.System.now()
+        it.accessToken.isNotEmpty()
     }
+
+    // TODO Test coverage including at feature/app level
+    override val accountExpiration: Flow<Instant> = accountData.map { it.tokenExpiry }
 
     override suspend fun clearAccount() = dataSource.clearAccount()
 
@@ -25,8 +29,15 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
         email: String,
         firstName: String,
         lastName: String,
-        expirySeconds: Long
+        expirySeconds: Long,
+        profilePictureUri: String,
     ) {
-        dataSource.setAccount(accessToken, email, firstName, lastName, expirySeconds)
+        dataSource.setAccount(
+            accessToken,
+            email,
+            firstName,
+            lastName,
+            expirySeconds,
+            profilePictureUri)
     }
 }

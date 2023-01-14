@@ -27,6 +27,19 @@ class NetworkAuthTest {
         assertEquals("demo@crisiscleanup.org", claims.email)
         assertEquals("Demo", claims.firstName)
         assertEquals("User", claims.lastName)
+
+        val files = claims.files
+        assertEquals(1, files!!.size)
+        val firstFile = files[0]
+        assertEquals(5, firstFile.id)
+        assertEquals(5, firstFile.file)
+        assertEquals("6645713-b99b0bfba6a04d24879b35538d1c8b9f.jpg", firstFile.fileName)
+        assertEquals(
+            "https://crisiscleanup-user-files.s3.amazonaws.com/6645713-b99b0bfba6a04d24879b35538d1c8b9f.jpg?AWSAccessKeyId=AKIASU3RMDS2EGFBJH5O&Signature=Ez3PS71Gedweed%2BWZLT0rF%2BU9AY%3D&Expires=1673376442",
+            firstFile.url
+        )
+        assertEquals("fileTypes.user_profile_picture", firstFile.fileTypeT)
+        assertEquals("image/jpeg", firstFile.mimeContentType)
     }
 
     @Test

@@ -38,6 +38,8 @@ class CrisisCleanupAccountDataRepositoryTest {
                     accessToken = "",
                     displayName = "",
                     tokenExpiry = Instant.fromEpochSeconds(0),
+                    emailAddress = "",
+                    profilePictureUri = "",
                 ),
                 it
             )
@@ -47,11 +49,20 @@ class CrisisCleanupAccountDataRepositoryTest {
 
     @Test
     fun setAccount_clearAccount_delegatesTo_dataSource() = runTest {
-        subject.setAccount("at", "em", "fn", "ln", 6235234341)
+        subject.setAccount(
+            "at",
+            "em",
+            "fn",
+            "ln",
+            6235234341,
+            "pp",
+        )
         var expectedData = AccountData(
             accessToken = "at",
             displayName = "fn ln",
-            tokenExpiry = Instant.fromEpochSeconds(6235234341)
+            tokenExpiry = Instant.fromEpochSeconds(6235234341),
+            emailAddress = "em",
+            profilePictureUri = "pp",
         )
         assertEquals(expectedData, subject.accountData.first())
         assertEquals(expectedData, accountInfoDataSource.accountData.first())
@@ -60,7 +71,9 @@ class CrisisCleanupAccountDataRepositoryTest {
         expectedData = AccountData(
             accessToken = "",
             displayName = "",
-            tokenExpiry = Instant.fromEpochSeconds(0)
+            tokenExpiry = Instant.fromEpochSeconds(0),
+            emailAddress = "",
+            profilePictureUri = "",
         )
         assertEquals(expectedData, subject.accountData.first())
         assertEquals(expectedData, accountInfoDataSource.accountData.first())

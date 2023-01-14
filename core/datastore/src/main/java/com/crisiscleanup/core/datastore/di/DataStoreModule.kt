@@ -4,8 +4,8 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.dataStoreFile
-import com.crisiscleanup.common.network.CrisisCleanupDispatchers.IO
-import com.crisiscleanup.common.network.Dispatcher
+import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
+import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.datastore.*
 import dagger.Module
 import dagger.Provides

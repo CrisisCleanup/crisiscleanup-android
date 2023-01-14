@@ -1,28 +1,33 @@
 package com.crisiscleanup.core.network.retrofit
 
+import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.network.CrisisCleanupAuthApi
+import com.crisiscleanup.core.network.RetrofitInterceptorProvider
 import com.crisiscleanup.core.network.model.NetworkAuthPayload
 import com.crisiscleanup.core.network.model.NetworkAuthResult
 import retrofit2.http.Body
-import retrofit2.http.GET
 import retrofit2.http.POST
+import javax.inject.Inject
 import javax.inject.Singleton
 
 private interface AuthApi {
-    @POST("login")
+    @POST("api-token-auth")
     suspend fun login(@Body body: NetworkAuthPayload): NetworkAuthResult
 
-    @GET("logout")
+    @POST("logout")
     suspend fun logout()
 }
 
 @Singleton
-class AuthApiClient : CrisisCleanupAuthApi {
-
-    private val networkApi = crisisCleanupApiBuilder.create(AuthApi::class.java)
+class AuthApiClient @Inject constructor(
+    appEnv: AppEnv,
+    interceptorProvider: RetrofitInterceptorProvider,
+) : CrisisCleanupAuthApi {
+    private val networkApi =
+        getCrisisCleanupApiBuilder(appEnv, interceptorProvider).create(AuthApi::class.java)
 
     override suspend fun login(email: String, password: String): NetworkAuthResult =
         networkApi.login(NetworkAuthPayload(email, password))
 
-    override suspend fun logout() = networkApi.logout()
+    override suspend fun logout() {}
 }

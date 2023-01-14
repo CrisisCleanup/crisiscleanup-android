@@ -1,7 +1,10 @@
 package com.crisiscleanup.core.network.di
 
 import android.content.Context
+import com.crisiscleanup.core.network.AccessTokenManager
+import com.crisiscleanup.core.network.SimpleAccessTokenManager
 import com.crisiscleanup.core.network.fake.FakeAssetManager
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -25,4 +28,14 @@ object NetworkModule {
     fun providesFakeAssetManager(
         @ApplicationContext context: Context,
     ): FakeAssetManager = FakeAssetManager(context.assets::open)
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+interface BindingNetworkModule {
+    @Binds
+    @Singleton
+    fun bindsAccessTokenManager(
+        accessTokenManager: SimpleAccessTokenManager
+    ): AccessTokenManager
 }

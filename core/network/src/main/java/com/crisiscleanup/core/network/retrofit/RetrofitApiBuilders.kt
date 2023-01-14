@@ -1,6 +1,8 @@
 package com.crisiscleanup.core.network.retrofit
 
+import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.network.BuildConfig
+import com.crisiscleanup.core.network.RetrofitInterceptorProvider
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
@@ -15,19 +17,25 @@ private val networkApiJson by lazy {
     Json { ignoreUnknownKeys = true }
 }
 
-val crisisCleanupApiBuilder: Retrofit by lazy {
-    Retrofit.Builder()
+fun getCrisisCleanupApiBuilder(
+    appEnv: AppEnv,
+    interceptorProvider: RetrofitInterceptorProvider? = null,
+): Retrofit {
+    val clientBuilder = OkHttpClient.Builder()
+
+    if (appEnv.isDebuggable) {
+        clientBuilder.addInterceptor(HttpLoggingInterceptor().apply {
+            setLevel(HttpLoggingInterceptor.Level.HEADERS)
+        })
+    }
+
+    interceptorProvider?.interceptors?.forEach {
+        clientBuilder.addInterceptor(it)
+    }
+
+    return Retrofit.Builder()
         .baseUrl(CrisisCleanupApiBaseUrl)
-        .client(
-            OkHttpClient.Builder()
-                .addInterceptor(
-                    // TODO: Decide logging logic
-                    HttpLoggingInterceptor().apply {
-                        setLevel(HttpLoggingInterceptor.Level.BODY)
-                    }
-                )
-                .build()
-        )
+        .client(clientBuilder.build())
         .addConverterFactory(
             @OptIn(ExperimentalSerializationApi::class)
             networkApiJson.asConverterFactory("application/json".toMediaType())

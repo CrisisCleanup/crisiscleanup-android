@@ -1,4 +1,4 @@
-package com.crisiscleanup.common.network
+package com.crisiscleanup.core.common.network
 
 import javax.inject.Qualifier
 import kotlin.annotation.AnnotationRetention.RUNTIME

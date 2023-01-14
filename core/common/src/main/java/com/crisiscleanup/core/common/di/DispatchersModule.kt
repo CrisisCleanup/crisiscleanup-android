@@ -1,7 +1,7 @@
-package com.crisiscleanup.common.di
+package com.crisiscleanup.core.common.di
 
-import com.crisiscleanup.common.network.Dispatcher
-import com.crisiscleanup.common.network.CrisisCleanupDispatchers.IO
+import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
+import com.crisiscleanup.core.common.network.Dispatcher
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -13,6 +13,6 @@ import kotlinx.coroutines.Dispatchers
 @InstallIn(SingletonComponent::class)
 object DispatchersModule {
     @Provides
-    @Dispatcher(IO)
+    @Dispatcher(CrisisCleanupDispatchers.IO)
     fun providesIODispatcher(): CoroutineDispatcher = Dispatchers.IO
 }

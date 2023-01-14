@@ -3,10 +3,8 @@ package com.crisiscleanup.ui
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -15,25 +13,27 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
+import com.crisiscleanup.AuthState
+import com.crisiscleanup.CrisisCleanupApplication
+import com.crisiscleanup.MainActivityViewModel
 import com.crisiscleanup.R
 import com.crisiscleanup.core.data.util.NetworkMonitor
 import com.crisiscleanup.core.designsystem.component.*
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.icon.Icon.DrawableResourceIcon
 import com.crisiscleanup.core.designsystem.icon.Icon.ImageVectorIcon
+import com.crisiscleanup.feature.authentication.AuthenticateScreen
 import com.crisiscleanup.navigation.CrisisCleanupNavHost
 import com.crisiscleanup.navigation.TopLevelDestination
 import com.crisiscleanup.feature.settings.R as settingsR
 
 @OptIn(
-    ExperimentalMaterial3Api::class,
-    ExperimentalLayoutApi::class,
-    ExperimentalComposeUiApi::class,
-    ExperimentalLifecycleComposeApi::class
+    ExperimentalLifecycleComposeApi::class,
 )
 @Composable
 fun CrisisCleanupApp(
@@ -43,6 +43,7 @@ fun CrisisCleanupApp(
         networkMonitor = networkMonitor,
         windowSizeClass = windowSizeClass
     ),
+    mainActivityViewModel: MainActivityViewModel = hiltViewModel()
 ) {
     CrisisCleanupBackground {
         Box(Modifier.fillMaxSize()) {
@@ -51,6 +52,7 @@ fun CrisisCleanupApp(
 
             val isOffline by appState.isOffline.collectAsStateWithLifecycle()
 
+            // TODO Revisit and change the visual to be minimal since operation should be offline capable
             // If user is not connected to the internet show a snack bar to inform them.
             val notConnectedMessage = stringResource(R.string.not_connected)
             LaunchedEffect(isOffline) {
@@ -60,81 +62,137 @@ fun CrisisCleanupApp(
                 )
             }
 
-            // TODO Implement/copy when needed if settings is dialog otherwise delete
-//            if (appState.shouldShowSettingsDialog) {
-//                SettingsDialog(
-//                    onDismiss = { appState.setShowSettingsDialog(false) }
-//                )
-//            }
-
-            Scaffold(
-                modifier = Modifier.semantics {
-                    testTagsAsResourceId = true
-                },
-                containerColor = Color.Transparent,
-                contentColor = MaterialTheme.colorScheme.onBackground,
-                contentWindowInsets = WindowInsets(0, 0, 0, 0),
-                snackbarHost = { SnackbarHost(snackbarHostState) },
-                bottomBar = {
-                    if (appState.shouldShowBottomBar) {
-                        CrisisCleanupBottomBar(
-                            destinations = appState.topLevelDestinations,
-                            onNavigateToDestination = appState::navigateToTopLevelDestination,
-                            currentDestination = appState.currentDestination,
-                            modifier = Modifier.testTag("CrisisCleanupBottomBar")
-                        )
-                    }
-                }
-            ) { padding ->
-                Row(
-                    Modifier
-                        .fillMaxSize()
-                        .padding(padding)
-                        .consumedWindowInsets(padding)
-                        .windowInsetsPadding(
-                            WindowInsets.safeDrawing.only(
-                                WindowInsetsSides.Horizontal
-                            )
-                        )
-                ) {
-                    if (appState.shouldShowNavRail) {
-                        CrisisCleanupNavRail(
-                            destinations = appState.topLevelDestinations,
-                            onNavigateToDestination = appState::navigateToTopLevelDestination,
-                            currentDestination = appState.currentDestination,
-                            modifier = Modifier
-                                .testTag("CrisisCleanupNavRail")
-                                .safeDrawingPadding()
-                        )
-                    }
-
-                    Column(Modifier.fillMaxSize()) {
-                        // Show the top app bar on top level destinations.
-                        val destination = appState.currentTopLevelDestination
-                        if (destination != null) {
-                            CrisisCleanupTopAppBar(
-                                titleRes = destination.titleTextId,
-                                actionIcon = CrisisCleanupIcons.Settings,
-                                actionIconContentDescription = stringResource(
-                                    id = settingsR.string.settings
-                                ),
-                                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                                    containerColor = Color.Transparent
-                                ),
-                                onActionClick = { appState.setShowSettingsDialog(true) }
-                            )
-                        }
-
-                        CrisisCleanupNavHost(
-                            navController = appState.navController,
-                            onBackClick = appState::onBackClick
-                        )
-                    }
-
-                    // TODO: We may want to add padding or spacer when the snackbar is shown so that
-                    //  content doesn't display behind it.
-                }
+            val authState by mainActivityViewModel.authState.collectAsStateWithLifecycle()
+            var openAuthentication by rememberSaveable { mutableStateOf(false) }
+            if (openAuthentication || authState == AuthState.Other) {
+                AuthenticateContent(
+                    snackbarHostState,
+                    toggleAuthentication = { b -> openAuthentication = b },
+                )
+            } else {
+                NavigableContent(
+                    snackbarHostState,
+                    appState,
+                    openAuthentication = { openAuthentication = true }
+                )
             }
+        }
+    }
+}
+
+@OptIn(
+    ExperimentalMaterial3Api::class,
+    ExperimentalComposeUiApi::class,
+    ExperimentalLayoutApi::class,
+)
+@Composable
+private fun AuthenticateContent(
+    snackbarHostState: SnackbarHostState,
+    toggleAuthentication: (Boolean) -> Unit,
+) {
+    Scaffold(
+        modifier = Modifier.semantics {
+            testTagsAsResourceId = true
+        },
+        containerColor = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onBackground,
+        contentWindowInsets = WindowInsets.systemBars,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        content = { padding ->
+            AuthenticateScreen(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .consumedWindowInsets(padding)
+                    .windowInsetsPadding(
+                        WindowInsets.safeDrawing.only(
+                            WindowInsetsSides.Horizontal
+                        )
+                    ),
+                closeAuthentication = { toggleAuthentication(false) },
+                isDebug = CrisisCleanupApplication.isDebuggable,
+            )
+        }
+    )
+}
+
+@OptIn(
+    ExperimentalMaterial3Api::class,
+    ExperimentalLayoutApi::class,
+    ExperimentalComposeUiApi::class,
+)
+@Composable
+private fun NavigableContent(
+    snackbarHostState: SnackbarHostState,
+    appState: CrisisCleanupAppState,
+    openAuthentication: () -> Unit,
+) {
+    Scaffold(
+        modifier = Modifier.semantics {
+            testTagsAsResourceId = true
+        },
+        containerColor = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onBackground,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        bottomBar = {
+            if (appState.shouldShowBottomBar) {
+                CrisisCleanupBottomBar(
+                    destinations = appState.topLevelDestinations,
+                    onNavigateToDestination = appState::navigateToTopLevelDestination,
+                    currentDestination = appState.currentDestination,
+                    modifier = Modifier.testTag("CrisisCleanupBottomBar")
+                )
+            }
+        }
+    ) { padding ->
+        Row(
+            Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .consumedWindowInsets(padding)
+                .windowInsetsPadding(
+                    WindowInsets.safeDrawing.only(
+                        WindowInsetsSides.Horizontal
+                    )
+                )
+        ) {
+            if (appState.shouldShowNavRail) {
+                CrisisCleanupNavRail(
+                    destinations = appState.topLevelDestinations,
+                    onNavigateToDestination = appState::navigateToTopLevelDestination,
+                    currentDestination = appState.currentDestination,
+                    modifier = Modifier
+                        .testTag("CrisisCleanupNavRail")
+                        .safeDrawingPadding()
+                )
+            }
+
+            Column(Modifier.fillMaxSize()) {
+                // Show the top app bar on top level destinations.
+                val destination = appState.currentTopLevelDestination
+                if (destination != null) {
+                    CrisisCleanupTopAppBar(
+                        titleRes = destination.titleTextId,
+                        actionIcon = CrisisCleanupIcons.Settings,
+                        actionIconContentDescription = stringResource(
+                            id = settingsR.string.settings
+                        ),
+                        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                            containerColor = Color.Transparent
+                        ),
+                        onActionClick = openAuthentication,
+                    )
+                }
+
+                CrisisCleanupNavHost(
+                    navController = appState.navController,
+                    onBackClick = appState::onBackClick
+                )
+            }
+
+            // TODO: We may want to add padding or spacer when the snackbar is shown so that
+            //  content doesn't display behind it.
         }
     }
 }

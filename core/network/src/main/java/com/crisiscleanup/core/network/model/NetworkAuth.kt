@@ -36,4 +36,18 @@ data class NetworkAuthUserClaims(
     val firstName: String,
     @SerialName("last_name")
     val lastName: String,
+    val files: List<NetworkAuthUserFiles>?,
+)
+
+@Serializable
+class NetworkAuthUserFiles(
+    val id: Long,
+    val file: Long,
+    @SerialName("filename")
+    val fileName: String,
+    val url: String,
+    @SerialName("file_type_t")
+    val fileTypeT: String,
+    @SerialName("mime_content_type")
+    val mimeContentType: String,
 )

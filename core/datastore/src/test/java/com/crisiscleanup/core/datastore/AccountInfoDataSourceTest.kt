@@ -35,7 +35,8 @@ class AccountInfoDataSourceTest {
             "email",
             "first",
             "last",
-            125512586
+            125512586,
+            "profile-picture-url",
         )
         subject.accountData.first().run {
             assertEquals("access-token", accessToken)

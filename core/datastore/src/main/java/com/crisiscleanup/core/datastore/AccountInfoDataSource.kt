@@ -20,10 +20,12 @@ class AccountInfoDataSource @Inject constructor(
                 accessToken = it.accessToken,
                 tokenExpiry = Instant.fromEpochSeconds(it.expirySeconds),
                 displayName = "${it.firstName} ${it.lastName}".trim(),
+                emailAddress = it.email,
+                profilePictureUri = it.profilePictureUri,
             )
         }
 
-    suspend fun clearAccount() = setAccount("", "", "", "", 0)
+    suspend fun clearAccount() = setAccount("", "", "", "", 0, "")
 
     suspend fun setAccount(
         accessToken: String,
@@ -31,6 +33,7 @@ class AccountInfoDataSource @Inject constructor(
         firstName: String,
         lastName: String,
         expirySeconds: Long,
+        profilePictureUri: String,
     ) {
         dataStore.updateData {
             it.copy {
@@ -39,6 +42,7 @@ class AccountInfoDataSource @Inject constructor(
                 this.firstName = firstName
                 this.lastName = lastName
                 this.expirySeconds = expirySeconds
+                this.profilePictureUri = profilePictureUri
             }
         }
     }
