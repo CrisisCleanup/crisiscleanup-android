@@ -18,6 +18,7 @@ private val networkApiJson by lazy {
     Json { ignoreUnknownKeys = true }
 }
 
+@Target(AnnotationTarget.FUNCTION, AnnotationTarget.VALUE_PARAMETER)
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 internal annotation class CrisisCleanupRetrofit
