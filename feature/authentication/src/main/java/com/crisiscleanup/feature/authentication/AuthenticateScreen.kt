@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.common.R as commonR
@@ -179,7 +180,7 @@ private fun LoginScreen(
         )
 
         if (isDebug) {
-            Button(
+            BusyButton(
                 modifier = fillWidthPadded,
                 onClick = {
                     viewModel.loginInputData.apply {
@@ -189,19 +190,18 @@ private fun LoginScreen(
                     viewModel.authenticateEmailPassword()
                 },
                 enabled = isNotBusy,
-            ) {
-                Text("Login debug")
-            }
+                text = "Login debug",
+                indicateBusy = !isNotBusy,
+            )
         }
 
-        // TODO Login button with loading
-        Button(
+        BusyButton(
             modifier = fillWidthPadded,
             onClick = { viewModel.authenticateEmailPassword() },
             enabled = isNotBusy,
-        ) {
-            Text(stringResource(id = R.string.login))
-        }
+            textResId = R.string.login,
+            indicateBusy = !isNotBusy,
+        )
 
         val authState = viewModel.authenticationState.collectAsStateWithLifecycle()
         if (authState.value.hasAccessToken) {
@@ -249,13 +249,13 @@ private fun AuthenticatedScreen(
         val isNotBusy by viewModel.isNotAuthenticating.collectAsStateWithLifecycle()
 
         // TODO Logout button with loading
-        Button(
+        BusyButton(
             modifier = fillWidthPadded,
             onClick = { viewModel.logout() },
             enabled = isNotBusy,
-        ) {
-            Text(stringResource(id = R.string.logout))
-        }
+            textResId = R.string.logout,
+            indicateBusy = !isNotBusy,
+        )
 
         Button(
             modifier = fillWidthPadded,
