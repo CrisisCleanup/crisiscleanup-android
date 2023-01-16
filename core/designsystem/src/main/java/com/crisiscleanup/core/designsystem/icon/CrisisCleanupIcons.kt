@@ -2,6 +2,7 @@ package com.crisiscleanup.core.designsystem.icon
 
 import androidx.annotation.DrawableRes
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Settings
@@ -13,6 +14,7 @@ import com.crisiscleanup.core.designsystem.R
  */
 object CrisisCleanupIcons {
     val Cases = R.drawable.ic_cases
+    val Clear = Icons.Default.Clear
     val Dashboard = R.drawable.ic_dashboard
     val MoreVert = Icons.Default.MoreVert
     val Search = Icons.Rounded.Search

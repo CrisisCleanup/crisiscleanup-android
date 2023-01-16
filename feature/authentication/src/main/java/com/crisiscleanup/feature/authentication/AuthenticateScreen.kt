@@ -18,8 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.crisiscleanup.core.model.data.emptyAccountData
-import com.crisiscleanup.core.network.BuildConfig
+import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
+import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.common.R as commonR
 
 @Composable
@@ -78,11 +78,6 @@ fun AuthenticateScreen(
     }
 }
 
-// TODO Better naming. Consolidate with other common modifiers.
-private val columnPadded = Modifier
-    .fillMaxWidth()
-    .padding(16.dp)
-
 @Composable
 private fun AuthenticateScreenContainer(
     modifier: Modifier = Modifier,
@@ -102,7 +97,7 @@ private fun AuthenticateScreenContainer(
 @Composable
 private fun CrisisCleanupLogoRow() {
     Row(
-        modifier = columnPadded,
+        modifier = fillWidthPadded,
         horizontalArrangement = Arrangement.Center,
     ) {
         Image(
@@ -137,35 +132,35 @@ private fun LoginScreen(
         CrisisCleanupLogoRow()
 
         Text(
-            modifier = columnPadded,
+            modifier = fillWidthPadded,
             text = stringResource(R.string.login),
             style = MaterialTheme.typography.headlineMedium
         )
 
         val isNotBusy by viewModel.isNotAuthenticating.collectAsStateWithLifecycle()
 
-        OutlinedTextField(
-            modifier = columnPadded,
-            label = { Text(stringResource(id = R.string.email)) },
+        OutlinedClearableTextField(
+            modifier = fillWidthPadded,
+            labelResId = R.string.email,
             value = viewModel.loginInputData.emailAddress,
             onValueChange = { viewModel.loginInputData.emailAddress = it },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             enabled = isNotBusy,
         )
 
-        OutlinedTextField(
-            modifier = columnPadded,
-            label = { Text(stringResource(id = R.string.password)) },
+        OutlinedClearableTextField(
+            modifier = fillWidthPadded,
+            labelResId = R.string.password,
             value = viewModel.loginInputData.password,
             onValueChange = { viewModel.loginInputData.password = it },
-            visualTransformation = PasswordVisualTransformation(),
+            obfuscateValue = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             enabled = isNotBusy,
         )
 
         if (isDebug) {
             Button(
-                modifier = columnPadded,
+                modifier = fillWidthPadded,
                 onClick = {
                     viewModel.loginInputData.apply {
                         emailAddress = "demo@crisiscleanup.org"
@@ -182,7 +177,7 @@ private fun LoginScreen(
         // TODO closeAuthentication on successful login?
         // TODO Login button with loading
         Button(
-            modifier = columnPadded,
+            modifier = fillWidthPadded,
             onClick = { viewModel.authenticateEmailPassword() },
             enabled = isNotBusy,
         ) {
@@ -192,7 +187,7 @@ private fun LoginScreen(
         val authState = viewModel.authenticationState.collectAsStateWithLifecycle()
         if (authState.value.hasAccessToken) {
             Button(
-                modifier = columnPadded,
+                modifier = fillWidthPadded,
                 onClick = closeAuthentication,
                 enabled = isNotBusy,
             ) {
@@ -221,7 +216,7 @@ private fun AuthenticatedScreen(
         val authState by viewModel.authenticationState.collectAsStateWithLifecycle()
 
         Text(
-            modifier = columnPadded,
+            modifier = fillWidthPadded,
             text = stringResource(
                 R.string.account_is,
                 authState.accountData.displayName,
@@ -233,7 +228,7 @@ private fun AuthenticatedScreen(
 
         // TODO Logout button with loading
         Button(
-            modifier = columnPadded,
+            modifier = fillWidthPadded,
             onClick = { viewModel.logout() },
             enabled = isNotBusy,
         ) {
@@ -241,10 +236,10 @@ private fun AuthenticatedScreen(
         }
 
         Button(
-            modifier = columnPadded,
+            modifier = fillWidthPadded,
             onClick = closeAuthentication,
         ) {
-            Text(stringResource(R.string.cancel))
+            Text(stringResource(R.string.dismiss))
         }
     }
 }
