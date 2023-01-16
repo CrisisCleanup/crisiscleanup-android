@@ -39,6 +39,7 @@ kotlinxDatetime = "0.4.0"
 kotlinxSerializationJson = "1.4.1"
 ksp = "1.7.21-1.0.8"
 lint = "30.3.1"
+mockk = "1.13.3"
 okhttp = "4.10.0"
 protobuf = "3.21.12"
 protobufPlugin = "0.8.19"
@@ -110,6 +111,9 @@ kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetime" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 lint-api = { group = "com.android.tools.lint", name = "lint-api", version.ref = "lint" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockk" }
+mockk-agent = { group = "io.mockk", name = "mockk-agent", version.ref = "mockk" }
 okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 protobuf-kotlin-lite = { group = "com.google.protobuf", name = "protobuf-kotlin-lite", version.ref = "protobuf" }
 protobuf-protoc = { group = "com.google.protobuf", name = "protoc", version.ref = "protobuf" }

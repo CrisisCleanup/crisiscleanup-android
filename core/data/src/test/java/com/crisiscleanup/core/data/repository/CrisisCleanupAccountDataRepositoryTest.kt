@@ -12,6 +12,7 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class CrisisCleanupAccountDataRepositoryTest {
     private lateinit var subject: CrisisCleanupAccountDataRepository
@@ -32,6 +33,8 @@ class CrisisCleanupAccountDataRepositoryTest {
 
     @Test
     fun defaultIsUnauthenticated() = runTest {
+        assertTrue(subject.accessTokenCached.isEmpty())
+
         subject.accountData.first().let {
             assertEquals(
                 AccountData(
@@ -44,6 +47,7 @@ class CrisisCleanupAccountDataRepositoryTest {
                 it
             )
         }
+
         assertFalse(subject.isAuthenticated.first())
     }
 
@@ -64,8 +68,11 @@ class CrisisCleanupAccountDataRepositoryTest {
             emailAddress = "em",
             profilePictureUri = "pp",
         )
+
+        assertEquals("at", subject.accessTokenCached)
         assertEquals(expectedData, subject.accountData.first())
         assertEquals(expectedData, accountInfoDataSource.accountData.first())
+        assertTrue(subject.isAuthenticated.first())
 
         subject.clearAccount()
         expectedData = AccountData(
@@ -75,7 +82,10 @@ class CrisisCleanupAccountDataRepositoryTest {
             emailAddress = "",
             profilePictureUri = "",
         )
+
+        assertTrue(subject.accessTokenCached.isEmpty())
         assertEquals(expectedData, subject.accountData.first())
         assertEquals(expectedData, accountInfoDataSource.accountData.first())
+        assertFalse(subject.isAuthenticated.first())
     }
 }

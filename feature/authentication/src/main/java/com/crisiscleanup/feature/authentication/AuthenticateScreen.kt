@@ -12,7 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -113,6 +112,18 @@ private fun CrisisCleanupLogoRow() {
 // TODO Logging in with a different account requires clearing any and all data.
 //      Alert that offline data will not upload to different account.
 
+@Composable
+private fun conditionalErrorMessage(errorMessage: String) {
+    if (errorMessage.isNotEmpty()) {
+        Text(
+            modifier = fillWidthPadded,
+            text = errorMessage,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.error,
+        )
+    }
+}
+
 @OptIn(
     ExperimentalMaterial3Api::class,
     ExperimentalLifecycleComposeApi::class,
@@ -137,8 +148,13 @@ private fun LoginScreen(
             style = MaterialTheme.typography.headlineMedium
         )
 
+        val authErrorMessage by viewModel.errorMessage
+        conditionalErrorMessage(authErrorMessage)
+
         val isNotBusy by viewModel.isNotAuthenticating.collectAsStateWithLifecycle()
 
+        val focusEmail = viewModel.loginInputData.emailAddress.isEmpty() ||
+                viewModel.isInvalidEmail.value
         OutlinedClearableTextField(
             modifier = fillWidthPadded,
             labelResId = R.string.email,
@@ -146,6 +162,8 @@ private fun LoginScreen(
             onValueChange = { viewModel.loginInputData.emailAddress = it },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             enabled = isNotBusy,
+            isError = viewModel.isInvalidEmail.value,
+            hasFocus = focusEmail,
         )
 
         OutlinedClearableTextField(
@@ -156,6 +174,8 @@ private fun LoginScreen(
             obfuscateValue = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             enabled = isNotBusy,
+            isError = viewModel.isInvalidPassword.value,
+            hasFocus = viewModel.isInvalidPassword.value,
         )
 
         if (isDebug) {
@@ -174,7 +194,6 @@ private fun LoginScreen(
             }
         }
 
-        // TODO closeAuthentication on successful login?
         // TODO Login button with loading
         Button(
             modifier = fillWidthPadded,
@@ -223,6 +242,9 @@ private fun AuthenticatedScreen(
                 authState.accountData.emailAddress
             ),
         )
+
+        val authErrorMessage by viewModel.errorMessage
+        conditionalErrorMessage(authErrorMessage)
 
         val isNotBusy by viewModel.isNotAuthenticating.collectAsStateWithLifecycle()
 

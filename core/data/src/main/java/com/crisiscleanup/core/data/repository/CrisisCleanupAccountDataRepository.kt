@@ -21,12 +21,14 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
         it
     }
 
-    // TODO Test coverage including at feature/app level
     override val isAuthenticated: Flow<Boolean> = accountData.map {
         it.accessToken.isNotEmpty()
     }
 
-    override suspend fun clearAccount() = dataSource.clearAccount()
+    override suspend fun clearAccount() {
+        accessTokenCached = ""
+        dataSource.clearAccount()
+    }
 
     override suspend fun setAccount(
         accessToken: String,
@@ -36,7 +38,6 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
         expirySeconds: Long,
         profilePictureUri: String,
     ) {
-        // TODO Update tests for set and clear
         accessTokenCached = accessToken
         dataSource.setAccount(
             accessToken,

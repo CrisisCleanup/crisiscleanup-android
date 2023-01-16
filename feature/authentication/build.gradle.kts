@@ -16,4 +16,7 @@ dependencies {
     implementation(libs.kotlinx.datetime)
 
     implementation(libs.jwt.decode)
+    implementation(libs.retrofit.core)
+
+    testImplementation(libs.mockk.android)
 }

@@ -8,4 +8,8 @@
     <string name="cancel">Cancel</string>
     <string name="dismiss">Dismiss</string>
     <string name="account_is">%s (%s)</string>
+    <string name="error_during_authentication">We are experiencing issues with login/logout. Please try again later.</string>
+    <string name="invalid_credentials_retry">The email or password is incorrect. Try again.</string>
+    <string name="enter_valid_email">Enter a valid email</string>
+    <string name="enter_valid_password">Enter a password</string>
 </resources>
