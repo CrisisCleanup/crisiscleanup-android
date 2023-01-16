@@ -2,7 +2,6 @@ package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.model.data.AccountData
 import kotlinx.coroutines.flow.Flow
-import kotlinx.datetime.Instant
 
 interface AccountDataRepository {
     /**
@@ -11,16 +10,18 @@ interface AccountDataRepository {
     val accountData: Flow<AccountData>
 
     /**
-     * Stream of authenticated account status
+     * Cached value of access token
      *
-     * See if the authenticated account is expired by querying [accountExpiration].
+     * The token may be expired (if defined). Access [accountData] for latest values.
      */
-    val isAuthenticated: Flow<Boolean>
+    val accessTokenCached: String
 
     /**
-     * Instant the account (token) expires
+     * Stream of authenticated account status
+     *
+     * See if the authenticated account is expired in [accountData].
      */
-    val accountExpiration: Flow<Instant>
+    val isAuthenticated: Flow<Boolean>
 
     /**
      * Clear (authenticated) account info

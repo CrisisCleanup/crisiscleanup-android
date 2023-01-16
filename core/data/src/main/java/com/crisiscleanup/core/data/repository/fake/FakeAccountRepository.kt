@@ -28,11 +28,11 @@ class FakeAccountRepository(
 
     override val accountData: Flow<AccountData> = _accountData.filterNotNull()
 
+    override val accessTokenCached: String = accessToken
+
     override val isAuthenticated: Flow<Boolean> = accountData.map {
         it.accessToken.isNotEmpty()
     }
-
-    override val accountExpiration: Flow<Instant> = accountData.map { it.tokenExpiry }
 
     override suspend fun clearAccount() = setAccount("", "", "", "", 0, "")
 

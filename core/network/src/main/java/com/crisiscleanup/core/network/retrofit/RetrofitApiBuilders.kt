@@ -10,6 +10,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
+import javax.inject.Qualifier
 
 private const val CrisisCleanupApiBaseUrl = BuildConfig.API_BASE_URL
 
@@ -17,9 +18,14 @@ private val networkApiJson by lazy {
     Json { ignoreUnknownKeys = true }
 }
 
-fun getCrisisCleanupApiBuilder(
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+internal annotation class CrisisCleanupRetrofit
+
+internal fun getCrisisCleanupApiBuilder(
     appEnv: AppEnv,
-    interceptorProvider: RetrofitInterceptorProvider? = null,
+    interceptorProvider: RetrofitInterceptorProvider,
+    headerKeysLookup: RequestHeaderKeysLookup,
 ): Retrofit {
     val clientBuilder = OkHttpClient.Builder()
 
@@ -29,13 +35,14 @@ fun getCrisisCleanupApiBuilder(
         })
     }
 
-    interceptorProvider?.interceptors?.forEach {
+    interceptorProvider.interceptors?.forEach {
         clientBuilder.addInterceptor(it)
     }
 
     return Retrofit.Builder()
         .baseUrl(CrisisCleanupApiBaseUrl)
         .client(clientBuilder.build())
+        .addCallAdapterFactory(RequestHeaderCallAdapterFactory(headerKeysLookup))
         .addConverterFactory(
             @OptIn(ExperimentalSerializationApi::class)
             networkApiJson.asConverterFactory("application/json".toMediaType())

@@ -7,7 +7,6 @@ import com.auth0.android.jwt.JWT
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.data.repository.AccountDataRepository
-import com.crisiscleanup.core.network.AccessTokenManager
 import com.crisiscleanup.core.network.CrisisCleanupAuthApi
 import com.crisiscleanup.feature.authentication.model.AuthenticationState
 import com.crisiscleanup.feature.authentication.model.LoginInputData
@@ -24,7 +23,6 @@ class AuthenticationViewModel @Inject constructor(
     private val authApiClient: CrisisCleanupAuthApi,
     private val logger: AppLogger,
     private val appEnv: AppEnv,
-    private val accessTokenManager: AccessTokenManager,
 ) : ViewModel() {
     var isLoading = MutableStateFlow(true)
         private set
@@ -72,8 +70,6 @@ class AuthenticationViewModel @Inject constructor(
         isAuthenticating.value = true
         viewModelScope.launch {
             try {
-                accessTokenManager.accessToken = ""
-
                 val result = authApiClient.login(emailAddress, password)
                 val hasError = (result.errors?.size ?: 0) > 0
                 if (hasError) {
@@ -104,7 +100,6 @@ class AuthenticationViewModel @Inject constructor(
                         expirySeconds = expirySeconds,
                         profilePictureUri = profilePicUri,
                     )
-                    accessTokenManager.accessToken = ""
                 }
             } catch (e: Exception) {
                 // TODO show message to user
@@ -123,7 +118,6 @@ class AuthenticationViewModel @Inject constructor(
                 Log.i("AUTH", "Logged out through API")
 
                 accountDataRepository.clearAccount()
-                accessTokenManager.accessToken = ""
             } catch (e: Exception) {
                 // TODO show message to user
                 logger.logException(e)

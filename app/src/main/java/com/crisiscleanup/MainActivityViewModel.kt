@@ -7,7 +7,6 @@ import com.crisiscleanup.MainActivityUiState.Success
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.model.data.UserData
-import com.crisiscleanup.core.network.AccessTokenManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -19,7 +18,6 @@ import javax.inject.Inject
 class MainActivityViewModel @Inject constructor(
     localAppPreferencesRepository: LocalAppPreferencesRepository,
     accountDataRepository: AccountDataRepository,
-    accessTokenManager: AccessTokenManager,
 ) : ViewModel() {
     val uiState: StateFlow<MainActivityUiState> = localAppPreferencesRepository.userData.map {
         Success(it)
@@ -30,9 +28,6 @@ class MainActivityViewModel @Inject constructor(
     )
 
     val authState: StateFlow<AuthState> = accountDataRepository.accountData.map {
-        // TODO Refactor/redesign access token management later
-        accessTokenManager.accessToken = it.accessToken
-
         if (it.accessToken.isNotEmpty()) AuthState.Authenticated
         else AuthState.Other
     }.stateIn(

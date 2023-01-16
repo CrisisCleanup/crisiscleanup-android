@@ -5,7 +5,9 @@ import com.crisiscleanup.core.model.data.DarkThemeConfig
 import com.crisiscleanup.core.model.data.UserData
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class OfflineFirstLocalAppPreferencesRepository @Inject constructor(
     private val preferencesDataSource: LocalAppPreferencesDataSource
 ) : LocalAppPreferencesRepository {

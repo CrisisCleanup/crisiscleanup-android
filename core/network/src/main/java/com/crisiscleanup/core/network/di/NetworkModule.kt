@@ -1,16 +1,19 @@
 package com.crisiscleanup.core.network.di
 
 import android.content.Context
-import com.crisiscleanup.core.network.AccessTokenManager
-import com.crisiscleanup.core.network.SimpleAccessTokenManager
+import com.crisiscleanup.core.common.AppEnv
+import com.crisiscleanup.core.network.RetrofitInterceptorProvider
 import com.crisiscleanup.core.network.fake.FakeAssetManager
-import dagger.Binds
+import com.crisiscleanup.core.network.retrofit.CrisisCleanupRetrofit
+import com.crisiscleanup.core.network.retrofit.RequestHeaderKeysLookup
+import com.crisiscleanup.core.network.retrofit.getCrisisCleanupApiBuilder
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
+import retrofit2.Retrofit
 import javax.inject.Singleton
 
 @Module
@@ -28,14 +31,17 @@ object NetworkModule {
     fun providesFakeAssetManager(
         @ApplicationContext context: Context,
     ): FakeAssetManager = FakeAssetManager(context.assets::open)
-}
 
-@Module
-@InstallIn(SingletonComponent::class)
-interface BindingNetworkModule {
-    @Binds
+    @Provides
     @Singleton
-    fun bindsAccessTokenManager(
-        accessTokenManager: SimpleAccessTokenManager
-    ): AccessTokenManager
+    fun providesRequestHeaderKeysLookup(): RequestHeaderKeysLookup = RequestHeaderKeysLookup()
+
+    @CrisisCleanupRetrofit
+    @Provides
+    @Singleton
+    fun providesCrisisCleanupRetrofit(
+        appEnv: AppEnv,
+        interceptorProvider: RetrofitInterceptorProvider,
+        headerKeysLookup: RequestHeaderKeysLookup,
+    ): Retrofit = getCrisisCleanupApiBuilder(appEnv, interceptorProvider, headerKeysLookup)
 }
