@@ -7,6 +7,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -18,7 +21,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.BusyButton
-import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
+import com.crisiscleanup.core.designsystem.component.OutlinedSingleLineTextField
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.common.R as commonR
 
@@ -114,7 +117,7 @@ private fun CrisisCleanupLogoRow() {
 //      Alert that offline data will not upload to different account.
 
 @Composable
-private fun conditionalErrorMessage(errorMessage: String) {
+private fun ConditionalErrorMessage(errorMessage: String) {
     if (errorMessage.isNotEmpty()) {
         Text(
             modifier = fillWidthPadded,
@@ -150,13 +153,13 @@ private fun LoginScreen(
         )
 
         val authErrorMessage by viewModel.errorMessage
-        conditionalErrorMessage(authErrorMessage)
+        ConditionalErrorMessage(authErrorMessage)
 
         val isNotBusy by viewModel.isNotAuthenticating.collectAsStateWithLifecycle()
 
         val focusEmail = viewModel.loginInputData.emailAddress.isEmpty() ||
                 viewModel.isInvalidEmail.value
-        OutlinedClearableTextField(
+        OutlinedSingleLineTextField(
             modifier = fillWidthPadded,
             labelResId = R.string.email,
             value = viewModel.loginInputData.emailAddress,
@@ -167,16 +170,20 @@ private fun LoginScreen(
             hasFocus = focusEmail,
         )
 
-        OutlinedClearableTextField(
+        var isObfuscatingPassword by rememberSaveable { mutableStateOf(true) }
+        OutlinedSingleLineTextField(
             modifier = fillWidthPadded,
             labelResId = R.string.password,
             value = viewModel.loginInputData.password,
             onValueChange = { viewModel.loginInputData.password = it },
             obfuscateValue = true,
+            isObfuscating = isObfuscatingPassword,
+            onObfuscate = { isObfuscatingPassword = !isObfuscatingPassword },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             enabled = isNotBusy,
             isError = viewModel.isInvalidPassword.value,
             hasFocus = viewModel.isInvalidPassword.value,
+            onEnter = { viewModel.authenticateEmailPassword() },
         )
 
         if (isDebug) {
@@ -244,7 +251,7 @@ private fun AuthenticatedScreen(
         )
 
         val authErrorMessage by viewModel.errorMessage
-        conditionalErrorMessage(authErrorMessage)
+        ConditionalErrorMessage(authErrorMessage)
 
         val isNotBusy by viewModel.isNotAuthenticating.collectAsStateWithLifecycle()
 
