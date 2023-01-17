@@ -3,7 +3,6 @@ package com.crisiscleanup.feature.authentication
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -14,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -21,7 +21,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.BusyButton
-import com.crisiscleanup.core.designsystem.component.OutlinedSingleLineTextField
+import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
+import com.crisiscleanup.core.designsystem.component.OutlinedObfuscatingTextField
 import com.crisiscleanup.core.designsystem.theme.DayNightPreviews
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.common.R as commonR
@@ -45,11 +46,13 @@ fun AuthenticateScreen(
     closeAuthentication: () -> Unit = {},
     isDebug: Boolean = false,
 ) {
+    // TODO Write test(s)
     val onCloseScreen = {
         viewModel.loginInputData.password = ""
         closeAuthentication()
     }
 
+    // TODO Write test
     BackHandler {
         onCloseScreen()
     }
@@ -127,7 +130,6 @@ private fun ConditionalErrorMessage(errorMessage: String) {
 }
 
 @OptIn(
-    ExperimentalMaterial3Api::class,
     ExperimentalLifecycleComposeApi::class,
 )
 @Composable
@@ -157,31 +159,31 @@ private fun LoginScreen(
 
         val focusEmail = viewModel.loginInputData.emailAddress.isEmpty() ||
                 viewModel.isInvalidEmail.value
-        OutlinedSingleLineTextField(
+        OutlinedClearableTextField(
             modifier = fillWidthPadded,
             labelResId = R.string.email,
             value = viewModel.loginInputData.emailAddress,
             onValueChange = { viewModel.loginInputData.emailAddress = it },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            keyboardType = KeyboardType.Email,
             enabled = isNotBusy,
             isError = viewModel.isInvalidEmail.value,
             hasFocus = focusEmail,
+            onNext = { viewModel.clearErrorVisuals() },
         )
 
         var isObfuscatingPassword by rememberSaveable { mutableStateOf(true) }
-        OutlinedSingleLineTextField(
+        OutlinedObfuscatingTextField(
             modifier = fillWidthPadded,
             labelResId = R.string.password,
             value = viewModel.loginInputData.password,
             onValueChange = { viewModel.loginInputData.password = it },
-            obfuscateValue = true,
             isObfuscating = isObfuscatingPassword,
             onObfuscate = { isObfuscatingPassword = !isObfuscatingPassword },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             enabled = isNotBusy,
             isError = viewModel.isInvalidPassword.value,
             hasFocus = viewModel.isInvalidPassword.value,
             onEnter = { viewModel.authenticateEmailPassword() },
+            imeAction = ImeAction.Done,
         )
 
         if (isDebug) {

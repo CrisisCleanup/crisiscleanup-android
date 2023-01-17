@@ -82,7 +82,7 @@ class AuthenticationViewModel @Inject constructor(
         loginInputData.password = ""
     }
 
-    private fun clearErrors() {
+    fun clearErrorVisuals() {
         isInvalidEmail.value = false
         isInvalidPassword.value = false
         errorMessage.value = ""
@@ -110,7 +110,7 @@ class AuthenticationViewModel @Inject constructor(
             return
         }
 
-        clearErrors()
+        clearErrorVisuals()
 
         val emailAddress = loginInputData.emailAddress
         val password = loginInputData.password
@@ -177,7 +177,7 @@ class AuthenticationViewModel @Inject constructor(
             return
         }
 
-        clearErrors()
+        clearErrorVisuals()
 
         isAuthenticating.value = true
         viewModelScope.launch {
