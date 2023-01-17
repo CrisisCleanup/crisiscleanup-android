@@ -11,6 +11,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -172,6 +174,7 @@ private fun LoginScreen(
         )
 
         var isObfuscatingPassword by rememberSaveable { mutableStateOf(true) }
+        val focusManager = LocalFocusManager.current
         OutlinedObfuscatingTextField(
             modifier = fillWidthPadded,
             labelResId = R.string.password,
@@ -182,7 +185,11 @@ private fun LoginScreen(
             enabled = isNotBusy,
             isError = viewModel.isInvalidPassword.value,
             hasFocus = viewModel.isInvalidPassword.value,
-            onEnter = { viewModel.authenticateEmailPassword() },
+            onEnter = {
+                // Allows email input to request focus if necessary
+                focusManager.moveFocus(FocusDirection.Next)
+                viewModel.authenticateEmailPassword()
+            },
             imeAction = ImeAction.Done,
         )
 
