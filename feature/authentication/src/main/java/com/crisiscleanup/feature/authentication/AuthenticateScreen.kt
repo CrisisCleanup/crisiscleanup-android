@@ -22,6 +22,7 @@ import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.OutlinedSingleLineTextField
+import com.crisiscleanup.core.designsystem.theme.DayNightPreviews
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.common.R as commonR
 
@@ -105,16 +106,13 @@ private fun CrisisCleanupLogoRow() {
     ) {
         Image(
             modifier = Modifier
-                // TODO Make parameter and adjust to screen size
+                // TODO Adjust image size to screen size
                 .sizeIn(maxWidth = 160.dp),
             painter = painterResource(commonR.drawable.crisis_cleanup_logo),
             contentDescription = stringResource(R.string.crisis_cleanup_logo),
         )
     }
 }
-
-// TODO Logging in with a different account requires clearing any and all data.
-//      Alert that offline data will not upload to different account.
 
 @Composable
 private fun ConditionalErrorMessage(errorMessage: String) {
@@ -255,7 +253,6 @@ private fun AuthenticatedScreen(
 
         val isNotBusy by viewModel.isNotAuthenticating.collectAsStateWithLifecycle()
 
-        // TODO Logout button with loading
         BusyButton(
             modifier = fillWidthPadded,
             onClick = { viewModel.logout() },
@@ -271,6 +268,12 @@ private fun AuthenticatedScreen(
             Text(stringResource(R.string.dismiss))
         }
     }
+}
+
+@DayNightPreviews
+@Composable
+fun LogoRowPreview() {
+    CrisisCleanupLogoRow()
 }
 
 @Preview
