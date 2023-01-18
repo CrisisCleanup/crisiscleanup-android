@@ -44,5 +44,6 @@ _sandbox
 # Android Studio captures folder
 captures/
 
-demo.properties
+debug.properties
+release.properties
 prod.properties

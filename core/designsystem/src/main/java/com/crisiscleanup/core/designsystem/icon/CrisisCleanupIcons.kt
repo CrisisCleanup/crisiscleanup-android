@@ -2,12 +2,8 @@ package com.crisiscleanup.core.designsystem.icon
 
 import androidx.annotation.DrawableRes
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.crisiscleanup.core.designsystem.R
 
@@ -15,12 +11,13 @@ import com.crisiscleanup.core.designsystem.R
  * Material icons are [ImageVector]s, custom icons are drawable resource IDs.
  */
 object CrisisCleanupIcons {
+    val Account = Icons.Default.PersonOutline
     val Cases = R.drawable.ic_cases
     val Clear = Icons.Default.Clear
     val Dashboard = R.drawable.ic_dashboard
+    val Menu = Icons.Default.Menu
     val MoreVert = Icons.Default.MoreVert
     val Search = Icons.Rounded.Search
-    val Settings = Icons.Rounded.Settings
     val Team = R.drawable.ic_team
     val Visibility = Icons.Default.Visibility
     val VisibilityOff = Icons.Default.VisibilityOff

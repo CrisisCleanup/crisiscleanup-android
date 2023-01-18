@@ -23,6 +23,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.BusyButton
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.OutlinedObfuscatingTextField
 import com.crisiscleanup.core.designsystem.theme.DayNightPreviews
@@ -270,12 +271,12 @@ private fun AuthenticatedScreen(
             indicateBusy = !isNotBusy,
         )
 
-        Button(
+        CrisisCleanupButton(
             modifier = fillWidthPadded,
             onClick = closeAuthentication,
-        ) {
-            Text(stringResource(R.string.dismiss))
-        }
+            enabled = isNotBusy,
+            textResId = R.string.dismiss,
+        )
     }
 }
 

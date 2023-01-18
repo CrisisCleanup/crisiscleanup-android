@@ -11,6 +11,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
+private fun roundedRectangleButtonShape() = RoundedCornerShape(4.dp)
+private val buttonMinHeight = 48.dp
+
+@Composable
+private fun Text(
+    @StringRes
+    textResId: Int = 0,
+    text: String = "",
+) {
+    if (textResId != 0) {
+        Text(stringResource(textResId))
+    } else {
+        Text(text)
+    }
+}
+
 @Composable
 fun BusyButton(
     modifier: Modifier = Modifier,
@@ -22,19 +38,34 @@ fun BusyButton(
     indicateBusy: Boolean = false,
 ) {
     Button(
-        modifier = modifier.sizeIn(minHeight = 48.dp),
+        modifier = modifier.sizeIn(minHeight = buttonMinHeight),
         onClick = onClick,
         enabled = enabled,
-        shape = RoundedCornerShape(4.dp),
+        shape = roundedRectangleButtonShape(),
     ) {
         if (indicateBusy) {
             CircularProgressIndicator()
         } else {
-            if (textResId != 0) {
-                Text(stringResource(textResId))
-            } else if (text.isNotEmpty()) {
-                Text(text)
-            }
+            Text(textResId, text)
         }
+    }
+}
+
+@Composable
+fun CrisisCleanupButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+    enabled: Boolean,
+    @StringRes
+    textResId: Int = 0,
+    text: String = "",
+) {
+    Button(
+        modifier = modifier.sizeIn(minHeight = buttonMinHeight),
+        onClick = onClick,
+        enabled = enabled,
+        shape = roundedRectangleButtonShape(),
+    ) {
+        Text(textResId, text)
     }
 }

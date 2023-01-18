@@ -2,5 +2,7 @@
     <string name="app_name">Crisis Cleanup</string>
     <string name="app_name_short">Cleanup</string>
 
+    <string name="account">Account</string>
+
     <string name="not_connected">⚠️ You aren’t connected to the internet</string>
 </resources>

@@ -3,8 +3,10 @@ package com.crisiscleanup.navigation
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.icon.Icon
 import com.crisiscleanup.core.designsystem.icon.Icon.DrawableResourceIcon
+import com.crisiscleanup.core.designsystem.icon.Icon.ImageVectorIcon
 import com.crisiscleanup.feature.cases.R as casesR
 import com.crisiscleanup.feature.dashboard.R as dashboardR
+import com.crisiscleanup.feature.menu.R as menuR
 import com.crisiscleanup.feature.team.R as teamR
 
 /**
@@ -36,4 +38,10 @@ enum class TopLevelDestination(
         iconTextId = teamR.string.team,
         titleTextId = teamR.string.team,
     ),
+    MENU(
+        selectedIcon = ImageVectorIcon(CrisisCleanupIcons.Menu),
+        unselectedIcon = ImageVectorIcon(CrisisCleanupIcons.Menu),
+        iconTextId = menuR.string.menu,
+        titleTextId = menuR.string.menu,
+    )
 }

@@ -30,7 +30,6 @@ import com.crisiscleanup.core.designsystem.icon.Icon.ImageVectorIcon
 import com.crisiscleanup.feature.authentication.AuthenticateScreen
 import com.crisiscleanup.navigation.CrisisCleanupNavHost
 import com.crisiscleanup.navigation.TopLevelDestination
-import com.crisiscleanup.feature.settings.R as settingsR
 
 @OptIn(
     ExperimentalLifecycleComposeApi::class,
@@ -174,9 +173,9 @@ private fun NavigableContent(
                 if (destination != null) {
                     CrisisCleanupTopAppBar(
                         titleRes = destination.titleTextId,
-                        actionIcon = CrisisCleanupIcons.Settings,
+                        actionIcon = CrisisCleanupIcons.Account,
                         actionIconContentDescription = stringResource(
-                            id = settingsR.string.settings
+                            id = R.string.account
                         ),
                         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                             containerColor = Color.Transparent
@@ -249,11 +248,8 @@ private fun CrisisCleanupBottomBar(
                 selected = selected,
                 onClick = { onNavigateToDestination(destination) },
                 icon = {
-                    val icon = if (selected) {
-                        destination.selectedIcon
-                    } else {
-                        destination.unselectedIcon
-                    }
+                    val icon = if (selected) destination.selectedIcon
+                    else destination.unselectedIcon
                     when (icon) {
                         is ImageVectorIcon -> Icon(
                             imageVector = icon.imageVector,

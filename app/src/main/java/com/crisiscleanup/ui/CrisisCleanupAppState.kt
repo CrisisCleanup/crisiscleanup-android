@@ -5,11 +5,8 @@ import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -24,6 +21,8 @@ import com.crisiscleanup.feature.cases.navigation.casesRoute
 import com.crisiscleanup.feature.cases.navigation.navigateToCases
 import com.crisiscleanup.feature.dashboard.navigation.dashboardRoute
 import com.crisiscleanup.feature.dashboard.navigation.navigateToDashboard
+import com.crisiscleanup.feature.menu.navigation.menuRoute
+import com.crisiscleanup.feature.menu.navigation.navigateToMenu
 import com.crisiscleanup.feature.team.navigation.navigateToTeam
 import com.crisiscleanup.feature.team.navigation.teamRoute
 import com.crisiscleanup.navigation.TopLevelDestination
@@ -62,11 +61,9 @@ class CrisisCleanupAppState(
             casesRoute -> CASES
             dashboardRoute -> DASHBOARD
             teamRoute -> TEAM
+            menuRoute -> MENU
             else -> null
         }
-
-    var shouldShowSettingsDialog by mutableStateOf(false)
-        private set
 
     val shouldShowBottomBar: Boolean
         get() = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact ||
@@ -116,16 +113,13 @@ class CrisisCleanupAppState(
                 CASES -> navController.navigateToCases(topLevelNavOptions)
                 DASHBOARD -> navController.navigateToDashboard(topLevelNavOptions)
                 TEAM -> navController.navigateToTeam(topLevelNavOptions)
+                MENU -> navController.navigateToMenu(topLevelNavOptions)
             }
         }
     }
 
     fun onBackClick() {
         navController.popBackStack()
-    }
-
-    fun setShowSettingsDialog(shouldShow: Boolean) {
-        shouldShowSettingsDialog = shouldShow
     }
 }
 

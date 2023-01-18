@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import com.crisiscleanup.feature.cases.navigation.casesRoute
 import com.crisiscleanup.feature.cases.navigation.casesScreen
 import com.crisiscleanup.feature.dashboard.navigation.dashboardScreen
+import com.crisiscleanup.feature.menu.navigation.menuScreen
 import com.crisiscleanup.feature.team.navigation.teamScreen
 
 /**
@@ -31,5 +32,6 @@ fun CrisisCleanupNavHost(
         casesScreen()
         dashboardScreen()
         teamScreen()
+        menuScreen()
     }
 }

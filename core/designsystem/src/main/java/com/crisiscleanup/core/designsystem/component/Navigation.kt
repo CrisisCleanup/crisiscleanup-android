@@ -2,13 +2,7 @@ package com.crisiscleanup.core.designsystem.component
 
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.NavigationRail
-import androidx.compose.material3.NavigationRailItem
-import androidx.compose.material3.NavigationRailItemDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,6 +23,7 @@ import androidx.compose.ui.unit.dp
  * @param alwaysShowLabel Whether to always show the label for this item. If false, the label will
  * only be shown when this item is selected.
  */
+
 @Composable
 fun RowScope.CrisisCleanupNavigationBarItem(
     selected: Boolean,
@@ -40,6 +35,8 @@ fun RowScope.CrisisCleanupNavigationBarItem(
     label: @Composable (() -> Unit)? = null,
     alwaysShowLabel: Boolean = true
 ) {
+    val selectedColor = CrisisCleanupNavigationDefaults.navigationSelectedItemColor()
+    val unselectedColor = selectedColor.copy(0.5f)
     NavigationBarItem(
         selected = selected,
         onClick = onClick,
@@ -49,11 +46,11 @@ fun RowScope.CrisisCleanupNavigationBarItem(
         label = label,
         alwaysShowLabel = alwaysShowLabel,
         colors = NavigationBarItemDefaults.colors(
-            selectedIconColor = CrisisCleanupNavigationDefaults.navigationSelectedItemColor(),
-            unselectedIconColor = CrisisCleanupNavigationDefaults.navigationContentColor(),
-            selectedTextColor = CrisisCleanupNavigationDefaults.navigationSelectedItemColor(),
-            unselectedTextColor = CrisisCleanupNavigationDefaults.navigationContentColor(),
-            indicatorColor = CrisisCleanupNavigationDefaults.navigationIndicatorColor()
+            selectedIconColor = selectedColor,
+            unselectedIconColor = unselectedColor,
+            selectedTextColor = selectedColor,
+            unselectedTextColor = unselectedColor,
+            indicatorColor = MaterialTheme.colorScheme.surface,
         )
     )
 }
@@ -151,8 +148,10 @@ fun CrisisCleanupNavigationRail(
 object CrisisCleanupNavigationDefaults {
     @Composable
     fun navigationContentColor() = MaterialTheme.colorScheme.onSurfaceVariant
+
     @Composable
     fun navigationSelectedItemColor() = MaterialTheme.colorScheme.onPrimaryContainer
+
     @Composable
     fun navigationIndicatorColor() = MaterialTheme.colorScheme.primaryContainer
 }
