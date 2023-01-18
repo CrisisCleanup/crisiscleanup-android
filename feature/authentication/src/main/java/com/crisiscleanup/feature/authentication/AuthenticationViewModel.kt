@@ -29,14 +29,6 @@ class AuthenticationViewModel @Inject constructor(
     private val appEnv: AppEnv,
     private val resProvider: AndroidResourceProvider,
 ) : ViewModel() {
-    /**
-     * Initial loading state of the view model
-     *
-     * Loading is complete when when the account data repository becomes accessible (the first time).
-     */
-    var isLoading = MutableStateFlow(true)
-        private set
-
     private var isAuthenticating = MutableStateFlow(false)
     val isNotAuthenticating = isAuthenticating.map { !it }
         .stateIn(
@@ -45,22 +37,26 @@ class AuthenticationViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed()
         )
 
-    val authenticationState: StateFlow<AuthenticationState> =
+    val uiState: StateFlow<AuthenticateScreenUiState> =
         accountDataRepository.accountData.map {
-            if (isLoading.value) {
-                resetLoginInputData()
-                isLoading.value = false
+            if (loginInputData.emailAddress.isEmpty() &&
+                it.emailAddress.isNotEmpty()
+            ) {
+                loginInputData.emailAddress = it.emailAddress
+                loginInputData.password = ""
             }
 
-            AuthenticationState(
-                accountData = it,
-                hasAccessToken = it.accessToken.isNotEmpty(),
-                // TODO Expiry must be dynamic not a snapshot
-                isTokenExpired = it.tokenExpiry < Clock.System.now(),
+            AuthenticateScreenUiState.Ready(
+                authenticationState = AuthenticationState(
+                    accountData = it,
+                    hasAccessToken = it.accessToken.isNotEmpty(),
+                    // TODO Expiry must be dynamic not a snapshot
+                    isTokenExpired = it.tokenExpiry < Clock.System.now(),
+                ),
             )
         }.stateIn(
             scope = viewModelScope,
-            initialValue = AuthenticationState(),
+            initialValue = AuthenticateScreenUiState.Loading,
             started = SharingStarted.WhileSubscribed(),
         )
 
@@ -76,11 +72,6 @@ class AuthenticationViewModel @Inject constructor(
         private set
     var isInvalidPassword = mutableStateOf(false)
         private set
-
-    private suspend fun resetLoginInputData() {
-        loginInputData.emailAddress = accountDataRepository.accountData.first().emailAddress
-        loginInputData.password = ""
-    }
 
     fun clearErrorVisuals() {
         isInvalidEmail.value = false
@@ -197,4 +188,9 @@ class AuthenticationViewModel @Inject constructor(
             }
         }
     }
+}
+
+sealed interface AuthenticateScreenUiState {
+    object Loading : AuthenticateScreenUiState
+    data class Ready(val authenticationState: AuthenticationState) : AuthenticateScreenUiState
 }

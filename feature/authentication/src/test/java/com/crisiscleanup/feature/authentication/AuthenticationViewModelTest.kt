@@ -11,6 +11,8 @@ import com.crisiscleanup.core.network.model.NetworkAuthResult
 import com.crisiscleanup.core.network.model.NetworkAuthUserClaims
 import com.crisiscleanup.core.network.retrofit.AuthApiClient
 import com.crisiscleanup.core.testing.util.MainDispatcherRule
+import com.crisiscleanup.feature.authentication.AuthenticateScreenUiState.Loading
+import com.crisiscleanup.feature.authentication.AuthenticateScreenUiState.Ready
 import com.crisiscleanup.feature.authentication.model.AuthenticationState
 import com.crisiscleanup.feature.authentication.model.LoginInputData
 import io.mockk.MockKAnnotations
@@ -29,6 +31,7 @@ import org.junit.Test
 import kotlin.math.abs
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 
@@ -96,6 +99,18 @@ class AuthenticationViewModelTest {
     )
 
     @Test
+    fun initialState() = runTest {
+        // Setup
+        val accountDataFlow = flow { emit(emptyAccountData) }
+        every { accountDataRepository.accountData } returns accountDataFlow
+
+        viewModel = buildViewModel()
+
+        assertEquals(Loading, viewModel.uiState.value)
+        assertTrue(viewModel.isNotAuthenticating.first())
+    }
+
+    @Test
     fun notAuthenticated_authenticateEmailPassword() = runTest {
         // Setup
         val accountDataFlow = flow { emit(emptyAccountData) }
@@ -106,19 +121,17 @@ class AuthenticationViewModelTest {
         viewModel = buildViewModel()
 
         // Initial state tests
-        assertTrue(viewModel.isLoading.first())
-        assertTrue(viewModel.isNotAuthenticating.first())
         assertEquals(
             AuthenticationState(
                 accountData = emptyAccountData,
                 hasAccessToken = false,
                 isTokenExpired = true,
-            ), viewModel.authenticationState.first()
+            ), (viewModel.uiState.first() as Ready).authenticationState
         )
         assertEquals(emptyLoginData, viewModel.loginInputData)
 
         // Auth state has been accessed. View model is "loaded".
-        assertFalse(viewModel.isLoading.first())
+        assertNotEquals(Loading, viewModel.uiState.first())
 
         viewModel.loginInputData.apply {
             emailAddress = "email@address.com"
@@ -153,9 +166,7 @@ class AuthenticationViewModelTest {
             )
         }
 
-        assertFalse(viewModel.isLoading.first())
         assertTrue(viewModel.isNotAuthenticating.first())
-        viewModel.authenticationState.drop(1)
         assertEquals(LoginInputData("email@address.com", "password"), viewModel.loginInputData)
 
         assertTrue(viewModel.errorMessage.value.isEmpty())
@@ -180,14 +191,12 @@ class AuthenticationViewModelTest {
         viewModel = buildViewModel()
 
         // Initial state tests
-        assertTrue(viewModel.isLoading.first())
-        assertTrue(viewModel.isNotAuthenticating.first())
         assertEquals(
             AuthenticationState(
                 accountData = nonEmptyAccountData,
                 hasAccessToken = true,
                 isTokenExpired = false,
-            ), viewModel.authenticationState.first()
+            ), (viewModel.uiState.first() as Ready).authenticationState
         )
 
         assertEquals(LoginInputData("email-address"), viewModel.loginInputData)

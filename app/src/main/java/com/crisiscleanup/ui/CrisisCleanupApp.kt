@@ -57,7 +57,8 @@ fun CrisisCleanupApp(
             LaunchedEffect(isOffline) {
                 if (isOffline) snackbarHostState.showSnackbar(
                     message = notConnectedMessage,
-                    duration = SnackbarDuration.Indefinite
+                    duration = SnackbarDuration.Indefinite,
+                    withDismissAction = true,
                 )
             }
 

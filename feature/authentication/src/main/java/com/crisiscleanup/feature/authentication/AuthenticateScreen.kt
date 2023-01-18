@@ -17,7 +17,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
@@ -28,6 +27,7 @@ import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.OutlinedObfuscatingTextField
 import com.crisiscleanup.core.designsystem.theme.DayNightPreviews
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
+import com.crisiscleanup.feature.authentication.model.AuthenticationState
 import com.crisiscleanup.core.common.R as commonR
 
 @Composable
@@ -60,31 +60,33 @@ fun AuthenticateScreen(
         onCloseScreen()
     }
 
-    // Collect outside the loading scope so it updates isLoading in the first data mapping
-    val authenticationStatus by viewModel.authenticationState.collectAsStateWithLifecycle()
-
-    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
-    if (isLoading) {
-        Box(Modifier.fillMaxSize()) {
-            CircularProgressIndicator(Modifier.align(Alignment.Center))
-        }
-    } else {
-        authenticationStatus.let {
-            if (!it.hasAccessToken || it.isTokenExpired) {
-                LoginScreen(
-                    modifier,
-                    onCloseScreen,
-                    isDebug = isDebug,
-                )
-
-            } else {
-                AuthenticatedScreen(
-                    modifier,
-                    onCloseScreen,
-                )
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    when (uiState) {
+        AuthenticateScreenUiState.Loading -> {
+            Box(Modifier.fillMaxSize()) {
+                CircularProgressIndicator(Modifier.align(Alignment.Center))
             }
         }
+        is AuthenticateScreenUiState.Ready -> {
+            val readyState = uiState as AuthenticateScreenUiState.Ready
+            readyState.authenticationState.let {
+                if (!it.hasAccessToken || it.isTokenExpired) {
+                    LoginScreen(
+                        it,
+                        modifier,
+                        onCloseScreen,
+                        isDebug = isDebug,
+                    )
 
+                } else {
+                    AuthenticatedScreen(
+                        it,
+                        modifier,
+                        onCloseScreen,
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -137,6 +139,7 @@ private fun ConditionalErrorMessage(errorMessage: String) {
 )
 @Composable
 private fun LoginScreen(
+    authState: AuthenticationState,
     modifier: Modifier = Modifier,
     closeAuthentication: () -> Unit = {},
     viewModel: AuthenticationViewModel = hiltViewModel(),
@@ -218,14 +221,13 @@ private fun LoginScreen(
             indicateBusy = !isNotBusy,
         )
 
-        val authState = viewModel.authenticationState.collectAsStateWithLifecycle()
-        if (authState.value.hasAccessToken) {
+        if (authState.hasAccessToken) {
             Button(
                 modifier = fillWidthPadded,
                 onClick = closeAuthentication,
                 enabled = isNotBusy,
             ) {
-                Text(stringResource(R.string.cancel))
+                Text(stringResource(R.string.dismiss))
             }
         }
     }
@@ -236,6 +238,7 @@ private fun LoginScreen(
 )
 @Composable
 private fun AuthenticatedScreen(
+    authState: AuthenticationState,
     modifier: Modifier = Modifier,
     closeAuthentication: () -> Unit = {},
     viewModel: AuthenticationViewModel = hiltViewModel(),
@@ -246,8 +249,6 @@ private fun AuthenticatedScreen(
             .then(modifier)
     ) {
         CrisisCleanupLogoRow()
-
-        val authState by viewModel.authenticationState.collectAsStateWithLifecycle()
 
         Text(
             modifier = fillWidthPadded,
@@ -284,16 +285,4 @@ private fun AuthenticatedScreen(
 @Composable
 fun LogoRowPreview() {
     CrisisCleanupLogoRow()
-}
-
-@Preview
-@Composable
-fun LoginScreenPreview() {
-    LoginScreen()
-}
-
-@Preview
-@Composable
-fun AuthenticatedScreenPreview() {
-    AuthenticatedScreen()
 }
