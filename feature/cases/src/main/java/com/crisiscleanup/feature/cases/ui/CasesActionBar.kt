@@ -1,10 +1,7 @@
 package com.crisiscleanup.feature.cases.ui
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,7 +35,7 @@ private fun CasesActionButton(
         modifier = modifier.size(actionSize),
         iconRes = action.iconResId,
         contentDescriptionResId = action.contentDescriptionResId,
-        onClick = { onCasesAction(CasesAction.Search) },
+        onClick = { onCasesAction(action) },
     )
 }
 
@@ -56,7 +53,11 @@ internal fun CasesActionBar(
         val tableMapAction = if (isTableView) CasesAction.MapView else CasesAction.TableView
         CasesActionButton(modifier, tableMapAction, onCasesAction)
         CasesActionButton(modifier, CasesAction.Filters, onCasesAction)
-        CasesActionButton(modifier, CasesAction.Layers, onCasesAction)
+        if (isTableView) {
+            Spacer(modifier = Modifier.size(actionSize))
+        } else {
+            CasesActionButton(modifier, CasesAction.Layers, onCasesAction)
+        }
     }
 }
 

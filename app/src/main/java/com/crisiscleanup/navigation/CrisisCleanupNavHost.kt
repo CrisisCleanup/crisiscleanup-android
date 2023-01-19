@@ -4,8 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import com.crisiscleanup.feature.cases.navigation.casesRoute
-import com.crisiscleanup.feature.cases.navigation.casesScreen
+import com.crisiscleanup.feature.cases.navigation.casesGraph
+import com.crisiscleanup.feature.cases.navigation.casesGraphRoutePattern
 import com.crisiscleanup.feature.dashboard.navigation.dashboardScreen
 import com.crisiscleanup.feature.menu.navigation.menuScreen
 import com.crisiscleanup.feature.team.navigation.teamScreen
@@ -22,14 +22,18 @@ fun CrisisCleanupNavHost(
     navController: NavHostController,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    startDestination: String = casesRoute
+    startDestination: String = casesGraphRoutePattern
 ) {
     NavHost(
         navController = navController,
         startDestination = startDestination,
         modifier = modifier,
     ) {
-        casesScreen()
+        casesGraph(
+            nestedGraphs = {
+                // TODO Nested composables that can be navigated to
+            }
+        )
         dashboardScreen()
         teamScreen()
         menuScreen()
