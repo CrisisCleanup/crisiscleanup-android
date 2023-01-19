@@ -222,13 +222,12 @@ private fun LoginScreen(
         )
 
         if (authState.hasAccessToken) {
-            Button(
+            CrisisCleanupButton(
                 modifier = fillWidthPadded,
                 onClick = closeAuthentication,
                 enabled = isNotBusy,
-            ) {
-                Text(stringResource(R.string.dismiss))
-            }
+                textResId = R.string.cancel
+            )
         }
     }
 }
