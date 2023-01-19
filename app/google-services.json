@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "928842574362-hn48mfr7ldfmh4ppjbto6qf65bd7bjqv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.crisiscleanup.prod",
+            "certificate_hash": "0105646ad7f42e3919cb81dfdd4e9ef51c56e294"
+          }
+        },
+        {
           "client_id": "928842574362-ggd60nnj6me37u74779oc65pllusis50.apps.googleusercontent.com",
           "client_type": 3
         }

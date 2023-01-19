@@ -4,11 +4,8 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
@@ -29,15 +26,6 @@ import com.crisiscleanup.core.designsystem.theme.DayNightPreviews
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.feature.authentication.model.AuthenticationState
 import com.crisiscleanup.core.common.R as commonR
-
-@Composable
-internal fun AuthenticateRoute(
-    modifier: Modifier = Modifier,
-) {
-    AuthenticateScreen(
-        modifier = modifier
-    )
-}
 
 @OptIn(
     ExperimentalLifecycleComposeApi::class,
@@ -70,11 +58,15 @@ fun AuthenticateScreen(
         is AuthenticateScreenUiState.Ready -> {
             val readyState = uiState as AuthenticateScreenUiState.Ready
             readyState.authenticationState.let {
+                val rememberOnCloseScreen = remember(viewModel, closeAuthentication) {
+                    { onCloseScreen() }
+                }
+
                 if (!it.hasAccessToken || it.isTokenExpired) {
                     LoginScreen(
                         it,
                         modifier,
-                        onCloseScreen,
+                        rememberOnCloseScreen,
                         isDebug = isDebug,
                     )
 
@@ -82,7 +74,7 @@ fun AuthenticateScreen(
                     AuthenticatedScreen(
                         it,
                         modifier,
-                        onCloseScreen,
+                        rememberOnCloseScreen,
                     )
                 }
             }
@@ -165,48 +157,63 @@ private fun LoginScreen(
 
         val focusEmail = viewModel.loginInputData.emailAddress.isEmpty() ||
                 viewModel.isInvalidEmail.value
+        val rememberBindEmailInput = remember(viewModel) {
+            { s: String -> viewModel.loginInputData.emailAddress = s }
+        }
+        val rememberClearErrorVisuals = remember(viewModel) {
+            { viewModel.clearErrorVisuals() }
+        }
         OutlinedClearableTextField(
             modifier = fillWidthPadded,
             labelResId = R.string.email,
             value = viewModel.loginInputData.emailAddress,
-            onValueChange = { viewModel.loginInputData.emailAddress = it },
+            onValueChange = { rememberBindEmailInput(it) },
             keyboardType = KeyboardType.Email,
             enabled = isNotBusy,
             isError = viewModel.isInvalidEmail.value,
             hasFocus = focusEmail,
-            onNext = { viewModel.clearErrorVisuals() },
+            onNext = { rememberClearErrorVisuals() },
         )
 
         var isObfuscatingPassword by rememberSaveable { mutableStateOf(true) }
         val focusManager = LocalFocusManager.current
+        val rememberBindPasswordInput = remember(viewModel) {
+            { s: String -> viewModel.loginInputData.password = s }
+        }
+        val rememberAuth = remember(viewModel) {
+            {
+                // Allows email input to request focus if necessary
+                focusManager.moveFocus(FocusDirection.Next)
+                viewModel.authenticateEmailPassword()
+            }
+        }
         OutlinedObfuscatingTextField(
             modifier = fillWidthPadded,
             labelResId = R.string.password,
             value = viewModel.loginInputData.password,
-            onValueChange = { viewModel.loginInputData.password = it },
+            onValueChange = { rememberBindPasswordInput(it) },
             isObfuscating = isObfuscatingPassword,
             onObfuscate = { isObfuscatingPassword = !isObfuscatingPassword },
             enabled = isNotBusy,
             isError = viewModel.isInvalidPassword.value,
             hasFocus = viewModel.isInvalidPassword.value,
-            onEnter = {
-                // Allows email input to request focus if necessary
-                focusManager.moveFocus(FocusDirection.Next)
-                viewModel.authenticateEmailPassword()
-            },
+            onEnter = { rememberAuth() },
             imeAction = ImeAction.Done,
         )
 
         if (isDebug) {
-            BusyButton(
-                modifier = fillWidthPadded,
-                onClick = {
+            val rememberDebugAuthenticate = remember(viewModel) {
+                {
                     viewModel.loginInputData.apply {
                         emailAddress = "demo@crisiscleanup.org"
                         password = "demodemo1"
                     }
                     viewModel.authenticateEmailPassword()
-                },
+                }
+            }
+            BusyButton(
+                modifier = fillWidthPadded,
+                onClick = rememberDebugAuthenticate,
                 enabled = isNotBusy,
                 text = "Login debug",
                 indicateBusy = !isNotBusy,
@@ -215,7 +222,7 @@ private fun LoginScreen(
 
         BusyButton(
             modifier = fillWidthPadded,
-            onClick = { viewModel.authenticateEmailPassword() },
+            onClick = viewModel::authenticateEmailPassword,
             enabled = isNotBusy,
             textResId = R.string.login,
             indicateBusy = !isNotBusy,
@@ -265,7 +272,7 @@ private fun AuthenticatedScreen(
 
         BusyButton(
             modifier = fillWidthPadded,
-            onClick = { viewModel.logout() },
+            onClick = viewModel::logout,
             enabled = isNotBusy,
             textResId = R.string.logout,
             indicateBusy = !isNotBusy,
