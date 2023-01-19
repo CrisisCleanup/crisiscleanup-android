@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="cases">Cases</string>
+    <string name="search">Search</string>
+    <string name="table_view">Table view</string>
+    <string name="map_view">Map view</string>
+    <string name="filters">Filters</string>
+    <string name="layers">Layers</string>
+    <string name="zoom_to_incident">Zoom to incident</string>
+    <string name="zoom_to_interactive">Zoom to make icons interactive</string>
+    <string name="create_case">New case</string>
 </resources>

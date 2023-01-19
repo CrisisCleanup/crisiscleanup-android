@@ -70,6 +70,7 @@ class DesignSystemDetector : Detector(), Detector.UastScanner {
             "NavigationRailItem" to "CrisisCleanupNavigationRailItem",
             "TabRow" to "CrisisCleanupTabRow",
             "Tab" to "CrisisCleanupTab",
+            "IconButton" to "CrisisCleanupIconButton",
             "IconToggleButton" to "CrisisCleanupIconToggleButton",
             "FilledIconToggleButton" to "CrisisCleanupIconToggleButton",
             "FilledTonalIconToggleButton" to "CrisisCleanupIconToggleButton",

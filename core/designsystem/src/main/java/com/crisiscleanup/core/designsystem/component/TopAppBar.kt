@@ -69,7 +69,7 @@ fun CrisisCleanupTopAppBar(
                 Icon(
                     imageVector = actionIcon,
                     contentDescription = actionIconContentDescription,
-                    tint = MaterialTheme.colorScheme.onSurface
+                    tint = MaterialTheme.colorScheme.primary,
                 )
             }
         },

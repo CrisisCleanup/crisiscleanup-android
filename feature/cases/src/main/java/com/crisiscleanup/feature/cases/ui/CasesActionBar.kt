@@ -1,0 +1,93 @@
+package com.crisiscleanup.feature.cases.ui
+
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
+import com.crisiscleanup.feature.cases.R
+
+enum class CasesAction(
+    val iconResId: Int,
+    val contentDescriptionResId: Int,
+) {
+    Search(R.drawable.ic_search, R.string.search),
+    TableView(R.drawable.ic_table, R.string.table_view),
+    Filters(R.drawable.ic_dials, R.string.filters),
+    Layers(R.drawable.ic_layers, R.string.layers),
+    MapView(R.drawable.ic_map, R.string.map_view),
+    ZoomToInteractive(R.drawable.ic_zoom_interactive, R.string.zoom_to_interactive),
+    ZoomToIncident(R.drawable.ic_zoom_incident, R.string.zoom_to_incident),
+}
+
+private val actionSize = 48.dp
+private val zoomBarSpacing = 8.dp
+
+@Composable
+private fun CasesActionButton(
+    modifier: Modifier = Modifier,
+    action: CasesAction,
+    onCasesAction: (CasesAction) -> Unit,
+) {
+    CrisisCleanupIconButton(
+        modifier = modifier.size(actionSize),
+        iconRes = action.iconResId,
+        contentDescriptionResId = action.contentDescriptionResId,
+        onClick = { onCasesAction(CasesAction.Search) },
+    )
+}
+
+@Composable
+internal fun CasesActionBar(
+    modifier: Modifier = Modifier,
+    onCasesAction: (CasesAction) -> Unit = {},
+    isTableView: Boolean = false,
+) {
+    Row(
+        modifier,
+        horizontalArrangement = Arrangement.spacedBy(1.dp),
+    ) {
+        CasesActionButton(modifier, CasesAction.Search, onCasesAction)
+        val tableMapAction = if (isTableView) CasesAction.MapView else CasesAction.TableView
+        CasesActionButton(modifier, tableMapAction, onCasesAction)
+        CasesActionButton(modifier, CasesAction.Filters, onCasesAction)
+        CasesActionButton(modifier, CasesAction.Layers, onCasesAction)
+    }
+}
+
+@Composable
+internal fun CasesZoomBar(
+    modifier: Modifier = Modifier,
+    onCasesAction: (CasesAction) -> Unit = {},
+) {
+    Column(
+        modifier,
+        verticalArrangement = Arrangement.spacedBy(zoomBarSpacing),
+    ) {
+        CasesActionButton(modifier, CasesAction.ZoomToIncident, onCasesAction)
+        CasesActionButton(modifier, CasesAction.ZoomToInteractive, onCasesAction)
+    }
+}
+
+@Preview(uiMode = UI_MODE_NIGHT_YES, name = "Toggle to table")
+@Composable
+fun CasesActionBarPreview() {
+    CasesActionBar()
+}
+
+@Preview(name = "Toggle to map")
+@Composable
+fun CasesActionBarTableViewPreview() {
+    CasesActionBar(isTableView = true)
+}
+
+@Preview
+@Composable
+fun CasesZoomBarPreview() {
+    CasesZoomBar()
+}
