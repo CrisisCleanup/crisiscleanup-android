@@ -39,7 +39,7 @@ class CrisisCleanupAccountDataRepositoryTest {
             assertEquals(
                 AccountData(
                     accessToken = "",
-                    displayName = "",
+                    fullName = "",
                     tokenExpiry = Instant.fromEpochSeconds(0),
                     emailAddress = "",
                     profilePictureUri = "",
@@ -63,7 +63,7 @@ class CrisisCleanupAccountDataRepositoryTest {
         )
         var expectedData = AccountData(
             accessToken = "at",
-            displayName = "fn ln",
+            fullName = "fn ln",
             tokenExpiry = Instant.fromEpochSeconds(6235234341),
             emailAddress = "em",
             profilePictureUri = "pp",
@@ -77,7 +77,7 @@ class CrisisCleanupAccountDataRepositoryTest {
         subject.clearAccount()
         expectedData = AccountData(
             accessToken = "",
-            displayName = "",
+            fullName = "",
             tokenExpiry = Instant.fromEpochSeconds(0),
             emailAddress = "",
             profilePictureUri = "",

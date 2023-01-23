@@ -260,7 +260,7 @@ private fun AuthenticatedScreen(
             modifier = fillWidthPadded,
             text = stringResource(
                 R.string.account_is,
-                authState.accountData.displayName,
+                authState.accountData.fullName,
                 authState.accountData.emailAddress
             ),
         )

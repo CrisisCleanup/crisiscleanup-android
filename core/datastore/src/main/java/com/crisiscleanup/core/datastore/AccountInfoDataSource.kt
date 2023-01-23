@@ -16,12 +16,15 @@ class AccountInfoDataSource @Inject constructor(
 
     val accountData = dataStore.data
         .map {
+            val fullName = "${it.firstName} ${it.lastName}".trim()
+            val profilePictureUri = if (it.profilePictureUri?.isEmpty() == true) "https://avatars.dicebear.com/api/bottts/$fullName.svg"
+            else it.profilePictureUri
             AccountData(
                 accessToken = it.accessToken,
                 tokenExpiry = Instant.fromEpochSeconds(it.expirySeconds),
-                displayName = "${it.firstName} ${it.lastName}".trim(),
+                fullName = fullName,
                 emailAddress = it.email,
-                profilePictureUri = it.profilePictureUri,
+                profilePictureUri = profilePictureUri,
             )
         }
 

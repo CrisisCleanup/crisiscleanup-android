@@ -5,7 +5,7 @@ import kotlinx.datetime.Instant
 data class AccountData(
     val accessToken: String,
     val tokenExpiry: Instant,
-    val displayName: String,
+    val fullName: String,
     val emailAddress: String,
     val profilePictureUri: String,
 )

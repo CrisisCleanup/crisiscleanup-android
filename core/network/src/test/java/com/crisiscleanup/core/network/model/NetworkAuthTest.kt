@@ -38,6 +38,7 @@ class NetworkAuthTest {
             "https://crisiscleanup-user-files.s3.amazonaws.com/6645713-b99b0bfba6a04d24879b35538d1c8b9f.jpg?AWSAccessKeyId=AKIASU3RMDS2EGFBJH5O&Signature=Ez3PS71Gedweed%2BWZLT0rF%2BU9AY%3D&Expires=1673376442",
             firstFile.url
         )
+        assertEquals(null, firstFile.largeThumbnailUrl)
         assertEquals("fileTypes.user_profile_picture", firstFile.fileTypeT)
         assertEquals("image/jpeg", firstFile.mimeContentType)
     }

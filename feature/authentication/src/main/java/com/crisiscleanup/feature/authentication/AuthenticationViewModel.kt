@@ -134,7 +134,7 @@ class AuthenticationViewModel @Inject constructor(
                     val claims = result.claims!!
                     val profilePicUri: String = claims.files?.firstOrNull {
                         it.fileTypeT == "fileTypes.user_profile_picture"
-                    }?.url ?: ""
+                    }?.largeThumbnailUrl ?: ""
                     accountDataRepository.setAccount(
                         accessToken = accessToken,
                         email = claims.email,

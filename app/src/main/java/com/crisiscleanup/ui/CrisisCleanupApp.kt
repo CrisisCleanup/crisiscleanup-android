@@ -30,6 +30,7 @@ import com.crisiscleanup.core.designsystem.icon.Icon.ImageVectorIcon
 import com.crisiscleanup.feature.authentication.AuthenticateScreen
 import com.crisiscleanup.navigation.CrisisCleanupNavHost
 import com.crisiscleanup.navigation.TopLevelDestination
+import kotlinx.datetime.Clock
 
 @OptIn(
     ExperimentalLifecycleComposeApi::class,
@@ -70,10 +71,17 @@ fun CrisisCleanupApp(
                     toggleAuthentication = { b -> openAuthentication = b },
                 )
             } else {
+                val accountData = (authState as AuthState.Authenticated).accountData
+                val profilePictureUri by remember { mutableStateOf(accountData.profilePictureUri) }
+                val isAccountExpired by remember {
+                    derivedStateOf { accountData.tokenExpiry < Clock.System.now() }
+                }
                 NavigableContent(
                     snackbarHostState,
                     appState,
-                    openAuthentication = { openAuthentication = true }
+                    { openAuthentication = true },
+                    profilePictureUri,
+                    isAccountExpired,
                 )
             }
         }
@@ -126,6 +134,9 @@ private fun NavigableContent(
     snackbarHostState: SnackbarHostState,
     appState: CrisisCleanupAppState,
     openAuthentication: () -> Unit,
+    profilePictureUri: String,
+    // TODO Show badge/marking if account has expired
+    isAccountExpired: Boolean,
 ) {
     Scaffold(
         modifier = Modifier.semantics {
@@ -174,6 +185,7 @@ private fun NavigableContent(
                 if (destination != null) {
                     CrisisCleanupTopAppBar(
                         titleRes = destination.titleTextId,
+                        profilePictureUri = profilePictureUri,
                         actionIcon = CrisisCleanupIcons.Account,
                         actionIconContentDescription = stringResource(
                             id = R.string.account

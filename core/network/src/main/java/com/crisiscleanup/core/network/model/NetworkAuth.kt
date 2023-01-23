@@ -46,6 +46,8 @@ class NetworkAuthUserFiles(
     @SerialName("filename")
     val fileName: String,
     val url: String,
+    @SerialName("large_thumbnail_url")
+    val largeThumbnailUrl: String?,
     @SerialName("file_type_t")
     val fileTypeT: String,
     @SerialName("mime_content_type")

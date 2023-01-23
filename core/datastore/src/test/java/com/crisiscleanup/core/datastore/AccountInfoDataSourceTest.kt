@@ -40,14 +40,14 @@ class AccountInfoDataSourceTest {
         )
         subject.accountData.first().run {
             assertEquals("access-token", accessToken)
-            assertEquals("first last", displayName)
+            assertEquals("first last", fullName)
             assertEquals(125512586, tokenExpiry.epochSeconds)
         }
 
         subject.clearAccount()
         subject.accountData.first().run {
             assertEquals("", accessToken)
-            assertEquals("", displayName)
+            assertEquals("", fullName)
             assertEquals(0, tokenExpiry.epochSeconds)
         }
     }

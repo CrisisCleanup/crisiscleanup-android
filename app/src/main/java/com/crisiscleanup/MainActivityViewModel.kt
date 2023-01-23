@@ -6,6 +6,7 @@ import com.crisiscleanup.MainActivityUiState.Loading
 import com.crisiscleanup.MainActivityUiState.Success
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
+import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.model.data.UserData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -28,7 +29,7 @@ class MainActivityViewModel @Inject constructor(
     )
 
     val authState: StateFlow<AuthState> = accountDataRepository.accountData.map {
-        if (it.accessToken.isNotEmpty()) AuthState.Authenticated
+        if (it.accessToken.isNotEmpty()) AuthState.Authenticated(it)
         else AuthState.Other
     }.stateIn(
         scope = viewModelScope,
@@ -42,9 +43,9 @@ sealed interface MainActivityUiState {
     data class Success(val userData: UserData) : MainActivityUiState
 }
 
-enum class AuthState {
-    Authenticated,
+sealed interface AuthState {
+    data class Authenticated(val accountData: AccountData) : AuthState
 
     // Loading or not authenticated
-    Other,
+    object Other : AuthState
 }

@@ -13,7 +13,8 @@ dependencies {
     implementation(project(":core:datastore"))
     implementation(project(":core:network"))
 
-    implementation(libs.kotlinx.datetime)
+    // Depending modules/apps likely need to compare ktx Instants
+    api(libs.kotlinx.datetime)
 
     implementation(libs.jwt.decode)
     implementation(libs.retrofit.core)

@@ -55,7 +55,7 @@ class FakeAccountRepository(
             _accountData.tryEmit(
                 it.copy(
                     accessToken = this.accessToken,
-                    displayName = "${this.firstName} ${this.lastName}".trim(),
+                    fullName = "${this.firstName} ${this.lastName}".trim(),
                     tokenExpiry = Instant.fromEpochSeconds(this.expirySeconds),
                     emailAddress = this.email,
                     profilePictureUri = this.profilePictureUri,
