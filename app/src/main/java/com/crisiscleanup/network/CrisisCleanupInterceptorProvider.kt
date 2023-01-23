@@ -26,10 +26,7 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
                         RequestHeaderKey.AccessTokenAuth -> {
                             val accessToken = accountDataRepository.accessTokenCached
                             if (accessToken.isNotEmpty()) {
-                                requestBuilder.addHeader(
-                                    "Authorization",
-                                    "Bearer $accessToken"
-                                )
+                                requestBuilder.addHeader("Token", accessToken)
                                 addHeaderCount++
                             }
                         }

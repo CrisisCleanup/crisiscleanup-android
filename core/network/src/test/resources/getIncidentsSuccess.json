@@ -1,0 +1,106 @@
+{
+  "count": 5,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 199,
+      "name": "Pandemic (Fake)",
+      "short_name": "covid_19_response",
+      "locations": [
+        {
+          "tag": null,
+          "title": null,
+          "notes": null,
+          "created_at": "2021-04-05T22:33:08Z",
+          "id": 2,
+          "location": 73141,
+          "object_id": 199
+        }
+      ],
+      "turn_on_release": false,
+      "active_phone_number": null
+    },
+    {
+      "id": 151,
+      "name": "Medium Storm (Fake)",
+      "short_name": "n_wi_derecho_jul_2019",
+      "locations": [
+        {
+          "tag": null,
+          "title": null,
+          "notes": null,
+          "created_at": "2020-03-11T04:07:46Z",
+          "id": 122,
+          "location": 41898,
+          "object_id": 151
+        }
+      ],
+      "turn_on_release": false,
+      "active_phone_number": null
+    },
+    {
+      "id": 200,
+      "name": "Another Tornado (Fake)",
+      "short_name": "another_tornado",
+      "locations": [
+        {
+          "tag": null,
+          "title": null,
+          "notes": null,
+          "created_at": "2020-11-12T02:37:07Z",
+          "id": 1,
+          "location": 73132,
+          "object_id": 200
+        },
+        {
+          "tag": null,
+          "title": null,
+          "notes": null,
+          "created_at": "2022-07-20T16:26:21Z",
+          "id": 3,
+          "location": 73145,
+          "object_id": 200
+        }
+      ],
+      "turn_on_release": false,
+      "active_phone_number": null
+    },
+    {
+      "id": 158,
+      "name": "Small Tornado (Fake)",
+      "short_name": "chippewa_dunn_wi_tornado",
+      "locations": [
+        {
+          "tag": null,
+          "title": null,
+          "notes": null,
+          "created_at": "2020-03-11T04:17:28Z",
+          "id": 129,
+          "location": 41905,
+          "object_id": 158
+        }
+      ],
+      "turn_on_release": false,
+      "active_phone_number": null
+    },
+    {
+      "id": 60,
+      "name": "Big Hurricane (Fake)",
+      "short_name": "hurricane_harvey",
+      "locations": [
+        {
+          "tag": null,
+          "title": null,
+          "notes": null,
+          "created_at": "2020-03-10T17:57:07Z",
+          "id": 63,
+          "location": 41823,
+          "object_id": 60
+        }
+      ],
+      "turn_on_release": false,
+      "active_phone_number": null
+    }
+  ]
+}
