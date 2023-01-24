@@ -42,6 +42,8 @@ data class NetworkIncidentLocation(
 data class NetworkIncident(
     // UPDATE NetworkAuthTest in conjunction with changes here
     val id: Long,
+    @SerialName("start_at")
+    val startAt: Instant,
     val name: String,
     @SerialName("short_name")
     val shortName: String,
