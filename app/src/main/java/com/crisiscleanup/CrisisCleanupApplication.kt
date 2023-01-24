@@ -19,7 +19,7 @@ class CrisisCleanupApplication : Application(), ImageLoaderFactory {
     }
 
     override fun onCreate() {
-        isDebuggable = 0 != applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE
+        isDebuggable = 0 != (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE)
         super.onCreate()
 
         // Initialize Sync; the system responsible for keeping data in the app up to date.

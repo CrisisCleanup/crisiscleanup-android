@@ -1,19 +1,37 @@
 package com.crisiscleanup.sync.initializers
 
 import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
 import androidx.core.app.NotificationCompat
 import androidx.work.Constraints
+import androidx.work.ExistingWorkPolicy
 import androidx.work.ForegroundInfo
 import androidx.work.NetworkType
+import androidx.work.WorkManager
 import com.crisiscleanup.sync.R
-
-import com.crisiscleanup.core.common.R as commonR;
+import com.crisiscleanup.sync.workers.SyncWorker
+import com.crisiscleanup.core.common.R as commonR
 
 private const val SyncNotificationId = 0
 private const val SyncNotificationChannelID = "SyncNotificationChannel"
 
-// All sync work needs an internet connectionS
+// This name should not be changed otherwise the app may have concurrent sync requests running
+internal const val SyncWorkName = "SyncWorkName"
+
+fun scheduleSync(context: Context) {
+    WorkManager.getInstance(context).apply {
+        // Run sync and ensure only one sync worker runs at any time
+        enqueueUniqueWork(
+            SyncWorkName,
+            ExistingWorkPolicy.KEEP,
+            SyncWorker.oneTimeSyncWork()
+        )
+    }
+}
+
+// All sync work needs an internet connection
 val SyncConstraints
     get() = Constraints.Builder()
         .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -33,6 +51,18 @@ fun Context.syncForegroundInfo() = ForegroundInfo(
  * run with a foreground service
  */
 private fun Context.syncWorkNotification(): Notification {
+    val channel = NotificationChannel(
+        SyncNotificationChannelID,
+        getString(R.string.sync_notification_channel_name),
+        NotificationManager.IMPORTANCE_DEFAULT
+    ).apply {
+        description = getString(R.string.sync_notification_channel_description)
+    }
+    // Register the channel with the system
+    val notificationManager: NotificationManager? =
+        getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+    notificationManager?.createNotificationChannel(channel)
+
     return NotificationCompat.Builder(
         this,
         SyncNotificationChannelID

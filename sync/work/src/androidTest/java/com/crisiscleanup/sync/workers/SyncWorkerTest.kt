@@ -36,7 +36,7 @@ class SyncWorkerTest {
     @Test
     fun testSyncWork() {
         // Create request
-        val request = SyncWorker.startUpSyncWork()
+        val request = SyncWorker.oneTimeSyncWork()
 
         val workManager = WorkManager.getInstance(context)
         val testDriver = WorkManagerTestInitHelper.getTestDriver(context)!!
