@@ -1,6 +1,6 @@
 package com.crisiscleanup.core.network.fake
 
-import com.crisiscleanup.core.network.CrisisCleanupIncidentApi
+import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkIncident
 import com.crisiscleanup.core.network.model.NetworkIncidentLocation
 import com.crisiscleanup.core.network.model.NetworkIncidentsResult
@@ -37,7 +37,7 @@ private val incidents = NetworkIncidentsResult(
     )
 )
 
-class FakeIncidentApi @Inject constructor() : CrisisCleanupIncidentApi {
+class FakeNetworkDataSource @Inject constructor() : CrisisCleanupNetworkDataSource {
     override suspend fun getIncidents(
         fields: List<String>,
         limit: Int,

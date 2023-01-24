@@ -9,7 +9,7 @@ interface CrisisCleanupAuthApi {
     suspend fun logout()
 }
 
-interface CrisisCleanupIncidentApi {
+interface CrisisCleanupNetworkDataSource {
     suspend fun getIncidents(
         fields: List<String>,
         limit: Int = 100,

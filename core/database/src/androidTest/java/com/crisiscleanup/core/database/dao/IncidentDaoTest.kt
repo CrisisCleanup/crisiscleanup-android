@@ -87,7 +87,7 @@ class IncidentDaoTest {
                 listOf(31L, 226),
             ),
             savedIncidents.map { incident ->
-                incident.locations.map { it.id }
+                incident.locations.map(IncidentLocationEntity::id)
             }
         )
     }

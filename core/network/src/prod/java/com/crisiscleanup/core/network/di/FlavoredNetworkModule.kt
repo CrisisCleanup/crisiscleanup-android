@@ -1,9 +1,9 @@
 package com.crisiscleanup.core.network.di
 
 import com.crisiscleanup.core.network.CrisisCleanupAuthApi
-import com.crisiscleanup.core.network.CrisisCleanupIncidentApi
+import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.retrofit.AuthApiClient
-import com.crisiscleanup.core.network.retrofit.IncidentApiClient
+import com.crisiscleanup.core.network.retrofit.RetrofitNetworkDataSource
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -17,5 +17,5 @@ interface FlavoredNetworkModule {
     fun bindsAuthApiClient(apiClient: AuthApiClient): CrisisCleanupAuthApi
 
     @Binds
-    fun bindsIncidentApiClient(apiClient: IncidentApiClient): CrisisCleanupIncidentApi
+    fun bindsNetworkDataSource(apiClient: RetrofitNetworkDataSource): CrisisCleanupNetworkDataSource
 }

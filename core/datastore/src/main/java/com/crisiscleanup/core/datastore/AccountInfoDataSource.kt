@@ -12,13 +12,20 @@ import javax.inject.Inject
 class AccountInfoDataSource @Inject constructor(
     private val dataStore: DataStore<AccountInfo>
 ) {
-    /* UPDATE [AccountInfoDataSourceTest] when changing below */
+    companion object {
+        fun defaultProfilePictureUri(fullName: String): String =
+            if (fullName.isEmpty()) ""
+            else "https://avatars.dicebear.com/api/bottts/$fullName.svg"
+    }
+
+    // UPDATE AccountInfoDataSourceTest (and downstream tests) when changing below
 
     val accountData = dataStore.data
         .map {
             val fullName = "${it.firstName} ${it.lastName}".trim()
-            val profilePictureUri = if (it.profilePictureUri?.isEmpty() == true) "https://avatars.dicebear.com/api/bottts/$fullName.svg"
-            else it.profilePictureUri
+            val profilePictureUri =
+                if (it.profilePictureUri?.isEmpty() == true) defaultProfilePictureUri(fullName)
+                else it.profilePictureUri
             AccountData(
                 accessToken = it.accessToken,
                 tokenExpiry = Instant.fromEpochSeconds(it.expirySeconds),
