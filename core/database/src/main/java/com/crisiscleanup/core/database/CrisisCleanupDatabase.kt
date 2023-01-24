@@ -4,7 +4,6 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.crisiscleanup.core.database.dao.IncidentDao
-import com.crisiscleanup.core.database.dao.IncidentLocationDao
 import com.crisiscleanup.core.database.model.IncidentEntity
 import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
 import com.crisiscleanup.core.database.model.IncidentLocationEntity
@@ -27,5 +26,4 @@ import com.crisiscleanup.core.database.util.InstantConverter
 )
 abstract class CrisisCleanupDatabase : RoomDatabase() {
     abstract fun incidentDao(): IncidentDao
-    abstract fun incidentLocationDao(): IncidentLocationDao
 }

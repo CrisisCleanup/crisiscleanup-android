@@ -14,11 +14,8 @@ data class NetworkIncidentsResult(
 data class NetworkIncidentLocation(
     val id: Long,
     val location: Long,
-    @SerialName("object_id")
-    val objectId: Long,
-    @SerialName("created_at")
-    val createdAt: Instant,
 ) {
+    // For tests. equals can compare on id only.
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -27,8 +24,6 @@ data class NetworkIncidentLocation(
 
         if (id != other.id) return false
         if (location != other.location) return false
-        if (objectId != other.objectId) return false
-        if (createdAt != other.createdAt) return false
 
         return true
     }
@@ -40,7 +35,9 @@ data class NetworkIncidentLocation(
 
 @Serializable
 data class NetworkIncident(
-    // UPDATE NetworkAuthTest in conjunction with changes here
+
+    // UPDATE NetworkIncidentTest in conjunction with changes here
+
     val id: Long,
     @SerialName("start_at")
     val startAt: Instant,
@@ -53,6 +50,7 @@ data class NetworkIncident(
     @SerialName("active_phone_number")
     val activePhoneNumber: String?,
 ) {
+    // For tests. equals can compare on id only.
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

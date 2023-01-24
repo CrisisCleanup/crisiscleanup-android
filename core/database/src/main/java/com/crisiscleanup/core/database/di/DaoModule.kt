@@ -2,7 +2,6 @@ package com.crisiscleanup.core.database.di
 
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
 import com.crisiscleanup.core.database.dao.IncidentDao
-import com.crisiscleanup.core.database.dao.IncidentLocationDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,9 +14,4 @@ object DaoModule {
     fun providesIncidentDao(
         database: CrisisCleanupDatabase,
     ): IncidentDao = database.incidentDao()
-
-    @Provides
-    fun providesIncidentLocationDao(
-        database: CrisisCleanupDatabase,
-    ): IncidentLocationDao = database.incidentLocationDao()
 }

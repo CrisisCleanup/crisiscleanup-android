@@ -27,7 +27,7 @@ data class IncidentEntity(
     @ColumnInfo("short_name", defaultValue = "")
     val shortName: String,
     @ColumnInfo("active_phone_number", defaultValue = "")
-    val activePhoneNumber: String?,
+    val activePhoneNumber: String? = null,
 )
 
 @Entity("incident_locations")
