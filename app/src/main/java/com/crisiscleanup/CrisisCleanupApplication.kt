@@ -5,6 +5,7 @@ import android.content.pm.ApplicationInfo
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.decode.SvgDecoder
+import com.crisiscleanup.sync.initializers.Sync
 import dagger.hilt.android.HiltAndroidApp
 
 /**
@@ -21,9 +22,8 @@ class CrisisCleanupApplication : Application(), ImageLoaderFactory {
         isDebuggable = 0 != applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE
         super.onCreate()
 
-        // TODO Add syncing or delete
         // Initialize Sync; the system responsible for keeping data in the app up to date.
-        // Sync.initialize(context = this)
+        Sync.initialize(context = this)
     }
 
     /**
