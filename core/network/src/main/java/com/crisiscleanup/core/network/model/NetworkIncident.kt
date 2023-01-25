@@ -15,7 +15,7 @@ data class NetworkIncidentLocation(
     val id: Long,
     val location: Long,
 ) {
-    // For tests. equals can compare on id only.
+    // For tests. true equals can compare on id only.
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -49,8 +49,10 @@ data class NetworkIncident(
     val turnOnRelease: Boolean,
     @SerialName("active_phone_number")
     val activePhoneNumber: String?,
+    @SerialName("is_archived")
+    val isArchived: Boolean,
 ) {
-    // For tests. equals can compare on id only.
+    // For tests. true equals can compare on id only.
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -63,6 +65,7 @@ data class NetworkIncident(
         if (locations != other.locations) return false
         if (turnOnRelease != other.turnOnRelease) return false
         if (activePhoneNumber != other.activePhoneNumber) return false
+        if (isArchived != other.isArchived) return false
 
         return true
     }

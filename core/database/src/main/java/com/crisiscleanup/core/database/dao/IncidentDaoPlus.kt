@@ -1,6 +1,7 @@
-package com.crisiscleanup.core.database
+package com.crisiscleanup.core.database.dao
 
 import androidx.room.withTransaction
+import com.crisiscleanup.core.database.CrisisCleanupDatabase
 import com.crisiscleanup.core.database.model.IncidentEntity
 import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
 import com.crisiscleanup.core.database.model.IncidentLocationEntity
@@ -8,7 +9,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class IncidentsCrossReference @Inject constructor(
+class IncidentDaoPlus @Inject constructor(
     private val db: CrisisCleanupDatabase
 ) {
     // Tested in IncidentDaoTest

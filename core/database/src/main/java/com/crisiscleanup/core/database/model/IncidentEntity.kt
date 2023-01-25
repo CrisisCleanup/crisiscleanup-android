@@ -14,7 +14,7 @@ import kotlinx.datetime.Instant
         Index(
             value = ["start_at"],
             orders = [Index.Order.DESC],
-            name = "newest_to_oldest_incidents"
+            name = "idx_newest_to_oldest_incidents"
         )
     ]
 )
@@ -28,6 +28,8 @@ data class IncidentEntity(
     val shortName: String,
     @ColumnInfo("active_phone_number", defaultValue = "")
     val activePhoneNumber: String? = null,
+    @ColumnInfo("is_archived", defaultValue = "0")
+    val isArchived: Boolean = false,
 )
 
 @Entity("incident_locations")
@@ -59,6 +61,12 @@ fun IncidentLocationEntity.asExternalModel() = IncidentLocation(
             onDelete = ForeignKey.CASCADE,
         ),
     ],
+    indices = [
+        Index(
+            value = ["incident_location_id", "incident_id"],
+            name = "idx_incident_location_to_incident"
+        ),
+    ]
 )
 data class IncidentIncidentLocationCrossRef(
     @ColumnInfo("incident_id")

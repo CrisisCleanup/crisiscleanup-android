@@ -19,6 +19,7 @@
           "object_id": 199
         }
       ],
+      "is_archived": false,
       "turn_on_release": false,
       "active_phone_number": null
     },
@@ -38,6 +39,7 @@
           "object_id": 151
         }
       ],
+      "is_archived": false,
       "turn_on_release": false,
       "active_phone_number": null
     },
@@ -66,6 +68,7 @@
           "object_id": 200
         }
       ],
+      "is_archived": false,
       "turn_on_release": false,
       "active_phone_number": null
     },
@@ -85,6 +88,7 @@
           "object_id": 158
         }
       ],
+      "is_archived": false,
       "turn_on_release": false,
       "active_phone_number": null
     },
@@ -104,6 +108,7 @@
           "object_id": 60
         }
       ],
+      "is_archived": true,
       "turn_on_release": false,
       "active_phone_number": null
     }

@@ -4,10 +4,8 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
-import com.crisiscleanup.core.database.IncidentsCrossReference
 import com.crisiscleanup.core.database.model.IncidentEntity
 import com.crisiscleanup.core.database.model.IncidentLocationEntity
-import com.crisiscleanup.core.database.model.asExternalModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Instant
@@ -19,7 +17,7 @@ class IncidentDaoTest {
     private lateinit var db: CrisisCleanupDatabase
 
     private lateinit var incidentDao: IncidentDao
-    private lateinit var incidentsCrossReference: IncidentsCrossReference
+    private lateinit var incidentDaoPlus: IncidentDaoPlus
 
     @Before
     fun createDb() {
@@ -29,7 +27,7 @@ class IncidentDaoTest {
             CrisisCleanupDatabase::class.java
         ).build()
         incidentDao = db.incidentDao()
-        incidentsCrossReference = IncidentsCrossReference(db)
+        incidentDaoPlus = IncidentDaoPlus(db)
     }
 
     @Test
@@ -48,30 +46,39 @@ class IncidentDaoTest {
 
         assertEquals(
             listOf(2L, 1, 3),
-            savedIncidents.map { it.asExternalModel().id }
+            savedIncidents.map { it.entity.id }
         )
     }
 
-    @Test
-    fun queryIncidentsWithLocations() = runTest {
+    private fun testIncidents(): List<IncidentEntity> {
+        val seconds = 52352385L
+        return listOf(
+            testIncidentEntity(48, seconds + 3),
+            testIncidentEntity(18, seconds + 1),
+            testIncidentEntity(954, seconds + 2),
+        )
+    }
+
+    private fun testIncidentDataSet(): Triple<List<IncidentLocationEntity>, List<IncidentEntity>, Map<Long, Set<Long>>> {
         val incidentLocations = listOf(
             IncidentLocationEntity(15, 158),
             IncidentLocationEntity(226, 241),
             IncidentLocationEntity(31, 386),
         )
-        val seconds = 52352385L
-        val incidents = listOf(
-            testIncidentEntity(48, seconds + 3),
-            testIncidentEntity(18, seconds + 1),
-            testIncidentEntity(954, seconds + 2),
-        )
+        val incidents = testIncidents()
         val incidentToIncidentLocations = mapOf(
             48L to setOf(15L, 226),
             18L to setOf(226L, 31),
             954L to setOf(15L),
         )
+        return Triple(incidentLocations, incidents, incidentToIncidentLocations)
+    }
 
-        incidentsCrossReference.saveIncidents(
+    @Test
+    fun saveIncidents_queryIncidentsWithLocations() = runTest {
+        val (incidentLocations, incidents, incidentToIncidentLocations) = testIncidentDataSet()
+
+        incidentDaoPlus.saveIncidents(
             incidents,
             incidentLocations,
             incidentToIncidentLocations
@@ -90,6 +97,19 @@ class IncidentDaoTest {
                 incident.locations.map(IncidentLocationEntity::id)
             }
         )
+    }
+
+    @Test
+    fun archiveUnspecified() = runTest {
+        incidentDao.upsertIncidents(testIncidents())
+
+        val savedIncidents = incidentDao.getIncidents().first()
+        assertEquals(listOf(48L, 954, 18), savedIncidents.map { it.entity.id })
+
+        incidentDao.setExcludedArchived(setOf(48L, 18))
+
+        val updatedIncidents = incidentDao.getIncidents().first()
+        assertEquals(listOf(48L, 18), updatedIncidents.map { it.entity.id })
     }
 }
 

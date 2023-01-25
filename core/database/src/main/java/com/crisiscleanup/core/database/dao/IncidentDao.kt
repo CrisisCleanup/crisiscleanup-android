@@ -22,6 +22,7 @@ interface IncidentDao {
         """
     SELECT *
     FROM incidents
+    WHERE is_archived==0
     ORDER BY start_at DESC
     """
     )
@@ -37,4 +38,13 @@ interface IncidentDao {
     suspend fun insertIgnoreIncidentIncidentLocationCrossRefs(
         incidentCrossRefs: List<IncidentIncidentLocationCrossRef>
     )
+
+    @Query(
+        """
+    UPDATE incidents
+    SET is_archived=1
+    WHERE id NOT IN(:unarchivedIds)
+    """
+    )
+    suspend fun setExcludedArchived(unarchivedIds: Set<Long>)
 }

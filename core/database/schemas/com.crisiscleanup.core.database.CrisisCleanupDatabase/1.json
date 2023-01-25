@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "35d0f0747f634f51307e23c6ab4e70f7",
+    "identityHash": "1159ee308a0e5d721e93eb70e1e05048",
     "entities": [
       {
         "tableName": "incidents",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `start_at` INTEGER NOT NULL, `name` TEXT NOT NULL, `short_name` TEXT NOT NULL DEFAULT '', `active_phone_number` TEXT DEFAULT '', PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `start_at` INTEGER NOT NULL, `name` TEXT NOT NULL, `short_name` TEXT NOT NULL DEFAULT '', `active_phone_number` TEXT DEFAULT '', `is_archived` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -39,6 +39,13 @@
             "affinity": "TEXT",
             "notNull": false,
             "defaultValue": "''"
+          },
+          {
+            "fieldPath": "isArchived",
+            "columnName": "is_archived",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
           }
         ],
         "primaryKey": {
@@ -49,7 +56,7 @@
         },
         "indices": [
           {
-            "name": "newest_to_oldest_incidents",
+            "name": "idx_newest_to_oldest_incidents",
             "unique": false,
             "columnNames": [
               "start_at"
@@ -57,7 +64,7 @@
             "orders": [
               "DESC"
             ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `newest_to_oldest_incidents` ON `${TABLE_NAME}` (`start_at` DESC)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `idx_newest_to_oldest_incidents` ON `${TABLE_NAME}` (`start_at` DESC)"
           }
         ],
         "foreignKeys": []
@@ -112,7 +119,18 @@
             "incident_location_id"
           ]
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "idx_incident_location_to_incident",
+            "unique": false,
+            "columnNames": [
+              "incident_location_id",
+              "incident_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `idx_incident_location_to_incident` ON `${TABLE_NAME}` (`incident_location_id`, `incident_id`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "incidents",
@@ -142,7 +160,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '35d0f0747f634f51307e23c6ab4e70f7')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1159ee308a0e5d721e93eb70e1e05048')"
     ]
   }
 }
