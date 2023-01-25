@@ -16,11 +16,13 @@ import androidx.navigation.createGraph
 import androidx.navigation.testing.TestNavHostController
 import com.crisiscleanup.core.testing.util.TestNetworkMonitor
 import junit.framework.TestCase.*
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
+import java.util.Locale
 
 /**
  * Tests [CrisisCleanupAppState].
@@ -64,7 +66,7 @@ class CrisisCleanupAppStateTest {
             }
         }
 
-        kotlin.test.assertEquals("b", currentDestination)
+        assertEquals("b", currentDestination)
     }
 
     @Test
@@ -76,10 +78,14 @@ class CrisisCleanupAppStateTest {
             )
         }
 
-        kotlin.test.assertEquals(3, state.topLevelDestinations.size)
-        kotlin.test.assertTrue(state.topLevelDestinations[0].name.contains("for_you", true))
-        kotlin.test.assertTrue(state.topLevelDestinations[1].name.contains("bookmarks", true))
-        kotlin.test.assertTrue(state.topLevelDestinations[2].name.contains("interests", true))
+        val destinations = listOf("cases", "dashboard", "team", "menu")
+        assertEquals(destinations.size, state.topLevelDestinations.size)
+        for (i in destinations.indices) {
+            assertEquals(
+                destinations[i],
+                state.topLevelDestinations[i].name.lowercase(Locale.getDefault())
+            )
+        }
     }
 
     @Test
@@ -93,8 +99,8 @@ class CrisisCleanupAppStateTest {
             )
         }
 
-        kotlin.test.assertTrue(state.shouldShowBottomBar)
-        kotlin.test.assertFalse(state.shouldShowNavRail)
+        assertTrue(state.shouldShowBottomBar)
+        assertFalse(state.shouldShowNavRail)
     }
 
     @Test
@@ -108,8 +114,8 @@ class CrisisCleanupAppStateTest {
             )
         }
 
-        kotlin.test.assertTrue(state.shouldShowNavRail)
-        kotlin.test.assertFalse(state.shouldShowBottomBar)
+        assertTrue(state.shouldShowNavRail)
+        assertFalse(state.shouldShowBottomBar)
     }
 
     @Test
@@ -124,8 +130,8 @@ class CrisisCleanupAppStateTest {
             )
         }
 
-        kotlin.test.assertTrue(state.shouldShowNavRail)
-        kotlin.test.assertFalse(state.shouldShowBottomBar)
+        assertTrue(state.shouldShowNavRail)
+        assertFalse(state.shouldShowBottomBar)
     }
 
     @Test
@@ -142,7 +148,7 @@ class CrisisCleanupAppStateTest {
 
         backgroundScope.launch { state.isOffline.collect() }
         networkMonitor.setConnected(false)
-        kotlin.test.assertEquals(
+        assertEquals(
             true,
             state.isOffline.value
         )
