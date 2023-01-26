@@ -5,7 +5,10 @@ import androidx.compose.runtime.State
 interface AppHeaderBar {
     val appHeaderState: State<AppHeaderState>
 
+    val title: State<String>
+
     fun setState(state: AppHeaderState)
+    fun setTitle(title: String)
 }
 
 enum class AppHeaderState {

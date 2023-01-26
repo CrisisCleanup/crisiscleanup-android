@@ -8,6 +8,8 @@ data class Incident(
     val activePhoneNumber: String?,
 )
 
+val EmptyIncident = Incident(-1, "", "", emptyList(), null)
+
 data class IncidentLocation(
     val id: Long,
     val location: Long,

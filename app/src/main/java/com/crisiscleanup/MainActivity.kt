@@ -47,26 +47,28 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         var uiState: MainActivityUiState by mutableStateOf(Loading)
+        var authState: AuthState by mutableStateOf(AuthState.Loading)
 
         // Update the uiState
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState
-                    .onEach {
-                        uiState = it
-                    }
-                    .collect()
+                viewModel.uiState.onEach { uiState = it }.collect()
             }
         }
 
+        // Update auth state
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.authState.onEach { authState = it }.collect()
+            }
+        }
+
+        // TODO Splash screen is blank on emulator 32
         // Keep the splash screen on-screen until the UI state is loaded. This condition is
         // evaluated each time the app needs to be redrawn so it should be fast to avoid blocking
         // the UI.
         splashScreen.setKeepOnScreenCondition {
-            when (uiState) {
-                Loading -> true
-                is Success -> false
-            }
+            uiState is Loading || authState is AuthState.Loading
         }
 
         // Turn off the decor fitting system windows, which allows us to handle insets,

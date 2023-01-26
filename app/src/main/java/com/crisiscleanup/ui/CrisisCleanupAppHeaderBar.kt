@@ -11,7 +11,14 @@ class CrisisCleanupAppHeaderBar @Inject constructor() : AppHeaderBar {
     override var appHeaderState = mutableStateOf(AppHeaderState.Default)
         private set
 
+    override var title = mutableStateOf("")
+        private set
+
     override fun setState(state: AppHeaderState) {
         appHeaderState.value = state
+    }
+
+    override fun setTitle(title: String) {
+        this.title.value = title
     }
 }

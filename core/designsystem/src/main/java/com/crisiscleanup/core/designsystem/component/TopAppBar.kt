@@ -20,30 +20,40 @@ import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CrisisCleanupTopAppBar(
-    @StringRes titleRes: Int,
+    @StringRes titleResId: Int,
     modifier: Modifier = Modifier,
     isCenterAlign: Boolean = true,
     navIcon: ImageVector? = null,
     navContentDescription: String? = null,
+    navIconPadding: Dp = 16.dp,
     actionIcon: ImageVector? = null,
     actionIconContentDescription: String? = null,
     colors: TopAppBarColors = TopAppBarDefaults.centerAlignedTopAppBarColors(),
-    onNavigationClick: () -> Unit = {},
-    onActionClick: () -> Unit = {}
+    onNavigationClick: (() -> Unit)? = null,
+    onActionClick: () -> Unit = {},
 ) {
     val titleContent = @Composable {
-        Text(text = stringResource(id = titleRes))
+        Text(text = stringResource(id = titleResId))
     }
     val navigationContent: (@Composable (() -> Unit)) = if (navIcon == null) {
         @Composable {}
     } else {
         @Composable {
-            IconButton(onClick = onNavigationClick) {
+            if (onNavigationClick == null) {
                 Icon(
+                    modifier = Modifier.padding(navIconPadding),
                     imageVector = navIcon,
                     contentDescription = navContentDescription,
                     tint = MaterialTheme.colorScheme.onSurface
                 )
+            } else {
+                IconButton(onClick = onNavigationClick) {
+                    Icon(
+                        imageVector = navIcon,
+                        contentDescription = navContentDescription,
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
             }
         }
     }
@@ -107,17 +117,44 @@ private fun AttentionBadge(
 @Composable
 fun TopAppBarDefault(
     modifier: Modifier = Modifier,
-    @StringRes titleRes: Int,
+    @StringRes titleResId: Int = 0,
+    title: String = "",
+    navIcon: ImageVector? = null,
+    navContentDescription: String? = null,
+    navIconPadding: Dp = 16.dp,
     actionIcon: ImageVector,
     @StringRes actionResId: Int,
-    isCenterAlign: Boolean = false,
     isActionAttention: Boolean = false,
     colors: TopAppBarColors = TopAppBarDefaults.centerAlignedTopAppBarColors(),
     profilePictureUri: String = "",
+    onNavigationClick: (() -> Unit)? = null,
     onActionClick: () -> Unit = {},
 ) {
     val titleContent = @Composable {
-        Text(text = stringResource(id = titleRes))
+        val text = if (titleResId == 0) title else stringResource(titleResId)
+        Text(text)
+    }
+    val navigationContent: (@Composable (() -> Unit)) = if (navIcon == null) {
+        @Composable {}
+    } else {
+        @Composable {
+            if (onNavigationClick == null) {
+                Icon(
+                    modifier = Modifier.padding(navIconPadding),
+                    imageVector = navIcon,
+                    contentDescription = navContentDescription,
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            } else {
+                IconButton(onClick = onNavigationClick) {
+                    Icon(
+                        imageVector = navIcon,
+                        contentDescription = navContentDescription,
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+        }
     }
     val actionsContent: (@Composable (RowScope.() -> Unit)) = @Composable {
         IconButton(onClick = onActionClick) {
@@ -142,21 +179,13 @@ fun TopAppBarDefault(
         }
     }
 
-    if (isCenterAlign) {
-        CenterAlignedTopAppBar(
-            title = titleContent,
-            actions = actionsContent,
-            colors = colors,
-            modifier = modifier,
-        )
-    } else {
-        TopAppBar(
-            title = titleContent,
-            actions = actionsContent,
-            colors = colors,
-            modifier = modifier,
-        )
-    }
+    TopAppBar(
+        title = titleContent,
+        navigationIcon = navigationContent,
+        actions = actionsContent,
+        colors = colors,
+        modifier = modifier,
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -164,7 +193,7 @@ fun TopAppBarDefault(
 @Composable
 private fun CrisisCleanupTopCenterAppBarPreview() {
     CrisisCleanupTopAppBar(
-        titleRes = android.R.string.untitled,
+        titleResId = android.R.string.untitled,
         navIcon = CrisisCleanupIcons.Search,
         navContentDescription = "Nav",
         actionIcon = CrisisCleanupIcons.MoreVert,
@@ -178,18 +207,19 @@ private fun CrisisCleanupTopCenterAppBarPreview() {
 private fun CrisisCleanupTopAppBarPreview() {
     CrisisCleanupTopAppBar(
         isCenterAlign = false,
-        titleRes = android.R.string.untitled,
+        navIcon = CrisisCleanupIcons.Search,
+        titleResId = android.R.string.untitled,
         actionIcon = CrisisCleanupIcons.MoreVert,
         actionIconContentDescription = "Action"
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview("end-icon")
+@Preview("attention-over-icon")
 @Composable
 private fun CrisisCleanupTopAppBarEndPreview() {
     TopAppBarDefault(
-        titleRes = android.R.string.untitled,
+        titleResId = android.R.string.untitled,
         actionIcon = CrisisCleanupIcons.MoreVert,
         actionResId = android.R.string.search_go,
         profilePictureUri = "",
@@ -198,11 +228,12 @@ private fun CrisisCleanupTopAppBarEndPreview() {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview("end-icon")
+@Preview("attention-over-image")
 @Composable
 private fun CrisisCleanupTopAppBarImagePreview() {
     TopAppBarDefault(
-        titleRes = android.R.string.untitled,
+        title = "with icon",
+        navIcon = CrisisCleanupIcons.Search,
         actionIcon = CrisisCleanupIcons.MoreVert,
         actionResId = android.R.string.search_go,
         profilePictureUri = "https://avatars.dicebear.com/api/bottts/Demo User.svg",

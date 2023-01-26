@@ -1,10 +1,12 @@
 package com.crisiscleanup.feature.cases
 
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.appheader.AppHeaderBar
 import com.crisiscleanup.core.data.repository.IncidentsRepository
+import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.Incident
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -37,24 +39,31 @@ class CasesViewModel @Inject constructor(
 
     val isLoadingIncidents = incidentsRepository.isLoading
 
-    // TODO Save and load from prefs later.
-    var incidentId = mutableStateOf(-1L)
+    var selectedIncident: MutableState<Incident> = mutableStateOf(EmptyIncident)
         private set
 
-    val incidentsData = incidentsRepository.incidents.map {
-        val ids = it.map(Incident::id)
-        if (!ids.contains(incidentId.value)) {
-            incidentId.value = -1L
-        }
+    // TODO Save and load from prefs later.
+    var incidentId = mutableStateOf(EmptyIncident.id)
+        private set
 
-        if (incidentId.value < 0) {
-            if (it.isNotEmpty()) {
-                incidentId.value = it[0].id
-            }
+    val incidentsData = incidentsRepository.incidents.map { incidents ->
+        var selectedId = incidentId.value
+
+        // Update incident data or select first if current incident (ID) not found
+        var incident = incidents.find { it.id == selectedId } ?: EmptyIncident
+        if (incident == EmptyIncident && incidents.isNotEmpty()) {
+            incident = incidents[0]
         }
+        selectedId = incident.id
+
+        // TODO Assign atomically (or use a single value)
+        incidentId.value = selectedId
+        selectedIncident.value = incident
+
+        appHeaderBar.setTitle(selectedIncident.value.name)
 
         if (incidentId.value < 0) IncidentsData.Empty
-        else IncidentsData.Incidents(it)
+        else IncidentsData.Incidents(incidents)
     }.stateIn(
         scope = viewModelScope,
         initialValue = IncidentsData.Loading,

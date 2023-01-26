@@ -20,7 +20,7 @@ import com.crisiscleanup.core.designsystem.R
 fun CrisisCleanupIconButton(
     modifier: Modifier = Modifier,
     @DrawableRes
-    iconRes: Int,
+    iconResId: Int,
     contentDescriptionResId: Int = 0,
     contentDescription: String = "",
     onClick: () -> Unit = {},
@@ -36,7 +36,7 @@ fun CrisisCleanupIconButton(
         val cd = if (contentDescriptionResId == 0) contentDescription
         else stringResource(contentDescriptionResId)
         Icon(
-            painter = painterResource(iconRes),
+            painter = painterResource(iconResId),
             contentDescription = cd,
             tint = MaterialTheme.colorScheme.primary,
         )
@@ -48,6 +48,6 @@ fun CrisisCleanupIconButton(
 fun CrisisCleanupIconButtonPreview() {
     CrisisCleanupIconButton(
         modifier = Modifier.size(48.dp),
-        iconRes = R.drawable.ic_cases,
+        iconResId = R.drawable.ic_cases,
     )
 }

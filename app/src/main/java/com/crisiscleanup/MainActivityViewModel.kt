@@ -38,10 +38,10 @@ class MainActivityViewModel @Inject constructor(
         }
 
         if (it.accessToken.isNotEmpty()) AuthState.Authenticated(it)
-        else AuthState.Other
+        else AuthState.NotAuthenticated
     }.stateIn(
         scope = viewModelScope,
-        initialValue = AuthState.Other,
+        initialValue = AuthState.Loading,
         started = SharingStarted.WhileSubscribed()
     )
 }
@@ -52,8 +52,7 @@ sealed interface MainActivityUiState {
 }
 
 sealed interface AuthState {
+    object Loading : AuthState
     data class Authenticated(val accountData: AccountData) : AuthState
-
-    // Loading or not authenticated
-    object Other : AuthState
+    object NotAuthenticated : AuthState
 }

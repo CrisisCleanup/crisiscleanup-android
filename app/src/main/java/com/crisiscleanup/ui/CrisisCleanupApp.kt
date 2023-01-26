@@ -71,7 +71,9 @@ fun CrisisCleanupApp(
 
             val authState by mainActivityViewModel.authState.collectAsStateWithLifecycle()
             var openAuthentication by rememberSaveable { mutableStateOf(false) }
-            if (openAuthentication || authState == AuthState.Other) {
+            if (authState is AuthState.Loading) {
+                // Splash screen should be showing
+            } else if (openAuthentication || authState !is AuthState.Authenticated) {
                 AuthenticateContent(
                     snackbarHostState,
                     toggleAuthentication = { b -> openAuthentication = b },
@@ -83,6 +85,8 @@ fun CrisisCleanupApp(
                     derivedStateOf { accountData.tokenExpiry < Clock.System.now() }
                 }
                 val appHeaderState by remember { mainActivityViewModel.appHeaderBar.appHeaderState }
+                val appHeaderTitle by remember { mainActivityViewModel.appHeaderBar.title }
+
                 val onCasesAction = remember(mainActivityViewModel) {
                     { casesAction: CasesAction ->
                         when (casesAction) {
@@ -106,6 +110,7 @@ fun CrisisCleanupApp(
                     snackbarHostState,
                     appState,
                     appHeaderState,
+                    appHeaderTitle,
                     { openAuthentication = true },
                     profilePictureUri,
                     isAccountExpired,
@@ -164,6 +169,7 @@ private fun NavigableContent(
     snackbarHostState: SnackbarHostState,
     appState: CrisisCleanupAppState,
     appHeaderState: AppHeaderState,
+    headerTitle: String = "",
     openAuthentication: () -> Unit,
     profilePictureUri: String,
     isAccountExpired: Boolean,
@@ -183,7 +189,7 @@ private fun NavigableContent(
             val destination = appState.currentTopLevelDestination
             if (destination != null && appHeaderState != AppHeaderState.None) {
                 AppHeader(
-                    titleRes = destination.titleTextId,
+                    title = headerTitle,
                     appHeaderState = appHeaderState,
                     profilePictureUri = profilePictureUri,
                     isAccountExpired = isAccountExpired,
@@ -245,6 +251,7 @@ private fun NavigableContent(
 private fun AppHeader(
     modifier: Modifier = Modifier,
     @StringRes titleRes: Int = 0,
+    title: String = "",
     appHeaderState: AppHeaderState = AppHeaderState.Default,
     profilePictureUri: String = "",
     isAccountExpired: Boolean = false,
@@ -256,7 +263,8 @@ private fun AppHeader(
         AppHeaderState.Default -> {
             TopAppBarDefault(
                 modifier = modifier,
-                titleRes = titleRes,
+                titleResId = titleRes,
+                title = title,
                 profilePictureUri = profilePictureUri,
                 actionIcon = CrisisCleanupIcons.Account,
                 actionResId = R.string.account,
@@ -281,7 +289,7 @@ private fun AppHeader(
 
         AppHeaderState.TitleActions -> {
             CrisisCleanupTopAppBar(
-                titleRes = titleRes,
+                titleResId = titleRes,
             )
         }
 
