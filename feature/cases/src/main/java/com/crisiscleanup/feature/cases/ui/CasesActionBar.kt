@@ -13,6 +13,7 @@ enum class CasesAction(
     val iconResId: Int,
     val contentDescriptionResId: Int,
 ) {
+    CreateNew(android.R.drawable.btn_plus, R.string.create_case),
     Search(R.drawable.ic_search, R.string.search),
     TableView(R.drawable.ic_table, R.string.table_view),
     Filters(R.drawable.ic_dials, R.string.filters),

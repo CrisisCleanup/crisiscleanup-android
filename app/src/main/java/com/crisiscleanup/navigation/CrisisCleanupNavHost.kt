@@ -24,7 +24,7 @@ fun CrisisCleanupNavHost(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     startDestination: String = casesGraphRoutePattern,
-    onCasesAction: (CasesAction) -> Boolean = { true },
+    onCasesAction: (CasesAction) -> Unit = { },
 ) {
     NavHost(
         navController = navController,
@@ -32,6 +32,7 @@ fun CrisisCleanupNavHost(
         modifier = modifier,
     ) {
         casesGraph(
+            navController = navController,
             nestedGraphs = {
                 // TODO Nested composables that can be navigated to
             },

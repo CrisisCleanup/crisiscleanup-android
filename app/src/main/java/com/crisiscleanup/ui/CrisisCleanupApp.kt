@@ -9,6 +9,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -30,6 +31,7 @@ import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.icon.Icon.DrawableResourceIcon
 import com.crisiscleanup.core.designsystem.icon.Icon.ImageVectorIcon
 import com.crisiscleanup.feature.authentication.AuthenticateScreen
+import com.crisiscleanup.feature.cases.CasesViewModel
 import com.crisiscleanup.feature.cases.ui.CasesAction
 import com.crisiscleanup.navigation.CrisisCleanupNavHost
 import com.crisiscleanup.navigation.TopLevelDestination
@@ -46,7 +48,8 @@ fun CrisisCleanupApp(
         networkMonitor = networkMonitor,
         windowSizeClass = windowSizeClass
     ),
-    mainActivityViewModel: MainActivityViewModel = hiltViewModel()
+    mainActivityViewModel: MainActivityViewModel = hiltViewModel(),
+    casesViewModel: CasesViewModel = hiltViewModel(),
 ) {
     CrisisCleanupBackground {
         Box(Modifier.fillMaxSize()) {
@@ -88,14 +91,16 @@ fun CrisisCleanupApp(
                                 val toggleState = if (isOnSearch) AppHeaderState.Default
                                 else AppHeaderState.SearchCases
                                 mainActivityViewModel.appHeaderBar.setState(toggleState)
-                                true
                             }
 
-                            else -> {
-                                false
-                            }
+                            else -> {}
                         }
                     }
+                }
+                val casesSearchQuery =
+                    remember(casesViewModel) { { casesViewModel.casesSearchQuery.value } }
+                val updateCasesSearchQuery = remember(casesViewModel) {
+                    { q: String -> casesViewModel.updateCasesSearchQuery(q) }
                 }
                 NavigableContent(
                     snackbarHostState,
@@ -104,7 +109,9 @@ fun CrisisCleanupApp(
                     { openAuthentication = true },
                     profilePictureUri,
                     isAccountExpired,
-                    onCasesAction = onCasesAction,
+                    onCasesAction,
+                    casesSearchQuery,
+                    updateCasesSearchQuery,
                 )
             }
         }
@@ -160,7 +167,9 @@ private fun NavigableContent(
     openAuthentication: () -> Unit,
     profilePictureUri: String,
     isAccountExpired: Boolean,
-    onCasesAction: (CasesAction) -> Boolean = { true },
+    onCasesAction: (CasesAction) -> Unit = { },
+    searchQuery: () -> String = { "" },
+    onQueryChange: (String) -> Unit = {},
 ) {
     Scaffold(
         modifier = Modifier.semantics {
@@ -179,6 +188,8 @@ private fun NavigableContent(
                     profilePictureUri = profilePictureUri,
                     isAccountExpired = isAccountExpired,
                     openAuthentication = openAuthentication,
+                    searchQuery = searchQuery,
+                    onQueryChange = onQueryChange,
                 )
             }
         },
@@ -229,7 +240,7 @@ private fun NavigableContent(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 private fun AppHeader(
     modifier: Modifier = Modifier,
@@ -238,7 +249,7 @@ private fun AppHeader(
     profilePictureUri: String = "",
     isAccountExpired: Boolean = false,
     openAuthentication: () -> Unit = {},
-    searchQuery: String = "",
+    searchQuery: () -> String = { "" },
     onQueryChange: (String) -> Unit = {},
 ) {
     when (appHeaderState) {
@@ -258,10 +269,13 @@ private fun AppHeader(
         }
 
         AppHeaderState.SearchCases -> {
+            val keyboardController = LocalSoftwareKeyboardController.current
+
             TopAppBarSearchCases(
                 modifier = modifier,
                 q = searchQuery,
                 onQueryChange = onQueryChange,
+                onSearch = { keyboardController?.hide() },
             )
         }
 

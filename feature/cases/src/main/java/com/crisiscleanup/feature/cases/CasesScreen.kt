@@ -18,8 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -43,37 +41,33 @@ import com.google.maps.android.compose.rememberCameraPositionState
 @Composable
 internal fun CasesRoute(
     modifier: Modifier = Modifier,
-    onCasesAction: (CasesAction) -> Boolean = { true },
-    onNewCase: () -> Unit = {},
+    onCasesAction: (CasesAction) -> Unit = { },
     casesViewModel: CasesViewModel = hiltViewModel(),
 ) {
     val incidentsData by casesViewModel.incidentsData.collectAsStateWithLifecycle()
     if (incidentsData is IncidentsData.Incidents) {
-        var isTableView by rememberSaveable { mutableStateOf(false) }
+        val isTableView by casesViewModel.isTableView
 
-        val rememberOnCasesAction = remember(onCasesAction) {
+        val rememberOnCasesAction = remember(onCasesAction, casesViewModel) {
             { action: CasesAction ->
-                val isActed = onCasesAction(action)
-                if (isActed) {
-                    when (action) {
-                        CasesAction.MapView -> {
-                            isTableView = false
-                        }
+                when (action) {
+                    CasesAction.MapView -> {
+                        casesViewModel.setContentViewType(false)
+                    }
 
-                        CasesAction.TableView -> {
-                            isTableView = true
-                        }
+                    CasesAction.TableView -> {
+                        casesViewModel.setContentViewType(true)
+                    }
 
-                        else -> {}
+                    else -> {
+                        onCasesAction(action)
                     }
                 }
             }
         }
-        val rememberOnNewCase = remember(onNewCase) { { onNewCase() } }
         CasesScreen(
-            modifier = modifier,
+            modifier,
             rememberOnCasesAction,
-            rememberOnNewCase,
             isTableView,
         )
     } else {
@@ -115,7 +109,6 @@ internal fun NoCasesScreen(
 internal fun CasesScreen(
     modifier: Modifier = Modifier,
     onCasesAction: (CasesAction) -> Unit = {},
-    onNewCase: () -> Unit = {},
     isTableView: Boolean = false,
     latLngInitial: LatLng = LatLng(40.272621, -96.012327),
 ) {
@@ -129,7 +122,6 @@ internal fun CasesScreen(
             modifier,
             onCasesAction,
             isTableView,
-            onNewCase,
         )
     }
 }
@@ -165,7 +157,6 @@ internal fun CasesOverlayActions(
     modifier: Modifier = Modifier,
     onCasesAction: (CasesAction) -> Unit = {},
     isTableView: Boolean = false,
-    onNewCase: () -> Unit = {},
 ) {
     ConstraintLayout(Modifier.fillMaxSize()) {
         val (zoomBar, actionBar, newCaseFab) = createRefs()
@@ -189,6 +180,7 @@ internal fun CasesOverlayActions(
             isTableView,
         )
 
+        val onNewCase = remember(onCasesAction) { { onCasesAction(CasesAction.CreateNew) } }
         FloatingActionButton(
             modifier = modifier.constrainAs(newCaseFab) {
                 end.linkTo(parent.end, margin = fabSpacing)

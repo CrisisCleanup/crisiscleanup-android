@@ -133,7 +133,7 @@ fun TopAppBarDefault(
 @Composable
 fun TopAppBarSearchCases(
     modifier: Modifier = Modifier,
-    q: String = "",
+    q: () -> String = { "" },
     onQueryChange: (String) -> Unit = {},
     // TODO Use constant for padding
     padding: Dp = 8.dp,
@@ -153,7 +153,7 @@ fun TopAppBarSearchCases(
                 .fillMaxWidth()
                 .padding(horizontal = padding),
             labelResId = 0,
-            value = q,
+            value = q(),
             onValueChange = onQueryChange,
             enabled = true,
             isError = false,
@@ -207,6 +207,6 @@ private fun CrisisCleanupTopAppBarImagePreview() {
 @Composable
 private fun TopAppBarSearchCasesPreview() {
     TopAppBarSearchCases(
-        q = "searching",
+        q = { "searching" },
     )
 }

@@ -8,6 +8,10 @@ import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.model.data.Incident
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
@@ -17,6 +21,13 @@ class CasesViewModel @Inject constructor(
     private val incidentsRepository: IncidentsRepository,
     val appHeaderBar: AppHeaderBar,
 ) : ViewModel() {
+    var isTableView = mutableStateOf(false)
+        private set
+
+    fun setContentViewType(isTableView: Boolean) {
+        this.isTableView.value = isTableView
+    }
+
     val isLoadingIncidents = incidentsRepository.isLoading
 
     // TODO Save and load from prefs later.
@@ -42,6 +53,23 @@ class CasesViewModel @Inject constructor(
         initialValue = IncidentsData.Loading,
         started = SharingStarted.WhileSubscribed(),
     )
+
+    var casesSearchQuery = mutableStateOf("")
+        private set
+
+    // TODO Use constant for debounce
+    private val filteredResults = flowOf(casesSearchQuery)
+        .debounce(200)
+        .map { it.value.trim() }
+        .distinctUntilChanged()
+        .map {
+            // TODO Filter if (search is is open and) query is not defined
+        }
+        .launchIn(viewModelScope)
+
+    fun updateCasesSearchQuery(q: String) {
+        casesSearchQuery.value = q
+    }
 }
 
 sealed interface IncidentsData {
