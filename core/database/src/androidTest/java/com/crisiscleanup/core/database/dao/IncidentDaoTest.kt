@@ -5,6 +5,7 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
 import com.crisiscleanup.core.database.model.IncidentEntity
+import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
 import com.crisiscleanup.core.database.model.IncidentLocationEntity
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -59,17 +60,31 @@ class IncidentDaoTest {
         )
     }
 
-    private fun testIncidentDataSet(): Triple<List<IncidentLocationEntity>, List<IncidentEntity>, Map<Long, Set<Long>>> {
+    private fun makeIncidentLocationCrossRefs(idMap: Map<Long, Set<Long>>): List<IncidentIncidentLocationCrossRef> {
+        val incidentCrossRefs = mutableListOf<IncidentIncidentLocationCrossRef>()
+        for ((incidentId, locationIds) in idMap.entries) {
+            for (locationId in locationIds) {
+                incidentCrossRefs.add(
+                    IncidentIncidentLocationCrossRef(incidentId, locationId)
+                )
+            }
+        }
+        return incidentCrossRefs
+    }
+
+    private fun testIncidentDataSet(): Triple<List<IncidentLocationEntity>, List<IncidentEntity>, List<IncidentIncidentLocationCrossRef>> {
         val incidentLocations = listOf(
             IncidentLocationEntity(15, 158),
             IncidentLocationEntity(226, 241),
             IncidentLocationEntity(31, 386),
         )
         val incidents = testIncidents()
-        val incidentToIncidentLocations = mapOf(
-            48L to setOf(15L, 226),
-            18L to setOf(226L, 31),
-            954L to setOf(15L),
+        val incidentToIncidentLocations = makeIncidentLocationCrossRefs(
+            mapOf(
+                48L to setOf(15L, 226),
+                18L to setOf(226L, 31),
+                954L to setOf(15L),
+            )
         )
         return Triple(incidentLocations, incidents, incidentToIncidentLocations)
     }

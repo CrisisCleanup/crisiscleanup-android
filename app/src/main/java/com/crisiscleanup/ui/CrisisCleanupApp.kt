@@ -135,7 +135,6 @@ private fun NavigableContent(
     appState: CrisisCleanupAppState,
     openAuthentication: () -> Unit,
     profilePictureUri: String,
-    // TODO Show badge/marking if account has expired
     isAccountExpired: Boolean,
 ) {
     Scaffold(
@@ -187,9 +186,8 @@ private fun NavigableContent(
                         titleRes = destination.titleTextId,
                         profilePictureUri = profilePictureUri,
                         actionIcon = CrisisCleanupIcons.Account,
-                        actionIconContentDescription = stringResource(
-                            id = R.string.account
-                        ),
+                        actionResId = R.string.account,
+                        isActionAttention = isAccountExpired,
                         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                             containerColor = Color.Transparent
                         ),
@@ -233,6 +231,7 @@ private fun CrisisCleanupNavRail(
                             imageVector = icon.imageVector,
                             contentDescription = null
                         )
+
                         is DrawableResourceIcon -> Icon(
                             painter = painterResource(id = icon.id),
                             contentDescription = null

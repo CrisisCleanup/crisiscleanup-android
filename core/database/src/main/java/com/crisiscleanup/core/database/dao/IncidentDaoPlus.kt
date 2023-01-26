@@ -16,21 +16,15 @@ class IncidentDaoPlus @Inject constructor(
     suspend fun saveIncidents(
         incidents: List<IncidentEntity>,
         incidentLocations: List<IncidentLocationEntity>,
-        idMap: Map<Long, Set<Long>>
+        incidentIncidentLocationCrossRefs: List<IncidentIncidentLocationCrossRef>,
     ) {
-        val incidentCrossRefs = mutableListOf<IncidentIncidentLocationCrossRef>()
-        for ((incidentId, locationIds) in idMap.entries) {
-            for (locationId in locationIds) {
-                incidentCrossRefs.add(
-                    IncidentIncidentLocationCrossRef(incidentId, locationId)
-                )
-            }
-        }
-
         db.withTransaction {
-            db.incidentDao().upsertIncidents(incidents)
-            db.incidentDao().upsertIncidentLocations(incidentLocations)
-            db.incidentDao().insertIgnoreIncidentIncidentLocationCrossRefs(incidentCrossRefs)
+            val incidentDao = db.incidentDao()
+            incidentDao.upsertIncidents(incidents)
+            incidentDao.upsertIncidentLocations(incidentLocations)
+            incidentDao.insertIgnoreIncidentIncidentLocationCrossRefs(
+                incidentIncidentLocationCrossRefs
+            )
         }
     }
 }

@@ -2,6 +2,7 @@ package com.crisiscleanup.core.testing.repository
 
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.model.data.DarkThemeConfig
+import com.crisiscleanup.core.model.data.SyncAttempt
 import com.crisiscleanup.core.model.data.UserData
 import kotlinx.coroutines.channels.BufferOverflow.DROP_OLDEST
 import kotlinx.coroutines.flow.Flow
@@ -10,7 +11,8 @@ import kotlinx.coroutines.flow.filterNotNull
 
 private val emptyUserData = UserData(
     darkThemeConfig = DarkThemeConfig.FOLLOW_SYSTEM,
-    shouldHideOnboarding = false
+    shouldHideOnboarding = false,
+    syncAttempt = SyncAttempt(0, 0, 0),
 )
 
 class TestLocalAppPreferencesRepository : LocalAppPreferencesRepository {

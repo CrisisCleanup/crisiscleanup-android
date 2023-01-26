@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.MainActivityUiState.Loading
 import com.crisiscleanup.MainActivityUiState.Success
 import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.model.data.UserData
@@ -19,6 +20,7 @@ import javax.inject.Inject
 class MainActivityViewModel @Inject constructor(
     localAppPreferencesRepository: LocalAppPreferencesRepository,
     accountDataRepository: AccountDataRepository,
+    private val incidentsRepository: IncidentsRepository,
 ) : ViewModel() {
     val uiState: StateFlow<MainActivityUiState> = localAppPreferencesRepository.userData.map {
         Success(it)
@@ -29,6 +31,10 @@ class MainActivityViewModel @Inject constructor(
     )
 
     val authState: StateFlow<AuthState> = accountDataRepository.accountData.map {
+        if (it.accessToken.isNotEmpty()) {
+            incidentsRepository.sync(false)
+        }
+
         if (it.accessToken.isNotEmpty()) AuthState.Authenticated(it)
         else AuthState.Other
     }.stateIn(

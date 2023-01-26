@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+option java_package = "com.crisiscleanup.core.datastore";
+option java_multiple_files = true;
+
+message SyncAttemptProto {
+  int64 successful_seconds = 1;
+  int64 attempted_seconds = 2;
+  int32 attempted_counter = 3;
+}

@@ -1,7 +1,6 @@
 package com.crisiscleanup.sync.workers
 
 import android.content.Context
-import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.tracing.traceAsync
 import androidx.work.CoroutineWorker
@@ -12,11 +11,15 @@ import androidx.work.WorkerParameters
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.Synchronizer
+import com.crisiscleanup.core.data.repository.IncidentsRepository
+import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.sync.initializers.SyncConstraints
 import com.crisiscleanup.sync.initializers.syncForegroundInfo
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 
 /**
@@ -28,6 +31,8 @@ class SyncWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted workerParams: WorkerParameters,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
+    private val incidentsRepository: IncidentsRepository,
+    private val appPreferences: LocalAppPreferencesDataSource,
 ) : CoroutineWorker(appContext, workerParams), Synchronizer {
 
     override suspend fun getForegroundInfo(): ForegroundInfo =
@@ -35,10 +40,16 @@ class SyncWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result = withContext(ioDispatcher) {
         traceAsync("Sync", 0) {
-            // Starting file syncs all syncable repositories
+            val syncedSuccessfully = awaitAll(
+                async {
+                    incidentsRepository.sync()
+                },
+            ).all { it }
 
-            Log.d("Sync", "No syncing logic yet")
-            Result.success()
+            appPreferences.setSyncAttempt(syncedSuccessfully)
+
+            if (syncedSuccessfully) Result.success()
+            else Result.retry()
         }
     }
 

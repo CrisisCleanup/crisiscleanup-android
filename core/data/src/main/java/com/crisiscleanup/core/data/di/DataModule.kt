@@ -2,7 +2,9 @@ package com.crisiscleanup.core.data.di
 
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupAccountDataRepository
+import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
+import com.crisiscleanup.core.data.repository.OfflineFirstIncidentsRepository
 import com.crisiscleanup.core.data.repository.OfflineFirstLocalAppPreferencesRepository
 import com.crisiscleanup.core.data.util.ConnectivityManagerNetworkMonitor
 import com.crisiscleanup.core.data.util.NetworkMonitor
@@ -32,4 +34,10 @@ interface DataModule {
     fun bindsNetworkMonitor(
         networkMonitor: ConnectivityManagerNetworkMonitor
     ): NetworkMonitor
+
+    @Singleton
+    @Binds
+    fun bindsIncidentsRepository(
+        incidentsRepository: OfflineFirstIncidentsRepository
+    ): IncidentsRepository
 }

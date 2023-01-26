@@ -14,24 +14,7 @@ data class NetworkIncidentsResult(
 data class NetworkIncidentLocation(
     val id: Long,
     val location: Long,
-) {
-    // For tests. true equals can compare on id only.
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as NetworkIncidentLocation
-
-        if (id != other.id) return false
-        if (location != other.location) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        return id.hashCode()
-    }
-}
+)
 
 @Serializable
 data class NetworkIncident(
@@ -46,31 +29,9 @@ data class NetworkIncident(
     val shortName: String,
     val locations: List<NetworkIncidentLocation>,
     @SerialName("turn_on_release")
-    val turnOnRelease: Boolean,
+    val turnOnRelease: Boolean?,
     @SerialName("active_phone_number")
     val activePhoneNumber: String?,
     @SerialName("is_archived")
-    val isArchived: Boolean,
-) {
-    // For tests. true equals can compare on id only.
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as NetworkIncident
-
-        if (id != other.id) return false
-        if (name != other.name) return false
-        if (shortName != other.shortName) return false
-        if (locations != other.locations) return false
-        if (turnOnRelease != other.turnOnRelease) return false
-        if (activePhoneNumber != other.activePhoneNumber) return false
-        if (isArchived != other.isArchived) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        return id.hashCode()
-    }
-}
+    val isArchived: Boolean?,
+)

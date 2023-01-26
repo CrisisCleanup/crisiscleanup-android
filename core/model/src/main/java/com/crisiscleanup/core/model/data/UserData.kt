@@ -6,5 +6,7 @@ package com.crisiscleanup.core.model.data
 // Named UserData originally so sticking with it rather than renaming to (Local)AppPreferences.
 data class UserData(
     val darkThemeConfig: DarkThemeConfig,
-    val shouldHideOnboarding: Boolean
+    val shouldHideOnboarding: Boolean,
+
+    val syncAttempt: SyncAttempt,
 )

@@ -14,7 +14,7 @@ import kotlinx.datetime.Instant
         Index(
             value = ["start_at"],
             orders = [Index.Order.DESC],
-            name = "idx_newest_to_oldest_incidents"
+            name = "idx_newest_to_oldest_incidents",
         )
     ]
 )
@@ -64,7 +64,7 @@ fun IncidentLocationEntity.asExternalModel() = IncidentLocation(
     indices = [
         Index(
             value = ["incident_location_id", "incident_id"],
-            name = "idx_incident_location_to_incident"
+            name = "idx_incident_location_to_incident",
         ),
     ]
 )

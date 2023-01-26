@@ -3,6 +3,7 @@ package com.crisiscleanup.core.data.repository
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.core.datastore.test.testUserPreferencesDataStore
 import com.crisiscleanup.core.model.data.DarkThemeConfig
+import com.crisiscleanup.core.model.data.SyncAttempt
 import com.crisiscleanup.core.model.data.UserData
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -37,7 +38,8 @@ class OfflineFirstLocalAppPreferencesRepositoryTest {
         assertEquals(
             UserData(
                 darkThemeConfig = DarkThemeConfig.FOLLOW_SYSTEM,
-                shouldHideOnboarding = false
+                shouldHideOnboarding = false,
+                syncAttempt = SyncAttempt(0, 0, 0),
             ),
             subject.userData.first()
         )

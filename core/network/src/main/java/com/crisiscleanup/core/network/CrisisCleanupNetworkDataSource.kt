@@ -12,7 +12,7 @@ interface CrisisCleanupAuthApi {
 interface CrisisCleanupNetworkDataSource {
     suspend fun getIncidents(
         fields: List<String>,
-        limit: Int = 100,
+        limit: Int = 250,
         ordering: String = "-start_at"
     ): NetworkIncidentsResult
 }
