@@ -271,7 +271,7 @@ private fun AppHeader(
         AppHeaderState.SearchCases -> {
             val keyboardController = LocalSoftwareKeyboardController.current
 
-            TopAppBarSearchCases(
+            TopAppBarSearch(
                 modifier = modifier,
                 q = searchQuery,
                 onQueryChange = onQueryChange,

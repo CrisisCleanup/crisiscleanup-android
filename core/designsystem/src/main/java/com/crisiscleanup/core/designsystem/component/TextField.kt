@@ -61,10 +61,19 @@ fun OutlinedSingleLineTextField(
             onEnter?.invoke()
         },
     )
+    val labelContent: (@Composable (() -> Unit)?) = if (labelResId == 0) null
+    else {
+        @Composable { Text(stringResource(labelResId)) }
+    }
+    val trailingIconContent: (@Composable (() -> Unit)?) =
+        if (value.isEmpty() || trailingIcon == null) null
+        else {
+            @Composable { trailingIcon() }
+        }
 
     OutlinedTextField(
         modifier = modifier2,
-        label = { if (labelResId != 0) Text(stringResource(labelResId)) else null },
+        label = labelContent,
         value = value,
         // Physical keyboard input will append tab/enter characters. Use onscreen when testing.
         onValueChange = { onValueChange(it) },
@@ -74,11 +83,7 @@ fun OutlinedSingleLineTextField(
         enabled = enabled,
         isError = isError,
         visualTransformation = visualTransformation,
-        trailingIcon = {
-            if (value.isNotEmpty() && trailingIcon != null) {
-                trailingIcon()
-            }
-        },
+        trailingIcon = trailingIconContent,
     )
 
     if (hasFocus) {
