@@ -6,9 +6,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 private fun roundedRectangleButtonShape() = RoundedCornerShape(4.dp)
@@ -54,8 +56,8 @@ fun BusyButton(
 @Composable
 fun CrisisCleanupButton(
     modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-    enabled: Boolean,
+    onClick: () -> Unit = {},
+    enabled: Boolean = true,
     @StringRes
     textResId: Int = 0,
     text: String = "",
@@ -68,4 +70,13 @@ fun CrisisCleanupButton(
     ) {
         Text(textResId, text)
     }
+}
+
+@Preview
+@Composable
+fun CrisisCleanupButtonPreview() {
+    CrisisCleanupButton(
+        enabled = true,
+        text = "Press"
+    )
 }

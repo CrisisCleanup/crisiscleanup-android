@@ -6,6 +6,11 @@ import kotlinx.coroutines.flow.Flow
 
 interface IncidentsRepository : Syncable {
     /**
+     * Is loading incidents data
+     */
+    val isLoading: Flow<Boolean>
+
+    /**
      * Stream of [Incident]s
      */
     val incidents: Flow<List<Incident>>

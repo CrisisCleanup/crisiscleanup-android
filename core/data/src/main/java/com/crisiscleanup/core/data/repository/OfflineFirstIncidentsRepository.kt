@@ -26,12 +26,12 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     private val incidentDaoPlus: IncidentDaoPlus,
     private val appLogger: AppLogger,
 ) : IncidentsRepository {
+    private var isSyncing = MutableStateFlow(false)
+
+    override val isLoading: Flow<Boolean> = isSyncing
 
     override val incidents: Flow<List<Incident>> =
         incidentDao.getIncidents().map { it.map(PopulatedIncident::asExternalModel) }
-
-    var isSyncing: MutableStateFlow<Boolean> = MutableStateFlow(false)
-        private set
 
     override suspend fun sync(force: Boolean) {
         if (!force && incidents.first().isNotEmpty()) {

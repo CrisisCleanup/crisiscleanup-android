@@ -1,21 +1,35 @@
 package com.crisiscleanup.feature.cases
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.feature.cases.ui.CasesAction
 import com.crisiscleanup.feature.cases.ui.CasesActionBar
 import com.crisiscleanup.feature.cases.ui.CasesZoomBar
@@ -25,35 +39,76 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
 
+@OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 internal fun CasesRoute(
     modifier: Modifier = Modifier,
-    onCasesAction: (CasesAction) -> Unit = {},
+    onCasesAction: (CasesAction) -> Boolean = { true },
     onNewCase: () -> Unit = {},
+    casesViewModel: CasesViewModel = hiltViewModel(),
 ) {
-    var isTableView by rememberSaveable { mutableStateOf(false) }
+    val incidentsData by casesViewModel.incidentsData.collectAsStateWithLifecycle()
+    if (incidentsData is IncidentsData.Incidents) {
+        var isTableView by rememberSaveable { mutableStateOf(false) }
 
-    val rememberOnCasesAction = remember(onCasesAction) {
-        { action: CasesAction ->
-            onCasesAction(action)
-            if (isTableView) {
-                if (action == CasesAction.MapView) {
-                    isTableView = false
-                }
-            } else {
-                if (action == CasesAction.TableView) {
-                    isTableView = true
+        val rememberOnCasesAction = remember(onCasesAction) {
+            { action: CasesAction ->
+                val isActed = onCasesAction(action)
+                if (isActed) {
+                    when (action) {
+                        CasesAction.MapView -> {
+                            isTableView = false
+                        }
+
+                        CasesAction.TableView -> {
+                            isTableView = true
+                        }
+
+                        else -> {}
+                    }
                 }
             }
         }
+        val rememberOnNewCase = remember(onNewCase) { { onNewCase() } }
+        CasesScreen(
+            modifier = modifier,
+            rememberOnCasesAction,
+            rememberOnNewCase,
+            isTableView,
+        )
+    } else {
+        val isLoading = incidentsData is IncidentsData.Loading
+        NoCasesScreen(modifier, isLoading)
     }
-    val rememberOnNewCase = remember(onNewCase) { { onNewCase() } }
-    CasesScreen(
-        modifier = modifier,
-        rememberOnCasesAction,
-        rememberOnNewCase,
-        isTableView,
-    )
+}
+
+@Composable
+internal fun NoCasesScreen(
+    modifier: Modifier = Modifier,
+    isLoading: Boolean = false,
+    onRetryLoad: () -> Unit = {},
+) {
+    Box(modifier.fillMaxSize()) {
+        if (isLoading) {
+            CircularProgressIndicator(Modifier.align(Alignment.Center))
+        } else {
+            // TODO Use constant for width
+            Column(
+                modifier
+                    .align(Alignment.Center)
+                    .widthIn(max = 300.dp)
+            ) {
+                Text(stringResource(R.string.issues_loading_incidents))
+                // TODO Use constant for spacing
+                Spacer(modifier = Modifier.height(16.dp))
+                CrisisCleanupButton(
+                    modifier = modifier.align(Alignment.End),
+                    onClick = onRetryLoad,
+                    textResId = R.string.retry_load_incidents,
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -154,4 +209,16 @@ internal fun CasesOverlayActions(
 @Composable
 fun CasesOverlayActionsPreview() {
     CasesOverlayActions()
+}
+
+@Preview
+@Composable
+fun NoCasesLoadingPreview() {
+    NoCasesScreen(isLoading = true)
+}
+
+@Preview
+@Composable
+fun NoCasesRetryPreview() {
+    NoCasesScreen()
 }

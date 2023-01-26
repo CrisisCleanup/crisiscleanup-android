@@ -75,7 +75,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val systemUiController = rememberSystemUiController()
-            val darkTheme = isSystemInDarkTheme()
+            val darkTheme = shouldUseDarkTheme(uiState)
 
             // Update the dark content of the system bars to match the theme
             DisposableEffect(systemUiController, darkTheme) {

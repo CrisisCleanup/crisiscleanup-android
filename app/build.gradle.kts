@@ -73,6 +73,7 @@ dependencies {
     implementation(project(":feature:menu"))
     implementation(project(":feature:team"))
 
+    implementation(project(":core:appheader"))
     implementation(project(":core:common"))
     implementation(project(":core:data"))
     implementation(project(":core:designsystem"))

@@ -36,6 +36,7 @@ fun OutlinedSingleLineTextField(
     visualTransformation: VisualTransformation = VisualTransformation.None,
     onNext: (() -> Unit)? = null,
     onEnter: (() -> Unit)? = null,
+    onSearch: (() -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
     imeAction: ImeAction = ImeAction.Next,
 ) {
@@ -53,6 +54,9 @@ fun OutlinedSingleLineTextField(
             focusManager.moveFocus(FocusDirection.Next)
             onNext?.invoke()
         },
+        onSearch = {
+            onSearch?.invoke()
+        },
         onDone = {
             onEnter?.invoke()
         },
@@ -60,7 +64,7 @@ fun OutlinedSingleLineTextField(
 
     OutlinedTextField(
         modifier = modifier2,
-        label = { Text(stringResource(labelResId)) },
+        label = { if (labelResId != 0) Text(stringResource(labelResId)) else null },
         value = value,
         // Physical keyboard input will append tab/enter characters. Use onscreen when testing.
         onValueChange = { onValueChange(it) },
@@ -97,6 +101,7 @@ fun OutlinedClearableTextField(
     keyboardType: KeyboardType = KeyboardType.Text,
     onNext: (() -> Unit)? = null,
     onEnter: (() -> Unit)? = null,
+    onSearch: (() -> Unit)? = null,
     imeAction: ImeAction = ImeAction.Next,
 ) {
     val trailingIcon = @Composable {
@@ -123,6 +128,7 @@ fun OutlinedClearableTextField(
         keyboardType = keyboardType,
         onNext = onNext,
         onEnter = onEnter,
+        onSearch = onSearch,
         trailingIcon = trailingIcon,
         imeAction = imeAction,
     )

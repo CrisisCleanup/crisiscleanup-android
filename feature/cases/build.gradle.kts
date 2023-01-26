@@ -17,6 +17,8 @@ secrets {
 }
 
 dependencies {
+    implementation(project(":core:appheader"))
+
     implementation(libs.androidx.constraintlayout)
     implementation(libs.google.maps.compose)
     implementation(libs.google.maps.playservices)

@@ -1,5 +1,6 @@
 package com.crisiscleanup.ui
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
@@ -22,12 +23,14 @@ import com.crisiscleanup.AuthState
 import com.crisiscleanup.CrisisCleanupApplication
 import com.crisiscleanup.MainActivityViewModel
 import com.crisiscleanup.R
+import com.crisiscleanup.core.appheader.AppHeaderState
 import com.crisiscleanup.core.data.util.NetworkMonitor
 import com.crisiscleanup.core.designsystem.component.*
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.icon.Icon.DrawableResourceIcon
 import com.crisiscleanup.core.designsystem.icon.Icon.ImageVectorIcon
 import com.crisiscleanup.feature.authentication.AuthenticateScreen
+import com.crisiscleanup.feature.cases.ui.CasesAction
 import com.crisiscleanup.navigation.CrisisCleanupNavHost
 import com.crisiscleanup.navigation.TopLevelDestination
 import kotlinx.datetime.Clock
@@ -76,12 +79,32 @@ fun CrisisCleanupApp(
                 val isAccountExpired by remember {
                     derivedStateOf { accountData.tokenExpiry < Clock.System.now() }
                 }
+                val appHeaderState by remember { mainActivityViewModel.appHeaderBar.appHeaderState }
+                val onCasesAction = remember(mainActivityViewModel) {
+                    { casesAction: CasesAction ->
+                        when (casesAction) {
+                            CasesAction.Search -> {
+                                val isOnSearch = appHeaderState == AppHeaderState.SearchCases
+                                val toggleState = if (isOnSearch) AppHeaderState.Default
+                                else AppHeaderState.SearchCases
+                                mainActivityViewModel.appHeaderBar.setState(toggleState)
+                                true
+                            }
+
+                            else -> {
+                                false
+                            }
+                        }
+                    }
+                }
                 NavigableContent(
                     snackbarHostState,
                     appState,
+                    appHeaderState,
                     { openAuthentication = true },
                     profilePictureUri,
                     isAccountExpired,
+                    onCasesAction = onCasesAction,
                 )
             }
         }
@@ -133,9 +156,11 @@ private fun AuthenticateContent(
 private fun NavigableContent(
     snackbarHostState: SnackbarHostState,
     appState: CrisisCleanupAppState,
+    appHeaderState: AppHeaderState,
     openAuthentication: () -> Unit,
     profilePictureUri: String,
     isAccountExpired: Boolean,
+    onCasesAction: (CasesAction) -> Boolean = { true },
 ) {
     Scaffold(
         modifier = Modifier.semantics {
@@ -145,6 +170,18 @@ private fun NavigableContent(
         contentColor = MaterialTheme.colorScheme.onBackground,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = { SnackbarHost(snackbarHostState) },
+        topBar = {
+            val destination = appState.currentTopLevelDestination
+            if (destination != null && appHeaderState != AppHeaderState.None) {
+                AppHeader(
+                    titleRes = destination.titleTextId,
+                    appHeaderState = appHeaderState,
+                    profilePictureUri = profilePictureUri,
+                    isAccountExpired = isAccountExpired,
+                    openAuthentication = openAuthentication,
+                )
+            }
+        },
         bottomBar = {
             if (appState.shouldShowBottomBar) {
                 CrisisCleanupBottomBar(
@@ -154,7 +191,7 @@ private fun NavigableContent(
                     modifier = Modifier.testTag("CrisisCleanupBottomBar")
                 )
             }
-        }
+        },
     ) { padding ->
         Row(
             Modifier
@@ -162,9 +199,8 @@ private fun NavigableContent(
                 .padding(padding)
                 .consumedWindowInsets(padding)
                 .windowInsetsPadding(
-                    WindowInsets.safeDrawing.only(
-                        WindowInsetsSides.Horizontal
-                    )
+                    if (appHeaderState == AppHeaderState.None) WindowInsets.safeDrawing
+                    else WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)
                 )
         ) {
             if (appState.shouldShowNavRail) {
@@ -179,31 +215,63 @@ private fun NavigableContent(
             }
 
             Column(Modifier.fillMaxSize()) {
-                // Show the top app bar on top level destinations.
-                val destination = appState.currentTopLevelDestination
-                if (destination != null) {
-                    CrisisCleanupTopAppBar(
-                        titleRes = destination.titleTextId,
-                        profilePictureUri = profilePictureUri,
-                        actionIcon = CrisisCleanupIcons.Account,
-                        actionResId = R.string.account,
-                        isActionAttention = isAccountExpired,
-                        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                            containerColor = Color.Transparent
-                        ),
-                        onActionClick = openAuthentication,
-                    )
-                }
-
                 CrisisCleanupNavHost(
                     navController = appState.navController,
-                    onBackClick = appState::onBackClick
+                    // TODO Back when search or table view is showing should go back?
+                    onBackClick = appState::onBackClick,
+                    onCasesAction = onCasesAction,
                 )
             }
 
             // TODO: We may want to add padding or spacer when the snackbar is shown so that
             //  content doesn't display behind it.
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AppHeader(
+    modifier: Modifier = Modifier,
+    @StringRes titleRes: Int = 0,
+    appHeaderState: AppHeaderState = AppHeaderState.Default,
+    profilePictureUri: String = "",
+    isAccountExpired: Boolean = false,
+    openAuthentication: () -> Unit = {},
+    searchQuery: String = "",
+    onQueryChange: (String) -> Unit = {},
+) {
+    when (appHeaderState) {
+        AppHeaderState.Default -> {
+            TopAppBarDefault(
+                modifier = modifier,
+                titleRes = titleRes,
+                profilePictureUri = profilePictureUri,
+                actionIcon = CrisisCleanupIcons.Account,
+                actionResId = R.string.account,
+                isActionAttention = isAccountExpired,
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.Transparent
+                ),
+                onActionClick = openAuthentication,
+            )
+        }
+
+        AppHeaderState.SearchCases -> {
+            TopAppBarSearchCases(
+                modifier = modifier,
+                q = searchQuery,
+                onQueryChange = onQueryChange,
+            )
+        }
+
+        AppHeaderState.TitleActions -> {
+            CrisisCleanupTopAppBar(
+                titleRes = titleRes,
+            )
+        }
+
+        else -> {}
     }
 }
 
