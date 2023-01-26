@@ -47,6 +47,7 @@ internal fun CasesRoute(
     val incidentsData by casesViewModel.incidentsData.collectAsStateWithLifecycle()
     if (incidentsData is IncidentsData.Incidents) {
         val isTableView by casesViewModel.isTableView
+        val isLayerView by casesViewModel.isLayerView
 
         val rememberOnCasesAction = remember(onCasesAction, casesViewModel) {
             { action: CasesAction ->
@@ -59,6 +60,18 @@ internal fun CasesRoute(
                         casesViewModel.setContentViewType(true)
                     }
 
+                    CasesAction.Layers -> {
+                        casesViewModel.toggleLayersView()
+                    }
+
+                    CasesAction.ZoomToInteractive -> {
+                        // TODO
+                    }
+
+                    CasesAction.ZoomToIncident -> {
+                        // TODO
+                    }
+
                     else -> {
                         onCasesAction(action)
                     }
@@ -68,7 +81,8 @@ internal fun CasesRoute(
         CasesScreen(
             modifier,
             rememberOnCasesAction,
-            isTableView,
+            isTableView = isTableView,
+            isLayerView = isLayerView,
         )
     } else {
         val isLoading = incidentsData is IncidentsData.Loading
@@ -110,6 +124,7 @@ internal fun CasesScreen(
     modifier: Modifier = Modifier,
     onCasesAction: (CasesAction) -> Unit = {},
     isTableView: Boolean = false,
+    isLayerView: Boolean = false,
     latLngInitial: LatLng = LatLng(40.272621, -96.012327),
 ) {
     Box(modifier.then(Modifier.fillMaxSize())) {

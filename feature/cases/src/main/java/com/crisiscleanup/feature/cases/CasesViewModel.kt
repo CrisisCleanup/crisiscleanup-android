@@ -28,6 +28,13 @@ class CasesViewModel @Inject constructor(
         this.isTableView.value = isTableView
     }
 
+    var isLayerView = mutableStateOf(false)
+        private set
+
+    fun toggleLayersView() {
+        isLayerView.value = !isLayerView.value
+    }
+
     val isLoadingIncidents = incidentsRepository.isLoading
 
     // TODO Save and load from prefs later.
