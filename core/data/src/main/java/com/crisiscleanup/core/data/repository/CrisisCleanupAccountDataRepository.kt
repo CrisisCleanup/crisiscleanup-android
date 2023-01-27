@@ -31,6 +31,7 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
     }
 
     override suspend fun setAccount(
+        id: Long,
         accessToken: String,
         email: String,
         firstName: String,
@@ -40,6 +41,7 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
     ) {
         accessTokenCached = accessToken
         dataSource.setAccount(
+            id,
             accessToken,
             email,
             firstName,

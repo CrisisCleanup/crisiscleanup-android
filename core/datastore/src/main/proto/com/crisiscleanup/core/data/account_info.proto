@@ -10,4 +10,5 @@ message AccountInfo {
   string last_name = 4;
   int64 expiry_seconds = 5;
   string profile_picture_uri = 6;
+  int64 id = 7;
 }

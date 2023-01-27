@@ -27,6 +27,7 @@ class AccountInfoDataSource @Inject constructor(
                 if (it.profilePictureUri?.isEmpty() == true) defaultProfilePictureUri(fullName)
                 else it.profilePictureUri
             AccountData(
+                id = it.id,
                 accessToken = it.accessToken,
                 tokenExpiry = Instant.fromEpochSeconds(it.expirySeconds),
                 fullName = fullName,
@@ -35,9 +36,10 @@ class AccountInfoDataSource @Inject constructor(
             )
         }
 
-    suspend fun clearAccount() = setAccount("", "", "", "", 0, "")
+    suspend fun clearAccount() = setAccount(0, "", "", "", "", 0, "")
 
     suspend fun setAccount(
+        id: Long,
         accessToken: String,
         email: String,
         firstName: String,
@@ -47,6 +49,7 @@ class AccountInfoDataSource @Inject constructor(
     ) {
         dataStore.updateData {
             it.copy {
+                this.id = id
                 this.accessToken = accessToken
                 this.email = email
                 this.firstName = firstName

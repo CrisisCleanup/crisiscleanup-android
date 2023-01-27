@@ -31,6 +31,7 @@ class AccountInfoDataSourceTest {
     @Test
     fun setAccount_clearAccount() = runTest {
         subject.setAccount(
+            523,
             "access-token",
             "email",
             "first",
@@ -39,6 +40,7 @@ class AccountInfoDataSourceTest {
             "profile-picture-url",
         )
         subject.accountData.first().run {
+            assertEquals(523, id)
             assertEquals("access-token", accessToken)
             assertEquals("first last", fullName)
             assertEquals(125512586, tokenExpiry.epochSeconds)
@@ -46,6 +48,7 @@ class AccountInfoDataSourceTest {
 
         subject.clearAccount()
         subject.accountData.first().run {
+            assertEquals(0, id)
             assertEquals("", accessToken)
             assertEquals("", fullName)
             assertEquals(0, tokenExpiry.epochSeconds)

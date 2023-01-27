@@ -32,6 +32,7 @@ interface AccountDataRepository {
      * Set authenticated account info
      */
     suspend fun setAccount(
+        id: Long,
         accessToken: String,
         email: String,
         firstName: String,

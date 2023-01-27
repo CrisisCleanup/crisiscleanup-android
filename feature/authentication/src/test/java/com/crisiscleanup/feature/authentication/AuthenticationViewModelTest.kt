@@ -66,6 +66,7 @@ class AuthenticationViewModelTest {
 
         coEvery {
             accountDataRepository.setAccount(
+                id = any(),
                 accessToken = any(),
                 email = any(),
                 firstName = any(),
@@ -81,6 +82,7 @@ class AuthenticationViewModelTest {
     val emptyLoginData = LoginInputData()
 
     val nonEmptyAccountData = AccountData(
+        id = 19,
         "access-token",
         Clock.System.now().plus(1000.seconds),
         "display-name",
@@ -156,6 +158,7 @@ class AuthenticationViewModelTest {
         val nowMillis = Clock.System.now().epochSeconds
         coVerify(exactly = 1) {
             accountDataRepository.setAccount(
+                id = 534,
                 accessToken = "access-token",
                 email = "email@address.com",
                 firstName = "first-name",

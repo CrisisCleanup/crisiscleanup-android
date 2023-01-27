@@ -13,7 +13,11 @@ import com.crisiscleanup.core.network.CrisisCleanupAuthApi
 import com.crisiscleanup.feature.authentication.model.AuthenticationState
 import com.crisiscleanup.feature.authentication.model.LoginInputData
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -136,6 +140,7 @@ class AuthenticationViewModel @Inject constructor(
                         it.fileTypeT == "fileTypes.user_profile_picture"
                     }?.largeThumbnailUrl ?: ""
                     accountDataRepository.setAccount(
+                        id = claims.id,
                         accessToken = accessToken,
                         email = claims.email,
                         firstName = claims.firstName,

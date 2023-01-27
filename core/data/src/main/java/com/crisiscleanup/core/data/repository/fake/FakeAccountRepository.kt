@@ -14,6 +14,7 @@ import kotlinx.datetime.Instant
  * For specifying account information (without needing internet)
  */
 class FakeAccountRepository(
+    private var id: Long = 3513,
     private var accessToken: String = "access-token",
     private var email: String = "email@address.com",
     private var firstName: String = "First",
@@ -34,9 +35,10 @@ class FakeAccountRepository(
         it.accessToken.isNotEmpty()
     }
 
-    override suspend fun clearAccount() = setAccount("", "", "", "", 0, "")
+    override suspend fun clearAccount() = setAccount(0, "", "", "", "", 0, "")
 
     override suspend fun setAccount(
+        id: Long,
         accessToken: String,
         email: String,
         firstName: String,
@@ -44,6 +46,7 @@ class FakeAccountRepository(
         expirySeconds: Long,
         profilePictureUri: String,
     ) {
+        this.id = id
         this.accessToken = accessToken
         this.email = email
         this.firstName = firstName
@@ -54,6 +57,7 @@ class FakeAccountRepository(
         current.let {
             _accountData.tryEmit(
                 it.copy(
+                    id = this.id,
                     accessToken = this.accessToken,
                     fullName = "${this.firstName} ${this.lastName}".trim(),
                     tokenExpiry = Instant.fromEpochSeconds(this.expirySeconds),

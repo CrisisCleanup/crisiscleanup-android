@@ -38,6 +38,7 @@ class CrisisCleanupAccountDataRepositoryTest {
         subject.accountData.first().let {
             assertEquals(
                 AccountData(
+                    id = 0,
                     accessToken = "",
                     fullName = "",
                     tokenExpiry = Instant.fromEpochSeconds(0),
@@ -54,6 +55,7 @@ class CrisisCleanupAccountDataRepositoryTest {
     @Test
     fun setAccount_clearAccount_delegatesTo_dataSource() = runTest {
         subject.setAccount(
+            5434,
             "at",
             "em",
             "fn",
@@ -62,6 +64,7 @@ class CrisisCleanupAccountDataRepositoryTest {
             "pp",
         )
         var expectedData = AccountData(
+            id = 5434,
             accessToken = "at",
             fullName = "fn ln",
             tokenExpiry = Instant.fromEpochSeconds(6235234341),
@@ -76,6 +79,7 @@ class CrisisCleanupAccountDataRepositoryTest {
 
         subject.clearAccount()
         expectedData = AccountData(
+            id = 0,
             accessToken = "",
             fullName = "",
             tokenExpiry = Instant.fromEpochSeconds(0),
