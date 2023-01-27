@@ -2,7 +2,10 @@ package com.crisiscleanup.core.appheader
 
 import androidx.compose.runtime.State
 
-interface AppHeaderBar {
+/**
+ * State for app header UI
+ */
+interface AppHeaderUiState {
     val appHeaderState: State<AppHeaderState>
 
     val title: State<String>

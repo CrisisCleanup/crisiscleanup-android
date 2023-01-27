@@ -2,6 +2,7 @@
 <resources>
     <string name="cases">Cases</string>
     <string name="select_incident">Select Incident</string>
+    <string name="change_incident">Change incident</string>
     <string name="search">Search</string>
     <string name="table_view">Table view</string>
     <string name="map_view">Map view</string>
@@ -12,4 +13,6 @@
     <string name="create_case">New case</string>
     <string name="issues_loading_incidents">Unable to load incidents. We could be experiencing server issues or you may not have a reliable internet connection.</string>
     <string name="retry_load_incidents">Retry</string>
+    <string name="no_incidents_to_select">There are no incidents.</string>
+    <string name="close">Close</string>
 </resources>

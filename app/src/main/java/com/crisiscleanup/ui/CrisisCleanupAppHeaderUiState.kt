@@ -1,13 +1,13 @@
 package com.crisiscleanup.ui
 
 import androidx.compose.runtime.mutableStateOf
-import com.crisiscleanup.core.appheader.AppHeaderBar
 import com.crisiscleanup.core.appheader.AppHeaderState
+import com.crisiscleanup.core.appheader.AppHeaderUiState
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class CrisisCleanupAppHeaderBar @Inject constructor() : AppHeaderBar {
+class CrisisCleanupAppHeaderUiState @Inject constructor() : AppHeaderUiState {
     override var appHeaderState = mutableStateOf(AppHeaderState.Default)
         private set
 

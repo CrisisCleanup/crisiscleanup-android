@@ -6,9 +6,6 @@ plugins {
 }
 
 android {
-    buildFeatures {
-        buildConfig = true
-    }
     namespace = "com.crisiscleanup.feature.cases"
 }
 

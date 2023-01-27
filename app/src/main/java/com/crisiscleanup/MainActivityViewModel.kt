@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.MainActivityUiState.Loading
 import com.crisiscleanup.MainActivityUiState.Success
-import com.crisiscleanup.core.appheader.AppHeaderBar
+import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
@@ -22,7 +22,7 @@ class MainActivityViewModel @Inject constructor(
     localAppPreferencesRepository: LocalAppPreferencesRepository,
     accountDataRepository: AccountDataRepository,
     private val incidentsRepository: IncidentsRepository,
-    val appHeaderBar: AppHeaderBar,
+    val appHeaderUiState: AppHeaderUiState,
 ) : ViewModel() {
     val uiState: StateFlow<MainActivityUiState> = localAppPreferencesRepository.userData.map {
         Success(it)

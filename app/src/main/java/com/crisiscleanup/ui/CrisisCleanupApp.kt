@@ -85,8 +85,9 @@ fun CrisisCleanupApp(
                 val isAccountExpired by remember {
                     derivedStateOf { accountData.tokenExpiry < Clock.System.now() }
                 }
-                val appHeaderState by remember { mainActivityViewModel.appHeaderBar.appHeaderState }
-                val appHeaderTitle by remember { mainActivityViewModel.appHeaderBar.title }
+                val appHeaderBar = mainActivityViewModel.appHeaderUiState
+                val appHeaderState by remember { appHeaderBar.appHeaderState }
+                val appHeaderTitle by remember { appHeaderBar.title }
 
                 val onCasesAction = remember(mainActivityViewModel) {
                     { casesAction: CasesAction ->
@@ -95,7 +96,7 @@ fun CrisisCleanupApp(
                                 val isOnSearch = appHeaderState == AppHeaderState.SearchCases
                                 val toggleState = if (isOnSearch) AppHeaderState.Default
                                 else AppHeaderState.SearchCases
-                                mainActivityViewModel.appHeaderBar.setState(toggleState)
+                                mainActivityViewModel.appHeaderUiState.setState(toggleState)
                             }
 
                             else -> {}

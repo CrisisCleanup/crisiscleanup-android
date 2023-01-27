@@ -1,5 +1,7 @@
 package com.crisiscleanup.core.data.di
 
+import com.crisiscleanup.core.data.IncidentSelectManager
+import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupAccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
@@ -40,4 +42,8 @@ interface DataModule {
     fun bindsIncidentsRepository(
         incidentsRepository: OfflineFirstIncidentsRepository
     ): IncidentsRepository
+
+    @Singleton
+    @Binds
+    fun bindsIncidentSelector(selector: IncidentSelectManager): IncidentSelector
 }

@@ -1,13 +1,13 @@
 package com.crisiscleanup.di
 
 import com.crisiscleanup.CrisisCleanupAppEnv
-import com.crisiscleanup.core.appheader.AppHeaderBar
+import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.network.RetrofitInterceptorProvider
 import com.crisiscleanup.log.CrisisCleanupAppLogger
 import com.crisiscleanup.network.CrisisCleanupInterceptorProvider
-import com.crisiscleanup.ui.CrisisCleanupAppHeaderBar
+import com.crisiscleanup.ui.CrisisCleanupAppHeaderUiState
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -33,5 +33,5 @@ interface AppModule {
 
     @Singleton
     @Binds
-    fun bindsAppHeaderBar(headerBar: CrisisCleanupAppHeaderBar): AppHeaderBar
+    fun bindsAppHeaderUiState(headerUiState: CrisisCleanupAppHeaderUiState): AppHeaderUiState
 }

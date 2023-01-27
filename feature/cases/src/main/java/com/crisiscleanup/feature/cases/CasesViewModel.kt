@@ -1,10 +1,10 @@
 package com.crisiscleanup.feature.cases
 
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.crisiscleanup.core.appheader.AppHeaderBar
+import com.crisiscleanup.core.appheader.AppHeaderUiState
+import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.Incident
@@ -20,8 +20,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CasesViewModel @Inject constructor(
-    private val incidentsRepository: IncidentsRepository,
-    val appHeaderBar: AppHeaderBar,
+    incidentsRepository: IncidentsRepository,
+    private val incidentSelector: IncidentSelector,
+    private val appHeaderUiState: AppHeaderUiState,
 ) : ViewModel() {
     var isTableView = mutableStateOf(false)
         private set
@@ -37,17 +38,16 @@ class CasesViewModel @Inject constructor(
         isLayerView.value = !isLayerView.value
     }
 
+    val selectedIncidentId: Long
+        get() = incidentSelector.incident.id
+
     val isLoadingIncidents = incidentsRepository.isLoading
 
-    var selectedIncident: MutableState<Incident> = mutableStateOf(EmptyIncident)
-        private set
-
-    // TODO Save and load from prefs later.
-    var incidentId = mutableStateOf(EmptyIncident.id)
-        private set
+    private fun updateAppTitle() = appHeaderUiState.setTitle(incidentSelector.incident.name)
 
     val incidentsData = incidentsRepository.incidents.map { incidents ->
-        var selectedId = incidentId.value
+        // TODO Save and load from prefs
+        var selectedId = incidentSelector.incidentId
 
         // Update incident data or select first if current incident (ID) not found
         var incident = incidents.find { it.id == selectedId } ?: EmptyIncident
@@ -56,13 +56,11 @@ class CasesViewModel @Inject constructor(
         }
         selectedId = incident.id
 
-        // TODO Assign atomically (or use a single value)
-        incidentId.value = selectedId
-        selectedIncident.value = incident
+        incidentSelector.incident = incident
 
-        appHeaderBar.setTitle(selectedIncident.value.name)
+        updateAppTitle()
 
-        if (incidentId.value < 0) IncidentsData.Empty
+        if (selectedIncidentId < 0) IncidentsData.Empty
         else IncidentsData.Incidents(incidents)
     }.stateIn(
         scope = viewModelScope,
@@ -87,15 +85,14 @@ class CasesViewModel @Inject constructor(
         casesSearchQuery.value = q
     }
 
-    suspend fun selectIncident(incident: Incident) {
-        // TODO Disallow double select
+    fun selectIncident(incident: Incident) {
+        // TODO Atomic set
         if (incidentsData.value is IncidentsData.Incidents) {
             val incidents = (incidentsData.value as IncidentsData.Incidents).incidents
             val verifiedIncident = incidents.find { it.id == incident.id }
             if (verifiedIncident != null) {
-                // TODO Atomic set
-                selectedIncident.value = incident
-                incidentId.value = incident.id
+                incidentSelector.incident = incident
+                updateAppTitle()
             }
         }
     }
