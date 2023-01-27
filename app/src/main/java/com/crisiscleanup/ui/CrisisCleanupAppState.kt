@@ -19,6 +19,7 @@ import com.crisiscleanup.core.data.util.NetworkMonitor
 import com.crisiscleanup.core.ui.TrackDisposableJank
 import com.crisiscleanup.feature.cases.navigation.casesRoute
 import com.crisiscleanup.feature.cases.navigation.navigateToCases
+import com.crisiscleanup.feature.cases.navigation.selectIncidentRoute
 import com.crisiscleanup.feature.dashboard.navigation.dashboardRoute
 import com.crisiscleanup.feature.dashboard.navigation.navigateToDashboard
 import com.crisiscleanup.feature.menu.navigation.menuRoute
@@ -26,7 +27,10 @@ import com.crisiscleanup.feature.menu.navigation.navigateToMenu
 import com.crisiscleanup.feature.team.navigation.navigateToTeam
 import com.crisiscleanup.feature.team.navigation.teamRoute
 import com.crisiscleanup.navigation.TopLevelDestination
-import com.crisiscleanup.navigation.TopLevelDestination.*
+import com.crisiscleanup.navigation.TopLevelDestination.CASES
+import com.crisiscleanup.navigation.TopLevelDestination.DASHBOARD
+import com.crisiscleanup.navigation.TopLevelDestination.MENU
+import com.crisiscleanup.navigation.TopLevelDestination.TEAM
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
@@ -64,6 +68,17 @@ class CrisisCleanupAppState(
             menuRoute -> MENU
             else -> null
         }
+
+    /**
+     * Routes (not top level) that should show app header.
+     */
+    private val showHeaderRoutes = setOf(
+        selectIncidentRoute
+    )
+    val shouldShowHeader: Boolean
+        @Composable
+        get() = currentTopLevelDestination != null ||
+                showHeaderRoutes.contains(currentDestination?.route)
 
     val shouldShowBottomBar: Boolean
         get() = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact ||

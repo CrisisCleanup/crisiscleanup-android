@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="cases">Cases</string>
+    <string name="select_incident">Select Incident</string>
     <string name="search">Search</string>
     <string name="table_view">Table view</string>
     <string name="map_view">Map view</string>

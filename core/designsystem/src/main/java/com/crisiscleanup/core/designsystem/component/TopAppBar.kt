@@ -3,6 +3,7 @@
 package com.crisiscleanup.core.designsystem.component
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
@@ -132,7 +133,11 @@ fun TopAppBarDefault(
 ) {
     val titleContent = @Composable {
         val text = if (titleResId == 0) title else stringResource(titleResId)
-        Text(text)
+        Text(
+            modifier = if (onNavigationClick == null) Modifier
+            else Modifier.clickable(onClick = onNavigationClick),
+            text = text,
+        )
     }
     val navigationContent: (@Composable (() -> Unit)) = if (navIcon == null) {
         @Composable {}

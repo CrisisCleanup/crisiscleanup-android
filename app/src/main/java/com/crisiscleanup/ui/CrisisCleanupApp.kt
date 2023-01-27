@@ -32,6 +32,7 @@ import com.crisiscleanup.core.designsystem.icon.Icon.DrawableResourceIcon
 import com.crisiscleanup.core.designsystem.icon.Icon.ImageVectorIcon
 import com.crisiscleanup.feature.authentication.AuthenticateScreen
 import com.crisiscleanup.feature.cases.CasesViewModel
+import com.crisiscleanup.feature.cases.navigation.navigateToSelectIncident
 import com.crisiscleanup.feature.cases.ui.CasesAction
 import com.crisiscleanup.navigation.CrisisCleanupNavHost
 import com.crisiscleanup.navigation.TopLevelDestination
@@ -106,6 +107,15 @@ fun CrisisCleanupApp(
                 val updateCasesSearchQuery = remember(casesViewModel) {
                     { q: String -> casesViewModel.updateCasesSearchQuery(q) }
                 }
+
+                val openIncidentsSelect = remember(appHeaderState) {
+                    {
+                        if (appHeaderState == AppHeaderState.Default) {
+                            appState.navController.navigateToSelectIncident()
+                        }
+                    }
+                }
+
                 NavigableContent(
                     snackbarHostState,
                     appState,
@@ -114,6 +124,7 @@ fun CrisisCleanupApp(
                     { openAuthentication = true },
                     profilePictureUri,
                     isAccountExpired,
+                    openIncidentsSelect,
                     onCasesAction,
                     casesSearchQuery,
                     updateCasesSearchQuery,
@@ -173,6 +184,7 @@ private fun NavigableContent(
     openAuthentication: () -> Unit,
     profilePictureUri: String,
     isAccountExpired: Boolean,
+    onHeaderNavClick: () -> Unit,
     onCasesAction: (CasesAction) -> Unit = { },
     searchQuery: () -> String = { "" },
     onQueryChange: (String) -> Unit = {},
@@ -186,14 +198,17 @@ private fun NavigableContent(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            val destination = appState.currentTopLevelDestination
-            if (destination != null && appHeaderState != AppHeaderState.None) {
+            if (appHeaderState != AppHeaderState.None && appState.shouldShowHeader) {
+                val titleResId = appState.currentTopLevelDestination?.titleTextId ?: 0
+                val title = if (titleResId != 0) stringResource(titleResId) else headerTitle
                 AppHeader(
-                    title = headerTitle,
+                    modifier = Modifier.testTag("CrisisCleanupAppHeader"),
+                    title = title,
                     appHeaderState = appHeaderState,
                     profilePictureUri = profilePictureUri,
                     isAccountExpired = isAccountExpired,
                     openAuthentication = openAuthentication,
+                    onNavClick = onHeaderNavClick,
                     searchQuery = searchQuery,
                     onQueryChange = onQueryChange,
                 )
@@ -246,7 +261,10 @@ private fun NavigableContent(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
+@OptIn(
+    ExperimentalMaterial3Api::class,
+    ExperimentalComposeUiApi::class
+)
 @Composable
 private fun AppHeader(
     modifier: Modifier = Modifier,
@@ -256,6 +274,7 @@ private fun AppHeader(
     profilePictureUri: String = "",
     isAccountExpired: Boolean = false,
     openAuthentication: () -> Unit = {},
+    onNavClick: () -> Unit = {},
     searchQuery: () -> String = { "" },
     onQueryChange: (String) -> Unit = {},
 ) {
@@ -269,10 +288,8 @@ private fun AppHeader(
                 actionIcon = CrisisCleanupIcons.Account,
                 actionResId = R.string.account,
                 isActionAttention = isAccountExpired,
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.Transparent
-                ),
                 onActionClick = openAuthentication,
+                onNavigationClick = onNavClick,
             )
         }
 

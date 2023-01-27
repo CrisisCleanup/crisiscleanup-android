@@ -24,7 +24,7 @@ enum class TopLevelDestination(
         selectedIcon = DrawableResourceIcon(CrisisCleanupIcons.Cases),
         unselectedIcon = DrawableResourceIcon(CrisisCleanupIcons.Cases),
         iconTextId = casesR.string.cases,
-        titleTextId = casesR.string.cases
+        titleTextId = 0,
     ),
     DASHBOARD(
         selectedIcon = DrawableResourceIcon(CrisisCleanupIcons.Dashboard),

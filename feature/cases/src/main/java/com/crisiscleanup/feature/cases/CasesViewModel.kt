@@ -86,6 +86,19 @@ class CasesViewModel @Inject constructor(
     fun updateCasesSearchQuery(q: String) {
         casesSearchQuery.value = q
     }
+
+    suspend fun selectIncident(incident: Incident) {
+        // TODO Disallow double select
+        if (incidentsData.value is IncidentsData.Incidents) {
+            val incidents = (incidentsData.value as IncidentsData.Incidents).incidents
+            val verifiedIncident = incidents.find { it.id == incident.id }
+            if (verifiedIncident != null) {
+                // TODO Atomic set
+                selectedIncident.value = incident
+                incidentId.value = incident.id
+            }
+        }
+    }
 }
 
 sealed interface IncidentsData {
