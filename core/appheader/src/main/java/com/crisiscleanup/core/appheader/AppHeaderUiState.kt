@@ -1,14 +1,14 @@
 package com.crisiscleanup.core.appheader
 
-import androidx.compose.runtime.State
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * State for app header UI
  */
 interface AppHeaderUiState {
-    val appHeaderState: State<AppHeaderState>
+    val appHeaderState: StateFlow<AppHeaderState>
 
-    val title: State<String>
+    val title: StateFlow<String>
 
     fun setState(state: AppHeaderState)
     fun setTitle(title: String)

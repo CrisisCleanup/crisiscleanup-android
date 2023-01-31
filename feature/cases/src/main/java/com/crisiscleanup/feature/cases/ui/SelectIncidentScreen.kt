@@ -3,14 +3,9 @@ package com.crisiscleanup.feature.cases.ui
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
@@ -35,7 +30,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.feature.cases.CasesViewModel
 import com.crisiscleanup.feature.cases.IncidentsData
@@ -49,117 +44,144 @@ internal fun SelectIncidentRoute(
     modifier: Modifier = Modifier,
     casesViewModel: CasesViewModel = hiltViewModel(),
     padding: Dp = 16.dp,
+    textPadding: Dp = 16.dp,
+    cornerRound: Dp = 4.dp,
 ) {
     val incidentsData by casesViewModel.incidentsData.collectAsStateWithLifecycle()
 
-    Dialog(onDismissRequest = onBackClick) {
-        Surface(
-            // TODO Wrap height in case content is smaller
-            modifier = modifier
-                .fillMaxHeight(0.8f),
-            // TODO Use style value for round
-            shape = RoundedCornerShape(4.dp),
-            color = MaterialTheme.colorScheme.surface,
-        ) {
-            Column(modifier) {
-                Text(
-                    // TODO Use style for padding
-                    modifier = modifier.padding(16.dp),
-                    text = stringResource(R.string.change_incident),
-                    style = MaterialTheme.typography.headlineMedium,
-                )
+    // TODO Sometimes on first open the (entire) dialog does not expand fully.
+    //      Could be due to incidentsData changing state?
 
-                var enableInput by rememberSaveable { mutableStateOf(true) }
-
-                when (incidentsData) {
-                    IncidentsData.Loading -> {
-                        Box(modifier.fillMaxSize()) {
-                            CircularProgressIndicator(Modifier.align(Alignment.Center))
+    Dialog(
+        onDismissRequest = onBackClick,
+        content = {
+            Surface(
+                modifier = modifier.heightIn(max = 480.dp),
+                shape = RoundedCornerShape(cornerRound),
+                color = MaterialTheme.colorScheme.surface,
+            ) {
+                Column(modifier) {
+                    when (incidentsData) {
+                        is IncidentsData.Incidents -> {
+                            Text(
+                                modifier = modifier.padding(textPadding),
+                                text = stringResource(R.string.change_incident),
+                                style = MaterialTheme.typography.titleLarge
+                            )
                         }
                     }
 
-                    is IncidentsData.Incidents -> {
-                        val cs = rememberCoroutineScope()
-                        val onSelectIncident = remember(casesViewModel) {
-                            { incident: Incident ->
-                                if (enableInput) {
-                                    enableInput = false
-                                    cs.launch {
-                                        casesViewModel.selectIncident(incident)
-                                        onBackClick()
-                                    }
-                                }
+                    when (incidentsData) {
+                        IncidentsData.Loading -> {
+                            Box(
+                                modifier
+                                    .padding(padding)
+                                    .align(Alignment.CenterHorizontally)
+                            ) {
+                                CircularProgressIndicator()
                             }
                         }
-                        val incidents = (incidentsData as IncidentsData.Incidents).incidents
-                        val selectedIncidentId by casesViewModel.incidentSelector.incidentId.collectAsStateWithLifecycle()
-                        IncidentSelectContent(
-                            modifier,
-                            selectedIncidentId,
-                            incidents,
-                            onSelectIncident,
-                        )
-                    }
 
-                    else -> {
-                        Text(
-                            // TODO Use constant for padding
-                            modifier = modifier.padding(16.dp),
-                            text = stringResource(R.string.no_incidents_to_select)
+                        is IncidentsData.Incidents -> {
+                            val incidents = (incidentsData as IncidentsData.Incidents).incidents
+                            IncidentSelectContent(
+                                casesViewModel,
+                                incidents,
+                                modifier,
+                                onBackClick,
+                                padding,
+                            )
+
+                        }
+
+                        else -> NoIncidentsContent(
+                            modifier,
+                            onBackClick,
+                            padding,
                         )
                     }
                 }
-
-                Spacer(modifier.weight(1f))
-                CrisisCleanupButton(
-                    modifier = modifier
-                        .padding(padding)
-                        .align(Alignment.End),
-                    onClick = onBackClick,
-                    enabled = enableInput,
-                    textResId = R.string.close
-                )
             }
         }
+    )
+}
+
+@OptIn(ExperimentalLifecycleComposeApi::class)
+@Composable
+private fun ColumnScope.IncidentSelectContent(
+    casesViewModel: CasesViewModel,
+    incidents: List<Incident>,
+    modifier: Modifier = Modifier,
+    onBackClick: () -> Unit = {},
+    padding: Dp = 16.dp,
+) {
+    var enableInput by rememberSaveable { mutableStateOf(true) }
+    val cs = rememberCoroutineScope()
+    val onSelectIncident = remember(casesViewModel) {
+        { incident: Incident ->
+            if (enableInput) {
+                enableInput = false
+                cs.launch {
+                    casesViewModel.selectIncident(incident)
+                    onBackClick()
+                }
+            }
+        }
+    }
+    val selectedIncidentId by casesViewModel.incidentSelector.incidentId.collectAsStateWithLifecycle()
+
+    Box(Modifier.weight(weight = 1f, fill = false)) {
+        LazyColumn(
+            modifier = modifier
+                .testTag("cases:incidents"),
+        ) {
+            incidents.forEach { incident ->
+                val id = incident.id
+                val isSelected = id == selectedIncidentId
+                val fontWeight = if (isSelected) FontWeight.Bold else null
+                item(key = id) {
+                    Text(
+                        modifier = modifier
+                            .fillParentMaxWidth()
+                            .clickable {
+                                onSelectIncident(incident)
+                            }
+                            .padding(padding),
+                        text = incident.name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = fontWeight,
+                    )
+                }
+            }
+        }
+    }
+    Box(modifier.align(Alignment.End)) {
+        CrisisCleanupTextButton(
+            modifier = modifier
+                .padding(padding),
+            onClick = onBackClick,
+            textResId = R.string.close,
+        )
     }
 }
 
 @Composable
-private fun IncidentSelectContent(
+private fun ColumnScope.NoIncidentsContent(
     modifier: Modifier = Modifier,
-    selectedIncidentId: Long = -1,
-    incidents: List<Incident>,
-    onIncidentSelect: (Incident) -> Unit = {},
-    spacing: Dp = 16.dp,
+    onBackClick: () -> Unit = {},
+    padding: Dp = 16.dp,
+    textPadding: Dp = 16.dp,
 ) {
-    LazyColumn(
+    Text(
+        modifier = modifier.padding(textPadding),
+        text = stringResource(R.string.no_incidents_to_select),
+        style = MaterialTheme.typography.titleLarge,
+    )
+    CrisisCleanupTextButton(
         modifier = modifier
-            .testTag("cases:incidents"),
-    ) {
-        incidents.forEach { incident ->
-            val id = incident.id
-            val isSelected = id == selectedIncidentId
-            val fontWeight = if (isSelected) FontWeight.Bold else null
-            item(key = id) {
-                Text(
-                    modifier = modifier
-                        // TODO Wrap width so is automatic
-                        .sizeIn(minWidth = 200.dp)
-                        .fillParentMaxWidth()
-                        // TODO Use style for item padding
-                        .clickable {
-                            onIncidentSelect(incident)
-                        }
-                        .padding(spacing),
-                    text = incident.name,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = fontWeight,
-                )
-            }
-        }
-
-        item {
-            Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.safeDrawing))
-        }
-    }
+            .padding(padding)
+            .align(Alignment.End),
+        onClick = onBackClick,
+        textResId = R.string.close,
+    )
 }

@@ -13,6 +13,6 @@
     <string name="create_case">New case</string>
     <string name="issues_loading_incidents">Unable to load incidents. We could be experiencing server issues or you may not have a reliable internet connection.</string>
     <string name="retry_load_incidents">Retry</string>
-    <string name="no_incidents_to_select">There are no incidents.</string>
+    <string name="no_incidents_to_select">Incidents have gone.</string>
     <string name="close">Close</string>
 </resources>

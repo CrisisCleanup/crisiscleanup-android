@@ -19,7 +19,6 @@ import com.crisiscleanup.core.data.util.NetworkMonitor
 import com.crisiscleanup.core.ui.TrackDisposableJank
 import com.crisiscleanup.feature.cases.navigation.casesRoute
 import com.crisiscleanup.feature.cases.navigation.navigateToCases
-import com.crisiscleanup.feature.cases.navigation.selectIncidentRoute
 import com.crisiscleanup.feature.dashboard.navigation.dashboardRoute
 import com.crisiscleanup.feature.dashboard.navigation.navigateToDashboard
 import com.crisiscleanup.feature.menu.navigation.menuRoute
@@ -70,15 +69,12 @@ class CrisisCleanupAppState(
         }
 
     /**
-     * Routes (not top level) that should show app header.
+     * Routes that should hide the app header.
      */
-    private val showHeaderRoutes = setOf(
-        selectIncidentRoute
-    )
-    val shouldShowHeader: Boolean
+    private val hideHeaderRoutes = setOf<String>()
+    val shouldHideHeader: Boolean
         @Composable
-        get() = currentTopLevelDestination != null ||
-                showHeaderRoutes.contains(currentDestination?.route)
+        get() = hideHeaderRoutes.contains(currentDestination?.route)
 
     val shouldShowBottomBar: Boolean
         get() = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact ||

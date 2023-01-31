@@ -72,6 +72,24 @@ fun CrisisCleanupButton(
     }
 }
 
+@Composable
+fun CrisisCleanupTextButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {},
+    enabled: Boolean = true,
+    @StringRes
+    textResId: Int = 0,
+    text: String = "",
+) {
+    TextButton(
+        modifier = modifier.sizeIn(minHeight = buttonMinHeight),
+        onClick = onClick,
+        enabled = enabled,
+    ) {
+        Text(textResId, text)
+    }
+}
+
 @Preview
 @Composable
 fun CrisisCleanupButtonPreview() {

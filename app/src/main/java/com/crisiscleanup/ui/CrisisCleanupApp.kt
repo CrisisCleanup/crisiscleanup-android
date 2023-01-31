@@ -86,8 +86,8 @@ fun CrisisCleanupApp(
                     derivedStateOf { accountData.tokenExpiry < Clock.System.now() }
                 }
                 val appHeaderBar = mainActivityViewModel.appHeaderUiState
-                val appHeaderState by remember { appHeaderBar.appHeaderState }
-                val appHeaderTitle by remember { appHeaderBar.title }
+                val appHeaderState by appHeaderBar.appHeaderState.collectAsStateWithLifecycle()
+                val appHeaderTitle by appHeaderBar.title.collectAsStateWithLifecycle()
 
                 val onCasesAction = remember(mainActivityViewModel) {
                     { casesAction: CasesAction ->
@@ -199,7 +199,9 @@ private fun NavigableContent(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            if (appHeaderState != AppHeaderState.None && appState.shouldShowHeader) {
+            // TODO Profile recompose and optimize if necessary
+            val showTopBar = appHeaderState != AppHeaderState.None && !appState.shouldHideHeader
+            if (showTopBar) {
                 val titleResId = appState.currentTopLevelDestination?.titleTextId ?: 0
                 val title = if (titleResId != 0) stringResource(titleResId) else headerTitle
                 AppHeader(

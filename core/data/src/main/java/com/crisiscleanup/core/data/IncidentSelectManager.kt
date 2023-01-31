@@ -4,7 +4,6 @@ import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.Incident
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -18,14 +17,15 @@ interface IncidentSelector {
 
 @Singleton
 class IncidentSelectManager @Inject constructor() : IncidentSelector {
-    private var _incident = MutableStateFlow(EmptyIncident)
-    override val incident = _incident.asStateFlow()
+    override var incident = MutableStateFlow(EmptyIncident)
+        private set
 
-    private var _incidentId = MutableStateFlow(_incident.value.id)
-    override val incidentId: StateFlow<Long> = _incidentId
+    override var incidentId = MutableStateFlow(EmptyIncident.id)
+        private set
 
     override fun setIncident(incident: Incident) {
-        _incident.value = incident
-        _incidentId.value = incident.id
+        // TODO Atomic set
+        this.incident.value = incident
+        incidentId.value = incident.id
     }
 }
