@@ -13,6 +13,7 @@ private val emptyUserData = UserData(
     darkThemeConfig = DarkThemeConfig.FOLLOW_SYSTEM,
     shouldHideOnboarding = false,
     syncAttempt = SyncAttempt(0, 0, 0),
+    selectedIncidentId = -1,
 )
 
 class TestLocalAppPreferencesRepository : LocalAppPreferencesRepository {
@@ -31,6 +32,12 @@ class TestLocalAppPreferencesRepository : LocalAppPreferencesRepository {
     override suspend fun setShouldHideOnboarding(shouldHideOnboarding: Boolean) {
         currentUserData.let { current ->
             _userData.tryEmit(current.copy(shouldHideOnboarding = shouldHideOnboarding))
+        }
+    }
+
+    override suspend fun setSelectedIncident(id: Long) {
+        currentUserData.let { current ->
+            _userData.tryEmit(current.copy(selectedIncidentId = id))
         }
     }
 }

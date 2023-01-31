@@ -16,5 +16,8 @@ message UserPreferences {
   bool should_hide_onboarding = 1;
   DarkThemeConfigProto dark_theme_config = 2;
 
+  // General sync stats. Use for backoff in case of bad connection, errors, or other failures.
   SyncAttemptProto sync_attempt = 3;
+
+  int64 selected_incident_id = 4;
 }

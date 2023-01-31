@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.MainActivityUiState.Loading
 import com.crisiscleanup.MainActivityUiState.Success
 import com.crisiscleanup.core.appheader.AppHeaderUiState
+import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
@@ -13,7 +14,9 @@ import com.crisiscleanup.core.model.data.UserData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
@@ -21,6 +24,7 @@ import javax.inject.Inject
 class MainActivityViewModel @Inject constructor(
     localAppPreferencesRepository: LocalAppPreferencesRepository,
     accountDataRepository: AccountDataRepository,
+    private val incidentSelector: IncidentSelector,
     private val incidentsRepository: IncidentsRepository,
     val appHeaderUiState: AppHeaderUiState,
 ) : ViewModel() {
@@ -33,10 +37,6 @@ class MainActivityViewModel @Inject constructor(
     )
 
     val authState: StateFlow<AuthState> = accountDataRepository.accountData.map {
-        if (it.accessToken.isNotEmpty()) {
-            incidentsRepository.sync(false)
-        }
-
         if (it.accessToken.isNotEmpty()) AuthState.Authenticated(it)
         else AuthState.NotAuthenticated
     }.stateIn(
@@ -44,6 +44,12 @@ class MainActivityViewModel @Inject constructor(
         initialValue = AuthState.Loading,
         started = SharingStarted.WhileSubscribed()
     )
+
+    init {
+        incidentSelector.incidentId
+            .onEach { incidentsRepository.sync(false) }
+            .launchIn(viewModelScope)
+    }
 }
 
 sealed interface MainActivityUiState {

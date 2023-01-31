@@ -3,7 +3,6 @@ package com.crisiscleanup.core.database.di
 import android.content.Context
 import androidx.room.Room
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
-import com.crisiscleanup.core.database.dao.IncidentDaoPlus
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,10 +22,4 @@ object DatabaseModule {
         CrisisCleanupDatabase::class.java,
         "crisis-cleanup-database"
     ).build()
-
-    @Provides
-    @Singleton
-    fun providesIncidentDaoPlus(
-        db: CrisisCleanupDatabase
-    ) = IncidentDaoPlus(db)
 }

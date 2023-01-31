@@ -8,6 +8,8 @@ import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.OfflineFirstIncidentsRepository
 import com.crisiscleanup.core.data.repository.OfflineFirstLocalAppPreferencesRepository
+import com.crisiscleanup.core.data.repository.OfflineFirstWorksitesRepository
+import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.data.util.ConnectivityManagerNetworkMonitor
 import com.crisiscleanup.core.data.util.NetworkMonitor
 import dagger.Binds
@@ -46,4 +48,10 @@ interface DataModule {
     @Singleton
     @Binds
     fun bindsIncidentSelector(selector: IncidentSelectManager): IncidentSelector
+
+    @Singleton
+    @Binds
+    fun bindsWorksiteRepository(
+        worksitesRepository: OfflineFirstWorksitesRepository
+    ): WorksitesRepository
 }

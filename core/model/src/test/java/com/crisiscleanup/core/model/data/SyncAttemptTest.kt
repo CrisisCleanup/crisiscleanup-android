@@ -56,4 +56,23 @@ class SyncAttemptTest {
         assertTrue(syncAttempt.isBackingOff(0, 107))
         assertFalse(syncAttempt.isBackingOff(0, 108))
     }
+
+    @Test
+    fun shouldSyncPassively() {
+        // Not recent, not backing off
+        val notRecentNotBackingOff = SyncAttempt(10, 1000, 1)
+        assertTrue(notRecentNotBackingOff.shouldSyncPassively(100, 100, 1100))
+
+        // Recent, not backing off
+        val recentNotBackingOff = SyncAttempt(900, 1000, 1)
+        assertFalse(recentNotBackingOff.shouldSyncPassively(250, 100, 1149))
+
+        // Not recent, backing off
+        val notRecentBackingOff = SyncAttempt(10, 1000, 1)
+        assertFalse(notRecentBackingOff.shouldSyncPassively(100, 200, 1199))
+
+        // Recent, backing off
+        val recentBackingOff = SyncAttempt(800, 1000, 1)
+        assertFalse(recentBackingOff.shouldSyncPassively(250, 50, 1049))
+    }
 }

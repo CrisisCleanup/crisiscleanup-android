@@ -20,4 +20,9 @@ interface LocalAppPreferencesRepository {
      * Sets whether the user has completed the onboarding process.
      */
     suspend fun setShouldHideOnboarding(shouldHideOnboarding: Boolean)
+
+    /**
+     * Caches ID of selected incident.
+     */
+    suspend fun setSelectedIncident(id: Long)
 }

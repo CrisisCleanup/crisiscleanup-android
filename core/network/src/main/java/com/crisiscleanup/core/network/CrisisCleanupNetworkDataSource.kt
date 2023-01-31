@@ -2,6 +2,10 @@ package com.crisiscleanup.core.network
 
 import com.crisiscleanup.core.network.model.NetworkAuthResult
 import com.crisiscleanup.core.network.model.NetworkIncidentsResult
+import com.crisiscleanup.core.network.model.NetworkWorksitesCountResult
+import com.crisiscleanup.core.network.model.NetworkWorksitesFullResult
+import com.crisiscleanup.core.network.model.NetworkWorksitesShortResult
+import kotlinx.datetime.Instant
 
 interface CrisisCleanupAuthApi {
     suspend fun login(email: String, password: String): NetworkAuthResult
@@ -15,4 +19,20 @@ interface CrisisCleanupNetworkDataSource {
         limit: Int = 250,
         ordering: String = "-start_at"
     ): NetworkIncidentsResult
+
+    suspend fun getWorksites(
+        incidentId: Long,
+        limit: Int,
+        offset: Int,
+    ): NetworkWorksitesFullResult
+
+    suspend fun getWorksitesCount(
+        incidentId: Long,
+    ): NetworkWorksitesCountResult
+
+    suspend fun getWorksitesAll(
+        incidentId: Long,
+        updatedAtAfter: Instant?,
+        updatedAtBefore: Instant? = null,
+    ): NetworkWorksitesShortResult
 }

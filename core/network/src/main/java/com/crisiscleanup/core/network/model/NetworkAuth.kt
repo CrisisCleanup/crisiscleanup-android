@@ -3,15 +3,6 @@ package com.crisiscleanup.core.network.model
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-/**
- * General error from the API
- */
-@Serializable
-data class NetworkCrisisCleanupApiError(
-    val field: String,
-    val message: List<String>? = null,
-)
-
 @Serializable
 data class NetworkAuthPayload(
     val email: String,
@@ -36,20 +27,5 @@ data class NetworkAuthUserClaims(
     val firstName: String,
     @SerialName("last_name")
     val lastName: String,
-    val files: List<NetworkAuthUserFiles>?,
-)
-
-@Serializable
-class NetworkAuthUserFiles(
-    val id: Long,
-    val file: Long,
-    @SerialName("filename")
-    val fileName: String,
-    val url: String,
-    @SerialName("large_thumbnail_url")
-    val largeThumbnailUrl: String?,
-    @SerialName("file_type_t")
-    val fileTypeT: String,
-    @SerialName("mime_content_type")
-    val mimeContentType: String,
+    val files: List<NetworkFile>?,
 )

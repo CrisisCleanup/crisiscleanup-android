@@ -39,6 +39,7 @@ interface IncidentDao {
         incidentCrossRefs: List<IncidentIncidentLocationCrossRef>
     )
 
+    @Transaction
     @Query(
         """
     UPDATE incidents

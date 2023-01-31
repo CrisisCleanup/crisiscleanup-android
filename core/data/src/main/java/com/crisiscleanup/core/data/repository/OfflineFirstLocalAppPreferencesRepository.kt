@@ -19,4 +19,7 @@ class OfflineFirstLocalAppPreferencesRepository @Inject constructor(
 
     override suspend fun setShouldHideOnboarding(shouldHideOnboarding: Boolean) =
         preferencesDataSource.setShouldHideOnboarding(shouldHideOnboarding)
+
+    override suspend fun setSelectedIncident(id: Long) =
+        preferencesDataSource.setSelectedIncident(id)
 }

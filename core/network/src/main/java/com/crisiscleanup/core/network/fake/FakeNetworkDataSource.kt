@@ -4,6 +4,9 @@ import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkIncident
 import com.crisiscleanup.core.network.model.NetworkIncidentLocation
 import com.crisiscleanup.core.network.model.NetworkIncidentsResult
+import com.crisiscleanup.core.network.model.NetworkWorksitesCountResult
+import com.crisiscleanup.core.network.model.NetworkWorksitesFullResult
+import com.crisiscleanup.core.network.model.NetworkWorksitesShortResult
 import kotlinx.datetime.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -44,6 +47,10 @@ private val incidentsResult = NetworkIncidentsResult(
     results = incidents
 )
 
+private val worksitesCountResult = NetworkWorksitesCountResult(count = 10)
+private val worksitesResult = NetworkWorksitesFullResult()
+private val worksitesShortResult = NetworkWorksitesShortResult()
+
 @Singleton
 class FakeNetworkDataSource @Inject constructor() : CrisisCleanupNetworkDataSource {
     override suspend fun getIncidents(
@@ -51,6 +58,21 @@ class FakeNetworkDataSource @Inject constructor() : CrisisCleanupNetworkDataSour
         limit: Int,
         ordering: String
     ): NetworkIncidentsResult = incidentsResult
+
+    override suspend fun getWorksites(
+        incidentId: Long,
+        limit: Int,
+        offset: Int
+    ): NetworkWorksitesFullResult = worksitesResult
+
+    override suspend fun getWorksitesCount(incidentId: Long): NetworkWorksitesCountResult =
+        worksitesCountResult
+
+    override suspend fun getWorksitesAll(
+        incidentId: Long,
+        updatedAtAfter: Instant?,
+        updatedAtBefore: Instant?
+    ): NetworkWorksitesShortResult = worksitesShortResult
 }
 
 internal fun fillNetworkIncident(

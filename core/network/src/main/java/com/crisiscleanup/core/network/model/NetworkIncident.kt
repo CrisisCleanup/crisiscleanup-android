@@ -6,8 +6,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class NetworkIncidentsResult(
-    val count: Int,
-    val results: List<NetworkIncident>,
+    val errors: List<NetworkCrisisCleanupApiError>? = null,
+    val count: Int? = null,
+    val results: List<NetworkIncident>? = null,
 )
 
 @Serializable

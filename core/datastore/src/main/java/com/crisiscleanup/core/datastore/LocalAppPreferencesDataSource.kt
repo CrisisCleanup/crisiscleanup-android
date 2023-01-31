@@ -35,7 +35,9 @@ class LocalAppPreferencesDataSource @Inject constructor(
                     it.syncAttempt.successfulSeconds,
                     it.syncAttempt.attemptedSeconds,
                     it.syncAttempt.attemptedCounter,
-                )
+                ),
+
+                selectedIncidentId = it.selectedIncidentId,
             )
         }
 
@@ -79,6 +81,12 @@ class LocalAppPreferencesDataSource @Inject constructor(
             it.copy {
                 this.syncAttempt = attempt
             }
+        }
+    }
+
+    suspend fun setSelectedIncident(id: Long) {
+        userPreferences.updateData {
+            it.copy { selectedIncidentId = id }
         }
     }
 }

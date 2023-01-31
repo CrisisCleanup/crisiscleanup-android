@@ -70,7 +70,7 @@ internal fun SelectIncidentRoute(
                 )
 
                 var enableInput by rememberSaveable { mutableStateOf(true) }
-                
+
                 when (incidentsData) {
                     IncidentsData.Loading -> {
                         Box(modifier.fillMaxSize()) {
@@ -92,7 +92,7 @@ internal fun SelectIncidentRoute(
                             }
                         }
                         val incidents = (incidentsData as IncidentsData.Incidents).incidents
-                        val selectedIncidentId by remember { mutableStateOf(casesViewModel.selectedIncidentId) }
+                        val selectedIncidentId by casesViewModel.incidentSelector.incidentId.collectAsStateWithLifecycle()
                         IncidentSelectContent(
                             modifier,
                             selectedIncidentId,
@@ -102,7 +102,11 @@ internal fun SelectIncidentRoute(
                     }
 
                     else -> {
-                        Text(stringResource(R.string.no_incidents_to_select))
+                        Text(
+                            // TODO Use constant for padding
+                            modifier = modifier.padding(16.dp),
+                            text = stringResource(R.string.no_incidents_to_select)
+                        )
                     }
                 }
 

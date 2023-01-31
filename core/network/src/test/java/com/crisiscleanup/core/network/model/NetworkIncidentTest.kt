@@ -5,6 +5,8 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 class NetworkIncidentTest {
     private val json = Json { ignoreUnknownKeys = true }
@@ -42,17 +44,40 @@ class NetworkIncidentTest {
     )
 
     @Test
-    fun networkGetIncidentsSuccessResultDeserialize() {
+    fun getIncidentsSuccessResult() {
         val contents =
             NetworkAuthResult::class.java.getResource("/getIncidentsSuccess.json")?.readText()!!
         val result = json.decodeFromString<NetworkIncidentsResult>(contents)
 
-        assertEquals(result.count, 5)
+        assertNull(result.errors)
+
+        assertEquals(5, result.count)
 
         val incidents = result.results
+        assertNotNull(incidents)
         assertEquals(result.count, incidents.size)
         for (i in incidents.indices) {
             assertEquals(expectedIncidents[i], incidents[i])
         }
+    }
+
+    @Test
+    fun getIncidentsResultFail() {
+        val contents =
+            NetworkAuthResult::class.java.getResource("/expiredTokenResult.json")?.readText()!!
+        val result = json.decodeFromString<NetworkIncidentsResult>(contents)
+
+        assertNull(result.count)
+        assertNull(result.results)
+
+        assertEquals(1, result.errors?.size)
+        val firstError = result.errors?.get(0)!!
+        assertEquals(
+            NetworkCrisisCleanupApiError(
+                field = "detail",
+                message = listOf("Token has expired.")
+            ),
+            firstError
+        )
     }
 }

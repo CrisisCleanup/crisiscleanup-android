@@ -40,6 +40,7 @@ class OfflineFirstLocalAppPreferencesRepositoryTest {
                 darkThemeConfig = DarkThemeConfig.FOLLOW_SYSTEM,
                 shouldHideOnboarding = false,
                 syncAttempt = SyncAttempt(0, 0, 0),
+                selectedIncidentId = 0,
             ),
             subject.userData.first()
         )

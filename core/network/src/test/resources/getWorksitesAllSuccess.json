@@ -1,0 +1,1180 @@
+{
+  "count": 30,
+  "results": [
+    {
+      "id": 142359,
+      "key_work_type": {
+        "status": "open_unassigned",
+        "work_type": "debris",
+        "claimed_by": null
+      },
+      "work_types": [
+        {
+          "id": 65846,
+          "status": "open_unassigned",
+          "work_type": "debris",
+          "claimed_by": null
+        }
+      ],
+      "flags": [
+        {
+          "reason_t": "flag.worksite_high_priority",
+          "is_high_priority": true,
+          "flag_invalidated_at": null
+        }
+      ],
+      "favorite_id": 12,
+      "case_number": "D17",
+      "name": "test user",
+      "updated_at": "2021-08-03T01:22:33.159423+00:00",
+      "created_at": "2019-09-30T15:01:42.424019+00:00",
+      "svi": 0.4506,
+      "address": "test address",
+      "city": "Chippewa Falls",
+      "county": "Chippewa County",
+      "state": "Wisconsin",
+      "postal_code": "54739-6997",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -91.3914448,
+          44.9366154
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 141431,
+      "key_work_type": {
+        "status": "open_unassigned",
+        "work_type": "trees",
+        "claimed_by": null
+      },
+      "work_types": [
+        {
+          "id": 80852,
+          "status": "open_unassigned",
+          "work_type": "trees",
+          "claimed_by": null
+        }
+      ],
+      "flags": [],
+      "favorite_id": null,
+      "case_number": "D6",
+      "name": "test user",
+      "updated_at": "2021-08-03T01:25:21.968327+00:00",
+      "created_at": "2019-09-27T13:19:36.734254+00:00",
+      "svi": 0.2081,
+      "address": "test address",
+      "city": "Elk Mound",
+      "county": "Chippewa County",
+      "state": "Wisconsin",
+      "postal_code": "54739-2466",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -91.620046,
+          44.896316
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 141459,
+      "key_work_type": {
+        "status": "open_unassigned",
+        "work_type": "trees",
+        "claimed_by": null
+      },
+      "work_types": [
+        {
+          "id": 80854,
+          "status": "open_unassigned",
+          "work_type": "trees",
+          "claimed_by": null
+        }
+      ],
+      "flags": [],
+      "favorite_id": null,
+      "case_number": "D2",
+      "name": "test user",
+      "updated_at": "2021-08-03T01:25:23.279399+00:00",
+      "created_at": "2019-09-27T14:20:21.501040+00:00",
+      "svi": 0.2081,
+      "address": "test address",
+      "city": "Elk Mound",
+      "county": "Chippewa County",
+      "state": "Wisconsin",
+      "postal_code": "54739",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -91.6198736,
+          44.8945056
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 142291,
+      "key_work_type": {
+        "status": "open_unassigned",
+        "work_type": "other",
+        "claimed_by": 12
+      },
+      "work_types": [
+        {
+          "id": 84070,
+          "status": "open_unassigned",
+          "work_type": "other",
+          "claimed_by": 12
+        }
+      ],
+      "flags": [],
+      "favorite_id": null,
+      "case_number": "D7",
+      "name": "test user",
+      "updated_at": "2021-08-03T01:26:16.642765+00:00",
+      "created_at": "2019-09-29T16:02:47.279329+00:00",
+      "svi": 0.2081,
+      "address": "test address",
+      "city": "Elk Mound",
+      "county": "Chippewa County",
+      "state": "Wisconsin",
+      "postal_code": "54739-1771",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -91.62064,
+          44.895796
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 141174,
+      "key_work_type": {
+        "status": "open_unassigned",
+        "work_type": "trees",
+        "claimed_by": null
+      },
+      "work_types": [
+        {
+          "id": 113776,
+          "status": "open_unassigned",
+          "work_type": "trees",
+          "claimed_by": null
+        },
+        {
+          "id": 477655,
+          "status": "open_unassigned",
+          "work_type": "debris",
+          "claimed_by": null
+        }
+      ],
+      "flags": [],
+      "favorite_id": null,
+      "case_number": "D13",
+      "name": "test user",
+      "updated_at": "2021-08-03T01:28:29.360605+00:00",
+      "created_at": "2019-09-26T13:14:32.724106+00:00",
+      "svi": 0.2081,
+      "address": "test address",
+      "city": "Elk Mound",
+      "county": "Chippewa County",
+      "state": "Wisconsin",
+      "postal_code": "54739-2622",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -91.592783,
+          44.905302
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 141187,
+      "key_work_type": {
+        "status": "open_unassigned",
+        "work_type": "debris",
+        "claimed_by": null
+      },
+      "work_types": [
+        {
+          "id": 54589,
+          "status": "open_unassigned",
+          "work_type": "debris",
+          "claimed_by": null
+        }
+      ],
+      "flags": [],
+      "favorite_id": null,
+      "case_number": "D10",
+      "name": "test user",
+      "updated_at": "2021-08-03T01:32:25.763584+00:00",
+      "created_at": "2019-09-26T14:48:56.512945+00:00",
+      "svi": 0.2081,
+      "address": "test address",
+      "city": "Elk Mound",
+      "county": "Chippewa County",
+      "state": "Wisconsin",
+      "postal_code": "54739",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -91.609658,
+          44.905107
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 142102,
+      "key_work_type": {
+        "status": "open_unassigned",
+        "work_type": "trees_heavy_equipment",
+        "claimed_by": null
+      },
+      "work_types": [
+        {
+          "id": 64782,
+          "status": "open_unassigned",
+          "work_type": "trees_heavy_equipment",
+          "claimed_by": null
+        }
+      ],
+      "flags": [],
+      "favorite_id": null,
+      "case_number": "D19",
+      "name": "test user",
+      "updated_at": "2021-08-03T01:32:45.275674+00:00",
+      "created_at": "2019-09-28T17:04:40.387105+00:00",
+      "svi": 0.2081,
+      "address": "test address",
+      "city": "Elk Mound",
+      "county": "Chippewa County",
+      "state": "Wisconsin",
+      "postal_code": "54739",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -91.6178458,
+          44.8959617
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 141166,
+      "key_work_type": {
+        "status": "open_unassigned",
+        "work_type": "trees",
+        "claimed_by": 3886
+      },
+      "work_types": [
+        {
+          "id": 731313,
+          "status": "open_unassigned",
+          "work_type": "debris",
+          "claimed_by": 3886
+        },
+        {
+          "id": 69012,
+          "status": "open_unassigned",
+          "work_type": "trees",
+          "claimed_by": 3886
+        }
+      ],
+      "flags": [],
+      "favorite_id": null,
+      "case_number": "D9",
+      "name": "test user",
+      "updated_at": "2021-08-03T01:32:50.040752+00:00",
+      "created_at": "2019-09-25T23:36:58.222743+00:00",
+      "svi": 0.2081,
+      "address": "test address",
+      "city": "Elk Mound",
+      "county": "Chippewa County",
+      "state": "Wisconsin",
+      "postal_code": "54739-4878",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -91.631007,
+          44.886226
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 141195,
+      "key_work_type": {
+        "status": "open_unassigned",
+        "work_type": "trees_heavy_equipment",
+        "claimed_by": null
+      },
+      "work_types": [
+        {
+          "id": 69013,
+          "status": "open_unassigned",
+          "work_type": "trees_heavy_equipment",
+          "claimed_by": null
+        },
+        {
+          "id": 144814,
+          "status": "open_unassigned",
+          "work_type": "trees",
+          "claimed_by": null
+        }
+      ],
+      "flags": [],
+      "favorite_id": null,
+      "case_number": "D15",
+      "name": "test user",
+      "updated_at": "2021-08-03T01:32:50.068100+00:00",
+      "created_at": "2019-09-26T15:13:43.326259+00:00",
+      "svi": 0.2081,
+      "address": "test address",
+      "city": "Elk Mound",
+      "county": "Chippewa County",
+      "state": "Wisconsin",
+      "postal_code": "54739-5500",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -91.6167676,
+          44.8975698
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 142016,
+      "key_work_type": {
+        "status": "open_unassigned",
+        "work_type": "trees",
+        "claimed_by": null
+      },
+      "work_types": [
+        {
+          "id": 794143,
+          "status": "open_unassigned",
+          "work_type": "trees",
+          "claimed_by": null
+        },
+        {
+          "id": 113781,
+          "status": "open_unassigned",
+          "work_type": "debris",
+          "claimed_by": null
+        }
+      ],
+      "flags": [],
+      "favorite_id": null,
+      "case_number": "D4",
+      "name": "test user",
+      "updated_at": "2021-08-03T01:34:22.281061+00:00",
+      "created_at": "2019-09-28T13:47:20.457942+00:00",
+      "svi": 0.2081,
+      "address": "test address",
+      "city": "Elk Mound",
+      "county": "Chippewa County",
+      "state": "Wisconsin",
+      "postal_code": "54739",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -91.591413,
+          44.905522
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 142230,
+      "key_work_type": {
+        "status": "open_unassigned",
+        "work_type": "trees",
+        "claimed_by": null
+      },
+      "work_types": [
+        {
+          "id": 71149,
+          "status": "open_unassigned",
+          "work_type": "trees",
+          "claimed_by": null
+        }
+      ],
+      "flags": [],
+      "favorite_id": null,
+      "case_number": "D18",
+      "name": "test user",
+      "updated_at": "2021-08-03T01:32:54.590949+00:00",
+      "created_at": "2019-09-28T21:28:45.774018+00:00",
+      "svi": 0.2081,
+      "address": "test address",
+      "city": "Elk Mound",
+      "county": "Chippewa County",
+      "state": "Wisconsin",
+      "postal_code": "54739-3468",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -91.5772019,
+          44.9090603
+        ]
+      },
+      "total_volunteer_hours": "5:16:12"
+    },
+    {
+      "id": 142265,
+      "key_work_type": {
+        "status": "open_unassigned",
+        "work_type": "trees_heavy_equipment",
+        "claimed_by": null
+      },
+      "work_types": [
+        {
+          "id": 76523,
+          "status": "open_unassigned",
+          "work_type": "trees_heavy_equipment",
+          "claimed_by": null
+        },
+        {
+          "id": 740906,
+          "status": "open_unassigned",
+          "work_type": "trees",
+          "claimed_by": null
+        }
+      ],
+      "flags": [],
+      "favorite_id": null,
+      "case_number": "D5",
+      "name": "test user",
+      "updated_at": "2021-08-03T01:33:08.801161+00:00",
+      "created_at": "2019-09-29T14:12:20.062639+00:00",
+      "svi": 0.2081,
+      "address": "test address",
+      "city": "Elk Mound",
+      "county": "Chippewa County",
+      "state": "Wisconsin",
+      "postal_code": "54739",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -91.616857,
+          44.895678
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 142273,
+      "key_work_type": {
+        "status": "open_unassigned",
+        "work_type": "trees",
+        "claimed_by": 12
+      },
+      "work_types": [
+        {
+          "id": 759837,
+          "status": "open_unassigned",
+          "work_type": "trees",
+          "claimed_by": 12
+        },
+        {
+          "id": 90765,
+          "status": "open_unassigned",
+          "work_type": "debris",
+          "claimed_by": 12
+        }
+      ],
+      "flags": [],
+      "favorite_id": null,
+      "case_number": "D20",
+      "name": "test user",
+      "updated_at": "2021-08-03T01:33:37.420425+00:00",
+      "created_at": "2019-09-29T14:49:43.948872+00:00",
+      "svi": 0.2081,
+      "address": "test address",
+      "city": "Elk Mound",
+      "county": "Chippewa County",
+      "state": "Wisconsin",
+      "postal_code": "54739-1654",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -91.613329,
+          44.8999209
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 142101,
+      "key_work_type": {
+        "status": "open_unassigned",
+        "work_type": "trees_heavy_equipment",
+        "claimed_by": null
+      },
+      "work_types": [
+        {
+          "id": 105915,
+          "status": "open_unassigned",
+          "work_type": "trees_heavy_equipment",
+          "claimed_by": null
+        },
+        {
+          "id": 782971,
+          "status": "open_unassigned",
+          "work_type": "trees",
+          "claimed_by": null
+        }
+      ],
+      "flags": [],
+      "favorite_id": null,
+      "case_number": "D12",
+      "name": "test user",
+      "updated_at": "2021-08-03T01:34:06.481471+00:00",
+      "created_at": "2019-09-28T17:03:38.013633+00:00",
+      "svi": 0.2081,
+      "address": "test address",
+      "city": "Elk Mound",
+      "county": "Chippewa County",
+      "state": "Wisconsin",
+      "postal_code": "54739",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -91.6153186,
+          44.8949547
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 142268,
+      "key_work_type": {
+        "status": "open_unassigned",
+        "work_type": "trees",
+        "claimed_by": null
+      },
+      "work_types": [
+        {
+          "id": 787836,
+          "status": "open_unassigned",
+          "work_type": "trees",
+          "claimed_by": null
+        },
+        {
+          "id": 109329,
+          "status": "open_unassigned",
+          "work_type": "debris",
+          "claimed_by": null
+        }
+      ],
+      "flags": [],
+      "favorite_id": null,
+      "case_number": "D14",
+      "name": "test user",
+      "updated_at": "2021-08-03T01:34:13.777935+00:00",
+      "created_at": "2019-09-29T14:25:14.919833+00:00",
+      "svi": 0.2081,
+      "address": "test address",
+      "city": "Elk Mound",
+      "county": "Chippewa County",
+      "state": "Wisconsin",
+      "postal_code": "54739-7353",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -91.6096759,
+          44.9050015
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 138563,
+      "key_work_type": {
+        "status": "open_unassigned",
+        "work_type": "trees",
+        "claimed_by": null
+      },
+      "work_types": [
+        {
+          "id": 530166,
+          "status": "open_unassigned",
+          "work_type": "tarp",
+          "claimed_by": null
+        },
+        {
+          "id": 1101801,
+          "status": "open_unassigned",
+          "work_type": "trees",
+          "claimed_by": null
+        },
+        {
+          "id": 7390,
+          "status": "open_unassigned",
+          "work_type": "trees",
+          "claimed_by": null
+        },
+        {
+          "id": 1101800,
+          "status": "open_unassigned",
+          "work_type": "tarp",
+          "claimed_by": null
+        }
+      ],
+      "flags": [],
+      "favorite_id": null,
+      "case_number": "D28",
+      "name": "test user",
+      "updated_at": "2021-08-03T01:38:19.718514+00:00",
+      "created_at": "2019-07-26T20:20:45.144377+00:00",
+      "svi": 0.1562,
+      "address": "test address",
+      "city": "Amherst",
+      "county": "Portage County",
+      "state": "Wisconsin",
+      "postal_code": "54462",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -89.33044,
+          44.45373
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 143568,
+      "key_work_type": null,
+      "work_types": [],
+      "flags": [],
+      "favorite_id": null,
+      "case_number": "D21",
+      "name": "test user",
+      "updated_at": "2020-11-26T03:06:56.190843+00:00",
+      "created_at": "2020-05-04T21:28:24.454806+00:00",
+      "svi": 0.8829,
+      "address": "test address",
+      "city": "Fort Worth",
+      "county": "Tarrant County",
+      "state": "Texas",
+      "postal_code": "76106",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -97.35461649999999,
+          32.82837819999999
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 143569,
+      "key_work_type": null,
+      "work_types": [],
+      "flags": [],
+      "favorite_id": null,
+      "case_number": "D22",
+      "name": "test user",
+      "updated_at": "2020-11-26T03:06:56.201241+00:00",
+      "created_at": "2020-05-04T21:32:44.882749+00:00",
+      "svi": 0.7258,
+      "address": "test address",
+      "city": "Orlando",
+      "county": "Orange County",
+      "state": "Florida",
+      "postal_code": "32824",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -81.3152741,
+          28.3853821
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 143570,
+      "key_work_type": null,
+      "work_types": [],
+      "flags": [],
+      "favorite_id": null,
+      "case_number": "D23",
+      "name": "test user",
+      "updated_at": "2020-11-26T03:06:56.245586+00:00",
+      "created_at": "2020-05-04T21:34:14.109500+00:00",
+      "svi": 0.0886,
+      "address": "test address",
+      "city": "Sterling",
+      "county": "Loudoun County",
+      "state": "Virginia",
+      "postal_code": "20166",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -77.4743196,
+          38.98614329999999
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 143571,
+      "key_work_type": null,
+      "work_types": [],
+      "flags": [],
+      "favorite_id": null,
+      "case_number": "D24",
+      "name": "test user",
+      "updated_at": "2020-11-26T03:06:56.255847+00:00",
+      "created_at": "2020-05-04T21:35:27.382194+00:00",
+      "svi": 0.9492,
+      "address": "test address",
+      "city": "San Bernardino",
+      "county": "San Bernardino County",
+      "state": "California",
+      "postal_code": "92408",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -117.276111,
+          34.079155
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 143572,
+      "key_work_type": null,
+      "work_types": [],
+      "flags": [],
+      "favorite_id": null,
+      "case_number": "D25",
+      "name": "test user",
+      "updated_at": "2020-11-26T03:06:56.266470+00:00",
+      "created_at": "2020-05-04T21:36:25.876333+00:00",
+      "svi": 0.8531,
+      "address": "test address",
+      "city": "Dallas",
+      "county": "Dallas County",
+      "state": "Texas",
+      "postal_code": "75241",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -96.73610579999999,
+          32.6610351
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 143573,
+      "key_work_type": {
+        "status": "open_unassigned",
+        "work_type": "trees",
+        "claimed_by": null
+      },
+      "work_types": [
+        {
+          "id": 1101749,
+          "status": "open_unassigned",
+          "work_type": "debris",
+          "claimed_by": null
+        },
+        {
+          "id": 1101750,
+          "status": "open_unassigned",
+          "work_type": "trees",
+          "claimed_by": null
+        },
+        {
+          "id": 1101751,
+          "status": "open_unassigned",
+          "work_type": "tarp",
+          "claimed_by": null
+        }
+      ],
+      "flags": [],
+      "favorite_id": null,
+      "case_number": "D26",
+      "name": "test user",
+      "updated_at": "2020-11-26T03:06:56.276924+00:00",
+      "created_at": "2020-05-04T21:38:53.609451+00:00",
+      "svi": 0.6118,
+      "address": "test address",
+      "city": "null",
+      "county": "Richmond County",
+      "state": "New York",
+      "postal_code": "10305",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -74.0804776,
+          40.5819188
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 143593,
+      "key_work_type": {
+        "status": "open_unassigned",
+        "work_type": "trees",
+        "claimed_by": null
+      },
+      "work_types": [
+        {
+          "id": 1101775,
+          "status": "open_unassigned",
+          "work_type": "trees",
+          "claimed_by": null
+        }
+      ],
+      "flags": [
+        {
+          "reason_t": "flag.worksite_high_priority",
+          "is_high_priority": true,
+          "flag_invalidated_at": null
+        }
+      ],
+      "favorite_id": null,
+      "case_number": "D27",
+      "name": "test user",
+      "updated_at": "2021-08-03T01:37:34.703406+00:00",
+      "created_at": "2020-08-29T23:41:31.984231+00:00",
+      "svi": 0.9446,
+      "address": "test address",
+      "city": "Pasadena",
+      "county": "Harris County",
+      "state": "Texas",
+      "postal_code": "77504",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -95.20733129999999,
+          29.6453831
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 141271,
+      "key_work_type": {
+        "status": "open_unassigned",
+        "work_type": "trees",
+        "claimed_by": null
+      },
+      "work_types": [
+        {
+          "id": 52552,
+          "status": "open_unassigned",
+          "work_type": "trees",
+          "claimed_by": null
+        }
+      ],
+      "flags": [
+        {
+          "reason_t": "flag.worksite_wrong_location",
+          "is_high_priority": false,
+          "flag_invalidated_at": null
+        }
+      ],
+      "favorite_id": null,
+      "case_number": "D11",
+      "name": "test user",
+      "updated_at": "2021-08-03T01:37:37.400151+00:00",
+      "created_at": "2019-09-26T20:45:42.662996+00:00",
+      "svi": 0.2081,
+      "address": "test address",
+      "city": "Elk Mound",
+      "county": "Chippewa County",
+      "state": "Wisconsin",
+      "postal_code": "54739",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -91.614598,
+          44.8938962
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 142229,
+      "key_work_type": {
+        "status": "open_unassigned",
+        "work_type": "trees",
+        "claimed_by": 12
+      },
+      "work_types": [
+        {
+          "id": 51539,
+          "status": "open_unassigned",
+          "work_type": "trees",
+          "claimed_by": 12
+        },
+        {
+          "id": 692711,
+          "status": "open_unassigned",
+          "work_type": "debris",
+          "claimed_by": 12
+        }
+      ],
+      "flags": [],
+      "favorite_id": null,
+      "case_number": "D1",
+      "name": "test user",
+      "updated_at": "2021-08-03T01:38:18.294570+00:00",
+      "created_at": "2019-09-28T21:26:50.842159+00:00",
+      "svi": 0.2081,
+      "address": "test address",
+      "city": "Elk Mound",
+      "county": "Chippewa County",
+      "state": "Wisconsin",
+      "postal_code": "54729",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -91.5757886,
+          44.9090586
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 143603,
+      "key_work_type": {
+        "status": "open_unassigned",
+        "work_type": "trees",
+        "claimed_by": null
+      },
+      "work_types": [
+        {
+          "id": 1101804,
+          "status": "open_unassigned",
+          "work_type": "trees",
+          "claimed_by": null
+        },
+        {
+          "id": 1101805,
+          "status": "open_unassigned",
+          "work_type": "fence",
+          "claimed_by": null
+        }
+      ],
+      "flags": [],
+      "favorite_id": null,
+      "case_number": "D30",
+      "name": "test user",
+      "updated_at": "2021-02-22T11:39:07.312667+00:00",
+      "created_at": "2021-02-22T11:39:07.448662+00:00",
+      "svi": 0.0146,
+      "address": "test address",
+      "city": "Amityville",
+      "county": "Suffolk County",
+      "state": "New York",
+      "postal_code": "11701",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -73.4147758,
+          40.666555
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 138308,
+      "key_work_type": {
+        "status": "open_unassigned",
+        "work_type": "trees",
+        "claimed_by": null
+      },
+      "work_types": [
+        {
+          "id": 1101802,
+          "status": "open_unassigned",
+          "work_type": "trees",
+          "claimed_by": null
+        },
+        {
+          "id": 62701,
+          "status": "open_unassigned",
+          "work_type": "trees",
+          "claimed_by": null
+        },
+        {
+          "id": 944496,
+          "status": "open_unassigned",
+          "work_type": "tarp",
+          "claimed_by": null
+        },
+        {
+          "id": 1101803,
+          "status": "open_unassigned",
+          "work_type": "tarp",
+          "claimed_by": null
+        }
+      ],
+      "flags": [],
+      "favorite_id": null,
+      "case_number": "D29",
+      "name": "test user",
+      "updated_at": "2021-08-03T01:38:19.729092+00:00",
+      "created_at": "2019-07-25T18:08:38.988371+00:00",
+      "svi": 0.351,
+      "address": "test address",
+      "city": "Scandinavia",
+      "county": "Waupaca County",
+      "state": "Wisconsin",
+      "postal_code": "54826",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -89.1793302,
+          44.4465606
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 141324,
+      "key_work_type": {
+        "status": "open_unassigned",
+        "work_type": "trees",
+        "claimed_by": 89
+      },
+      "work_types": [
+        {
+          "id": 772365,
+          "status": "open_unassigned",
+          "work_type": "trees",
+          "claimed_by": 89
+        },
+        {
+          "id": 98318,
+          "status": "open_unassigned",
+          "work_type": "debris",
+          "claimed_by": 89
+        }
+      ],
+      "flags": [],
+      "favorite_id": null,
+      "case_number": "D8",
+      "name": "test user",
+      "updated_at": "2021-08-03T01:26:22.713162+00:00",
+      "created_at": "2019-09-26T23:15:23.065702+00:00",
+      "svi": 0.2081,
+      "address": "test address",
+      "city": "Elk Mound",
+      "county": "Chippewa County",
+      "state": "Wisconsin",
+      "postal_code": "54739",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -91.6024767,
+          44.9034256
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 141217,
+      "key_work_type": {
+        "status": "open_unassigned",
+        "work_type": "trees_heavy_equipment",
+        "claimed_by": null
+      },
+      "work_types": [
+        {
+          "id": 743616,
+          "status": "open_unassigned",
+          "work_type": "trees",
+          "claimed_by": null
+        },
+        {
+          "id": 78738,
+          "status": "open_unassigned",
+          "work_type": "trees_heavy_equipment",
+          "claimed_by": null
+        }
+      ],
+      "flags": [],
+      "favorite_id": null,
+      "case_number": "D3",
+      "name": "test user",
+      "updated_at": "2021-08-03T01:33:13.704108+00:00",
+      "created_at": "2019-09-26T16:35:14.491077+00:00",
+      "svi": 0.2081,
+      "address": "test address",
+      "city": "Elk Mound",
+      "county": "Chippewa County",
+      "state": "Wisconsin",
+      "postal_code": "54739-9432",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -91.622796,
+          44.895801
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    },
+    {
+      "id": 143609,
+      "key_work_type": {
+        "status": "open_unassigned",
+        "work_type": "trees",
+        "claimed_by": null
+      },
+      "work_types": [
+        {
+          "id": 1101828,
+          "status": "open_unassigned",
+          "work_type": "trees",
+          "claimed_by": null
+        },
+        {
+          "id": 1101829,
+          "status": "open_unassigned",
+          "work_type": "tarp",
+          "claimed_by": null
+        }
+      ],
+      "flags": [
+        {
+          "reason_t": "flag.worksite_high_priority",
+          "is_high_priority": true,
+          "flag_invalidated_at": null
+        }
+      ],
+      "favorite_id": null,
+      "case_number": "D31",
+      "name": "test user",
+      "updated_at": "2022-07-20T17:38:57.832885+00:00",
+      "created_at": "2022-07-20T17:38:58.269629+00:00",
+      "svi": 0.3475,
+      "address": "test address",
+      "city": "Seneca",
+      "county": "Oconee County",
+      "state": "South Carolina",
+      "postal_code": "29672",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          -82.9642908,
+          34.7302462
+        ]
+      },
+      "total_volunteer_hours": "0:00:00"
+    }
+  ]
+}

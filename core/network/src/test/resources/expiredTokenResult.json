@@ -1,0 +1,9 @@
+{
+  "errors": [
+    {
+      "field": "detail",
+      "message": "Token has expired."
+    }
+  ],
+  "data": null
+}

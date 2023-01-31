@@ -28,4 +28,11 @@ data class SyncAttempt(
         val rhs = (attemptedCounter - 1) * ln(2f)
         return lhs < rhs
     }
+
+    fun shouldSyncPassively(
+        recentIntervalSeconds: Int = 1800,
+        backoffIntervalSeconds: Int = 15,
+        nowSeconds: Long = Clock.System.now().epochSeconds,
+    ) = !(isRecent(recentIntervalSeconds, nowSeconds) ||
+            isBackingOff(backoffIntervalSeconds, nowSeconds))
 }

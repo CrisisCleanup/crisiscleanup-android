@@ -10,7 +10,7 @@ import javax.inject.Singleton
 
 @Singleton
 class IncidentDaoPlus @Inject constructor(
-    private val db: CrisisCleanupDatabase
+    private val db: CrisisCleanupDatabase,
 ) {
     // Tested in IncidentDaoTest
     suspend fun saveIncidents(

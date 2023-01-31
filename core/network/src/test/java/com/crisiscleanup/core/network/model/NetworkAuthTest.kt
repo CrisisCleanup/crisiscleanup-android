@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.network.model
 
+import kotlinx.datetime.Instant
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.junit.Test
@@ -10,7 +11,7 @@ class NetworkAuthTest {
     private val json = Json { ignoreUnknownKeys = true }
 
     @Test
-    fun networkAuthSuccessResultDeserialize() {
+    fun authSuccessResult() {
         val contents =
             NetworkAuthResult::class.java.getResource("/authResponseSuccess.json")?.readText()!!
         val result = json.decodeFromString<NetworkAuthResult>(contents)
@@ -31,20 +32,22 @@ class NetworkAuthTest {
         val files = claims.files
         assertEquals(1, files!!.size)
         val firstFile = files[0]
-        assertEquals(5, firstFile.id)
-        assertEquals(5, firstFile.file)
-        assertEquals("6645713-b99b0bfba6a04d24879b35538d1c8b9f.jpg", firstFile.fileName)
         assertEquals(
-            "https://crisiscleanup-user-files.s3.amazonaws.com/6645713-b99b0bfba6a04d24879b35538d1c8b9f.jpg?AWSAccessKeyId=AKIASU3RMDS2EGFBJH5O&Signature=Ez3PS71Gedweed%2BWZLT0rF%2BU9AY%3D&Expires=1673376442",
-            firstFile.url
+            NetworkFile(
+                id = 5,
+                createdAt = Instant.parse("2020-05-13T05:53:45Z"),
+                file = 5,
+                fileName = "6645713-b99b0bfba6a04d24879b35538d1c8b9f.jpg",
+                url = "https://crisiscleanup-user-files.s3.amazonaws.com/6645713-b99b0bfba6a04d24879b35538d1c8b9f.jpg?AWSAccessKeyId=AKIASU3RMDS2EGFBJH5O&Signature=Ez3PS71Gedweed%2BWZLT0rF%2BU9AY%3D&Expires=1673376442",
+                filenameOriginal = "6645713.jpg",
+                fileTypeT = "fileTypes.user_profile_picture",
+                mimeContentType = "image/jpeg",
+            ), firstFile
         )
-        assertEquals(null, firstFile.largeThumbnailUrl)
-        assertEquals("fileTypes.user_profile_picture", firstFile.fileTypeT)
-        assertEquals("image/jpeg", firstFile.mimeContentType)
     }
 
     @Test
-    fun networkAuthFailResultDeserialize() {
+    fun authFailResult() {
         val contents =
             NetworkAuthResult::class.java.getResource("/authResponseFail.json")?.readText()!!
         val result = json.decodeFromString<NetworkAuthResult>(contents)
@@ -54,10 +57,12 @@ class NetworkAuthTest {
 
         assertEquals(1, result.errors?.size)
         val firstError = result.errors?.get(0)!!
-        assertEquals("non_field_errors", firstError.field)
-
-        assertEquals(1, firstError.message?.size)
-        val errorMessage = firstError.message?.get(0)
-        assertEquals("Unable to log in with provided credentials.", errorMessage)
+        assertEquals(
+            NetworkCrisisCleanupApiError(
+                "non_field_errors",
+                listOf("Unable to log in with provided credentials.")
+            ),
+            firstError
+        )
     }
 }

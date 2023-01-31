@@ -6,23 +6,24 @@ import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.IncidentsRepository
+import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.Incident
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
 class CasesViewModel @Inject constructor(
     incidentsRepository: IncidentsRepository,
-    private val incidentSelector: IncidentSelector,
+    val incidentSelector: IncidentSelector,
     private val appHeaderUiState: AppHeaderUiState,
+    private val appPreferencesRepository: LocalAppPreferencesRepository,
 ) : ViewModel() {
     var isTableView = mutableStateOf(false)
         private set
@@ -38,29 +39,29 @@ class CasesViewModel @Inject constructor(
         isLayerView.value = !isLayerView.value
     }
 
-    val selectedIncidentId: Long
-        get() = incidentSelector.incident.id
-
     val isLoadingIncidents = incidentsRepository.isLoading
 
-    private fun updateAppTitle() = appHeaderUiState.setTitle(incidentSelector.incident.name)
+    init {
+        incidentSelector.incident.onEach {
+            appHeaderUiState.setTitle(it.name)
+        }.launchIn(viewModelScope)
+    }
 
     val incidentsData = incidentsRepository.incidents.map { incidents ->
-        // TODO Save and load from prefs
-        var selectedId = incidentSelector.incidentId
+        var selectedId = incidentSelector.incidentId.first()
+        if (selectedId == EmptyIncident.id) {
+            selectedId = appPreferencesRepository.userData.first().selectedIncidentId
+        }
 
         // Update incident data or select first if current incident (ID) not found
         var incident = incidents.find { it.id == selectedId } ?: EmptyIncident
         if (incident == EmptyIncident && incidents.isNotEmpty()) {
             incident = incidents[0]
         }
-        selectedId = incident.id
 
-        incidentSelector.incident = incident
+        incidentSelector.setIncident(incident)
 
-        updateAppTitle()
-
-        if (selectedIncidentId < 0) IncidentsData.Empty
+        if (incidentSelector.incidentId.first() == EmptyIncident.id) IncidentsData.Empty
         else IncidentsData.Incidents(incidents)
     }.stateIn(
         scope = viewModelScope,
@@ -71,28 +72,18 @@ class CasesViewModel @Inject constructor(
     var casesSearchQuery = mutableStateOf("")
         private set
 
-    // TODO Use constant for debounce
-    private val filteredResults = flowOf(casesSearchQuery)
-        .debounce(200)
-        .map { it.value.trim() }
-        .distinctUntilChanged()
-        .map {
-            // TODO Filter if (search is is open and) query is not defined
-        }
-        .launchIn(viewModelScope)
-
     fun updateCasesSearchQuery(q: String) {
         casesSearchQuery.value = q
     }
 
-    fun selectIncident(incident: Incident) {
-        // TODO Atomic set
+    suspend fun selectIncident(incident: Incident) {
         if (incidentsData.value is IncidentsData.Incidents) {
             val incidents = (incidentsData.value as IncidentsData.Incidents).incidents
             val verifiedIncident = incidents.find { it.id == incident.id }
             if (verifiedIncident != null) {
-                incidentSelector.incident = incident
-                updateAppTitle()
+                incidentSelector.setIncident(incident)
+
+                appPreferencesRepository.setSelectedIncident(incident.id)
             }
         }
     }

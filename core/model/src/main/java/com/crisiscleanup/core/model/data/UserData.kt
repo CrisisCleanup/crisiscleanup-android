@@ -9,4 +9,6 @@ data class UserData(
     val shouldHideOnboarding: Boolean,
 
     val syncAttempt: SyncAttempt,
+
+    val selectedIncidentId: Long,
 )
