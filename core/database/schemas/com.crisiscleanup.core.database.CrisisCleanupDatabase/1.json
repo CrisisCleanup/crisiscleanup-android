@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "8f786855dc1f8d092485dbd7a08bad58",
+    "identityHash": "5b0220f73cdd51582e3c4eb4395ee3c1",
     "entities": [
       {
         "tableName": "incidents",
@@ -403,14 +403,15 @@
         },
         "indices": [
           {
-            "name": "index_worksites_network_id_local_global_uuid",
+            "name": "index_worksites_incident_id_network_id_local_global_uuid",
             "unique": true,
             "columnNames": [
+              "incident_id",
               "network_id",
               "local_global_uuid"
             ],
             "orders": [],
-            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_worksites_network_id_local_global_uuid` ON `${TABLE_NAME}` (`network_id`, `local_global_uuid`)"
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_worksites_incident_id_network_id_local_global_uuid` ON `${TABLE_NAME}` (`incident_id`, `network_id`, `local_global_uuid`)"
           },
           {
             "name": "index_worksites_sync_uuid",
@@ -682,7 +683,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8f786855dc1f8d092485dbd7a08bad58')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5b0220f73cdd51582e3c4eb4395ee3c1')"
     ]
   }
 }

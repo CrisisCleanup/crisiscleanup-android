@@ -35,7 +35,7 @@ data class NetworkWorksiteFull(
     val county: String,
     val email: String? = null,
     val events: List<NetworkEvent>,
-    val favorite: Long?,
+    val favorite: Favorite?,
     val files: List<NetworkFile>,
     val flags: List<NetworkFlag>,
     // TODO How to deal w/ serialization
@@ -72,6 +72,13 @@ data class NetworkWorksiteFull(
     @SerialName("work_types")
     val workTypes: List<WorkType>,
 ) {
+    @Serializable
+    data class Favorite(
+        val id: Long,
+        @SerialName("type_t")
+        val typeT: String,
+    )
+
     @Serializable
     data class FormData(
         @SerialName("field_key")

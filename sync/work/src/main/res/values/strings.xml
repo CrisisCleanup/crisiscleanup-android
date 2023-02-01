@@ -3,4 +3,5 @@
     <string name="sync_notification_title">@string/crisis_cleanup</string>
     <string name="sync_notification_channel_name">Sync</string>
     <string name="sync_notification_channel_description">Background tasks for Crisis Cleanup</string>
+    <string name="sync_notification_text">Syncing data</string>
 </resources>

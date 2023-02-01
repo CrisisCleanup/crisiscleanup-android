@@ -3,7 +3,6 @@
 package com.crisiscleanup.core.designsystem.component
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
@@ -36,28 +35,27 @@ fun CrisisCleanupTopAppBar(
     val titleContent = @Composable {
         Text(text = stringResource(id = titleResId))
     }
-    val navigationContent: (@Composable (() -> Unit)) = if (navIcon == null) {
-        @Composable {}
-    } else {
+    val navigationContent: (@Composable (() -> Unit)) =
         @Composable {
-            if (onNavigationClick == null) {
-                Icon(
-                    modifier = Modifier.padding(navIconPadding),
-                    imageVector = navIcon,
-                    contentDescription = navContentDescription,
-                    tint = MaterialTheme.colorScheme.onSurface
-                )
-            } else {
-                IconButton(onClick = onNavigationClick) {
+            if (navIcon != null) {
+                if (onNavigationClick == null) {
                     Icon(
+                        modifier = Modifier.padding(navIconPadding),
                         imageVector = navIcon,
                         contentDescription = navContentDescription,
                         tint = MaterialTheme.colorScheme.onSurface
                     )
+                } else {
+                    IconButton(onClick = onNavigationClick) {
+                        Icon(
+                            imageVector = navIcon,
+                            contentDescription = navContentDescription,
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
             }
         }
-    }
     val actionsContent: (@Composable (RowScope.() -> Unit)) = if (actionIcon == null) {
         @Composable {}
     } else {
@@ -130,37 +128,33 @@ fun TopAppBarDefault(
     profilePictureUri: String = "",
     onNavigationClick: (() -> Unit)? = null,
     onActionClick: () -> Unit = {},
+    titleContent: (@Composable () -> Unit)? = null,
 ) {
-    val titleContent = @Composable {
+    val barTitle: (@Composable () -> Unit) = titleContent ?: @Composable {
         val text = if (titleResId == 0) title else stringResource(titleResId)
-        Text(
-            modifier = if (onNavigationClick == null) Modifier
-            else Modifier.clickable(onClick = onNavigationClick),
-            text = text,
-        )
+        Text(modifier = modifier, text = text)
     }
-    val navigationContent: (@Composable (() -> Unit)) = if (navIcon == null) {
-        @Composable {}
-    } else {
+    val navigationContent: (@Composable (() -> Unit)) =
         @Composable {
-            if (onNavigationClick == null) {
-                Icon(
-                    modifier = Modifier.padding(navIconPadding),
-                    imageVector = navIcon,
-                    contentDescription = navContentDescription,
-                    tint = MaterialTheme.colorScheme.onSurface
-                )
-            } else {
-                IconButton(onClick = onNavigationClick) {
+            if (navIcon != null) {
+                if (onNavigationClick == null) {
                     Icon(
+                        modifier = Modifier.padding(navIconPadding),
                         imageVector = navIcon,
                         contentDescription = navContentDescription,
                         tint = MaterialTheme.colorScheme.onSurface
                     )
+                } else {
+                    IconButton(onClick = onNavigationClick) {
+                        Icon(
+                            imageVector = navIcon,
+                            contentDescription = navContentDescription,
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
             }
         }
-    }
     val actionsContent: (@Composable (RowScope.() -> Unit)) = @Composable {
         IconButton(onClick = onActionClick) {
             if (profilePictureUri.isEmpty()) {
@@ -185,7 +179,7 @@ fun TopAppBarDefault(
     }
 
     TopAppBar(
-        title = titleContent,
+        title = barTitle,
         navigationIcon = navigationContent,
         actions = actionsContent,
         colors = colors,

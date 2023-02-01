@@ -85,6 +85,7 @@ fun CrisisCleanupTextButton(
         modifier = modifier.sizeIn(minHeight = buttonMinHeight),
         onClick = onClick,
         enabled = enabled,
+        shape = roundedRectangleButtonShape(),
     ) {
         Text(textResId, text)
     }

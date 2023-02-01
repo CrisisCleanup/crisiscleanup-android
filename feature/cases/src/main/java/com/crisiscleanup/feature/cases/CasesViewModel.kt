@@ -7,10 +7,12 @@ import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
+import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.Incident
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -21,6 +23,7 @@ import javax.inject.Inject
 @HiltViewModel
 class CasesViewModel @Inject constructor(
     incidentsRepository: IncidentsRepository,
+    worksitesRepository: WorksitesRepository,
     val incidentSelector: IncidentSelector,
     private val appHeaderUiState: AppHeaderUiState,
     private val appPreferencesRepository: LocalAppPreferencesRepository,
@@ -40,6 +43,9 @@ class CasesViewModel @Inject constructor(
     }
 
     val isLoadingIncidents = incidentsRepository.isLoading
+        .combine(worksitesRepository.isLoading) { incidentsLoading, worksitesLoading ->
+            incidentsLoading || worksitesLoading
+        }
 
     init {
         incidentSelector.incident.onEach {

@@ -25,7 +25,7 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
-    SELECT network_id as id, local_modified_at
+    SELECT network_id, local_modified_at
     FROM worksites
     WHERE incident_id=:incidentId AND network_id IN (:worksiteIds)
     """

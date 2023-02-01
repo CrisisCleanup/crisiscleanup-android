@@ -2,7 +2,13 @@ package com.crisiscleanup.core.designsystem.icon
 
 import androidx.annotation.DrawableRes
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.PersonOutline
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.crisiscleanup.core.designsystem.R
@@ -12,6 +18,7 @@ import com.crisiscleanup.core.designsystem.R
  */
 object CrisisCleanupIcons {
     val Account = Icons.Default.PersonOutline
+    val ArrowDropDown = Icons.Default.ArrowDropDown
     val Cases = R.drawable.ic_cases
     val Clear = Icons.Default.Clear
     val Dashboard = R.drawable.ic_dashboard

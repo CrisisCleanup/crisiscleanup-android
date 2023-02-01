@@ -49,7 +49,8 @@ fun PopulatedWorksite.asExternalModel() = Worksite(
 )
 
 data class WorksiteLocalModifiedAt(
-    val id: Long,
+    @ColumnInfo("network_id")
+    val networkId: Long,
     @ColumnInfo("local_modified_at")
     val localModifiedAt: Instant,
 )

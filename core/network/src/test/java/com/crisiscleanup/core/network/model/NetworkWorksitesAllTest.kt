@@ -6,39 +6,28 @@ import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-class NetworkWorksitesShortTest {
+class NetworkWorksitesAllTest {
     private val json = Json { ignoreUnknownKeys = true }
-
-    @Test
-    fun getWorksitesCount() {
-        val contents =
-            NetworkAuthResult::class.java.getResource("/getWorksitesCountSuccess.json")
-                ?.readText()!!
-        val result = json.decodeFromString<NetworkWorksitesCountResult>(contents)
-
-        assertNull(result.errors)
-        assertEquals(30, result.count)
-    }
 
     @Test
     fun getWorksitesSuccessResult() {
         val contents =
-            NetworkAuthResult::class.java.getResource("/getWorksitesPagedSuccess.json")
-                ?.readText()!!
-        val result = json.decodeFromString<NetworkWorksitesFullResult>(contents)
+            NetworkAuthResult::class.java.getResource("/getWorksitesAllSuccess.json")?.readText()!!
+        val result = json.decodeFromString<NetworkWorksitesShortResult>(contents)
 
         assertNull(result.errors)
         assertEquals(30, result.count)
 
         // TODO Compare certain cases
         //      Empty work_types (and null key_work_type)
+        //      Flags exist
     }
 
     @Test
     fun getWorksitesResultFail() {
         val contents =
             NetworkAuthResult::class.java.getResource("/expiredTokenResult.json")?.readText()!!
-        val result = json.decodeFromString<NetworkWorksitesFullResult>(contents)
+        val result = json.decodeFromString<NetworkWorksitesShortResult>(contents)
 
         assertNull(result.count)
         assertNull(result.results)
@@ -59,7 +48,7 @@ class NetworkWorksitesShortTest {
         val contents =
             NetworkAuthResult::class.java.getResource("/worksitesInvalidIncidentResult.json")
                 ?.readText()!!
-        val result = json.decodeFromString<NetworkWorksitesFullResult>(contents)
+        val result = json.decodeFromString<NetworkWorksitesShortResult>(contents)
 
         assertNull(result.count)
         assertNull(result.results)

@@ -25,7 +25,7 @@ class WorksiteDaoPlus @Inject constructor(
             worksiteIds,
         ).first()
         val modifiedAtLookup = mutableMapOf<Long, Instant>()
-        worksitesUpdatedAt.forEach { modifiedAtLookup[it.id] = it.localModifiedAt }
+        worksitesUpdatedAt.forEach { modifiedAtLookup[it.networkId] = it.localModifiedAt }
         return modifiedAtLookup
     }
 
@@ -43,7 +43,7 @@ class WorksiteDaoPlus @Inject constructor(
 
             val modifiedAtLookup = getWorksiteLocalModifiedAt(incidentId, worksiteIds, worksiteDao)
             worksites.forEach { worksite ->
-                val expectedLocalModifiedAt = modifiedAtLookup[worksite.id]
+                val expectedLocalModifiedAt = modifiedAtLookup[worksite.networkId]
                 if (expectedLocalModifiedAt == null) {
                     worksiteDao.insertWorksite(worksite)
                 } else if (worksite.updatedAt.epochSeconds > expectedLocalModifiedAt.epochSeconds) {

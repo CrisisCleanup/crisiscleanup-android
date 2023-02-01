@@ -38,7 +38,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : WorksitesRepository {
     // TODO Defer to provider instead. So amount can vary according to (WifiManager) signal level or equivalent.
-    var worksitesQueryBasePageAmount: Int = 25
+    var worksitesQueryBasePageAmount: Int = 100
 
     override var isLoading = MutableStateFlow(false)
         private set

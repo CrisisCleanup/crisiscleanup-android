@@ -4,7 +4,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,6 +36,26 @@ import com.crisiscleanup.feature.cases.IncidentsData
 import com.crisiscleanup.feature.cases.R
 import kotlinx.coroutines.launch
 
+// TODO Is it possible to use a single dialog wrapper and switch content inside?
+//      Using a single wrapper initially the dialog wasn't resizing when state was changing.
+//      Maybe newer versions of Compose will resize correctly.
+//      Logs are reporting jank when switching due to state changes as well.
+
+@Composable
+private fun WrapInDialog(
+    onBackClick: () -> Unit,
+    content: @Composable () -> Unit,
+    cornerRound: Dp = 4.dp,
+) = Dialog(
+    onDismissRequest = onBackClick,
+    content = {
+        Surface(
+            shape = RoundedCornerShape(cornerRound),
+            color = MaterialTheme.colorScheme.surface,
+            content = content,
+        )
+    })
+
 @OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 internal fun SelectIncidentRoute(
@@ -45,65 +64,51 @@ internal fun SelectIncidentRoute(
     casesViewModel: CasesViewModel = hiltViewModel(),
     padding: Dp = 16.dp,
     textPadding: Dp = 16.dp,
-    cornerRound: Dp = 4.dp,
 ) {
     val incidentsData by casesViewModel.incidentsData.collectAsStateWithLifecycle()
-
-    // TODO Sometimes on first open the (entire) dialog does not expand fully.
-    //      Could be due to incidentsData changing state?
-
-    Dialog(
-        onDismissRequest = onBackClick,
-        content = {
-            Surface(
-                modifier = modifier.heightIn(max = 480.dp),
-                shape = RoundedCornerShape(cornerRound),
-                color = MaterialTheme.colorScheme.surface,
-            ) {
-                Column(modifier) {
-                    when (incidentsData) {
-                        is IncidentsData.Incidents -> {
-                            Text(
-                                modifier = modifier.padding(textPadding),
-                                text = stringResource(R.string.change_incident),
-                                style = MaterialTheme.typography.titleLarge
-                            )
-                        }
-                    }
-
-                    when (incidentsData) {
-                        IncidentsData.Loading -> {
-                            Box(
-                                modifier
-                                    .padding(padding)
-                                    .align(Alignment.CenterHorizontally)
-                            ) {
-                                CircularProgressIndicator()
-                            }
-                        }
-
-                        is IncidentsData.Incidents -> {
-                            val incidents = (incidentsData as IncidentsData.Incidents).incidents
-                            IncidentSelectContent(
-                                casesViewModel,
-                                incidents,
-                                modifier,
-                                onBackClick,
-                                padding,
-                            )
-
-                        }
-
-                        else -> NoIncidentsContent(
-                            modifier,
-                            onBackClick,
-                            padding,
-                        )
-                    }
+    when (incidentsData) {
+        IncidentsData.Loading -> {
+            WrapInDialog(onBackClick, {
+                Box(
+                    modifier.padding(padding)
+                ) {
+                    CircularProgressIndicator()
                 }
-            }
+            })
         }
-    )
+
+        is IncidentsData.Incidents -> {
+            WrapInDialog(onBackClick, {
+                Column(modifier) {
+                    Text(
+                        modifier = modifier.padding(textPadding),
+                        text = stringResource(R.string.change_incident),
+                        style = MaterialTheme.typography.titleLarge
+                    )
+
+                    val incidents =
+                        (incidentsData as IncidentsData.Incidents).incidents
+                    IncidentSelectContent(
+                        casesViewModel,
+                        incidents,
+                        modifier,
+                        onBackClick,
+                        padding,
+                    )
+                }
+            })
+        }
+
+        else -> {
+            WrapInDialog(onBackClick, {
+                NoIncidentsContent(
+                    modifier,
+                    onBackClick,
+                    padding,
+                )
+            })
+        }
+    }
 }
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
@@ -166,22 +171,24 @@ private fun ColumnScope.IncidentSelectContent(
 }
 
 @Composable
-private fun ColumnScope.NoIncidentsContent(
+private fun NoIncidentsContent(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
     padding: Dp = 16.dp,
     textPadding: Dp = 16.dp,
 ) {
-    Text(
-        modifier = modifier.padding(textPadding),
-        text = stringResource(R.string.no_incidents_to_select),
-        style = MaterialTheme.typography.titleLarge,
-    )
-    CrisisCleanupTextButton(
-        modifier = modifier
-            .padding(padding)
-            .align(Alignment.End),
-        onClick = onBackClick,
-        textResId = R.string.close,
-    )
+    Column(modifier) {
+        Text(
+            modifier = modifier.padding(textPadding),
+            text = stringResource(R.string.no_incidents_to_select),
+            style = MaterialTheme.typography.titleLarge,
+        )
+        CrisisCleanupTextButton(
+            modifier = modifier
+                .padding(padding)
+                .align(Alignment.End),
+            onClick = onBackClick,
+            textResId = R.string.close,
+        )
+    }
 }

@@ -19,9 +19,9 @@ import kotlinx.datetime.Instant
         ),
     ],
     indices = [
-        Index(value = ["network_id", "local_global_uuid"], unique = true),
+        Index(value = ["incident_id", "network_id", "local_global_uuid"], unique = true),
         Index(value = ["sync_uuid"], unique = true),
-        
+
         Index(value = ["incident_id", "network_id"]),
         Index(value = ["network_id"]),
         Index(value = ["incident_id", "latitude", "longitude"]),

@@ -6,28 +6,54 @@ import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-class NetworkWorksitesFullTest {
+class NetworkWorksitesPagedTest {
     private val json = Json { ignoreUnknownKeys = true }
+
+    @Test
+    fun getWorksitesCount() {
+        val contents =
+            NetworkAuthResult::class.java.getResource("/getWorksitesCountSuccess.json")
+                ?.readText()!!
+        val result = json.decodeFromString<NetworkWorksitesCountResult>(contents)
+
+        assertNull(result.errors)
+        assertEquals(30, result.count)
+    }
 
     @Test
     fun getWorksitesSuccessResult() {
         val contents =
-            NetworkAuthResult::class.java.getResource("/getWorksitesAllSuccess.json")?.readText()!!
-        val result = json.decodeFromString<NetworkWorksitesShortResult>(contents)
+            NetworkAuthResult::class.java.getResource("/getWorksitesPagedSuccess.json")
+                ?.readText()!!
+        val result = json.decodeFromString<NetworkWorksitesFullResult>(contents)
 
         assertNull(result.errors)
         assertEquals(30, result.count)
 
         // TODO Compare certain cases
         //      Empty work_types (and null key_work_type)
-        //      Flags exist
+    }
+
+    @Test
+    fun getWorksites2SuccessResult() {
+        val contents =
+            NetworkAuthResult::class.java.getResource("/getWorksitesPaged2.json")
+                ?.readText()!!
+        val result = json.decodeFromString<NetworkWorksitesFullResult>(contents)
+
+        assertNull(result.errors)
+        assertEquals(30, result.count)
+
+        // TODO Compare certain cases
+        //      Empty work_types (and null key_work_type)
+        //      favorite not null
     }
 
     @Test
     fun getWorksitesResultFail() {
         val contents =
             NetworkAuthResult::class.java.getResource("/expiredTokenResult.json")?.readText()!!
-        val result = json.decodeFromString<NetworkWorksitesShortResult>(contents)
+        val result = json.decodeFromString<NetworkWorksitesFullResult>(contents)
 
         assertNull(result.count)
         assertNull(result.results)
@@ -48,7 +74,7 @@ class NetworkWorksitesFullTest {
         val contents =
             NetworkAuthResult::class.java.getResource("/worksitesInvalidIncidentResult.json")
                 ?.readText()!!
-        val result = json.decodeFromString<NetworkWorksitesShortResult>(contents)
+        val result = json.decodeFromString<NetworkWorksitesFullResult>(contents)
 
         assertNull(result.count)
         assertNull(result.results)

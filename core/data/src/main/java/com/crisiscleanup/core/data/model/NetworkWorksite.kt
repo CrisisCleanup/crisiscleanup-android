@@ -23,7 +23,8 @@ fun NetworkWorksiteFull.asEntity(
     city = city,
     county = county,
     email = email,
-    favoriteId = favorite,
+    // TODO Is this the correct interpretation?
+    favoriteId = favorite?.id,
     keyWorkTypeType = keyWorkType?.workType ?: "",
     latitude = location.coordinates[0],
     longitude = location.coordinates[1],

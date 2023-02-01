@@ -71,6 +71,7 @@ private fun Context.syncWorkNotification(): Notification {
             commonR.drawable.ic_app_notification
         )
         .setContentTitle(getString(R.string.sync_notification_title))
+        .setContentText(getString(R.string.sync_notification_text))
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
         // TODO Color? Is it possible from here? To use MaterialTheme? Or inject?
         .build()
