@@ -13,7 +13,8 @@ data class Worksite(
     val favoriteId: Long?,
     val incident: Long,
     val keyWorkType: WorkType?,
-    val location: LatLng,
+    val latitude: Float,
+    val longitude: Float,
     val name: String,
     val phone1: String,
     val phone2: String,
@@ -37,3 +38,4 @@ data class WorkType(
     val status: String?,
     val workType: String,
 )
+

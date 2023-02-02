@@ -92,7 +92,7 @@ fun CrisisCleanupApp(
                 val appHeaderBar = mainActivityViewModel.appHeaderUiState
                 val appHeaderState by appHeaderBar.appHeaderState.collectAsStateWithLifecycle()
                 val appHeaderTitle by appHeaderBar.title.collectAsStateWithLifecycle()
-                val isHeaderLoading by casesViewModel.isLoadingIncidents.collectAsStateWithLifecycle(
+                val isHeaderLoading by casesViewModel.isLoading.collectAsStateWithLifecycle(
                     true
                 )
 

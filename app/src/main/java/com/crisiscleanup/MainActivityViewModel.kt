@@ -24,7 +24,7 @@ import javax.inject.Inject
 class MainActivityViewModel @Inject constructor(
     localAppPreferencesRepository: LocalAppPreferencesRepository,
     accountDataRepository: AccountDataRepository,
-    private val incidentSelector: IncidentSelector,
+    incidentSelector: IncidentSelector,
     private val incidentsRepository: IncidentsRepository,
     val appHeaderUiState: AppHeaderUiState,
 ) : ViewModel() {

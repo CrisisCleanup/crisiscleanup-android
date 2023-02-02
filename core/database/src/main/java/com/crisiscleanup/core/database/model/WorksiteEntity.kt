@@ -19,14 +19,17 @@ import kotlinx.datetime.Instant
         ),
     ],
     indices = [
+        // Each worksite must be unique within an incident
+        // Newly created unsynced worksites will have a value of -1. The local/global UUID keeps these worksites unique within the table.
         Index(value = ["incident_id", "network_id", "local_global_uuid"], unique = true),
-        Index(value = ["sync_uuid"], unique = true),
+        // Locally modified worksites for querying sync queue and showing pending syncs.
+        Index(value = ["is_local_modified", "sync_attempt"]),
 
-        Index(value = ["incident_id", "network_id"]),
+        Index(value = ["incident_id", "network_id", "updated_at"]),
         Index(value = ["network_id"]),
         Index(value = ["incident_id", "latitude", "longitude"]),
         Index(value = ["incident_id", "longitude", "latitude"]),
-        // TODO Compound indexes, dates, svi, fts, ...
+        Index(value = ["incident_id", "network_id", "svi"]),
     ]
 )
 data class WorksiteEntity(
@@ -40,6 +43,10 @@ data class WorksiteEntity(
     val syncedAt: Instant,
     @ColumnInfo("local_global_uuid", defaultValue = "")
     val localGlobalUuid: String,
+    @ColumnInfo("is_local_modified", defaultValue = "0")
+    val isLocalModified: Boolean,
+    @ColumnInfo("sync_attempt", defaultValue = "0")
+    val syncAttempt: Int,
 
     @ColumnInfo("network_id", defaultValue = "-1")
     val networkId: Long,
@@ -86,25 +93,13 @@ data class WorksiteEntity(
 @Entity(
     "worksite_work_types",
     indices = [
-        Index(value = ["network_id", "local_global_uuid"], unique = true),
-        Index(value = ["sync_uuid"], unique = true),
         Index(value = ["network_id"]),
         Index(value = ["worksite_id"]),
-        // TODO More
     ]
 )
 data class WorkTypeEntity(
     @PrimaryKey(true)
     val id: Long,
-    @ColumnInfo("sync_uuid")
-    val syncUuid: String,
-    @ColumnInfo("local_modified_at", defaultValue = "0")
-    val localModifiedAt: Instant,
-    @ColumnInfo("synced_at", defaultValue = "0")
-    val syncedAt: Instant,
-    @ColumnInfo("local_global_uuid", defaultValue = "")
-    val localGlobalUuid: String,
-
     @ColumnInfo("network_id", defaultValue = "-1")
     val networkId: Long,
     @ColumnInfo("worksite_id")

@@ -9,13 +9,17 @@ import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.model.data.EmptyIncident
-import com.crisiscleanup.core.model.data.Incident
+import com.crisiscleanup.feature.cases.model.MapViewCameraBounds
+import com.crisiscleanup.feature.cases.model.MapViewCameraBoundsDefault
+import com.crisiscleanup.feature.cases.model.asLatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
@@ -24,10 +28,17 @@ import javax.inject.Inject
 class CasesViewModel @Inject constructor(
     incidentsRepository: IncidentsRepository,
     worksitesRepository: WorksitesRepository,
-    val incidentSelector: IncidentSelector,
+    incidentSelector: IncidentSelector,
     private val appHeaderUiState: AppHeaderUiState,
-    private val appPreferencesRepository: LocalAppPreferencesRepository,
+    appPreferencesRepository: LocalAppPreferencesRepository,
 ) : ViewModel() {
+    val incidentsData = IncidentsDataLoader(
+        viewModelScope,
+        incidentsRepository,
+        incidentSelector,
+        appPreferencesRepository,
+    ).data
+
     var isTableView = mutableStateOf(false)
         private set
 
@@ -42,38 +53,65 @@ class CasesViewModel @Inject constructor(
         isLayerView.value = !isLayerView.value
     }
 
-    val isLoadingIncidents = incidentsRepository.isLoading
-        .combine(worksitesRepository.isLoading) { incidentsLoading, worksitesLoading ->
-            incidentsLoading || worksitesLoading
-        }
+    private val isUpdatingCameraBounds = MutableStateFlow(false)
 
-    init {
-        incidentSelector.incident.onEach {
-            appHeaderUiState.setTitle(it.name)
-        }.launchIn(viewModelScope)
+    val isLoading = combine(
+        incidentsRepository.isLoading,
+        worksitesRepository.isLoading,
+        isUpdatingCameraBounds
+    ) { incidentsLoading,
+        worksitesLoading,
+        isUpdatingCameraBounds ->
+        incidentsLoading ||
+                worksitesLoading ||
+                isUpdatingCameraBounds
     }
 
-    val incidentsData = incidentsRepository.incidents.map { incidents ->
-        var selectedId = incidentSelector.incidentId.first()
-        if (selectedId == EmptyIncident.id) {
-            selectedId = appPreferencesRepository.userData.first().selectedIncidentId
+    val worksitesMapMarkers = incidentSelector.incidentId.flatMapLatest {
+        if (it == EmptyIncident.id) {
+            flowOf(emptyList())
+        } else {
+            // TODO Combine with search query and filters into single state. Load from network as available and necessary.
+            worksitesRepository.getWorksitesMapVisual(it)
         }
-
-        // Update incident data or select first if current incident (ID) not found
-        var incident = incidents.find { it.id == selectedId } ?: EmptyIncident
-        if (incident == EmptyIncident && incidents.isNotEmpty()) {
-            incident = incidents[0]
-        }
-
-        incidentSelector.setIncident(incident)
-
-        if (incidentSelector.incidentId.first() == EmptyIncident.id) IncidentsData.Empty
-        else IncidentsData.Incidents(incidents)
     }.stateIn(
         scope = viewModelScope,
-        initialValue = IncidentsData.Loading,
-        started = SharingStarted.WhileSubscribed(),
+        initialValue = emptyList(),
+        started = SharingStarted.WhileSubscribed()
     )
+
+    // TODO Reset map tiler
+
+    // TODO Create provider to
+    //      Restore last map location if cached
+    //      Move to device's physical location if first load?
+    //      Use incident's location if...
+    val mapCameraBounds = worksitesMapMarkers.flatMapLatest {
+        if (it.isEmpty()) {
+            flowOf(MapViewCameraBoundsDefault)
+        } else {
+            isUpdatingCameraBounds.value = true
+
+            // TODO Use incident's location repository instead
+            val builder = it.fold(
+                LatLngBounds.builder(),
+            ) { acc, curr -> acc.include(curr.asLatLng()) }
+            val bounds = MapViewCameraBounds(builder.build())
+
+            isUpdatingCameraBounds.value = false
+
+            flowOf(bounds)
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        initialValue = MapViewCameraBoundsDefault,
+        started = SharingStarted.WhileSubscribed()
+    )
+
+    init {
+        incidentSelector.incident.onEach { it -> appHeaderUiState.setTitle(it.name) }
+            .launchIn(viewModelScope)
+    }
 
     var casesSearchQuery = mutableStateOf("")
         private set
@@ -81,26 +119,4 @@ class CasesViewModel @Inject constructor(
     fun updateCasesSearchQuery(q: String) {
         casesSearchQuery.value = q
     }
-
-    suspend fun selectIncident(incident: Incident) {
-        if (incidentsData.value is IncidentsData.Incidents) {
-            val incidents = (incidentsData.value as IncidentsData.Incidents).incidents
-            val verifiedIncident = incidents.find { it.id == incident.id }
-            if (verifiedIncident != null) {
-                incidentSelector.setIncident(incident)
-
-                appPreferencesRepository.setSelectedIncident(incident.id)
-            }
-        }
-    }
-}
-
-sealed interface IncidentsData {
-    object Loading : IncidentsData
-
-    data class Incidents(
-        val incidents: List<Incident>,
-    )
-
-    object Empty : IncidentsData
 }

@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import com.crisiscleanup.core.database.model.PopulatedWorksite
+import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
 import com.crisiscleanup.core.database.model.WorksiteEntity
 import com.crisiscleanup.core.database.model.WorksiteLocalModifiedAt
 import kotlinx.coroutines.flow.Flow
@@ -21,6 +22,16 @@ interface WorksiteDao {
     """
     )
     fun getWorksites(incidentId: Long): Flow<List<PopulatedWorksite>>
+
+    @Transaction
+    @Query(
+        """
+    SELECT id, latitude, longitude, key_work_type_type
+    FROM worksites
+    WHERE incident_id=:incidentId
+    """
+    )
+    fun getWorksitesMapVisual(incidentId: Long): Flow<List<PopulatedWorksiteMapVisual>>
 
     @Transaction
     @Query(
@@ -46,6 +57,8 @@ interface WorksiteDao {
         UPDATE worksites
         SET
         synced_at=:syncedAt,
+        sync_attempt=0,
+        is_local_modified=0,
         incident_id=:incidentId,
         address=:address,
         auto_contact_frequency_t=:autoContactFrequencyT,

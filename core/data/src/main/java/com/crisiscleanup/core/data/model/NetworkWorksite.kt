@@ -14,7 +14,9 @@ fun NetworkWorksiteFull.asEntity(
     localModifiedAt = syncedAt,
     syncedAt = syncedAt,
     localGlobalUuid = "",
-    
+    isLocalModified = false,
+    syncAttempt = 0,
+
     networkId = id,
     incidentId = incidentId,
     address = address,
@@ -26,8 +28,8 @@ fun NetworkWorksiteFull.asEntity(
     // TODO Is this the correct interpretation?
     favoriteId = favorite?.id,
     keyWorkTypeType = keyWorkType?.workType ?: "",
-    latitude = location.coordinates[0],
-    longitude = location.coordinates[1],
+    latitude = location.coordinates[1],
+    longitude = location.coordinates[0],
     name = name,
     phone1 = phone1,
     phone2 = phone2,

@@ -8,11 +8,13 @@ import com.crisiscleanup.core.database.dao.WorksiteDao
 import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
 import com.crisiscleanup.core.database.dao.WorksitesSyncStatsDao
 import com.crisiscleanup.core.database.model.PopulatedWorksite
+import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
 import com.crisiscleanup.core.database.model.asEntity
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.SyncAttempt
 import com.crisiscleanup.core.model.data.Worksite
+import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.core.model.data.WorksitesSyncStats
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError
@@ -42,6 +44,11 @@ class OfflineFirstWorksitesRepository @Inject constructor(
 
     override var isLoading = MutableStateFlow(false)
         private set
+
+    override fun getWorksitesMapVisual(incidentId: Long): Flow<List<WorksiteMapMark>> {
+        return worksiteDao.getWorksitesMapVisual(incidentId)
+            .map { it.map(PopulatedWorksiteMapVisual::asExternalModel) }
+    }
 
     override fun getWorksites(incidentId: Long): Flow<List<Worksite>> {
         return worksiteDao.getWorksites(incidentId)

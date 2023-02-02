@@ -20,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -28,14 +29,20 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
+import com.crisiscleanup.core.model.data.WorksiteMapMark
+import com.crisiscleanup.feature.cases.model.MapViewCameraBounds
+import com.crisiscleanup.feature.cases.model.MapViewCameraBoundsDefault
 import com.crisiscleanup.feature.cases.ui.CasesAction
 import com.crisiscleanup.feature.cases.ui.CasesActionBar
 import com.crisiscleanup.feature.cases.ui.CasesZoomBar
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.rememberMarkerState
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
@@ -78,11 +85,15 @@ internal fun CasesRoute(
                 }
             }
         }
+        val worksitesOnMap by casesViewModel.worksitesMapMarkers.collectAsStateWithLifecycle()
+        val mapCameraBounds by casesViewModel.mapCameraBounds.collectAsStateWithLifecycle()
         CasesScreen(
             modifier,
-            rememberOnCasesAction,
+            onCasesAction = rememberOnCasesAction,
             isTableView = isTableView,
             isLayerView = isLayerView,
+            worksitesOnMap = worksitesOnMap,
+            mapCameraBounds = mapCameraBounds,
         )
     } else {
         val isLoading = incidentsData is IncidentsData.Loading
@@ -125,13 +136,17 @@ internal fun CasesScreen(
     onCasesAction: (CasesAction) -> Unit = {},
     isTableView: Boolean = false,
     isLayerView: Boolean = false,
-    latLngInitial: LatLng = LatLng(40.272621, -96.012327),
+    worksitesOnMap: List<WorksiteMapMark> = emptyList(),
+    mapCameraBounds: MapViewCameraBounds = MapViewCameraBoundsDefault,
 ) {
     Box(modifier.then(Modifier.fillMaxSize())) {
         if (isTableView) {
             Text("Table view", Modifier.padding(48.dp))
         } else {
-            CasesMapView(latLngInitial)
+            CasesMapView(
+                mapCameraBounds,
+                worksitesOnMap,
+            )
         }
         CasesOverlayActions(
             modifier,
@@ -143,25 +158,48 @@ internal fun CasesScreen(
 
 @Composable
 internal fun CasesMapView(
-    latLngInitial: LatLng,
+    mapCameraBounds: MapViewCameraBounds,
+    worksitesOnMap: List<WorksiteMapMark> = emptyList(),
 ) {
-    // rememberSaveable (for configuration changes) requires saver. Research or write.
-    // Reference rememberCameraPositionState or similar.
     val uiSettings by remember {
         mutableStateOf(
             MapUiSettings(
                 zoomControlsEnabled = false,
+                tiltGesturesEnabled = false,
+                rotationGesturesEnabled = false,
             )
         )
     }
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(latLngInitial, 10f)
+        position = CameraPosition.fromLatLngZoom(
+            mapCameraBounds.bounds.center,
+            // TODO Use parameter
+            10f,
+        )
+    }
+
+    val markerStates = worksitesOnMap.map {
+        rememberMarkerState(it.key, LatLng(it.latitude, it.longitude))
     }
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
         uiSettings = uiSettings,
         cameraPositionState = cameraPositionState,
-    )
+    ) {
+        // TODO Test caching and recomposition
+        markerStates.forEach {
+            Marker(it)
+        }
+    }
+
+    if (mapCameraBounds.takeApply()) {
+        // TODO Use reasonable (and configurable) value for padding however it translates to screens of different densities
+        val padding = with(LocalDensity.current) { 8.dp.toPx() }
+        val update = CameraUpdateFactory.newLatLngBounds(
+            mapCameraBounds.bounds, padding.toInt()
+        )
+        cameraPositionState.move(update)
+    }
 }
 
 private val actionSpacing = 8.dp

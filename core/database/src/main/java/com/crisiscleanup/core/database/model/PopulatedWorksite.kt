@@ -4,8 +4,8 @@ import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Junction
 import androidx.room.Relation
-import com.crisiscleanup.core.model.data.LatLng
 import com.crisiscleanup.core.model.data.Worksite
+import com.crisiscleanup.core.model.data.WorksiteMapMark
 import kotlinx.datetime.Instant
 
 data class PopulatedWorksite(
@@ -34,7 +34,8 @@ fun PopulatedWorksite.asExternalModel() = Worksite(
     favoriteId = entity.favoriteId,
     incident = entity.incidentId,
     keyWorkType = workTypes.find { it.workType == entity.keyWorkTypeType }?.asExternalModel(),
-    location = LatLng(entity.latitude, entity.longitude),
+    latitude = entity.latitude,
+    longitude = entity.longitude,
     name = entity.name,
     phone1 = entity.phone1,
     phone2 = entity.phone2 ?: "",
@@ -53,4 +54,19 @@ data class WorksiteLocalModifiedAt(
     val networkId: Long,
     @ColumnInfo("local_modified_at")
     val localModifiedAt: Instant,
+)
+
+data class PopulatedWorksiteMapVisual(
+    val id: Long,
+    val latitude: Float,
+    val longitude: Float,
+)
+
+fun PopulatedWorksiteMapVisual.asExternalModel() = WorksiteMapMark(
+    id = id,
+    key = "$id",
+    latitude = latitude.toDouble(),
+    longitude = longitude.toDouble(),
+    fLatitude = latitude,
+    fLongitude = longitude,
 )

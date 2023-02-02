@@ -31,9 +31,9 @@ import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.model.data.Incident
-import com.crisiscleanup.feature.cases.CasesViewModel
 import com.crisiscleanup.feature.cases.IncidentsData
 import com.crisiscleanup.feature.cases.R
+import com.crisiscleanup.feature.cases.SelectIncidentViewModel
 import kotlinx.coroutines.launch
 
 // TODO Is it possible to use a single dialog wrapper and switch content inside?
@@ -61,11 +61,11 @@ private fun WrapInDialog(
 internal fun SelectIncidentRoute(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    casesViewModel: CasesViewModel = hiltViewModel(),
+    selectIncidentViewModel: SelectIncidentViewModel = hiltViewModel(),
     padding: Dp = 16.dp,
     textPadding: Dp = 16.dp,
 ) {
-    val incidentsData by casesViewModel.incidentsData.collectAsStateWithLifecycle()
+    val incidentsData by selectIncidentViewModel.incidentsData.collectAsStateWithLifecycle()
     when (incidentsData) {
         IncidentsData.Loading -> {
             WrapInDialog(onBackClick, {
@@ -89,7 +89,7 @@ internal fun SelectIncidentRoute(
                     val incidents =
                         (incidentsData as IncidentsData.Incidents).incidents
                     IncidentSelectContent(
-                        casesViewModel,
+                        selectIncidentViewModel,
                         incidents,
                         modifier,
                         onBackClick,
@@ -114,7 +114,7 @@ internal fun SelectIncidentRoute(
 @OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 private fun ColumnScope.IncidentSelectContent(
-    casesViewModel: CasesViewModel,
+    selectIncidentViewModel: SelectIncidentViewModel,
     incidents: List<Incident>,
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
@@ -122,18 +122,18 @@ private fun ColumnScope.IncidentSelectContent(
 ) {
     var enableInput by rememberSaveable { mutableStateOf(true) }
     val cs = rememberCoroutineScope()
-    val onSelectIncident = remember(casesViewModel) {
+    val onSelectIncident = remember(selectIncidentViewModel) {
         { incident: Incident ->
             if (enableInput) {
                 enableInput = false
                 cs.launch {
-                    casesViewModel.selectIncident(incident)
+                    selectIncidentViewModel.selectIncident(incident)
                     onBackClick()
                 }
             }
         }
     }
-    val selectedIncidentId by casesViewModel.incidentSelector.incidentId.collectAsStateWithLifecycle()
+    val selectedIncidentId by selectIncidentViewModel.incidentSelector.incidentId.collectAsStateWithLifecycle()
 
     Box(Modifier.weight(weight = 1f, fill = false)) {
         LazyColumn(
@@ -148,7 +148,7 @@ private fun ColumnScope.IncidentSelectContent(
                     Text(
                         modifier = modifier
                             .fillParentMaxWidth()
-                            .clickable {
+                            .clickable(enabled = enableInput) {
                                 onSelectIncident(incident)
                             }
                             .padding(padding),
@@ -165,6 +165,7 @@ private fun ColumnScope.IncidentSelectContent(
             modifier = modifier
                 .padding(padding),
             onClick = onBackClick,
+            enabled = enableInput,
             textResId = R.string.close,
         )
     }
