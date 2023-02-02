@@ -67,7 +67,11 @@ class CasesViewModel @Inject constructor(
                 isUpdatingCameraBounds
     }
 
+    private var skipMarksAutoBounding = false
+
     val worksitesMapMarkers = incidentSelector.incidentId.flatMapLatest {
+        skipMarksAutoBounding = false
+
         if (it == EmptyIncident.id) {
             flowOf(emptyList())
         } else {
@@ -87,7 +91,7 @@ class CasesViewModel @Inject constructor(
     //      Move to device's physical location if first load?
     //      Use incident's location if...
     val mapCameraBounds = worksitesMapMarkers.flatMapLatest {
-        if (it.isEmpty()) {
+        if (it.isEmpty() || skipMarksAutoBounding) {
             flowOf(MapViewCameraBoundsDefault)
         } else {
             isUpdatingCameraBounds.value = true
@@ -118,5 +122,11 @@ class CasesViewModel @Inject constructor(
 
     fun updateCasesSearchQuery(q: String) {
         casesSearchQuery.value = q
+    }
+
+    fun onMapCameraChange(isActiveChange: Boolean) {
+        if (isActiveChange) {
+            skipMarksAutoBounding = true
+        }
     }
 }

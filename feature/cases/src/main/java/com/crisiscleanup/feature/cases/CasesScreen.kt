@@ -15,6 +15,8 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,6 +40,7 @@ import com.crisiscleanup.feature.cases.ui.CasesZoomBar
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.CameraMoveStartedReason
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
@@ -87,6 +90,11 @@ internal fun CasesRoute(
         }
         val worksitesOnMap by casesViewModel.worksitesMapMarkers.collectAsStateWithLifecycle()
         val mapCameraBounds by casesViewModel.mapCameraBounds.collectAsStateWithLifecycle()
+        val onMapCameraChange = remember(casesViewModel) {
+            { activeChange: Boolean ->
+                casesViewModel.onMapCameraChange(activeChange)
+            }
+        }
         CasesScreen(
             modifier,
             onCasesAction = rememberOnCasesAction,
@@ -94,6 +102,7 @@ internal fun CasesRoute(
             isLayerView = isLayerView,
             worksitesOnMap = worksitesOnMap,
             mapCameraBounds = mapCameraBounds,
+            onMapCameraChange = onMapCameraChange,
         )
     } else {
         val isLoading = incidentsData is IncidentsData.Loading
@@ -138,6 +147,7 @@ internal fun CasesScreen(
     isLayerView: Boolean = false,
     worksitesOnMap: List<WorksiteMapMark> = emptyList(),
     mapCameraBounds: MapViewCameraBounds = MapViewCameraBoundsDefault,
+    onMapCameraChange: (Boolean) -> Unit = {},
 ) {
     Box(modifier.then(Modifier.fillMaxSize())) {
         if (isTableView) {
@@ -146,6 +156,7 @@ internal fun CasesScreen(
             CasesMapView(
                 mapCameraBounds,
                 worksitesOnMap,
+                onMapCameraChange = onMapCameraChange,
             )
         }
         CasesOverlayActions(
@@ -160,6 +171,7 @@ internal fun CasesScreen(
 internal fun CasesMapView(
     mapCameraBounds: MapViewCameraBounds,
     worksitesOnMap: List<WorksiteMapMark> = emptyList(),
+    onMapCameraChange: (Boolean) -> Unit = {},
 ) {
     val uiSettings by remember {
         mutableStateOf(
@@ -192,14 +204,24 @@ internal fun CasesMapView(
         }
     }
 
-    if (mapCameraBounds.takeApply()) {
-        // TODO Use reasonable (and configurable) value for padding however it translates to screens of different densities
-        val padding = with(LocalDensity.current) { 8.dp.toPx() }
-        val update = CameraUpdateFactory.newLatLngBounds(
-            mapCameraBounds.bounds, padding.toInt()
-        )
-        cameraPositionState.move(update)
+    val currentLocalDensity = LocalDensity.current
+    LaunchedEffect(mapCameraBounds) {
+        if (mapCameraBounds.takeApply()) {
+            // TODO Make padding dp a parameter
+            val padding = with(currentLocalDensity) { 8.dp.toPx() }
+            val update = CameraUpdateFactory.newLatLngBounds(
+                mapCameraBounds.bounds, padding.toInt()
+            )
+            cameraPositionState.animate(update, 500)
+        }
     }
+
+    val movingCamera = remember {
+        derivedStateOf {
+            cameraPositionState.isMoving && cameraPositionState.cameraMoveStartedReason == CameraMoveStartedReason.GESTURE
+        }
+    }
+    onMapCameraChange(movingCamera.value)
 }
 
 private val actionSpacing = 8.dp
