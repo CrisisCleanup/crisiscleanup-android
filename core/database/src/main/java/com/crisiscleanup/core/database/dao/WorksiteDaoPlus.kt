@@ -12,8 +12,6 @@ import javax.inject.Singleton
 class WorksiteDaoPlus @Inject constructor(
     private val db: CrisisCleanupDatabase,
 ) {
-    // TODO Write tests
-
     private suspend fun getWorksiteLocalModifiedAt(
         incidentId: Long,
         worksiteIds: Set<Long>,
@@ -35,9 +33,9 @@ class WorksiteDaoPlus @Inject constructor(
     suspend fun syncExternalWorksites(
         incidentId: Long,
         worksites: List<WorksiteEntity>,
+        syncedAt: Instant,
     ) {
         val worksiteIds = worksites.map(WorksiteEntity::networkId).toSet()
-        // TODO Handle failed transaction
         db.withTransaction {
             val worksiteDao = db.worksiteDao()
 
@@ -45,11 +43,22 @@ class WorksiteDaoPlus @Inject constructor(
             worksites.forEach { worksite ->
                 val expectedLocalModifiedAt = modifiedAtLookup[worksite.networkId]
                 if (expectedLocalModifiedAt == null) {
-                    worksiteDao.insertWorksite(worksite)
+                    val id = worksiteDao.insertWorksiteRoot(
+                        syncedAt,
+                        worksite.networkId,
+                        worksite.incidentId,
+                    )
+                    worksiteDao.insertWorksite(worksite.copy(id = id))
+
                 } else if (worksite.updatedAt.epochSeconds > expectedLocalModifiedAt.epochSeconds) {
+                    worksiteDao.updateSyncWorksiteRoot(
+                        expectedLocalModifiedAt = expectedLocalModifiedAt,
+                        syncedAt = syncedAt,
+                        networkId = worksite.networkId,
+                        incidentId = worksite.incidentId,
+                    )
                     worksiteDao.updateSyncWorksite(
                         expectedLocalModifiedAt = expectedLocalModifiedAt,
-                        syncedAt = worksite.syncedAt,
                         networkId = worksite.networkId,
                         incidentId = worksite.incidentId,
                         address = worksite.address,
@@ -75,9 +84,6 @@ class WorksiteDaoPlus @Inject constructor(
                         updatedAt = worksite.updatedAt,
                     )
                     // TODO All cross reference data. Be sure to delete XRs as necessary before updating new
-
-                } else {
-                    // TODO Accumulate and return not updated? For testing/metrics?
                 }
             }
         }

@@ -90,6 +90,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
 
         try {
             syncInternal(force)
+            
             val incidentId = incidentSelector.incidentId.value
             worksitesRepository.refreshWorksites(incidentId, force)
         } catch (e: Exception) {

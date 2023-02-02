@@ -19,6 +19,7 @@ interface WorksiteDao {
     SELECT *
     FROM worksites
     WHERE incident_id=:incidentId
+    ORDER BY updated_at DESC, id DESC
     """
     )
     fun getWorksites(incidentId: Long): Flow<List<PopulatedWorksite>>
@@ -37,7 +38,7 @@ interface WorksiteDao {
     @Query(
         """
     SELECT network_id, local_modified_at
-    FROM worksites
+    FROM worksites_root
     WHERE incident_id=:incidentId AND network_id IN (:worksiteIds)
     """
     )
@@ -46,19 +47,58 @@ interface WorksiteDao {
         worksiteIds: Set<Long>,
     ): Flow<List<WorksiteLocalModifiedAt>>
 
-    @Query("SELECT COUNT(id) FROM worksites WHERE incident_id=:incidentId")
-    fun getWorksitesCount(incidentId: Long): Flow<Int>
+    @Transaction
+    @Query("SELECT COUNT(id) FROM worksites_root WHERE incident_id=:incidentId")
+    fun getWorksitesCount(incidentId: Long): Int
+
+    @Transaction
+    @Query(
+        """
+        INSERT OR ROLLBACK INTO worksites_root (
+            synced_at, 
+            network_id, 
+            incident_id
+        )
+        VALUES (
+            :syncedAt,
+            :networkId,
+            :incidentId
+        )
+    """
+    )
+    fun insertWorksiteRoot(
+        syncedAt: Instant,
+        networkId: Long,
+        incidentId: Long,
+    ): Long
 
     @Insert
     fun insertWorksite(worksite: WorksiteEntity)
 
+    @Transaction
     @Query(
         """
-        UPDATE worksites
+        UPDATE OR ROLLBACK worksites_root
         SET
         synced_at=:syncedAt,
         sync_attempt=0,
         is_local_modified=0,
+        incident_id=:incidentId
+        WHERE network_id=:networkId AND local_global_uuid='' AND local_modified_at = :expectedLocalModifiedAt
+        """
+    )
+    fun updateSyncWorksiteRoot(
+        expectedLocalModifiedAt: Instant,
+        syncedAt: Instant,
+        networkId: Long,
+        incidentId: Long,
+    )
+
+    @Transaction
+    @Query(
+        """
+        UPDATE OR ROLLBACK worksites
+        SET
         incident_id=:incidentId,
         address=:address,
         auto_contact_frequency_t=:autoContactFrequencyT,
@@ -81,12 +121,11 @@ interface WorksiteDao {
         svi=:svi,
         what3Words=:what3Words,
         updated_at=:updatedAt
-        WHERE network_id=:networkId AND local_global_uuid="" AND local_modified_at = :expectedLocalModifiedAt
+        WHERE id=(SELECT id from worksites_root WHERE network_id=:networkId AND local_global_uuid='' AND local_modified_at = :expectedLocalModifiedAt)
         """
     )
     fun updateSyncWorksite(
         expectedLocalModifiedAt: Instant,
-        syncedAt: Instant,
         networkId: Long,
         incidentId: Long,
         address: String,

@@ -11,6 +11,7 @@ import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
 import com.crisiscleanup.core.database.model.IncidentLocationEntity
 import com.crisiscleanup.core.database.model.WorkTypeEntity
 import com.crisiscleanup.core.database.model.WorksiteEntity
+import com.crisiscleanup.core.database.model.WorksiteRootEntity
 import com.crisiscleanup.core.database.model.WorksiteSyncStatsEntity
 import com.crisiscleanup.core.database.model.WorksiteWorkTypeCrossRef
 import com.crisiscleanup.core.database.util.InstantConverter
@@ -21,6 +22,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         IncidentLocationEntity::class,
         IncidentIncidentLocationCrossRef::class,
         WorksiteSyncStatsEntity::class,
+        WorksiteRootEntity::class,
         WorksiteEntity::class,
         WorkTypeEntity::class,
         WorksiteWorkTypeCrossRef::class,

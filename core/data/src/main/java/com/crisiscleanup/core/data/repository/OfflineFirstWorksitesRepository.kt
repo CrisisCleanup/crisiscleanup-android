@@ -1,6 +1,6 @@
 package com.crisiscleanup.core.data.repository
 
-import com.crisiscleanup.core.common.UuidGenerator
+import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.model.asEntity
@@ -18,6 +18,7 @@ import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.core.model.data.WorksitesSyncStats
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,7 +37,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private val worksitesSyncStatsDao: WorksitesSyncStatsDao,
     private val worksiteDao: WorksiteDao,
     private val worksiteDaoPlus: WorksiteDaoPlus,
-    private val uuidGenerator: UuidGenerator,
+    private val appLogger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : WorksitesRepository {
     // TODO Defer to provider instead. So amount can vary according to (WifiManager) signal level or equivalent.
@@ -110,18 +111,15 @@ class OfflineFirstWorksitesRepository @Inject constructor(
                 )
             }
 
-            val worksites = worksitesRequest.results?.map {
-                it.asEntity(incidentId, uuidGenerator.uuid(), syncStart)
-            } ?: emptyList()
+            val worksites = worksitesRequest.results?.map { it.asEntity(incidentId) } ?: emptyList()
             worksiteDaoPlus.syncExternalWorksites(
                 incidentId,
                 worksites,
+                syncStart,
             )
 
             pagedCount += worksites.size
             offset += limit
-
-            // TODO Check for cancellation and exit gracefully. Save stats as necessary. Be sure to emit CancellationExceptions https://developer.android.com/kotlin/coroutines/coroutines-best-practices#coroutine-cancellable
         }
 
         val syncSeconds = syncStart.epochSeconds
@@ -135,6 +133,9 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     }
 
     // TODO Write tests
+    // TODO Split force into two arguments.
+    //      - Clear should delete all worksites data and sync.
+    //      - Soft force should sync deltas since last.
     override suspend fun refreshWorksites(incidentId: Long, force: Boolean) =
         withContext(ioDispatcher) {
             if (incidentId == EmptyIncident.id) {
@@ -149,9 +150,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
 
                 var syncStats = querySyncStats(incidentId, syncStart)
 
-                val savedWorksitesCount = worksiteDao.getWorksitesCount(incidentId).first()
-
-                // TODO Sync full should cull invalid worksites. Easiest would be deleting all worksites under an incident.
+                val savedWorksitesCount = worksiteDao.getWorksitesCount(incidentId)
 
                 val syncFull = force || savedWorksitesCount < syncStats.worksitesCount
                 if (syncFull || syncStats.syncAttempt.shouldSyncPassively()) {
@@ -164,6 +163,13 @@ class OfflineFirstWorksitesRepository @Inject constructor(
                 }
 
                 worksitesSyncStatsDao.upsertStats(syncStats.asEntity())
+            } catch (e: Exception) {
+                if (e is CancellationException) {
+                    throw (e)
+                } else {
+                    // TODO User feedback?
+                    appLogger.logException(e)
+                }
             } finally {
                 isLoading.value = false
             }

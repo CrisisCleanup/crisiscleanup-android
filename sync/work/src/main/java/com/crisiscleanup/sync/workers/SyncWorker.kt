@@ -42,6 +42,7 @@ class SyncWorker @AssistedInject constructor(
         traceAsync("Sync", 0) {
             val syncedSuccessfully = awaitAll(
                 async {
+                    // TODO Force sync incidents if not recent in case newer incidents have been created
                     incidentsRepository.sync()
                 },
             ).all { it }

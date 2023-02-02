@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "49d248fe36412f3943b6cd6befcc7d5a",
+    "identityHash": "35ffa3e6e0a5c87edf1ca43d5cfd6ba4",
     "entities": [
       {
         "tableName": "incidents",
@@ -214,8 +214,8 @@
         "foreignKeys": []
       },
       {
-        "tableName": "worksites",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `sync_uuid` TEXT NOT NULL, `local_modified_at` INTEGER NOT NULL DEFAULT 0, `synced_at` INTEGER NOT NULL DEFAULT 0, `local_global_uuid` TEXT NOT NULL DEFAULT '', `is_local_modified` INTEGER NOT NULL DEFAULT 0, `sync_attempt` INTEGER NOT NULL DEFAULT 0, `network_id` INTEGER NOT NULL DEFAULT -1, `incident_id` INTEGER NOT NULL, `address` TEXT NOT NULL, `auto_contact_frequency_t` TEXT NOT NULL, `case_number` TEXT NOT NULL, `city` TEXT NOT NULL, `county` TEXT NOT NULL, `created_at` INTEGER, `email` TEXT DEFAULT '', `favorite_id` INTEGER, `key_work_type_type` TEXT NOT NULL DEFAULT '', `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `name` TEXT NOT NULL, `phone1` TEXT NOT NULL, `phone2` TEXT DEFAULT '', `plus_code` TEXT DEFAULT '', `postal_code` TEXT NOT NULL, `reported_by` INTEGER, `state` TEXT NOT NULL, `svi` REAL, `what3Words` TEXT DEFAULT '', `updated_at` INTEGER NOT NULL, FOREIGN KEY(`incident_id`) REFERENCES `incidents`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "tableName": "worksites_root",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `sync_uuid` TEXT NOT NULL DEFAULT '', `local_modified_at` INTEGER NOT NULL DEFAULT 0, `synced_at` INTEGER NOT NULL DEFAULT 0, `local_global_uuid` TEXT NOT NULL DEFAULT '', `is_local_modified` INTEGER NOT NULL DEFAULT 0, `sync_attempt` INTEGER NOT NULL DEFAULT 0, `network_id` INTEGER NOT NULL DEFAULT -1, `incident_id` INTEGER NOT NULL, FOREIGN KEY(`incident_id`) REFERENCES `incidents`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -227,7 +227,8 @@
             "fieldPath": "syncUuid",
             "columnName": "sync_uuid",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": true,
+            "defaultValue": "''"
           },
           {
             "fieldPath": "localModifiedAt",
@@ -263,6 +264,73 @@
             "affinity": "INTEGER",
             "notNull": true,
             "defaultValue": "0"
+          },
+          {
+            "fieldPath": "networkId",
+            "columnName": "network_id",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "-1"
+          },
+          {
+            "fieldPath": "incidentId",
+            "columnName": "incident_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_worksites_root_incident_id_network_id_local_global_uuid",
+            "unique": true,
+            "columnNames": [
+              "incident_id",
+              "network_id",
+              "local_global_uuid"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_worksites_root_incident_id_network_id_local_global_uuid` ON `${TABLE_NAME}` (`incident_id`, `network_id`, `local_global_uuid`)"
+          },
+          {
+            "name": "index_worksites_root_is_local_modified_sync_attempt",
+            "unique": false,
+            "columnNames": [
+              "is_local_modified",
+              "sync_attempt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_worksites_root_is_local_modified_sync_attempt` ON `${TABLE_NAME}` (`is_local_modified`, `sync_attempt`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "incidents",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "incident_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "worksites",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `network_id` INTEGER NOT NULL DEFAULT -1, `incident_id` INTEGER NOT NULL, `address` TEXT NOT NULL, `auto_contact_frequency_t` TEXT NOT NULL, `case_number` TEXT NOT NULL, `city` TEXT NOT NULL, `county` TEXT NOT NULL, `created_at` INTEGER, `email` TEXT DEFAULT '', `favorite_id` INTEGER, `key_work_type_type` TEXT NOT NULL DEFAULT '', `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `name` TEXT NOT NULL, `phone1` TEXT NOT NULL, `phone2` TEXT DEFAULT '', `plus_code` TEXT DEFAULT '', `postal_code` TEXT NOT NULL, `reported_by` INTEGER, `state` TEXT NOT NULL, `svi` REAL, `what3Words` TEXT DEFAULT '', `updated_at` INTEGER NOT NULL, FOREIGN KEY(`id`) REFERENCES `worksites_root`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
           },
           {
             "fieldPath": "networkId",
@@ -417,27 +485,6 @@
         },
         "indices": [
           {
-            "name": "index_worksites_incident_id_network_id_local_global_uuid",
-            "unique": true,
-            "columnNames": [
-              "incident_id",
-              "network_id",
-              "local_global_uuid"
-            ],
-            "orders": [],
-            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_worksites_incident_id_network_id_local_global_uuid` ON `${TABLE_NAME}` (`incident_id`, `network_id`, `local_global_uuid`)"
-          },
-          {
-            "name": "index_worksites_is_local_modified_sync_attempt",
-            "unique": false,
-            "columnNames": [
-              "is_local_modified",
-              "sync_attempt"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_worksites_is_local_modified_sync_attempt` ON `${TABLE_NAME}` (`is_local_modified`, `sync_attempt`)"
-          },
-          {
             "name": "index_worksites_incident_id_network_id_updated_at",
             "unique": false,
             "columnNames": [
@@ -493,11 +540,11 @@
         ],
         "foreignKeys": [
           {
-            "table": "incidents",
+            "table": "worksites_root",
             "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
             "columns": [
-              "incident_id"
+              "id"
             ],
             "referencedColumns": [
               "id"
@@ -664,7 +711,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '49d248fe36412f3943b6cd6befcc7d5a')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '35ffa3e6e0a5c87edf1ca43d5cfd6ba4')"
     ]
   }
 }

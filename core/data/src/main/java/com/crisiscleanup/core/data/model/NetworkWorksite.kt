@@ -2,21 +2,11 @@ package com.crisiscleanup.core.data.model
 
 import com.crisiscleanup.core.database.model.WorksiteEntity
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
-import kotlinx.datetime.Instant
 
 fun NetworkWorksiteFull.asEntity(
     incidentId: Long,
-    syncUuid: String,
-    syncedAt: Instant,
 ) = WorksiteEntity(
     id = 0,
-    syncUuid = syncUuid,
-    localModifiedAt = syncedAt,
-    syncedAt = syncedAt,
-    localGlobalUuid = "",
-    isLocalModified = false,
-    syncAttempt = 0,
-
     networkId = id,
     incidentId = incidentId,
     address = address,

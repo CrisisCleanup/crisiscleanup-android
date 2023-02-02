@@ -9,7 +9,7 @@ import com.crisiscleanup.core.model.data.WorkType
 import kotlinx.datetime.Instant
 
 @Entity(
-    "worksites",
+    "worksites_root",
     foreignKeys = [
         ForeignKey(
             entity = IncidentEntity::class,
@@ -20,22 +20,17 @@ import kotlinx.datetime.Instant
     ],
     indices = [
         // Each worksite must be unique within an incident
-        // Newly created unsynced worksites will have a value of -1. The local/global UUID keeps these worksites unique within the table.
+        // Locally created unsynced worksites will have a network_id=-1. The local/global UUID keeps these worksites unique within the table.
         Index(value = ["incident_id", "network_id", "local_global_uuid"], unique = true),
         // Locally modified worksites for querying sync queue and showing pending syncs.
         Index(value = ["is_local_modified", "sync_attempt"]),
 
-        Index(value = ["incident_id", "network_id", "updated_at"]),
-        Index(value = ["network_id"]),
-        Index(value = ["incident_id", "latitude", "longitude"]),
-        Index(value = ["incident_id", "longitude", "latitude"]),
-        Index(value = ["incident_id", "network_id", "svi"]),
     ]
 )
-data class WorksiteEntity(
+data class WorksiteRootEntity(
     @PrimaryKey(true)
     val id: Long,
-    @ColumnInfo("sync_uuid")
+    @ColumnInfo("sync_uuid", defaultValue = "")
     val syncUuid: String,
     @ColumnInfo("local_modified_at", defaultValue = "0")
     val localModifiedAt: Instant,
@@ -48,6 +43,33 @@ data class WorksiteEntity(
     @ColumnInfo("sync_attempt", defaultValue = "0")
     val syncAttempt: Int,
 
+    @ColumnInfo("network_id", defaultValue = "-1")
+    val networkId: Long,
+    @ColumnInfo("incident_id")
+    val incidentId: Long,
+)
+
+@Entity(
+    "worksites",
+    foreignKeys = [
+        ForeignKey(
+            entity = WorksiteRootEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+    indices = [
+        Index(value = ["incident_id", "network_id", "updated_at"]),
+        Index(value = ["network_id"]),
+        Index(value = ["incident_id", "latitude", "longitude"]),
+        Index(value = ["incident_id", "longitude", "latitude"]),
+        Index(value = ["incident_id", "network_id", "svi"]),
+    ]
+)
+data class WorksiteEntity(
+    @PrimaryKey(true)
+    val id: Long,
     @ColumnInfo("network_id", defaultValue = "-1")
     val networkId: Long,
     @ColumnInfo("incident_id")

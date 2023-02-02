@@ -75,6 +75,8 @@ class CasesViewModel @Inject constructor(
         if (it == EmptyIncident.id) {
             flowOf(emptyList())
         } else {
+            // TODO When switching between incidents from lots to little worksites the little worksites sometimes loaded in addition to lots of worksites. Around 5% of the time.
+
             // TODO Combine with search query and filters into single state. Load from network as available and necessary.
             worksitesRepository.getWorksitesMapVisual(it)
         }

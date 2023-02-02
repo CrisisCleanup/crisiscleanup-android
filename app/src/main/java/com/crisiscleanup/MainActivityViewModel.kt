@@ -12,12 +12,14 @@ import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.model.data.UserData
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -45,9 +47,16 @@ class MainActivityViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed()
     )
 
+    private var syncJob: Job? = null
+
     init {
         incidentSelector.incidentId
-            .onEach { incidentsRepository.sync(false) }
+            .onEach {
+                syncJob?.cancel()
+                syncJob = viewModelScope.launch {
+                    incidentsRepository.sync(false)
+                }
+            }
             .launchIn(viewModelScope)
     }
 }
