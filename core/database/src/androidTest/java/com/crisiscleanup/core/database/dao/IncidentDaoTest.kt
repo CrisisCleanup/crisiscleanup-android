@@ -89,6 +89,9 @@ class IncidentDaoTest {
         return Triple(incidentLocations, incidents, incidentToIncidentLocations)
     }
 
+    /**
+     * Incidents are saved with location cross references
+     */
     @Test
     fun saveIncidents_queryIncidentsWithLocations() = runTest {
         val (incidentLocations, incidents, incidentToIncidentLocations) = testIncidentDataSet()
@@ -114,6 +117,9 @@ class IncidentDaoTest {
         )
     }
 
+    /**
+     * Archives incidents with IDs not in specified
+     */
     @Test
     fun archiveUnspecified() = runTest {
         incidentDao.upsertIncidents(testIncidents())

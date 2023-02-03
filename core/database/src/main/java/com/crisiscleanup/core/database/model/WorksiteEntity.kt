@@ -76,7 +76,7 @@ data class WorksiteEntity(
     val incidentId: Long,
     val address: String,
     @ColumnInfo("auto_contact_frequency_t")
-    val autoContactFrequencyT: String,
+    val autoContactFrequencyT: String?,
     @ColumnInfo("case_number")
     val caseNumber: String,
     val city: String,
@@ -93,7 +93,7 @@ data class WorksiteEntity(
     val latitude: Float,
     val longitude: Float,
     val name: String,
-    val phone1: String,
+    val phone1: String?,
     @ColumnInfo(defaultValue = "")
     val phone2: String?,
     @ColumnInfo("plus_code", defaultValue = "")

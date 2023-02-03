@@ -84,6 +84,8 @@ class WorksiteDaoPlus @Inject constructor(
                         updatedAt = worksite.updatedAt,
                     )
                     // TODO All cross reference data. Be sure to delete XRs as necessary before updating new
+                } else {
+                    // TODO Log local modified not overwritten (for sync logs)
                 }
             }
         }

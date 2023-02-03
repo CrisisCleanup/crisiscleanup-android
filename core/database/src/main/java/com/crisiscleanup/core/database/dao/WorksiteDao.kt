@@ -30,9 +30,10 @@ interface WorksiteDao {
     SELECT id, latitude, longitude, key_work_type_type
     FROM worksites
     WHERE incident_id=:incidentId
+    LIMIT :limit
     """
     )
-    fun getWorksitesMapVisual(incidentId: Long): Flow<List<PopulatedWorksiteMapVisual>>
+    fun getWorksitesMapVisual(incidentId: Long, limit: Int): Flow<List<PopulatedWorksiteMapVisual>>
 
     @Transaction
     @Query(
@@ -99,28 +100,28 @@ interface WorksiteDao {
         """
         UPDATE OR ROLLBACK worksites
         SET
-        incident_id=:incidentId,
-        address=:address,
-        auto_contact_frequency_t=:autoContactFrequencyT,
-        case_number=:caseNumber,
-        city=:city,
-        county=:county,
-        created_at=COALESCE(:createdAt, created_at),
-        email=:email,
-        favorite_id=:favoriteId,
+        incident_id     =:incidentId,
+        address         =:address,
+        auto_contact_frequency_t=COALESCE(:autoContactFrequencyT,auto_contact_frequency_t),
+        case_number     =:caseNumber,
+        city            =:city,
+        county          =:county,
+        created_at      =COALESCE(:createdAt, created_at),
+        email           =COALESCE(:email, email),
+        favorite_id     =:favoriteId,
         key_work_type_type=:keyWorkTypeType,
-        latitude=:latitude,
-        longitude=:longitude,
-        name=:name,
-        phone1=:phone1,
-        phone2=:phone2,
-        plus_code=:plusCode,
-        postal_code=:postalCode,
-        reported_by=:reportedBy,
-        state=:state,
-        svi=:svi,
-        what3Words=:what3Words,
-        updated_at=:updatedAt
+        latitude        =:latitude,
+        longitude       =:longitude,
+        name            =:name,
+        phone1          =COALESCE(:phone1, phone1),
+        phone2          =COALESCE(:phone2, phone2),
+        plus_code       =COALESCE(:plusCode, plus_code),
+        postal_code     =:postalCode,
+        reported_by     =COALESCE(:reportedBy, reported_by),
+        state           =:state,
+        svi             =:svi,
+        what3Words      =COALESCE(:what3Words, what3Words),
+        updated_at      =:updatedAt
         WHERE id=(SELECT id from worksites_root WHERE network_id=:networkId AND local_global_uuid='' AND local_modified_at = :expectedLocalModifiedAt)
         """
     )
@@ -129,7 +130,7 @@ interface WorksiteDao {
         networkId: Long,
         incidentId: Long,
         address: String,
-        autoContactFrequencyT: String,
+        autoContactFrequencyT: String?,
         caseNumber: String,
         city: String,
         county: String,
@@ -140,7 +141,7 @@ interface WorksiteDao {
         latitude: Float,
         longitude: Float,
         name: String,
-        phone1: String,
+        phone1: String?,
         phone2: String?,
         plusCode: String?,
         postalCode: String,

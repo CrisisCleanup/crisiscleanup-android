@@ -31,21 +31,20 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
-import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.feature.cases.model.MapViewCameraBounds
 import com.crisiscleanup.feature.cases.model.MapViewCameraBoundsDefault
+import com.crisiscleanup.feature.cases.model.WorksiteGoogleMapMark
 import com.crisiscleanup.feature.cases.ui.CasesAction
 import com.crisiscleanup.feature.cases.ui.CasesActionBar
 import com.crisiscleanup.feature.cases.ui.CasesZoomBar
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraMoveStartedReason
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
-import com.google.maps.android.compose.rememberMarkerState
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
@@ -56,7 +55,7 @@ internal fun CasesRoute(
 ) {
     val incidentsData by casesViewModel.incidentsData.collectAsStateWithLifecycle()
     if (incidentsData is IncidentsData.Incidents) {
-        val isTableView by casesViewModel.isTableView
+        val isTableView by casesViewModel.isTableView.collectAsStateWithLifecycle()
         val isLayerView by casesViewModel.isLayerView
 
         val rememberOnCasesAction = remember(onCasesAction, casesViewModel) {
@@ -88,11 +87,12 @@ internal fun CasesRoute(
                 }
             }
         }
+        // TODO Delay evaluation only when necessary by remembering data
         val worksitesOnMap by casesViewModel.worksitesMapMarkers.collectAsStateWithLifecycle()
         val mapCameraBounds by casesViewModel.mapCameraBounds.collectAsStateWithLifecycle()
         val onMapCameraChange = remember(casesViewModel) {
-            { activeChange: Boolean ->
-                casesViewModel.onMapCameraChange(activeChange)
+            { projection: Projection?, activeChange: Boolean ->
+                casesViewModel.onMapCameraChange(projection, activeChange)
             }
         }
         CasesScreen(
@@ -145,9 +145,9 @@ internal fun CasesScreen(
     onCasesAction: (CasesAction) -> Unit = {},
     isTableView: Boolean = false,
     isLayerView: Boolean = false,
-    worksitesOnMap: List<WorksiteMapMark> = emptyList(),
+    worksitesOnMap: List<WorksiteGoogleMapMark> = emptyList(),
     mapCameraBounds: MapViewCameraBounds = MapViewCameraBoundsDefault,
-    onMapCameraChange: (Boolean) -> Unit = {},
+    onMapCameraChange: (Projection?, Boolean) -> Unit = { _, _ -> },
 ) {
     Box(modifier.then(Modifier.fillMaxSize())) {
         if (isTableView) {
@@ -170,9 +170,11 @@ internal fun CasesScreen(
 @Composable
 internal fun CasesMapView(
     mapCameraBounds: MapViewCameraBounds,
-    worksitesOnMap: List<WorksiteMapMark> = emptyList(),
-    onMapCameraChange: (Boolean) -> Unit = {},
+    worksitesOnMap: List<WorksiteGoogleMapMark> = emptyList(),
+    onMapCameraChange: (Projection?, Boolean) -> Unit = { _, _ -> },
 ) {
+    // TODO Profile and optimize recompositions when map is changed (by user) if possible.
+
     val uiSettings by remember {
         mutableStateOf(
             MapUiSettings(
@@ -190,17 +192,14 @@ internal fun CasesMapView(
         )
     }
 
-    val markerStates = worksitesOnMap.map {
-        rememberMarkerState(it.key, LatLng(it.latitude, it.longitude))
-    }
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
         uiSettings = uiSettings,
         cameraPositionState = cameraPositionState,
     ) {
-        // TODO Test caching and recomposition
-        markerStates.forEach {
-            Marker(it)
+        // TODO Is it possible to cache? If so test recomposition. If not document why not.
+        worksitesOnMap.forEach {
+            Marker(it.markerState)
         }
     }
 
@@ -221,7 +220,10 @@ internal fun CasesMapView(
             cameraPositionState.isMoving && cameraPositionState.cameraMoveStartedReason == CameraMoveStartedReason.GESTURE
         }
     }
-    onMapCameraChange(movingCamera.value)
+    onMapCameraChange(
+        cameraPositionState.projection,
+        movingCamera.value
+    )
 }
 
 private val actionSpacing = 8.dp

@@ -15,7 +15,7 @@ import com.crisiscleanup.core.database.model.PopulatedIncident
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
-import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.collapseMessages
+import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.tryGetException
 import com.crisiscleanup.core.network.model.NetworkIncident
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -67,8 +67,8 @@ class OfflineFirstIncidentsRepository @Inject constructor(
                 )
             )
 
-            if (networkIncidents.errors != null) {
-                throw Exception(collapseMessages(networkIncidents.errors!!))
+            networkIncidents.errors?.let {
+                tryGetException(it)?.let { exception -> throw exception }
             }
 
             networkIncidents.results?.let { incidents ->
@@ -90,7 +90,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
 
         try {
             syncInternal(force)
-            
+
             val incidentId = incidentSelector.incidentId.value
             worksitesRepository.refreshWorksites(incidentId, force)
         } catch (e: Exception) {

@@ -21,12 +21,11 @@ class SelectIncidentViewModel @Inject constructor(
         incidentSelector,
         appPreferencesRepository,
     ).data
-    
+
     suspend fun selectIncident(incident: Incident) {
         if (incidentsData.value is IncidentsData.Incidents) {
             val incidents = (incidentsData.value as IncidentsData.Incidents).incidents
-            val verifiedIncident = incidents.find { it.id == incident.id }
-            if (verifiedIncident != null) {
+            incidents.find { it.id == incident.id }?.let {
                 incidentSelector.setIncident(incident)
 
                 appPreferencesRepository.setSelectedIncident(incident.id)

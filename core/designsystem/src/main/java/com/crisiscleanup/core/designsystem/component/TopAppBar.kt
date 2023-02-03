@@ -37,7 +37,7 @@ fun CrisisCleanupTopAppBar(
     }
     val navigationContent: (@Composable (() -> Unit)) =
         @Composable {
-            if (navIcon != null) {
+            navIcon?.let {
                 if (onNavigationClick == null) {
                     Icon(
                         modifier = Modifier.padding(navIconPadding),
@@ -136,7 +136,7 @@ fun TopAppBarDefault(
     }
     val navigationContent: (@Composable (() -> Unit)) =
         @Composable {
-            if (navIcon != null) {
+            navIcon?.let {
                 if (onNavigationClick == null) {
                     Icon(
                         modifier = Modifier.padding(navIconPadding),

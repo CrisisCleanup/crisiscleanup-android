@@ -17,6 +17,8 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
 
+class ExpiredTokenException : Exception("Auth token is expired")
+
 /**
  * General error from the API
  */
@@ -27,10 +29,35 @@ data class NetworkCrisisCleanupApiError(
     val message: List<String>? = null,
 ) {
     companion object {
-        // TODO Use distinct exceptions (like expired token) where possible
-        fun collapseMessages(errors: Collection<NetworkCrisisCleanupApiError>) =
+        fun tryThrowException(errors: Collection<NetworkCrisisCleanupApiError>?) {
+            errors?.let {
+                tryGetException(it)?.let { exception -> throw exception }
+            }
+        }
+
+        fun tryGetException(errors: Collection<NetworkCrisisCleanupApiError>): Exception? {
+            if (errors.isNotEmpty()) {
+                var exception: Exception? = null
+                if (errors.size == 1) {
+                    exception = errors.first().tryGetException()
+                }
+                return exception ?: Exception(collapseMessages(errors))
+            }
+            return null
+        }
+
+        private fun collapseMessages(errors: Collection<NetworkCrisisCleanupApiError>) =
             errors.map { it.message?.joinToString(". ") }
                 .joinToString("\n")
+    }
+
+    private fun tryGetException(): Exception? {
+        if (message?.size == 1) {
+            if (message[0] == "Token has expired.") {
+                return ExpiredTokenException()
+            }
+        }
+        return null
     }
 }
 

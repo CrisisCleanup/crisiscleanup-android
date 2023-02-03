@@ -42,7 +42,7 @@ private interface CrisisCleanupNetworkApi {
     ): NetworkWorksitesCountResult
 
     @TokenAuthenticationHeader
-    @GET("worksites-all")
+    @GET("worksites_all")
     suspend fun getWorksitesAll(
         @Query("incident")
         incidentId: Long,

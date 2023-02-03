@@ -13,6 +13,9 @@ import kotlinx.datetime.Instant
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.time.Duration.Companion.seconds
 
 class WorksiteDaoTest {
@@ -58,40 +61,9 @@ class WorksiteDaoTest {
         }
     }
 
-    // Defines all fields setting updated_at to be relative to createdAt
-    private fun testWorksiteFullEntity(
-        networkId: Long,
-        incidentId: Long,
-        createdAt: Instant,
-        id: Long = 0
-    ) = WorksiteEntity(
-        id = id,
-        networkId = networkId,
-        incidentId = incidentId,
-        address = "123 address st",
-        autoContactFrequencyT = "enum.enver",
-        caseNumber = "case",
-        city = "city 123",
-        county = "county 123",
-        createdAt = createdAt,
-        email = "test123@email.com",
-        favoriteId = 4134,
-        keyWorkTypeType = "key-type-type",
-        latitude = 414.353f,
-        longitude = -534.15f,
-        name = "full worksite",
-        phone1 = "345-414-7825",
-        phone2 = "835-621-8938",
-        plusCode = "code 123",
-        postalCode = "83425",
-        reportedBy = 7835,
-        state = "ED",
-        svi = 6.235f,
-        what3Words = "what,three,words",
-        updatedAt = createdAt.plus(99.seconds),
-    )
-
     private val nowInstant = Clock.System.now()
+
+    private val previousSyncedAt = nowInstant.plus((-9999).seconds)
 
     private val createdAtA = nowInstant.plus((-854812).seconds)
     private val updatedAtA = createdAtA.plus(78458.seconds)
@@ -114,6 +86,9 @@ class WorksiteDaoTest {
             createdAt,
         )
 
+    /**
+     * Syncing worksites data insert into db without fail
+     */
     @Test
     fun syncNewWorksites() = runTest {
         // Insert existing
@@ -122,7 +97,6 @@ class WorksiteDaoTest {
             existingEntity(2),
             existingEntity(3, 23, address = "test-address-23"),
         )
-        val previousSyncedAt = nowInstant.plus((-9999).seconds)
         existingWorksites = insertWorksites(existingWorksites, previousSyncedAt)
 
         // Sync
@@ -143,8 +117,6 @@ class WorksiteDaoTest {
         var expected = listOf(existingWorksites[2])
         var actual = worksiteDao.getWorksites(23).first().map { it.entity }
         assertEquals(expected, actual)
-
-        // TODO worksites_root data as well
 
         actual = worksiteDao.getWorksites(1).first().map { it.entity }
 
@@ -176,6 +148,11 @@ class WorksiteDaoTest {
         }
     }
 
+    /**
+     * Synced updates to worksite data overwrite as expected
+     *
+     * - created_at does not overwrite if syncing data is null
+     */
     @Test
     fun syncUpdateWorksites() = runTest {
         // Insert existing
@@ -188,7 +165,6 @@ class WorksiteDaoTest {
             existingEntity(6, createdAt = createdAtA),
             existingEntity(7),
         )
-        val previousSyncedAt = nowInstant.plus((-9999).seconds)
         existingWorksites = insertWorksites(existingWorksites, previousSyncedAt)
 
         // Sync
@@ -216,8 +192,6 @@ class WorksiteDaoTest {
         var expected = listOf(existingWorksites[2])
         var actual = worksiteDao.getWorksites(23).first().map { it.entity }
         assertEquals(expected, actual)
-
-        // TODO worksites_root data as well
 
         actual = worksiteDao.getWorksites(1).first().map { it.entity }
 
@@ -252,6 +226,132 @@ class WorksiteDaoTest {
         for (i in actual.indices) {
             assertEquals(expected[i], actual[i], "$i")
         }
+    }
+
+    /**
+     * Full and short entity data must be different for test integrity
+     *
+     * Update as fields change.
+     */
+    @Test
+    fun testWorksiteEntitiesAreDifferent() {
+        val networkId = 41L
+        val incidentId = 53L
+        val full = testWorksiteFullEntity(networkId, incidentId, createdAtA)
+        val short = testWorksiteShortEntity(networkId, incidentId, createdAtA)
+        assertNotEquals(full.address, short.address)
+        assertNotEquals(full.caseNumber, short.caseNumber)
+        assertNotEquals(full.city, short.city)
+        assertNotEquals(full.county, short.county)
+        assertNotEquals(full.favoriteId, short.favoriteId)
+        assertNotEquals(full.keyWorkTypeType, short.keyWorkTypeType)
+        assertNotEquals(full.latitude, short.latitude)
+        assertNotEquals(full.longitude, short.longitude)
+        assertNotEquals(full.name, short.name)
+        assertNotEquals(full.postalCode, short.postalCode)
+        assertNotEquals(full.state, short.state)
+        assertNotEquals(full.svi, short.svi)
+        assertNotEquals(full.updatedAt, short.updatedAt)
+
+        assertNotNull(full.autoContactFrequencyT)
+        assertNotNull(full.email)
+        assertNotNull(full.phone1)
+        assertNotNull(full.phone2)
+        assertNotNull(full.plusCode)
+        assertNotNull(full.reportedBy)
+        assertNotNull(full.what3Words)
+
+        assertNull(short.autoContactFrequencyT)
+        assertNull(short.email)
+        assertNull(short.phone1)
+        assertNull(short.phone2)
+        assertNull(short.plusCode)
+        assertNull(short.reportedBy)
+        assertNull(short.what3Words)
+    }
+
+    /**
+     * Nullable worksite fields are nullable columns in db
+     */
+    @Test
+    fun syncNewWorksitesShort() = runTest {
+        var existingWorksites = listOf(
+            testWorksiteShortEntity(1, 1, createdAtA),
+        )
+        existingWorksites = insertWorksites(existingWorksites, previousSyncedAt)
+
+        val expected = listOf(existingWorksites[0].copy(id = 1))
+        val actual = worksiteDao.getWorksites(1).first().map { it.entity }
+        assertEquals(expected, actual)
+    }
+
+    /**
+     * Worksite db data coalesces certain nullable columns as expected
+     */
+    @Test
+    fun updateNewWorksitesShort() = runTest {
+        // Insert existing
+        var existingWorksites = listOf(
+            testWorksiteShortEntity(1, 1, createdAtA),
+            testWorksiteFullEntity(2, 1, createdAtA),
+        )
+        existingWorksites = insertWorksites(existingWorksites, previousSyncedAt)
+        val existingWorksite = existingWorksites[1]
+
+        // Sync
+        val syncingWorksites = listOf(
+            // Missing created_at
+            testWorksiteShortEntity(1, 1, createdAtB).copy(
+                createdAt = null,
+                address = "expected-address"
+            ),
+            testWorksiteShortEntity(2, 1, createdAtB).copy(
+                address = "expected-address",
+                caseNumber = "expected-case",
+                city = "expected-city",
+                county = "expected-county",
+                favoriteId = existingWorksite.favoriteId!! + 1L,
+                keyWorkTypeType = "expected-key-work-type",
+                latitude = existingWorksite.latitude + 0.01f,
+                longitude = existingWorksite.longitude + 0.01f,
+                name = "expected-name",
+                postalCode = "expected-code",
+                state = "expected-state",
+                svi = existingWorksite.svi!! + 0.1f,
+                updatedAt = existingWorksite.updatedAt.plus(11.seconds),
+            ),
+        )
+        // Sync
+        val syncedAt = previousSyncedAt.plus(487.seconds)
+        worksiteDaoPlus.syncExternalWorksites(1, syncingWorksites, syncedAt)
+
+        // Assert
+        val expected = listOf(
+            // Updates certain fields
+            syncingWorksites[0].copy(
+                id = 1,
+                createdAt = createdAtA,
+            ),
+            // Does not overwrite coalescing columns/fields
+            testWorksiteFullEntity(2, 1, createdAtB).copy(
+                id = 2,
+                address = "expected-address",
+                caseNumber = "expected-case",
+                city = "expected-city",
+                county = "expected-county",
+                favoriteId = existingWorksite.favoriteId!! + 1L,
+                keyWorkTypeType = "expected-key-work-type",
+                latitude = existingWorksite.latitude + 0.01f,
+                longitude = existingWorksite.longitude + 0.01f,
+                name = "expected-name",
+                postalCode = "expected-code",
+                state = "expected-state",
+                svi = existingWorksite.svi!! + 0.1f,
+                updatedAt = existingWorksite.updatedAt.plus(11.seconds),
+            ),
+        )
+        val actual = worksiteDao.getWorksites(1).first().map { it.entity }
+        assertEquals(expected, actual)
     }
 
     // TODO Sync existing worksite incident changes
@@ -289,4 +389,71 @@ fun testWorksiteEntity(
     svi = null,
     what3Words = null,
     updatedAt = updatedAt,
+)
+
+// Defines all fields setting updated_at to be relative to createdAt
+fun testWorksiteFullEntity(
+    networkId: Long,
+    incidentId: Long,
+    createdAt: Instant,
+    id: Long = 0
+) = WorksiteEntity(
+    id = id,
+    networkId = networkId,
+    incidentId = incidentId,
+    address = "123 address st",
+    autoContactFrequencyT = "enum.never",
+    caseNumber = "case",
+    city = "city 123",
+    county = "county 123",
+    createdAt = createdAt,
+    email = "test123@email.com",
+    favoriteId = 4134,
+    keyWorkTypeType = "key-type-type",
+    latitude = 414.353f,
+    longitude = -534.15f,
+    name = "full worksite",
+    phone1 = "345-414-7825",
+    phone2 = "835-621-8938",
+    plusCode = "code 123",
+    postalCode = "83425",
+    reportedBy = 7835,
+    state = "ED",
+    svi = 6.235f,
+    what3Words = "what,three,words",
+    updatedAt = createdAt.plus(99.seconds),
+)
+
+
+// Defines all fields not nullable
+fun testWorksiteShortEntity(
+    networkId: Long,
+    incidentId: Long,
+    createdAt: Instant,
+    id: Long = 0
+) = WorksiteEntity(
+    id = id,
+    networkId = networkId,
+    incidentId = incidentId,
+    address = "123 address st short",
+    autoContactFrequencyT = null,
+    caseNumber = "case short",
+    city = "city short 123",
+    county = "county short 123",
+    createdAt = createdAt,
+    email = null,
+    favoriteId = 895,
+    keyWorkTypeType = "key-short-type",
+    latitude = 856.353f,
+    longitude = -157.15f,
+    name = "short worksite",
+    phone1 = null,
+    phone2 = null,
+    plusCode = null,
+    postalCode = "83425-shrt",
+    reportedBy = null,
+    state = "SH",
+    svi = 0.548f,
+    what3Words = null,
+    updatedAt = createdAt.plus(66.seconds),
 )

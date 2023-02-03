@@ -37,7 +37,7 @@ fun PopulatedWorksite.asExternalModel() = Worksite(
     latitude = entity.latitude,
     longitude = entity.longitude,
     name = entity.name,
-    phone1 = entity.phone1,
+    phone1 = entity.phone1 ?: "",
     phone2 = entity.phone2 ?: "",
     plusCode = entity.plusCode,
     postalCode = entity.postalCode,
@@ -64,9 +64,6 @@ data class PopulatedWorksiteMapVisual(
 
 fun PopulatedWorksiteMapVisual.asExternalModel() = WorksiteMapMark(
     id = id,
-    key = "$id",
-    latitude = latitude.toDouble(),
-    longitude = longitude.toDouble(),
-    fLatitude = latitude,
-    fLongitude = longitude,
+    latitude = latitude,
+    longitude = longitude,
 )
