@@ -15,7 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -30,11 +29,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
+import com.crisiscleanup.core.domain.IncidentsData
 import com.crisiscleanup.core.model.data.Incident
-import com.crisiscleanup.feature.cases.IncidentsData
 import com.crisiscleanup.feature.cases.R
 import com.crisiscleanup.feature.cases.SelectIncidentViewModel
-import kotlinx.coroutines.launch
 
 // TODO Is it possible to use a single dialog wrapper and switch content inside?
 //      Using a single wrapper initially the dialog wasn't resizing when state was changing.
@@ -121,15 +119,12 @@ private fun ColumnScope.IncidentSelectContent(
     padding: Dp = 16.dp,
 ) {
     var enableInput by rememberSaveable { mutableStateOf(true) }
-    val cs = rememberCoroutineScope()
     val onSelectIncident = remember(selectIncidentViewModel) {
         { incident: Incident ->
             if (enableInput) {
                 enableInput = false
-                cs.launch {
-                    selectIncidentViewModel.selectIncident(incident)
-                    onBackClick()
-                }
+                selectIncidentViewModel.selectIncident(incident)
+                onBackClick()
             }
         }
     }

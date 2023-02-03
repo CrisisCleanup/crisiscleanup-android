@@ -1,6 +1,5 @@
-package com.crisiscleanup.feature.cases
+package com.crisiscleanup.core.domain
 
-import androidx.lifecycle.ViewModel
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
@@ -12,13 +11,13 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
-class IncidentsDataLoader constructor(
+class LoadIncidentDataUseCase constructor(
     coroutineScope: CoroutineScope,
     incidentsRepository: IncidentsRepository,
     private val incidentSelector: IncidentSelector,
     private val appPreferencesRepository: LocalAppPreferencesRepository,
-) : ViewModel() {
-    val data = incidentsRepository.incidents.map { incidents ->
+) {
+    private val data = incidentsRepository.incidents.map { incidents ->
         var selectedId = incidentSelector.incidentId.first()
         if (selectedId == EmptyIncident.id) {
             selectedId = appPreferencesRepository.userData.first().selectedIncidentId
@@ -39,6 +38,8 @@ class IncidentsDataLoader constructor(
         initialValue = IncidentsData.Loading,
         started = SharingStarted.WhileSubscribed(),
     )
+
+    operator fun invoke() = data
 }
 
 sealed interface IncidentsData {
@@ -46,7 +47,7 @@ sealed interface IncidentsData {
 
     data class Incidents(
         val incidents: List<Incident>,
-    )
+    ) : IncidentsData
 
     object Empty : IncidentsData
 }

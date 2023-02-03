@@ -8,6 +8,7 @@ import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
+import com.crisiscleanup.core.domain.LoadIncidentDataUseCase
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.feature.cases.model.CoordinateBounds
@@ -35,12 +36,12 @@ class CasesViewModel @Inject constructor(
     appHeaderUiState: AppHeaderUiState,
     appPreferencesRepository: LocalAppPreferencesRepository,
 ) : ViewModel() {
-    val incidentsData = IncidentsDataLoader(
+    val incidentsData = LoadIncidentDataUseCase(
         viewModelScope,
         incidentsRepository,
         incidentSelector,
         appPreferencesRepository,
-    ).data
+    )()
 
     private val qsm = CasesQueryStateManager(
         incidentSelector,

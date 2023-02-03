@@ -5,8 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
+import com.crisiscleanup.core.domain.IncidentsData
+import com.crisiscleanup.core.domain.LoadIncidentDataUseCase
 import com.crisiscleanup.core.model.data.Incident
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -15,20 +18,22 @@ class SelectIncidentViewModel @Inject constructor(
     val incidentSelector: IncidentSelector,
     private val appPreferencesRepository: LocalAppPreferencesRepository,
 ) : ViewModel() {
-    val incidentsData = IncidentsDataLoader(
+    val incidentsData = LoadIncidentDataUseCase(
         viewModelScope,
         incidentsRepository,
         incidentSelector,
         appPreferencesRepository,
-    ).data
+    )()
 
-    suspend fun selectIncident(incident: Incident) {
-        if (incidentsData.value is IncidentsData.Incidents) {
-            val incidents = (incidentsData.value as IncidentsData.Incidents).incidents
-            incidents.find { it.id == incident.id }?.let {
-                incidentSelector.setIncident(incident)
+    fun selectIncident(incident: Incident) {
+        (incidentsData.value as? IncidentsData.Incidents)?.let {
+            viewModelScope.launch {
+                val incidents = it.incidents
+                incidents.find { it.id == incident.id }?.let { matchingIncident ->
+                    incidentSelector.setIncident(matchingIncident)
 
-                appPreferencesRepository.setSelectedIncident(incident.id)
+                    appPreferencesRepository.setSelectedIncident(matchingIncident.id)
+                }
             }
         }
     }
