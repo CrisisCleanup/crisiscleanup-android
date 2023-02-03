@@ -24,6 +24,7 @@ fun PopulatedIncident.asExternalModel() = Incident(
     id = entity.id,
     name = entity.name,
     shortName = entity.shortName,
-    activePhoneNumber = entity.activePhoneNumber,
+    // TODO Set once data structure is determined
+    activePhoneNumber = null,
     locations = locations.map(IncidentLocationEntity::asExternalModel),
 )

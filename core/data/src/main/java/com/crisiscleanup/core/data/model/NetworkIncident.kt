@@ -10,7 +10,7 @@ fun NetworkIncident.asEntity() = IncidentEntity(
     startAt = startAt,
     name = name,
     shortName = shortName,
-    activePhoneNumber = activePhoneNumber,
+//    activePhoneNumber = activePhoneNumber,
     isArchived = isArchived ?: false,
 )
 

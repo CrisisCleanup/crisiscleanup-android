@@ -31,8 +31,8 @@ data class NetworkIncident(
     val locations: List<NetworkIncidentLocation>,
     @SerialName("turn_on_release")
     val turnOnRelease: Boolean?,
-    @SerialName("active_phone_number")
-    val activePhoneNumber: String?,
+//    @SerialName("active_phone_number")
+//    val activePhoneNumber: String?,
     @SerialName("is_archived")
     val isArchived: Boolean?,
 )

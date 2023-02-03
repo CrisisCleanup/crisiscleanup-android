@@ -82,12 +82,14 @@ internal fun fillNetworkIncident(
     shortName: String,
     locations: List<NetworkIncidentLocation>,
     turnOn: Boolean = false,
-    activePhone: String? = null,
+//    activePhone: String? = null,
     isArchived: Boolean = false
 ) = NetworkIncident(
     id,
     Instant.parse(startAt),
     name, shortName,
     locations,
-    turnOn, activePhone, isArchived
+    turnOn,
+//    activePhone,
+    isArchived
 )
