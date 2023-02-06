@@ -5,10 +5,10 @@ data class Incident(
     val name: String,
     val shortName: String,
     val locations: List<IncidentLocation>,
-    val activePhoneNumber: String?,
+    val activePhoneNumbers: List<String>,
 )
 
-val EmptyIncident = Incident(-1, "", "", emptyList(), null)
+val EmptyIncident = Incident(-1, "", "", emptyList(), emptyList())
 
 data class IncidentLocation(
     val id: Long,

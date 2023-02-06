@@ -87,7 +87,6 @@ class CasesViewModel @Inject constructor(
 
     private var skipMarksAutoBounding = false
 
-    // TODO Convert to mutable state when table view is done to avoid triggering recompositions unnecessarily when not visible? Or too much work? Profile recompositions due to map markers. Research known patterns.
     val worksitesMapMarkers = qsm.worksiteQueryState.flatMapLatest {
         skipMarksAutoBounding = false
 
@@ -95,8 +94,6 @@ class CasesViewModel @Inject constructor(
         if (isTableView.value || id == EmptyIncident.id) {
             flowOf(emptyList())
         } else {
-            // TODO When switching between incidents from lots to little worksites the little worksites sometimes loaded in addition to lots of worksites. Around 5% of the time.
-
             worksitesRepository.getWorksitesMapVisual(id).map { marks ->
                 marks.map(WorksiteMapMark::asWorksiteGoogleMapMark)
             }

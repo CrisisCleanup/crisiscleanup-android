@@ -27,7 +27,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         WorkTypeEntity::class,
         WorksiteWorkTypeCrossRef::class,
     ],
-    version = 1,
+    version = 2,
     autoMigrations = [
         // See starting file and read docs for more
     ],

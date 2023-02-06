@@ -7,8 +7,12 @@ import com.crisiscleanup.core.database.CrisisCleanupDatabase
 import com.crisiscleanup.core.database.model.IncidentEntity
 import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
 import com.crisiscleanup.core.database.model.IncidentLocationEntity
+import com.crisiscleanup.core.database.model.PopulatedIncident
+import com.crisiscleanup.core.database.model.asExternalModel
+import com.crisiscleanup.core.model.data.Incident
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.junit.Before
 import org.junit.Test
@@ -51,12 +55,12 @@ class IncidentDaoTest {
         )
     }
 
+    private val testStartAtSeconds = 52352385L
     private fun testIncidents(): List<IncidentEntity> {
-        val seconds = 52352385L
         return listOf(
-            testIncidentEntity(48, seconds + 3),
-            testIncidentEntity(18, seconds + 1),
-            testIncidentEntity(954, seconds + 2),
+            testIncidentEntity(48, testStartAtSeconds + 3),
+            testIncidentEntity(18, testStartAtSeconds + 1),
+            testIncidentEntity(954, testStartAtSeconds + 2),
         )
     }
 
@@ -110,6 +114,135 @@ class IncidentDaoTest {
                 listOf(15L),
                 // Assumes cross reference ordering is asc
                 listOf(31L, 226),
+            ),
+            savedIncidents.map { incident ->
+                incident.locations.map(IncidentLocationEntity::id)
+            }
+        )
+    }
+
+    /**
+     * Incident phone numbers save and load as expected
+     */
+    @Test
+    fun saveIncidentPhoneNumbers() = runTest {
+        val nowInstant = Clock.System.now()
+        fun phoneIncidentEntity(
+            id: Long,
+            phoneNumber: String?,
+        ) = IncidentEntity(
+            id = id,
+            startAt = nowInstant,
+            activePhoneNumber = phoneNumber,
+            name = "",
+            shortName = "",
+        )
+
+        // Insert existing
+        val existingIncidents = listOf(
+            phoneIncidentEntity(1, null),
+            phoneIncidentEntity(2, "one, two"),
+            phoneIncidentEntity(3, ""),
+            phoneIncidentEntity(4, "existing-phone,second-phone"),
+        )
+        incidentDao.upsertIncidents(existingIncidents)
+
+        // Save
+        incidentDao.upsertIncidents(
+            listOf(
+                // Not defined to multiple numbers
+                phoneIncidentEntity(1, "phone,changed"),
+                // Multiple numbers to not defined
+                phoneIncidentEntity(4, null),
+                // New incidents
+                phoneIncidentEntity(5, "new-incident"),
+                phoneIncidentEntity(6, "phone-1, phone-2"),
+            )
+        )
+
+        // Assert
+        fun expectedIncident(id: Long, phoneNumbers: List<String>) = Incident(
+            id,
+            "",
+            "",
+            emptyList(),
+            phoneNumbers,
+        )
+
+        val expecteds = listOf(
+            expectedIncident(1, listOf("phone", "changed")),
+            expectedIncident(2, listOf("one", "two")),
+            expectedIncident(3, listOf()),
+            expectedIncident(4, listOf()),
+            expectedIncident(5, listOf("new-incident")),
+            expectedIncident(6, listOf("phone-1", "phone-2")),
+        ).reversed()
+        val savedIncidents =
+            incidentDao.getIncidents().first().map(PopulatedIncident::asExternalModel)
+        for (i in expecteds.indices) {
+            assertEquals(expecteds[i], savedIncidents[i], "$i")
+        }
+    }
+
+    /**
+     * Incidents with changes in locations must not retain previous locations
+     */
+    @Test
+    fun updateIncident_updatesLocationChanges() = runTest {
+        val (incidentLocations, incidents, incidentToIncidentLocations) = testIncidentDataSet()
+
+        // Incidents with locations
+        incidentDaoPlus.saveIncidents(
+            incidents,
+            incidentLocations,
+            incidentToIncidentLocations
+        )
+        // Incident without location
+        incidentDao.upsertIncidents(
+            listOf(testIncidentEntity(35L, testStartAtSeconds + 11))
+        )
+
+        // incidentToIncidentLocations IDs
+        //   48L to setOf(15L, 226),
+        //   18L to setOf(226L, 31),
+        //   954L to setOf(15L),
+
+        // Sync incidents with different locations
+        val syncingIncidents = listOf(
+            // Remove all locations
+            testIncidentEntity(48L, testStartAtSeconds + 21),
+            // Remove one location
+            testIncidentEntity(18L, testStartAtSeconds + 22),
+            // No change to 954L
+            // Change locations
+            testIncidentEntity(35L, testStartAtSeconds + 23),
+        )
+        val syncingLocations = listOf(
+            IncidentLocationEntity(321, 985),
+            IncidentLocationEntity(852, 164),
+        )
+        val syncingCrossRefs = makeIncidentLocationCrossRefs(
+            mapOf(
+                18L to setOf(31L),
+                35L to setOf(321L, 852),
+            )
+        )
+        incidentDaoPlus.saveIncidents(
+            syncingIncidents,
+            syncingLocations,
+            syncingCrossRefs,
+        )
+
+        val savedIncidents = incidentDao.getIncidents().first()
+
+        assertEquals(
+            // Sorted by start_by desc
+            listOf(
+                // Assumes cross reference ordering is asc
+                listOf(321L, 852),
+                listOf(31L),
+                listOf(),
+                listOf(15L),
             ),
             savedIncidents.map { incident ->
                 incident.locations.map(IncidentLocationEntity::id)

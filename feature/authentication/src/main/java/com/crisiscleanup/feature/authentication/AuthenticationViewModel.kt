@@ -8,11 +8,14 @@ import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.InputValidator
 import com.crisiscleanup.core.common.log.AppLogger
+import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
+import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.network.CrisisCleanupAuthApi
 import com.crisiscleanup.feature.authentication.model.AuthenticationState
 import com.crisiscleanup.feature.authentication.model.LoginInputData
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -32,6 +35,7 @@ class AuthenticationViewModel @Inject constructor(
     private val logger: AppLogger,
     private val appEnv: AppEnv,
     private val resProvider: AndroidResourceProvider,
+    @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     private var isAuthenticating = MutableStateFlow(false)
     val isNotAuthenticating = isAuthenticating.map { !it }
@@ -115,7 +119,7 @@ class AuthenticationViewModel @Inject constructor(
         }
 
         isAuthenticating.value = true
-        viewModelScope.launch {
+        viewModelScope.launch(ioDispatcher) {
             try {
                 val result = authApiClient.login(emailAddress, password)
                 val hasError = (result.errors?.size ?: 0) > 0
@@ -176,7 +180,7 @@ class AuthenticationViewModel @Inject constructor(
         clearErrorVisuals()
 
         isAuthenticating.value = true
-        viewModelScope.launch {
+        viewModelScope.launch(ioDispatcher) {
             try {
                 authApiClient.logout()
 

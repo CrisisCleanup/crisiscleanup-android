@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.network.model
 
+import com.crisiscleanup.core.network.model.util.IterableStringSerializer
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -31,8 +32,9 @@ data class NetworkIncident(
     val locations: List<NetworkIncidentLocation>,
     @SerialName("turn_on_release")
     val turnOnRelease: Boolean?,
-//    @SerialName("active_phone_number")
-//    val activePhoneNumber: String?,
+    @Serializable(IterableStringSerializer::class)
+    @SerialName("active_phone_number")
+    val activePhoneNumber: List<String>?,
     @SerialName("is_archived")
     val isArchived: Boolean?,
 )

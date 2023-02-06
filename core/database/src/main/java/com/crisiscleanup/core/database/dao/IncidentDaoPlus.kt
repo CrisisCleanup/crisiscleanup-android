@@ -22,7 +22,8 @@ class IncidentDaoPlus @Inject constructor(
             val incidentDao = db.incidentDao()
             incidentDao.upsertIncidents(incidents)
             incidentDao.upsertIncidentLocations(incidentLocations)
-            incidentDao.insertIgnoreIncidentIncidentLocationCrossRefs(
+            incidentDao.deleteIncidentLocationCrossRefs(incidents.map(IncidentEntity::id))
+            incidentDao.insertIgnoreIncidentLocationCrossRefs(
                 incidentIncidentLocationCrossRefs
             )
         }

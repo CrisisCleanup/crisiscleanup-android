@@ -26,8 +26,9 @@ data class IncidentEntity(
     val name: String,
     @ColumnInfo("short_name", defaultValue = "")
     val shortName: String,
-//    @ColumnInfo("active_phone_number", defaultValue = "")
-//    val activePhoneNumber: String? = null,
+    // Comma delimited phone numbers if defined
+    @ColumnInfo("active_phone_number", defaultValue = "")
+    val activePhoneNumber: String? = null,
     @ColumnInfo("is_archived", defaultValue = "0")
     val isArchived: Boolean = false,
 )

@@ -1,7 +1,7 @@
 package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.common.log.AppLogger
-import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
+import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.Synchronizer
@@ -35,7 +35,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     private val worksitesRepository: WorksitesRepository,
     private val networkMonitor: NetworkMonitor,
     private val appLogger: AppLogger,
-    @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
+    @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : IncidentsRepository {
     private var isSyncing = MutableStateFlow(false)
 

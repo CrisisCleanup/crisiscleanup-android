@@ -23,7 +23,7 @@ interface IncidentDao {
     SELECT *
     FROM incidents
     WHERE is_archived==0
-    ORDER BY start_at DESC
+    ORDER BY start_at DESC, id DESC
     """
     )
     fun getIncidents(): Flow<List<PopulatedIncident>>
@@ -34,8 +34,17 @@ interface IncidentDao {
     @Upsert
     suspend fun upsertIncidentLocations(locations: List<IncidentLocationEntity>)
 
+    @Transaction
+    @Query(
+        """
+        DELETE FROM incident_to_incident_location
+        WHERE incident_id in (:incidentIds)
+    """
+    )
+    suspend fun deleteIncidentLocationCrossRefs(incidentIds: Collection<Long>)
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertIgnoreIncidentIncidentLocationCrossRefs(
+    suspend fun insertIgnoreIncidentLocationCrossRefs(
         incidentCrossRefs: List<IncidentIncidentLocationCrossRef>
     )
 
