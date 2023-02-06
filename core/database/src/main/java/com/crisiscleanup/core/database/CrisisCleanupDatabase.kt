@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.database
 
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
@@ -29,7 +30,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
     ],
     version = 2,
     autoMigrations = [
-        // See starting file and read docs for more
+        AutoMigration(from = 1, to = 2),
     ],
     exportSchema = true,
 )
