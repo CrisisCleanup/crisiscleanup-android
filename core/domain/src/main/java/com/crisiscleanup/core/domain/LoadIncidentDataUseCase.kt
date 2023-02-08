@@ -39,7 +39,7 @@ class LoadIncidentDataUseCase @Inject constructor(
 
         incidentSelector.setIncident(incident)
 
-        if (incidentSelector.incidentId.first() == EmptyIncident.id) IncidentsData.Empty
+        if (incident.id == EmptyIncident.id) IncidentsData.Empty
         else IncidentsData.Incidents(incidents)
     }.shareIn(
         scope = coroutineScope,
