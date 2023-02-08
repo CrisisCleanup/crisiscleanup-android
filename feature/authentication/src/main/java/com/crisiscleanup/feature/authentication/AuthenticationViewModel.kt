@@ -3,9 +3,7 @@ package com.crisiscleanup.feature.authentication
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.auth0.android.jwt.JWT
 import com.crisiscleanup.core.common.AndroidResourceProvider
-import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.InputValidator
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
@@ -23,7 +21,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import retrofit2.HttpException
 import javax.inject.Inject
 
@@ -32,8 +29,8 @@ class AuthenticationViewModel @Inject constructor(
     private val accountDataRepository: AccountDataRepository,
     private val authApiClient: CrisisCleanupAuthApi,
     private val inputValidator: InputValidator,
+    private val accessTokenDecoder: AccessTokenDecoder,
     private val logger: AppLogger,
-    private val appEnv: AppEnv,
     private val resProvider: AndroidResourceProvider,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
@@ -131,13 +128,8 @@ class AuthenticationViewModel @Inject constructor(
                 } else {
                     val accessToken = result.accessToken!!
 
-                    val isDevBuild = appEnv.isDebuggable && accessToken == "access-token"
-                    val expirySeconds: Long = if (isDevBuild) {
-                        Clock.System.now().epochSeconds + 864000L
-                    } else {
-                        val jwt = JWT(accessToken)
-                        Instant.fromEpochMilliseconds(jwt.expiresAt!!.time).epochSeconds
-                    }
+                    val expirySeconds: Long =
+                        accessTokenDecoder.decode(accessToken).expiresAt.epochSeconds
 
                     val claims = result.claims!!
                     val profilePicUri: String = claims.files?.firstOrNull {

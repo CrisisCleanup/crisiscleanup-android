@@ -24,9 +24,9 @@ private val networkApiJson by lazy {
 internal annotation class CrisisCleanupRetrofit
 
 internal fun getCrisisCleanupApiBuilder(
-    appEnv: AppEnv,
     interceptorProvider: RetrofitInterceptorProvider,
     headerKeysLookup: RequestHeaderKeysLookup,
+    appEnv: AppEnv,
 ): Retrofit {
     val clientBuilder = OkHttpClient.Builder()
 

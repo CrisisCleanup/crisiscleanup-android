@@ -1,7 +1,6 @@
 package com.crisiscleanup.feature.authentication
 
 import com.crisiscleanup.core.common.AndroidResourceProvider
-import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.InputValidator
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.data.repository.AccountDataRepository
@@ -22,8 +21,10 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -48,10 +49,10 @@ class AuthenticationViewModelTest {
     lateinit var inputValidator: InputValidator
 
     @MockK
-    lateinit var appLogger: AppLogger
+    lateinit var accessTokenDecoder: AccessTokenDecoder
 
     @MockK
-    lateinit var appEnv: AppEnv
+    lateinit var appLogger: AppLogger
 
     @MockK
     lateinit var resProvider: AndroidResourceProvider
@@ -61,8 +62,6 @@ class AuthenticationViewModelTest {
     @Before
     fun setUp() {
         MockKAnnotations.init(this)
-
-        every { appEnv.isDebuggable } returns true
 
         coEvery {
             accountDataRepository.setAccount(
@@ -76,12 +75,15 @@ class AuthenticationViewModelTest {
             )
         } returns Unit
 
+        every { accessTokenDecoder.decode("access-token") } returns
+                TestDecodedAccessToken(Clock.System.now().plus(864000L.seconds))
+
         every { resProvider.getString(any()) } returns "test-string"
     }
 
-    val emptyLoginData = LoginInputData()
+    private val emptyLoginData = LoginInputData()
 
-    val nonEmptyAccountData = AccountData(
+    private val nonEmptyAccountData = AccountData(
         id = 19,
         "access-token",
         Clock.System.now().plus(1000.seconds),
@@ -90,15 +92,19 @@ class AuthenticationViewModelTest {
         "profile-picture-uri",
     )
 
-    fun buildViewModel() = AuthenticationViewModel(
+    private fun buildViewModel() = AuthenticationViewModel(
         accountDataRepository,
         authApiClient,
         inputValidator,
+        accessTokenDecoder,
         appLogger,
-        appEnv,
         resProvider,
+        UnconfinedTestDispatcher(),
     )
 
+    /**
+     * View model starts out as not authenticating
+     */
     @Test
     fun initialState() = runTest {
         // Setup
@@ -220,3 +226,5 @@ class AuthenticationViewModelTest {
 
     // TODO Other paths in logout()
 }
+
+class TestDecodedAccessToken(override val expiresAt: Instant) : DecodedAccessToken

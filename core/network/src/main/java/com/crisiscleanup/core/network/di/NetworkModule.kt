@@ -43,5 +43,5 @@ object NetworkModule {
         appEnv: AppEnv,
         interceptorProvider: RetrofitInterceptorProvider,
         headerKeysLookup: RequestHeaderKeysLookup,
-    ): Retrofit = getCrisisCleanupApiBuilder(appEnv, interceptorProvider, headerKeysLookup)
+    ): Retrofit = getCrisisCleanupApiBuilder(interceptorProvider, headerKeysLookup, appEnv)
 }
