@@ -1,12 +1,12 @@
 package com.crisiscleanup.feature.cases
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.IncidentsRepository
-import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.domain.LoadIncidentDataUseCase
 import com.crisiscleanup.core.model.data.EmptyIncident
@@ -34,14 +34,9 @@ class CasesViewModel @Inject constructor(
     worksitesRepository: WorksitesRepository,
     incidentSelector: IncidentSelector,
     appHeaderUiState: AppHeaderUiState,
-    appPreferencesRepository: LocalAppPreferencesRepository,
+    loadIncidentDataUseCase: LoadIncidentDataUseCase,
 ) : ViewModel() {
-    val incidentsData = LoadIncidentDataUseCase(
-        viewModelScope,
-        incidentsRepository,
-        incidentSelector,
-        appPreferencesRepository,
-    )()
+    val incidentsData = loadIncidentDataUseCase()
 
     private val qsm = CasesQueryStateManager(
         incidentSelector,

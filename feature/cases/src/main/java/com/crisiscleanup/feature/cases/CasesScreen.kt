@@ -54,7 +54,7 @@ internal fun CasesRoute(
     onCasesAction: (CasesAction) -> Unit = { },
     casesViewModel: CasesViewModel = hiltViewModel(),
 ) {
-    val incidentsData by casesViewModel.incidentsData.collectAsStateWithLifecycle()
+    val incidentsData by casesViewModel.incidentsData.collectAsStateWithLifecycle(IncidentsData.Loading)
     if (incidentsData is IncidentsData.Incidents) {
         val isTableView by casesViewModel.isTableView.collectAsStateWithLifecycle()
         val isLayerView by casesViewModel.isLayerView

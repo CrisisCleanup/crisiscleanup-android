@@ -63,7 +63,9 @@ internal fun SelectIncidentRoute(
     padding: Dp = 16.dp,
     textPadding: Dp = 16.dp,
 ) {
-    val incidentsData by selectIncidentViewModel.incidentsData.collectAsStateWithLifecycle()
+    val incidentsData by selectIncidentViewModel.incidentsData.collectAsStateWithLifecycle(
+        IncidentsData.Loading
+    )
     when (incidentsData) {
         IncidentsData.Loading -> {
             WrapInDialog(onBackClick, {
