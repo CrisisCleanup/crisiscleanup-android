@@ -3,6 +3,8 @@ package com.crisiscleanup.core.database.di
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
 import com.crisiscleanup.core.database.dao.IncidentDao
 import com.crisiscleanup.core.database.dao.IncidentDaoPlus
+import com.crisiscleanup.core.database.dao.LocationDao
+import com.crisiscleanup.core.database.dao.LocationDaoPlus
 import com.crisiscleanup.core.database.dao.WorksiteDao
 import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
 import com.crisiscleanup.core.database.dao.WorksitesSyncStatsDao
@@ -21,8 +23,18 @@ object DaoModule {
 
     @Provides
     fun providesIncidentDaoPlus(
-        db: CrisisCleanupDatabase
+        db: CrisisCleanupDatabase,
     ) = IncidentDaoPlus(db)
+
+    @Provides
+    fun providesLocationDao(
+        db: CrisisCleanupDatabase,
+    ): LocationDao = db.locationDao()
+
+    @Provides
+    fun providesLocationDaoPlus(
+        db: CrisisCleanupDatabase,
+    ) = LocationDaoPlus(db)
 
     @Provides
     fun providesWorksiteSyncStatsDao(

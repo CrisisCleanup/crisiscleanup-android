@@ -56,14 +56,29 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     override var isLoading = MutableStateFlow(false)
         private set
 
-    override fun getWorksitesMapVisual(incidentId: Long): Flow<List<WorksiteMapMark>> {
-        // TODO Make limit configurable if kept
-        return worksiteDao.getWorksitesMapVisual(incidentId, 1000)
+    override suspend fun getWorksitesMapVisual(
+        incidentId: Long,
+        latitudeMin: Double,
+        latitudeMax: Double,
+        longitudeLeft: Double,
+        longitudeRight: Double,
+        limit: Int,
+        offset: Int,
+    ): Flow<List<WorksiteMapMark>> = withContext(ioDispatcher) {
+        return@withContext worksiteDaoPlus.getWorksitesMapVisual(
+            incidentId,
+            latitudeMin,
+            latitudeMax,
+            longitudeLeft,
+            longitudeRight,
+            limit,
+            offset
+        )
             .map { it.map(PopulatedWorksiteMapVisual::asExternalModel) }
     }
 
-    override fun getWorksites(incidentId: Long): Flow<List<Worksite>> {
-        return worksiteDao.getWorksites(incidentId)
+    override fun getWorksites(incidentId: Long, limit: Int, offset: Int): Flow<List<Worksite>> {
+        return worksiteDao.getWorksites(incidentId, limit, offset)
             .map { it.map(PopulatedWorksite::asExternalModel) }
     }
 

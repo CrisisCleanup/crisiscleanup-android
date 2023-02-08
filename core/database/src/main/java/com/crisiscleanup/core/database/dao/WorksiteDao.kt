@@ -20,20 +20,56 @@ interface WorksiteDao {
     FROM worksites
     WHERE incident_id=:incidentId
     ORDER BY updated_at DESC, id DESC
+    LIMIT :limit
+    OFFSET :offset
     """
     )
-    fun getWorksites(incidentId: Long): Flow<List<PopulatedWorksite>>
+    fun getWorksites(incidentId: Long, limit: Int, offset: Int = 0): Flow<List<PopulatedWorksite>>
+
+    // TODO Implement spatial indexes for coordinates search
+    @Transaction
+    @Query(
+        """
+    SELECT id, latitude, longitude, key_work_type_type
+    FROM worksites
+    WHERE incident_id=:incidentId AND
+    (latitude BETWEEN :latitudeMin AND :latitudeMax) AND
+    (longitude BETWEEN :longitudeLeft AND :longitudeRight)
+    LIMIT :limit
+    OFFSET :offset
+    """
+    )
+    fun getWorksitesMapVisual(
+        incidentId: Long,
+        latitudeMin: Double,
+        latitudeMax: Double,
+        longitudeLeft: Double,
+        longitudeRight: Double,
+        limit: Int,
+        offset: Int,
+    ): Flow<List<PopulatedWorksiteMapVisual>>
 
     @Transaction
     @Query(
         """
     SELECT id, latitude, longitude, key_work_type_type
     FROM worksites
-    WHERE incident_id=:incidentId
+    WHERE incident_id=:incidentId AND
+    (latitude BETWEEN :latitudeMin AND :latitudeMax) AND
+    (longitude>=:longitudeLeft OR longitude<=:longitudeRight)
     LIMIT :limit
+    OFFSET :offset
     """
     )
-    fun getWorksitesMapVisual(incidentId: Long, limit: Int): Flow<List<PopulatedWorksiteMapVisual>>
+    fun getWorksitesMapVisualLongitudeCrossover(
+        incidentId: Long,
+        latitudeMin: Double,
+        latitudeMax: Double,
+        longitudeLeft: Double,
+        longitudeRight: Double,
+        limit: Int,
+        offset: Int,
+    ): Flow<List<PopulatedWorksiteMapVisual>>
 
     @Transaction
     @Query(
@@ -138,8 +174,8 @@ interface WorksiteDao {
         email: String?,
         favoriteId: Long?,
         keyWorkTypeType: String,
-        latitude: Float,
-        longitude: Float,
+        latitude: Double,
+        longitude: Double,
         name: String,
         phone1: String?,
         phone2: String?,

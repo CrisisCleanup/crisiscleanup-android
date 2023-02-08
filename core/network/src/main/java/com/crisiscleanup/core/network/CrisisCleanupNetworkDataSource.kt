@@ -2,6 +2,7 @@ package com.crisiscleanup.core.network
 
 import com.crisiscleanup.core.network.model.NetworkAuthResult
 import com.crisiscleanup.core.network.model.NetworkIncidentsResult
+import com.crisiscleanup.core.network.model.NetworkLocationsResult
 import com.crisiscleanup.core.network.model.NetworkWorksitesCountResult
 import com.crisiscleanup.core.network.model.NetworkWorksitesFullResult
 import com.crisiscleanup.core.network.model.NetworkWorksitesShortResult
@@ -19,6 +20,10 @@ interface CrisisCleanupNetworkDataSource {
         limit: Int = 250,
         ordering: String = "-start_at"
     ): NetworkIncidentsResult
+
+    suspend fun getIncidentLocations(
+        locationIds: List<Long>,
+    ): NetworkLocationsResult
 
     suspend fun getWorksites(
         incidentId: Long,

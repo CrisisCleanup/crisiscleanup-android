@@ -115,10 +115,10 @@ class WorksiteDaoTest {
         // Assert
 
         var expected = listOf(existingWorksites[2])
-        var actual = worksiteDao.getWorksites(23).first().map { it.entity }
+        var actual = worksiteDao.getWorksites(23, 99).first().map { it.entity }
         assertEquals(expected, actual)
 
-        actual = worksiteDao.getWorksites(1).first().map { it.entity }
+        actual = worksiteDao.getWorksites(1, 99).first().map { it.entity }
 
         // Order by updated_at desc id desc
         // updatedA > updatedB > fullA.updated_at
@@ -190,10 +190,10 @@ class WorksiteDaoTest {
         // Assert
 
         var expected = listOf(existingWorksites[2])
-        var actual = worksiteDao.getWorksites(23).first().map { it.entity }
+        var actual = worksiteDao.getWorksites(23, 99).first().map { it.entity }
         assertEquals(expected, actual)
 
-        actual = worksiteDao.getWorksites(1).first().map { it.entity }
+        actual = worksiteDao.getWorksites(1, 99).first().map { it.entity }
 
         // Order by updated_at desc id desc
         // updatedA > updatedB > fullA.updated_at
@@ -281,7 +281,7 @@ class WorksiteDaoTest {
         existingWorksites = insertWorksites(existingWorksites, previousSyncedAt)
 
         val expected = listOf(existingWorksites[0].copy(id = 1))
-        val actual = worksiteDao.getWorksites(1).first().map { it.entity }
+        val actual = worksiteDao.getWorksites(1, 99).first().map { it.entity }
         assertEquals(expected, actual)
     }
 
@@ -350,7 +350,7 @@ class WorksiteDaoTest {
                 updatedAt = existingWorksite.updatedAt.plus(11.seconds),
             ),
         )
-        val actual = worksiteDao.getWorksites(1).first().map { it.entity }
+        val actual = worksiteDao.getWorksites(1, 99).first().map { it.entity }
         assertEquals(expected, actual)
     }
 
@@ -377,8 +377,8 @@ fun testWorksiteEntity(
     email = "",
     favoriteId = null,
     keyWorkTypeType = "",
-    latitude = 0f,
-    longitude = 0f,
+    latitude = 0.0,
+    longitude = 0.0,
     name = "",
     phone1 = "",
     phone2 = null,
@@ -410,8 +410,8 @@ fun testWorksiteFullEntity(
     email = "test123@email.com",
     favoriteId = 4134,
     keyWorkTypeType = "key-type-type",
-    latitude = 414.353f,
-    longitude = -534.15f,
+    latitude = 414.353,
+    longitude = -534.15,
     name = "full worksite",
     phone1 = "345-414-7825",
     phone2 = "835-621-8938",
@@ -444,8 +444,8 @@ fun testWorksiteShortEntity(
     email = null,
     favoriteId = 895,
     keyWorkTypeType = "key-short-type",
-    latitude = 856.353f,
-    longitude = -157.15f,
+    latitude = 856.353,
+    longitude = -157.15,
     name = "short worksite",
     phone1 = null,
     phone2 = null,

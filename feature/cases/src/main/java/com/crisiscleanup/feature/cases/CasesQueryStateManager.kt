@@ -1,6 +1,5 @@
 package com.crisiscleanup.feature.cases
 
-import android.util.Log
 import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.feature.cases.model.CoordinateBoundsDefault
@@ -38,13 +37,11 @@ class CasesQueryStateManager constructor(
         casesSearchQueryFlow.asStateFlow()
             .debounce(searchQueryDebounceTimeout)
             .onEach {
-                Log.w("query", "query change $it")
                 worksiteQueryState.value = worksiteQueryState.value.copy(q = it)
             }
             .launchIn(coroutineScope)
 
         isTableView.asStateFlow().onEach {
-            Log.w("query", "Is table view $it")
             worksiteQueryState.value = worksiteQueryState.value.copy(isTableView = it)
         }
             .launchIn(coroutineScope)
@@ -52,7 +49,6 @@ class CasesQueryStateManager constructor(
         mapBounds.asStateFlow()
             .debounce(mapBoundsDebounceTimeout)
             .onEach {
-                Log.w("query", "Projection change $it")
                 worksiteQueryState.value = worksiteQueryState.value.copy(coordinateBounds = it)
             }
             .launchIn(coroutineScope)

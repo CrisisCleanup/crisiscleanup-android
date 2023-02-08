@@ -13,12 +13,20 @@ interface WorksitesRepository {
     /**
      * Stream of worksite data for map rendering
      */
-    fun getWorksitesMapVisual(incidentId: Long): Flow<List<WorksiteMapMark>>
+    suspend fun getWorksitesMapVisual(
+        incidentId: Long,
+        latitudeMin: Double,
+        latitudeMax: Double,
+        longitudeLeft: Double,
+        longitudeRight: Double,
+        limit: Int,
+        offset: Int,
+    ): Flow<List<WorksiteMapMark>>
 
     /**
      * Stream of an incident's [Worksite]s
      */
-    fun getWorksites(incidentId: Long): Flow<List<Worksite>>
+    fun getWorksites(incidentId: Long, limit: Int, offset: Int): Flow<List<Worksite>>
 
     suspend fun refreshWorksites(incidentId: Long, force: Boolean)
 }

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "60e77dd1ba58883bc2ab2baef85a555b",
+    "identityHash": "8173f026c1596f36ad35dbea5fae5275",
     "entities": [
       {
         "tableName": "incidents",
@@ -155,6 +155,40 @@
             ]
           }
         ]
+      },
+      {
+        "tableName": "locations",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `shape_type` TEXT NOT NULL DEFAULT '', `coordinates` TEXT NOT NULL DEFAULT '', PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "shapeType",
+            "columnName": "shape_type",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "coordinates",
+            "columnName": "coordinates",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
       },
       {
         "tableName": "worksite_sync_stats",
@@ -711,7 +745,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '60e77dd1ba58883bc2ab2baef85a555b')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8173f026c1596f36ad35dbea5fae5275')"
     ]
   }
 }

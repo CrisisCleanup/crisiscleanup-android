@@ -90,7 +90,7 @@ data class NetworkWorksiteFull(
     @Serializable
     data class Location(
         val type: String,
-        val coordinates: List<Float>,
+        val coordinates: List<Double>,
     )
 
     @Serializable

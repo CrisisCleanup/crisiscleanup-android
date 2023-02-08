@@ -11,12 +11,15 @@ import com.crisiscleanup.core.data.model.locationsAsEntity
 import com.crisiscleanup.core.data.util.NetworkMonitor
 import com.crisiscleanup.core.database.dao.IncidentDao
 import com.crisiscleanup.core.database.dao.IncidentDaoPlus
+import com.crisiscleanup.core.database.dao.LocationDaoPlus
+import com.crisiscleanup.core.database.dao.LocationEntitySource
 import com.crisiscleanup.core.database.model.PopulatedIncident
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.tryGetException
 import com.crisiscleanup.core.network.model.NetworkIncident
+import com.crisiscleanup.core.network.model.NetworkIncidentLocation
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,8 +32,9 @@ import javax.inject.Singleton
 @Singleton
 class OfflineFirstIncidentsRepository @Inject constructor(
     incidentDao: IncidentDao,
-    private val incidentsNetworkDataSource: CrisisCleanupNetworkDataSource,
+    private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val incidentDaoPlus: IncidentDaoPlus,
+    private val locationDaoPlus: LocationDaoPlus,
     private val incidentSelector: IncidentSelector,
     private val worksitesRepository: WorksitesRepository,
     private val networkMonitor: NetworkMonitor,
@@ -44,6 +48,29 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     override val incidents: Flow<List<Incident>> =
         incidentDao.getIncidents().map { it.map(PopulatedIncident::asExternalModel) }
 
+    private suspend fun saveLocations(incidents: List<NetworkIncident>) {
+        val locationIds = incidents.flatMap { it.locations.map(NetworkIncidentLocation::id) }
+        val networkLocations = networkDataSource.getIncidentLocations(locationIds)
+
+        networkLocations.errors?.let {
+            tryGetException(it)?.let { exception -> throw exception }
+        }
+
+        networkLocations.results?.let { locations ->
+            val sourceLocations = locations.map {
+                val multiCoordinates = it.geom?.condensedCoordinates
+                val coordinates = it.poly?.condensedCoordinates ?: it.point?.coordinates
+                LocationEntitySource(
+                    id = it.id,
+                    shapeType = it.shapeType,
+                    coordinates = if (multiCoordinates == null) coordinates else null,
+                    multiCoordinates = multiCoordinates,
+                )
+            }
+            locationDaoPlus.saveLocations(sourceLocations)
+        }
+    }
+
     /**
      * Possibly syncs and caches incidents data
      */
@@ -54,7 +81,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
 
         isSyncing.value = true
         try {
-            val networkIncidents = incidentsNetworkDataSource.getIncidents(
+            val networkIncidents = networkDataSource.getIncidents(
                 listOf(
                     "id",
                     "start_at",
@@ -77,6 +104,8 @@ class OfflineFirstIncidentsRepository @Inject constructor(
                     incidents.map(NetworkIncident::locationsAsEntity).flatten(),
                     incidents.map(NetworkIncident::incidentLocationCrossReferences).flatten(),
                 )
+
+                saveLocations(incidents)
             }
         } finally {
             isSyncing.value = false

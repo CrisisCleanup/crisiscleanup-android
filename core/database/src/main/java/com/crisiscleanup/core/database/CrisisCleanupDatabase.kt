@@ -5,11 +5,13 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.crisiscleanup.core.database.dao.IncidentDao
+import com.crisiscleanup.core.database.dao.LocationDao
 import com.crisiscleanup.core.database.dao.WorksiteDao
 import com.crisiscleanup.core.database.dao.WorksitesSyncStatsDao
 import com.crisiscleanup.core.database.model.IncidentEntity
 import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
 import com.crisiscleanup.core.database.model.IncidentLocationEntity
+import com.crisiscleanup.core.database.model.LocationEntity
 import com.crisiscleanup.core.database.model.WorkTypeEntity
 import com.crisiscleanup.core.database.model.WorksiteEntity
 import com.crisiscleanup.core.database.model.WorksiteRootEntity
@@ -22,6 +24,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         IncidentEntity::class,
         IncidentLocationEntity::class,
         IncidentIncidentLocationCrossRef::class,
+        LocationEntity::class,
         WorksiteSyncStatsEntity::class,
         WorksiteRootEntity::class,
         WorksiteEntity::class,
@@ -39,6 +42,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
 )
 abstract class CrisisCleanupDatabase : RoomDatabase() {
     abstract fun incidentDao(): IncidentDao
+    abstract fun locationDao(): LocationDao
     abstract fun worksitesSyncStatsDao(): WorksitesSyncStatsDao
     abstract fun worksiteDao(): WorksiteDao
 }

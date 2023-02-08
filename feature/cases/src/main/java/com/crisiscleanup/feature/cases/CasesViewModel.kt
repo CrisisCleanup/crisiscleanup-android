@@ -85,11 +85,20 @@ class CasesViewModel @Inject constructor(
     val worksitesMapMarkers = qsm.worksiteQueryState.flatMapLatest {
         skipMarksAutoBounding = false
 
+        Log.w("query", "Query state change $it")
         val id = it.incidentId
         if (isTableView.value || id == EmptyIncident.id) {
             flowOf(emptyList())
         } else {
-            worksitesRepository.getWorksitesMapVisual(id).map { marks ->
+            worksitesRepository.getWorksitesMapVisual(
+                id,
+                it.coordinateBounds.southWest.latitude,
+                it.coordinateBounds.northEast.latitude,
+                it.coordinateBounds.southWest.longitude,
+                it.coordinateBounds.northEast.longitude,
+                100,
+                0,
+            ).map { marks ->
                 marks.map(WorksiteMapMark::asWorksiteGoogleMapMark)
             }
         }

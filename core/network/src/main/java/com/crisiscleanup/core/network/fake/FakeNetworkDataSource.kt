@@ -4,6 +4,8 @@ import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkIncident
 import com.crisiscleanup.core.network.model.NetworkIncidentLocation
 import com.crisiscleanup.core.network.model.NetworkIncidentsResult
+import com.crisiscleanup.core.network.model.NetworkLocation
+import com.crisiscleanup.core.network.model.NetworkLocationsResult
 import com.crisiscleanup.core.network.model.NetworkWorksitesCountResult
 import com.crisiscleanup.core.network.model.NetworkWorksitesFullResult
 import com.crisiscleanup.core.network.model.NetworkWorksitesShortResult
@@ -47,6 +49,79 @@ private val incidentsResult = NetworkIncidentsResult(
     results = incidents
 )
 
+private val locations = listOf(
+    fillNetworkLocation(
+        1, poly = listOf(
+            splitToTwos(
+                listOf(
+                    -85.748032,
+                    31.619180999999998,
+                    -85.745435,
+                    31.618897999999998,
+                    -85.742651,
+                    31.621258999999995,
+                    -85.74174,
+                    31.619403,
+                    -85.739813,
+                    31.62181,
+                    -85.73992100000001,
+                    31.623321999999998,
+                    -85.73693200000001,
+                    31.623691,
+                    -85.731172,
+                    31.629939999999998
+                )
+            )
+        )
+    ),
+    fillNetworkLocation(
+        2, geom = listOf(
+            listOf(
+                splitToTwos(
+                    listOf(
+                        -105.99888629510694,
+                        31.39394035670263,
+                        -106.21328529530662,
+                        31.478246356781145,
+                        -106.38358129546522,
+                        31.73387235701922,
+                        -106.53951429561045,
+                        31.786305357068045,
+                        -106.61498629568072,
+                        31.81783435709741,
+                        -106.61612329568179,
+                        31.84474035712247
+                    )
+                )
+            ),
+            listOf(
+                splitToTwos(
+                    listOf(
+                        -94.91362828478299,
+                        29.257810354713204,
+                        -94.76757528464697,
+                        29.342686354792246,
+                        -94.74860028462929,
+                        29.319727354770865,
+                        -95.1056212849618,
+                        29.097200354563626,
+                        -94.91362828478299,
+                        29.257810354713204
+                    )
+                )
+            ),
+        )
+    ),
+    fillNetworkLocation(
+        3, point = listOf(-73.2886979, 38.3069709)
+    ),
+)
+
+private val incidentLocationsResult = NetworkLocationsResult(
+    count = locations.size,
+    results = locations
+)
+
 private val worksitesCountResult = NetworkWorksitesCountResult(count = 10)
 private val worksitesResult = NetworkWorksitesFullResult()
 private val worksitesShortResult = NetworkWorksitesShortResult()
@@ -58,6 +133,9 @@ class FakeNetworkDataSource @Inject constructor() : CrisisCleanupNetworkDataSour
         limit: Int,
         ordering: String
     ): NetworkIncidentsResult = incidentsResult
+
+    override suspend fun getIncidentLocations(locationIds: List<Long>): NetworkLocationsResult =
+        incidentLocationsResult
 
     override suspend fun getWorksites(
         incidentId: Long,
@@ -93,3 +171,32 @@ internal fun fillNetworkIncident(
     activePhone,
     isArchived
 )
+
+internal fun fillNetworkLocation(
+    id: Long,
+    geom: List<List<List<List<Double>>>>? = null,
+    poly: List<List<List<Double>>>? = null,
+    point: List<Double>? = null,
+) = NetworkLocation(
+    id = id,
+    geom = if (geom == null) null else NetworkLocation.LocationGeometry(
+        type = "MultiPolygon",
+        coordinates = geom,
+    ),
+    poly = if (poly == null) null else NetworkLocation.LocationPolygon(
+        type = "Polygon",
+        coordinates = poly,
+    ),
+    point = if (point == null) null else NetworkLocation.LocationPoint(
+        type = "Point",
+        coordinates = point,
+    ),
+)
+
+internal fun splitToTwos(coordinates: List<Double>): List<List<Double>> {
+    val twosList = mutableListOf<List<Double>>()
+    for (i in coordinates.indices step 2) {
+        twosList.add(listOf(coordinates[i], coordinates[i + 1]))
+    }
+    return twosList
+}

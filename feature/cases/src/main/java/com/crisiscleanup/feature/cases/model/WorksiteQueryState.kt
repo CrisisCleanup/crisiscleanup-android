@@ -4,8 +4,8 @@ import com.crisiscleanup.core.model.data.EmptyIncident
 import com.google.android.gms.maps.model.LatLng
 
 data class CoordinateBounds(
-    val min: LatLng,
-    val max: LatLng,
+    val southWest: LatLng,
+    val northEast: LatLng,
 )
 
 val CoordinateBoundsDefault = CoordinateBounds(

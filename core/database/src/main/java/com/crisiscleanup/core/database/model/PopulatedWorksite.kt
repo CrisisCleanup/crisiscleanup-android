@@ -58,8 +58,8 @@ data class WorksiteLocalModifiedAt(
 
 data class PopulatedWorksiteMapVisual(
     val id: Long,
-    val latitude: Float,
-    val longitude: Float,
+    val latitude: Double,
+    val longitude: Double,
 )
 
 fun PopulatedWorksiteMapVisual.asExternalModel() = WorksiteMapMark(

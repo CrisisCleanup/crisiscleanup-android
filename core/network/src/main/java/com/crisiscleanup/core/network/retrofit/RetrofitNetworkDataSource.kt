@@ -2,6 +2,7 @@ package com.crisiscleanup.core.network.retrofit
 
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkIncidentsResult
+import com.crisiscleanup.core.network.model.NetworkLocationsResult
 import com.crisiscleanup.core.network.model.NetworkWorksitesCountResult
 import com.crisiscleanup.core.network.model.NetworkWorksitesFullResult
 import com.crisiscleanup.core.network.model.NetworkWorksitesShortResult
@@ -22,6 +23,14 @@ private interface CrisisCleanupNetworkApi {
         @Query("ordering")
         ordering: String
     ): NetworkIncidentsResult
+
+    @GET("locations")
+    suspend fun getLocations(
+        @Query("id__in")
+        ids: String,
+        @Query("limit")
+        limit: Int,
+    ): NetworkLocationsResult
 
     @TokenAuthenticationHeader
     @GET("worksites")
@@ -60,6 +69,9 @@ class RetrofitNetworkDataSource @Inject constructor(
     private val networkApi = retrofit.create(CrisisCleanupNetworkApi::class.java)
     override suspend fun getIncidents(fields: List<String>, limit: Int, ordering: String) =
         networkApi.getIncidents(fields.joinToString(","), limit, ordering)
+
+    override suspend fun getIncidentLocations(locationIds: List<Long>): NetworkLocationsResult =
+        networkApi.getLocations(locationIds.joinToString(","), locationIds.size)
 
     override suspend fun getWorksites(
         incidentId: Long,

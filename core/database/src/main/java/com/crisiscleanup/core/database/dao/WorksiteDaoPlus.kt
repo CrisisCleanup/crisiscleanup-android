@@ -2,7 +2,9 @@ package com.crisiscleanup.core.database.dao
 
 import androidx.room.withTransaction
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
+import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
 import com.crisiscleanup.core.database.model.WorksiteEntity
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.datetime.Instant
 import javax.inject.Inject
@@ -89,5 +91,37 @@ class WorksiteDaoPlus @Inject constructor(
                 }
             }
         }
+    }
+
+    fun getWorksitesMapVisual(
+        incidentId: Long,
+        latitudeMin: Double,
+        latitudeMax: Double,
+        longitudeLeft: Double,
+        longitudeRight: Double,
+        limit: Int = 600,
+        offset: Int = 0,
+    ): Flow<List<PopulatedWorksiteMapVisual>> {
+        val worksiteDao = db.worksiteDao()
+        val isLongitudeOrdered = longitudeLeft < longitudeRight
+        return if (isLongitudeOrdered)
+            worksiteDao.getWorksitesMapVisual(
+                incidentId,
+                latitudeMin,
+                latitudeMax,
+                longitudeLeft,
+                longitudeRight,
+                limit,
+                offset,
+            )
+        else worksiteDao.getWorksitesMapVisualLongitudeCrossover(
+            incidentId,
+            latitudeMin,
+            latitudeMax,
+            longitudeLeft,
+            longitudeRight,
+            limit,
+            offset,
+        )
     }
 }

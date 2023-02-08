@@ -90,8 +90,8 @@ data class WorksiteEntity(
     val favoriteId: Long?,
     @ColumnInfo("key_work_type_type", defaultValue = "")
     val keyWorkTypeType: String,
-    val latitude: Float,
-    val longitude: Float,
+    val latitude: Double,
+    val longitude: Double,
     val name: String,
     val phone1: String?,
     @ColumnInfo(defaultValue = "")
