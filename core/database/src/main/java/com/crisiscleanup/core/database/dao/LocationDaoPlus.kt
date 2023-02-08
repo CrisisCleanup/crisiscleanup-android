@@ -13,10 +13,9 @@ class LocationDaoPlus @Inject constructor(
         locationsSource: List<LocationEntitySource>,
     ) {
         val locations = locationsSource
-            .map { source ->
-                var coordinates = source.coordinates?.let {
-                    it.joinToString(",")
-                } ?: ""
+            .mapNotNull { source ->
+                // Assumes coordinates and multiCoordinates are lng-lat ordered pairs
+                var coordinates = source.coordinates?.joinToString(",") ?: ""
                 if (coordinates.isEmpty()) {
                     coordinates = source.multiCoordinates?.let {
                         it.joinToString("\n") { l ->
@@ -24,13 +23,13 @@ class LocationDaoPlus @Inject constructor(
                         }
                     } ?: ""
                 }
-                LocationEntity(
+                if (coordinates.isEmpty()) null
+                else LocationEntity(
                     id = source.id,
                     shapeType = source.shapeType,
                     coordinates = coordinates,
                 )
             }
-            .filter { it.coordinates.isNotEmpty() }
         db.locationDao().upsertLocations(locations)
     }
 }

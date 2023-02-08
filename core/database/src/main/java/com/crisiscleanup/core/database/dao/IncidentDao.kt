@@ -28,6 +28,10 @@ interface IncidentDao {
     )
     fun getIncidents(): Flow<List<PopulatedIncident>>
 
+    @Transaction
+    @Query("SELECT * FROM incidents WHERE id=:id")
+    fun getIncident(id: Long): PopulatedIncident?
+
     @Upsert
     suspend fun upsertIncidents(incidents: List<IncidentEntity>)
 

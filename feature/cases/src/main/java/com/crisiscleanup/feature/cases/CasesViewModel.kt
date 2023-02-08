@@ -7,21 +7,26 @@ import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.IncidentsRepository
+import com.crisiscleanup.core.data.repository.LocationsRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.domain.LoadIncidentDataUseCase
 import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.model.data.IncidentLocation
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.feature.cases.model.CoordinateBounds
 import com.crisiscleanup.feature.cases.model.MapViewCameraBounds
 import com.crisiscleanup.feature.cases.model.MapViewCameraBoundsDefault
 import com.crisiscleanup.feature.cases.model.asWorksiteGoogleMapMark
 import com.google.android.gms.maps.Projection
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -31,6 +36,7 @@ import javax.inject.Inject
 @HiltViewModel
 class CasesViewModel @Inject constructor(
     incidentsRepository: IncidentsRepository,
+    locationsRepository: LocationsRepository,
     worksitesRepository: WorksitesRepository,
     incidentSelector: IncidentSelector,
     appHeaderUiState: AppHeaderUiState,
@@ -82,67 +88,98 @@ class CasesViewModel @Inject constructor(
 
     private var skipMarksAutoBounding = false
 
-    val worksitesMapMarkers = qsm.worksiteQueryState.flatMapLatest {
-        skipMarksAutoBounding = false
+    val incidentLocationBounds = incidentSelector.incident.map { incident ->
+        var bounds: LatLngBounds = MapViewCameraBoundsDefault.bounds
 
-        Log.w("query", "Query state change $it")
-        val id = it.incidentId
-        if (isTableView.value || id == EmptyIncident.id) {
-            flowOf(emptyList())
-        } else {
-            worksitesRepository.getWorksitesMapVisual(
-                id,
-                it.coordinateBounds.southWest.latitude,
-                it.coordinateBounds.northEast.latitude,
-                it.coordinateBounds.southWest.longitude,
-                it.coordinateBounds.northEast.longitude,
-                100,
-                0,
-            ).map { marks ->
-                marks.map(WorksiteMapMark::asWorksiteGoogleMapMark)
+        isUpdatingCameraBounds.value = true
+        try {
+            val locations =
+                locationsRepository.getLocations(incident.locations.map(IncidentLocation::location))
+            if (locations.isNotEmpty()) {
+                // Assumes coordinates and multiCoordinates are lng-lat ordered pairs
+                val coordinates = locations.mapNotNull {
+                    it.multiCoordinates?.flatten() ?: it.coordinates
+                }.flatten()
+                val latLngs = mutableListOf<LatLng>()
+                for (i in 1 until coordinates.size step 2) {
+                    latLngs.add(LatLng(coordinates[i], coordinates[i - 1]))
+                }
+                val locationBounds =
+                    latLngs.fold(LatLngBounds.builder()) { acc, latLng -> acc.include(latLng) }
+                bounds = locationBounds.build()
             }
+
+
+            if (bounds == MapViewCameraBoundsDefault.bounds) {
+                // TODO Report/log location bounds are missing
+                val worksites = worksitesRepository.getWorksites(incident.id, 100, 0).first()
+                val locationBounds =
+                    worksites.map { LatLng(it.latitude, it.longitude) }
+                        .fold(LatLngBounds.builder()) { acc, latLng -> acc.include(latLng) }
+                bounds = locationBounds.build()
+            }
+
+            if (bounds.southwest.latitude == bounds.northeast.latitude ||
+                bounds.southwest.longitude == bounds.northeast.longitude
+            ) {
+                // TODO Add padding to bounds
+            }
+
+        } finally {
+            isUpdatingCameraBounds.value = false
         }
+
+        MapViewCameraBounds(bounds)
     }.stateIn(
         scope = viewModelScope,
-        initialValue = emptyList(),
+        initialValue = MapViewCameraBoundsDefault,
         started = SharingStarted.WhileSubscribed()
     )
 
-    // TODO Create provider (if not deleted later) to
-    //      Restore last map location if cached
-    //      Move to device's physical location if first load?
-    //      Use incident's location if...
-    val mapCameraBounds = worksitesMapMarkers
-        // TODO Make configurable.
-        .debounce(150)
+    val worksitesMapMarkers = qsm.worksiteQueryState
+        // TODO Make debounce a parameter
+        .debounce(250)
         .flatMapLatest {
-            if (isTableView.value || it.isEmpty() || skipMarksAutoBounding) {
-                flowOf(MapViewCameraBoundsDefault)
+            skipMarksAutoBounding = false
+
+            Log.w("query", "Query state change $it")
+            val id = it.incidentId
+            if (isTableView.value || id == EmptyIncident.id) {
+                flowOf(emptyList())
             } else {
-                isUpdatingCameraBounds.value = true
-
-                // TODO Use incident's location repository instead
-                val builder = it.fold(
-                    LatLngBounds.builder(),
-                ) { acc, curr -> acc.include(curr.latLng) }
-                val bounds = MapViewCameraBounds(builder.build())
-
-                isUpdatingCameraBounds.value = false
-
-                flowOf(bounds)
+                // TODO Defer to tiler when zoom is far out
+                val visuals = worksitesRepository.getWorksitesMapVisual(
+                    id,
+                    it.coordinateBounds.southWest.latitude,
+                    it.coordinateBounds.northEast.latitude,
+                    it.coordinateBounds.southWest.longitude,
+                    it.coordinateBounds.northEast.longitude,
+                    100,
+                    0,
+                ).map { marks ->
+                    marks.map(WorksiteMapMark::asWorksiteGoogleMapMark)
+                }
+                Log.w("Query", "Result ${visuals.first().size}")
+                visuals
             }
-        }.stateIn(
+        }
+        .stateIn(
             scope = viewModelScope,
-            initialValue = MapViewCameraBoundsDefault,
+            initialValue = emptyList(),
             started = SharingStarted.WhileSubscribed()
         )
 
-    fun onMapCameraChange(projection: Projection?, isActiveChange: Boolean) {
+    fun onMapCameraChange(
+        cameraPosition: CameraPosition,
+        projection: Projection?, isActiveChange: Boolean
+    ) {
+        qsm.mapZoom.value = cameraPosition.zoom
+
         projection?.let {
             val visibleBounds = it.visibleRegion.latLngBounds
             qsm.mapBounds.value = CoordinateBounds(
                 visibleBounds.southwest,
-                visibleBounds.northeast
+                visibleBounds.northeast,
             )
         }
 

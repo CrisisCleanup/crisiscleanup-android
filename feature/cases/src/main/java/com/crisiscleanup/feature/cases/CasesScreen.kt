@@ -90,10 +90,10 @@ internal fun CasesRoute(
         }
         // TODO Delay evaluation only when necessary by remembering data
         val worksitesOnMap by casesViewModel.worksitesMapMarkers.collectAsStateWithLifecycle()
-        val mapCameraBounds by casesViewModel.mapCameraBounds.collectAsStateWithLifecycle()
+        val mapCameraBounds by casesViewModel.incidentLocationBounds.collectAsStateWithLifecycle()
         val onMapCameraChange = remember(casesViewModel) {
-            { projection: Projection?, activeChange: Boolean ->
-                casesViewModel.onMapCameraChange(projection, activeChange)
+            { position: CameraPosition, projection: Projection?, activeChange: Boolean ->
+                casesViewModel.onMapCameraChange(position, projection, activeChange)
             }
         }
         CasesScreen(
@@ -148,7 +148,7 @@ internal fun CasesScreen(
     isLayerView: Boolean = false,
     worksitesOnMap: List<WorksiteGoogleMapMark> = emptyList(),
     mapCameraBounds: MapViewCameraBounds = MapViewCameraBoundsDefault,
-    onMapCameraChange: (Projection?, Boolean) -> Unit = { _, _ -> },
+    onMapCameraChange: (CameraPosition, Projection?, Boolean) -> Unit = { _, _, _ -> },
 ) {
     Box(modifier.then(Modifier.fillMaxSize())) {
         if (isTableView) {
@@ -172,7 +172,7 @@ internal fun CasesScreen(
 internal fun CasesMapView(
     mapCameraBounds: MapViewCameraBounds,
     worksitesOnMap: List<WorksiteGoogleMapMark> = emptyList(),
-    onMapCameraChange: (Projection?, Boolean) -> Unit = { _, _ -> },
+    onMapCameraChange: (CameraPosition, Projection?, Boolean) -> Unit = { _, _, _ -> },
 ) {
     // TODO Profile and optimize recompositions when map is changed (by user) if possible.
 
@@ -212,6 +212,7 @@ internal fun CasesMapView(
             val update = CameraUpdateFactory.newLatLngBounds(
                 mapCameraBounds.bounds, padding.toInt()
             )
+            // TODO Make durationMs proportional to distance moved
             cameraPositionState.animate(update, 500)
         }
     }
@@ -222,6 +223,7 @@ internal fun CasesMapView(
         }
     }
     onMapCameraChange(
+        cameraPositionState.position,
         cameraPositionState.projection,
         movingCamera.value
     )

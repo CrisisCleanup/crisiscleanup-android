@@ -35,8 +35,10 @@ data class IncidentEntity(
 
 @Entity("incident_locations")
 data class IncidentLocationEntity(
+    // location.id
     @PrimaryKey
     val id: Long,
+    // location.location
     val location: Long,
 )
 

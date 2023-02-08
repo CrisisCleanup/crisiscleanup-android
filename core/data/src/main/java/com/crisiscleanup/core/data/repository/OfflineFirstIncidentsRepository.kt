@@ -49,7 +49,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
         incidentDao.getIncidents().map { it.map(PopulatedIncident::asExternalModel) }
 
     private suspend fun saveLocations(incidents: List<NetworkIncident>) {
-        val locationIds = incidents.flatMap { it.locations.map(NetworkIncidentLocation::id) }
+        val locationIds = incidents.flatMap { it.locations.map(NetworkIncidentLocation::location) }
         val networkLocations = networkDataSource.getIncidentLocations(locationIds)
 
         networkLocations.errors?.let {

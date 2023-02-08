@@ -16,11 +16,13 @@ class CasesQueryStateManager constructor(
     private val appHeaderUiState: AppHeaderUiState,
     coroutineScope: CoroutineScope,
     searchQueryDebounceTimeout: Long = 150,
-    mapBoundsDebounceTimeout: Long = 50,
+    mapChangeDebounceTimeout: Long = 50,
 ) {
     internal val casesSearchQueryFlow = MutableStateFlow("")
 
     internal val isTableView = MutableStateFlow(false)
+
+    internal val mapZoom = MutableStateFlow(0f)
 
     internal val mapBounds = MutableStateFlow(CoordinateBoundsDefault)
 
@@ -46,8 +48,15 @@ class CasesQueryStateManager constructor(
         }
             .launchIn(coroutineScope)
 
+        mapZoom.asStateFlow()
+            .debounce(mapChangeDebounceTimeout)
+            .onEach {
+                worksiteQueryState.value = worksiteQueryState.value.copy(zoom = it)
+            }
+            .launchIn(coroutineScope)
+
         mapBounds.asStateFlow()
-            .debounce(mapBoundsDebounceTimeout)
+            .debounce(mapChangeDebounceTimeout)
             .onEach {
                 worksiteQueryState.value = worksiteQueryState.value.copy(coordinateBounds = it)
             }

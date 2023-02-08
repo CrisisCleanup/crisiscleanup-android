@@ -4,8 +4,10 @@ import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupAccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
+import com.crisiscleanup.core.data.repository.LocationsRepository
 import com.crisiscleanup.core.data.repository.OfflineFirstIncidentsRepository
 import com.crisiscleanup.core.data.repository.OfflineFirstLocalAppPreferencesRepository
+import com.crisiscleanup.core.data.repository.OfflineFirstLocationsRepository
 import com.crisiscleanup.core.data.repository.OfflineFirstWorksitesRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.data.util.ConnectivityManagerNetworkMonitor
@@ -21,6 +23,12 @@ import javax.inject.Singleton
 interface DataModule {
     @Singleton
     @Binds
+    fun bindsNetworkMonitor(
+        networkMonitor: ConnectivityManagerNetworkMonitor
+    ): NetworkMonitor
+
+    @Singleton
+    @Binds
     fun bindsLocalAppPreferencesRepository(
         repository: OfflineFirstLocalAppPreferencesRepository
     ): LocalAppPreferencesRepository
@@ -33,15 +41,15 @@ interface DataModule {
 
     @Singleton
     @Binds
-    fun bindsNetworkMonitor(
-        networkMonitor: ConnectivityManagerNetworkMonitor
-    ): NetworkMonitor
-
-    @Singleton
-    @Binds
     fun bindsIncidentsRepository(
         incidentsRepository: OfflineFirstIncidentsRepository
     ): IncidentsRepository
+
+    @Singleton
+    @Binds
+    fun bindsLocationRepository(
+        locationsRepository: OfflineFirstLocationsRepository
+    ): LocationsRepository
 
     @Singleton
     @Binds
