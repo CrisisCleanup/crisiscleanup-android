@@ -200,7 +200,10 @@ internal fun CasesMapView(
     ) {
         // TODO Is it possible to cache? If so test recomposition. If not document why not.
         worksitesOnMap.forEach {
-            Marker(it.markerState)
+            Marker(
+                it.markerState,
+                icon = it.mapDotIcon,
+            )
         }
     }
 

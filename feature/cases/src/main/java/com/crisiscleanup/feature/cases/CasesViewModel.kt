@@ -10,9 +10,9 @@ import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocationsRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.domain.LoadIncidentDataUseCase
+import com.crisiscleanup.core.mapmarker.MapCaseDotProvider
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.IncidentLocation
-import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.feature.cases.model.CoordinateBounds
 import com.crisiscleanup.feature.cases.model.MapViewCameraBounds
 import com.crisiscleanup.feature.cases.model.MapViewCameraBoundsDefault
@@ -41,6 +41,7 @@ class CasesViewModel @Inject constructor(
     incidentSelector: IncidentSelector,
     appHeaderUiState: AppHeaderUiState,
     loadIncidentDataUseCase: LoadIncidentDataUseCase,
+    mapCaseDotProvider: MapCaseDotProvider,
 ) : ViewModel() {
     val incidentsData = loadIncidentDataUseCase()
 
@@ -109,7 +110,6 @@ class CasesViewModel @Inject constructor(
                 bounds = locationBounds.build()
             }
 
-
             if (bounds == MapViewCameraBoundsDefault.bounds) {
                 // TODO Report/log location bounds are missing
                 val worksites = worksitesRepository.getWorksites(incident.id, 100, 0).first()
@@ -157,7 +157,7 @@ class CasesViewModel @Inject constructor(
                     100,
                     0,
                 ).map { marks ->
-                    marks.map(WorksiteMapMark::asWorksiteGoogleMapMark)
+                    marks.map { mark -> mark.asWorksiteGoogleMapMark(mapCaseDotProvider) }
                 }
                 Log.w("Query", "Result ${visuals.first().size}")
                 visuals
