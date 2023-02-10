@@ -40,8 +40,9 @@ object NetworkModule {
     @Provides
     @Singleton
     fun providesCrisisCleanupRetrofit(
-        appEnv: AppEnv,
         interceptorProvider: RetrofitInterceptorProvider,
         headerKeysLookup: RequestHeaderKeysLookup,
-    ): Retrofit = getCrisisCleanupApiBuilder(interceptorProvider, headerKeysLookup, appEnv)
+        json: Json,
+        appEnv: AppEnv,
+    ): Retrofit = getCrisisCleanupApiBuilder(interceptorProvider, headerKeysLookup, json, appEnv)
 }

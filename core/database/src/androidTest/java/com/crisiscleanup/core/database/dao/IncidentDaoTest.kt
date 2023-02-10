@@ -47,7 +47,7 @@ class IncidentDaoTest {
         )
         incidentDao.upsertIncidents(incidents)
 
-        val savedIncidents = incidentDao.getIncidents().first()
+        val savedIncidents = incidentDao.streamIncidents().first()
 
         assertEquals(
             listOf(2L, 1, 3),
@@ -106,7 +106,7 @@ class IncidentDaoTest {
             incidentToIncidentLocations
         )
 
-        val savedIncidents = incidentDao.getIncidents().first()
+        val savedIncidents = incidentDao.streamIncidents().first()
 
         assertEquals(
             listOf(
@@ -178,7 +178,7 @@ class IncidentDaoTest {
             expectedIncident(6, listOf("phone-1", "phone-2")),
         ).reversed()
         val savedIncidents =
-            incidentDao.getIncidents().first().map(PopulatedIncident::asExternalModel)
+            incidentDao.streamIncidents().first().map(PopulatedIncident::asExternalModel)
         for (i in expecteds.indices) {
             assertEquals(expecteds[i], savedIncidents[i], "$i")
         }
@@ -233,7 +233,7 @@ class IncidentDaoTest {
             syncingCrossRefs,
         )
 
-        val savedIncidents = incidentDao.getIncidents().first()
+        val savedIncidents = incidentDao.streamIncidents().first()
 
         assertEquals(
             // Sorted by start_by desc
@@ -257,12 +257,12 @@ class IncidentDaoTest {
     fun archiveUnspecified() = runTest {
         incidentDao.upsertIncidents(testIncidents())
 
-        val savedIncidents = incidentDao.getIncidents().first()
+        val savedIncidents = incidentDao.streamIncidents().first()
         assertEquals(listOf(48L, 954, 18), savedIncidents.map { it.entity.id })
 
         incidentDao.setExcludedArchived(setOf(48L, 18))
 
-        val updatedIncidents = incidentDao.getIncidents().first()
+        val updatedIncidents = incidentDao.streamIncidents().first()
         assertEquals(listOf(48L, 18), updatedIncidents.map { it.entity.id })
     }
 }

@@ -5,7 +5,6 @@ import com.crisiscleanup.core.database.CrisisCleanupDatabase
 import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
 import com.crisiscleanup.core.database.model.WorksiteEntity
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.datetime.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -14,7 +13,7 @@ import javax.inject.Singleton
 class WorksiteDaoPlus @Inject constructor(
     private val db: CrisisCleanupDatabase,
 ) {
-    private suspend fun getWorksiteLocalModifiedAt(
+    private fun getWorksiteLocalModifiedAt(
         incidentId: Long,
         worksiteIds: Set<Long>,
         worksiteDao: WorksiteDao,
@@ -23,7 +22,7 @@ class WorksiteDaoPlus @Inject constructor(
         val worksitesUpdatedAt = worksiteDao.getWorksitesLocalModifiedAt(
             incidentId,
             worksiteIds,
-        ).first()
+        )
         val modifiedAtLookup = mutableMapOf<Long, Instant>()
         worksitesUpdatedAt.forEach { modifiedAtLookup[it.networkId] = it.localModifiedAt }
         return modifiedAtLookup
@@ -93,10 +92,10 @@ class WorksiteDaoPlus @Inject constructor(
         }
     }
 
-    fun getWorksitesMapVisual(
+    fun streamWorksitesMapVisual(
         incidentId: Long,
-        latitudeMin: Double,
-        latitudeMax: Double,
+        latitudeSouth: Double,
+        latitudeNorth: Double,
         longitudeLeft: Double,
         longitudeRight: Double,
         limit: Int = 600,
@@ -105,19 +104,19 @@ class WorksiteDaoPlus @Inject constructor(
         val worksiteDao = db.worksiteDao()
         val isLongitudeOrdered = longitudeLeft < longitudeRight
         return if (isLongitudeOrdered)
-            worksiteDao.getWorksitesMapVisual(
+            worksiteDao.streamWorksitesMapVisual(
                 incidentId,
-                latitudeMin,
-                latitudeMax,
+                latitudeSouth,
+                latitudeNorth,
                 longitudeLeft,
                 longitudeRight,
                 limit,
                 offset,
             )
-        else worksiteDao.getWorksitesMapVisualLongitudeCrossover(
+        else worksiteDao.streamWorksitesMapVisualLongitudeCrossover(
             incidentId,
-            latitudeMin,
-            latitudeMax,
+            latitudeSouth,
+            latitudeNorth,
             longitudeLeft,
             longitudeRight,
             limit,

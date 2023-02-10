@@ -46,7 +46,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     override val isLoading: Flow<Boolean> = isSyncing
 
     override val incidents: Flow<List<Incident>> =
-        incidentDao.getIncidents().map { it.map(PopulatedIncident::asExternalModel) }
+        incidentDao.streamIncidents().map { it.map(PopulatedIncident::asExternalModel) }
 
     private suspend fun saveLocations(incidents: List<NetworkIncident>) {
         val locationIds = incidents.flatMap { it.locations.map(NetworkIncidentLocation::location) }

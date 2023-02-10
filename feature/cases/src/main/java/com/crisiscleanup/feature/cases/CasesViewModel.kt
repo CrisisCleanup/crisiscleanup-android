@@ -5,6 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.appheader.AppHeaderUiState
+import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
+import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocationsRepository
@@ -21,7 +23,9 @@ import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.TileProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -29,19 +33,25 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
 class CasesViewModel @Inject constructor(
     incidentsRepository: IncidentsRepository,
-    locationsRepository: LocationsRepository,
-    worksitesRepository: WorksitesRepository,
-    incidentSelector: IncidentSelector,
+    private val locationsRepository: LocationsRepository,
+    private val worksitesRepository: WorksitesRepository,
+    private val incidentSelector: IncidentSelector,
     appHeaderUiState: AppHeaderUiState,
     loadIncidentDataUseCase: LoadIncidentDataUseCase,
     mapCaseDotProvider: MapCaseDotProvider,
+    private val mapTileRenderer: CaseDotsMapTileRenderer,
+    private val tileProvider: TileProvider,
+    @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     val incidentsData = loadIncidentDataUseCase()
 
@@ -52,6 +62,8 @@ class CasesViewModel @Inject constructor(
     )
 
     val isTableView = qsm.isTableView
+
+    val overviewTileDataSize = mapTileRenderer.tileDataSize
 
     // TODO Is it possible use stateFlow in Compose deferring evaluation until needed in the hierarchy like with a remembered lambda? Maybe not so research and test with the layout inspector.
     var casesSearchQuery = mutableStateOf("")
@@ -75,61 +87,73 @@ class CasesViewModel @Inject constructor(
 
     private val isUpdatingCameraBounds = MutableStateFlow(false)
 
+    init {
+        mapTileRenderer.setScope(viewModelScope)
+
+        incidentSelector.incidentId.onEach {
+            mapTileRenderer.setIncident(it)
+        }.launchIn(viewModelScope)
+    }
+
     val isLoading = combine(
         incidentsRepository.isLoading,
         worksitesRepository.isLoading,
-        isUpdatingCameraBounds
-    ) { incidentsLoading,
-        worksitesLoading,
-        isUpdatingCameraBounds ->
+        isUpdatingCameraBounds,
+        mapTileRenderer.isBusy,
+    ) {
+            incidentsLoading,
+            worksitesLoading,
+            isUpdatingCameraBounds,
+            rendererBusy,
+        ->
         incidentsLoading ||
                 worksitesLoading ||
-                isUpdatingCameraBounds
+                isUpdatingCameraBounds ||
+                rendererBusy
     }
 
-    private var skipMarksAutoBounding = false
-
     val incidentLocationBounds = incidentSelector.incident.map { incident ->
-        var bounds: LatLngBounds = MapViewCameraBoundsDefault.bounds
+        withContext(ioDispatcher) {
+            var bounds = MapViewCameraBoundsDefault.bounds
 
-        isUpdatingCameraBounds.value = true
-        try {
-            val locations =
-                locationsRepository.getLocations(incident.locations.map(IncidentLocation::location))
-            if (locations.isNotEmpty()) {
-                // Assumes coordinates and multiCoordinates are lng-lat ordered pairs
-                val coordinates = locations.mapNotNull {
-                    it.multiCoordinates?.flatten() ?: it.coordinates
-                }.flatten()
-                val latLngs = mutableListOf<LatLng>()
-                for (i in 1 until coordinates.size step 2) {
-                    latLngs.add(LatLng(coordinates[i], coordinates[i - 1]))
+            isUpdatingCameraBounds.value = true
+            try {
+                val locations =
+                    locationsRepository.getLocations(incident.locations.map(IncidentLocation::location))
+                if (locations.isNotEmpty()) {
+                    // Assumes coordinates and multiCoordinates are lng-lat ordered pairs
+                    val coordinates = locations.mapNotNull {
+                        it.multiCoordinates?.flatten() ?: it.coordinates
+                    }.flatten()
+                    val latLngs = mutableListOf<LatLng>()
+                    for (i in 1 until coordinates.size step 2) {
+                        latLngs.add(LatLng(coordinates[i], coordinates[i - 1]))
+                    }
+                    val locationBounds =
+                        latLngs.fold(LatLngBounds.builder()) { acc, latLng -> acc.include(latLng) }
+                    bounds = locationBounds.build()
                 }
-                val locationBounds =
-                    latLngs.fold(LatLngBounds.builder()) { acc, latLng -> acc.include(latLng) }
-                bounds = locationBounds.build()
+
+                if (bounds == MapViewCameraBoundsDefault.bounds) {
+                    // TODO Report/log location bounds are missing
+                    val worksites = worksitesRepository.getWorksitesMapVisual(incident.id, 100, 0)
+                    val locationBounds =
+                        worksites.map { LatLng(it.latitude, it.longitude) }
+                            .fold(LatLngBounds.builder()) { acc, latLng -> acc.include(latLng) }
+                    bounds = locationBounds.build()
+                }
+
+                if (bounds.southwest.latitude == bounds.northeast.latitude ||
+                    bounds.southwest.longitude == bounds.northeast.longitude
+                ) {
+                    // TODO Add padding to bounds
+                }
+            } finally {
+                isUpdatingCameraBounds.value = false
             }
 
-            if (bounds == MapViewCameraBoundsDefault.bounds) {
-                // TODO Report/log location bounds are missing
-                val worksites = worksitesRepository.getWorksites(incident.id, 100, 0).first()
-                val locationBounds =
-                    worksites.map { LatLng(it.latitude, it.longitude) }
-                        .fold(LatLngBounds.builder()) { acc, latLng -> acc.include(latLng) }
-                bounds = locationBounds.build()
-            }
-
-            if (bounds.southwest.latitude == bounds.northeast.latitude ||
-                bounds.southwest.longitude == bounds.northeast.longitude
-            ) {
-                // TODO Add padding to bounds
-            }
-
-        } finally {
-            isUpdatingCameraBounds.value = false
+            MapViewCameraBounds(bounds)
         }
-
-        MapViewCameraBounds(bounds)
     }.stateIn(
         scope = viewModelScope,
         initialValue = MapViewCameraBoundsDefault,
@@ -140,15 +164,15 @@ class CasesViewModel @Inject constructor(
         // TODO Make debounce a parameter
         .debounce(250)
         .flatMapLatest {
-            skipMarksAutoBounding = false
-
-            Log.w("query", "Query state change $it")
             val id = it.incidentId
-            if (isTableView.value || id == EmptyIncident.id) {
+            val skipMarkers = isTableView.value ||
+                    id == EmptyIncident.id ||
+                    mapTileRenderer.rendersAt(it.zoom)
+            Log.w("query", "Query state change ${it.zoom} $it")
+            if (skipMarkers) {
                 flowOf(emptyList())
             } else {
-                // TODO Defer to tiler when zoom is far out
-                val visuals = worksitesRepository.getWorksitesMapVisual(
+                val visuals = worksitesRepository.streamWorksitesMapVisual(
                     id,
                     it.coordinateBounds.southWest.latitude,
                     it.coordinateBounds.northEast.latitude,
@@ -166,12 +190,20 @@ class CasesViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = emptyList(),
-            started = SharingStarted.WhileSubscribed()
+            started = SharingStarted.WhileSubscribed(),
         )
+
+    fun overviewMapTileProvider(): TileProvider? {
+        val ignoreTiling = isTableView.value ||
+                incidentSelector.incidentId.value == EmptyIncident.id ||
+                !mapTileRenderer.rendersAt(qsm.mapZoom.value)
+        return if (ignoreTiling) null else tileProvider
+    }
 
     fun onMapCameraChange(
         cameraPosition: CameraPosition,
-        projection: Projection?, isActiveChange: Boolean
+        projection: Projection?,
+        isActiveChange: Boolean
     ) {
         qsm.mapZoom.value = cameraPosition.zoom
 
@@ -181,10 +213,6 @@ class CasesViewModel @Inject constructor(
                 visibleBounds.southwest,
                 visibleBounds.northeast,
             )
-        }
-
-        if (isActiveChange) {
-            skipMarksAutoBounding = true
         }
     }
 }

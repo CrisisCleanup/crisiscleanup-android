@@ -41,10 +41,12 @@ import com.crisiscleanup.feature.cases.ui.CasesZoomBar
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.TileProvider
 import com.google.maps.android.compose.CameraMoveStartedReason
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.TileOverlay
 import com.google.maps.android.compose.rememberCameraPositionState
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
@@ -91,6 +93,9 @@ internal fun CasesRoute(
         // TODO Delay evaluation only when necessary by remembering data
         val worksitesOnMap by casesViewModel.worksitesMapMarkers.collectAsStateWithLifecycle()
         val mapCameraBounds by casesViewModel.incidentLocationBounds.collectAsStateWithLifecycle()
+        val casesDotTileProvider = remember(casesViewModel.overviewTileDataSize) {
+            { casesViewModel.overviewMapTileProvider() }
+        }
         val onMapCameraChange = remember(casesViewModel) {
             { position: CameraPosition, projection: Projection?, activeChange: Boolean ->
                 casesViewModel.onMapCameraChange(position, projection, activeChange)
@@ -103,6 +108,7 @@ internal fun CasesRoute(
             isLayerView = isLayerView,
             worksitesOnMap = worksitesOnMap,
             mapCameraBounds = mapCameraBounds,
+            casesDotTileProvider = casesDotTileProvider,
             onMapCameraChange = onMapCameraChange,
         )
     } else {
@@ -148,6 +154,7 @@ internal fun CasesScreen(
     isLayerView: Boolean = false,
     worksitesOnMap: List<WorksiteGoogleMapMark> = emptyList(),
     mapCameraBounds: MapViewCameraBounds = MapViewCameraBoundsDefault,
+    casesDotTileProvider: () -> TileProvider? = { null },
     onMapCameraChange: (CameraPosition, Projection?, Boolean) -> Unit = { _, _, _ -> },
 ) {
     Box(modifier.then(Modifier.fillMaxSize())) {
@@ -157,6 +164,7 @@ internal fun CasesScreen(
             CasesMapView(
                 mapCameraBounds,
                 worksitesOnMap,
+                casesDotTileProvider,
                 onMapCameraChange = onMapCameraChange,
             )
         }
@@ -172,6 +180,7 @@ internal fun CasesScreen(
 internal fun CasesMapView(
     mapCameraBounds: MapViewCameraBounds,
     worksitesOnMap: List<WorksiteGoogleMapMark> = emptyList(),
+    casesDotTileProvider: () -> TileProvider? = { null },
     onMapCameraChange: (CameraPosition, Projection?, Boolean) -> Unit = { _, _, _ -> },
 ) {
     // TODO Profile and optimize recompositions when map is changed (by user) if possible.
@@ -202,8 +211,11 @@ internal fun CasesMapView(
         worksitesOnMap.forEach {
             Marker(
                 it.markerState,
-                icon = it.mapDotIcon,
             )
+        }
+
+        casesDotTileProvider()?.let {
+            TileOverlay(tileProvider = it)
         }
     }
 

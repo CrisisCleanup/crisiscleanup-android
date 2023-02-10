@@ -24,7 +24,11 @@ interface WorksiteDao {
     OFFSET :offset
     """
     )
-    fun getWorksites(incidentId: Long, limit: Int, offset: Int = 0): Flow<List<PopulatedWorksite>>
+    fun streamWorksites(
+        incidentId: Long,
+        limit: Int,
+        offset: Int = 0
+    ): Flow<List<PopulatedWorksite>>
 
     // TODO Implement spatial indexes for coordinates search
     @Transaction
@@ -33,18 +37,19 @@ interface WorksiteDao {
     SELECT id, latitude, longitude, key_work_type_type
     FROM worksites
     WHERE incident_id=:incidentId AND
-    (latitude BETWEEN :latitudeMin AND :latitudeMax) AND
-    (longitude BETWEEN :longitudeLeft AND :longitudeRight)
+    (latitude BETWEEN :latitudeSouth AND :latitudeNorth) AND
+    (longitude BETWEEN :longitudeWest AND :longitudeEast)
+    ORDER BY updated_at DESC, id DESC
     LIMIT :limit
     OFFSET :offset
     """
     )
-    fun getWorksitesMapVisual(
+    fun streamWorksitesMapVisual(
         incidentId: Long,
-        latitudeMin: Double,
-        latitudeMax: Double,
-        longitudeLeft: Double,
-        longitudeRight: Double,
+        latitudeSouth: Double,
+        latitudeNorth: Double,
+        longitudeWest: Double,
+        longitudeEast: Double,
         limit: Int,
         offset: Int,
     ): Flow<List<PopulatedWorksiteMapVisual>>
@@ -55,16 +60,17 @@ interface WorksiteDao {
     SELECT id, latitude, longitude, key_work_type_type
     FROM worksites
     WHERE incident_id=:incidentId AND
-    (latitude BETWEEN :latitudeMin AND :latitudeMax) AND
+    (latitude BETWEEN :latitudeSouth AND :latitudeNorth) AND
     (longitude>=:longitudeLeft OR longitude<=:longitudeRight)
+    ORDER BY updated_at DESC, id DESC
     LIMIT :limit
     OFFSET :offset
     """
     )
-    fun getWorksitesMapVisualLongitudeCrossover(
+    fun streamWorksitesMapVisualLongitudeCrossover(
         incidentId: Long,
-        latitudeMin: Double,
-        latitudeMax: Double,
+        latitudeSouth: Double,
+        latitudeNorth: Double,
         longitudeLeft: Double,
         longitudeRight: Double,
         limit: Int,
@@ -82,7 +88,47 @@ interface WorksiteDao {
     fun getWorksitesLocalModifiedAt(
         incidentId: Long,
         worksiteIds: Set<Long>,
-    ): Flow<List<WorksiteLocalModifiedAt>>
+    ): List<WorksiteLocalModifiedAt>
+
+    @Transaction
+    @Query(
+        """
+    SELECT id, latitude, longitude, key_work_type_type
+    FROM worksites
+    WHERE incident_id=:incidentId
+    ORDER BY updated_at DESC, id DESC
+    LIMIT :limit
+    OFFSET :offset
+    """
+    )
+    fun getWorksitesMapVisual(
+        incidentId: Long,
+        limit: Int,
+        offset: Int,
+    ): List<PopulatedWorksiteMapVisual>
+
+    @Transaction
+    @Query(
+        """
+    SELECT id, latitude, longitude, key_work_type_type
+    FROM worksites
+    WHERE incident_id=:incidentId AND
+    (latitude BETWEEN :latitudeSouth AND :latitudeNorth) AND
+    (longitude BETWEEN :longitudeWest AND :longitudeEast)
+    ORDER BY updated_at DESC, id DESC
+    LIMIT :limit
+    OFFSET :offset
+    """
+    )
+    fun getWorksitesMapVisual(
+        incidentId: Long,
+        latitudeSouth: Double,
+        latitudeNorth: Double,
+        longitudeWest: Double,
+        longitudeEast: Double,
+        limit: Int,
+        offset: Int,
+    ): List<PopulatedWorksiteMapVisual>
 
     @Transaction
     @Query("SELECT COUNT(id) FROM worksites_root WHERE incident_id=:incidentId")

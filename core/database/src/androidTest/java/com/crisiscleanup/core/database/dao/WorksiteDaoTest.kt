@@ -115,10 +115,10 @@ class WorksiteDaoTest {
         // Assert
 
         var expected = listOf(existingWorksites[2])
-        var actual = worksiteDao.getWorksites(23, 99).first().map { it.entity }
+        var actual = worksiteDao.streamWorksites(23, 99).first().map { it.entity }
         assertEquals(expected, actual)
 
-        actual = worksiteDao.getWorksites(1, 99).first().map { it.entity }
+        actual = worksiteDao.streamWorksites(1, 99).first().map { it.entity }
 
         // Order by updated_at desc id desc
         // updatedA > updatedB > fullA.updated_at
@@ -190,10 +190,10 @@ class WorksiteDaoTest {
         // Assert
 
         var expected = listOf(existingWorksites[2])
-        var actual = worksiteDao.getWorksites(23, 99).first().map { it.entity }
+        var actual = worksiteDao.streamWorksites(23, 99).first().map { it.entity }
         assertEquals(expected, actual)
 
-        actual = worksiteDao.getWorksites(1, 99).first().map { it.entity }
+        actual = worksiteDao.streamWorksites(1, 99).first().map { it.entity }
 
         // Order by updated_at desc id desc
         // updatedA > updatedB > fullA.updated_at
@@ -281,7 +281,7 @@ class WorksiteDaoTest {
         existingWorksites = insertWorksites(existingWorksites, previousSyncedAt)
 
         val expected = listOf(existingWorksites[0].copy(id = 1))
-        val actual = worksiteDao.getWorksites(1, 99).first().map { it.entity }
+        val actual = worksiteDao.streamWorksites(1, 99).first().map { it.entity }
         assertEquals(expected, actual)
     }
 
@@ -350,7 +350,7 @@ class WorksiteDaoTest {
                 updatedAt = existingWorksite.updatedAt.plus(11.seconds),
             ),
         )
-        val actual = worksiteDao.getWorksites(1, 99).first().map { it.entity }
+        val actual = worksiteDao.streamWorksites(1, 99).first().map { it.entity }
         assertEquals(expected, actual)
     }
 

@@ -14,10 +14,6 @@ import javax.inject.Qualifier
 
 private const val CrisisCleanupApiBaseUrl = BuildConfig.API_BASE_URL
 
-private val networkApiJson by lazy {
-    Json { ignoreUnknownKeys = true }
-}
-
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.VALUE_PARAMETER)
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
@@ -26,6 +22,7 @@ internal annotation class CrisisCleanupRetrofit
 internal fun getCrisisCleanupApiBuilder(
     interceptorProvider: RetrofitInterceptorProvider,
     headerKeysLookup: RequestHeaderKeysLookup,
+    networkApiJson: Json,
     appEnv: AppEnv,
 ): Retrofit {
     val clientBuilder = OkHttpClient.Builder()

@@ -56,19 +56,19 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     override var isLoading = MutableStateFlow(false)
         private set
 
-    override suspend fun getWorksitesMapVisual(
+    override suspend fun streamWorksitesMapVisual(
         incidentId: Long,
-        latitudeMin: Double,
-        latitudeMax: Double,
+        latitudeSouth: Double,
+        latitudeNorth: Double,
         longitudeLeft: Double,
         longitudeRight: Double,
         limit: Int,
         offset: Int,
     ): Flow<List<WorksiteMapMark>> = withContext(ioDispatcher) {
-        return@withContext worksiteDaoPlus.getWorksitesMapVisual(
+        return@withContext worksiteDaoPlus.streamWorksitesMapVisual(
             incidentId,
-            latitudeMin,
-            latitudeMax,
+            latitudeSouth,
+            latitudeNorth,
             longitudeLeft,
             longitudeRight,
             limit,
@@ -77,10 +77,43 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             .map { it.map(PopulatedWorksiteMapVisual::asExternalModel) }
     }
 
-    override fun getWorksites(incidentId: Long, limit: Int, offset: Int): Flow<List<Worksite>> {
-        return worksiteDao.getWorksites(incidentId, limit, offset)
+    override fun streamWorksites(incidentId: Long, limit: Int, offset: Int): Flow<List<Worksite>> {
+        return worksiteDao.streamWorksites(incidentId, limit, offset)
             .map { it.map(PopulatedWorksite::asExternalModel) }
     }
+
+    override fun getWorksitesMapVisual(
+        incidentId: Long,
+        limit: Int,
+        offset: Int
+    ): List<WorksiteMapMark> {
+        return worksiteDao.getWorksitesMapVisual(incidentId, limit, offset)
+            .map(PopulatedWorksiteMapVisual::asExternalModel)
+    }
+
+    override fun getWorksitesMapVisual(
+        incidentId: Long,
+        latitudeSouth: Double,
+        latitudeNorth: Double,
+        longitudeWest: Double,
+        longitudeEast: Double,
+        limit: Int,
+        offset: Int
+    ): List<WorksiteMapMark> {
+        return worksiteDao.getWorksitesMapVisual(
+            incidentId,
+            latitudeSouth,
+            latitudeNorth,
+            longitudeWest,
+            longitudeEast,
+            limit,
+            offset
+        )
+            .map(PopulatedWorksiteMapVisual::asExternalModel)
+    }
+
+    override fun getWorksitesCount(incidentId: Long): Int =
+        worksiteDao.getWorksitesCount(incidentId)
 
     private suspend fun networkWorksitesCount(
         incidentId: Long,

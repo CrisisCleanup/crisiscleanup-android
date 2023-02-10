@@ -9,5 +9,5 @@ annotation class Dispatcher(val dispatchers: CrisisCleanupDispatchers)
 
 enum class CrisisCleanupDispatchers {
     Default,
-    IO
+    IO,
 }

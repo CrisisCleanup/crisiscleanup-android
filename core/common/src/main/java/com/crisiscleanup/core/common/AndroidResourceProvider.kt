@@ -8,6 +8,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 interface AndroidResourceProvider {
+    val displayDensity: Float
+
     fun getString(@StringRes resId: Int): String
 
     fun dpToPx(dp: Float): Float
@@ -19,7 +21,9 @@ class ApplicationResourceProvider @Inject constructor(
 ) : AndroidResourceProvider {
     val resources: Resources = context.resources
 
+    override val displayDensity: Float = resources.displayMetrics.density
+
     override fun getString(resId: Int): String = context.getString(resId)
 
-    override fun dpToPx(dp: Float): Float = resources.displayMetrics.density * dp
+    override fun dpToPx(dp: Float): Float = displayDensity * dp
 }

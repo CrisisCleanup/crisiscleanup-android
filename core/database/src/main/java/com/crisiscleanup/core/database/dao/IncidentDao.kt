@@ -26,7 +26,7 @@ interface IncidentDao {
     ORDER BY start_at DESC, id DESC
     """
     )
-    fun getIncidents(): Flow<List<PopulatedIncident>>
+    fun streamIncidents(): Flow<List<PopulatedIncident>>
 
     @Transaction
     @Query("SELECT * FROM incidents WHERE id=:id")

@@ -19,56 +19,101 @@ import com.crisiscleanup.core.model.data.CaseStatus.Unknown
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import javax.inject.Inject
+import javax.inject.Singleton
 
 interface MapCaseDotProvider {
-    fun getDotIcon(
-        status: CaseStatus,
-        bitmapSizeDp: Float = 12f,
-        dotDiameterDp: Float = 6f,
-        strokeWidthDp: Float = 2f,
-    ): BitmapDescriptor
+    val centerSizePx: Float
+
+    fun setDotProperties(dotDrawProperties: DotDrawProperties)
+
+    fun getDotIcon(status: CaseStatus): BitmapDescriptor?
+
+    fun getDotBitmap(status: CaseStatus): Bitmap?
 }
 
+@Singleton
 class InMemoryDotProvider @Inject constructor(
-    private val resourceProvider: AndroidResourceProvider,
+    resourceProvider: AndroidResourceProvider,
 ) : MapCaseDotProvider {
     private val cache = LruCache<CaseStatus, BitmapDescriptor>(16)
+    private val bitmapCache = LruCache<CaseStatus, Bitmap>(16)
 
-    override fun getDotIcon(
+    private var cacheDotDrawProperties: DotDrawProperties
+    override val centerSizePx: Float
+        get() = cacheDotDrawProperties.centerSizePx
+
+    init {
+        cacheDotDrawProperties = DotDrawProperties.make(resourceProvider)
+    }
+
+    override fun setDotProperties(dotDrawProperties: DotDrawProperties) {
+        synchronized(cacheDotDrawProperties) {
+            if (cacheDotDrawProperties != dotDrawProperties) {
+                cache.evictAll()
+                bitmapCache.evictAll()
+            }
+            cacheDotDrawProperties = dotDrawProperties
+        }
+    }
+
+    private fun cacheDotBitmap(
         status: CaseStatus,
-        bitmapSizeDp: Float,
-        dotDiameterDp: Float,
-        strokeWidthDp: Float,
-    ): BitmapDescriptor {
-        cache.get(status)?.let {
-            return it
+        dotDrawProperties: DotDrawProperties,
+    ): BitmapDescriptor? {
+        val colors = caseDotMarkerColors[status] ?: caseDotMarkerColors[Unknown]!!
+        val bitmap = drawDot(colors, dotDrawProperties)
+        val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap)
+        synchronized(cacheDotDrawProperties) {
+            if (cacheDotDrawProperties != dotDrawProperties) {
+                return null
+            }
+
+            bitmapCache.put(status, bitmap)
+            cache.put(status, bitmapDescriptor)
+            return bitmapDescriptor
+        }
+    }
+
+    override fun getDotIcon(status: CaseStatus): BitmapDescriptor? {
+        synchronized(cacheDotDrawProperties) {
+            cache.get(status)?.let {
+                return it
+            }
         }
 
-        val colors = caseDotMarkerColors[status] ?: caseDotMarkerColors[Unknown]!!
-        val bitmap = drawDot(
-            colors,
-            resourceProvider.dpToPx(bitmapSizeDp),
-            resourceProvider.dpToPx(dotDiameterDp),
-            resourceProvider.dpToPx(strokeWidthDp),
-        )
-        val bitmapDrawable = BitmapDescriptorFactory.fromBitmap(bitmap)
-        cache.put(status, bitmapDrawable)
-        return bitmapDrawable
+        return cacheDotBitmap(status, cacheDotDrawProperties)
+    }
+
+    override fun getDotBitmap(status: CaseStatus): Bitmap? {
+        synchronized(cacheDotDrawProperties) {
+            bitmapCache.get(status)?.let {
+                return it
+            }
+        }
+
+        val dotDrawProperties = cacheDotDrawProperties
+        cacheDotBitmap(status, dotDrawProperties)
+        synchronized(cacheDotDrawProperties) {
+            if (cacheDotDrawProperties == dotDrawProperties) {
+                bitmapCache.get(status)?.let {
+                    return it
+                }
+            }
+            return null
+        }
     }
 
     private fun drawDot(
         colors: DotMarkerColors,
-        bitmapSizePx: Float,
-        dotDiameterPx: Float,
-        strokeWidthPx: Float,
+        dotDrawProperties: DotDrawProperties,
     ): Bitmap {
-
-        val bitmapSize = bitmapSizePx.toInt()
+        val bitmapSize = dotDrawProperties.bitmapSizePx.toInt()
         val output = Bitmap.createBitmap(bitmapSize, bitmapSize, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(output)
 
-        val center = bitmapSizePx * 0.5f
-        val radius = dotDiameterPx * 0.5f
+        val radius = dotDrawProperties.dotDiameterPx * 0.5f
+        val center = dotDrawProperties.centerSizePx
+        val strokeWidthPx = dotDrawProperties.strokeWidthPx
 
         val dotPaint = Paint(Paint.ANTI_ALIAS_FLAG)
         dotPaint.isAntiAlias = true
@@ -83,6 +128,26 @@ class InMemoryDotProvider @Inject constructor(
         canvas.drawCircle(center, center, radius + strokeWidthPx * 0.5f, dotPaint)
 
         return output
+    }
+}
+
+data class DotDrawProperties(
+    val bitmapSizePx: Float = 12f,
+    val centerSizePx: Float = bitmapSizePx * 0.5f,
+    val dotDiameterPx: Float = 6f,
+    val strokeWidthPx: Float = 2f,
+) {
+    companion object {
+        fun make(
+            resourceProvider: AndroidResourceProvider,
+            bitmapSizeDp: Float = 8f,
+            dotDiameterDp: Float = 4f,
+            strokeWidthDp: Float = 1f,
+        ) = DotDrawProperties(
+            bitmapSizePx = resourceProvider.dpToPx(bitmapSizeDp),
+            dotDiameterPx = resourceProvider.dpToPx(dotDiameterDp),
+            strokeWidthPx = resourceProvider.dpToPx(strokeWidthDp),
+        )
     }
 }
 

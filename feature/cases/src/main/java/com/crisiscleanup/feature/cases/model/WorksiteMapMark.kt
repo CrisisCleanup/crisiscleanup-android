@@ -11,7 +11,7 @@ data class WorksiteGoogleMapMark(
     val source: WorksiteMapMark,
     val latLng: LatLng,
     val markerState: MarkerState,
-    val mapDotIcon: BitmapDescriptor,
+    val mapDotIcon: BitmapDescriptor?,
 )
 
 fun WorksiteMapMark.asWorksiteGoogleMapMark(dotProvider: MapCaseDotProvider): WorksiteGoogleMapMark {
@@ -22,7 +22,7 @@ fun WorksiteMapMark.asWorksiteGoogleMapMark(dotProvider: MapCaseDotProvider): Wo
         markerState = MarkerState(latLng),
         dotProvider.getDotIcon(
             if (latLng.latitude % 1f < 0.5) CaseStatus.Unclaimed
-            else CaseStatus.ClaimedNotStarted
+            else CaseStatus.ClaimedNotStarted,
         ),
     )
 }
