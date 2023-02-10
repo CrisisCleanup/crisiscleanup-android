@@ -30,7 +30,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
@@ -163,28 +162,37 @@ class CasesViewModel @Inject constructor(
     val worksitesMapMarkers = qsm.worksiteQueryState
         // TODO Make debounce a parameter
         .debounce(250)
-        .flatMapLatest {
-            val id = it.incidentId
+        .flatMapLatest { wqs ->
+            val id = wqs.incidentId
             val skipMarkers = isTableView.value ||
                     id == EmptyIncident.id ||
-                    mapTileRenderer.rendersAt(it.zoom)
-            Log.w("query", "Query state change ${it.zoom} $it")
+                    mapTileRenderer.rendersAt(wqs.zoom)
+
+            Log.w("query", "Query state change ${wqs.zoom} $wqs")
+
             if (skipMarkers) {
                 flowOf(emptyList())
             } else {
-                val visuals = worksitesRepository.streamWorksitesMapVisual(
-                    id,
-                    it.coordinateBounds.southWest.latitude,
-                    it.coordinateBounds.northEast.latitude,
-                    it.coordinateBounds.southWest.longitude,
-                    it.coordinateBounds.northEast.longitude,
-                    100,
-                    0,
-                ).map { marks ->
-                    marks.map { mark -> mark.asWorksiteGoogleMapMark(mapCaseDotProvider) }
+                withContext(ioDispatcher) {
+                    val sw = wqs.coordinateBounds.southWest
+                    val ne = wqs.coordinateBounds.northEast
+                    val visuals = worksitesRepository.getWorksitesMapVisual(
+                        id,
+                        sw.latitude,
+                        ne.latitude,
+                        sw.longitude,
+                        ne.longitude,
+                        // TODO Make parameter.
+                        //      Decide how to prioritize when there are plenty if not already documented.
+                        //      At a minimum alert when markers are hidden due to limit. Post query if size of marks equals the limit to know if there are more.
+                        1000,
+                        0,
+                    ).map { mark -> mark.asWorksiteGoogleMapMark(mapCaseDotProvider) }
+
+                    Log.w("Query", "Result ${visuals.size}")
+
+                    flowOf(visuals)
                 }
-                Log.w("Query", "Result ${visuals.first().size}")
-                visuals
             }
         }
         .stateIn(
