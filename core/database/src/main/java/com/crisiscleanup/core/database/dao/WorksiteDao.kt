@@ -14,15 +14,23 @@ import kotlinx.datetime.Instant
 @Dao
 interface WorksiteDao {
     @Transaction
+    @Query("SELECT id FROM worksites_root WHERE incident_id=:incidentId AND network_id=:networkId AND local_global_uuid=''")
+    fun getWorksiteId(incidentId: Long, networkId: Long): Long
+
+    @Transaction
+    @Query("SELECT * FROM worksites WHERE id=:id")
+    fun getWorksite(id: Long): PopulatedWorksite
+
+    @Transaction
     @Query(
         """
-    SELECT *
-    FROM worksites
-    WHERE incident_id=:incidentId
-    ORDER BY updated_at DESC, id DESC
-    LIMIT :limit
-    OFFSET :offset
-    """
+        SELECT *
+        FROM worksites
+        WHERE incident_id=:incidentId
+        ORDER BY updated_at DESC, id DESC
+        LIMIT :limit
+        OFFSET :offset
+        """
     )
     fun streamWorksites(
         incidentId: Long,
@@ -34,15 +42,15 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
-    SELECT id, latitude, longitude, key_work_type_type
-    FROM worksites
-    WHERE incident_id=:incidentId AND
-    (latitude BETWEEN :latitudeSouth AND :latitudeNorth) AND
-    (longitude BETWEEN :longitudeWest AND :longitudeEast)
-    ORDER BY updated_at DESC, id DESC
-    LIMIT :limit
-    OFFSET :offset
-    """
+        SELECT id, latitude, longitude, key_work_type_type
+        FROM worksites
+        WHERE incident_id=:incidentId AND
+        (latitude BETWEEN :latitudeSouth AND :latitudeNorth) AND
+        (longitude BETWEEN :longitudeWest AND :longitudeEast)
+        ORDER BY updated_at DESC, id DESC
+        LIMIT :limit
+        OFFSET :offset
+        """
     )
     fun streamWorksitesMapVisual(
         incidentId: Long,
@@ -57,15 +65,15 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
-    SELECT id, latitude, longitude, key_work_type_type
-    FROM worksites
-    WHERE incident_id=:incidentId AND
-    (latitude BETWEEN :latitudeSouth AND :latitudeNorth) AND
-    (longitude>=:longitudeLeft OR longitude<=:longitudeRight)
-    ORDER BY updated_at DESC, id DESC
-    LIMIT :limit
-    OFFSET :offset
-    """
+        SELECT id, latitude, longitude, key_work_type_type
+        FROM worksites
+        WHERE incident_id=:incidentId AND
+        (latitude BETWEEN :latitudeSouth AND :latitudeNorth) AND
+        (longitude>=:longitudeLeft OR longitude<=:longitudeRight)
+        ORDER BY updated_at DESC, id DESC
+        LIMIT :limit
+        OFFSET :offset
+        """
     )
     fun streamWorksitesMapVisualLongitudeCrossover(
         incidentId: Long,
@@ -80,10 +88,10 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
-    SELECT network_id, local_modified_at
-    FROM worksites_root
-    WHERE incident_id=:incidentId AND network_id IN (:worksiteIds)
-    """
+        SELECT network_id, local_modified_at, is_local_modified
+        FROM worksites_root
+        WHERE incident_id=:incidentId AND network_id IN (:worksiteIds)
+        """
     )
     fun getWorksitesLocalModifiedAt(
         incidentId: Long,
@@ -93,13 +101,13 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
-    SELECT id, latitude, longitude, key_work_type_type
-    FROM worksites
-    WHERE incident_id=:incidentId
-    ORDER BY updated_at DESC, id DESC
-    LIMIT :limit
-    OFFSET :offset
-    """
+        SELECT id, latitude, longitude, key_work_type_type
+        FROM worksites
+        WHERE incident_id=:incidentId
+        ORDER BY updated_at DESC, id DESC
+        LIMIT :limit
+        OFFSET :offset
+        """
     )
     fun getWorksitesMapVisual(
         incidentId: Long,
@@ -110,15 +118,15 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
-    SELECT id, latitude, longitude, key_work_type_type
-    FROM worksites
-    WHERE incident_id=:incidentId AND
-    (latitude BETWEEN :latitudeSouth AND :latitudeNorth) AND
-    (longitude BETWEEN :longitudeWest AND :longitudeEast)
-    ORDER BY updated_at DESC, id DESC
-    LIMIT :limit
-    OFFSET :offset
-    """
+        SELECT id, latitude, longitude, key_work_type_type
+        FROM worksites
+        WHERE incident_id=:incidentId AND
+        (latitude BETWEEN :latitudeSouth AND :latitudeNorth) AND
+        (longitude BETWEEN :longitudeWest AND :longitudeEast)
+        ORDER BY updated_at DESC, id DESC
+        LIMIT :limit
+        OFFSET :offset
+        """
     )
     fun getWorksitesMapVisual(
         incidentId: Long,
@@ -147,9 +155,9 @@ interface WorksiteDao {
             :networkId,
             :incidentId
         )
-    """
+        """
     )
-    fun insertWorksiteRoot(
+    fun insertOrRollbackWorksiteRoot(
         syncedAt: Instant,
         networkId: Long,
         incidentId: Long,
@@ -170,7 +178,7 @@ interface WorksiteDao {
         WHERE network_id=:networkId AND local_global_uuid='' AND local_modified_at = :expectedLocalModifiedAt
         """
     )
-    fun updateSyncWorksiteRoot(
+    fun syncUpdateWorksiteRoot(
         expectedLocalModifiedAt: Instant,
         syncedAt: Instant,
         networkId: Long,
@@ -207,7 +215,7 @@ interface WorksiteDao {
         WHERE id=(SELECT id from worksites_root WHERE network_id=:networkId AND local_global_uuid='' AND local_modified_at = :expectedLocalModifiedAt)
         """
     )
-    fun updateSyncWorksite(
+    fun syncUpdateWorksite(
         expectedLocalModifiedAt: Instant,
         networkId: Long,
         incidentId: Long,
@@ -233,4 +241,17 @@ interface WorksiteDao {
         what3Words: String?,
         updatedAt: Instant,
     )
+}
+
+@Dao
+interface TestTargetWorksiteDao {
+    @Transaction
+    @Query(
+        """
+        UPDATE worksites_root
+        SET local_modified_at=:modifiedAt, is_local_modified=1
+        WHERE id=:id
+        """
+    )
+    fun setLocallyModified(id: Long, modifiedAt: Instant)
 }

@@ -3,7 +3,9 @@ package com.crisiscleanup.core.database.dao
 import androidx.room.withTransaction
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
 import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
+import com.crisiscleanup.core.database.model.WorkTypeEntity
 import com.crisiscleanup.core.database.model.WorksiteEntity
+import com.crisiscleanup.core.database.model.WorksiteLocalModifiedAt
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Instant
 import javax.inject.Inject
@@ -17,48 +19,84 @@ class WorksiteDaoPlus @Inject constructor(
         incidentId: Long,
         worksiteIds: Set<Long>,
         worksiteDao: WorksiteDao,
-    ): Map<Long, Instant> {
+    ): Map<Long, WorksiteLocalModifiedAt> {
 
         val worksitesUpdatedAt = worksiteDao.getWorksitesLocalModifiedAt(
             incidentId,
             worksiteIds,
         )
-        val modifiedAtLookup = mutableMapOf<Long, Instant>()
-        worksitesUpdatedAt.forEach { modifiedAtLookup[it.networkId] = it.localModifiedAt }
-        return modifiedAtLookup
+        return worksitesUpdatedAt.fold(mutableMapOf()) { map, w ->
+            map[w.networkId] = w
+            map
+        }
     }
 
     /**
-     * Saves external worksite data skipping worksites where local changes are newer than external changes
+     * Syncs a worksite work types
+     *
+     * Deletes existing work types not specified and upserts work types specified.
      */
-    suspend fun syncExternalWorksites(
+    private suspend fun syncWorkTypes(
+        worksiteId: Long,
+        unassociatedWorkTypes: List<WorkTypeEntity>,
+    ) {
+        if (unassociatedWorkTypes.isEmpty()) {
+            return
+        }
+
+        val worksiteWorkTypes = unassociatedWorkTypes.map { it.copy(worksiteId = worksiteId) }
+        val networkIds = worksiteWorkTypes.map(WorkTypeEntity::networkId)
+        val workTypeDao = db.workTypeDao()
+        workTypeDao.syncDeleteUnspecifiedWorkTypes(worksiteId, networkIds)
+
+        val workTypeDaoPlus = WorkTypeDaoPlus(db)
+        workTypeDaoPlus.syncUpsert(worksiteWorkTypes)
+    }
+
+    /**
+     * Syncs worksite data skipping worksites where local changes exist
+     */
+    suspend fun syncWorksites(
         incidentId: Long,
         worksites: List<WorksiteEntity>,
+        worksitesWorkTypes: List<List<WorkTypeEntity>>,
         syncedAt: Instant,
     ) {
+        if (worksites.size != worksitesWorkTypes.size) {
+            throw Exception("Inconsistent data size. Each worksite must have corresponding work types")
+        }
+
         val worksiteIds = worksites.map(WorksiteEntity::networkId).toSet()
         db.withTransaction {
             val worksiteDao = db.worksiteDao()
 
             val modifiedAtLookup = getWorksiteLocalModifiedAt(incidentId, worksiteIds, worksiteDao)
-            worksites.forEach { worksite ->
-                val expectedLocalModifiedAt = modifiedAtLookup[worksite.networkId]
-                if (expectedLocalModifiedAt == null) {
-                    val id = worksiteDao.insertWorksiteRoot(
+            worksites.forEachIndexed { i, worksite ->
+                val workTypes = worksitesWorkTypes[i]
+
+                val modifiedAt = modifiedAtLookup[worksite.networkId]
+                val isLocallyModified = modifiedAt?.isLocallyModified ?: false
+                if (modifiedAt == null) {
+                    val id = worksiteDao.insertOrRollbackWorksiteRoot(
                         syncedAt,
                         worksite.networkId,
                         worksite.incidentId,
                     )
                     worksiteDao.insertWorksite(worksite.copy(id = id))
 
-                } else if (worksite.updatedAt.epochSeconds > expectedLocalModifiedAt.epochSeconds) {
-                    worksiteDao.updateSyncWorksiteRoot(
+                    syncWorkTypes(id, workTypes)
+
+                    // TODO Sync more related data.
+
+                } else if (!isLocallyModified) {
+                    val expectedLocalModifiedAt = modifiedAt.localModifiedAt
+                    worksiteDao.syncUpdateWorksiteRoot(
                         expectedLocalModifiedAt = expectedLocalModifiedAt,
                         syncedAt = syncedAt,
                         networkId = worksite.networkId,
                         incidentId = worksite.incidentId,
                     )
-                    worksiteDao.updateSyncWorksite(
+                    worksiteDao.syncUpdateWorksite(
                         expectedLocalModifiedAt = expectedLocalModifiedAt,
                         networkId = worksite.networkId,
                         incidentId = worksite.incidentId,
@@ -84,7 +122,14 @@ class WorksiteDaoPlus @Inject constructor(
                         what3Words = worksite.what3Words,
                         updatedAt = worksite.updatedAt,
                     )
-                    // TODO All cross reference data. Be sure to delete XRs as necessary before updating new
+
+                    // Should return a valid ID if UPDATE OR ROLLBACK query succeeded
+                    val worksiteId = worksiteDao.getWorksiteId(incidentId, worksite.networkId)
+
+                    syncWorkTypes(worksiteId, workTypes)
+
+                    // TODO Sync more related data.. Be sure to delete existing as necessary before updating with new.
+
                 } else {
                     // TODO Log local modified not overwritten (for sync logs)
                 }

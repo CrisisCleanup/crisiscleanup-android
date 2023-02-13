@@ -12,10 +12,10 @@ interface WorksitesSyncStatsDao {
     @Transaction
     @Query(
         """
-    SELECT *
-    FROM worksite_sync_stats
-    WHERE incidentId==:incidentId
-    """
+        SELECT *
+        FROM worksite_sync_stats
+        WHERE incidentId==:incidentId
+        """
     )
     fun getSyncStats(incidentId: Long): Flow<List<WorksiteSyncStatsEntity>>
 

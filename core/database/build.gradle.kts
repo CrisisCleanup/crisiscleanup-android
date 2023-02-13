@@ -23,6 +23,11 @@ android {
     }
     namespace = "com.crisiscleanup.core.database"
 
+    sourceSets {
+        // For migration test to be able to find schemas
+        getByName("androidTest").assets.srcDirs(files("$projectDir/schemas")) // Room
+    }
+
     testOptions {
         // TODO: Convert it as a convention plugin once Flamingo goes out (https://github.com/android/nowinandroid/issues/523)
         managedDevices {
@@ -49,4 +54,5 @@ dependencies {
     implementation(libs.kotlinx.datetime)
 
     androidTestImplementation(project(":core:testing"))
+    androidTestImplementation(libs.room.testing)
 }

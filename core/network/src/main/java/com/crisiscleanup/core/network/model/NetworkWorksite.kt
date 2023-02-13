@@ -129,18 +129,25 @@ data class NetworkWorksiteFull(
         val nextRecurAt: Instant? = null,
         val phase: Int? = null,
         val recur: String? = null,
-        val status: String?,
+        val status: String,
+        @SerialName("work_type")
+        val workType: String,
+    )
+
+    @Serializable
+    data class KeyWorkTypeShort(
         @SerialName("work_type")
         val workType: String,
     )
 
     @Serializable
     data class WorkTypeShort(
+        val id: Long,
         @SerialName("work_type")
         val workType: String,
         @SerialName("claimed_by")
         val orgClaim: Long?,
-        val status: String?,
+        val status: String,
     )
 
     @Serializable
@@ -180,7 +187,7 @@ data class NetworkWorksiteShort(
     val favoriteId: Long? = null,
     val flags: List<NetworkWorksiteFull.FlagShort>,
     @SerialName("key_work_type")
-    val keyWorkType: NetworkWorksiteFull.WorkTypeShort?,
+    val keyWorkType: NetworkWorksiteFull.KeyWorkTypeShort?,
     val location: NetworkWorksiteFull.Location,
     val name: String,
     @SerialName("postal_code")
@@ -191,5 +198,5 @@ data class NetworkWorksiteShort(
     @SerialName("updated_at")
     val updatedAt: Instant,
     @SerialName("work_types")
-    val workTypes: List<NetworkWorksiteFull.WorkType>,
+    val workTypes: List<NetworkWorksiteFull.WorkTypeShort>,
 )

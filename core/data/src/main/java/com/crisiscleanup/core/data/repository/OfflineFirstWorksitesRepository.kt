@@ -9,6 +9,7 @@ import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
 import com.crisiscleanup.core.database.dao.WorksitesSyncStatsDao
 import com.crisiscleanup.core.database.model.PopulatedWorksite
 import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
+import com.crisiscleanup.core.database.model.WorkTypeEntity
 import com.crisiscleanup.core.database.model.WorksiteEntity
 import com.crisiscleanup.core.database.model.asEntity
 import com.crisiscleanup.core.database.model.asExternalModel
@@ -19,6 +20,8 @@ import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.core.model.data.WorksitesSyncStats
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.tryThrowException
+import com.crisiscleanup.core.network.model.NetworkWorksiteFull
+import com.crisiscleanup.core.network.model.NetworkWorksiteFull.WorkType
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -186,9 +189,12 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             val worksitesRequest = worksiteNetworkDataSource.getWorksites(incidentId, limit, offset)
             tryThrowException(worksitesRequest.errors)
 
-            val worksites = worksitesRequest.results?.map { it.asEntity(incidentId) } ?: emptyList()
-            pagedCount += saveToDb(incidentId, worksites, syncStart)
-            offset += limit
+            worksitesRequest.results?.let { list ->
+                val worksites = list.map { it.asEntity(incidentId) }
+                val workTypes = list.map { it.workTypes.map(WorkType::asEntity) }
+                pagedCount += saveToDb(incidentId, worksites, workTypes, syncStart)
+                offset += limit
+            }
         }
 
         return pagedCount
@@ -197,6 +203,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private suspend fun saveToDb(
         incidentId: Long,
         worksites: List<WorksiteEntity>,
+        workTypes: List<List<WorkTypeEntity>>,
         syncStart: Instant,
     ): Int {
         var offset = 0
@@ -204,14 +211,16 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         var pagedCount = 0
         while (offset < worksites.size) {
             val offsetEnd = min(offset + limit, worksites.size)
-            val subset = worksites.slice(offset until offsetEnd)
-            worksiteDaoPlus.syncExternalWorksites(
+            val worksiteSubset = worksites.slice(offset until offsetEnd)
+            val workTypeSubset = workTypes.slice(offset until offsetEnd)
+            worksiteDaoPlus.syncWorksites(
                 incidentId,
-                subset,
+                worksiteSubset,
+                workTypeSubset,
                 syncStart,
             )
 
-            pagedCount += subset.size
+            pagedCount += worksiteSubset.size
             offset += limit
         }
         return pagedCount
@@ -224,8 +233,14 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         val worksitesRequest = worksiteNetworkDataSource.getWorksitesAll(incidentId, null)
         tryThrowException(worksitesRequest.errors)
 
-        val worksites = worksitesRequest.results?.map { it.asEntity(incidentId) } ?: emptyList()
-        return saveToDb(incidentId, worksites, syncStart)
+        worksitesRequest.results?.let { list ->
+            val worksites = list.map { it.asEntity(incidentId) }
+            val workTypes =
+                list.map { it.workTypes.map(NetworkWorksiteFull.WorkTypeShort::asEntity) }
+            return saveToDb(incidentId, worksites, workTypes, syncStart)
+        }
+
+        return 0
     }
 
     // TODO Write tests

@@ -102,12 +102,12 @@ class CasesViewModel @Inject constructor(
     ) {
             incidentsLoading,
             worksitesLoading,
-            isUpdatingCameraBounds,
+            cameraBoundsUpdating,
             rendererBusy,
         ->
         incidentsLoading ||
                 worksitesLoading ||
-                isUpdatingCameraBounds ||
+                cameraBoundsUpdating ||
                 rendererBusy
     }
 
@@ -184,7 +184,7 @@ class CasesViewModel @Inject constructor(
                         ne.longitude,
                         // TODO Make parameter.
                         //      Decide how to prioritize when there are plenty if not already documented.
-                        //      At a minimum alert when markers are hidden due to limit. Post query if size of marks equals the limit to know if there are more.
+                        //      At a minimum show a visual with number of markers displayed/total.
                         1000,
                         0,
                     ).map { mark -> mark.asWorksiteGoogleMapMark(mapCaseDotProvider) }

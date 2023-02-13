@@ -2,7 +2,6 @@ package com.crisiscleanup.core.database.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
-import androidx.room.Junction
 import androidx.room.Relation
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteMapMark
@@ -13,12 +12,7 @@ data class PopulatedWorksite(
     val entity: WorksiteEntity,
     @Relation(
         parentColumn = "id",
-        entityColumn = "id",
-        associateBy = Junction(
-            value = WorksiteWorkTypeCrossRef::class,
-            parentColumn = "worksite_id",
-            entityColumn = "work_type_id",
-        )
+        entityColumn = "worksite_id",
     )
     val workTypes: List<WorkTypeEntity>
 )
@@ -54,6 +48,8 @@ data class WorksiteLocalModifiedAt(
     val networkId: Long,
     @ColumnInfo("local_modified_at")
     val localModifiedAt: Instant,
+    @ColumnInfo("is_local_modified")
+    val isLocallyModified: Boolean,
 )
 
 data class PopulatedWorksiteMapVisual(

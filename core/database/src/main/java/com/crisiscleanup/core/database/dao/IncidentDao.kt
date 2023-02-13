@@ -20,17 +20,13 @@ interface IncidentDao {
     @Transaction
     @Query(
         """
-    SELECT *
-    FROM incidents
-    WHERE is_archived==0
-    ORDER BY start_at DESC, id DESC
-    """
+        SELECT *
+        FROM incidents
+        WHERE is_archived==0
+        ORDER BY start_at DESC, id DESC
+        """
     )
     fun streamIncidents(): Flow<List<PopulatedIncident>>
-
-    @Transaction
-    @Query("SELECT * FROM incidents WHERE id=:id")
-    fun getIncident(id: Long): PopulatedIncident?
 
     @Upsert
     suspend fun upsertIncidents(incidents: List<IncidentEntity>)
@@ -43,7 +39,7 @@ interface IncidentDao {
         """
         DELETE FROM incident_to_incident_location
         WHERE incident_id in (:incidentIds)
-    """
+        """
     )
     suspend fun deleteIncidentLocationCrossRefs(incidentIds: Collection<Long>)
 
@@ -51,14 +47,17 @@ interface IncidentDao {
     suspend fun insertIgnoreIncidentLocationCrossRefs(
         incidentCrossRefs: List<IncidentIncidentLocationCrossRef>
     )
+}
 
+@Dao
+interface TestTargetIncidentDao {
     @Transaction
     @Query(
         """
-    UPDATE incidents
-    SET is_archived=1
-    WHERE id NOT IN(:unarchivedIds)
-    """
+        UPDATE incidents
+        SET is_archived=1
+        WHERE id NOT IN(:unarchivedIds)
+        """
     )
     suspend fun setExcludedArchived(unarchivedIds: Set<Long>)
 }

@@ -2,9 +2,11 @@ package com.crisiscleanup.core.database.dao
 
 import android.content.Context
 import androidx.room.Room
-import androidx.room.withTransaction
 import androidx.test.core.app.ApplicationProvider
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
+import com.crisiscleanup.core.database.WorksiteTestUtil
+import com.crisiscleanup.core.database.WorksiteTestUtil.testIncidents
+import com.crisiscleanup.core.database.model.WorkTypeEntity
 import com.crisiscleanup.core.database.model.WorksiteEntity
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -23,12 +25,6 @@ class WorksiteDaoTest {
 
     private lateinit var worksiteDao: WorksiteDao
     private lateinit var worksiteDaoPlus: WorksiteDaoPlus
-
-    private val testIncidents = listOf(
-        testIncidentEntity(1, 6525),
-        testIncidentEntity(23, 152),
-        testIncidentEntity(456, 514),
-    )
 
     @Before
     fun createDb() {
@@ -51,14 +47,7 @@ class WorksiteDaoTest {
         worksites: List<WorksiteEntity>,
         syncedAt: Instant,
     ): List<WorksiteEntity> {
-        return db.withTransaction {
-            worksites.map {
-                val id = worksiteDao.insertWorksiteRoot(syncedAt, it.networkId, it.incidentId)
-                val updated = it.copy(id = id)
-                worksiteDao.insertWorksite(updated)
-                updated
-            }
-        }
+        return WorksiteTestUtil.insertWorksites(db, worksites, syncedAt)
     }
 
     private val nowInstant = Clock.System.now()
@@ -108,9 +97,10 @@ class WorksiteDaoTest {
             testWorksiteEntity(6, 1, "created-at-6", updatedAtB, createdAtB),
             testWorksiteFullEntity(7, 1, createdAtB),
         )
+        val syncingWorkTypes = syncingWorksites.map { emptyList<WorkTypeEntity>() }
         // Sync new and existing
         val syncedAt = previousSyncedAt.plus(487.seconds)
-        worksiteDaoPlus.syncExternalWorksites(1, syncingWorksites, syncedAt)
+        worksiteDaoPlus.syncWorksites(1, syncingWorksites, syncingWorkTypes, syncedAt)
 
         // Assert
 
@@ -183,9 +173,10 @@ class WorksiteDaoTest {
             testWorksiteEntity(6, 1, "update-created-at-6", updatedAtB, createdAtB),
             testWorksiteFullEntity(7, 1, createdAtB),
         )
+        val syncingWorkTypes = syncingWorksites.map { emptyList<WorkTypeEntity>() }
         // Sync new and existing
         val syncedAt = previousSyncedAt.plus(487.seconds)
-        worksiteDaoPlus.syncExternalWorksites(1, syncingWorksites, syncedAt)
+        worksiteDaoPlus.syncWorksites(1, syncingWorksites, syncingWorkTypes, syncedAt)
 
         // Assert
 
@@ -321,9 +312,10 @@ class WorksiteDaoTest {
                 updatedAt = existingWorksite.updatedAt.plus(11.seconds),
             ),
         )
+        val syncingWorkTypes = syncingWorksites.map { emptyList<WorkTypeEntity>() }
         // Sync
         val syncedAt = previousSyncedAt.plus(487.seconds)
-        worksiteDaoPlus.syncExternalWorksites(1, syncingWorksites, syncedAt)
+        worksiteDaoPlus.syncWorksites(1, syncingWorksites, syncingWorkTypes, syncedAt)
 
         // Assert
         val expected = listOf(
@@ -354,7 +346,7 @@ class WorksiteDaoTest {
         assertEquals(expected, actual)
     }
 
-    // TODO Sync existing worksite incident changes
+    // TODO Sync existing worksite where the incident changes. Change back as well?
 }
 
 fun testWorksiteEntity(

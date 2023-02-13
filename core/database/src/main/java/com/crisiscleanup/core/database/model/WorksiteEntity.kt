@@ -25,7 +25,7 @@ import kotlinx.datetime.Instant
         // Locally modified worksites for querying sync queue and showing pending syncs.
         Index(value = ["is_local_modified", "sync_attempt"]),
 
-    ]
+    ],
 )
 data class WorksiteRootEntity(
     @PrimaryKey(true)
@@ -113,15 +113,28 @@ data class WorksiteEntity(
 // TODO Flags XR
 
 @Entity(
-    "worksite_work_types",
+    "work_types",
+    foreignKeys = [
+        ForeignKey(
+            entity = WorksiteEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["worksite_id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
     indices = [
-        Index(value = ["network_id"]),
-        Index(value = ["worksite_id"]),
-    ]
+        Index(value = ["network_id", "local_global_uuid"], unique = true),
+        Index(value = ["worksite_id", "network_id"]),
+        Index(value = ["status"]),
+        Index(value = ["claimed_by"]),
+    ],
 )
 data class WorkTypeEntity(
     @PrimaryKey(true)
     val id: Long,
+    @ColumnInfo("local_global_uuid", defaultValue = "")
+    val localGlobalUuid: String,
+
     @ColumnInfo("network_id", defaultValue = "-1")
     val networkId: Long,
     @ColumnInfo("worksite_id")
@@ -134,7 +147,7 @@ data class WorkTypeEntity(
     val nextRecurAt: Instant? = null,
     val phase: Int? = null,
     val recur: String? = null,
-    val status: String?,
+    val status: String,
     @ColumnInfo("work_type")
     val workType: String,
 )
@@ -151,37 +164,6 @@ fun WorkTypeEntity.asExternalModel() = WorkType(
     recur = recur,
     status = status,
     workType = workType,
-)
-
-@Entity(
-    "worksite_to_work_type",
-    primaryKeys = ["worksite_id", "work_type_id"],
-    foreignKeys = [
-        ForeignKey(
-            entity = WorksiteEntity::class,
-            parentColumns = ["id"],
-            childColumns = ["worksite_id"],
-            onDelete = ForeignKey.CASCADE,
-        ),
-        ForeignKey(
-            entity = WorkTypeEntity::class,
-            parentColumns = ["id"],
-            childColumns = ["work_type_id"],
-            onDelete = ForeignKey.CASCADE,
-        ),
-    ],
-    indices = [
-        Index(
-            value = ["work_type_id", "worksite_id"],
-            name = "idx_work_type_to_worksite",
-        ),
-    ]
-)
-data class WorksiteWorkTypeCrossRef(
-    @ColumnInfo("worksite_id")
-    val worksiteId: Long,
-    @ColumnInfo("work_type_id")
-    val workTypeId: Long,
 )
 
 // TODO Events XR

@@ -260,7 +260,7 @@ class IncidentDaoTest {
         val savedIncidents = incidentDao.streamIncidents().first()
         assertEquals(listOf(48L, 954, 18), savedIncidents.map { it.entity.id })
 
-        incidentDao.setExcludedArchived(setOf(48L, 18))
+        db.testTargetIncidentDao().setExcludedArchived(setOf(48L, 18))
 
         val updatedIncidents = incidentDao.streamIncidents().first()
         assertEquals(listOf(48L, 18), updatedIncidents.map { it.entity.id })
