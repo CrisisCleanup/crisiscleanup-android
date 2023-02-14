@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 3,
-    "identityHash": "4a941a2d43f297726fc48eef79e12b36",
+    "identityHash": "99e546fa4a555740b953e3adc65e8ee9",
     "entities": [
       {
         "tableName": "incidents",
@@ -358,7 +358,7 @@
       },
       {
         "tableName": "worksites",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `network_id` INTEGER NOT NULL DEFAULT -1, `incident_id` INTEGER NOT NULL, `address` TEXT NOT NULL, `auto_contact_frequency_t` TEXT, `case_number` TEXT NOT NULL, `city` TEXT NOT NULL, `county` TEXT NOT NULL, `created_at` INTEGER, `email` TEXT DEFAULT '', `favorite_id` INTEGER, `key_work_type_type` TEXT NOT NULL DEFAULT '', `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `name` TEXT NOT NULL, `phone1` TEXT, `phone2` TEXT DEFAULT '', `plus_code` TEXT DEFAULT '', `postal_code` TEXT NOT NULL, `reported_by` INTEGER, `state` TEXT NOT NULL, `svi` REAL, `what3Words` TEXT DEFAULT '', `updated_at` INTEGER NOT NULL, FOREIGN KEY(`id`) REFERENCES `worksites_root`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `network_id` INTEGER NOT NULL DEFAULT -1, `incident_id` INTEGER NOT NULL, `address` TEXT NOT NULL, `auto_contact_frequency_t` TEXT, `case_number` TEXT NOT NULL, `city` TEXT NOT NULL, `county` TEXT NOT NULL, `created_at` INTEGER, `email` TEXT DEFAULT '', `favorite_id` INTEGER, `key_work_type_type` TEXT NOT NULL DEFAULT '', `key_work_type_org` INTEGER, `key_work_type_status` TEXT NOT NULL DEFAULT '', `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `name` TEXT NOT NULL, `phone1` TEXT, `phone2` TEXT DEFAULT '', `plus_code` TEXT DEFAULT '', `postal_code` TEXT NOT NULL, `reported_by` INTEGER, `state` TEXT NOT NULL, `svi` REAL, `what3Words` TEXT DEFAULT '', `updated_at` INTEGER NOT NULL, FOREIGN KEY(`id`) REFERENCES `worksites_root`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -431,6 +431,19 @@
           {
             "fieldPath": "keyWorkTypeType",
             "columnName": "key_work_type_type",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "keyWorkTypeOrgClaim",
+            "columnName": "key_work_type_org",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "keyWorkTypeStatus",
+            "columnName": "key_work_type_status",
             "affinity": "TEXT",
             "notNull": true,
             "defaultValue": "''"
@@ -667,24 +680,15 @@
         },
         "indices": [
           {
-            "name": "index_work_types_network_id_local_global_uuid",
+            "name": "unique_worksite_work_type",
             "unique": true,
             "columnNames": [
+              "worksite_id",
               "network_id",
               "local_global_uuid"
             ],
             "orders": [],
-            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_work_types_network_id_local_global_uuid` ON `${TABLE_NAME}` (`network_id`, `local_global_uuid`)"
-          },
-          {
-            "name": "index_work_types_worksite_id_network_id",
-            "unique": false,
-            "columnNames": [
-              "worksite_id",
-              "network_id"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_work_types_worksite_id_network_id` ON `${TABLE_NAME}` (`worksite_id`, `network_id`)"
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `unique_worksite_work_type` ON `${TABLE_NAME}` (`worksite_id`, `network_id`, `local_global_uuid`)"
           },
           {
             "name": "index_work_types_status",
@@ -723,7 +727,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4a941a2d43f297726fc48eef79e12b36')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '99e546fa4a555740b953e3adc65e8ee9')"
     ]
   }
 }

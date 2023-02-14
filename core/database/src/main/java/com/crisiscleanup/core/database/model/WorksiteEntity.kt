@@ -90,6 +90,10 @@ data class WorksiteEntity(
     val favoriteId: Long?,
     @ColumnInfo("key_work_type_type", defaultValue = "")
     val keyWorkTypeType: String,
+    @ColumnInfo("key_work_type_org")
+    val keyWorkTypeOrgClaim: Long?,
+    @ColumnInfo("key_work_type_status", defaultValue = "")
+    val keyWorkTypeStatus: String,
     val latitude: Double,
     val longitude: Double,
     val name: String,
@@ -123,8 +127,10 @@ data class WorksiteEntity(
         ),
     ],
     indices = [
-        Index(value = ["network_id", "local_global_uuid"], unique = true),
-        Index(value = ["worksite_id", "network_id"]),
+        Index(
+            value = ["worksite_id", "network_id", "local_global_uuid"], unique = true,
+            name = "unique_worksite_work_type",
+        ),
         Index(value = ["status"]),
         Index(value = ["claimed_by"]),
     ],
@@ -162,7 +168,7 @@ fun WorkTypeEntity.asExternalModel() = WorkType(
     nextRecurAt = nextRecurAt,
     phase = phase,
     recur = recur,
-    status = status,
+    statusLiteral = status,
     workType = workType,
 )
 

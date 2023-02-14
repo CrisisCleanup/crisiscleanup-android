@@ -1,7 +1,6 @@
 package com.crisiscleanup.feature.cases.model
 
 import com.crisiscleanup.core.mapmarker.MapCaseDotProvider
-import com.crisiscleanup.core.model.data.CaseStatus
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.LatLng
@@ -20,9 +19,6 @@ fun WorksiteMapMark.asWorksiteGoogleMapMark(dotProvider: MapCaseDotProvider): Wo
         source = this,
         latLng = latLng,
         markerState = MarkerState(latLng),
-        dotProvider.getDotIcon(
-            if (latLng.latitude % 1f < 0.5) CaseStatus.Unclaimed
-            else CaseStatus.ClaimedNotStarted,
-        ),
+        dotProvider.getDotIcon(statusClaim),
     )
 }

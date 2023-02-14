@@ -27,15 +27,3 @@ data class Worksite(
     val what3words: String? = null,
     val workTypes: List<WorkType>,
 )
-
-data class WorkType(
-    val id: Long,
-    val createdAt: Instant? = null,
-    val orgClaim: Long? = null,
-    val nextRecurAt: Instant? = null,
-    val phase: Int? = null,
-    val recur: String? = null,
-    val status: String?,
-    val workType: String,
-)
-

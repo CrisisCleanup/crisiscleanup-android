@@ -38,6 +38,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     private val incidentSelector: IncidentSelector,
     private val worksitesRepository: WorksitesRepository,
     private val networkMonitor: NetworkMonitor,
+    private val accountDataRepository: AccountDataRepository,
     private val appLogger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : IncidentsRepository {
@@ -50,6 +51,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
 
     private suspend fun saveLocations(incidents: List<NetworkIncident>) {
         val locationIds = incidents.flatMap { it.locations.map(NetworkIncidentLocation::location) }
+        // TODO On emulator this call sometimes get cancelled after logging in from a clean install. Test on devices and see if similar happens. See with try/catch and logging exception.
         val networkLocations = networkDataSource.getIncidentLocations(locationIds)
 
         networkLocations.errors?.let {
@@ -75,6 +77,10 @@ class OfflineFirstIncidentsRepository @Inject constructor(
      * Possibly syncs and caches incidents data
      */
     private suspend fun syncInternal(force: Boolean) {
+        if (!accountDataRepository.isAuthenticated.first()) {
+            return
+        }
+
         if (!force && incidents.first().isNotEmpty()) {
             return
         }
@@ -123,6 +129,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
             val incidentId = incidentSelector.incidentId.value
             worksitesRepository.refreshWorksites(incidentId, force)
         } catch (e: Exception) {
+            // TODO Rethrow CancellationException
             appLogger.logException(e)
             if (force) {
                 // TODO Emit error to interested listeners (for feedback)

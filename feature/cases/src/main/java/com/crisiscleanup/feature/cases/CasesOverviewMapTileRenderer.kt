@@ -11,7 +11,7 @@ import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.MapCaseDotProvider
 import com.crisiscleanup.core.mapmarker.model.TileCoordinates
 import com.crisiscleanup.core.mapmarker.tiler.makeTileBorderBitmap
-import com.crisiscleanup.core.model.data.CaseStatus
+import com.crisiscleanup.feature.cases.CasesConstant.InteractiveZoomLevel
 import com.crisiscleanup.feature.cases.model.EmptyMapTileCases
 import com.crisiscleanup.feature.cases.model.MapTileCases
 import com.google.android.gms.maps.model.Tile
@@ -55,6 +55,8 @@ interface CasesOverviewMapTileRenderer {
      * @return true when this zoom level renders tiles, false otherwise.
      */
     fun rendersAt(zoom: Float): Boolean
+
+    fun setRendering(render: Boolean)
 }
 
 @Singleton
@@ -72,7 +74,7 @@ class CaseDotsMapTileRenderer @Inject constructor(
     private val tileSizePx: Int = resourceProvider.dpToPx(tileSizeDp).roundToInt()
 
     // zoom 9 = 512x512 tiles
-    override var zoomThreshold: Int = 9
+    override var zoomThreshold: Int = InteractiveZoomLevel
 
     private var incidentIdCache: Long = -1
     private val cache = MapTileCasesLruCache(2f)
@@ -90,12 +92,18 @@ class CaseDotsMapTileRenderer @Inject constructor(
     var tileDataSize = mutableStateOf(0)
         private set
 
+    private var isRenderingTiles = false
+
+    override fun setRendering(render: Boolean) {
+        isRenderingTiles = render
+    }
+
     override fun rendersAt(zoom: Float): Boolean =
         // Lower zoom is far out, higher zoom is closer in
         coroutineScope != null && zoom < zoomThreshold + 1
 
     override fun getTile(x: Int, y: Int, zoom: Int): Tile? {
-        if (zoom > zoomThreshold) {
+        if (!isRenderingTiles || zoom > zoomThreshold) {
             return null
         }
 
@@ -115,7 +123,6 @@ class CaseDotsMapTileRenderer @Inject constructor(
             if (id != incidentIdCache) {
                 incidentIdCache = id
                 cache.evictAll()
-                // TODO UI likely needs to call clearTileCache(). Test if necessary.
                 tileDataSize.value = cache.size()
             }
         }
@@ -224,7 +231,7 @@ class CaseDotsMapTileRenderer @Inject constructor(
             )
 
             worksites.onEach {
-                mapCaseDotProvider.getDotBitmap(CaseStatus.Unclaimed)?.let { dotBitmap ->
+                mapCaseDotProvider.getDotBitmap(it.statusClaim)?.let { dotBitmap ->
                     val xyNorm = coordinates.fromLatLng(it.latitude, it.longitude)
                     if (xyNorm == null) {
                         // TODO This needs finishing (and is not working as designed).

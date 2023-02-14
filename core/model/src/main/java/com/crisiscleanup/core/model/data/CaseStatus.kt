@@ -19,4 +19,5 @@ enum class CaseStatus {
      * Du = Duplicate or unresponsive
      */
     OutOfScopeDu,
+    Incomplete,
 }

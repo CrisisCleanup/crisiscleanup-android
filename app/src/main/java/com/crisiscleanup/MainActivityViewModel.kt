@@ -38,8 +38,19 @@ class MainActivityViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5_000)
     )
 
+    private var wasAuthenticated: Boolean? = null
+
     val authState: StateFlow<AuthState> = accountDataRepository.accountData.map {
-        if (it.accessToken.isNotEmpty()) AuthState.Authenticated(it)
+        // TODO Remove this once full syncing pipeline is in place.
+        //      Logging out should clear sync state so logging in syncs without requiring force.
+        val isAuthenticated = it.accessToken.isNotEmpty()
+        if (isAuthenticated) {
+            val forceSync = wasAuthenticated == false
+            syncIncidents(forceSync)
+        }
+        wasAuthenticated = isAuthenticated
+
+        if (isAuthenticated) AuthState.Authenticated(it)
         else AuthState.NotAuthenticated
     }.stateIn(
         scope = viewModelScope,
@@ -52,12 +63,16 @@ class MainActivityViewModel @Inject constructor(
     init {
         incidentSelector.incidentId
             .onEach {
-                syncJob?.cancel()
-                syncJob = viewModelScope.launch {
-                    incidentsRepository.sync(false)
-                }
+                syncIncidents(false)
             }
             .launchIn(viewModelScope)
+    }
+
+    private fun syncIncidents(force: Boolean) {
+        syncJob?.cancel()
+        syncJob = viewModelScope.launch {
+            incidentsRepository.sync(force)
+        }
     }
 }
 

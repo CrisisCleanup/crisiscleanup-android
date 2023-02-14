@@ -3,6 +3,7 @@ package com.crisiscleanup.core.database.model
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Relation
+import com.crisiscleanup.core.model.data.WorkTypeStatusClaim
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 import kotlinx.datetime.Instant
@@ -56,10 +57,17 @@ data class PopulatedWorksiteMapVisual(
     val id: Long,
     val latitude: Double,
     val longitude: Double,
+    @ColumnInfo("key_work_type_type")
+    val keyWorkTypeType: String,
+    @ColumnInfo("key_work_type_org")
+    val keyWorkTypeOrgClaim: Long?,
+    @ColumnInfo("key_work_type_status")
+    val keyWorkTypeStatus: String,
 )
 
 fun PopulatedWorksiteMapVisual.asExternalModel() = WorksiteMapMark(
     id = id,
     latitude = latitude,
     longitude = longitude,
+    statusClaim = WorkTypeStatusClaim.make(keyWorkTypeStatus, keyWorkTypeOrgClaim)
 )

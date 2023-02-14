@@ -6,16 +6,27 @@ import android.graphics.Paint
 import androidx.collection.LruCache
 import androidx.compose.ui.graphics.Color
 import com.crisiscleanup.core.common.AndroidResourceProvider
-import com.crisiscleanup.core.model.data.CaseStatus
 import com.crisiscleanup.core.model.data.CaseStatus.ClaimedNotStarted
 import com.crisiscleanup.core.model.data.CaseStatus.Completed
 import com.crisiscleanup.core.model.data.CaseStatus.DoneByOthersNhwPc
 import com.crisiscleanup.core.model.data.CaseStatus.InProgress
+import com.crisiscleanup.core.model.data.CaseStatus.Incomplete
 import com.crisiscleanup.core.model.data.CaseStatus.NeedsFollowUp
 import com.crisiscleanup.core.model.data.CaseStatus.OutOfScopeDu
 import com.crisiscleanup.core.model.data.CaseStatus.PartiallyCompleted
 import com.crisiscleanup.core.model.data.CaseStatus.Unclaimed
 import com.crisiscleanup.core.model.data.CaseStatus.Unknown
+import com.crisiscleanup.core.model.data.WorkTypeStatus
+import com.crisiscleanup.core.model.data.WorkTypeStatus.ClosedCompleted
+import com.crisiscleanup.core.model.data.WorkTypeStatus.ClosedDoneByOthers
+import com.crisiscleanup.core.model.data.WorkTypeStatus.ClosedIncomplete
+import com.crisiscleanup.core.model.data.WorkTypeStatus.ClosedOutOfScope
+import com.crisiscleanup.core.model.data.WorkTypeStatus.OpenAssigned
+import com.crisiscleanup.core.model.data.WorkTypeStatus.OpenNeedsFollowUp
+import com.crisiscleanup.core.model.data.WorkTypeStatus.OpenPartiallyCompleted
+import com.crisiscleanup.core.model.data.WorkTypeStatus.OpenUnassigned
+import com.crisiscleanup.core.model.data.WorkTypeStatus.OpenUnresponsive
+import com.crisiscleanup.core.model.data.WorkTypeStatusClaim
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import javax.inject.Inject
@@ -26,17 +37,17 @@ interface MapCaseDotProvider {
 
     fun setDotProperties(dotDrawProperties: DotDrawProperties)
 
-    fun getDotIcon(status: CaseStatus): BitmapDescriptor?
+    fun getDotIcon(statusClaim: WorkTypeStatusClaim): BitmapDescriptor?
 
-    fun getDotBitmap(status: CaseStatus): Bitmap?
+    fun getDotBitmap(statusClaim: WorkTypeStatusClaim): Bitmap?
 }
 
 @Singleton
 class InMemoryDotProvider @Inject constructor(
     resourceProvider: AndroidResourceProvider,
 ) : MapCaseDotProvider {
-    private val cache = LruCache<CaseStatus, BitmapDescriptor>(16)
-    private val bitmapCache = LruCache<CaseStatus, Bitmap>(16)
+    private val cache = LruCache<WorkTypeStatusClaim, BitmapDescriptor>(16)
+    private val bitmapCache = LruCache<WorkTypeStatusClaim, Bitmap>(16)
 
     private var cacheDotDrawProperties: DotDrawProperties
     override val centerSizePx: Float
@@ -57,9 +68,10 @@ class InMemoryDotProvider @Inject constructor(
     }
 
     private fun cacheDotBitmap(
-        status: CaseStatus,
+        statusClaim: WorkTypeStatusClaim,
         dotDrawProperties: DotDrawProperties,
     ): BitmapDescriptor? {
+        val status = statusClaimToStatus[statusClaim]
         val colors = caseDotMarkerColors[status] ?: caseDotMarkerColors[Unknown]!!
         val bitmap = drawDot(colors, dotDrawProperties)
         val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap)
@@ -68,34 +80,34 @@ class InMemoryDotProvider @Inject constructor(
                 return null
             }
 
-            bitmapCache.put(status, bitmap)
-            cache.put(status, bitmapDescriptor)
+            bitmapCache.put(statusClaim, bitmap)
+            cache.put(statusClaim, bitmapDescriptor)
             return bitmapDescriptor
         }
     }
 
-    override fun getDotIcon(status: CaseStatus): BitmapDescriptor? {
+    override fun getDotIcon(statusClaim: WorkTypeStatusClaim): BitmapDescriptor? {
         synchronized(cacheDotDrawProperties) {
-            cache.get(status)?.let {
+            cache.get(statusClaim)?.let {
                 return it
             }
         }
 
-        return cacheDotBitmap(status, cacheDotDrawProperties)
+        return cacheDotBitmap(statusClaim, cacheDotDrawProperties)
     }
 
-    override fun getDotBitmap(status: CaseStatus): Bitmap? {
+    override fun getDotBitmap(statusClaim: WorkTypeStatusClaim): Bitmap? {
         synchronized(cacheDotDrawProperties) {
-            bitmapCache.get(status)?.let {
+            bitmapCache.get(statusClaim)?.let {
                 return it
             }
         }
 
         val dotDrawProperties = cacheDotDrawProperties
-        cacheDotBitmap(status, dotDrawProperties)
+        cacheDotBitmap(statusClaim, dotDrawProperties)
         synchronized(cacheDotDrawProperties) {
             if (cacheDotDrawProperties == dotDrawProperties) {
-                bitmapCache.get(status)?.let {
+                bitmapCache.get(statusClaim)?.let {
                     return it
                 }
             }
@@ -161,6 +173,29 @@ private fun makeDotColor(fill: Long, stroke: Long) = DotMarkerColors(
     Color(stroke),
 )
 
+private val statusClaimToStatus = mapOf(
+    WorkTypeStatusClaim(WorkTypeStatus.Unknown, true) to Unknown,
+    WorkTypeStatusClaim(OpenAssigned, true) to InProgress,
+    WorkTypeStatusClaim(OpenUnassigned, true) to ClaimedNotStarted,
+    WorkTypeStatusClaim(OpenPartiallyCompleted, true) to PartiallyCompleted,
+    WorkTypeStatusClaim(OpenNeedsFollowUp, true) to NeedsFollowUp,
+    WorkTypeStatusClaim(OpenUnresponsive, true) to OutOfScopeDu,
+    WorkTypeStatusClaim(ClosedCompleted, true) to Completed,
+    WorkTypeStatusClaim(ClosedIncomplete, true) to Incomplete,
+    WorkTypeStatusClaim(ClosedOutOfScope, true) to OutOfScopeDu,
+    WorkTypeStatusClaim(ClosedDoneByOthers, true) to DoneByOthersNhwPc,
+    WorkTypeStatusClaim(WorkTypeStatus.Unknown, false) to Unknown,
+    WorkTypeStatusClaim(OpenAssigned, false) to Unclaimed,
+    WorkTypeStatusClaim(OpenUnassigned, false) to Unclaimed,
+    WorkTypeStatusClaim(OpenPartiallyCompleted, false) to PartiallyCompleted,
+    WorkTypeStatusClaim(OpenNeedsFollowUp, false) to NeedsFollowUp,
+    WorkTypeStatusClaim(OpenUnresponsive, false) to OutOfScopeDu,
+    WorkTypeStatusClaim(ClosedCompleted, false) to Completed,
+    WorkTypeStatusClaim(ClosedIncomplete, false) to Incomplete,
+    WorkTypeStatusClaim(ClosedOutOfScope, false) to OutOfScopeDu,
+    WorkTypeStatusClaim(ClosedDoneByOthers, false) to DoneByOthersNhwPc,
+)
+
 private val caseDotMarkerColors = mapOf(
     Unknown to makeDotColor(0xFF000000, 0xFFFFFFFF),
     Unclaimed to makeDotColor(0xFFD0021B, 0xFFE30001),
@@ -171,4 +206,5 @@ private val caseDotMarkerColors = mapOf(
     Completed to makeDotColor(0xFF82D78C, 0xFF51AC7C),
     DoneByOthersNhwPc to makeDotColor(0xFF0fa355, 0xFF0fa355),
     OutOfScopeDu to makeDotColor(0xFF787878, 0xFF5d5d5d),
+    Incomplete to makeDotColor(0xFF1d1d1d, 0xFF1d1d1d),
 )

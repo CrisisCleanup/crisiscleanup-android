@@ -24,10 +24,11 @@ interface WorkTypeDao {
         recur           =:recur,
         status          =:status,
         work_type       =:workType
-        WHERE network_id=:networkId AND local_global_uuid=""
+        WHERE worksite_id=:worksiteId AND network_id=:networkId AND local_global_uuid=""
         """
     )
     fun syncUpdateWorkType(
+        worksiteId: Long,
         networkId: Long,
         orgClaim: Long?,
         status: String,

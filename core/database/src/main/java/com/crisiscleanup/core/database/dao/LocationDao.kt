@@ -6,6 +6,7 @@ import androidx.room.Transaction
 import androidx.room.Upsert
 import com.crisiscleanup.core.database.model.LocationEntity
 import com.crisiscleanup.core.database.model.PopulatedLocation
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface LocationDao {
@@ -13,7 +14,7 @@ interface LocationDao {
     @Query(
         "SELECT * FROM locations WHERE id in (:ids)"
     )
-    fun getLocations(ids: Collection<Long>): List<PopulatedLocation>
+    fun streamLocations(ids: Collection<Long>): Flow<List<PopulatedLocation>>
 
     @Upsert
     fun upsertLocations(locations: List<LocationEntity>)

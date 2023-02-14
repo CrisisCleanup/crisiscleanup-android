@@ -47,7 +47,9 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.TileOverlay
+import com.google.maps.android.compose.TileOverlayState
 import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.rememberTileOverlayState
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
@@ -93,6 +95,10 @@ internal fun CasesRoute(
         // TODO Delay evaluation only when necessary by remembering data
         val worksitesOnMap by casesViewModel.worksitesMapMarkers.collectAsStateWithLifecycle()
         val mapCameraBounds by casesViewModel.incidentLocationBounds.collectAsStateWithLifecycle()
+        val tileOverlayState = rememberTileOverlayState()
+        val clearTileLayer = remember(casesViewModel) {
+            { casesViewModel.clearTileLayer }
+        }
         val casesDotTileProvider = remember(casesViewModel.overviewTileDataSize) {
             { casesViewModel.overviewMapTileProvider() }
         }
@@ -108,12 +114,15 @@ internal fun CasesRoute(
             isLayerView = isLayerView,
             worksitesOnMap = worksitesOnMap,
             mapCameraBounds = mapCameraBounds,
+            tileOverlayState = tileOverlayState,
+            clearTileLayer = clearTileLayer,
             casesDotTileProvider = casesDotTileProvider,
             onMapCameraChange = onMapCameraChange,
         )
     } else {
         val isLoading = incidentsData is IncidentsData.Loading
-        NoCasesScreen(modifier, isLoading)
+        val reloadIncidents = remember(casesViewModel) { { casesViewModel.refreshIncidentsData() } }
+        NoCasesScreen(modifier, isLoading, reloadIncidents)
     }
 }
 
@@ -154,6 +163,8 @@ internal fun CasesScreen(
     isLayerView: Boolean = false,
     worksitesOnMap: List<WorksiteGoogleMapMark> = emptyList(),
     mapCameraBounds: MapViewCameraBounds = MapViewCameraBoundsDefault,
+    clearTileLayer: () -> Boolean = { false },
+    tileOverlayState: TileOverlayState = rememberTileOverlayState(),
     casesDotTileProvider: () -> TileProvider? = { null },
     onMapCameraChange: (CameraPosition, Projection?, Boolean) -> Unit = { _, _, _ -> },
 ) {
@@ -164,6 +175,8 @@ internal fun CasesScreen(
             CasesMapView(
                 mapCameraBounds,
                 worksitesOnMap,
+                clearTileLayer,
+                tileOverlayState,
                 casesDotTileProvider,
                 onMapCameraChange = onMapCameraChange,
             )
@@ -180,6 +193,8 @@ internal fun CasesScreen(
 internal fun CasesMapView(
     mapCameraBounds: MapViewCameraBounds,
     worksitesOnMap: List<WorksiteGoogleMapMark> = emptyList(),
+    clearTileLayer: () -> Boolean = { false },
+    tileOverlayState: TileOverlayState = rememberTileOverlayState(),
     casesDotTileProvider: () -> TileProvider? = { null },
     onMapCameraChange: (CameraPosition, Projection?, Boolean) -> Unit = { _, _, _ -> },
 ) {
@@ -215,7 +230,13 @@ internal fun CasesMapView(
         }
 
         casesDotTileProvider()?.let {
-            TileOverlay(tileProvider = it)
+            TileOverlay(
+                tileProvider = it,
+                state = tileOverlayState,
+            )
+            if (clearTileLayer()) {
+                tileOverlayState.clearTileCache()
+            }
         }
     }
 
@@ -227,8 +248,11 @@ internal fun CasesMapView(
             val update = CameraUpdateFactory.newLatLngBounds(
                 mapCameraBounds.bounds, padding.toInt()
             )
-            // TODO Make durationMs proportional to distance moved
-            cameraPositionState.animate(update, 500)
+            if (mapCameraBounds.durationMs > 0) {
+                cameraPositionState.animate(update, mapCameraBounds.durationMs)
+            } else {
+                cameraPositionState.move(update)
+            }
         }
     }
 

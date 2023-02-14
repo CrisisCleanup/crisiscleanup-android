@@ -14,6 +14,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 private interface CrisisCleanupNetworkApi {
+    @TokenAuthenticationHeader
     @GET("incidents")
     suspend fun getIncidents(
         @Query("fields")
@@ -24,6 +25,7 @@ private interface CrisisCleanupNetworkApi {
         ordering: String
     ): NetworkIncidentsResult
 
+    @TokenAuthenticationHeader
     @GET("locations")
     suspend fun getLocations(
         @Query("id__in")

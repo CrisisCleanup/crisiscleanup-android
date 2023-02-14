@@ -109,6 +109,8 @@ class WorksiteDaoPlus @Inject constructor(
                         email = worksite.email,
                         favoriteId = worksite.favoriteId,
                         keyWorkTypeType = worksite.keyWorkTypeType,
+                        keyWorkTypeOrgClaim = worksite.keyWorkTypeOrgClaim,
+                        keyWorkTypeStatus = worksite.keyWorkTypeStatus,
                         latitude = worksite.latitude,
                         longitude = worksite.longitude,
                         name = worksite.name,

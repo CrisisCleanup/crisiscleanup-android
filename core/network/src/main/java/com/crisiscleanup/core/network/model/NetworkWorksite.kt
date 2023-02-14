@@ -138,6 +138,9 @@ data class NetworkWorksiteFull(
     data class KeyWorkTypeShort(
         @SerialName("work_type")
         val workType: String,
+        @SerialName("claimed_by")
+        val orgClaim: Long?,
+        val status: String,
     )
 
     @Serializable

@@ -17,6 +17,8 @@ fun NetworkWorksiteFull.asEntity(incidentId: Long) = WorksiteEntity(
     // TODO Is this the correct interpretation?
     favoriteId = favorite?.id,
     keyWorkTypeType = keyWorkType?.workType ?: "",
+    keyWorkTypeOrgClaim = keyWorkType?.orgClaim,
+    keyWorkTypeStatus = keyWorkType?.status ?: "",
     latitude = location.coordinates[1],
     longitude = location.coordinates[0],
     name = name,
@@ -42,6 +44,8 @@ fun NetworkWorksiteShort.asEntity(incidentId: Long) = WorksiteEntity(
     createdAt = createdAt,
     favoriteId = favoriteId,
     keyWorkTypeType = keyWorkType?.workType ?: "",
+    keyWorkTypeOrgClaim = keyWorkType?.orgClaim,
+    keyWorkTypeStatus = keyWorkType?.status ?: "",
     latitude = location.coordinates[1],
     longitude = location.coordinates[0],
     name = name,

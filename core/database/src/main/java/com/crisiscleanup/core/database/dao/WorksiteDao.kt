@@ -42,7 +42,7 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
-        SELECT id, latitude, longitude, key_work_type_type
+        SELECT id, latitude, longitude, key_work_type_type, key_work_type_org, key_work_type_status
         FROM worksites
         WHERE incident_id=:incidentId AND
         (latitude BETWEEN :latitudeSouth AND :latitudeNorth) AND
@@ -65,7 +65,7 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
-        SELECT id, latitude, longitude, key_work_type_type
+        SELECT id, latitude, longitude, key_work_type_type, key_work_type_type, key_work_type_org, key_work_type_status
         FROM worksites
         WHERE incident_id=:incidentId AND
         (latitude BETWEEN :latitudeSouth AND :latitudeNorth) AND
@@ -101,7 +101,7 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
-        SELECT id, latitude, longitude, key_work_type_type
+        SELECT id, latitude, longitude, key_work_type_type, key_work_type_type, key_work_type_org, key_work_type_status
         FROM worksites
         WHERE incident_id=:incidentId
         ORDER BY updated_at DESC, id DESC
@@ -118,7 +118,7 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
-        SELECT id, latitude, longitude, key_work_type_type
+        SELECT id, latitude, longitude, key_work_type_type, key_work_type_org, key_work_type_status
         FROM worksites
         WHERE incident_id=:incidentId AND
         (latitude BETWEEN :latitudeSouth AND :latitudeNorth) AND
@@ -200,6 +200,8 @@ interface WorksiteDao {
         email           =COALESCE(:email, email),
         favorite_id     =:favoriteId,
         key_work_type_type=:keyWorkTypeType,
+        key_work_type_org=:keyWorkTypeOrgClaim,
+        key_work_type_status=:keyWorkTypeStatus,
         latitude        =:latitude,
         longitude       =:longitude,
         name            =:name,
@@ -228,6 +230,8 @@ interface WorksiteDao {
         email: String?,
         favoriteId: Long?,
         keyWorkTypeType: String,
+        keyWorkTypeOrgClaim: Long?,
+        keyWorkTypeStatus: String,
         latitude: Double,
         longitude: Double,
         name: String,

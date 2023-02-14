@@ -1,7 +1,8 @@
 package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.model.data.Location
+import kotlinx.coroutines.flow.Flow
 
 interface LocationsRepository {
-    suspend fun getLocations(ids: Collection<Long>): List<Location>
+    fun streamLocations(ids: List<Long>): Flow<List<Location>>
 }

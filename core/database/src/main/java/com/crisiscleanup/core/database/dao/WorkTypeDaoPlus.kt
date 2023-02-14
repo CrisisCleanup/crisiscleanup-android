@@ -22,6 +22,7 @@ class WorkTypeDaoPlus @Inject constructor(
                 val id = workTypeDao.insertIgnoreWorkType(workType)
                 if (id < 0) {
                     workTypeDao.syncUpdateWorkType(
+                        worksiteId = workType.worksiteId,
                         networkId = workType.networkId,
                         orgClaim = workType.orgClaim,
                         status = workType.status,
