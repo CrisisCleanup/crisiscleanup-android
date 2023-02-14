@@ -2,6 +2,7 @@ package com.crisiscleanup.feature.authentication
 
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.InputValidator
+import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.model.data.AccountData
@@ -52,6 +53,9 @@ class AuthenticationViewModelTest {
     lateinit var accessTokenDecoder: AccessTokenDecoder
 
     @MockK
+    lateinit var authEventManager: AuthEventManager
+
+    @MockK
     lateinit var appLogger: AppLogger
 
     @MockK
@@ -97,6 +101,7 @@ class AuthenticationViewModelTest {
         authApiClient,
         inputValidator,
         accessTokenDecoder,
+        authEventManager,
         appLogger,
         resProvider,
         UnconfinedTestDispatcher(),
@@ -132,7 +137,6 @@ class AuthenticationViewModelTest {
             AuthenticationState(
                 accountData = emptyAccountData,
                 hasAccessToken = false,
-                isTokenExpired = true,
             ), (viewModel.uiState.first() as Ready).authenticationState
         )
         assertEquals(emptyLoginData, viewModel.loginInputData)
@@ -192,7 +196,7 @@ class AuthenticationViewModelTest {
 
         every { inputValidator.validateEmailAddress(any()) } returns true
 
-        coEvery { accountDataRepository.clearAccount() } returns Unit
+        coEvery { authEventManager.onLogout() } returns Unit
 
         coEvery { authApiClient.logout() } returns Unit
 
@@ -203,7 +207,6 @@ class AuthenticationViewModelTest {
             AuthenticationState(
                 accountData = nonEmptyAccountData,
                 hasAccessToken = true,
-                isTokenExpired = false,
             ), (viewModel.uiState.first() as Ready).authenticationState
         )
 
@@ -215,7 +218,7 @@ class AuthenticationViewModelTest {
         viewModel.logout()
 
         coVerify(exactly = 1) { authApiClient.logout() }
-        coVerify(exactly = 1) { accountDataRepository.clearAccount() }
+        coVerify(exactly = 1) { authEventManager.onLogout() }
 
         assertEquals(LoginInputData(), viewModel.loginInputData)
 

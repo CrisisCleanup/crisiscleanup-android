@@ -1,5 +1,7 @@
 package com.crisiscleanup.core.data.repository
 
+import com.crisiscleanup.core.common.event.AuthEventManager
+import com.crisiscleanup.core.common.event.CrisisCleanupAuthEventManager
 import com.crisiscleanup.core.datastore.AccountInfoDataSource
 import com.crisiscleanup.core.datastore.test.testAccountInfoDataStore
 import com.crisiscleanup.core.model.data.AccountData
@@ -19,6 +21,8 @@ class CrisisCleanupAccountDataRepositoryTest {
 
     private lateinit var accountInfoDataSource: AccountInfoDataSource
 
+    private lateinit var authEventManager: AuthEventManager
+
     @get:Rule
     val tmpFolder: TemporaryFolder = TemporaryFolder.builder().assureDeletion().build()
 
@@ -28,7 +32,11 @@ class CrisisCleanupAccountDataRepositoryTest {
             tmpFolder.testAccountInfoDataStore()
         )
 
-        subject = CrisisCleanupAccountDataRepository(accountInfoDataSource)
+        authEventManager = CrisisCleanupAuthEventManager()
+        subject = CrisisCleanupAccountDataRepository(
+            accountInfoDataSource,
+            authEventManager,
+        )
     }
 
     @Test
@@ -53,7 +61,7 @@ class CrisisCleanupAccountDataRepositoryTest {
     }
 
     @Test
-    fun setAccount_clearAccount_delegatesTo_dataSource() = runTest {
+    fun setAccount_logout_delegatesTo_dataSource() = runTest {
         subject.setAccount(
             5434,
             "at",
@@ -77,7 +85,8 @@ class CrisisCleanupAccountDataRepositoryTest {
         assertEquals(expectedData, accountInfoDataSource.accountData.first())
         assertTrue(subject.isAuthenticated.first())
 
-        subject.clearAccount()
+        authEventManager.onLogout()
+
         expectedData = AccountData(
             id = 0,
             accessToken = "",

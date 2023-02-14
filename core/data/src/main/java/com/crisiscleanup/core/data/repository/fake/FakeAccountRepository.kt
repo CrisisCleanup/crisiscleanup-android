@@ -35,8 +35,6 @@ class FakeAccountRepository(
         it.accessToken.isNotEmpty()
     }
 
-    override suspend fun clearAccount() = setAccount(0, "", "", "", "", 0, "")
-
     override suspend fun setAccount(
         id: Long,
         accessToken: String,
@@ -67,6 +65,8 @@ class FakeAccountRepository(
             )
         }
     }
+
+    private suspend fun clearAccount() = setAccount(0, "", "", "", "", 0, "")
 }
 
 val demoAccountRepository = FakeAccountRepository(

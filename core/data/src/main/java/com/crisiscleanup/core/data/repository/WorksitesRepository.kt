@@ -2,6 +2,7 @@ package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteMapMark
+import com.crisiscleanup.core.model.data.WorksitesSyncStats
 import kotlinx.coroutines.flow.Flow
 
 interface WorksitesRepository {
@@ -43,4 +44,6 @@ interface WorksitesRepository {
     fun getWorksitesCount(incidentId: Long): Int
 
     suspend fun refreshWorksites(incidentId: Long, force: Boolean)
+
+    fun getWorksitesSyncStats(incidentId: Long): WorksitesSyncStats?
 }

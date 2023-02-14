@@ -5,14 +5,13 @@ import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.MainActivityUiState.Loading
 import com.crisiscleanup.MainActivityUiState.Success
 import com.crisiscleanup.core.appheader.AppHeaderUiState
+import com.crisiscleanup.core.common.Syncer
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRepository
-import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.model.data.UserData
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
@@ -27,8 +26,8 @@ class MainActivityViewModel @Inject constructor(
     localAppPreferencesRepository: LocalAppPreferencesRepository,
     accountDataRepository: AccountDataRepository,
     incidentSelector: IncidentSelector,
-    private val incidentsRepository: IncidentsRepository,
     val appHeaderUiState: AppHeaderUiState,
+    private val syncer: Syncer,
 ) : ViewModel() {
     val uiState: StateFlow<MainActivityUiState> = localAppPreferencesRepository.userData.map {
         Success(it)
@@ -38,18 +37,9 @@ class MainActivityViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5_000)
     )
 
-    private var wasAuthenticated: Boolean? = null
-
     val authState: StateFlow<AuthState> = accountDataRepository.accountData.map {
-        // TODO Remove this once full syncing pipeline is in place.
-        //      Logging out should clear sync state so logging in syncs without requiring force.
+        syncIncidents()
         val isAuthenticated = it.accessToken.isNotEmpty()
-        if (isAuthenticated) {
-            val forceSync = wasAuthenticated == false
-            syncIncidents(forceSync)
-        }
-        wasAuthenticated = isAuthenticated
-
         if (isAuthenticated) AuthState.Authenticated(it)
         else AuthState.NotAuthenticated
     }.stateIn(
@@ -58,20 +48,17 @@ class MainActivityViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed()
     )
 
-    private var syncJob: Job? = null
-
     init {
         incidentSelector.incidentId
             .onEach {
-                syncIncidents(false)
+                syncIncidents()
             }
             .launchIn(viewModelScope)
     }
 
-    private fun syncIncidents(force: Boolean) {
-        syncJob?.cancel()
-        syncJob = viewModelScope.launch {
-            incidentsRepository.sync(force)
+    private fun syncIncidents() {
+        viewModelScope.launch {
+            syncer.sync()
         }
     }
 }

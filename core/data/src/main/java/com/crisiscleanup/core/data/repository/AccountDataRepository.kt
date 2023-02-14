@@ -24,11 +24,6 @@ interface AccountDataRepository {
     val isAuthenticated: Flow<Boolean>
 
     /**
-     * Clear (authenticated) account info
-     */
-    suspend fun clearAccount()
-
-    /**
      * Set authenticated account info
      */
     suspend fun setAccount(

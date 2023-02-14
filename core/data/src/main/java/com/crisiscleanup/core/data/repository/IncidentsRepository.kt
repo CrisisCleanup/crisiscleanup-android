@@ -15,8 +15,5 @@ interface IncidentsRepository : Syncable {
      */
     val incidents: Flow<List<Incident>>
 
-    /**
-     * Syncs incidents data (from network)
-     */
-    suspend fun sync(force: Boolean)
+    suspend fun getIncident(id: Long): Incident?
 }

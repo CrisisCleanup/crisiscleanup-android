@@ -12,7 +12,7 @@ import javax.inject.Inject
  * Stores data and preferences related to the local app (on each device)
  */
 class LocalAppPreferencesDataSource @Inject constructor(
-    private val userPreferences: DataStore<UserPreferences>
+    private val userPreferences: DataStore<UserPreferences>,
 ) {
     val userData = userPreferences.data
         .map {
@@ -80,6 +80,14 @@ class LocalAppPreferencesDataSource @Inject constructor(
 
             it.copy {
                 this.syncAttempt = attempt
+            }
+        }
+    }
+
+    suspend fun clearSyncData() {
+        userPreferences.updateData {
+            it.copy {
+                this.syncAttempt = SyncAttemptProto.newBuilder().build()
             }
         }
     }

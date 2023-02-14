@@ -35,6 +35,7 @@ class LoadIncidentDataUseCase @Inject constructor(
         var incident = incidents.find { it.id == selectedId } ?: EmptyIncident
         if (incident == EmptyIncident && incidents.isNotEmpty()) {
             incident = incidents[0]
+            appPreferencesRepository.setSelectedIncident(incident.id)
         }
 
         incidentSelector.setIncident(incident)

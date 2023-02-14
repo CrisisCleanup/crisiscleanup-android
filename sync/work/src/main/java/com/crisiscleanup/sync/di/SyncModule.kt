@@ -1,8 +1,8 @@
 package com.crisiscleanup.sync.di
 
+import com.crisiscleanup.core.common.Syncer
 import com.crisiscleanup.core.data.util.SyncStatusMonitor
-import com.crisiscleanup.sync.BackoffSyncer
-import com.crisiscleanup.sync.Syncer
+import com.crisiscleanup.sync.ForcibleSyncer
 import com.crisiscleanup.sync.status.WorkManagerSyncStatusMonitor
 import dagger.Binds
 import dagger.Module
@@ -18,5 +18,5 @@ interface SyncModule {
 
     @Singleton
     @Binds
-    fun bindsSyncer(syncer: BackoffSyncer): Syncer
+    fun bindsSyncer(syncer: ForcibleSyncer): Syncer
 }

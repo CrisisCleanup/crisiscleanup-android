@@ -5,7 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.appheader.AppHeaderUiState
-import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
+import com.crisiscleanup.core.common.Syncer
+import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.IncidentsRepository
@@ -35,7 +36,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CasesViewModel @Inject constructor(
-    private val incidentsRepository: IncidentsRepository,
+    incidentsRepository: IncidentsRepository,
     locationsRepository: LocationsRepository,
     private val worksitesRepository: WorksitesRepository,
     private val incidentSelector: IncidentSelector,
@@ -44,7 +45,8 @@ class CasesViewModel @Inject constructor(
     mapCaseDotProvider: MapCaseDotProvider,
     private val mapTileRenderer: CaseDotsMapTileRenderer,
     private val tileProvider: TileProvider,
-    @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
+    private val syncer: Syncer,
+    @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     val incidentsData = loadIncidentDataUseCase()
 
@@ -112,8 +114,9 @@ class CasesViewModel @Inject constructor(
 
     var incidentLocationBounds = mapBoundsManager.mapCameraBounds
 
+    val isSyncingIncidents = incidentsRepository.isLoading
     val isLoading = combine(
-        incidentsRepository.isLoading,
+        isSyncingIncidents,
         worksitesRepository.isLoading,
         mapBoundsManager.isDeterminingBounds,
         mapTileRenderer.isBusy,
@@ -199,7 +202,7 @@ class CasesViewModel @Inject constructor(
 
     fun refreshIncidentsData() {
         viewModelScope.launch {
-            incidentsRepository.sync(true)
+            syncer.sync(true)
         }
     }
 

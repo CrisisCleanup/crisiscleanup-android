@@ -14,19 +14,19 @@ import com.crisiscleanup.sync.R
 import com.crisiscleanup.sync.workers.SyncWorker
 import com.crisiscleanup.core.common.R as commonR
 
-private const val SyncNotificationId = 0
+internal const val SyncNotificationId = 0
 private const val SyncNotificationChannelID = "SyncNotificationChannel"
 
 // This name should not be changed otherwise the app may have concurrent sync requests running
 internal const val SyncWorkName = "SyncWorkName"
 
-fun scheduleSync(context: Context) {
+fun scheduleSync(context: Context, force: Boolean = false) {
     WorkManager.getInstance(context).apply {
         // Run sync and ensure only one sync worker runs at any time
         enqueueUniqueWork(
             SyncWorkName,
-            ExistingWorkPolicy.KEEP,
-            SyncWorker.oneTimeSyncWork()
+            ExistingWorkPolicy.APPEND_OR_REPLACE,
+            SyncWorker.oneTimeSyncWork(force)
         )
     }
 }
@@ -41,16 +41,16 @@ val SyncConstraints
  * Foreground information for sync on lower API levels when sync workers are being
  * run with a foreground service
  */
-fun Context.syncForegroundInfo() = ForegroundInfo(
+fun Context.syncForegroundInfo(text: String = "") = ForegroundInfo(
     SyncNotificationId,
-    syncWorkNotification()
+    syncWorkNotification(text)
 )
 
 /**
  * Notification displayed on lower API levels when sync workers are being
  * run with a foreground service
  */
-private fun Context.syncWorkNotification(): Notification {
+internal fun Context.syncWorkNotification(contextText: String = ""): Notification {
     val channel = NotificationChannel(
         SyncNotificationChannelID,
         getString(R.string.sync_notification_channel_name),
@@ -63,6 +63,8 @@ private fun Context.syncWorkNotification(): Notification {
         getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
     notificationManager?.createNotificationChannel(channel)
 
+    val notificationText = contextText.ifEmpty { getString(R.string.sync_notification_text) }
+
     return NotificationCompat.Builder(
         this,
         SyncNotificationChannelID
@@ -71,8 +73,7 @@ private fun Context.syncWorkNotification(): Notification {
             commonR.drawable.ic_app_notification
         )
         .setContentTitle(getString(R.string.sync_notification_title))
-        // TODO Be more descriptive where possible
-        .setContentText(getString(R.string.sync_notification_text))
+        .setContentText(notificationText)
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
         // TODO Color? Is it possible from here? To use MaterialTheme? Or inject?
         .build()

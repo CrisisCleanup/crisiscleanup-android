@@ -1,5 +1,7 @@
 package com.crisiscleanup.core.data.repository
 
+import com.crisiscleanup.core.common.event.AuthEventManager
+import com.crisiscleanup.core.common.event.LogoutListener
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.core.model.data.DarkThemeConfig
 import com.crisiscleanup.core.model.data.UserData
@@ -9,10 +11,15 @@ import javax.inject.Singleton
 
 @Singleton
 class OfflineFirstLocalAppPreferencesRepository @Inject constructor(
-    private val preferencesDataSource: LocalAppPreferencesDataSource
-) : LocalAppPreferencesRepository {
+    private val preferencesDataSource: LocalAppPreferencesDataSource,
+    authEventManager: AuthEventManager,
+) : LocalAppPreferencesRepository, LogoutListener {
 
     override val userData: Flow<UserData> = preferencesDataSource.userData
+
+    init {
+        authEventManager.addLogoutListener(this)
+    }
 
     override suspend fun setDarkThemeConfig(darkThemeConfig: DarkThemeConfig) =
         preferencesDataSource.setDarkThemeConfig(darkThemeConfig)
@@ -22,4 +29,10 @@ class OfflineFirstLocalAppPreferencesRepository @Inject constructor(
 
     override suspend fun setSelectedIncident(id: Long) =
         preferencesDataSource.setSelectedIncident(id)
+
+    // LogoutListener
+
+    override suspend fun onLogout() {
+        preferencesDataSource.clearSyncData()
+    }
 }

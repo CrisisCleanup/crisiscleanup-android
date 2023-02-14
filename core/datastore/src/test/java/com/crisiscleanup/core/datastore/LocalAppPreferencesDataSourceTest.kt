@@ -102,4 +102,17 @@ class LocalAppPreferencesDataSourceTest {
             }
         }
     }
+
+    @Test
+    fun clearSyncData() = runTest {
+        subject.setSyncAttempt(true, 20158)
+        subject.setSyncAttempt(false, 58354)
+
+        val syncAttempt = subject.userData.first().syncAttempt
+        assertEquals(SyncAttempt(20158, 58354, 1), syncAttempt)
+
+        subject.clearSyncData()
+        val clearedSyncAttempt = subject.userData.first().syncAttempt
+        assertEquals(SyncAttempt(0, 0, 0), clearedSyncAttempt)
+    }
 }

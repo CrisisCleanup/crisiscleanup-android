@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.InputValidator
+import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
@@ -20,7 +21,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import retrofit2.HttpException
 import javax.inject.Inject
 
@@ -30,6 +30,7 @@ class AuthenticationViewModel @Inject constructor(
     private val authApiClient: CrisisCleanupAuthApi,
     private val inputValidator: InputValidator,
     private val accessTokenDecoder: AccessTokenDecoder,
+    private val authEventManager: AuthEventManager,
     private val logger: AppLogger,
     private val resProvider: AndroidResourceProvider,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
@@ -55,8 +56,6 @@ class AuthenticationViewModel @Inject constructor(
                 authenticationState = AuthenticationState(
                     accountData = it,
                     hasAccessToken = it.accessToken.isNotEmpty(),
-                    // TODO Expiry must be dynamic not a snapshot
-                    isTokenExpired = it.tokenExpiry < Clock.System.now(),
                 ),
             )
         }.stateIn(
@@ -180,7 +179,7 @@ class AuthenticationViewModel @Inject constructor(
                     emailAddress = ""
                     password = ""
                 }
-                accountDataRepository.clearAccount()
+                authEventManager.onLogout()
             } catch (e: Exception) {
                 errorMessage.value = resProvider.getString(R.string.error_during_authentication)
                 logger.logException(e)

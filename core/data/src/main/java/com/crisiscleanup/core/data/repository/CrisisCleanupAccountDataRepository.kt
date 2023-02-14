@@ -1,5 +1,7 @@
 package com.crisiscleanup.core.data.repository
 
+import com.crisiscleanup.core.common.event.AuthEventManager
+import com.crisiscleanup.core.common.event.LogoutListener
 import com.crisiscleanup.core.datastore.AccountInfoDataSource
 import com.crisiscleanup.core.model.data.AccountData
 import kotlinx.coroutines.flow.Flow
@@ -9,8 +11,9 @@ import javax.inject.Singleton
 
 @Singleton
 class CrisisCleanupAccountDataRepository @Inject constructor(
-    private val dataSource: AccountInfoDataSource
-) : AccountDataRepository {
+    private val dataSource: AccountInfoDataSource,
+    authEventManager: AuthEventManager,
+) : AccountDataRepository, LogoutListener {
     /* UPDATE [CrisisCleanupAccountDataRepositoryTest] when changing below */
 
     override var accessTokenCached: String = ""
@@ -25,9 +28,8 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
         it.accessToken.isNotEmpty()
     }
 
-    override suspend fun clearAccount() {
-        accessTokenCached = ""
-        dataSource.clearAccount()
+    init {
+        authEventManager.addLogoutListener(this)
     }
 
     override suspend fun setAccount(
@@ -50,4 +52,12 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
             profilePictureUri,
         )
     }
+
+    private suspend fun clearAccount() {
+        accessTokenCached = ""
+        dataSource.clearAccount()
+    }
+
+    // LogoutListener
+    override suspend fun onLogout() = clearAccount()
 }

@@ -11,6 +11,7 @@ interface AndroidResourceProvider {
     val displayDensity: Float
 
     fun getString(@StringRes resId: Int): String
+    fun getString(@StringRes resId: Int, vararg formatArgs: Any): String
 
     fun dpToPx(dp: Float): Float
 }
@@ -24,6 +25,8 @@ class ApplicationResourceProvider @Inject constructor(
     override val displayDensity: Float = resources.displayMetrics.density
 
     override fun getString(resId: Int): String = context.getString(resId)
+    override fun getString(resId: Int, vararg formatArgs: Any): String =
+        context.getString(resId, formatArgs)
 
     override fun dpToPx(dp: Float): Float = displayDensity * dp
 }

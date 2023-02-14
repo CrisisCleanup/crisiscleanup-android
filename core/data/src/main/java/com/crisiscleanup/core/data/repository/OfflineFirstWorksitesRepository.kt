@@ -26,7 +26,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
@@ -35,6 +34,8 @@ import java.lang.Integer.max
 import java.lang.Integer.min
 import javax.inject.Inject
 import javax.inject.Singleton
+
+// TODO Clear sync stats on logout? Or is it more efficient to keep? Are there differences in data when different accounts request data?
 
 @Singleton
 class OfflineFirstWorksitesRepository @Inject constructor(
@@ -118,6 +119,10 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     override fun getWorksitesCount(incidentId: Long): Int =
         worksiteDao.getWorksitesCount(incidentId)
 
+    override fun getWorksitesSyncStats(incidentId: Long): WorksitesSyncStats? {
+        return worksitesSyncStatsDao.getSyncStats(incidentId).firstOrNull()?.asExternalModel()
+    }
+
     private suspend fun networkWorksitesCount(
         incidentId: Long,
         throwOnEmpty: Boolean = false
@@ -138,7 +143,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         incidentId: Long,
         syncStart: Instant,
     ): WorksitesSyncStats {
-        val syncStatsQuery = worksitesSyncStatsDao.getSyncStats(incidentId).first()
+        val syncStatsQuery = worksitesSyncStatsDao.getSyncStats(incidentId)
         if (syncStatsQuery.isNotEmpty()) {
             return syncStatsQuery.first().asExternalModel()
         }
@@ -255,7 +260,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             return@withContext
         }
 
-        // TODO Enforce single process syncing per incident
+        // TODO Enforce single process syncing per incident since this may be very long running
 
         isLoading.value = true
         try {

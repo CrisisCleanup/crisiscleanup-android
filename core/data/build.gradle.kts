@@ -22,13 +22,13 @@ dependencies {
     implementation(project(":core:datastore"))
     implementation(project(":core:network"))
 
-    testImplementation(project(":core:testing"))
-    testImplementation(project(":core:datastore-test"))
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.compose.runtime)
 
     implementation(libs.kotlinx.datetime)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
+
+    testImplementation(project(":core:testing"))
+    testImplementation(project(":core:datastore-test"))
 }

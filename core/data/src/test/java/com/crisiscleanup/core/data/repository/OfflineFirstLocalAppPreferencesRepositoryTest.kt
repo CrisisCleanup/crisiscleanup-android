@@ -1,5 +1,7 @@
 package com.crisiscleanup.core.data.repository
 
+import com.crisiscleanup.core.common.event.AuthEventManager
+import com.crisiscleanup.core.common.event.CrisisCleanupAuthEventManager
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.core.datastore.test.testUserPreferencesDataStore
 import com.crisiscleanup.core.model.data.DarkThemeConfig
@@ -19,6 +21,8 @@ class OfflineFirstLocalAppPreferencesRepositoryTest {
 
     private lateinit var preferencesDataSource: LocalAppPreferencesDataSource
 
+    private lateinit var authEventManager: AuthEventManager
+
     @get:Rule
     val tmpFolder: TemporaryFolder = TemporaryFolder.builder().assureDeletion().build()
 
@@ -28,8 +32,10 @@ class OfflineFirstLocalAppPreferencesRepositoryTest {
             tmpFolder.testUserPreferencesDataStore()
         )
 
+        authEventManager = CrisisCleanupAuthEventManager()
         subject = OfflineFirstLocalAppPreferencesRepository(
-            preferencesDataSource = preferencesDataSource
+            preferencesDataSource,
+            authEventManager,
         )
     }
 
@@ -65,4 +71,6 @@ class OfflineFirstLocalAppPreferencesRepositoryTest {
                     .first()
             )
         }
+
+    // TODO Other methods delegate to preferences
 }

@@ -33,11 +33,11 @@ class FakeIncidentsRepository @Inject constructor() : IncidentsRepository {
         )
     )
 
-    override suspend fun sync(force: Boolean) {
+    override suspend fun getIncident(id: Long): Incident? {
+        return makeIncident(id, "Incident $id")
     }
 
     override suspend fun syncWith(synchronizer: Synchronizer): Boolean {
-        sync(false)
         return true
     }
 }

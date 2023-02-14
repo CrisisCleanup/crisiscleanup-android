@@ -17,10 +17,11 @@ object Sync {
 }
 
 /**
- * Registers work to sync the data layer periodically on app startup.
+ * Registers work to sync the data layer (on app startup).
  */
 class SyncInitializer : Initializer<Sync> {
     override fun create(context: Context): Sync {
+        // TODO Schedule periodic sync?
         scheduleSync(context)
 
         return Sync
