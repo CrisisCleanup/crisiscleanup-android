@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -42,15 +43,19 @@ import com.crisiscleanup.feature.cases.ui.CasesZoomBar
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.TileProvider
 import com.google.maps.android.compose.CameraMoveStartedReason
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.TileOverlay
 import com.google.maps.android.compose.TileOverlayState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberTileOverlayState
+
+import com.crisiscleanup.core.mapmarker.R as mapmarkerR
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
@@ -219,9 +224,22 @@ internal fun CasesMapView(
         )
     }
 
+    val context = LocalContext.current
+    val mapProperties by remember {
+        mutableStateOf(
+            MapProperties(
+                mapStyleOptions = MapStyleOptions.loadRawResourceStyle(
+                    context,
+                    mapmarkerR.raw.map_style
+                )
+            )
+        )
+    }
+
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
         uiSettings = uiSettings,
+        properties = mapProperties,
         cameraPositionState = cameraPositionState,
     ) {
         // TODO Is it possible to cache? If so test recomposition. If not document why not.
