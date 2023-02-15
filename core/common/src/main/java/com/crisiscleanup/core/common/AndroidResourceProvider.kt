@@ -24,9 +24,9 @@ class ApplicationResourceProvider @Inject constructor(
 
     override val displayDensity: Float = resources.displayMetrics.density
 
-    override fun getString(resId: Int): String = context.getString(resId)
-    override fun getString(resId: Int, vararg formatArgs: Any): String =
-        context.getString(resId, formatArgs)
+    override fun getString(@StringRes resId: Int): String = context.getString(resId)
+    override fun getString(@StringRes resId: Int, vararg formatArgs: Any): String =
+        resources.getString(resId, *formatArgs)
 
     override fun dpToPx(dp: Float): Float = displayDensity * dp
 }

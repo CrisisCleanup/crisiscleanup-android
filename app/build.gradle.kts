@@ -114,6 +114,8 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:31.1.1"))
     implementation("com.google.firebase:firebase-crashlytics")
     implementation("com.google.firebase:firebase-analytics")
+
+    implementation(libs.google.maps.playservices)
 }
 
 // androidx.test is forcing JUnit, 4.12. This forces it to use 4.13

@@ -21,6 +21,8 @@ import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.model.data.DarkThemeConfig
 import com.crisiscleanup.ui.CrisisCleanupApp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.google.android.gms.maps.MapsInitializer
+import com.google.android.gms.maps.MapsInitializer.Renderer
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -45,6 +47,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
+        MapsInitializer.initialize(this, Renderer.LATEST) {}
 
         var uiState: MainActivityUiState by mutableStateOf(Loading)
         var authState: AuthState by mutableStateOf(AuthState.Loading)
