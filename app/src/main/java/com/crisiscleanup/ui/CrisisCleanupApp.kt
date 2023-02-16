@@ -2,11 +2,39 @@ package com.crisiscleanup.ui
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.consumedWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -19,7 +47,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -29,7 +56,14 @@ import com.crisiscleanup.MainActivityViewModel
 import com.crisiscleanup.R
 import com.crisiscleanup.core.appheader.AppHeaderState
 import com.crisiscleanup.core.data.util.NetworkMonitor
-import com.crisiscleanup.core.designsystem.component.*
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupBackground
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationBar
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationBarItem
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationRail
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationRailItem
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupTopAppBar
+import com.crisiscleanup.core.designsystem.component.TopAppBarDefault
+import com.crisiscleanup.core.designsystem.component.TopAppBarSearch
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.icon.Icon.DrawableResourceIcon
 import com.crisiscleanup.core.designsystem.icon.Icon.ImageVectorIcon
@@ -41,9 +75,6 @@ import com.crisiscleanup.navigation.CrisisCleanupNavHost
 import com.crisiscleanup.navigation.TopLevelDestination
 import com.crisiscleanup.feature.cases.R as casesR
 
-@OptIn(
-    ExperimentalLifecycleComposeApi::class,
-)
 @Composable
 fun CrisisCleanupApp(
     windowSizeClass: WindowSizeClass,

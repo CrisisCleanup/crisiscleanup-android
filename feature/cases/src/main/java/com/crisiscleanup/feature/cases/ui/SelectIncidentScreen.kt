@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.domain.IncidentsData
@@ -54,7 +53,6 @@ private fun WrapInDialog(
         )
     })
 
-@OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 internal fun SelectIncidentRoute(
     onBackClick: () -> Unit,
@@ -111,7 +109,6 @@ internal fun SelectIncidentRoute(
     }
 }
 
-@OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 private fun ColumnScope.IncidentSelectContent(
     selectIncidentViewModel: SelectIncidentViewModel,

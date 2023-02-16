@@ -2,10 +2,23 @@ package com.crisiscleanup.feature.authentication
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
@@ -16,7 +29,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
@@ -27,9 +39,6 @@ import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.feature.authentication.model.AuthenticationState
 import com.crisiscleanup.core.common.R as commonR
 
-@OptIn(
-    ExperimentalLifecycleComposeApi::class,
-)
 @Composable
 fun AuthenticateScreen(
     modifier: Modifier = Modifier,
@@ -55,6 +64,7 @@ fun AuthenticateScreen(
                 CircularProgressIndicator(Modifier.align(Alignment.Center))
             }
         }
+
         is AuthenticateScreenUiState.Ready -> {
             val readyState = uiState as AuthenticateScreenUiState.Ready
             readyState.authenticationState.let {
@@ -126,9 +136,6 @@ private fun ConditionalErrorMessage(errorMessage: String) {
     }
 }
 
-@OptIn(
-    ExperimentalLifecycleComposeApi::class,
-)
 @Composable
 private fun LoginScreen(
     authState: AuthenticationState,
@@ -205,8 +212,8 @@ private fun LoginScreen(
             val rememberDebugAuthenticate = remember(viewModel) {
                 {
                     viewModel.loginInputData.apply {
-                        emailAddress = "demo@crisiscleanup.org"
-                        password = "demodemo1"
+                        emailAddress = BuildConfig.DEBUG_EMAIL_ADDRESS
+                        password = BuildConfig.DEBUG_ACCOUNT_PASSWORD
                     }
                     viewModel.authenticateEmailPassword()
                 }
@@ -239,9 +246,6 @@ private fun LoginScreen(
     }
 }
 
-@OptIn(
-    ExperimentalLifecycleComposeApi::class,
-)
 @Composable
 private fun AuthenticatedScreen(
     authState: AuthenticationState,
