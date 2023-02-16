@@ -18,7 +18,8 @@ import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
-import com.crisiscleanup.sync.R
+import com.crisiscleanup.sync.SyncPipeline.determineSyncSteps
+import com.crisiscleanup.sync.SyncPipeline.performSync
 import com.crisiscleanup.sync.initializers.SyncConstraints
 import com.crisiscleanup.sync.initializers.syncForegroundInfo
 import dagger.assisted.Assisted
@@ -28,7 +29,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.Clock
 
 /**
  * Syncs the data layer by delegating to the appropriate repository instances with
@@ -49,66 +49,29 @@ class SyncWorker @AssistedInject constructor(
     override suspend fun getForegroundInfo(): ForegroundInfo =
         appContext.syncForegroundInfo()
 
-    private val isForced: Boolean
-        get() = inputData.getBoolean(KEY_FORCE_SYNC, false)
-
-    private suspend fun trySync(): Boolean {
-        if (!isForced) {
-            if (incidentsRepository.incidents.first().isEmpty()) {
-                return true
-            }
-
-            val incidentId = appPreferences.userData.first().selectedIncidentId
-            if (incidentId <= 0) {
-                val syncAttempt = appPreferences.userData.first().syncAttempt
-                return !(syncAttempt.isRecent() || syncAttempt.isBackingOff())
-            }
-
-            val syncStats = worksitesRepository.getWorksitesSyncStats(incidentId)
-            syncStats?.let {
-                val syncAttempt = it.syncAttempt
-                return !(syncAttempt.isRecent() || syncAttempt.isBackingOff())
-            }
-        }
-
-        return true
-    }
-
     override suspend fun doWork(): Result = withContext(ioDispatcher) {
-        // Skip sync if not necessary
-        if (!trySync()) {
-            return@withContext Result.success()
-        }
-
         val accountData = accountDataRepository.accountData.first()
-        if (accountData.accessToken.isEmpty() ||
-            accountData.tokenExpiry < Clock.System.now()
-        ) {
+        if (accountData.isTokenInvalid) {
             // Downstream work should wait for valid access token before commencing
             return@withContext Result.failure()
+        }
+
+        val plan = determineSyncSteps(incidentsRepository, worksitesRepository, appPreferences)
+        if (!plan.requiresSync) {
+            return@withContext Result.success()
         }
 
         traceAsync("Sync", 0) {
             val syncedSuccessfully = awaitAll(
                 async {
-                    if (incidentsRepository.sync()) {
-                        val selectedIncidentId = appPreferences.userData.first().selectedIncidentId
-
-                        incidentsRepository.getIncident(selectedIncidentId)?.let {
-                            val syncMessage =
-                                resourceProvider.getString(R.string.syncing_incident_text, it.name)
-                            setForeground(appContext.syncForegroundInfo(syncMessage))
-
-                            worksitesRepository.refreshWorksites(selectedIncidentId, isForced)
-                        }
-                        true
-                    } else {
-                        false
-                    }
-                },
+                    performSync(
+                        plan,
+                        incidentsRepository,
+                        worksitesRepository,
+                        resourceProvider,
+                    ) { text -> setForeground(appContext.syncForegroundInfo(text)) }
+                }
             ).all { it }
-
-            appPreferences.setSyncAttempt(syncedSuccessfully)
 
             if (syncedSuccessfully) Result.success()
             else Result.retry()
@@ -116,12 +79,9 @@ class SyncWorker @AssistedInject constructor(
     }
 
     companion object {
-        private const val KEY_FORCE_SYNC = "force-sync"
-
-        fun oneTimeSyncWork(force: Boolean = false): OneTimeWorkRequest {
+        fun oneTimeSyncWork(): OneTimeWorkRequest {
             val data = Data.Builder()
                 .putAll(SyncWorker::class.delegatedData())
-                .putBoolean(KEY_FORCE_SYNC, force)
                 .build()
 
             return OneTimeWorkRequestBuilder<DelegatingWorker>()

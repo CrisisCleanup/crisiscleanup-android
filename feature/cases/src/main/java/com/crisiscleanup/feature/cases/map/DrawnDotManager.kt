@@ -1,4 +1,4 @@
-package com.crisiscleanup.feature.cases
+package com.crisiscleanup.feature.cases.map
 
 import android.util.Log
 import java.time.Clock

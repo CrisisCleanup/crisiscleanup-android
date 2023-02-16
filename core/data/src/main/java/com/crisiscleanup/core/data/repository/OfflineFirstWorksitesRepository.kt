@@ -24,6 +24,7 @@ import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull.WorkType
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -46,11 +47,11 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private val appLogger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : WorksitesRepository {
-    // TODO Defer to provider instead. So amount can vary according to (WifiManager) signal level or equivalent.
+    // TODO Defer to provider instead. So amount can vary according to (WifiManager) signal level or equivalent. Must track request timeouts and give feedback or adjust.
     /**
      * Number of worksites per query page.
      */
-    var worksitesQueryBasePageAmount: Int = 100
+    var worksitesQueryBasePageAmount: Int = 20
 
     /**
      * Amount of DB operations per transaction when caching worksites short data
@@ -59,6 +60,15 @@ class OfflineFirstWorksitesRepository @Inject constructor(
 
     override var isLoading = MutableStateFlow(false)
         private set
+
+    override fun streamWorksites(incidentId: Long, limit: Int, offset: Int): Flow<List<Worksite>> {
+        return worksiteDao.streamWorksites(incidentId, limit, offset)
+            .map { it.map(PopulatedWorksite::asExternalModel) }
+    }
+
+    override fun streamIncidentWorksitesCount(incidentId: Long): Flow<Int> {
+        return worksiteDao.streamWorksitesCount(incidentId)
+    }
 
     override suspend fun streamWorksitesMapVisual(
         incidentId: Long,
@@ -79,11 +89,6 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             offset
         )
             .map { it.map(PopulatedWorksiteMapVisual::asExternalModel) }
-    }
-
-    override fun streamWorksites(incidentId: Long, limit: Int, offset: Int): Flow<List<Worksite>> {
-        return worksiteDao.streamWorksites(incidentId, limit, offset)
-            .map { it.map(PopulatedWorksite::asExternalModel) }
     }
 
     override fun getWorksitesMapVisual(
@@ -167,7 +172,8 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         val count = networkWorksitesCount(incidentId, true)
 
         // TODO Make value configurable and responsive to network speed, battery, ...
-        val syncedCount = if (count > 100)
+        // TODO Set upper bound proportional to max memory allowed to app and average size of worksite data.
+        val syncedCount = if (count in 100 until 5000)
         // TODO This is short synced count not the full synced count. Revisit endpoint when paging is reliable and needs differentiation.
             syncWorksitesShortData(incidentId, syncStart)
         else syncWorksitesPagedData(incidentId, syncStart, count)
@@ -255,9 +261,9 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     override suspend fun refreshWorksites(
         incidentId: Long,
         force: Boolean
-    ) = withContext(ioDispatcher) {
+    ) = coroutineScope {
         if (incidentId == EmptyIncident.id) {
-            return@withContext
+            return@coroutineScope
         }
 
         // TODO Enforce single process syncing per incident since this may be very long running

@@ -4,6 +4,8 @@ import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.ApplicationResourceProvider
 import com.crisiscleanup.core.common.CommonInputValidator
 import com.crisiscleanup.core.common.InputValidator
+import com.crisiscleanup.core.common.event.CrisisCleanupTrimMemoryEventManager
+import com.crisiscleanup.core.common.event.TrimMemoryEventManager
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -24,4 +26,10 @@ interface ApplicationModule {
     fun bindsInputValidator(
         validator: CommonInputValidator
     ): InputValidator
+
+    @Singleton
+    @Binds
+    fun bindsTrimMemoryEventManager(
+        manager: CrisisCleanupTrimMemoryEventManager
+    ): TrimMemoryEventManager
 }

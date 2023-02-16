@@ -1,6 +1,5 @@
 package com.crisiscleanup.core.data.repository.fake
 
-import com.crisiscleanup.core.data.Synchronizer
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.model.data.Incident
 import kotlinx.coroutines.flow.Flow
@@ -37,9 +36,7 @@ class FakeIncidentsRepository @Inject constructor() : IncidentsRepository {
         return makeIncident(id, "Incident $id")
     }
 
-    override suspend fun syncWith(synchronizer: Synchronizer): Boolean {
-        return true
-    }
+    override suspend fun pullIncidents() {}
 }
 
 private fun makeIncident(id: Long, name: String) =

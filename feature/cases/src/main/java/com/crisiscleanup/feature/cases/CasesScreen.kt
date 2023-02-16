@@ -1,5 +1,6 @@
 package com.crisiscleanup.feature.cases
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -54,7 +55,6 @@ import com.google.maps.android.compose.TileOverlay
 import com.google.maps.android.compose.TileOverlayState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberTileOverlayState
-
 import com.crisiscleanup.core.mapmarker.R as mapmarkerR
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
@@ -102,11 +102,15 @@ internal fun CasesRoute(
         val worksitesOnMap by casesViewModel.worksitesMapMarkers.collectAsStateWithLifecycle()
         val mapCameraBounds by casesViewModel.incidentLocationBounds.collectAsStateWithLifecycle()
         val tileOverlayState = rememberTileOverlayState()
+        val tileChangeValue by casesViewModel.overviewTileDataChange
         val clearTileLayer = remember(casesViewModel) {
             { casesViewModel.clearTileLayer }
         }
-        val casesDotTileProvider = remember(casesViewModel.overviewTileDataSize) {
+        val casesDotTileProvider = remember(casesViewModel) {
             { casesViewModel.overviewMapTileProvider() }
+        }
+        val onMapLoaded = remember(casesViewModel) {
+            { casesViewModel.onMapLoaded() }
         }
         val onMapCameraChange = remember(casesViewModel) {
             { position: CameraPosition, projection: Projection?, activeChange: Boolean ->
@@ -120,9 +124,11 @@ internal fun CasesRoute(
             isLayerView = isLayerView,
             worksitesOnMap = worksitesOnMap,
             mapCameraBounds = mapCameraBounds,
+            tileChangeValue = tileChangeValue,
             tileOverlayState = tileOverlayState,
             clearTileLayer = clearTileLayer,
             casesDotTileProvider = casesDotTileProvider,
+            onMapLoaded = onMapLoaded,
             onMapCameraChange = onMapCameraChange,
         )
     } else {
@@ -170,9 +176,11 @@ internal fun CasesScreen(
     isLayerView: Boolean = false,
     worksitesOnMap: List<WorksiteGoogleMapMark> = emptyList(),
     mapCameraBounds: MapViewCameraBounds = MapViewCameraBoundsDefault,
+    tileChangeValue: Long = -1,
     clearTileLayer: () -> Boolean = { false },
     tileOverlayState: TileOverlayState = rememberTileOverlayState(),
     casesDotTileProvider: () -> TileProvider? = { null },
+    onMapLoaded: () -> Unit = {},
     onMapCameraChange: (CameraPosition, Projection?, Boolean) -> Unit = { _, _, _ -> },
 ) {
     Box(modifier.then(Modifier.fillMaxSize())) {
@@ -182,10 +190,12 @@ internal fun CasesScreen(
             CasesMapView(
                 mapCameraBounds,
                 worksitesOnMap,
+                tileChangeValue,
                 clearTileLayer,
                 tileOverlayState,
                 casesDotTileProvider,
-                onMapCameraChange = onMapCameraChange,
+                onMapLoaded,
+                onMapCameraChange,
             )
         }
         CasesOverlayActions(
@@ -200,9 +210,11 @@ internal fun CasesScreen(
 internal fun CasesMapView(
     mapCameraBounds: MapViewCameraBounds,
     worksitesOnMap: List<WorksiteGoogleMapMark> = emptyList(),
+    tileChangeValue: Long = -1,
     clearTileLayer: () -> Boolean = { false },
     tileOverlayState: TileOverlayState = rememberTileOverlayState(),
     casesDotTileProvider: () -> TileProvider? = { null },
+    onMapLoaded: () -> Unit = {},
     onMapCameraChange: (CameraPosition, Projection?, Boolean) -> Unit = { _, _, _ -> },
 ) {
     // TODO Profile and optimize recompositions when map is changed (by user) if possible.
@@ -240,6 +252,7 @@ internal fun CasesMapView(
         modifier = Modifier.fillMaxSize(),
         uiSettings = uiSettings,
         properties = mapProperties,
+        onMapLoaded = onMapLoaded,
         cameraPositionState = cameraPositionState,
     ) {
         // TODO Is it possible to cache? If so test recomposition. If not document why not.
@@ -249,13 +262,26 @@ internal fun CasesMapView(
             )
         }
 
-        casesDotTileProvider()?.let {
-            TileOverlay(
-                tileProvider = it,
-                state = tileOverlayState,
-            )
-            if (clearTileLayer()) {
-                tileOverlayState.clearTileCache()
+        if (tileChangeValue >= 0) {
+            casesDotTileProvider()?.let {
+                if (clearTileLayer()) {
+                    // TODO When inspection of state and overlay is possible remove the try/catch
+                    //      This is fine for now as the exception is just an escape from the method.
+                    try {
+                        // TODO This is not clearing as expected on API 29 at times. Unrelated to try/catch.
+                        tileOverlayState.clearTileCache()
+                    } catch (e: Exception) {
+                        if (e.message?.contains("is not used") == true) {
+                            Log.d("tile-overlay", "Ignoring unattached tile overlay state")
+                        } else {
+                            throw e
+                        }
+                    }
+                }
+                TileOverlay(
+                    tileProvider = it,
+                    state = tileOverlayState,
+                )
             }
         }
     }

@@ -8,17 +8,19 @@ import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.common.Syncer
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
+import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.model.data.UserData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -27,6 +29,8 @@ class MainActivityViewModel @Inject constructor(
     accountDataRepository: AccountDataRepository,
     incidentSelector: IncidentSelector,
     val appHeaderUiState: AppHeaderUiState,
+    incidentsRepository: IncidentsRepository,
+    worksitesRepository: WorksitesRepository,
     private val syncer: Syncer,
 ) : ViewModel() {
     val uiState: StateFlow<MainActivityUiState> = localAppPreferencesRepository.userData.map {
@@ -48,6 +52,17 @@ class MainActivityViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed()
     )
 
+    val showHeaderLoading = combine(
+        incidentsRepository.isLoading,
+        worksitesRepository.isLoading,
+    ) {
+            incidentsLoading,
+            worksitesLoading,
+        ->
+        incidentsLoading ||
+                worksitesLoading
+    }
+
     init {
         incidentSelector.incidentId
             .onEach {
@@ -57,9 +72,7 @@ class MainActivityViewModel @Inject constructor(
     }
 
     private fun syncIncidents() {
-        viewModelScope.launch {
-            syncer.sync()
-        }
+        syncer.sync()
     }
 }
 

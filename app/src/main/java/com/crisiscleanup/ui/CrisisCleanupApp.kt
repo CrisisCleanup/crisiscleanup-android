@@ -39,7 +39,6 @@ import com.crisiscleanup.feature.cases.navigation.navigateToSelectIncident
 import com.crisiscleanup.feature.cases.ui.CasesAction
 import com.crisiscleanup.navigation.CrisisCleanupNavHost
 import com.crisiscleanup.navigation.TopLevelDestination
-import kotlinx.datetime.Clock
 import com.crisiscleanup.feature.cases.R as casesR
 
 @OptIn(
@@ -54,6 +53,7 @@ fun CrisisCleanupApp(
         windowSizeClass = windowSizeClass
     ),
     mainActivityViewModel: MainActivityViewModel = hiltViewModel(),
+    // TODO Refactor components out of cases view model
     casesViewModel: CasesViewModel = hiltViewModel(),
 ) {
     CrisisCleanupBackground {
@@ -86,15 +86,11 @@ fun CrisisCleanupApp(
             } else {
                 val accountData = (authState as AuthState.Authenticated).accountData
                 val profilePictureUri by remember { mutableStateOf(accountData.profilePictureUri) }
-                val isAccountExpired by remember {
-                    derivedStateOf { accountData.tokenExpiry < Clock.System.now() }
-                }
+                val isAccountExpired by remember { mutableStateOf(accountData.isTokenExpired) }
                 val appHeaderBar = mainActivityViewModel.appHeaderUiState
                 val appHeaderState by appHeaderBar.appHeaderState.collectAsStateWithLifecycle()
                 val appHeaderTitle by appHeaderBar.title.collectAsStateWithLifecycle()
-                val isHeaderLoading by casesViewModel.isLoading.collectAsStateWithLifecycle(
-                    true
-                )
+                val isHeaderLoading by mainActivityViewModel.showHeaderLoading.collectAsState(false)
 
                 val onCasesAction = remember(mainActivityViewModel) {
                     { casesAction: CasesAction ->
@@ -110,6 +106,7 @@ fun CrisisCleanupApp(
                         }
                     }
                 }
+                // TODO Refactor into generic header search provider with listeners. Move into MainActivityViewModel.
                 val casesSearchQuery =
                     remember(casesViewModel) { { casesViewModel.casesSearchQuery.value } }
                 val updateCasesSearchQuery = remember(casesViewModel) {

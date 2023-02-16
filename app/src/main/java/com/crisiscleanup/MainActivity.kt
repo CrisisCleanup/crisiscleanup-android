@@ -16,6 +16,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.metrics.performance.JankStats
 import com.crisiscleanup.MainActivityUiState.Loading
 import com.crisiscleanup.MainActivityUiState.Success
+import com.crisiscleanup.core.common.event.TrimMemoryEventManager
 import com.crisiscleanup.core.data.util.NetworkMonitor
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.model.data.DarkThemeConfig
@@ -41,6 +42,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var networkMonitor: NetworkMonitor
+
+    @Inject
+    lateinit var trimMemoryEventManager: TrimMemoryEventManager
 
     val viewModel: MainActivityViewModel by viewModels()
 
@@ -107,6 +111,11 @@ class MainActivity : ComponentActivity() {
     override fun onPause() {
         super.onPause()
         lazyStats.get().isTrackingEnabled = false
+    }
+
+    override fun onTrimMemory(level: Int) {
+        trimMemoryEventManager.onTrimMemory(level)
+        super.onTrimMemory(level)
     }
 }
 

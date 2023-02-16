@@ -1,9 +1,7 @@
 package com.crisiscleanup.core.data.repository
 
-import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
-import com.crisiscleanup.core.data.Synchronizer
 import com.crisiscleanup.core.data.model.asEntity
 import com.crisiscleanup.core.data.model.incidentLocationCrossReferences
 import com.crisiscleanup.core.data.model.locationsAsEntity
@@ -13,13 +11,14 @@ import com.crisiscleanup.core.database.dao.LocationDaoPlus
 import com.crisiscleanup.core.database.dao.LocationEntitySource
 import com.crisiscleanup.core.database.model.PopulatedIncident
 import com.crisiscleanup.core.database.model.asExternalModel
+import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.tryGetException
 import com.crisiscleanup.core.network.model.NetworkIncident
 import com.crisiscleanup.core.network.model.NetworkIncidentLocation
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -33,7 +32,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val incidentDaoPlus: IncidentDaoPlus,
     private val locationDaoPlus: LocationDaoPlus,
-    private val appLogger: AppLogger,
+    private val appPreferences: LocalAppPreferencesDataSource,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : IncidentsRepository {
     private var isSyncing = MutableStateFlow(false)
@@ -73,7 +72,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     /**
      * Possibly syncs and caches incidents data
      */
-    private suspend fun syncInternal() = withContext(ioDispatcher) {
+    private suspend fun syncInternal() = coroutineScope {
         isSyncing.value = true
         try {
             val networkIncidents = networkDataSource.getIncidents(
@@ -107,17 +106,14 @@ class OfflineFirstIncidentsRepository @Inject constructor(
         }
     }
 
-    override suspend fun syncWith(synchronizer: Synchronizer): Boolean {
-        return try {
+    override suspend fun pullIncidents() = coroutineScope {
+        var isSuccessful = false
+        try {
             syncInternal()
-            true
-        } catch (e: Exception) {
-            if (e is CancellationException) {
-                throw e
-            }
-
-            appLogger.logException(e)
-            false
+            isSuccessful = true
+        } finally {
+            // Treat coroutine cancellation as unsuccessful for now
+            appPreferences.setSyncAttempt(isSuccessful)
         }
     }
 }

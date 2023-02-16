@@ -5,7 +5,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.model.data.emptyAccountData
-import kotlinx.datetime.Clock
 
 class LoginInputData(emailAddress: String = "", password: String = "") {
     var emailAddress by mutableStateOf(emailAddress)
@@ -33,5 +32,5 @@ data class AuthenticationState(
     val hasAccessToken: Boolean = false,
 ) {
     val isTokenExpired: Boolean
-        get() = accountData.tokenExpiry <= Clock.System.now()
+        get() = accountData.isTokenExpired
 }

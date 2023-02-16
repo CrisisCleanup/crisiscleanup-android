@@ -1,6 +1,6 @@
-package com.crisiscleanup.feature.cases
+package com.crisiscleanup.feature.cases.map
 
-import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
+import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.LocationsRepository
@@ -23,12 +23,15 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 
-class CasesMapBoundsManager constructor(
+internal class CasesMapBoundsManager constructor(
     coroutineScope: CoroutineScope,
     incidentSelector: IncidentSelector,
     private val locationsRepository: LocationsRepository,
-    @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
+    @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) {
+    var isMapLoaded = false
+        private set
+
     private var _mapCameraBounds = MutableStateFlow(MapViewCameraBoundsDefault)
     var mapCameraBounds = _mapCameraBounds.asStateFlow()
 
@@ -96,9 +99,12 @@ class CasesMapBoundsManager constructor(
                         }
 
                         bounds = locationBounds.build()
+                        if (isMapLoaded) {
+                            _mapCameraBounds.value = MapViewCameraBounds(bounds)
+                        } else {
+                            cacheBounds(bounds)
+                        }
                     }
-
-                    _mapCameraBounds.value = MapViewCameraBounds(bounds)
                 } finally {
                     isUpdatingCameraBounds.value = false
                 }
@@ -111,6 +117,25 @@ class CasesMapBoundsManager constructor(
 
     fun cacheBounds(bounds: LatLngBounds) {
         mapBoundsCache = bounds
+    }
+
+    // TODO Call when it becomes possible to determine newly created maps
+    //      There doesn't seem to be an API for such with Compose maps
+    fun onNewMap() {
+        isMapLoaded = false
+    }
+
+    /**
+     * @return true if state is changing from not loaded->loaded or false if loaded signal was already received
+     */
+    fun onMapLoaded(): Boolean {
+        if (isMapLoaded) {
+            return false
+        }
+        isMapLoaded = true
+
+        restoreBounds()
+        return true
     }
 
     fun restoreBounds() {

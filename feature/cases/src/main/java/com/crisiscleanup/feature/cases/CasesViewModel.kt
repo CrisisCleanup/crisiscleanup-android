@@ -1,11 +1,14 @@
 package com.crisiscleanup.feature.cases
 
+import android.content.ComponentCallbacks2
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.common.Syncer
+import com.crisiscleanup.core.common.event.TrimMemoryEventManager
+import com.crisiscleanup.core.common.event.TrimMemoryListener
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.IncidentSelector
@@ -15,6 +18,9 @@ import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.domain.LoadIncidentDataUseCase
 import com.crisiscleanup.core.mapmarker.MapCaseDotProvider
 import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.feature.cases.map.CasesMapBoundsManager
+import com.crisiscleanup.feature.cases.map.CasesMapTileLayerManager
+import com.crisiscleanup.feature.cases.map.CasesOverviewMapTileRenderer
 import com.crisiscleanup.feature.cases.model.CoordinateBounds
 import com.crisiscleanup.feature.cases.model.asWorksiteGoogleMapMark
 import com.google.android.gms.maps.Projection
@@ -30,7 +36,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -43,11 +48,12 @@ class CasesViewModel @Inject constructor(
     appHeaderUiState: AppHeaderUiState,
     loadIncidentDataUseCase: LoadIncidentDataUseCase,
     mapCaseDotProvider: MapCaseDotProvider,
-    private val mapTileRenderer: CaseDotsMapTileRenderer,
+    private val mapTileRenderer: CasesOverviewMapTileRenderer,
     private val tileProvider: TileProvider,
     private val syncer: Syncer,
+    trimMemoryEventManager: TrimMemoryEventManager,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
-) : ViewModel() {
+) : ViewModel(), TrimMemoryListener {
     val incidentsData = loadIncidentDataUseCase()
 
     private val qsm = CasesQueryStateManager(
@@ -57,11 +63,6 @@ class CasesViewModel @Inject constructor(
     )
 
     val isTableView = qsm.isTableView
-
-    /**
-     * Indicates map should refresh when data size changes as tiles could have updated
-     */
-    val overviewTileDataSize = mapTileRenderer.tileDataSize
 
     // TODO Is it possible use stateFlow in Compose deferring evaluation until needed in the hierarchy like with a remembered lambda? Maybe not so research and test with the layout inspector.
     var casesSearchQuery = mutableStateOf("")
@@ -87,24 +88,6 @@ class CasesViewModel @Inject constructor(
         isLayerView.value = !isLayerView.value
     }
 
-    /**
-     * Guards against calling tileOverlayState.clearTileCache before TileOverlay is sufficiently loaded.
-     */
-    // TODO Search for updated documentation on a more elegant technique once clearTileCache has been available for some time.
-    private var incidentChangeCounter = 0
-    private var _clearTileLayer: Boolean = false
-    var clearTileLayer: Boolean
-        get() {
-            if (_clearTileLayer) {
-                _clearTileLayer = false
-                return true
-            }
-            return false
-        }
-        private set(value) {
-            _clearTileLayer = value
-        }
-
     private val mapBoundsManager = CasesMapBoundsManager(
         viewModelScope,
         incidentSelector,
@@ -115,20 +98,14 @@ class CasesViewModel @Inject constructor(
     var incidentLocationBounds = mapBoundsManager.mapCameraBounds
 
     val isSyncingIncidents = incidentsRepository.isLoading
-    val isLoading = combine(
-        isSyncingIncidents,
-        worksitesRepository.isLoading,
+    val isMapBusy = combine(
         mapBoundsManager.isDeterminingBounds,
         mapTileRenderer.isBusy,
     ) {
-            incidentsLoading,
-            worksitesLoading,
             isMapBounding,
             rendererBusy,
         ->
-        incidentsLoading ||
-                worksitesLoading ||
-                isMapBounding ||
+        isMapBounding ||
                 rendererBusy
     }
 
@@ -158,7 +135,7 @@ class CasesViewModel @Inject constructor(
                         // TODO Make parameter.
                         //      Decide how to prioritize when there are plenty if not already documented.
                         //      At a minimum show a visual with number of markers displayed/total.
-                        1000,
+                        250,
                         0,
                     ).map { mark -> mark.asWorksiteGoogleMapMark(mapCaseDotProvider) }
 
@@ -174,42 +151,51 @@ class CasesViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
+    private val casesMapTileManager = CasesMapTileLayerManager(
+        viewModelScope,
+        incidentSelector,
+        worksitesRepository,
+        mapBoundsManager,
+    )
+    val overviewTileDataChange = casesMapTileManager.overviewTileDataChange
+    val clearTileLayer: Boolean
+        get() = casesMapTileManager.clearTileLayer
+
     init {
-        mapTileRenderer.setScope(viewModelScope)
+        trimMemoryEventManager.addListener(this)
+
+        mapTileRenderer.enableTileBoundaries()
 
         qsm.worksiteQueryState
             .onEach {
                 val noTiling = it.isTableView ||
                         incidentSelector.incidentId.value == EmptyIncident.id ||
-                        !mapTileRenderer.rendersAt(it.zoom)
-                mapTileRenderer.setRendering(!noTiling)
+                        !mapTileRenderer.rendersAt(it.zoom) ||
+                        !mapBoundsManager.isMapLoaded
+                mapTileRenderer.setRenderState(noTiling, it.zoom)
+                casesMapTileManager.setTilingState(noTiling, it.zoom)
             }
             .launchIn(viewModelScope)
 
         incidentSelector.incidentId.onEach {
             mapTileRenderer.setIncident(it)
-
-            if (it != EmptyIncident.id) {
-                // Allow clearing tiles only after the incident has been changed at least once
-                if (incidentChangeCounter > 0) {
-                    clearTileLayer = true
-                } else {
-                    incidentChangeCounter++
-                }
-            }
         }.launchIn(viewModelScope)
     }
 
     fun refreshIncidentsData() {
-        viewModelScope.launch {
-            syncer.sync(true)
-        }
+        syncer.sync(true)
     }
 
     fun overviewMapTileProvider(): TileProvider {
         // Do not try and be efficient here by returning null when tiling is not necessary (when used in compose).
         // Doing so will cause errors with TileOverlay and TileOverlayState#clearTileCache.
         return tileProvider
+    }
+
+    fun onMapLoaded() {
+        if (mapBoundsManager.onMapLoaded()) {
+            casesMapTileManager.clearTiles()
+        }
     }
 
     fun onMapCameraChange(
@@ -219,13 +205,25 @@ class CasesViewModel @Inject constructor(
     ) {
         qsm.mapZoom.value = cameraPosition.zoom
 
-        projection?.let {
-            val visibleBounds = it.visibleRegion.latLngBounds
-            qsm.mapBounds.value = CoordinateBounds(
-                visibleBounds.southwest,
-                visibleBounds.northeast,
-            )
-            mapBoundsManager.cacheBounds(visibleBounds)
+        if (mapBoundsManager.isMapLoaded) {
+            projection?.let {
+                val visibleBounds = it.visibleRegion.latLngBounds
+                qsm.mapBounds.value = CoordinateBounds(
+                    visibleBounds.southwest,
+                    visibleBounds.northeast,
+                )
+                mapBoundsManager.cacheBounds(visibleBounds)
+            }
+        }
+    }
+
+    // TrimMemoryListener
+
+    override fun onTrimMemory(level: Int) {
+        when (level) {
+            ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW -> {
+                casesMapTileManager.clearTiles()
+            }
         }
     }
 }

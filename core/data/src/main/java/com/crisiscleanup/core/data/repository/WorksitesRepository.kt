@@ -29,6 +29,8 @@ interface WorksitesRepository {
      */
     fun streamWorksites(incidentId: Long, limit: Int, offset: Int): Flow<List<Worksite>>
 
+    fun streamIncidentWorksitesCount(id: Long): Flow<Int>
+
     fun getWorksitesMapVisual(incidentId: Long, limit: Int, offset: Int): List<WorksiteMapMark>
 
     fun getWorksitesMapVisual(

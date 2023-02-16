@@ -20,13 +20,13 @@ private const val SyncNotificationChannelID = "SyncNotificationChannel"
 // This name should not be changed otherwise the app may have concurrent sync requests running
 internal const val SyncWorkName = "SyncWorkName"
 
-fun scheduleSync(context: Context, force: Boolean = false) {
+fun scheduleSync(context: Context) {
     WorkManager.getInstance(context).apply {
         // Run sync and ensure only one sync worker runs at any time
         enqueueUniqueWork(
             SyncWorkName,
             ExistingWorkPolicy.APPEND_OR_REPLACE,
-            SyncWorker.oneTimeSyncWork(force)
+            SyncWorker.oneTimeSyncWork()
         )
     }
 }

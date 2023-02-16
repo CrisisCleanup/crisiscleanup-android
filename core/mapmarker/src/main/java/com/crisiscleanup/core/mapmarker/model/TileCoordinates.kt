@@ -6,12 +6,12 @@ import kotlin.math.exp
 import kotlin.math.ln
 import kotlin.math.sin
 
-private const val halfPi = Math.PI / 2
-private const val twoPi = 2 * Math.PI
-private const val fourPi = 4 * Math.PI
+private const val HALF_PI = Math.PI / 2
+private const val TWO_PI = 2 * Math.PI
+private const val FOUR_PI = 4 * Math.PI
 
 // From https://stackoverflow.com/questions/23457916/how-to-get-latitude-and-longitude-bounds-from-google-maps-x-y-and-zoom-parameter
-private fun yToLat(yNorm: Double) = Math.toDegrees(2 * atan(exp(twoPi * (0.5 - yNorm))) - halfPi)
+private fun yToLat(yNorm: Double) = Math.toDegrees(2 * atan(exp(TWO_PI * (0.5 - yNorm))) - HALF_PI)
 
 data class TileCoordinates(
     val x: Int,
@@ -63,7 +63,7 @@ data class TileCoordinates(
         // Truncating to 0.9999 effectively limits latitude to 89.189. This is
         // about a third of a tile past the edge of the world tile.
         siny = siny.coerceAtLeast(-0.9999).coerceAtMost(0.9999)
-        var yNorm = 0.5 - ln((1 + siny) / (1 - siny)) / fourPi
+        var yNorm = 0.5 - ln((1 + siny) / (1 - siny)) / FOUR_PI
         yNorm = (yNorm * maxIndex) % 1
 
         return Pair(xNorm, yNorm)

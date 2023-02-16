@@ -143,6 +143,10 @@ interface WorksiteDao {
     fun getWorksitesCount(incidentId: Long): Int
 
     @Transaction
+    @Query("SELECT COUNT(id) FROM worksites_root WHERE incident_id=:incidentId")
+    fun streamWorksitesCount(incidentId: Long): Flow<Int>
+
+    @Transaction
     @Query(
         """
         INSERT OR ROLLBACK INTO worksites_root (
