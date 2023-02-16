@@ -18,6 +18,7 @@ import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.domain.LoadIncidentDataUseCase
 import com.crisiscleanup.core.mapmarker.MapCaseDotProvider
 import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.ui.SearchManager
 import com.crisiscleanup.feature.cases.map.CasesMapBoundsManager
 import com.crisiscleanup.feature.cases.map.CasesMapTileLayerManager
 import com.crisiscleanup.feature.cases.map.CasesOverviewMapTileRenderer
@@ -50,6 +51,7 @@ class CasesViewModel @Inject constructor(
     mapCaseDotProvider: MapCaseDotProvider,
     private val mapTileRenderer: CasesOverviewMapTileRenderer,
     private val tileProvider: TileProvider,
+    searchManager: SearchManager,
     private val syncer: Syncer,
     trimMemoryEventManager: TrimMemoryEventManager,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
@@ -63,15 +65,6 @@ class CasesViewModel @Inject constructor(
     )
 
     val isTableView = qsm.isTableView
-
-    // TODO Is it possible use stateFlow in Compose deferring evaluation until needed in the hierarchy like with a remembered lambda? Maybe not so research and test with the layout inspector.
-    var casesSearchQuery = mutableStateOf("")
-        private set
-
-    fun updateCasesSearchQuery(q: String) {
-        casesSearchQuery.value = q
-        qsm.casesSearchQueryFlow.value = q
-    }
 
     fun setContentViewType(isTableView: Boolean) {
         this.isTableView.value = isTableView
@@ -165,6 +158,10 @@ class CasesViewModel @Inject constructor(
         trimMemoryEventManager.addListener(this)
 
         mapTileRenderer.enableTileBoundaries()
+
+        searchManager.searchQueryFlow.onEach {
+            qsm.casesSearchQueryFlow.value = it
+        }.launchIn(viewModelScope)
 
         qsm.worksiteQueryState
             .onEach {

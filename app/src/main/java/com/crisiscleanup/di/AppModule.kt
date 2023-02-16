@@ -5,8 +5,10 @@ import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.network.RetrofitInterceptorProvider
+import com.crisiscleanup.core.ui.SearchManager
 import com.crisiscleanup.log.CrisisCleanupAppLogger
 import com.crisiscleanup.network.CrisisCleanupInterceptorProvider
+import com.crisiscleanup.ui.AppSearchManager
 import com.crisiscleanup.ui.CrisisCleanupAppHeaderUiState
 import dagger.Binds
 import dagger.Module
@@ -34,4 +36,8 @@ interface AppModule {
     @Singleton
     @Binds
     fun bindsAppHeaderUiState(headerUiState: CrisisCleanupAppHeaderUiState): AppHeaderUiState
+
+    @Singleton
+    @Binds
+    fun bindSearchManager(searchManager: AppSearchManager): SearchManager
 }

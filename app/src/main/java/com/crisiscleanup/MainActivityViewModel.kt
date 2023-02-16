@@ -13,6 +13,7 @@ import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.model.data.UserData
+import com.crisiscleanup.core.ui.SearchManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -29,6 +30,7 @@ class MainActivityViewModel @Inject constructor(
     accountDataRepository: AccountDataRepository,
     incidentSelector: IncidentSelector,
     val appHeaderUiState: AppHeaderUiState,
+    val searchManager: SearchManager,
     incidentsRepository: IncidentsRepository,
     worksitesRepository: WorksitesRepository,
     private val syncer: Syncer,

@@ -68,7 +68,6 @@ import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.icon.Icon.DrawableResourceIcon
 import com.crisiscleanup.core.designsystem.icon.Icon.ImageVectorIcon
 import com.crisiscleanup.feature.authentication.AuthenticateScreen
-import com.crisiscleanup.feature.cases.CasesViewModel
 import com.crisiscleanup.feature.cases.navigation.navigateToSelectIncident
 import com.crisiscleanup.feature.cases.ui.CasesAction
 import com.crisiscleanup.navigation.CrisisCleanupNavHost
@@ -84,8 +83,6 @@ fun CrisisCleanupApp(
         windowSizeClass = windowSizeClass
     ),
     mainActivityViewModel: MainActivityViewModel = hiltViewModel(),
-    // TODO Refactor components out of cases view model
-    casesViewModel: CasesViewModel = hiltViewModel(),
 ) {
     CrisisCleanupBackground {
         Box(Modifier.fillMaxSize()) {
@@ -123,6 +120,12 @@ fun CrisisCleanupApp(
                 val appHeaderTitle by appHeaderBar.title.collectAsStateWithLifecycle()
                 val isHeaderLoading by mainActivityViewModel.showHeaderLoading.collectAsState(false)
 
+                val appSearchQuery =
+                    remember(mainActivityViewModel) { { mainActivityViewModel.searchManager.searchQuery.value } }
+                val updateAppSearchQuery = remember(mainActivityViewModel) {
+                    { q: String -> mainActivityViewModel.searchManager.updateSearchQuery(q) }
+                }
+
                 val onCasesAction = remember(mainActivityViewModel) {
                     { casesAction: CasesAction ->
                         when (casesAction) {
@@ -136,12 +139,6 @@ fun CrisisCleanupApp(
                             else -> {}
                         }
                     }
-                }
-                // TODO Refactor into generic header search provider with listeners. Move into MainActivityViewModel.
-                val casesSearchQuery =
-                    remember(casesViewModel) { { casesViewModel.casesSearchQuery.value } }
-                val updateCasesSearchQuery = remember(casesViewModel) {
-                    { q: String -> casesViewModel.updateCasesSearchQuery(q) }
                 }
 
                 val openIncidentsSelect = remember(appHeaderState) {
@@ -163,8 +160,8 @@ fun CrisisCleanupApp(
                     isAccountExpired,
                     openIncidentsSelect,
                     onCasesAction,
-                    casesSearchQuery,
-                    updateCasesSearchQuery,
+                    appSearchQuery,
+                    updateAppSearchQuery,
                 )
             }
         }
