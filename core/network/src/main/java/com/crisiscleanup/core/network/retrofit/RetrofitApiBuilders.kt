@@ -10,6 +10,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
+import java.util.concurrent.TimeUnit
 import javax.inject.Qualifier
 
 private const val CrisisCleanupApiBaseUrl = BuildConfig.API_BASE_URL
@@ -26,6 +27,10 @@ internal fun getCrisisCleanupApiBuilder(
     appEnv: AppEnv,
 ): Retrofit {
     val clientBuilder = OkHttpClient.Builder()
+        // TODO Allow user configuration? Or adjust dynamically according to device and network conditions?
+        .connectTimeout(60, TimeUnit.SECONDS)
+        .readTimeout(60, TimeUnit.SECONDS)
+        .writeTimeout(60, TimeUnit.SECONDS)
 
     if (appEnv.isDebuggable) {
         clientBuilder.addInterceptor(HttpLoggingInterceptor().apply {

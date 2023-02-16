@@ -52,7 +52,7 @@ data class NetworkWorksiteFull(
     @SerialName("pluscode")
     val plusCode: String? = null,
     @SerialName("postal_code")
-    val postalCode: String,
+    val postalCode: String?,
     @SerialName("reported_by")
     val reportedBy: Long?,
     // TODO This has disappeared?
@@ -108,9 +108,9 @@ data class NetworkWorksiteFull(
     data class Time(
         val id: Long,
         @SerialName("created_by_name")
-        val createdByName: String,
+        val createdByName: String?,
         @SerialName("created_by_org")
-        val createdByOrg: Long,
+        val createdByOrg: Long?,
         val seconds: Int,
         val volunteers: Int,
         val worksite: Int
@@ -194,7 +194,7 @@ data class NetworkWorksiteShort(
     val location: NetworkWorksiteFull.Location,
     val name: String,
     @SerialName("postal_code")
-    val postalCode: String,
+    val postalCode: String?,
     val state: String,
     val svi: Float?,
     @Serializable(InstantSerializer::class)
