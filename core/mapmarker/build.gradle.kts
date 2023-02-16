@@ -16,7 +16,7 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.runtime)
 
-    implementation(libs.google.maps.playservices)
+    implementation(libs.playservices.maps)
 
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)

@@ -19,5 +19,5 @@ dependencies {
 
     implementation(libs.androidx.constraintlayout)
     implementation(libs.google.maps.compose)
-    implementation(libs.google.maps.playservices)
+    implementation(libs.playservices.maps)
 }
