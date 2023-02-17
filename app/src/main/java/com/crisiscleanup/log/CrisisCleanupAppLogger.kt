@@ -9,9 +9,17 @@ import javax.inject.Singleton
 
 @Singleton
 class CrisisCleanupAppLogger @Inject constructor(
-    private val appEnv: AppEnv
+    private val appEnv: AppEnv,
 ) : AppLogger {
     private val crashlytics = FirebaseCrashlytics.getInstance()
+
+    override var tag: String? = null
+
+    override fun logDebug(vararg logs: Any) {
+        if (appEnv.isDebuggable) {
+            Log.d(tag, logs.joinToString(" "))
+        }
+    }
 
     override fun logException(e: Exception) {
         crashlytics.recordException(e)

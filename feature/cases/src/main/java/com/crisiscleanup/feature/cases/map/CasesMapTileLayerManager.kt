@@ -79,7 +79,7 @@ internal class CasesMapTileLayerManager(
             .launchIn(coroutineScope)
 
         incidentWorksitesCount
-            .debounce(60)
+            .debounce(1000)
             .onEach {
                 clearTileLayer = true
                 val key = incidentSelector.incidentId.value + it

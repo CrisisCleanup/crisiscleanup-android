@@ -1,6 +1,8 @@
 package com.crisiscleanup.core.common.di
 
+import com.crisiscleanup.core.common.AndroidAppMemoryStats
 import com.crisiscleanup.core.common.AndroidResourceProvider
+import com.crisiscleanup.core.common.AppMemoryStats
 import com.crisiscleanup.core.common.ApplicationResourceProvider
 import com.crisiscleanup.core.common.CommonInputValidator
 import com.crisiscleanup.core.common.InputValidator
@@ -32,4 +34,7 @@ interface ApplicationModule {
     fun bindsTrimMemoryEventManager(
         manager: CrisisCleanupTrimMemoryEventManager
     ): TrimMemoryEventManager
+
+    @Binds
+    fun bindsMemoryStats(memoryStats: AndroidAppMemoryStats): AppMemoryStats
 }

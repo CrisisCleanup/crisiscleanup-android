@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.data.repository
 
+import com.crisiscleanup.core.common.AppMemoryStats
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
@@ -44,6 +45,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private val worksitesSyncStatsDao: WorksitesSyncStatsDao,
     private val worksiteDao: WorksiteDao,
     private val worksiteDaoPlus: WorksiteDaoPlus,
+    private val memoryStats: AppMemoryStats,
     private val appLogger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : WorksitesRepository {
@@ -58,16 +60,22 @@ class OfflineFirstWorksitesRepository @Inject constructor(
      */
     var worksitesDbOperationAmount: Int = 300
 
+    private val allWorksitesMemoryThreshold = 100
+
     override var isLoading = MutableStateFlow(false)
         private set
+
+    init {
+        appLogger.tag = "worksites-repo"
+    }
 
     override fun streamWorksites(incidentId: Long, limit: Int, offset: Int): Flow<List<Worksite>> {
         return worksiteDao.streamWorksites(incidentId, limit, offset)
             .map { it.map(PopulatedWorksite::asExternalModel) }
     }
 
-    override fun streamIncidentWorksitesCount(incidentId: Long): Flow<Int> {
-        return worksiteDao.streamWorksitesCount(incidentId)
+    override fun streamIncidentWorksitesCount(id: Long): Flow<Int> {
+        return worksiteDao.streamWorksitesCount(id)
     }
 
     override suspend fun streamWorksitesMapVisual(
@@ -171,12 +179,16 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     ): WorksitesSyncStats {
         val count = networkWorksitesCount(incidentId, true)
 
-        // TODO Make value configurable and responsive to network speed, battery, ...
-        // TODO Set upper bound proportional to max memory allowed to app and average size of worksite data.
-        val syncedCount = if (count in 100 until 5000)
-        // TODO This is short synced count not the full synced count. Revisit endpoint when paging is reliable and needs differentiation.
-            syncWorksitesShortData(incidentId, syncStart)
-        else syncWorksitesPagedData(incidentId, syncStart, count)
+        // TODO Make value configurable and responsive to device resources, network speed, battery, ...
+        val syncedCount =
+            if (count > 300 && memoryStats.availableMemory >= allWorksitesMemoryThreshold) {
+                // TODO This is short synced count not the full synced count. Revisit endpoint when paging is reliable and needs differentiation.
+                syncWorksitesShortData(incidentId, syncStart)
+            } else {
+                appLogger.logDebug("Paging worksites request due to constrained memory ${memoryStats.availableMemory}")
+                // TODO Alert the device is lacking and the experience will be degraded
+                syncWorksitesPagedData(incidentId, syncStart, count)
+            }
 
         val syncSeconds = syncStart.epochSeconds
         return WorksitesSyncStats(

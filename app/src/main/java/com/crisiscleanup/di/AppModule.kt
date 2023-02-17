@@ -23,7 +23,6 @@ interface AppModule {
     @Binds
     fun bindsCrisisCleanupAppEnv(appEnv: CrisisCleanupAppEnv): AppEnv
 
-    @Singleton
     @Binds
     fun bindsCrisisCleanupAppLogger(logger: CrisisCleanupAppLogger): AppLogger
 
