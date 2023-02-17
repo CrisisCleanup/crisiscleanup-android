@@ -24,7 +24,6 @@ import kotlinx.datetime.Instant
         Index(value = ["incident_id", "network_id", "local_global_uuid"], unique = true),
         // Locally modified worksites for querying sync queue and showing pending syncs.
         Index(value = ["is_local_modified", "sync_attempt"]),
-
     ],
 )
 data class WorksiteRootEntity(

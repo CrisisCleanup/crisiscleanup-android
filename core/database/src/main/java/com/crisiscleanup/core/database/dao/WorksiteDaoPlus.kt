@@ -20,7 +20,6 @@ class WorksiteDaoPlus @Inject constructor(
         worksiteIds: Set<Long>,
         worksiteDao: WorksiteDao,
     ): Map<Long, WorksiteLocalModifiedAt> {
-
         val worksitesUpdatedAt = worksiteDao.getWorksitesLocalModifiedAt(
             incidentId,
             worksiteIds,
@@ -89,15 +88,15 @@ class WorksiteDaoPlus @Inject constructor(
                     // TODO Sync more related data.
 
                 } else if (!isLocallyModified) {
-                    val expectedLocalModifiedAt = modifiedAt.localModifiedAt
                     worksiteDao.syncUpdateWorksiteRoot(
-                        expectedLocalModifiedAt = expectedLocalModifiedAt,
+                        id = modifiedAt.id,
+                        expectedLocalModifiedAt = modifiedAt.localModifiedAt,
                         syncedAt = syncedAt,
                         networkId = worksite.networkId,
                         incidentId = worksite.incidentId,
                     )
                     worksiteDao.syncUpdateWorksite(
-                        expectedLocalModifiedAt = expectedLocalModifiedAt,
+                        id = modifiedAt.id,
                         networkId = worksite.networkId,
                         incidentId = worksite.incidentId,
                         address = worksite.address,

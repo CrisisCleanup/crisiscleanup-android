@@ -58,7 +58,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     /**
      * Amount of DB operations per transaction when caching worksites short data
      */
-    var worksitesDbOperationAmount: Int = 300
+    var worksitesDbOperationAmount: Int = 500
 
     private val allWorksitesMemoryThreshold = 100
 
@@ -181,7 +181,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
 
         // TODO Make value configurable and responsive to device resources, network speed, battery, ...
         val syncedCount =
-            if (count > 100 && memoryStats.availableMemory >= allWorksitesMemoryThreshold) {
+            if (memoryStats.availableMemory >= allWorksitesMemoryThreshold) {
                 // TODO This is short synced count not the full synced count. Revisit endpoint when paging is reliable and needs differentiation.
                 syncWorksitesShortData(incidentId, syncStart)
             } else {

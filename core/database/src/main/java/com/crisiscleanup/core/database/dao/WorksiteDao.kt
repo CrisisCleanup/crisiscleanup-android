@@ -88,14 +88,14 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
-        SELECT network_id, local_modified_at, is_local_modified
+        SELECT id, network_id, local_modified_at, is_local_modified
         FROM worksites_root
         WHERE incident_id=:incidentId AND network_id IN (:worksiteIds)
         """
     )
     fun getWorksitesLocalModifiedAt(
         incidentId: Long,
-        worksiteIds: Set<Long>,
+        worksiteIds: Collection<Long>,
     ): List<WorksiteLocalModifiedAt>
 
     @Transaction
@@ -179,10 +179,11 @@ interface WorksiteDao {
         sync_attempt=0,
         is_local_modified=0,
         incident_id=:incidentId
-        WHERE network_id=:networkId AND local_global_uuid='' AND local_modified_at = :expectedLocalModifiedAt
+        WHERE id=:id AND network_id=:networkId AND local_modified_at=:expectedLocalModifiedAt
         """
     )
     fun syncUpdateWorksiteRoot(
+        id: Long,
         expectedLocalModifiedAt: Instant,
         syncedAt: Instant,
         networkId: Long,
@@ -218,11 +219,11 @@ interface WorksiteDao {
         svi             =:svi,
         what3Words      =COALESCE(:what3Words, what3Words),
         updated_at      =:updatedAt
-        WHERE id=(SELECT id from worksites_root WHERE network_id=:networkId AND local_global_uuid='' AND local_modified_at = :expectedLocalModifiedAt)
+        WHERE id=:id AND network_id=:networkId
         """
     )
     fun syncUpdateWorksite(
-        expectedLocalModifiedAt: Instant,
+        id: Long,
         networkId: Long,
         incidentId: Long,
         address: String,
