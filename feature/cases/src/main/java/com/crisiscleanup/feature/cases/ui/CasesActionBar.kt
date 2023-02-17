@@ -75,8 +75,8 @@ internal fun CasesZoomBar(
         modifier,
         verticalArrangement = Arrangement.spacedBy(zoomBarSpacing),
     ) {
-        CasesActionButton(modifier, CasesAction.ZoomToIncident, onCasesAction)
         CasesActionButton(modifier, CasesAction.ZoomToInteractive, onCasesAction)
+        CasesActionButton(modifier, CasesAction.ZoomToIncident, onCasesAction)
     }
 }
 

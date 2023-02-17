@@ -27,13 +27,17 @@ import com.crisiscleanup.feature.cases.map.CasesMapTileLayerManager
 import com.crisiscleanup.feature.cases.map.CasesOverviewMapTileRenderer
 import com.crisiscleanup.feature.cases.map.IncidentIdWorksiteCount
 import com.crisiscleanup.feature.cases.model.CoordinateBounds
+import com.crisiscleanup.feature.cases.model.MapViewCameraZoom
+import com.crisiscleanup.feature.cases.model.MapViewCameraZoomDefault
 import com.crisiscleanup.feature.cases.model.asWorksiteGoogleMapMark
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.TileProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
@@ -95,6 +99,9 @@ class CasesViewModel @Inject constructor(
 
     val showDataProgress = dataPullReporter.worksitesDataPullStats.map { it.isPulling }
     val dataProgress = dataPullReporter.worksitesDataPullStats.map { it.progress }
+
+    private var _mapCameraZoom = MutableStateFlow(MapViewCameraZoomDefault)
+    val mapCameraZoom = _mapCameraZoom.asStateFlow()
 
     private val mapBoundsManager = CasesMapBoundsManager(
         viewModelScope,
@@ -263,11 +270,14 @@ class CasesViewModel @Inject constructor(
     }
 
     fun zoomToIncidentBounds() {
-        // TODO
+        mapBoundsManager.restoreIncidentBounds()
     }
 
     fun zoomToInteractive() {
-        // TODO
+        _mapCameraZoom.value = MapViewCameraZoom(
+            mapBoundsManager.centerCache,
+            (mapTileRenderer.zoomThreshold + 1).toFloat(),
+        )
     }
 
     // TrimMemoryListener

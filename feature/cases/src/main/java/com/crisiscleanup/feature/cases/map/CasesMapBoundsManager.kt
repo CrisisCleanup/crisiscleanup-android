@@ -5,6 +5,7 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.LocationsRepository
+import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.IncidentLocation
 import com.crisiscleanup.feature.cases.model.MapViewCameraBounds
 import com.crisiscleanup.feature.cases.model.MapViewCameraBoundsDefault
@@ -26,7 +27,7 @@ import kotlinx.coroutines.flow.stateIn
 
 internal class CasesMapBoundsManager constructor(
     coroutineScope: CoroutineScope,
-    incidentSelector: IncidentSelector,
+    private val incidentSelector: IncidentSelector,
     private val locationsRepository: LocationsRepository,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
     private val logger: AppLogger,
@@ -34,8 +35,11 @@ internal class CasesMapBoundsManager constructor(
     var isMapLoaded = false
         private set
 
+    val centerCache: LatLng
+        get() = mapBoundsCache.center
+
     private var _mapCameraBounds = MutableStateFlow(MapViewCameraBoundsDefault)
-    var mapCameraBounds = _mapCameraBounds.asStateFlow()
+    val mapCameraBounds = _mapCameraBounds.asStateFlow()
 
     private val isMappingLocationBounds = MutableStateFlow(false)
     private val isUpdatingCameraBounds = MutableStateFlow(false)
@@ -48,7 +52,7 @@ internal class CasesMapBoundsManager constructor(
         isMapping || isUpdating
     }
 
-    private val incidentLatLngBoundary: StateFlow<List<LatLng>> =
+    private val incidentLatLngBoundary: StateFlow<Pair<Long, List<LatLng>>> =
         incidentSelector.incident.flatMapLatest { incident ->
             isMappingLocationBounds.value = true
             try {
@@ -63,7 +67,7 @@ internal class CasesMapBoundsManager constructor(
                         for (i in 1 until coordinates.size step 2) {
                             latLngs.add(LatLng(coordinates[i], coordinates[i - 1]))
                         }
-                        latLngs
+                        Pair(incident.id, latLngs)
                     }
                     .flowOn(ioDispatcher)
             } finally {
@@ -71,13 +75,15 @@ internal class CasesMapBoundsManager constructor(
             }
         }.stateIn(
             scope = coroutineScope,
-            initialValue = emptyList(),
+            initialValue = Pair(EmptyIncident.id, emptyList()),
             started = SharingStarted.WhileSubscribed(),
         )
 
+    private val incidentBoundsCache = mutableMapOf<Long, LatLngBounds>()
+
     init {
         incidentLatLngBoundary
-            .onEach { latLngs ->
+            .onEach { (incidentId, latLngs) ->
                 var bounds = MapViewCameraBoundsDefault.bounds
 
                 isUpdatingCameraBounds.value = true
@@ -101,11 +107,11 @@ internal class CasesMapBoundsManager constructor(
                         }
 
                         bounds = locationBounds.build()
+                        incidentBoundsCache[incidentId] = bounds
                         if (isMapLoaded) {
                             _mapCameraBounds.value = MapViewCameraBounds(bounds)
-                        } else {
-                            cacheBounds(bounds)
                         }
+                        cacheBounds(bounds)
                     }
                 } finally {
                     isUpdatingCameraBounds.value = false
@@ -141,5 +147,18 @@ internal class CasesMapBoundsManager constructor(
 
     fun restoreBounds() {
         _mapCameraBounds.value = MapViewCameraBounds(mapBoundsCache, 0)
+    }
+
+    fun restoreIncidentBounds() {
+        val incidentId = incidentSelector.incidentId.value
+        incidentBoundsCache[incidentId]?.let {
+            // TODO Force rebounding in a less hacky way
+            val latitude = it.northeast.latitude + 1e-9 * Math.random()
+            val ne = LatLng(latitude, it.northeast.longitude)
+            val bounds = LatLngBounds(it.southwest, ne)
+
+            _mapCameraBounds.value = MapViewCameraBounds(bounds)
+            mapBoundsCache = bounds
+        }
     }
 }

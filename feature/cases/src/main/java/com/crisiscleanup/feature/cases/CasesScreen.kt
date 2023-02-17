@@ -44,6 +44,8 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.domain.IncidentsData
 import com.crisiscleanup.feature.cases.model.MapViewCameraBounds
 import com.crisiscleanup.feature.cases.model.MapViewCameraBoundsDefault
+import com.crisiscleanup.feature.cases.model.MapViewCameraZoom
+import com.crisiscleanup.feature.cases.model.MapViewCameraZoomDefault
 import com.crisiscleanup.feature.cases.model.WorksiteGoogleMapMark
 import com.crisiscleanup.feature.cases.ui.CasesAction
 import com.crisiscleanup.feature.cases.ui.CasesActionBar
@@ -78,29 +80,12 @@ internal fun CasesRoute(
         val rememberOnCasesAction = remember(onCasesAction, casesViewModel) {
             { action: CasesAction ->
                 when (action) {
-                    CasesAction.MapView -> {
-                        casesViewModel.setContentViewType(false)
-                    }
-
-                    CasesAction.TableView -> {
-                        casesViewModel.setContentViewType(true)
-                    }
-
-                    CasesAction.Layers -> {
-                        casesViewModel.toggleLayersView()
-                    }
-
-                    CasesAction.ZoomToInteractive -> {
-                        // TODO
-                    }
-
-                    CasesAction.ZoomToIncident -> {
-                        // TODO
-                    }
-
-                    else -> {
-                        onCasesAction(action)
-                    }
+                    CasesAction.MapView -> casesViewModel.setContentViewType(false)
+                    CasesAction.TableView -> casesViewModel.setContentViewType(true)
+                    CasesAction.Layers -> casesViewModel.toggleLayersView()
+                    CasesAction.ZoomToInteractive -> casesViewModel.zoomToInteractive()
+                    CasesAction.ZoomToIncident -> casesViewModel.zoomToIncidentBounds()
+                    else -> onCasesAction(action)
                 }
             }
         }
@@ -108,6 +93,7 @@ internal fun CasesRoute(
         // TODO Delay evaluation only when necessary by remembering data
         val worksitesOnMap by casesViewModel.worksitesMapMarkers.collectAsStateWithLifecycle()
         val mapCameraBounds by casesViewModel.incidentLocationBounds.collectAsStateWithLifecycle()
+        val mapCameraZoom by casesViewModel.mapCameraZoom.collectAsStateWithLifecycle()
         val tileOverlayState = rememberTileOverlayState()
         val tileChangeValue by casesViewModel.overviewTileDataChange
         val clearTileLayer = remember(casesViewModel) {
@@ -136,6 +122,7 @@ internal fun CasesRoute(
             isMapBusy = isMapBusy,
             worksitesOnMap = worksitesOnMap,
             mapCameraBounds = mapCameraBounds,
+            mapCameraZoom = mapCameraZoom,
             tileChangeValue = tileChangeValue,
             tileOverlayState = tileOverlayState,
             clearTileLayer = clearTileLayer,
@@ -191,6 +178,7 @@ internal fun CasesScreen(
     isMapBusy: Boolean = false,
     worksitesOnMap: List<WorksiteGoogleMapMark> = emptyList(),
     mapCameraBounds: MapViewCameraBounds = MapViewCameraBoundsDefault,
+    mapCameraZoom: MapViewCameraZoom = MapViewCameraZoomDefault,
     tileChangeValue: Long = -1,
     clearTileLayer: () -> Boolean = { false },
     tileOverlayState: TileOverlayState = rememberTileOverlayState(),
@@ -204,6 +192,7 @@ internal fun CasesScreen(
         } else {
             CasesMapView(
                 mapCameraBounds,
+                mapCameraZoom,
                 isMapBusy,
                 worksitesOnMap,
                 tileChangeValue,
@@ -235,7 +224,8 @@ internal fun CasesScreen(
 
 @Composable
 internal fun BoxScope.CasesMapView(
-    mapCameraBounds: MapViewCameraBounds,
+    mapCameraBounds: MapViewCameraBounds = MapViewCameraBoundsDefault,
+    mapCameraZoom: MapViewCameraZoom = MapViewCameraZoomDefault,
     isMapBusy: Boolean = false,
     worksitesOnMap: List<WorksiteGoogleMapMark> = emptyList(),
     tileChangeValue: Long = -1,
@@ -259,8 +249,7 @@ internal fun BoxScope.CasesMapView(
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(
             mapCameraBounds.bounds.center,
-            // TODO Use parameter
-            10f,
+            mapCameraZoom.zoom,
         )
     }
 
@@ -338,6 +327,19 @@ internal fun BoxScope.CasesMapView(
             )
             if (mapCameraBounds.durationMs > 0) {
                 cameraPositionState.animate(update, mapCameraBounds.durationMs)
+            } else {
+                cameraPositionState.move(update)
+            }
+        }
+    }
+
+    LaunchedEffect(mapCameraZoom) {
+        if (mapCameraZoom.takeApply()) {
+            val update = CameraUpdateFactory.newLatLngZoom(
+                mapCameraZoom.center, mapCameraZoom.zoom
+            )
+            if (mapCameraZoom.durationMs > 0) {
+                cameraPositionState.animate(update, mapCameraZoom.durationMs)
             } else {
                 cameraPositionState.move(update)
             }
