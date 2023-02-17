@@ -196,17 +196,31 @@ class CasesViewModel @Inject constructor(
         incidentWorksitesCount
             .throttleLatest(1_000)
             .onEach {
-                val pullStats = dataPullReporter.worksitesDataPullStats.first()
-                var refreshTiles = pullStats.isEnded
-                val now = Clock.System.now()
-                if (!refreshTiles && pullStats.progress > 0.33f) {
-                    refreshTiles = now - pullStats.pullStart > tileClearRefreshInterval &&
-                            now - countChangeClearInstant > tileClearRefreshInterval &&
-                            pullStats.projectedFinish - now > tileClearRefreshInterval
+                var refreshTiles = true
+                var clearCache = false
+
+                dataPullReporter.worksitesDataPullStats.first().run {
+                    if (isPulling) {
+                        refreshTiles = isEnded
+                        clearCache = isEnded
+                        val now = Clock.System.now()
+                        if (!refreshTiles && progress > 0.33f) {
+                            val projectedDelta = projectedFinish - now
+                            refreshTiles = now - pullStart > tileClearRefreshInterval &&
+                                    now - countChangeClearInstant > tileClearRefreshInterval &&
+                                    projectedDelta > tileClearRefreshInterval
+                            clearCache =
+                                projectedDelta > tileClearRefreshInterval.times(3) && progress in 0.5f..0.7f
+                        }
+
+                        if (refreshTiles) {
+                            countChangeClearInstant = now
+                        }
+                    }
                 }
+
                 if (refreshTiles) {
-                    countChangeClearInstant = now
-                    mapTileRenderer.setIncident(it.id, it.count)
+                    mapTileRenderer.setIncident(it.id, it.count, clearCache)
                     casesMapTileManager.clearTiles()
                 }
             }
@@ -246,6 +260,14 @@ class CasesViewModel @Inject constructor(
                 mapBoundsManager.cacheBounds(visibleBounds)
             }
         }
+    }
+
+    fun zoomToIncidentBounds() {
+        // TODO
+    }
+
+    fun zoomToInteractive() {
+        // TODO
     }
 
     // TrimMemoryListener

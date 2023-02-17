@@ -40,8 +40,9 @@ data class TileCoordinates(
         val yNorth = y * maxInverse
 
         // TODO Find values relative to dot size at the given zoom
-        val padLongitude = 0.0004
-        val padLatitude = 0.0001
+        val padScale = if (zoom < 8) maxInverse * 32 else 1.0
+        val padLongitude = padScale * 0.0004
+        val padLatitude = padScale * 0.0001
 
         val latSouth = yToLat(ySouth)
         val latNorth = yToLat(yNorth)
