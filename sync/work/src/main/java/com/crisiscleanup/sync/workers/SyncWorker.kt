@@ -19,7 +19,6 @@ import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.sync.SyncPipeline.determineSyncSteps
-import com.crisiscleanup.sync.SyncPipeline.performSync
 import com.crisiscleanup.sync.initializers.SyncConstraints
 import com.crisiscleanup.sync.initializers.syncForegroundInfo
 import dagger.assisted.Assisted
@@ -64,12 +63,14 @@ class SyncWorker @AssistedInject constructor(
         traceAsync("Sync", 0) {
             val syncedSuccessfully = awaitAll(
                 async {
-                    performSync(
-                        plan,
-                        incidentsRepository,
-                        worksitesRepository,
-                        resourceProvider,
-                    ) { text -> setForeground(appContext.syncForegroundInfo(text)) }
+                    // TODO Consolidate all syncing so only a single process is run at a time
+//                    performSync(
+//                        plan,
+//                        incidentsRepository,
+//                        worksitesRepository,
+//                        resourceProvider,
+//                    ) { text -> setForeground(appContext.syncForegroundInfo(text)) }
+                    true
                 }
             ).all { it }
 

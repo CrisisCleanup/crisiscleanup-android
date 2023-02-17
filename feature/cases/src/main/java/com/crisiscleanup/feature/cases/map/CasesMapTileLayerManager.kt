@@ -2,6 +2,7 @@ package com.crisiscleanup.feature.cases.map
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.WorksitesRepository
@@ -10,12 +11,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.math.floor
-import kotlin.math.roundToInt
 
 /**
  * Signals when the Compose map tile layer should invalidate its cache and/or redraw new or updated tiles.
@@ -27,6 +27,8 @@ internal class CasesMapTileLayerManager(
     private val incidentSelector: IncidentSelector,
     private val worksitesRepository: WorksitesRepository,
     private val mapBoundsManager: CasesMapBoundsManager,
+    private val mapTileRenderer: CasesOverviewMapTileRenderer,
+    private val logger: AppLogger,
 ) {
     private var tileDataChangeKey = mutableStateOf(0L)
 
@@ -35,8 +37,9 @@ internal class CasesMapTileLayerManager(
      */
     val overviewTileDataChange: State<Long> = tileDataChangeKey
 
-    private val incidentWorksitesCount = incidentSelector.incidentId.flatMapLatest {
-        worksitesRepository.streamIncidentWorksitesCount(it)
+    private val incidentWorksitesCount = incidentSelector.incidentId.flatMapLatest { id ->
+        worksitesRepository.streamIncidentWorksitesCount(id)
+            .map { count -> IncidentIdWorksiteCount(id, count) }
     }.shareIn(
         scope = coroutineScope,
         replay = 1,
@@ -82,21 +85,16 @@ internal class CasesMapTileLayerManager(
             .throttleLatest(2000)
             .onEach {
                 clearTileLayer = true
-                val key = incidentSelector.incidentId.value + it
+
+                mapTileRenderer.setIncident(it.id, it.count)
+                val key = it.id + it.count
                 onTileChange(key)
             }
             .launchIn(coroutineScope)
     }
 
     fun setTilingState(isTilingHidden: Boolean, zoom: Float) {
-        if (hideTiling.getAndSet(isTilingHidden) != isTilingHidden && !isTilingHidden) {
-            clearTiles()
-        }
-
-        val zoomFloor = floor(zoom).roundToInt()
-        if (zoomLevelCache.getAndSet(zoomFloor) != zoomFloor) {
-            clearTiles()
-        }
+        // Do not optimize until TileProvider is consistent across all OS versions
     }
 
     fun clearTiles() {
@@ -115,3 +113,8 @@ internal class CasesMapTileLayerManager(
         tileDataChangeKey.value = dataChangeValue % 1_000_000
     }
 }
+
+data class IncidentIdWorksiteCount(
+    val id: Long,
+    val count: Int,
+)

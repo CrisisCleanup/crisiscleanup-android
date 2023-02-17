@@ -1,5 +1,6 @@
 package com.crisiscleanup.feature.cases.map
 
+import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.IncidentSelector
@@ -28,6 +29,7 @@ internal class CasesMapBoundsManager constructor(
     incidentSelector: IncidentSelector,
     private val locationsRepository: LocationsRepository,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
+    private val logger: AppLogger,
 ) {
     var isMapLoaded = false
         private set
@@ -134,7 +136,6 @@ internal class CasesMapBoundsManager constructor(
         }
         isMapLoaded = true
 
-        restoreBounds()
         return true
     }
 

@@ -46,7 +46,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private val worksiteDao: WorksiteDao,
     private val worksiteDaoPlus: WorksiteDaoPlus,
     private val memoryStats: AppMemoryStats,
-    private val appLogger: AppLogger,
+    private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : WorksitesRepository {
     // TODO Defer to provider instead. So amount can vary according to (WifiManager) signal level or equivalent. Must track request timeouts and give feedback or adjust.
@@ -66,7 +66,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         private set
 
     init {
-        appLogger.tag = "worksites-repo"
+        logger.tag = "worksites-repo"
     }
 
     override fun streamWorksites(incidentId: Long, limit: Int, offset: Int): Flow<List<Worksite>> {
@@ -185,7 +185,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
                 // TODO This is short synced count not the full synced count. Revisit endpoint when paging is reliable and needs differentiation.
                 syncWorksitesShortData(incidentId, syncStart)
             } else {
-                appLogger.logDebug("Paging worksites request due to constrained memory ${memoryStats.availableMemory}")
+                logger.logDebug("Paging worksites request due to constrained memory ${memoryStats.availableMemory}")
                 // TODO Alert the device is lacking and the experience will be degraded
                 syncWorksitesPagedData(incidentId, syncStart, count)
             }
@@ -304,7 +304,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
                 throw (e)
             } else {
                 // TODO User feedback?
-                appLogger.logException(e)
+                logger.logException(e)
             }
         } finally {
             isLoading.value = false

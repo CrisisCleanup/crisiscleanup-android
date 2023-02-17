@@ -9,6 +9,7 @@ import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.common.Syncer
 import com.crisiscleanup.core.common.event.TrimMemoryEventManager
 import com.crisiscleanup.core.common.event.TrimMemoryListener
+import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.IncidentSelector
@@ -55,6 +56,7 @@ class CasesViewModel @Inject constructor(
     private val syncer: Syncer,
     trimMemoryEventManager: TrimMemoryEventManager,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
+    private val logger: AppLogger,
 ) : ViewModel(), TrimMemoryListener {
     val incidentsData = loadIncidentDataUseCase()
 
@@ -86,6 +88,7 @@ class CasesViewModel @Inject constructor(
         incidentSelector,
         locationsRepository,
         ioDispatcher,
+        logger,
     )
 
     var incidentLocationBounds = mapBoundsManager.mapCameraBounds
@@ -149,12 +152,16 @@ class CasesViewModel @Inject constructor(
         incidentSelector,
         worksitesRepository,
         mapBoundsManager,
+        mapTileRenderer,
+        logger,
     )
     val overviewTileDataChange = casesMapTileManager.overviewTileDataChange
     val clearTileLayer: Boolean
         get() = casesMapTileManager.clearTileLayer
 
     init {
+        logger.tag = "cases-map-tile"
+
         trimMemoryEventManager.addListener(this)
 
         mapTileRenderer.enableTileBoundaries()
@@ -173,10 +180,6 @@ class CasesViewModel @Inject constructor(
                 casesMapTileManager.setTilingState(noTiling, it.zoom)
             }
             .launchIn(viewModelScope)
-
-        incidentSelector.incidentId.onEach {
-            mapTileRenderer.setIncident(it)
-        }.launchIn(viewModelScope)
     }
 
     fun refreshIncidentsData() {
@@ -191,7 +194,7 @@ class CasesViewModel @Inject constructor(
 
     fun onMapLoaded() {
         if (mapBoundsManager.onMapLoaded()) {
-            casesMapTileManager.clearTiles()
+            mapBoundsManager.restoreBounds()
         }
     }
 

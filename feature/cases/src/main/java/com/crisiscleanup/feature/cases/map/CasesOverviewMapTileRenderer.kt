@@ -2,8 +2,10 @@ package com.crisiscleanup.feature.cases.map
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import androidx.collection.LruCache
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.AppEnv
+import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.MapCaseDotProvider
 import com.crisiscleanup.core.mapmarker.model.TileCoordinates
@@ -17,7 +19,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.mapLatest
 import java.io.ByteArrayOutputStream
-import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.roundToInt
@@ -34,7 +35,7 @@ interface CasesOverviewMapTileRenderer {
      */
     var zoomThreshold: Int
 
-    fun setIncident(id: Long)
+    fun setIncident(id: Long, worksitesCount: Int)
 
     fun enableTileBoundaries()
 
@@ -52,6 +53,7 @@ class CaseDotsMapTileRenderer @Inject constructor(
     private val worksitesRepository: WorksitesRepository,
     private val mapCaseDotProvider: MapCaseDotProvider,
     private val appEnv: AppEnv,
+    private val logger: AppLogger,
 ) : CasesOverviewMapTileRenderer, TileProvider {
     private var renderingCount = MutableStateFlow(0)
     override var isBusy = renderingCount.mapLatest { it > 0 }
@@ -63,7 +65,9 @@ class CaseDotsMapTileRenderer @Inject constructor(
     // zoom 9 = 512x512 tiles
     override var zoomThreshold = InteractiveZoomLevel
 
-    private var incidentIdCache = AtomicLong(-1)
+    private val tileCache = TileDataCache(1.5f)
+    private var incidentIdCache = -1L
+    private var worksitesCount = 0
 
     // For visualizing tile boundaries in dev
     private var isRenderingBorder = false
@@ -71,6 +75,10 @@ class CaseDotsMapTileRenderer @Inject constructor(
 
     private var skipTileRendering = false
     private var mapZoomLevel = 0f
+
+    init {
+        logger.tag = "map-tile-renderer"
+    }
 
     override fun setRenderState(skipRendering: Boolean, zoom: Float) {
         skipTileRendering = skipRendering
@@ -81,8 +89,12 @@ class CaseDotsMapTileRenderer @Inject constructor(
         // Lower zoom is far out, higher zoom is closer in
         zoom < zoomThreshold + 1
 
-    override fun setIncident(id: Long) {
-        incidentIdCache.set(id)
+    override fun setIncident(id: Long, worksitesCount: Int) {
+        synchronized(tileCache) {
+            tileCache.evictAll()
+            incidentIdCache = id
+            this.worksitesCount = worksitesCount
+        }
     }
 
     override fun enableTileBoundaries() {
@@ -94,16 +106,28 @@ class CaseDotsMapTileRenderer @Inject constructor(
     }
 
     override fun getTile(x: Int, y: Int, zoom: Int): Tile? {
-        if (skipTileRendering ||
-            zoom > zoomThreshold ||
-            mapZoomLevel < zoom ||
-            mapZoomLevel >= zoom + 1
-        ) {
+        val incidentId = incidentIdCache
+
+        if (zoom > zoomThreshold) {
+            return null
+        }
+
+        if (worksitesCount == 0) {
             return NO_TILE
         }
 
         val coordinates = TileCoordinates(x, y, zoom)
-        return renderTile(coordinates)
+        val tileData = tileCache[coordinates]
+        tileData?.let { data ->
+            if (data.tileCaseCount == 0 || data.tile != null) {
+                return data.tile ?: NO_TILE
+            }
+        }
+
+        // TODO Skip rendering (including when zoom level is not current) when TileProvider accepts null as retry later (on older Android OSes)
+
+        val tile = renderTile(coordinates)
+        return if (incidentId != incidentIdCache) null else tile
     }
 
     private fun renderTile(
@@ -120,14 +144,14 @@ class CaseDotsMapTileRenderer @Inject constructor(
     private fun renderTileInternal(
         coordinates: TileCoordinates
     ): Tile? {
-        val incidentId = incidentIdCache.get()
+        val incidentId = incidentIdCache
 
-        val worksitesCount = worksitesRepository.getWorksitesCount(incidentId)
-        if (worksitesCount == 0 || incidentId != incidentIdCache.get()) {
+        var (boundedWorksitesCount, bitmap) = renderTile(incidentId, worksitesCount, coordinates)
+
+        // Incident has changed this tile is invalid
+        if (incidentId != incidentIdCache) {
             return null
         }
-
-        var bitmap = renderTile(incidentId, worksitesCount, coordinates)
 
         val tile = if (bitmap == null && !isRenderingBorder) {
             NO_TILE
@@ -142,8 +166,19 @@ class CaseDotsMapTileRenderer @Inject constructor(
             bitmap.recycle()
             Tile(tileSizePx, tileSizePx, bitmapData)
         }
-        if (incidentId != incidentIdCache.get()) {
-            return null
+
+        synchronized(tileCache) {
+            // Incident has changed this tile is invalid
+            if (incidentId != incidentIdCache) {
+                return null
+            }
+
+            val tileData = MapTileCases(
+                boundedWorksitesCount,
+                worksitesCount,
+                tile,
+            )
+            tileCache.put(coordinates, tileData)
         }
 
         return tile
@@ -153,7 +188,7 @@ class CaseDotsMapTileRenderer @Inject constructor(
         incidentId: Long,
         worksitesCount: Int,
         coordinates: TileCoordinates,
-    ): Bitmap? {
+    ): Pair<Int, Bitmap?> {
         val limit = 2000
         var offset = 0
         val centerDotOffset = -mapCaseDotProvider.centerSizePx
@@ -163,6 +198,8 @@ class CaseDotsMapTileRenderer @Inject constructor(
 
         var bitmap: Bitmap? = null
         var canvas: Canvas? = null
+
+        var boundedWorksitesCount = 0
 
         for (i in 0 until worksitesCount step limit) {
             val worksites = worksitesRepository.getWorksitesMapVisual(
@@ -174,6 +211,11 @@ class CaseDotsMapTileRenderer @Inject constructor(
                 limit,
                 offset,
             )
+
+            // Incident has changed this tile is invalid
+            if (incidentId != incidentIdCache) {
+                break
+            }
 
             if (worksites.isNotEmpty() && bitmap == null) {
                 bitmap = if (isRenderingBorder) borderTile.copy()
@@ -196,6 +238,13 @@ class CaseDotsMapTileRenderer @Inject constructor(
                 }
             }
 
+            boundedWorksitesCount += worksites.size
+
+            // Incident has changed this tile is invalid
+            if (incidentId != incidentIdCache) {
+                break
+            }
+
             // There are no more worksites in this tile
             if (worksites.size < limit) {
                 break
@@ -204,6 +253,24 @@ class CaseDotsMapTileRenderer @Inject constructor(
             offset += limit
         }
 
-        return bitmap
+        return Pair(boundedWorksitesCount, bitmap)
     }
+}
+
+internal data class MapTileCases(
+    val tileCaseCount: Int,
+    val incidentCaseCount: Int,
+    val tile: Tile?,
+)
+
+private class TileDataCache(sizeMb: Float) :
+    DataSizeLruCache<TileCoordinates, MapTileCases>(sizeMb) {
+    override fun sizeOf(value: MapTileCases): Int = value.tile?.data?.size ?: 0
+}
+
+abstract class DataSizeLruCache<K : Any, V : Any>(sizeMb: Float) :
+    LruCache<K, V>((sizeMb * 1_000_000).roundToInt()) {
+    abstract fun sizeOf(value: V): Int
+
+    override fun sizeOf(key: K, value: V): Int = sizeOf(value)
 }
