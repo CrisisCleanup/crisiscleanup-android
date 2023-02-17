@@ -12,10 +12,12 @@ import com.crisiscleanup.core.common.event.TrimMemoryListener
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocationsRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
+import com.crisiscleanup.core.data.util.WorksitesDataPullReporter
 import com.crisiscleanup.core.domain.LoadIncidentDataUseCase
 import com.crisiscleanup.core.mapmarker.MapCaseDotProvider
 import com.crisiscleanup.core.model.data.EmptyIncident
@@ -23,6 +25,7 @@ import com.crisiscleanup.core.ui.SearchManager
 import com.crisiscleanup.feature.cases.map.CasesMapBoundsManager
 import com.crisiscleanup.feature.cases.map.CasesMapTileLayerManager
 import com.crisiscleanup.feature.cases.map.CasesOverviewMapTileRenderer
+import com.crisiscleanup.feature.cases.map.IncidentIdWorksiteCount
 import com.crisiscleanup.feature.cases.model.CoordinateBounds
 import com.crisiscleanup.feature.cases.model.asWorksiteGoogleMapMark
 import com.google.android.gms.maps.Projection
@@ -33,22 +36,29 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class CasesViewModel @Inject constructor(
     incidentsRepository: IncidentsRepository,
     locationsRepository: LocationsRepository,
     private val worksitesRepository: WorksitesRepository,
-    private val incidentSelector: IncidentSelector,
+    incidentSelector: IncidentSelector,
     appHeaderUiState: AppHeaderUiState,
     loadIncidentDataUseCase: LoadIncidentDataUseCase,
+    private val dataPullReporter: WorksitesDataPullReporter,
     mapCaseDotProvider: MapCaseDotProvider,
     private val mapTileRenderer: CasesOverviewMapTileRenderer,
     private val tileProvider: TileProvider,
@@ -82,6 +92,9 @@ class CasesViewModel @Inject constructor(
     fun toggleLayersView() {
         isLayerView.value = !isLayerView.value
     }
+
+    val showDataProgress = dataPullReporter.worksitesDataPullStats.map { it.isPulling }
+    val dataProgress = dataPullReporter.worksitesDataPullStats.map { it.progress }
 
     private val mapBoundsManager = CasesMapBoundsManager(
         viewModelScope,
@@ -150,14 +163,24 @@ class CasesViewModel @Inject constructor(
     private val casesMapTileManager = CasesMapTileLayerManager(
         viewModelScope,
         incidentSelector,
-        worksitesRepository,
         mapBoundsManager,
-        mapTileRenderer,
         logger,
     )
     val overviewTileDataChange = casesMapTileManager.overviewTileDataChange
     val clearTileLayer: Boolean
         get() = casesMapTileManager.clearTileLayer
+
+    private val tileClearRefreshInterval = 5.seconds
+    private var countChangeClearInstant: Instant = Instant.fromEpochSeconds(0)
+
+    private val incidentWorksitesCount = incidentSelector.incidentId.flatMapLatest { id ->
+        worksitesRepository.streamIncidentWorksitesCount(id)
+            .map { count -> IncidentIdWorksiteCount(id, count) }
+    }.shareIn(
+        scope = viewModelScope,
+        replay = 1,
+        started = SharingStarted.WhileSubscribed(1_000)
+    )
 
     init {
         logger.tag = "cases-map-tile"
@@ -170,14 +193,22 @@ class CasesViewModel @Inject constructor(
             qsm.casesSearchQueryFlow.value = it
         }.launchIn(viewModelScope)
 
-        qsm.worksiteQueryState
+        incidentWorksitesCount
+            .throttleLatest(1_000)
             .onEach {
-                val noTiling = it.isTableView ||
-                        incidentSelector.incidentId.value == EmptyIncident.id ||
-                        !mapTileRenderer.rendersAt(it.zoom) ||
-                        !mapBoundsManager.isMapLoaded
-                mapTileRenderer.setRenderState(noTiling, it.zoom)
-                casesMapTileManager.setTilingState(noTiling, it.zoom)
+                val pullStats = dataPullReporter.worksitesDataPullStats.first()
+                var refreshTiles = pullStats.isEnded
+                val now = Clock.System.now()
+                if (!refreshTiles && pullStats.progress > 0.33f) {
+                    refreshTiles = now - pullStats.pullStart > tileClearRefreshInterval &&
+                            now - countChangeClearInstant > tileClearRefreshInterval &&
+                            pullStats.projectedFinish - now > tileClearRefreshInterval
+                }
+                if (refreshTiles) {
+                    countChangeClearInstant = now
+                    mapTileRenderer.setIncident(it.id, it.count)
+                    casesMapTileManager.clearTiles()
+                }
             }
             .launchIn(viewModelScope)
     }

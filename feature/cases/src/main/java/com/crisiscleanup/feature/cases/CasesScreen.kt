@@ -1,19 +1,27 @@
 package com.crisiscleanup.feature.cases
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -96,6 +104,7 @@ internal fun CasesRoute(
                 }
             }
         }
+        val isMapBusy by casesViewModel.isMapBusy.collectAsStateWithLifecycle(false)
         // TODO Delay evaluation only when necessary by remembering data
         val worksitesOnMap by casesViewModel.worksitesMapMarkers.collectAsStateWithLifecycle()
         val mapCameraBounds by casesViewModel.incidentLocationBounds.collectAsStateWithLifecycle()
@@ -115,11 +124,16 @@ internal fun CasesRoute(
                 casesViewModel.onMapCameraChange(position, projection, activeChange)
             }
         }
+        val showDataProgress by casesViewModel.showDataProgress.collectAsStateWithLifecycle(false)
+        val dataProgress by casesViewModel.dataProgress.collectAsStateWithLifecycle(0f)
         CasesScreen(
             modifier,
+            showDataProgress = showDataProgress,
+            dataProgress = dataProgress,
             onCasesAction = rememberOnCasesAction,
             isTableView = isTableView,
             isLayerView = isLayerView,
+            isMapBusy = isMapBusy,
             worksitesOnMap = worksitesOnMap,
             mapCameraBounds = mapCameraBounds,
             tileChangeValue = tileChangeValue,
@@ -169,9 +183,12 @@ internal fun NoCasesScreen(
 @Composable
 internal fun CasesScreen(
     modifier: Modifier = Modifier,
+    showDataProgress: Boolean = false,
+    dataProgress: Float = 0f,
     onCasesAction: (CasesAction) -> Unit = {},
     isTableView: Boolean = false,
     isLayerView: Boolean = false,
+    isMapBusy: Boolean = false,
     worksitesOnMap: List<WorksiteGoogleMapMark> = emptyList(),
     mapCameraBounds: MapViewCameraBounds = MapViewCameraBoundsDefault,
     tileChangeValue: Long = -1,
@@ -187,6 +204,7 @@ internal fun CasesScreen(
         } else {
             CasesMapView(
                 mapCameraBounds,
+                isMapBusy,
                 worksitesOnMap,
                 tileChangeValue,
                 clearTileLayer,
@@ -201,12 +219,24 @@ internal fun CasesScreen(
             onCasesAction,
             isTableView,
         )
+
+        AnimatedVisibility(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth(),
+            visible = showDataProgress,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            LinearProgressIndicator(progress = dataProgress)
+        }
     }
 }
 
 @Composable
-internal fun CasesMapView(
+internal fun BoxScope.CasesMapView(
     mapCameraBounds: MapViewCameraBounds,
+    isMapBusy: Boolean = false,
     worksitesOnMap: List<WorksiteGoogleMapMark> = emptyList(),
     tileChangeValue: Long = -1,
     clearTileLayer: () -> Boolean = { false },
@@ -282,6 +312,20 @@ internal fun CasesMapView(
                 )
             }
         }
+    }
+
+    AnimatedVisibility(
+        modifier = Modifier.align(Alignment.TopCenter),
+        visible = isMapBusy,
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        CircularProgressIndicator(
+            Modifier
+                .wrapContentSize()
+                .padding(96.dp)
+                .size(24.dp)
+        )
     }
 
     val currentLocalDensity = LocalDensity.current

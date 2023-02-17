@@ -5,6 +5,9 @@ import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.model.asEntity
+import com.crisiscleanup.core.data.util.IncidentWorksitesDataPullStats
+import com.crisiscleanup.core.data.util.WorksitesDataPullReporter
+import com.crisiscleanup.core.data.util.WorksitesDataPullStatsUpdater
 import com.crisiscleanup.core.database.dao.WorksiteDao
 import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
 import com.crisiscleanup.core.database.dao.WorksitesSyncStatsDao
@@ -48,7 +51,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private val memoryStats: AppMemoryStats,
     private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
-) : WorksitesRepository {
+) : WorksitesRepository, WorksitesDataPullReporter {
     // TODO Defer to provider instead. So amount can vary according to (WifiManager) signal level or equivalent. Must track request timeouts and give feedback or adjust.
     /**
      * Number of worksites per query page.
@@ -64,6 +67,8 @@ class OfflineFirstWorksitesRepository @Inject constructor(
 
     override var isLoading = MutableStateFlow(false)
         private set
+
+    override val worksitesDataPullStats = MutableStateFlow(IncidentWorksitesDataPullStats())
 
     init {
         logger.tag = "worksites-repo"
@@ -173,21 +178,45 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         return syncStats
     }
 
-    private suspend fun syncWorksitesData(
+    private suspend fun syncWorksitesDataStat(
         incidentId: Long,
         syncStart: Instant,
     ): WorksitesSyncStats {
-        val count = networkWorksitesCount(incidentId, true)
+        val statsUpdater = WorksitesDataPullStatsUpdater(
+            updatePullStats = { stats -> worksitesDataPullStats.value = stats }
+        ).also {
+            it.beginPull(incidentId)
+            it.beginRequest()
+        }
+        try {
+            val count = networkWorksitesCount(incidentId, true)
 
+            statsUpdater.updateWorksitesCount(count)
+
+            return syncWorksitesData(incidentId, syncStart, count, statsUpdater)
+        } finally {
+            statsUpdater.endPull()
+        }
+    }
+
+    private suspend fun syncWorksitesData(
+        incidentId: Long,
+        syncStart: Instant,
+        count: Int,
+        statsUpdater: WorksitesDataPullStatsUpdater,
+    ): WorksitesSyncStats {
         // TODO Make value configurable and responsive to device resources, network speed, battery, ...
         val syncedCount =
             if (memoryStats.availableMemory >= allWorksitesMemoryThreshold) {
                 // TODO This is short synced count not the full synced count. Revisit endpoint when paging is reliable and needs differentiation.
-                syncWorksitesShortData(incidentId, syncStart)
+                syncWorksitesShortData(incidentId, syncStart, statsUpdater)
             } else {
-                logger.logDebug("Paging worksites request due to constrained memory ${memoryStats.availableMemory}")
                 // TODO Alert the device is lacking and the experience will be degraded
-                syncWorksitesPagedData(incidentId, syncStart, count)
+                statsUpdater.setPagingRequest()
+
+                logger.logDebug("Paging worksites request due to constrained memory ${memoryStats.availableMemory}")
+
+                syncWorksitesPagedData(incidentId, syncStart, count, statsUpdater)
             }
 
         val syncSeconds = syncStart.epochSeconds
@@ -204,6 +233,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         incidentId: Long,
         syncStart: Instant,
         worksitesCount: Int,
+        statsUpdater: WorksitesDataPullStatsUpdater,
     ): Int {
         var offset = 0
         val limit = max(worksitesQueryBasePageAmount, 5)
@@ -212,13 +242,23 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             val worksitesRequest = worksiteNetworkDataSource.getWorksites(incidentId, limit, offset)
             tryThrowException(worksitesRequest.errors)
 
+            val requestCount = worksitesRequest.count ?: 0
+            if (requestCount <= 0) {
+                break
+            }
+
+            statsUpdater.updateRequestedCount(offset + requestCount)
+
             worksitesRequest.results?.let { list ->
                 val worksites = list.map { it.asEntity(incidentId) }
                 val workTypes = list.map { it.workTypes.map(WorkType::asEntity) }
-                pagedCount += saveToDb(incidentId, worksites, workTypes, syncStart)
-                offset += limit
+                pagedCount += saveToDb(incidentId, worksites, workTypes, syncStart, statsUpdater)
             }
+
+            offset += limit
         }
+
+        statsUpdater.endRequest()
 
         return pagedCount
     }
@@ -228,6 +268,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         worksites: List<WorksiteEntity>,
         workTypes: List<List<WorkTypeEntity>>,
         syncStart: Instant,
+        statsUpdater: WorksitesDataPullStatsUpdater,
     ): Int {
         var offset = 0
         val limit = max(worksitesDbOperationAmount, 10)
@@ -243,7 +284,10 @@ class OfflineFirstWorksitesRepository @Inject constructor(
                 syncStart,
             )
 
+            statsUpdater.addSavedCount(worksiteSubset.size)
+
             pagedCount += worksiteSubset.size
+
             offset += limit
         }
         return pagedCount
@@ -252,15 +296,20 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private suspend fun syncWorksitesShortData(
         incidentId: Long,
         syncStart: Instant,
+        statsUpdater: WorksitesDataPullStatsUpdater,
     ): Int {
         val worksitesRequest = worksiteNetworkDataSource.getWorksitesAll(incidentId, null)
         tryThrowException(worksitesRequest.errors)
+
+        statsUpdater.endRequest()
+        val requestCount = worksitesRequest.count ?: 0
+        statsUpdater.updateRequestedCount(requestCount)
 
         worksitesRequest.results?.let { list ->
             val worksites = list.map { it.asEntity(incidentId) }
             val workTypes =
                 list.map { it.workTypes.map(NetworkWorksiteFull.WorkTypeShort::asEntity) }
-            return saveToDb(incidentId, worksites, workTypes, syncStart)
+            return saveToDb(incidentId, worksites, workTypes, syncStart, statsUpdater)
         }
 
         return 0
@@ -291,7 +340,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             val syncFull = force || savedWorksitesCount < syncStats.worksitesCount
             if (syncFull || syncStats.syncAttempt.shouldSyncPassively()) {
                 // TODO Is it possible skip saved worksites and only pull missing worksites or start from syncStats.pagedCount?
-                syncStats = syncWorksitesData(incidentId, syncStart)
+                syncStats = syncWorksitesDataStat(incidentId, syncStart)
             }
 
             if (syncFull || syncStats.syncAttempt.shouldSyncPassively()) {

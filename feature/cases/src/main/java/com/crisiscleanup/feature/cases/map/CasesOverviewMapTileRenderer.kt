@@ -43,8 +43,6 @@ interface CasesOverviewMapTileRenderer {
      * @return true when this zoom level renders tiles, false otherwise.
      */
     fun rendersAt(zoom: Float): Boolean
-
-    fun setRenderState(skipRendering: Boolean, zoom: Float)
 }
 
 @Singleton
@@ -80,11 +78,6 @@ class CaseDotsMapTileRenderer @Inject constructor(
         logger.tag = "map-tile-renderer"
     }
 
-    override fun setRenderState(skipRendering: Boolean, zoom: Float) {
-        skipTileRendering = skipRendering
-        mapZoomLevel = zoom
-    }
-
     override fun rendersAt(zoom: Float): Boolean =
         // Lower zoom is far out, higher zoom is closer in
         zoom < zoomThreshold + 1
@@ -108,11 +101,9 @@ class CaseDotsMapTileRenderer @Inject constructor(
     override fun getTile(x: Int, y: Int, zoom: Int): Tile? {
         val incidentId = incidentIdCache
 
-        if (zoom > zoomThreshold) {
-            return null
-        }
-
-        if (worksitesCount == 0) {
+        if (zoom > zoomThreshold ||
+            worksitesCount == 0
+        ) {
             return NO_TILE
         }
 
@@ -124,10 +115,8 @@ class CaseDotsMapTileRenderer @Inject constructor(
             }
         }
 
-        // TODO Skip rendering (including when zoom level is not current) when TileProvider accepts null as retry later (on older Android OSes)
-
         val tile = renderTile(coordinates)
-        return if (incidentId != incidentIdCache) null else tile
+        return if (incidentId != incidentIdCache) NO_TILE else tile
     }
 
     private fun renderTile(

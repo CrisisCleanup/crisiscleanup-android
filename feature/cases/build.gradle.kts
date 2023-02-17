@@ -17,6 +17,8 @@ dependencies {
     implementation(project(":core:appheader"))
     implementation(project(":core:mapmarker"))
 
+    implementation(libs.kotlinx.datetime)
+    
     implementation(libs.androidx.constraintlayout)
     implementation(libs.google.maps.compose)
     implementation(libs.playservices.maps)
