@@ -2,12 +2,12 @@ package com.crisiscleanup.feature.cases.map
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.model.data.EmptyIncident
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -79,7 +79,7 @@ internal class CasesMapTileLayerManager(
             .launchIn(coroutineScope)
 
         incidentWorksitesCount
-            .debounce(1000)
+            .throttleLatest(2000)
             .onEach {
                 clearTileLayer = true
                 val key = incidentSelector.incidentId.value + it

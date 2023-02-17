@@ -19,28 +19,41 @@ data class TileCoordinates(
     val zoom: Int,
 ) {
     private val maxIndex: Int = 1 shl zoom
-    val southwest: LatLng
-    val northeast: LatLng
-    val boundsPadding: Double
+    private val southwest: LatLng
+    private val northeast: LatLng
     private val lngRangeInverse: Double
+
+    val querySouthwest: LatLng
+    val queryNortheast: LatLng
 
     init {
         val maxInverse: Double = 1 / maxIndex.toDouble()
 
-        val lngWest = (x * maxInverse - 0.5) * 360
-        val lngEast = ((x + 1) * maxInverse - 0.5) * 360
+        val xWest = x * maxInverse - 0.5
+        val xEast = (x + 1) * maxInverse - 0.5
+        val lngWest = xWest * 360
+        val lngEast = xEast * 360
         val lngRange = lngEast - lngWest
         lngRangeInverse = 1 / lngRange
 
         val ySouth = (y + 1) * maxInverse
         val yNorth = y * maxInverse
 
-        // TODO This is not tested and doesn't seem to be working as designed.
-        //      Is it possible to be more exact based on the zoom level?
-        boundsPadding = maxInverse / 4
+        // TODO Find values relative to dot size at the given zoom
+        val padLongitude = 0.0004
+        val padLatitude = 0.0001
 
-        southwest = LatLng(yToLat(ySouth), lngWest)
-        northeast = LatLng(yToLat(yNorth), lngEast)
+        val latSouth = yToLat(ySouth)
+        val latNorth = yToLat(yNorth)
+        southwest = LatLng(latSouth, lngWest)
+        northeast = LatLng(latNorth, lngEast)
+
+        val querySouth = yToLat(ySouth + padLatitude)
+        val queryWest = (xWest - padLongitude) * 360
+        querySouthwest = LatLng(querySouth, queryWest)
+        val queryNorth = yToLat(yNorth - padLatitude)
+        val queryEast = (xEast + padLongitude) * 360
+        queryNortheast = LatLng(queryNorth, queryEast)
     }
 
     /**
@@ -50,8 +63,10 @@ data class TileCoordinates(
         latitude: Double,
         longitude: Double,
     ): Pair<Double, Double>? {
-        if (latitude < southwest.latitude || latitude > northeast.latitude ||
-            longitude < southwest.longitude || longitude > northeast.longitude
+        if (latitude < querySouthwest.latitude ||
+            latitude > queryNortheast.latitude ||
+            longitude < querySouthwest.longitude ||
+            longitude > queryNortheast.longitude
         ) {
             return null
         }
@@ -65,6 +80,12 @@ data class TileCoordinates(
         siny = siny.coerceAtLeast(-0.9999).coerceAtMost(0.9999)
         var yNorm = 0.5 - ln((1 + siny) / (1 - siny)) / FOUR_PI
         yNorm = (yNorm * maxIndex) % 1
+
+        if (latitude < southwest.latitude) {
+            yNorm++
+        } else if (latitude > northeast.latitude) {
+            yNorm--
+        }
 
         return Pair(xNorm, yNorm)
     }

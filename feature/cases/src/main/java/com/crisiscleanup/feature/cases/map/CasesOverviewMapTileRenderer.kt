@@ -127,11 +127,15 @@ class CaseDotsMapTileRenderer @Inject constructor(
             return null
         }
 
-        val (worksiteCount, bitmap) = renderTile(incidentId, worksitesCount, coordinates)
+        var bitmap = renderTile(incidentId, worksitesCount, coordinates)
 
-        val tile = if (worksiteCount == 0 && !isRenderingBorder) {
+        val tile = if (bitmap == null && !isRenderingBorder) {
             NO_TILE
         } else {
+            if (bitmap == null) {
+                bitmap = borderTile.copy()
+            }
+
             val stream = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.PNG, 0, stream)
             val bitmapData = stream.toByteArray()
@@ -149,35 +153,33 @@ class CaseDotsMapTileRenderer @Inject constructor(
         incidentId: Long,
         worksitesCount: Int,
         coordinates: TileCoordinates,
-    ): Pair<Int, Bitmap> {
-        val bitmap = if (isRenderingBorder) borderTile.copy()
-        else squareBitmap(tileSizePx)
-
-        val canvas = Canvas(bitmap)
-
+    ): Bitmap? {
         val limit = 2000
         var offset = 0
         val centerDotOffset = -mapCaseDotProvider.centerSizePx
 
-        val sw = coordinates.southwest
-        val ne = coordinates.northeast
-        val boundsPadding = coordinates.boundsPadding
-        val latitudeSouth = sw.latitude - boundsPadding
-        val latitudeNorth = ne.latitude + boundsPadding
-        val longitudeWest = (sw.longitude - boundsPadding).coerceAtLeast(-180.0)
-        val longitudeEast = (ne.longitude + boundsPadding).coerceAtMost(180.0)
+        val sw = coordinates.querySouthwest
+        val ne = coordinates.queryNortheast
 
-        var worksiteCount = 0
+        var bitmap: Bitmap? = null
+        var canvas: Canvas? = null
+
         for (i in 0 until worksitesCount step limit) {
             val worksites = worksitesRepository.getWorksitesMapVisual(
                 incidentId,
-                latitudeSouth,
-                latitudeNorth,
-                longitudeWest,
-                longitudeEast,
+                sw.latitude,
+                ne.latitude,
+                sw.longitude,
+                ne.longitude,
                 limit,
                 offset,
             )
+
+            if (worksites.isNotEmpty() && bitmap == null) {
+                bitmap = if (isRenderingBorder) borderTile.copy()
+                else squareBitmap(tileSizePx)
+                canvas = Canvas(bitmap)
+            }
 
             worksites.onEach {
                 mapCaseDotProvider.getDotBitmap(it.statusClaim)?.let { dotBitmap ->
@@ -189,12 +191,10 @@ class CaseDotsMapTileRenderer @Inject constructor(
                         val (xNorm, yNorm) = xyNorm
                         val left = xNorm.toFloat() * tileSizePx + centerDotOffset
                         val top = yNorm.toFloat() * tileSizePx + centerDotOffset
-                        canvas.drawBitmap(dotBitmap, left, top, null)
+                        canvas!!.drawBitmap(dotBitmap, left, top, null)
                     }
                 }
             }
-
-            worksiteCount += worksites.size
 
             // There are no more worksites in this tile
             if (worksites.size < limit) {
@@ -204,6 +204,6 @@ class CaseDotsMapTileRenderer @Inject constructor(
             offset += limit
         }
 
-        return Pair(worksiteCount, bitmap)
+        return bitmap
     }
 }
