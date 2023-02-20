@@ -3,6 +3,11 @@ package com.crisiscleanup.core.model.data
 import kotlinx.datetime.Instant
 
 /**
+ * Version of app where worksites (database) entity was last changed
+ */
+private const val WORKSITES_STABLE_MODEL_BUILD_VERSION = 21
+
+/**
  * Keeps track of incident worksites syncing
  */
 data class WorksitesSyncStats(
@@ -23,4 +28,8 @@ data class WorksitesSyncStats(
      * Sync attempt stats after the first full sync (of base worksite data)
      */
     val syncAttempt: SyncAttempt,
-)
+
+    val appBuildVersionCode: Int,
+) {
+    val isDataVersionOutdated = appBuildVersionCode < WORKSITES_STABLE_MODEL_BUILD_VERSION
+}

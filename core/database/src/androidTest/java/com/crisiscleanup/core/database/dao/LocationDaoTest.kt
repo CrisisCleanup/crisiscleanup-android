@@ -8,6 +8,7 @@ import com.crisiscleanup.core.database.model.PopulatedLocation
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.Location
 import com.crisiscleanup.core.model.data.LocationShape
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -49,7 +50,8 @@ class LocationDaoTest {
         locationDaoPlus.saveLocations(locationsSource)
 
         val locations =
-            locationDao.getLocations(listOf(1, 2, 3, 4, 5)).map(PopulatedLocation::asExternalModel)
+            locationDao.streamLocations(listOf(1, 2, 3, 4, 5)).first()
+                .map(PopulatedLocation::asExternalModel)
         val expecteds = listOf(
             Location(1, LocationShape.Point, listOf(-3.4, 5.1), null),
             Location(2, LocationShape.Polygon, listOf(-13.4, 55.1, 41.2, -81.2), null),

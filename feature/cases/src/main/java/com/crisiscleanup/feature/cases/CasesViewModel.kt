@@ -35,19 +35,7 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.TileProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.shareIn
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -201,34 +189,39 @@ class CasesViewModel @Inject constructor(
         }.launchIn(viewModelScope)
 
         incidentWorksitesCount
+            .debounce(16)
             .throttleLatest(1_000)
             .onEach {
                 var refreshTiles = true
                 var clearCache = false
 
                 dataPullReporter.worksitesDataPullStats.first().run {
-                    if (isPulling) {
-                        refreshTiles = isEnded
-                        clearCache = isEnded
-                        val now = Clock.System.now()
-                        if (!refreshTiles && progress > 0.33f) {
-                            val projectedDelta = projectedFinish - now
-                            refreshTiles = now - pullStart > tileClearRefreshInterval &&
-                                    now - countChangeClearInstant > tileClearRefreshInterval &&
-                                    projectedDelta > tileClearRefreshInterval
-                            clearCache =
-                                projectedDelta > tileClearRefreshInterval.times(3) && progress in 0.5f..0.7f
-                        }
+                    if (it.id != incidentId) {
+                        return@run
+                    }
 
-                        if (refreshTiles) {
-                            countChangeClearInstant = now
-                        }
+                    refreshTiles = isEnded
+                    clearCache = isEnded
+                    val now = Clock.System.now()
+                    if (!refreshTiles && progress > 0.33f) {
+                        val projectedDelta = projectedFinish - now
+                        refreshTiles = now - pullStart > tileClearRefreshInterval &&
+                                now - countChangeClearInstant > tileClearRefreshInterval &&
+                                projectedDelta > tileClearRefreshInterval
+                        clearCache =
+                            projectedDelta > tileClearRefreshInterval.times(2) && progress in 0.5f..0.7f
+                    }
+
+                    if (refreshTiles) {
+                        countChangeClearInstant = now
                     }
                 }
 
+                if (clearCache) {
+                    casesMapTileManager.clearTiles()
+                }
                 if (refreshTiles) {
                     mapTileRenderer.setIncident(it.id, it.count, clearCache)
-                    casesMapTileManager.clearTiles()
                 }
             }
             .launchIn(viewModelScope)
@@ -276,7 +269,7 @@ class CasesViewModel @Inject constructor(
     fun zoomToInteractive() {
         _mapCameraZoom.value = MapViewCameraZoom(
             mapBoundsManager.centerCache,
-            (mapTileRenderer.zoomThreshold + 1).toFloat(),
+            ((mapTileRenderer.zoomThreshold + 1) + Math.random() * 1e-3).toFloat(),
         )
     }
 

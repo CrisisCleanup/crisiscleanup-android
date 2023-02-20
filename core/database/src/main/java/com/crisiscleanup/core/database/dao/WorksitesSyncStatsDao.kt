@@ -13,7 +13,7 @@ interface WorksitesSyncStatsDao {
         """
         SELECT *
         FROM worksite_sync_stats
-        WHERE incidentId==:incidentId
+        WHERE incident_id==:incidentId
         """
     )
     fun getSyncStats(incidentId: Long): List<WorksiteSyncStatsEntity>

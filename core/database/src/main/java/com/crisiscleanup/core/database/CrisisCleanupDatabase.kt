@@ -5,6 +5,7 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.crisiscleanup.core.database.DatabaseMigrations.Schema2To3
+import com.crisiscleanup.core.database.DatabaseMigrations.Schema3to4
 import com.crisiscleanup.core.database.dao.IncidentDao
 import com.crisiscleanup.core.database.dao.LocationDao
 import com.crisiscleanup.core.database.dao.TestTargetIncidentDao
@@ -34,10 +35,11 @@ import com.crisiscleanup.core.database.util.InstantConverter
         WorksiteEntity::class,
         WorkTypeEntity::class,
     ],
-    version = 3,
+    version = 4,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
+        AutoMigration(from = 3, to = 4, spec = Schema3to4::class),
     ],
     exportSchema = true,
 )

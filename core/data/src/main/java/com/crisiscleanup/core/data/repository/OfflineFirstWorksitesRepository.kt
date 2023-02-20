@@ -1,6 +1,7 @@
 package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.common.AppMemoryStats
+import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
@@ -29,6 +30,7 @@ import com.crisiscleanup.core.network.model.NetworkWorksiteFull.WorkType
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -49,6 +51,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private val worksiteDao: WorksiteDao,
     private val worksiteDaoPlus: WorksiteDaoPlus,
     private val memoryStats: AppMemoryStats,
+    private val appVersionProvider: AppVersionProvider,
     private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : WorksitesRepository, WorksitesDataPullReporter {
@@ -172,6 +175,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             syncStart = syncStart,
             worksitesCount = worksitesCount,
             syncAttempt = SyncAttempt(0, 0, 0),
+            appBuildVersionCode = 0,
         )
         worksitesSyncStatsDao.upsertStats(syncStats.asEntity())
 
@@ -189,11 +193,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             it.beginRequest()
         }
         try {
-            val count = networkWorksitesCount(incidentId, true)
-
-            statsUpdater.updateWorksitesCount(count)
-
-            return syncWorksitesData(incidentId, syncStart, count, statsUpdater)
+            return syncWorksitesData(incidentId, syncStart, statsUpdater)
         } finally {
             statsUpdater.endPull()
         }
@@ -202,9 +202,12 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private suspend fun syncWorksitesData(
         incidentId: Long,
         syncStart: Instant,
-        count: Int,
         statsUpdater: WorksitesDataPullStatsUpdater,
     ): WorksitesSyncStats {
+        val count = networkWorksitesCount(incidentId, true)
+
+        statsUpdater.updateWorksitesCount(count)
+
         // TODO Make value configurable and responsive to device resources, network speed, battery, ...
         val syncedCount =
             if (memoryStats.availableMemory >= allWorksitesMemoryThreshold) {
@@ -225,7 +228,8 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             syncStart,
             count,
             syncedCount,
-            SyncAttempt(syncSeconds, syncSeconds, 0)
+            SyncAttempt(syncSeconds, syncSeconds, 0),
+            appVersionProvider.versionCode,
         )
     }
 
@@ -234,7 +238,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         syncStart: Instant,
         worksitesCount: Int,
         statsUpdater: WorksitesDataPullStatsUpdater,
-    ): Int {
+    ): Int = coroutineScope {
         var offset = 0
         val limit = max(worksitesQueryBasePageAmount, 5)
         var pagedCount = 0
@@ -246,6 +250,8 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             if (requestCount <= 0) {
                 break
             }
+
+            ensureActive()
 
             statsUpdater.updateRequestedCount(offset + requestCount)
 
@@ -260,7 +266,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
 
         statsUpdater.endRequest()
 
-        return pagedCount
+        return@coroutineScope pagedCount
     }
 
     private suspend fun saveToDb(
@@ -269,7 +275,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         workTypes: List<List<WorkTypeEntity>>,
         syncStart: Instant,
         statsUpdater: WorksitesDataPullStatsUpdater,
-    ): Int {
+    ): Int = coroutineScope {
         var offset = 0
         val limit = max(worksitesDbOperationAmount, 10)
         var pagedCount = 0
@@ -289,17 +295,21 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             pagedCount += worksiteSubset.size
 
             offset += limit
+
+            ensureActive()
         }
-        return pagedCount
+        return@coroutineScope pagedCount
     }
 
     private suspend fun syncWorksitesShortData(
         incidentId: Long,
         syncStart: Instant,
         statsUpdater: WorksitesDataPullStatsUpdater,
-    ): Int {
+    ): Int = coroutineScope {
         val worksitesRequest = worksiteNetworkDataSource.getWorksitesAll(incidentId, null)
         tryThrowException(worksitesRequest.errors)
+
+        ensureActive()
 
         statsUpdater.endRequest()
         val requestCount = worksitesRequest.count ?: 0
@@ -309,10 +319,16 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             val worksites = list.map { it.asEntity(incidentId) }
             val workTypes =
                 list.map { it.workTypes.map(NetworkWorksiteFull.WorkTypeShort::asEntity) }
-            return saveToDb(incidentId, worksites, workTypes, syncStart, statsUpdater)
+            return@coroutineScope saveToDb(
+                incidentId,
+                worksites,
+                workTypes,
+                syncStart,
+                statsUpdater,
+            )
         }
 
-        return 0
+        return@coroutineScope 0
     }
 
     // TODO Write tests
@@ -337,14 +353,17 @@ class OfflineFirstWorksitesRepository @Inject constructor(
 
             val savedWorksitesCount = worksiteDao.getWorksitesCount(incidentId)
 
-            val syncFull = force || savedWorksitesCount < syncStats.worksitesCount
-            if (syncFull || syncStats.syncAttempt.shouldSyncPassively()) {
+            val syncFull = force ||
+                    savedWorksitesCount < syncStats.worksitesCount ||
+                    syncStats.isDataVersionOutdated
+            if (syncFull) {
                 // TODO Is it possible skip saved worksites and only pull missing worksites or start from syncStats.pagedCount?
                 syncStats = syncWorksitesDataStat(incidentId, syncStart)
             }
 
             if (syncFull || syncStats.syncAttempt.shouldSyncPassively()) {
-                // TODO Compare last successful with syncStart and determine if extra syncing is necessary
+                // TODO Compare last successful with syncStart and determine if extra syncing is necessary.
+                //      Update syncStats accordingly.
             }
 
             worksitesSyncStatsDao.upsertStats(syncStats.asEntity())
@@ -352,6 +371,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             if (e is CancellationException) {
                 throw (e)
             } else {
+                // TODO Update sync stats and attempt
                 // TODO User feedback?
                 logger.logException(e)
             }

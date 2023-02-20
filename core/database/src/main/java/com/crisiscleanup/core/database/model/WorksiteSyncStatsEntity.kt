@@ -11,7 +11,8 @@ import kotlinx.datetime.Instant
     "worksite_sync_stats",
 )
 data class WorksiteSyncStatsEntity(
-    @PrimaryKey()
+    @PrimaryKey
+    @ColumnInfo("incident_id")
     val incidentId: Long,
     @ColumnInfo("sync_start")
     val syncStart: Instant?,
@@ -25,6 +26,8 @@ data class WorksiteSyncStatsEntity(
     val attemptedSync: Instant?,
     @ColumnInfo("attempted_counter")
     val attemptedCounter: Int,
+    @ColumnInfo("app_build_version_code", defaultValue = "0")
+    val appBuildVersionCode: Int,
 )
 
 fun WorksiteSyncStatsEntity.asExternalModel() = WorksitesSyncStats(
@@ -36,7 +39,8 @@ fun WorksiteSyncStatsEntity.asExternalModel() = WorksitesSyncStats(
         successfulSync?.epochSeconds ?: 0,
         attemptedSync?.epochSeconds ?: 0,
         attemptedCounter,
-    )
+    ),
+    appBuildVersionCode = appBuildVersionCode,
 )
 
 fun WorksitesSyncStats.asEntity() = WorksiteSyncStatsEntity(
@@ -47,4 +51,5 @@ fun WorksitesSyncStats.asEntity() = WorksiteSyncStatsEntity(
     successfulSync = if (syncAttempt.successfulSeconds > 0) Instant.fromEpochSeconds(syncAttempt.successfulSeconds) else null,
     attemptedSync = if (syncAttempt.attemptedSeconds > 0) Instant.fromEpochSeconds(syncAttempt.attemptedSeconds) else null,
     attemptedCounter = syncAttempt.attemptedCounter,
+    appBuildVersionCode = appBuildVersionCode,
 )

@@ -1,6 +1,7 @@
 package com.crisiscleanup.core.database
 
 import androidx.room.DeleteTable
+import androidx.room.RenameColumn
 import androidx.room.migration.AutoMigrationSpec
 
 /**
@@ -20,4 +21,11 @@ object DatabaseMigrations {
         ),
     )
     class Schema2To3 : AutoMigrationSpec
+
+    @RenameColumn(
+        tableName = "worksite_sync_stats",
+        fromColumnName = "incidentId",
+        toColumnName = "incident_id",
+    )
+    class Schema3to4 : AutoMigrationSpec
 }
