@@ -15,23 +15,32 @@ internal fun MenuRoute(
     viewModel: MenuViewModel = hiltViewModel()
 ) {
     MenuScreen(
-        modifier = modifier
+        modifier = modifier,
+        versionText = viewModel.versionText,
     )
 }
 
 @Composable
 internal fun MenuScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    versionText: String,
 ) {
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxWidth()) {
             Text(
-                text = "Menu",
-                modifier = Modifier
+                modifier = modifier
                     .fillMaxWidth()
                     .padding(48.dp),
                 textAlign = TextAlign.Center,
+                text = "Menu",
                 style = MaterialTheme.typography.bodyMedium
+            )
+
+            Text(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                text = versionText,
             )
         }
     }
