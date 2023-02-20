@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import androidx.collection.LruCache
+import androidx.compose.ui.geometry.Offset
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.model.data.CaseStatus.Unknown
 import com.crisiscleanup.core.model.data.WorkTypeStatusClaim
@@ -13,8 +14,6 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 interface MapCaseDotProvider : MapCaseIconProvider {
-    val centerSizePx: Float
-
     fun setDotProperties(dotDrawProperties: DotDrawProperties)
 }
 
@@ -26,21 +25,30 @@ class InMemoryDotProvider @Inject constructor(
     private val bitmapCache = LruCache<WorkTypeStatusClaim, Bitmap>(16)
 
     private var cacheDotDrawProperties: DotDrawProperties
-    override val centerSizePx: Float
-        get() = cacheDotDrawProperties.centerSizePx
+    private var dotOffsetPx: Offset = Offset(0f, 0f)
+
+    override val iconOffset: Offset
+        get() = dotOffsetPx
 
     init {
         cacheDotDrawProperties = DotDrawProperties.make(resourceProvider)
+        setIconOffset()
     }
 
     override fun setDotProperties(dotDrawProperties: DotDrawProperties) {
-        synchronized(cacheDotDrawProperties) {
+        synchronized(cache) {
             if (cacheDotDrawProperties != dotDrawProperties) {
                 cache.evictAll()
                 bitmapCache.evictAll()
             }
             cacheDotDrawProperties = dotDrawProperties
+            setIconOffset()
         }
+    }
+
+    private fun setIconOffset() {
+        val centerSizePx = cacheDotDrawProperties.centerSizePx
+        dotOffsetPx = Offset(centerSizePx, centerSizePx)
     }
 
     private fun cacheDotBitmap(
@@ -51,7 +59,7 @@ class InMemoryDotProvider @Inject constructor(
         val colors = mapMarkerColors[status] ?: mapMarkerColors[Unknown]!!
         val bitmap = drawDot(colors, dotDrawProperties)
         val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap)
-        synchronized(cacheDotDrawProperties) {
+        synchronized(cache) {
             if (cacheDotDrawProperties != dotDrawProperties) {
                 return null
             }
@@ -63,7 +71,7 @@ class InMemoryDotProvider @Inject constructor(
     }
 
     override fun getIcon(statusClaim: WorkTypeStatusClaim): BitmapDescriptor? {
-        synchronized(cacheDotDrawProperties) {
+        synchronized(cache) {
             cache.get(statusClaim)?.let {
                 return it
             }
@@ -73,7 +81,7 @@ class InMemoryDotProvider @Inject constructor(
     }
 
     override fun getIconBitmap(statusClaim: WorkTypeStatusClaim): Bitmap? {
-        synchronized(cacheDotDrawProperties) {
+        synchronized(cache) {
             bitmapCache.get(statusClaim)?.let {
                 return it
             }
@@ -81,7 +89,7 @@ class InMemoryDotProvider @Inject constructor(
 
         val dotDrawProperties = cacheDotDrawProperties
         cacheDotBitmap(statusClaim, dotDrawProperties)
-        synchronized(cacheDotDrawProperties) {
+        synchronized(cache) {
             if (cacheDotDrawProperties == dotDrawProperties) {
                 bitmapCache.get(statusClaim)?.let {
                     return it

@@ -30,11 +30,17 @@ class WorkTypeIconProvider @Inject constructor(
     // TODO Make configurable
     private val bitmapSizeDp = 48f
     private val bitmapSize: Int
+    private var bitmapCenterOffset: Offset = Offset(0f, 0f)
+
+    override val iconOffset: Offset
+        get() = bitmapCenterOffset
 
     init {
         logger.tag = "map-icon"
 
         bitmapSize = resourceProvider.dpToPx(bitmapSizeDp).toInt()
+        val centerOffset = bitmapSizeDp * 0.5f
+        bitmapCenterOffset = Offset(centerOffset, centerOffset)
     }
 
     private fun cacheIconBitmap(statusClaim: WorkTypeStatusClaim): BitmapDescriptor {

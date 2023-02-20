@@ -245,6 +245,7 @@ internal fun BoxScope.CasesMapView(
             Marker(
                 it.markerState,
                 icon = it.mapIcon,
+                anchor = it.mapIconOffset,
             )
         }
 

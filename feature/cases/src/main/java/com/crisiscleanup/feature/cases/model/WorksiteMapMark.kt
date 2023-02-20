@@ -1,5 +1,6 @@
 package com.crisiscleanup.feature.cases.model
 
+import androidx.compose.ui.geometry.Offset
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.google.android.gms.maps.model.BitmapDescriptor
@@ -11,6 +12,7 @@ data class WorksiteGoogleMapMark(
     val latLng: LatLng,
     val markerState: MarkerState,
     val mapIcon: BitmapDescriptor?,
+    val mapIconOffset: Offset,
 )
 
 fun WorksiteMapMark.asWorksiteGoogleMapMark(iconProvider: MapCaseIconProvider): WorksiteGoogleMapMark {
@@ -19,6 +21,7 @@ fun WorksiteMapMark.asWorksiteGoogleMapMark(iconProvider: MapCaseIconProvider): 
         source = this,
         latLng = latLng,
         markerState = MarkerState(latLng),
-        iconProvider.getIcon(statusClaim),
+        mapIcon = iconProvider.getIcon(statusClaim),
+        mapIconOffset = Offset(0.5f, 0.5f),
     )
 }

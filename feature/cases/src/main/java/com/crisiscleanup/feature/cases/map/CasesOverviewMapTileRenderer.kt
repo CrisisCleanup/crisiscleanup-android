@@ -179,7 +179,7 @@ class CaseDotsMapTileRenderer @Inject constructor(
     ): Pair<Int, Bitmap?> {
         val limit = 2000
         var offset = 0
-        val centerDotOffset = -mapCaseDotProvider.centerSizePx
+        val centerDotOffset = -mapCaseDotProvider.iconOffset.x
 
         val sw = coordinates.querySouthwest
         val ne = coordinates.queryNortheast
