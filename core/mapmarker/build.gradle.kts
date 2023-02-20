@@ -17,6 +17,7 @@ dependencies {
     implementation(libs.androidx.compose.runtime)
 
     implementation(libs.playservices.maps)
+    implementation(libs.android.material.material)
 
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)

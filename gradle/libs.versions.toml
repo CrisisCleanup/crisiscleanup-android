@@ -2,6 +2,7 @@
 accompanist = "0.28.0"
 androidDesugarJdkLibs = "2.0.2"
 androidGradlePlugin = "7.4.1"
+androidMaterial = "1.8.0"
 androidxActivity = "1.6.1"
 androidxAppCompat = "1.6.1"
 androidxBrowser = "1.5.0"
@@ -58,6 +59,7 @@ accompanist-flowlayout = { group = "com.google.accompanist", name = "accompanist
 accompanist-systemuicontroller = { group = "com.google.accompanist", name = "accompanist-systemuicontroller", version.ref = "accompanist" }
 accompanist-testharness = { group = "com.google.accompanist", name = "accompanist-testharness", version.ref = "accompanist" }
 android-desugarJdkLibs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "androidDesugarJdkLibs" }
+android-material-material = { group = "com.google.android.material", name = "material", version.ref = "androidMaterial" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidxActivity" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidxAppCompat" }
 androidx-benchmark-macro = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "androidxMacroBenchmark" }
