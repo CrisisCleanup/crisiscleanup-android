@@ -2,6 +2,8 @@ package com.crisiscleanup.core.common
 
 import android.content.Context
 import android.content.res.Resources
+import android.graphics.drawable.Drawable
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -14,6 +16,8 @@ interface AndroidResourceProvider {
     fun getString(@StringRes resId: Int, vararg formatArgs: Any): String
 
     fun dpToPx(dp: Float): Float
+
+    fun getDrawable(@DrawableRes drawableId: Int, theme: Resources.Theme? = null): Drawable
 }
 
 @Singleton
@@ -29,4 +33,7 @@ class ApplicationResourceProvider @Inject constructor(
         resources.getString(resId, *formatArgs)
 
     override fun dpToPx(dp: Float): Float = displayDensity * dp
+
+    override fun getDrawable(drawableId: Int, theme: Resources.Theme?): Drawable =
+        resources.getDrawable(drawableId, theme)
 }

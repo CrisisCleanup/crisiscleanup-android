@@ -4,32 +4,12 @@ import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -42,11 +22,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.domain.IncidentsData
-import com.crisiscleanup.feature.cases.model.MapViewCameraBounds
-import com.crisiscleanup.feature.cases.model.MapViewCameraBoundsDefault
-import com.crisiscleanup.feature.cases.model.MapViewCameraZoom
-import com.crisiscleanup.feature.cases.model.MapViewCameraZoomDefault
-import com.crisiscleanup.feature.cases.model.WorksiteGoogleMapMark
+import com.crisiscleanup.feature.cases.model.*
 import com.crisiscleanup.feature.cases.ui.CasesAction
 import com.crisiscleanup.feature.cases.ui.CasesActionBar
 import com.crisiscleanup.feature.cases.ui.CasesZoomBar
@@ -55,15 +31,7 @@ import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.TileProvider
-import com.google.maps.android.compose.CameraMoveStartedReason
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapProperties
-import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.TileOverlay
-import com.google.maps.android.compose.TileOverlayState
-import com.google.maps.android.compose.rememberCameraPositionState
-import com.google.maps.android.compose.rememberTileOverlayState
+import com.google.maps.android.compose.*
 import com.crisiscleanup.core.mapmarker.R as mapmarkerR
 
 @Composable
@@ -276,6 +244,7 @@ internal fun BoxScope.CasesMapView(
         worksitesOnMap.forEach {
             Marker(
                 it.markerState,
+                icon = it.mapIcon,
             )
         }
 

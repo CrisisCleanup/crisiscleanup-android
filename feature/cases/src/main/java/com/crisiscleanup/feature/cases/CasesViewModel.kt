@@ -19,7 +19,7 @@ import com.crisiscleanup.core.data.repository.LocationsRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.data.util.WorksitesDataPullReporter
 import com.crisiscleanup.core.domain.LoadIncidentDataUseCase
-import com.crisiscleanup.core.mapmarker.MapCaseDotProvider
+import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.ui.SearchManager
 import com.crisiscleanup.feature.cases.map.CasesMapBoundsManager
@@ -51,7 +51,7 @@ class CasesViewModel @Inject constructor(
     appHeaderUiState: AppHeaderUiState,
     loadIncidentDataUseCase: LoadIncidentDataUseCase,
     private val dataPullReporter: WorksitesDataPullReporter,
-    mapCaseDotProvider: MapCaseDotProvider,
+    mapCaseIconProvider: MapCaseIconProvider,
     private val mapTileRenderer: CasesOverviewMapTileRenderer,
     private val tileProvider: TileProvider,
     searchManager: SearchManager,
@@ -141,7 +141,7 @@ class CasesViewModel @Inject constructor(
                         //      At a minimum show a visual with number of markers displayed/total.
                         250,
                         0,
-                    ).map { mark -> mark.asWorksiteGoogleMapMark(mapCaseDotProvider) }
+                    ).map { mark -> mark.asWorksiteGoogleMapMark(mapCaseIconProvider) }
 
                     Log.w("Query", "Result ${visuals.size}")
 

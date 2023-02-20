@@ -4,42 +4,18 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import androidx.collection.LruCache
-import androidx.compose.ui.graphics.Color
 import com.crisiscleanup.core.common.AndroidResourceProvider
-import com.crisiscleanup.core.model.data.CaseStatus.ClaimedNotStarted
-import com.crisiscleanup.core.model.data.CaseStatus.Completed
-import com.crisiscleanup.core.model.data.CaseStatus.DoneByOthersNhwPc
-import com.crisiscleanup.core.model.data.CaseStatus.InProgress
-import com.crisiscleanup.core.model.data.CaseStatus.Incomplete
-import com.crisiscleanup.core.model.data.CaseStatus.NeedsFollowUp
-import com.crisiscleanup.core.model.data.CaseStatus.OutOfScopeDu
-import com.crisiscleanup.core.model.data.CaseStatus.PartiallyCompleted
-import com.crisiscleanup.core.model.data.CaseStatus.Unclaimed
 import com.crisiscleanup.core.model.data.CaseStatus.Unknown
-import com.crisiscleanup.core.model.data.WorkTypeStatus
-import com.crisiscleanup.core.model.data.WorkTypeStatus.ClosedCompleted
-import com.crisiscleanup.core.model.data.WorkTypeStatus.ClosedDoneByOthers
-import com.crisiscleanup.core.model.data.WorkTypeStatus.ClosedIncomplete
-import com.crisiscleanup.core.model.data.WorkTypeStatus.ClosedOutOfScope
-import com.crisiscleanup.core.model.data.WorkTypeStatus.OpenAssigned
-import com.crisiscleanup.core.model.data.WorkTypeStatus.OpenNeedsFollowUp
-import com.crisiscleanup.core.model.data.WorkTypeStatus.OpenPartiallyCompleted
-import com.crisiscleanup.core.model.data.WorkTypeStatus.OpenUnassigned
-import com.crisiscleanup.core.model.data.WorkTypeStatus.OpenUnresponsive
 import com.crisiscleanup.core.model.data.WorkTypeStatusClaim
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import javax.inject.Inject
 import javax.inject.Singleton
 
-interface MapCaseDotProvider {
+interface MapCaseDotProvider : MapCaseIconProvider {
     val centerSizePx: Float
 
     fun setDotProperties(dotDrawProperties: DotDrawProperties)
-
-    fun getDotIcon(statusClaim: WorkTypeStatusClaim): BitmapDescriptor?
-
-    fun getDotBitmap(statusClaim: WorkTypeStatusClaim): Bitmap?
 }
 
 @Singleton
@@ -72,7 +48,7 @@ class InMemoryDotProvider @Inject constructor(
         dotDrawProperties: DotDrawProperties,
     ): BitmapDescriptor? {
         val status = statusClaimToStatus[statusClaim]
-        val colors = caseDotMarkerColors[status] ?: caseDotMarkerColors[Unknown]!!
+        val colors = mapMarkerColors[status] ?: mapMarkerColors[Unknown]!!
         val bitmap = drawDot(colors, dotDrawProperties)
         val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap)
         synchronized(cacheDotDrawProperties) {
@@ -86,7 +62,7 @@ class InMemoryDotProvider @Inject constructor(
         }
     }
 
-    override fun getDotIcon(statusClaim: WorkTypeStatusClaim): BitmapDescriptor? {
+    override fun getIcon(statusClaim: WorkTypeStatusClaim): BitmapDescriptor? {
         synchronized(cacheDotDrawProperties) {
             cache.get(statusClaim)?.let {
                 return it
@@ -96,7 +72,7 @@ class InMemoryDotProvider @Inject constructor(
         return cacheDotBitmap(statusClaim, cacheDotDrawProperties)
     }
 
-    override fun getDotBitmap(statusClaim: WorkTypeStatusClaim): Bitmap? {
+    override fun getIconBitmap(statusClaim: WorkTypeStatusClaim): Bitmap? {
         synchronized(cacheDotDrawProperties) {
             bitmapCache.get(statusClaim)?.let {
                 return it
@@ -116,7 +92,7 @@ class InMemoryDotProvider @Inject constructor(
     }
 
     private fun drawDot(
-        colors: DotMarkerColors,
+        colors: MapMarkerColor,
         dotDrawProperties: DotDrawProperties,
     ): Bitmap {
         val bitmapSize = dotDrawProperties.bitmapSizePx.toInt()
@@ -162,49 +138,3 @@ data class DotDrawProperties(
         )
     }
 }
-
-private data class DotMarkerColors(
-    val fill: Color,
-    val stroke: Color,
-)
-
-private fun makeDotColor(fill: Long, stroke: Long) = DotMarkerColors(
-    Color(fill),
-    Color(stroke),
-)
-
-private val statusClaimToStatus = mapOf(
-    WorkTypeStatusClaim(WorkTypeStatus.Unknown, true) to Unknown,
-    WorkTypeStatusClaim(OpenAssigned, true) to InProgress,
-    WorkTypeStatusClaim(OpenUnassigned, true) to ClaimedNotStarted,
-    WorkTypeStatusClaim(OpenPartiallyCompleted, true) to PartiallyCompleted,
-    WorkTypeStatusClaim(OpenNeedsFollowUp, true) to NeedsFollowUp,
-    WorkTypeStatusClaim(OpenUnresponsive, true) to OutOfScopeDu,
-    WorkTypeStatusClaim(ClosedCompleted, true) to Completed,
-    WorkTypeStatusClaim(ClosedIncomplete, true) to Incomplete,
-    WorkTypeStatusClaim(ClosedOutOfScope, true) to OutOfScopeDu,
-    WorkTypeStatusClaim(ClosedDoneByOthers, true) to DoneByOthersNhwPc,
-    WorkTypeStatusClaim(WorkTypeStatus.Unknown, false) to Unknown,
-    WorkTypeStatusClaim(OpenAssigned, false) to Unclaimed,
-    WorkTypeStatusClaim(OpenUnassigned, false) to Unclaimed,
-    WorkTypeStatusClaim(OpenPartiallyCompleted, false) to PartiallyCompleted,
-    WorkTypeStatusClaim(OpenNeedsFollowUp, false) to NeedsFollowUp,
-    WorkTypeStatusClaim(OpenUnresponsive, false) to OutOfScopeDu,
-    WorkTypeStatusClaim(ClosedCompleted, false) to Completed,
-    WorkTypeStatusClaim(ClosedIncomplete, false) to Incomplete,
-    WorkTypeStatusClaim(ClosedOutOfScope, false) to OutOfScopeDu,
-    WorkTypeStatusClaim(ClosedDoneByOthers, false) to DoneByOthersNhwPc,
-)
-
-private val caseDotMarkerColors = mapOf(
-    Unknown to makeDotColor(0xFF000000, 0xFFFFFFFF),
-    Unclaimed to makeDotColor(0xFFD0021B, 0xFFE30001),
-    ClaimedNotStarted to makeDotColor(0xFFFAB92E, 0xFFF79820),
-    InProgress to makeDotColor(0xFFF0F032, 0xFF85863F),
-    PartiallyCompleted to makeDotColor(0xFF0054BB, 0xFF0054BB),
-    NeedsFollowUp to makeDotColor(0xFFEA51EB, 0xFFE018E1),
-    Completed to makeDotColor(0xFF82D78C, 0xFF51AC7C),
-    DoneByOthersNhwPc to makeDotColor(0xFF0fa355, 0xFF0fa355),
-    OutOfScopeDu to makeDotColor(0xFF787878, 0xFF5d5d5d),
-    Incomplete to makeDotColor(0xFF1d1d1d, 0xFF1d1d1d),
-)

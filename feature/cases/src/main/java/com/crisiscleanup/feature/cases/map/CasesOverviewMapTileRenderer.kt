@@ -212,12 +212,8 @@ class CaseDotsMapTileRenderer @Inject constructor(
             }
 
             worksites.onEach {
-                mapCaseDotProvider.getDotBitmap(it.statusClaim)?.let { dotBitmap ->
-                    val xyNorm = coordinates.fromLatLng(it.latitude, it.longitude)
-                    if (xyNorm == null) {
-                        // TODO This needs finishing (and is not working as designed).
-                        //      Worksites on the outskirts of the tile (centered in neighboring tiles) need to be drawn overlapping at the boundaries and complement the dot visual of the worksite.
-                    } else {
+                mapCaseDotProvider.getIconBitmap(it.statusClaim)?.let { dotBitmap ->
+                    coordinates.fromLatLng(it.latitude, it.longitude)?.let { xyNorm ->
                         val (xNorm, yNorm) = xyNorm
                         val left = xNorm.toFloat() * tileSizePx + centerDotOffset
                         val top = yNorm.toFloat() * tileSizePx + centerDotOffset
