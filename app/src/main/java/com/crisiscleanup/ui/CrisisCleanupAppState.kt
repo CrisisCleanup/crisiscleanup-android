@@ -25,10 +25,7 @@ import com.crisiscleanup.feature.menu.navigation.navigateToMenu
 import com.crisiscleanup.feature.team.navigation.navigateToTeam
 import com.crisiscleanup.feature.team.navigation.teamRoute
 import com.crisiscleanup.navigation.TopLevelDestination
-import com.crisiscleanup.navigation.TopLevelDestination.CASES
-import com.crisiscleanup.navigation.TopLevelDestination.DASHBOARD
-import com.crisiscleanup.navigation.TopLevelDestination.MENU
-import com.crisiscleanup.navigation.TopLevelDestination.TEAM
+import com.crisiscleanup.navigation.TopLevelDestination.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
@@ -66,6 +63,9 @@ class CrisisCleanupAppState(
             menuRoute -> MENU
             else -> null
         }
+
+    val isCasesRoute: Boolean
+        @Composable get() = currentDestination?.route == casesRoute
 
     /**
      * Routes that should hide the app header.

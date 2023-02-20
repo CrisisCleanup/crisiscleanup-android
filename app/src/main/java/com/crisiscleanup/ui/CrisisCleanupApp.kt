@@ -1,40 +1,15 @@
 package com.crisiscleanup.ui
 
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.consumedWindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -56,14 +31,7 @@ import com.crisiscleanup.MainActivityViewModel
 import com.crisiscleanup.R
 import com.crisiscleanup.core.appheader.AppHeaderState
 import com.crisiscleanup.core.data.util.NetworkMonitor
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupBackground
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationBar
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationBarItem
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationRail
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationRailItem
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupTopAppBar
-import com.crisiscleanup.core.designsystem.component.TopAppBarDefault
-import com.crisiscleanup.core.designsystem.component.TopAppBarSearch
+import com.crisiscleanup.core.designsystem.component.*
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.icon.Icon.DrawableResourceIcon
 import com.crisiscleanup.core.designsystem.icon.Icon.ImageVectorIcon
@@ -219,7 +187,7 @@ private fun NavigableContent(
     openAuthentication: () -> Unit,
     profilePictureUri: String,
     isAccountExpired: Boolean,
-    onHeaderNavClick: () -> Unit,
+    openIncidentsSelect: () -> Unit,
     onCasesAction: (CasesAction) -> Unit = { },
     searchQuery: () -> String = { "" },
     onQueryChange: (String) -> Unit = {},
@@ -238,6 +206,7 @@ private fun NavigableContent(
             if (showTopBar) {
                 val titleResId = appState.currentTopLevelDestination?.titleTextId ?: 0
                 val title = if (titleResId != 0) stringResource(titleResId) else headerTitle
+                val onOpenIncidents = if (appState.isCasesRoute) openIncidentsSelect else null
                 AppHeader(
                     modifier = Modifier.testTag("CrisisCleanupAppHeader"),
                     title = title,
@@ -246,7 +215,7 @@ private fun NavigableContent(
                     profilePictureUri = profilePictureUri,
                     isAccountExpired = isAccountExpired,
                     openAuthentication = openAuthentication,
-                    onTextClick = onHeaderNavClick,
+                    onOpenIncidents = onOpenIncidents,
                     searchQuery = searchQuery,
                     onQueryChange = onQueryChange,
                 )
@@ -313,7 +282,7 @@ private fun AppHeader(
     profilePictureUri: String = "",
     isAccountExpired: Boolean = false,
     openAuthentication: () -> Unit = {},
-    onTextClick: () -> Unit = {},
+    onOpenIncidents: (() -> Unit)? = null,
     searchQuery: () -> String = { "" },
     onQueryChange: (String) -> Unit = {},
 ) {
@@ -331,23 +300,30 @@ private fun AppHeader(
                 onNavigationClick = null,
                 titleContent = @Composable {
                     // TODO Match height of visible part of app bar (not the entire app bar)
-                    Row(
-                        modifier = modifier.clickable(onClick = onTextClick),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
+                    if (onOpenIncidents == null) {
                         Text(title)
-                        Icon(
-                            imageVector = CrisisCleanupIcons.ArrowDropDown,
-                            contentDescription = stringResource(casesR.string.change_incident),
-                            tint = MaterialTheme.colorScheme.primary,
-                        )
-                        if (isAppHeaderLoading) {
-                            // TODO Use consistent loading indicators
-                            CircularProgressIndicator(
-                                modifier
-                                    .size(48.dp)
-                                    .padding(8.dp)
+                    } else {
+                        Row(
+                            modifier = modifier.clickable(onClick = onOpenIncidents),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(title)
+                            Icon(
+                                imageVector = CrisisCleanupIcons.ArrowDropDown,
+                                contentDescription = stringResource(casesR.string.change_incident),
+                                tint = MaterialTheme.colorScheme.primary,
                             )
+                            AnimatedVisibility(
+                                visible = isAppHeaderLoading,
+                                enter = fadeIn(),
+                                exit = fadeOut()
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier
+                                        .size(48.dp)
+                                        .padding(8.dp)
+                                )
+                            }
                         }
                     }
                 }
