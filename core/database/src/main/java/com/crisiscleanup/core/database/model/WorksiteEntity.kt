@@ -1,10 +1,6 @@
 package com.crisiscleanup.core.database.model
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.Index
-import androidx.room.PrimaryKey
+import androidx.room.*
 import com.crisiscleanup.core.model.data.WorkType
 import kotlinx.datetime.Instant
 
@@ -168,7 +164,7 @@ fun WorkTypeEntity.asExternalModel() = WorkType(
     phase = phase,
     recur = recur,
     statusLiteral = status,
-    workType = workType,
+    workTypeLiteral = workType,
 )
 
 // TODO Events XR

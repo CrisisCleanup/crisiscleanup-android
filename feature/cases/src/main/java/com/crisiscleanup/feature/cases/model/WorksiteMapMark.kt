@@ -21,7 +21,7 @@ fun WorksiteMapMark.asWorksiteGoogleMapMark(iconProvider: MapCaseIconProvider): 
         source = this,
         latLng = latLng,
         markerState = MarkerState(latLng),
-        mapIcon = iconProvider.getIcon(statusClaim),
+        mapIcon = iconProvider.getIcon(statusClaim, workType),
         mapIconOffset = Offset(0.5f, 0.5f),
     )
 }

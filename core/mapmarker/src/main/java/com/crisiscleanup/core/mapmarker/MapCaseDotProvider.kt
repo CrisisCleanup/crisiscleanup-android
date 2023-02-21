@@ -8,6 +8,7 @@ import androidx.compose.ui.geometry.Offset
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.model.data.CaseStatus.Unknown
 import com.crisiscleanup.core.model.data.WorkTypeStatusClaim
+import com.crisiscleanup.core.model.data.WorkTypeType
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import javax.inject.Inject
@@ -70,7 +71,10 @@ class InMemoryDotProvider @Inject constructor(
         }
     }
 
-    override fun getIcon(statusClaim: WorkTypeStatusClaim): BitmapDescriptor? {
+    override fun getIcon(
+        statusClaim: WorkTypeStatusClaim,
+        workType: WorkTypeType,
+    ): BitmapDescriptor? {
         synchronized(cache) {
             cache.get(statusClaim)?.let {
                 return it
@@ -80,7 +84,10 @@ class InMemoryDotProvider @Inject constructor(
         return cacheDotBitmap(statusClaim, cacheDotDrawProperties)
     }
 
-    override fun getIconBitmap(statusClaim: WorkTypeStatusClaim): Bitmap? {
+    override fun getIconBitmap(
+        statusClaim: WorkTypeStatusClaim,
+        workType: WorkTypeType,
+    ): Bitmap? {
         synchronized(cache) {
             bitmapCache.get(statusClaim)?.let {
                 return it

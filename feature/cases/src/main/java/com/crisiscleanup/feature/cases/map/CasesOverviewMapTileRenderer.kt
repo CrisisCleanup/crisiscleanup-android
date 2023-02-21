@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.mapLatest
 import java.io.ByteArrayOutputStream
+import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.roundToInt
@@ -53,6 +54,7 @@ class CaseDotsMapTileRenderer @Inject constructor(
     private val appEnv: AppEnv,
     private val logger: AppLogger,
 ) : CasesOverviewMapTileRenderer, TileProvider {
+    private val renderingCounter = AtomicInteger()
     private var renderingCount = MutableStateFlow(0)
     override var isBusy = renderingCount.mapLatest { it > 0 }
         private set
@@ -122,10 +124,10 @@ class CaseDotsMapTileRenderer @Inject constructor(
         coordinates: TileCoordinates
     ): Tile? {
         try {
-            renderingCount.value++
+            renderingCount.value = renderingCounter.incrementAndGet()
             return renderTileInternal(coordinates)
         } finally {
-            renderingCount.value--
+            renderingCount.value = renderingCounter.decrementAndGet()
         }
     }
 
@@ -212,7 +214,7 @@ class CaseDotsMapTileRenderer @Inject constructor(
             }
 
             worksites.onEach {
-                mapCaseDotProvider.getIconBitmap(it.statusClaim)?.let { dotBitmap ->
+                mapCaseDotProvider.getIconBitmap(it.statusClaim, it.workType)?.let { dotBitmap ->
                     coordinates.fromLatLng(it.latitude, it.longitude)?.let { xyNorm ->
                         val (xNorm, yNorm) = xyNorm
                         val left = xNorm.toFloat() * tileSizePx + centerDotOffset

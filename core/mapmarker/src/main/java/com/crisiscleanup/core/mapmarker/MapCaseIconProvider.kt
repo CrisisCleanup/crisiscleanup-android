@@ -3,6 +3,7 @@ package com.crisiscleanup.core.mapmarker
 import android.graphics.Bitmap
 import androidx.compose.ui.geometry.Offset
 import com.crisiscleanup.core.model.data.WorkTypeStatusClaim
+import com.crisiscleanup.core.model.data.WorkTypeType
 import com.google.android.gms.maps.model.BitmapDescriptor
 
 interface MapCaseIconProvider {
@@ -11,7 +12,7 @@ interface MapCaseIconProvider {
      */
     val iconOffset: Offset
 
-    fun getIcon(statusClaim: WorkTypeStatusClaim): BitmapDescriptor?
+    fun getIcon(statusClaim: WorkTypeStatusClaim, workType: WorkTypeType): BitmapDescriptor?
 
-    fun getIconBitmap(statusClaim: WorkTypeStatusClaim): Bitmap?
+    fun getIconBitmap(statusClaim: WorkTypeStatusClaim, workType: WorkTypeType): Bitmap?
 }

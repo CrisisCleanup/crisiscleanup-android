@@ -71,5 +71,6 @@ fun PopulatedWorksiteMapVisual.asExternalModel() = WorksiteMapMark(
     id = id,
     latitude = latitude,
     longitude = longitude,
-    statusClaim = WorkTypeStatusClaim.make(keyWorkTypeStatus, keyWorkTypeOrgClaim)
+    statusClaim = WorkTypeStatusClaim.make(keyWorkTypeStatus, keyWorkTypeOrgClaim),
+    workType = WorkTypeStatusClaim.getType(keyWorkTypeType),
 )
