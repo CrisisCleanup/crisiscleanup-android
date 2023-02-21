@@ -6,4 +6,5 @@ data class WorksiteMapMark(
     val longitude: Double,
     val statusClaim: WorkTypeStatusClaim,
     val workType: WorkTypeType,
+    val workTypeCount: Int,
 )

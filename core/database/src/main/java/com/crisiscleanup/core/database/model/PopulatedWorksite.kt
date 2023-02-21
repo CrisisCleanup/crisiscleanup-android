@@ -65,6 +65,8 @@ data class PopulatedWorksiteMapVisual(
     val keyWorkTypeOrgClaim: Long?,
     @ColumnInfo("key_work_type_status")
     val keyWorkTypeStatus: String,
+    @ColumnInfo("work_type_count")
+    val workTypeCount: Int,
 )
 
 fun PopulatedWorksiteMapVisual.asExternalModel() = WorksiteMapMark(
@@ -73,4 +75,5 @@ fun PopulatedWorksiteMapVisual.asExternalModel() = WorksiteMapMark(
     longitude = longitude,
     statusClaim = WorkTypeStatusClaim.make(keyWorkTypeStatus, keyWorkTypeOrgClaim),
     workType = WorkTypeStatusClaim.getType(keyWorkTypeType),
+    workTypeCount = workTypeCount,
 )

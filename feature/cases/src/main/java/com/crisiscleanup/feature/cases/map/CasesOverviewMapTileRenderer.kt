@@ -214,7 +214,11 @@ class CaseDotsMapTileRenderer @Inject constructor(
             }
 
             worksites.onEach {
-                mapCaseDotProvider.getIconBitmap(it.statusClaim, it.workType)?.let { dotBitmap ->
+                mapCaseDotProvider.getIconBitmap(
+                    it.statusClaim,
+                    it.workType,
+                    it.workTypeCount > 1,
+                )?.let { dotBitmap ->
                     coordinates.fromLatLng(it.latitude, it.longitude)?.let { xyNorm ->
                         val (xNorm, yNorm) = xyNorm
                         val left = xNorm.toFloat() * tileSizePx + centerDotOffset

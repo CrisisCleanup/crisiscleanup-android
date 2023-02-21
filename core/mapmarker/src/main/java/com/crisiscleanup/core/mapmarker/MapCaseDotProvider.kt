@@ -74,6 +74,7 @@ class InMemoryDotProvider @Inject constructor(
     override fun getIcon(
         statusClaim: WorkTypeStatusClaim,
         workType: WorkTypeType,
+        hasMultipleWorkTypes: Boolean,
     ): BitmapDescriptor? {
         synchronized(cache) {
             cache.get(statusClaim)?.let {
@@ -87,6 +88,7 @@ class InMemoryDotProvider @Inject constructor(
     override fun getIconBitmap(
         statusClaim: WorkTypeStatusClaim,
         workType: WorkTypeType,
+        hasMultipleWorkTypes: Boolean,
     ): Bitmap? {
         synchronized(cache) {
             bitmapCache.get(statusClaim)?.let {

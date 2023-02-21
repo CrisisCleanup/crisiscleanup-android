@@ -12,7 +12,15 @@ interface MapCaseIconProvider {
      */
     val iconOffset: Offset
 
-    fun getIcon(statusClaim: WorkTypeStatusClaim, workType: WorkTypeType): BitmapDescriptor?
+    fun getIcon(
+        statusClaim: WorkTypeStatusClaim,
+        workType: WorkTypeType,
+        hasMultipleWorkTypes: Boolean,
+    ): BitmapDescriptor?
 
-    fun getIconBitmap(statusClaim: WorkTypeStatusClaim, workType: WorkTypeType): Bitmap?
+    fun getIconBitmap(
+        statusClaim: WorkTypeStatusClaim,
+        workType: WorkTypeType,
+        hasMultipleWorkTypes: Boolean,
+    ): Bitmap?
 }

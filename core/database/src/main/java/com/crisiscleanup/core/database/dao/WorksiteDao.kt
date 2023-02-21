@@ -42,12 +42,13 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
-        SELECT id, latitude, longitude, key_work_type_type, key_work_type_org, key_work_type_status
-        FROM worksites
+        SELECT w.id, latitude, longitude, key_work_type_type, key_work_type_org, key_work_type_status, COUNT(wt.id) as work_type_count
+        FROM worksites w LEFT JOIN work_types wt ON w.id=wt.worksite_id
         WHERE incident_id=:incidentId AND
         (latitude BETWEEN :latitudeSouth AND :latitudeNorth) AND
         (longitude BETWEEN :longitudeWest AND :longitudeEast)
-        ORDER BY updated_at DESC, id DESC
+        GROUP BY w.id
+        ORDER BY updated_at DESC, w.id DESC
         LIMIT :limit
         OFFSET :offset
         """
@@ -65,12 +66,13 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
-        SELECT id, latitude, longitude, key_work_type_type, key_work_type_type, key_work_type_org, key_work_type_status
-        FROM worksites
+        SELECT w.id, latitude, longitude, key_work_type_type, key_work_type_org, key_work_type_status, COUNT(wt.id) as work_type_count
+        FROM worksites w LEFT JOIN work_types wt ON w.id=wt.worksite_id
         WHERE incident_id=:incidentId AND
         (latitude BETWEEN :latitudeSouth AND :latitudeNorth) AND
         (longitude>=:longitudeLeft OR longitude<=:longitudeRight)
-        ORDER BY updated_at DESC, id DESC
+        GROUP BY w.id
+        ORDER BY updated_at DESC, w.id DESC
         LIMIT :limit
         OFFSET :offset
         """
@@ -101,10 +103,11 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
-        SELECT id, latitude, longitude, key_work_type_type, key_work_type_type, key_work_type_org, key_work_type_status
-        FROM worksites
+        SELECT w.id, latitude, longitude, key_work_type_type, key_work_type_org, key_work_type_status, COUNT(wt.id) as work_type_count
+        FROM worksites w LEFT JOIN work_types wt ON w.id=wt.worksite_id
         WHERE incident_id=:incidentId
-        ORDER BY updated_at DESC, id DESC
+        GROUP BY w.id
+        ORDER BY updated_at DESC, w.id DESC
         LIMIT :limit
         OFFSET :offset
         """
@@ -118,12 +121,13 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
-        SELECT id, latitude, longitude, key_work_type_type, key_work_type_org, key_work_type_status
-        FROM worksites
+        SELECT w.id, latitude, longitude, key_work_type_type, key_work_type_org, key_work_type_status, COUNT(wt.id) as work_type_count
+        FROM worksites w LEFT JOIN work_types wt ON w.id=wt.worksite_id
         WHERE incident_id=:incidentId AND
         (latitude BETWEEN :latitudeSouth AND :latitudeNorth) AND
         (longitude BETWEEN :longitudeWest AND :longitudeEast)
-        ORDER BY updated_at DESC, id DESC
+        GROUP BY w.id
+        ORDER BY updated_at DESC, w.id DESC
         LIMIT :limit
         OFFSET :offset
         """

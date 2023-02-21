@@ -2,6 +2,7 @@ package com.crisiscleanup.core.mapmarker
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.drawable.Drawable
 import androidx.collection.LruCache
 import androidx.compose.ui.geometry.Offset
 import androidx.core.graphics.alpha
@@ -19,25 +20,25 @@ import com.google.android.material.animation.ArgbEvaluatorCompat
 import javax.inject.Inject
 import javax.inject.Singleton
 
-typealias TypeStatusClaim = Pair<WorkTypeStatusClaim, WorkTypeType>
-
 @Singleton
 class WorkTypeIconProvider @Inject constructor(
     private val resourceProvider: AndroidResourceProvider,
     private val logger: AppLogger,
 ) : MapCaseIconProvider {
-    private val cache = LruCache<TypeStatusClaim, BitmapDescriptor>(32)
-    private val bitmapCache = LruCache<WorkTypeStatusClaim, Bitmap>(32)
+    private val cache = LruCache<CacheKey, BitmapDescriptor>(64)
+    private val bitmapCache = LruCache<CacheKey, Bitmap>(64)
 
     private val argbEvaluator = ArgbEvaluatorCompat()
 
     // TODO Make configurable
     private val bitmapSizeDp = 48f
     private val bitmapSize: Int
-    private var bitmapCenterOffset: Offset = Offset(0f, 0f)
+    private var bitmapCenterOffset = Offset(0f, 0f)
 
     override val iconOffset: Offset
         get() = bitmapCenterOffset
+
+    private val plusDrawable: Drawable
 
     init {
         logger.tag = "map-icon"
@@ -45,17 +46,16 @@ class WorkTypeIconProvider @Inject constructor(
         bitmapSize = resourceProvider.dpToPx(bitmapSizeDp).toInt()
         val centerOffset = bitmapSizeDp * 0.5f
         bitmapCenterOffset = Offset(centerOffset, centerOffset)
+
+        plusDrawable = resourceProvider.getDrawable(R.drawable.ic_work_type_plus)
     }
 
-    private fun cacheIconBitmap(
-        statusClaim: WorkTypeStatusClaim,
-        workType: WorkTypeType,
-    ): BitmapDescriptor {
-        val bitmap = drawIcon(statusClaim, workType)
+    private fun cacheIconBitmap(cacheKey: CacheKey): BitmapDescriptor {
+        val bitmap = drawIcon(cacheKey)
         val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap)
         synchronized(cache) {
-            bitmapCache.put(statusClaim, bitmap)
-            cache.put(Pair(statusClaim, workType), bitmapDescriptor)
+            bitmapCache.put(cacheKey, bitmap)
+            cache.put(cacheKey, bitmapDescriptor)
             return bitmapDescriptor
         }
     }
@@ -63,42 +63,43 @@ class WorkTypeIconProvider @Inject constructor(
     override fun getIcon(
         statusClaim: WorkTypeStatusClaim,
         workType: WorkTypeType,
+        hasMultipleWorkTypes: Boolean,
     ): BitmapDescriptor? {
+        val cacheKey = CacheKey(statusClaim, workType, hasMultipleWorkTypes)
         synchronized(cache) {
-            cache.get(Pair(statusClaim, workType))?.let {
+            cache.get(cacheKey)?.let {
                 return it
             }
         }
 
-        return cacheIconBitmap(statusClaim, workType)
+        return cacheIconBitmap(cacheKey)
     }
 
     override fun getIconBitmap(
         statusClaim: WorkTypeStatusClaim,
         workType: WorkTypeType,
+        hasMultipleWorkTypes: Boolean,
     ): Bitmap? {
+        val cacheKey = CacheKey(statusClaim, workType, hasMultipleWorkTypes)
         synchronized(cache) {
-            bitmapCache.get(statusClaim)?.let {
+            bitmapCache.get(cacheKey)?.let {
                 return it
             }
         }
 
-        cacheIconBitmap(statusClaim, workType)
+        cacheIconBitmap(cacheKey)
         synchronized(cache) {
-            bitmapCache.get(statusClaim)?.let {
+            bitmapCache.get(cacheKey)?.let {
                 return it
             }
             return null
         }
     }
 
-    private fun drawIcon(
-        statusClaim: WorkTypeStatusClaim,
-        workType: WorkTypeType,
-    ): Bitmap {
-        val status = statusClaimToStatus[statusClaim]
+    private fun drawIcon(cacheKey: CacheKey): Bitmap {
+        val status = statusClaimToStatus[cacheKey.statusClaim]
 
-        val iconResId = statusIcons[workType] ?: R.drawable.ic_work_type_unknown
+        val iconResId = statusIcons[cacheKey.workType] ?: R.drawable.ic_work_type_unknown
         val drawable = resourceProvider.getDrawable(iconResId)
         val output = Bitmap.createBitmap(
             bitmapSize,
@@ -136,7 +137,18 @@ class WorkTypeIconProvider @Inject constructor(
             }
         }
 
-        // TODO Draw plus over if there are multiple
+        if (cacheKey.hasMultipleWorkTypes) {
+            synchronized(plusDrawable) {
+                plusDrawable.setBounds(
+                    canvas.width - plusDrawable.intrinsicWidth,
+                    canvas.height - plusDrawable.intrinsicHeight,
+                    canvas.width,
+                    canvas.height,
+                )
+                plusDrawable.draw(canvas)
+
+            }
+        }
 
         return output
     }
@@ -186,3 +198,9 @@ class WorkTypeIconProvider @Inject constructor(
         WellnessCheck to R.drawable.ic_work_type_wellness_check,
     )
 }
+
+private data class CacheKey(
+    val statusClaim: WorkTypeStatusClaim,
+    val workType: WorkTypeType,
+    val hasMultipleWorkTypes: Boolean,
+)
