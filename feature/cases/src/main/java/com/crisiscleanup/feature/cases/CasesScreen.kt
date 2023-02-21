@@ -80,6 +80,8 @@ internal fun CasesRoute(
         }
         val showDataProgress by casesViewModel.showDataProgress.collectAsStateWithLifecycle(false)
         val dataProgress by casesViewModel.dataProgress.collectAsStateWithLifecycle(0f)
+        val hiddenMarkersMessage =
+            remember(casesViewModel) { { casesViewModel.hiddenMarkersMessage } }
         CasesScreen(
             modifier,
             showDataProgress = showDataProgress,
@@ -97,6 +99,7 @@ internal fun CasesRoute(
             casesDotTileProvider = casesDotTileProvider,
             onMapLoaded = onMapLoaded,
             onMapCameraChange = onMapCameraChange,
+            hiddenMarkersMessage = hiddenMarkersMessage,
         )
     } else {
         val isSyncingIncidents by casesViewModel.isSyncingIncidents.collectAsState(true)
@@ -153,6 +156,7 @@ internal fun CasesScreen(
     casesDotTileProvider: () -> TileProvider? = { null },
     onMapLoaded: () -> Unit = {},
     onMapCameraChange: (CameraPosition, Projection?, Boolean) -> Unit = { _, _, _ -> },
+    hiddenMarkersMessage: () -> String = { "" },
 ) {
     Box(modifier.then(Modifier.fillMaxSize())) {
         if (isTableView) {
@@ -169,6 +173,7 @@ internal fun CasesScreen(
                 casesDotTileProvider,
                 onMapLoaded,
                 onMapCameraChange,
+                hiddenMarkersMessage,
             )
         }
         CasesOverlayActions(
@@ -202,6 +207,7 @@ internal fun BoxScope.CasesMapView(
     casesDotTileProvider: () -> TileProvider? = { null },
     onMapLoaded: () -> Unit = {},
     onMapCameraChange: (CameraPosition, Projection?, Boolean) -> Unit = { _, _, _ -> },
+    hiddenMarkersMessage: () -> String = { "" },
 ) {
     // TODO Profile and optimize recompositions when map is changed (by user) if possible.
 
@@ -285,6 +291,27 @@ internal fun BoxScope.CasesMapView(
                 .padding(96.dp)
                 .size(24.dp)
         )
+    }
+
+    val message = hiddenMarkersMessage()
+    AnimatedVisibility(
+        modifier = Modifier.align(Alignment.BottomStart),
+        visible = message.isNotEmpty(),
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        Surface(
+            Modifier.padding(
+                horizontal = 16.dp,
+                vertical = 48.dp,
+            )
+        ) {
+            Text(
+                text = message,
+                modifier = Modifier.padding(8.dp),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
     }
 
     val currentLocalDensity = LocalDensity.current

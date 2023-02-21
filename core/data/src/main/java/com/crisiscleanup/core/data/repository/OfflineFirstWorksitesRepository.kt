@@ -127,6 +127,20 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     override fun getWorksitesCount(incidentId: Long): Int =
         worksiteDao.getWorksitesCount(incidentId)
 
+    override fun getWorksitesCount(
+        incidentId: Long,
+        latitudeSouth: Double,
+        latitudeNorth: Double,
+        longitudeLeft: Double,
+        longitudeRight: Double
+    ): Int = worksiteDaoPlus.getWorksitesCount(
+        incidentId,
+        latitudeSouth,
+        latitudeNorth,
+        longitudeLeft,
+        longitudeRight
+    )
+
     override fun getWorksitesSyncStats(incidentId: Long): WorksitesSyncStats? {
         return worksitesSyncStatsDao.getSyncStats(incidentId).firstOrNull()?.asExternalModel()
     }

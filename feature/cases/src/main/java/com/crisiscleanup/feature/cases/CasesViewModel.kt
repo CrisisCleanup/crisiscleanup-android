@@ -1,11 +1,12 @@
 package com.crisiscleanup.feature.cases
 
 import android.content.ComponentCallbacks2
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.appheader.AppHeaderUiState
+import com.crisiscleanup.core.common.AndroidResourceProvider
+import com.crisiscleanup.core.common.AppMemoryStats
 import com.crisiscleanup.core.common.Syncer
 import com.crisiscleanup.core.common.event.TrimMemoryEventManager
 import com.crisiscleanup.core.common.event.TrimMemoryListener
@@ -22,10 +23,7 @@ import com.crisiscleanup.core.domain.LoadIncidentDataUseCase
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.ui.SearchManager
-import com.crisiscleanup.feature.cases.map.CasesMapBoundsManager
-import com.crisiscleanup.feature.cases.map.CasesMapTileLayerManager
-import com.crisiscleanup.feature.cases.map.CasesOverviewMapTileRenderer
-import com.crisiscleanup.feature.cases.map.IncidentIdWorksiteCount
+import com.crisiscleanup.feature.cases.map.*
 import com.crisiscleanup.feature.cases.model.CoordinateBounds
 import com.crisiscleanup.feature.cases.model.MapViewCameraZoom
 import com.crisiscleanup.feature.cases.model.MapViewCameraZoomDefault
@@ -35,6 +33,7 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.TileProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
@@ -56,6 +55,8 @@ class CasesViewModel @Inject constructor(
     private val tileProvider: TileProvider,
     searchManager: SearchManager,
     private val syncer: Syncer,
+    private val resourceProvider: AndroidResourceProvider,
+    appMemoryStats: AppMemoryStats,
     trimMemoryEventManager: TrimMemoryEventManager,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
     private val logger: AppLogger,
@@ -113,6 +114,14 @@ class CasesViewModel @Inject constructor(
                 rendererBusy
     }
 
+    private val mapMarkerManager = CasesMapMarkerManager(
+        worksitesRepository,
+        appMemoryStats,
+        logger,
+    )
+
+    var hiddenMarkersMessage = ""
+        private set
     val worksitesMapMarkers = qsm.worksiteQueryState
         // TODO Make debounce a parameter
         .debounce(250)
@@ -122,7 +131,7 @@ class CasesViewModel @Inject constructor(
                     id == EmptyIncident.id ||
                     mapTileRenderer.rendersAt(wqs.zoom)
 
-            Log.w("query", "Query state change ${wqs.zoom} $wqs")
+            logger.logDebug("Query state change", wqs)
 
             if (skipMarkers) {
                 flowOf(emptyList())
@@ -130,20 +139,17 @@ class CasesViewModel @Inject constructor(
                 withContext(ioDispatcher) {
                     val sw = wqs.coordinateBounds.southWest
                     val ne = wqs.coordinateBounds.northEast
-                    val visuals = worksitesRepository.getWorksitesMapVisual(
-                        id,
-                        sw.latitude,
-                        ne.latitude,
-                        sw.longitude,
-                        ne.longitude,
-                        // TODO Make parameter.
-                        //      Decide how to prioritize when there are plenty if not already documented.
-                        //      At a minimum show a visual with number of markers displayed/total.
-                        250,
-                        0,
-                    ).map { mark -> mark.asWorksiteGoogleMapMark(mapCaseIconProvider) }
+                    val marksQuery = mapMarkerManager.queryWorksitesInBounds(id, sw, ne)
+                    val visuals = marksQuery.first.map { mark ->
+                        mark.asWorksiteGoogleMapMark(mapCaseIconProvider)
+                    }
 
-                    Log.w("Query", "Result ${visuals.size}")
+                    val hiddenWorksites = marksQuery.second - visuals.size
+                    hiddenMarkersMessage = if (hiddenWorksites > 0) resourceProvider.getString(
+                        R.string.worksite_markers_hidden,
+                        hiddenWorksites
+                    )
+                    else ""
 
                     flowOf(visuals)
                 }
@@ -191,39 +197,7 @@ class CasesViewModel @Inject constructor(
         incidentWorksitesCount
             .debounce(16)
             .throttleLatest(1_000)
-            .onEach {
-                var refreshTiles = true
-                var clearCache = false
-
-                dataPullReporter.worksitesDataPullStats.first().run {
-                    if (it.id != incidentId) {
-                        return@run
-                    }
-
-                    refreshTiles = isEnded
-                    clearCache = isEnded
-                    val now = Clock.System.now()
-                    if (!refreshTiles && progress > 0.33f) {
-                        val projectedDelta = projectedFinish - now
-                        refreshTiles = now - pullStart > tileClearRefreshInterval &&
-                                now - countChangeClearInstant > tileClearRefreshInterval &&
-                                projectedDelta > tileClearRefreshInterval
-                        clearCache =
-                            projectedDelta > tileClearRefreshInterval.times(2) && progress in 0.5f..0.7f
-                    }
-
-                    if (refreshTiles) {
-                        countChangeClearInstant = now
-                    }
-                }
-
-                if (clearCache) {
-                    casesMapTileManager.clearTiles()
-                }
-                if (refreshTiles) {
-                    mapTileRenderer.setIncident(it.id, it.count, clearCache)
-                }
-            }
+            .onEach { refreshTiles(it) }
             .launchIn(viewModelScope)
     }
 
@@ -271,6 +245,40 @@ class CasesViewModel @Inject constructor(
             mapBoundsManager.centerCache,
             ((mapTileRenderer.zoomThreshold + 1) + Math.random() * 1e-3).toFloat(),
         )
+    }
+
+    private suspend fun refreshTiles(it: IncidentIdWorksiteCount) = coroutineScope {
+        var refreshTiles = true
+        var clearCache = false
+
+        dataPullReporter.worksitesDataPullStats.first().run {
+            if (it.id != incidentId) {
+                return@run
+            }
+
+            refreshTiles = isEnded
+            clearCache = isEnded
+            val now = Clock.System.now()
+            if (!refreshTiles && progress > 0.33f) {
+                val projectedDelta = projectedFinish - now
+                refreshTiles = now - pullStart > tileClearRefreshInterval &&
+                        now - countChangeClearInstant > tileClearRefreshInterval &&
+                        projectedDelta > tileClearRefreshInterval
+                clearCache =
+                    projectedDelta > tileClearRefreshInterval.times(2) && progress in 0.5f..0.7f
+            }
+
+            if (refreshTiles) {
+                countChangeClearInstant = now
+            }
+        }
+
+        if (clearCache) {
+            casesMapTileManager.clearTiles()
+        }
+        if (refreshTiles) {
+            mapTileRenderer.setIncident(it.id, it.count, clearCache)
+        }
     }
 
     // TrimMemoryListener

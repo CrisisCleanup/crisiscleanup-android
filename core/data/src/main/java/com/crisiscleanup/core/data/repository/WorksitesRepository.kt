@@ -45,6 +45,14 @@ interface WorksitesRepository {
 
     fun getWorksitesCount(incidentId: Long): Int
 
+    fun getWorksitesCount(
+        incidentId: Long,
+        latitudeSouth: Double,
+        latitudeNorth: Double,
+        longitudeLeft: Double,
+        longitudeRight: Double,
+    ): Int
+
     suspend fun refreshWorksites(incidentId: Long, force: Boolean)
 
     fun getWorksitesSyncStats(incidentId: Long): WorksitesSyncStats?

@@ -45,8 +45,8 @@ interface WorksiteDao {
         SELECT w.id, latitude, longitude, key_work_type_type, key_work_type_org, key_work_type_status, COUNT(wt.id) as work_type_count
         FROM worksites w LEFT JOIN work_types wt ON w.id=wt.worksite_id
         WHERE incident_id=:incidentId AND
-        (latitude BETWEEN :latitudeSouth AND :latitudeNorth) AND
-        (longitude BETWEEN :longitudeWest AND :longitudeEast)
+              (longitude BETWEEN :longitudeWest AND :longitudeEast) AND
+              (latitude BETWEEN :latitudeSouth AND :latitudeNorth)
         GROUP BY w.id
         ORDER BY updated_at DESC, w.id DESC
         LIMIT :limit
@@ -69,8 +69,8 @@ interface WorksiteDao {
         SELECT w.id, latitude, longitude, key_work_type_type, key_work_type_org, key_work_type_status, COUNT(wt.id) as work_type_count
         FROM worksites w LEFT JOIN work_types wt ON w.id=wt.worksite_id
         WHERE incident_id=:incidentId AND
-        (latitude BETWEEN :latitudeSouth AND :latitudeNorth) AND
-        (longitude>=:longitudeLeft OR longitude<=:longitudeRight)
+              (longitude>=:longitudeLeft OR longitude<=:longitudeRight) AND
+              (latitude BETWEEN :latitudeSouth AND :latitudeNorth)
         GROUP BY w.id
         ORDER BY updated_at DESC, w.id DESC
         LIMIT :limit
@@ -124,8 +124,8 @@ interface WorksiteDao {
         SELECT w.id, latitude, longitude, key_work_type_type, key_work_type_org, key_work_type_status, COUNT(wt.id) as work_type_count
         FROM worksites w LEFT JOIN work_types wt ON w.id=wt.worksite_id
         WHERE incident_id=:incidentId AND
-        (latitude BETWEEN :latitudeSouth AND :latitudeNorth) AND
-        (longitude BETWEEN :longitudeWest AND :longitudeEast)
+              (longitude BETWEEN :longitudeWest AND :longitudeEast) AND
+              (latitude BETWEEN :latitudeSouth AND :latitudeNorth)
         GROUP BY w.id
         ORDER BY updated_at DESC, w.id DESC
         LIMIT :limit
@@ -145,6 +145,42 @@ interface WorksiteDao {
     @Transaction
     @Query("SELECT COUNT(id) FROM worksites_root WHERE incident_id=:incidentId")
     fun getWorksitesCount(incidentId: Long): Int
+
+    @Transaction
+    @Query(
+        """
+        SELECT COUNT(id)
+        FROM worksites
+        WHERE incident_id=:incidentId AND
+              (longitude BETWEEN :longitudeWest AND :longitudeEast) AND
+              (latitude BETWEEN :latitudeSouth AND :latitudeNorth)
+        """
+    )
+    fun getWorksitesCount(
+        incidentId: Long,
+        latitudeSouth: Double,
+        latitudeNorth: Double,
+        longitudeWest: Double,
+        longitudeEast: Double,
+    ): Int
+
+    @Transaction
+    @Query(
+        """
+        SELECT COUNT(id)
+        FROM worksites
+        WHERE incident_id=:incidentId AND
+              (longitude>=:longitudeLeft OR longitude<=:longitudeRight) AND
+              (latitude BETWEEN :latitudeSouth AND :latitudeNorth)
+        """
+    )
+    fun getWorksitesCountLongitudeCrossover(
+        incidentId: Long,
+        latitudeSouth: Double,
+        latitudeNorth: Double,
+        longitudeLeft: Double,
+        longitudeRight: Double,
+    ): Int
 
     @Transaction
     @Query("SELECT COUNT(id) FROM worksites_root WHERE incident_id=:incidentId")
@@ -183,7 +219,9 @@ interface WorksiteDao {
         sync_attempt=0,
         is_local_modified=0,
         incident_id=:incidentId
-        WHERE id=:id AND network_id=:networkId AND local_modified_at=:expectedLocalModifiedAt
+        WHERE id=:id AND
+              network_id=:networkId AND
+              local_modified_at=:expectedLocalModifiedAt
         """
     )
     fun syncUpdateWorksiteRoot(

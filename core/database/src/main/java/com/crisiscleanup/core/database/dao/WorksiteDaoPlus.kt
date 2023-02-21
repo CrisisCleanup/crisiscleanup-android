@@ -169,4 +169,30 @@ class WorksiteDaoPlus @Inject constructor(
             offset,
         )
     }
+
+    fun getWorksitesCount(
+        incidentId: Long,
+        latitudeSouth: Double,
+        latitudeNorth: Double,
+        longitudeLeft: Double,
+        longitudeRight: Double,
+    ): Int {
+        val worksiteDao = db.worksiteDao()
+        val isLongitudeOrdered = longitudeLeft < longitudeRight
+        return if (isLongitudeOrdered)
+            worksiteDao.getWorksitesCount(
+                incidentId,
+                latitudeSouth,
+                latitudeNorth,
+                longitudeLeft,
+                longitudeRight,
+            )
+        else worksiteDao.getWorksitesCountLongitudeCrossover(
+            incidentId,
+            latitudeSouth,
+            latitudeNorth,
+            longitudeLeft,
+            longitudeRight,
+        )
+    }
 }

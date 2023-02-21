@@ -15,4 +15,5 @@
     <string name="retry_load_incidents">Retry</string>
     <string name="no_incidents_to_select">Incidents have gone.</string>
     <string name="close">Close</string>
+    <string name="worksite_markers_hidden">%1$d worksites not shown</string>
 </resources>
