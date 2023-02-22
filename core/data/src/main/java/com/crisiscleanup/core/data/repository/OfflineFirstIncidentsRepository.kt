@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.data.repository
 
+import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.model.asEntity
@@ -14,7 +15,7 @@ import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
-import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.tryGetException
+import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.tryThrowException
 import com.crisiscleanup.core.network.model.NetworkIncident
 import com.crisiscleanup.core.network.model.NetworkIncidentLocation
 import kotlinx.coroutines.CoroutineDispatcher
@@ -33,6 +34,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     private val incidentDaoPlus: IncidentDaoPlus,
     private val locationDaoPlus: LocationDaoPlus,
     private val appPreferences: LocalAppPreferencesDataSource,
+    private val authEventManager: AuthEventManager,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : IncidentsRepository {
     private var isSyncing = MutableStateFlow(false)
@@ -50,9 +52,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
         // TODO On emulator this call sometimes get cancelled after logging in from a clean install. This was happening before syncing used WorkManager. Test on devices and see if similar happens. See with try/catch and logging exception.
         val networkLocations = networkDataSource.getIncidentLocations(locationIds)
 
-        networkLocations.errors?.let {
-            tryGetException(it)?.let { exception -> throw exception }
-        }
+        tryThrowException(authEventManager, networkLocations.errors)
 
         networkLocations.results?.let { locations ->
             val sourceLocations = locations.map {
@@ -88,9 +88,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
                 )
             )
 
-            networkIncidents.errors?.let {
-                tryGetException(it)?.let { exception -> throw exception }
-            }
+            tryThrowException(authEventManager, networkIncidents.errors)
 
             networkIncidents.results?.let { incidents ->
                 incidentDaoPlus.saveIncidents(

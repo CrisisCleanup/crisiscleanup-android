@@ -10,7 +10,7 @@ import javax.inject.Inject
  * Stores info/data related to the authenticated account
  */
 class AccountInfoDataSource @Inject constructor(
-    private val dataStore: DataStore<AccountInfo>
+    private val dataStore: DataStore<AccountInfo>,
 ) {
     companion object {
         fun defaultProfilePictureUri(fullName: String): String =

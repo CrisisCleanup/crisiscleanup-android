@@ -2,6 +2,7 @@ package com.crisiscleanup.sync
 
 import com.crisiscleanup.core.common.Syncer
 import com.crisiscleanup.core.common.di.ApplicationScope
+import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
@@ -27,6 +28,7 @@ class AppSyncer @Inject constructor(
     private val incidentsRepository: IncidentsRepository,
     private val worksitesRepository: WorksitesRepository,
     private val appPreferences: LocalAppPreferencesDataSource,
+    private val authEventManager: AuthEventManager,
     @ApplicationScope private val applicationScope: CoroutineScope,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : Syncer {
@@ -37,6 +39,7 @@ class AppSyncer @Inject constructor(
         syncJob = applicationScope.launch(ioDispatcher) {
             val accountData = accountDataRepository.accountData.first()
             if (accountData.isTokenInvalid) {
+                authEventManager.onExpiredToken()
                 return@launch
             }
 

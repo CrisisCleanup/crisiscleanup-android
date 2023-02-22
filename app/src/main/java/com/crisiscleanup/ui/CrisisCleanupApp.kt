@@ -70,6 +70,9 @@ fun CrisisCleanupApp(
                 )
             }
 
+            val isAccountExpired by mainActivityViewModel.isAccessTokenExpired
+            var isExpiredTokenReminderShown by rememberSaveable { mutableStateOf(false) }
+
             val authState by mainActivityViewModel.authState.collectAsStateWithLifecycle()
             var openAuthentication by rememberSaveable { mutableStateOf(false) }
             if (authState is AuthState.Loading) {
@@ -82,7 +85,6 @@ fun CrisisCleanupApp(
             } else {
                 val accountData = (authState as AuthState.Authenticated).accountData
                 val profilePictureUri by remember { mutableStateOf(accountData.profilePictureUri) }
-                val isAccountExpired by remember { mutableStateOf(accountData.isTokenExpired) }
                 val appHeaderBar = mainActivityViewModel.appHeaderUiState
                 val appHeaderState by appHeaderBar.appHeaderState.collectAsStateWithLifecycle()
                 val appHeaderTitle by appHeaderBar.title.collectAsStateWithLifecycle()
@@ -131,6 +133,17 @@ fun CrisisCleanupApp(
                     appSearchQuery,
                     updateAppSearchQuery,
                 )
+
+                if (isAccountExpired) {
+                    if (!isExpiredTokenReminderShown) {
+                        ExpiredTokenAlert(
+                            snackbarHostState,
+                            { isExpiredTokenReminderShown = true }
+                        )
+                    }
+                } else {
+                    isExpiredTokenReminderShown = false
+                }
             }
         }
     }
@@ -265,6 +278,22 @@ private fun NavigableContent(
             // TODO: We may want to add padding or spacer when the snackbar is shown so that
             //  content doesn't display behind it.
         }
+    }
+}
+
+@Composable
+private fun ExpiredTokenAlert(
+    snackbarHostState: SnackbarHostState,
+    onSnackbarShown: () -> Unit,
+) {
+    val message = stringResource(R.string.expired_token_message)
+    LaunchedEffect(Unit) {
+        snackbarHostState.showSnackbar(
+            message,
+            withDismissAction = true,
+            duration = SnackbarDuration.Indefinite,
+        )
+        onSnackbarShown()
     }
 }
 

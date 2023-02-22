@@ -10,15 +10,21 @@ interface AuthEventManager {
     fun addLogoutListener(listener: LogoutListener): Int
     fun removeLogoutListener(listenerId: Int)
     suspend fun onLogout()
+
+    fun addExpiredTokenListener(listener: ExpiredTokenListener): Int
+    fun removeExpiredTokenListener(listenerId: Int)
+    fun onExpiredToken()
 }
 
 @Singleton
 class CrisisCleanupAuthEventManager @Inject constructor() : AuthEventManager {
-    private val logoutListenerCounter = AtomicInteger()
+    private val listenerCounter = AtomicInteger()
     private val logoutListeners = ConcurrentHashMap<Int, WeakReference<LogoutListener>>()
+    private val expiredTokenListeners =
+        ConcurrentHashMap<Int, WeakReference<ExpiredTokenListener>>()
 
     override fun addLogoutListener(listener: LogoutListener): Int {
-        val id = logoutListenerCounter.incrementAndGet()
+        val id = listenerCounter.incrementAndGet()
         logoutListeners[id] = WeakReference(listener)
         return id
     }
@@ -30,5 +36,20 @@ class CrisisCleanupAuthEventManager @Inject constructor() : AuthEventManager {
     override suspend fun onLogout() {
         // TODO Handle exceptions properly
         logoutListeners.values.onEach { it.get()?.onLogout() }
+    }
+
+    override fun addExpiredTokenListener(listener: ExpiredTokenListener): Int {
+        val id = listenerCounter.incrementAndGet()
+        expiredTokenListeners[id] = WeakReference(listener)
+        return id
+    }
+
+    override fun removeExpiredTokenListener(listenerId: Int) {
+        expiredTokenListeners.remove(listenerId)
+    }
+
+    override fun onExpiredToken() {
+        // TODO Handle exceptions properly
+        expiredTokenListeners.values.onEach { it.get()?.onExpiredToken() }
     }
 }

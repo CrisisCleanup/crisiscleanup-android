@@ -2,6 +2,7 @@ package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.common.AppMemoryStats
 import com.crisiscleanup.core.common.AppVersionProvider
+import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
@@ -37,6 +38,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private val worksitesSyncStatsDao: WorksitesSyncStatsDao,
     private val worksiteDao: WorksiteDao,
     private val worksiteDaoPlus: WorksiteDaoPlus,
+    private val authEventManager: AuthEventManager,
     private val memoryStats: AppMemoryStats,
     private val appVersionProvider: AppVersionProvider,
     private val logger: AppLogger,
@@ -151,7 +153,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     ): Int {
         val worksitesCountResult =
             worksiteNetworkDataSource.getWorksitesCount(incidentId)
-        tryThrowException(worksitesCountResult.errors)
+        tryThrowException(authEventManager, worksitesCountResult.errors)
 
         val count = worksitesCountResult.count ?: 0
         if (throwOnEmpty && count == 0) {
@@ -245,7 +247,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         var pagedCount = 0
         while (offset < worksitesCount) {
             val worksitesRequest = worksiteNetworkDataSource.getWorksites(incidentId, limit, offset)
-            tryThrowException(worksitesRequest.errors)
+            tryThrowException(authEventManager, worksitesRequest.errors)
 
             val requestCount = worksitesRequest.count ?: 0
             if (requestCount <= 0) {
@@ -308,7 +310,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         statsUpdater: WorksitesDataPullStatsUpdater,
     ): Int = coroutineScope {
         val worksitesRequest = worksiteNetworkDataSource.getWorksitesAll(incidentId, null)
-        tryThrowException(worksitesRequest.errors)
+        tryThrowException(authEventManager, worksitesRequest.errors)
 
         ensureActive()
 

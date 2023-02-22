@@ -3,14 +3,7 @@ package com.crisiscleanup.sync.workers
 import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.tracing.traceAsync
-import androidx.work.CoroutineWorker
-import androidx.work.Data
-import androidx.work.ForegroundInfo
-import androidx.work.OneTimeWorkRequest
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.OutOfQuotaPolicy
-import androidx.work.WorkerParameters
-import com.crisiscleanup.core.common.AndroidResourceProvider
+import androidx.work.*
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.Synchronizer
@@ -42,7 +35,6 @@ class SyncWorker @AssistedInject constructor(
     private val worksitesRepository: WorksitesRepository,
     private val accountDataRepository: AccountDataRepository,
     private val appPreferences: LocalAppPreferencesDataSource,
-    private val resourceProvider: AndroidResourceProvider,
 ) : CoroutineWorker(appContext, workerParams), Synchronizer {
 
     override suspend fun getForegroundInfo(): ForegroundInfo =
