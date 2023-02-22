@@ -11,6 +11,8 @@ import com.crisiscleanup.core.common.Syncer
 import com.crisiscleanup.core.common.event.TrimMemoryEventManager
 import com.crisiscleanup.core.common.event.TrimMemoryListener
 import com.crisiscleanup.core.common.log.AppLogger
+import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
+import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.throttleLatest
@@ -59,7 +61,7 @@ class CasesViewModel @Inject constructor(
     appMemoryStats: AppMemoryStats,
     trimMemoryEventManager: TrimMemoryEventManager,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
-    private val logger: AppLogger,
+    @Logger(CrisisCleanupLoggers.Cases) private val logger: AppLogger,
 ) : ViewModel(), TrimMemoryListener {
     val incidentsData = loadIncidentDataUseCase()
 
@@ -184,8 +186,6 @@ class CasesViewModel @Inject constructor(
     )
 
     init {
-        logger.tag = "cases-map-tile"
-
         trimMemoryEventManager.addListener(this)
 
         mapTileRenderer.enableTileBoundaries()

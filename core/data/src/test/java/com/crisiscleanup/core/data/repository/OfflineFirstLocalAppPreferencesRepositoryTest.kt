@@ -47,6 +47,8 @@ class OfflineFirstLocalAppPreferencesRepositoryTest {
                 shouldHideOnboarding = false,
                 syncAttempt = SyncAttempt(0, 0, 0),
                 selectedIncidentId = 0,
+                saveCredentialsPromptCount = 0,
+                disableSaveCredentialsPrompt = false,
             ),
             subject.userData.first()
         )

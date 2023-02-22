@@ -5,7 +5,6 @@ import android.graphics.Canvas
 import androidx.collection.LruCache
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.AppEnv
-import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.MapCaseDotProvider
 import com.crisiscleanup.core.mapmarker.model.TileCoordinates
@@ -52,7 +51,6 @@ class CaseDotsMapTileRenderer @Inject constructor(
     private val worksitesRepository: WorksitesRepository,
     private val mapCaseDotProvider: MapCaseDotProvider,
     private val appEnv: AppEnv,
-    private val logger: AppLogger,
 ) : CasesOverviewMapTileRenderer, TileProvider {
     private val renderingCounter = AtomicInteger()
     private var renderingCount = MutableStateFlow(0)
@@ -72,10 +70,6 @@ class CaseDotsMapTileRenderer @Inject constructor(
     // For visualizing tile boundaries in dev
     private var isRenderingBorder = false
     private val borderTile = BorderTile(tileSizePx)
-
-    init {
-        logger.tag = "map-tile-renderer"
-    }
 
     override fun rendersAt(zoom: Float): Boolean =
         // Lower zoom is far out, higher zoom is closer in

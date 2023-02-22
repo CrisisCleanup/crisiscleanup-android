@@ -21,6 +21,10 @@ interface LocalAppPreferencesRepository {
      */
     suspend fun setShouldHideOnboarding(shouldHideOnboarding: Boolean)
 
+    suspend fun incrementSaveCredentialsPrompt()
+
+    suspend fun setDisableSaveCredentialsPrompt(disable: Boolean)
+
     /**
      * Caches ID of selected incident.
      */

@@ -6,20 +6,21 @@ import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.InputValidator
 import com.crisiscleanup.core.common.event.AuthEventManager
+import com.crisiscleanup.core.common.event.CredentialsResultListener
+import com.crisiscleanup.core.common.event.PasswordRequestCode
 import com.crisiscleanup.core.common.log.AppLogger
+import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
+import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.network.CrisisCleanupAuthApi
 import com.crisiscleanup.feature.authentication.model.AuthenticationState
 import com.crisiscleanup.feature.authentication.model.LoginInputData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import javax.inject.Inject
@@ -31,10 +32,11 @@ class AuthenticationViewModel @Inject constructor(
     private val inputValidator: InputValidator,
     private val accessTokenDecoder: AccessTokenDecoder,
     private val authEventManager: AuthEventManager,
-    private val logger: AppLogger,
+    appPreferences: LocalAppPreferencesRepository,
     private val resProvider: AndroidResourceProvider,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
-) : ViewModel() {
+    @Logger(CrisisCleanupLoggers.Auth) private val logger: AppLogger,
+) : ViewModel(), CredentialsResultListener {
     private var isAuthenticating = MutableStateFlow(false)
     val isNotAuthenticating = isAuthenticating.map { !it }
         .stateIn(
@@ -43,6 +45,16 @@ class AuthenticationViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed()
         )
 
+    private val saveCredentialsManager = SaveCredentialsManager(
+        viewModelScope,
+        appPreferences,
+        accountDataRepository,
+        authEventManager,
+        logger,
+    )
+    val showSaveCredentialsAction = saveCredentialsManager.showSaveCredentialsAction
+    val showDisableSaveCredentials = saveCredentialsManager.showDisableSaveCredentials
+
     val uiState: StateFlow<AuthenticateScreenUiState> =
         accountDataRepository.accountData.map {
             if (loginInputData.emailAddress.isEmpty() &&
@@ -50,6 +62,8 @@ class AuthenticationViewModel @Inject constructor(
             ) {
                 loginInputData.emailAddress = it.emailAddress
                 loginInputData.password = ""
+
+                saveCredentialsManager.resetState()
             }
 
             AuthenticateScreenUiState.Ready(
@@ -76,6 +90,19 @@ class AuthenticationViewModel @Inject constructor(
         private set
     var isInvalidPassword = mutableStateOf(false)
         private set
+
+    init {
+        authEventManager.addPasswordResultListener(this)
+    }
+
+    // TODO Test (if not included in other tests)
+    fun onCloseScreen() {
+        loginInputData.password = ""
+        errorMessage.value = ""
+        isInvalidEmail.value = false
+        isInvalidEmail.value = false
+        saveCredentialsManager.resetState()
+    }
 
     fun clearErrorVisuals() {
         isInvalidEmail.value = false
@@ -143,6 +170,9 @@ class AuthenticationViewModel @Inject constructor(
                         expirySeconds = expirySeconds,
                         profilePictureUri = profilePicUri,
                     )
+
+                    // TODO Update tests
+                    saveCredentialsManager.promptSaveCredentials(loginInputData)
                 }
             } catch (e: Exception) {
                 var isInvalidCredentials = false
@@ -186,6 +216,35 @@ class AuthenticationViewModel @Inject constructor(
             } finally {
                 isAuthenticating.value = false
             }
+        }
+    }
+
+    // TODO Test save credentials related below
+    fun onInputFocus() {
+        if (loginInputData.password.isEmpty()) {
+            saveCredentialsManager.requestSavedCredentials()
+        }
+    }
+
+    fun saveCredentials() = saveCredentialsManager.saveCredentials(loginInputData)
+
+    fun setDisableSaveCredentials(disable: Boolean) =
+        saveCredentialsManager.setDisableSaveCredentials(disable)
+
+    // OnPasswordResultListener
+
+    override fun onPasswordCredentialsResult(
+        emailAddress: String,
+        password: String,
+        resultCode: PasswordRequestCode
+    ) {
+        if (resultCode == PasswordRequestCode.Success && emailAddress.isNotEmpty()) {
+            saveCredentialsManager.setSavedCredentials(LoginInputData(emailAddress, password))
+            loginInputData.apply {
+                this.emailAddress = emailAddress
+                this.password = password
+            }
+            authenticateEmailPassword()
         }
     }
 }

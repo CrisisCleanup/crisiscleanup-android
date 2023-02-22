@@ -31,6 +31,9 @@ class LocalAppPreferencesDataSource @Inject constructor(
                 },
                 shouldHideOnboarding = it.shouldHideOnboarding,
 
+                saveCredentialsPromptCount = it.saveCredentialsPromptCount,
+                disableSaveCredentialsPrompt = it.disableSaveCredentialsPrompt,
+
                 syncAttempt = SyncAttempt(
                     it.syncAttempt.successfulSeconds,
                     it.syncAttempt.attemptedSeconds,
@@ -73,21 +76,33 @@ class LocalAppPreferencesDataSource @Inject constructor(
                 builder.successfulSeconds = attemptedSeconds
                 builder.attemptedCounter = 0
             } else {
-                builder.attemptedCounter += 1
+                builder.attemptedCounter++
             }
             builder.attemptedSeconds = attemptedSeconds
             val attempt = builder.build()
 
             it.copy {
-                this.syncAttempt = attempt
+                syncAttempt = attempt
             }
+        }
+    }
+
+    suspend fun incrementSaveCredentialsPrompt() {
+        userPreferences.updateData {
+            it.copy { saveCredentialsPromptCount++ }
+        }
+    }
+
+    suspend fun setDisableSaveCredentialsPrompt(disable: Boolean) {
+        userPreferences.updateData {
+            it.copy { disableSaveCredentialsPrompt = disable }
         }
     }
 
     suspend fun clearSyncData() {
         userPreferences.updateData {
             it.copy {
-                this.syncAttempt = SyncAttemptProto.newBuilder().build()
+                syncAttempt = SyncAttemptProto.newBuilder().build()
             }
         }
     }

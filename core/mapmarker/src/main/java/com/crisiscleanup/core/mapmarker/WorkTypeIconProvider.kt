@@ -9,7 +9,6 @@ import androidx.core.graphics.alpha
 import androidx.core.graphics.get
 import androidx.core.graphics.red
 import com.crisiscleanup.core.common.AndroidResourceProvider
-import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.model.data.CaseStatus
 import com.crisiscleanup.core.model.data.WorkTypeStatusClaim
 import com.crisiscleanup.core.model.data.WorkTypeType
@@ -23,7 +22,6 @@ import javax.inject.Singleton
 @Singleton
 class WorkTypeIconProvider @Inject constructor(
     private val resourceProvider: AndroidResourceProvider,
-    private val logger: AppLogger,
 ) : MapCaseIconProvider {
     private val cache = LruCache<CacheKey, BitmapDescriptor>(64)
     private val bitmapCache = LruCache<CacheKey, Bitmap>(64)
@@ -41,8 +39,6 @@ class WorkTypeIconProvider @Inject constructor(
     private val plusDrawable: Drawable
 
     init {
-        logger.tag = "map-icon"
-
         bitmapSize = resourceProvider.dpToPx(bitmapSizeDp).toInt()
         val centerOffset = bitmapSizeDp * 0.5f
         bitmapCenterOffset = Offset(centerOffset, centerOffset)

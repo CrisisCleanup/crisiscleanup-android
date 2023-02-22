@@ -106,11 +106,15 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         lazyStats.get().isTrackingEnabled = true
+
+        viewModel.setActivity(this)
     }
 
     override fun onPause() {
         super.onPause()
         lazyStats.get().isTrackingEnabled = false
+
+        viewModel.setActivity(null)
     }
 
     override fun onTrimMemory(level: Int) {

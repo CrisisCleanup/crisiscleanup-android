@@ -5,8 +5,8 @@ import com.crisiscleanup.core.common.InputValidator
 import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.data.repository.AccountDataRepository
-import com.crisiscleanup.core.model.data.AccountData
-import com.crisiscleanup.core.model.data.emptyAccountData
+import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
+import com.crisiscleanup.core.model.data.*
 import com.crisiscleanup.core.network.model.NetworkAuthResult
 import com.crisiscleanup.core.network.model.NetworkAuthUserClaims
 import com.crisiscleanup.core.network.retrofit.AuthApiClient
@@ -22,6 +22,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Clock
@@ -56,6 +57,9 @@ class AuthenticationViewModelTest {
     lateinit var authEventManager: AuthEventManager
 
     @MockK
+    lateinit var appPreferences: LocalAppPreferencesRepository
+
+    @MockK
     lateinit var appLogger: AppLogger
 
     @MockK
@@ -78,6 +82,24 @@ class AuthenticationViewModelTest {
                 profilePictureUri = any(),
             )
         } returns Unit
+
+        // TODO How to mock SaveCredentialsManager with coroutineScope=viewModelScope
+        coEvery {
+            appPreferences.userData
+        } returns flowOf(
+            UserData(
+                darkThemeConfig = DarkThemeConfig.FOLLOW_SYSTEM,
+                shouldHideOnboarding = false,
+                saveCredentialsPromptCount = 0,
+                disableSaveCredentialsPrompt = false,
+                syncAttempt = SyncAttempt(0, 0, 0),
+                selectedIncidentId = 0,
+            )
+        )
+
+        every {
+            authEventManager.addPasswordResultListener(any())
+        } returns 1
 
         every { accessTokenDecoder.decode("access-token") } returns
                 TestDecodedAccessToken(Clock.System.now().plus(864000L.seconds))
@@ -102,9 +124,10 @@ class AuthenticationViewModelTest {
         inputValidator,
         accessTokenDecoder,
         authEventManager,
-        appLogger,
+        appPreferences,
         resProvider,
         UnconfinedTestDispatcher(),
+        appLogger,
     )
 
     /**

@@ -4,6 +4,8 @@ import com.crisiscleanup.core.common.AppMemoryStats
 import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.log.AppLogger
+import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
+import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.model.asEntity
@@ -41,7 +43,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private val authEventManager: AuthEventManager,
     private val memoryStats: AppMemoryStats,
     private val appVersionProvider: AppVersionProvider,
-    private val logger: AppLogger,
+    @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : WorksitesRepository, WorksitesDataPullReporter {
     // TODO Defer to provider instead. So amount can vary according to (WifiManager) signal level or equivalent. Must track request timeouts and give feedback or adjust.
@@ -61,10 +63,6 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         private set
 
     override val worksitesDataPullStats = MutableStateFlow(IncidentWorksitesDataPullStats())
-
-    init {
-        logger.tag = "worksites-repo"
-    }
 
     override fun streamWorksites(incidentId: Long, limit: Int, offset: Int): Flow<List<Worksite>> {
         return worksiteDao.streamWorksites(incidentId, limit, offset)

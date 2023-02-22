@@ -74,10 +74,11 @@ fun CrisisCleanupApp(
             var isExpiredTokenReminderShown by rememberSaveable { mutableStateOf(false) }
 
             val authState by mainActivityViewModel.authState.collectAsStateWithLifecycle()
-            var openAuthentication by rememberSaveable { mutableStateOf(false) }
+            val isNotAuthenticatedState = authState !is AuthState.Authenticated
+            var openAuthentication by rememberSaveable { mutableStateOf(isNotAuthenticatedState) }
             if (authState is AuthState.Loading) {
                 // Splash screen should be showing
-            } else if (openAuthentication || authState !is AuthState.Authenticated) {
+            } else if (openAuthentication || isNotAuthenticatedState) {
                 AuthenticateContent(
                     snackbarHostState,
                     toggleAuthentication = { b -> openAuthentication = b },

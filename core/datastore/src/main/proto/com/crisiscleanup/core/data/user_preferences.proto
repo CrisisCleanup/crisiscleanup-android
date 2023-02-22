@@ -20,4 +20,7 @@ message UserPreferences {
   SyncAttemptProto sync_attempt = 3;
 
   int64 selected_incident_id = 4;
+
+  int32 save_credentials_prompt_count = 5;
+  bool disable_save_credentials_prompt = 6;
 }

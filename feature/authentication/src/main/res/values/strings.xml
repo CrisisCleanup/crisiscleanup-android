@@ -12,4 +12,7 @@
     <string name="invalid_credentials_retry">The email or password is incorrect. Try again.</string>
     <string name="enter_valid_email">Enter a valid email</string>
     <string name="enter_valid_password">Enter a password</string>
+    <string name="prompt_save_password">Would you like to save your account password for auto login in the future?</string>
+    <string name="save">Save</string>
+    <string name="do_not_ask_save_credentials">Do not ask to save credentials again.</string>
 </resources>
