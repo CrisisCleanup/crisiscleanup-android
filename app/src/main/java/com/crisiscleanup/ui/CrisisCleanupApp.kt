@@ -96,9 +96,13 @@ private fun LoadedContent(
     val isNotAuthenticatedState = authState !is AuthState.Authenticated
     var openAuthentication by rememberSaveable { mutableStateOf(isNotAuthenticatedState) }
     if (openAuthentication || isNotAuthenticatedState) {
+        val toggleAuthentication = remember(authState) {
+            { open: Boolean -> openAuthentication = open }
+        }
         AuthenticateContent(
             snackbarHostState,
-            toggleAuthentication = { b -> openAuthentication = b },
+            !isNotAuthenticatedState,
+            toggleAuthentication,
         )
     } else {
         val accountData = (authState as AuthState.Authenticated).accountData
@@ -170,6 +174,7 @@ private fun LoadedContent(
 @Composable
 private fun AuthenticateContent(
     snackbarHostState: SnackbarHostState,
+    enableBackHandler: Boolean,
     toggleAuthentication: (Boolean) -> Unit,
 ) {
     Scaffold(
@@ -191,6 +196,7 @@ private fun AuthenticateContent(
                             WindowInsetsSides.Horizontal
                         )
                     ),
+                enableBackHandler = enableBackHandler,
                 closeAuthentication = { toggleAuthentication(false) },
                 isDebug = CrisisCleanupApplication.isDebuggable,
             )

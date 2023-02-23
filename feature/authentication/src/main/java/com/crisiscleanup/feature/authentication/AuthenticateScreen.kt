@@ -37,6 +37,7 @@ fun AuthenticateScreen(
     modifier: Modifier = Modifier,
     viewModel: AuthenticationViewModel = hiltViewModel(),
     closeAuthentication: () -> Unit = {},
+    enableBackHandler: Boolean = false,
     isDebug: Boolean = false,
 ) {
     // TODO Write test(s)
@@ -48,7 +49,7 @@ fun AuthenticateScreen(
     }
 
     // TODO Write test
-    BackHandler {
+    BackHandler(enableBackHandler) {
         onCloseScreen()
     }
 
