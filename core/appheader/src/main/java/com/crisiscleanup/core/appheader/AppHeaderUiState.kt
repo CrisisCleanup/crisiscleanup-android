@@ -15,10 +15,13 @@ interface AppHeaderUiState {
 }
 
 enum class AppHeaderState {
+    /** No title bar */
     None,
-
-    // Incidents, comms, auth
     Default,
-    SearchCases,
+
+    /** Search bar in title */
+    SearchInTitle,
+
+    /** Standard actions in the title bar */
     TitleActions,
 }

@@ -30,6 +30,7 @@ import com.crisiscleanup.CrisisCleanupApplication
 import com.crisiscleanup.MainActivityViewModel
 import com.crisiscleanup.R
 import com.crisiscleanup.core.appheader.AppHeaderState
+import com.crisiscleanup.core.common.NavigationObserver
 import com.crisiscleanup.core.data.util.NetworkMonitor
 import com.crisiscleanup.core.designsystem.component.*
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
@@ -46,9 +47,11 @@ import com.crisiscleanup.feature.cases.R as casesR
 fun CrisisCleanupApp(
     windowSizeClass: WindowSizeClass,
     networkMonitor: NetworkMonitor,
+    navigationObserver: NavigationObserver,
     appState: CrisisCleanupAppState = rememberCrisisCleanupAppState(
         networkMonitor = networkMonitor,
-        windowSizeClass = windowSizeClass
+        windowSizeClass = windowSizeClass,
+        navigationObserver = navigationObserver,
     ),
     mainActivityViewModel: MainActivityViewModel = hiltViewModel(),
 ) {
@@ -101,9 +104,9 @@ fun CrisisCleanupApp(
                     { casesAction: CasesAction ->
                         when (casesAction) {
                             CasesAction.Search -> {
-                                val isOnSearch = appHeaderState == AppHeaderState.SearchCases
+                                val isOnSearch = appHeaderState == AppHeaderState.SearchInTitle
                                 val toggleState = if (isOnSearch) AppHeaderState.Default
-                                else AppHeaderState.SearchCases
+                                else AppHeaderState.SearchInTitle
                                 mainActivityViewModel.appHeaderUiState.setState(toggleState)
                             }
 
@@ -113,11 +116,7 @@ fun CrisisCleanupApp(
                 }
 
                 val openIncidentsSelect = remember(appHeaderState) {
-                    {
-                        if (appHeaderState == AppHeaderState.Default) {
-                            appState.navController.navigateToSelectIncident()
-                        }
-                    }
+                    { appState.navController.navigateToSelectIncident() }
                 }
 
                 NavigableContent(
@@ -137,10 +136,7 @@ fun CrisisCleanupApp(
 
                 if (isAccountExpired) {
                     if (!isExpiredTokenReminderShown) {
-                        ExpiredTokenAlert(
-                            snackbarHostState,
-                            { isExpiredTokenReminderShown = true }
-                        )
+                        ExpiredTokenAlert(snackbarHostState) { isExpiredTokenReminderShown = true }
                     }
                 } else {
                     isExpiredTokenReminderShown = false
@@ -216,7 +212,7 @@ private fun NavigableContent(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             // TODO Profile recompose and optimize if necessary
-            val showTopBar = appHeaderState != AppHeaderState.None && !appState.shouldHideHeader
+            val showTopBar = appHeaderState != AppHeaderState.None
             if (showTopBar) {
                 val titleResId = appState.currentTopLevelDestination?.titleTextId ?: 0
                 val title = if (titleResId != 0) stringResource(titleResId) else headerTitle
@@ -360,7 +356,7 @@ private fun AppHeader(
             )
         }
 
-        AppHeaderState.SearchCases -> {
+        AppHeaderState.SearchInTitle -> {
             val keyboardController = LocalSoftwareKeyboardController.current
 
             TopAppBarSearch(

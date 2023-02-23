@@ -20,6 +20,20 @@ object LoggersModule {
     }
 
     @Provides
+    @Logger(CrisisCleanupLoggers.Cases)
+    fun providesCasesLogger(logger: TagLogger): AppLogger {
+        logger.tag = "cases"
+        return logger
+    }
+
+    @Provides
+    @Logger(CrisisCleanupLoggers.Navigation)
+    fun providesNavLogger(logger: TagLogger): AppLogger {
+        logger.tag = "navigation"
+        return logger
+    }
+
+    @Provides
     @Logger(CrisisCleanupLoggers.Token)
     fun providesTokenLogger(logger: TagLogger): AppLogger {
         logger.tag = "token"
@@ -30,13 +44,6 @@ object LoggersModule {
     @Logger(CrisisCleanupLoggers.Worksites)
     fun providesWorksitesLogger(logger: TagLogger): AppLogger {
         logger.tag = "worksites"
-        return logger
-    }
-
-    @Provides
-    @Logger(CrisisCleanupLoggers.Cases)
-    fun providesCasesLogger(logger: TagLogger): AppLogger {
-        logger.tag = "cases"
         return logger
     }
 }

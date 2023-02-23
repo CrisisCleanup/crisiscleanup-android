@@ -14,6 +14,7 @@ import androidx.navigation.compose.ComposeNavigator
 import androidx.navigation.compose.composable
 import androidx.navigation.createGraph
 import androidx.navigation.testing.TestNavHostController
+import com.crisiscleanup.core.testing.util.TestNavigationObserver
 import com.crisiscleanup.core.testing.util.TestNetworkMonitor
 import junit.framework.TestCase.*
 import kotlinx.coroutines.flow.collect
@@ -22,7 +23,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
-import java.util.Locale
+import java.util.*
 
 /**
  * Tests [CrisisCleanupAppState].
@@ -38,6 +39,8 @@ class CrisisCleanupAppStateTest {
 
     // Create the test dependencies.
     private val networkMonitor = TestNetworkMonitor()
+
+    private val navigationObserver = TestNavigationObserver()
 
     // Subject under test.
     private lateinit var state: CrisisCleanupAppState
@@ -74,7 +77,8 @@ class CrisisCleanupAppStateTest {
         composeTestRule.setContent {
             state = rememberCrisisCleanupAppState(
                 windowSizeClass = getCompactWindowClass(),
-                networkMonitor = networkMonitor
+                networkMonitor = networkMonitor,
+                navigationObserver = navigationObserver,
             )
         }
 

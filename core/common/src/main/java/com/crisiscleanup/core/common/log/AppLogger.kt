@@ -19,6 +19,7 @@ annotation class Logger(val loggers: CrisisCleanupLoggers)
 enum class CrisisCleanupLoggers {
     Auth,
     Cases,
+    Navigation,
     Token,
     Worksites,
 }

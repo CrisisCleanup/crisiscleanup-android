@@ -2,10 +2,7 @@ package com.crisiscleanup.ui
 
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Stable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -14,6 +11,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import androidx.tracing.trace
+import com.crisiscleanup.core.common.NavigationObserver
 import com.crisiscleanup.core.data.util.NetworkMonitor
 import com.crisiscleanup.core.ui.TrackDisposableJank
 import com.crisiscleanup.feature.cases.navigation.casesRoute
@@ -35,10 +33,12 @@ import kotlinx.coroutines.flow.stateIn
 fun rememberCrisisCleanupAppState(
     windowSizeClass: WindowSizeClass,
     networkMonitor: NetworkMonitor,
+    navigationObserver: NavigationObserver,
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
     navController: NavHostController = rememberNavController()
 ): CrisisCleanupAppState {
     NavigationTrackingSideEffect(navController)
+    NavigationObserverSideEffect(navController, navigationObserver)
     return remember(navController, coroutineScope, windowSizeClass, networkMonitor) {
         CrisisCleanupAppState(navController, coroutineScope, windowSizeClass, networkMonitor)
     }
@@ -66,14 +66,6 @@ class CrisisCleanupAppState(
 
     val isCasesRoute: Boolean
         @Composable get() = currentDestination?.route == casesRoute
-
-    /**
-     * Routes that should hide the app header.
-     */
-    private val hideHeaderRoutes = setOf<String>()
-    val shouldHideHeader: Boolean
-        @Composable
-        get() = hideHeaderRoutes.contains(currentDestination?.route)
 
     val shouldShowBottomBar: Boolean
         get() = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
@@ -140,6 +132,24 @@ private fun NavigationTrackingSideEffect(navController: NavHostController) {
     TrackDisposableJank(navController) { metricsHolder ->
         val listener = NavController.OnDestinationChangedListener { _, destination, _ ->
             metricsHolder.state?.putState("Navigation", destination.route.toString())
+        }
+
+        navController.addOnDestinationChangedListener(listener)
+
+        onDispose {
+            navController.removeOnDestinationChangedListener(listener)
+        }
+    }
+}
+
+@Composable
+private fun NavigationObserverSideEffect(
+    navController: NavHostController,
+    navigationObserver: NavigationObserver,
+) {
+    DisposableEffect(navController, navigationObserver) {
+        val listener = NavController.OnDestinationChangedListener { _, destination, arguments ->
+            navigationObserver.onRouteChange(destination.route, arguments)
         }
 
         navController.addOnDestinationChangedListener(listener)
