@@ -1,22 +1,25 @@
 package com.crisiscleanup.core.data.di
 
-import com.crisiscleanup.core.data.repository.AccountDataRepository
-import com.crisiscleanup.core.data.repository.CrisisCleanupAccountDataRepository
-import com.crisiscleanup.core.data.repository.IncidentsRepository
-import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
-import com.crisiscleanup.core.data.repository.LocationsRepository
-import com.crisiscleanup.core.data.repository.OfflineFirstIncidentsRepository
-import com.crisiscleanup.core.data.repository.OfflineFirstLocalAppPreferencesRepository
-import com.crisiscleanup.core.data.repository.OfflineFirstLocationsRepository
-import com.crisiscleanup.core.data.repository.OfflineFirstWorksitesRepository
-import com.crisiscleanup.core.data.repository.WorksitesRepository
+import android.content.Context
+import com.crisiscleanup.core.common.event.AuthEventManager
+import com.crisiscleanup.core.common.log.AppLogger
+import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
+import com.crisiscleanup.core.common.log.Logger
+import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
+import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.data.IncidentWorksitesDataManager
+import com.crisiscleanup.core.data.repository.*
 import com.crisiscleanup.core.data.util.ConnectivityManagerNetworkMonitor
 import com.crisiscleanup.core.data.util.NetworkMonitor
 import com.crisiscleanup.core.data.util.WorksitesDataPullReporter
+import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import dagger.Binds
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Singleton
 
 @Module
@@ -63,4 +66,20 @@ interface DataModule {
     fun bindsWorksitesDataPullReporter(
         reporter: OfflineFirstWorksitesRepository
     ): WorksitesDataPullReporter
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object DataModuleObject {
+    @Singleton
+    @Provides
+    fun providesIncidentWorksitesDataManager(
+        networkDataSource: CrisisCleanupNetworkDataSource,
+        authEventManager: AuthEventManager,
+        @ApplicationContext context: Context,
+        @Dispatcher(CrisisCleanupDispatchers.IO) ioDispatcher: CoroutineDispatcher,
+        @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
+    ) = IncidentWorksitesDataManager(
+        networkDataSource, authEventManager, context, ioDispatcher, logger
+    )
 }

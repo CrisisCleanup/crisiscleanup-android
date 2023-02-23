@@ -24,6 +24,8 @@ data class IncidentWorksitesDataPullStats(
     val isEnded: Boolean = false,
     private val startProgressAmount: Float = 0.01f,
     private val countProgressAmount: Float = 0.05f,
+    private val requestStartedAmount: Float = 0.1f,
+    val saveStartedAmount: Float = 0.33f,
 ) {
     val progress: Float
         get() {
@@ -38,11 +40,11 @@ data class IncidentWorksitesDataPullStats(
                         (requestedCount + savedCount) * 0.5f / worksitesCount
                     } else {
                         if (savedCount > 0) {
-                            0.5f + (savedCount.toFloat() / worksitesCount) * 0.5f
+                            saveStartedAmount + (1 - saveStartedAmount) * savedCount / requestedCount
                         } else if (requestedCount > 0) {
-                            0.5f
+                            saveStartedAmount
                         } else {
-                            0.1f
+                            requestStartedAmount
                         }
                     }
 

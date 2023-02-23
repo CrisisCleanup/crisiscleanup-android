@@ -8,6 +8,8 @@ import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.data.IncidentWorksitesDataManager
+import com.crisiscleanup.core.data.WorksitesRequestDataCache
 import com.crisiscleanup.core.data.model.asEntity
 import com.crisiscleanup.core.data.util.IncidentWorksitesDataPullStats
 import com.crisiscleanup.core.data.util.WorksitesDataPullReporter
@@ -37,6 +39,7 @@ import javax.inject.Singleton
 @Singleton
 class OfflineFirstWorksitesRepository @Inject constructor(
     private val worksiteNetworkDataSource: CrisisCleanupNetworkDataSource,
+    private val worksiteRequestDataManager: IncidentWorksitesDataManager,
     private val worksitesSyncStatsDao: WorksitesSyncStatsDao,
     private val worksiteDao: WorksiteDao,
     private val worksiteDaoPlus: WorksiteDaoPlus,
@@ -210,28 +213,39 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         statsUpdater.updateWorksitesCount(count)
 
         // TODO Make value configurable and responsive to device resources, network speed, battery, ...
-        val syncedCount =
-            if (memoryStats.availableMemory >= allWorksitesMemoryThreshold) {
-                // TODO This is short synced count not the full synced count. Revisit endpoint when paging is reliable and needs differentiation.
-                syncWorksitesShortData(incidentId, syncStart, statsUpdater)
-            } else {
-                // TODO Alert the device is lacking and the experience will be degraded
-                statsUpdater.setPagingRequest()
+        if (memoryStats.availableMemory >= allWorksitesMemoryThreshold) {
+            // TODO This is short synced count not the full synced count. Revisit endpoint when paging is reliable and needs differentiation.
+            val worksitesData = syncWorksitesShortData(incidentId, count, statsUpdater)
 
-                logger.logDebug("Paging worksites request due to constrained memory ${memoryStats.availableMemory}")
+            val syncedTime = worksitesData.requestTime
+            val syncSeconds = syncedTime.epochSeconds
+            val worksitesCount = worksitesData.worksites.size
+            return WorksitesSyncStats(
+                incidentId,
+                syncedTime,
+                worksitesCount,
+                worksitesCount,
+                SyncAttempt(syncSeconds, syncSeconds, 0),
+                appVersionProvider.versionCode,
+            )
+        } else {
+            // TODO Alert the device is lacking and the experience will be degraded
+            statsUpdater.setPagingRequest()
 
-                syncWorksitesPagedData(incidentId, syncStart, count, statsUpdater)
-            }
+            logger.logDebug("Paging worksites request due to constrained memory ${memoryStats.availableMemory}")
 
-        val syncSeconds = syncStart.epochSeconds
-        return WorksitesSyncStats(
-            incidentId,
-            syncStart,
-            count,
-            syncedCount,
-            SyncAttempt(syncSeconds, syncSeconds, 0),
-            appVersionProvider.versionCode,
-        )
+            val syncedCount = syncWorksitesPagedData(incidentId, syncStart, count, statsUpdater)
+
+            val syncSeconds = syncStart.epochSeconds
+            return WorksitesSyncStats(
+                incidentId,
+                syncStart,
+                count,
+                syncedCount,
+                SyncAttempt(syncSeconds, syncSeconds, 0),
+                appVersionProvider.versionCode,
+            )
+        }
     }
 
     private suspend fun syncWorksitesPagedData(
@@ -304,32 +318,34 @@ class OfflineFirstWorksitesRepository @Inject constructor(
 
     private suspend fun syncWorksitesShortData(
         incidentId: Long,
-        syncStart: Instant,
+        worksitesCount: Int,
         statsUpdater: WorksitesDataPullStatsUpdater,
-    ): Int = coroutineScope {
-        val worksitesRequest = worksiteNetworkDataSource.getWorksitesAll(incidentId, null)
-        tryThrowException(authEventManager, worksitesRequest.errors)
+    ): WorksitesRequestDataCache = coroutineScope {
+        val requestData =
+            worksiteRequestDataManager.getWorksitesShortData(incidentId, worksitesCount)
 
         ensureActive()
 
         statsUpdater.endRequest()
-        val requestCount = worksitesRequest.count ?: 0
+        val requestCount = requestData.worksites.size
         statsUpdater.updateRequestedCount(requestCount)
 
-        worksitesRequest.results?.let { list ->
+        requestData.worksites.let { list ->
             val worksites = list.map { it.asEntity(incidentId) }
             val workTypes =
                 list.map { it.workTypes.map(NetworkWorksiteFull.WorkTypeShort::asEntity) }
-            return@coroutineScope saveToDb(
+            saveToDb(
                 incidentId,
                 worksites,
                 workTypes,
-                syncStart,
+                requestData.requestTime,
                 statsUpdater,
             )
         }
 
-        return@coroutineScope 0
+        worksiteRequestDataManager.deleteWorksitesShortDataCache(incidentId)
+
+        requestData
     }
 
     // TODO Write tests

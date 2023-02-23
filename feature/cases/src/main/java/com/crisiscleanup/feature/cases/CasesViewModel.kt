@@ -272,15 +272,14 @@ class CasesViewModel @Inject constructor(
             refreshTiles = isEnded
             clearCache = isEnded
             val now = Clock.System.now()
-            if (!refreshTiles && progress > 0.33f) {
+            if (!refreshTiles && progress > saveStartedAmount) {
                 val projectedDelta = projectedFinish - now
+                val sinceLastRefresh = now - countChangeClearInstant
                 refreshTiles = now - pullStart > tileClearRefreshInterval &&
-                        now - countChangeClearInstant > tileClearRefreshInterval &&
+                        sinceLastRefresh > tileClearRefreshInterval &&
                         projectedDelta > tileClearRefreshInterval
-                clearCache =
-                    projectedDelta > tileClearRefreshInterval.times(2) && progress in 0.5f..0.7f
+                clearCache = progress * 100 % 33 < 6
             }
-
             if (refreshTiles) {
                 countChangeClearInstant = now
             }
