@@ -66,7 +66,7 @@ internal class CasesMapTileLayerManager(
     }
 
     // TODO Develop a change mechanism that guarantees uniqueness from any change
-    private fun onTileChange() = onTileChange(tileDataChangeKey.value + 1)
+    fun onTileChange() = onTileChange(tileDataChangeKey.value + 1)
 
     private fun onTileChange(dataChangeValue: Long) {
         tileDataChangeKey.value = dataChangeValue % 1_000_000

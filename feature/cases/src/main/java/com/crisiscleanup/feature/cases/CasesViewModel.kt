@@ -26,10 +26,7 @@ import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.ui.SearchManager
 import com.crisiscleanup.feature.cases.map.*
-import com.crisiscleanup.feature.cases.model.CoordinateBounds
-import com.crisiscleanup.feature.cases.model.MapViewCameraZoom
-import com.crisiscleanup.feature.cases.model.MapViewCameraZoomDefault
-import com.crisiscleanup.feature.cases.model.asWorksiteGoogleMapMark
+import com.crisiscleanup.feature.cases.model.*
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.TileProvider
@@ -52,7 +49,7 @@ class CasesViewModel @Inject constructor(
     appHeaderUiState: AppHeaderUiState,
     loadIncidentDataUseCase: LoadIncidentDataUseCase,
     private val dataPullReporter: WorksitesDataPullReporter,
-    mapCaseIconProvider: MapCaseIconProvider,
+    private val mapCaseIconProvider: MapCaseIconProvider,
     private val mapTileRenderer: CasesOverviewMapTileRenderer,
     private val tileProvider: TileProvider,
     searchManager: SearchManager,
@@ -105,15 +102,19 @@ class CasesViewModel @Inject constructor(
     var incidentLocationBounds = mapBoundsManager.mapCameraBounds
 
     val isSyncingIncidents = incidentsRepository.isLoading
+    private val isGeneratingWorksiteMarkers = MutableStateFlow(false)
     val isMapBusy = combine(
         mapBoundsManager.isDeterminingBounds,
         mapTileRenderer.isBusy,
+        isGeneratingWorksiteMarkers,
     ) {
             isMapBounding,
             rendererBusy,
+            isGeneratingMarkers,
         ->
         isMapBounding ||
-                rendererBusy
+                rendererBusy ||
+                isGeneratingMarkers
     }
 
     private val mapMarkerManager = CasesMapMarkerManager(
@@ -122,8 +123,10 @@ class CasesViewModel @Inject constructor(
         logger,
     )
 
-    var hiddenMarkersMessage = ""
-        private set
+    private var _hiddenMarkersMessage = ""
+    val hiddenMarkersMessage: String
+        get() = if (mapTileRenderer.rendersAt(qsm.mapZoom.value)) _hiddenMarkersMessage else ""
+
     val worksitesMapMarkers = qsm.worksiteQueryState
         // TODO Make debounce a parameter
         .debounce(250)
@@ -138,22 +141,13 @@ class CasesViewModel @Inject constructor(
             if (skipMarkers) {
                 flowOf(emptyList())
             } else {
+                isGeneratingWorksiteMarkers.value = true
                 withContext(ioDispatcher) {
-                    val sw = wqs.coordinateBounds.southWest
-                    val ne = wqs.coordinateBounds.northEast
-                    val marksQuery = mapMarkerManager.queryWorksitesInBounds(id, sw, ne)
-                    val visuals = marksQuery.first.map { mark ->
-                        mark.asWorksiteGoogleMapMark(mapCaseIconProvider)
+                    try {
+                        generateWorksiteMarkers(wqs)
+                    } finally {
+                        isGeneratingWorksiteMarkers.value = false
                     }
-
-                    val hiddenWorksites = marksQuery.second - visuals.size
-                    hiddenMarkersMessage = if (hiddenWorksites > 0) resourceProvider.getString(
-                        R.string.worksite_markers_hidden,
-                        hiddenWorksites
-                    )
-                    else ""
-
-                    flowOf(visuals)
                 }
             }
         }
@@ -209,6 +203,25 @@ class CasesViewModel @Inject constructor(
         // Do not try and be efficient here by returning null when tiling is not necessary (when used in compose).
         // Doing so will cause errors with TileOverlay and TileOverlayState#clearTileCache.
         return tileProvider
+    }
+
+    private suspend fun generateWorksiteMarkers(wqs: WorksiteQueryState) = coroutineScope {
+        val id = wqs.incidentId
+        val sw = wqs.coordinateBounds.southWest
+        val ne = wqs.coordinateBounds.northEast
+        val marksQuery = mapMarkerManager.queryWorksitesInBounds(id, sw, ne)
+        val visuals = marksQuery.first.map { mark ->
+            mark.asWorksiteGoogleMapMark(mapCaseIconProvider)
+        }
+
+        val hiddenWorksites = marksQuery.second - visuals.size
+        _hiddenMarkersMessage = if (hiddenWorksites > 0) resourceProvider.getString(
+            R.string.worksite_markers_hidden,
+            hiddenWorksites
+        )
+        else ""
+
+        flowOf(visuals)
     }
 
     fun onMapLoaded() {
@@ -273,11 +286,14 @@ class CasesViewModel @Inject constructor(
             }
         }
 
-        if (clearCache) {
-            casesMapTileManager.clearTiles()
-        }
         if (refreshTiles) {
             mapTileRenderer.setIncident(it.id, it.count, clearCache)
+        }
+
+        if (clearCache) {
+            casesMapTileManager.clearTiles()
+        } else if (refreshTiles) {
+            casesMapTileManager.onTileChange()
         }
     }
 
