@@ -53,7 +53,7 @@ fun CrisisCleanupApp(
         windowSizeClass = windowSizeClass,
         navigationObserver = navigationObserver,
     ),
-    mainActivityViewModel: MainActivityViewModel = hiltViewModel(),
+    viewModel: MainActivityViewModel = hiltViewModel(),
 ) {
     CrisisCleanupBackground {
         Box(Modifier.fillMaxSize()) {
@@ -73,75 +73,91 @@ fun CrisisCleanupApp(
                 )
             }
 
-            val isAccountExpired by mainActivityViewModel.isAccessTokenExpired
-            var isExpiredTokenReminderShown by rememberSaveable { mutableStateOf(false) }
-
-            val authState by mainActivityViewModel.authState.collectAsStateWithLifecycle()
-            val isNotAuthenticatedState = authState !is AuthState.Authenticated
-            var openAuthentication by rememberSaveable { mutableStateOf(isNotAuthenticatedState) }
+            val authState by viewModel.authState.collectAsStateWithLifecycle()
             if (authState is AuthState.Loading) {
                 // Splash screen should be showing
-            } else if (openAuthentication || isNotAuthenticatedState) {
-                AuthenticateContent(
-                    snackbarHostState,
-                    toggleAuthentication = { b -> openAuthentication = b },
-                )
             } else {
-                val accountData = (authState as AuthState.Authenticated).accountData
-                val profilePictureUri by remember { mutableStateOf(accountData.profilePictureUri) }
-                val appHeaderBar = mainActivityViewModel.appHeaderUiState
-                val appHeaderState by appHeaderBar.appHeaderState.collectAsStateWithLifecycle()
-                val appHeaderTitle by appHeaderBar.title.collectAsStateWithLifecycle()
-                val isHeaderLoading by mainActivityViewModel.showHeaderLoading.collectAsState(false)
+                LoadedContent(snackbarHostState, appState, viewModel, authState)
+            }
+        }
+    }
+}
 
-                val appSearchQuery =
-                    remember(mainActivityViewModel) { { mainActivityViewModel.searchManager.searchQuery.value } }
-                val updateAppSearchQuery = remember(mainActivityViewModel) {
-                    { q: String -> mainActivityViewModel.searchManager.updateSearchQuery(q) }
-                }
+@Composable
+private fun LoadedContent(
+    snackbarHostState: SnackbarHostState,
+    appState: CrisisCleanupAppState,
+    viewModel: MainActivityViewModel,
+    authState: AuthState,
+) {
+    val isAccountExpired by viewModel.isAccessTokenExpired
+    var isExpiredTokenReminderShown by rememberSaveable { mutableStateOf(false) }
 
-                val onCasesAction = remember(mainActivityViewModel) {
-                    { casesAction: CasesAction ->
-                        when (casesAction) {
-                            CasesAction.Search -> {
-                                val isOnSearch = appHeaderState == AppHeaderState.SearchInTitle
-                                val toggleState = if (isOnSearch) AppHeaderState.Default
-                                else AppHeaderState.SearchInTitle
-                                mainActivityViewModel.appHeaderUiState.setState(toggleState)
-                            }
+    val isNotAuthenticatedState = authState !is AuthState.Authenticated
+    var openAuthentication by rememberSaveable { mutableStateOf(isNotAuthenticatedState) }
+    if (openAuthentication || isNotAuthenticatedState) {
+        AuthenticateContent(
+            snackbarHostState,
+            toggleAuthentication = { b -> openAuthentication = b },
+        )
+    } else {
+        val accountData = (authState as AuthState.Authenticated).accountData
+        val profilePictureUri by remember { mutableStateOf(accountData.profilePictureUri) }
+        val appHeaderBar = viewModel.appHeaderUiState
+        val appHeaderState by appHeaderBar.appHeaderState.collectAsStateWithLifecycle()
+        val appHeaderTitle by appHeaderBar.title.collectAsStateWithLifecycle()
+        val isHeaderLoading by viewModel.showHeaderLoading.collectAsState(
+            false
+        )
 
-                            else -> {}
-                        }
+        val appSearchQuery =
+            remember(viewModel) { { viewModel.searchManager.searchQuery.value } }
+        val updateAppSearchQuery = remember(viewModel) {
+            { q: String -> viewModel.searchManager.updateSearchQuery(q) }
+        }
+
+        val onCasesAction = remember(viewModel) {
+            { casesAction: CasesAction ->
+                when (casesAction) {
+                    CasesAction.Search -> {
+                        val isOnSearch = appHeaderState == AppHeaderState.SearchInTitle
+                        val toggleState = if (isOnSearch) AppHeaderState.Default
+                        else AppHeaderState.SearchInTitle
+                        viewModel.appHeaderUiState.setState(toggleState)
                     }
-                }
 
-                val openIncidentsSelect = remember(appHeaderState) {
-                    { appState.navController.navigateToSelectIncident() }
-                }
-
-                NavigableContent(
-                    snackbarHostState,
-                    appState,
-                    appHeaderState,
-                    appHeaderTitle,
-                    isHeaderLoading,
-                    { openAuthentication = true },
-                    profilePictureUri,
-                    isAccountExpired,
-                    openIncidentsSelect,
-                    onCasesAction,
-                    appSearchQuery,
-                    updateAppSearchQuery,
-                )
-
-                if (isAccountExpired) {
-                    if (!isExpiredTokenReminderShown) {
-                        ExpiredTokenAlert(snackbarHostState) { isExpiredTokenReminderShown = true }
-                    }
-                } else {
-                    isExpiredTokenReminderShown = false
+                    else -> {}
                 }
             }
+        }
+
+        val openIncidentsSelect = remember(appHeaderState) {
+            { appState.navController.navigateToSelectIncident() }
+        }
+
+        NavigableContent(
+            snackbarHostState,
+            appState,
+            appHeaderState,
+            appHeaderTitle,
+            isHeaderLoading,
+            { openAuthentication = true },
+            profilePictureUri,
+            isAccountExpired,
+            openIncidentsSelect,
+            onCasesAction,
+            appSearchQuery,
+            updateAppSearchQuery,
+        )
+
+        if (isAccountExpired) {
+            if (!isExpiredTokenReminderShown) {
+                ExpiredTokenAlert(snackbarHostState) {
+                    isExpiredTokenReminderShown = true
+                }
+            }
+        } else {
+            isExpiredTokenReminderShown = false
         }
     }
 }
