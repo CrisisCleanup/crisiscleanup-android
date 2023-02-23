@@ -52,6 +52,9 @@ class AuthenticationViewModel @Inject constructor(
         authEventManager,
         logger,
     )
+
+    // This may fail when a user cancels too many times.
+    // Wait 24 hours or enter the code at https://developer.android.com/training/sign-in/passkeys#troubleshoot
     val showSaveCredentialsAction = saveCredentialsManager.showSaveCredentialsAction
     val showDisableSaveCredentials = saveCredentialsManager.showDisableSaveCredentials
 

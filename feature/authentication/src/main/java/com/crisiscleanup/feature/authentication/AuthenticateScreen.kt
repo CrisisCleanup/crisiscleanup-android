@@ -13,6 +13,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -141,7 +142,13 @@ private fun LoginScreen(
     ) {
         CrisisCleanupLogoRow()
 
-        val onInputFocus = remember(viewModel) { { viewModel.onInputFocus() } }
+        val onInputFocus = remember(viewModel) {
+            { focusState: FocusState ->
+                if (focusState.hasFocus) {
+                    viewModel.onInputFocus()
+                }
+            }
+        }
 
         Text(
             modifier = fillWidthPadded,
@@ -163,11 +170,9 @@ private fun LoginScreen(
             { viewModel.clearErrorVisuals() }
         }
         OutlinedClearableTextField(
-            modifier = fillWidthPadded.onFocusChanged {
-                if (it.hasFocus) {
-                    onInputFocus()
-                }
-            },
+            // TODO Listening onFocusChanged forces an input to recompose on any input change.
+            //      Research if possible to decouple focus change when not in focus.
+            modifier = fillWidthPadded.onFocusChanged(onInputFocus),
             labelResId = R.string.email,
             value = viewModel.loginInputData.emailAddress,
             onValueChange = { rememberBindEmailInput(it) },
@@ -191,11 +196,7 @@ private fun LoginScreen(
             }
         }
         OutlinedObfuscatingTextField(
-            modifier = fillWidthPadded.onFocusChanged {
-                if (it.hasFocus) {
-                    onInputFocus()
-                }
-            },
+            modifier = fillWidthPadded.onFocusChanged(onInputFocus),
             labelResId = R.string.password,
             value = viewModel.loginInputData.password,
             onValueChange = { rememberBindPasswordInput(it) },

@@ -1,19 +1,12 @@
 package com.crisiscleanup
 
-import android.app.Activity
 import androidx.compose.runtime.mutableStateOf
-import androidx.credentials.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.common.Syncer
 import com.crisiscleanup.core.common.event.AuthEventManager
-import com.crisiscleanup.core.common.event.CredentialsRequestListener
 import com.crisiscleanup.core.common.event.ExpiredTokenListener
-import com.crisiscleanup.core.common.event.SaveCredentialsListener
-import com.crisiscleanup.core.common.log.AppLogger
-import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
-import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
@@ -24,7 +17,6 @@ import com.crisiscleanup.core.model.data.UserData
 import com.crisiscleanup.core.ui.SearchManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
-import java.lang.ref.WeakReference
 import javax.inject.Inject
 
 @HiltViewModel
@@ -33,17 +25,12 @@ class MainActivityViewModel @Inject constructor(
     accountDataRepository: AccountDataRepository,
     incidentSelector: IncidentSelector,
     val appHeaderUiState: AppHeaderUiState,
-    private val authEventManager: AuthEventManager,
+    authEventManager: AuthEventManager,
     val searchManager: SearchManager,
     incidentsRepository: IncidentsRepository,
     worksitesRepository: WorksitesRepository,
     private val syncer: Syncer,
-    credentialManager: CredentialManager,
-    @Logger(CrisisCleanupLoggers.Auth) private val logger: AppLogger,
-) : ViewModel(),
-    ExpiredTokenListener,
-    CredentialsRequestListener,
-    SaveCredentialsListener {
+) : ViewModel(), ExpiredTokenListener {
     val uiState: StateFlow<MainActivityUiState> = localAppPreferencesRepository.userData.map {
         MainActivityUiState.Success(it)
     }.stateIn(
@@ -81,18 +68,8 @@ class MainActivityViewModel @Inject constructor(
                 worksitesLoading
     }
 
-    private val credentialManager = CredentialSaveRetrieveManager(
-        viewModelScope,
-        credentialManager,
-        logger,
-    )
-
-    private var activityWr: WeakReference<Activity> = WeakReference(null)
-
     init {
         authEventManager.addExpiredTokenListener(this)
-        authEventManager.addCredentialsRequestListener(this)
-        authEventManager.addSaveCredentialsListener(this)
 
         incidentSelector.incidentId
             .onEach {
@@ -109,22 +86,6 @@ class MainActivityViewModel @Inject constructor(
 
     override fun onExpiredToken() {
         isAccessTokenExpired.value = true
-    }
-
-    fun setActivity(activity: Activity?) {
-        activityWr = WeakReference(activity)
-    }
-
-    // PasswordRequestListener
-
-    override fun onCredentialsRequest() {
-        credentialManager.passkeySignIn(activityWr, authEventManager)
-    }
-
-    // SaveCredentialsListener
-
-    override fun onSaveCredentials(emailAddress: String, password: String) {
-        credentialManager.saveAccountPassword(activityWr, emailAddress, password)
     }
 }
 

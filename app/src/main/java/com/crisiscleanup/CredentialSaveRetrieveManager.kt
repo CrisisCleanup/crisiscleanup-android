@@ -10,7 +10,6 @@ import com.crisiscleanup.core.common.event.PasswordRequestCode
 import com.crisiscleanup.core.common.log.AppLogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import java.lang.ref.WeakReference
 
 internal class CredentialSaveRetrieveManager(
     private val coroutineScope: CoroutineScope,
@@ -18,7 +17,7 @@ internal class CredentialSaveRetrieveManager(
     private val logger: AppLogger,
 ) {
     fun passkeySignIn(
-        activityWr: WeakReference<Activity>,
+        activity: Activity,
         authEventManager: AuthEventManager,
     ) {
         val getPasswordOption = GetPasswordOption()
@@ -29,13 +28,11 @@ internal class CredentialSaveRetrieveManager(
 
         coroutineScope.launch {
             try {
-                activityWr.get()?.let { activity ->
-                    val result = credentialManager.getCredential(
-                        request = getCredRequest,
-                        activity = activity,
-                    )
-                    handleSignIn(result, authEventManager)
-                }
+                val result = credentialManager.getCredential(
+                    request = getCredRequest,
+                    activity = activity,
+                )
+                handleSignIn(result, authEventManager)
             } catch (e: GetCredentialException) {
                 if (e !is NoCredentialException) {
                     logger.logException(e)
@@ -68,7 +65,7 @@ internal class CredentialSaveRetrieveManager(
     }
 
     fun saveAccountPassword(
-        activityWr: WeakReference<Activity>,
+        activity: Activity,
         emailAddress: String,
         password: String,
     ) {
@@ -78,9 +75,7 @@ internal class CredentialSaveRetrieveManager(
         // Create credentials and handle result.
         coroutineScope.launch {
             try {
-                activityWr.get()?.let {
-                    credentialManager.createCredential(createPasswordRequest, it)
-                }
+                credentialManager.createCredential(createPasswordRequest, activity)
             } catch (e: CreateCredentialException) {
                 logger.logException(e)
             }

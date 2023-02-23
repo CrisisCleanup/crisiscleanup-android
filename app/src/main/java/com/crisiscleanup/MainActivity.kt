@@ -10,13 +10,17 @@ import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.*
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
+import androidx.credentials.CredentialManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.metrics.performance.JankStats
 import com.crisiscleanup.MainActivityUiState.Loading
 import com.crisiscleanup.MainActivityUiState.Success
-import com.crisiscleanup.core.common.event.TrimMemoryEventManager
+import com.crisiscleanup.core.common.event.*
+import com.crisiscleanup.core.common.log.AppLogger
+import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
+import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.data.util.NetworkMonitor
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.model.data.DarkThemeConfig
@@ -32,26 +36,49 @@ import javax.inject.Inject
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(),
+    CredentialsRequestListener,
+    SaveCredentialsListener {
 
     /**
      * Lazily inject [JankStats], which is used to track jank throughout the app.
      */
     @Inject
-    lateinit var lazyStats: dagger.Lazy<JankStats>
+    internal lateinit var lazyStats: dagger.Lazy<JankStats>
 
     @Inject
-    lateinit var networkMonitor: NetworkMonitor
+    internal lateinit var networkMonitor: NetworkMonitor
 
     @Inject
-    lateinit var trimMemoryEventManager: TrimMemoryEventManager
+    internal lateinit var trimMemoryEventManager: TrimMemoryEventManager
 
-    val viewModel: MainActivityViewModel by viewModels()
+    private val viewModel: MainActivityViewModel by viewModels()
+
+    @Inject
+    internal lateinit var authEventManager: AuthEventManager
+
+    @Inject
+    @Logger(CrisisCleanupLoggers.Auth)
+    internal lateinit var logger: AppLogger
+
+    @Inject
+    internal lateinit var credentialManager: CredentialManager
+
+    private lateinit var credentialSaveRetrieveManager: CredentialSaveRetrieveManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         MapsInitializer.initialize(this, Renderer.LATEST) {}
+
+        authEventManager.addCredentialsRequestListener(this)
+        authEventManager.addSaveCredentialsListener(this)
+
+        credentialSaveRetrieveManager = CredentialSaveRetrieveManager(
+            lifecycleScope,
+            credentialManager,
+            logger,
+        )
 
         var uiState: MainActivityUiState by mutableStateOf(Loading)
         var authState: AuthState by mutableStateOf(AuthState.Loading)
@@ -106,20 +133,28 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         lazyStats.get().isTrackingEnabled = true
-
-        viewModel.setActivity(this)
     }
 
     override fun onPause() {
         super.onPause()
         lazyStats.get().isTrackingEnabled = false
-
-        viewModel.setActivity(null)
     }
 
     override fun onTrimMemory(level: Int) {
         trimMemoryEventManager.onTrimMemory(level)
         super.onTrimMemory(level)
+    }
+
+    // PasswordRequestListener
+
+    override fun onCredentialsRequest() {
+        credentialSaveRetrieveManager.passkeySignIn(this, authEventManager)
+    }
+
+    // SaveCredentialsListener
+
+    override fun onSaveCredentials(emailAddress: String, password: String) {
+        credentialSaveRetrieveManager.saveAccountPassword(this, emailAddress, password)
     }
 }
 
