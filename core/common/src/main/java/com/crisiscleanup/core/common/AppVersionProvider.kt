@@ -17,6 +17,10 @@ interface AppVersionProvider {
     val versionName: String
 }
 
+interface DatabaseVersionProvider {
+    val databaseVersion: Int
+}
+
 @Singleton
 class AndroidAppVersionProvider @Inject constructor(
     @ApplicationContext private val context: Context,

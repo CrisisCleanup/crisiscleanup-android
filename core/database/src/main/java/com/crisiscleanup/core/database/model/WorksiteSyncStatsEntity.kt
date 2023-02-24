@@ -14,8 +14,8 @@ data class WorksiteSyncStatsEntity(
     @PrimaryKey
     @ColumnInfo("incident_id")
     val incidentId: Long,
-    @ColumnInfo("sync_start")
-    val syncStart: Instant?,
+    @ColumnInfo("sync_start", defaultValue = "0")
+    val syncStart: Instant,
     @ColumnInfo("target_count")
     val targetCount: Int,
     @ColumnInfo("paged_count", defaultValue = "0")

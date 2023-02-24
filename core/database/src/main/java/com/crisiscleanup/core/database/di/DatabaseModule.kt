@@ -2,7 +2,9 @@ package com.crisiscleanup.core.database.di
 
 import android.content.Context
 import androidx.room.Room
+import com.crisiscleanup.core.common.DatabaseVersionProvider
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,4 +24,14 @@ object DatabaseModule {
         CrisisCleanupDatabase::class.java,
         "crisis-cleanup-database"
     ).build()
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+interface DatabaseInterfaceModule {
+    @Binds
+    @Singleton
+    fun bindsDatabaseVersionProvider(
+        versionProvider: CrisisCleanupDatabase,
+    ): DatabaseVersionProvider
 }

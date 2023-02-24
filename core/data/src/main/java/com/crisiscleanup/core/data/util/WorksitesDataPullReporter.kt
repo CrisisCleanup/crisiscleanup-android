@@ -13,11 +13,10 @@ interface WorksitesDataPullReporter {
 }
 
 data class IncidentWorksitesDataPullStats(
-    val isPulling: Boolean = false,
+    val isStarted: Boolean = false,
     val incidentId: Long = EmptyIncident.id,
     val pullStart: Instant = Clock.System.now(),
     val worksitesCount: Int = 0,
-    val isRequestingData: Boolean = false,
     val isPagingRequest: Boolean = false,
     val requestedCount: Int = 0,
     val savedCount: Int = 0,
@@ -27,13 +26,16 @@ data class IncidentWorksitesDataPullStats(
     private val requestStartedAmount: Float = 0.1f,
     val saveStartedAmount: Float = 0.33f,
 ) {
+    val isOngoing: Boolean
+        get() = isStarted && !isEnded
+
     val progress: Float
         get() {
             var progress = 0f
-            if (isPulling) {
+            if (isStarted) {
                 // Pull has started
                 progress = startProgressAmount
-                if (isRequestingData || worksitesCount > 0) {
+                if (worksitesCount > 0) {
                     progress = countProgressAmount
 
                     val remainingProgress = if (isPagingRequest) {
@@ -80,23 +82,15 @@ internal class WorksitesDataPullStatsUpdater(
     fun beginPull(incidentId: Long) {
         reportChange(
             pullStats.copy(
-                isPulling = true,
+                isStarted = true,
                 incidentId = incidentId,
                 pullStart = Clock.System.now(),
             )
         )
     }
 
-    fun beginRequest() {
-        reportChange(pullStats.copy(isRequestingData = true))
-    }
-
     fun setPagingRequest() {
         reportChange(pullStats.copy(isPagingRequest = true))
-    }
-
-    fun endRequest() {
-        reportChange(pullStats.copy(isRequestingData = false))
     }
 
     fun updateWorksitesCount(worksitesCount: Int) {
@@ -114,7 +108,6 @@ internal class WorksitesDataPullStatsUpdater(
     fun endPull() {
         reportChange(
             pullStats.copy(
-                isPulling = false,
                 isEnded = true,
             )
         )

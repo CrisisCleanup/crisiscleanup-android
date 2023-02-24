@@ -15,13 +15,16 @@ internal fun MenuRoute(
     modifier: Modifier = Modifier,
     viewModel: MenuViewModel = hiltViewModel(),
 ) {
+    val databaseText = viewModel.databaseVersionText
+
     val expireTokenAction = if (viewModel.isDebug) {
         { viewModel.simulateTokenExpired() }
     } else null
-    
+
     MenuScreen(
         modifier = modifier,
         versionText = viewModel.versionText,
+        databaseText = databaseText,
         expireTokenAction = expireTokenAction,
     )
 }
@@ -30,6 +33,7 @@ internal fun MenuRoute(
 internal fun MenuScreen(
     modifier: Modifier = Modifier,
     versionText: String,
+    databaseText: String = "",
     expireTokenAction: (() -> Unit)? = null,
 ) {
     Box(Modifier.fillMaxSize()) {
@@ -49,6 +53,15 @@ internal fun MenuScreen(
                     .padding(16.dp),
                 text = versionText,
             )
+
+            if (databaseText.isNotEmpty()) {
+                Text(
+                    modifier = modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    text = databaseText,
+                )
+            }
 
             expireTokenAction?.let {
                 TextButton(onClick = it) {

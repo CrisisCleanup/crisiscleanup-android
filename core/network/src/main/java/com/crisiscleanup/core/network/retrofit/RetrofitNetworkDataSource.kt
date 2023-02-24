@@ -1,11 +1,7 @@
 package com.crisiscleanup.core.network.retrofit
 
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
-import com.crisiscleanup.core.network.model.NetworkIncidentsResult
-import com.crisiscleanup.core.network.model.NetworkLocationsResult
-import com.crisiscleanup.core.network.model.NetworkWorksitesCountResult
-import com.crisiscleanup.core.network.model.NetworkWorksitesFullResult
-import com.crisiscleanup.core.network.model.NetworkWorksitesShortResult
+import com.crisiscleanup.core.network.model.*
 import kotlinx.datetime.Instant
 import retrofit2.Retrofit
 import retrofit2.http.GET
@@ -50,6 +46,8 @@ private interface CrisisCleanupNetworkApi {
     suspend fun getWorksitesCount(
         @Query("incident")
         incidentId: Long,
+        @Query("updated_at__gt")
+        updatedAtAfter: Instant? = null,
     ): NetworkWorksitesCountResult
 
     @TokenAuthenticationHeader
@@ -61,6 +59,21 @@ private interface CrisisCleanupNetworkApi {
         updatedAtAfter: Instant?,
         @Query("updated_at__lt")
         updatedAtBefore: Instant? = null,
+    ): NetworkWorksitesShortResult
+
+    @TokenAuthenticationHeader
+    @GET("worksites_page")
+    suspend fun getWorksitesPage(
+        @Query("incident")
+        incidentId: Long,
+        @Query("limit")
+        pageCount: Int,
+        @Query("page")
+        pageOffset: Int?,
+        @Query("center_coordinates")
+        centerCoordinates: List<Double>?,
+        @Query("updated_at__gt")
+        updatedAtAfter: Instant?,
     ): NetworkWorksitesShortResult
 }
 
@@ -81,8 +94,10 @@ class RetrofitNetworkDataSource @Inject constructor(
         offset: Int
     ): NetworkWorksitesFullResult = networkApi.getWorksites(incidentId, limit, offset)
 
-    override suspend fun getWorksitesCount(incidentId: Long): NetworkWorksitesCountResult =
-        networkApi.getWorksitesCount(incidentId)
+    override suspend fun getWorksitesCount(
+        incidentId: Long,
+        updatedAtAfter: Instant?
+    ): NetworkWorksitesCountResult = networkApi.getWorksitesCount(incidentId, updatedAtAfter)
 
     override suspend fun getWorksitesAll(
         incidentId: Long,
@@ -90,4 +105,23 @@ class RetrofitNetworkDataSource @Inject constructor(
         updatedAtBefore: Instant?
     ): NetworkWorksitesShortResult =
         networkApi.getWorksitesAll(incidentId, updatedAtAfter, updatedAtBefore)
+
+    override suspend fun getWorksitesPage(
+        incidentId: Long,
+        updatedAtAfter: Instant?,
+        pageCount: Int,
+        pageOffset: Int?,
+        latitude: Double?,
+        longitude: Double?
+    ): NetworkWorksitesShortResult {
+        val centerCoordinates: List<Double>? = if (latitude == null && longitude == null) null else
+            listOf(latitude!!, longitude!!)
+        return networkApi.getWorksitesPage(
+            incidentId,
+            pageCount,
+            if ((pageOffset ?: 0) <= 1) null else pageOffset,
+            centerCoordinates,
+            updatedAtAfter,
+        )
+    }
 }

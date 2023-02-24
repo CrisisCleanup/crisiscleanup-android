@@ -35,7 +35,10 @@ interface CasesOverviewMapTileRenderer {
      */
     var zoomThreshold: Int
 
-    fun setIncident(id: Long, worksitesCount: Int, clearCache: Boolean = true)
+    /**
+     * @return true if incident is changed or false otherwise
+     */
+    fun setIncident(id: Long, worksitesCount: Int, clearCache: Boolean = true): Boolean
 
     fun enableTileBoundaries()
 
@@ -75,14 +78,16 @@ class CaseDotsMapTileRenderer @Inject constructor(
         // Lower zoom is far out, higher zoom is closer in
         zoom < zoomThreshold + 1
 
-    override fun setIncident(id: Long, worksitesCount: Int, clearCache: Boolean) {
+    override fun setIncident(id: Long, worksitesCount: Int, clearCache: Boolean): Boolean {
+        val isIncidentChanged = id != incidentIdCache
         synchronized(tileCache) {
-            if (id != incidentIdCache || clearCache) {
+            if (isIncidentChanged || clearCache) {
                 tileCache.evictAll()
             }
             incidentIdCache = id
             this.worksitesCount = worksitesCount
         }
+        return isIncidentChanged
     }
 
     override fun enableTileBoundaries() {

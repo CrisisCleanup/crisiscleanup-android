@@ -4,24 +4,11 @@ import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.crisiscleanup.core.common.DatabaseVersionProvider
 import com.crisiscleanup.core.database.DatabaseMigrations.Schema2To3
 import com.crisiscleanup.core.database.DatabaseMigrations.Schema3to4
-import com.crisiscleanup.core.database.dao.IncidentDao
-import com.crisiscleanup.core.database.dao.LocationDao
-import com.crisiscleanup.core.database.dao.TestTargetIncidentDao
-import com.crisiscleanup.core.database.dao.TestTargetWorkTypeDao
-import com.crisiscleanup.core.database.dao.TestTargetWorksiteDao
-import com.crisiscleanup.core.database.dao.WorkTypeDao
-import com.crisiscleanup.core.database.dao.WorksiteDao
-import com.crisiscleanup.core.database.dao.WorksitesSyncStatsDao
-import com.crisiscleanup.core.database.model.IncidentEntity
-import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
-import com.crisiscleanup.core.database.model.IncidentLocationEntity
-import com.crisiscleanup.core.database.model.LocationEntity
-import com.crisiscleanup.core.database.model.WorkTypeEntity
-import com.crisiscleanup.core.database.model.WorksiteEntity
-import com.crisiscleanup.core.database.model.WorksiteRootEntity
-import com.crisiscleanup.core.database.model.WorksiteSyncStatsEntity
+import com.crisiscleanup.core.database.dao.*
+import com.crisiscleanup.core.database.model.*
 import com.crisiscleanup.core.database.util.InstantConverter
 
 @Database(
@@ -35,18 +22,22 @@ import com.crisiscleanup.core.database.util.InstantConverter
         WorksiteEntity::class,
         WorkTypeEntity::class,
     ],
-    version = 4,
+    version = 5,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
         AutoMigration(from = 3, to = 4, spec = Schema3to4::class),
+        AutoMigration(from = 4, to = 5),
     ],
     exportSchema = true,
 )
 @TypeConverters(
     InstantConverter::class,
 )
-abstract class CrisisCleanupDatabase : RoomDatabase() {
+abstract class CrisisCleanupDatabase : RoomDatabase(), DatabaseVersionProvider {
+    override val databaseVersion: Int
+        get() = openHelper.readableDatabase.version
+
     abstract fun incidentDao(): IncidentDao
     abstract fun locationDao(): LocationDao
     abstract fun worksitesSyncStatsDao(): WorksitesSyncStatsDao

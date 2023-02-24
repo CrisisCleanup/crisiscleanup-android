@@ -1,11 +1,6 @@
 package com.crisiscleanup.core.network
 
-import com.crisiscleanup.core.network.model.NetworkAuthResult
-import com.crisiscleanup.core.network.model.NetworkIncidentsResult
-import com.crisiscleanup.core.network.model.NetworkLocationsResult
-import com.crisiscleanup.core.network.model.NetworkWorksitesCountResult
-import com.crisiscleanup.core.network.model.NetworkWorksitesFullResult
-import com.crisiscleanup.core.network.model.NetworkWorksitesShortResult
+import com.crisiscleanup.core.network.model.*
 import kotlinx.datetime.Instant
 
 interface CrisisCleanupAuthApi {
@@ -33,11 +28,21 @@ interface CrisisCleanupNetworkDataSource {
 
     suspend fun getWorksitesCount(
         incidentId: Long,
+        updatedAtAfter: Instant? = null,
     ): NetworkWorksitesCountResult
 
     suspend fun getWorksitesAll(
         incidentId: Long,
         updatedAtAfter: Instant?,
         updatedAtBefore: Instant? = null,
+    ): NetworkWorksitesShortResult
+
+    suspend fun getWorksitesPage(
+        incidentId: Long,
+        updatedAtAfter: Instant?,
+        pageCount: Int,
+        pageOffset: Int? = null,
+        latitude: Double? = null,
+        longitude: Double? = null,
     ): NetworkWorksitesShortResult
 }

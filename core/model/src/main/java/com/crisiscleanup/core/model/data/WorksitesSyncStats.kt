@@ -14,8 +14,10 @@ data class WorksitesSyncStats(
     val incidentId: Long,
     /**
      * Timestamp when the incident first started syncing
+     *
+     * See [syncAttempt] for last successful sync timestamp
      */
-    val syncStart: Instant?,
+    val syncStart: Instant,
     /**
      * Number of worksites reported on first sync
      */
@@ -32,4 +34,9 @@ data class WorksitesSyncStats(
     val appBuildVersionCode: Int,
 ) {
     val isDataVersionOutdated = appBuildVersionCode < WORKSITES_STABLE_MODEL_BUILD_VERSION
+
+    val shouldSync = pagedCount < worksitesCount ||
+            isDataVersionOutdated ||
+            syncAttempt.shouldSyncPassively()
+
 }

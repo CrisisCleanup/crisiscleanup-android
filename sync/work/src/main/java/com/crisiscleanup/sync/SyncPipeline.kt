@@ -31,10 +31,7 @@ object SyncPipeline {
         if (incidentId > 0) {
             incidentsRepository.getIncident(incidentId)?.let {
                 val syncStats = worksitesRepository.getWorksitesSyncStats(incidentId)
-                if (syncStats == null ||
-                    syncStats.syncAttempt.shouldSyncPassively() ||
-                    syncStats.isDataVersionOutdated
-                ) {
+                if (syncStats?.shouldSync != false) {
                     stepsBuilder.setPullIncidentIdWorksites(incidentId)
                 }
             }
@@ -65,7 +62,7 @@ object SyncPipeline {
                     updateNotificationMessage(syncMessage)
                 }
 
-                worksitesRepository.refreshWorksites(incidentId, false)
+                worksitesRepository.refreshWorksites(incidentId)
             }
         }
 

@@ -1,25 +1,17 @@
 package com.crisiscleanup.core.data.di
 
-import android.content.Context
-import com.crisiscleanup.core.common.event.AuthEventManager
-import com.crisiscleanup.core.common.log.AppLogger
-import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
-import com.crisiscleanup.core.common.log.Logger
-import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
-import com.crisiscleanup.core.common.network.Dispatcher
-import com.crisiscleanup.core.data.IncidentWorksitesDataManager
+import com.crisiscleanup.core.data.IncidentWorksitesSyncer
+import com.crisiscleanup.core.data.WorksitesNetworkDataCache
+import com.crisiscleanup.core.data.WorksitesNetworkDataFileCache
+import com.crisiscleanup.core.data.WorksitesSyncer
 import com.crisiscleanup.core.data.repository.*
 import com.crisiscleanup.core.data.util.ConnectivityManagerNetworkMonitor
 import com.crisiscleanup.core.data.util.NetworkMonitor
 import com.crisiscleanup.core.data.util.WorksitesDataPullReporter
-import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import dagger.Binds
 import dagger.Module
-import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Singleton
 
 @Module
@@ -70,16 +62,12 @@ interface DataModule {
 
 @Module
 @InstallIn(SingletonComponent::class)
-object DataModuleObject {
-    @Singleton
-    @Provides
-    fun providesIncidentWorksitesDataManager(
-        networkDataSource: CrisisCleanupNetworkDataSource,
-        authEventManager: AuthEventManager,
-        @ApplicationContext context: Context,
-        @Dispatcher(CrisisCleanupDispatchers.IO) ioDispatcher: CoroutineDispatcher,
-        @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
-    ) = IncidentWorksitesDataManager(
-        networkDataSource, authEventManager, context, ioDispatcher, logger
-    )
+interface DataInternalModule {
+    @Binds
+    fun providesWorksitesNetworkDataCache(
+        cache: WorksitesNetworkDataFileCache
+    ): WorksitesNetworkDataCache
+
+    @Binds
+    fun providesWorksitesSyncer(syncer: IncidentWorksitesSyncer): WorksitesSyncer
 }

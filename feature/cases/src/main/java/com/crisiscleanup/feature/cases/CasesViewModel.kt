@@ -85,7 +85,7 @@ class CasesViewModel @Inject constructor(
         isLayerView.value = !isLayerView.value
     }
 
-    val showDataProgress = dataPullReporter.worksitesDataPullStats.map { it.isPulling }
+    val showDataProgress = dataPullReporter.worksitesDataPullStats.map { it.isOngoing }
     val dataProgress = dataPullReporter.worksitesDataPullStats.map { it.progress }
 
     private var _mapCameraZoom = MutableStateFlow(MapViewCameraZoomDefault)
@@ -286,7 +286,9 @@ class CasesViewModel @Inject constructor(
         }
 
         if (refreshTiles) {
-            mapTileRenderer.setIncident(it.id, it.count, clearCache)
+            if (mapTileRenderer.setIncident(it.id, it.count, clearCache)) {
+                clearCache = true
+            }
         }
 
         if (clearCache) {

@@ -53,7 +53,11 @@ interface WorksitesRepository {
         longitudeRight: Double,
     ): Int
 
-    suspend fun refreshWorksites(incidentId: Long, force: Boolean)
+    suspend fun refreshWorksites(
+        incidentId: Long,
+        forceQueryDeltas: Boolean = false,
+        forceRefreshAll: Boolean = false,
+    )
 
     fun getWorksitesSyncStats(incidentId: Long): WorksitesSyncStats?
 }
