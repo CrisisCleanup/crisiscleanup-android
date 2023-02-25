@@ -125,7 +125,7 @@ class CasesViewModel @Inject constructor(
 
     private var _hiddenMarkersMessage = ""
     val hiddenMarkersMessage: String
-        get() = if (mapTileRenderer.rendersAt(qsm.mapZoom.value)) _hiddenMarkersMessage else ""
+        get() = if (mapTileRenderer.rendersAt(qsm.mapZoom.value)) "" else _hiddenMarkersMessage
 
     val worksitesMapMarkers = qsm.worksiteQueryState
         // TODO Make debounce a parameter
