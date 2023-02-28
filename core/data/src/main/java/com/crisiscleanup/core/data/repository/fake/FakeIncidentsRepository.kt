@@ -37,6 +37,8 @@ class FakeIncidentsRepository @Inject constructor() : IncidentsRepository {
     }
 
     override suspend fun pullIncidents() {}
+
+    override suspend fun pullIncident(id: Long) {}
 }
 
 private fun makeIncident(id: Long, name: String) =

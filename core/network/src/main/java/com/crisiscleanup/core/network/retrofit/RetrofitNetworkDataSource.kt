@@ -5,6 +5,7 @@ import com.crisiscleanup.core.network.model.*
 import kotlinx.datetime.Instant
 import retrofit2.Retrofit
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -29,6 +30,16 @@ private interface CrisisCleanupNetworkApi {
         @Query("limit")
         limit: Int,
     ): NetworkLocationsResult
+
+    @TokenAuthenticationHeader
+    @WrapIncidentResponseHeader
+    @GET("incidents/{id}")
+    suspend fun getIncident(
+        @Path("id")
+        id: Long,
+        @Query("fields")
+        fields: String,
+    ): NetworkIncidentResult
 
     @TokenAuthenticationHeader
     @GET("worksites")
@@ -85,26 +96,23 @@ class RetrofitNetworkDataSource @Inject constructor(
     override suspend fun getIncidents(fields: List<String>, limit: Int, ordering: String) =
         networkApi.getIncidents(fields.joinToString(","), limit, ordering)
 
-    override suspend fun getIncidentLocations(locationIds: List<Long>): NetworkLocationsResult =
+    override suspend fun getIncidentLocations(locationIds: List<Long>) =
         networkApi.getLocations(locationIds.joinToString(","), locationIds.size)
 
-    override suspend fun getWorksites(
-        incidentId: Long,
-        limit: Int,
-        offset: Int
-    ): NetworkWorksitesFullResult = networkApi.getWorksites(incidentId, limit, offset)
+    override suspend fun getIncident(id: Long, fields: List<String>) =
+        networkApi.getIncident(id, fields.joinToString(","))
 
-    override suspend fun getWorksitesCount(
-        incidentId: Long,
-        updatedAtAfter: Instant?
-    ): NetworkWorksitesCountResult = networkApi.getWorksitesCount(incidentId, updatedAtAfter)
+    override suspend fun getWorksites(incidentId: Long, limit: Int, offset: Int) =
+        networkApi.getWorksites(incidentId, limit, offset)
+
+    override suspend fun getWorksitesCount(incidentId: Long, updatedAtAfter: Instant?) =
+        networkApi.getWorksitesCount(incidentId, updatedAtAfter)
 
     override suspend fun getWorksitesAll(
         incidentId: Long,
         updatedAtAfter: Instant?,
         updatedAtBefore: Instant?
-    ): NetworkWorksitesShortResult =
-        networkApi.getWorksitesAll(incidentId, updatedAtAfter, updatedAtBefore)
+    ) = networkApi.getWorksitesAll(incidentId, updatedAtAfter, updatedAtBefore)
 
     override suspend fun getWorksitesPage(
         incidentId: Long,

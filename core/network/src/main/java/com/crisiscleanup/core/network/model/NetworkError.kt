@@ -21,19 +21,23 @@ data class NetworkCrisisCleanupApiError(
             errors: Collection<NetworkCrisisCleanupApiError>?,
         ) {
             errors?.let {
-                tryGetException(authEventManager, errors)?.let { throw it }
+                tryGetException(errors)?.let {
+                    if (it is ExpiredTokenException) {
+                        // TODO Move this broadcast into the network layer (and consolidate other broadcasts where possible)
+                        authEventManager.onExpiredToken()
+                    } else {
+                        throw it
+                    }
+                }
             }
         }
 
-        fun tryGetException(
-            authEventManager: AuthEventManager,
-            errors: Collection<NetworkCrisisCleanupApiError>,
-        ): Exception? {
+        private fun tryGetException(errors: Collection<NetworkCrisisCleanupApiError>): Exception? {
             if (errors.isNotEmpty()) {
                 var exception: Exception? = null
                 // Assume expired token will only be a singular exception
                 if (errors.size == 1) {
-                    exception = errors.first().tryGetException(authEventManager)
+                    exception = errors.first().tryGetException()
                 }
                 return exception ?: Exception(collapseMessages(errors))
             }
@@ -45,12 +49,9 @@ data class NetworkCrisisCleanupApiError(
                 .joinToString("\n")
     }
 
-    private fun tryGetException(authEventManager: AuthEventManager): Exception? {
+    private fun tryGetException(): Exception? {
         if (message?.size == 1) {
             if (message[0] == "Token has expired.") {
-                // TODO Move this broadcast into the network layer (and consolidate other broadcasts where possible)
-                authEventManager.onExpiredToken()
-
                 return ExpiredTokenException()
             }
         }

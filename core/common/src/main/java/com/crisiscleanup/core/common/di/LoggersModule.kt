@@ -41,6 +41,13 @@ object LoggersModule {
     }
 
     @Provides
+    @Logger(CrisisCleanupLoggers.Incidents)
+    fun providesIncidentsLogger(logger: TagLogger): AppLogger {
+        logger.tag = "incidents"
+        return logger
+    }
+
+    @Provides
     @Logger(CrisisCleanupLoggers.Worksites)
     fun providesWorksitesLogger(logger: TagLogger): AppLogger {
         logger.tag = "worksites"

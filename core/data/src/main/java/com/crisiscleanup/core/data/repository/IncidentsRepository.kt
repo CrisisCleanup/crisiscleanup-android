@@ -17,4 +17,6 @@ interface IncidentsRepository {
     suspend fun getIncident(id: Long): Incident?
 
     suspend fun pullIncidents()
+
+    suspend fun pullIncident(id: Long)
 }

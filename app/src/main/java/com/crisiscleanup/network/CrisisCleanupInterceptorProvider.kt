@@ -5,6 +5,8 @@ import com.crisiscleanup.core.network.RetrofitInterceptorProvider
 import com.crisiscleanup.core.network.retrofit.RequestHeaderKey
 import com.crisiscleanup.core.network.retrofit.RequestHeaderKeysLookup
 import okhttp3.Interceptor
+import okhttp3.Response
+import okhttp3.ResponseBody.Companion.toResponseBody
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,6 +32,7 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
                                 addHeaderCount++
                             }
                         }
+                        else -> {}
                     }
                 }
             }
@@ -39,7 +42,32 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
         }
     }
 
+    private val wrapIncidentInterceptor: Interceptor by lazy {
+        Interceptor { chain ->
+            val request = chain.request()
+            var response: Response = chain.proceed(request)
+
+            headerKeysLookup.getHeaderKeys(request)?.let {
+                if (it.containsKey(RequestHeaderKey.WrapIncidentResponse)) {
+                    if (response.code == 200) {
+                        // TODO Write tests
+                        // Better to deserialize, make new, and re-serialize but data structure is simple so text operations is sufficient
+                        val incidentData = response.body?.string()
+                            ?: throw Exception("Unexpected incident response")
+                        val wrappedIncidentData = """{"incident":$incidentData}"""
+                        val converted =
+                            wrappedIncidentData.toResponseBody(response.body?.contentType())
+                        response = response.newBuilder().body(converted).build()
+                    }
+                }
+            }
+
+            response
+        }
+    }
+
     override val interceptors: List<Interceptor> = listOf(
         headerInterceptor,
+        wrapIncidentInterceptor,
     )
 }

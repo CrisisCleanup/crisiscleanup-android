@@ -14,6 +14,12 @@ data class NetworkIncidentsResult(
 )
 
 @Serializable
+data class NetworkIncidentResult(
+    val errors: List<NetworkCrisisCleanupApiError>? = null,
+    val incident: NetworkIncident? = null,
+)
+
+@Serializable
 data class NetworkIncidentLocation(
     val id: Long,
     val location: Long,

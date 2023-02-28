@@ -1,6 +1,9 @@
 package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.common.event.AuthEventManager
+import com.crisiscleanup.core.common.log.AppLogger
+import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
+import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.model.asEntity
@@ -24,6 +27,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -35,9 +39,27 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     private val locationDaoPlus: LocationDaoPlus,
     private val appPreferences: LocalAppPreferencesDataSource,
     private val authEventManager: AuthEventManager,
+    @Logger(CrisisCleanupLoggers.Incidents) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : IncidentsRepository {
     private var isSyncing = MutableStateFlow(false)
+
+    private var isPullingSingleIncident = MutableStateFlow(false)
+    private val pullSingleIncidentId = AtomicLong(0)
+
+    private val incidentsQueryFields = listOf(
+        "id",
+        "start_at",
+        "name",
+        "short_name",
+        "incident_type",
+        "locations",
+        "turn_on_release",
+        "active_phone_number",
+        "is_archived",
+    )
+    private val fullIncidentQueryFields: List<String> =
+        incidentsQueryFields.toMutableList().also { it.add("form_fields") }
 
     override val isLoading: Flow<Boolean> = isSyncing
 
@@ -75,19 +97,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     private suspend fun syncInternal() = coroutineScope {
         isSyncing.value = true
         try {
-            val networkIncidents = networkDataSource.getIncidents(
-                listOf(
-                    "id",
-                    "start_at",
-                    "name",
-                    "short_name",
-                    "incident_type",
-                    "locations",
-                    "turn_on_release",
-                    "active_phone_number",
-                    "is_archived"
-                )
-            )
+            val networkIncidents = networkDataSource.getIncidents(incidentsQueryFields)
 
             tryThrowException(authEventManager, networkIncidents.errors)
 
@@ -113,6 +123,28 @@ class OfflineFirstIncidentsRepository @Inject constructor(
         } finally {
             // Treat coroutine cancellation as unsuccessful for now
             appPreferences.setSyncAttempt(isSuccessful)
+        }
+    }
+
+    override suspend fun pullIncident(id: Long) {
+        synchronized(pullSingleIncidentId) {
+            pullSingleIncidentId.set(id)
+            isPullingSingleIncident.value = true
+        }
+        try {
+            val networkIncident = networkDataSource.getIncident(id, fullIncidentQueryFields)
+            // TODO Expired token still needs testing
+            tryThrowException(authEventManager, networkIncident.errors)
+
+            networkIncident.incident?.let { incident ->
+                logger.logDebug("Incident", incident)
+            }
+        } finally {
+            synchronized(pullSingleIncidentId) {
+                if (pullSingleIncidentId.compareAndSet(id, 0)) {
+                    isPullingSingleIncident.value = false
+                }
+            }
         }
     }
 }

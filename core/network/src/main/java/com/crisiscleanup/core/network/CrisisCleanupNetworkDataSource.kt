@@ -20,6 +20,11 @@ interface CrisisCleanupNetworkDataSource {
         locationIds: List<Long>,
     ): NetworkLocationsResult
 
+    suspend fun getIncident(
+        id: Long,
+        fields: List<String>,
+    ): NetworkIncidentResult
+
     suspend fun getWorksites(
         incidentId: Long,
         limit: Int,

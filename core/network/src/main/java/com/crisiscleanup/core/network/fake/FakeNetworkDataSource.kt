@@ -122,31 +122,25 @@ private val worksitesShortResult = NetworkWorksitesShortResult()
 
 @Singleton
 class FakeNetworkDataSource @Inject constructor() : CrisisCleanupNetworkDataSource {
-    override suspend fun getIncidents(
-        fields: List<String>,
-        limit: Int,
-        ordering: String
-    ): NetworkIncidentsResult = incidentsResult
+    override suspend fun getIncidents(fields: List<String>, limit: Int, ordering: String) =
+        incidentsResult
 
-    override suspend fun getIncidentLocations(locationIds: List<Long>): NetworkLocationsResult =
+    override suspend fun getIncidentLocations(locationIds: List<Long>) =
         incidentLocationsResult
 
-    override suspend fun getWorksites(
-        incidentId: Long,
-        limit: Int,
-        offset: Int
-    ): NetworkWorksitesFullResult = worksitesResult
+    override suspend fun getIncident(id: Long, fields: List<String>) =
+        NetworkIncidentResult(incident = incidents[0])
 
-    override suspend fun getWorksitesCount(
-        incidentId: Long,
-        updatedAtAfter: Instant?
-    ): NetworkWorksitesCountResult = worksitesCountResult
+    override suspend fun getWorksites(incidentId: Long, limit: Int, offset: Int) = worksitesResult
+
+    override suspend fun getWorksitesCount(incidentId: Long, updatedAtAfter: Instant?) =
+        worksitesCountResult
 
     override suspend fun getWorksitesAll(
         incidentId: Long,
         updatedAtAfter: Instant?,
         updatedAtBefore: Instant?
-    ): NetworkWorksitesShortResult = worksitesShortResult
+    ) = worksitesShortResult
 
     override suspend fun getWorksitesPage(
         incidentId: Long,
@@ -155,7 +149,7 @@ class FakeNetworkDataSource @Inject constructor() : CrisisCleanupNetworkDataSour
         pageOffset: Int?,
         latitude: Double?,
         longitude: Double?
-    ): NetworkWorksitesShortResult = worksitesShortResult
+    ) = worksitesShortResult
 }
 
 internal fun fillNetworkIncident(
