@@ -4,6 +4,7 @@ import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.event.LogoutListener
 import com.crisiscleanup.core.datastore.AccountInfoDataSource
 import com.crisiscleanup.core.model.data.AccountData
+import com.crisiscleanup.core.model.data.OrgData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -40,6 +41,7 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
         lastName: String,
         expirySeconds: Long,
         profilePictureUri: String,
+        org: OrgData,
     ) {
         accessTokenCached = accessToken
         dataSource.setAccount(
@@ -50,6 +52,7 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
             lastName,
             expirySeconds,
             profilePictureUri,
+            org,
         )
     }
 

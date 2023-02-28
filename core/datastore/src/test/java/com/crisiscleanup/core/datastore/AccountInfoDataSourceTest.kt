@@ -1,6 +1,8 @@
 package com.crisiscleanup.core.datastore
 
 import com.crisiscleanup.core.datastore.test.testAccountInfoDataStore
+import com.crisiscleanup.core.model.data.OrgData
+import com.crisiscleanup.core.model.data.emptyOrgData
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -38,12 +40,17 @@ class AccountInfoDataSourceTest {
             "last",
             125512586,
             "profile-picture-url",
+            OrgData(
+                85,
+                "org-o",
+            ),
         )
         subject.accountData.first().run {
             assertEquals(523, id)
             assertEquals("access-token", accessToken)
             assertEquals("first last", fullName)
             assertEquals(125512586, tokenExpiry.epochSeconds)
+            assertEquals(OrgData(85, "org-o"), org)
         }
 
         subject.clearAccount()
@@ -52,6 +59,7 @@ class AccountInfoDataSourceTest {
             assertEquals("", accessToken)
             assertEquals("", fullName)
             assertEquals(0, tokenExpiry.epochSeconds)
+            assertEquals(emptyOrgData, org)
         }
     }
 }

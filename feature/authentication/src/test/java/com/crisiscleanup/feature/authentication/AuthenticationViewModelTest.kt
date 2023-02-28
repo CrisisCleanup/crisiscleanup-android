@@ -7,6 +7,7 @@ import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.model.data.*
+import com.crisiscleanup.core.network.model.NetworkAuthOrganization
 import com.crisiscleanup.core.network.model.NetworkAuthResult
 import com.crisiscleanup.core.network.model.NetworkAuthUserClaims
 import com.crisiscleanup.core.network.retrofit.AuthApiClient
@@ -80,6 +81,7 @@ class AuthenticationViewModelTest {
                 lastName = any(),
                 expirySeconds = any(),
                 profilePictureUri = any(),
+                org = any(),
             )
         } returns Unit
 
@@ -116,6 +118,7 @@ class AuthenticationViewModelTest {
         "display-name",
         "email-address",
         "profile-picture-uri",
+        org = OrgData(813, "org"),
     )
 
     private fun buildViewModel() = AuthenticationViewModel(
@@ -182,6 +185,11 @@ class AuthenticationViewModelTest {
                 firstName = "first-name",
                 lastName = "last-name",
                 files = null,
+            ),
+            organizations = NetworkAuthOrganization(
+                id = 813,
+                name = "org",
+                isActive = true,
             )
         )
 
@@ -198,6 +206,7 @@ class AuthenticationViewModelTest {
                 lastName = "last-name",
                 expirySeconds = match { millis -> abs(millis - nowMillis) < 8640000 },
                 profilePictureUri = "",
+                org = OrgData(813, "org"),
             )
         }
 

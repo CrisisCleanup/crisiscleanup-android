@@ -15,6 +15,7 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
+import com.crisiscleanup.core.model.data.OrgData
 import com.crisiscleanup.core.network.CrisisCleanupAuthApi
 import com.crisiscleanup.feature.authentication.model.AuthenticationState
 import com.crisiscleanup.feature.authentication.model.LoginInputData
@@ -164,6 +165,9 @@ class AuthenticationViewModel @Inject constructor(
                     val profilePicUri: String = claims.files?.firstOrNull {
                         it.fileTypeT == "fileTypes.user_profile_picture"
                     }?.largeThumbnailUrl ?: ""
+
+                    val organization = result.organizations!!
+
                     accountDataRepository.setAccount(
                         id = claims.id,
                         accessToken = accessToken,
@@ -172,6 +176,7 @@ class AuthenticationViewModel @Inject constructor(
                         lastName = claims.lastName,
                         expirySeconds = expirySeconds,
                         profilePictureUri = profilePicUri,
+                        org = OrgData(organization.id, organization.name)
                     )
 
                     // TODO Update tests

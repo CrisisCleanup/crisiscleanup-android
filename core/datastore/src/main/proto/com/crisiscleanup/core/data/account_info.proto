@@ -11,4 +11,6 @@ message AccountInfo {
   int64 expiry_seconds = 5;
   string profile_picture_uri = 6;
   int64 id = 7;
+  int64 orgId = 8;
+  string orgName = 9;
 }

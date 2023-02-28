@@ -2,6 +2,8 @@ package com.crisiscleanup.core.datastore
 
 import androidx.datastore.core.DataStore
 import com.crisiscleanup.core.model.data.AccountData
+import com.crisiscleanup.core.model.data.OrgData
+import com.crisiscleanup.core.model.data.emptyOrgData
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Instant
 import javax.inject.Inject
@@ -33,10 +35,14 @@ class AccountInfoDataSource @Inject constructor(
                 fullName = fullName,
                 emailAddress = it.email,
                 profilePictureUri = profilePictureUri,
+                org = OrgData(
+                    id = it.orgId,
+                    name = it.orgName,
+                )
             )
         }
 
-    suspend fun clearAccount() = setAccount(0, "", "", "", "", 0, "")
+    suspend fun clearAccount() = setAccount(0, "", "", "", "", 0, "", emptyOrgData)
 
     suspend fun setAccount(
         id: Long,
@@ -46,6 +52,7 @@ class AccountInfoDataSource @Inject constructor(
         lastName: String,
         expirySeconds: Long,
         profilePictureUri: String,
+        org: OrgData,
     ) {
         dataStore.updateData {
             it.copy {
@@ -56,6 +63,8 @@ class AccountInfoDataSource @Inject constructor(
                 this.lastName = lastName
                 this.expirySeconds = expirySeconds
                 this.profilePictureUri = profilePictureUri
+                this.orgId = org.id
+                this.orgName = org.name
             }
         }
     }

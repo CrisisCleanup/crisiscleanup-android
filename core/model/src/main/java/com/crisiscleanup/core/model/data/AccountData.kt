@@ -10,6 +10,7 @@ data class AccountData(
     val fullName: String,
     val emailAddress: String,
     val profilePictureUri: String,
+    val org: OrgData,
 ) {
     val isTokenExpired: Boolean
         get() = tokenExpiry <= Clock.System.now()
@@ -17,4 +18,10 @@ data class AccountData(
         get() = accessToken.isEmpty() || isTokenExpired
 }
 
-val emptyAccountData = AccountData(0, "", Instant.fromEpochSeconds(0), "", "", "")
+val emptyOrgData = OrgData(0, "")
+val emptyAccountData = AccountData(0, "", Instant.fromEpochSeconds(0), "", "", "", emptyOrgData)
+
+data class OrgData(
+    val id: Long,
+    val name: String,
+)

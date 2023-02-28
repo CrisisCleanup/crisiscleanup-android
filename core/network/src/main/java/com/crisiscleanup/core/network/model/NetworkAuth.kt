@@ -16,6 +16,7 @@ data class NetworkAuthResult(
     val accessToken: String? = null,
     @SerialName("user_claims")
     val claims: NetworkAuthUserClaims? = null,
+    val organizations: NetworkAuthOrganization? = null
 )
 
 @Serializable
@@ -28,4 +29,12 @@ data class NetworkAuthUserClaims(
     @SerialName("last_name")
     val lastName: String,
     val files: List<NetworkFile>?,
+)
+
+@Serializable
+data class NetworkAuthOrganization(
+    val id: Long,
+    val name: String,
+    @SerialName("is_active")
+    val isActive: Boolean,
 )

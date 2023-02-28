@@ -44,6 +44,11 @@ class NetworkAuthTest {
                 mimeContentType = "image/jpeg",
             ), firstFile
         )
+
+        val organization = result.organizations!!
+        assertEquals(12, organization.id)
+        assertEquals("Demo Recovery Organization", organization.name)
+        assertEquals(true, organization.isActive)
     }
 
     @Test
@@ -54,6 +59,7 @@ class NetworkAuthTest {
 
         assertNull(result.accessToken)
         assertNull(result.claims)
+        assertNull(result.organizations)
 
         assertEquals(1, result.errors?.size)
         val firstError = result.errors?.get(0)!!

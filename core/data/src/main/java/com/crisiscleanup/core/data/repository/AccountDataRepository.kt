@@ -1,6 +1,7 @@
 package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.model.data.AccountData
+import com.crisiscleanup.core.model.data.OrgData
 import kotlinx.coroutines.flow.Flow
 
 interface AccountDataRepository {
@@ -34,5 +35,6 @@ interface AccountDataRepository {
         lastName: String,
         expirySeconds: Long,
         profilePictureUri: String,
+        org: OrgData,
     )
 }

@@ -5,6 +5,8 @@ import com.crisiscleanup.core.common.event.CrisisCleanupAuthEventManager
 import com.crisiscleanup.core.datastore.AccountInfoDataSource
 import com.crisiscleanup.core.datastore.test.testAccountInfoDataStore
 import com.crisiscleanup.core.model.data.AccountData
+import com.crisiscleanup.core.model.data.OrgData
+import com.crisiscleanup.core.model.data.emptyOrgData
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Instant
@@ -52,6 +54,7 @@ class CrisisCleanupAccountDataRepositoryTest {
                     tokenExpiry = Instant.fromEpochSeconds(0),
                     emailAddress = "",
                     profilePictureUri = "",
+                    org = emptyOrgData,
                 ),
                 it
             )
@@ -70,6 +73,7 @@ class CrisisCleanupAccountDataRepositoryTest {
             "ln",
             6235234341,
             "pp",
+            org = OrgData(83, "org"),
         )
         var expectedData = AccountData(
             id = 5434,
@@ -78,6 +82,7 @@ class CrisisCleanupAccountDataRepositoryTest {
             tokenExpiry = Instant.fromEpochSeconds(6235234341),
             emailAddress = "em",
             profilePictureUri = "pp",
+            org = OrgData(83, "org"),
         )
 
         assertEquals("at", subject.accessTokenCached)
@@ -94,6 +99,7 @@ class CrisisCleanupAccountDataRepositoryTest {
             tokenExpiry = Instant.fromEpochSeconds(0),
             emailAddress = "",
             profilePictureUri = "",
+            org = emptyOrgData,
         )
 
         assertTrue(subject.accessTokenCached.isEmpty())
