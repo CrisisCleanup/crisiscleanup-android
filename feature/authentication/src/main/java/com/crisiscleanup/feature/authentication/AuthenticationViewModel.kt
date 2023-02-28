@@ -55,9 +55,7 @@ class AuthenticationViewModel @Inject constructor(
 
     // This may fail when a user cancels too many times.
     // Wait 24 hours or enter the code at https://developer.android.com/training/sign-in/passkeys#troubleshoot
-    val showSaveCredentialsAction = mutableStateOf(false)
-
-    //    val showSaveCredentialsAction = saveCredentialsManager.showSaveCredentialsAction
+    val showSaveCredentialsAction = saveCredentialsManager.showSaveCredentialsAction
     val showDisableSaveCredentials = saveCredentialsManager.showDisableSaveCredentials
 
     val uiState: StateFlow<AuthenticateScreenUiState> =
@@ -227,8 +225,7 @@ class AuthenticationViewModel @Inject constructor(
     // TODO Test save credentials related below
     fun onInputFocus() {
         if (loginInputData.password.isEmpty()) {
-            // TODO Re-enable when credentials library bug is fixed
-            // saveCredentialsManager.requestSavedCredentials()
+            saveCredentialsManager.requestSavedCredentials()
         }
     }
 
