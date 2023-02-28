@@ -4,10 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
-import com.crisiscleanup.core.database.model.PopulatedWorksite
-import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
-import com.crisiscleanup.core.database.model.WorksiteEntity
-import com.crisiscleanup.core.database.model.WorksiteLocalModifiedAt
+import com.crisiscleanup.core.database.model.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Instant
 
@@ -20,6 +17,10 @@ interface WorksiteDao {
     @Transaction
     @Query("SELECT * FROM worksites WHERE id=:id")
     fun getWorksite(id: Long): PopulatedWorksite
+
+    @Transaction
+    @Query("SELECT * FROM worksites WHERE id=:id")
+    fun getLocalWorksite(id: Long): PopulatedLocalWorksite
 
     @Transaction
     @Query(

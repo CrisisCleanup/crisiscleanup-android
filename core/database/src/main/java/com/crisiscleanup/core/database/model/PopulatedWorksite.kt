@@ -15,11 +15,15 @@ data class PopulatedWorksite(
         parentColumn = "id",
         entityColumn = "worksite_id",
     )
-    val workTypes: List<WorkTypeEntity>
+    val workTypes: List<WorkTypeEntity>,
 )
 
 fun PopulatedWorksite.asExternalModel() = Worksite(
+
+    // Be sure to copy changes below to PopulatedLocalWorksite.asExternalModel
+
     id = entity.id,
+    networkId = entity.networkId,
     address = entity.address,
     caseNumber = entity.caseNumber,
     city = entity.city,

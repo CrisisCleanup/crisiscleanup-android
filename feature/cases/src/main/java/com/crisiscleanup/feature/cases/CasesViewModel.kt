@@ -20,6 +20,7 @@ import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocationsRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
+import com.crisiscleanup.core.data.util.IncidentWorksitesDataPullStats
 import com.crisiscleanup.core.data.util.WorksitesDataPullReporter
 import com.crisiscleanup.core.domain.LoadIncidentDataUseCase
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
@@ -45,10 +46,10 @@ class CasesViewModel @Inject constructor(
     incidentsRepository: IncidentsRepository,
     locationsRepository: LocationsRepository,
     private val worksitesRepository: WorksitesRepository,
-    incidentSelector: IncidentSelector,
+    private val incidentSelector: IncidentSelector,
     appHeaderUiState: AppHeaderUiState,
     loadIncidentDataUseCase: LoadIncidentDataUseCase,
-    private val dataPullReporter: WorksitesDataPullReporter,
+    dataPullReporter: WorksitesDataPullReporter,
     private val mapCaseIconProvider: MapCaseIconProvider,
     private val mapTileRenderer: CasesOverviewMapTileRenderer,
     private val tileProvider: TileProvider,
@@ -61,6 +62,9 @@ class CasesViewModel @Inject constructor(
     @Logger(CrisisCleanupLoggers.Cases) private val logger: AppLogger,
 ) : ViewModel(), TrimMemoryListener {
     val incidentsData = loadIncidentDataUseCase()
+
+    val incidentId: Long
+        get() = incidentSelector.incidentId.value
 
     private val qsm = CasesQueryStateManager(
         incidentSelector,
@@ -168,7 +172,8 @@ class CasesViewModel @Inject constructor(
         get() = casesMapTileManager.clearTileLayer
 
     private val tileClearRefreshInterval = 5.seconds
-    private var countChangeClearInstant: Instant = Instant.fromEpochSeconds(0)
+    private var tileRefreshedInstant: Instant = Instant.fromEpochSeconds(0)
+    private var tileClearWorksitesCount = 0
 
     private val incidentWorksitesCount = incidentSelector.incidentId.flatMapLatest { id ->
         worksitesRepository.streamIncidentWorksitesCount(id)
@@ -188,10 +193,14 @@ class CasesViewModel @Inject constructor(
             qsm.casesSearchQueryFlow.value = it
         }.launchIn(viewModelScope)
 
-        incidentWorksitesCount
+        combine(
+            incidentWorksitesCount,
+            dataPullReporter.worksitesDataPullStats,
+            ::Pair,
+        )
             .debounce(16)
             .throttleLatest(1_000)
-            .onEach { refreshTiles(it) }
+            .onEach { refreshTiles(it.first, it.second) }
             .launchIn(viewModelScope)
     }
 
@@ -260,12 +269,19 @@ class CasesViewModel @Inject constructor(
         )
     }
 
-    private suspend fun refreshTiles(it: IncidentIdWorksiteCount) = coroutineScope {
+    private suspend fun refreshTiles(
+        idCount: IncidentIdWorksiteCount,
+        pullStats: IncidentWorksitesDataPullStats,
+    ) = coroutineScope {
         var refreshTiles = true
         var clearCache = false
 
-        dataPullReporter.worksitesDataPullStats.first().run {
-            if (it.id != incidentId) {
+        pullStats.run {
+            if (!isStarted || idCount.id != incidentId) {
+                return@run
+            }
+
+            if (this.worksitesCount < 3000) {
                 return@run
             }
 
@@ -273,25 +289,31 @@ class CasesViewModel @Inject constructor(
             clearCache = isEnded
             val now = Clock.System.now()
             if (!refreshTiles && progress > saveStartedAmount) {
+                val sinceLastRefresh = now - tileRefreshedInstant
                 val projectedDelta = projectedFinish - now
-                val sinceLastRefresh = now - countChangeClearInstant
                 refreshTiles = now - pullStart > tileClearRefreshInterval &&
                         sinceLastRefresh > tileClearRefreshInterval &&
                         projectedDelta > tileClearRefreshInterval
-                clearCache = progress * 100 % 33 < 6
+                if (idCount.count - tileClearWorksitesCount >= 6000 &&
+                    worksitesCount - tileClearWorksitesCount > 3000
+                ) {
+                    clearCache = true
+                    refreshTiles = true
+                }
             }
             if (refreshTiles) {
-                countChangeClearInstant = now
+                tileRefreshedInstant = now
             }
         }
 
         if (refreshTiles) {
-            if (mapTileRenderer.setIncident(it.id, it.count, clearCache)) {
+            if (mapTileRenderer.setIncident(idCount.id, idCount.count, clearCache)) {
                 clearCache = true
             }
         }
 
         if (clearCache) {
+            tileClearWorksitesCount = idCount.count
             casesMapTileManager.clearTiles()
         } else if (refreshTiles) {
             casesMapTileManager.onTileChange()

@@ -125,12 +125,14 @@ private fun LoadedContent(
                 when (casesAction) {
                     CasesAction.Search -> {
                         val isOnSearch = appHeaderState == AppHeaderState.SearchInTitle
-                        val toggleState = if (isOnSearch) AppHeaderState.Default
+                        val toggleState = if (isOnSearch) AppHeaderState.TopLevel
                         else AppHeaderState.SearchInTitle
                         viewModel.appHeaderUiState.setState(toggleState)
                     }
 
-                    else -> {}
+                    else -> {
+                        // TODO Report unhandled cases action
+                    }
                 }
             }
         }
@@ -239,6 +241,7 @@ private fun NavigableContent(
                 val titleResId = appState.currentTopLevelDestination?.titleTextId ?: 0
                 val title = if (titleResId != 0) stringResource(titleResId) else headerTitle
                 val onOpenIncidents = if (appState.isCasesRoute) openIncidentsSelect else null
+                // TODO Back when search is showing should dismiss search
                 AppHeader(
                     modifier = Modifier.testTag("CrisisCleanupAppHeader"),
                     title = title,
@@ -288,7 +291,6 @@ private fun NavigableContent(
             Column(Modifier.fillMaxSize()) {
                 CrisisCleanupNavHost(
                     navController = appState.navController,
-                    // TODO Back when search or table view is showing should go back?
                     onBackClick = appState::onBackClick,
                     onCasesAction = onCasesAction,
                 )
@@ -325,7 +327,7 @@ private fun AppHeader(
     modifier: Modifier = Modifier,
     @StringRes titleRes: Int = 0,
     title: String = "",
-    appHeaderState: AppHeaderState = AppHeaderState.Default,
+    appHeaderState: AppHeaderState = AppHeaderState.TopLevel,
     isAppHeaderLoading: Boolean = false,
     profilePictureUri: String = "",
     isAccountExpired: Boolean = false,
@@ -335,7 +337,7 @@ private fun AppHeader(
     onQueryChange: (String) -> Unit = {},
 ) {
     when (appHeaderState) {
-        AppHeaderState.Default -> {
+        AppHeaderState.TopLevel -> {
             TopAppBarDefault(
                 modifier = modifier,
                 titleResId = titleRes,
@@ -389,9 +391,10 @@ private fun AppHeader(
             )
         }
 
-        AppHeaderState.TitleActions -> {
+        AppHeaderState.BackTitleAction -> {
             CrisisCleanupTopAppBar(
                 titleResId = titleRes,
+                title = title,
             )
         }
 

@@ -1,6 +1,7 @@
-package com.crisiscleanup.feature.cases
+package com.crisiscleanup.feature.cases.ui
 
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -22,10 +23,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.domain.IncidentsData
+import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.model.data.WorksiteMapMark
+import com.crisiscleanup.feature.cases.CasesViewModel
+import com.crisiscleanup.feature.cases.R
 import com.crisiscleanup.feature.cases.model.*
-import com.crisiscleanup.feature.cases.ui.CasesAction
-import com.crisiscleanup.feature.cases.ui.CasesActionBar
-import com.crisiscleanup.feature.cases.ui.CasesZoomBar
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.CameraPosition
@@ -39,15 +41,27 @@ internal fun CasesRoute(
     modifier: Modifier = Modifier,
     onCasesAction: (CasesAction) -> Unit = { },
     casesViewModel: CasesViewModel = hiltViewModel(),
+    createNewCase: (Long) -> Unit = {},
+    openCase: (Long, Long) -> Boolean = { _, _ -> false },
 ) {
     val incidentsData by casesViewModel.incidentsData.collectAsStateWithLifecycle(IncidentsData.Loading)
     if (incidentsData is IncidentsData.Incidents) {
         val isTableView by casesViewModel.isTableView.collectAsStateWithLifecycle()
+        BackHandler(enabled = isTableView) {
+            casesViewModel.setContentViewType(false)
+        }
+
         val isLayerView by casesViewModel.isLayerView
 
         val rememberOnCasesAction = remember(onCasesAction, casesViewModel) {
             { action: CasesAction ->
                 when (action) {
+                    CasesAction.CreateNew -> {
+                        val incidentId = casesViewModel.incidentId
+                        if (incidentId != EmptyIncident.id) {
+                            createNewCase(incidentId)
+                        }
+                    }
                     CasesAction.MapView -> casesViewModel.setContentViewType(false)
                     CasesAction.TableView -> casesViewModel.setContentViewType(true)
                     CasesAction.Layers -> casesViewModel.toggleLayersView()
@@ -82,6 +96,9 @@ internal fun CasesRoute(
         val dataProgress by casesViewModel.dataProgress.collectAsStateWithLifecycle(0f)
         val hiddenMarkersMessage =
             remember(casesViewModel) { { casesViewModel.hiddenMarkersMessage } }
+        val onMapMarkerSelect = remember(casesViewModel) {
+            { mark: WorksiteMapMark -> openCase(casesViewModel.incidentId, mark.id) }
+        }
         CasesScreen(
             modifier,
             showDataProgress = showDataProgress,
@@ -100,6 +117,7 @@ internal fun CasesRoute(
             onMapLoaded = onMapLoaded,
             onMapCameraChange = onMapCameraChange,
             hiddenMarkersMessage = hiddenMarkersMessage,
+            onMarkerSelect = onMapMarkerSelect,
         )
     } else {
         val isSyncingIncidents by casesViewModel.isSyncingIncidents.collectAsState(true)
@@ -157,6 +175,7 @@ internal fun CasesScreen(
     onMapLoaded: () -> Unit = {},
     onMapCameraChange: (CameraPosition, Projection?, Boolean) -> Unit = { _, _, _ -> },
     hiddenMarkersMessage: () -> String = { "" },
+    onMarkerSelect: (WorksiteMapMark) -> Boolean = { false },
 ) {
     Box(modifier.then(Modifier.fillMaxSize())) {
         if (isTableView) {
@@ -174,6 +193,7 @@ internal fun CasesScreen(
                 onMapLoaded,
                 onMapCameraChange,
                 hiddenMarkersMessage,
+                onMarkerSelect,
             )
         }
         CasesOverlayActions(
@@ -208,6 +228,7 @@ internal fun BoxScope.CasesMapView(
     onMapLoaded: () -> Unit = {},
     onMapCameraChange: (CameraPosition, Projection?, Boolean) -> Unit = { _, _, _ -> },
     hiddenMarkersMessage: () -> String = { "" },
+    onMarkerSelect: (WorksiteMapMark) -> Boolean = { false },
 ) {
     // TODO Profile and optimize recompositions when map is changed (by user) if possible.
 
@@ -217,6 +238,7 @@ internal fun BoxScope.CasesMapView(
                 zoomControlsEnabled = false,
                 tiltGesturesEnabled = false,
                 rotationGesturesEnabled = false,
+                mapToolbarEnabled = false,
             )
         )
     }
@@ -233,7 +255,7 @@ internal fun BoxScope.CasesMapView(
             MapProperties(
                 mapStyleOptions = MapStyleOptions.loadRawResourceStyle(
                     context,
-                    mapmarkerR.raw.map_style
+                    mapmarkerR.raw.map_style,
                 )
             )
         )
@@ -247,11 +269,12 @@ internal fun BoxScope.CasesMapView(
         cameraPositionState = cameraPositionState,
     ) {
         // TODO Is it possible to cache? If so test recomposition. If not document why not.
-        worksitesOnMap.forEach {
+        worksitesOnMap.forEach { mapMark ->
             Marker(
-                it.markerState,
-                icon = it.mapIcon,
-                anchor = it.mapIconOffset,
+                mapMark.markerState,
+                icon = mapMark.mapIcon,
+                anchor = mapMark.mapIconOffset,
+                onClick = { onMarkerSelect(mapMark.source) },
             )
         }
 
@@ -263,7 +286,7 @@ internal fun BoxScope.CasesMapView(
                     try {
                         // TODO This is not clearing as expected on API 29 at times. Unrelated to try/catch.
                         tileOverlayState.clearTileCache()
-                    } catch (e: Exception) {
+                    } catch (e: IllegalStateException) {
                         if (e.message?.contains("is not used") == true) {
                             Log.d("tile-overlay", "Ignoring unattached tile overlay state")
                         } else {
@@ -271,10 +294,7 @@ internal fun BoxScope.CasesMapView(
                         }
                     }
                 }
-                TileOverlay(
-                    tileProvider = it,
-                    state = tileOverlayState,
-                )
+                TileOverlay(it, tileOverlayState)
             }
         }
     }
@@ -283,7 +303,7 @@ internal fun BoxScope.CasesMapView(
         modifier = Modifier.align(Alignment.TopCenter),
         visible = isMapBusy,
         enter = fadeIn(),
-        exit = fadeOut()
+        exit = fadeOut(),
     ) {
         CircularProgressIndicator(
             Modifier
@@ -298,7 +318,7 @@ internal fun BoxScope.CasesMapView(
         modifier = Modifier.align(Alignment.BottomStart),
         visible = message.isNotEmpty(),
         enter = fadeIn(),
-        exit = fadeOut()
+        exit = fadeOut(),
     ) {
         Surface(
             Modifier.padding(
@@ -351,7 +371,7 @@ internal fun BoxScope.CasesMapView(
     onMapCameraChange(
         cameraPositionState.position,
         cameraPositionState.projection,
-        movingCamera.value
+        movingCamera.value,
     )
 }
 

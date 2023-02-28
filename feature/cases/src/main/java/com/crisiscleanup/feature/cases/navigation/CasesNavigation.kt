@@ -3,12 +3,11 @@ package com.crisiscleanup.feature.cases.navigation
 import androidx.compose.runtime.remember
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavHostController
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-import com.crisiscleanup.feature.cases.CasesRoute
 import com.crisiscleanup.feature.cases.ui.CasesAction
+import com.crisiscleanup.feature.cases.ui.CasesRoute
 
 const val casesGraphRoutePattern = "cases_graph"
 
@@ -20,9 +19,10 @@ fun NavController.navigateToCases(navOptions: NavOptions? = null) {
 }
 
 fun NavGraphBuilder.casesGraph(
-    navController: NavHostController,
     nestedGraphs: NavGraphBuilder.() -> Unit,
     onCasesAction: (CasesAction) -> Unit = { },
+    createCase: (Long) -> Unit = {},
+    editCase: (Long, Long) -> Boolean = { _, _ -> false },
 ) {
     navigation(
         route = casesGraphRoutePattern,
@@ -32,23 +32,18 @@ fun NavGraphBuilder.casesGraph(
             val rememberOnCasesAction = remember(onCasesAction) {
                 { casesAction: CasesAction ->
                     when (casesAction) {
-                        CasesAction.CreateNew -> {
-                            // TODO Navigate to new screen
-                        }
-
                         CasesAction.Filters -> {
                             // TODO Navigate to filters screen
                         }
 
-                        else -> {
-                            onCasesAction(casesAction)
-                        }
+                        else -> onCasesAction(casesAction)
                     }
                 }
             }
-
             CasesRoute(
                 onCasesAction = rememberOnCasesAction,
+                createNewCase = createCase,
+                openCase = editCase,
             )
         }
 

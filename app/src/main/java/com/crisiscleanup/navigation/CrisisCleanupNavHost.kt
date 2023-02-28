@@ -1,9 +1,12 @@
 package com.crisiscleanup.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import com.crisiscleanup.feature.caseeditor.navigation.caseEditorScreen
+import com.crisiscleanup.feature.caseeditor.navigation.navigateToCaseEditor
 import com.crisiscleanup.feature.cases.navigation.casesGraph
 import com.crisiscleanup.feature.cases.navigation.casesGraphRoutePattern
 import com.crisiscleanup.feature.cases.navigation.selectIncidentScreen
@@ -27,17 +30,30 @@ fun CrisisCleanupNavHost(
     startDestination: String = casesGraphRoutePattern,
     onCasesAction: (CasesAction) -> Unit = { },
 ) {
+    val createNewCase = remember(navController) {
+        { incidentId: Long -> navController.navigateToCaseEditor(incidentId) }
+    }
+
+    val openCase = remember(navController) {
+        { incidentId: Long, worksiteId: Long ->
+            navController.navigateToCaseEditor(incidentId, worksiteId)
+            true
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = startDestination,
         modifier = modifier,
     ) {
         casesGraph(
-            navController = navController,
             nestedGraphs = {
                 selectIncidentScreen(onBackClick)
+                caseEditorScreen(onBackClick)
             },
             onCasesAction = onCasesAction,
+            createCase = createNewCase,
+            editCase = openCase,
         )
         dashboardScreen()
         teamScreen()

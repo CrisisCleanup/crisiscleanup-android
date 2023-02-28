@@ -12,16 +12,20 @@ interface AppHeaderUiState {
 
     fun setState(state: AppHeaderState)
     fun setTitle(title: String)
+    fun pushTitle(title: String)
+    fun popTitle(popAll: Boolean = false)
 }
 
 enum class AppHeaderState {
     /** No title bar */
     None,
-    Default,
+
+    /** Custom on left and account on right */
+    TopLevel,
 
     /** Search bar in title */
     SearchInTitle,
 
-    /** Standard actions in the title bar */
-    TitleActions,
+    /** Back action on left, title center, single action on right */
+    BackTitleAction,
 }

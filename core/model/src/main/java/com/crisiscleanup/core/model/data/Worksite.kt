@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.model.data
 
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
 data class Worksite(
@@ -16,6 +17,7 @@ data class Worksite(
     val latitude: Double,
     val longitude: Double,
     val name: String,
+    val networkId: Long,
     val phone1: String,
     val phone2: String,
     val plusCode: String? = null,
@@ -26,4 +28,28 @@ data class Worksite(
     val updatedAt: Instant?,
     val what3words: String? = null,
     val workTypes: List<WorkType>,
+)
+
+val EmptyWorksite = Worksite(
+    id = -1L,
+    address = "",
+    caseNumber = "",
+    city = "",
+    county = "",
+    createdAt = Clock.System.now(),
+    favoriteId = null,
+    incident = EmptyIncident.id,
+    keyWorkType = null,
+    latitude = 0.0,
+    longitude = 0.0,
+    name = "",
+    networkId = -1L,
+    phone1 = "",
+    phone2 = "",
+    postalCode = "",
+    reportedBy = null,
+    state = "",
+    svi = null,
+    updatedAt = null,
+    workTypes = emptyList(),
 )

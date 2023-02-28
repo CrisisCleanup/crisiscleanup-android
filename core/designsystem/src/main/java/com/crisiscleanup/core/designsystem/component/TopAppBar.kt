@@ -21,6 +21,7 @@ import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 @Composable
 fun CrisisCleanupTopAppBar(
     @StringRes titleResId: Int,
+    title: String = "",
     modifier: Modifier = Modifier,
     isCenterAlign: Boolean = true,
     navIcon: ImageVector? = null,
@@ -33,7 +34,8 @@ fun CrisisCleanupTopAppBar(
     onActionClick: () -> Unit = {},
 ) {
     val titleContent = @Composable {
-        Text(text = stringResource(id = titleResId))
+        val text = if (titleResId == 0) title else stringResource(titleResId)
+        Text(text)
     }
     val navigationContent: (@Composable (() -> Unit)) =
         @Composable {

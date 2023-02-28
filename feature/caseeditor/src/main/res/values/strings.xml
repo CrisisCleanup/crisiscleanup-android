@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="create_case">Create Case</string>
+    <string name="edit_case">Edit Case</string>
+    <string name="edit_case_case_number">Edit Case %1$s</string>
+</resources>

@@ -29,16 +29,32 @@ class CrisisCleanupNavigationObserver @Inject constructor(
 
     // TODO Move into core/appnavigation module and consolidate
     private val casesRoutes = setOf("cases_route", "select_incident")
+    private val topLevelRoutes = setOf(
+        "cases_route",
+        "dashboard_route",
+        "team_route",
+        "menu_route",
+    )
 
     init {
         navigationRoute.onEach {
             val (fromRoute, toRoute) = navigationRoute.value
 
+            // TODO Research a better pattern when there is a shared top level component between routes
             if (casesRoutes.contains(fromRoute) &&
                 !casesRoutes.contains(toRoute) &&
                 headerUiState.appHeaderState.value == AppHeaderState.SearchInTitle
             ) {
-                headerUiState.setState(AppHeaderState.Default)
+                headerUiState.setState(AppHeaderState.TopLevel)
+            } else if (toRoute?.startsWith("case_editor?") == true) {
+                headerUiState.setState(AppHeaderState.BackTitleAction)
+            }
+
+            if (topLevelRoutes.contains(toRoute) &&
+                !topLevelRoutes.contains(fromRoute)
+            ) {
+                headerUiState.setState(AppHeaderState.TopLevel)
+                headerUiState.popTitle(true)
             }
         }
             .launchIn(coroutineScope)

@@ -67,9 +67,7 @@ internal fun SelectIncidentRoute(
     when (incidentsData) {
         IncidentsData.Loading -> {
             WrapInDialog(onBackClick, {
-                Box(
-                    modifier.padding(padding)
-                ) {
+                Box(modifier.padding(padding)) {
                     CircularProgressIndicator()
                 }
             })

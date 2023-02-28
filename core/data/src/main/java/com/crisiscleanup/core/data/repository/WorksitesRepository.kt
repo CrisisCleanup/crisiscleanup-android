@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.data.repository
 
+import com.crisiscleanup.core.model.data.LocalWorksite
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.core.model.data.WorksitesSyncStats
@@ -60,4 +61,8 @@ interface WorksitesRepository {
     )
 
     fun getWorksitesSyncStats(incidentId: Long): WorksitesSyncStats?
+
+    fun getLocalWorksite(worksiteId: Long): LocalWorksite
+
+    fun refreshWorksite(incidentId: Long, worksiteNetworkId: Long): Worksite
 }

@@ -39,7 +39,7 @@ interface WorksitesSyncer {
 // TODO Write tests
 
 class IncidentWorksitesSyncer @Inject constructor(
-    private val worksiteNetworkDataSource: CrisisCleanupNetworkDataSource,
+    private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val networkDataCache: WorksitesNetworkDataCache,
     private val worksiteDaoPlus: WorksiteDaoPlus,
     private val worksitesSyncStatsDao: WorksitesSyncStatsDao,
@@ -62,7 +62,7 @@ class IncidentWorksitesSyncer @Inject constructor(
         throwOnEmpty: Boolean,
     ): Int {
         val worksitesCountResult =
-            worksiteNetworkDataSource.getWorksitesCount(incidentId, updatedAfter)
+            networkDataSource.getWorksitesCount(incidentId, updatedAfter)
         tryThrowException(authEventManager, worksitesCountResult.errors)
 
         val count = worksitesCountResult.count ?: 0

@@ -13,8 +13,8 @@ import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
 import com.crisiscleanup.core.database.dao.WorksitesSyncStatsDao
 import com.crisiscleanup.core.database.model.*
 import com.crisiscleanup.core.model.data.*
+import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
@@ -26,6 +26,7 @@ import javax.inject.Singleton
 
 @Singleton
 class OfflineFirstWorksitesRepository @Inject constructor(
+    private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val worksitesSyncer: IncidentWorksitesSyncer,
     private val worksitesSyncStatsDao: WorksitesSyncStatsDao,
     private val worksiteDao: WorksiteDao,
@@ -39,14 +40,11 @@ class OfflineFirstWorksitesRepository @Inject constructor(
 
     override val worksitesDataPullStats = worksitesSyncer.dataPullStats
 
-    override fun streamWorksites(incidentId: Long, limit: Int, offset: Int): Flow<List<Worksite>> {
-        return worksiteDao.streamWorksites(incidentId, limit, offset)
+    override fun streamWorksites(incidentId: Long, limit: Int, offset: Int) =
+        worksiteDao.streamWorksites(incidentId, limit, offset)
             .map { it.map(PopulatedWorksite::asExternalModel) }
-    }
 
-    override fun streamIncidentWorksitesCount(id: Long): Flow<Int> {
-        return worksiteDao.streamWorksitesCount(id)
-    }
+    override fun streamIncidentWorksitesCount(id: Long) = worksiteDao.streamWorksitesCount(id)
 
     override suspend fun streamWorksitesMapVisual(
         incidentId: Long,
@@ -56,7 +54,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         longitudeRight: Double,
         limit: Int,
         offset: Int,
-    ): Flow<List<WorksiteMapMark>> = withContext(ioDispatcher) {
+    ) = withContext(ioDispatcher) {
         return@withContext worksiteDaoPlus.streamWorksitesMapVisual(
             incidentId,
             latitudeSouth,
@@ -73,10 +71,8 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         incidentId: Long,
         limit: Int,
         offset: Int
-    ): List<WorksiteMapMark> {
-        return worksiteDao.getWorksitesMapVisual(incidentId, limit, offset)
-            .map(PopulatedWorksiteMapVisual::asExternalModel)
-    }
+    ) = worksiteDao.getWorksitesMapVisual(incidentId, limit, offset)
+        .map(PopulatedWorksiteMapVisual::asExternalModel)
 
     override fun getWorksitesMapVisual(
         incidentId: Long,
@@ -86,21 +82,18 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         longitudeEast: Double,
         limit: Int,
         offset: Int
-    ): List<WorksiteMapMark> {
-        return worksiteDao.getWorksitesMapVisual(
-            incidentId,
-            latitudeSouth,
-            latitudeNorth,
-            longitudeWest,
-            longitudeEast,
-            limit,
-            offset
-        )
-            .map(PopulatedWorksiteMapVisual::asExternalModel)
-    }
+    ) = worksiteDao.getWorksitesMapVisual(
+        incidentId,
+        latitudeSouth,
+        latitudeNorth,
+        longitudeWest,
+        longitudeEast,
+        limit,
+        offset
+    )
+        .map(PopulatedWorksiteMapVisual::asExternalModel)
 
-    override fun getWorksitesCount(incidentId: Long): Int =
-        worksiteDao.getWorksitesCount(incidentId)
+    override fun getWorksitesCount(incidentId: Long) = worksiteDao.getWorksitesCount(incidentId)
 
     override fun getWorksitesCount(
         incidentId: Long,
@@ -108,7 +101,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         latitudeNorth: Double,
         longitudeLeft: Double,
         longitudeRight: Double
-    ): Int = worksiteDaoPlus.getWorksitesCount(
+    ) = worksiteDaoPlus.getWorksitesCount(
         incidentId,
         latitudeSouth,
         latitudeNorth,
@@ -116,7 +109,10 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         longitudeRight
     )
 
-    override fun getWorksitesSyncStats(incidentId: Long): WorksitesSyncStats? =
+    override fun getLocalWorksite(worksiteId: Long) =
+        worksiteDao.getLocalWorksite(worksiteId).asExternalModel()
+
+    override fun getWorksitesSyncStats(incidentId: Long) =
         worksitesSyncStatsDao.getSyncStats(incidentId).firstOrNull()?.asExternalModel()
 
     private suspend fun queryUpdatedSyncStats(
@@ -185,5 +181,10 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         } finally {
             isLoading.value = false
         }
+    }
+
+    override fun refreshWorksite(incidentId: Long, worksiteNetworkId: Long): Worksite {
+        // TODO Query for latest, insert if not locally modified, return latest data
+        return EmptyWorksite
     }
 }
