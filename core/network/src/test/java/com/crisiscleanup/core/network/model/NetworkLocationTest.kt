@@ -1,19 +1,13 @@
 package com.crisiscleanup.core.network.model
 
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class NetworkLocationTest {
-    private val json = Json { ignoreUnknownKeys = true }
-
     @Test
     fun getLocationsSuccessResult() {
-        val contents =
-            NetworkAuthResult::class.java.getResource("/getIncidentLocations.json")?.readText()!!
-        val result = json.decodeFromString<NetworkLocationsResult>(contents)
+        val result = TestUtil.decodeResource<NetworkLocationsResult>("/getIncidentLocations.json")
 
         assertNull(result.errors)
         assertEquals(3, result.count)

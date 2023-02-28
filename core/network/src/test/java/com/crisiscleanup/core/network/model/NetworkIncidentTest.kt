@@ -1,16 +1,12 @@
 package com.crisiscleanup.core.network.model
 
 import com.crisiscleanup.core.network.fake.fillNetworkIncident
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class NetworkIncidentTest {
-    private val json = Json { ignoreUnknownKeys = true }
-
     private val expectedIncidents = listOf(
         fillNetworkIncident(
             158, "2019-09-25T00:00:00Z",
@@ -45,9 +41,7 @@ class NetworkIncidentTest {
 
     @Test
     fun getIncidentsSuccessResult() {
-        val contents =
-            NetworkAuthResult::class.java.getResource("/getIncidentsSuccess.json")?.readText()!!
-        val result = json.decodeFromString<NetworkIncidentsResult>(contents)
+        val result = TestUtil.decodeResource<NetworkIncidentsResult>("/getIncidentsSuccess.json")
 
         assertNull(result.errors)
 
@@ -63,9 +57,7 @@ class NetworkIncidentTest {
 
     @Test
     fun getIncidentsResultFail() {
-        val contents =
-            NetworkAuthResult::class.java.getResource("/expiredTokenResult.json")?.readText()!!
-        val result = json.decodeFromString<NetworkIncidentsResult>(contents)
+        val result = TestUtil.decodeResource<NetworkIncidentsResult>("/expiredTokenResult.json")
 
         assertNull(result.count)
         assertNull(result.results)

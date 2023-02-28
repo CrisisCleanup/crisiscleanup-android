@@ -1,20 +1,14 @@
 package com.crisiscleanup.core.network.model
 
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class NetworkWorksitesPagedTest {
-    private val json = Json { ignoreUnknownKeys = true }
-
     @Test
     fun getWorksitesCount() {
-        val contents =
-            NetworkAuthResult::class.java.getResource("/getWorksitesCountSuccess.json")
-                ?.readText()!!
-        val result = json.decodeFromString<NetworkWorksitesCountResult>(contents)
+        val result =
+            TestUtil.decodeResource<NetworkWorksitesCountResult>("/getWorksitesCountSuccess.json")
 
         assertNull(result.errors)
         assertEquals(30, result.count)
@@ -22,10 +16,8 @@ class NetworkWorksitesPagedTest {
 
     @Test
     fun getWorksitesSuccessResult() {
-        val contents =
-            NetworkAuthResult::class.java.getResource("/getWorksitesPagedSuccess.json")
-                ?.readText()!!
-        val result = json.decodeFromString<NetworkWorksitesFullResult>(contents)
+        val result =
+            TestUtil.decodeResource<NetworkWorksitesFullResult>("/getWorksitesPagedSuccess.json")
 
         assertNull(result.errors)
         assertEquals(30, result.count)
@@ -36,10 +28,7 @@ class NetworkWorksitesPagedTest {
 
     @Test
     fun getWorksites2SuccessResult() {
-        val contents =
-            NetworkAuthResult::class.java.getResource("/getWorksitesPaged2.json")
-                ?.readText()!!
-        val result = json.decodeFromString<NetworkWorksitesFullResult>(contents)
+        val result = TestUtil.decodeResource<NetworkWorksitesFullResult>("/getWorksitesPaged2.json")
 
         assertNull(result.errors)
         assertEquals(30, result.count)
@@ -51,9 +40,7 @@ class NetworkWorksitesPagedTest {
 
     @Test
     fun getWorksitesResultFail() {
-        val contents =
-            NetworkAuthResult::class.java.getResource("/expiredTokenResult.json")?.readText()!!
-        val result = json.decodeFromString<NetworkWorksitesFullResult>(contents)
+        val result = TestUtil.decodeResource<NetworkWorksitesFullResult>("/expiredTokenResult.json")
 
         assertNull(result.count)
         assertNull(result.results)
@@ -71,10 +58,8 @@ class NetworkWorksitesPagedTest {
 
     @Test
     fun invalidIncidentIdResponse() {
-        val contents =
-            NetworkAuthResult::class.java.getResource("/worksitesInvalidIncidentResult.json")
-                ?.readText()!!
-        val result = json.decodeFromString<NetworkWorksitesFullResult>(contents)
+        val result =
+            TestUtil.decodeResource<NetworkWorksitesFullResult>("/worksitesInvalidIncidentResult.json")
 
         assertNull(result.count)
         assertNull(result.results)

@@ -1,20 +1,14 @@
 package com.crisiscleanup.core.network.model
 
 import kotlinx.datetime.Instant
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class NetworkAuthTest {
-    private val json = Json { ignoreUnknownKeys = true }
-
     @Test
     fun authSuccessResult() {
-        val contents =
-            NetworkAuthResult::class.java.getResource("/authResponseSuccess.json")?.readText()!!
-        val result = json.decodeFromString<NetworkAuthResult>(contents)
+        val result = TestUtil.decodeResource<NetworkAuthResult>("/authResponseSuccess.json")
 
         assertNull(result.errors)
 
@@ -53,9 +47,7 @@ class NetworkAuthTest {
 
     @Test
     fun authFailResult() {
-        val contents =
-            NetworkAuthResult::class.java.getResource("/authResponseFail.json")?.readText()!!
-        val result = json.decodeFromString<NetworkAuthResult>(contents)
+        val result = TestUtil.decodeResource<NetworkAuthResult>("/authResponseFail.json")
 
         assertNull(result.accessToken)
         assertNull(result.claims)

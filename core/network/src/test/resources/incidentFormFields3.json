@@ -1,0 +1,2223 @@
+{
+  "id": 254,
+  "name": "Hurricane Ian",
+  "form_fields": [
+    {
+      "label_t": "Debris Location",
+      "html_type": "select",
+      "data_sensitivity": "public",
+      "data_group": "caseInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "formOptions.untouched": "formOptions.untouched",
+        "formOptions.piled_on_property": "formOptions.piled_on_property",
+        "formOptions.piled_on_public_right_of_way": "formOptions.piled_on_public_right_of_way",
+        "formOptions.removed_from_property_public_right_of_way": "formOptions.removed_from_property_public_right_of_way"
+      },
+      "order_label": null,
+      "validation": "string",
+      "values": [
+        {
+          "value": null,
+          "name_t": "--"
+        },
+        {
+          "value": "formOptions.untouched",
+          "name_t": "Untouched"
+        },
+        {
+          "value": "formOptions.piled_on_property",
+          "name_t": "Piled on property"
+        },
+        {
+          "value": "formOptions.piled_on_public_right_of_way",
+          "name_t": "Piled on public right-of-way"
+        },
+        {
+          "value": "formOptions.removed_from_property_public_right_of_way",
+          "name_t": "Removed from property/public right-of-way"
+        }
+      ],
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 0,
+      "invalidated_at": null,
+      "field_key": "debris_status",
+      "field_parent_key": "claim_status_report_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Home is habitable",
+      "html_type": "select",
+      "data_sensitivity": "sensitive",
+      "data_group": "caseInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "formOptions.no": "formOptions.no",
+        "formOptions.yes": "formOptions.yes"
+      },
+      "order_label": null,
+      "validation": "string",
+      "values": [
+        {
+          "value": null,
+          "name_t": "--"
+        },
+        {
+          "value": "formOptions.yes",
+          "name_t": "Yes"
+        },
+        {
+          "value": "formOptions.no",
+          "name_t": "No"
+        }
+      ],
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 0,
+      "invalidated_at": null,
+      "field_key": "habitable",
+      "field_parent_key": "hazards_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Needs Visual Inspection",
+      "html_type": "checkbox",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 0,
+      "invalidated_at": null,
+      "field_key": "needs_visual",
+      "field_parent_key": "rebuild_info",
+      "if_selected_then_work_type": "rebuild",
+      "phase": 4
+    },
+    {
+      "label_t": "Mold Amount",
+      "html_type": "select",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "formOptions.other": "formOptions.other",
+        "formOptions.large_area": "formOptions.large_area",
+        "formOptions.small_isolated_area": "formOptions.small_isolated_area",
+        "formOptions.medium_isolated_area": "formOptions.medium_isolated_area",
+        "formOptions.extensive_mold_throughout": "formOptions.extensive_mold_throughout"
+      },
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": [
+        {
+          "value": null,
+          "name_t": "--"
+        },
+        {
+          "value": "formOptions.small_isolated_area",
+          "name_t": "Small Isolated Area"
+        },
+        {
+          "value": "formOptions.medium_isolated_area",
+          "name_t": "Medium Isolated Area"
+        },
+        {
+          "value": "formOptions.large_area",
+          "name_t": "Large Area"
+        },
+        {
+          "value": "formOptions.extensive_mold_throughout",
+          "name_t": "Extensive Mold Throughout"
+        },
+        {
+          "value": "formOptions.other",
+          "name_t": "Other"
+        }
+      ],
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 0,
+      "invalidated_at": null,
+      "field_key": "mold_amount",
+      "field_parent_key": "mold_remediation_info",
+      "if_selected_then_work_type": "mold_remediation",
+      "phase": 4
+    },
+    {
+      "label_t": "Non-vegetative Debris",
+      "html_type": "checkbox",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 0,
+      "invalidated_at": null,
+      "field_key": "nonvegitative_debris_removal",
+      "field_parent_key": "debris_info",
+      "if_selected_then_work_type": "debris",
+      "phase": 4
+    },
+    {
+      "label_t": "House Roof Damage",
+      "html_type": "checkbox",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 0,
+      "invalidated_at": null,
+      "field_key": "house_roof_damage",
+      "field_parent_key": "tarping_info",
+      "if_selected_then_work_type": "tarp",
+      "phase": 4
+    },
+    {
+      "label_t": "# of Small Trees",
+      "html_type": "select",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "formOptions.one": "formOptions.one",
+        "formOptions.two": "formOptions.two",
+        "formOptions.five": "formOptions.five_plus",
+        "formOptions.four": "formOptions.four",
+        "formOptions.zero": "formOptions.zero",
+        "formOptions.three": "formOptions.three"
+      },
+      "order_label": null,
+      "validation": "integer",
+      "recur_default": null,
+      "values": [
+        {
+          "value": "formOptions.zero",
+          "name_t": "0"
+        },
+        {
+          "value": "formOptions.one",
+          "name_t": "1"
+        },
+        {
+          "value": "formOptions.two",
+          "name_t": "2"
+        },
+        {
+          "value": "formOptions.three",
+          "name_t": "3"
+        },
+        {
+          "value": "formOptions.four",
+          "name_t": "4"
+        },
+        {
+          "value": "formOptions.five",
+          "name_t": "5+"
+        }
+      ],
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 0,
+      "invalidated_at": null,
+      "field_key": "num_trees_down",
+      "field_parent_key": "tree_info",
+      "if_selected_then_work_type": "trees",
+      "phase": 4
+    },
+    {
+      "label_t": "Muck Out",
+      "html_type": "h5",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": null,
+      "order_label": null,
+      "validation": null,
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 0,
+      "invalidated_at": null,
+      "field_key": "muck_out_info",
+      "field_parent_key": "work_info",
+      "if_selected_then_work_type": "muck_out",
+      "phase": 4
+    },
+    {
+      "label_t": "Height of Flood",
+      "html_type": "select",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "formOptions.six_7ft": "formOptions.six_7ft",
+        "formOptions.two_3ft": "formOptions.two_3ft",
+        "formOptions.five_6ft": "formOptions.five_6ft",
+        "formOptions.four_5ft": "formOptions.four_5ft",
+        "formOptions.six_12in": "formOptions.six_12in",
+        "formOptions.zero_3in": "formOptions.zero_3in",
+        "formOptions.seven_8ft": "formOptions.seven_8ft",
+        "formOptions.three_4ft": "formOptions.three_4ft",
+        "formOptions.three_6in": "formOptions.three_6in",
+        "formOptions.twelve_18in": "formOptions.twelve_18in",
+        "formOptions.in_the_attic": "formOptions.in_the_attic",
+        "formOptions.over_the_house": "formOptions.over_the_house",
+        "formOptions.eighteen_in_2ft": "formOptions.eighteen_in_2ft",
+        "formOptions.above_the_ceiling": "formOptions.above_the_ceiling"
+      },
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": [
+        {
+          "value": null,
+          "name_t": "--"
+        },
+        {
+          "value": "formOptions.zero_3in",
+          "name_t": "0-3in"
+        },
+        {
+          "value": "formOptions.three_6in",
+          "name_t": "3-6in"
+        },
+        {
+          "value": "formOptions.six_12in",
+          "name_t": "6-12in"
+        },
+        {
+          "value": "formOptions.twelve_18in",
+          "name_t": "12-18in"
+        },
+        {
+          "value": "formOptions.eighteen_in_2ft",
+          "name_t": "18in-2ft"
+        },
+        {
+          "value": "formOptions.two_3ft",
+          "name_t": "2-3ft"
+        },
+        {
+          "value": "formOptions.three_4ft",
+          "name_t": "3-4ft"
+        },
+        {
+          "value": "formOptions.four_5ft",
+          "name_t": "4-5ft"
+        },
+        {
+          "value": "formOptions.five_6ft",
+          "name_t": "5-6ft"
+        },
+        {
+          "value": "formOptions.six_7ft",
+          "name_t": "6-7ft"
+        },
+        {
+          "value": "formOptions.seven_8ft",
+          "name_t": "7-8ft"
+        },
+        {
+          "value": "formOptions.above_the_ceiling",
+          "name_t": "Above the Ceiling"
+        },
+        {
+          "value": "formOptions.in_the_attic",
+          "name_t": "In the Attic"
+        },
+        {
+          "value": "formOptions.over_the_house",
+          "name_t": "Over the House"
+        }
+      ],
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 0,
+      "invalidated_at": null,
+      "field_key": "flood_height_select",
+      "field_parent_key": "muck_out_info",
+      "if_selected_then_work_type": "muck_out",
+      "phase": 4
+    },
+    {
+      "label_t": "Water Status",
+      "html_type": "select",
+      "data_sensitivity": "public",
+      "data_group": "caseInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "formOptions.on": "formOptions.on",
+        "formOptions.off": "formOptions.off"
+      },
+      "order_label": null,
+      "validation": "string",
+      "values": [
+        {
+          "value": null,
+          "name_t": "--"
+        },
+        {
+          "value": "formOptions.on",
+          "name_t": "On"
+        },
+        {
+          "value": "formOptions.off",
+          "name_t": "Off"
+        }
+      ],
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 0,
+      "invalidated_at": null,
+      "field_key": "water_status",
+      "field_parent_key": "utilities_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Cross Street or Nearby Landmark",
+      "html_type": "text",
+      "data_sensitivity": "sensitive",
+      "data_group": "personalInfo",
+      "help_t": null,
+      "placeholder_t": "Cross Street or Nearby Landmark",
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": null,
+      "order_label": null,
+      "validation": "string",
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 0,
+      "invalidated_at": null,
+      "field_key": "cross_street",
+      "field_parent_key": "property_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Prepared by",
+      "html_type": "text",
+      "data_sensitivity": "orgSensitive",
+      "data_group": "caseInfo",
+      "help_t": "Name of person who created the work request.",
+      "placeholder_t": "Prepared by",
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": null,
+      "order_label": null,
+      "validation": "string",
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 1,
+      "invalidated_at": null,
+      "field_key": "prepared_by",
+      "field_parent_key": "claim_status_report_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Hoarder",
+      "html_type": "checkbox",
+      "data_sensitivity": "sensitive",
+      "data_group": "personalInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 1,
+      "invalidated_at": null,
+      "field_key": "hoarder",
+      "field_parent_key": "hazards_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Rebuilding Details",
+      "html_type": "textarea",
+      "data_sensitivity": "verySensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": null,
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 1,
+      "invalidated_at": null,
+      "field_key": "rebuild_details",
+      "field_parent_key": "rebuild_info",
+      "if_selected_then_work_type": "rebuild",
+      "phase": 4
+    },
+    {
+      "label_t": "Drying Needed",
+      "html_type": "checkbox",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 1,
+      "invalidated_at": null,
+      "field_key": "mold_drying",
+      "field_parent_key": "mold_remediation_info",
+      "if_selected_then_work_type": "mold_remediation",
+      "phase": 4
+    },
+    {
+      "label_t": "Vegetative Debris",
+      "html_type": "checkbox",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 1,
+      "invalidated_at": null,
+      "field_key": "vegitative_debris_removal",
+      "field_parent_key": "debris_info",
+      "if_selected_then_work_type": "debris",
+      "phase": 4
+    },
+    {
+      "label_t": "Outbuilding Roof Damage",
+      "html_type": "checkbox",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 1,
+      "invalidated_at": null,
+      "field_key": "outbuilding_roof_damage",
+      "field_parent_key": "tarping_info",
+      "if_selected_then_work_type": "tarp",
+      "phase": 4
+    },
+    {
+      "label_t": "Tree Work",
+      "html_type": "h5",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": null,
+      "order_label": null,
+      "validation": null,
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 1,
+      "invalidated_at": null,
+      "field_key": "tree_info",
+      "field_parent_key": "work_info",
+      "if_selected_then_work_type": "trees",
+      "phase": 4
+    },
+    {
+      "label_t": "# Big Trees (can't wrap arms around)",
+      "html_type": "select",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": "Many chainsaws have 18-inch blades.",
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "formOptions.one": "formOptions.one",
+        "formOptions.two": "formOptions.two",
+        "formOptions.five": "formOptions.five_plus",
+        "formOptions.four": "formOptions.four",
+        "formOptions.zero": "formOptions.zero",
+        "formOptions.three": "formOptions.three"
+      },
+      "order_label": null,
+      "validation": "integer",
+      "recur_default": null,
+      "values": [
+        {
+          "value": "formOptions.zero",
+          "name_t": "0"
+        },
+        {
+          "value": "formOptions.one",
+          "name_t": "1"
+        },
+        {
+          "value": "formOptions.two",
+          "name_t": "2"
+        },
+        {
+          "value": "formOptions.three",
+          "name_t": "3"
+        },
+        {
+          "value": "formOptions.four",
+          "name_t": "4"
+        },
+        {
+          "value": "formOptions.five",
+          "name_t": "5+"
+        }
+      ],
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 1,
+      "invalidated_at": null,
+      "field_key": "num_wide_trees",
+      "field_parent_key": "tree_info",
+      "if_selected_then_work_type": "trees",
+      "phase": 4
+    },
+    {
+      "label_t": "Floors Affected",
+      "html_type": "select",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "formOptions.none": "formOptions.none",
+        "formOptions.crawlspace": "formOptions.crawlspace",
+        "formOptions.basement_only": "formOptions.basement_only",
+        "formOptions.ground_floor_only": "formOptions.ground_floor_only",
+        "formOptions.basement_and_ground_floor": "formOptions.basement_and_ground_floor"
+      },
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": [
+        {
+          "value": null,
+          "name_t": "--"
+        },
+        {
+          "value": "formOptions.ground_floor_only",
+          "name_t": "Ground Floor Only"
+        },
+        {
+          "value": "formOptions.crawlspace",
+          "name_t": "Crawlspace"
+        },
+        {
+          "value": "formOptions.basement_only",
+          "name_t": "Basement Only"
+        },
+        {
+          "value": "formOptions.basement_and_ground_floor",
+          "name_t": "Basement and Ground Floor"
+        },
+        {
+          "value": "formOptions.none",
+          "name_t": "None"
+        }
+      ],
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 1,
+      "invalidated_at": null,
+      "field_key": "floors_affected",
+      "field_parent_key": "muck_out_info",
+      "if_selected_then_work_type": "muck_out",
+      "phase": 4
+    },
+    {
+      "label_t": "Gas Status",
+      "html_type": "select",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "formOptions.on": "formOptions.on",
+        "formOptions.off": "formOptions.off"
+      },
+      "order_label": null,
+      "validation": "string",
+      "values": [
+        {
+          "value": null,
+          "name_t": "--"
+        },
+        {
+          "value": "formOptions.on",
+          "name_t": "On"
+        },
+        {
+          "value": "formOptions.off",
+          "name_t": "Off"
+        }
+      ],
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 1,
+      "invalidated_at": null,
+      "field_key": "gas_status",
+      "field_parent_key": "utilities_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Best time to call",
+      "html_type": "text",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "caseInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": null,
+      "order_label": null,
+      "validation": "string",
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 1,
+      "invalidated_at": null,
+      "field_key": "time_to_call",
+      "field_parent_key": "property_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Do not work before",
+      "html_type": "text",
+      "data_sensitivity": "sensitive",
+      "data_group": "caseInfo",
+      "help_t": null,
+      "placeholder_t": "Do not work before",
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": null,
+      "order_label": null,
+      "validation": "string",
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 2,
+      "invalidated_at": null,
+      "field_key": "do_not_work_before",
+      "field_parent_key": "claim_status_report_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Possible Asbestos",
+      "html_type": "checkbox",
+      "data_sensitivity": "sensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 2,
+      "invalidated_at": null,
+      "field_key": "possible_asbestos",
+      "field_parent_key": "hazards_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Mold Scraping",
+      "html_type": "checkbox",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 2,
+      "invalidated_at": null,
+      "field_key": "mold_scraping",
+      "field_parent_key": "mold_remediation_info",
+      "if_selected_then_work_type": "mold_remediation",
+      "phase": 4
+    },
+    {
+      "label_t": "Interior Debris Removal",
+      "html_type": "checkbox",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 2,
+      "invalidated_at": null,
+      "field_key": "interior_debris_removal",
+      "field_parent_key": "debris_info",
+      "if_selected_then_work_type": "debris",
+      "phase": 4
+    },
+    {
+      "label_t": "Tarping",
+      "html_type": "h5",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": null,
+      "order_label": null,
+      "validation": null,
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 2,
+      "invalidated_at": null,
+      "field_key": "tarping_info",
+      "field_parent_key": "work_info",
+      "if_selected_then_work_type": "tarp",
+      "phase": 4
+    },
+    {
+      "label_t": "Roof Type",
+      "html_type": "select",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "formOptions.metal_roof": "formOptions.metal_roof",
+        "formOptions.tiled_roof": "formOptions.tiled_roof",
+        "formOptions.shingled_roof": "formOptions.shingled_roof"
+      },
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": null,
+      "is_required": null,
+      "is_read_only": null,
+      "list_order": 2,
+      "invalidated_at": null,
+      "field_key": "roof_type",
+      "field_parent_key": "tarping_info",
+      "if_selected_then_work_type": "tarp",
+      "phase": 4
+    },
+    {
+      "label_t": "Ceiling Water Damage",
+      "html_type": "checkbox",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 2,
+      "invalidated_at": null,
+      "field_key": "ceiling_water_damage",
+      "field_parent_key": "muck_out_info",
+      "if_selected_then_work_type": "muck_out",
+      "phase": 4
+    },
+    {
+      "label_t": "Power Status",
+      "html_type": "select",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "formOptions.on": "formOptions.on",
+        "formOptions.off": "formOptions.off"
+      },
+      "order_label": null,
+      "validation": "string",
+      "values": [
+        {
+          "value": null,
+          "name_t": "--"
+        },
+        {
+          "value": "formOptions.on",
+          "name_t": "On"
+        },
+        {
+          "value": "formOptions.off",
+          "name_t": "Off"
+        }
+      ],
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 2,
+      "invalidated_at": null,
+      "field_key": "power_status",
+      "field_parent_key": "utilities_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Special needs",
+      "html_type": "textarea",
+      "data_sensitivity": "verySensitive",
+      "data_group": "personalInfo",
+      "help_t": "No sensitive personal information! Please only include special needs that are directly related to service, e.g. 'Wheelchair-bound,' or 'Has difficulty hearing&mdash;knock hard.'",
+      "placeholder_t": "Special needs",
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": null,
+      "order_label": null,
+      "validation": "string",
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 2,
+      "invalidated_at": null,
+      "field_key": "special_needs",
+      "field_parent_key": "property_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Known Lead Paint",
+      "html_type": "checkbox",
+      "data_sensitivity": "sensitive",
+      "data_group": "caseInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 3,
+      "invalidated_at": null,
+      "field_key": "known_lead_paint",
+      "field_parent_key": "hazards_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Mold Spraying",
+      "html_type": "checkbox",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 3,
+      "invalidated_at": null,
+      "field_key": "mold_spraying",
+      "field_parent_key": "mold_remediation_info",
+      "if_selected_then_work_type": "mold_remediation",
+      "phase": 4
+    },
+    {
+      "label_t": "Debris & Garbage",
+      "html_type": "h5",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": null,
+      "order_label": null,
+      "validation": null,
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 3,
+      "invalidated_at": null,
+      "field_key": "debris_info",
+      "field_parent_key": "work_info",
+      "if_selected_then_work_type": "debris",
+      "phase": 4
+    },
+    {
+      "label_t": "Pool Cage",
+      "html_type": "checkbox",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "values": null,
+      "is_required": null,
+      "is_read_only": null,
+      "list_order": 3,
+      "invalidated_at": null,
+      "field_key": "pool_cage",
+      "field_parent_key": "debris_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Roof Pitch (Steepness)",
+      "html_type": "select",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "formOptions.flat": "formOptions.flat",
+        "formOptions.steep_pitch": "formOptions.steep_pitch",
+        "formOptions.medium_pitch": "formOptions.medium_pitch",
+        "formOptions.slight_pitch": "formOptions.slight_pitch",
+        "formOptions.very_steep_pitch": "formOptions.very_steep_pitch"
+      },
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": null,
+      "is_required": null,
+      "is_read_only": null,
+      "list_order": 3,
+      "invalidated_at": null,
+      "field_key": "roof_pitch",
+      "field_parent_key": "tarping_info",
+      "if_selected_then_work_type": "tarp",
+      "phase": 4
+    },
+    {
+      "label_t": "Carpet Removal",
+      "html_type": "checkbox",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 3,
+      "invalidated_at": null,
+      "field_key": "carpet_removal",
+      "field_parent_key": "muck_out_info",
+      "if_selected_then_work_type": "muck_out",
+      "phase": 4
+    },
+    {
+      "label_t": "Case Details",
+      "html_type": "h4",
+      "data_sensitivity": "verySensitive",
+      "data_group": "personalInfo",
+      "help_t": "<u>Crisis Cleanup is about property, not people.</u> <br /><strong>Never include SSNs, FEMA numbers, dates of birth, detailed medical information, etc.</strong>",
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": null,
+      "order_label": 2,
+      "validation": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 3,
+      "invalidated_at": null,
+      "field_key": "property_info",
+      "field_parent_key": null,
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Older than 60",
+      "html_type": "checkbox",
+      "data_sensitivity": "verySensitive",
+      "data_group": "personalInfo",
+      "help_t": "Never include dates (or years) of birth in the notes.",
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 3,
+      "invalidated_at": null,
+      "field_key": "older_than_60",
+      "field_parent_key": "property_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Other Hazards",
+      "html_type": "textarea",
+      "data_sensitivity": "verySensitive",
+      "data_group": "caseInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": null,
+      "order_label": null,
+      "validation": "string",
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 4,
+      "invalidated_at": null,
+      "field_key": "other_hazards",
+      "field_parent_key": "hazards_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Mold Remediation",
+      "html_type": "h5",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": null,
+      "order_label": null,
+      "validation": null,
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 4,
+      "invalidated_at": null,
+      "field_key": "mold_remediation_info",
+      "field_parent_key": "work_info",
+      "if_selected_then_work_type": "mold_remediation",
+      "phase": 4
+    },
+    {
+      "label_t": "Mold Replace Studs",
+      "html_type": "checkbox",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 4,
+      "invalidated_at": null,
+      "field_key": "mold_replace_studs",
+      "field_parent_key": "mold_remediation_info",
+      "if_selected_then_work_type": "mold_remediation",
+      "phase": 4
+    },
+    {
+      "label_t": "Debris Description",
+      "html_type": "textarea",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": null,
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 4,
+      "invalidated_at": null,
+      "field_key": "debris_description",
+      "field_parent_key": "debris_info",
+      "if_selected_then_work_type": "debris",
+      "phase": 4
+    },
+    {
+      "label_t": "Number of 20' x 30'Tarps Needed",
+      "html_type": "text",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": null,
+      "order_label": null,
+      "validation": "integer",
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 4,
+      "invalidated_at": null,
+      "field_key": "tarps_needed",
+      "field_parent_key": "tarping_info",
+      "if_selected_then_work_type": "tarp",
+      "phase": 4
+    },
+    {
+      "label_t": "Hardwood Floor Removal",
+      "html_type": "checkbox",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 4,
+      "invalidated_at": null,
+      "field_key": "hardwood_floor_removal",
+      "field_parent_key": "muck_out_info",
+      "if_selected_then_work_type": "muck_out",
+      "phase": 4
+    },
+    {
+      "label_t": "Children In Home",
+      "html_type": "checkbox",
+      "data_sensitivity": "verySensitive",
+      "data_group": "personalInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 4,
+      "invalidated_at": null,
+      "field_key": "children_in_home",
+      "field_parent_key": "property_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Rebuild",
+      "html_type": "h5",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": null,
+      "order_label": null,
+      "validation": null,
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 5,
+      "invalidated_at": null,
+      "field_key": "rebuild_info",
+      "field_parent_key": "work_info",
+      "if_selected_then_work_type": "rebuild",
+      "phase": 4
+    },
+    {
+      "label_t": "HVAC",
+      "html_type": "checkbox",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 5,
+      "invalidated_at": null,
+      "field_key": "mold_hvac",
+      "field_parent_key": "mold_remediation_info",
+      "if_selected_then_work_type": "mold_remediation",
+      "phase": 4
+    },
+    {
+      "label_t": "Unsalvageable Structure",
+      "html_type": "checkbox",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 5,
+      "invalidated_at": null,
+      "field_key": "unsalvageable_structure",
+      "field_parent_key": "debris_info",
+      "if_selected_then_work_type": "debris",
+      "phase": 4
+    },
+    {
+      "label_t": "Need Help Installing",
+      "html_type": "checkbox",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 5,
+      "invalidated_at": null,
+      "field_key": "help_install_tarp",
+      "field_parent_key": "tarping_info",
+      "if_selected_then_work_type": "tarp",
+      "phase": 4
+    },
+    {
+      "label_t": "Tile",
+      "html_type": "checkbox",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 5,
+      "invalidated_at": null,
+      "field_key": "tile_removal",
+      "field_parent_key": "muck_out_info",
+      "if_selected_then_work_type": "muck_out",
+      "phase": 4
+    },
+    {
+      "label_t": "First Responder",
+      "html_type": "checkbox",
+      "data_sensitivity": "verySensitive",
+      "data_group": "personalInfo",
+      "help_t": "First responders and their families are often the last to receive help. Consequently, many relief agencies prioritize them.",
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 5,
+      "invalidated_at": null,
+      "field_key": "first_responder",
+      "field_parent_key": "property_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Notes",
+      "html_type": "textarea",
+      "data_sensitivity": "verySensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": "Notes",
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": null,
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 6,
+      "invalidated_at": null,
+      "field_key": "notes",
+      "field_parent_key": "mold_remediation_info",
+      "if_selected_then_work_type": "mold_remediation",
+      "phase": 4
+    },
+    {
+      "label_t": "Heavy Machinery Required",
+      "html_type": "checkbox",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 6,
+      "invalidated_at": null,
+      "field_key": "heavy_machinary_required",
+      "field_parent_key": "debris_info",
+      "if_selected_then_work_type": "debris",
+      "phase": 4
+    },
+    {
+      "label_t": "Num Stories",
+      "html_type": "select",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "formOptions.one": "formOptions.one",
+        "formOptions.six": "formOptions.six",
+        "formOptions.ten": "formOptions.ten",
+        "formOptions.two": "formOptions.two",
+        "formOptions.five": "formOptions.five",
+        "formOptions.four": "formOptions.four",
+        "formOptions.nine": "formOptions.nine",
+        "formOptions.eight": "formOptions.eight",
+        "formOptions.seven": "formOptions.seven",
+        "formOptions.three": "formOptions.three",
+        "formOptions.eleven": "formOptions.eleven",
+        "formOptions.twelve": "formOptions.twelve_plus"
+      },
+      "order_label": null,
+      "validation": "integer",
+      "recur_default": null,
+      "values": [
+        {
+          "value": null,
+          "name_t": "--"
+        },
+        {
+          "value": "formOptions.one",
+          "name_t": "1"
+        },
+        {
+          "value": "formOptions.two",
+          "name_t": "2"
+        },
+        {
+          "value": "formOptions.three",
+          "name_t": "3"
+        },
+        {
+          "value": "formOptions.four",
+          "name_t": "4"
+        },
+        {
+          "value": "formOptions.five",
+          "name_t": "5"
+        },
+        {
+          "value": "formOptions.six",
+          "name_t": "6"
+        },
+        {
+          "value": "formOptions.seven",
+          "name_t": "7"
+        },
+        {
+          "value": "formOptions.eight",
+          "name_t": "8"
+        },
+        {
+          "value": "formOptions.nine",
+          "name_t": "9"
+        },
+        {
+          "value": "formOptions.ten",
+          "name_t": "10"
+        },
+        {
+          "value": "formOptions.eleven",
+          "name_t": "11"
+        },
+        {
+          "value": "unitTest.t1",
+          "name_t": "12+"
+        }
+      ],
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 6,
+      "invalidated_at": null,
+      "field_key": "num_stories",
+      "field_parent_key": "tarping_info",
+      "if_selected_then_work_type": "tarp",
+      "phase": 4
+    },
+    {
+      "label_t": "Drywall Removal",
+      "html_type": "checkbox",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 6,
+      "invalidated_at": null,
+      "field_key": "drywall_removal",
+      "field_parent_key": "muck_out_info",
+      "if_selected_then_work_type": "muck_out",
+      "phase": 4
+    },
+    {
+      "label_t": "Veteran",
+      "html_type": "checkbox",
+      "data_sensitivity": "verySensitive",
+      "data_group": "personalInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 6,
+      "invalidated_at": null,
+      "field_key": "veteran",
+      "field_parent_key": "property_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Appliance Removal",
+      "html_type": "checkbox",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 7,
+      "invalidated_at": null,
+      "field_key": "appliance_removal",
+      "field_parent_key": "muck_out_info",
+      "if_selected_then_work_type": "muck_out",
+      "phase": 4
+    },
+    {
+      "label_t": "Primary Language",
+      "html_type": "select",
+      "data_sensitivity": "verySensitive",
+      "data_group": "personalInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "formOptions.english": "formOptions.english",
+        "formOptions.spanish": "formOptions.spanish"
+      },
+      "order_label": null,
+      "validation": "string",
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 7,
+      "invalidated_at": null,
+      "field_key": "primary_language",
+      "field_parent_key": "property_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Heavy Item Removal",
+      "html_type": "checkbox",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "recur_default": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 8,
+      "invalidated_at": null,
+      "field_key": "heavy_item_removal",
+      "field_parent_key": "muck_out_info",
+      "if_selected_then_work_type": "muck_out",
+      "phase": 4
+    },
+    {
+      "label_t": "Residence Type",
+      "html_type": "select",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "caseInfo",
+      "help_t": "A person displaced from their primary home, or living in squalid conditions in their primary home are often higher priorities for relief organizations.",
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "formOptions.guest_home": "formOptions.guest_home",
+        "formOptions.second_home": "formOptions.second_home",
+        "formOptions.non_residence": "formOptions.non_residence",
+        "formOptions.primary_living_in_home": "formOptions.primary_living_in_home",
+        "formOptions.other_secondary_property": "formOptions.other_secondary_property",
+        "formOptions.primary_displaced_from_home": "formOptions.primary_displaced_from_home"
+      },
+      "order_label": null,
+      "validation": "string",
+      "values": [
+        {
+          "value": null,
+          "name_t": "--"
+        },
+        {
+          "value": "formOptions.primary_living_in_home",
+          "name_t": "Primary-Living in Home"
+        },
+        {
+          "value": "formOptions.primary_displaced_from_home",
+          "name_t": "Primary-Displaced from Home"
+        },
+        {
+          "value": "formOptions.second_home",
+          "name_t": "Second Home"
+        },
+        {
+          "value": "formOptions.guest_home",
+          "name_t": "Guest Home"
+        },
+        {
+          "value": "formOptions.other_secondary_property",
+          "name_t": "Other Secondary Property"
+        },
+        {
+          "value": "formOptions.non_residence",
+          "name_t": "Non-Residence"
+        }
+      ],
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 8,
+      "invalidated_at": null,
+      "field_key": "residence_type",
+      "field_parent_key": "property_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Structure Type",
+      "html_type": "select",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "caseInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "formOptions.rv": "formOptions.rv",
+        "formOptions.barn": "formOptions.barn",
+        "formOptions.condo": "formOptions.condo",
+        "formOptions.house": "formOptions.house",
+        "formOptions.other": "formOptions.other",
+        "formOptions.duplex": "formOptions.duplex",
+        "formOptions.apartment": "formOptions.apartment",
+        "formOptions.townhouse": "formOptions.townhouse",
+        "formOptions.mobile_home": "formOptions.mobile_home"
+      },
+      "order_label": null,
+      "validation": "string",
+      "values": [
+        {
+          "value": null,
+          "name_t": "--"
+        },
+        {
+          "value": "formOptions.house",
+          "name_t": "House"
+        },
+        {
+          "value": "formOptions.duplex",
+          "name_t": "Duplex"
+        },
+        {
+          "value": "formOptions.mobile_home",
+          "name_t": "Mobile Home"
+        },
+        {
+          "value": "formOptions.apartment",
+          "name_t": "Apartment"
+        },
+        {
+          "value": "formOptions.condo",
+          "name_t": "Condo"
+        },
+        {
+          "value": "formOptions.townhouse",
+          "name_t": "Townhouse"
+        },
+        {
+          "value": "formOptions.rv",
+          "name_t": "RV"
+        },
+        {
+          "value": "formOptions.barn",
+          "name_t": "Barn"
+        },
+        {
+          "value": "formOptions.other",
+          "name_t": "Other"
+        }
+      ],
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 9,
+      "invalidated_at": null,
+      "field_key": "dwelling_type",
+      "field_parent_key": "property_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Rent/ Own/ Public",
+      "html_type": "select",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "personalInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "formOptions.own": "formOptions.own",
+        "formOptions.farm": "formOptions.farm",
+        "formOptions.rent": "formOptions.rent",
+        "formOptions.borrowed": "formOptions.borrowed",
+        "formOptions.business": "formOptions.business",
+        "formOptions.non_profit": "formOptions.non_profit",
+        "formOptions.public_land": "formOptions.public_land",
+        "formOptions.rental_property": "formOptions.rental_property"
+      },
+      "order_label": null,
+      "validation": "string",
+      "values": [
+        {
+          "value": null,
+          "name_t": "--"
+        },
+        {
+          "value": "formOptions.rent",
+          "name_t": "Rent"
+        },
+        {
+          "value": "formOptions.own",
+          "name_t": "Own"
+        },
+        {
+          "value": "formOptions.rental_home",
+          "name_t": "Rental Home"
+        },
+        {
+          "value": "formOptions.borrowed",
+          "name_t": "Borrowed"
+        },
+        {
+          "value": "formOptions.public_land",
+          "name_t": "Public Land"
+        },
+        {
+          "value": "formOptions.non_profit",
+          "name_t": "Non-Profit"
+        },
+        {
+          "value": "formOptions.business",
+          "name_t": "Business"
+        },
+        {
+          "value": "formOptions.farm",
+          "name_t": "Farm"
+        }
+      ],
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 10,
+      "invalidated_at": null,
+      "field_key": "rent_or_own",
+      "field_parent_key": "property_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Work with resident gone (Ask Permission)",
+      "html_type": "checkbox",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "caseInfo",
+      "help_t": "Note: Even if this is box is checked, it may not be a good idea to work without the resident present. Follow your organization's policy on this matter.",
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 11,
+      "invalidated_at": null,
+      "field_key": "work_without_resident",
+      "field_parent_key": "property_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Flood Insurance",
+      "html_type": "checkbox",
+      "data_sensitivity": "verySensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 12,
+      "invalidated_at": null,
+      "field_key": "insured",
+      "field_parent_key": "property_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Home or Renters Insurance",
+      "html_type": "checkbox",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": {
+        "value": "true"
+      },
+      "order_label": null,
+      "validation": "string",
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 13,
+      "invalidated_at": null,
+      "field_key": "insurance_home_rent",
+      "field_parent_key": "property_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Utilities",
+      "html_type": "h5",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": null,
+      "order_label": null,
+      "validation": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 14,
+      "invalidated_at": null,
+      "field_key": "utilities_info",
+      "field_parent_key": "property_info",
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Work",
+      "html_type": "h4",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "workInfo",
+      "help_t": "Contact <a href='mailto:help{'@'}crisiscleanup.org'>help{'@'}crisiscleanup.org</a> to request another question. Be sure to include the incident name.",
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": null,
+      "order_label": 3,
+      "validation": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 24,
+      "invalidated_at": null,
+      "field_key": "work_info",
+      "field_parent_key": null,
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Hazards",
+      "html_type": "h4",
+      "data_sensitivity": "lessSensitive",
+      "data_group": "caseInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": null,
+      "order_label": 4,
+      "validation": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 69,
+      "invalidated_at": null,
+      "field_key": "hazards_info",
+      "field_parent_key": null,
+      "if_selected_then_work_type": null,
+      "phase": 4
+    },
+    {
+      "label_t": "Volunteer Report",
+      "html_type": "h4",
+      "data_sensitivity": "sensitive",
+      "data_group": "caseInfo",
+      "help_t": null,
+      "placeholder_t": null,
+      "is_required_default": false,
+      "is_read_only_default": false,
+      "read_only_break_glass": false,
+      "values_default_t": null,
+      "order_label": 5,
+      "validation": null,
+      "values": null,
+      "is_required": false,
+      "is_read_only": false,
+      "list_order": 76,
+      "invalidated_at": null,
+      "field_key": "claim_status_report_info",
+      "field_parent_key": null,
+      "if_selected_then_work_type": null,
+      "phase": 4
+    }
+  ]
+}

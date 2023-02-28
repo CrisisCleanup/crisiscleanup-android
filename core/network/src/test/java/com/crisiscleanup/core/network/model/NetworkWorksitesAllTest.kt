@@ -1,19 +1,14 @@
 package com.crisiscleanup.core.network.model
 
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class NetworkWorksitesAllTest {
-    private val json = Json { ignoreUnknownKeys = true }
-
     @Test
     fun getWorksitesSuccessResult() {
-        val contents =
-            NetworkAuthResult::class.java.getResource("/getWorksitesAllSuccess.json")?.readText()!!
-        val result = json.decodeFromString<NetworkWorksitesShortResult>(contents)
+        val result =
+            TestUtil.decodeResource<NetworkWorksitesShortResult>("/getWorksitesAllSuccess.json")
 
         assertNull(result.errors)
         assertEquals(30, result.count)
@@ -25,9 +20,8 @@ class NetworkWorksitesAllTest {
 
     @Test
     fun getWorksitesResultFail() {
-        val contents =
-            NetworkAuthResult::class.java.getResource("/expiredTokenResult.json")?.readText()!!
-        val result = json.decodeFromString<NetworkWorksitesShortResult>(contents)
+        val result =
+            TestUtil.decodeResource<NetworkWorksitesShortResult>("/expiredTokenResult.json")
 
         assertNull(result.count)
         assertNull(result.results)
@@ -45,10 +39,8 @@ class NetworkWorksitesAllTest {
 
     @Test
     fun invalidIncidentIdResponse() {
-        val contents =
-            NetworkAuthResult::class.java.getResource("/worksitesInvalidIncidentResult.json")
-                ?.readText()!!
-        val result = json.decodeFromString<NetworkWorksitesShortResult>(contents)
+        val result =
+            TestUtil.decodeResource<NetworkWorksitesShortResult>("/worksitesInvalidIncidentResult.json")
 
         assertNull(result.count)
         assertNull(result.results)
