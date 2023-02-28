@@ -351,13 +351,13 @@ private fun AppHeader(
                 titleContent = @Composable {
                     // TODO Match height of visible part of app bar (not the entire app bar)
                     if (onOpenIncidents == null) {
-                        Text(title)
+                        TruncatedAppBarText(title = title)
                     } else {
                         Row(
                             modifier = modifier.clickable(onClick = onOpenIncidents),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Text(title)
+                            TruncatedAppBarText(title = title)
                             Icon(
                                 imageVector = CrisisCleanupIcons.ArrowDropDown,
                                 contentDescription = stringResource(casesR.string.change_incident),

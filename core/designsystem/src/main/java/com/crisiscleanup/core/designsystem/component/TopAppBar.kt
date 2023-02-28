@@ -5,24 +5,79 @@ package com.crisiscleanup.core.designsystem.component
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 
+@Composable
+fun TruncatedAppBarText(
+    modifier: Modifier = Modifier,
+    @StringRes titleResId: Int = 0,
+    title: String = "",
+) {
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+    val maxWidth = screenWidth.times(0.65f)
+    val text = if (titleResId == 0) title else stringResource(titleResId)
+    Text(
+        text,
+        modifier = modifier.widthIn(max = maxWidth),
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+    )
+}
+
+@Composable
+private fun IconButton(
+    onClick: () -> Unit,
+    iconImage: ImageVector,
+    contentDescription: String? = null,
+) {
+    IconButton(onClick = onClick) {
+        Icon(
+            imageVector = iconImage,
+            contentDescription = contentDescription,
+            tint = MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
+@Composable
+private fun StaticDynamicIcon(
+    imageIcon: ImageVector,
+    onClick: (() -> Unit)? = null,
+    contentDescription: String? = null,
+    staticIconPadding: Dp = 16.dp,
+) {
+    if (onClick == null) {
+        Icon(
+            modifier = Modifier.padding(staticIconPadding),
+            imageVector = imageIcon,
+            contentDescription = contentDescription,
+            tint = MaterialTheme.colorScheme.onSurface
+        )
+    } else {
+        IconButton(onClick, imageIcon, contentDescription)
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CrisisCleanupTopAppBar(
-    @StringRes titleResId: Int,
-    title: String = "",
     modifier: Modifier = Modifier,
+    @StringRes titleResId: Int = 0,
+    title: String = "",
     isCenterAlign: Boolean = true,
     navIcon: ImageVector? = null,
     navContentDescription: String? = null,
@@ -34,42 +89,23 @@ fun CrisisCleanupTopAppBar(
     onActionClick: () -> Unit = {},
 ) {
     val titleContent = @Composable {
-        val text = if (titleResId == 0) title else stringResource(titleResId)
-        Text(text)
+        TruncatedAppBarText(modifier, titleResId, title)
     }
     val navigationContent: (@Composable (() -> Unit)) =
         @Composable {
             navIcon?.let {
-                if (onNavigationClick == null) {
-                    Icon(
-                        modifier = Modifier.padding(navIconPadding),
-                        imageVector = navIcon,
-                        contentDescription = navContentDescription,
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                } else {
-                    IconButton(onClick = onNavigationClick) {
-                        Icon(
-                            imageVector = navIcon,
-                            contentDescription = navContentDescription,
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
+                StaticDynamicIcon(
+                    it,
+                    onNavigationClick,
+                    navContentDescription,
+                    navIconPadding,
+                )
             }
         }
     val actionsContent: (@Composable (RowScope.() -> Unit)) = if (actionIcon == null) {
         @Composable {}
     } else {
-        @Composable {
-            IconButton(onClick = onActionClick) {
-                Icon(
-                    imageVector = actionIcon,
-                    contentDescription = actionIconContentDescription,
-                    tint = MaterialTheme.colorScheme.onSurface
-                )
-            }
-        }
+        @Composable { IconButton(onActionClick, actionIcon, actionIconContentDescription) }
     }
     if (isCenterAlign) {
         CenterAlignedTopAppBar(
@@ -133,28 +169,17 @@ fun TopAppBarDefault(
     titleContent: (@Composable () -> Unit)? = null,
 ) {
     val barTitle: (@Composable () -> Unit) = titleContent ?: @Composable {
-        val text = if (titleResId == 0) title else stringResource(titleResId)
-        Text(modifier = modifier, text = text)
+        TruncatedAppBarText(modifier, titleResId, title)
     }
     val navigationContent: (@Composable (() -> Unit)) =
         @Composable {
             navIcon?.let {
-                if (onNavigationClick == null) {
-                    Icon(
-                        modifier = Modifier.padding(navIconPadding),
-                        imageVector = navIcon,
-                        contentDescription = navContentDescription,
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                } else {
-                    IconButton(onClick = onNavigationClick) {
-                        Icon(
-                            imageVector = navIcon,
-                            contentDescription = navContentDescription,
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
+                StaticDynamicIcon(
+                    navIcon,
+                    onNavigationClick,
+                    navContentDescription,
+                    navIconPadding
+                )
             }
         }
     val actionsContent: (@Composable (RowScope.() -> Unit)) = @Composable {
