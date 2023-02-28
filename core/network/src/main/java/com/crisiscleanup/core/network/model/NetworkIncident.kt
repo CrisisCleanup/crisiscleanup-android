@@ -30,6 +30,8 @@ data class NetworkIncident(
     @SerialName("short_name")
     val shortName: String,
     val locations: List<NetworkIncidentLocation>,
+    @SerialName("incident_type")
+    val type: String,
     @SerialName("turn_on_release")
     val turnOnRelease: Boolean?,
     @Serializable(IterableStringSerializer::class)

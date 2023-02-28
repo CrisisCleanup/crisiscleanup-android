@@ -81,6 +81,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
                     "start_at",
                     "name",
                     "short_name",
+                    "incident_type",
                     "locations",
                     "turn_on_release",
                     "active_phone_number",

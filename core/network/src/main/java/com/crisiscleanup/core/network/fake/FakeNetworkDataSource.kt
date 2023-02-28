@@ -9,17 +9,17 @@ import javax.inject.Singleton
 private val incidents = listOf(
     fillNetworkIncident(
         199, "2021-03-10T02:33:48Z",
-        "Pandemic (Fake)", "covid_19_response",
+        "Pandemic (Fake)", "covid_19_response", "virus",
         listOf(NetworkIncidentLocation(2, 73141)),
     ),
     fillNetworkIncident(
         151, "2019-07-22T00:00:00Z",
-        "Medium Storm (Fake)", "n_wi_derecho_jul_2019",
+        "Medium Storm (Fake)", "n_wi_derecho_jul_2019", "wind",
         listOf(NetworkIncidentLocation(122, 41898)),
     ),
     fillNetworkIncident(
         200, "2022-07-20T16:28:51Z",
-        "Another Tornado (Fake)", "another_tornado",
+        "Another Tornado (Fake)", "another_tornado", "tornado",
         listOf(
             NetworkIncidentLocation(1, 73132),
             NetworkIncidentLocation(3, 73145)
@@ -28,11 +28,12 @@ private val incidents = listOf(
     fillNetworkIncident(
         158, "2019-09-25T00:00:00Z",
         "Small Tornado (Fake)", "chippewa_dunn_wi_tornado",
+        "tornado",
         listOf(NetworkIncidentLocation(129, 41905)),
     ),
     fillNetworkIncident(
         60, "2017-08-24T00:00:00Z",
-        "Big Hurricane (Fake)", "hurricane_harvey",
+        "Big Hurricane (Fake)", "hurricane_harvey", "hurricane",
         listOf(NetworkIncidentLocation(63, 41823)),
     ),
 )
@@ -162,6 +163,7 @@ internal fun fillNetworkIncident(
     startAt: String,
     name: String,
     shortName: String,
+    incidentType: String,
     locations: List<NetworkIncidentLocation>,
     turnOn: Boolean = false,
     activePhone: List<String>? = null,
@@ -171,6 +173,7 @@ internal fun fillNetworkIncident(
     Instant.parse(startAt),
     name, shortName,
     locations,
+    incidentType,
     turnOn,
     activePhone,
     isArchived

@@ -4,41 +4,22 @@
   "previous": null,
   "results": [
     {
-      "id": 199,
-      "name": "Pandemic (Fake)",
-      "start_at": "2021-03-10T02:33:48Z",
-      "short_name": "covid_19_response",
+      "id": 158,
+      "name": "Small Tornado (Fake)",
+      "start_at": "2019-09-25T00:00:00Z",
+      "short_name": "chippewa_dunn_wi_tornado",
       "locations": [
         {
           "tag": null,
           "title": null,
           "notes": null,
-          "created_at": "2021-04-05T22:33:08Z",
-          "id": 2,
-          "location": 73141,
-          "object_id": 199
+          "created_at": "2020-03-11T04:17:28Z",
+          "id": 129,
+          "location": 41905,
+          "object_id": 158
         }
       ],
-      "is_archived": false,
-      "turn_on_release": false,
-      "active_phone_number": null
-    },
-    {
-      "id": 151,
-      "name": "Medium Storm (Fake)",
-      "start_at": "2019-07-22T00:00:00Z",
-      "short_name": "n_wi_derecho_jul_2019",
-      "locations": [
-        {
-          "tag": null,
-          "title": null,
-          "notes": null,
-          "created_at": "2020-03-11T04:07:46Z",
-          "id": 122,
-          "location": 41898,
-          "object_id": 151
-        }
-      ],
+      "incident_type": "tornado",
       "is_archived": false,
       "turn_on_release": false,
       "active_phone_number": null
@@ -68,26 +49,28 @@
           "object_id": 200
         }
       ],
+      "incident_type": "tornado",
       "is_archived": false,
       "turn_on_release": false,
       "active_phone_number": null
     },
     {
-      "id": 158,
-      "name": "Small Tornado (Fake)",
-      "start_at": "2019-09-25T00:00:00Z",
-      "short_name": "chippewa_dunn_wi_tornado",
+      "id": 199,
+      "name": "Pandemic (Fake)",
+      "start_at": "2021-03-10T02:33:48Z",
+      "short_name": "covid_19_response",
       "locations": [
         {
           "tag": null,
           "title": null,
           "notes": null,
-          "created_at": "2020-03-11T04:17:28Z",
-          "id": 129,
-          "location": 41905,
-          "object_id": 158
+          "created_at": "2021-04-05T22:33:08Z",
+          "id": 2,
+          "location": 73141,
+          "object_id": 199
         }
       ],
+      "incident_type": "virus",
       "is_archived": false,
       "turn_on_release": false,
       "active_phone_number": null
@@ -108,7 +91,29 @@
           "object_id": 60
         }
       ],
+      "incident_type": "hurricane",
       "is_archived": true,
+      "turn_on_release": false,
+      "active_phone_number": null
+    },
+    {
+      "id": 151,
+      "name": "Medium Storm (Fake)",
+      "start_at": "2019-07-22T00:00:00Z",
+      "short_name": "n_wi_derecho_jul_2019",
+      "locations": [
+        {
+          "tag": null,
+          "title": null,
+          "notes": null,
+          "created_at": "2020-03-11T04:07:46Z",
+          "id": 122,
+          "location": 41898,
+          "object_id": 151
+        }
+      ],
+      "incident_type": "wind",
+      "is_archived": false,
       "turn_on_release": false,
       "active_phone_number": null
     }
