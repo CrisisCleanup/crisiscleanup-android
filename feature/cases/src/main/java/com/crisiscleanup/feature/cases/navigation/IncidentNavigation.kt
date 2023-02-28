@@ -5,9 +5,8 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.dialog
+import com.crisiscleanup.core.appnav.RouteConstant.selectIncidentRoute
 import com.crisiscleanup.feature.cases.ui.SelectIncidentRoute
-
-const val selectIncidentRoute = "select_incident"
 
 fun NavController.navigateToSelectIncident(navOptions: NavOptions? = null) {
     this.navigate(selectIncidentRoute, navOptions)

@@ -5,10 +5,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import com.crisiscleanup.core.appnav.RouteConstant.casesGraphRoutePattern
 import com.crisiscleanup.feature.caseeditor.navigation.caseEditorScreen
 import com.crisiscleanup.feature.caseeditor.navigation.navigateToCaseEditor
 import com.crisiscleanup.feature.cases.navigation.casesGraph
-import com.crisiscleanup.feature.cases.navigation.casesGraphRoutePattern
 import com.crisiscleanup.feature.cases.navigation.selectIncidentScreen
 import com.crisiscleanup.feature.cases.ui.CasesAction
 import com.crisiscleanup.feature.dashboard.navigation.dashboardScreen

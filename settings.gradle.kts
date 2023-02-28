@@ -16,6 +16,8 @@ dependencyResolutionManagement {
 }
 rootProject.name = "crisiscleanup"
 include(":app")
+include(":core:appheader")
+include(":core:appnav")
 include(":core:common")
 include(":core:data")
 include(":core:data-test")
@@ -28,7 +30,6 @@ include(":core:mapmarker")
 include(":core:model")
 include(":core:network")
 include(":core:ui")
-include(":core:appheader")
 include(":core:testing")
 include(":feature:authentication")
 include(":feature:caseeditor")

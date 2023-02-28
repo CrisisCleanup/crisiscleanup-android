@@ -6,13 +6,10 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import com.crisiscleanup.core.appnav.RouteConstant.casesGraphRoutePattern
+import com.crisiscleanup.core.appnav.RouteConstant.casesRoute
 import com.crisiscleanup.feature.cases.ui.CasesAction
 import com.crisiscleanup.feature.cases.ui.CasesRoute
-
-const val casesGraphRoutePattern = "cases_graph"
-
-// This cannot be used as the navHost startDestination
-const val casesRoute = "cases_route"
 
 fun NavController.navigateToCases(navOptions: NavOptions? = null) {
     this.navigate(casesGraphRoutePattern, navOptions)

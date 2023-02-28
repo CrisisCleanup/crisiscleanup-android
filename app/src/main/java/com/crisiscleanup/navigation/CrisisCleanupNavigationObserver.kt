@@ -3,6 +3,9 @@ package com.crisiscleanup.navigation
 import android.os.Bundle
 import com.crisiscleanup.core.appheader.AppHeaderState
 import com.crisiscleanup.core.appheader.AppHeaderUiState
+import com.crisiscleanup.core.appnav.RouteConstant.caseEditorRoute
+import com.crisiscleanup.core.appnav.RouteConstant.casesRoute
+import com.crisiscleanup.core.appnav.RouteConstant.topLevelRoutes
 import com.crisiscleanup.core.common.NavigationObserver
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.log.AppLogger
@@ -27,26 +30,17 @@ class CrisisCleanupNavigationObserver @Inject constructor(
         navigationRoute.value = Pair(navigationRoute.value.second, route)
     }
 
-    // TODO Move into core/appnavigation module and consolidate
-    private val casesRoutes = setOf("cases_route", "select_incident")
-    private val topLevelRoutes = setOf(
-        "cases_route",
-        "dashboard_route",
-        "team_route",
-        "menu_route",
-    )
-
     init {
         navigationRoute.onEach {
             val (fromRoute, toRoute) = navigationRoute.value
 
             // TODO Research a better pattern when there is a shared top level component between routes
-            if (casesRoutes.contains(fromRoute) &&
-                !casesRoutes.contains(toRoute) &&
+            if (fromRoute == casesRoute &&
+                toRoute != casesRoute &&
                 headerUiState.appHeaderState.value == AppHeaderState.SearchInTitle
             ) {
                 headerUiState.setState(AppHeaderState.TopLevel)
-            } else if (toRoute?.startsWith("case_editor?") == true) {
+            } else if (toRoute?.startsWith("$caseEditorRoute?") == true) {
                 headerUiState.setState(AppHeaderState.BackTitleAction)
             }
 

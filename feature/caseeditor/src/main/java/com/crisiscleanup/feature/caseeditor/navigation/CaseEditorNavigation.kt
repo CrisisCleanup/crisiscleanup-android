@@ -7,6 +7,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.crisiscleanup.core.appnav.RouteConstant.caseEditorRoute
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.feature.caseeditor.ui.CaseEditorRoute
 
@@ -20,8 +21,6 @@ internal class CaseEditorArgs(val incidentId: Long, val worksiteId: Long?) {
         savedStateHandle.get<String>(worksiteIdArg)?.toLong(),
     )
 }
-
-const val caseEditorRoute = "case_editor"
 
 fun NavController.navigateToCaseEditor(incidentId: Long, worksiteId: Long? = null) {
     val routeParts = mutableListOf("$caseEditorRoute?$incidentIdArg=$incidentId")
