@@ -16,6 +16,7 @@ import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.model.data.OrgData
+import com.crisiscleanup.core.model.data.emptyOrgData
 import com.crisiscleanup.core.network.CrisisCleanupAuthApi
 import com.crisiscleanup.feature.authentication.model.AuthenticationState
 import com.crisiscleanup.feature.authentication.model.LoginInputData
@@ -166,7 +167,20 @@ class AuthenticationViewModel @Inject constructor(
                         it.fileTypeT == "fileTypes.user_profile_picture"
                     }?.largeThumbnailUrl ?: ""
 
-                    val organization = result.organizations!!
+                    // TODO Test coverage
+                    val organization = result.organizations
+                    val orgData = if (
+                        organization?.isActive == true &&
+                        organization.id >= 0 &&
+                        organization.name.isNotEmpty()
+                    ) {
+                        OrgData(
+                            organization.id,
+                            organization.name,
+                        )
+                    } else {
+                        emptyOrgData
+                    }
 
                     accountDataRepository.setAccount(
                         id = claims.id,
@@ -176,7 +190,7 @@ class AuthenticationViewModel @Inject constructor(
                         lastName = claims.lastName,
                         expirySeconds = expirySeconds,
                         profilePictureUri = profilePicUri,
-                        org = OrgData(organization.id, organization.name)
+                        org = orgData,
                     )
 
                     // TODO Update tests
