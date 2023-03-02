@@ -281,12 +281,13 @@ class CasesViewModel @Inject constructor(
                 return@run
             }
 
+            refreshTiles = isEnded
+            clearCache = isEnded
+
             if (this.worksitesCount < 3000) {
                 return@run
             }
 
-            refreshTiles = isEnded
-            clearCache = isEnded
             val now = Clock.System.now()
             if (!refreshTiles && progress > saveStartedAmount) {
                 val sinceLastRefresh = now - tileRefreshedInstant

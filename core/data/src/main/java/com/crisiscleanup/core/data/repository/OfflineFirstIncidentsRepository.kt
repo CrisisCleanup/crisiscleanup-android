@@ -106,9 +106,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
         )
     }
 
-    private suspend fun saveIncidentsSecondaryData(incidents: Collection<NetworkIncident>) {
-        saveLocations(incidents)
-
+    private suspend fun saveFormFields(incidents: Collection<NetworkIncident>) {
         val incidentsFields = incidents
             .filter { it.fields?.isNotEmpty() == true }
             .map { incident ->
@@ -117,6 +115,11 @@ class OfflineFirstIncidentsRepository @Inject constructor(
                 Pair(incident.id, fields)
             }
         incidentDaoPlus.updateFormFields(incidentsFields)
+    }
+
+    private suspend fun saveIncidentsSecondaryData(incidents: Collection<NetworkIncident>) {
+        saveLocations(incidents)
+        saveFormFields(incidents)
     }
 
     /**
@@ -149,6 +152,19 @@ class OfflineFirstIncidentsRepository @Inject constructor(
                 // TODO Use configurable threshold
                 val recentIncidents = incidents.filter { it.startAt > recentTimestamp }
                 saveIncidentsSecondaryData(recentIncidents)
+
+                if (incidents.mapNotNull(NetworkIncident::fields).isEmpty()) {
+                    val ordered =
+                        incidents.sortedWith { a, b -> if (a.startAt > b.startAt) -1 else 1 }
+                    ordered.subList(0, ordered.size.coerceAtMost(3))
+                        .forEach { incident ->
+                            val networkIncident =
+                                networkDataSource.getIncident(incident.id, fullIncidentQueryFields)
+                            tryThrowException(authEventManager, networkIncident.errors)
+
+                            networkIncident.incident?.let { saveFormFields(listOf(it)) }
+                        }
+                }
             }
         } finally {
             isSyncing.value = false
