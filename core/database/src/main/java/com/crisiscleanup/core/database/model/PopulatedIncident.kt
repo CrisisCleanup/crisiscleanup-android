@@ -28,4 +28,20 @@ fun PopulatedIncident.asExternalModel() = Incident(
         ?.filter(String::isNotEmpty)
         ?: emptyList(),
     locations = locations.map(IncidentLocationEntity::asExternalModel),
+    formFields = emptyList(),
+)
+
+data class PopulatedFormFieldsIncident(
+    @Embedded
+    val entity: PopulatedIncident,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "incident_id",
+    )
+    val formFields: List<IncidentFormFieldEntity>,
+)
+
+fun PopulatedFormFieldsIncident.asExternalModel() = entity.asExternalModel().copy(
+    formFields = formFields.map(IncidentFormFieldEntity::asExternalModel)
+        .filter { !it.isInvalidated }
 )

@@ -1,0 +1,919 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 6,
+    "identityHash": "a88ce3213d03a057e888a1ae4c1b4761",
+    "entities": [
+      {
+        "tableName": "incidents",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `start_at` INTEGER NOT NULL, `name` TEXT NOT NULL, `short_name` TEXT NOT NULL DEFAULT '', `incident_type` TEXT NOT NULL DEFAULT '', `active_phone_number` TEXT DEFAULT '', `is_archived` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startAt",
+            "columnName": "start_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "shortName",
+            "columnName": "short_name",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "incident_type",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "activePhoneNumber",
+            "columnName": "active_phone_number",
+            "affinity": "TEXT",
+            "notNull": false,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "isArchived",
+            "columnName": "is_archived",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "idx_newest_to_oldest_incidents",
+            "unique": false,
+            "columnNames": [
+              "start_at"
+            ],
+            "orders": [
+              "DESC"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `idx_newest_to_oldest_incidents` ON `${TABLE_NAME}` (`start_at` DESC)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "incident_locations",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `location` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "location",
+            "columnName": "location",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "incident_to_incident_location",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`incident_id` INTEGER NOT NULL, `incident_location_id` INTEGER NOT NULL, PRIMARY KEY(`incident_id`, `incident_location_id`), FOREIGN KEY(`incident_id`) REFERENCES `incidents`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`incident_location_id`) REFERENCES `incident_locations`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "incidentId",
+            "columnName": "incident_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "incidentLocationId",
+            "columnName": "incident_location_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "incident_id",
+            "incident_location_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "idx_incident_location_to_incident",
+            "unique": false,
+            "columnNames": [
+              "incident_location_id",
+              "incident_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `idx_incident_location_to_incident` ON `${TABLE_NAME}` (`incident_location_id`, `incident_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "incidents",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "incident_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "incident_locations",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "incident_location_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "incident_form_fields",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`incident_id` INTEGER NOT NULL, `label` TEXT NOT NULL, `html_type` TEXT NOT NULL, `data_group` TEXT NOT NULL, `help` TEXT DEFAULT '', `placeholder` TEXT DEFAULT '', `read_only_break_glass` INTEGER NOT NULL, `values_default_json` TEXT DEFAULT '', `is_checkbox_default_true` INTEGER DEFAULT 0, `order_label` INTEGER NOT NULL DEFAULT -1, `validation` TEXT DEFAULT '', `recur_default` TEXT DEFAULT '0', `values_json` TEXT DEFAULT '', `is_required` INTEGER DEFAULT 0, `is_read_only` INTEGER DEFAULT 0, `list_order` INTEGER NOT NULL, `is_invalidated` INTEGER NOT NULL, `field_key` TEXT NOT NULL, `field_parent_key` TEXT DEFAULT '', `selected_toggle_work_type` TEXT DEFAULT '', PRIMARY KEY(`incident_id`, `field_key`), FOREIGN KEY(`incident_id`) REFERENCES `incidents`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "incidentId",
+            "columnName": "incident_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "label",
+            "columnName": "label",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "htmlType",
+            "columnName": "html_type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dataGroup",
+            "columnName": "data_group",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "help",
+            "columnName": "help",
+            "affinity": "TEXT",
+            "notNull": false,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "placeholder",
+            "columnName": "placeholder",
+            "affinity": "TEXT",
+            "notNull": false,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "readOnlyBreakGlass",
+            "columnName": "read_only_break_glass",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "valuesDefaultJson",
+            "columnName": "values_default_json",
+            "affinity": "TEXT",
+            "notNull": false,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "isCheckboxDefaultTrue",
+            "columnName": "is_checkbox_default_true",
+            "affinity": "INTEGER",
+            "notNull": false,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "orderLabel",
+            "columnName": "order_label",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "-1"
+          },
+          {
+            "fieldPath": "validation",
+            "columnName": "validation",
+            "affinity": "TEXT",
+            "notNull": false,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "recurDefault",
+            "columnName": "recur_default",
+            "affinity": "TEXT",
+            "notNull": false,
+            "defaultValue": "'0'"
+          },
+          {
+            "fieldPath": "valuesJson",
+            "columnName": "values_json",
+            "affinity": "TEXT",
+            "notNull": false,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "isRequired",
+            "columnName": "is_required",
+            "affinity": "INTEGER",
+            "notNull": false,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "isReadOnly",
+            "columnName": "is_read_only",
+            "affinity": "INTEGER",
+            "notNull": false,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "listOrder",
+            "columnName": "list_order",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isInvalidated",
+            "columnName": "is_invalidated",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fieldKey",
+            "columnName": "field_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fieldParentKey",
+            "columnName": "field_parent_key",
+            "affinity": "TEXT",
+            "notNull": false,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "selectToggleWorkType",
+            "columnName": "selected_toggle_work_type",
+            "affinity": "TEXT",
+            "notNull": false,
+            "defaultValue": "''"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "incident_id",
+            "field_key"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_incident_form_fields_data_group_field_parent_key_list_order",
+            "unique": false,
+            "columnNames": [
+              "data_group",
+              "field_parent_key",
+              "list_order"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_incident_form_fields_data_group_field_parent_key_list_order` ON `${TABLE_NAME}` (`data_group`, `field_parent_key`, `list_order`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "incidents",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "incident_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "locations",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `shape_type` TEXT NOT NULL DEFAULT '', `coordinates` TEXT NOT NULL DEFAULT '', PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "shapeType",
+            "columnName": "shape_type",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "coordinates",
+            "columnName": "coordinates",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "worksite_sync_stats",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`incident_id` INTEGER NOT NULL, `sync_start` INTEGER NOT NULL DEFAULT 0, `target_count` INTEGER NOT NULL, `paged_count` INTEGER NOT NULL DEFAULT 0, `successful_sync` INTEGER, `attempted_sync` INTEGER, `attempted_counter` INTEGER NOT NULL, `app_build_version_code` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`incident_id`))",
+        "fields": [
+          {
+            "fieldPath": "incidentId",
+            "columnName": "incident_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "syncStart",
+            "columnName": "sync_start",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "targetCount",
+            "columnName": "target_count",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pagedCount",
+            "columnName": "paged_count",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "successfulSync",
+            "columnName": "successful_sync",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "attemptedSync",
+            "columnName": "attempted_sync",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "attemptedCounter",
+            "columnName": "attempted_counter",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "appBuildVersionCode",
+            "columnName": "app_build_version_code",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "incident_id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "worksites_root",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `sync_uuid` TEXT NOT NULL DEFAULT '', `local_modified_at` INTEGER NOT NULL DEFAULT 0, `synced_at` INTEGER NOT NULL DEFAULT 0, `local_global_uuid` TEXT NOT NULL DEFAULT '', `is_local_modified` INTEGER NOT NULL DEFAULT 0, `sync_attempt` INTEGER NOT NULL DEFAULT 0, `network_id` INTEGER NOT NULL DEFAULT -1, `incident_id` INTEGER NOT NULL, FOREIGN KEY(`incident_id`) REFERENCES `incidents`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "syncUuid",
+            "columnName": "sync_uuid",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "localModifiedAt",
+            "columnName": "local_modified_at",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "syncedAt",
+            "columnName": "synced_at",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "localGlobalUuid",
+            "columnName": "local_global_uuid",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "isLocalModified",
+            "columnName": "is_local_modified",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "syncAttempt",
+            "columnName": "sync_attempt",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "networkId",
+            "columnName": "network_id",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "-1"
+          },
+          {
+            "fieldPath": "incidentId",
+            "columnName": "incident_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_worksites_root_incident_id_network_id_local_global_uuid",
+            "unique": true,
+            "columnNames": [
+              "incident_id",
+              "network_id",
+              "local_global_uuid"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_worksites_root_incident_id_network_id_local_global_uuid` ON `${TABLE_NAME}` (`incident_id`, `network_id`, `local_global_uuid`)"
+          },
+          {
+            "name": "index_worksites_root_is_local_modified_sync_attempt",
+            "unique": false,
+            "columnNames": [
+              "is_local_modified",
+              "sync_attempt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_worksites_root_is_local_modified_sync_attempt` ON `${TABLE_NAME}` (`is_local_modified`, `sync_attempt`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "incidents",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "incident_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "worksites",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `network_id` INTEGER NOT NULL DEFAULT -1, `incident_id` INTEGER NOT NULL, `address` TEXT NOT NULL, `auto_contact_frequency_t` TEXT, `case_number` TEXT NOT NULL, `city` TEXT NOT NULL, `county` TEXT NOT NULL, `created_at` INTEGER, `email` TEXT DEFAULT '', `favorite_id` INTEGER, `key_work_type_type` TEXT NOT NULL DEFAULT '', `key_work_type_org` INTEGER, `key_work_type_status` TEXT NOT NULL DEFAULT '', `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `name` TEXT NOT NULL, `phone1` TEXT, `phone2` TEXT DEFAULT '', `plus_code` TEXT DEFAULT '', `postal_code` TEXT NOT NULL, `reported_by` INTEGER, `state` TEXT NOT NULL, `svi` REAL, `what3Words` TEXT DEFAULT '', `updated_at` INTEGER NOT NULL, FOREIGN KEY(`id`) REFERENCES `worksites_root`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "networkId",
+            "columnName": "network_id",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "-1"
+          },
+          {
+            "fieldPath": "incidentId",
+            "columnName": "incident_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "address",
+            "columnName": "address",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "autoContactFrequencyT",
+            "columnName": "auto_contact_frequency_t",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "caseNumber",
+            "columnName": "case_number",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "city",
+            "columnName": "city",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "county",
+            "columnName": "county",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "email",
+            "columnName": "email",
+            "affinity": "TEXT",
+            "notNull": false,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "favoriteId",
+            "columnName": "favorite_id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "keyWorkTypeType",
+            "columnName": "key_work_type_type",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "keyWorkTypeOrgClaim",
+            "columnName": "key_work_type_org",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "keyWorkTypeStatus",
+            "columnName": "key_work_type_status",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "latitude",
+            "columnName": "latitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "longitude",
+            "columnName": "longitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "phone1",
+            "columnName": "phone1",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "phone2",
+            "columnName": "phone2",
+            "affinity": "TEXT",
+            "notNull": false,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "plusCode",
+            "columnName": "plus_code",
+            "affinity": "TEXT",
+            "notNull": false,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "postalCode",
+            "columnName": "postal_code",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reportedBy",
+            "columnName": "reported_by",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "state",
+            "columnName": "state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "svi",
+            "columnName": "svi",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "what3Words",
+            "columnName": "what3Words",
+            "affinity": "TEXT",
+            "notNull": false,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_worksites_incident_id_network_id_updated_at",
+            "unique": false,
+            "columnNames": [
+              "incident_id",
+              "network_id",
+              "updated_at"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_worksites_incident_id_network_id_updated_at` ON `${TABLE_NAME}` (`incident_id`, `network_id`, `updated_at`)"
+          },
+          {
+            "name": "index_worksites_network_id",
+            "unique": false,
+            "columnNames": [
+              "network_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_worksites_network_id` ON `${TABLE_NAME}` (`network_id`)"
+          },
+          {
+            "name": "index_worksites_incident_id_latitude_longitude",
+            "unique": false,
+            "columnNames": [
+              "incident_id",
+              "latitude",
+              "longitude"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_worksites_incident_id_latitude_longitude` ON `${TABLE_NAME}` (`incident_id`, `latitude`, `longitude`)"
+          },
+          {
+            "name": "index_worksites_incident_id_longitude_latitude",
+            "unique": false,
+            "columnNames": [
+              "incident_id",
+              "longitude",
+              "latitude"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_worksites_incident_id_longitude_latitude` ON `${TABLE_NAME}` (`incident_id`, `longitude`, `latitude`)"
+          },
+          {
+            "name": "index_worksites_incident_id_network_id_svi",
+            "unique": false,
+            "columnNames": [
+              "incident_id",
+              "network_id",
+              "svi"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_worksites_incident_id_network_id_svi` ON `${TABLE_NAME}` (`incident_id`, `network_id`, `svi`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "worksites_root",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "work_types",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `local_global_uuid` TEXT NOT NULL DEFAULT '', `network_id` INTEGER NOT NULL DEFAULT -1, `worksite_id` INTEGER NOT NULL, `created_at` INTEGER, `claimed_by` INTEGER, `next_recur_at` INTEGER, `phase` INTEGER, `recur` TEXT, `status` TEXT NOT NULL, `work_type` TEXT NOT NULL, FOREIGN KEY(`worksite_id`) REFERENCES `worksites`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "localGlobalUuid",
+            "columnName": "local_global_uuid",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "networkId",
+            "columnName": "network_id",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "-1"
+          },
+          {
+            "fieldPath": "worksiteId",
+            "columnName": "worksite_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "orgClaim",
+            "columnName": "claimed_by",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "nextRecurAt",
+            "columnName": "next_recur_at",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "phase",
+            "columnName": "phase",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "recur",
+            "columnName": "recur",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "workType",
+            "columnName": "work_type",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "unique_worksite_work_type",
+            "unique": true,
+            "columnNames": [
+              "worksite_id",
+              "network_id",
+              "local_global_uuid"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `unique_worksite_work_type` ON `${TABLE_NAME}` (`worksite_id`, `network_id`, `local_global_uuid`)"
+          },
+          {
+            "name": "index_work_types_status",
+            "unique": false,
+            "columnNames": [
+              "status"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_work_types_status` ON `${TABLE_NAME}` (`status`)"
+          },
+          {
+            "name": "index_work_types_claimed_by",
+            "unique": false,
+            "columnNames": [
+              "claimed_by"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_work_types_claimed_by` ON `${TABLE_NAME}` (`claimed_by`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "worksites",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "worksite_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a88ce3213d03a057e888a1ae4c1b4761')"
+    ]
+  }
+}

@@ -19,7 +19,9 @@ private interface CrisisCleanupNetworkApi {
         @Query("limit")
         limit: Int,
         @Query("ordering")
-        ordering: String
+        ordering: String,
+        @Query("start_at__gt")
+        after: Instant?,
     ): NetworkIncidentsResult
 
     @TokenAuthenticationHeader
@@ -93,8 +95,13 @@ class RetrofitNetworkDataSource @Inject constructor(
     @CrisisCleanupRetrofit retrofit: Retrofit
 ) : CrisisCleanupNetworkDataSource {
     private val networkApi = retrofit.create(CrisisCleanupNetworkApi::class.java)
-    override suspend fun getIncidents(fields: List<String>, limit: Int, ordering: String) =
-        networkApi.getIncidents(fields.joinToString(","), limit, ordering)
+    override suspend fun getIncidents(
+        fields: List<String>,
+        limit: Int,
+        ordering: String,
+        after: Instant?
+    ) =
+        networkApi.getIncidents(fields.joinToString(","), limit, ordering, after)
 
     override suspend fun getIncidentLocations(locationIds: List<Long>) =
         networkApi.getLocations(locationIds.joinToString(","), locationIds.size)

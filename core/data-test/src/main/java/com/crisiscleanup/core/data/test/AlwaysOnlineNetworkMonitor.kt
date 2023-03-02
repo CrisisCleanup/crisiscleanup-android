@@ -7,4 +7,5 @@ import javax.inject.Inject
 
 class AlwaysOnlineNetworkMonitor @Inject constructor() : NetworkMonitor {
     override val isOnline: Flow<Boolean> = flowOf(true)
+    override val isNotOnline: Flow<Boolean> = flowOf(false)
 }

@@ -4,11 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
-import com.crisiscleanup.core.database.model.IncidentEntity
-import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
-import com.crisiscleanup.core.database.model.IncidentLocationEntity
-import com.crisiscleanup.core.database.model.PopulatedIncident
-import com.crisiscleanup.core.database.model.asExternalModel
+import com.crisiscleanup.core.database.model.*
 import com.crisiscleanup.core.model.data.Incident
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -136,6 +132,7 @@ class IncidentDaoTest {
             activePhoneNumber = phoneNumber,
             name = "",
             shortName = "",
+            type = "",
         )
 
         // Insert existing
@@ -167,6 +164,7 @@ class IncidentDaoTest {
             "",
             emptyList(),
             phoneNumbers,
+            emptyList(),
         )
 
         val expecteds = listOf(
@@ -270,4 +268,4 @@ class IncidentDaoTest {
 fun testIncidentEntity(
     id: Long,
     startAtSeconds: Long,
-) = IncidentEntity(id, Instant.fromEpochSeconds(startAtSeconds), "", "")
+) = IncidentEntity(id, Instant.fromEpochSeconds(startAtSeconds), "", "", "")

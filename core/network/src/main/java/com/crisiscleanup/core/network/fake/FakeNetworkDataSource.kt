@@ -122,8 +122,12 @@ private val worksitesShortResult = NetworkWorksitesShortResult()
 
 @Singleton
 class FakeNetworkDataSource @Inject constructor() : CrisisCleanupNetworkDataSource {
-    override suspend fun getIncidents(fields: List<String>, limit: Int, ordering: String) =
-        incidentsResult
+    override suspend fun getIncidents(
+        fields: List<String>,
+        limit: Int,
+        ordering: String,
+        after: Instant?,
+    ) = incidentsResult
 
     override suspend fun getIncidentLocations(locationIds: List<Long>) =
         incidentLocationsResult
@@ -159,7 +163,6 @@ internal fun fillNetworkIncident(
     shortName: String,
     incidentType: String,
     locations: List<NetworkIncidentLocation>,
-    turnOn: Boolean = false,
     activePhone: List<String>? = null,
     isArchived: Boolean = false
 ) = NetworkIncident(
@@ -168,9 +171,8 @@ internal fun fillNetworkIncident(
     name, shortName,
     locations,
     incidentType,
-    turnOn,
     activePhone,
-    isArchived
+    isArchived,
 )
 
 internal fun fillNetworkLocation(

@@ -12,6 +12,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -58,6 +59,8 @@ class ConnectivityManagerNetworkMonitor @Inject constructor(
         }
     }
         .conflate()
+
+    override val isNotOnline: Flow<Boolean> = isOnline.map(Boolean::not)
 
     private fun ConnectivityManager?.isCurrentlyConnected() = when (this) {
         null -> false

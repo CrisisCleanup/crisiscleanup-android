@@ -1,21 +1,17 @@
 package com.crisiscleanup.core.database.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import androidx.room.Transaction
-import androidx.room.Upsert
-import com.crisiscleanup.core.database.model.IncidentEntity
-import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
-import com.crisiscleanup.core.database.model.IncidentLocationEntity
-import com.crisiscleanup.core.database.model.PopulatedIncident
+import androidx.room.*
+import com.crisiscleanup.core.database.model.*
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface IncidentDao {
 
     // Update IncidentDaoTest in conjunction with below
+
+    @Transaction
+    @Query("SELECT COUNT(*) FROM incidents")
+    suspend fun getIncidentCount(): Int
 
     @Transaction
     @Query(
@@ -32,25 +28,42 @@ interface IncidentDao {
     @Query("SELECT * FROM incidents WHERE id=:id")
     suspend fun getIncident(id: Long): List<PopulatedIncident>
 
-    @Upsert
-    suspend fun upsertIncidents(incidents: List<IncidentEntity>)
+    @Transaction
+    @Query("SELECT * FROM incidents WHERE id=:id")
+    suspend fun getFormFieldsIncident(id: Long): PopulatedFormFieldsIncident?
 
     @Upsert
-    suspend fun upsertIncidentLocations(locations: List<IncidentLocationEntity>)
+    suspend fun upsertIncidents(incidents: Collection<IncidentEntity>)
+
+    @Upsert
+    suspend fun upsertIncidentLocations(locations: Collection<IncidentLocationEntity>)
 
     @Transaction
     @Query(
         """
         DELETE FROM incident_to_incident_location
-        WHERE incident_id in (:incidentIds)
+        WHERE incident_id IN (:incidentIds)
         """
     )
     suspend fun deleteIncidentLocationCrossRefs(incidentIds: Collection<Long>)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertIgnoreIncidentLocationCrossRefs(
-        incidentCrossRefs: List<IncidentIncidentLocationCrossRef>
+        incidentCrossRefs: Collection<IncidentIncidentLocationCrossRef>
     )
+
+    @Transaction
+    @Query(
+        """
+        UPDATE incident_form_fields
+        SET is_invalidated=1
+        WHERE incident_id=:incidentId
+        """
+    )
+    suspend fun invalidateFormFields(incidentId: Long)
+
+    @Upsert
+    suspend fun upsertFormFields(formFields: Collection<IncidentFormFieldEntity>)
 }
 
 @Dao

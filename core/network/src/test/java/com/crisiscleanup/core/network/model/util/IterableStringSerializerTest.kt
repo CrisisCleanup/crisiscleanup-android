@@ -106,10 +106,7 @@ class IterableStringSerializerTest {
     }
 
     private fun makeExpectedNetworkIncident(expectedPhoneNumber: String?) =
-        """{"id":0,"start_at":"2023-02-06T16:13:20Z","name":"","short_name":"","locations":[],"incident_type":"","turn_on_release":null""" +
-                ",\"active_phone_number\":$expectedPhoneNumber" +
-                ""","is_archived":null""" +
-                "}"
+        """{"id":0,"start_at":"2023-02-06T16:13:20Z","name":"","short_name":"","locations":[],"incident_type":"","active_phone_number":$expectedPhoneNumber,"is_archived":null,"form_fields":[]}"""
 
     private fun testNetworkIncident(phoneNumbers: List<String>?) = NetworkIncident(
         0,
@@ -118,8 +115,8 @@ class IterableStringSerializerTest {
         "",
         emptyList(),
         "",
-        null,
         phoneNumbers,
-        null
+        null,
+        emptyList(),
     )
 }

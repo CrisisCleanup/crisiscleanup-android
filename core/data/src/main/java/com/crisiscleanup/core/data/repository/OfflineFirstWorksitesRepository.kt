@@ -7,6 +7,7 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.IncidentWorksitesSyncer
+import com.crisiscleanup.core.data.util.NetworkMonitor
 import com.crisiscleanup.core.data.util.WorksitesDataPullReporter
 import com.crisiscleanup.core.database.dao.WorksiteDao
 import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
@@ -16,6 +17,7 @@ import com.crisiscleanup.core.model.data.*
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -31,6 +33,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private val worksitesSyncStatsDao: WorksitesSyncStatsDao,
     private val worksiteDao: WorksiteDao,
     private val worksiteDaoPlus: WorksiteDaoPlus,
+    private val networkMonitor: NetworkMonitor,
     private val appVersionProvider: AppVersionProvider,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
@@ -39,6 +42,8 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         private set
 
     override val worksitesDataPullStats = worksitesSyncer.dataPullStats
+
+    private suspend fun isNotOnline() = networkMonitor.isNotOnline.first()
 
     override fun streamWorksites(incidentId: Long, limit: Int, offset: Int) =
         worksiteDao.streamWorksites(incidentId, limit, offset)
@@ -183,7 +188,11 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         }
     }
 
-    override fun refreshWorksite(incidentId: Long, worksiteNetworkId: Long): Worksite {
+    override suspend fun refreshWorksite(incidentId: Long, worksiteNetworkId: Long): Worksite? {
+        if (isNotOnline()) {
+            return null
+        }
+
         // TODO Query for latest, insert if not locally modified, return latest data
         return EmptyWorksite
     }

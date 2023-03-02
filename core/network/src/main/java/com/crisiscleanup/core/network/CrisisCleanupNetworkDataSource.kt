@@ -13,7 +13,8 @@ interface CrisisCleanupNetworkDataSource {
     suspend fun getIncidents(
         fields: List<String>,
         limit: Int = 250,
-        ordering: String = "-start_at"
+        ordering: String = "-start_at",
+        after: Instant? = null,
     ): NetworkIncidentsResult
 
     suspend fun getIncidentLocations(

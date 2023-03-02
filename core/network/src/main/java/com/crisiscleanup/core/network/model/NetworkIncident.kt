@@ -4,7 +4,6 @@ import com.crisiscleanup.core.network.model.util.IterableStringSerializer
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 
 @Serializable
 data class NetworkIncidentsResult(
@@ -39,8 +38,6 @@ data class NetworkIncident(
     val locations: List<NetworkIncidentLocation>,
     @SerialName("incident_type")
     val type: String,
-    @SerialName("turn_on_release")
-    val turnOnRelease: Boolean?,
     @Serializable(IterableStringSerializer::class)
     @SerialName("active_phone_number")
     val activePhoneNumber: List<String>?,
@@ -57,18 +54,12 @@ data class NetworkIncidentFormField(
     val label: String,
     @SerialName("html_type")
     val htmlType: String,
-    @SerialName("data_sensitivity")
-    val dataSensitivity: String,
     @SerialName("data_group")
     val dataGroup: String,
     @SerialName("help_t")
     val help: String? = null,
     @SerialName("placeholder_t")
     val placeholder: String? = null,
-    @SerialName("is_required_default")
-    val isRequiredDefault: Boolean,
-    @SerialName("is_read_only_default")
-    val isReadOnlyDefault: Boolean,
     @SerialName("read_only_break_glass")
     val readOnlyBreakGlass: Boolean,
     @SerialName("values_default_t")
@@ -77,7 +68,7 @@ data class NetworkIncidentFormField(
     val orderLabel: Int? = null,
     val validation: String? = null,
     @SerialName("recur_default")
-    val recurDefault: Boolean? = null,
+    val recurDefault: String? = null,
     @SerialName("values")
     val values: List<FormFieldValue>? = null,
     @SerialName("is_required")
@@ -94,29 +85,9 @@ data class NetworkIncidentFormField(
     val fieldParentKey: String? = null,
     @SerialName("if_selected_then_work_type")
     val selectToggleWorkType: String? = null,
-    val phase: Int,
 ) {
-    val checkboxDefault: Boolean
+    val isCheckboxDefaultTrue: Boolean
         get() = htmlType == "checkbox" && valuesDefault?.size == 1 && valuesDefault["value"] == "true"
-
-    @Transient
-    var isExpectedValueDefault: Boolean = false
-        private set
-
-    init {
-        var isExpectedDefaults = false
-        val valueCount = values?.size ?: 0
-        if (valueCount > 0 && valuesDefault?.isNotEmpty() == true) {
-            isExpectedDefaults = true
-            values!!.map(FormFieldValue::value).onEach {
-                if (it != null && valuesDefault[it] != it) {
-                    isExpectedDefaults = false
-                    return@onEach
-                }
-            }
-        }
-        isExpectedValueDefault = isExpectedDefaults
-    }
 
     @Serializable
     data class FormFieldValue(

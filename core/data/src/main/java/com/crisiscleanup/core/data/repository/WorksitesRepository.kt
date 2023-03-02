@@ -64,5 +64,5 @@ interface WorksitesRepository {
 
     fun getLocalWorksite(worksiteId: Long): LocalWorksite
 
-    fun refreshWorksite(incidentId: Long, worksiteNetworkId: Long): Worksite
+    suspend fun refreshWorksite(incidentId: Long, worksiteNetworkId: Long): Worksite?
 }
