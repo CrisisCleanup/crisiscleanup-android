@@ -14,14 +14,12 @@ import com.crisiscleanup.core.database.dao.LanguageDaoPlus
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.EnglishLanguage
 import com.crisiscleanup.core.model.data.Language
-import com.crisiscleanup.core.model.data.LanguageTranslations
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.tryThrowException
 import com.crisiscleanup.core.network.model.NetworkLanguageDescription
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -70,28 +68,27 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000),
         )
 
-    private var languageTranslations = LanguageTranslations(
-        language = EnglishLanguage,
-        translations = emptyMap(),
-        syncedAt = Instant.fromEpochSeconds(0),
-    )
-
-    private var setLanguageJob: Job? = null
-
-    override val currentLanguage = appPreferences.userData.map {
+    private val languageTranslations = appPreferences.userData.flatMapLatest {
         val key = it.languageKey.ifEmpty { EnglishLanguage.key }
-        val translations = languageDao.getLanguageTranslations(key)?.asExternalModel()
-
-        translations?.let { lts -> languageTranslations = lts }
-
-        languageTranslations.language
+        languageDao.streamLanguageTranslations(key)
+            .mapLatest { translation -> translation?.asExternalModel() }
     }
         .flowOn(ioDispatcher)
         .stateIn(
             scope = coroutineScope,
-            initialValue = EnglishLanguage,
-            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = null,
+            started = SharingStarted.WhileSubscribed(),
         )
+
+    override val currentLanguage = languageTranslations.map {
+        it?.language ?: EnglishLanguage
+    }.stateIn(
+        scope = coroutineScope,
+        initialValue = EnglishLanguage,
+        started = SharingStarted.WhileSubscribed(5_000),
+    )
+    
+    private var setLanguageJob: Job? = null
 
     private suspend fun isNotOnline() = networkMonitor.isNotOnline.first()
 
@@ -130,6 +127,8 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
                     if (languageCount == 0) {
                         pullTranslations(EnglishLanguage.key)
                     }
+                } else {
+                    pullUpdatedTranslations()
                 }
             } catch (e: Exception) {
                 logger.logException(e)
@@ -139,11 +138,10 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
         }
     }
 
-    // TODO Check and update periodically
     private suspend fun pullUpdatedTranslations() = pullTranslations(currentLanguage.value.key)
 
     private suspend fun pullUpdatedTranslations(key: String) {
-        languageDao.getLanguageTranslations(key)?.asExternalModel()?.let {
+        languageDao.streamLanguageTranslations(key).first()?.asExternalModel()?.let {
             val localizationUpdateCount = dataSource.getLocalizationCount(it.syncedAt)
             if ((localizationUpdateCount.count ?: 0) > 0) {
                 pullLanguages()
@@ -174,5 +172,5 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
     }
 
     override fun translate(phraseKey: String): String =
-        languageTranslations.translations[phraseKey] ?: ""
+        languageTranslations.value?.translations?.get(phraseKey) ?: ""
 }

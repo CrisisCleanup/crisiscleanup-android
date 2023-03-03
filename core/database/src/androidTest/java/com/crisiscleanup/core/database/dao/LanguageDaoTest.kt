@@ -8,6 +8,7 @@ import com.crisiscleanup.core.database.model.LanguageTranslationEntity
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.Language
 import com.crisiscleanup.core.model.data.LanguageTranslations
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -68,7 +69,7 @@ class LanguageDaoTest {
             it.add(testLanguageEntity("en-GB", "British"))
         }
         languages2.forEach {
-            val translations = languageDao.getLanguageTranslations(it.key)
+            val translations = languageDao.streamLanguageTranslations(it.key).first()
             val expected = if (it.key == "en-US") {
                 LanguageTranslations(
                     Language("en-US", "English"),

@@ -20,7 +20,7 @@ interface LanguageDao {
 
     @Transaction
     @Query("SELECT * FROM language_translations WHERE key=:key")
-    fun getLanguageTranslations(key: String): PopulatedLanguageTranslation?
+    fun streamLanguageTranslations(key: String): Flow<PopulatedLanguageTranslation?>
 
     @Upsert
     fun upsertLanguageTranslation(translations: LanguageTranslationEntity)
