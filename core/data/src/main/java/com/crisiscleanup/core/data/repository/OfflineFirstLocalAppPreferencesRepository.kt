@@ -38,6 +38,8 @@ class OfflineFirstLocalAppPreferencesRepository @Inject constructor(
     override suspend fun setSelectedIncident(id: Long) =
         preferencesDataSource.setSelectedIncident(id)
 
+    override suspend fun setLanguageKey(key: String) = preferencesDataSource.setLanguageKey(key)
+
     // LogoutListener
 
     override suspend fun onLogout() {

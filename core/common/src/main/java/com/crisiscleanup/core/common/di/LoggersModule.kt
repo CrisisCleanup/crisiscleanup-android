@@ -53,4 +53,11 @@ object LoggersModule {
         logger.tag = "worksites"
         return logger
     }
+
+    @Provides
+    @Logger(CrisisCleanupLoggers.Language)
+    fun providesLanguageLogger(logger: TagLogger): AppLogger {
+        logger.tag = "language"
+        return logger
+    }
 }

@@ -3,9 +3,7 @@ package com.crisiscleanup.core.database.dao
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
 import com.crisiscleanup.core.database.model.LocationEntity
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class LocationDaoPlus @Inject constructor(
     private val db: CrisisCleanupDatabase,
 ) {

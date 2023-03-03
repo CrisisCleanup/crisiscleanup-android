@@ -8,10 +8,7 @@ import com.crisiscleanup.core.common.Syncer
 import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.event.ExpiredTokenListener
 import com.crisiscleanup.core.data.IncidentSelector
-import com.crisiscleanup.core.data.repository.AccountDataRepository
-import com.crisiscleanup.core.data.repository.IncidentsRepository
-import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
-import com.crisiscleanup.core.data.repository.WorksitesRepository
+import com.crisiscleanup.core.data.repository.*
 import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.model.data.UserData
 import com.crisiscleanup.core.ui.SearchManager
@@ -29,6 +26,7 @@ class MainActivityViewModel @Inject constructor(
     val searchManager: SearchManager,
     incidentsRepository: IncidentsRepository,
     worksitesRepository: WorksitesRepository,
+    languageTranslationsRepository: LanguageTranslationsRepository,
     private val syncer: Syncer,
 ) : ViewModel(), ExpiredTokenListener {
     val uiState: StateFlow<MainActivityUiState> = localAppPreferencesRepository.userData.map {
@@ -74,8 +72,11 @@ class MainActivityViewModel @Inject constructor(
         incidentSelector.incidentId
             .onEach {
                 syncIncidents()
+                syncer.syncIncident(it)
             }
             .launchIn(viewModelScope)
+
+        languageTranslationsRepository.loadLanguages()
     }
 
     private fun syncIncidents() {

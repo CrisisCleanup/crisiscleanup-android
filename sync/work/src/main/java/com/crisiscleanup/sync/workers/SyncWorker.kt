@@ -66,6 +66,8 @@ class SyncWorker @AssistedInject constructor(
                 }
             ).all { it }
 
+            // TODO Notification seems to hang around. Research if needs to manually clear.
+
             if (syncedSuccessfully) Result.success()
             else Result.retry()
         }

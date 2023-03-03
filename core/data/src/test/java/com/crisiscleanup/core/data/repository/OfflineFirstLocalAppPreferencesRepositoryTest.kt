@@ -49,6 +49,7 @@ class OfflineFirstLocalAppPreferencesRepositoryTest {
                 selectedIncidentId = 0,
                 saveCredentialsPromptCount = 0,
                 disableSaveCredentialsPrompt = false,
+                languageKey = "",
             ),
             subject.userData.first()
         )

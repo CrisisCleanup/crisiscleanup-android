@@ -8,7 +8,7 @@ import java.lang.reflect.Type
 
 enum class RequestHeaderKey {
     AccessTokenAuth,
-    WrapIncidentResponse,
+    WrapResponse,
 }
 
 class RequestHeaderKeysLookup(
@@ -34,8 +34,8 @@ class RequestHeaderKeysLookup(
             when (it.annotationClass) {
                 TokenAuthenticationHeader::class ->
                     requestKeys[RequestHeaderKey.AccessTokenAuth] = ""
-                WrapIncidentResponseHeader::class ->
-                    requestKeys[RequestHeaderKey.WrapIncidentResponse] = ""
+                WrapResponseHeader::class ->
+                    requestKeys[RequestHeaderKey.WrapResponse] = (it as WrapResponseHeader).key
             }
         }
     }

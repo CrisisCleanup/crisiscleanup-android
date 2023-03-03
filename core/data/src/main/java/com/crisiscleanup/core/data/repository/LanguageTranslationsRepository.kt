@@ -1,0 +1,178 @@
+package com.crisiscleanup.core.data.repository
+
+import com.crisiscleanup.core.common.di.ApplicationScope
+import com.crisiscleanup.core.common.event.AuthEventManager
+import com.crisiscleanup.core.common.log.AppLogger
+import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
+import com.crisiscleanup.core.common.log.Logger
+import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
+import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.data.model.asEntity
+import com.crisiscleanup.core.data.util.NetworkMonitor
+import com.crisiscleanup.core.database.dao.LanguageDao
+import com.crisiscleanup.core.database.dao.LanguageDaoPlus
+import com.crisiscleanup.core.database.model.asExternalModel
+import com.crisiscleanup.core.model.data.EnglishLanguage
+import com.crisiscleanup.core.model.data.Language
+import com.crisiscleanup.core.model.data.LanguageTranslations
+import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
+import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.tryThrowException
+import com.crisiscleanup.core.network.model.NetworkLanguageDescription
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import javax.inject.Inject
+import javax.inject.Singleton
+
+interface LanguageTranslationsRepository {
+    val isLoading: Flow<Boolean>
+
+    val supportedLanguages: Flow<List<Language>>
+
+    val currentLanguage: Flow<Language>
+
+    fun loadLanguages(force: Boolean = false)
+
+    fun setLanguage(key: String = "")
+
+    fun translate(phraseKey: String): String
+}
+
+@Singleton
+class OfflineFirstLanguageTranslationsRepository @Inject constructor(
+    private val appPreferences: LocalAppPreferencesRepository,
+    private val dataSource: CrisisCleanupNetworkDataSource,
+    private val languageDao: LanguageDao,
+    private val languageDaoPlus: LanguageDaoPlus,
+    private val authEventManager: AuthEventManager,
+    @Logger(CrisisCleanupLoggers.Language) private val logger: AppLogger,
+    private val networkMonitor: NetworkMonitor,
+    @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
+    @ApplicationScope private val coroutineScope: CoroutineScope,
+) : LanguageTranslationsRepository {
+    private var isLoadingLanguages = MutableStateFlow(false)
+    private var isSettingLanguage = MutableStateFlow(false)
+
+    override val isLoading =
+        combine(
+            isLoadingLanguages,
+            isSettingLanguage,
+        ) { b, b1 -> b || b1 }
+
+    override val supportedLanguages = languageDao.streamLanguages().map {
+        it.map { translation -> Language(translation.entity.key, translation.entity.name) }
+    }
+        .flowOn(ioDispatcher)
+        .stateIn(
+            scope = coroutineScope,
+            initialValue = listOf(EnglishLanguage),
+            started = SharingStarted.WhileSubscribed(5_000),
+        )
+
+    private var languageTranslations = LanguageTranslations(
+        language = EnglishLanguage,
+        translations = emptyMap(),
+        syncedAt = Instant.fromEpochSeconds(0),
+    )
+
+    private var setLanguageJob: Job? = null
+
+    override val currentLanguage = appPreferences.userData.map {
+        val key = it.languageKey.ifEmpty { EnglishLanguage.key }
+        val translations = languageDao.getLanguageTranslations(key)?.asExternalModel()
+
+        translations?.let { lts -> languageTranslations = lts }
+
+        languageTranslations.language
+    }
+        .flowOn(ioDispatcher)
+        .stateIn(
+            scope = coroutineScope,
+            initialValue = EnglishLanguage,
+            started = SharingStarted.WhileSubscribed(5_000),
+        )
+
+    private suspend fun isNotOnline() = networkMonitor.isNotOnline.first()
+
+    private suspend fun pullLanguages() = coroutineScope {
+        val languagesResult = dataSource.getLanguages()
+        tryThrowException(authEventManager, languagesResult.errors)
+
+        languageDaoPlus.saveLanguages(
+            languagesResult.results.map(NetworkLanguageDescription::asEntity)
+        )
+    }
+
+    private suspend fun pullTranslations(key: String) = coroutineScope {
+        val syncAt = Clock.System.now()
+
+        val networkTranslations = dataSource.getLanguageTranslations(key)
+        tryThrowException(authEventManager, networkTranslations.errors)
+
+        networkTranslations.translation?.let {
+            languageDao.upsertLanguageTranslation(it.asEntity(syncAt))
+        }
+    }
+
+    override fun loadLanguages(force: Boolean) {
+        coroutineScope.launch(ioDispatcher) {
+            if (isNotOnline()) {
+                return@launch
+            }
+
+            isLoadingLanguages.value = true
+            try {
+                val languageCount = if (force) 0 else languageDao.getLanguageCount()
+                if (force || languageCount == 0) {
+                    pullLanguages()
+
+                    if (languageCount == 0) {
+                        pullTranslations(EnglishLanguage.key)
+                    }
+                }
+            } catch (e: Exception) {
+                logger.logException(e)
+            } finally {
+                isLoadingLanguages.value = false
+            }
+        }
+    }
+
+    // TODO Check and update periodically
+    private suspend fun pullUpdatedTranslations() = pullTranslations(currentLanguage.value.key)
+
+    private suspend fun pullUpdatedTranslations(key: String) {
+        languageDao.getLanguageTranslations(key)?.asExternalModel()?.let {
+            val localizationUpdateCount = dataSource.getLocalizationCount(it.syncedAt)
+            if ((localizationUpdateCount.count ?: 0) > 0) {
+                pullLanguages()
+                pullTranslations(key)
+            }
+        }
+    }
+
+    override fun setLanguage(key: String) {
+        setLanguageJob?.cancel()
+        setLanguageJob = coroutineScope.launch(ioDispatcher) {
+            if (isNotOnline()) {
+                return@launch
+            }
+
+            try {
+                pullUpdatedTranslations(key)
+
+                ensureActive()
+
+                appPreferences.setLanguageKey(key)
+            } catch (e: Exception) {
+                logger.logException(e)
+            } finally {
+                isSettingLanguage.value = false
+            }
+        }
+    }
+
+    override fun translate(phraseKey: String): String =
+        languageTranslations.translations[phraseKey] ?: ""
+}

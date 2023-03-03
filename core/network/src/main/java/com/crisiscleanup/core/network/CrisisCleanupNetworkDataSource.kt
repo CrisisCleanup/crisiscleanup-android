@@ -35,7 +35,7 @@ interface CrisisCleanupNetworkDataSource {
     suspend fun getWorksitesCount(
         incidentId: Long,
         updatedAtAfter: Instant? = null,
-    ): NetworkWorksitesCountResult
+    ): NetworkCountResult
 
     suspend fun getWorksitesAll(
         incidentId: Long,
@@ -51,4 +51,10 @@ interface CrisisCleanupNetworkDataSource {
         latitude: Double? = null,
         longitude: Double? = null,
     ): NetworkWorksitesShortResult
+
+    suspend fun getLanguages(): NetworkLanguagesResult
+
+    suspend fun getLanguageTranslations(key: String): NetworkLanguageTranslationResult
+
+    suspend fun getLocalizationCount(after: Instant): NetworkCountResult
 }

@@ -58,6 +58,12 @@ interface DataModule {
     fun bindsWorksitesDataPullReporter(
         reporter: OfflineFirstWorksitesRepository
     ): WorksitesDataPullReporter
+
+    @Singleton
+    @Binds
+    fun bindsLanguageTranslationRepository(
+        translationsRepository: OfflineFirstLanguageTranslationsRepository
+    ): LanguageTranslationsRepository
 }
 
 @Module

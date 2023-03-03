@@ -4,9 +4,7 @@ import androidx.room.withTransaction
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
 import com.crisiscleanup.core.database.model.WorkTypeEntity
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class WorkTypeDaoPlus @Inject constructor(
     private val db: CrisisCleanupDatabase,
 ) {

@@ -41,6 +41,8 @@ class LocalAppPreferencesDataSource @Inject constructor(
                 ),
 
                 selectedIncidentId = it.selectedIncidentId,
+
+                languageKey = it.languageKey,
             )
         }
 
@@ -110,6 +112,12 @@ class LocalAppPreferencesDataSource @Inject constructor(
     suspend fun setSelectedIncident(id: Long) {
         userPreferences.updateData {
             it.copy { selectedIncidentId = id }
+        }
+    }
+
+    suspend fun setLanguageKey(key: String) {
+        userPreferences.updateData {
+            it.copy { languageKey = key }
         }
     }
 }

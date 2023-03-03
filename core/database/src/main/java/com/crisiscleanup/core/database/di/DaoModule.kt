@@ -1,10 +1,7 @@
 package com.crisiscleanup.core.database.di
 
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
-import com.crisiscleanup.core.database.dao.IncidentDaoPlus
-import com.crisiscleanup.core.database.dao.LocationDaoPlus
-import com.crisiscleanup.core.database.dao.WorkTypeDaoPlus
-import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
+import com.crisiscleanup.core.database.dao.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -39,4 +36,10 @@ object DaoModule {
 
     @Provides
     fun providesWorkTypeDaoPlus(db: CrisisCleanupDatabase) = WorkTypeDaoPlus(db)
+
+    @Provides
+    fun providesLanguageDao(db: CrisisCleanupDatabase) = db.languageDao()
+
+    @Provides
+    fun providesLanguageDaoPlus(db: CrisisCleanupDatabase) = LanguageDaoPlus(db)
 }

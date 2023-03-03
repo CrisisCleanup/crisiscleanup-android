@@ -7,9 +7,7 @@ import com.crisiscleanup.core.database.model.IncidentFormFieldEntity
 import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
 import com.crisiscleanup.core.database.model.IncidentLocationEntity
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class IncidentDaoPlus @Inject constructor(
     private val db: CrisisCleanupDatabase,
 ) {

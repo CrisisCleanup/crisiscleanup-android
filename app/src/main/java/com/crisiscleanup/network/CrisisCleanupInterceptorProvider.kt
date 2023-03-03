@@ -15,7 +15,6 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
     private val accountDataRepository: AccountDataRepository,
     private val headerKeysLookup: RequestHeaderKeysLookup,
 ) : RetrofitInterceptorProvider {
-
     private val headerInterceptor: Interceptor by lazy {
         Interceptor { chain ->
             val request = chain.request()
@@ -42,21 +41,21 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
         }
     }
 
-    private val wrapIncidentInterceptor: Interceptor by lazy {
+    private val wrapPayloadInterceptor: Interceptor by lazy {
         Interceptor { chain ->
             val request = chain.request()
             var response: Response = chain.proceed(request)
 
             headerKeysLookup.getHeaderKeys(request)?.let {
-                if (it.containsKey(RequestHeaderKey.WrapIncidentResponse)) {
+
+                it[RequestHeaderKey.WrapResponse]?.let { key ->
                     if (response.code == 200) {
                         // TODO Write tests
                         // Better to deserialize, make new, and re-serialize but data structure is simple so text operations is sufficient
-                        val incidentData = response.body?.string()
-                            ?: throw Exception("Unexpected incident response")
-                        val wrappedIncidentData = """{"incident":$incidentData}"""
-                        val converted =
-                            wrappedIncidentData.toResponseBody(response.body?.contentType())
+                        val bodyData = response.body?.string()
+                            ?: throw Exception("Unexpected $key response")
+                        val wrappedData = """{"$key":$bodyData}"""
+                        val converted = wrappedData.toResponseBody(response.body?.contentType())
                         response = response.newBuilder().body(converted).build()
                     }
                 }
@@ -68,6 +67,6 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
 
     override val interceptors: List<Interceptor> = listOf(
         headerInterceptor,
-        wrapIncidentInterceptor,
+        wrapPayloadInterceptor,
     )
 }

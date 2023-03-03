@@ -9,9 +9,7 @@ import com.crisiscleanup.core.database.model.WorksiteLocalModifiedAt
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Instant
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class WorksiteDaoPlus @Inject constructor(
     private val db: CrisisCleanupDatabase,
 ) {

@@ -1,0 +1,22 @@
+{
+  "count": 3,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "subtag": "en-US",
+      "name_t": "English (United States)",
+      "id": 2
+    },
+    {
+      "subtag": "es-MX",
+      "name_t": "Spanish (Mexico)",
+      "id": 7
+    },
+    {
+      "subtag": "cs",
+      "name_t": "Czech",
+      "id": 8
+    }
+  ]
+}

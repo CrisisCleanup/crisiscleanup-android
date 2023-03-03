@@ -14,4 +14,6 @@ data class UserData(
     val syncAttempt: SyncAttempt,
 
     val selectedIncidentId: Long,
+
+    val languageKey: String,
 )

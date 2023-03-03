@@ -16,6 +16,7 @@ private val emptyUserData = UserData(
     saveCredentialsPromptCount = 0,
     disableSaveCredentialsPrompt = false,
     selectedIncidentId = -1,
+    languageKey = "",
 )
 
 class TestLocalAppPreferencesRepository : LocalAppPreferencesRepository {
@@ -52,6 +53,12 @@ class TestLocalAppPreferencesRepository : LocalAppPreferencesRepository {
     override suspend fun setSelectedIncident(id: Long) {
         currentUserData.let { current ->
             _userData.tryEmit(current.copy(selectedIncidentId = id))
+        }
+    }
+
+    override suspend fun setLanguageKey(key: String) {
+        currentUserData.let { current ->
+            _userData.tryEmit(current.copy(languageKey = key))
         }
     }
 }

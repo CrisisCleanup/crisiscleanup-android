@@ -113,10 +113,10 @@ private val locations = listOf(
 
 private val incidentLocationsResult = NetworkLocationsResult(
     count = locations.size,
-    results = locations
+    results = locations,
 )
 
-private val worksitesCountResult = NetworkWorksitesCountResult(count = 10)
+private val worksitesCountResult = NetworkCountResult(count = 10)
 private val worksitesResult = NetworkWorksitesFullResult()
 private val worksitesShortResult = NetworkWorksitesShortResult()
 
@@ -154,6 +154,19 @@ class FakeNetworkDataSource @Inject constructor() : CrisisCleanupNetworkDataSour
         latitude: Double?,
         longitude: Double?
     ) = worksitesShortResult
+
+    override suspend fun getLanguages() =
+        NetworkLanguagesResult(
+            results = listOf(NetworkLanguageDescription("en-US", "English US"))
+        )
+
+    override suspend fun getLanguageTranslations(key: String) = NetworkLanguageTranslationResult(
+        translation = NetworkLanguageTranslation(
+            "en-US", "English US", emptyMap()
+        )
+    )
+
+    override suspend fun getLocalizationCount(after: Instant) = NetworkCountResult(count = 0)
 }
 
 internal fun fillNetworkIncident(

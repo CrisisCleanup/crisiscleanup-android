@@ -5,4 +5,4 @@ import kotlin.annotation.AnnotationTarget.*
 
 @Target(FUNCTION)
 @Retention(RUNTIME)
-internal annotation class WrapIncidentResponseHeader
+internal annotation class WrapResponseHeader(val key: String)

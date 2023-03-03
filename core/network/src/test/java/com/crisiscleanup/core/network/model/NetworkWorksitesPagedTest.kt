@@ -8,7 +8,7 @@ class NetworkWorksitesPagedTest {
     @Test
     fun getWorksitesCount() {
         val result =
-            TestUtil.decodeResource<NetworkWorksitesCountResult>("/getWorksitesCountSuccess.json")
+            TestUtil.decodeResource<NetworkCountResult>("/getWorksitesCountSuccess.json")
 
         assertNull(result.errors)
         assertEquals(30, result.count)

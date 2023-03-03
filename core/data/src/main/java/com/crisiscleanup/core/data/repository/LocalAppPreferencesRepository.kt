@@ -29,4 +29,6 @@ interface LocalAppPreferencesRepository {
      * Caches ID of selected incident.
      */
     suspend fun setSelectedIncident(id: Long)
+
+    suspend fun setLanguageKey(key: String)
 }

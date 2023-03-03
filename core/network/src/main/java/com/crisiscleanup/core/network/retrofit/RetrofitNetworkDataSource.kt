@@ -34,7 +34,7 @@ private interface CrisisCleanupNetworkApi {
     ): NetworkLocationsResult
 
     @TokenAuthenticationHeader
-    @WrapIncidentResponseHeader
+    @WrapResponseHeader("incident")
     @GET("incidents/{id}")
     suspend fun getIncident(
         @Path("id")
@@ -61,7 +61,7 @@ private interface CrisisCleanupNetworkApi {
         incidentId: Long,
         @Query("updated_at__gt")
         updatedAtAfter: Instant? = null,
-    ): NetworkWorksitesCountResult
+    ): NetworkCountResult
 
     @TokenAuthenticationHeader
     @GET("worksites_all")
@@ -88,6 +88,22 @@ private interface CrisisCleanupNetworkApi {
         @Query("updated_at__gt")
         updatedAtAfter: Instant?,
     ): NetworkWorksitesShortResult
+
+    @GET("languages")
+    suspend fun getLanguages(): NetworkLanguagesResult
+
+    @WrapResponseHeader("translation")
+    @GET("languages/{key}")
+    suspend fun getLanguageTranslations(
+        @Path("key")
+        languageKey: String,
+    ): NetworkLanguageTranslationResult
+
+    @GET("localizations/count")
+    suspend fun getLocalizationCount(
+        @Query("updated_at__gt")
+        after: Instant,
+    ): NetworkCountResult
 }
 
 @Singleton
@@ -139,4 +155,12 @@ class RetrofitNetworkDataSource @Inject constructor(
             updatedAtAfter,
         )
     }
+
+    override suspend fun getLanguages() = networkApi.getLanguages()
+
+    override suspend fun getLanguageTranslations(key: String) =
+        networkApi.getLanguageTranslations(key)
+
+    override suspend fun getLocalizationCount(after: Instant) =
+        networkApi.getLocalizationCount(after)
 }

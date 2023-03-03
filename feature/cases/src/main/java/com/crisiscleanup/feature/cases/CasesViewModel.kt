@@ -205,7 +205,7 @@ class CasesViewModel @Inject constructor(
     }
 
     fun refreshIncidentsData() {
-        syncer.sync(true)
+        syncer.sync(true, cancelOngoing = true)
     }
 
     fun overviewMapTileProvider(): TileProvider {

@@ -5,13 +5,6 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-// TODO Test
-@Serializable
-data class NetworkWorksitesCountResult(
-    val errors: List<NetworkCrisisCleanupApiError>? = null,
-    val count: Int? = null,
-)
-
 @Serializable
 data class NetworkWorksitesFullResult(
     val errors: List<NetworkCrisisCleanupApiError>? = null,
