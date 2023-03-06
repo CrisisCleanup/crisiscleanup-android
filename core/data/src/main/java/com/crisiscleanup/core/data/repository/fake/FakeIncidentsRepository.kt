@@ -32,7 +32,7 @@ class FakeIncidentsRepository @Inject constructor() : IncidentsRepository {
         )
     )
 
-    override suspend fun getIncident(id: Long): Incident? {
+    override suspend fun getIncident(id: Long, loadFormFields: Boolean): Incident? {
         return makeIncident(id, "Incident $id")
     }
 

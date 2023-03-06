@@ -41,7 +41,7 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
         }
     }
 
-    private val wrapPayloadInterceptor: Interceptor by lazy {
+    private val wrapResponseInterceptor: Interceptor by lazy {
         Interceptor { chain ->
             val request = chain.request()
             var response: Response = chain.proceed(request)
@@ -50,7 +50,7 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
 
                 it[RequestHeaderKey.WrapResponse]?.let { key ->
                     if (response.code == 200) {
-                        // TODO Write tests
+                        // TODO Write tests. Including expired tokens where tokens are used.
                         // Better to deserialize, make new, and re-serialize but data structure is simple so text operations is sufficient
                         val bodyData = response.body?.string()
                             ?: throw Exception("Unexpected $key response")
@@ -67,6 +67,6 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
 
     override val interceptors: List<Interceptor> = listOf(
         headerInterceptor,
-        wrapPayloadInterceptor,
+        wrapResponseInterceptor,
     )
 }

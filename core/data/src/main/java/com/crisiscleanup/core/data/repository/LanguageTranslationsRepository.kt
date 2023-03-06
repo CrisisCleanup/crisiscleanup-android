@@ -23,7 +23,11 @@ import kotlinx.datetime.Clock
 import javax.inject.Inject
 import javax.inject.Singleton
 
-interface LanguageTranslationsRepository {
+interface KeyTranslator {
+    fun translate(phraseKey: String): String?
+}
+
+interface LanguageTranslationsRepository : KeyTranslator {
     val isLoading: Flow<Boolean>
 
     val supportedLanguages: Flow<List<Language>>
@@ -33,8 +37,6 @@ interface LanguageTranslationsRepository {
     fun loadLanguages(force: Boolean = false)
 
     fun setLanguage(key: String = "")
-
-    fun translate(phraseKey: String): String
 }
 
 @Singleton
@@ -80,6 +82,7 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
+    // TODO Observers must have a signal for when translations are updated and new translations available for updating
     override val currentLanguage = languageTranslations.map {
         it?.language ?: EnglishLanguage
     }.stateIn(
@@ -87,7 +90,7 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
         initialValue = EnglishLanguage,
         started = SharingStarted.WhileSubscribed(5_000),
     )
-    
+
     private var setLanguageJob: Job? = null
 
     private suspend fun isNotOnline() = networkMonitor.isNotOnline.first()
@@ -120,13 +123,13 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
 
             isLoadingLanguages.value = true
             try {
-                val languageCount = if (force) 0 else languageDao.getLanguageCount()
+                val languageCount = languageDao.getLanguageCount()
                 if (force || languageCount == 0) {
                     pullLanguages()
+                }
 
-                    if (languageCount == 0) {
-                        pullTranslations(EnglishLanguage.key)
-                    }
+                if (languageCount == 0) {
+                    pullTranslations(EnglishLanguage.key)
                 } else {
                     pullUpdatedTranslations()
                 }
@@ -171,6 +174,6 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
         }
     }
 
-    override fun translate(phraseKey: String): String =
-        languageTranslations.value?.translations?.get(phraseKey) ?: ""
+    override fun translate(phraseKey: String): String? =
+        languageTranslations.value?.translations?.get(phraseKey)
 }

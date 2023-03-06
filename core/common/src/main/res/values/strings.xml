@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="crisis_cleanup">Crisis Cleanup</string>
+    <string name="unexpected_error">This is a minor crisis. We will need to find and fix issue. Sorry for this inconvenience.</string>
 </resources>

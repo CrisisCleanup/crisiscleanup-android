@@ -14,7 +14,7 @@ interface IncidentsRepository {
      */
     val incidents: Flow<List<Incident>>
 
-    suspend fun getIncident(id: Long): Incident?
+    suspend fun getIncident(id: Long, loadFormFields: Boolean = false): Incident?
 
     suspend fun pullIncidents()
 

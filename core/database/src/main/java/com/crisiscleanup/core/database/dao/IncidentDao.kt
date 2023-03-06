@@ -26,7 +26,7 @@ interface IncidentDao {
 
     @Transaction
     @Query("SELECT * FROM incidents WHERE id=:id")
-    suspend fun getIncident(id: Long): List<PopulatedIncident>
+    suspend fun getIncident(id: Long): PopulatedIncident?
 
     @Transaction
     @Query("SELECT * FROM incidents WHERE id=:id")

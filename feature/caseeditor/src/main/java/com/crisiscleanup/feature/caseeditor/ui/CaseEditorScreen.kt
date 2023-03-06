@@ -12,11 +12,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.feature.caseeditor.CaseEditorUiState
 import com.crisiscleanup.feature.caseeditor.CaseEditorViewModel
+import com.crisiscleanup.core.common.R as commonR
 
 @Composable
 internal fun CaseEditorRoute(
@@ -38,14 +40,14 @@ internal fun CaseEditorRoute(
         }
         is CaseEditorUiState.WorksiteData -> {
             Box(Modifier.fillMaxSize()) {
-                val isRefreshingWorksite by viewModel.isRefreshingWorksite.collectAsStateWithLifecycle()
+                val isLoadingWorksite by viewModel.isLoadingWorksite.collectAsStateWithLifecycle()
 
                 val worksiteData = uiState as CaseEditorUiState.WorksiteData
                 Text("Case ${worksiteData.worksite.caseNumber}")
 
                 AnimatedVisibility(
                     modifier = Modifier.align(Alignment.TopCenter),
-                    visible = isRefreshingWorksite,
+                    visible = isLoadingWorksite,
                     enter = fadeIn(),
                     exit = fadeOut(),
                 ) {
@@ -59,12 +61,14 @@ internal fun CaseEditorRoute(
             }
         }
         else -> {
-            // TODO Better UI
+            val errorData = uiState as CaseEditorUiState.Error
+            val errorMessage = if (errorData.errorResId != 0) stringResource(errorData.errorResId)
+            else errorData.errorMessage.ifEmpty { stringResource(commonR.string.unexpected_error) }
             Box(modifier) {
                 Text(
-                    text = "We have a problem",
+                    text = errorMessage,
                     modifier = Modifier.padding(8.dp),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.headlineMedium,
                 )
             }
         }

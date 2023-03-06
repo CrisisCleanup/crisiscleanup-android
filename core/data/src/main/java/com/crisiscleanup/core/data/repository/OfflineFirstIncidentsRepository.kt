@@ -75,8 +75,14 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     override val incidents: Flow<List<Incident>> =
         incidentDao.streamIncidents().map { it.map(PopulatedIncident::asExternalModel) }
 
-    override suspend fun getIncident(id: Long): Incident? =
-        withContext(ioDispatcher) { incidentDao.getIncident(id).firstOrNull()?.asExternalModel() }
+    override suspend fun getIncident(id: Long, loadFormFields: Boolean): Incident? =
+        withContext(ioDispatcher) {
+            if (loadFormFields) {
+                incidentDao.getFormFieldsIncident(id)?.asExternalModel()
+            } else {
+                incidentDao.getIncident(id)?.asExternalModel()
+            }
+        }
 
     private suspend fun saveLocations(incidents: Collection<NetworkIncident>) {
         val locationIds = incidents.flatMap { it.locations.map(NetworkIncidentLocation::location) }
@@ -193,7 +199,6 @@ class OfflineFirstIncidentsRepository @Inject constructor(
         }
         try {
             val networkIncident = networkDataSource.getIncident(id, fullIncidentQueryFields)
-            // TODO Expired token still needs testing
             tryThrowException(authEventManager, networkIncident.errors)
 
             networkIncident.incident?.let { incident ->

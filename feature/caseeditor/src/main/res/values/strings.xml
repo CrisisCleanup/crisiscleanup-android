@@ -3,4 +3,5 @@
     <string name="create_case">Create Case</string>
     <string name="edit_case">Edit Case</string>
     <string name="edit_case_case_number">Edit Case %1$s</string>
+    <string name="incident_issue_try_again">There seems to be an issue with the current incident. Please try again. Connect to the internet if possible.</string>
 </resources>
