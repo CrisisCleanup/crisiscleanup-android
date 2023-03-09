@@ -1,9 +1,7 @@
 package com.crisiscleanup.core.database.dao
 
-import android.content.Context
-import androidx.room.Room
-import androidx.test.core.app.ApplicationProvider
-import com.crisiscleanup.core.database.CrisisCleanupDatabase
+import com.crisiscleanup.core.database.TestCrisisCleanupDatabase
+import com.crisiscleanup.core.database.TestUtil
 import com.crisiscleanup.core.database.WorksiteTestUtil
 import com.crisiscleanup.core.database.model.WorkTypeEntity
 import com.crisiscleanup.core.database.model.WorksiteEntity
@@ -16,7 +14,7 @@ import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 
 class WorkTypeDaoTest {
-    private lateinit var db: CrisisCleanupDatabase
+    private lateinit var db: TestCrisisCleanupDatabase
 
     private lateinit var worksiteDao: WorksiteDao
     private lateinit var worksiteDaoPlus: WorksiteDaoPlus
@@ -35,11 +33,7 @@ class WorkTypeDaoTest {
 
     @Before
     fun createDb() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        db = Room.inMemoryDatabaseBuilder(
-            context,
-            CrisisCleanupDatabase::class.java
-        ).build()
+        db = TestUtil.getTestDatabase()
         worksiteDao = db.worksiteDao()
         worksiteDaoPlus = WorksiteDaoPlus(db)
         workTypeDao = db.workTypeDao()
@@ -78,7 +72,7 @@ class WorkTypeDaoTest {
             // Overwrites
             workTypeFull.copy(id = 1),
         )
-        val workTypes = db.testTargetWorkTypeDao().getWorksiteWorkTypes(1)
+        val workTypes = db.testWorkTypeDao().getWorksiteWorkTypes(1)
         assertEquals(expected, workTypes)
     }
 
@@ -118,7 +112,7 @@ class WorkTypeDaoTest {
             // Unchanged
             testWorkTypeEntity(112).copy(id = 2),
         )
-        val workTypes = db.testTargetWorkTypeDao().getWorksiteWorkTypes(1)
+        val workTypes = db.testWorkTypeDao().getWorksiteWorkTypes(1)
         // id=4 because upsert.insert failed
         assertEquals(listOf(1L, 4, 2), workTypes.map(WorkTypeEntity::id))
         for (i in expecteds.indices) {
@@ -138,6 +132,7 @@ internal fun testWorkTypeEntity(
     phase: Int? = null,
     recur: String? = null,
     id: Long = 0,
+    isInvalid: Boolean = false,
 ) = WorkTypeEntity(
     id = id,
     localGlobalUuid = "",
@@ -150,6 +145,7 @@ internal fun testWorkTypeEntity(
     recur = recur,
     status = status,
     workType = workType,
+    isInvalid = isInvalid,
 )
 
 internal fun fullWorkTypeEntity(

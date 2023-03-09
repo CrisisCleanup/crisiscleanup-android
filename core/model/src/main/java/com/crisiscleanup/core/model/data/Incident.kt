@@ -24,7 +24,7 @@ data class IncidentFormField(
     val placeholder: String,
     val validation: String,
     val readOnlyBreakGlass: Boolean,
-    val valuesDefault: Map<String, String>?,
+    val valuesDefault: Map<String, String?>?,
     val values: Map<String, String>,
     val isCheckboxDefaultTrue: Boolean,
     val recurDefault: String,

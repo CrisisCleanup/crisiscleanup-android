@@ -32,6 +32,10 @@ interface CrisisCleanupNetworkDataSource {
         offset: Int,
     ): NetworkWorksitesFullResult
 
+    suspend fun getWorksites(
+        worksiteIds: Collection<Long>,
+    ): NetworkWorksitesFullResult
+
     suspend fun getWorksitesCount(
         incidentId: Long,
         updatedAtAfter: Instant? = null,

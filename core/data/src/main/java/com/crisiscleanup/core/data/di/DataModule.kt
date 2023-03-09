@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.data.di
 
+import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.data.IncidentWorksitesSyncer
 import com.crisiscleanup.core.data.WorksitesNetworkDataCache
 import com.crisiscleanup.core.data.WorksitesNetworkDataFileCache
@@ -64,6 +65,12 @@ interface DataModule {
     fun bindsLanguageTranslationRepository(
         translationsRepository: OfflineFirstLanguageTranslationsRepository
     ): LanguageTranslationsRepository
+
+    @Singleton
+    @Binds
+    fun bindsKeyTranslator(
+        translator: OfflineFirstLanguageTranslationsRepository
+    ): KeyTranslator
 }
 
 @Module

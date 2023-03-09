@@ -1,24 +1,25 @@
 package com.crisiscleanup.core.database.dao
 
-import android.content.Context
-import androidx.room.Room
-import androidx.test.core.app.ApplicationProvider
-import com.crisiscleanup.core.database.CrisisCleanupDatabase
+import com.crisiscleanup.core.database.TestCrisisCleanupDatabase
+import com.crisiscleanup.core.database.TestUtil
 import com.crisiscleanup.core.database.WorksiteTestUtil
 import com.crisiscleanup.core.database.model.WorksiteEntity
+import com.crisiscleanup.core.database.model.asExternalModel
+import com.crisiscleanup.core.model.data.WorkType
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
 
 /**
  * Sync worksites with work types
  */
 class WorksiteWorkTypeTest {
-    private lateinit var db: CrisisCleanupDatabase
+    private lateinit var db: TestCrisisCleanupDatabase
 
     private lateinit var worksiteDao: WorksiteDao
     private lateinit var worksiteDaoPlus: WorksiteDaoPlus
@@ -32,11 +33,7 @@ class WorksiteWorkTypeTest {
 
     @Before
     fun createDb() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        db = Room.inMemoryDatabaseBuilder(
-            context,
-            CrisisCleanupDatabase::class.java
-        ).build()
+        db = TestUtil.getTestDatabase()
         worksiteDao = db.worksiteDao()
         worksiteDaoPlus = WorksiteDaoPlus(db)
     }
@@ -81,7 +78,7 @@ class WorksiteWorkTypeTest {
             testWorksiteEntity(2, 1, "address", updatedAtA),
         )
         existingWorksites = insertWorksites(existingWorksites, previousSyncedAt)
-        db.testTargetWorkTypeDao().insertWorkTypes(
+        db.testWorkTypeDao().insertWorkTypes(
             listOf(
                 testWorkTypeEntity(1, worksiteId = 1),
                 testWorkTypeEntity(11, worksiteId = 1),
@@ -93,13 +90,36 @@ class WorksiteWorkTypeTest {
             testWorksiteEntity(1, 1, "sync-address", updatedAtB),
             testWorksiteEntity(2, 1, "sync-address", updatedAtB),
         )
+        val createdAtC = now.plus(200.seconds)
+        val nextRecurAtC = createdAtC.plus(1.days)
         val syncingWorkTypes = listOf(
             listOf(
                 // Update
-                testWorkTypeEntity(1, worksiteId = 1, workType = "synced"),
+                testWorkTypeEntity(
+                    1,
+                    worksiteId = 1,
+                    workType = "work-type-synced-update",
+                    status = "status-synced-update",
+                    orgClaim = 5498,
+                    createdAt = createdAtC,
+                    nextRecurAt = nextRecurAtC,
+                    phase = 84,
+                    recur = "recur-synced-update",
+                ),
+                // Delete 11
                 // New
                 testWorkTypeEntity(15, worksiteId = 1, workType = "synced"),
-                testWorkTypeEntity(22, worksiteId = 1, workType = "synced"),
+                testWorkTypeEntity(
+                    22,
+                    worksiteId = 1,
+                    workType = "work-type-synced-new",
+                    status = "status-synced-new",
+                    orgClaim = 8456,
+                    createdAt = createdAtC,
+                    nextRecurAt = nextRecurAtC,
+                    phase = 93,
+                    recur = "recur-synced-new",
+                ),
             ),
             listOf(
                 testWorkTypeEntity(24, worksiteId = 2, workType = "new"),
@@ -120,15 +140,71 @@ class WorksiteWorkTypeTest {
             ),
             actual.entity,
         )
-        var actualWorkTypes = listOf(
-            testWorkTypeEntity(1, worksiteId = 1).copy(id = 1, workType = "synced"),
+        val expectedWorkTypeEntitiesA = listOf(
+            testWorkTypeEntity(
+                id = 1,
+                networkId = 1,
+                worksiteId = 1,
+                workType = "work-type-synced-update",
+                status = "status-synced-update",
+                orgClaim = 5498,
+                createdAt = createdAtC,
+                nextRecurAt = nextRecurAtC,
+                phase = 84,
+                recur = "recur-synced-update",
+            ),
             testWorkTypeEntity(15, worksiteId = 1).copy(id = 4, workType = "synced"),
-            testWorkTypeEntity(22, worksiteId = 1).copy(id = 5, workType = "synced"),
+            testWorkTypeEntity(
+                id = 5,
+                networkId = 22,
+                worksiteId = 1,
+                workType = "work-type-synced-new",
+                status = "status-synced-new",
+                orgClaim = 8456,
+                createdAt = createdAtC,
+                nextRecurAt = nextRecurAtC,
+                phase = 93,
+                recur = "recur-synced-new",
+            ),
         )
-        assertEquals(actualWorkTypes, actual.workTypes)
+        assertEquals(expectedWorkTypeEntitiesA, actual.workTypes)
+
+        val expectedWorkTypes = listOf(
+            WorkType(
+                id = 1,
+                workTypeLiteral = "work-type-synced-update",
+                statusLiteral = "status-synced-update",
+                orgClaim = 5498,
+                createdAt = createdAtC,
+                nextRecurAt = nextRecurAtC,
+                phase = 84,
+                recur = "recur-synced-update",
+            ),
+            WorkType(
+                id = 4,
+                workTypeLiteral = "synced",
+                statusLiteral = "status",
+                orgClaim = 201,
+                createdAt = null,
+                nextRecurAt = null,
+                phase = null,
+                recur = null,
+            ),
+            WorkType(
+                id = 5,
+                workTypeLiteral = "work-type-synced-new",
+                statusLiteral = "status-synced-new",
+                orgClaim = 8456,
+                createdAt = createdAtC,
+                nextRecurAt = nextRecurAtC,
+                phase = 93,
+                recur = "recur-synced-new",
+            ),
+        )
+        assertEquals(expectedWorkTypes, actual.asExternalModel().workTypes)
 
         actual = worksiteDao.getWorksite(2)
-        actualWorkTypes = listOf(
+        val expectedWorkTypesB = listOf(
             testWorkTypeEntity(24, worksiteId = 2).copy(id = 6, workType = "new"),
             testWorkTypeEntity(26, worksiteId = 2).copy(id = 7, workType = "new"),
         )
@@ -139,7 +215,7 @@ class WorksiteWorkTypeTest {
             ),
             actual.entity,
         )
-        assertEquals(actualWorkTypes, actual.workTypes)
+        assertEquals(expectedWorkTypesB, actual.workTypes)
     }
 
     /**
@@ -153,9 +229,9 @@ class WorksiteWorkTypeTest {
             testWorksiteEntity(2, 1, "address", updatedAtA),
         )
         existingWorksites = insertWorksites(existingWorksites, previousSyncedAt)
-        db.testTargetWorksiteDao().setLocallyModified(2, updatedAtA)
+        db.testWorksiteDao().setLocallyModified(2, updatedAtA)
 
-        db.testTargetWorkTypeDao().insertWorkTypes(
+        db.testWorkTypeDao().insertWorkTypes(
             listOf(
                 testWorkTypeEntity(1, worksiteId = 1),
                 testWorkTypeEntity(11, worksiteId = 1),
@@ -217,5 +293,41 @@ class WorksiteWorkTypeTest {
         )
         assertEquals(existingWorksites[1], actual.entity)
         assertEquals(actualWorkTypes, actual.workTypes)
+    }
+
+    @Test
+    fun skipInvalidWorkTypes() = runTest {
+        val existingWorksites = listOf(
+            testWorksiteEntity(1, 1, "address", updatedAtA),
+        )
+        insertWorksites(existingWorksites, previousSyncedAt)
+
+        db.testWorkTypeDao().insertWorkTypes(
+            listOf(
+                testWorkTypeEntity(11, worksiteId = 1, isInvalid = true),
+                testWorkTypeEntity(
+                    1, worksiteId = 1,
+                    createdAt = createdAtA,
+                    nextRecurAt = updatedAtA,
+                    phase = 3,
+                    recur = "recur",
+                ),
+            )
+        )
+
+        val actual = worksiteDao.getWorksite(1).asExternalModel().workTypes
+        val expected = listOf(
+            WorkType(
+                id = 2,
+                createdAt = createdAtA,
+                orgClaim = 201,
+                nextRecurAt = updatedAtA,
+                phase = 3,
+                recur = "recur",
+                statusLiteral = "status",
+                workTypeLiteral = "work-type-a",
+            )
+        )
+        assertEquals(expected, actual)
     }
 }

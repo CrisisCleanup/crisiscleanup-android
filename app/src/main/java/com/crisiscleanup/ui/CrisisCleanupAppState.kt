@@ -11,6 +11,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import androidx.tracing.trace
+import com.crisiscleanup.core.appnav.RouteConstant.caseEditorRoute
 import com.crisiscleanup.core.appnav.RouteConstant.casesRoute
 import com.crisiscleanup.core.appnav.RouteConstant.dashboardRoute
 import com.crisiscleanup.core.appnav.RouteConstant.menuRoute
@@ -66,6 +67,12 @@ class CrisisCleanupAppState(
 
     val isCasesRoute: Boolean
         @Composable get() = currentDestination?.route == casesRoute
+
+    val isFullscreenRoute: Boolean
+        @Composable get() {
+            val route = currentDestination?.route ?: ""
+            return route.startsWith(caseEditorRoute)
+        }
 
     val shouldShowBottomBar: Boolean
         get() = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact

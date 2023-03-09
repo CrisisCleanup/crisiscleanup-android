@@ -13,24 +13,22 @@ class WorkTypeDaoPlus @Inject constructor(
      *
      * These work types are expected to have a [WorkTypeEntity.networkId] and a blank [WorkTypeEntity.localGlobalUuid].
      */
-    suspend fun syncUpsert(workTypes: List<WorkTypeEntity>) {
-        db.withTransaction {
-            val workTypeDao = db.workTypeDao()
-            workTypes.forEach { workType ->
-                val id = workTypeDao.insertIgnoreWorkType(workType)
-                if (id < 0) {
-                    workTypeDao.syncUpdateWorkType(
-                        worksiteId = workType.worksiteId,
-                        networkId = workType.networkId,
-                        orgClaim = workType.orgClaim,
-                        status = workType.status,
-                        workType = workType.workType,
-                        createdAt = workType.createdAt,
-                        nextRecurAt = workType.nextRecurAt,
-                        phase = workType.phase,
-                        recur = workType.recur,
-                    )
-                }
+    suspend fun syncUpsert(workTypes: List<WorkTypeEntity>) = db.withTransaction {
+        val workTypeDao = db.workTypeDao()
+        workTypes.forEach { workType ->
+            val id = workTypeDao.insertIgnoreWorkType(workType)
+            if (id < 0) {
+                workTypeDao.syncUpdateWorkType(
+                    worksiteId = workType.worksiteId,
+                    networkId = workType.networkId,
+                    orgClaim = workType.orgClaim,
+                    status = workType.status,
+                    workType = workType.workType,
+                    createdAt = workType.createdAt,
+                    nextRecurAt = workType.nextRecurAt,
+                    phase = workType.phase,
+                    recur = workType.recur,
+                )
             }
         }
     }

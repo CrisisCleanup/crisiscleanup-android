@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.data.repository
 
+import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.log.AppLogger
@@ -22,10 +23,6 @@ import kotlinx.coroutines.flow.*
 import kotlinx.datetime.Clock
 import javax.inject.Inject
 import javax.inject.Singleton
-
-interface KeyTranslator {
-    fun translate(phraseKey: String): String?
-}
 
 interface LanguageTranslationsRepository : KeyTranslator {
     val isLoading: Flow<Boolean>
@@ -82,7 +79,13 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    // TODO Observers must have a signal for when translations are updated and new translations available for updating
+    override val translationCount = languageTranslations.map { it?.translations?.size ?: 0 }
+        .stateIn(
+            scope = coroutineScope,
+            initialValue = 0,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
     override val currentLanguage = languageTranslations.map {
         it?.language ?: EnglishLanguage
     }.stateIn(

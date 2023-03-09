@@ -16,6 +16,7 @@ fun WorkType.asEntity() = WorkTypeEntity(
     recur = recur,
     status = status,
     workType = workType,
+    isInvalid = false,
 )
 
 fun WorkTypeShort.asEntity() = WorkTypeEntity(
@@ -30,4 +31,5 @@ fun WorkTypeShort.asEntity() = WorkTypeEntity(
     recur = null,
     status = status,
     workType = workType,
+    isInvalid = false,
 )

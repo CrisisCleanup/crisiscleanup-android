@@ -1,9 +1,7 @@
 package com.crisiscleanup.core.database.dao
 
-import android.content.Context
-import androidx.room.Room
-import androidx.test.core.app.ApplicationProvider
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
+import com.crisiscleanup.core.database.TestUtil
 import com.crisiscleanup.core.database.model.LanguageTranslationEntity
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.Language
@@ -27,11 +25,7 @@ class LanguageDaoTest {
 
     @Before
     fun createDb() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        db = Room.inMemoryDatabaseBuilder(
-            context,
-            CrisisCleanupDatabase::class.java
-        ).build()
+        db = TestUtil.getDatabase()
         languageDao = db.languageDao()
         languageDaoPlus = LanguageDaoPlus(db)
     }

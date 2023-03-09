@@ -1,9 +1,7 @@
 package com.crisiscleanup.core.database.dao
 
-import android.content.Context
-import androidx.room.Room
-import androidx.test.core.app.ApplicationProvider
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
+import com.crisiscleanup.core.database.TestUtil
 import com.crisiscleanup.core.database.WorksiteTestUtil.testIncidents
 import com.crisiscleanup.core.database.model.IncidentFormFieldEntity
 import com.crisiscleanup.core.database.model.asExternalModel
@@ -21,14 +19,9 @@ class IncidentDaoFormFieldTest {
 
     @Before
     fun createDb() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        db = Room.inMemoryDatabaseBuilder(
-            context,
-            CrisisCleanupDatabase::class.java
-        ).build()
+        db = TestUtil.getDatabase()
         incidentDao = db.incidentDao()
         incidentDaoPlus = IncidentDaoPlus(db)
-
     }
 
     @Before

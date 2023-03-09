@@ -55,6 +55,13 @@ private interface CrisisCleanupNetworkApi {
     ): NetworkWorksitesFullResult
 
     @TokenAuthenticationHeader
+    @GET("worksites")
+    suspend fun getWorksites(
+        @Query("id__in")
+        worksiteIds: String,
+    ): NetworkWorksitesFullResult
+
+    @TokenAuthenticationHeader
     @GET("worksites/count")
     suspend fun getWorksitesCount(
         @Query("incident")
@@ -127,6 +134,9 @@ class RetrofitNetworkDataSource @Inject constructor(
 
     override suspend fun getWorksites(incidentId: Long, limit: Int, offset: Int) =
         networkApi.getWorksites(incidentId, limit, offset)
+
+    override suspend fun getWorksites(worksiteIds: Collection<Long>) =
+        networkApi.getWorksites(worksiteIds.joinToString(","))
 
     override suspend fun getWorksitesCount(incidentId: Long, updatedAtAfter: Instant?) =
         networkApi.getWorksitesCount(incidentId, updatedAtAfter)

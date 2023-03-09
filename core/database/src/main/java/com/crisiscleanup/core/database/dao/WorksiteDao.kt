@@ -39,7 +39,6 @@ interface WorksiteDao {
         offset: Int = 0
     ): Flow<List<PopulatedWorksite>>
 
-    // TODO Implement spatial indexes for coordinates search
     @Transaction
     @Query(
         """
@@ -293,17 +292,4 @@ interface WorksiteDao {
         what3Words: String?,
         updatedAt: Instant,
     )
-}
-
-@Dao
-interface TestTargetWorksiteDao {
-    @Transaction
-    @Query(
-        """
-        UPDATE worksites_root
-        SET local_modified_at=:modifiedAt, is_local_modified=1
-        WHERE id=:id
-        """
-    )
-    fun setLocallyModified(id: Long, modifiedAt: Instant)
 }

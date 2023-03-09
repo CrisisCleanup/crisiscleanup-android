@@ -4,6 +4,7 @@ import com.crisiscleanup.core.model.data.LocalWorksite
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.core.model.data.WorksitesSyncStats
+import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import kotlinx.coroutines.flow.Flow
 
 interface WorksitesRepository {
@@ -64,5 +65,8 @@ interface WorksitesRepository {
 
     fun getLocalWorksite(worksiteId: Long): LocalWorksite
 
-    suspend fun refreshWorksite(incidentId: Long, worksiteNetworkId: Long): Worksite?
+    suspend fun syncWorksite(
+        incidentId: Long,
+        worksiteNetworkId: Long,
+    ): Pair<Long, NetworkWorksiteFull>?
 }

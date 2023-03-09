@@ -22,9 +22,12 @@ import com.crisiscleanup.core.database.util.InstantConverter
         WorksiteRootEntity::class,
         WorksiteEntity::class,
         WorkTypeEntity::class,
+        WorksiteFormDataEntity::class,
+        WorksiteFlagEntity::class,
+        WorksiteNoteEntity::class,
         LanguageTranslationEntity::class,
     ],
-    version = 7,
+    version = 8,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
@@ -32,6 +35,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         AutoMigration(from = 4, to = 5),
         AutoMigration(from = 5, to = 6),
         AutoMigration(from = 6, to = 7),
+        AutoMigration(from = 7, to = 8),
     ],
     exportSchema = true,
 )
@@ -47,10 +51,8 @@ abstract class CrisisCleanupDatabase : RoomDatabase(), DatabaseVersionProvider {
     abstract fun worksitesSyncStatsDao(): WorksitesSyncStatsDao
     abstract fun worksiteDao(): WorksiteDao
     abstract fun workTypeDao(): WorkTypeDao
+    abstract fun worksiteFormDataDao(): WorksiteFormDataDao
+    abstract fun worksiteFlagDao(): WorksiteFlagDao
+    abstract fun worksiteNoteDao(): WorksiteNoteDao
     abstract fun languageDao(): LanguageDao
-
-    // TODO Restrict below to test builds only
-    abstract fun testTargetIncidentDao(): TestTargetIncidentDao
-    abstract fun testTargetWorksiteDao(): TestTargetWorksiteDao
-    abstract fun testTargetWorkTypeDao(): TestTargetWorkTypeDao
 }

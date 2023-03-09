@@ -1,8 +1,10 @@
 package com.crisiscleanup.core.database
 
 import androidx.room.withTransaction
+import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.database.dao.testIncidentEntity
 import com.crisiscleanup.core.database.model.WorksiteEntity
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.datetime.Instant
 
 // Data and util for tests relating to worksites
@@ -28,5 +30,11 @@ object WorksiteTestUtil {
                 updated
             }
         }
+    }
+
+    object TestTranslator : KeyTranslator {
+        override val translationCount = MutableStateFlow(0)
+
+        override fun translate(phraseKey: String) = "$phraseKey-translated"
     }
 }

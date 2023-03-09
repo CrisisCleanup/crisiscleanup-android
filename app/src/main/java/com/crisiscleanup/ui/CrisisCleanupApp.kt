@@ -226,6 +226,7 @@ private fun NavigableContent(
     searchQuery: () -> String = { "" },
     onQueryChange: (String) -> Unit = {},
 ) {
+    val showNavBar = !appState.isFullscreenRoute
     Scaffold(
         modifier = Modifier.semantics {
             testTagsAsResourceId = true
@@ -257,7 +258,7 @@ private fun NavigableContent(
             }
         },
         bottomBar = {
-            if (appState.shouldShowBottomBar) {
+            if (showNavBar && appState.shouldShowBottomBar) {
                 CrisisCleanupBottomBar(
                     destinations = appState.topLevelDestinations,
                     onNavigateToDestination = appState::navigateToTopLevelDestination,
@@ -277,7 +278,7 @@ private fun NavigableContent(
                     else WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)
                 )
         ) {
-            if (appState.shouldShowNavRail) {
+            if (showNavBar && appState.shouldShowNavRail) {
                 CrisisCleanupNavRail(
                     destinations = appState.topLevelDestinations,
                     onNavigateToDestination = appState::navigateToTopLevelDestination,

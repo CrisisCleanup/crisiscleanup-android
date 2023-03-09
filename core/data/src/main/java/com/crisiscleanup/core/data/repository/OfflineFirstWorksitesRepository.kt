@@ -1,12 +1,16 @@
 package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.common.AppVersionProvider
+import com.crisiscleanup.core.common.KeyTranslator
+import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.IncidentWorksitesSyncer
+import com.crisiscleanup.core.data.model.asEntity
+import com.crisiscleanup.core.data.model.asWorksiteEntity
 import com.crisiscleanup.core.data.util.NetworkMonitor
 import com.crisiscleanup.core.data.util.WorksitesDataPullReporter
 import com.crisiscleanup.core.database.dao.WorksiteDao
@@ -15,6 +19,10 @@ import com.crisiscleanup.core.database.dao.WorksitesSyncStatsDao
 import com.crisiscleanup.core.database.model.*
 import com.crisiscleanup.core.model.data.*
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
+import com.crisiscleanup.core.network.model.KeyDynamicValuePair
+import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.tryThrowException
+import com.crisiscleanup.core.network.model.NetworkFlag
+import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -35,6 +43,8 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private val worksiteDaoPlus: WorksiteDaoPlus,
     private val networkMonitor: NetworkMonitor,
     private val appVersionProvider: AppVersionProvider,
+    private val authEventManager: AuthEventManager,
+    private val keyTranslator: KeyTranslator,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : WorksitesRepository, WorksitesDataPullReporter {
@@ -115,7 +125,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     )
 
     override fun getLocalWorksite(worksiteId: Long) =
-        worksiteDao.getLocalWorksite(worksiteId).asExternalModel()
+        worksiteDao.getLocalWorksite(worksiteId).asExternalModel(keyTranslator)
 
     override fun getWorksitesSyncStats(incidentId: Long) =
         worksitesSyncStatsDao.getSyncStats(incidentId).firstOrNull()?.asExternalModel()
@@ -188,12 +198,46 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         }
     }
 
-    override suspend fun refreshWorksite(incidentId: Long, worksiteNetworkId: Long): Worksite? {
+    override suspend fun syncWorksite(
+        incidentId: Long,
+        worksiteNetworkId: Long,
+    ): Pair<Long, NetworkWorksiteFull>? {
         if (isNotOnline()) {
             return null
         }
 
-        // TODO Query for latest, insert if not locally modified, return latest data
-        return EmptyWorksite
+        // TODO Surface meaningful error(s) to user
+
+        try {
+            val syncedAt = Clock.System.now()
+
+            val result = networkDataSource.getWorksites(listOf(worksiteNetworkId))
+            tryThrowException(authEventManager, result.errors)
+
+            if (result.results?.size == 1) {
+                val worksite = result.results!![0]
+                val worksiteEntity = worksite.asEntity(incidentId)
+                val workTypes = worksite.workTypes.map(NetworkWorksiteFull.WorkType::asEntity)
+                val formData = worksite.formData.map(KeyDynamicValuePair::asWorksiteEntity)
+                val flags = worksite.flags.map(NetworkFlag::asEntity)
+                val notes = worksite.notes.map(NetworkWorksiteFull.Note::asEntity)
+
+                val localWorksiteId = worksiteDaoPlus.syncWorksite(
+                    incidentId,
+                    worksiteEntity,
+                    workTypes,
+                    formData,
+                    flags,
+                    notes,
+                    syncedAt,
+                )
+
+                return Pair(localWorksiteId, worksite)
+            }
+        } catch (e: Exception) {
+            logger.logException(e)
+        }
+
+        return null
     }
 }

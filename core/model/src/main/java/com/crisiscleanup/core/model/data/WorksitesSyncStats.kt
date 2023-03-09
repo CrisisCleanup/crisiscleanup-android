@@ -5,7 +5,7 @@ import kotlinx.datetime.Instant
 /**
  * Version of app where worksites (database) entity was last changed
  */
-private const val WORKSITES_STABLE_MODEL_BUILD_VERSION = 21
+private const val WORKSITES_STABLE_MODEL_BUILD_VERSION = 33
 
 /**
  * Keeps track of incident worksites syncing

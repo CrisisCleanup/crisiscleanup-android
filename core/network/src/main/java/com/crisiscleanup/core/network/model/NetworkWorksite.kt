@@ -18,10 +18,7 @@ data class NetworkWorksiteFull(
     val id: Long,
     val address: String,
     @SerialName("auto_contact_frequency_t")
-    val autoContactFrequencyT: String, // "formOptions.often", "formOptions.not_often", "formOptions.never"
-    // TODO Is this necessary to save when location is given?
-    @SerialName("blurred_location")
-    val blurredLocation: Location,
+    val autoContactFrequencyT: String,
     @SerialName("case_number")
     val caseNumber: String,
     val city: String,
@@ -31,9 +28,8 @@ data class NetworkWorksiteFull(
     val favorite: Favorite?,
     val files: List<NetworkFile>,
     val flags: List<NetworkFlag>,
-    // TODO How to deal w/ serialization
-//    @SerialName("form_data")
-//    val formData: List<FormData>,
+    @SerialName("form_data")
+    val formData: List<KeyDynamicValuePair>,
     val incident: Long,
     @SerialName("key_work_type")
     val keyWorkType: WorkType?,
@@ -48,12 +44,6 @@ data class NetworkWorksiteFull(
     val postalCode: String?,
     @SerialName("reported_by")
     val reportedBy: Long?,
-    // TODO This has disappeared?
-//    @SerialName("send_sms")
-//    val sendSms: Boolean,
-    // TODO This has disappeared?
-//    @SerialName("skip_duplicate_check")
-//    val skipDuplicateCheck: Boolean,
     val state: String,
     val svi: Float?,
     val time: List<Time>,
@@ -70,14 +60,6 @@ data class NetworkWorksiteFull(
         val id: Long,
         @SerialName("type_t")
         val typeT: String,
-    )
-
-    @Serializable
-    data class FormData(
-        @SerialName("field_key")
-        val key: String?,
-        @SerialName("field_value")
-        val value: String,
     )
 
     @Serializable
@@ -148,14 +130,13 @@ data class NetworkWorksiteFull(
 
     @Serializable
     data class FlagShort(
-        // TODO differs from [NetworkFlag]/full why?
         @SerialName("is_high_priority")
         val isHighPriority: Boolean?,
         @SerialName("reason_t")
         val reasonT: String?,
         @Serializable(InstantSerializer::class)
         @SerialName("flag_invalidated_at")
-        val inValidatedAt: Instant?,
+        val invalidatedAt: Instant?,
     )
 }
 
@@ -174,7 +155,7 @@ data class NetworkWorksiteShort(
     val caseNumber: String,
     val city: String,
     val county: String,
-    // TODO Differs from full
+    // Full does not have this field. Updates should not overwrite
     @Serializable(InstantSerializer::class)
     @SerialName("created_at")
     val createdAt: Instant,

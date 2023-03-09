@@ -1,6 +1,6 @@
 package com.crisiscleanup.feature.caseeditor.model
 
-import com.crisiscleanup.core.data.repository.KeyTranslator
+import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.model.data.IncidentFormField
 
 data class FormFieldNode(
@@ -43,7 +43,8 @@ data class FormFieldNode(
                 val formField = lookup[fieldKey]!!
                 val options = formField.values.ifEmpty {
                     formField.valuesDefault?.entries?.associate {
-                        val value = keyTranslator.translate(it.value) ?: it.value
+                        val phraseKey = it.value ?: ""
+                        val value = keyTranslator.translate(phraseKey) ?: phraseKey
                         it.key to value
                     } ?: emptyMap()
                 }

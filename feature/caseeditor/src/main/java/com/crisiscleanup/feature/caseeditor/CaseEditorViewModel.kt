@@ -12,10 +12,12 @@ import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.model.data.*
+import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import com.crisiscleanup.feature.caseeditor.model.FormFieldNode
 import com.crisiscleanup.feature.caseeditor.navigation.CaseEditorArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,12 +32,14 @@ class CaseEditorViewModel @Inject constructor(
     incidentsRepository: IncidentsRepository,
     worksitesRepository: WorksitesRepository,
     languageRepository: LanguageTranslationsRepository,
+    incidentSelectManager: IncidentSelector,
     private val appHeaderUiState: AppHeaderUiState,
     private val resourceProvider: AndroidResourceProvider,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     private val caseEditorArgs = CaseEditorArgs(savedStateHandle)
+    val isCreateWorksite = caseEditorArgs.worksiteId == null
 
     private val _uiState = MutableStateFlow<CaseEditorUiState>(CaseEditorUiState.Loading)
     val uiState: StateFlow<CaseEditorUiState> = _uiState
@@ -55,26 +59,22 @@ class CaseEditorViewModel @Inject constructor(
         appHeaderUiState.pushTitle(resourceProvider.getString(headerTitleResId))
 
         viewModelScope.launch(ioDispatcher) {
-            val incidentId = caseEditorArgs.incidentId
-
             var worksite: Worksite? = null
             var localWorksite: LocalWorksite? = null
-            var networkWorksite: Worksite? = null
+            var networkWorksiteSync: Pair<Long, NetworkWorksiteFull>? = null
 
             val worksiteIdArg = caseEditorArgs.worksiteId
 
             // TODO Sync incidents, worksite, and languages in parallel and process all data at end
 
-            // Load network incident optimistically
+            val incidentId = caseEditorArgs.incidentId
             try {
                 incidentsRepository.pullIncident(incidentId)
             } catch (e: Exception) {
                 logger.logException(e)
             }
-
-            // Load local incident or fail
             val incident = incidentsRepository.getIncident(incidentId, true)
-            if (incident == null) {
+            if (incident?.formFields?.isEmpty() != false) {
                 logger.logException(Exception("Incident $incidentId not found when editing worksite $worksiteIdArg"))
                 _uiState.value = CaseEditorUiState.Error(R.string.incident_issue_try_again)
                 return@launch
@@ -112,11 +112,15 @@ class CaseEditorViewModel @Inject constructor(
                 if (isNetworkedWorksite) {
                     _isRefreshingWorksite.value = true
                     try {
-                        networkWorksite = worksitesRepository.refreshWorksite(incidentId, networkId)
+                        networkWorksiteSync =
+                            worksitesRepository.syncWorksite(incidentId, networkId)
+                        // TODO How to reliably resolve changes between local and network if exists? Ask to overwrite from network or continue with local? Which may overwrite network when pushed?
                         if (!isLocalModified) {
                             localWorksite = worksitesRepository.getLocalWorksite(worksiteId)
                             worksite = localWorksite!!.worksite.copy()
                         }
+
+                        _isReadOnly.value = false
                     } catch (e: Exception) {
                         // TODO This is going to be difficult. Plenty of state for possible change...
                         //      Show error message of some sort
@@ -128,13 +132,17 @@ class CaseEditorViewModel @Inject constructor(
                 }
             }
 
-            _isReadOnly.value = false
+            if (isCreateWorksite) {
+                _isReadOnly.value = false
+            }
 
             _uiState.value = CaseEditorUiState.WorksiteData(
-                worksite ?: EmptyWorksite,
+                worksite ?: EmptyWorksite.copy(
+                    autoContactFrequencyT = AutoContactFrequency.Often.literal,
+                ),
                 incident,
                 localWorksite,
-                networkWorksite,
+                networkWorksiteSync,
             )
         }
     }
@@ -142,11 +150,12 @@ class CaseEditorViewModel @Inject constructor(
 
 sealed interface CaseEditorUiState {
     object Loading : CaseEditorUiState
+
     data class WorksiteData(
         val worksite: Worksite,
-        val incident: Incident?,
+        val incident: Incident,
         val localWorksite: LocalWorksite?,
-        val networkWorksite: Worksite?,
+        val networkWorksiteSync: Pair<Long, NetworkWorksiteFull>?,
     ) : CaseEditorUiState {
         val isLocalModified = localWorksite?.localChanges?.isLocalModified ?: false
     }

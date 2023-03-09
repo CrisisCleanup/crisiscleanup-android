@@ -23,14 +23,20 @@ import com.crisiscleanup.core.common.R as commonR
 @Composable
 internal fun CaseEditorRoute(
     onBackClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    viewModel: CaseEditorViewModel = hiltViewModel(),
 ) {
     BackHandler {
         // TODO Prompt if there are unsaved changes on back click
         onBackClick()
     }
 
+    CaseEditorScreen()
+}
+
+@Composable
+internal fun CaseEditorScreen(
+    modifier: Modifier = Modifier,
+    viewModel: CaseEditorViewModel = hiltViewModel(),
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     when (uiState) {
         is CaseEditorUiState.Loading -> {
@@ -40,24 +46,7 @@ internal fun CaseEditorRoute(
         }
         is CaseEditorUiState.WorksiteData -> {
             Box(Modifier.fillMaxSize()) {
-                val isLoadingWorksite by viewModel.isLoadingWorksite.collectAsStateWithLifecycle()
-
-                val worksiteData = uiState as CaseEditorUiState.WorksiteData
-                Text("Case ${worksiteData.worksite.caseNumber}")
-
-                AnimatedVisibility(
-                    modifier = Modifier.align(Alignment.TopCenter),
-                    visible = isLoadingWorksite,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                ) {
-                    CircularProgressIndicator(
-                        Modifier
-                            .wrapContentSize()
-                            .padding(48.dp)
-                            .size(24.dp)
-                    )
-                }
+                EditCaseContents(uiState as CaseEditorUiState.WorksiteData)
             }
         }
         else -> {
@@ -76,10 +65,29 @@ internal fun CaseEditorRoute(
 }
 
 @Composable
-internal fun CaseEditorScreen(
+private fun BoxScope.EditCaseContents(
+    worksiteData: CaseEditorUiState.WorksiteData,
     modifier: Modifier = Modifier,
-    isLoading: Boolean = false,
-    onForceReload: () -> Unit = {},
+    viewModel: CaseEditorViewModel = hiltViewModel(),
 ) {
+    val isLoadingWorksite by viewModel.isLoadingWorksite.collectAsStateWithLifecycle()
+    val isReadOnly by viewModel.isReadOnly.collectAsStateWithLifecycle()
 
+    Column(modifier = modifier.matchParentSize()) {
+        Text(worksiteData.incident.name)
+    }
+
+    AnimatedVisibility(
+        modifier = Modifier.align(Alignment.TopCenter),
+        visible = isLoadingWorksite,
+        enter = fadeIn(),
+        exit = fadeOut(),
+    ) {
+        CircularProgressIndicator(
+            Modifier
+                .wrapContentSize()
+                .padding(48.dp)
+                .size(24.dp)
+        )
+    }
 }

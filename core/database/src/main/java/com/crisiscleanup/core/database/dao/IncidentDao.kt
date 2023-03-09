@@ -65,16 +65,3 @@ interface IncidentDao {
     @Upsert
     suspend fun upsertFormFields(formFields: Collection<IncidentFormFieldEntity>)
 }
-
-@Dao
-interface TestTargetIncidentDao {
-    @Transaction
-    @Query(
-        """
-        UPDATE incidents
-        SET is_archived=1
-        WHERE id NOT IN(:unarchivedIds)
-        """
-    )
-    suspend fun setExcludedArchived(unarchivedIds: Set<Long>)
-}

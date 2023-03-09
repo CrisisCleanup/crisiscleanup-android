@@ -1,6 +1,11 @@
 package com.crisiscleanup.core.data.model
 
 import com.crisiscleanup.core.database.model.WorksiteEntity
+import com.crisiscleanup.core.database.model.WorksiteFlagEntity
+import com.crisiscleanup.core.database.model.WorksiteFormDataEntity
+import com.crisiscleanup.core.database.model.WorksiteNoteEntity
+import com.crisiscleanup.core.network.model.KeyDynamicValuePair
+import com.crisiscleanup.core.network.model.NetworkFlag
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import com.crisiscleanup.core.network.model.NetworkWorksiteShort
 
@@ -61,4 +66,36 @@ fun NetworkWorksiteShort.asEntity(incidentId: Long) = WorksiteEntity(
     plusCode = null,
     reportedBy = null,
     what3Words = null,
+)
+
+fun KeyDynamicValuePair.asWorksiteEntity() = WorksiteFormDataEntity(
+    worksiteId = 0,
+    fieldKey = key,
+    isBoolValue = value.isBoolean,
+    valueString = value.valueString,
+    valueBool = value.valueBoolean,
+)
+
+fun NetworkFlag.asEntity() = WorksiteFlagEntity(
+    id = 0,
+    localGlobalUuid = "",
+    worksiteId = 0,
+    networkId = id,
+    action = action,
+    createdAt = createdAt,
+    isHighPriority = isHighPriority,
+    notes = notes,
+    reasonT = reasonT,
+    requestedAction = requestedAction,
+    isInvalid = false,
+)
+
+fun NetworkWorksiteFull.Note.asEntity() = WorksiteNoteEntity(
+    id = 0,
+    localGlobalUuid = "",
+    worksiteId = 0,
+    networkId = id,
+    createdAt = createdAt,
+    isSurvivor = isSurvivor,
+    note = note ?: "",
 )

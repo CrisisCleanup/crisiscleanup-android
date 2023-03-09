@@ -38,6 +38,21 @@ object DaoModule {
     fun providesWorkTypeDaoPlus(db: CrisisCleanupDatabase) = WorkTypeDaoPlus(db)
 
     @Provides
+    fun providesWorksiteFormDataDao(db: CrisisCleanupDatabase) = db.worksiteFormDataDao()
+
+    @Provides
+    fun providesWorksiteFlagDao(db: CrisisCleanupDatabase) = db.worksiteFlagDao()
+
+    @Provides
+    fun providesWorksiteFlagDaoPlus(db: CrisisCleanupDatabase) = WorksiteFlagDaoPlus(db)
+
+    @Provides
+    fun providesWorksiteNoteDao(db: CrisisCleanupDatabase) = db.worksiteNoteDao()
+
+    @Provides
+    fun providesWorksiteNoteDaoPlus(db: CrisisCleanupDatabase) = WorksiteNoteDaoPlus(db)
+
+    @Provides
     fun providesLanguageDao(db: CrisisCleanupDatabase) = db.languageDao()
 
     @Provides

@@ -10,6 +10,7 @@ android {
 
 dependencies {
     implementation(project(":core:appheader"))
+    implementation(project(":core:network"))
 
     implementation(libs.kotlinx.datetime)
 }

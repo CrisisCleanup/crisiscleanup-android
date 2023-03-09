@@ -1,9 +1,7 @@
 package com.crisiscleanup.core.database.dao
 
-import android.content.Context
-import androidx.room.Room
-import androidx.test.core.app.ApplicationProvider
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
+import com.crisiscleanup.core.database.TestUtil
 import com.crisiscleanup.core.database.WorksiteTestUtil
 import com.crisiscleanup.core.database.WorksiteTestUtil.testIncidents
 import com.crisiscleanup.core.database.model.WorkTypeEntity
@@ -28,11 +26,7 @@ class WorksiteDaoTest {
 
     @Before
     fun createDb() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        db = Room.inMemoryDatabaseBuilder(
-            context,
-            CrisisCleanupDatabase::class.java
-        ).build()
+        db = TestUtil.getDatabase()
         worksiteDao = db.worksiteDao()
         worksiteDaoPlus = WorksiteDaoPlus(db)
     }

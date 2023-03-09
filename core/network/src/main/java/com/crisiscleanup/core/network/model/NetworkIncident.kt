@@ -63,7 +63,7 @@ data class NetworkIncidentFormField(
     @SerialName("read_only_break_glass")
     val readOnlyBreakGlass: Boolean,
     @SerialName("values_default_t")
-    val valuesDefault: Map<String, String>? = null,
+    val valuesDefault: Map<String, String?>? = null,
     @SerialName("order_label")
     val orderLabel: Int? = null,
     val validation: String? = null,

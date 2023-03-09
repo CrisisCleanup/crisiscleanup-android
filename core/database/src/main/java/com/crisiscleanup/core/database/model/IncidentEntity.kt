@@ -140,7 +140,7 @@ fun IncidentFormFieldEntity.asExternalModel(): IncidentFormField {
     val formValues =
         if (valuesJson?.isNotEmpty() == true) Json.decodeFromString<Map<String, String>>(valuesJson) else emptyMap()
     val formValuesDefault =
-        if (formValues.isEmpty() && valuesDefaultJson?.isNotEmpty() == true) Json.decodeFromString<Map<String, String>>(
+        if (formValues.isEmpty() && valuesDefaultJson?.isNotEmpty() == true) Json.decodeFromString<Map<String, String?>>(
             valuesDefaultJson
         ) else emptyMap()
     return IncidentFormField(

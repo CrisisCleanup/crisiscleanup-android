@@ -1,10 +1,6 @@
 package com.crisiscleanup.core.database.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import androidx.room.Transaction
+import androidx.room.*
 import com.crisiscleanup.core.database.model.WorkTypeEntity
 import kotlinx.datetime.Instant
 
@@ -24,7 +20,7 @@ interface WorkTypeDao {
         recur           =:recur,
         status          =:status,
         work_type       =:workType
-        WHERE worksite_id=:worksiteId AND network_id=:networkId AND local_global_uuid=""
+        WHERE worksite_id=:worksiteId AND network_id=:networkId AND local_global_uuid=''
         """
     )
     fun syncUpdateWorkType(
@@ -46,23 +42,5 @@ interface WorkTypeDao {
         WHERE worksite_id=:worksiteId AND network_id NOT IN(:networkIds)
         """
     )
-    fun syncDeleteUnspecifiedWorkTypes(worksiteId: Long, networkIds: Collection<Long>)
-
-}
-
-@Dao
-interface TestTargetWorkTypeDao {
-    @Transaction
-    @Query(
-        """
-        SELECT *
-        FROM work_types
-        WHERE worksite_id=:worksiteId
-        ORDER BY work_type ASC, id ASC
-        """
-    )
-    fun getWorksiteWorkTypes(worksiteId: Long): List<WorkTypeEntity>
-
-    @Insert
-    fun insertWorkTypes(workTypes: Collection<WorkTypeEntity>)
+    fun syncDeleteUnspecified(worksiteId: Long, networkIds: Collection<Long>)
 }

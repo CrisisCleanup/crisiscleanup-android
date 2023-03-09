@@ -1,9 +1,7 @@
 package com.crisiscleanup.core.database.dao
 
-import android.content.Context
-import androidx.room.Room
-import androidx.test.core.app.ApplicationProvider
-import com.crisiscleanup.core.database.CrisisCleanupDatabase
+import com.crisiscleanup.core.database.TestCrisisCleanupDatabase
+import com.crisiscleanup.core.database.TestUtil
 import com.crisiscleanup.core.database.model.*
 import com.crisiscleanup.core.model.data.Incident
 import kotlinx.coroutines.flow.first
@@ -15,18 +13,14 @@ import org.junit.Test
 import kotlin.test.assertEquals
 
 class IncidentDaoTest {
-    private lateinit var db: CrisisCleanupDatabase
+    private lateinit var db: TestCrisisCleanupDatabase
 
     private lateinit var incidentDao: IncidentDao
     private lateinit var incidentDaoPlus: IncidentDaoPlus
 
     @Before
     fun createDb() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        db = Room.inMemoryDatabaseBuilder(
-            context,
-            CrisisCleanupDatabase::class.java
-        ).build()
+        db = TestUtil.getTestDatabase()
         incidentDao = db.incidentDao()
         incidentDaoPlus = IncidentDaoPlus(db)
     }
@@ -258,7 +252,7 @@ class IncidentDaoTest {
         val savedIncidents = incidentDao.streamIncidents().first()
         assertEquals(listOf(48L, 954, 18), savedIncidents.map { it.entity.id })
 
-        db.testTargetIncidentDao().setExcludedArchived(setOf(48L, 18))
+        db.testIncidentDao().setExcludedArchived(setOf(48L, 18))
 
         val updatedIncidents = incidentDao.streamIncidents().first()
         assertEquals(listOf(48L, 18), updatedIncidents.map { it.entity.id })

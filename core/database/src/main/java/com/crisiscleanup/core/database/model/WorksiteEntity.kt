@@ -1,7 +1,10 @@
 package com.crisiscleanup.core.database.model
 
 import androidx.room.*
+import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.model.data.WorkType
+import com.crisiscleanup.core.model.data.WorksiteFlag
+import com.crisiscleanup.core.model.data.WorksiteNote
 import kotlinx.datetime.Instant
 
 @Entity(
@@ -55,11 +58,12 @@ data class WorksiteRootEntity(
         ),
     ],
     indices = [
-        Index(value = ["incident_id", "network_id", "updated_at"]),
+        Index(value = ["incident_id", "network_id"]),
         Index(value = ["network_id"]),
         Index(value = ["incident_id", "latitude", "longitude"]),
         Index(value = ["incident_id", "longitude", "latitude"]),
-        Index(value = ["incident_id", "network_id", "svi"]),
+        Index(value = ["incident_id", "svi"]),
+        Index(value = ["incident_id", "updated_at"]),
     ]
 )
 data class WorksiteEntity(
@@ -109,8 +113,6 @@ data class WorksiteEntity(
     val updatedAt: Instant,
 )
 
-// TODO Flags XR
-
 @Entity(
     "work_types",
     foreignKeys = [
@@ -135,6 +137,8 @@ data class WorkTypeEntity(
     val id: Long,
     @ColumnInfo("local_global_uuid", defaultValue = "")
     val localGlobalUuid: String,
+    @ColumnInfo("is_invalid", defaultValue = "0")
+    val isInvalid: Boolean,
 
     @ColumnInfo("network_id", defaultValue = "-1")
     val networkId: Long,
@@ -167,10 +171,136 @@ fun WorkTypeEntity.asExternalModel() = WorkType(
     workTypeLiteral = workType,
 )
 
+@Entity(
+    "worksite_form_data",
+    foreignKeys = [
+        ForeignKey(
+            entity = WorksiteEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["worksite_id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+    primaryKeys = ["worksite_id", "field_key"],
+)
+data class WorksiteFormDataEntity(
+    @ColumnInfo("worksite_id")
+    val worksiteId: Long,
+    @ColumnInfo("field_key")
+    val fieldKey: String,
+    @ColumnInfo("is_bool_value")
+    val isBoolValue: Boolean,
+    @ColumnInfo("value_string")
+    val valueString: String,
+    @ColumnInfo("value_bool")
+    val valueBool: Boolean,
+)
+
+@Entity(
+    "worksite_flags",
+    foreignKeys = [
+        ForeignKey(
+            entity = WorksiteEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["worksite_id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+    indices = [
+        Index(
+            value = ["worksite_id", "network_id", "local_global_uuid"], unique = true,
+            name = "unique_worksite_flag",
+        ),
+        Index(value = ["reason_t"]),
+    ],
+)
+data class WorksiteFlagEntity(
+    @PrimaryKey(true)
+    val id: Long,
+    @ColumnInfo("local_global_uuid", defaultValue = "")
+    val localGlobalUuid: String,
+    @ColumnInfo("is_invalid", defaultValue = "0")
+    val isInvalid: Boolean,
+
+    @ColumnInfo("network_id", defaultValue = "-1")
+    val networkId: Long,
+    @ColumnInfo("worksite_id")
+    val worksiteId: Long,
+    val action: String?,
+    @ColumnInfo("created_at")
+    val createdAt: Instant,
+    @ColumnInfo("is_high_priority", defaultValue = "0")
+    val isHighPriority: Boolean?,
+    @ColumnInfo(defaultValue = "")
+    val notes: String?,
+    @ColumnInfo("reason_t")
+    val reasonT: String,
+    @ColumnInfo("requested_action", defaultValue = "")
+    val requestedAction: String?,
+)
+
+fun WorksiteFlagEntity.asExternalModel(translator: KeyTranslator? = null) = WorksiteFlag(
+    /**
+     * Local ID not the network ID
+     */
+    id = id,
+    action = action ?: "",
+    createdAt = createdAt,
+    isHighPriority = isHighPriority ?: false,
+    notes = notes ?: "",
+    reasonT = reasonT,
+    reason = translator?.translate(reasonT) ?: reasonT,
+    requestedAction = requestedAction ?: "",
+)
+
+@Entity(
+    "worksite_notes",
+    foreignKeys = [
+        ForeignKey(
+            entity = WorksiteEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["worksite_id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+    indices = [
+        Index(
+            value = ["worksite_id", "network_id", "local_global_uuid"], unique = true,
+            name = "unique_worksite_note",
+        ),
+    ],
+)
+data class WorksiteNoteEntity(
+    @PrimaryKey(true)
+    val id: Long,
+    @ColumnInfo("local_global_uuid", defaultValue = "")
+    val localGlobalUuid: String,
+    // Notes cannot be invalidated (as of Mar 2023)
+
+    @ColumnInfo("network_id", defaultValue = "-1")
+    val networkId: Long,
+    @ColumnInfo("worksite_id")
+    val worksiteId: Long,
+    @ColumnInfo("created_at")
+    val createdAt: Instant,
+    @ColumnInfo("is_survivor")
+    val isSurvivor: Boolean,
+    @ColumnInfo(defaultValue = "")
+    val note: String,
+)
+
+fun WorksiteNoteEntity.asExternalModel() = WorksiteNote(
+    /**
+     * Local ID not the network ID
+     */
+    id = id,
+    createdAt = createdAt,
+    isSurvivor = isSurvivor,
+    note = note,
+)
+
 // TODO Events XR
 // TODO Files XR
-// TODO Form data XR
-// TODO Notes XR
 
 // TODO Worksites FTS
 
