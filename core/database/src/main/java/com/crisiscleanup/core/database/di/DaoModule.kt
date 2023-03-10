@@ -57,4 +57,7 @@ object DaoModule {
 
     @Provides
     fun providesLanguageDaoPlus(db: CrisisCleanupDatabase) = LanguageDaoPlus(db)
+
+    @Provides
+    fun providesSyncLogDao(db: CrisisCleanupDatabase) = db.syncLogDao()
 }

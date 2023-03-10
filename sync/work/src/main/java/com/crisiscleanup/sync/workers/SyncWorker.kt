@@ -9,6 +9,7 @@ import com.crisiscleanup.core.common.SyncResult
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.Synchronizer
+import com.crisiscleanup.core.data.repository.SyncLogRepository
 import com.crisiscleanup.sync.initializers.SyncConstraints
 import com.crisiscleanup.sync.initializers.syncForegroundInfo
 import dagger.assisted.Assisted
@@ -23,6 +24,7 @@ class SyncWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted workerParams: WorkerParameters,
     private val syncPuller: SyncPuller,
+    private val syncLogger: SyncLogRepository,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : CoroutineWorker(appContext, workerParams), Synchronizer {
 
@@ -31,6 +33,8 @@ class SyncWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result = withContext(ioDispatcher) {
         traceAsync("Sync", 0) {
+            syncLogger.log("Sync start")
+
             val syncedSuccessfully = awaitAll(
                 async {
                     // TODO Observe progress and update notification
@@ -43,6 +47,10 @@ class SyncWorker @AssistedInject constructor(
                     true
                 }
             ).all { it }
+
+            syncLogger
+                .log("Sync end. success=$syncedSuccessfully")
+                .flush()
 
             // TODO Notification seems to hang around.
             //      Research if needs to manually clear.

@@ -21,6 +21,7 @@ import kotlinx.datetime.Instant
         WorksiteFlagEntity::class,
         WorksiteNoteEntity::class,
         LanguageTranslationEntity::class,
+        SyncLogEntity::class,
     ],
     version = 1,
 )

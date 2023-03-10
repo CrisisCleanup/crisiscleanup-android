@@ -7,10 +7,7 @@ import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
-import com.crisiscleanup.core.data.repository.AccountDataRepository
-import com.crisiscleanup.core.data.repository.IncidentsRepository
-import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
-import com.crisiscleanup.core.data.repository.WorksitesRepository
+import com.crisiscleanup.core.data.repository.*
 import com.crisiscleanup.core.data.util.NetworkMonitor
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.core.model.data.EmptyIncident
@@ -34,6 +31,7 @@ class AppSyncer @Inject constructor(
     private val worksitesRepository: WorksitesRepository,
     private val languageRepository: LanguageTranslationsRepository,
     private val appPreferences: LocalAppPreferencesDataSource,
+    private val syncLogger: SyncLogRepository,
     private val authEventManager: AuthEventManager,
     private val networkMonitor: NetworkMonitor,
     @ApplicationScope private val applicationScope: CoroutineScope,
@@ -84,6 +82,7 @@ class AppSyncer @Inject constructor(
         val plan = if (force) unforcedPlan.copy(pullIncidents = true)
         else unforcedPlan
         if (!plan.requiresSync) {
+            syncLogger.log("Skipping unforced sync")
             return SyncResult.NotAttempted("Unforced sync not necessary")
         }
 
@@ -91,8 +90,10 @@ class AppSyncer @Inject constructor(
             plan,
             incidentsRepository,
             worksitesRepository,
+            syncLogger,
         )
 
+        syncLogger.log("Sync pulled. force=$force")
         return SyncResult.Success(if (force) "Force pulled" else "Pulled")
     }
 
@@ -136,6 +137,10 @@ class AppSyncer @Inject constructor(
                 stopPull()
                 pullJob = applicationScope.launch(ioDispatcher) {
                     pull(force)
+
+                    syncLogger
+                        .log("App pull end")
+                        .flush()
                 }
             }
         }
@@ -149,6 +154,8 @@ class AppSyncer @Inject constructor(
 
     private suspend fun incidentPull(id: Long) {
         incidentsRepository.pullIncident(id)
+
+        syncLogger.log("Incident $id pulled")
     }
 
     override suspend fun syncPullIncidentAsync(id: Long): Deferred<SyncResult> {
@@ -182,6 +189,10 @@ class AppSyncer @Inject constructor(
                 onSyncPreconditions()?.let { return@launch }
 
                 incidentPull(id)
+
+                syncLogger
+                    .log("App pull incident end")
+                    .flush()
             }
         }
     }

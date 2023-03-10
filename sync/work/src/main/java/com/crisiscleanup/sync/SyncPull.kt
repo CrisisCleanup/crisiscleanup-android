@@ -2,6 +2,7 @@ package com.crisiscleanup.sync
 
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.data.repository.IncidentsRepository
+import com.crisiscleanup.core.data.repository.SyncLogRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.sync.model.SyncPlan
@@ -44,11 +45,14 @@ internal object SyncPull {
         plan: SyncPlan,
         incidentsRepository: IncidentsRepository,
         worksitesRepository: WorksitesRepository,
+        syncLogger: SyncLogRepository,
         resourceProvider: AndroidResourceProvider? = null,
         updateNotificationMessage: suspend CoroutineScope.(String) -> Unit = {},
     ): Boolean = coroutineScope {
         if (plan.pullIncidents) {
             incidentsRepository.pullIncidents()
+
+            syncLogger.log("Incidents pulled")
         }
 
         ensureActive()
@@ -62,6 +66,8 @@ internal object SyncPull {
                 }
 
                 worksitesRepository.refreshWorksites(incidentId)
+
+                syncLogger.log("Incident $incidentId worksites pulled")
             }
         }
 

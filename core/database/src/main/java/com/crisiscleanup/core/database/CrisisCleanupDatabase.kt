@@ -26,8 +26,9 @@ import com.crisiscleanup.core.database.util.InstantConverter
         WorksiteFlagEntity::class,
         WorksiteNoteEntity::class,
         LanguageTranslationEntity::class,
+        SyncLogEntity::class,
     ],
-    version = 8,
+    version = 9,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
@@ -36,6 +37,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         AutoMigration(from = 5, to = 6),
         AutoMigration(from = 6, to = 7),
         AutoMigration(from = 7, to = 8),
+        AutoMigration(from = 8, to = 9),
     ],
     exportSchema = true,
 )
@@ -55,4 +57,5 @@ abstract class CrisisCleanupDatabase : RoomDatabase(), DatabaseVersionProvider {
     abstract fun worksiteFlagDao(): WorksiteFlagDao
     abstract fun worksiteNoteDao(): WorksiteNoteDao
     abstract fun languageDao(): LanguageDao
+    abstract fun syncLogDao(): SyncLogDao
 }
