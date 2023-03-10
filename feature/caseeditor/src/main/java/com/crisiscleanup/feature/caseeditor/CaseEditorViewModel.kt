@@ -83,7 +83,6 @@ class CaseEditorViewModel @Inject constructor(
             _formFields.value = FormFieldNode.buildTree(incident.formFields, languageRepository)
 
             try {
-                // TODO Track language sync attempts and skip if last attempt is less than x hours ago where x hours is parameterized?
                 languageRepository.loadLanguages()
             } catch (e: Exception) {
                 logger.logException(e)

@@ -4,14 +4,11 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.tracing.traceAsync
 import androidx.work.*
+import com.crisiscleanup.core.common.SyncPuller
+import com.crisiscleanup.core.common.SyncResult
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.Synchronizer
-import com.crisiscleanup.core.data.repository.AccountDataRepository
-import com.crisiscleanup.core.data.repository.IncidentsRepository
-import com.crisiscleanup.core.data.repository.WorksitesRepository
-import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
-import com.crisiscleanup.sync.SyncPipeline.determineSyncSteps
 import com.crisiscleanup.sync.initializers.SyncConstraints
 import com.crisiscleanup.sync.initializers.syncForegroundInfo
 import dagger.assisted.Assisted
@@ -19,54 +16,37 @@ import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 
-/**
- * Syncs the data layer by delegating to the appropriate repository instances with
- * sync functionality.
- */
 @HiltWorker
 class SyncWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted workerParams: WorkerParameters,
+    private val syncPuller: SyncPuller,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
-    private val incidentsRepository: IncidentsRepository,
-    private val worksitesRepository: WorksitesRepository,
-    private val accountDataRepository: AccountDataRepository,
-    private val appPreferences: LocalAppPreferencesDataSource,
 ) : CoroutineWorker(appContext, workerParams), Synchronizer {
 
     override suspend fun getForegroundInfo(): ForegroundInfo =
         appContext.syncForegroundInfo()
 
     override suspend fun doWork(): Result = withContext(ioDispatcher) {
-        val accountData = accountDataRepository.accountData.first()
-        if (accountData.isTokenInvalid) {
-            // Downstream work should wait for valid access token before commencing
-            return@withContext Result.failure()
-        }
-
-        val plan = determineSyncSteps(incidentsRepository, worksitesRepository, appPreferences)
-        if (!plan.requiresSync) {
-            return@withContext Result.success()
-        }
-
         traceAsync("Sync", 0) {
             val syncedSuccessfully = awaitAll(
                 async {
-                    // TODO Consolidate all syncing so only a single process is run at a time
-//                    performSync(
-//                        plan,
-//                        incidentsRepository,
-//                        worksitesRepository,
-//                        resourceProvider,
-//                    ) { text -> setForeground(appContext.syncForegroundInfo(text)) }
+                    // TODO Observe progress and update notification
+                    // text -> setForeground(appContext.syncForegroundInfo(text)) }
+                    val result = syncPuller.syncPullAsync().await()
+                    result !is SyncResult.Error
+                },
+                async {
+                    syncPuller.syncPullLanguage()
                     true
                 }
             ).all { it }
 
-            // TODO Notification seems to hang around. Research if needs to manually clear.
+            // TODO Notification seems to hang around.
+            //      Research if needs to manually clear.
+            //      Nia doesn't need to clear notification...
 
             if (syncedSuccessfully) Result.success()
             else Result.retry()

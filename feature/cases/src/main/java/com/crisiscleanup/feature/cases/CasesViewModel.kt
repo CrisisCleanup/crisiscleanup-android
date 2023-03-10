@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.AppMemoryStats
-import com.crisiscleanup.core.common.Syncer
+import com.crisiscleanup.core.common.SyncPuller
 import com.crisiscleanup.core.common.event.TrimMemoryEventManager
 import com.crisiscleanup.core.common.event.TrimMemoryListener
 import com.crisiscleanup.core.common.log.AppLogger
@@ -54,7 +54,7 @@ class CasesViewModel @Inject constructor(
     private val mapTileRenderer: CasesOverviewMapTileRenderer,
     private val tileProvider: TileProvider,
     searchManager: SearchManager,
-    private val syncer: Syncer,
+    private val syncPuller: SyncPuller,
     private val resourceProvider: AndroidResourceProvider,
     appMemoryStats: AppMemoryStats,
     trimMemoryEventManager: TrimMemoryEventManager,
@@ -205,7 +205,7 @@ class CasesViewModel @Inject constructor(
     }
 
     fun refreshIncidentsData() {
-        syncer.sync(true, cancelOngoing = true)
+        syncPuller.appPull(true, cancelOngoing = true)
     }
 
     fun overviewMapTileProvider(): TileProvider {

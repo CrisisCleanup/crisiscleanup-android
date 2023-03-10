@@ -1,6 +1,7 @@
 package com.crisiscleanup.sync.di
 
-import com.crisiscleanup.core.common.Syncer
+import com.crisiscleanup.core.common.SyncPuller
+import com.crisiscleanup.core.common.SyncPusher
 import com.crisiscleanup.core.data.util.SyncStatusMonitor
 import com.crisiscleanup.sync.AppSyncer
 import com.crisiscleanup.sync.status.WorkManagerSyncStatusMonitor
@@ -18,5 +19,9 @@ interface SyncModule {
 
     @Singleton
     @Binds
-    fun bindsSyncer(syncer: AppSyncer): Syncer
+    fun bindsSyncPuller(syncer: AppSyncer): SyncPuller
+
+    @Singleton
+    @Binds
+    fun bindsSyncPusher(syncer: AppSyncer): SyncPusher
 }

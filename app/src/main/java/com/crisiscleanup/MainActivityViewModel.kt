@@ -4,7 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.appheader.AppHeaderUiState
-import com.crisiscleanup.core.common.Syncer
+import com.crisiscleanup.core.common.SyncPuller
 import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.event.ExpiredTokenListener
 import com.crisiscleanup.core.data.IncidentSelector
@@ -27,7 +27,7 @@ class MainActivityViewModel @Inject constructor(
     incidentsRepository: IncidentsRepository,
     worksitesRepository: WorksitesRepository,
     languageTranslationsRepository: LanguageTranslationsRepository,
-    private val syncer: Syncer,
+    private val syncPuller: SyncPuller,
 ) : ViewModel(), ExpiredTokenListener {
     val uiState: StateFlow<MainActivityUiState> = localAppPreferencesRepository.userData.map {
         MainActivityUiState.Success(it)
@@ -72,15 +72,15 @@ class MainActivityViewModel @Inject constructor(
         incidentSelector.incidentId
             .onEach {
                 syncIncidents()
-                syncer.syncIncident(it)
+                syncPuller.appPullIncident(it)
             }
             .launchIn(viewModelScope)
 
-        languageTranslationsRepository.loadLanguages()
+        syncPuller.appPullLanguage()
     }
 
     private fun syncIncidents() {
-        syncer.sync()
+        syncPuller.appPull(force = false, false)
     }
 
     // ExpiredTokenListener

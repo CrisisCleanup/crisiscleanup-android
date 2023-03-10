@@ -51,8 +51,8 @@ class OfflineFirstIncidentsRepository @Inject constructor(
 ) : IncidentsRepository {
     private var isSyncing = MutableStateFlow(false)
 
-    private var pullSingleIncidentId = MutableStateFlow(EmptyIncident.id)
-    private val _pullSingleIncidentId = AtomicLong(0)
+    private val isPullingSingleIncident = MutableStateFlow(false)
+    private val pullSingleIncidentId = AtomicLong(0)
 
     private val incidentsQueryFields = listOf(
         "id",
@@ -193,9 +193,9 @@ class OfflineFirstIncidentsRepository @Inject constructor(
             return
         }
 
-        synchronized(_pullSingleIncidentId) {
-            _pullSingleIncidentId.set(id)
-            pullSingleIncidentId.value = id
+        synchronized(pullSingleIncidentId) {
+            pullSingleIncidentId.set(id)
+            isPullingSingleIncident.value = true
         }
         try {
             val networkIncident = networkDataSource.getIncident(id, fullIncidentQueryFields)
@@ -207,10 +207,8 @@ class OfflineFirstIncidentsRepository @Inject constructor(
                 saveIncidentsSecondaryData(incidents)
             }
         } finally {
-            synchronized(_pullSingleIncidentId) {
-                if (_pullSingleIncidentId.compareAndSet(id, 0)) {
-                    pullSingleIncidentId.value = EmptyIncident.id
-                }
+            if (pullSingleIncidentId.compareAndSet(id, EmptyIncident.id)) {
+                isPullingSingleIncident.value = false
             }
         }
     }

@@ -10,7 +10,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.first
 
-object SyncPipeline {
+internal object SyncPull {
     suspend fun determineSyncSteps(
         incidentsRepository: IncidentsRepository,
         worksitesRepository: WorksitesRepository,
@@ -40,8 +40,7 @@ object SyncPipeline {
         return stepsBuilder.build()
     }
 
-    // TODO Prevent multiple calls to this concurrently
-    suspend fun performSync(
+    suspend fun executePlan(
         plan: SyncPlan,
         incidentsRepository: IncidentsRepository,
         worksitesRepository: WorksitesRepository,

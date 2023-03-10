@@ -31,7 +31,7 @@ interface LanguageTranslationsRepository : KeyTranslator {
 
     val currentLanguage: Flow<Language>
 
-    fun loadLanguages(force: Boolean = false)
+    suspend fun loadLanguages(force: Boolean = false)
 
     fun setLanguage(key: String = "")
 }
@@ -118,29 +118,29 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
         }
     }
 
-    override fun loadLanguages(force: Boolean) {
-        coroutineScope.launch(ioDispatcher) {
-            if (isNotOnline()) {
-                return@launch
+    override suspend fun loadLanguages(force: Boolean) {
+        if (isNotOnline()) {
+            return
+        }
+
+        // TODO Track language sync attempts and skip if not forced and last attempt is recent
+
+        isLoadingLanguages.value = true
+        try {
+            val languageCount = languageDao.getLanguageCount()
+            if (force || languageCount == 0) {
+                pullLanguages()
             }
 
-            isLoadingLanguages.value = true
-            try {
-                val languageCount = languageDao.getLanguageCount()
-                if (force || languageCount == 0) {
-                    pullLanguages()
-                }
-
-                if (languageCount == 0) {
-                    pullTranslations(EnglishLanguage.key)
-                } else {
-                    pullUpdatedTranslations()
-                }
-            } catch (e: Exception) {
-                logger.logException(e)
-            } finally {
-                isLoadingLanguages.value = false
+            if (languageCount == 0) {
+                pullTranslations(EnglishLanguage.key)
+            } else {
+                pullUpdatedTranslations()
             }
+        } catch (e: Exception) {
+            logger.logException(e)
+        } finally {
+            isLoadingLanguages.value = false
         }
     }
 
