@@ -80,7 +80,7 @@ internal fun CaseEditorScreen(
         }
         is CaseEditorUiState.WorksiteData -> {
             Box(Modifier.fillMaxSize()) {
-                EditCaseContents(
+                CaseSummary(
                     uiState as CaseEditorUiState.WorksiteData,
                     onEditPropertyData = onEditPropertyData,
                 )
@@ -102,7 +102,7 @@ internal fun CaseEditorScreen(
 }
 
 @Composable
-private fun BoxScope.EditCaseContents(
+private fun BoxScope.CaseSummary(
     worksiteData: CaseEditorUiState.WorksiteData,
     modifier: Modifier = Modifier,
     viewModel: CaseEditorViewModel = hiltViewModel(),
@@ -119,8 +119,9 @@ private fun BoxScope.EditCaseContents(
             style = MaterialTheme.typography.headlineMedium,
         )
 
+        val worksite by viewModel.editingWorksite.collectAsStateWithLifecycle()
         PropertySummaryView(
-            viewModel.editableWorksite,
+            worksite,
             onEdit = onEditPropertyData
         )
     }

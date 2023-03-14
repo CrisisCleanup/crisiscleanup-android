@@ -52,7 +52,7 @@ class EditCasePropertyViewModel @Inject constructor(
 
         propertyInputData = PropertyInputData(
             inputValidator,
-            worksiteProvider.editableWorksite,
+            worksiteProvider.editableWorksite.value,
             resourceProvider,
         )
     }
@@ -60,7 +60,7 @@ class EditCasePropertyViewModel @Inject constructor(
     private fun validateSaveWorksite(): Boolean {
         val updatedWorksite = propertyInputData.updateCase()
         if (updatedWorksite != null) {
-            worksiteProvider.editableWorksite = updatedWorksite
+            worksiteProvider.editableWorksite.value = updatedWorksite
             return true
         }
         return false

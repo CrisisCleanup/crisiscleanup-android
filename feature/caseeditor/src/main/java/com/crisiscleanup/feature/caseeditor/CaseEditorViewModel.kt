@@ -46,8 +46,7 @@ class CaseEditorViewModel @Inject constructor(
     private val _isRefreshingWorksite = MutableStateFlow(false)
     val isLoadingWorksite: StateFlow<Boolean> = _isRefreshingWorksite
 
-    val editableWorksite: Worksite
-        get() = editableWorksiteProvider.editableWorksite
+    val editingWorksite = editableWorksiteProvider.editableWorksite
 
     val navigateBack = mutableStateOf(false)
 
@@ -55,6 +54,11 @@ class CaseEditorViewModel @Inject constructor(
         val headerTitleResId =
             if (caseEditorArgs.worksiteId == null) R.string.create_case else R.string.edit_case
         headerTitle.value = resourceProvider.getString(headerTitleResId)
+
+        with(editableWorksiteProvider) {
+            editableWorksite.value = EmptyWorksite
+            formFields = emptyList()
+        }
 
         viewModelScope.launch(ioDispatcher) {
             var worksite: Worksite? = null
@@ -94,6 +98,7 @@ class CaseEditorViewModel @Inject constructor(
                     resourceProvider.getString(R.string.edit_case_case_number, caseNumber)
 
                 worksite = cachedWorksite.worksite.copy()
+                editableWorksiteProvider.editableWorksite.value = worksite!!
                 uiState.value = CaseEditorUiState.WorksiteData(
                     worksite!!,
                     incident,
@@ -135,11 +140,9 @@ class CaseEditorViewModel @Inject constructor(
             )
             // TODO Atomic set just in case
             with(editableWorksiteProvider) {
-                editableWorksite = initialWorksite.copy()
+                editableWorksite.value = initialWorksite.copy()
                 formFields = FormFieldNode.buildTree(incident.formFields, languageRepository)
             }
-
-            logger.logDebug("Loaded for editing", editableWorksiteProvider.editableWorksite.id)
 
             uiState.value = CaseEditorUiState.WorksiteData(
                 initialWorksite,

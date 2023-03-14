@@ -7,17 +7,18 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 
 interface EditableWorksiteProvider {
-    var editableWorksite: Worksite
+    val editableWorksite: MutableStateFlow<Worksite>
     var formFields: List<FormFieldNode>
 }
 
 @Singleton
 class SingleEditableWorksiteProvider @Inject constructor() : EditableWorksiteProvider {
-    override var editableWorksite: Worksite = EmptyWorksite
+    override val editableWorksite = MutableStateFlow(EmptyWorksite)
     override var formFields: List<FormFieldNode> = emptyList()
 }
 
