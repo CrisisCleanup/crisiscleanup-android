@@ -35,21 +35,23 @@ internal fun PropertySummaryView(
 ) {
     Column(
         modifier
-            .padding(16.dp)
+            .fillMaxWidth()
             .clickable(onClick = onEdit)
+            .padding(16.dp)
     ) {
         Text(
             text = stringResource(R.string.property_information),
-            modifier = modifier,
-            style = MaterialTheme.typography.bodyLarge,
+            style = MaterialTheme.typography.headlineSmall,
         )
 
         if (worksite.name.isNotEmpty()) {
-            Text(
-                text = worksite.name,
-                modifier = modifier.fillMaxWidth(),
-                style = MaterialTheme.typography.bodyLarge,
-            )
+            Column(modifier.padding(8.dp)) {
+                Text(
+                    text = worksite.name,
+                    modifier = modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            }
         }
     }
 }
@@ -61,11 +63,11 @@ internal fun EditCasePropertyRoute(
     onBackClick: () -> Unit = {},
 ) {
     BackHandler {
-        // TODO Save or check changes before backing out
-        onBackClick()
+        if (viewModel.onSystemBack()) {
+            onBackClick()
+        }
     }
 
-    // TODO Reset to false every time a new screen opens
     val navigateBack by remember { viewModel.navigateBack }
     if (navigateBack) {
         onBackClick()
@@ -95,6 +97,22 @@ internal fun EditCasePropertyRoute(
     }
 }
 
+// TODO Move into util/common
+@Composable
+internal fun ErrorText(
+    errorMessage: String,
+) {
+    if (errorMessage.isNotEmpty()) {
+        Text(
+            errorMessage,
+            modifier = errorMessageModifier,
+            color = MaterialTheme.colorScheme.error,
+        )
+    }
+}
+
+private val errorMessageModifier = Modifier.padding(top = 8.dp, start = 16.dp, end = 16.dp)
+
 @Composable
 internal fun PropertyFormView(
     modifier: Modifier = Modifier,
@@ -116,6 +134,7 @@ internal fun PropertyFormView(
     val isNameError = propertyInputData.residentNameError.isNotEmpty()
     val focusName = propertyInputData.residentName.isEmpty() || isNameError
     Column(modifier = modifier.fillMaxWidth()) {
+        ErrorText(propertyInputData.residentNameError)
         OutlinedClearableTextField(
             modifier = columnItemModifier,
             labelResId = R.string.resident_name,
@@ -137,6 +156,7 @@ internal fun PropertyFormView(
         }
         val isPhoneError = propertyInputData.phoneNumberError.isNotEmpty()
         val focusPhone = isPhoneError
+        ErrorText(propertyInputData.phoneNumberError)
         OutlinedClearableTextField(
             modifier = columnItemModifier,
             labelResId = R.string.phone_number,
@@ -152,20 +172,13 @@ internal fun PropertyFormView(
         val updateAdditionalPhone = remember(propertyInputData) {
             { it: String -> propertyInputData.phoneNumberSecondary = it }
         }
-        val clearAdditionalPhoneError = remember(propertyInputData) {
-            { propertyInputData.phoneNumberError = "" }
-        }
-        val isAdditionalPhoneError = propertyInputData.phoneNumberError.isNotEmpty()
-        val focusAdditionalPhone = isPhoneError
         OutlinedClearableTextField(
             modifier = columnItemModifier,
             labelResId = R.string.additional_phone_number,
             value = propertyInputData.phoneNumberSecondary,
             onValueChange = { updateAdditionalPhone(it) },
             keyboardType = KeyboardType.Text,
-            isError = isAdditionalPhoneError,
-            hasFocus = focusAdditionalPhone,
-            onNext = clearAdditionalPhoneError,
+            isError = false,
             enabled = true,
         )
 
@@ -177,6 +190,7 @@ internal fun PropertyFormView(
         }
         val isEmailError = propertyInputData.emailError.isNotEmpty()
         val focusEmail = isEmailError
+        ErrorText(propertyInputData.emailError)
         OutlinedClearableTextField(
             modifier = columnItemModifier,
             labelResId = R.string.email_address,
@@ -189,17 +203,18 @@ internal fun PropertyFormView(
             enabled = true,
         )
 
-        // TODO Help action showing help text. May be provided in form fields.
+        // TODO Help action showing help text.
         Text(
             text = stringResource(R.string.auto_contact_frequency),
             modifier = columnItemModifier,
         )
-        val autoContactOptions by viewModel.autoContactOptions.collectAsState()
-        val updateAutoContact = remember(propertyInputData) {
+        val updateContactFrequency = remember(propertyInputData) {
             { it: AutoContactFrequency -> propertyInputData.autoContactFrequency = it }
         }
+        val contactFrequencyOptions by viewModel.contactFrequencyOptions.collectAsState()
+        ErrorText(propertyInputData.frequencyError)
         Column(modifier = Modifier.selectableGroup()) {
-            autoContactOptions.forEach {
+            contactFrequencyOptions.forEach {
                 val isSelected = propertyInputData.autoContactFrequency == it.first
                 Row(
                     Modifier
@@ -207,7 +222,7 @@ internal fun PropertyFormView(
                         .height(56.dp)
                         .selectable(
                             selected = isSelected,
-                            onClick = { updateAutoContact(it.first) },
+                            onClick = { updateContactFrequency(it.first) },
                             role = Role.RadioButton,
                         )
                         // TODO Match padding to rest of items

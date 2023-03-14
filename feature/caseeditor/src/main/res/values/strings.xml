@@ -11,4 +11,9 @@
     <string name="additional_phone_number">Additional phone</string>
     <string name="email_address">Email</string>
     <string name="auto_contact_frequency">Auto contact frequency</string>
+
+    <string name="name_is_required">Enter a name for the resident</string>
+    <string name="phone_is_required">Enter a phone number</string>
+    <string name="invalid_email">Enter a valid email address</string>
+    <string name="invalid_auto_frequency">Select an auto contact frequency</string>
 </resources>

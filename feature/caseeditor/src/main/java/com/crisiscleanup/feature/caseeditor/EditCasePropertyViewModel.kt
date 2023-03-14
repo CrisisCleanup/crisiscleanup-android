@@ -10,12 +10,9 @@ import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
-import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
-import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.model.data.AutoContactFrequency
 import com.crisiscleanup.feature.caseeditor.model.PropertyInputData
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -23,27 +20,25 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EditCasePropertyViewModel @Inject constructor(
-    worksiteProvider: EditableWorksiteProvider,
+    private val worksiteProvider: EditableWorksiteProvider,
     inputValidator: InputValidator,
     appHeaderUiState: AppHeaderUiState,
-    private val resourceProvider: AndroidResourceProvider,
+    resourceProvider: AndroidResourceProvider,
     translator: KeyTranslator,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
-    @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     val propertyInputData: PropertyInputData
 
     val navigateBack = mutableStateOf(false)
 
-    private val autoContactOptionValues = listOf(
+    private val contactFrequencyOptionValues = listOf(
         AutoContactFrequency.Often,
         AutoContactFrequency.NotOften,
         AutoContactFrequency.Never,
     )
 
-    val autoContactOptions = translator.translationCount.map {
-        // TODO Selected value
-        autoContactOptionValues.map {
+    val contactFrequencyOptions = translator.translationCount.map {
+        contactFrequencyOptionValues.map {
             Pair(it, translator.translate(it.literal) ?: it.literal)
         }
     }.stateIn(
@@ -58,14 +53,25 @@ class EditCasePropertyViewModel @Inject constructor(
         propertyInputData = PropertyInputData(
             inputValidator,
             worksiteProvider.editableWorksite,
+            resourceProvider,
         )
+    }
 
-        val formFields = worksiteProvider.formFields
-        logger.logDebug("Property view model", formFields.joinToString(", ") { it.fieldKey })
+    private fun validateSaveWorksite(): Boolean {
+        val updatedWorksite = propertyInputData.updateCase()
+        if (updatedWorksite != null) {
+            worksiteProvider.editableWorksite = updatedWorksite
+            return true
+        }
+        return false
+    }
+
+    fun onSystemBack(): Boolean {
+        return validateSaveWorksite()
     }
 
     fun onNavigateBack(): Boolean {
-        return true
+        return validateSaveWorksite()
     }
 
     fun onNavigateCancel(): Boolean {

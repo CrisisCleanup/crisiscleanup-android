@@ -33,8 +33,6 @@ internal fun CaseEditorRoute(
         onBackClick()
     }
 
-    // TODO Reset to false every time a new screen opens
-    // LaunchedEffect(Unit) { viewModel.navigateBack.value = false }
     val navigateBack by remember { viewModel.navigateBack }
     if (navigateBack) {
         onBackClick()
@@ -113,8 +111,13 @@ private fun BoxScope.EditCaseContents(
     val isLoadingWorksite by viewModel.isLoadingWorksite.collectAsStateWithLifecycle()
     val isReadOnly by viewModel.isReadOnly.collectAsStateWithLifecycle()
 
-    Column(modifier = modifier.matchParentSize()) {
-        Text(worksiteData.incident.name)
+    Column(modifier.matchParentSize()) {
+        Text(
+            worksiteData.incident.name,
+            // TODO Consistent spacing between all (forms) elements
+            modifier = modifier.padding(16.dp),
+            style = MaterialTheme.typography.headlineMedium,
+        )
 
         PropertySummaryView(
             viewModel.editableWorksite,
