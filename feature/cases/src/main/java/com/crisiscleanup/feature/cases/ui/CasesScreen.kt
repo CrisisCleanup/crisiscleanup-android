@@ -38,7 +38,6 @@ import com.crisiscleanup.core.mapmarker.R as mapmarkerR
 
 @Composable
 internal fun CasesRoute(
-    modifier: Modifier = Modifier,
     onCasesAction: (CasesAction) -> Unit = { },
     casesViewModel: CasesViewModel = hiltViewModel(),
     createNewCase: (Long) -> Unit = {},
@@ -100,7 +99,6 @@ internal fun CasesRoute(
             { mark: WorksiteMapMark -> openCase(casesViewModel.incidentId, mark.id) }
         }
         CasesScreen(
-            modifier,
             showDataProgress = showDataProgress,
             dataProgress = dataProgress,
             onCasesAction = rememberOnCasesAction,
@@ -123,7 +121,10 @@ internal fun CasesRoute(
         val isSyncingIncidents by casesViewModel.isSyncingIncidents.collectAsState(true)
         val isLoading = incidentsData is IncidentsData.Loading || isSyncingIncidents
         val reloadIncidents = remember(casesViewModel) { { casesViewModel.refreshIncidentsData() } }
-        NoCasesScreen(modifier, isLoading, reloadIncidents)
+        NoCasesScreen(
+            isLoading = isLoading,
+            onRetryLoad = reloadIncidents,
+        )
     }
 }
 

@@ -3,4 +3,6 @@
     <string name="clear">Clear</string>
     <string name="show">Show</string>
     <string name="hide">Hide</string>
+    <string name="back">Back</string>
+    <string name="cancel">Cancel</string>
 </resources>

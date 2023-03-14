@@ -227,6 +227,8 @@ private fun NavigableContent(
     onQueryChange: (String) -> Unit = {},
 ) {
     val showNavBar = !appState.isFullscreenRoute
+    // TODO Fix resize jitter when going from nested to top level
+    val notDefaultTopBar = appHeaderState == AppHeaderState.None || appState.hasCustomTopBar
     Scaffold(
         modifier = Modifier.semantics {
             testTagsAsResourceId = true
@@ -237,7 +239,7 @@ private fun NavigableContent(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             // TODO Profile recompose and optimize if necessary
-            val showTopBar = appHeaderState != AppHeaderState.None
+            val showTopBar = !notDefaultTopBar
             if (showTopBar) {
                 val titleResId = appState.currentTopLevelDestination?.titleTextId ?: 0
                 val title = if (titleResId != 0) stringResource(titleResId) else headerTitle
@@ -274,7 +276,7 @@ private fun NavigableContent(
                 .padding(padding)
                 .consumedWindowInsets(padding)
                 .windowInsetsPadding(
-                    if (appHeaderState == AppHeaderState.None) WindowInsets.safeDrawing
+                    if (notDefaultTopBar) WindowInsets.safeDrawing
                     else WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)
                 )
         ) {

@@ -4,4 +4,11 @@
     <string name="edit_case">Edit Case</string>
     <string name="edit_case_case_number">Edit Case %1$s</string>
     <string name="incident_issue_try_again">There seems to be an issue with the current incident. Please try again. Connect to the internet if possible.</string>
+
+    <string name="property_information">Property information</string>
+    <string name="resident_name">Resident name</string>
+    <string name="phone_number">Phone number</string>
+    <string name="additional_phone_number">Additional phone</string>
+    <string name="email_address">Email</string>
+    <string name="auto_contact_frequency">Auto contact frequency</string>
 </resources>

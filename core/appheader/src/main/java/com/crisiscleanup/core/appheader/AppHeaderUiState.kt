@@ -12,8 +12,6 @@ interface AppHeaderUiState {
 
     fun setState(state: AppHeaderState)
     fun setTitle(title: String)
-    fun pushTitle(title: String)
-    fun popTitle(popAll: Boolean = false)
 }
 
 enum class AppHeaderState {

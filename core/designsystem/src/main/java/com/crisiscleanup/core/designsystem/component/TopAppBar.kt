@@ -3,6 +3,8 @@
 package com.crisiscleanup.core.designsystem.component
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
@@ -18,6 +20,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.crisiscleanup.core.designsystem.R
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 
 @Composable
@@ -124,6 +127,49 @@ fun CrisisCleanupTopAppBar(
             modifier = modifier
         )
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TopAppBarBackCancel(
+    modifier: Modifier = Modifier,
+    @StringRes titleResId: Int = 0,
+    title: String = "",
+    onBack: () -> Unit = {},
+    onCancel: () -> Unit = {},
+    colors: TopAppBarColors = TopAppBarDefaults.centerAlignedTopAppBarColors(),
+) {
+    val titleContent = @Composable {
+        TruncatedAppBarText(modifier, titleResId, title)
+    }
+    val navigationContent: (@Composable (() -> Unit)) =
+        @Composable {
+            // TODO Style, icon, height of app bar
+            Row(
+                modifier
+                    .clickable(onClick = onBack)
+                    .padding(8.dp)
+            ) {
+                Text(stringResource(R.string.back))
+            }
+        }
+    val actionsContent: (@Composable (RowScope.() -> Unit)) =
+        @Composable {
+            Text(
+                stringResource(R.string.cancel),
+                // TODO Style, height of app bar
+                modifier
+                    .clickable(onClick = onCancel)
+                    .padding(8.dp)
+            )
+        }
+    CenterAlignedTopAppBar(
+        title = titleContent,
+        navigationIcon = navigationContent,
+        actions = actionsContent,
+        colors = colors,
+        modifier = modifier
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

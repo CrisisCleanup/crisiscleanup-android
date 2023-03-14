@@ -6,36 +6,72 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.designsystem.component.TopAppBarBackCancel
 import com.crisiscleanup.feature.caseeditor.CaseEditorUiState
 import com.crisiscleanup.feature.caseeditor.CaseEditorViewModel
 import com.crisiscleanup.core.common.R as commonR
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun CaseEditorRoute(
-    onBackClick: () -> Unit,
+    onEditPropertyData: () -> Unit = {},
+    onBackClick: () -> Unit = {},
+    viewModel: CaseEditorViewModel = hiltViewModel(),
 ) {
     BackHandler {
         // TODO Prompt if there are unsaved changes on back click
         onBackClick()
     }
 
-    CaseEditorScreen()
+    // TODO Reset to false every time a new screen opens
+    // LaunchedEffect(Unit) { viewModel.navigateBack.value = false }
+    val navigateBack by remember { viewModel.navigateBack }
+    if (navigateBack) {
+        onBackClick()
+    } else {
+        val headerTitle by viewModel.headerTitle.collectAsState()
+        val onNavigateBack = remember(viewModel) {
+            {
+                if (viewModel.onNavigateBack()) {
+                    onBackClick()
+                }
+            }
+        }
+        val onNavigateCancel = remember(viewModel) {
+            {
+                if (viewModel.onNavigateCancel()) {
+                    onBackClick()
+                }
+            }
+        }
+        Column {
+            TopAppBarBackCancel(
+                title = headerTitle,
+                onBack = onNavigateBack,
+                onCancel = onNavigateCancel,
+            )
+            CaseEditorScreen(
+                onEditPropertyData = onEditPropertyData,
+            )
+        }
+    }
 }
 
 @Composable
 internal fun CaseEditorScreen(
     modifier: Modifier = Modifier,
     viewModel: CaseEditorViewModel = hiltViewModel(),
+    onEditPropertyData: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     when (uiState) {
@@ -46,7 +82,10 @@ internal fun CaseEditorScreen(
         }
         is CaseEditorUiState.WorksiteData -> {
             Box(Modifier.fillMaxSize()) {
-                EditCaseContents(uiState as CaseEditorUiState.WorksiteData)
+                EditCaseContents(
+                    uiState as CaseEditorUiState.WorksiteData,
+                    onEditPropertyData = onEditPropertyData,
+                )
             }
         }
         else -> {
@@ -69,12 +108,18 @@ private fun BoxScope.EditCaseContents(
     worksiteData: CaseEditorUiState.WorksiteData,
     modifier: Modifier = Modifier,
     viewModel: CaseEditorViewModel = hiltViewModel(),
+    onEditPropertyData: () -> Unit = {},
 ) {
     val isLoadingWorksite by viewModel.isLoadingWorksite.collectAsStateWithLifecycle()
     val isReadOnly by viewModel.isReadOnly.collectAsStateWithLifecycle()
 
     Column(modifier = modifier.matchParentSize()) {
         Text(worksiteData.incident.name)
+
+        PropertySummaryView(
+            viewModel.editableWorksite,
+            onEdit = onEditPropertyData
+        )
     }
 
     AnimatedVisibility(

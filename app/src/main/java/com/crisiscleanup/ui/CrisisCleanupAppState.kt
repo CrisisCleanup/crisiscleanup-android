@@ -74,6 +74,12 @@ class CrisisCleanupAppState(
             return route.startsWith(caseEditorRoute)
         }
 
+    val hasCustomTopBar: Boolean
+        @Composable get() {
+            val route = currentDestination?.route ?: ""
+            return route.startsWith(caseEditorRoute)
+        }
+
     val shouldShowBottomBar: Boolean
         get() = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
 

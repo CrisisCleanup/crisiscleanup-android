@@ -56,7 +56,6 @@ private fun WrapInDialog(
 @Composable
 internal fun SelectIncidentRoute(
     onBackClick: () -> Unit,
-    modifier: Modifier = Modifier,
     selectIncidentViewModel: SelectIncidentViewModel = hiltViewModel(),
     padding: Dp = 16.dp,
     textPadding: Dp = 16.dp,
@@ -67,7 +66,7 @@ internal fun SelectIncidentRoute(
     when (incidentsData) {
         IncidentsData.Loading -> {
             WrapInDialog(onBackClick, {
-                Box(modifier.padding(padding)) {
+                Box(Modifier.padding(padding)) {
                     CircularProgressIndicator()
                 }
             })
@@ -75,9 +74,9 @@ internal fun SelectIncidentRoute(
 
         is IncidentsData.Incidents -> {
             WrapInDialog(onBackClick, {
-                Column(modifier) {
+                Column {
                     Text(
-                        modifier = modifier.padding(textPadding),
+                        modifier = Modifier.padding(textPadding),
                         text = stringResource(R.string.change_incident),
                         style = MaterialTheme.typography.titleLarge
                     )
@@ -87,9 +86,8 @@ internal fun SelectIncidentRoute(
                     IncidentSelectContent(
                         selectIncidentViewModel,
                         incidents,
-                        modifier,
-                        onBackClick,
-                        padding,
+                        onBackClick = onBackClick,
+                        padding = padding,
                     )
                 }
             })
@@ -98,9 +96,8 @@ internal fun SelectIncidentRoute(
         else -> {
             WrapInDialog(onBackClick, {
                 NoIncidentsContent(
-                    modifier,
-                    onBackClick,
-                    padding,
+                    onBackClick = onBackClick,
+                    padding = padding,
                 )
             })
         }

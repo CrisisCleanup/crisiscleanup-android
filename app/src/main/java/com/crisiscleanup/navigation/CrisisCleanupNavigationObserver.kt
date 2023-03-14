@@ -48,7 +48,6 @@ class CrisisCleanupNavigationObserver @Inject constructor(
                 !topLevelRoutes.contains(fromRoute)
             ) {
                 headerUiState.setState(AppHeaderState.TopLevel)
-                headerUiState.popTitle(true)
             }
         }
             .launchIn(coroutineScope)

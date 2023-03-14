@@ -1,6 +1,5 @@
 package com.crisiscleanup.feature.caseeditor
 
-import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -33,6 +32,7 @@ class CaseEditorViewModel @Inject constructor(
     worksitesRepository: WorksitesRepository,
     languageRepository: LanguageTranslationsRepository,
     incidentSelectManager: IncidentSelector,
+    private val editableWorksiteProvider: EditableWorksiteProvider,
     private val appHeaderUiState: AppHeaderUiState,
     private val resourceProvider: AndroidResourceProvider,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
@@ -41,22 +41,24 @@ class CaseEditorViewModel @Inject constructor(
     private val caseEditorArgs = CaseEditorArgs(savedStateHandle)
     val isCreateWorksite = caseEditorArgs.worksiteId == null
 
-    private val _uiState = MutableStateFlow<CaseEditorUiState>(CaseEditorUiState.Loading)
-    val uiState: StateFlow<CaseEditorUiState> = _uiState
+    val uiState = MutableStateFlow<CaseEditorUiState>(CaseEditorUiState.Loading)
 
-    private val _isReadOnly = MutableStateFlow(true)
-    val isReadOnly: StateFlow<Boolean> = _isReadOnly
+    val isReadOnly = MutableStateFlow(true)
+
+    val headerTitle = MutableStateFlow("")
 
     private val _isRefreshingWorksite = MutableStateFlow(false)
     val isLoadingWorksite: StateFlow<Boolean> = _isRefreshingWorksite
 
-    private var _formFields = mutableStateOf(emptyList<FormFieldNode>())
-    private val formFields: State<List<FormFieldNode>> = _formFields
+    val editableWorksite: Worksite
+        get() = editableWorksiteProvider.editableWorksite
+
+    val navigateBack = mutableStateOf(false)
 
     init {
         val headerTitleResId =
             if (caseEditorArgs.worksiteId == null) R.string.create_case else R.string.edit_case
-        appHeaderUiState.pushTitle(resourceProvider.getString(headerTitleResId))
+        headerTitle.value = resourceProvider.getString(headerTitleResId)
 
         viewModelScope.launch(ioDispatcher) {
             var worksite: Worksite? = null
@@ -76,11 +78,9 @@ class CaseEditorViewModel @Inject constructor(
             val incident = incidentsRepository.getIncident(incidentId, true)
             if (incident?.formFields?.isEmpty() != false) {
                 logger.logException(Exception("Incident $incidentId not found when editing worksite $worksiteIdArg"))
-                _uiState.value = CaseEditorUiState.Error(R.string.incident_issue_try_again)
+                uiState.value = CaseEditorUiState.Error(R.string.incident_issue_try_again)
                 return@launch
             }
-
-            _formFields.value = FormFieldNode.buildTree(incident.formFields, languageRepository)
 
             try {
                 languageRepository.loadLanguages()
@@ -94,12 +94,11 @@ class CaseEditorViewModel @Inject constructor(
                 val isLocalModified = cachedWorksite.localChanges.isLocalModified
 
                 val caseNumber = cachedWorksite.worksite.caseNumber
-                val headerTitle =
+                headerTitle.value =
                     resourceProvider.getString(R.string.edit_case_case_number, caseNumber)
-                appHeaderUiState.setTitle(headerTitle)
 
                 worksite = cachedWorksite.worksite.copy()
-                _uiState.value = CaseEditorUiState.WorksiteData(
+                uiState.value = CaseEditorUiState.WorksiteData(
                     worksite!!,
                     incident,
                     cachedWorksite,
@@ -119,7 +118,7 @@ class CaseEditorViewModel @Inject constructor(
                             worksite = localWorksite!!.worksite.copy()
                         }
 
-                        _isReadOnly.value = false
+                        isReadOnly.value = false
                     } catch (e: Exception) {
                         // TODO This is going to be difficult. Plenty of state for possible change...
                         //      Show error message of some sort
@@ -132,18 +131,35 @@ class CaseEditorViewModel @Inject constructor(
             }
 
             if (isCreateWorksite) {
-                _isReadOnly.value = false
+                isReadOnly.value = false
             }
 
-            _uiState.value = CaseEditorUiState.WorksiteData(
-                worksite ?: EmptyWorksite.copy(
-                    autoContactFrequencyT = AutoContactFrequency.Often.literal,
-                ),
+            val initialWorksite = worksite ?: EmptyWorksite.copy(
+                autoContactFrequencyT = AutoContactFrequency.Often.literal,
+            )
+            // TODO Atomic set just in case
+            with(editableWorksiteProvider) {
+                editableWorksite = initialWorksite.copy()
+                formFields = FormFieldNode.buildTree(incident.formFields, languageRepository)
+            }
+
+            logger.logDebug("Loaded for editing", editableWorksiteProvider.editableWorksite.id)
+
+            uiState.value = CaseEditorUiState.WorksiteData(
+                initialWorksite,
                 incident,
                 localWorksite,
                 networkWorksiteSync,
             )
         }
+    }
+
+    fun onNavigateBack(): Boolean {
+        return true
+    }
+
+    fun onNavigateCancel(): Boolean {
+        return true
     }
 }
 
