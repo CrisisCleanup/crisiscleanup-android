@@ -134,7 +134,9 @@ internal fun ColumnScope.LocationView(
         LocationMapContainerView(mapModifier, true)
     } else {
         OutlinedClearableTextField(
-            modifier = columnItemModifier,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
             labelResId = R.string.location_address_search,
             value = locationInputData.locationQuery,
             onValueChange = updateLocation,
@@ -244,7 +246,8 @@ internal fun LocationMapView(
     }
 
     val markerState = rememberMarkerState()
-    markerState.position = viewModel.locationInputData.coordinates
+    val coordinates by viewModel.locationInputData.coordinates
+    markerState.position = coordinates
 
     val mapProperties by rememberMapProperties()
     GoogleMap(

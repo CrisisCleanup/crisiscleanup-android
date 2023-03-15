@@ -15,7 +15,7 @@ class LocationInputData(
     private val worksiteIn = worksite.copy()
 
     var locationQuery by mutableStateOf("")
-    var coordinates by mutableStateOf(coordinatesIn)
+    val coordinates = mutableStateOf(coordinatesIn)
 
     override fun updateCase() = updateCase(worksiteIn)
 
