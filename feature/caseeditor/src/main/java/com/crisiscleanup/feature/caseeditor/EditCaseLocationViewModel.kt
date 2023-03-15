@@ -1,6 +1,5 @@
 package com.crisiscleanup.feature.caseeditor
 
-import android.Manifest
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,6 +13,8 @@ import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.mapmarker.model.DefaultCoordinates
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
+import com.crisiscleanup.core.mapmarker.util.smallOffset
+import com.crisiscleanup.core.mapmarker.util.toLatLng
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.feature.caseeditor.model.LocationInputData
 import com.google.android.gms.maps.Projection
@@ -46,16 +47,17 @@ class EditCaseLocationViewModel @Inject constructor(
     val navigateBack = mutableStateOf(false)
 
     var isMoveLocationOnMapMode = mutableStateOf(false)
+    private var hasEnteredMoveLocationMapMode = false
 
     private val defaultMapZoom = 13 + (Math.random() * 1e-3).toFloat()
+    private var zoomCache = defaultMapZoom
     private var _mapCameraZoom = MutableStateFlow(MapViewCameraZoomDefault)
     val mapCameraZoom = _mapCameraZoom.asStateFlow()
 
+    /**
+     * Indicates if the map was manually moved (since last checked)
+     */
     private val isMapMoved = AtomicBoolean(false)
-    private val locationPermissionGranted = Pair(
-        Manifest.permission.ACCESS_COARSE_LOCATION,
-        PermissionStatus.Granted,
-    )
 
     init {
         val formFields = worksiteProvider.formFields
@@ -98,10 +100,7 @@ class EditCaseLocationViewModel @Inject constructor(
     private fun setMyLocationCoordinates() {
         viewModelScope.launch(coroutineDispatcher) {
             locationProvider.getLocation()?.let {
-                val coordinates = LatLng(
-                    it.first,
-                    it.second + Math.random() * 1e-6,
-                )
+                val coordinates = it.toLatLng().smallOffset()
                 locationInputData.coordinates.value = coordinates
                 _mapCameraZoom.value = MapViewCameraZoom(coordinates, defaultMapZoom)
             }
@@ -132,19 +131,28 @@ class EditCaseLocationViewModel @Inject constructor(
         // TODO Update reactive variable and query local and backend results when connected to internet (and not expired token)
     }
 
-    fun onMapLoaded() {
-        // TODO Delete if unnecessary
-    }
+    private fun centerCoordinatesZoom() = MapViewCameraZoom(
+        locationInputData.coordinates.value.smallOffset(),
+        defaultMapZoom,
+        0,
+    )
 
     fun onMapCameraChange(
         cameraPosition: CameraPosition,
         projection: Projection?,
         isActiveChange: Boolean
     ) {
+        zoomCache = cameraPosition.zoom
+
         if (isMoveLocationOnMapMode.value) {
             projection?.let {
-                val center = it.visibleRegion.latLngBounds.center
-                locationInputData.coordinates.value = center
+                if (hasEnteredMoveLocationMapMode) {
+                    val center = it.visibleRegion.latLngBounds.center
+                    locationInputData.coordinates.value = center
+                } else {
+                    hasEnteredMoveLocationMapMode = true
+                    _mapCameraZoom.value = centerCoordinatesZoom()
+                }
             }
         }
 
@@ -154,7 +162,17 @@ class EditCaseLocationViewModel @Inject constructor(
     }
 
     fun toggleMoveLocationOnMap() {
+        if (isMoveLocationOnMapMode.value) {
+            _mapCameraZoom.value = centerCoordinatesZoom()
+        } else {
+            hasEnteredMoveLocationMapMode = false
+        }
         isMoveLocationOnMapMode.value = !isMoveLocationOnMapMode.value
+    }
+
+    fun centerOnLocation() {
+        val coordinates = locationInputData.coordinates.value.smallOffset()
+        _mapCameraZoom.value = MapViewCameraZoom(coordinates, zoomCache)
     }
 
     fun onSystemBack(): Boolean {

@@ -1,6 +1,7 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -98,6 +99,7 @@ internal fun EditCaseLocationRoute(
                 onBack = onNavigateBack,
                 onCancel = onNavigateCancel,
             )
+            // TODO There is gap between the top bar and the location views
             LocationView()
         }
     }
@@ -163,13 +165,15 @@ private val buttonSizeModifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 4
 
 @Composable
 internal fun MapButton(
-    imageVector: ImageVector,
-    @StringRes contentDescriptionResId: Int,
-    onClick: () -> Unit,
+    imageVector: ImageVector? = null,
+    @DrawableRes iconResId: Int = 0,
+    @StringRes contentDescriptionResId: Int = 0,
+    onClick: () -> Unit = {},
 ) {
     CrisisCleanupIconButton(
         modifier = buttonSizeModifier,
         imageVector = imageVector,
+        iconResId = iconResId,
         contentDescriptionResId = contentDescriptionResId,
         onClick = onClick,
     )
@@ -183,16 +187,9 @@ internal fun LocationMapActions(
     isMoveLocationMode: Boolean,
     viewModel: EditCaseLocationViewModel = hiltViewModel(),
 ) {
-    val useMyLocation = remember(viewModel) {
-        {
-            viewModel.useMyLocation()
-        }
-    }
-    val moveLocationOnMap = remember(viewModel) {
-        {
-            viewModel.toggleMoveLocationOnMap()
-        }
-    }
+    val useMyLocation = remember(viewModel) { { viewModel.useMyLocation() } }
+    val moveLocationOnMap = remember(viewModel) { { viewModel.toggleMoveLocationOnMap() } }
+    val centerOnLocation = remember(viewModel) { { viewModel.centerOnLocation() } }
 
     ConstraintLayout(Modifier.fillMaxSize()) {
         val (actionBar) = createRefs()
@@ -206,11 +203,16 @@ internal fun LocationMapActions(
         ) {
             // TODO Likely hint with translator
             MapButton(
-                imageVector = CrisisCleanupIcons.EditLocationOnMap,
+                iconResId = R.drawable.ic_move_location,
                 contentDescriptionResId = R.string.select_on_map,
                 onClick = moveLocationOnMap,
             )
             if (!isMoveLocationMode) {
+                MapButton(
+                    imageVector = CrisisCleanupIcons.Location,
+                    contentDescriptionResId = R.string.center_on_location,
+                    onClick = centerOnLocation,
+                )
                 MapButton(
                     imageVector = CrisisCleanupIcons.MyLocation,
                     contentDescriptionResId = R.string.use_my_location,
@@ -227,11 +229,11 @@ internal fun LocationMapView(
     viewModel: EditCaseLocationViewModel = hiltViewModel(),
     mapCameraBounds: MapViewCameraBounds = MapViewCameraBoundsDefault,
 ) {
-    val onMapLoaded = remember(viewModel) { {} }
     val onMapCameraChange = remember(viewModel) {
-        { cameraPosition: CameraPosition,
+        { position: CameraPosition,
           projection: Projection?,
           isUserInteraction: Boolean ->
+            viewModel.onMapCameraChange(position, projection, isUserInteraction)
         }
     }
 
@@ -254,7 +256,6 @@ internal fun LocationMapView(
         modifier = modifier,
         uiSettings = uiSettings,
         properties = mapProperties,
-        onMapLoaded = onMapLoaded,
         cameraPositionState = cameraPositionState,
     ) {
         Marker(markerState)

@@ -16,7 +16,7 @@ object CrisisCleanupIcons {
     val Cases = R.drawable.ic_cases
     val Clear = Icons.Default.Clear
     val Dashboard = R.drawable.ic_dashboard
-    val EditLocationOnMap = Icons.Default.EditLocation
+    val Location = Icons.Default.LocationOn
     val Menu = Icons.Default.Menu
     val MoreVert = Icons.Default.MoreVert
     val MyLocation = Icons.Default.MyLocation

@@ -7,6 +7,7 @@ import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.LocationsRepository
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraBounds
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraBoundsDefault
+import com.crisiscleanup.core.mapmarker.util.smallOffset
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.IncidentLocation
 import com.google.android.gms.maps.model.LatLng
@@ -142,9 +143,7 @@ internal class CasesMapBoundsManager constructor(
     fun restoreIncidentBounds() {
         val incidentId = incidentSelector.incidentId.value
         incidentBoundsCache[incidentId]?.let {
-            // TODO Force rebounding in a less hacky way
-            val latitude = it.northeast.latitude + 1e-9 * Math.random()
-            val ne = LatLng(latitude, it.northeast.longitude)
+            val ne = it.northeast.smallOffset()
             val bounds = LatLngBounds(it.southwest, ne)
 
             _mapCameraBounds.value = MapViewCameraBounds(bounds)
