@@ -13,9 +13,11 @@ dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:model"))
 
+    implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.runtime)
 
+    implementation(libs.google.maps.compose)
     implementation(libs.playservices.maps)
     implementation(libs.android.material.material)
 

@@ -13,6 +13,13 @@ import dagger.hilt.components.SingletonComponent
 @InstallIn(SingletonComponent::class)
 object LoggersModule {
     @Provides
+    @Logger(CrisisCleanupLoggers.App)
+    fun providesAppLogger(logger: TagLogger): AppLogger {
+        logger.tag = "app"
+        return logger
+    }
+
+    @Provides
     @Logger(CrisisCleanupLoggers.Auth)
     fun providesAuthLogger(logger: TagLogger): AppLogger {
         logger.tag = "auth"

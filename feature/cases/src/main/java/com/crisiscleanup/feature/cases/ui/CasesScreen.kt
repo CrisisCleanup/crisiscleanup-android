@@ -13,7 +13,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -23,18 +22,22 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.domain.IncidentsData
+import com.crisiscleanup.core.mapmarker.model.MapViewCameraBounds
+import com.crisiscleanup.core.mapmarker.model.MapViewCameraBoundsDefault
+import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
+import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
+import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
+import com.crisiscleanup.core.mapmarker.ui.rememberMapUiSettings
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.feature.cases.CasesViewModel
 import com.crisiscleanup.feature.cases.R
-import com.crisiscleanup.feature.cases.model.*
+import com.crisiscleanup.feature.cases.model.WorksiteGoogleMapMark
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.TileProvider
 import com.google.maps.android.compose.*
-import com.crisiscleanup.core.mapmarker.R as mapmarkerR
 
 @Composable
 internal fun CasesRoute(
@@ -233,16 +236,7 @@ internal fun BoxScope.CasesMapView(
 ) {
     // TODO Profile and optimize recompositions when map is changed (by user) if possible.
 
-    val uiSettings by remember {
-        mutableStateOf(
-            MapUiSettings(
-                zoomControlsEnabled = false,
-                tiltGesturesEnabled = false,
-                rotationGesturesEnabled = false,
-                mapToolbarEnabled = false,
-            )
-        )
-    }
+    val uiSettings by rememberMapUiSettings()
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(
             mapCameraBounds.bounds.center,
@@ -250,18 +244,7 @@ internal fun BoxScope.CasesMapView(
         )
     }
 
-    val context = LocalContext.current
-    val mapProperties by remember {
-        mutableStateOf(
-            MapProperties(
-                mapStyleOptions = MapStyleOptions.loadRawResourceStyle(
-                    context,
-                    mapmarkerR.raw.map_style,
-                )
-            )
-        )
-    }
-
+    val mapProperties by rememberMapProperties()
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
         uiSettings = uiSettings,
@@ -376,6 +359,7 @@ internal fun BoxScope.CasesMapView(
     )
 }
 
+// TODO Move into common
 private val actionSpacing = 8.dp
 private val fabSpacing = 16.dp
 

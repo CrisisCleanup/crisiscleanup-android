@@ -2,10 +2,14 @@ package com.crisiscleanup.di
 
 import android.content.Context
 import androidx.credentials.CredentialManager
+import com.crisiscleanup.AndroidLocationProvider
+import com.crisiscleanup.AndroidPermissionManager
 import com.crisiscleanup.CrisisCleanupAppEnv
 import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.common.AppEnv
+import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.NavigationObserver
+import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.log.TagLogger
 import com.crisiscleanup.core.network.RetrofitInterceptorProvider
 import com.crisiscleanup.core.ui.SearchManager
@@ -49,6 +53,13 @@ interface AppModule {
     @Singleton
     @Binds
     fun bindSearchManager(searchManager: AppSearchManager): SearchManager
+
+    @Singleton
+    @Binds
+    fun bindsPermissionManager(manager: AndroidPermissionManager): PermissionManager
+
+    @Binds
+    fun bindsLocationProvider(provider: AndroidLocationProvider): LocationProvider
 }
 
 @Module

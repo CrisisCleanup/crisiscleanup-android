@@ -164,31 +164,27 @@ private fun LoginScreen(
 
         val focusEmail = viewModel.loginInputData.emailAddress.isEmpty() ||
                 viewModel.isInvalidEmail.value
-        val rememberBindEmailInput = remember(viewModel) {
-            { s: String -> viewModel.loginInputData.emailAddress = s }
-        }
-        val rememberClearErrorVisuals = remember(viewModel) {
-            { viewModel.clearErrorVisuals() }
-        }
+        val updateEmailInput =
+            remember(viewModel) { { s: String -> viewModel.loginInputData.emailAddress = s } }
+        val clearErrorVisuals = remember(viewModel) { { viewModel.clearErrorVisuals() } }
         OutlinedClearableTextField(
             // TODO Listening onFocusChanged forces an input to recompose on any input change.
             //      Research if possible to decouple focus change when not in focus.
             modifier = fillWidthPadded.onFocusChanged(onInputFocus),
             labelResId = R.string.email,
             value = viewModel.loginInputData.emailAddress,
-            onValueChange = { rememberBindEmailInput(it) },
+            onValueChange = updateEmailInput,
             keyboardType = KeyboardType.Email,
             enabled = isNotBusy,
             isError = viewModel.isInvalidEmail.value,
             hasFocus = focusEmail,
-            onNext = { rememberClearErrorVisuals() },
+            onNext = clearErrorVisuals,
         )
 
         var isObfuscatingPassword by rememberSaveable { mutableStateOf(true) }
         val focusManager = LocalFocusManager.current
-        val rememberBindPasswordInput = remember(viewModel) {
-            { s: String -> viewModel.loginInputData.password = s }
-        }
+        val updatePasswordInput =
+            remember(viewModel) { { s: String -> viewModel.loginInputData.password = s } }
         val rememberAuth = remember(viewModel) {
             {
                 // Allows email input to request focus if necessary
@@ -200,7 +196,7 @@ private fun LoginScreen(
             modifier = fillWidthPadded.onFocusChanged(onInputFocus),
             labelResId = R.string.password,
             value = viewModel.loginInputData.password,
-            onValueChange = { rememberBindPasswordInput(it) },
+            onValueChange = updatePasswordInput,
             isObfuscating = isObfuscatingPassword,
             onObfuscate = { isObfuscatingPassword = !isObfuscatingPassword },
             enabled = isNotBusy,

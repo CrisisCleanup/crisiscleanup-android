@@ -1,4 +1,4 @@
-package com.crisiscleanup.feature.cases.model
+package com.crisiscleanup.core.mapmarker.model
 
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
@@ -17,8 +17,9 @@ data class MapViewCameraBounds(
     fun takeApply(): Boolean = applyToMap.getAndSet(false)
 }
 
-private val swDefault = LatLng(40.272621, -96.012327)
-private val neDefault = LatLng(40.282621, -96.002327)
+val DefaultCoordinates = LatLng(40.272621, -96.012327)
+private val swDefault = DefaultCoordinates
+private val neDefault = DefaultCoordinates
 val MapViewCameraBoundsDefault = MapViewCameraBounds(
     LatLngBounds(swDefault, neDefault),
     0,

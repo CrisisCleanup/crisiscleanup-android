@@ -52,7 +52,8 @@ class CaseEditorViewModel @Inject constructor(
 
     init {
         val headerTitleResId =
-            if (caseEditorArgs.worksiteId == null) R.string.create_case else R.string.edit_case
+            if (caseEditorArgs.worksiteId == null) R.string.create_case
+            else R.string.view_case
         headerTitle.value = resourceProvider.getString(headerTitleResId)
 
         with(editableWorksiteProvider) {
@@ -95,7 +96,7 @@ class CaseEditorViewModel @Inject constructor(
 
                 val caseNumber = cachedWorksite.worksite.caseNumber
                 headerTitle.value =
-                    resourceProvider.getString(R.string.edit_case_case_number, caseNumber)
+                    resourceProvider.getString(R.string.view_case_number, caseNumber)
 
                 worksite = cachedWorksite.worksite.copy()
                 editableWorksiteProvider.editableWorksite.value = worksite!!
@@ -153,8 +154,18 @@ class CaseEditorViewModel @Inject constructor(
         }
     }
 
+    /**
+     * @return true if save is ongoing or false if not and processes can continue
+     */
+    fun saveChanges(promptSave: Boolean = false): Boolean {
+        // TODO Compare current and save if there are changes. Show progress.
+        //      Close on successful save.
+        //      Alert on fail with option to abandon (should never happen when saving and queueing locally).
+        return false
+    }
+
     fun onNavigateBack(): Boolean {
-        return true
+        return !saveChanges(true)
     }
 
     fun onNavigateCancel(): Boolean {

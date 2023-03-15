@@ -22,7 +22,7 @@ class MainActivityViewModel @Inject constructor(
     accountDataRepository: AccountDataRepository,
     incidentSelector: IncidentSelector,
     val appHeaderUiState: AppHeaderUiState,
-    authEventManager: AuthEventManager,
+    private val authEventManager: AuthEventManager,
     val searchManager: SearchManager,
     incidentsRepository: IncidentsRepository,
     worksitesRepository: WorksitesRepository,
@@ -66,8 +66,10 @@ class MainActivityViewModel @Inject constructor(
                 worksitesLoading
     }
 
+    private var expiredTokenListenerId = -1
+
     init {
-        authEventManager.addExpiredTokenListener(this)
+        expiredTokenListenerId = authEventManager.addExpiredTokenListener(this)
 
         incidentSelector.incidentId
             .onEach {
@@ -77,6 +79,10 @@ class MainActivityViewModel @Inject constructor(
             .launchIn(viewModelScope)
 
         syncPuller.appPullLanguage()
+    }
+
+    override fun onCleared() {
+        authEventManager.removeExpiredTokenListener(expiredTokenListenerId)
     }
 
     private fun syncIncidents() {

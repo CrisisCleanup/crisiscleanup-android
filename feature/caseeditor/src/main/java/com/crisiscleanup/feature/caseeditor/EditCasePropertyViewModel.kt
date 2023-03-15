@@ -3,7 +3,6 @@ package com.crisiscleanup.feature.caseeditor
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.InputValidator
 import com.crisiscleanup.core.common.KeyTranslator
@@ -22,7 +21,6 @@ import javax.inject.Inject
 class EditCasePropertyViewModel @Inject constructor(
     private val worksiteProvider: EditableWorksiteProvider,
     inputValidator: InputValidator,
-    appHeaderUiState: AppHeaderUiState,
     resourceProvider: AndroidResourceProvider,
     translator: KeyTranslator,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
@@ -48,8 +46,6 @@ class EditCasePropertyViewModel @Inject constructor(
     )
 
     init {
-        appHeaderUiState.setTitle(resourceProvider.getString(R.string.property_information))
-
         propertyInputData = PropertyInputData(
             inputValidator,
             worksiteProvider.editableWorksite.value,

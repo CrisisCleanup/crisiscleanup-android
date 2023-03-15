@@ -96,8 +96,14 @@ class AuthenticationViewModel @Inject constructor(
     var isInvalidPassword = mutableStateOf(false)
         private set
 
+    private var passwordResultListenerId = -1
+
     init {
-        authEventManager.addPasswordResultListener(this)
+        passwordResultListenerId = authEventManager.addPasswordResultListener(this)
+    }
+
+    override fun onCleared() {
+        authEventManager.removePasswordResultListener(passwordResultListenerId)
     }
 
     // TODO Test (if not included in other tests)

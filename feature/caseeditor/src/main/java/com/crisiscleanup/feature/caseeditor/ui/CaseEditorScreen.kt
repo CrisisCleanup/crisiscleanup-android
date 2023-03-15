@@ -25,12 +25,15 @@ import com.crisiscleanup.core.common.R as commonR
 @Composable
 internal fun CaseEditorRoute(
     onEditPropertyData: () -> Unit = {},
+    onEditLocation: () -> Unit = {},
     onBackClick: () -> Unit = {},
     viewModel: CaseEditorViewModel = hiltViewModel(),
 ) {
     BackHandler {
-        // TODO Prompt if there are unsaved changes on back click
-        onBackClick()
+        if (!viewModel.saveChanges()) {
+            // TODO Prompt if there are unsaved changes on back click
+            onBackClick()
+        }
     }
 
     val navigateBack by remember { viewModel.navigateBack }
@@ -59,7 +62,8 @@ internal fun CaseEditorRoute(
                 onCancel = onNavigateCancel,
             )
             CaseEditorScreen(
-                onEditPropertyData = onEditPropertyData,
+                onEditProperty = onEditPropertyData,
+                onEditLocation = onEditLocation,
             )
         }
     }
@@ -69,7 +73,8 @@ internal fun CaseEditorRoute(
 internal fun CaseEditorScreen(
     modifier: Modifier = Modifier,
     viewModel: CaseEditorViewModel = hiltViewModel(),
-    onEditPropertyData: () -> Unit = {},
+    onEditProperty: () -> Unit = {},
+    onEditLocation: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     when (uiState) {
@@ -82,7 +87,8 @@ internal fun CaseEditorScreen(
             Box(Modifier.fillMaxSize()) {
                 CaseSummary(
                     uiState as CaseEditorUiState.WorksiteData,
-                    onEditPropertyData = onEditPropertyData,
+                    editPropertyData = onEditProperty,
+                    editLocation = onEditLocation,
                 )
             }
         }
@@ -106,7 +112,8 @@ private fun BoxScope.CaseSummary(
     worksiteData: CaseEditorUiState.WorksiteData,
     modifier: Modifier = Modifier,
     viewModel: CaseEditorViewModel = hiltViewModel(),
-    onEditPropertyData: () -> Unit = {},
+    editPropertyData: () -> Unit = {},
+    editLocation: () -> Unit = {},
 ) {
     val isLoadingWorksite by viewModel.isLoadingWorksite.collectAsStateWithLifecycle()
     val isReadOnly by viewModel.isReadOnly.collectAsStateWithLifecycle()
@@ -122,7 +129,12 @@ private fun BoxScope.CaseSummary(
         val worksite by viewModel.editingWorksite.collectAsStateWithLifecycle()
         PropertySummaryView(
             worksite,
-            onEdit = onEditPropertyData
+            onEdit = editPropertyData,
+        )
+
+        LocationSummaryView(
+            worksite,
+            onEdit = editLocation,
         )
     }
 

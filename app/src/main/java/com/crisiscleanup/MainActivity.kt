@@ -18,6 +18,7 @@ import androidx.metrics.performance.JankStats
 import com.crisiscleanup.MainActivityUiState.Loading
 import com.crisiscleanup.MainActivityUiState.Success
 import com.crisiscleanup.core.common.NavigationObserver
+import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.event.*
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
@@ -68,15 +69,23 @@ class MainActivity : ComponentActivity(),
     @Inject
     internal lateinit var credentialManager: CredentialManager
 
+    @Inject
+    internal lateinit var permissionManager: PermissionManager
+
     private lateinit var credentialSaveRetrieveManager: CredentialSaveRetrieveManager
+
+    private var requestCredentialsListenerId = -1
+    private var saveCredentialsListenerId = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         MapsInitializer.initialize(this, Renderer.LATEST) {}
 
-        authEventManager.addCredentialsRequestListener(this)
-        authEventManager.addSaveCredentialsListener(this)
+        requestCredentialsListenerId = authEventManager.addCredentialsRequestListener(this)
+        saveCredentialsListenerId = authEventManager.addSaveCredentialsListener(this)
+
+        (permissionManager as? AndroidPermissionManager)?.let { lifecycle.addObserver(it) }
 
         credentialSaveRetrieveManager = CredentialSaveRetrieveManager(
             lifecycleScope,
@@ -143,6 +152,13 @@ class MainActivity : ComponentActivity(),
     override fun onPause() {
         super.onPause()
         lazyStats.get().isTrackingEnabled = false
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        authEventManager.removeCredentialsRequestListener(requestCredentialsListenerId)
+        authEventManager.removeSaveCredentialsListener(saveCredentialsListenerId)
     }
 
     override fun onTrimMemory(level: Int) {

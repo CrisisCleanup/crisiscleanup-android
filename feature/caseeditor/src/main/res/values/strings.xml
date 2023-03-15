@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="create_case">Create Case</string>
-    <string name="edit_case">Edit Case</string>
-    <string name="edit_case_case_number">Edit Case %1$s</string>
+    <string name="view_case">View Case</string>
+    <string name="view_case_number">Case %1$s</string>
     <string name="incident_issue_try_again">There seems to be an issue with the current incident. Please try again. Connect to the internet if possible.</string>
 
     <string name="property_information">Property information</string>
@@ -16,4 +16,9 @@
     <string name="phone_is_required">Enter a phone number</string>
     <string name="invalid_email">Enter a valid email address</string>
     <string name="invalid_auto_frequency">Select an auto contact frequency</string>
+
+    <string name="location">Location</string>
+    <string name="location_address_search">Location/address search</string>
+    <string name="use_my_location">Use my location</string>
+    <string name="select_on_map">Select on map</string>
 </resources>

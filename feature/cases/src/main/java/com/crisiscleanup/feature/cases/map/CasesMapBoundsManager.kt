@@ -5,25 +5,15 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.LocationsRepository
+import com.crisiscleanup.core.mapmarker.model.MapViewCameraBounds
+import com.crisiscleanup.core.mapmarker.model.MapViewCameraBoundsDefault
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.IncidentLocation
-import com.crisiscleanup.feature.cases.model.MapViewCameraBounds
-import com.crisiscleanup.feature.cases.model.MapViewCameraBoundsDefault
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 
 internal class CasesMapBoundsManager constructor(
     coroutineScope: CoroutineScope,

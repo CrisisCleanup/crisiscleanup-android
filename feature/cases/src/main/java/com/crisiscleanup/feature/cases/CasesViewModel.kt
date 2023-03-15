@@ -24,6 +24,8 @@ import com.crisiscleanup.core.data.util.IncidentWorksitesDataPullStats
 import com.crisiscleanup.core.data.util.WorksitesDataPullReporter
 import com.crisiscleanup.core.domain.LoadIncidentDataUseCase
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
+import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
+import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.ui.SearchManager
 import com.crisiscleanup.feature.cases.map.*

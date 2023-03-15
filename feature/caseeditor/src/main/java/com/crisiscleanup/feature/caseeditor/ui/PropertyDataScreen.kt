@@ -97,40 +97,17 @@ internal fun EditCasePropertyRoute(
     }
 }
 
-// TODO Move into util/common
-@Composable
-internal fun ErrorText(
-    errorMessage: String,
-) {
-    if (errorMessage.isNotEmpty()) {
-        Text(
-            errorMessage,
-            modifier = errorMessageModifier,
-            color = MaterialTheme.colorScheme.error,
-        )
-    }
-}
-
-private val errorMessageModifier = Modifier.padding(top = 8.dp, start = 16.dp, end = 16.dp)
-
 @Composable
 internal fun PropertyFormView(
     modifier: Modifier = Modifier,
     viewModel: EditCasePropertyViewModel = hiltViewModel(),
 ) {
-    // TODO Make function/constant
-    val columnItemModifier = modifier
-        .fillMaxWidth()
-        .padding(16.dp, 8.dp)
-
     val propertyInputData = viewModel.propertyInputData
 
-    val updateName = remember(propertyInputData) {
-        { it: String -> propertyInputData.residentName = it }
-    }
-    val clearNameError = remember(propertyInputData) {
-        { propertyInputData.residentNameError = "" }
-    }
+    val updateName =
+        remember(propertyInputData) { { s: String -> propertyInputData.residentName = s } }
+    val clearNameError =
+        remember(propertyInputData) { { propertyInputData.residentNameError = "" } }
     val isNameError = propertyInputData.residentNameError.isNotEmpty()
     val focusName = propertyInputData.residentName.isEmpty() || isNameError
     Column(modifier = modifier.fillMaxWidth()) {
@@ -139,7 +116,7 @@ internal fun PropertyFormView(
             modifier = columnItemModifier,
             labelResId = R.string.resident_name,
             value = propertyInputData.residentName,
-            onValueChange = { updateName(it) },
+            onValueChange = updateName,
             keyboardType = KeyboardType.Text,
             isError = isNameError,
             hasFocus = focusName,
@@ -148,12 +125,10 @@ internal fun PropertyFormView(
         )
 
         // TODO Apply mask with dashes if input is purely numbers (and dashes)
-        val updatePhone = remember(propertyInputData) {
-            { it: String -> propertyInputData.phoneNumber = it }
-        }
-        val clearPhoneError = remember(propertyInputData) {
-            { propertyInputData.phoneNumberError = "" }
-        }
+        val updatePhone =
+            remember(propertyInputData) { { s: String -> propertyInputData.phoneNumber = s } }
+        val clearPhoneError =
+            remember(propertyInputData) { { propertyInputData.phoneNumberError = "" } }
         val isPhoneError = propertyInputData.phoneNumberError.isNotEmpty()
         val focusPhone = isPhoneError
         ErrorText(propertyInputData.phoneNumberError)
@@ -161,7 +136,7 @@ internal fun PropertyFormView(
             modifier = columnItemModifier,
             labelResId = R.string.phone_number,
             value = propertyInputData.phoneNumber,
-            onValueChange = { updatePhone(it) },
+            onValueChange = updatePhone,
             keyboardType = KeyboardType.Phone,
             isError = isPhoneError,
             hasFocus = focusPhone,
@@ -170,24 +145,21 @@ internal fun PropertyFormView(
         )
 
         val updateAdditionalPhone = remember(propertyInputData) {
-            { it: String -> propertyInputData.phoneNumberSecondary = it }
+            { s: String -> propertyInputData.phoneNumberSecondary = s }
         }
         OutlinedClearableTextField(
             modifier = columnItemModifier,
             labelResId = R.string.additional_phone_number,
             value = propertyInputData.phoneNumberSecondary,
-            onValueChange = { updateAdditionalPhone(it) },
+            onValueChange = updateAdditionalPhone,
             keyboardType = KeyboardType.Text,
             isError = false,
             enabled = true,
         )
 
-        val updateEmail = remember(propertyInputData) {
-            { it: String -> propertyInputData.email = it }
-        }
-        val clearEmailError = remember(propertyInputData) {
-            { propertyInputData.emailError = "" }
-        }
+        val updateEmail =
+            remember(propertyInputData) { { s: String -> propertyInputData.email = s } }
+        val clearEmailError = remember(propertyInputData) { { propertyInputData.emailError = "" } }
         val isEmailError = propertyInputData.emailError.isNotEmpty()
         val focusEmail = isEmailError
         ErrorText(propertyInputData.emailError)
@@ -195,7 +167,7 @@ internal fun PropertyFormView(
             modifier = columnItemModifier,
             labelResId = R.string.email_address,
             value = propertyInputData.email,
-            onValueChange = { updateEmail(it) },
+            onValueChange = updateEmail,
             keyboardType = KeyboardType.Email,
             isError = isEmailError,
             hasFocus = focusEmail,

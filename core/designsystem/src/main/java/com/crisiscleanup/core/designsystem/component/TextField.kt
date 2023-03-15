@@ -76,7 +76,7 @@ fun OutlinedSingleLineTextField(
         label = labelContent,
         value = value,
         // Physical keyboard input will append tab/enter characters. Use onscreen when testing.
-        onValueChange = { onValueChange(it) },
+        onValueChange = onValueChange,
         singleLine = true,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
