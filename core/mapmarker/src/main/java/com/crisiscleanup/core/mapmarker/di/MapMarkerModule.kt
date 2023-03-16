@@ -1,9 +1,6 @@
 package com.crisiscleanup.core.mapmarker.di
 
-import com.crisiscleanup.core.mapmarker.InMemoryDotProvider
-import com.crisiscleanup.core.mapmarker.MapCaseDotProvider
-import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
-import com.crisiscleanup.core.mapmarker.WorkTypeIconProvider
+import com.crisiscleanup.core.mapmarker.*
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -20,4 +17,10 @@ interface MapMarkerModule {
     @Singleton
     @Binds
     fun bindsMapIconProvider(provider: WorkTypeIconProvider): MapCaseIconProvider
+
+    @Singleton
+    @Binds
+    fun bindsBitmapIconProvider(
+        provider: CrisisCleanupDrawableResourceBitmapProvider
+    ): DrawableResourceBitmapProvider
 }

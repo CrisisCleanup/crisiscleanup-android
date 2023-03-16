@@ -251,6 +251,8 @@ internal fun LocationMapView(
     val coordinates by viewModel.locationInputData.coordinates
     markerState.position = coordinates
 
+    val mapMarkerIcon by viewModel.mapMarkerIcon
+
     val mapProperties by rememberMapProperties()
     GoogleMap(
         modifier = modifier,
@@ -258,7 +260,10 @@ internal fun LocationMapView(
         properties = mapProperties,
         cameraPositionState = cameraPositionState,
     ) {
-        Marker(markerState)
+        Marker(
+            markerState,
+            icon = mapMarkerIcon,
+        )
     }
 
 

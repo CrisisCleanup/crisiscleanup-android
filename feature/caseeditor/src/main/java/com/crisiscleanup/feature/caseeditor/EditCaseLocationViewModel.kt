@@ -10,6 +10,7 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.Default
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.repository.IncidentsRepository
+import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
 import com.crisiscleanup.core.mapmarker.model.DefaultCoordinates
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
@@ -18,6 +19,7 @@ import com.crisiscleanup.core.mapmarker.util.toLatLng
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.feature.caseeditor.model.LocationInputData
 import com.google.android.gms.maps.Projection
+import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,6 +32,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
+import com.crisiscleanup.core.common.R as commonR
 
 @HiltViewModel
 class EditCaseLocationViewModel @Inject constructor(
@@ -38,6 +41,7 @@ class EditCaseLocationViewModel @Inject constructor(
     private val permissionManager: PermissionManager,
     private val locationProvider: LocationProvider,
     resourceProvider: AndroidResourceProvider,
+    drawableResourceBitmapProvider: DrawableResourceBitmapProvider,
     translator: KeyTranslator,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
     @Dispatcher(Default) private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
@@ -53,6 +57,8 @@ class EditCaseLocationViewModel @Inject constructor(
     private var zoomCache = defaultMapZoom
     private var _mapCameraZoom = MutableStateFlow(MapViewCameraZoomDefault)
     val mapCameraZoom = _mapCameraZoom.asStateFlow()
+
+    val mapMarkerIcon = mutableStateOf<BitmapDescriptor?>(null)
 
     /**
      * Indicates if the map was manually moved (since last checked)
@@ -76,6 +82,14 @@ class EditCaseLocationViewModel @Inject constructor(
                 setMyLocationCoordinates()
             }
         }.launchIn(viewModelScope)
+
+        viewModelScope.launch {
+            mapMarkerIcon.value =
+                drawableResourceBitmapProvider.getIcon(
+                    commonR.drawable.cc_foreground_pin,
+                    Pair(32f, 48f),
+                )
+        }
 
         setDefaultMapCamera(coordinates)
     }
