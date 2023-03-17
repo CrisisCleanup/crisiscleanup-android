@@ -34,7 +34,7 @@ fun PopulatedWorksite.asExternalModel(): Worksite {
         createdAt = entity.createdAt,
         email = entity.email,
         favoriteId = entity.favoriteId,
-        incident = entity.incidentId,
+        incidentId = entity.incidentId,
         keyWorkType = validWorkTypes.find { it.workType == entity.keyWorkTypeType }
             ?.asExternalModel(),
         latitude = entity.latitude,

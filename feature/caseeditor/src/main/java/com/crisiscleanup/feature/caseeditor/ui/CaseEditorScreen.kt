@@ -112,6 +112,7 @@ private fun BoxScope.CaseSummary(
     worksiteData: CaseEditorUiState.WorksiteData,
     modifier: Modifier = Modifier,
     viewModel: CaseEditorViewModel = hiltViewModel(),
+
     editPropertyData: () -> Unit = {},
     editLocation: () -> Unit = {},
 ) {
@@ -127,15 +128,23 @@ private fun BoxScope.CaseSummary(
         )
 
         val worksite by viewModel.editingWorksite.collectAsStateWithLifecycle()
+        if (viewModel.isCreateWorksite) {
+            LocationSummaryView(
+                worksite,
+                onEdit = editLocation,
+            )
+        }
         PropertySummaryView(
             worksite,
             onEdit = editPropertyData,
         )
 
-        LocationSummaryView(
-            worksite,
-            onEdit = editLocation,
-        )
+        if (!viewModel.isCreateWorksite) {
+            LocationSummaryView(
+                worksite,
+                onEdit = editLocation,
+            )
+        }
     }
 
     AnimatedVisibility(

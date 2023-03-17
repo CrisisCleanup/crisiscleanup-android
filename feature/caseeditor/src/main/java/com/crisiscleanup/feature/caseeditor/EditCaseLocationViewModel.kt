@@ -3,13 +3,16 @@ package com.crisiscleanup.feature.caseeditor
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.crisiscleanup.core.addresssearch.AddressSearchRepository
 import com.crisiscleanup.core.common.*
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.Default
+import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.repository.IncidentsRepository
+import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
 import com.crisiscleanup.core.mapmarker.model.DefaultCoordinates
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
@@ -25,10 +28,7 @@ import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
@@ -37,16 +37,22 @@ import com.crisiscleanup.core.common.R as commonR
 @HiltViewModel
 class EditCaseLocationViewModel @Inject constructor(
     private val incidentsRepository: IncidentsRepository,
-    private val worksiteProvider: EditableWorksiteProvider,
+    worksiteProvider: EditableWorksiteProvider,
     private val permissionManager: PermissionManager,
     private val locationProvider: LocationProvider,
+    searchWorksitesRepository: SearchWorksitesRepository,
+    addressSearchRepository: AddressSearchRepository,
     resourceProvider: AndroidResourceProvider,
     drawableResourceBitmapProvider: DrawableResourceBitmapProvider,
     translator: KeyTranslator,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
-    @Dispatcher(Default) private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
+    @Dispatcher(Default) private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
+    @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
     val locationInputData: LocationInputData
+
+    private val locationSearchManager: LocationSearchManager
+    val searchResults: StateFlow<LocationSearchResults>
 
     val navigateBack = mutableStateOf(false)
 
@@ -65,6 +71,8 @@ class EditCaseLocationViewModel @Inject constructor(
      */
     private val isMapMoved = AtomicBoolean(false)
 
+    val showExplainPermissionLocation = mutableStateOf(false)
+
     init {
         val formFields = worksiteProvider.formFields
         val worksite = worksiteProvider.editableWorksite.value
@@ -77,6 +85,25 @@ class EditCaseLocationViewModel @Inject constructor(
             resourceProvider,
         )
 
+        locationSearchManager = LocationSearchManager(
+            worksite.incidentId,
+            locationInputData,
+            searchWorksitesRepository,
+            locationProvider,
+            addressSearchRepository,
+            ioDispatcher,
+        )
+        searchResults = locationSearchManager.searchResults.stateIn(
+            scope = viewModelScope,
+            initialValue = LocationSearchResults("", emptyList(), emptyList()),
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+        searchResults.onEach {
+            logger.logDebug("query ${it.query} ${it.addresses.size} ${it.worksites.size}")
+
+        }.launchIn(viewModelScope)
+
         permissionManager.permissionChanges.map {
             if (it == locationPermissionGranted && !isMapMoved.getAndSet(false)) {
                 setMyLocationCoordinates()
@@ -84,15 +111,16 @@ class EditCaseLocationViewModel @Inject constructor(
         }.launchIn(viewModelScope)
 
         viewModelScope.launch {
-            mapMarkerIcon.value =
-                drawableResourceBitmapProvider.getIcon(
-                    commonR.drawable.cc_foreground_pin,
-                    Pair(32f, 48f),
-                )
+            mapMarkerIcon.value = drawableResourceBitmapProvider.getIcon(
+                commonR.drawable.cc_foreground_pin,
+                Pair(32f, 48f),
+            )
         }
 
         setDefaultMapCamera(coordinates)
     }
+
+    val isLocationSearching = locationSearchManager.isSearching
 
     private fun setDefaultMapCamera(coordinates: LatLng) {
         if (coordinates == DefaultCoordinates) {
@@ -127,8 +155,7 @@ class EditCaseLocationViewModel @Inject constructor(
                 setMyLocationCoordinates()
             }
             PermissionStatus.ShowRationale -> {
-                // TODO Show dialog that user must manually enable permissions due to denying it previously
-                logger.logDebug("Show rational for my location")
+                showExplainPermissionLocation.value = true
             }
             PermissionStatus.Requesting -> {
                 isMapMoved.set(false)
@@ -141,8 +168,7 @@ class EditCaseLocationViewModel @Inject constructor(
     }
 
     fun onQueryChange(q: String) {
-        locationInputData.locationQuery = q
-        // TODO Update reactive variable and query local and backend results when connected to internet (and not expired token)
+        locationInputData.locationQuery.value = q
     }
 
     private fun centerCoordinatesZoom() = MapViewCameraZoom(

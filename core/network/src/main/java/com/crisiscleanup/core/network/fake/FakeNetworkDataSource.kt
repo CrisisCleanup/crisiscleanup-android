@@ -119,6 +119,7 @@ private val incidentLocationsResult = NetworkLocationsResult(
 private val worksitesCountResult = NetworkCountResult(count = 10)
 private val worksitesResult = NetworkWorksitesFullResult()
 private val worksitesShortResult = NetworkWorksitesShortResult()
+private val locationSearchResult = NetworkWorksiteLocationSearchResult()
 
 @Singleton
 class FakeNetworkDataSource @Inject constructor() : CrisisCleanupNetworkDataSource {
@@ -156,6 +157,12 @@ class FakeNetworkDataSource @Inject constructor() : CrisisCleanupNetworkDataSour
         latitude: Double?,
         longitude: Double?
     ) = worksitesShortResult
+
+    override suspend fun getLocationSearchWorksites(
+        incidentId: Long,
+        q: String,
+        limit: Int
+    ) = locationSearchResult
 
     override suspend fun getLanguages() =
         NetworkLanguagesResult(

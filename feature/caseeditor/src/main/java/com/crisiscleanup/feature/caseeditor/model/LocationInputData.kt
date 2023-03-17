@@ -1,11 +1,9 @@
 package com.crisiscleanup.feature.caseeditor.model
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.model.data.Worksite
 import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.flow.MutableStateFlow
 
 class LocationInputData(
     worksite: Worksite,
@@ -14,8 +12,8 @@ class LocationInputData(
 ) : CaseDataWriter {
     private val worksiteIn = worksite.copy()
 
-    var locationQuery by mutableStateOf("")
-    val coordinates = mutableStateOf(coordinatesIn)
+    var locationQuery = MutableStateFlow("")
+    val coordinates = MutableStateFlow(coordinatesIn)
 
     override fun updateCase() = updateCase(worksiteIn)
 

@@ -103,6 +103,14 @@ internal fun EditCaseLocationRoute(
             LocationView()
         }
     }
+
+    val closeDialog =
+        remember(viewModel) { { viewModel.showExplainPermissionLocation.value = false } }
+    val explainPermission by viewModel.showExplainPermissionLocation
+    ExplainLocationPermissionDialog(
+        showDialog = explainPermission,
+        closeDialog = closeDialog,
+    )
 }
 
 @Composable
@@ -135,12 +143,13 @@ internal fun ColumnScope.LocationView(
     if (isMoveLocationMode) {
         LocationMapContainerView(mapModifier, true)
     } else {
+        val locationQuery by locationInputData.locationQuery.collectAsStateWithLifecycle()
         OutlinedClearableTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp),
             labelResId = R.string.location_address_search,
-            value = locationInputData.locationQuery,
+            value = locationQuery,
             onValueChange = updateLocation,
             keyboardType = KeyboardType.Text,
             isError = false,
@@ -248,7 +257,7 @@ internal fun LocationMapView(
     }
 
     val markerState = rememberMarkerState()
-    val coordinates by viewModel.locationInputData.coordinates
+    val coordinates by viewModel.locationInputData.coordinates.collectAsStateWithLifecycle()
     markerState.position = coordinates
 
     val mapMarkerIcon by viewModel.mapMarkerIcon

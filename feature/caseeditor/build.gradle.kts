@@ -19,6 +19,7 @@ secrets {
 dependencies {
     implementation(project(":core:network"))
     implementation(project(":core:mapmarker"))
+    implementation(project(":core:addresssearch"))
 
     implementation(libs.kotlinx.datetime)
 

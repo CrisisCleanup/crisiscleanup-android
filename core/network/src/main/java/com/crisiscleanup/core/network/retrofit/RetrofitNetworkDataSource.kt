@@ -56,6 +56,19 @@ private interface CrisisCleanupNetworkApi {
 
     @TokenAuthenticationHeader
     @GET("worksites")
+    suspend fun getWorksitesLocationSearch(
+        @Query("incident")
+        incidentId: Long,
+        @Query("fields")
+        fields: String,
+        @Query("search")
+        q: String,
+        @Query("limit")
+        limit: Int,
+    ): NetworkWorksiteLocationSearchResult
+
+    @TokenAuthenticationHeader
+    @GET("worksites")
     suspend fun getWorksites(
         @Query("id__in")
         worksiteIds: String,
@@ -165,6 +178,29 @@ class RetrofitNetworkDataSource @Inject constructor(
             updatedAtAfter,
         )
     }
+
+    private val locationSearchFields = listOf(
+        "id",
+        "name",
+        "address",
+        "case_number",
+        "postal_code",
+        "city",
+        "state",
+        "incident",
+        "work_types",
+    ).joinToString(",")
+
+    override suspend fun getLocationSearchWorksites(
+        incidentId: Long,
+        q: String,
+        limit: Int
+    ) = networkApi.getWorksitesLocationSearch(
+        incidentId,
+        locationSearchFields,
+        q,
+        limit
+    )
 
     override suspend fun getLanguages() = networkApi.getLanguages()
 

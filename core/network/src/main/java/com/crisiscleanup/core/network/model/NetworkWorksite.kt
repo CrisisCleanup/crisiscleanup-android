@@ -148,6 +148,13 @@ data class NetworkWorksitesShortResult(
 )
 
 @Serializable
+data class NetworkWorksiteLocationSearchResult(
+    val errors: List<NetworkCrisisCleanupApiError>? = null,
+    val count: Int? = null,
+    val results: List<NetworkWorksiteLocationSearch>? = null,
+)
+
+@Serializable
 data class NetworkWorksiteShort(
     val id: Long,
     val address: String,
@@ -176,4 +183,22 @@ data class NetworkWorksiteShort(
     val updatedAt: Instant,
     @SerialName("work_types")
     val workTypes: List<NetworkWorksiteFull.WorkTypeShort>,
+)
+
+@Serializable
+data class NetworkWorksiteLocationSearch(
+    @SerialName("incident")
+    val incidentId: Long,
+    val id: Long,
+    val address: String,
+    @SerialName("case_number")
+    val caseNumber: String,
+    val city: String,
+    val county: String,
+    val name: String,
+    @SerialName("postal_code")
+    val postalCode: String?,
+    val state: String,
+    @SerialName("work_types")
+    val workTypes: List<NetworkWorksiteFull.WorkType>,
 )

@@ -56,6 +56,12 @@ interface CrisisCleanupNetworkDataSource {
         longitude: Double? = null,
     ): NetworkWorksitesShortResult
 
+    suspend fun getLocationSearchWorksites(
+        incidentId: Long,
+        q: String,
+        limit: Int = 5,
+    ): NetworkWorksiteLocationSearchResult
+
     suspend fun getLanguages(): NetworkLanguagesResult
 
     suspend fun getLanguageTranslations(key: String): NetworkLanguageTranslationResult

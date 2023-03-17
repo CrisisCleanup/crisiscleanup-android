@@ -64,7 +64,7 @@ fun PopulatedLocalWorksite.asExternalModel(translator: KeyTranslator? = null): L
             favoriteId = entity.favoriteId,
             flags = validFlags.map { it.asExternalModel(translator) },
             formData = formDataMap,
-            incident = entity.incidentId,
+            incidentId = entity.incidentId,
             keyWorkType = validWorkTypes.find { it.workType == entity.keyWorkTypeType }
                 ?.asExternalModel(),
             latitude = entity.latitude,

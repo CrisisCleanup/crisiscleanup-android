@@ -1,0 +1,157 @@
+{
+  "count": 58,
+  "next": "https://api.staging.crisiscleanup.io/worksites?fields=id%2Cname%2Caddress%2Ccase_number%2Cpostal_code%2Ccity%2Cstate%2Cincident%2Cwork_types&incident=255&limit=5&offset=5&search=mar",
+  "previous": null,
+  "results": [
+    {
+      "id": 245731,
+      "name": "test user",
+      "address": "test address",
+      "case_number": "W4",
+      "postal_code": "33873",
+      "incident": 255,
+      "work_types": [
+        {
+          "id": 1493918,
+          "work_type": "muck_out",
+          "claimed_by": 4470,
+          "phase": 4,
+          "status": "closed_duplicate",
+          "recur": null,
+          "next_recur_at": null,
+          "created_at": "2023-01-05T17:59:38Z"
+        }
+      ],
+      "city": "Wauchula",
+      "state": "Florida",
+      "county": "Hardee County",
+      "phone1": "19009091234",
+      "phone2": null,
+      "email": "test@test.com"
+    },
+    {
+      "id": 245758,
+      "name": "test user",
+      "address": "test address",
+      "case_number": "W10",
+      "postal_code": "32034",
+      "incident": 255,
+      "work_types": [
+        {
+          "id": 1481876,
+          "work_type": "trees",
+          "claimed_by": null,
+          "phase": 4,
+          "status": "open_unassigned",
+          "recur": null,
+          "next_recur_at": null,
+          "created_at": "2022-11-10T15:16:47Z"
+        }
+      ],
+      "city": "Fernandina Beach",
+      "state": "Florida",
+      "county": "Nassau County",
+      "phone1": "19009091234",
+      "phone2": null,
+      "email": "test@test.com"
+    },
+    {
+      "id": 245799,
+      "name": "test user",
+      "address": "test address",
+      "case_number": "W28",
+      "postal_code": "32958",
+      "incident": 255,
+      "work_types": [
+        {
+          "id": 1484697,
+          "work_type": "trees",
+          "claimed_by": 820,
+          "phase": 4,
+          "status": "closed_done-by-others",
+          "recur": null,
+          "next_recur_at": null,
+          "created_at": "2022-11-14T08:56:39Z"
+        }
+      ],
+      "city": "Sebastian",
+      "state": "Florida",
+      "county": "Indian River County",
+      "phone1": "19009091234",
+      "phone2": null,
+      "email": "test@test.com"
+    },
+    {
+      "id": 245801,
+      "name": "test user",
+      "address": "test address",
+      "case_number": "W29",
+      "postal_code": "32114",
+      "incident": 255,
+      "work_types": [
+        {
+          "id": 1482001,
+          "work_type": "tarp",
+          "claimed_by": null,
+          "phase": 4,
+          "status": "open_unassigned",
+          "recur": null,
+          "next_recur_at": null,
+          "created_at": "2022-11-10T17:43:19Z"
+        },
+        {
+          "id": 1482000,
+          "work_type": "muck_out",
+          "claimed_by": null,
+          "phase": 4,
+          "status": "open_unassigned",
+          "recur": null,
+          "next_recur_at": null,
+          "created_at": "2022-11-10T17:43:19Z"
+        },
+        {
+          "id": 1481999,
+          "work_type": "debris",
+          "claimed_by": null,
+          "phase": 4,
+          "status": "open_unassigned",
+          "recur": null,
+          "next_recur_at": null,
+          "created_at": "2022-11-10T17:43:18Z"
+        }
+      ],
+      "city": "Daytona Beach",
+      "state": "Florida",
+      "county": "Volusia County",
+      "phone1": "19009091234",
+      "phone2": null,
+      "email": "test@test.com"
+    },
+    {
+      "id": 245822,
+      "name": "test user",
+      "address": "test address",
+      "case_number": "W45",
+      "postal_code": "32937",
+      "incident": 255,
+      "work_types": [
+        {
+          "id": 1482036,
+          "work_type": "debris",
+          "claimed_by": null,
+          "phase": 4,
+          "status": "open_unassigned",
+          "recur": null,
+          "next_recur_at": null,
+          "created_at": "2022-11-10T18:10:37Z"
+        }
+      ],
+      "city": "Satellite Beach",
+      "state": "Florida",
+      "county": "Brevard County",
+      "phone1": "19009091234",
+      "phone2": null,
+      "email": "test@test.com"
+    }
+  ]
+}

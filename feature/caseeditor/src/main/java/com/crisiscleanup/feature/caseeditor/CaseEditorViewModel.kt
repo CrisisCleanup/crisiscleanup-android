@@ -51,13 +51,17 @@ class CaseEditorViewModel @Inject constructor(
     val navigateBack = mutableStateOf(false)
 
     init {
+        val incidentId = caseEditorArgs.incidentId
+
         val headerTitleResId =
             if (caseEditorArgs.worksiteId == null) R.string.create_case
             else R.string.view_case
         headerTitle.value = resourceProvider.getString(headerTitleResId)
 
         with(editableWorksiteProvider) {
-            editableWorksite.value = EmptyWorksite
+            editableWorksite.value = EmptyWorksite.copy(
+                incidentId = incidentId,
+            )
             formFields = emptyList()
         }
 
@@ -70,7 +74,6 @@ class CaseEditorViewModel @Inject constructor(
 
             // TODO Sync incidents, worksite, and languages in parallel and process all data at end
 
-            val incidentId = caseEditorArgs.incidentId
             try {
                 incidentsRepository.pullIncident(incidentId)
             } catch (e: Exception) {

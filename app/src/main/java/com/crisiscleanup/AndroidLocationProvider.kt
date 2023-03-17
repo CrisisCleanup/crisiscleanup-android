@@ -24,6 +24,8 @@ class AndroidLocationProvider @Inject constructor(
 ) : LocationProvider {
     private val locationClient = LocationServices.getFusedLocationProviderClient(context)
 
+    override var coordinates: Pair<Double, Double>? = null
+
     override suspend fun getLocation(): Pair<Double, Double>? {
         val locationPermission = ActivityCompat.checkSelfPermission(context, ACCESS_COARSE_LOCATION)
         if (locationPermission == PackageManager.PERMISSION_GRANTED) {
@@ -41,7 +43,9 @@ class AndroidLocationProvider @Inject constructor(
                     cancellationToken,
                 ).await()
                 location?.let {
-                    return Pair(it.latitude, it.longitude)
+                    val coordinates = Pair(it.latitude, it.longitude)
+                    this.coordinates = coordinates
+                    return coordinates
                 }
             } catch (e: Exception) {
                 logger.logException(e)

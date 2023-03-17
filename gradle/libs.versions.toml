@@ -33,6 +33,7 @@ androidxWindowManager = "1.0.0"
 androidxWork = "2.8.0"
 coil = "2.2.2"
 googleMapsCompose = "2.9.1"
+googlePlaces = "3.0.0"
 hilt = "2.44.2"
 hiltExt = "1.0.0"
 jacoco = "0.8.7"
@@ -109,6 +110,7 @@ androidx-window-manager = { module = "androidx.window:window", version.ref = "an
 androidx-work-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "androidxWork" }
 androidx-work-testing = { group = "androidx.work", name = "work-testing", version.ref = "androidxWork" }
 google-maps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "googleMapsCompose" }
+google-places = { group = "com.google.android.libraries.places", name = "places", version.ref = "googlePlaces" }
 coil-kt = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
 coil-kt-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 coil-kt-svg = { group = "io.coil-kt", name = "coil-svg", version.ref = "coil" }

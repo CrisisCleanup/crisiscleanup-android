@@ -71,6 +71,11 @@ interface DataModule {
     fun bindsKeyTranslator(
         translator: OfflineFirstLanguageTranslationsRepository
     ): KeyTranslator
+
+    @Binds
+    fun bindsSearchWorksitesRepository(
+        repository: MemoryCacheSearchWorksitesRepository
+    ): SearchWorksitesRepository
 }
 
 @Module

@@ -22,4 +22,9 @@
     <string name="use_my_location">Use my location</string>
     <string name="center_on_location">Center on location</string>
     <string name="select_on_map">Select on map</string>
+
+    <string name="allow_location_permission">Allow location</string>
+    <string name="location_permission_explanation">Using My Location needs access to the device\'s location. Grant access in the App info/settings > Permissions.</string>
+    <string name="close">Close</string>
+    <string name="app_settings">App settings</string>
 </resources>

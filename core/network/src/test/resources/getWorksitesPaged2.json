@@ -8,7 +8,7 @@
       "name": "test user 2",
       "address": "test address 2",
       "case_number": "D29",
-      "phone1": "920-428-5067",
+      "phone1": "19009091234",
       "phone2": "",
       "email": null,
       "location": {
@@ -137,7 +137,7 @@
       "name": "test user 2",
       "address": "test address 2",
       "case_number": "D28",
-      "phone1": "715-340-4614",
+      "phone1": "19009091234",
       "phone2": "",
       "email": null,
       "location": {
@@ -274,7 +274,7 @@
       "name": "test user 2",
       "address": "test address 2",
       "case_number": "D9",
-      "phone1": "715-874-6891",
+      "phone1": "19009091234",
       "phone2": "",
       "email": null,
       "location": {
@@ -433,7 +433,7 @@
       "name": "test user 2",
       "address": "test address 2",
       "case_number": "D13",
-      "phone1": "715-894-3333",
+      "phone1": "19009091234",
       "phone2": "",
       "email": null,
       "location": {
@@ -568,7 +568,7 @@
       "name": "test user 2",
       "address": "test address 2",
       "case_number": "D10",
-      "phone1": "715-874-5149",
+      "phone1": "19009091234",
       "phone2": "",
       "email": null,
       "location": {
@@ -673,7 +673,7 @@
       "name": "test user 2",
       "address": "test address 2",
       "case_number": "D15",
-      "phone1": "715-894-6900",
+      "phone1": "19009091234",
       "phone2": "",
       "email": null,
       "location": {
@@ -820,7 +820,7 @@
       "name": "test user 2",
       "address": "test address 2",
       "case_number": "D3",
-      "phone1": "(715)579-9797",
+      "phone1": "19009091234",
       "phone2": "",
       "email": null,
       "location": {
@@ -943,7 +943,7 @@
       "name": "test user 2",
       "address": "test address 2",
       "case_number": "D11",
-      "phone1": "7158746127",
+      "phone1": "19009091234",
       "phone2": "",
       "email": null,
       "location": {
@@ -1154,8 +1154,8 @@
       "name": "test user 2",
       "address": "test address 2",
       "case_number": "D8",
-      "phone1": "715-559-9634",
-      "phone2": " 7158745539  7153385102cell",
+      "phone1": "19009091234",
+      "phone2": " 9009091234  9009194321cell",
       "email": null,
       "location": {
         "type": "Point",
@@ -1321,7 +1321,7 @@
       "name": "test user 2",
       "address": "test address 2",
       "case_number": "D6",
-      "phone1": "850-259-3850",
+      "phone1": "19009091234",
       "phone2": "",
       "email": null,
       "location": {
@@ -1438,7 +1438,7 @@
       "name": "test user 2",
       "address": "test address 2",
       "case_number": "D2",
-      "phone1": "7158746127",
+      "phone1": "19009091234",
       "phone2": "",
       "email": null,
       "location": {
@@ -1575,7 +1575,7 @@
       "name": "test user 2",
       "address": "test address 2",
       "case_number": "D4",
-      "phone1": "7158943333",
+      "phone1": "19009091234",
       "phone2": "",
       "email": null,
       "location": {
@@ -1734,7 +1734,7 @@
       "name": "test user 2",
       "address": "test address 2",
       "case_number": "D12",
-      "phone1": "715-874-5619",
+      "phone1": "19009091234",
       "phone2": "",
       "email": null,
       "location": {
@@ -1849,7 +1849,7 @@
       "name": "test user 2",
       "address": "test address 2",
       "case_number": "D19",
-      "phone1": "715-214-3495",
+      "phone1": "19009091234",
       "phone2": "",
       "email": null,
       "location": {
@@ -1950,7 +1950,7 @@
       "name": "test user 2",
       "address": "test address 2",
       "case_number": "D1",
-      "phone1": "7155596284",
+      "phone1": "19009091234",
       "phone2": "",
       "email": null,
       "location": {
@@ -2139,7 +2139,7 @@
       "name": "test user 2",
       "address": "test address 2",
       "case_number": "D18",
-      "phone1": "7152715740",
+      "phone1": "19009091234",
       "phone2": "",
       "email": null,
       "location": {
@@ -2277,7 +2277,7 @@
       "name": "test user 2",
       "address": "test address 2",
       "case_number": "D5",
-      "phone1": "715-577-1755",
+      "phone1": "19009091234",
       "phone2": "",
       "email": null,
       "location": {
@@ -2388,7 +2388,7 @@
       "name": "test user 2",
       "address": "test address 2",
       "case_number": "D14",
-      "phone1": "715-874-5149",
+      "phone1": "19009091234",
       "phone2": "",
       "email": null,
       "location": {
@@ -2503,7 +2503,7 @@
       "name": "test user 2",
       "address": "test address 2",
       "case_number": "D20",
-      "phone1": "715-559-1110",
+      "phone1": "19009091234",
       "phone2": "",
       "email": null,
       "location": {
@@ -2632,7 +2632,7 @@
       "name": "test user 2",
       "address": "test address 2",
       "case_number": "D7",
-      "phone1": "715-874-6515",
+      "phone1": "19009091234",
       "phone2": "",
       "email": null,
       "location": {
@@ -2771,7 +2771,7 @@
       "name": "test user 2",
       "address": "test address 2",
       "case_number": "D17",
-      "phone1": "715-577-0322",
+      "phone1": "19009091234",
       "phone2": "",
       "email": null,
       "location": {
@@ -2932,7 +2932,7 @@
       "name": "test user 2",
       "address": "test address 2",
       "case_number": "D21",
-      "phone1": "124344",
+      "phone1": "19009091234",
       "phone2": null,
       "email": null,
       "location": {
@@ -2990,7 +2990,7 @@
       "name": "test user 2",
       "address": "test address 2",
       "case_number": "D22",
-      "phone1": "12445",
+      "phone1": "19009091234",
       "phone2": null,
       "email": "test@test.test",
       "location": {
@@ -3048,7 +3048,7 @@
       "name": "test user 2",
       "address": "test address 2",
       "case_number": "D23",
-      "phone1": "123355",
+      "phone1": "19009091234",
       "phone2": null,
       "email": "test@test.test",
       "location": {
@@ -3106,7 +3106,7 @@
       "name": "test user 2",
       "address": "test address 2",
       "case_number": "D24",
-      "phone1": "12222",
+      "phone1": "19009091234",
       "phone2": null,
       "email": "test@test.test",
       "location": {
