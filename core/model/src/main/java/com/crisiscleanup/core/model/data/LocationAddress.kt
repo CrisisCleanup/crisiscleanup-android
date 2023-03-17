@@ -7,5 +7,6 @@ data class LocationAddress(
     val city: String,
     val county: String,
     val state: String,
+    val country: String,
     val zipCode: String,
 )

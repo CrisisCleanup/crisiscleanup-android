@@ -3,10 +3,12 @@ package com.crisiscleanup.core.addresssearch
 import android.content.Context
 import android.location.Geocoder
 import android.util.LruCache
+import com.crisiscleanup.core.addresssearch.model.KeyLocationAddress
+import com.crisiscleanup.core.addresssearch.model.filterLatLng
+import com.crisiscleanup.core.addresssearch.model.toKeyLocationAddress
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
-import com.crisiscleanup.core.model.data.LocationAddress
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.libraries.places.api.Places
@@ -40,47 +42,24 @@ class GooglePlaceAddressSearchRepository @Inject constructor(
 
     // TODO Use configurable maxSize
     private val placeAutocompleteResultCache =
-        LruCache<String, Pair<Instant, Collection<AutocompletePrediction>>>(30)
+        LruCache<String, Pair<Instant, List<AutocompletePrediction>>>(30)
     private val addressResultCache =
-        LruCache<String, Pair<Instant, Collection<LocationAddress>>>(30)
+        LruCache<String, Pair<Instant, List<KeyLocationAddress>>>(30)
 
     override fun clearCache() {
+        placeAutocompleteResultCache.evictAll()
         addressResultCache.evictAll()
     }
 
     private suspend fun mapPredictionsToAddress(predictions: Collection<AutocompletePrediction>) =
         coroutineScope {
-            return@coroutineScope predictions.mapNotNull {
-                val placeText = it.getPrimaryText(null).toString()
+            return@coroutineScope predictions.mapNotNull { prediction ->
+                val placeText = prediction.getPrimaryText(null).toString()
                 val addresses = geocoder.getFromLocationName(placeText, 1)
 
                 ensureActive()
 
-                if (addresses?.isNotEmpty() != true) {
-                    return@mapNotNull null
-                }
-
-                val address = addresses[0]
-
-                val addressLine = address.getAddressLine(0) ?: ""
-                val streetAddress =
-                    if (addressLine.isNotEmpty()) addressLine.split(",")[0]
-                    else address.thoroughfare ?: ""
-
-                val countyLine = address.subAdminArea ?: ""
-                val county = if (countyLine.contains(" County")) {
-                    countyLine.subSequence(0, countyLine.indexOf(" County")).toString()
-                } else countyLine
-
-                LocationAddress(
-                    latitude = address.latitude,
-                    longitude = address.longitude,
-                    address = streetAddress,
-                    city = address.locality ?: "",
-                    county = county,
-                    state = address.adminArea ?: "",
-                    zipCode = address.postalCode ?: "",
-                )
+                addresses?.filterLatLng()?.firstOrNull()?.toKeyLocationAddress(prediction.placeId)
             }
         }
 
@@ -90,7 +69,7 @@ class GooglePlaceAddressSearchRepository @Inject constructor(
         center: LatLng?,
         southwest: LatLng?,
         northeast: LatLng?
-    ): Collection<LocationAddress> = coroutineScope {
+    ): List<KeyLocationAddress> = coroutineScope {
         val now = Clock.System.now()
 
         addressResultCache.get(query)?.let {

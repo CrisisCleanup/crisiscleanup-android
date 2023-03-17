@@ -1,10 +1,10 @@
 package com.crisiscleanup.feature.caseeditor
 
 import com.crisiscleanup.core.addresssearch.AddressSearchRepository
+import com.crisiscleanup.core.addresssearch.model.KeyLocationAddress
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
-import com.crisiscleanup.core.model.data.LocationAddress
-import com.crisiscleanup.core.network.model.NetworkWorksiteLocationSearch
+import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.feature.caseeditor.model.ExistingCaseLocation
 import com.crisiscleanup.feature.caseeditor.model.LocationInputData
 import com.crisiscleanup.feature.caseeditor.model.asCaseLocation
@@ -20,8 +20,9 @@ internal class LocationSearchManager(
     searchWorksitesRepository: SearchWorksitesRepository,
     locationProvider: LocationProvider,
     addressSearchRepository: AddressSearchRepository,
+    iconProvider: MapCaseIconProvider,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
-    minAddressQueryLength: Int = 4,
+    val querySearchThresholdLength: Int = 3,
 ) {
     private val activeQuery = AtomicReference("")
 
@@ -30,9 +31,7 @@ internal class LocationSearchManager(
     val isSearching = combine(
         isSearchingWorksites,
         isSearchingAddresses,
-    ) { b1, b2 ->
-        b1 || b2
-    }
+    ) { b1, b2 -> b1 || b2 }
 
     private val searchQuery = locationInputData.locationQuery
         .debounce(100)
@@ -42,7 +41,7 @@ internal class LocationSearchManager(
             activeQuery.set(it)
             it
         }
-        .filter { it.length >= minAddressQueryLength }
+        .filter { it.length >= querySearchThresholdLength }
 
     private val worksitesSearch = searchQuery
         .map { q ->
@@ -50,8 +49,7 @@ internal class LocationSearchManager(
             try {
                 val worksitesSearch =
                     searchWorksitesRepository.locationSearchWorksites(incidentId, q)
-                val worksites =
-                    worksitesSearch.map(NetworkWorksiteLocationSearch::asCaseLocation)
+                val worksites = worksitesSearch.map { it.asCaseLocation(iconProvider) }
                 Pair(q, worksites)
             } finally {
                 synchronized(activeQuery) {
@@ -74,6 +72,7 @@ internal class LocationSearchManager(
 
                 val addresses = addressSearchRepository.searchAddresses(
                     q,
+                    countryCodes = listOf("US"),
                     center = center,
                 )
                 Pair(q, addresses)
@@ -104,8 +103,8 @@ internal class LocationSearchManager(
 
 data class LocationSearchResults(
     val query: String,
-    val addresses: Collection<LocationAddress>,
-    val worksites: Collection<ExistingCaseLocation>,
+    val addresses: List<KeyLocationAddress>,
+    val worksites: List<ExistingCaseLocation>,
 ) {
     val isEmpty = addresses.isEmpty() && worksites.isEmpty()
 }

@@ -68,5 +68,3 @@ private data class IncidentQuery(
     val incidentId: Long,
     val q: String,
 )
-
-private val NoIncidentQuery = IncidentQuery(0, "")

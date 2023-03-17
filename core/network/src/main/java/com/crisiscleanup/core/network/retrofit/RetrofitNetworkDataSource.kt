@@ -182,13 +182,14 @@ class RetrofitNetworkDataSource @Inject constructor(
     private val locationSearchFields = listOf(
         "id",
         "name",
-        "address",
         "case_number",
+        "address",
         "postal_code",
         "city",
         "state",
         "incident",
-        "work_types",
+        "location",
+        "key_work_type",
     ).joinToString(",")
 
     override suspend fun getLocationSearchWorksites(

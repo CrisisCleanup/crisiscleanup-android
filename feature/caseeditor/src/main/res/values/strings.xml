@@ -27,4 +27,9 @@
     <string name="location_permission_explanation">Using My Location needs access to the device\'s location. Grant access in the App info/settings > Permissions.</string>
     <string name="close">Close</string>
     <string name="app_settings">App settings</string>
+
+    <string name="existing_worksites">Existing worksite</string>
+    <string name="geocoded_addresses">Addresses</string>
+    <string name="location_query_hint">Search for a worksite address or any address in general</string>
+    <string name="no_location_results">No worksites or addresses match \'%s\'</string>
 </resources>

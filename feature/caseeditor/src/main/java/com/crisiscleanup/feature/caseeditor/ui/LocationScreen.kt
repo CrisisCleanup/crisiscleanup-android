@@ -144,6 +144,7 @@ internal fun ColumnScope.LocationView(
         LocationMapContainerView(mapModifier, true)
     } else {
         val locationQuery by locationInputData.locationQuery.collectAsStateWithLifecycle()
+        val isShortQuery by viewModel.isShortQuery.collectAsStateWithLifecycle()
         OutlinedClearableTextField(
             modifier = Modifier
                 .fillMaxWidth()
@@ -155,16 +156,28 @@ internal fun ColumnScope.LocationView(
             isError = false,
             enabled = true,
         )
-        if (isRowOriented) {
-            Row {
-                LocationMapContainerView(mapModifier)
-                Column {
-                    LocationFormView()
+        val query = locationQuery.trim()
+        if (query.isEmpty()) {
+            if (isRowOriented) {
+                Row {
+                    LocationMapContainerView(mapModifier)
+                    Column {
+                        LocationFormView()
+                    }
                 }
+            } else {
+                LocationMapContainerView(mapModifier)
+                LocationFormView()
             }
+        } else if (isShortQuery) {
+            Text(
+                stringResource(R.string.location_query_hint),
+                // TODO Use common styles
+                modifier = Modifier.padding(16.dp),
+                style = MaterialTheme.typography.bodyLarge,
+            )
         } else {
-            LocationMapContainerView(mapModifier)
-            LocationFormView()
+            SearchContents(query)
         }
     }
 }
@@ -238,6 +251,7 @@ internal fun LocationMapView(
     viewModel: EditCaseLocationViewModel = hiltViewModel(),
     mapCameraBounds: MapViewCameraBounds = MapViewCameraBoundsDefault,
 ) {
+    val onMapLoaded = remember(viewModel) { { viewModel.onMapLoaded() } }
     val onMapCameraChange = remember(viewModel) {
         { position: CameraPosition,
           projection: Projection?,
@@ -268,6 +282,7 @@ internal fun LocationMapView(
         uiSettings = uiSettings,
         properties = mapProperties,
         cameraPositionState = cameraPositionState,
+        onMapLoaded = onMapLoaded,
     ) {
         Marker(
             markerState,

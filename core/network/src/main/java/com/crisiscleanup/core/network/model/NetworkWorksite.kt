@@ -195,10 +195,11 @@ data class NetworkWorksiteLocationSearch(
     val caseNumber: String,
     val city: String,
     val county: String,
+    @SerialName("key_work_type")
+    val keyWorkType: NetworkWorksiteFull.WorkType,
+    val location: NetworkLocation.LocationPoint,
     val name: String,
     @SerialName("postal_code")
     val postalCode: String?,
     val state: String,
-    @SerialName("work_types")
-    val workTypes: List<NetworkWorksiteFull.WorkType>,
 )

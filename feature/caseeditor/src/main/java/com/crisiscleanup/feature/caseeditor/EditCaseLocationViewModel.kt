@@ -14,12 +14,15 @@ import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
+import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.mapmarker.model.DefaultCoordinates
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
 import com.crisiscleanup.core.mapmarker.util.smallOffset
 import com.crisiscleanup.core.mapmarker.util.toLatLng
 import com.crisiscleanup.core.model.data.EmptyWorksite
+import com.crisiscleanup.core.model.data.LocationAddress
+import com.crisiscleanup.feature.caseeditor.model.ExistingCaseLocation
 import com.crisiscleanup.feature.caseeditor.model.LocationInputData
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.BitmapDescriptor
@@ -42,6 +45,7 @@ class EditCaseLocationViewModel @Inject constructor(
     private val locationProvider: LocationProvider,
     searchWorksitesRepository: SearchWorksitesRepository,
     addressSearchRepository: AddressSearchRepository,
+    caseIconProvider: MapCaseIconProvider,
     resourceProvider: AndroidResourceProvider,
     drawableResourceBitmapProvider: DrawableResourceBitmapProvider,
     translator: KeyTranslator,
@@ -53,6 +57,7 @@ class EditCaseLocationViewModel @Inject constructor(
 
     private val locationSearchManager: LocationSearchManager
     val searchResults: StateFlow<LocationSearchResults>
+    private val isSearchResultSelected = AtomicBoolean(false)
 
     val navigateBack = mutableStateOf(false)
 
@@ -91,6 +96,7 @@ class EditCaseLocationViewModel @Inject constructor(
             searchWorksitesRepository,
             locationProvider,
             addressSearchRepository,
+            caseIconProvider,
             ioDispatcher,
         )
         searchResults = locationSearchManager.searchResults.stateIn(
@@ -121,6 +127,14 @@ class EditCaseLocationViewModel @Inject constructor(
     }
 
     val isLocationSearching = locationSearchManager.isSearching
+
+    val isShortQuery = locationInputData.locationQuery
+        .map { it.trim().length < locationSearchManager.querySearchThresholdLength }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = true,
+            started = SharingStarted.WhileSubscribed(),
+        )
 
     private fun setDefaultMapCamera(coordinates: LatLng) {
         if (coordinates == DefaultCoordinates) {
@@ -167,15 +181,25 @@ class EditCaseLocationViewModel @Inject constructor(
         }
     }
 
+    private fun clearQuery() {
+        locationInputData.locationQuery.value = ""
+    }
+
     fun onQueryChange(q: String) {
         locationInputData.locationQuery.value = q
     }
 
-    private fun centerCoordinatesZoom() = MapViewCameraZoom(
+    private fun centerCoordinatesZoom(durationMs: Int = 0) = MapViewCameraZoom(
         locationInputData.coordinates.value.smallOffset(),
         defaultMapZoom,
-        0,
+        durationMs,
     )
+
+    fun onMapLoaded() {
+        if (isSearchResultSelected.compareAndSet(true, false)) {
+            _mapCameraZoom.value = centerCoordinatesZoom(500)
+        }
+    }
 
     fun onMapCameraChange(
         cameraPosition: CameraPosition,
@@ -213,6 +237,27 @@ class EditCaseLocationViewModel @Inject constructor(
     fun centerOnLocation() {
         val coordinates = locationInputData.coordinates.value.smallOffset()
         _mapCameraZoom.value = MapViewCameraZoom(coordinates, zoomCache)
+    }
+
+    private fun onSearchResultSelect(coordinates: LatLng) {
+        locationInputData.coordinates.value = coordinates
+        isSearchResultSelected.set(true)
+        clearQuery()
+    }
+
+    fun onExistingWorksiteSelected(caseLocation: ExistingCaseLocation) {
+        // TODO This should load/prompt (to edit) the existing case. If load clear nav backstack as well.
+        with(caseLocation) {
+            onSearchResultSelect(coordinates)
+            // TODO Address data
+        }
+    }
+
+    fun onGeocodeAddressSelected(address: LocationAddress) {
+        with(address) {
+            onSearchResultSelect(LatLng(latitude, longitude))
+            // TODO Address data
+        }
     }
 
     fun onSystemBack(): Boolean {

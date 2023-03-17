@@ -1,6 +1,6 @@
 package com.crisiscleanup.core.addresssearch
 
-import com.crisiscleanup.core.model.data.LocationAddress
+import com.crisiscleanup.core.addresssearch.model.KeyLocationAddress
 import com.google.android.gms.maps.model.LatLng
 
 interface AddressSearchRepository {
@@ -12,5 +12,5 @@ interface AddressSearchRepository {
         center: LatLng? = null,
         southwest: LatLng? = null,
         northeast: LatLng? = null,
-    ): Collection<LocationAddress>
+    ): List<KeyLocationAddress>
 }
