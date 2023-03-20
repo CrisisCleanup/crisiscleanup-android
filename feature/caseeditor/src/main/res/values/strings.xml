@@ -32,4 +32,15 @@
     <string name="geocoded_addresses">Addresses</string>
     <string name="location_query_hint">Search for a worksite address or any address in general</string>
     <string name="no_location_results">No worksites or addresses match \'%s\'</string>
+
+    <string name="street_address">Street address</string>
+    <string name="city">City</string>
+    <string name="county">County or parish</string>
+    <string name="state">State</string>
+    <string name="zipcode">Zip code</string>
+    <string name="address_is_required">Street address is required</string>
+    <string name="zipcode_is_required">Zip code is required</string>
+    <string name="city_is_required">City is required</string>
+    <string name="county_is_required">County or parish is required</string>
+    <string name="state_is_required">State is required</string>
 </resources>

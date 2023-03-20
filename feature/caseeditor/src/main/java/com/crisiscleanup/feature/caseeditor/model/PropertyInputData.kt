@@ -8,6 +8,7 @@ import com.crisiscleanup.core.common.InputValidator
 import com.crisiscleanup.core.model.data.AutoContactFrequency
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.feature.caseeditor.R
+import kotlinx.datetime.Clock
 
 class PropertyInputData(
     private val inputValidator: InputValidator,
@@ -33,10 +34,10 @@ class PropertyInputData(
     var frequencyError by mutableStateOf("")
 
     private fun isChanged(worksite: Worksite) =
-        residentName != worksite.name ||
-                phoneNumber != worksite.phone1 ||
-                phoneNumberSecondary != worksite.phone2 ||
-                email != (worksite.email ?: "") ||
+        residentName.trim() != worksite.name ||
+                phoneNumber.trim() != worksite.phone1 ||
+                phoneNumberSecondary.trim() != worksite.phone2 ||
+                email.trim() != (worksite.email ?: "") ||
                 autoContactFrequency != Worksite.autoContactFrequency(worksite.autoContactFrequencyT)
 
     private fun resetValidity() {
@@ -46,18 +47,18 @@ class PropertyInputData(
         frequencyError = ""
     }
 
-    fun validate(): Boolean {
+    private fun validate(): Boolean {
         resetValidity()
 
-        if (residentName.isEmpty()) {
+        if (residentName.isBlank()) {
             residentNameError = resourceProvider.getString(R.string.name_is_required)
             return false
         }
-        if (phoneNumber.isEmpty()) {
+        if (phoneNumber.isBlank()) {
             phoneNumberError = resourceProvider.getString(R.string.phone_is_required)
             return false
         }
-        if (email.isNotEmpty() && !inputValidator.validateEmailAddress(email)) {
+        if (email.isNotBlank() && !inputValidator.validateEmailAddress(email)) {
             emailError = resourceProvider.getString(R.string.invalid_email)
             return false
         }
@@ -80,11 +81,12 @@ class PropertyInputData(
         }
 
         return worksite.copy(
-            name = residentName,
-            phone1 = phoneNumber,
-            phone2 = phoneNumberSecondary,
-            email = email,
+            name = residentName.trim(),
+            phone1 = phoneNumber.trim(),
+            phone2 = phoneNumberSecondary.trim(),
+            email = email.trim(),
             autoContactFrequencyT = autoContactFrequency.literal,
+            updatedAt = Clock.System.now(),
         )
     }
 }

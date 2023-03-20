@@ -49,8 +49,13 @@ data class Worksite(
             autoContactFrequencyMap[literal] ?: AutoContactFrequency.None
     }
 
-    val hasHighPriorityFlag = flags?.any(WorksiteFlag::isHighPriorityFlag)
-    val hasWrongLocationFlag = flags?.any(WorksiteFlag::isWrongLocationFlag)
+    val hasHighPriorityFlag: Boolean
+        get() = flags?.any(WorksiteFlag::isHighPriorityFlag) ?: false
+    val hasWrongLocationFlag: Boolean
+        get() = flags?.any(WorksiteFlag::isWrongLocationFlag) ?: false
+
+    val crossStreetNearbyLandmark: String
+        get() = formData?.get(CROSS_STREET_FIELD_KEY)?.valueString ?: ""
 }
 
 val EmptyWorksite = Worksite(
@@ -78,6 +83,8 @@ val EmptyWorksite = Worksite(
     workTypes = emptyList(),
 )
 
+const val CROSS_STREET_FIELD_KEY = "cross_street"
+
 data class WorksiteFormValue(
     val isBoolean: Boolean = false,
     val valueString: String,
@@ -97,6 +104,25 @@ data class WorksiteFlag(
     val reason: String,
     val requestedAction: String,
 ) {
+    companion object {
+        private fun worksiteFlag(
+            reasonT: String,
+            reason: String = "",
+        ) = WorksiteFlag(
+            id = 0,
+            action = "",
+            createdAt = Clock.System.now(),
+            isHighPriority = reasonT == HIGH_PRIORITY_FLAG,
+            notes = "",
+            reasonT = reasonT,
+            reason = reason,
+            requestedAction = "",
+        )
+
+        fun highPriority() = worksiteFlag(HIGH_PRIORITY_FLAG)
+        fun wrongLocation() = worksiteFlag(WRONG_LOCATION_FLAG)
+    }
+
     val isHighPriorityFlag = isHighPriority && reasonT == HIGH_PRIORITY_FLAG
     val isWrongLocationFlag = reasonT == WRONG_LOCATION_FLAG
 }

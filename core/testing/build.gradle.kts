@@ -17,6 +17,7 @@ dependencies {
     api(libs.androidx.test.core)
     api(libs.kotlinx.coroutines.test)
     api(libs.turbine)
+    implementation(libs.kotlinx.datetime)
 
     api(libs.androidx.test.espresso.core)
     api(libs.androidx.test.runner)

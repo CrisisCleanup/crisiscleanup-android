@@ -24,6 +24,7 @@ import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.LocationAddress
 import com.crisiscleanup.feature.caseeditor.model.ExistingCaseLocation
 import com.crisiscleanup.feature.caseeditor.model.LocationInputData
+import com.crisiscleanup.feature.caseeditor.model.coordinates
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.CameraPosition
@@ -80,13 +81,15 @@ class EditCaseLocationViewModel @Inject constructor(
 
     init {
         val formFields = worksiteProvider.formFields
-        val worksite = worksiteProvider.editableWorksite.value
-        val coordinates =
-            if (worksite.id == EmptyWorksite.id) DefaultCoordinates
-            else LatLng(worksite.latitude, worksite.longitude)
+        var worksite = worksiteProvider.editableWorksite.value
+        if (worksite.id == EmptyWorksite.id) {
+            worksite = worksite.copy(
+                latitude = DefaultCoordinates.latitude,
+                longitude = DefaultCoordinates.longitude,
+            )
+        }
         locationInputData = LocationInputData(
             worksite,
-            coordinates,
             resourceProvider,
         )
 
@@ -123,7 +126,7 @@ class EditCaseLocationViewModel @Inject constructor(
             )
         }
 
-        setDefaultMapCamera(coordinates)
+        setDefaultMapCamera(worksite.coordinates())
     }
 
     val isLocationSearching = locationSearchManager.isSearching

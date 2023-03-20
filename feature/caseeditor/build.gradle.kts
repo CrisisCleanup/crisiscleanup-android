@@ -26,4 +26,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.google.maps.compose)
     implementation(libs.playservices.maps)
+
+    testImplementation(project(":core:testing"))
+    testImplementation(libs.mockk.android)
 }
