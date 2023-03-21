@@ -5,6 +5,7 @@ import com.crisiscleanup.core.addresssearch.model.KeyLocationAddress
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
+import com.crisiscleanup.core.mapmarker.model.DefaultCoordinates
 import com.crisiscleanup.feature.caseeditor.model.ExistingCaseLocation
 import com.crisiscleanup.feature.caseeditor.model.LocationInputData
 import com.crisiscleanup.feature.caseeditor.model.asCaseLocation
@@ -16,6 +17,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 internal class LocationSearchManager(
     private val incidentId: Long,
+    private val worksiteProvider: EditableWorksiteProvider,
     locationInputData: LocationInputData,
     searchWorksitesRepository: SearchWorksitesRepository,
     locationProvider: LocationProvider,
@@ -61,19 +63,42 @@ internal class LocationSearchManager(
         }
         .flowOn(coroutineDispatcher)
 
+    private val oneMinute = 1 / 60
+
     private val addressSearch = searchQuery
         .map { q ->
             isSearchingAddresses.value = true
             try {
+                val incidentBounds = worksiteProvider.incidentBounds
+
                 var center: LatLng? = null
                 locationProvider.coordinates?.let {
-                    center = LatLng(it.first, it.second)
+                    val deviceLocation = LatLng(it.first, it.second)
+                    if (incidentBounds.containsLocation(deviceLocation)) {
+                        center = deviceLocation
+                    }
+                }
+                if (center == null && incidentBounds.center != DefaultCoordinates) {
+                    center = incidentBounds.center
+                }
+
+                var searchSw: LatLng? = null
+                var searchNe: LatLng? = null
+                val boundsSw = incidentBounds.bounds.southwest
+                val boundsNe = incidentBounds.bounds.northeast
+                if (boundsNe.latitude - boundsSw.latitude > oneMinute &&
+                    (boundsSw.longitude + 360 - boundsNe.longitude > oneMinute)
+                ) {
+                    searchSw = boundsSw
+                    searchNe = boundsNe
                 }
 
                 val addresses = addressSearchRepository.searchAddresses(
                     q,
                     countryCodes = listOf("US"),
                     center = center,
+                    southwest = searchSw,
+                    northeast = searchNe,
                 )
                 Pair(q, addresses)
             } finally {

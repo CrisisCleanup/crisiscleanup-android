@@ -6,6 +6,7 @@ import android.util.LruCache
 import com.crisiscleanup.core.addresssearch.model.KeyLocationAddress
 import com.crisiscleanup.core.addresssearch.model.filterLatLng
 import com.crisiscleanup.core.addresssearch.model.toKeyLocationAddress
+import com.crisiscleanup.core.addresssearch.util.sort
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -68,7 +69,8 @@ class GooglePlaceAddressSearchRepository @Inject constructor(
         countryCodes: List<String>,
         center: LatLng?,
         southwest: LatLng?,
-        northeast: LatLng?
+        northeast: LatLng?,
+        maxResults: Int,
     ): List<KeyLocationAddress> = coroutineScope {
         val now = Clock.System.now()
 
@@ -78,11 +80,11 @@ class GooglePlaceAddressSearchRepository @Inject constructor(
             }
         }
 
-        placeAutocompleteResultCache.get(query)?.let {
-            if (now - it.first < staleResultDuration) {
-                val searchResults = mapPredictionsToAddress(it.second)
-                addressResultCache.put(query, Pair(it.first, searchResults))
-                return@coroutineScope searchResults
+        placeAutocompleteResultCache.get(query)?.let { (cacheTime, cacheResults) ->
+            if (now - cacheTime < staleResultDuration) {
+                return@coroutineScope mapPredictionsToAddress(cacheResults)
+                    .sort(center)
+                    .also { addressResultCache.put(query, Pair(cacheTime, it)) }
             }
         }
 
@@ -109,10 +111,11 @@ class GooglePlaceAddressSearchRepository @Inject constructor(
             val predictions = response.autocompletePredictions
             placeAutocompleteResultCache.put(query, Pair(now, predictions))
 
-            val searchResults = mapPredictionsToAddress(predictions)
-            addressResultCache.put(query, Pair(now, searchResults))
+            ensureActive()
 
-            return@coroutineScope searchResults
+            return@coroutineScope mapPredictionsToAddress(predictions)
+                .sort(center)
+                .also { addressResultCache.put(query, Pair(now, it)) }
         } catch (e: Exception) {
             if (e !is ApiException && e !is CancellationException) {
                 logger.logException(e)

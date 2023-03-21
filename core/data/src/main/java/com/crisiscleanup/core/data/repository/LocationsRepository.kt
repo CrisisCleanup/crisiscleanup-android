@@ -5,4 +5,5 @@ import kotlinx.coroutines.flow.Flow
 
 interface LocationsRepository {
     fun streamLocations(ids: List<Long>): Flow<List<Location>>
+    fun getLocations(ids: List<Long>): List<Location>
 }

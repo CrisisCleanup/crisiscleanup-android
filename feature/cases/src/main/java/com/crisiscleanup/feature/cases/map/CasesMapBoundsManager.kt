@@ -7,7 +7,10 @@ import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.LocationsRepository
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraBounds
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraBoundsDefault
+import com.crisiscleanup.core.mapmarker.util.flattenLatLng
 import com.crisiscleanup.core.mapmarker.util.smallOffset
+import com.crisiscleanup.core.mapmarker.util.toBounds
+import com.crisiscleanup.core.mapmarker.util.toLatLng
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.IncidentLocation
 import com.google.android.gms.maps.model.LatLng
@@ -50,14 +53,7 @@ internal class CasesMapBoundsManager constructor(
                 val locationIds = incident.locations.map(IncidentLocation::location)
                 locationsRepository.streamLocations(locationIds)
                     .map { locations ->
-                        // Assumes coordinates and multiCoordinates are lng-lat ordered pairs
-                        val coordinates = locations.mapNotNull {
-                            it.multiCoordinates?.flatten() ?: it.coordinates
-                        }.flatten()
-                        val latLngs = mutableListOf<LatLng>()
-                        for (i in 1 until coordinates.size step 2) {
-                            latLngs.add(LatLng(coordinates[i], coordinates[i - 1]))
-                        }
+                        val latLngs = locations.toLatLng().flattenLatLng()
                         Pair(incident.id, latLngs)
                     }
                     .flowOn(ioDispatcher)
@@ -75,29 +71,10 @@ internal class CasesMapBoundsManager constructor(
     init {
         incidentLatLngBoundary
             .onEach { (incidentId, latLngs) ->
-                var bounds = MapViewCameraBoundsDefault.bounds
-
                 isUpdatingCameraBounds.value = true
                 try {
                     if (latLngs.isNotEmpty()) {
-                        val locationBounds =
-                            latLngs.fold(LatLngBounds.builder()) { acc, latLng ->
-                                acc.include(latLng)
-                            }
-
-                        // Bounds must have error or build throws
-                        if (bounds.southwest.latitude == bounds.northeast.latitude ||
-                            bounds.southwest.longitude == bounds.northeast.longitude
-                        ) {
-                            locationBounds.include(
-                                LatLng(
-                                    bounds.southwest.latitude + 0.02,
-                                    bounds.southwest.longitude + 0.02,
-                                )
-                            )
-                        }
-
-                        bounds = locationBounds.build()
+                        val bounds = latLngs.toBounds()
                         incidentBoundsCache[incidentId] = bounds
                         if (isMapLoaded) {
                             _mapCameraBounds.value = MapViewCameraBounds(bounds)

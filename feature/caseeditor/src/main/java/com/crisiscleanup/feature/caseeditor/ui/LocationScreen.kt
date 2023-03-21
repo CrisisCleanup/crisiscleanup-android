@@ -274,7 +274,7 @@ internal fun LocationMapView(
     val coordinates by viewModel.locationInputData.coordinates.collectAsStateWithLifecycle()
     markerState.position = coordinates
 
-    val mapMarkerIcon by viewModel.mapMarkerIcon
+    val mapMarkerIcon by viewModel.mapMarkerIcon.collectAsStateWithLifecycle()
 
     val mapProperties by rememberMapProperties()
     GoogleMap(
@@ -331,7 +331,6 @@ internal fun LocationMapContainerView(
 internal fun ColumnScope.LocationFormView(
     modifier: Modifier = Modifier,
     viewModel: EditCaseLocationViewModel = hiltViewModel(),
-    isMoveLocationMode: Boolean = false,
 ) {
     Text("Location form input")
 }

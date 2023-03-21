@@ -10,9 +10,9 @@ import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
-import com.crisiscleanup.core.data.repository.IncidentsRepository
-import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
-import com.crisiscleanup.core.data.repository.WorksitesRepository
+import com.crisiscleanup.core.data.repository.*
+import com.crisiscleanup.core.mapmarker.util.toBounds
+import com.crisiscleanup.core.mapmarker.util.toLatLng
 import com.crisiscleanup.core.model.data.*
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import com.crisiscleanup.feature.caseeditor.model.FormFieldNode
@@ -27,6 +27,7 @@ import javax.inject.Inject
 class CaseEditorViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     incidentsRepository: IncidentsRepository,
+    locationsRepository: LocationsRepository,
     worksitesRepository: WorksitesRepository,
     languageRepository: LanguageTranslationsRepository,
     private val editableWorksiteProvider: EditableWorksiteProvider,
@@ -72,7 +73,7 @@ class CaseEditorViewModel @Inject constructor(
 
             val worksiteIdArg = caseEditorArgs.worksiteId
 
-            // TODO Sync incidents, worksite, and languages in parallel and process all data at end
+            // TODO Sync incidents, location, worksite, and languages in parallel and process all data at end
 
             try {
                 incidentsRepository.pullIncident(incidentId)
@@ -91,6 +92,16 @@ class CaseEditorViewModel @Inject constructor(
             } catch (e: Exception) {
                 logger.logException(e)
             }
+
+            val locationIds = incident.locations.map(IncidentLocation::location)
+            // TODO Query backend before querying local where incident is recent?
+            val locations = locationsRepository.getLocations(locationIds).toLatLng()
+            if (locations.isEmpty()) {
+                logger.logException(Exception("Incident $incidentId is lacking locations (expecting ${locationIds.size})."))
+                uiState.value = CaseEditorUiState.Error(R.string.incident_issue_try_again)
+                return@launch
+            }
+            editableWorksiteProvider.incidentBounds = locations.toBounds()
 
             worksiteIdArg?.let { worksiteId ->
                 localWorksite = worksitesRepository.getLocalWorksite(worksiteId)

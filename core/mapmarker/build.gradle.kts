@@ -17,6 +17,7 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.runtime)
 
+    implementation(libs.android.maps.util)
     implementation(libs.google.maps.compose)
     implementation(libs.playservices.maps)
     implementation(libs.android.material.material)

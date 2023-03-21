@@ -2,7 +2,6 @@ package com.crisiscleanup.core.database.model
 
 import androidx.room.Embedded
 import com.crisiscleanup.core.model.data.Location
-import com.crisiscleanup.core.model.data.Location.Companion.getLocationShape
 
 data class PopulatedLocation(
     @Embedded
@@ -24,7 +23,7 @@ fun PopulatedLocation.asExternalModel(): Location {
     }
     return Location(
         id = entity.id,
-        shape = getLocationShape(entity.shapeType),
+        shapeLiteral = entity.shapeType,
         coordinates = coordinates,
         multiCoordinates = multiCoordinates,
     )

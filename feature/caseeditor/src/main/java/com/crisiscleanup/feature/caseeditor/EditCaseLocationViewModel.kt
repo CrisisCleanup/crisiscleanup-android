@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.addresssearch.AddressSearchRepository
+import com.crisiscleanup.core.addresssearch.model.toLatLng
 import com.crisiscleanup.core.common.*
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
@@ -15,6 +16,7 @@ import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
+import com.crisiscleanup.core.mapmarker.R
 import com.crisiscleanup.core.mapmarker.model.DefaultCoordinates
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
@@ -41,7 +43,7 @@ import com.crisiscleanup.core.common.R as commonR
 @HiltViewModel
 class EditCaseLocationViewModel @Inject constructor(
     private val incidentsRepository: IncidentsRepository,
-    worksiteProvider: EditableWorksiteProvider,
+    private val worksiteProvider: EditableWorksiteProvider,
     private val permissionManager: PermissionManager,
     private val locationProvider: LocationProvider,
     searchWorksitesRepository: SearchWorksitesRepository,
@@ -55,6 +57,9 @@ class EditCaseLocationViewModel @Inject constructor(
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
     val locationInputData: LocationInputData
+
+    val isNewWorksite: Boolean
+        get() = worksiteProvider.editableWorksite.value.id == EmptyWorksite.id
 
     private val locationSearchManager: LocationSearchManager
     val searchResults: StateFlow<LocationSearchResults>
@@ -70,7 +75,8 @@ class EditCaseLocationViewModel @Inject constructor(
     private var _mapCameraZoom = MutableStateFlow(MapViewCameraZoomDefault)
     val mapCameraZoom = _mapCameraZoom.asStateFlow()
 
-    val mapMarkerIcon = mutableStateOf<BitmapDescriptor?>(null)
+    private var inBoundsPinIcon: BitmapDescriptor? = null
+    private var outOfBoundsPinIcon: BitmapDescriptor? = null
 
     /**
      * Indicates if the map was manually moved (since last checked)
@@ -80,12 +86,23 @@ class EditCaseLocationViewModel @Inject constructor(
     val showExplainPermissionLocation = mutableStateOf(false)
 
     init {
+        // TODO Add default inputs when creating worksite
         val formFields = worksiteProvider.formFields
+
         var worksite = worksiteProvider.editableWorksite.value
-        if (worksite.id == EmptyWorksite.id) {
+
+        if (isNewWorksite) {
+            val incidentBounds = worksiteProvider.incidentBounds
+            var worksiteCoordinates: LatLng = incidentBounds.center
+            locationProvider.coordinates?.let {
+                val deviceLocation = LatLng(it.first, it.second)
+                if (incidentBounds.containsLocation(deviceLocation)) {
+                    worksiteCoordinates = deviceLocation
+                }
+            }
             worksite = worksite.copy(
-                latitude = DefaultCoordinates.latitude,
-                longitude = DefaultCoordinates.longitude,
+                latitude = worksiteCoordinates.latitude,
+                longitude = worksiteCoordinates.longitude,
             )
         }
         locationInputData = LocationInputData(
@@ -95,6 +112,7 @@ class EditCaseLocationViewModel @Inject constructor(
 
         locationSearchManager = LocationSearchManager(
             worksite.incidentId,
+            worksiteProvider,
             locationInputData,
             searchWorksitesRepository,
             locationProvider,
@@ -108,21 +126,21 @@ class EditCaseLocationViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-        searchResults.onEach {
-            logger.logDebug("query ${it.query} ${it.addresses.size} ${it.worksites.size}")
-
-        }.launchIn(viewModelScope)
-
         permissionManager.permissionChanges.map {
             if (it == locationPermissionGranted && !isMapMoved.getAndSet(false)) {
                 setMyLocationCoordinates()
             }
         }.launchIn(viewModelScope)
 
+        val pinMarkerSize = Pair(32f, 48f)
         viewModelScope.launch {
-            mapMarkerIcon.value = drawableResourceBitmapProvider.getIcon(
+            inBoundsPinIcon = drawableResourceBitmapProvider.getIcon(
                 commonR.drawable.cc_foreground_pin,
-                Pair(32f, 48f),
+                pinMarkerSize,
+            )
+            outOfBoundsPinIcon = drawableResourceBitmapProvider.getIcon(
+                R.drawable.cc_pin_location_out_of_bounds,
+                pinMarkerSize,
             )
         }
 
@@ -136,6 +154,27 @@ class EditCaseLocationViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = true,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    val isLocationInBounds = locationInputData.coordinates
+        .debounce(100)
+        .map {
+            val isInBounds = worksiteProvider.incidentBounds.containsLocation(it)
+
+            isInBounds
+        }
+        .flowOn(ioDispatcher)
+
+    val mapMarkerIcon = isLocationInBounds
+        .map {
+            if (it) inBoundsPinIcon
+            else outOfBoundsPinIcon
+        }
+        .flowOn(ioDispatcher)
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = null,
             started = SharingStarted.WhileSubscribed(),
         )
 
@@ -199,9 +238,9 @@ class EditCaseLocationViewModel @Inject constructor(
     )
 
     fun onMapLoaded() {
-        if (isSearchResultSelected.compareAndSet(true, false)) {
-            _mapCameraZoom.value = centerCoordinatesZoom(500)
-        }
+        val isResultSelected = isSearchResultSelected.compareAndSet(true, false)
+        val duration = if (isResultSelected) 500 else 0
+        _mapCameraZoom.value = centerCoordinatesZoom(duration)
     }
 
     fun onMapCameraChange(
@@ -258,7 +297,7 @@ class EditCaseLocationViewModel @Inject constructor(
 
     fun onGeocodeAddressSelected(address: LocationAddress) {
         with(address) {
-            onSearchResultSelect(LatLng(latitude, longitude))
+            onSearchResultSelect(toLatLng())
             // TODO Address data
         }
     }

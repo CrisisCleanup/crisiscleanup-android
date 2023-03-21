@@ -22,6 +22,7 @@ dependencies {
 
     implementation(libs.kotlinx.datetime)
 
+    implementation(libs.android.maps.util)
     implementation(libs.google.places)
     implementation(libs.kotlinx.coroutines.playservices)
 }

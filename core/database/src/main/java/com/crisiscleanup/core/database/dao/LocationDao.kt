@@ -11,11 +11,13 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface LocationDao {
     @Transaction
-    @Query(
-        "SELECT * FROM locations WHERE id in (:ids)"
-    )
+    @Query("SELECT * FROM locations WHERE id in (:ids)")
     fun streamLocations(ids: Collection<Long>): Flow<List<PopulatedLocation>>
 
     @Upsert
     fun upsertLocations(locations: List<LocationEntity>)
+
+    @Transaction
+    @Query("SELECT * FROM locations WHERE id in (:ids)")
+    fun getLocations(ids: Collection<Long>): List<PopulatedLocation>
 }

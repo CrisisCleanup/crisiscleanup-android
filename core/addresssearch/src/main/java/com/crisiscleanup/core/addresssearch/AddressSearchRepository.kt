@@ -12,5 +12,6 @@ interface AddressSearchRepository {
         center: LatLng? = null,
         southwest: LatLng? = null,
         northeast: LatLng? = null,
+        maxResults: Int = 8,
     ): List<KeyLocationAddress>
 }

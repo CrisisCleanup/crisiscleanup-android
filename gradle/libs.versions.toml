@@ -2,6 +2,8 @@
 accompanist = "0.28.0"
 androidDesugarJdkLibs = "2.0.2"
 androidGradlePlugin = "7.4.1"
+androidMapsUtil = "2.3.0"
+androidMapsUtilKtx = "3.4.0"
 androidMaterial = "1.8.0"
 androidxActivity = "1.6.1"
 androidxAppCompat = "1.6.1"
@@ -63,6 +65,8 @@ accompanist-flowlayout = { group = "com.google.accompanist", name = "accompanist
 accompanist-systemuicontroller = { group = "com.google.accompanist", name = "accompanist-systemuicontroller", version.ref = "accompanist" }
 accompanist-testharness = { group = "com.google.accompanist", name = "accompanist-testharness", version.ref = "accompanist" }
 android-desugarJdkLibs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "androidDesugarJdkLibs" }
+android-maps-util = { group = "com.google.maps.android", name = "android-maps-utils", version.ref = "androidMapsUtil" }
+android-maps-util-ktx = { group = "com.google.maps.android", name = "maps-utils-ktx", version.ref = "androidMapsUtilKtx" }
 android-material-material = { group = "com.google.android.material", name = "material", version.ref = "androidMaterial" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidxActivity" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidxAppCompat" }

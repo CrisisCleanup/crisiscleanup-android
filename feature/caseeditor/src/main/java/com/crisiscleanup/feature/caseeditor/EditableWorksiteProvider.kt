@@ -1,5 +1,7 @@
 package com.crisiscleanup.feature.caseeditor
 
+import com.crisiscleanup.core.mapmarker.model.IncidentBounds
+import com.crisiscleanup.core.mapmarker.model.MapViewCameraBoundsDefault
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.feature.caseeditor.model.FormFieldNode
@@ -14,12 +16,15 @@ import javax.inject.Singleton
 interface EditableWorksiteProvider {
     val editableWorksite: MutableStateFlow<Worksite>
     var formFields: List<FormFieldNode>
+    var incidentBounds: IncidentBounds
 }
 
 @Singleton
 class SingleEditableWorksiteProvider @Inject constructor() : EditableWorksiteProvider {
     override val editableWorksite = MutableStateFlow(EmptyWorksite)
     override var formFields: List<FormFieldNode> = emptyList()
+    override var incidentBounds: IncidentBounds =
+        IncidentBounds(emptyList(), MapViewCameraBoundsDefault.bounds)
 }
 
 @Module
