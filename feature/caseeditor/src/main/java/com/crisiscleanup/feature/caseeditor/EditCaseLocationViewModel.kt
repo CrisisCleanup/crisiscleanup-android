@@ -95,7 +95,10 @@ class EditCaseLocationViewModel @Inject constructor(
 
         var worksite = worksiteProvider.editableWorksite.value
 
-        if (isNewWorksite) {
+        if (isNewWorksite &&
+            (worksite.coordinates() == EmptyWorksite.coordinates() ||
+                    worksite.coordinates() == DefaultCoordinates)
+        ) {
             val incidentBounds = worksiteProvider.incidentBounds
             var worksiteCoordinates: LatLng = incidentBounds.center
             locationProvider.coordinates?.let {
@@ -109,6 +112,7 @@ class EditCaseLocationViewModel @Inject constructor(
                 longitude = worksiteCoordinates.longitude,
             )
         }
+
         locationInputData = LocationInputData(
             worksite,
             resourceProvider,
@@ -206,11 +210,11 @@ class EditCaseLocationViewModel @Inject constructor(
     }
 
     private fun validateSaveWorksite(): Boolean {
-//        val updatedWorksite = .updateCase()
-//        if (updatedWorksite != null) {
-//            worksiteProvider.editableWorksite.value = updatedWorksite
-//            return true
-//        }
+        val updatedWorksite = locationInputData.updateCase()
+        if (updatedWorksite != null) {
+            worksiteProvider.editableWorksite.value = updatedWorksite
+            return true
+        }
         return false
     }
 
@@ -307,18 +311,47 @@ class EditCaseLocationViewModel @Inject constructor(
         clearQuery()
     }
 
-    fun onExistingWorksiteSelected(caseLocation: ExistingCaseLocation) {
-        // TODO This should load/prompt (to edit) the existing case. If load clear nav backstack as well.
-        with(caseLocation) {
-            onSearchResultSelect(coordinates)
-            // TODO Address data
+    private fun autofillAddress(
+        address: String,
+        zipCode: String,
+        county: String,
+        city: String,
+        state: String,
+    ) {
+        with(locationInputData) {
+            streetAddress = address
+            this.zipCode = zipCode
+            this.county = county
+            this.city = city
+            this.state = state
         }
     }
 
-    fun onGeocodeAddressSelected(address: LocationAddress) {
-        with(address) {
+    fun onExistingWorksiteSelected(caseLocation: ExistingCaseLocation) {
+        // TODO This should load/prompt (to edit) the existing case.
+        //      Clear nav backstack as well.
+        with(caseLocation) {
+            onSearchResultSelect(coordinates)
+            autofillAddress(
+                address,
+                zipCode,
+                county,
+                city,
+                state,
+            )
+        }
+    }
+
+    fun onGeocodeAddressSelected(locationAddress: LocationAddress) {
+        with(locationAddress) {
             onSearchResultSelect(toLatLng())
-            // TODO Address data
+            autofillAddress(
+                address,
+                zipCode,
+                county,
+                city,
+                state,
+            )
         }
     }
 

@@ -58,15 +58,27 @@ internal fun LocationSummaryView(
             style = MaterialTheme.typography.headlineSmall,
         )
 
-//        if (worksite..isNotEmpty()) {
-//            Column(modifier.padding(8.dp)) {
-//                Text(
-//                    text = worksite.,
-//                    modifier = modifier.fillMaxWidth(),
-//                    style = MaterialTheme.typography.bodyLarge,
-//                )
-//            }
-//        }
+        val address = listOf(worksite.address, worksite.city, worksite.state)
+            .filter(String::isNotBlank)
+            .joinToString(", ")
+
+        if (address.isNotEmpty()) {
+            Column(modifier.padding(8.dp)) {
+                Text(
+                    text = address,
+                    modifier = modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+
+                if (worksite.crossStreetNearbyLandmark.isNotEmpty()) {
+                    Text(
+                        text = worksite.crossStreetNearbyLandmark,
+                        modifier = modifier.fillMaxWidth(),
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -349,6 +361,7 @@ internal fun BoxScope.LocationMapView(
             val update = CameraUpdateFactory.newLatLngZoom(
                 mapCameraZoom.center, mapCameraZoom.zoom
             )
+
             if (mapCameraZoom.durationMs > 0) {
                 cameraPositionState.animate(update, mapCameraZoom.durationMs)
             } else {
@@ -446,7 +459,8 @@ internal fun LocationAddressFormView(
         enabled = true,
     )
 
-    // TODO Move into view model to query for and present autofill
+    // TODO Move into view model to query for and present autofill.
+    //      See ExposedDropdownMenu for presenting options.
     val updateZipCode =
         remember(locationInputData) { { s: String -> locationInputData.zipCode = s } }
     val clearZipCodeError =
@@ -464,23 +478,6 @@ internal fun LocationAddressFormView(
         enabled = true,
     )
 
-    val updateCity =
-        remember(locationInputData) { { s: String -> locationInputData.city = s } }
-    val clearCityError =
-        remember(locationInputData) { { locationInputData.cityError = "" } }
-    val isCityError = locationInputData.cityError.isNotEmpty()
-    ErrorText(locationInputData.cityError)
-    OutlinedClearableTextField(
-        modifier = columnItemModifier,
-        labelResId = R.string.city,
-        value = locationInputData.city,
-        onValueChange = updateCity,
-        keyboardType = KeyboardType.Text,
-        isError = isCityError,
-        onNext = clearCityError,
-        enabled = true,
-    )
-
     val updateCounty =
         remember(locationInputData) { { s: String -> locationInputData.county = s } }
     val clearCountyError =
@@ -495,6 +492,23 @@ internal fun LocationAddressFormView(
         keyboardType = KeyboardType.Text,
         isError = isCountyError,
         onNext = clearCountyError,
+        enabled = true,
+    )
+
+    val updateCity =
+        remember(locationInputData) { { s: String -> locationInputData.city = s } }
+    val clearCityError =
+        remember(locationInputData) { { locationInputData.cityError = "" } }
+    val isCityError = locationInputData.cityError.isNotEmpty()
+    ErrorText(locationInputData.cityError)
+    OutlinedClearableTextField(
+        modifier = columnItemModifier,
+        labelResId = R.string.city,
+        value = locationInputData.city,
+        onValueChange = updateCity,
+        keyboardType = KeyboardType.Text,
+        isError = isCityError,
+        onNext = clearCityError,
         enabled = true,
     )
 
