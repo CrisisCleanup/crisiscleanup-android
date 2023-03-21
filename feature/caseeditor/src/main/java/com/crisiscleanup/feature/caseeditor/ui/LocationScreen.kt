@@ -289,7 +289,7 @@ internal fun LocationMapActions(
                 contentDescriptionResId = R.string.select_on_map,
                 onClick = moveLocationOnMap,
             )
-            if (isMoveLocationMode) {
+            if (!isMoveLocationMode) {
                 MapButton(
                     imageVector = CrisisCleanupIcons.Location,
                     contentDescriptionResId = R.string.center_on_location,
