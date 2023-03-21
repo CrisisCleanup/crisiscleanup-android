@@ -1,16 +1,23 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
+import android.view.MotionEvent
 import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -22,8 +29,7 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackCancel
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
-import com.crisiscleanup.core.mapmarker.model.MapViewCameraBounds
-import com.crisiscleanup.core.mapmarker.model.MapViewCameraBoundsDefault
+import com.crisiscleanup.core.mapmarker.model.DefaultCoordinates
 import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
 import com.crisiscleanup.core.mapmarker.ui.rememberMapUiSettings
 import com.crisiscleanup.core.model.data.Worksite
@@ -100,32 +106,28 @@ internal fun EditCaseLocationRoute(
                 onBack = onNavigateBack,
                 onCancel = onNavigateCancel,
             )
-            // TODO There is gap between the top bar and the location views
+            // TODO Remove the gap between the top bar above and location view below
             LocationView()
         }
     }
 
-    val closeDialog =
+    val closePermissionDialog =
         remember(viewModel) { { viewModel.showExplainPermissionLocation.value = false } }
     val explainPermission by viewModel.showExplainPermissionLocation
     ExplainLocationPermissionDialog(
         showDialog = explainPermission,
-        closeDialog = closeDialog,
+        closeDialog = closePermissionDialog,
     )
 }
 
 @Composable
-internal fun ColumnScope.LocationView(
-    viewModel: EditCaseLocationViewModel = hiltViewModel(),
-) {
+private fun getLayoutParameters(isMoveLocationMode: Boolean): Pair<Boolean, Modifier> {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val screenHeight = configuration.screenHeightDp.dp
     val minScreenDimension = min(screenWidth, screenHeight)
     // TODO Revisit for all screen sizes. Adjust map size as necessary
     val isRowOriented = screenWidth > screenHeight.times(1.3f)
-
-    val isMoveLocationMode by viewModel.isMoveLocationOnMapMode
 
     val mapWidth: Dp
     val mapHeight: Dp
@@ -138,47 +140,101 @@ internal fun ColumnScope.LocationView(
     }
     val mapModifier = Modifier.sizeIn(maxWidth = mapWidth, maxHeight = mapHeight)
 
-    val locationInputData = viewModel.locationInputData
+    return Pair(isRowOriented, mapModifier)
+}
 
-    val updateLocation = remember(viewModel) { { s: String -> viewModel.onQueryChange(s) } }
-    if (isMoveLocationMode) {
-        LocationMapContainerView(mapModifier, true)
-    } else {
-        val locationQuery by locationInputData.locationQuery.collectAsStateWithLifecycle()
-        val isShortQuery by viewModel.isShortQuery.collectAsStateWithLifecycle()
-        OutlinedClearableTextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            labelResId = R.string.location_address_search,
-            value = locationQuery,
-            onValueChange = updateLocation,
-            keyboardType = KeyboardType.Text,
-            isError = false,
-            enabled = true,
+@Composable
+internal fun ColumnScope.LocationView(
+    viewModel: EditCaseLocationViewModel = hiltViewModel(),
+) {
+    val isMoveLocationMode by viewModel.isMoveLocationOnMapMode
+
+    val cameraPositionState = rememberCameraPositionState("edit-location") {
+        position = CameraPosition.fromLatLngZoom(
+            DefaultCoordinates,
+            viewModel.defaultMapZoom,
         )
-        val query = locationQuery.trim()
-        if (query.isEmpty()) {
-            if (isRowOriented) {
-                Row {
-                    LocationMapContainerView(mapModifier)
-                    Column {
-                        LocationFormView()
-                    }
-                }
-            } else {
-                LocationMapContainerView(mapModifier)
-                LocationFormView()
+    }
+
+    val (isRowOriented, mapModifier) = getLayoutParameters(isMoveLocationMode)
+
+    if (isMoveLocationMode) {
+        LocationMapContainerView(
+            mapModifier,
+            cameraPositionState,
+            true,
+        )
+    } else {
+        var enableColumnScroll by remember { mutableStateOf(true) }
+        LaunchedEffect(cameraPositionState.isMoving) {
+            if (!cameraPositionState.isMoving) {
+                enableColumnScroll = true
             }
-        } else if (isShortQuery) {
-            Text(
-                stringResource(R.string.location_query_hint),
-                // TODO Use common styles
-                modifier = Modifier.padding(16.dp),
-                style = MaterialTheme.typography.bodyLarge,
+        }
+
+        val locationQuery by viewModel.locationInputData.locationQuery.collectAsStateWithLifecycle()
+        val query = locationQuery.trim()
+        val showMapFormViews = query.isEmpty()
+
+        val scrollState = rememberScrollState()
+        Column(
+            Modifier
+                .verticalScroll(
+                    scrollState,
+                    showMapFormViews && enableColumnScroll,
+                )
+                .weight(1f)
+        ) {
+            val updateLocation = remember(viewModel) { { s: String -> viewModel.onQueryChange(s) } }
+            OutlinedClearableTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                labelResId = R.string.location_address_search,
+                value = locationQuery,
+                onValueChange = updateLocation,
+                keyboardType = KeyboardType.Text,
+                isError = false,
+                enabled = true,
             )
-        } else {
-            SearchContents(query)
+
+            if (viewModel.takeClearSearchInputFocus) {
+                LocalFocusManager.current.clearFocus(true)
+            }
+
+            val isShortQuery by viewModel.isShortQuery.collectAsStateWithLifecycle()
+            if (showMapFormViews) {
+                val onMapTouched =
+                    remember(viewModel) { { enableColumnScroll = false } }
+                if (isRowOriented) {
+                    Row {
+                        LocationMapContainerView(
+                            mapModifier,
+                            cameraPositionState,
+                            onMapTouched = onMapTouched,
+                        )
+                        Column {
+                            LocationFormView()
+                        }
+                    }
+                } else {
+                    LocationMapContainerView(
+                        mapModifier,
+                        cameraPositionState,
+                        onMapTouched = onMapTouched,
+                    )
+                    LocationFormView()
+                }
+            } else if (isShortQuery) {
+                Text(
+                    stringResource(R.string.location_query_hint),
+                    // TODO Use common styles
+                    modifier = Modifier.padding(16.dp),
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            } else {
+                SearchContents(query)
+            }
         }
     }
 }
@@ -250,7 +306,7 @@ internal fun LocationMapActions(
 internal fun BoxScope.LocationMapView(
     modifier: Modifier = Modifier,
     viewModel: EditCaseLocationViewModel = hiltViewModel(),
-    mapCameraBounds: MapViewCameraBounds = MapViewCameraBoundsDefault,
+    cameraPositionState: CameraPositionState = rememberCameraPositionState(),
 ) {
     val onMapLoaded = remember(viewModel) { { viewModel.onMapLoaded() } }
     val onMapCameraChange = remember(viewModel) {
@@ -264,12 +320,6 @@ internal fun BoxScope.LocationMapView(
     val mapCameraZoom by viewModel.mapCameraZoom.collectAsStateWithLifecycle()
 
     val uiSettings by rememberMapUiSettings(myLocation = true)
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(
-            mapCameraBounds.bounds.center,
-            mapCameraZoom.zoom,
-        )
-    }
 
     val markerState = rememberMarkerState()
     val coordinates by viewModel.locationInputData.coordinates.collectAsStateWithLifecycle()
@@ -319,21 +369,149 @@ internal fun BoxScope.LocationMapView(
     )
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun LocationMapContainerView(
     modifier: Modifier = Modifier,
+    cameraPositionState: CameraPositionState = rememberCameraPositionState(),
     isMoveLocationMode: Boolean = false,
+    onMapTouched: () -> Unit = {},
 ) {
-    Box(modifier = modifier) {
-        LocationMapView()
+    Box(modifier.pointerInteropFilter(
+        onTouchEvent = {
+            when (it.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    onMapTouched()
+                    false
+                }
+                else -> true
+            }
+        }
+    )) {
+        LocationMapView(cameraPositionState = cameraPositionState)
         LocationMapActions(isMoveLocationMode)
     }
 }
 
 @Composable
-internal fun ColumnScope.LocationFormView(
+internal fun LocationFormView(
     modifier: Modifier = Modifier,
     viewModel: EditCaseLocationViewModel = hiltViewModel(),
 ) {
-    Text("Location form input")
+    val locationInputData = viewModel.locationInputData
+
+    LocationAddressFormView(modifier)
+
+    val updateCrossStreet =
+        remember(locationInputData) {
+            { s: String ->
+                locationInputData.crossStreetNearbyLandmark = s
+            }
+        }
+    val closeKeyboard = rememberCloseKeyboard(viewModel)
+    OutlinedClearableTextField(
+        modifier = columnItemModifier,
+        labelResId = R.string.cross_street_nearby_landmark,
+        value = locationInputData.crossStreetNearbyLandmark,
+        onValueChange = updateCrossStreet,
+        keyboardType = KeyboardType.Text,
+        isError = false,
+        enabled = true,
+        imeAction = ImeAction.Done,
+        onEnter = closeKeyboard,
+    )
+}
+
+@Composable
+internal fun LocationAddressFormView(
+    modifier: Modifier = Modifier,
+    viewModel: EditCaseLocationViewModel = hiltViewModel(),
+) {
+    val locationInputData = viewModel.locationInputData
+
+    val updateAddress =
+        remember(locationInputData) { { s: String -> locationInputData.streetAddress = s } }
+    val clearAddressError =
+        remember(locationInputData) { { locationInputData.streetAddressError = "" } }
+    val isAddressError = locationInputData.streetAddressError.isNotEmpty()
+    ErrorText(locationInputData.streetAddressError)
+    OutlinedClearableTextField(
+        modifier = columnItemModifier,
+        labelResId = R.string.street_address,
+        value = locationInputData.streetAddress,
+        onValueChange = updateAddress,
+        keyboardType = KeyboardType.Text,
+        isError = isAddressError,
+        onNext = clearAddressError,
+        enabled = true,
+    )
+
+    // TODO Move into view model to query for and present autofill
+    val updateZipCode =
+        remember(locationInputData) { { s: String -> locationInputData.zipCode = s } }
+    val clearZipCodeError =
+        remember(locationInputData) { { locationInputData.zipCodeError = "" } }
+    val isZipCodeError = locationInputData.zipCodeError.isNotEmpty()
+    ErrorText(locationInputData.zipCodeError)
+    OutlinedClearableTextField(
+        modifier = columnItemModifier,
+        labelResId = R.string.zipcode,
+        value = locationInputData.zipCode,
+        onValueChange = updateZipCode,
+        keyboardType = KeyboardType.Text,
+        isError = isZipCodeError,
+        onNext = clearZipCodeError,
+        enabled = true,
+    )
+
+    val updateCity =
+        remember(locationInputData) { { s: String -> locationInputData.city = s } }
+    val clearCityError =
+        remember(locationInputData) { { locationInputData.cityError = "" } }
+    val isCityError = locationInputData.cityError.isNotEmpty()
+    ErrorText(locationInputData.cityError)
+    OutlinedClearableTextField(
+        modifier = columnItemModifier,
+        labelResId = R.string.city,
+        value = locationInputData.city,
+        onValueChange = updateCity,
+        keyboardType = KeyboardType.Text,
+        isError = isCityError,
+        onNext = clearCityError,
+        enabled = true,
+    )
+
+    val updateCounty =
+        remember(locationInputData) { { s: String -> locationInputData.county = s } }
+    val clearCountyError =
+        remember(locationInputData) { { locationInputData.countyError = "" } }
+    val isCountyError = locationInputData.countyError.isNotEmpty()
+    ErrorText(locationInputData.countyError)
+    OutlinedClearableTextField(
+        modifier = columnItemModifier,
+        labelResId = R.string.county,
+        value = locationInputData.county,
+        onValueChange = updateCounty,
+        keyboardType = KeyboardType.Text,
+        isError = isCountyError,
+        onNext = clearCountyError,
+        enabled = true,
+    )
+
+    val updateState =
+        remember(locationInputData) { { s: String -> locationInputData.state = s } }
+    val clearStateError =
+        remember(locationInputData) { { locationInputData.stateError = "" } }
+    val isStateError = locationInputData.stateError.isNotEmpty()
+    ErrorText(locationInputData.stateError)
+    OutlinedClearableTextField(
+        modifier = columnItemModifier,
+        labelResId = R.string.state,
+        value = locationInputData.state,
+        onValueChange = updateState,
+        keyboardType = KeyboardType.Text,
+        isError = isStateError,
+        onNext = clearStateError,
+        enabled = true,
+    )
 }

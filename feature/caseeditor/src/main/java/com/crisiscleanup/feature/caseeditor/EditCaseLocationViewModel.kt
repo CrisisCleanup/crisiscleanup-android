@@ -65,12 +65,16 @@ class EditCaseLocationViewModel @Inject constructor(
     val searchResults: StateFlow<LocationSearchResults>
     private val isSearchResultSelected = AtomicBoolean(false)
 
+    private val clearSearchInputFocus = AtomicBoolean(false)
+    val takeClearSearchInputFocus: Boolean
+        get() = clearSearchInputFocus.getAndSet(false)
+
     val navigateBack = mutableStateOf(false)
 
     var isMoveLocationOnMapMode = mutableStateOf(false)
     private var hasEnteredMoveLocationMapMode = false
 
-    private val defaultMapZoom = 13 + (Math.random() * 1e-3).toFloat()
+    val defaultMapZoom = 13 + (Math.random() * 1e-3).toFloat()
     private var zoomCache = defaultMapZoom
     private var _mapCameraZoom = MutableStateFlow(MapViewCameraZoomDefault)
     val mapCameraZoom = _mapCameraZoom.asStateFlow()
@@ -299,6 +303,7 @@ class EditCaseLocationViewModel @Inject constructor(
     private fun onSearchResultSelect(coordinates: LatLng) {
         locationInputData.coordinates.value = coordinates
         isSearchResultSelected.set(true)
+        clearSearchInputFocus.set(true)
         clearQuery()
     }
 
