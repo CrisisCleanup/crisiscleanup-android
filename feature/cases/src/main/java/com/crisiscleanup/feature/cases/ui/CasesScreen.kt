@@ -30,6 +30,7 @@ import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
 import com.crisiscleanup.core.mapmarker.ui.rememberMapUiSettings
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.WorksiteMapMark
+import com.crisiscleanup.core.ui.MapOverlayMessage
 import com.crisiscleanup.feature.cases.CasesViewModel
 import com.crisiscleanup.feature.cases.R
 import com.crisiscleanup.feature.cases.model.WorksiteGoogleMapMark
@@ -298,25 +299,7 @@ internal fun BoxScope.CasesMapView(
     }
 
     val message = hiddenMarkersMessage()
-    AnimatedVisibility(
-        modifier = Modifier.align(Alignment.BottomStart),
-        visible = message.isNotEmpty(),
-        enter = fadeIn(),
-        exit = fadeOut(),
-    ) {
-        Surface(
-            Modifier.padding(
-                horizontal = 16.dp,
-                vertical = 48.dp,
-            )
-        ) {
-            Text(
-                text = message,
-                modifier = Modifier.padding(8.dp),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        }
-    }
+    MapOverlayMessage(message)
 
     val currentLocalDensity = LocalDensity.current
     LaunchedEffect(mapCameraBounds) {

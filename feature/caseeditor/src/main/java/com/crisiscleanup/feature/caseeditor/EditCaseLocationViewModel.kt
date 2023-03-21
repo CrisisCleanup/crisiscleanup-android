@@ -16,7 +16,6 @@ import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
-import com.crisiscleanup.core.mapmarker.R
 import com.crisiscleanup.core.mapmarker.model.DefaultCoordinates
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
@@ -39,6 +38,7 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import com.crisiscleanup.core.common.R as commonR
+import com.crisiscleanup.core.mapmarker.R as mapMarkerR
 
 @HiltViewModel
 class EditCaseLocationViewModel @Inject constructor(
@@ -139,7 +139,7 @@ class EditCaseLocationViewModel @Inject constructor(
                 pinMarkerSize,
             )
             outOfBoundsPinIcon = drawableResourceBitmapProvider.getIcon(
-                R.drawable.cc_pin_location_out_of_bounds,
+                mapMarkerR.drawable.cc_pin_location_out_of_bounds,
                 pinMarkerSize,
             )
         }
@@ -177,6 +177,21 @@ class EditCaseLocationViewModel @Inject constructor(
             initialValue = null,
             started = SharingStarted.WhileSubscribed(),
         )
+
+    val locationOutOfBoundsMessage = isLocationInBounds
+        .map {
+            if (it) ""
+            else resourceProvider.getString(
+                R.string.location_out_of_incident_bounds,
+                worksiteProvider.incident.name,
+            )
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = "",
+            started = SharingStarted.WhileSubscribed(),
+        )
+
 
     private fun setDefaultMapCamera(coordinates: LatLng) {
         if (coordinates == DefaultCoordinates) {

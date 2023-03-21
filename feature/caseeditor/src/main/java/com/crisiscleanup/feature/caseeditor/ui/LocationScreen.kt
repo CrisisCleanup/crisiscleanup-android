@@ -27,6 +27,7 @@ import com.crisiscleanup.core.mapmarker.model.MapViewCameraBoundsDefault
 import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
 import com.crisiscleanup.core.mapmarker.ui.rememberMapUiSettings
 import com.crisiscleanup.core.model.data.Worksite
+import com.crisiscleanup.core.ui.MapOverlayMessage
 import com.crisiscleanup.feature.caseeditor.EditCaseLocationViewModel
 import com.crisiscleanup.feature.caseeditor.R
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -246,7 +247,7 @@ internal fun LocationMapActions(
 }
 
 @Composable
-internal fun LocationMapView(
+internal fun BoxScope.LocationMapView(
     modifier: Modifier = Modifier,
     viewModel: EditCaseLocationViewModel = hiltViewModel(),
     mapCameraBounds: MapViewCameraBounds = MapViewCameraBoundsDefault,
@@ -290,6 +291,8 @@ internal fun LocationMapView(
         )
     }
 
+    val outOfBoundsMessage by viewModel.locationOutOfBoundsMessage.collectAsStateWithLifecycle()
+    MapOverlayMessage(outOfBoundsMessage)
 
     LaunchedEffect(mapCameraZoom) {
         if (mapCameraZoom.takeApply()) {

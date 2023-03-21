@@ -86,6 +86,7 @@ class CaseEditorViewModel @Inject constructor(
                 uiState.value = CaseEditorUiState.Error(R.string.incident_issue_try_again)
                 return@launch
             }
+            editableWorksiteProvider.incident = incident
 
             try {
                 languageRepository.loadLanguages()
