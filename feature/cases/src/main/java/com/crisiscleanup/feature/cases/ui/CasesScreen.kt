@@ -21,6 +21,8 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
+import com.crisiscleanup.core.designsystem.component.fabEdgeSpace
+import com.crisiscleanup.core.designsystem.component.mapButtonEdgeSpace
 import com.crisiscleanup.core.domain.IncidentsData
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraBounds
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraBoundsDefault
@@ -39,6 +41,7 @@ import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.TileProvider
 import com.google.maps.android.compose.*
+import com.crisiscleanup.core.mapmarker.R as mapMarkerR
 
 @Composable
 internal fun CasesRoute(
@@ -245,7 +248,7 @@ internal fun BoxScope.CasesMapView(
         )
     }
 
-    val mapProperties by rememberMapProperties()
+    val mapProperties by rememberMapProperties(mapMarkerR.raw.map_style)
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
         uiSettings = uiSettings,
@@ -342,10 +345,6 @@ internal fun BoxScope.CasesMapView(
     )
 }
 
-// TODO Move into common
-private val actionSpacing = 8.dp
-private val fabSpacing = 16.dp
-
 @Composable
 internal fun CasesOverlayActions(
     modifier: Modifier = Modifier,
@@ -358,8 +357,8 @@ internal fun CasesOverlayActions(
         if (!isTableView) {
             CasesZoomBar(
                 modifier.constrainAs(zoomBar) {
-                    top.linkTo(parent.top, margin = actionSpacing)
-                    start.linkTo(parent.start, margin = actionSpacing)
+                    top.linkTo(parent.top, margin = mapButtonEdgeSpace)
+                    start.linkTo(parent.start, margin = mapButtonEdgeSpace)
                 },
                 onCasesAction,
             )
@@ -367,8 +366,8 @@ internal fun CasesOverlayActions(
 
         CasesActionBar(
             modifier.constrainAs(actionBar) {
-                top.linkTo(parent.top, margin = actionSpacing)
-                end.linkTo(parent.end, margin = actionSpacing)
+                top.linkTo(parent.top, margin = mapButtonEdgeSpace)
+                end.linkTo(parent.end, margin = mapButtonEdgeSpace)
             },
             onCasesAction,
             isTableView,
@@ -377,8 +376,8 @@ internal fun CasesOverlayActions(
         val onNewCase = remember(onCasesAction) { { onCasesAction(CasesAction.CreateNew) } }
         FloatingActionButton(
             modifier = modifier.constrainAs(newCaseFab) {
-                end.linkTo(parent.end, margin = fabSpacing)
-                bottom.linkTo(parent.bottom, margin = fabSpacing)
+                end.linkTo(parent.end, margin = fabEdgeSpace)
+                bottom.linkTo(parent.bottom, margin = fabEdgeSpace)
             },
             onClick = onNewCase,
             shape = CircleShape,

@@ -16,6 +16,12 @@ import androidx.compose.ui.unit.dp
 private fun roundedRectangleButtonShape() = RoundedCornerShape(4.dp)
 private val buttonMinHeight = 48.dp
 
+val mapButtonSize = 48.dp
+val mapButtonSpace = 1.dp
+val mapButtonEdgeSpace = 8.dp
+
+val fabEdgeSpace = 16.dp
+
 @Composable
 private fun Text(
     @StringRes

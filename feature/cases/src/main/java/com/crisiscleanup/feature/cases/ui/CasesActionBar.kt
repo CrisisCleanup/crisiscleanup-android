@@ -7,6 +7,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
+import com.crisiscleanup.core.designsystem.component.mapButtonSize
+import com.crisiscleanup.core.designsystem.component.mapButtonSpace
 import com.crisiscleanup.feature.cases.R
 
 enum class CasesAction(
@@ -23,7 +25,7 @@ enum class CasesAction(
     ZoomToIncident(R.drawable.ic_zoom_incident, R.string.zoom_to_incident),
 }
 
-private val actionSize = 48.dp
+private val actionSize = mapButtonSize
 private val zoomBarSpacing = 8.dp
 
 @Composable
@@ -48,8 +50,7 @@ internal fun CasesActionBar(
 ) {
     Row(
         modifier,
-        // TODO Move value into common
-        horizontalArrangement = Arrangement.spacedBy(1.dp),
+        horizontalArrangement = Arrangement.spacedBy(mapButtonSpace),
     ) {
         CasesActionButton(modifier, CasesAction.Search, onCasesAction)
         val tableMapAction = if (isTableView) CasesAction.MapView else CasesAction.TableView

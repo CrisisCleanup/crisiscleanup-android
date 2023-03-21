@@ -66,13 +66,13 @@ class LocationInputData(
             return false
         }
 
-        if (city.isBlank()) {
-            cityError = resourceProvider.getString(R.string.city_is_required)
+        if (county.isBlank()) {
+            countyError = resourceProvider.getString(R.string.county_is_required)
             return false
         }
 
-        if (county.isBlank()) {
-            countyError = resourceProvider.getString(R.string.county_is_required)
+        if (city.isBlank()) {
+            cityError = resourceProvider.getString(R.string.city_is_required)
             return false
         }
 

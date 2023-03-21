@@ -25,9 +25,7 @@ import androidx.compose.ui.unit.min
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
-import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
-import com.crisiscleanup.core.designsystem.component.TopAppBarBackCancel
+import com.crisiscleanup.core.designsystem.component.*
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.mapmarker.model.DefaultCoordinates
 import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
@@ -251,9 +249,6 @@ internal fun ColumnScope.LocationView(
     }
 }
 
-// TODO Use common styles
-private val buttonSizeModifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp)
-
 @Composable
 internal fun MapButton(
     imageVector: ImageVector? = null,
@@ -262,16 +257,13 @@ internal fun MapButton(
     onClick: () -> Unit = {},
 ) {
     CrisisCleanupIconButton(
-        modifier = buttonSizeModifier,
+        modifier = Modifier.size(mapButtonSize),
         imageVector = imageVector,
         iconResId = iconResId,
         contentDescriptionResId = contentDescriptionResId,
         onClick = onClick,
     )
 }
-
-// TODO Move into common
-private val actionSpacing = 8.dp
 
 @Composable
 internal fun LocationMapActions(
@@ -286,11 +278,10 @@ internal fun LocationMapActions(
         val (actionBar) = createRefs()
         Row(
             Modifier.constrainAs(actionBar) {
-                top.linkTo(parent.top, margin = actionSpacing)
-                end.linkTo(parent.end, margin = actionSpacing)
+                top.linkTo(parent.top, margin = mapButtonEdgeSpace)
+                end.linkTo(parent.end, margin = mapButtonEdgeSpace)
             },
-            // TODO Move value into common
-            horizontalArrangement = Arrangement.spacedBy(1.dp),
+            horizontalArrangement = Arrangement.spacedBy(mapButtonSpace),
         ) {
             // TODO Likely hint with translator
             MapButton(
@@ -298,7 +289,7 @@ internal fun LocationMapActions(
                 contentDescriptionResId = R.string.select_on_map,
                 onClick = moveLocationOnMap,
             )
-            if (!isMoveLocationMode) {
+            if (isMoveLocationMode) {
                 MapButton(
                     imageVector = CrisisCleanupIcons.Location,
                     contentDescriptionResId = R.string.center_on_location,
@@ -331,7 +322,7 @@ internal fun BoxScope.LocationMapView(
 
     val mapCameraZoom by viewModel.mapCameraZoom.collectAsStateWithLifecycle()
 
-    val uiSettings by rememberMapUiSettings(myLocation = true)
+    val uiSettings by rememberMapUiSettings()
 
     val markerState = rememberMarkerState()
     val coordinates by viewModel.locationInputData.coordinates.collectAsStateWithLifecycle()
@@ -447,6 +438,7 @@ internal fun LocationAddressFormView(
     val clearAddressError =
         remember(locationInputData) { { locationInputData.streetAddressError = "" } }
     val isAddressError = locationInputData.streetAddressError.isNotEmpty()
+    val focusAddress = isAddressError
     ErrorText(locationInputData.streetAddressError)
     OutlinedClearableTextField(
         modifier = columnItemModifier,
@@ -455,6 +447,7 @@ internal fun LocationAddressFormView(
         onValueChange = updateAddress,
         keyboardType = KeyboardType.Text,
         isError = isAddressError,
+        hasFocus = focusAddress,
         onNext = clearAddressError,
         enabled = true,
     )
@@ -466,6 +459,7 @@ internal fun LocationAddressFormView(
     val clearZipCodeError =
         remember(locationInputData) { { locationInputData.zipCodeError = "" } }
     val isZipCodeError = locationInputData.zipCodeError.isNotEmpty()
+    val focusZipCode = isZipCodeError
     ErrorText(locationInputData.zipCodeError)
     OutlinedClearableTextField(
         modifier = columnItemModifier,
@@ -474,6 +468,7 @@ internal fun LocationAddressFormView(
         onValueChange = updateZipCode,
         keyboardType = KeyboardType.Text,
         isError = isZipCodeError,
+        hasFocus = focusZipCode,
         onNext = clearZipCodeError,
         enabled = true,
     )
@@ -483,6 +478,7 @@ internal fun LocationAddressFormView(
     val clearCountyError =
         remember(locationInputData) { { locationInputData.countyError = "" } }
     val isCountyError = locationInputData.countyError.isNotEmpty()
+    val focusCounty = isCountyError
     ErrorText(locationInputData.countyError)
     OutlinedClearableTextField(
         modifier = columnItemModifier,
@@ -491,6 +487,7 @@ internal fun LocationAddressFormView(
         onValueChange = updateCounty,
         keyboardType = KeyboardType.Text,
         isError = isCountyError,
+        hasFocus = focusCounty,
         onNext = clearCountyError,
         enabled = true,
     )
@@ -500,6 +497,7 @@ internal fun LocationAddressFormView(
     val clearCityError =
         remember(locationInputData) { { locationInputData.cityError = "" } }
     val isCityError = locationInputData.cityError.isNotEmpty()
+    val focusCity = isCityError
     ErrorText(locationInputData.cityError)
     OutlinedClearableTextField(
         modifier = columnItemModifier,
@@ -508,6 +506,7 @@ internal fun LocationAddressFormView(
         onValueChange = updateCity,
         keyboardType = KeyboardType.Text,
         isError = isCityError,
+        hasFocus = focusCity,
         onNext = clearCityError,
         enabled = true,
     )
@@ -517,6 +516,7 @@ internal fun LocationAddressFormView(
     val clearStateError =
         remember(locationInputData) { { locationInputData.stateError = "" } }
     val isStateError = locationInputData.stateError.isNotEmpty()
+    val focusState = isStateError
     ErrorText(locationInputData.stateError)
     OutlinedClearableTextField(
         modifier = columnItemModifier,
@@ -525,6 +525,7 @@ internal fun LocationAddressFormView(
         onValueChange = updateState,
         keyboardType = KeyboardType.Text,
         isError = isStateError,
+        hasFocus = focusState,
         onNext = clearStateError,
         enabled = true,
     )
