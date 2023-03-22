@@ -28,6 +28,7 @@ import com.crisiscleanup.feature.caseeditor.EditCaseLocationViewModel
 import com.crisiscleanup.feature.caseeditor.LocationSearchResults
 import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.model.ExistingCaseLocation
+import com.crisiscleanup.feature.caseeditor.util.combineTrimText
 
 @Composable
 internal fun ColumnScope.SearchContents(
@@ -115,9 +116,6 @@ private fun LazyListScope.listItemTitle(
     }
 }
 
-private fun commaConcatNonEmpty(vararg ss: String) =
-    ss.map(String::trim).filter(String::isNotEmpty).joinToString(", ")
-
 @Composable
 internal fun ListSearchResults(
     results: LocationSearchResults,
@@ -154,8 +152,8 @@ internal fun ListSearchResults(
                                 .weight(1f)
                                 .padding(start = 16.dp)
                         ) {
-                            Text(commaConcatNonEmpty(name, caseNumber))
-                            Text(commaConcatNonEmpty(address, city, state))
+                            Text(combineTrimText(name, caseNumber))
+                            Text(combineTrimText(address, city, state))
                         }
                     }
                 }
@@ -182,7 +180,7 @@ internal fun ListSearchResults(
                     with(keyAddress.address) {
                         Column {
                             Text(address)
-                            Text(commaConcatNonEmpty(city, state, country))
+                            Text(combineTrimText(city, state, country))
                         }
                     }
                 }

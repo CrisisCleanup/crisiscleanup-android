@@ -304,14 +304,8 @@ class EditCaseLocationViewModel @Inject constructor(
         _mapCameraZoom.value = MapViewCameraZoom(coordinates, zoomCache)
     }
 
-    private fun onSearchResultSelect(coordinates: LatLng) {
-        locationInputData.coordinates.value = coordinates
-        isSearchResultSelected.set(true)
-        clearSearchInputFocus.set(true)
-        clearQuery()
-    }
-
-    private fun autofillAddress(
+    private fun onSearchResultSelect(
+        coordinates: LatLng,
         address: String,
         zipCode: String,
         county: String,
@@ -319,20 +313,25 @@ class EditCaseLocationViewModel @Inject constructor(
         state: String,
     ) {
         with(locationInputData) {
+            this.coordinates.value = coordinates
             streetAddress = address
             this.zipCode = zipCode
             this.county = county
             this.city = city
             this.state = state
+            resetValidity()
         }
+        isSearchResultSelected.set(true)
+        clearSearchInputFocus.set(true)
+        clearQuery()
     }
 
     fun onExistingWorksiteSelected(caseLocation: ExistingCaseLocation) {
         // TODO This should load/prompt (to edit) the existing case.
         //      Clear nav backstack as well.
         with(caseLocation) {
-            onSearchResultSelect(coordinates)
-            autofillAddress(
+            onSearchResultSelect(
+                coordinates,
                 address,
                 zipCode,
                 county,
@@ -344,8 +343,8 @@ class EditCaseLocationViewModel @Inject constructor(
 
     fun onGeocodeAddressSelected(locationAddress: LocationAddress) {
         with(locationAddress) {
-            onSearchResultSelect(toLatLng())
-            autofillAddress(
+            onSearchResultSelect(
+                toLatLng(),
                 address,
                 zipCode,
                 county,

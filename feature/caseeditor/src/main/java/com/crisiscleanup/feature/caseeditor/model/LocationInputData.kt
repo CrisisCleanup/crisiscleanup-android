@@ -9,6 +9,7 @@ import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteFormValue
 import com.crisiscleanup.feature.caseeditor.R
+import com.crisiscleanup.feature.caseeditor.util.summarizeAddress
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.datetime.Clock
 
@@ -28,11 +29,21 @@ class LocationInputData(
     var hasWrongLocation by mutableStateOf(worksite.hasWrongLocationFlag)
     var crossStreetNearbyLandmark by mutableStateOf(worksite.crossStreetNearbyLandmark)
 
+    val addressSummary: Collection<String>
+        get() = summarizeAddress(streetAddress, zipCode, county, city, state)
+
     var streetAddressError by mutableStateOf("")
     var zipCodeError by mutableStateOf("")
     var cityError by mutableStateOf("")
     var countyError by mutableStateOf("")
     var stateError by mutableStateOf("")
+
+    val hasAddressError: Boolean
+        get() = streetAddressError.isNotBlank() ||
+                zipCodeError.isNotBlank() ||
+                cityError.isNotBlank() ||
+                countyError.isNotBlank() ||
+                stateError.isNotBlank()
 
     private fun isChanged(worksite: Worksite): Boolean {
         return this.coordinates.value != worksite.coordinates() ||
@@ -45,7 +56,7 @@ class LocationInputData(
                 crossStreetNearbyLandmark.trim() != worksite.crossStreetNearbyLandmark
     }
 
-    private fun resetValidity() {
+    internal fun resetValidity() {
         streetAddressError = ""
         zipCodeError = ""
         cityError = ""
@@ -92,6 +103,9 @@ class LocationInputData(
         }
 
         if (!validate()) {
+            if (hasAddressError) {
+                hasWrongLocation = true
+            }
             return null
         }
 

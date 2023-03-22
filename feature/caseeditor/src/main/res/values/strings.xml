@@ -40,6 +40,7 @@
     <string name="state">State</string>
     <string name="zipcode">Zip code</string>
     <string name="cross_street_nearby_landmark">Cross street or nearby landmark</string>
+    <string name="wrong_location">Manual address override</string>
     <string name="address_is_required">Street address is required</string>
     <string name="zipcode_is_required">Zip code is required</string>
     <string name="city_is_required">City is required</string>

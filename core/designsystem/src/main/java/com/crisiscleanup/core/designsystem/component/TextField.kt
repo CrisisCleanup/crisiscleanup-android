@@ -39,6 +39,7 @@ fun OutlinedSingleLineTextField(
     onSearch: (() -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
     imeAction: ImeAction = ImeAction.Next,
+    nextDirection:FocusDirection = FocusDirection.Down,
 ) {
     val focusRequester = FocusRequester()
     val modifier2 =
@@ -51,7 +52,7 @@ fun OutlinedSingleLineTextField(
     val focusManager = LocalFocusManager.current
     val keyboardActions = KeyboardActions(
         onNext = {
-            focusManager.moveFocus(FocusDirection.Next)
+            focusManager.moveFocus(nextDirection)
             onNext?.invoke()
         },
         onSearch = {

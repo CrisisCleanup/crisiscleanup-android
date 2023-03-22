@@ -9,6 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
@@ -33,10 +34,25 @@ import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.core.ui.touchDownConsumer
 import com.crisiscleanup.feature.caseeditor.EditCaseLocationViewModel
 import com.crisiscleanup.feature.caseeditor.R
+import com.crisiscleanup.feature.caseeditor.util.summarizeAddress
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.maps.android.compose.*
+
+@Composable
+private fun AddressSummaryInColumn(
+    lines: Collection<String>,
+) {
+    lines.forEach {
+        // TODO Use common styles
+        Text(
+            it,
+            modifier = columnItemModifier,
+            style = MaterialTheme.typography.bodyLarge,
+        )
+    }
+}
 
 @Composable
 internal fun LocationSummaryView(
@@ -55,24 +71,20 @@ internal fun LocationSummaryView(
             style = MaterialTheme.typography.headlineSmall,
         )
 
-        val address = listOf(worksite.address, worksite.city, worksite.state)
-            .filter(String::isNotBlank)
-            .joinToString(", ")
+        worksite.run {
+            val addressSummaryLines = summarizeAddress(address, postalCode, county, city, state)
+            if (addressSummaryLines.isNotEmpty()) {
+                // TODO Common style for padding
+                Column(modifier.padding(8.dp)) {
+                    AddressSummaryInColumn(addressSummaryLines)
 
-        if (address.isNotEmpty()) {
-            Column(modifier.padding(8.dp)) {
-                Text(
-                    text = address,
-                    modifier = modifier.fillMaxWidth(),
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-
-                if (worksite.crossStreetNearbyLandmark.isNotEmpty()) {
-                    Text(
-                        text = worksite.crossStreetNearbyLandmark,
-                        modifier = modifier.fillMaxWidth(),
-                        style = MaterialTheme.typography.bodyLarge,
-                    )
+                    if (worksite.crossStreetNearbyLandmark.isNotEmpty()) {
+                        Text(
+                            text = worksite.crossStreetNearbyLandmark,
+                            modifier = modifier.fillMaxWidth(),
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
+                    }
                 }
             }
         }
@@ -400,7 +412,7 @@ internal fun LocationFormView(
 ) {
     val locationInputData = viewModel.locationInputData
 
-    LocationAddressFormView()
+    val closeKeyboard = rememberCloseKeyboard(locationInputData)
 
     val updateCrossStreet =
         remember(locationInputData) {
@@ -408,7 +420,6 @@ internal fun LocationFormView(
                 locationInputData.crossStreetNearbyLandmark = s
             }
         }
-    val closeKeyboard = rememberCloseKeyboard(viewModel)
     OutlinedClearableTextField(
         modifier = columnItemModifier,
         labelResId = R.string.cross_street_nearby_landmark,
@@ -417,14 +428,56 @@ internal fun LocationFormView(
         keyboardType = KeyboardType.Text,
         isError = false,
         enabled = true,
-        imeAction = ImeAction.Done,
-        onEnter = closeKeyboard,
+        imeAction = ImeAction.Next,
     )
+
+    val updateWrongLocation = remember(locationInputData) {
+        { b: Boolean ->
+            locationInputData.hasWrongLocation = b
+        }
+    }
+    val toggleWrongLocation = remember(locationInputData) {
+        {
+            updateWrongLocation(!locationInputData.hasWrongLocation)
+        }
+    }
+    Row(
+        Modifier
+            .clickable(onClick = toggleWrongLocation)
+            .then(columnItemModifier),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Checkbox(
+            checked = locationInputData.hasWrongLocation,
+            onCheckedChange = updateWrongLocation,
+        )
+        // TODO Translator from form fields data?
+        Text(text = stringResource(R.string.wrong_location))
+    }
+
+    locationInputData.run {
+        val showAddressForm by remember(
+            streetAddressError,
+            zipCodeError,
+            cityError,
+            countyError,
+            stateError,
+            hasWrongLocation,
+        ) {
+            derivedStateOf { hasAddressError || hasWrongLocation }
+        }
+        if (showAddressForm) {
+            LocationAddressFormView(closeKeyboard = closeKeyboard)
+        } else {
+            AddressSummaryInColumn(addressSummary)
+        }
+    }
 }
 
 @Composable
 internal fun LocationAddressFormView(
     viewModel: EditCaseLocationViewModel = hiltViewModel(),
+    closeKeyboard: () -> Unit = {},
 ) {
     val locationInputData = viewModel.locationInputData
 
@@ -480,7 +533,7 @@ internal fun LocationAddressFormView(
         labelResId = R.string.county,
         value = locationInputData.county,
         onValueChange = updateCounty,
-        keyboardType = KeyboardType.Text,
+        keyboardType = KeyboardType.Password,
         isError = isCountyError,
         hasFocus = focusCounty,
         onNext = clearCountyError,
@@ -499,7 +552,7 @@ internal fun LocationAddressFormView(
         labelResId = R.string.city,
         value = locationInputData.city,
         onValueChange = updateCity,
-        keyboardType = KeyboardType.Text,
+        keyboardType = KeyboardType.Password,
         isError = isCityError,
         hasFocus = focusCity,
         onNext = clearCityError,
@@ -518,10 +571,11 @@ internal fun LocationAddressFormView(
         labelResId = R.string.state,
         value = locationInputData.state,
         onValueChange = updateState,
-        keyboardType = KeyboardType.Text,
+        keyboardType = KeyboardType.Password,
         isError = isStateError,
         hasFocus = focusState,
-        onNext = clearStateError,
+        imeAction = ImeAction.Done,
+        onEnter = closeKeyboard,
         enabled = true,
     )
 }
