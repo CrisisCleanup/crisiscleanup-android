@@ -15,8 +15,8 @@ plugins {
 android {
     defaultConfig {
         applicationId = "com.crisiscleanup"
-        versionCode = 41
-        versionName = "0.0.41"
+        versionCode = 42
+        versionName = "0.0.42"
 
         // Custom test runner to set up Hilt dependency graph
         testInstrumentationRunner = "com.crisiscleanup.core.testing.CrisisCleanupTestRunner"
@@ -25,9 +25,15 @@ android {
         }
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     buildTypes {
         val debug by getting {
             applicationIdSuffix = NiaBuildType.DEBUG.applicationIdSuffix
+
+            buildConfigField("Boolean", "IS_RELEASE_BUILD", "false")
         }
         val release by getting {
             isMinifyEnabled = true
@@ -38,10 +44,23 @@ android {
                 "proguard-playservices.pro",
             )
 
+            buildConfigField("Boolean", "IS_RELEASE_BUILD", "true")
+
             // To publish on the Play store a private signing key is required, but to allow anyone
             // who clones the code to sign and run the release variant, use the debug signing key.
             // Uncomment to install locally. Change to build for Play store.
             signingConfig = signingConfigs.getByName("debug")
+        }
+    }
+
+    productFlavors {
+        val demo by getting {
+            buildConfigField("Boolean", "IS_PROD_BUILD", "false")
+
+        }
+
+        val prod by getting {
+            buildConfigField("Boolean", "IS_PROD_BUILD", "true")
         }
     }
 
@@ -82,6 +101,8 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:model"))
     implementation(project(":core:network"))
+    implementation(project(":core:testerfeedbackapi"))
+    demoImplementation(project(":core:testerfeedback"))
     implementation(project(":core:ui"))
 
     implementation(project(":sync:work"))
@@ -120,6 +141,8 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:31.1.1"))
     implementation("com.google.firebase:firebase-crashlytics")
     implementation("com.google.firebase:firebase-analytics")
+    implementation(libs.firebase.appdistribution.api)
+    demoImplementation(libs.firebase.appdistribution)
 
     implementation(libs.kotlinx.coroutines.playservices)
     implementation(libs.playservices.maps)

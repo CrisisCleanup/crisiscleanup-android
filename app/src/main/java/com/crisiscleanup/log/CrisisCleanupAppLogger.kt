@@ -7,14 +7,16 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import javax.inject.Inject
 
 class CrisisCleanupAppLogger @Inject constructor(
-    private val appEnv: AppEnv,
+    appEnv: AppEnv,
 ) : TagLogger {
     private val crashlytics = FirebaseCrashlytics.getInstance()
 
     override var tag: String? = null
 
+    private val isDebuggable = appEnv.isDebuggable
+
     override fun logDebug(vararg logs: Any) {
-        if (appEnv.isDebuggable) {
+        if (isDebuggable) {
             Log.d(tag, logs.joinToString(" "))
         }
     }
@@ -22,7 +24,7 @@ class CrisisCleanupAppLogger @Inject constructor(
     override fun logException(e: Exception) {
         crashlytics.recordException(e)
 
-        if (appEnv.isDebuggable) {
+        if (isDebuggable) {
             Log.e(tag, e.message, e)
         }
     }

@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.appheader.AppHeaderUiState
+import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.SyncPuller
 import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.event.ExpiredTokenListener
@@ -28,7 +29,10 @@ class MainActivityViewModel @Inject constructor(
     worksitesRepository: WorksitesRepository,
     languageTranslationsRepository: LanguageTranslationsRepository,
     private val syncPuller: SyncPuller,
+    appEnv: AppEnv,
 ) : ViewModel(), ExpiredTokenListener {
+    val isDebuggable = appEnv.isDebuggable
+
     val uiState: StateFlow<MainActivityUiState> = localAppPreferencesRepository.userData.map {
         MainActivityUiState.Success(it)
     }.stateIn(

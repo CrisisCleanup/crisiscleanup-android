@@ -12,10 +12,11 @@ import javax.inject.Inject
 class MenuViewModel @Inject constructor(
     private val appVersionProvider: AppVersionProvider,
     private val authEventManager: AuthEventManager,
-    private val appEnv: AppEnv,
+    appEnv: AppEnv,
     private val databaseVersionProvider: DatabaseVersionProvider,
 ) : ViewModel() {
-    val isDebug = appEnv.isDebuggable
+    val isDebuggable = appEnv.isDebuggable
+    private val isNotProduction = !appEnv.isProduction
 
     val versionText: String
         get() {
@@ -24,10 +25,10 @@ class MenuViewModel @Inject constructor(
         }
 
     val databaseVersionText: String
-        get() = if (appEnv.isDebuggable) "DB ${databaseVersionProvider.databaseVersion}" else ""
+        get() = if (isNotProduction) "DB ${databaseVersionProvider.databaseVersion}" else ""
 
     fun simulateTokenExpired() {
-        if (appEnv.isDebuggable) {
+        if (isDebuggable) {
             authEventManager.onExpiredToken()
         }
     }

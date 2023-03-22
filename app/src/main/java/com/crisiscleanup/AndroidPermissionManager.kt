@@ -1,7 +1,8 @@
 package com.crisiscleanup
 
-import android.Manifest.permission.ACCESS_COARSE_LOCATION
+import android.Manifest.permission.*
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -28,6 +29,10 @@ class AndroidPermissionManager @Inject constructor(
     private var requestPermissionLauncher: ActivityResultLauncher<String>? = null
 
     private var activityWr: WeakReference<ComponentActivity> = WeakReference(null)
+
+    private val screenshotReadPermission =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) READ_MEDIA_IMAGES
+        else READ_EXTERNAL_STORAGE
 
     override fun onCreate(owner: LifecycleOwner) {
         (owner as? ComponentActivity)?.let { activity ->
@@ -68,7 +73,7 @@ class AndroidPermissionManager @Inject constructor(
         return PermissionStatus.Undefined
     }
 
-    override fun requestLocationPermission(): PermissionStatus {
-        return requestPermission(ACCESS_COARSE_LOCATION)
-    }
+    override fun requestLocationPermission() = requestPermission(ACCESS_COARSE_LOCATION)
+
+    override fun requestScreenshotReadPermission() = requestPermission(screenshotReadPermission)
 }

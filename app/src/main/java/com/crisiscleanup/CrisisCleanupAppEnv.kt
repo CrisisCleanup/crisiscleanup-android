@@ -6,5 +6,6 @@ import javax.inject.Singleton
 
 @Singleton
 class CrisisCleanupAppEnv @Inject constructor() : AppEnv {
-    override val isDebuggable: Boolean = CrisisCleanupApplication.isDebuggable
+    override val isDebuggable = !(BuildConfig.IS_RELEASE_BUILD || BuildConfig.IS_PROD_BUILD)
+    override val isProduction = BuildConfig.IS_RELEASE_BUILD && BuildConfig.IS_PROD_BUILD
 }

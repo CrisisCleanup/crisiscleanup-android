@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -27,7 +25,7 @@ internal fun MenuScreen(
 ) {
     val databaseText = viewModel.databaseVersionText
 
-    val expireTokenAction = if (viewModel.isDebug) {
+    val expireTokenAction = if (viewModel.isDebuggable) {
         remember(viewModel) { { viewModel.simulateTokenExpired() } }
     } else null
 

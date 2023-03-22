@@ -11,9 +11,7 @@ import androidx.compose.runtime.*
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.credentials.CredentialManager
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.*
 import androidx.metrics.performance.JankStats
 import com.crisiscleanup.MainActivityUiState.Loading
 import com.crisiscleanup.MainActivityUiState.Success
@@ -26,6 +24,9 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.data.util.NetworkMonitor
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.model.data.DarkThemeConfig
+import com.crisiscleanup.core.testerfeedbackapi.FeedbackTriggerProvider
+import com.crisiscleanup.core.testerfeedbackapi.di.FeedbackTriggerProviderKey
+import com.crisiscleanup.core.testerfeedbackapi.di.FeedbackTriggerProviders
 import com.crisiscleanup.ui.CrisisCleanupApp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.gms.maps.MapsInitializer
@@ -72,10 +73,16 @@ class MainActivity : ComponentActivity(),
     @Inject
     internal lateinit var permissionManager: PermissionManager
 
+    @Inject
+    @FeedbackTriggerProviderKey(FeedbackTriggerProviders.Default)
+    internal lateinit var feedbackTriggerProvider: FeedbackTriggerProvider
+
     private lateinit var credentialSaveRetrieveManager: CredentialSaveRetrieveManager
 
     private var requestCredentialsListenerId = -1
     private var saveCredentialsListenerId = -1
+
+    private val lifecycleObservers = mutableListOf<LifecycleObserver>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
@@ -85,7 +92,11 @@ class MainActivity : ComponentActivity(),
         requestCredentialsListenerId = authEventManager.addCredentialsRequestListener(this)
         saveCredentialsListenerId = authEventManager.addSaveCredentialsListener(this)
 
-        (permissionManager as? AndroidPermissionManager)?.let { lifecycle.addObserver(it) }
+        (permissionManager as? DefaultLifecycleObserver)?.let { lifecycleObservers.add(it) }
+
+        lifecycleObservers.addAll(feedbackTriggerProvider.triggers.mapNotNull { it as? LifecycleObserver })
+
+        lifecycleObservers.forEach { lifecycle.addObserver(it) }
 
         credentialSaveRetrieveManager = CredentialSaveRetrieveManager(
             lifecycleScope,
@@ -159,6 +170,8 @@ class MainActivity : ComponentActivity(),
 
         authEventManager.removeCredentialsRequestListener(requestCredentialsListenerId)
         authEventManager.removeSaveCredentialsListener(saveCredentialsListenerId)
+
+        lifecycleObservers.forEach { lifecycle.removeObserver(it) }
     }
 
     override fun onTrimMemory(level: Int) {

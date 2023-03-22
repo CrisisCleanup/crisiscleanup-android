@@ -1,7 +1,6 @@
 package com.crisiscleanup
 
 import android.app.Application
-import android.content.pm.ApplicationInfo
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.decode.SvgDecoder
@@ -13,13 +12,7 @@ import dagger.hilt.android.HiltAndroidApp
  */
 @HiltAndroidApp
 class CrisisCleanupApplication : Application(), ImageLoaderFactory {
-    companion object {
-        var isDebuggable: Boolean = false
-            private set
-    }
-
     override fun onCreate() {
-        isDebuggable = 0 != (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE)
         super.onCreate()
 
         // Initialize Sync; the system responsible for keeping data in the app up to date.

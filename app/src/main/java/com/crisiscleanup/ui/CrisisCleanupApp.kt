@@ -26,7 +26,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import com.crisiscleanup.AuthState
-import com.crisiscleanup.CrisisCleanupApplication
 import com.crisiscleanup.MainActivityViewModel
 import com.crisiscleanup.R
 import com.crisiscleanup.core.appheader.AppHeaderState
@@ -103,6 +102,7 @@ private fun LoadedContent(
             snackbarHostState,
             !isNotAuthenticatedState,
             toggleAuthentication,
+            viewModel.isDebuggable,
         )
     } else {
         val accountData = (authState as AuthState.Authenticated).accountData
@@ -178,6 +178,7 @@ private fun AuthenticateContent(
     snackbarHostState: SnackbarHostState,
     enableBackHandler: Boolean,
     toggleAuthentication: (Boolean) -> Unit,
+    isDebuggable: Boolean = false,
 ) {
     Scaffold(
         modifier = Modifier.semantics {
@@ -200,7 +201,7 @@ private fun AuthenticateContent(
                     ),
                 enableBackHandler = enableBackHandler,
                 closeAuthentication = { toggleAuthentication(false) },
-                isDebug = CrisisCleanupApplication.isDebuggable,
+                isDebug = isDebuggable,
             )
         }
     )
