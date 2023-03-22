@@ -140,14 +140,14 @@ data class DotDrawProperties(
     val bitmapSizePx: Float = 12f,
     val centerSizePx: Float = bitmapSizePx * 0.5f,
     val dotDiameterPx: Float = 6f,
-    val strokeWidthPx: Float = 2f,
+    val strokeWidthPx: Float = 1f,
 ) {
     companion object {
         fun make(
             resourceProvider: AndroidResourceProvider,
             bitmapSizeDp: Float = 8f,
             dotDiameterDp: Float = 4f,
-            strokeWidthDp: Float = 1f,
+            strokeWidthDp: Float = 0.5f,
         ) = DotDrawProperties(
             bitmapSizePx = resourceProvider.dpToPx(bitmapSizeDp),
             dotDiameterPx = resourceProvider.dpToPx(dotDiameterDp),

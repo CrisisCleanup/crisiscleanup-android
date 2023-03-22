@@ -1,7 +1,6 @@
 package com.crisiscleanup.core.mapmarker
 
-import android.graphics.Bitmap
-import android.graphics.Canvas
+import android.graphics.*
 import android.graphics.drawable.Drawable
 import androidx.collection.LruCache
 import androidx.compose.ui.geometry.Offset
@@ -28,8 +27,13 @@ class WorkTypeIconProvider @Inject constructor(
 
     private val argbEvaluator = ArgbEvaluatorCompat()
 
-    // TODO Make configurable
-    private val bitmapSizeDp = 48f
+    // TODO Parameterize values
+
+    private val shadowRadiusDp = 3f
+    private val shadowRadius: Int
+    private val shadowColor = (0xFF666666).toInt()
+
+    private val bitmapSizeDp = 36f + 2 * shadowRadiusDp
     private val bitmapSize: Int
     private var bitmapCenterOffset = Offset(0f, 0f)
 
@@ -42,6 +46,8 @@ class WorkTypeIconProvider @Inject constructor(
         bitmapSize = resourceProvider.dpToPx(bitmapSizeDp).toInt()
         val centerOffset = bitmapSizeDp * 0.5f
         bitmapCenterOffset = Offset(centerOffset, centerOffset)
+
+        shadowRadius = resourceProvider.dpToPx(shadowRadiusDp).toInt()
 
         plusDrawable = resourceProvider.getDrawable(R.drawable.ic_work_type_plus)
     }
@@ -105,13 +111,20 @@ class WorkTypeIconProvider @Inject constructor(
         val canvas = Canvas(output)
 
         // TODO Keep bounds squared and icon centered
-        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        val rightBounds = canvas.width - shadowRadius
+        val bottomBounds = canvas.height - shadowRadius
+        drawable.setBounds(
+            shadowRadius,
+            shadowRadius,
+            rightBounds,
+            bottomBounds,
+        )
         drawable.draw(canvas)
 
         val colors = mapMarkerColors[status] ?: mapMarkerColors[CaseStatus.Unknown]!!
 
-        for (w in 0 until canvas.width) {
-            for (h in 0 until canvas.height) {
+        for (w in shadowRadius until rightBounds) {
+            for (h in shadowRadius until bottomBounds) {
                 val p = output[w, h]
                 val alpha = p.alpha
                 if (alpha > 0) {
@@ -133,20 +146,37 @@ class WorkTypeIconProvider @Inject constructor(
             }
         }
 
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            colorFilter = PorterDuffColorFilter(shadowColor, PorterDuff.Mode.SRC_IN)
+        }
+        val flatShadow = Bitmap.createBitmap(
+            bitmapSize,
+            bitmapSize,
+            Bitmap.Config.ARGB_8888,
+        )
+        Canvas(flatShadow).apply {
+            drawBitmap(output, Matrix(), paint)
+        }
+        val blurred = Toolkit.blur(flatShadow, shadowRadius)
+
         if (cacheKey.hasMultipleWorkTypes) {
             synchronized(plusDrawable) {
                 plusDrawable.setBounds(
-                    canvas.width - plusDrawable.intrinsicWidth,
-                    canvas.height - plusDrawable.intrinsicHeight,
-                    canvas.width,
-                    canvas.height,
+                    rightBounds - plusDrawable.intrinsicWidth,
+                    bottomBounds - plusDrawable.intrinsicHeight,
+                    rightBounds,
+                    bottomBounds,
                 )
                 plusDrawable.draw(canvas)
 
             }
         }
 
-        return output
+        Canvas(blurred).apply {
+            drawBitmap(output, 0f, 0f, null)
+        }
+
+        return blurred
     }
 
     private val statusIcons = mapOf(

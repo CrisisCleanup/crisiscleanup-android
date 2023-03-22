@@ -12,6 +12,7 @@ android {
 dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:model"))
+    implementation(project(":core:renderscript-toolkit"))
 
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.ui)

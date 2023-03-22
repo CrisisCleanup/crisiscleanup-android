@@ -1,0 +1,35 @@
+plugins {
+    id("nowinandroid.android.library")
+}
+
+android {
+    namespace = "com.google.android.renderscript"
+
+    ndkVersion "25.2.9519653"
+
+    defaultConfig {
+        externalNativeBuild {
+            cmake {
+                cppFlags "-std=c++17"
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path file('src/main/cpp/CMakeLists.txt')
+        }
+    }
+}
+
+dependencies {
+    implementation(libs.kotlin.stdlib)
+    implementation(libs.androidx.core.ktx)
+}
