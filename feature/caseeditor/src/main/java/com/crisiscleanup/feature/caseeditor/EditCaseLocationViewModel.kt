@@ -354,13 +354,23 @@ class EditCaseLocationViewModel @Inject constructor(
         }
     }
 
-    fun onSystemBack(): Boolean {
-        return validateSaveWorksite()
+    private fun onBackValidateSaveWorksite(): Boolean {
+        val isValid = validateSaveWorksite()
+
+        if (!isValid) {
+            with(locationInputData) {
+                if (locationQuery.value.isNotEmpty() && hasAddressError) {
+                    locationQuery.value = ""
+                }
+            }
+        }
+
+        return isValid
     }
 
-    fun onNavigateBack(): Boolean {
-        return validateSaveWorksite()
-    }
+    fun onSystemBack() = onBackValidateSaveWorksite()
+
+    fun onNavigateBack() = onBackValidateSaveWorksite()
 
     fun onNavigateCancel(): Boolean {
         return true
