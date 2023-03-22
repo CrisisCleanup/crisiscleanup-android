@@ -59,12 +59,7 @@ class CaseEditorViewModel @Inject constructor(
             else R.string.view_case
         headerTitle.value = resourceProvider.getString(headerTitleResId)
 
-        with(editableWorksiteProvider) {
-            editableWorksite.value = EmptyWorksite.copy(
-                incidentId = incidentId,
-            )
-            formFields = emptyList()
-        }
+        editableWorksiteProvider.reset(incidentId)
 
         viewModelScope.launch(ioDispatcher) {
             var worksite: Worksite? = null
@@ -152,11 +147,12 @@ class CaseEditorViewModel @Inject constructor(
             }
 
             val initialWorksite = worksite ?: EmptyWorksite.copy(
+                incidentId = incidentId,
                 autoContactFrequencyT = AutoContactFrequency.Often.literal,
             )
             // TODO Atomic set just in case
             with(editableWorksiteProvider) {
-                editableWorksite.value = initialWorksite.copy()
+                editableWorksite.value = initialWorksite
                 formFields = FormFieldNode.buildTree(incident.formFields, languageRepository)
             }
 
