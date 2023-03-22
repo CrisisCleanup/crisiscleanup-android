@@ -15,6 +15,7 @@ import com.crisiscleanup.core.model.data.WorkTypeType.*
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.material.animation.ArgbEvaluatorCompat
+import com.google.android.renderscript.Toolkit
 import javax.inject.Inject
 import javax.inject.Singleton
 
