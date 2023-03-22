@@ -27,6 +27,7 @@ import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackCancel
 import com.crisiscleanup.core.model.data.AutoContactFrequency
 import com.crisiscleanup.core.model.data.Worksite
+import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.EditCasePropertyViewModel
 import com.crisiscleanup.feature.caseeditor.R
 
@@ -96,9 +97,11 @@ internal fun EditCasePropertyRoute(
                 onCancel = onNavigateCancel,
             )
 
+            val closeKeyboard = rememberCloseKeyboard(viewModel)
             val scrollState = rememberScrollState()
             Column(
                 Modifier
+                    .scrollFlingListener(closeKeyboard)
                     .verticalScroll(scrollState)
                     .weight(1f)
             ) {

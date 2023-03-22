@@ -1,6 +1,5 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
-import android.view.MotionEvent
 import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
@@ -10,10 +9,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -32,6 +29,8 @@ import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
 import com.crisiscleanup.core.mapmarker.ui.rememberMapUiSettings
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.ui.MapOverlayMessage
+import com.crisiscleanup.core.ui.scrollFlingListener
+import com.crisiscleanup.core.ui.touchDownConsumer
 import com.crisiscleanup.feature.caseeditor.EditCaseLocationViewModel
 import com.crisiscleanup.feature.caseeditor.R
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -111,6 +110,8 @@ internal fun EditCaseLocationRoute(
             }
         }
         Column {
+            // TODO This seems to be recomposing when map is moved.
+            //      Is it possible to not recompose due to surrounding views?
             TopAppBarBackCancel(
                 titleResId = R.string.location,
                 onBack = onNavigateBack,
@@ -187,8 +188,10 @@ internal fun ColumnScope.LocationView(
         val showMapFormViews = query.isEmpty()
 
         val scrollState = rememberScrollState()
+        val closeKeyboard = rememberCloseKeyboard(viewModel)
         Column(
             Modifier
+                .scrollFlingListener(closeKeyboard)
                 .verticalScroll(
                     scrollState,
                     showMapFormViews && enableColumnScroll,
@@ -215,7 +218,12 @@ internal fun ColumnScope.LocationView(
             val isShortQuery by viewModel.isShortQuery.collectAsStateWithLifecycle()
             if (showMapFormViews) {
                 val onMapTouched =
-                    remember(viewModel) { { enableColumnScroll = false } }
+                    remember(viewModel) {
+                        {
+                            enableColumnScroll = false
+                            closeKeyboard()
+                        }
+                    }
                 if (isRowOriented) {
                     Row {
                         LocationMapContainerView(
@@ -373,7 +381,6 @@ internal fun BoxScope.LocationMapView(
     )
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun LocationMapContainerView(
     modifier: Modifier = Modifier,
@@ -381,17 +388,7 @@ internal fun LocationMapContainerView(
     isMoveLocationMode: Boolean = false,
     onMapTouched: () -> Unit = {},
 ) {
-    Box(modifier.pointerInteropFilter(
-        onTouchEvent = {
-            when (it.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    onMapTouched()
-                    false
-                }
-                else -> true
-            }
-        }
-    )) {
+    Box(modifier.touchDownConsumer(onMapTouched)) {
         LocationMapView(cameraPositionState = cameraPositionState)
         LocationMapActions(isMoveLocationMode)
     }
@@ -399,12 +396,11 @@ internal fun LocationMapContainerView(
 
 @Composable
 internal fun LocationFormView(
-    modifier: Modifier = Modifier,
     viewModel: EditCaseLocationViewModel = hiltViewModel(),
 ) {
     val locationInputData = viewModel.locationInputData
 
-    LocationAddressFormView(modifier)
+    LocationAddressFormView()
 
     val updateCrossStreet =
         remember(locationInputData) {
@@ -428,7 +424,6 @@ internal fun LocationFormView(
 
 @Composable
 internal fun LocationAddressFormView(
-    modifier: Modifier = Modifier,
     viewModel: EditCaseLocationViewModel = hiltViewModel(),
 ) {
     val locationInputData = viewModel.locationInputData

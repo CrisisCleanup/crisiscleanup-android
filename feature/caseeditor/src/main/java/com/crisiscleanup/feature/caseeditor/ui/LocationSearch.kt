@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.model.data.LocationAddress
+import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.EditCaseLocationViewModel
 import com.crisiscleanup.feature.caseeditor.LocationSearchResults
 import com.crisiscleanup.feature.caseeditor.R
@@ -76,10 +77,12 @@ internal fun ColumnScope.SearchContents(
                     viewModel.onGeocodeAddressSelected(address)
                 }
             }
+            val closeKeyboard = rememberCloseKeyboard(viewModel)
             ListSearchResults(
                 locationSearchResults,
-                onCaseSelect,
-                onAddressSelect,
+                onCaseSelect = onCaseSelect,
+                onAddressSelect = onAddressSelect,
+                closeKeyboard = closeKeyboard,
             )
         }
     }
@@ -118,10 +121,12 @@ private fun commaConcatNonEmpty(vararg ss: String) =
 @Composable
 internal fun ListSearchResults(
     results: LocationSearchResults,
+    modifier: Modifier = Modifier,
     onCaseSelect: (ExistingCaseLocation) -> Unit = {},
     onAddressSelect: (LocationAddress) -> Unit = {},
+    closeKeyboard: () -> Unit = {},
 ) {
-    LazyColumn {
+    LazyColumn(modifier.scrollFlingListener(closeKeyboard)) {
         if (results.worksites.isNotEmpty()) {
             listItemTitle(
                 itemKey = "title-worksites",
