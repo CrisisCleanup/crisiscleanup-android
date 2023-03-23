@@ -1,25 +1,22 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
 import androidx.annotation.StringRes
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.model.data.LocationAddress
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.EditCaseLocationViewModel
@@ -39,20 +36,7 @@ internal fun ColumnScope.SearchContents(
             .fillMaxWidth()
             .weight(1f)
     ) {
-        // TODO Refactor and use common UI
-        androidx.compose.animation.AnimatedVisibility(
-            modifier = Modifier.align(Alignment.TopCenter),
-            visible = isBusySearching,
-            enter = fadeIn(),
-            exit = fadeOut(),
-        ) {
-            CircularProgressIndicator(
-                Modifier
-                    .wrapContentSize()
-                    .padding(96.dp)
-                    .size(24.dp)
-            )
-        }
+        BusyIndicatorFloatingTopCenter(isBusySearching)
 
         val locationSearchResults by viewModel.searchResults.collectAsStateWithLifecycle()
         if (locationSearchResults.isEmpty) {
@@ -115,7 +99,7 @@ private fun LazyListScope.listItemTitle(
 }
 
 @Composable
-internal fun ListSearchResults(
+private fun ListSearchResults(
     results: LocationSearchResults,
     modifier: Modifier = Modifier,
     onCaseSelect: (ExistingCaseLocation) -> Unit = {},

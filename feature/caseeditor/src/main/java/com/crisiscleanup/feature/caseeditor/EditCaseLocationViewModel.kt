@@ -23,9 +23,7 @@ import com.crisiscleanup.core.mapmarker.util.smallOffset
 import com.crisiscleanup.core.mapmarker.util.toLatLng
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.LocationAddress
-import com.crisiscleanup.feature.caseeditor.model.ExistingCaseLocation
-import com.crisiscleanup.feature.caseeditor.model.LocationInputData
-import com.crisiscleanup.feature.caseeditor.model.coordinates
+import com.crisiscleanup.feature.caseeditor.model.*
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.CameraPosition
@@ -51,7 +49,7 @@ class EditCaseLocationViewModel @Inject constructor(
     caseIconProvider: MapCaseIconProvider,
     resourceProvider: AndroidResourceProvider,
     drawableResourceBitmapProvider: DrawableResourceBitmapProvider,
-    translator: KeyTranslator,
+    private val existingWorksiteSelector: ExistingWorksiteSelector,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
     @Dispatcher(Default) private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
@@ -65,11 +63,11 @@ class EditCaseLocationViewModel @Inject constructor(
     val searchResults: StateFlow<LocationSearchResults>
     private val isSearchResultSelected = AtomicBoolean(false)
 
+    val editIncidentWorksite = existingWorksiteSelector.selected
+
     private val clearSearchInputFocus = AtomicBoolean(false)
     val takeClearSearchInputFocus: Boolean
         get() = clearSearchInputFocus.getAndSet(false)
-
-    val navigateBack = mutableStateOf(false)
 
     var isMoveLocationOnMapMode = mutableStateOf(false)
     private var hasEnteredMoveLocationMapMode = false
@@ -90,9 +88,6 @@ class EditCaseLocationViewModel @Inject constructor(
     val showExplainPermissionLocation = mutableStateOf(false)
 
     init {
-        // TODO Add default inputs when creating worksite
-        val formFields = worksiteProvider.formFields
-
         var worksite = worksiteProvider.editableWorksite.value
 
         if (isNewWorksite &&
@@ -117,6 +112,15 @@ class EditCaseLocationViewModel @Inject constructor(
             worksite,
             resourceProvider,
         )
+        locationInputData.coordinates
+            .debounce(100)
+            .onEach {
+                if (!worksiteProvider.incidentBounds.containsLocation(it)) {
+                    // TODO Prompt depending if in another recent incident's bounds or not
+                }
+            }
+            .flowOn(ioDispatcher)
+            .launchIn(viewModelScope)
 
         locationSearchManager = LocationSearchManager(
             worksite.incidentId,
@@ -165,7 +169,7 @@ class EditCaseLocationViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val isLocationInBounds = locationInputData.coordinates
+    private val isLocationInBounds = locationInputData.coordinates
         .debounce(100)
         .map {
             val isInBounds = worksiteProvider.incidentBounds.containsLocation(it)
@@ -327,17 +331,8 @@ class EditCaseLocationViewModel @Inject constructor(
     }
 
     fun onExistingWorksiteSelected(caseLocation: ExistingCaseLocation) {
-        // TODO This should load/prompt (to edit) the existing case.
-        //      Clear nav backstack as well.
-        with(caseLocation) {
-            onSearchResultSelect(
-                coordinates,
-                address,
-                zipCode,
-                county,
-                city,
-                state,
-            )
+        viewModelScope.launch(ioDispatcher) {
+            existingWorksiteSelector.onNetworkWorksiteSelected(caseLocation.networkWorksiteId)
         }
     }
 

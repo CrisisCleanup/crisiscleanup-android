@@ -69,4 +69,6 @@ interface WorksitesRepository {
         incidentId: Long,
         worksiteNetworkId: Long,
     ): Pair<Long, NetworkWorksiteFull>?
+
+    suspend fun getLocalId(incidentId: Long, networkWorksiteId: Long): Long
 }

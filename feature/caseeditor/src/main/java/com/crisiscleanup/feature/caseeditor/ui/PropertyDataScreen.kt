@@ -7,29 +7,32 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toSize
+import androidx.compose.ui.window.PopupProperties
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackCancel
 import com.crisiscleanup.core.model.data.AutoContactFrequency
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.EditCasePropertyViewModel
+import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
 import com.crisiscleanup.feature.caseeditor.R
+import com.crisiscleanup.feature.caseeditor.model.ExistingCaseLocation
 
 @Composable
 internal fun PropertySummaryView(
@@ -62,9 +65,23 @@ internal fun PropertySummaryView(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun EditCasePropertyRoute(
+    viewModel: EditCasePropertyViewModel = hiltViewModel(),
+    onBackClick: () -> Unit = {},
+    openExistingCase: (ids: ExistingWorksiteIdentifier) -> Unit = { _ -> },
+) {
+    val editDifferentWorksite by viewModel.editIncidentWorksite.collectAsStateWithLifecycle()
+    if (editDifferentWorksite.isDefined) {
+        openExistingCase(editDifferentWorksite)
+    } else {
+        EditCasePropertyView(onBackClick = onBackClick)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun EditCasePropertyView(
     viewModel: EditCasePropertyViewModel = hiltViewModel(),
     onBackClick: () -> Unit = {},
 ) {
@@ -74,70 +91,47 @@ internal fun EditCasePropertyRoute(
         }
     }
 
-    val navigateBack by remember { viewModel.navigateBack }
-    if (navigateBack) {
-        onBackClick()
-    } else {
-        val onNavigateBack = remember(viewModel) {
-            {
-                if (viewModel.onNavigateBack()) {
-                    onBackClick()
-                }
+    val onNavigateBack = remember(viewModel) {
+        {
+            if (viewModel.onNavigateBack()) {
+                onBackClick()
             }
         }
-        val onNavigateCancel = remember(viewModel) {
-            {
-                if (viewModel.onNavigateCancel()) {
-                    onBackClick()
-                }
+    }
+    val onNavigateCancel = remember(viewModel) {
+        {
+            if (viewModel.onNavigateCancel()) {
+                onBackClick()
             }
         }
-        Column {
-            TopAppBarBackCancel(
-                titleResId = R.string.property_information,
-                onBack = onNavigateBack,
-                onCancel = onNavigateCancel,
-            )
+    }
+    Column {
+        TopAppBarBackCancel(
+            titleResId = R.string.property_information,
+            onBack = onNavigateBack,
+            onCancel = onNavigateCancel,
+        )
 
-            val closeKeyboard = rememberCloseKeyboard(viewModel)
-            val scrollState = rememberScrollState()
-            Column(
-                Modifier
-                    .scrollFlingListener(closeKeyboard)
-                    .verticalScroll(scrollState)
-                    .weight(1f)
-            ) {
-                PropertyFormView()
-            }
+        val closeKeyboard = rememberCloseKeyboard(viewModel)
+        val scrollState = rememberScrollState()
+        Column(
+            Modifier
+                .scrollFlingListener(closeKeyboard)
+                .verticalScroll(scrollState)
+                .weight(1f)
+        ) {
+            PropertyFormView()
         }
     }
 }
 
 @Composable
-internal fun PropertyFormView(
-    modifier: Modifier = Modifier,
+private fun PropertyFormView(
     viewModel: EditCasePropertyViewModel = hiltViewModel(),
 ) {
     val propertyInputData = viewModel.propertyInputData
 
-    val updateName =
-        remember(propertyInputData) { { s: String -> propertyInputData.residentName = s } }
-    val clearNameError =
-        remember(propertyInputData) { { propertyInputData.residentNameError = "" } }
-    val isNameError = propertyInputData.residentNameError.isNotEmpty()
-    val focusName = propertyInputData.residentName.isEmpty() || isNameError
-    ErrorText(propertyInputData.residentNameError)
-    OutlinedClearableTextField(
-        modifier = columnItemModifier,
-        labelResId = R.string.resident_name,
-        value = propertyInputData.residentName,
-        onValueChange = updateName,
-        keyboardType = KeyboardType.Text,
-        isError = isNameError,
-        hasFocus = focusName,
-        onNext = clearNameError,
-        enabled = true,
-    )
+    PropertyFormResidentNameView()
 
     // TODO Apply mask with dashes if input is purely numbers (and dashes)
     val updatePhone =
@@ -226,6 +220,82 @@ internal fun PropertyFormView(
                 Text(
                     text = it.second,
                     modifier = Modifier.padding(start = 16.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PropertyFormResidentNameView(
+    viewModel: EditCasePropertyViewModel = hiltViewModel(),
+) {
+    val propertyInputData = viewModel.propertyInputData
+
+    val residentName by propertyInputData.residentName.collectAsStateWithLifecycle()
+    val updateName =
+        remember(propertyInputData) { { s: String -> propertyInputData.residentName.value = s } }
+    val clearNameError =
+        remember(propertyInputData) { { propertyInputData.residentNameError = "" } }
+    val isNameError = propertyInputData.residentNameError.isNotEmpty()
+    val focusName = residentName.isEmpty() || isNameError
+    ErrorText(propertyInputData.residentNameError)
+    Box(Modifier.fillMaxWidth()) {
+        var contentWidth by remember { mutableStateOf(Size.Zero) }
+
+        OutlinedClearableTextField(
+            modifier = columnItemModifier.onGloballyPositioned {
+                contentWidth = it.size.toSize()
+            },
+            labelResId = R.string.resident_name,
+            value = residentName,
+            onValueChange = updateName,
+            keyboardType = KeyboardType.Text,
+            isError = isNameError,
+            hasFocus = focusName,
+            onNext = clearNameError,
+            enabled = true,
+        )
+
+        val existingCasesResults by viewModel.searchResults.collectAsStateWithLifecycle()
+
+        val onCaseSelect = remember(viewModel) {
+            { caseLocation: ExistingCaseLocation ->
+                viewModel.onExistingWorksiteSelected(caseLocation)
+            }
+        }
+
+        var hideDropdown by remember { mutableStateOf(false) }
+        val onStopSuggestions = remember(viewModel) {
+            {
+                hideDropdown = true
+                viewModel.stopSearchingWorksites()
+            }
+        }
+
+        if (!(hideDropdown || existingCasesResults.isEmpty)) {
+            DropdownMenu(
+                modifier = Modifier
+                    .width(with(LocalDensity.current) { contentWidth.width.toDp() }),
+                expanded = true,
+                onDismissRequest = onStopSuggestions,
+                // TODO Use common styles
+                offset = DpOffset(16.dp, 0.dp),
+                properties = PopupProperties(focusable = false)
+            ) {
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            stringResource(R.string.stop_suggesting_existing_cases),
+                            // TODO Use common styles
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 16.dp),
+                        )
+                    },
+                    onClick = onStopSuggestions,
+                )
+                ExistingCaseLocationsDropdownItems(
+                    existingCasesResults.worksites,
+                    onCaseSelect,
                 )
             }
         }

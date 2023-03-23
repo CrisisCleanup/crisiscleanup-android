@@ -39,9 +39,10 @@ internal class LocationSearchManager(
         .debounce(100)
         .map(String::trim)
         .distinctUntilChanged()
-        .map {
-            activeQuery.set(it)
-            it
+        .onEach {
+            synchronized(activeQuery) {
+                activeQuery.set(it)
+            }
         }
         .filter { it.length >= querySearchThresholdLength }
 
@@ -133,4 +134,3 @@ data class LocationSearchResults(
 ) {
     val isEmpty = addresses.isEmpty() && worksites.isEmpty()
 }
-

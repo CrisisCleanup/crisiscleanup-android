@@ -12,6 +12,7 @@
     <string name="email_address">Email</string>
     <string name="auto_contact_frequency">Auto contact frequency</string>
 
+    <string name="stop_suggesting_existing_cases">Stop showing existing cases</string>
     <string name="name_is_required">Enter a name for the resident</string>
     <string name="phone_is_required">Enter a phone number</string>
     <string name="invalid_email">Enter a valid email address</string>
@@ -46,4 +47,6 @@
     <string name="city_is_required">City is required</string>
     <string name="county_is_required">County or parish is required</string>
     <string name="state_is_required">State is required</string>
+
+    <string name="details">Details</string>
 </resources>

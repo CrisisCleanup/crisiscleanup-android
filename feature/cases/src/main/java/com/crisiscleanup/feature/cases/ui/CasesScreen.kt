@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.fabEdgeSpace
 import com.crisiscleanup.core.designsystem.component.mapButtonEdgeSpace
@@ -287,19 +288,7 @@ internal fun BoxScope.CasesMapView(
         }
     }
 
-    AnimatedVisibility(
-        modifier = Modifier.align(Alignment.TopCenter),
-        visible = isMapBusy,
-        enter = fadeIn(),
-        exit = fadeOut(),
-    ) {
-        CircularProgressIndicator(
-            Modifier
-                .wrapContentSize()
-                .padding(96.dp)
-                .size(24.dp)
-        )
-    }
+    BusyIndicatorFloatingTopCenter(isMapBusy)
 
     val message = hiddenMarkersMessage()
     MapOverlayMessage(message)

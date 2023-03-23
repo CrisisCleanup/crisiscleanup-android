@@ -1,6 +1,5 @@
 package com.crisiscleanup.feature.caseeditor
 
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AndroidResourceProvider
@@ -9,12 +8,18 @@ import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
+import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
+import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
+import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.model.data.AutoContactFrequency
+import com.crisiscleanup.feature.caseeditor.model.ExistingCaseLocation
 import com.crisiscleanup.feature.caseeditor.model.PropertyInputData
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,11 +28,18 @@ class EditCasePropertyViewModel @Inject constructor(
     inputValidator: InputValidator,
     resourceProvider: AndroidResourceProvider,
     translator: KeyTranslator,
+    searchWorksitesRepository: SearchWorksitesRepository,
+    caseIconProvider: MapCaseIconProvider,
+    private val existingWorksiteSelector: ExistingWorksiteSelector,
+    @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
 ) : ViewModel() {
     val propertyInputData: PropertyInputData
 
-    val navigateBack = mutableStateOf(false)
+    private val nameSearchManager: ResidentNameSearchManager
+    val searchResults: StateFlow<ResidentNameSearchResults>
+
+    val editIncidentWorksite = existingWorksiteSelector.selected
 
     private val contactFrequencyOptionValues = listOf(
         AutoContactFrequency.Often,
@@ -46,10 +58,25 @@ class EditCasePropertyViewModel @Inject constructor(
     )
 
     init {
+        val worksite = worksiteProvider.editableWorksite.value
+
         propertyInputData = PropertyInputData(
             inputValidator,
-            worksiteProvider.editableWorksite.value,
+            worksite,
             resourceProvider,
+        )
+
+        nameSearchManager = ResidentNameSearchManager(
+            worksite.incidentId,
+            propertyInputData,
+            searchWorksitesRepository,
+            caseIconProvider,
+            ioDispatcher,
+        )
+        searchResults = nameSearchManager.searchResults.stateIn(
+            scope = viewModelScope,
+            initialValue = ResidentNameSearchResults("", emptyList()),
+            started = SharingStarted.WhileSubscribed(),
         )
     }
 
@@ -60,6 +87,14 @@ class EditCasePropertyViewModel @Inject constructor(
             return true
         }
         return false
+    }
+
+    fun stopSearchingWorksites() = nameSearchManager.stopSearchingWorksites()
+
+    fun onExistingWorksiteSelected(caseLocation: ExistingCaseLocation) {
+        viewModelScope.launch(ioDispatcher) {
+            existingWorksiteSelector.onNetworkWorksiteSelected(caseLocation.networkWorksiteId)
+        }
     }
 
     fun onSystemBack(): Boolean {

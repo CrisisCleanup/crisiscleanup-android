@@ -9,6 +9,7 @@ import com.crisiscleanup.core.appnav.RouteConstant.caseEditLocationRoute
 import com.crisiscleanup.core.appnav.RouteConstant.caseEditPropertyRoute
 import com.crisiscleanup.core.appnav.RouteConstant.caseEditorRoute
 import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
 import com.crisiscleanup.feature.caseeditor.ui.CaseEditorRoute
 import com.crisiscleanup.feature.caseeditor.ui.EditCaseLocationRoute
 import com.crisiscleanup.feature.caseeditor.ui.EditCasePropertyRoute
@@ -62,18 +63,50 @@ fun NavGraphBuilder.caseEditorScreen(
 fun NavController.navigateToCaseEditProperty() = this.navigate(caseEditPropertyRoute)
 fun NavController.navigateToCaseEditLocation() = this.navigate(caseEditLocationRoute)
 
+fun NavController.rerouteToCaseEdit(ids: ExistingWorksiteIdentifier) {
+    popBackStack()
+    currentBackStackEntry?.let {
+        if (it.destination.route?.startsWith(caseEditorRoute) == true) {
+            popBackStack()
+        }
+    }
+    navigateToCaseEditor(ids.incidentId, ids.worksiteId)
+}
+
 fun NavGraphBuilder.caseEditPropertyScreen(
+    navController: NavHostController,
     onBackClick: () -> Unit,
 ) {
     composable(caseEditPropertyRoute) {
-        EditCasePropertyRoute(onBackClick = onBackClick)
+        val navToEditCase = remember(navController) {
+            { ids: ExistingWorksiteIdentifier ->
+                navController.rerouteToCaseEdit(
+                    ids
+                )
+            }
+        }
+        EditCasePropertyRoute(
+            onBackClick = onBackClick,
+            openExistingCase = navToEditCase,
+        )
     }
 }
 
 fun NavGraphBuilder.caseEditLocationScreen(
+    navController: NavHostController,
     onBackClick: () -> Unit,
 ) {
     composable(caseEditLocationRoute) {
-        EditCaseLocationRoute(onBackClick = onBackClick)
+        val navToEditCase = remember(navController) {
+            { ids: ExistingWorksiteIdentifier ->
+                navController.rerouteToCaseEdit(
+                    ids
+                )
+            }
+        }
+        EditCaseLocationRoute(
+            onBackClick = onBackClick,
+            openExistingCase = navToEditCase,
+        )
     }
 }

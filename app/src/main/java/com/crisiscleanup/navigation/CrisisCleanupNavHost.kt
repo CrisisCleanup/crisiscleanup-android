@@ -52,8 +52,8 @@ fun CrisisCleanupNavHost(
             nestedGraphs = {
                 selectIncidentScreen(onBackClick)
                 caseEditorScreen(navController, onBackClick)
-                caseEditPropertyScreen(onBackClick)
-                caseEditLocationScreen(onBackClick)
+                caseEditPropertyScreen(navController, onBackClick)
+                caseEditLocationScreen(navController, onBackClick)
             },
             onCasesAction = onCasesAction,
             createCase = createNewCase,

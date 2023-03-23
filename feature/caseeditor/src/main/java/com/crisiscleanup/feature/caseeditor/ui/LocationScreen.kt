@@ -33,6 +33,7 @@ import com.crisiscleanup.core.ui.MapOverlayMessage
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.core.ui.touchDownConsumer
 import com.crisiscleanup.feature.caseeditor.EditCaseLocationViewModel
+import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
 import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.util.summarizeAddress
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -93,9 +94,23 @@ internal fun LocationSummaryView(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun EditCaseLocationRoute(
+    viewModel: EditCaseLocationViewModel = hiltViewModel(),
+    onBackClick: () -> Unit = {},
+    openExistingCase: (ids: ExistingWorksiteIdentifier) -> Unit = { _ -> },
+) {
+    val editDifferentWorksite by viewModel.editIncidentWorksite.collectAsStateWithLifecycle()
+    if (editDifferentWorksite.isDefined) {
+        openExistingCase(editDifferentWorksite)
+    } else {
+        EditCaseLocationView(onBackClick = onBackClick)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun EditCaseLocationView(
     viewModel: EditCaseLocationViewModel = hiltViewModel(),
     onBackClick: () -> Unit = {},
 ) {
@@ -105,35 +120,30 @@ internal fun EditCaseLocationRoute(
         }
     }
 
-    val navigateBack by remember { viewModel.navigateBack }
-    if (navigateBack) {
-        onBackClick()
-    } else {
-        val onNavigateBack = remember(viewModel) {
-            {
-                if (viewModel.onNavigateBack()) {
-                    onBackClick()
-                }
+    val onNavigateBack = remember(viewModel) {
+        {
+            if (viewModel.onNavigateBack()) {
+                onBackClick()
             }
         }
-        val onNavigateCancel = remember(viewModel) {
-            {
-                if (viewModel.onNavigateCancel()) {
-                    onBackClick()
-                }
+    }
+    val onNavigateCancel = remember(viewModel) {
+        {
+            if (viewModel.onNavigateCancel()) {
+                onBackClick()
             }
         }
-        Column {
-            // TODO This seems to be recomposing when map is moved.
-            //      Is it possible to not recompose due to surrounding views?
-            TopAppBarBackCancel(
-                titleResId = R.string.location,
-                onBack = onNavigateBack,
-                onCancel = onNavigateCancel,
-            )
-            // TODO Remove the gap between the top bar above and location view below
-            LocationView()
-        }
+    }
+    Column {
+        // TODO This seems to be recomposing when map is moved.
+        //      Is it possible to not recompose due to surrounding views?
+        TopAppBarBackCancel(
+            titleResId = R.string.location,
+            onBack = onNavigateBack,
+            onCancel = onNavigateCancel,
+        )
+        // TODO Remove the gap between the top bar above and location view below
+        LocationView()
     }
 
     val closePermissionDialog =
