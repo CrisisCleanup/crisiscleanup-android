@@ -43,12 +43,13 @@ import com.google.maps.android.compose.*
 @Composable
 private fun AddressSummaryInColumn(
     lines: Collection<String>,
+    modifier: Modifier = Modifier,
 ) {
     lines.forEach {
         // TODO Use common styles
         Text(
             it,
-            modifier = columnItemModifier,
+            modifier = modifier,
             style = MaterialTheme.typography.bodyLarge,
         )
     }
@@ -64,6 +65,7 @@ internal fun LocationSummaryView(
         modifier
             .fillMaxWidth()
             .clickable(onClick = onEdit)
+            // TODO Common style for padding
             .padding(16.dp)
     ) {
         Text(
@@ -469,7 +471,10 @@ internal fun LocationFormView(
         if (showAddressForm) {
             LocationAddressFormView(closeKeyboard = closeKeyboard)
         } else {
-            AddressSummaryInColumn(addressSummary)
+            AddressSummaryInColumn(
+                addressSummary,
+                columnItemModifier,
+            )
         }
     }
 }

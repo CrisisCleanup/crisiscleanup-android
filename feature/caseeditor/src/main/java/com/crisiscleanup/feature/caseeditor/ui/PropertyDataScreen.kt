@@ -41,6 +41,7 @@ internal fun PropertySummaryView(
         modifier
             .fillMaxWidth()
             .clickable(onClick = onEdit)
+            // TODO Common style for padding
             .padding(16.dp)
     ) {
         Text(
@@ -49,6 +50,7 @@ internal fun PropertySummaryView(
         )
 
         if (worksite.name.isNotEmpty()) {
+            // TODO Common style for padding
             Column(modifier.padding(8.dp)) {
                 Text(
                     text = worksite.name,
