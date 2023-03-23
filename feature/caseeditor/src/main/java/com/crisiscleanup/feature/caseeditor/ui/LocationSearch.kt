@@ -3,7 +3,6 @@ package com.crisiscleanup.feature.caseeditor.ui
 import androidx.annotation.StringRes
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,7 +16,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -131,33 +129,10 @@ internal fun ListSearchResults(
                 textResId = R.string.existing_worksites,
             )
 
-            items(
+            existingCaseLocations(
                 results.worksites,
-                key = { it.networkWorksiteId },
-                contentType = { "item-worksite" },
-            ) { caseLocation ->
-                Row(
-                    Modifier
-                        .clickable { onCaseSelect(caseLocation) }
-                        .padding(16.dp)) {
-                    with(caseLocation) {
-                        if (icon != null && workType != null) {
-                            Image(
-                                bitmap = icon.asImageBitmap(),
-                                contentDescription = workType.workTypeLiteral,
-                            )
-                        }
-                        Column(
-                            Modifier
-                                .weight(1f)
-                                .padding(start = 16.dp)
-                        ) {
-                            Text(combineTrimText(name, caseNumber))
-                            Text(combineTrimText(address, city, state))
-                        }
-                    }
-                }
-            }
+                onCaseSelect,
+            )
         }
 
         if (results.addresses.isNotEmpty()) {
