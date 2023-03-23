@@ -13,7 +13,7 @@ interface SyncPuller {
     fun stopPullIncident()
 
     fun appPullLanguage()
-    suspend fun syncPullLanguage()
+    suspend fun syncPullLanguageAsync(): Deferred<SyncResult>
 }
 
 interface SyncPusher {

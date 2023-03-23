@@ -86,12 +86,17 @@ class AppSyncer @Inject constructor(
             return SyncResult.NotAttempted("Unforced sync not necessary")
         }
 
-        executePlan(
-            plan,
-            incidentsRepository,
-            worksitesRepository,
-            syncLogger,
-        )
+        try {
+            executePlan(
+                plan,
+                incidentsRepository,
+                worksitesRepository,
+                syncLogger,
+            )
+        } catch (e: Exception) {
+            syncLogger.log("Sync pull fail. ${e.message}".trim())
+            return SyncResult.Error(e.message ?: "Sync fail")
+        }
 
         syncLogger.log("Sync pulled. force=$force")
         return SyncResult.Success(if (force) "Force pulled" else "Pulled")
@@ -161,7 +166,7 @@ class AppSyncer @Inject constructor(
     override suspend fun syncPullIncidentAsync(id: Long): Deferred<SyncResult> {
         val deferred = applicationScope.async {
             if (id == EmptyIncident.id) {
-                return@async SyncResult.Success("Empty incident (not) synced")
+                return@async SyncResult.NotAttempted("Empty incident")
             }
 
             onSyncPreconditions()?.let {
@@ -188,7 +193,11 @@ class AppSyncer @Inject constructor(
             incidentPullJob = applicationScope.launch(ioDispatcher) {
                 onSyncPreconditions()?.let { return@launch }
 
-                incidentPull(id)
+                try {
+                    incidentPull(id)
+                } catch (e: Exception) {
+                    syncLogger.log("App pull incident fail. ${e.message}".trim())
+                }
 
                 syncLogger
                     .log("App pull incident end")
@@ -205,16 +214,23 @@ class AppSyncer @Inject constructor(
 
     override fun appPullLanguage() {
         applicationScope.launch(ioDispatcher) {
-            syncPullLanguage()
+            syncPullLanguageAsync().await()
         }
     }
 
-    override suspend fun syncPullLanguage() {
-        if (isNotOnline()) {
-            return
-        }
+    override suspend fun syncPullLanguageAsync(): Deferred<SyncResult> {
+        return applicationScope.async {
+            if (isNotOnline()) {
+                return@async SyncResult.NotAttempted("not-online")
+            }
 
-        languagePull()
+            try {
+                languagePull()
+                SyncResult.Success("Language pulled")
+            } catch (e: Exception) {
+                SyncResult.Error(e.message ?: "Language pull fail")
+            }
+        }
     }
 
     private val _isSyncPushing = MutableStateFlow(false)

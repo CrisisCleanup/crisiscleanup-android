@@ -17,11 +17,12 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
 ) : RetrofitInterceptorProvider {
     private val headerInterceptor: Interceptor by lazy {
         Interceptor { chain ->
-            val request = chain.request()
+            var request = chain.request()
 
-            val requestBuilder = request.newBuilder()
-            var addHeaderCount = 0
             headerKeysLookup.getHeaderKeys(request)?.let {
+                val requestBuilder = request.newBuilder()
+                var addHeaderCount = 0
+
                 it.forEach { entry ->
                     when (entry.key) {
                         RequestHeaderKey.AccessTokenAuth -> {
@@ -34,10 +35,14 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
                         else -> {}
                     }
                 }
+
+
+                if (addHeaderCount > 0) {
+                    request = requestBuilder.build()
+                }
             }
 
-            return@Interceptor if (addHeaderCount > 0) chain.proceed(requestBuilder.build())
-            else chain.proceed(request)
+            chain.proceed(request)
         }
     }
 

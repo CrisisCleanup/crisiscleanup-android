@@ -39,12 +39,10 @@ class SyncWorker @AssistedInject constructor(
                 async {
                     // TODO Observe progress and update notification
                     // text -> setForeground(appContext.syncForegroundInfo(text)) }
-                    val result = syncPuller.syncPullAsync().await()
-                    result !is SyncResult.Error
+                    syncPuller.syncPullAsync().await() !is SyncResult.Error
                 },
                 async {
-                    syncPuller.syncPullLanguage()
-                    true
+                    syncPuller.syncPullLanguageAsync().await() !is SyncResult.Error
                 }
             ).all { it }
 
