@@ -350,17 +350,19 @@ class EditCaseLocationViewModel @Inject constructor(
     }
 
     private fun onBackValidateSaveWorksite(): Boolean {
-        val isValid = validateSaveWorksite()
+        if (isMoveLocationOnMapMode.value) {
+            isMoveLocationOnMapMode.value = false
+            return false
+        }
 
-        if (!isValid) {
-            with(locationInputData) {
-                if (locationQuery.value.isNotEmpty() && hasAddressError) {
-                    locationQuery.value = ""
-                }
+        with(locationInputData) {
+            if (locationQuery.value.isNotEmpty()) {
+                locationQuery.value = ""
+                return false
             }
         }
 
-        return isValid
+        return validateSaveWorksite()
     }
 
     fun onSystemBack() = onBackValidateSaveWorksite()
