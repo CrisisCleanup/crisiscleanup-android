@@ -3,12 +3,13 @@ package com.crisiscleanup.core.model.data
 data class Location(
     val id: Long,
     val shapeLiteral: String,
-    val shape: LocationShape = getLocationShape(shapeLiteral),
     // Should only be defined for Point and Polygon
     val coordinates: List<Double>?,
     // Should only be defined for MultiPolygon
     val multiCoordinates: List<List<Double>>?,
 ) {
+    val shape: LocationShape = getLocationShape(shapeLiteral)
+
     companion object {
         private fun getLocationShape(shapeDescription: String): LocationShape =
             when (shapeDescription.lowercase()) {

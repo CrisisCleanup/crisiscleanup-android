@@ -6,10 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.crisiscleanup.core.appnav.RouteConstant.casesGraphRoutePattern
-import com.crisiscleanup.feature.caseeditor.navigation.caseEditLocationScreen
-import com.crisiscleanup.feature.caseeditor.navigation.caseEditPropertyScreen
-import com.crisiscleanup.feature.caseeditor.navigation.caseEditorScreen
-import com.crisiscleanup.feature.caseeditor.navigation.navigateToCaseEditor
+import com.crisiscleanup.feature.caseeditor.navigation.*
 import com.crisiscleanup.feature.cases.navigation.casesGraph
 import com.crisiscleanup.feature.cases.navigation.selectIncidentScreen
 import com.crisiscleanup.feature.cases.ui.CasesAction
@@ -54,6 +51,8 @@ fun CrisisCleanupNavHost(
                 caseEditorScreen(navController, onBackClick)
                 caseEditPropertyScreen(navController, onBackClick)
                 caseEditLocationScreen(navController, onBackClick)
+                caseEditNotesFlagsScreen(onBackClick)
+                caseEditDetailsScreen(onBackClick)
             },
             onCasesAction = onCasesAction,
             createCase = createNewCase,

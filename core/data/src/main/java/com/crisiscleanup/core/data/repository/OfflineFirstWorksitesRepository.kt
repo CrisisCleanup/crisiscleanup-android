@@ -61,6 +61,9 @@ class OfflineFirstWorksitesRepository @Inject constructor(
 
     override fun streamIncidentWorksitesCount(id: Long) = worksiteDao.streamWorksitesCount(id)
 
+    override fun streamLocalWorksite(worksiteId: Long) =
+        worksiteDao.streamLocalWorksite(worksiteId).map { it?.asExternalModel() }
+
     override suspend fun streamWorksitesMapVisual(
         incidentId: Long,
         latitudeSouth: Double,
@@ -123,9 +126,6 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         longitudeLeft,
         longitudeRight
     )
-
-    override fun getLocalWorksite(worksiteId: Long) =
-        worksiteDao.getLocalWorksite(worksiteId).asExternalModel(keyTranslator)
 
     override suspend fun getLocalId(
         incidentId: Long,

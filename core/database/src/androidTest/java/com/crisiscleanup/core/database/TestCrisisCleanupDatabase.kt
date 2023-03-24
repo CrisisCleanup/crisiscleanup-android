@@ -60,6 +60,10 @@ interface TestWorksiteDao {
         """
     )
     fun setLocallyModified(id: Long, modifiedAt: Instant)
+
+    @Transaction
+    @Query("SELECT * FROM worksites WHERE id=:id")
+    fun getLocalWorksite(id: Long): PopulatedLocalWorksite
 }
 
 @Dao

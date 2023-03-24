@@ -43,5 +43,5 @@ data class PopulatedFormFieldsIncident(
 
 fun PopulatedFormFieldsIncident.asExternalModel() = entity.asExternalModel().copy(
     formFields = formFields.map(IncidentFormFieldEntity::asExternalModel)
-        .filter { !it.isInvalidated }
+        .filter { !(it.isInvalidated || it.isDivEnd) }
 )

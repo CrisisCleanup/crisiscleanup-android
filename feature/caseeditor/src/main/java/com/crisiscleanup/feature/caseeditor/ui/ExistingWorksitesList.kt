@@ -35,8 +35,8 @@ private fun CaseView(
                     .weight(1f)
                     .padding(start = 16.dp)
             ) {
-                Text(combineTrimText(name, caseNumber))
-                Text(combineTrimText(address, city, state))
+                Text(listOf(name, caseNumber).combineTrimText())
+                Text(listOf(address, city, state).combineTrimText())
             }
         }
     }

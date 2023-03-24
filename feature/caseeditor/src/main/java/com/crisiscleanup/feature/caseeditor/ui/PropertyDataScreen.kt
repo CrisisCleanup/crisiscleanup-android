@@ -1,7 +1,6 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
@@ -33,34 +32,33 @@ import com.crisiscleanup.feature.caseeditor.EditCasePropertyViewModel
 import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
 import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.model.ExistingCaseLocation
+import com.crisiscleanup.feature.caseeditor.util.filterNotBlankTrim
 
 @Composable
 internal fun PropertySummaryView(
     worksite: Worksite,
+    isEditable: Boolean,
     modifier: Modifier = Modifier,
     onEdit: () -> Unit = {},
 ) {
-    Column(
-        modifier
-            .fillMaxWidth()
-            .clickable(onClick = onEdit)
-            // TODO Common style for padding
-            .padding(16.dp)
+    EditCaseSummaryHeader(
+        R.string.property_information,
+        isEditable,
+        onEdit,
+        modifier,
     ) {
-        Text(
-            text = stringResource(R.string.property_information),
-            style = MaterialTheme.typography.headlineSmall,
-        )
-
-        if (worksite.name.isNotEmpty()) {
-            // TODO Common style for padding
-            Column(modifier.padding(8.dp)) {
-                Text(
-                    text = worksite.name,
-                    modifier = modifier.fillMaxWidth(),
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-            }
+        val texts = listOf(
+            worksite.name,
+            worksite.phone1,
+            worksite.phone2,
+            worksite.email,
+        ).filterNotBlankTrim()
+        texts.forEach {
+            Text(
+                text = it,
+                modifier = modifier.fillMaxWidth(),
+                style = MaterialTheme.typography.bodyLarge,
+            )
         }
     }
 }

@@ -32,6 +32,10 @@ interface IncidentDao {
     @Query("SELECT * FROM incidents WHERE id=:id")
     suspend fun getFormFieldsIncident(id: Long): PopulatedFormFieldsIncident?
 
+    @Transaction
+    @Query("SELECT * FROM incidents WHERE id=:id")
+    fun streamFormFieldsIncident(id: Long): Flow<PopulatedFormFieldsIncident?>
+
     @Upsert
     suspend fun upsertIncidents(incidents: Collection<IncidentEntity>)
 

@@ -24,7 +24,7 @@ interface EditableWorksiteProvider {
 
 fun EditableWorksiteProvider.reset(incidentId: Long = EmptyIncident.id) = run {
     incident = EmptyIncident
-    incidentBounds = IncidentBounds(emptyList(), MapViewCameraBoundsDefault.bounds)
+    incidentBounds = DefaultIncidentBounds
     editableWorksite.value = EmptyWorksite.copy(
         incidentId = incidentId,
     )
@@ -34,10 +34,12 @@ fun EditableWorksiteProvider.reset(incidentId: Long = EmptyIncident.id) = run {
 @Singleton
 class SingleEditableWorksiteProvider @Inject constructor() : EditableWorksiteProvider {
     override var incident = EmptyIncident
-    override var incidentBounds = IncidentBounds(emptyList(), MapViewCameraBoundsDefault.bounds)
+    override var incidentBounds = DefaultIncidentBounds
     override val editableWorksite = MutableStateFlow(EmptyWorksite)
     override var formFields = emptyList<FormFieldNode>()
 }
+
+internal val DefaultIncidentBounds = IncidentBounds(emptyList(), MapViewCameraBoundsDefault.bounds)
 
 @Module
 @InstallIn(SingletonComponent::class)

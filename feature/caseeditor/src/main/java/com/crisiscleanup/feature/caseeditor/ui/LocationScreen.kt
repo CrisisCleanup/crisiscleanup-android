@@ -59,36 +59,27 @@ private fun AddressSummaryInColumn(
 @Composable
 internal fun LocationSummaryView(
     worksite: Worksite,
+    isEditable: Boolean,
     modifier: Modifier = Modifier,
     onEdit: () -> Unit = {},
 ) {
-    Column(
-        modifier
-            .fillMaxWidth()
-            .clickable(onClick = onEdit)
-            // TODO Common style for padding
-            .padding(16.dp)
+    EditCaseSummaryHeader(
+        R.string.location,
+        isEditable,
+        onEdit,
+        modifier,
     ) {
-        Text(
-            text = stringResource(R.string.location),
-            style = MaterialTheme.typography.headlineSmall,
-        )
-
         worksite.run {
             val addressSummaryLines = summarizeAddress(address, postalCode, county, city, state)
             if (addressSummaryLines.isNotEmpty()) {
-                // TODO Common style for padding
-                Column(modifier.padding(8.dp)) {
-                    AddressSummaryInColumn(addressSummaryLines)
+                AddressSummaryInColumn(addressSummaryLines)
+            }
 
-                    if (worksite.crossStreetNearbyLandmark.isNotEmpty()) {
-                        Text(
-                            text = worksite.crossStreetNearbyLandmark,
-                            modifier = modifier.fillMaxWidth(),
-                            style = MaterialTheme.typography.bodyLarge,
-                        )
-                    }
-                }
+            if (worksite.crossStreetNearbyLandmark.isNotEmpty()) {
+                Text(
+                    text = worksite.crossStreetNearbyLandmark,
+                    style = MaterialTheme.typography.bodyLarge,
+                )
             }
         }
     }

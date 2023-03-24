@@ -32,9 +32,11 @@ class FakeIncidentsRepository @Inject constructor() : IncidentsRepository {
         )
     )
 
-    override suspend fun getIncident(id: Long, loadFormFields: Boolean): Incident? {
-        return makeIncident(id, "Incident $id")
-    }
+    override suspend fun getIncident(id: Long, loadFormFields: Boolean) =
+        makeIncident(id, "Incident $id")
+
+    override fun streamIncident(id: Long): Flow<Incident?> =
+        flowOf(makeIncident(id, "Incident $id"))
 
     override suspend fun pullIncidents() {}
 

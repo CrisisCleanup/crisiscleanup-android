@@ -139,7 +139,7 @@ private fun ListSearchResults(
                     with(keyAddress.address) {
                         Column {
                             Text(address)
-                            Text(combineTrimText(city, state, country))
+                            Text(listOf(city, state, country).combineTrimText())
                         }
                     }
                 }

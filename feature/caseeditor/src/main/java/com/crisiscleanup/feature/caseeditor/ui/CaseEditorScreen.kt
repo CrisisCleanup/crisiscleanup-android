@@ -26,6 +26,8 @@ import com.crisiscleanup.core.common.R as commonR
 internal fun CaseEditorRoute(
     onEditPropertyData: () -> Unit = {},
     onEditLocation: () -> Unit = {},
+    onEditNotesFlags: () -> Unit = {},
+    onEditDetails: () -> Unit = {},
     onBackClick: () -> Unit = {},
     viewModel: CaseEditorViewModel = hiltViewModel(),
 ) {
@@ -64,6 +66,8 @@ internal fun CaseEditorRoute(
             CaseEditorScreen(
                 onEditProperty = onEditPropertyData,
                 onEditLocation = onEditLocation,
+                onEditNotesFlags = onEditNotesFlags,
+                onEditDetails = onEditDetails,
             )
         }
     }
@@ -75,6 +79,8 @@ internal fun CaseEditorScreen(
     viewModel: CaseEditorViewModel = hiltViewModel(),
     onEditProperty: () -> Unit = {},
     onEditLocation: () -> Unit = {},
+    onEditNotesFlags: () -> Unit = {},
+    onEditDetails: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     when (uiState) {
@@ -89,6 +95,8 @@ internal fun CaseEditorScreen(
                     uiState as CaseEditorUiState.WorksiteData,
                     editPropertyData = onEditProperty,
                     editLocation = onEditLocation,
+                    editNotesFlags = onEditNotesFlags,
+                    editDetails = onEditDetails,
                 )
             }
         }
@@ -115,9 +123,11 @@ private fun BoxScope.CaseSummary(
 
     editPropertyData: () -> Unit = {},
     editLocation: () -> Unit = {},
+    editNotesFlags: () -> Unit = {},
+    editDetails: () -> Unit = {},
 ) {
     val isLoadingWorksite by viewModel.isLoadingWorksite.collectAsStateWithLifecycle()
-    val isReadOnly by viewModel.isReadOnly.collectAsStateWithLifecycle()
+    val isEditable = worksiteData.isEditable
 
     Column(modifier.matchParentSize()) {
         Text(
@@ -131,18 +141,35 @@ private fun BoxScope.CaseSummary(
         if (viewModel.isCreateWorksite) {
             LocationSummaryView(
                 worksite,
+                isEditable,
                 onEdit = editLocation,
             )
         }
         PropertySummaryView(
             worksite,
+            isEditable,
             onEdit = editPropertyData,
         )
 
         if (!viewModel.isCreateWorksite) {
             LocationSummaryView(
                 worksite,
+                isEditable,
                 onEdit = editLocation,
+            )
+        }
+
+        NotesFlagsSummaryView(
+            worksite,
+            isEditable,
+            onEdit = editNotesFlags,
+        )
+
+        if (worksite.isNew) {
+            DetailsSummaryView(
+                worksite,
+                isEditable,
+                onEdit = editDetails,
             )
         }
     }

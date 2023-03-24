@@ -1,8 +1,12 @@
 package com.crisiscleanup.feature.caseeditor.util
 
 
-internal fun combineTrimText(vararg texts: String) =
-    texts.filter(String::isNotBlank).joinToString(", ", transform = String::trim)
+internal fun Collection<String?>.filterNotBlankTrim(): List<String> {
+    val notBlank = filter { it?.isNotBlank() == true }.filterNotNull()
+    return notBlank.map(String::trim)
+}
+
+internal fun Collection<String>.combineTrimText() = filterNotBlankTrim().joinToString(", ")
 
 internal fun summarizeAddress(
     streetAddress: String,
@@ -11,7 +15,7 @@ internal fun summarizeAddress(
     city: String,
     state: String,
 ) = listOf(
-    combineTrimText(streetAddress),
-    combineTrimText(city, state, county),
-    combineTrimText(zipCode),
+    streetAddress,
+    listOf(city, state, county).combineTrimText(),
+    zipCode,
 ).filter(String::isNotBlank)

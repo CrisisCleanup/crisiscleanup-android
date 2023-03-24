@@ -2,6 +2,7 @@ package com.crisiscleanup.core.database.dao
 
 import com.crisiscleanup.core.database.TestCrisisCleanupDatabase
 import com.crisiscleanup.core.database.TestUtil
+import com.crisiscleanup.core.database.TestWorksiteDao
 import com.crisiscleanup.core.database.WorksiteTestUtil
 import com.crisiscleanup.core.database.model.*
 import com.crisiscleanup.core.model.data.WorksiteFlag
@@ -21,6 +22,7 @@ class WorksiteFormDataFlagNoteTest {
 
     private lateinit var worksiteDao: WorksiteDao
     private lateinit var worksiteDaoPlus: WorksiteDaoPlus
+    private lateinit var testWorksiteDao: TestWorksiteDao
 
     private suspend fun insertWorksites(
         worksites: List<WorksiteEntity>,
@@ -34,6 +36,7 @@ class WorksiteFormDataFlagNoteTest {
         db = TestUtil.getTestDatabase()
         worksiteDao = db.worksiteDao()
         worksiteDaoPlus = WorksiteDaoPlus(db)
+        testWorksiteDao = db.testWorksiteDao()
     }
 
     @Before
@@ -87,7 +90,7 @@ class WorksiteFormDataFlagNoteTest {
 
         assertEquals(1, syncedWorksiteId)
 
-        val actualPopulatedWorksite = worksiteDao.getLocalWorksite(1)
+        val actualPopulatedWorksite = testWorksiteDao.getLocalWorksite(1)
         assertEquals(
             testWorksiteEntity(1, 1, "sync-address", updatedAtA, id = 1),
             actualPopulatedWorksite.entity,
@@ -234,7 +237,7 @@ class WorksiteFormDataFlagNoteTest {
 
         assertEquals(existingWorksites[0].id, syncedWorksiteId)
 
-        val actualPopulatedWorksite = worksiteDao.getLocalWorksite(1)
+        val actualPopulatedWorksite = testWorksiteDao.getLocalWorksite(1)
         assertEquals(
             existingWorksites[0].copy(
                 address = "sync-address",
@@ -350,7 +353,7 @@ class WorksiteFormDataFlagNoteTest {
 
         assertEquals(existingWorksites[0].id, syncedWorksiteId)
 
-        val actualPopulatedWorksite = worksiteDao.getLocalWorksite(1)
+        val actualPopulatedWorksite = testWorksiteDao.getLocalWorksite(1)
         assertEquals(
             existingWorksites[0].copy(
                 address = "sync-address",
@@ -387,7 +390,7 @@ class WorksiteFormDataFlagNoteTest {
         // Locally changed did not sync
 
         assertTrue(syncedLocallyChangedWorksiteId < 0)
-        val actualPopulatedWorksiteB = worksiteDao.getLocalWorksite(2)
+        val actualPopulatedWorksiteB = testWorksiteDao.getLocalWorksite(2)
         assertEquals(existingWorksites[1], actualPopulatedWorksiteB.entity)
         val actualWorksiteB =
             actualPopulatedWorksiteB.asExternalModel(WorksiteTestUtil.TestTranslator)
@@ -410,7 +413,7 @@ class WorksiteFormDataFlagNoteTest {
             )
         )
 
-        val actual = worksiteDao.getLocalWorksite(1)
+        val actual = testWorksiteDao.getLocalWorksite(1)
             .asExternalModel(WorksiteTestUtil.TestTranslator).worksite.flags
         val expected = listOf(
             WorksiteFlag(

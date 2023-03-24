@@ -33,6 +33,8 @@ interface WorksitesRepository {
 
     fun streamIncidentWorksitesCount(id: Long): Flow<Int>
 
+    fun streamLocalWorksite(worksiteId: Long): Flow<LocalWorksite?>
+
     fun getWorksitesMapVisual(incidentId: Long, limit: Int, offset: Int): List<WorksiteMapMark>
 
     fun getWorksitesMapVisual(
@@ -62,8 +64,6 @@ interface WorksitesRepository {
     )
 
     fun getWorksitesSyncStats(incidentId: Long): WorksitesSyncStats?
-
-    fun getLocalWorksite(worksiteId: Long): LocalWorksite
 
     suspend fun syncWorksite(
         incidentId: Long,

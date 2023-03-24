@@ -43,11 +43,16 @@ data class Worksite(
     val updatedAt: Instant?,
     val what3words: String? = null,
     val workTypes: List<WorkType>,
+    // Member of My Organization flag when new worksite is created.
+    // Use [favoriteId] when worksite is pre-existing.
+    val isAssignedToOrgMember: Boolean = false,
 ) {
     companion object {
         fun autoContactFrequency(literal: String) =
             autoContactFrequencyMap[literal] ?: AutoContactFrequency.None
     }
+
+    val isNew = id <= 0
 
     val hasHighPriorityFlag: Boolean
         get() = flags?.any(WorksiteFlag::isHighPriorityFlag) ?: false

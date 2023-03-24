@@ -56,9 +56,6 @@ class EditCaseLocationViewModel @Inject constructor(
 ) : ViewModel() {
     val locationInputData: LocationInputData
 
-    val isNewWorksite: Boolean
-        get() = worksiteProvider.editableWorksite.value.id == EmptyWorksite.id
-
     private val locationSearchManager: LocationSearchManager
     val searchResults: StateFlow<LocationSearchResults>
     private val isSearchResultSelected = AtomicBoolean(false)
@@ -90,7 +87,7 @@ class EditCaseLocationViewModel @Inject constructor(
     init {
         var worksite = worksiteProvider.editableWorksite.value
 
-        if (isNewWorksite &&
+        if (worksite.isNew &&
             (worksite.coordinates() == EmptyWorksite.coordinates() ||
                     worksite.coordinates() == DefaultCoordinates)
         ) {

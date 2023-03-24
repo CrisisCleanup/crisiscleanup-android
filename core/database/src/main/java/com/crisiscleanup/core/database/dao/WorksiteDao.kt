@@ -20,7 +20,7 @@ interface WorksiteDao {
 
     @Transaction
     @Query("SELECT * FROM worksites WHERE id=:id")
-    fun getLocalWorksite(id: Long): PopulatedLocalWorksite
+    fun streamLocalWorksite(id: Long): Flow<PopulatedLocalWorksite?>
 
     @Transaction
     @Query(

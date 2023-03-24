@@ -75,7 +75,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     override val incidents: Flow<List<Incident>> =
         incidentDao.streamIncidents().map { it.map(PopulatedIncident::asExternalModel) }
 
-    override suspend fun getIncident(id: Long, loadFormFields: Boolean): Incident? =
+    override suspend fun getIncident(id: Long, loadFormFields: Boolean) =
         withContext(ioDispatcher) {
             if (loadFormFields) {
                 incidentDao.getFormFieldsIncident(id)?.asExternalModel()
@@ -83,6 +83,9 @@ class OfflineFirstIncidentsRepository @Inject constructor(
                 incidentDao.getIncident(id)?.asExternalModel()
             }
         }
+
+    override fun streamIncident(id: Long) =
+        incidentDao.streamFormFieldsIncident(id).map { it?.asExternalModel() }
 
     private suspend fun saveLocations(incidents: Collection<NetworkIncident>) {
         val locationIds = incidents.flatMap { it.locations.map(NetworkIncidentLocation::location) }

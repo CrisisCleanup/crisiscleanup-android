@@ -36,4 +36,7 @@ data class IncidentFormField(
     val fieldKey: String,
     val parentKey: String,
     val selectToggleWorkType: String,
-)
+) {
+    val isDivEnd = htmlType.lowercase() == "divend"
+    val isHidden = htmlType.lowercase() == "hidden"
+}

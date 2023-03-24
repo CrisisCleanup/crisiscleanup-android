@@ -15,11 +15,13 @@ data class FormFieldNode(
             formFields: Collection<IncidentFormField>,
             keyTranslator: KeyTranslator,
         ): List<FormFieldNode> {
+            val inputFormFields = formFields.filter { !it.isHidden }
+
             val lookup = mutableMapOf("" to EmptyIncidentFormField)
-            formFields.forEach { lookup[it.fieldKey] = it }
+            inputFormFields.forEach { lookup[it.fieldKey] = it }
 
             val groupedByParent = mutableMapOf<String, MutableList<IncidentFormField>>()
-            formFields.forEach {
+            inputFormFields.forEach {
                 val parentKey = it.parentKey
                 if (!groupedByParent.containsKey(parentKey)) {
                     groupedByParent[parentKey] = mutableListOf()
@@ -56,7 +58,7 @@ data class FormFieldNode(
     }
 }
 
-private val EmptyIncidentFormField = IncidentFormField(
+internal val EmptyIncidentFormField = IncidentFormField(
     "",
     "",
     "",
@@ -76,4 +78,10 @@ private val EmptyIncidentFormField = IncidentFormField(
     fieldKey = "",
     parentKey = "",
     selectToggleWorkType = "",
+)
+
+internal val EmptyFormFieldNode = FormFieldNode(
+    EmptyIncidentFormField,
+    emptyList(),
+    emptyMap(),
 )
