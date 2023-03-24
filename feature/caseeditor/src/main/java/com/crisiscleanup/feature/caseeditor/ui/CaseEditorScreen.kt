@@ -126,7 +126,7 @@ private fun BoxScope.CaseSummary(
     editNotesFlags: () -> Unit = {},
     editDetails: () -> Unit = {},
 ) {
-    val isLoadingWorksite by viewModel.isLoadingWorksite.collectAsStateWithLifecycle()
+    val isLoadingWorksite by viewModel.isLoading.collectAsStateWithLifecycle()
     val isEditable = worksiteData.isEditable
 
     Column(modifier.matchParentSize()) {

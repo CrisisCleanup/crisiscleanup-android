@@ -1,7 +1,6 @@
 package com.crisiscleanup.feature.caseeditor
 
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.addresssearch.AddressSearchRepository
 import com.crisiscleanup.core.addresssearch.model.toLatLng
@@ -41,7 +40,7 @@ import com.crisiscleanup.core.mapmarker.R as mapMarkerR
 @HiltViewModel
 class EditCaseLocationViewModel @Inject constructor(
     private val incidentsRepository: IncidentsRepository,
-    private val worksiteProvider: EditableWorksiteProvider,
+    worksiteProvider: EditableWorksiteProvider,
     private val permissionManager: PermissionManager,
     private val locationProvider: LocationProvider,
     searchWorksitesRepository: SearchWorksitesRepository,
@@ -50,10 +49,11 @@ class EditCaseLocationViewModel @Inject constructor(
     resourceProvider: AndroidResourceProvider,
     drawableResourceBitmapProvider: DrawableResourceBitmapProvider,
     private val existingWorksiteSelector: ExistingWorksiteSelector,
-    @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
+    translator: KeyTranslator,
+    @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
     @Dispatcher(Default) private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-) : ViewModel() {
+) : EditCaseBaseViewModel(worksiteProvider, translator, logger) {
     val locationInputData: LocationInputData
 
     private val locationSearchManager: LocationSearchManager

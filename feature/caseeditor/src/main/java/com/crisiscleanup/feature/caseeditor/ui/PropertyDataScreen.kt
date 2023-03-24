@@ -127,22 +127,21 @@ private fun EditCasePropertyView(
 private fun PropertyFormView(
     viewModel: EditCasePropertyViewModel = hiltViewModel(),
 ) {
-    val propertyInputData = viewModel.propertyInputData
+    val inputData = viewModel.propertyInputData
 
     PropertyFormResidentNameView()
 
     // TODO Apply mask with dashes if input is purely numbers (and dashes)
-    val updatePhone =
-        remember(propertyInputData) { { s: String -> propertyInputData.phoneNumber = s } }
-    val clearPhoneError =
-        remember(propertyInputData) { { propertyInputData.phoneNumberError = "" } }
-    val isPhoneError = propertyInputData.phoneNumberError.isNotEmpty()
+    val updatePhone = remember(inputData) { { s: String -> inputData.phoneNumber = s } }
+    val clearPhoneError = remember(inputData) { { inputData.phoneNumberError = "" } }
+    val isPhoneError = inputData.phoneNumberError.isNotEmpty()
     val focusPhone = isPhoneError
-    ErrorText(propertyInputData.phoneNumberError)
+    ErrorText(inputData.phoneNumberError)
     OutlinedClearableTextField(
         modifier = columnItemModifier,
-        labelResId = R.string.phone_number,
-        value = propertyInputData.phoneNumber,
+        labelResId = 0,
+        label = viewModel.translate("formLabels.phone1"),
+        value = inputData.phoneNumber,
         onValueChange = updatePhone,
         keyboardType = KeyboardType.Password,
         isError = isPhoneError,
@@ -151,30 +150,31 @@ private fun PropertyFormView(
         enabled = true,
     )
 
-    val updateAdditionalPhone = remember(propertyInputData) {
-        { s: String -> propertyInputData.phoneNumberSecondary = s }
+    val updateAdditionalPhone = remember(inputData) {
+        { s: String -> inputData.phoneNumberSecondary = s }
     }
     OutlinedClearableTextField(
         modifier = columnItemModifier,
-        labelResId = R.string.additional_phone_number,
-        value = propertyInputData.phoneNumberSecondary,
+        labelResId = 0,
+        label = viewModel.translate("formLabels.phone2"),
+        value = inputData.phoneNumberSecondary,
         onValueChange = updateAdditionalPhone,
         keyboardType = KeyboardType.Password,
         isError = false,
         enabled = true,
     )
 
-    val updateEmail =
-        remember(propertyInputData) { { s: String -> propertyInputData.email = s } }
-    val clearEmailError = remember(propertyInputData) { { propertyInputData.emailError = "" } }
-    val isEmailError = propertyInputData.emailError.isNotEmpty()
+    val updateEmail = remember(inputData) { { s: String -> inputData.email = s } }
+    val clearEmailError = remember(inputData) { { inputData.emailError = "" } }
+    val isEmailError = inputData.emailError.isNotEmpty()
     val focusEmail = isEmailError
     val closeKeyboard = rememberCloseKeyboard(viewModel)
-    ErrorText(propertyInputData.emailError)
+    ErrorText(inputData.emailError)
     OutlinedClearableTextField(
         modifier = columnItemModifier,
-        labelResId = R.string.email_address,
-        value = propertyInputData.email,
+        labelResId = 0,
+        label = viewModel.translate("formLabels.email"),
+        value = inputData.email,
         onValueChange = updateEmail,
         keyboardType = KeyboardType.Email,
         isError = isEmailError,
@@ -187,17 +187,17 @@ private fun PropertyFormView(
 
     // TODO Help action showing help text.
     Text(
-        text = stringResource(R.string.auto_contact_frequency),
+        text = viewModel.translate("casesVue.auto_contact_frequency"),
         modifier = columnItemModifier,
     )
-    val updateContactFrequency = remember(propertyInputData) {
-        { it: AutoContactFrequency -> propertyInputData.autoContactFrequency = it }
+    val updateContactFrequency = remember(inputData) {
+        { it: AutoContactFrequency -> inputData.autoContactFrequency = it }
     }
     val contactFrequencyOptions by viewModel.contactFrequencyOptions.collectAsState()
-    ErrorText(propertyInputData.frequencyError)
+    ErrorText(inputData.frequencyError)
     Column(modifier = Modifier.selectableGroup()) {
         contactFrequencyOptions.forEach {
-            val isSelected = propertyInputData.autoContactFrequency == it.first
+            val isSelected = inputData.autoContactFrequency == it.first
             Row(
                 Modifier
                     .fillMaxWidth()
@@ -228,16 +228,14 @@ private fun PropertyFormView(
 private fun PropertyFormResidentNameView(
     viewModel: EditCasePropertyViewModel = hiltViewModel(),
 ) {
-    val propertyInputData = viewModel.propertyInputData
+    val inputData = viewModel.propertyInputData
 
-    val residentName by propertyInputData.residentName.collectAsStateWithLifecycle()
-    val updateName =
-        remember(propertyInputData) { { s: String -> propertyInputData.residentName.value = s } }
-    val clearNameError =
-        remember(propertyInputData) { { propertyInputData.residentNameError = "" } }
-    val isNameError = propertyInputData.residentNameError.isNotEmpty()
+    val residentName by inputData.residentName.collectAsStateWithLifecycle()
+    val updateName = remember(inputData) { { s: String -> inputData.residentName.value = s } }
+    val clearNameError = remember(inputData) { { inputData.residentNameError = "" } }
+    val isNameError = inputData.residentNameError.isNotEmpty()
     val focusName = residentName.isEmpty() || isNameError
-    ErrorText(propertyInputData.residentNameError)
+    ErrorText(inputData.residentNameError)
     Box(Modifier.fillMaxWidth()) {
         var contentWidth by remember { mutableStateOf(Size.Zero) }
 
@@ -245,7 +243,8 @@ private fun PropertyFormResidentNameView(
             modifier = columnItemModifier.onGloballyPositioned {
                 contentWidth = it.size.toSize()
             },
-            labelResId = R.string.resident_name,
+            labelResId = 0,
+            label = viewModel.translate("formLabels.name"),
             value = residentName,
             onValueChange = updateName,
             keyboardType = KeyboardType.Text,

@@ -20,6 +20,7 @@ interface EditableWorksiteProvider {
     var incidentBounds: IncidentBounds
     val editableWorksite: MutableStateFlow<Worksite>
     var formFields: List<FormFieldNode>
+    var formFieldTranslationLookup: Map<String, String>
 }
 
 fun EditableWorksiteProvider.reset(incidentId: Long = EmptyIncident.id) = run {
@@ -29,6 +30,7 @@ fun EditableWorksiteProvider.reset(incidentId: Long = EmptyIncident.id) = run {
         incidentId = incidentId,
     )
     formFields = emptyList()
+    formFieldTranslationLookup = emptyMap()
 }
 
 @Singleton
@@ -37,6 +39,7 @@ class SingleEditableWorksiteProvider @Inject constructor() : EditableWorksitePro
     override var incidentBounds = DefaultIncidentBounds
     override val editableWorksite = MutableStateFlow(EmptyWorksite)
     override var formFields = emptyList<FormFieldNode>()
+    override var formFieldTranslationLookup = emptyMap<String, String>()
 }
 
 internal val DefaultIncidentBounds = IncidentBounds(emptyList(), MapViewCameraBoundsDefault.bounds)

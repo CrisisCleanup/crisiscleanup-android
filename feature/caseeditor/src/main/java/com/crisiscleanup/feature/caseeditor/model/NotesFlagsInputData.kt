@@ -1,30 +1,33 @@
 package com.crisiscleanup.feature.caseeditor.model
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import com.crisiscleanup.core.common.AndroidResourceProvider
+import androidx.compose.runtime.*
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteNote
+import kotlinx.coroutines.flow.map
+
 
 class NotesFlagsInputData(
     worksite: Worksite,
-    private val resourceProvider: AndroidResourceProvider,
+    val visibleNoteCount: Int = 3,
 ) : CaseDataWriter {
     private val worksiteIn = worksite.copy()
+
+    val isNewWorksite = worksite.isNew
 
     val notes = mutableStateListOf<WorksiteNote>().also { list ->
         worksite.notes?.let { list.addAll(it) }
     }
     var isHighPriority by mutableStateOf(worksite.hasHighPriorityFlag)
-    var isAssignedToOrgMember by mutableStateOf(false)
+    var isAssignedToOrgMember by mutableStateOf(worksite.isAssignedToOrgMember)
+
+    val notesStream = snapshotFlow { notes.toList() }
+    val areNotesExpandable = notesStream.map { it.size > visibleNoteCount }
 
     private fun isChanged(worksite: Worksite): Boolean {
         return this.notes != worksite.notes ||
                 isHighPriority != worksite.hasHighPriorityFlag ||
-                isAssignedToOrgMember
+                isAssignedToOrgMember != worksite.isAssignedToOrgMember
     }
 
     override fun updateCase() = updateCase(worksiteIn)

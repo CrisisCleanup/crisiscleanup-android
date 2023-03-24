@@ -8,11 +8,6 @@
     <string name="edit_section">Edit %s</string>
 
     <string name="property_information">Property information</string>
-    <string name="resident_name">Resident name</string>
-    <string name="phone_number">Phone number</string>
-    <string name="additional_phone_number">Additional phone</string>
-    <string name="email_address">Email</string>
-    <string name="auto_contact_frequency">Auto contact frequency</string>
 
     <string name="stop_suggesting_existing_cases">Stop showing existing cases</string>
     <string name="name_is_required">Enter a name for the resident</string>
@@ -37,12 +32,6 @@
     <string name="location_query_hint">Search for a worksite address or any address in general</string>
     <string name="no_location_results">No worksites or addresses match \'%s\'</string>
 
-    <string name="street_address">Street address</string>
-    <string name="city">City</string>
-    <string name="county">County or parish</string>
-    <string name="state">State</string>
-    <string name="zipcode">Zip code</string>
-    <string name="cross_street_nearby_landmark">Cross street or nearby landmark</string>
     <string name="wrong_location">Manual address override</string>
     <string name="address_is_required">Street address is required</string>
     <string name="zipcode_is_required">Zip code is required</string>

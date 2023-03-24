@@ -45,8 +45,17 @@ class CaseEditorViewModel @Inject constructor(
 
     val headerTitle = MutableStateFlow("")
 
-    private val _isRefreshingWorksite = MutableStateFlow(false)
-    val isLoadingWorksite: StateFlow<Boolean> = _isRefreshingWorksite
+    private val isRefreshingIncident = MutableStateFlow(false)
+    private val isRefreshingWorksite = MutableStateFlow(false)
+    val isLoading = combine(
+        isRefreshingIncident,
+        isRefreshingWorksite,
+    ) { b0, b1 -> b0 || b1 }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
+            started = SharingStarted.WhileSubscribed(),
+        )
 
     val editingWorksite = editableWorksiteProvider.editableWorksite
 
@@ -66,11 +75,10 @@ class CaseEditorViewModel @Inject constructor(
             var bounds: IncidentBounds? = null
             it?.locations?.map(IncidentLocation::location)?.let { locationIds ->
                 val locations = locationsRepository.getLocations(locationIds).toLatLng()
-                if (locations.isNotEmpty()) {
-                    bounds = locations.toBounds()
-                }
+                bounds = if (locations.isEmpty()) null
+                else locations.toBounds()
             }
-            bounds ?: DefaultIncidentBounds
+            bounds
         }
         .flowOn(ioDispatcher)
         .stateIn(
@@ -121,22 +129,23 @@ class CaseEditorViewModel @Inject constructor(
     private val uiStateViewModel = com.crisiscleanup.core.common.combine(
         incidentStream,
         incidentBoundsStream,
+        isRefreshingIncident,
         worksiteStream,
         networkWorksiteStream,
-    ) { incident, bounds, worksite, networkWorksiteSync ->
+    ) { incident, bounds, pullingIncident, worksite, networkWorksiteSync ->
         Pair(
-            Pair(incident, bounds),
+            Triple(incident, bounds, pullingIncident),
             Pair(worksite, networkWorksiteSync)
         )
     }
-        .mapLatest { (p0, p1) ->
-            val (incident, bounds) = p0
+        .mapLatest { (first, second) ->
+            val (incident, bounds, pullingIncident) = first
 
             if (incident == null) {
                 return@mapLatest CaseEditorUiState.Loading
             }
 
-            if (incident.formFields.isEmpty()) {
+            if (!pullingIncident && incident.formFields.isEmpty()) {
                 logger.logException(Exception("Incident $incidentIdArg is missing form fields when editing worksite $worksiteIdArg"))
                 return@mapLatest CaseEditorUiState.Error(R.string.incident_issue_try_again)
             }
@@ -148,7 +157,7 @@ class CaseEditorViewModel @Inject constructor(
                 }
             }
 
-            val (localWorksite, networkWorksiteSync) = p1
+            val (localWorksite, networkWorksiteSync) = second
 
             val initialWorksite = localWorksite?.worksite ?: EmptyWorksite.copy(
                 incidentId = incidentIdArg,
@@ -159,14 +168,20 @@ class CaseEditorViewModel @Inject constructor(
                 this.incident = incident
                 if (formFields.isEmpty()) {
                     formFields = FormFieldNode.buildTree(incident.formFields, languageRepository)
+                    formFieldTranslationLookup =
+                        incident.formFields
+                            .filter { it.fieldKey.isNotBlank() && it.label.isNotBlank() }
+                            .associate { it.fieldKey to it.label }
                 }
                 editableWorksite.value = initialWorksite
                 incidentBounds = bounds ?: DefaultIncidentBounds
             }
 
-            val isWorksiteLoaded =
-                isCreateWorksite || (localWorksite != null && isWorksitePulled.get())
-            val isEditable = bounds != null && isWorksiteLoaded
+            val isLoadFinished =
+                isCreateWorksite ||
+                        (!pullingIncident &&
+                                localWorksite != null && isWorksitePulled.get())
+            val isEditable = bounds != null && isLoadFinished
             CaseEditorUiState.WorksiteData(
                 isEditable = isEditable,
                 initialWorksite,
@@ -195,10 +210,13 @@ class CaseEditorViewModel @Inject constructor(
         }
 
         viewModelScope.launch(ioDispatcher) {
+            isRefreshingIncident.value = true
             try {
                 incidentsRepository.pullIncident(incidentIdArg)
             } catch (e: Exception) {
                 logger.logException(e)
+            } finally {
+                isRefreshingIncident.value = false
             }
 
             // TODO Query backend for updated locations if incident is recent
@@ -220,7 +238,7 @@ class CaseEditorViewModel @Inject constructor(
     }
 
     private suspend fun refreshWorksite(networkWorksiteId: Long) {
-        _isRefreshingWorksite.value = true
+        isRefreshingWorksite.value = true
         try {
             networkWorksiteSync.set(
                 worksitesRepository.syncWorksite(
@@ -235,7 +253,7 @@ class CaseEditorViewModel @Inject constructor(
             // TODO This is going to be difficult. Plenty of state for possible change... Show error message that backend has changes not resolved on local?
             logger.logException(e)
         } finally {
-            _isRefreshingWorksite.value = false
+            isRefreshingWorksite.value = false
         }
     }
 

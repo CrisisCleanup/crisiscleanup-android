@@ -31,6 +31,7 @@ fun OutlinedSingleLineTextField(
     onValueChange: (String) -> Unit,
     enabled: Boolean,
     isError: Boolean,
+    label: String = "",
     hasFocus: Boolean = false,
     keyboardType: KeyboardType = KeyboardType.Text,
     visualTransformation: VisualTransformation = VisualTransformation.None,
@@ -39,7 +40,7 @@ fun OutlinedSingleLineTextField(
     onSearch: (() -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
     imeAction: ImeAction = ImeAction.Next,
-    nextDirection:FocusDirection = FocusDirection.Down,
+    nextDirection: FocusDirection = FocusDirection.Down,
 ) {
     val focusRequester = FocusRequester()
     val modifier2 =
@@ -62,9 +63,10 @@ fun OutlinedSingleLineTextField(
             onEnter?.invoke()
         },
     )
-    val labelContent: (@Composable (() -> Unit)?) = if (labelResId == 0) null
+    val labelText = if (labelResId == 0) label else stringResource(labelResId)
+    val labelContent: (@Composable (() -> Unit)?) = if (labelText.isBlank()) null
     else {
-        @Composable { Text(stringResource(labelResId)) }
+        @Composable { Text(labelText) }
     }
     val trailingIconContent: (@Composable (() -> Unit)?) =
         if (value.isEmpty() || trailingIcon == null) null
@@ -103,6 +105,7 @@ fun OutlinedClearableTextField(
     onValueChange: (String) -> Unit,
     enabled: Boolean,
     isError: Boolean,
+    label: String = "",
     hasFocus: Boolean = false,
     keyboardType: KeyboardType = KeyboardType.Text,
     onNext: (() -> Unit)? = null,
@@ -126,6 +129,7 @@ fun OutlinedClearableTextField(
     OutlinedSingleLineTextField(
         modifier = modifier,
         labelResId = labelResId,
+        label = label,
         value = value,
         onValueChange = onValueChange,
         enabled = enabled,

@@ -1,6 +1,5 @@
 package com.crisiscleanup.feature.caseeditor
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.InputValidator
@@ -24,16 +23,16 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EditCasePropertyViewModel @Inject constructor(
-    private val worksiteProvider: EditableWorksiteProvider,
+    worksiteProvider: EditableWorksiteProvider,
     inputValidator: InputValidator,
     resourceProvider: AndroidResourceProvider,
-    translator: KeyTranslator,
     searchWorksitesRepository: SearchWorksitesRepository,
     caseIconProvider: MapCaseIconProvider,
+    translator: KeyTranslator,
     private val existingWorksiteSelector: ExistingWorksiteSelector,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-    @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
-) : ViewModel() {
+    @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
+) : EditCaseBaseViewModel(worksiteProvider, translator, logger) {
     val propertyInputData: PropertyInputData
 
     private val nameSearchManager: ResidentNameSearchManager

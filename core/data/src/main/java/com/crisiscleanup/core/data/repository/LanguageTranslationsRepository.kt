@@ -67,16 +67,18 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000),
         )
 
+    private var translationCache = emptyMap<String, String>()
+
     private val languageTranslations = appPreferences.userData.flatMapLatest {
         val key = it.languageKey.ifEmpty { EnglishLanguage.key }
         languageDao.streamLanguageTranslations(key)
             .mapLatest { translation -> translation?.asExternalModel() }
     }
         .flowOn(ioDispatcher)
-        .stateIn(
+        .shareIn(
             scope = coroutineScope,
-            initialValue = null,
-            started = SharingStarted.WhileSubscribed(),
+            started = SharingStarted.WhileSubscribed(5_000),
+            replay = 1,
         )
 
     override val translationCount = languageTranslations.map { it?.translations?.size ?: 0 }
@@ -95,6 +97,13 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
     )
 
     private var setLanguageJob: Job? = null
+
+    init {
+        languageTranslations.onEach {
+            translationCache = it?.translations ?: emptyMap()
+        }
+            .launchIn(coroutineScope)
+    }
 
     private suspend fun isNotOnline() = networkMonitor.isNotOnline.first()
 
@@ -144,7 +153,8 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
         }
     }
 
-    private suspend fun pullUpdatedTranslations() = pullTranslations(currentLanguage.value.key)
+    private suspend fun pullUpdatedTranslations() =
+        pullUpdatedTranslations(currentLanguage.value.key)
 
     private suspend fun pullUpdatedTranslations(key: String) {
         languageDao.streamLanguageTranslations(key).first()?.asExternalModel()?.let {
@@ -177,6 +187,5 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
         }
     }
 
-    override fun translate(phraseKey: String): String? =
-        languageTranslations.value?.translations?.get(phraseKey)
+    override fun translate(phraseKey: String): String? = translationCache[phraseKey]
 }

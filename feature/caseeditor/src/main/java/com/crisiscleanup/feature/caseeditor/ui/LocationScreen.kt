@@ -3,13 +3,11 @@ package com.crisiscleanup.feature.caseeditor.ui
 import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
@@ -232,13 +230,12 @@ internal fun ColumnScope.LocationView(
 
             val isShortQuery by viewModel.isShortQuery.collectAsStateWithLifecycle()
             if (showMapFormViews) {
-                val onMapTouched =
-                    remember(viewModel) {
-                        {
-                            enableColumnScroll = false
-                            closeKeyboard()
-                        }
+                val onMapTouched = remember(viewModel) {
+                    {
+                        enableColumnScroll = false
+                        closeKeyboard()
                     }
+                }
                 if (isRowOriented) {
                     Row {
                         LocationMapContainerView(
@@ -413,20 +410,21 @@ internal fun LocationMapContainerView(
 internal fun LocationFormView(
     viewModel: EditCaseLocationViewModel = hiltViewModel(),
 ) {
-    val locationInputData = viewModel.locationInputData
+    val inputData = viewModel.locationInputData
 
-    val closeKeyboard = rememberCloseKeyboard(locationInputData)
+    val closeKeyboard = rememberCloseKeyboard(inputData)
 
-    val updateCrossStreet =
-        remember(locationInputData) {
-            { s: String ->
-                locationInputData.crossStreetNearbyLandmark = s
-            }
+    val updateCrossStreet = remember(inputData) {
+        { s: String ->
+            inputData.crossStreetNearbyLandmark = s
         }
+    }
     OutlinedClearableTextField(
         modifier = columnItemModifier,
-        labelResId = R.string.cross_street_nearby_landmark,
-        value = locationInputData.crossStreetNearbyLandmark,
+        labelResId = 0,
+        // TODO Translation from key
+        label = viewModel.translate("cross_street"),
+        value = inputData.crossStreetNearbyLandmark,
         onValueChange = updateCrossStreet,
         keyboardType = KeyboardType.Text,
         isError = false,
@@ -434,31 +432,26 @@ internal fun LocationFormView(
         imeAction = ImeAction.Next,
     )
 
-    val updateWrongLocation = remember(locationInputData) {
+    val updateWrongLocation = remember(inputData) {
         { b: Boolean ->
-            locationInputData.hasWrongLocation = b
+            inputData.hasWrongLocation = b
         }
     }
-    val toggleWrongLocation = remember(locationInputData) {
+    val toggleWrongLocation = remember(inputData) {
         {
-            updateWrongLocation(!locationInputData.hasWrongLocation)
+            updateWrongLocation(!inputData.hasWrongLocation)
         }
     }
-    Row(
-        Modifier
-            .clickable(onClick = toggleWrongLocation)
-            .then(columnItemModifier),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Checkbox(
-            checked = locationInputData.hasWrongLocation,
-            onCheckedChange = updateWrongLocation,
-        )
+    CrisisCleanupTextCheckbox(
+        columnItemModifier,
+        inputData.hasWrongLocation,
         // TODO Translator from form fields data?
-        Text(text = stringResource(R.string.wrong_location))
-    }
+        R.string.wrong_location,
+        onToggle = toggleWrongLocation,
+        onCheckChange = updateWrongLocation,
+    )
 
-    locationInputData.run {
+    inputData.run {
         val showAddressForm by remember(
             streetAddressError,
             zipCodeError,
@@ -485,19 +478,18 @@ internal fun LocationAddressFormView(
     viewModel: EditCaseLocationViewModel = hiltViewModel(),
     closeKeyboard: () -> Unit = {},
 ) {
-    val locationInputData = viewModel.locationInputData
+    val inputData = viewModel.locationInputData
 
-    val updateAddress =
-        remember(locationInputData) { { s: String -> locationInputData.streetAddress = s } }
-    val clearAddressError =
-        remember(locationInputData) { { locationInputData.streetAddressError = "" } }
-    val isAddressError = locationInputData.streetAddressError.isNotEmpty()
+    val updateAddress = remember(inputData) { { s: String -> inputData.streetAddress = s } }
+    val clearAddressError = remember(inputData) { { inputData.streetAddressError = "" } }
+    val isAddressError = inputData.streetAddressError.isNotEmpty()
     val focusAddress = isAddressError
-    ErrorText(locationInputData.streetAddressError)
+    ErrorText(inputData.streetAddressError)
     OutlinedClearableTextField(
         modifier = columnItemModifier,
-        labelResId = R.string.street_address,
-        value = locationInputData.streetAddress,
+        labelResId = 0,
+        label = viewModel.translate("formLabels.address"),
+        value = inputData.streetAddress,
         onValueChange = updateAddress,
         keyboardType = KeyboardType.Password,
         isError = isAddressError,
@@ -508,17 +500,16 @@ internal fun LocationAddressFormView(
 
     // TODO Move into view model to query for and present autofill.
     //      See ExposedDropdownMenu for presenting options.
-    val updateZipCode =
-        remember(locationInputData) { { s: String -> locationInputData.zipCode = s } }
-    val clearZipCodeError =
-        remember(locationInputData) { { locationInputData.zipCodeError = "" } }
-    val isZipCodeError = locationInputData.zipCodeError.isNotEmpty()
+    val updateZipCode = remember(inputData) { { s: String -> inputData.zipCode = s } }
+    val clearZipCodeError = remember(inputData) { { inputData.zipCodeError = "" } }
+    val isZipCodeError = inputData.zipCodeError.isNotEmpty()
     val focusZipCode = isZipCodeError
-    ErrorText(locationInputData.zipCodeError)
+    ErrorText(inputData.zipCodeError)
     OutlinedClearableTextField(
         modifier = columnItemModifier,
-        labelResId = R.string.zipcode,
-        value = locationInputData.zipCode,
+        labelResId = 0,
+        label = viewModel.translate("formLabels.postal_code"),
+        value = inputData.zipCode,
         onValueChange = updateZipCode,
         keyboardType = KeyboardType.Password,
         isError = isZipCodeError,
@@ -527,17 +518,16 @@ internal fun LocationAddressFormView(
         enabled = true,
     )
 
-    val updateCounty =
-        remember(locationInputData) { { s: String -> locationInputData.county = s } }
-    val clearCountyError =
-        remember(locationInputData) { { locationInputData.countyError = "" } }
-    val isCountyError = locationInputData.countyError.isNotEmpty()
+    val updateCounty = remember(inputData) { { s: String -> inputData.county = s } }
+    val clearCountyError = remember(inputData) { { inputData.countyError = "" } }
+    val isCountyError = inputData.countyError.isNotEmpty()
     val focusCounty = isCountyError
-    ErrorText(locationInputData.countyError)
+    ErrorText(inputData.countyError)
     OutlinedClearableTextField(
         modifier = columnItemModifier,
-        labelResId = R.string.county,
-        value = locationInputData.county,
+        labelResId = 0,
+        label = viewModel.translate("formLabels.county"),
+        value = inputData.county,
         onValueChange = updateCounty,
         keyboardType = KeyboardType.Password,
         isError = isCountyError,
@@ -546,17 +536,16 @@ internal fun LocationAddressFormView(
         enabled = true,
     )
 
-    val updateCity =
-        remember(locationInputData) { { s: String -> locationInputData.city = s } }
-    val clearCityError =
-        remember(locationInputData) { { locationInputData.cityError = "" } }
-    val isCityError = locationInputData.cityError.isNotEmpty()
+    val updateCity = remember(inputData) { { s: String -> inputData.city = s } }
+    val clearCityError = remember(inputData) { { inputData.cityError = "" } }
+    val isCityError = inputData.cityError.isNotEmpty()
     val focusCity = isCityError
-    ErrorText(locationInputData.cityError)
+    ErrorText(inputData.cityError)
     OutlinedClearableTextField(
         modifier = columnItemModifier,
-        labelResId = R.string.city,
-        value = locationInputData.city,
+        labelResId = 0,
+        label = viewModel.translate("formLabels.city"),
+        value = inputData.city,
         onValueChange = updateCity,
         keyboardType = KeyboardType.Password,
         isError = isCityError,
@@ -565,23 +554,27 @@ internal fun LocationAddressFormView(
         enabled = true,
     )
 
-    val updateState =
-        remember(locationInputData) { { s: String -> locationInputData.state = s } }
-    val clearStateError =
-        remember(locationInputData) { { locationInputData.stateError = "" } }
-    val isStateError = locationInputData.stateError.isNotEmpty()
+    val updateState = remember(inputData) { { s: String -> inputData.state = s } }
+    val onStateEnd = remember(inputData) {
+        {
+            inputData.stateError = ""
+            closeKeyboard()
+        }
+    }
+    val isStateError = inputData.stateError.isNotEmpty()
     val focusState = isStateError
-    ErrorText(locationInputData.stateError)
+    ErrorText(inputData.stateError)
     OutlinedClearableTextField(
         modifier = columnItemModifier,
-        labelResId = R.string.state,
-        value = locationInputData.state,
+        labelResId = 0,
+        label = viewModel.translate("formLabels.state"),
+        value = inputData.state,
         onValueChange = updateState,
         keyboardType = KeyboardType.Password,
         isError = isStateError,
         hasFocus = focusState,
         imeAction = ImeAction.Done,
-        onEnter = closeKeyboard,
+        onEnter = onStateEnd,
         enabled = true,
     )
 }

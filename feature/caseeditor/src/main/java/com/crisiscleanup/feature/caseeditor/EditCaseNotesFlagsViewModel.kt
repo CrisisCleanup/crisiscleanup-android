@@ -1,7 +1,6 @@
 package com.crisiscleanup.feature.caseeditor
 
-import androidx.lifecycle.ViewModel
-import com.crisiscleanup.core.common.AndroidResourceProvider
+import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -11,10 +10,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EditCaseNotesFlagsViewModel @Inject constructor(
-    private val worksiteProvider: EditableWorksiteProvider,
-    resourceProvider: AndroidResourceProvider,
-    @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
-) : ViewModel() {
+    worksiteProvider: EditableWorksiteProvider,
+    translator: KeyTranslator,
+    @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
+) : EditCaseBaseViewModel(worksiteProvider, translator, logger) {
     val notesFlagsInputData: NotesFlagsInputData
 
     init {
@@ -22,7 +21,6 @@ class EditCaseNotesFlagsViewModel @Inject constructor(
 
         notesFlagsInputData = NotesFlagsInputData(
             worksite,
-            resourceProvider,
         )
     }
 
