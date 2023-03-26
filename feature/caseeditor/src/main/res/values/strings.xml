@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="save">Save</string>
+
     <string name="create_case">Create Case</string>
     <string name="view_case">View Case</string>
     <string name="view_case_number">Case %1$s</string>
@@ -39,7 +41,10 @@
     <string name="county_is_required">County or parish is required</string>
     <string name="state_is_required">State is required</string>
 
+    <string name="high_priority">"High priority"</string>
     <string name="notes_flags">Notes &amp; flags</string>
+    <string name="note">Note</string>
+    <string name="add_note">Add note</string>
 
     <string name="details">Details</string>
 </resources>

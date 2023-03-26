@@ -2,9 +2,9 @@ package com.crisiscleanup.feature.caseeditor
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AndroidResourceProvider
+import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -34,16 +34,19 @@ class CaseEditorViewModel @Inject constructor(
     private val worksitesRepository: WorksitesRepository,
     languageRepository: LanguageTranslationsRepository,
     private val editableWorksiteProvider: EditableWorksiteProvider,
+    translator: KeyTranslator,
     resourceProvider: AndroidResourceProvider,
-    @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
+    @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
-) : ViewModel() {
+) : EditCaseBaseViewModel(editableWorksiteProvider, translator, logger) {
     private val caseEditorArgs = CaseEditorArgs(savedStateHandle)
     private val incidentIdArg = caseEditorArgs.incidentId
     private val worksiteIdArg = caseEditorArgs.worksiteId
     val isCreateWorksite = worksiteIdArg == null
 
     val headerTitle = MutableStateFlow("")
+
+    val visibleNoteCount: Int = 2
 
     private val isRefreshingIncident = MutableStateFlow(false)
     private val isRefreshingWorksite = MutableStateFlow(false)

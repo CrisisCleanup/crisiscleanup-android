@@ -70,7 +70,10 @@ fun PopulatedLocalWorksite.asExternalModel(translator: KeyTranslator? = null): L
             latitude = entity.latitude,
             longitude = entity.longitude,
             name = entity.name,
-            notes = notes.map(WorksiteNoteEntity::asExternalModel),
+            notes = notes
+                .filter { it.note.isNotBlank() }
+                .map(WorksiteNoteEntity::asExternalModel)
+                .sortedWith { a, b -> if (a.createdAt < b.createdAt) 1 else -1 },
             networkId = entity.networkId,
             phone1 = entity.phone1 ?: "",
             phone2 = entity.phone2 ?: "",

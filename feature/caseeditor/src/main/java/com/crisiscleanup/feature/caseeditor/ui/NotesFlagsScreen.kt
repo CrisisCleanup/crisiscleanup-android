@@ -2,22 +2,21 @@ package com.crisiscleanup.feature.caseeditor.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackCancel
+import com.crisiscleanup.core.designsystem.component.fabEdgeSpace
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteNote
@@ -25,7 +24,46 @@ import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.EditCaseNotesFlagsViewModel
 import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.model.getRelativeDate
+import java.lang.Integer.min
 
+@Composable
+private fun NoteView(
+    note: WorksiteNote,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier) {
+        // TODO Different styling when isSurvivor and not
+        val relativeDate = note.getRelativeDate()
+        if (relativeDate.isNotEmpty()) {
+            Text(
+                text = relativeDate,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+        Text(text = note.note)
+    }
+}
+
+private fun LazyListScope.staticNoteItems(
+    notes: List<WorksiteNote>,
+    visibleCount: Int,
+    modifier: Modifier,
+) {
+    // TODO Animate on expand/collapse
+    val count = min(notes.size, visibleCount)
+    items(
+        count,
+        key = {
+            val note = notes[it]
+            if (note.id > 0) note.id
+            else note.createdAt.toEpochMilliseconds()
+        },
+        contentType = { "item-note" },
+    ) {
+        val note = notes[it]
+        NoteView(note, modifier)
+    }
+}
 
 @Composable
 internal fun NotesFlagsSummaryView(
@@ -33,14 +71,75 @@ internal fun NotesFlagsSummaryView(
     isEditable: Boolean,
     modifier: Modifier = Modifier,
     onEdit: () -> Unit = {},
+    translate: (String) -> String = { s -> s },
+    collapsedNotesVisibleCount: Int = 3,
 ) {
     EditCaseSummaryHeader(
         R.string.notes_flags,
         isEditable,
         onEdit,
         modifier,
+        0.dp
     ) {
-        // TODO
+        val paddingStart = 16.dp
+        val paddingEnd = 16.dp
+        if (worksite.hasHighPriorityFlag) {
+            Text(
+                text = stringResource(R.string.high_priority),
+                // TODO Common styling dimensions
+                modifier = modifier.padding(
+                    start = paddingStart.plus(8.dp), end = paddingEnd,
+                    bottom = 8.dp, top = 8.dp,
+                ),
+            )
+        }
+
+        val notes = worksite.notes
+        if (notes.isNotEmpty()) {
+            val isExpandable = notes.size > collapsedNotesVisibleCount
+            var isExpanded by remember { mutableStateOf(false) }
+            val toggleExpand = remember(worksite) { { isExpanded = !isExpanded } }
+            Row(
+                Modifier
+                    .clickable(
+                        enabled = isExpandable,
+                        onClick = toggleExpand,
+                    )
+                    .fillMaxWidth()
+                    // TODO Common styling dimensions
+                    .padding(
+                        start = paddingStart.plus(8.dp), end = paddingEnd,
+                        bottom = 16.dp, top = 16.dp,
+                    ),
+            ) {
+                Text(
+                    text = translate("formLabels.notes"),
+                    Modifier.weight(1f),
+                )
+                if (isExpandable) {
+                    val icon = if (isExpanded) CrisisCleanupIcons.ExpandLess
+                    else CrisisCleanupIcons.ExpandMore
+                    val textKey = if (isExpanded) "actions.some_notes"
+                    else "actions.all_notes"
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = translate(textKey),
+                    )
+                }
+            }
+
+            val visibleCount = if (isExpanded) notes.size
+            else collapsedNotesVisibleCount
+            // TODO Common styling dimensions
+            val noteModifier = Modifier.padding(
+                start = paddingStart.plus(16.dp), end = paddingEnd,
+                bottom = 4.dp, top = 4.dp,
+            )
+            for (i in 0 until min(notes.size, visibleCount)) {
+                val note = notes[i]
+                NoteView(note, noteModifier)
+            }
+        }
     }
 }
 
@@ -85,15 +184,56 @@ internal fun EditCaseNotesFlagsRoute(
 private fun NotesFlagsView(
     viewModel: EditCaseNotesFlagsViewModel = hiltViewModel(),
 ) {
+    var isCreatingNote by remember { mutableStateOf(false) }
+
+    ConstraintLayout(Modifier.fillMaxSize()) {
+        val (newNoteFab) = createRefs()
+
+        FlagsInputNotesList()
+
+        FloatingActionButton(
+            modifier = Modifier.constrainAs(newNoteFab) {
+                end.linkTo(parent.end, margin = fabEdgeSpace)
+                bottom.linkTo(parent.bottom, margin = fabEdgeSpace)
+            },
+            onClick = { isCreatingNote = true },
+            shape = CircleShape,
+        ) {
+            Icon(
+                imageVector = CrisisCleanupIcons.AddNote,
+                contentDescription = viewModel.translate("caseView.add_note_alt"),
+            )
+        }
+    }
+
+    if (isCreatingNote) {
+        val dismissNoteDialog = { isCreatingNote = false }
+        val onCreateNote = remember(viewModel) {
+            { note: WorksiteNote ->
+                if (note.note.isNotBlank()) {
+                    viewModel.notesFlagsInputData.notes.add(0, note)
+                }
+                dismissNoteDialog()
+            }
+        }
+        EditNoteDialog(
+            note = WorksiteNote.create(),
+            dialogTitle = stringResource(R.string.add_note),
+            onSave = onCreateNote,
+            onCancel = dismissNoteDialog,
+        )
+    }
+}
+
+@Composable
+private fun FlagsInputNotesList(
+    viewModel: EditCaseNotesFlagsViewModel = hiltViewModel(),
+) {
     val inputData = viewModel.notesFlagsInputData
 
     val notes by inputData.notesStream.collectAsStateWithLifecycle(emptyList())
-    val areNotesExpandable by inputData.areNotesExpandable.collectAsStateWithLifecycle(false)
-    var areNotesExpanded by remember { mutableStateOf(false) }
-    val toggleNotesExpand = remember(inputData) { { areNotesExpanded = !areNotesExpanded } }
 
     val closeKeyboard = rememberCloseKeyboard(viewModel)
-
     LazyColumn(Modifier.scrollFlingListener(closeKeyboard)) {
         item(
             key = "high-priority",
@@ -134,73 +274,21 @@ private fun NotesFlagsView(
         }
 
         if (notes.isNotEmpty()) {
-            val visibleCount = if (areNotesExpanded) notes.size
-            else inputData.visibleNoteCount
-            noteItems(
-                viewModel,
-                notes,
-                visibleCount,
-                areNotesExpandable,
-                areNotesExpanded,
-                toggleNotesExpand,
-            )
-        }
-    }
-}
-
-private fun LazyListScope.noteItems(
-    viewModel: EditCaseNotesFlagsViewModel,
-    notes: List<WorksiteNote>,
-    visibleCount: Int,
-    isExpandable: Boolean,
-    isExpanded: Boolean,
-    toggleExpand: () -> Unit,
-) {
-    item(
-        key = "notes-title",
-        contentType = "item-notes-title",
-    ) {
-        Row(
-            Modifier
-                .clickable(
-                    enabled = isExpandable,
-                    onClick = toggleExpand,
-                )
-                .fillMaxWidth()
-                .padding(16.dp),
-        ) {
-            Text(
-                text = viewModel.translate("formLabels.notes"),
-                Modifier.weight(1f),
-            )
-            if (isExpandable) {
-                val icon = if (isExpanded) CrisisCleanupIcons.ExpandMore
-                else CrisisCleanupIcons.ExpandLess
-                val textKey = if (isExpanded) "actions.some_notes"
-                else "actions.all_notes"
-                Icon(
-                    imageVector = icon,
-                    contentDescription = viewModel.translate(textKey),
+            item(
+                key = "notes-title",
+                contentType = "item-notes-title",
+            ) {
+                Text(
+                    text = viewModel.translate("formLabels.notes"),
+                    modifier = columnItemModifier,
                 )
             }
-        }
-    }
 
-    // TODO Animate on expand/collapse
-    items(
-        visibleCount,
-        key = {
-            val note = notes[it]
-            if (note.id > 0) note.id
-            else note.createdAt.toEpochMilliseconds()
-        },
-        contentType = { "item-note" },
-    ) {
-        val note = notes[it]
-        Column(columnItemModifier) {
-            // TODO Different styling when isSurvivor and not
-            Text(text = note.getRelativeDate())
-            Text(text = note.note)
+            staticNoteItems(
+                notes,
+                notes.size,
+                columnItemModifier.padding(8.dp),
+            )
         }
     }
 }

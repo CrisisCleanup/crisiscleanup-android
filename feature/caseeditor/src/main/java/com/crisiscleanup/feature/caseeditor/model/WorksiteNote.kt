@@ -6,6 +6,7 @@ import kotlinx.datetime.toJavaInstant
 import java.time.format.DateTimeFormatter
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 
 private val absoluteDateFormat = DateTimeFormatter.ofPattern("MMM d yyyy")
 
@@ -20,6 +21,10 @@ fun WorksiteNote.getRelativeDate(): String {
     val date = createdAt
 
     val delta = Clock.System.now() - date
+    if (delta < 1.minutes) {
+        return ""
+    }
+
     if (delta < 1.hours) {
         return pluralize(delta.inWholeMinutes, "minute")
     }

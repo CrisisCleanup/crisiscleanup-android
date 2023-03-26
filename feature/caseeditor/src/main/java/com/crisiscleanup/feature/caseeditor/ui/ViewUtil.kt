@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.feature.caseeditor.R
@@ -47,6 +48,7 @@ fun EditCaseSummaryHeader(
     isEditable: Boolean,
     onEdit: () -> Unit,
     modifier: Modifier = Modifier,
+    horizontalPadding: Dp = 24.dp,
     content: @Composable (ColumnScope.() -> Unit) = {},
 ) {
     Column(modifier.fillMaxWidth()) {
@@ -80,7 +82,7 @@ fun EditCaseSummaryHeader(
         // TODO Consistent styling
         Column(
             modifier.padding(
-                horizontal = 24.dp,
+                horizontal = horizontalPadding,
                 vertical = 8.dp,
             )
         ) {

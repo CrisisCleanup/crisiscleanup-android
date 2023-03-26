@@ -4,25 +4,20 @@ import androidx.compose.runtime.*
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteNote
-import kotlinx.coroutines.flow.map
 
 
 class NotesFlagsInputData(
     worksite: Worksite,
-    val visibleNoteCount: Int = 3,
 ) : CaseDataWriter {
     private val worksiteIn = worksite.copy()
 
     val isNewWorksite = worksite.isNew
 
-    val notes = mutableStateListOf<WorksiteNote>().also { list ->
-        worksite.notes?.let { list.addAll(it) }
-    }
+    val notes = mutableStateListOf<WorksiteNote>().also { it.addAll(worksite.notes) }
     var isHighPriority by mutableStateOf(worksite.hasHighPriorityFlag)
     var isAssignedToOrgMember by mutableStateOf(worksite.isAssignedToOrgMember)
 
     val notesStream = snapshotFlow { notes.toList() }
-    val areNotesExpandable = notesStream.map { it.size > visibleNoteCount }
 
     private fun isChanged(worksite: Worksite): Boolean {
         return this.notes != worksite.notes ||

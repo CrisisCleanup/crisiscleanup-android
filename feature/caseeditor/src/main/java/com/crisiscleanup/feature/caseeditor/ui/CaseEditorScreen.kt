@@ -5,6 +5,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -17,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackCancel
+import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseEditorUiState
 import com.crisiscleanup.feature.caseeditor.CaseEditorViewModel
 import com.crisiscleanup.core.common.R as commonR
@@ -129,7 +132,15 @@ private fun BoxScope.CaseSummary(
     val isLoadingWorksite by viewModel.isLoading.collectAsStateWithLifecycle()
     val isEditable = worksiteData.isEditable
 
-    Column(modifier.matchParentSize()) {
+    val closeKeyboard = rememberCloseKeyboard(viewModel)
+    val scrollState = rememberScrollState()
+    // TODO Convert to LazyColumn and pass scope into children for lazy views as well
+    Column(
+        modifier
+            .scrollFlingListener(closeKeyboard)
+            .verticalScroll(scrollState)
+            .matchParentSize()
+    ) {
         Text(
             worksiteData.incident.name,
             // TODO Consistent spacing between all (forms) elements
@@ -159,10 +170,13 @@ private fun BoxScope.CaseSummary(
             )
         }
 
+        val translate = remember(viewModel) { { s: String -> viewModel.translate(s) } }
         NotesFlagsSummaryView(
             worksite,
             isEditable,
             onEdit = editNotesFlags,
+            collapsedNotesVisibleCount = viewModel.visibleNoteCount,
+            translate = translate,
         )
 
         if (worksite.isNew) {

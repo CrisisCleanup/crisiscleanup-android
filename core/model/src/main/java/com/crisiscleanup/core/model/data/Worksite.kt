@@ -32,7 +32,7 @@ data class Worksite(
     val longitude: Double,
     val name: String,
     val networkId: Long,
-    val notes: List<WorksiteNote>? = null,
+    val notes: List<WorksiteNote> = emptyList(),
     val phone1: String,
     val phone2: String,
     val plusCode: String? = null,
@@ -137,4 +137,14 @@ data class WorksiteNote(
     val createdAt: Instant,
     val isSurvivor: Boolean,
     val note: String,
-)
+) {
+    companion object {
+        fun create(isSurvivor: Boolean = false) = WorksiteNote(
+            id = -1,
+            createdAt = Clock.System.now(),
+            isSurvivor = isSurvivor,
+            note = "",
+        )
+    }
+}
+
