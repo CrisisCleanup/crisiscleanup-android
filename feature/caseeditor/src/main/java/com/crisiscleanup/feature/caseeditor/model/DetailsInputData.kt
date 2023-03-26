@@ -1,9 +1,7 @@
 package com.crisiscleanup.feature.caseeditor.model
 
 import androidx.compose.runtime.snapshots.SnapshotStateMap
-import com.crisiscleanup.core.model.data.IncidentFormField
 import com.crisiscleanup.core.model.data.Worksite
-import com.crisiscleanup.core.network.model.DynamicValue
 
 class DetailsInputData(
     worksite: Worksite,
@@ -38,16 +36,3 @@ class DetailsInputData(
         return null
     }
 }
-
-class FieldState(
-    val node: FormFieldNode,
-    val field: IncidentFormField = node.formField,
-) {
-    val listItemContentType = "item-${field.htmlType}"
-}
-
-data class FieldDynamicValue(
-    val dynamicValue: DynamicValue = DynamicValue(""),
-    val isGlass: Boolean = false,
-    val isGlassBroken: Boolean = false,
-)

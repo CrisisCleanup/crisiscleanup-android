@@ -87,6 +87,8 @@ private fun DetailsView(
     // TODO How to contain mutations to affected fields/items and not recompose entire (visible) list on changes? If it is possible in a maintainable way.
     val fieldValues = remember { inputData.snapshotMap }
 
+    val breakGlassHint = remember(viewModel) { { viewModel.translate("actions.edit") } }
+
     val closeKeyboard = rememberCloseKeyboard(viewModel)
     val lazyListState = rememberLazyListState()
     LazyColumn(
@@ -98,6 +100,7 @@ private fun DetailsView(
             key = { it },
             contentType = { fieldMap[it]!!.listItemContentType },
         ) {
+            // TODO There may be a label/placeholder on the field. Use by priority.
             val label = viewModel.translate(it)
             val fieldState = fieldMap[it]!!
             DynamicFormListItem(
@@ -105,7 +108,11 @@ private fun DetailsView(
                 label,
                 fieldState.field.htmlType,
                 fieldValues[it]!!,
-                columnItemModifier
+                columnItemModifier,
+                breakGlassHint(),
+                fieldState.field.help,
+                // TODO Alert dialog show help
+                {},
             ) { value: FieldDynamicValue ->
                 fieldValues[it] = value
             }
