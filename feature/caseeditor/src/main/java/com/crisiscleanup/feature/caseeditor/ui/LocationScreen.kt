@@ -39,6 +39,8 @@ import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.maps.android.compose.*
 
+private const val ScreenTitleTranslateKey = "formLabels.location"
+
 @Composable
 private fun AddressSummaryInColumn(
     lines: Collection<String>,
@@ -60,12 +62,14 @@ internal fun LocationSummaryView(
     isEditable: Boolean,
     modifier: Modifier = Modifier,
     onEdit: () -> Unit = {},
+    translate: (String) -> String = { s -> s },
 ) {
     EditCaseSummaryHeader(
-        R.string.location,
+        0,
         isEditable,
         onEdit,
         modifier,
+        header = translate(ScreenTitleTranslateKey),
     ) {
         worksite.run {
             val addressSummaryLines = summarizeAddress(address, postalCode, county, city, state)
@@ -127,7 +131,7 @@ private fun EditCaseLocationView(
         // TODO This seems to be recomposing when map is moved.
         //      Is it possible to not recompose due to surrounding views?
         TopAppBarBackCancel(
-            titleResId = R.string.location,
+            title = viewModel.translate(ScreenTitleTranslateKey),
             onBack = onNavigateBack,
             onCancel = onNavigateCancel,
         )

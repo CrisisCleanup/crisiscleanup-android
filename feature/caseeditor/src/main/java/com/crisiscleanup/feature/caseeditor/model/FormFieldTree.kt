@@ -58,6 +58,16 @@ data class FormFieldNode(
     }
 }
 
+fun FormFieldNode.flatten(): FormFieldNode {
+    // TODO Flatten more than 1 level deep
+    val flatChildren = children.fold(mutableListOf<FormFieldNode>()) { acc, node ->
+        acc.add(node)
+        acc.addAll(node.children)
+        acc
+    }
+    return copy(children = flatChildren)
+}
+
 internal val EmptyIncidentFormField = IncidentFormField(
     "",
     "",
@@ -65,13 +75,13 @@ internal val EmptyIncidentFormField = IncidentFormField(
     "",
     "",
     "",
-    false,
     null,
     emptyMap(),
     false,
     "",
     isRequired = false,
     isReadOnly = false,
+    isReadOnlyBreakGlass = false,
     labelOrder = 0,
     listOrder = 0,
     isInvalidated = false,

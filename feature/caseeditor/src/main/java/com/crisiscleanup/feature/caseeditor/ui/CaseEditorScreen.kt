@@ -148,18 +148,22 @@ private fun BoxScope.CaseSummary(
             style = MaterialTheme.typography.headlineMedium,
         )
 
+        val translate = remember(viewModel) { { s: String -> viewModel.translate(s) } }
+
         val worksite by viewModel.editingWorksite.collectAsStateWithLifecycle()
         if (viewModel.isCreateWorksite) {
             LocationSummaryView(
                 worksite,
                 isEditable,
                 onEdit = editLocation,
+                translate = translate,
             )
         }
         PropertySummaryView(
             worksite,
             isEditable,
             onEdit = editPropertyData,
+            translate = translate,
         )
 
         if (!viewModel.isCreateWorksite) {
@@ -167,10 +171,10 @@ private fun BoxScope.CaseSummary(
                 worksite,
                 isEditable,
                 onEdit = editLocation,
+                translate = translate,
             )
         }
 
-        val translate = remember(viewModel) { { s: String -> viewModel.translate(s) } }
         NotesFlagsSummaryView(
             worksite,
             isEditable,
@@ -184,6 +188,7 @@ private fun BoxScope.CaseSummary(
                 worksite,
                 isEditable,
                 onEdit = editDetails,
+                translate = translate,
             )
         }
     }

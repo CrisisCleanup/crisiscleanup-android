@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,6 +26,8 @@ import com.crisiscleanup.feature.caseeditor.EditCaseNotesFlagsViewModel
 import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.model.getRelativeDate
 import java.lang.Integer.min
+
+private val ScreenTitleResId = R.string.notes_flags
 
 @Composable
 private fun NoteView(
@@ -75,11 +78,11 @@ internal fun NotesFlagsSummaryView(
     collapsedNotesVisibleCount: Int = 3,
 ) {
     EditCaseSummaryHeader(
-        R.string.notes_flags,
+        ScreenTitleResId,
         isEditable,
         onEdit,
         modifier,
-        0.dp
+        horizontalPadding = 0.dp,
     ) {
         val paddingStart = 16.dp
         val paddingEnd = 16.dp
@@ -171,7 +174,7 @@ internal fun EditCaseNotesFlagsRoute(
     }
     Column {
         TopAppBarBackCancel(
-            titleResId = R.string.notes_flags,
+            titleResId = ScreenTitleResId,
             onBack = onNavigateBack,
             onCancel = onNavigateCancel,
         )
@@ -234,7 +237,11 @@ private fun FlagsInputNotesList(
     val notes by inputData.notesStream.collectAsStateWithLifecycle(emptyList())
 
     val closeKeyboard = rememberCloseKeyboard(viewModel)
-    LazyColumn(Modifier.scrollFlingListener(closeKeyboard)) {
+    val lazyListState = rememberLazyListState()
+    LazyColumn(
+        Modifier.scrollFlingListener(closeKeyboard),
+        state = lazyListState,
+    ) {
         item(
             key = "high-priority",
             contentType = "item-checkbox",

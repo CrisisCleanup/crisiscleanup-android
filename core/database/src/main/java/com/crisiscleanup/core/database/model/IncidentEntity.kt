@@ -150,7 +150,7 @@ fun IncidentFormFieldEntity.asExternalModel(): IncidentFormField {
         help = help ?: "",
         placeholder = placeholder ?: "",
         validation = validation ?: "",
-        readOnlyBreakGlass = readOnlyBreakGlass,
+        isReadOnlyBreakGlass = readOnlyBreakGlass,
         valuesDefault = formValuesDefault,
         values = formValues,
         isCheckboxDefaultTrue = isCheckboxDefaultTrue ?: false,

@@ -9,15 +9,12 @@
 
     <string name="edit_section">Edit %s</string>
 
-    <string name="property_information">Property information</string>
-
     <string name="stop_suggesting_existing_cases">Stop showing existing cases</string>
     <string name="name_is_required">Enter a name for the resident</string>
     <string name="phone_is_required">Enter a phone number</string>
     <string name="invalid_email">Enter a valid email address</string>
     <string name="invalid_auto_frequency">Select an auto contact frequency</string>
 
-    <string name="location">Location</string>
     <string name="location_address_search">Location/address search</string>
     <string name="use_my_location">Use my location</string>
     <string name="center_on_location">Center on location</string>
@@ -45,6 +42,4 @@
     <string name="notes_flags">Notes &amp; flags</string>
     <string name="note">Note</string>
     <string name="add_note">Add note</string>
-
-    <string name="details">Details</string>
 </resources>

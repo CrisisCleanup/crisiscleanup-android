@@ -34,18 +34,22 @@ import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.model.ExistingCaseLocation
 import com.crisiscleanup.feature.caseeditor.util.filterNotBlankTrim
 
+private const val ScreenTitleTranslateKey = "caseForm.property_information"
+
 @Composable
 internal fun PropertySummaryView(
     worksite: Worksite,
     isEditable: Boolean,
     modifier: Modifier = Modifier,
     onEdit: () -> Unit = {},
+    translate: (String) -> String = { s -> s },
 ) {
     EditCaseSummaryHeader(
-        R.string.property_information,
+        0,
         isEditable,
         onEdit,
         modifier,
+        translate(ScreenTitleTranslateKey),
     ) {
         val texts = listOf(
             worksite.name,
@@ -105,7 +109,7 @@ private fun EditCasePropertyView(
     }
     Column {
         TopAppBarBackCancel(
-            titleResId = R.string.property_information,
+            title = viewModel.translate(ScreenTitleTranslateKey),
             onBack = onNavigateBack,
             onCancel = onNavigateCancel,
         )

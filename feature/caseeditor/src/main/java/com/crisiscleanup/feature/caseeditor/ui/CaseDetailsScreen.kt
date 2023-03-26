@@ -2,16 +2,21 @@ package com.crisiscleanup.feature.caseeditor.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackCancel
 import com.crisiscleanup.core.model.data.Worksite
+import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.EditCaseDetailsViewModel
-import com.crisiscleanup.feature.caseeditor.R
+import com.crisiscleanup.feature.caseeditor.model.FieldDynamicValue
+
+private const val ScreenTitleTranslateKey = "property_info"
 
 @Composable
 internal fun DetailsSummaryView(
@@ -19,13 +24,14 @@ internal fun DetailsSummaryView(
     isEditable: Boolean,
     modifier: Modifier = Modifier,
     onEdit: () -> Unit = {},
+    translate: (String) -> String = { s -> s },
 ) {
     EditCaseSummaryHeader(
-        // TODO Translator?
-        R.string.details,
+        0,
         isEditable,
         onEdit,
         modifier,
+        header = translate(ScreenTitleTranslateKey),
     ) {
         worksite.run {
             // TODO
@@ -63,7 +69,7 @@ internal fun EditCaseDetailsRoute(
         // TODO This seems to be recomposing when map is moved.
         //      Is it possible to not recompose due to surrounding views?
         TopAppBarBackCancel(
-            titleResId = R.string.details,
+            title = viewModel.translate(ScreenTitleTranslateKey),
             onBack = onNavigateBack,
             onCancel = onNavigateCancel,
         )
@@ -73,6 +79,36 @@ internal fun EditCaseDetailsRoute(
 }
 
 @Composable
-private fun DetailsView() {
-    Text("Details")
+private fun DetailsView(
+    viewModel: EditCaseDetailsViewModel = hiltViewModel(),
+) {
+    val inputData = viewModel.detailsInputData
+    val fieldMap = inputData.fieldMap
+    // TODO How to contain mutations to affected fields/items and not recompose entire (visible) list on changes? If it is possible in a maintainable way.
+    val fieldValues = remember { inputData.snapshotMap }
+
+    val closeKeyboard = rememberCloseKeyboard(viewModel)
+    val lazyListState = rememberLazyListState()
+    LazyColumn(
+        Modifier.scrollFlingListener(closeKeyboard),
+        state = lazyListState,
+    ) {
+        items(
+            inputData.formKeys,
+            key = { it },
+            contentType = { fieldMap[it]!!.listItemContentType },
+        ) {
+            val label = viewModel.translate(it)
+            val fieldState = fieldMap[it]!!
+            DynamicFormListItem(
+                it,
+                label,
+                fieldState.field.htmlType,
+                fieldValues[it]!!,
+                columnItemModifier
+            ) { value: FieldDynamicValue ->
+                fieldValues[it] = value
+            }
+        }
+    }
 }

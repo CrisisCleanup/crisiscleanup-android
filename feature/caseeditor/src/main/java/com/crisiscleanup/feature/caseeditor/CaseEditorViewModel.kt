@@ -17,6 +17,7 @@ import com.crisiscleanup.core.mapmarker.util.toLatLng
 import com.crisiscleanup.core.model.data.*
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import com.crisiscleanup.feature.caseeditor.model.FormFieldNode
+import com.crisiscleanup.feature.caseeditor.model.flatten
 import com.crisiscleanup.feature.caseeditor.navigation.CaseEditorArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -171,6 +172,7 @@ class CaseEditorViewModel @Inject constructor(
                 this.incident = incident
                 if (formFields.isEmpty()) {
                     formFields = FormFieldNode.buildTree(incident.formFields, languageRepository)
+                        .map(FormFieldNode::flatten)
                     formFieldTranslationLookup =
                         incident.formFields
                             .filter { it.fieldKey.isNotBlank() && it.label.isNotBlank() }

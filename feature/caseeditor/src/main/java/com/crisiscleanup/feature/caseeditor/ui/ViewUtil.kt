@@ -48,12 +48,12 @@ fun EditCaseSummaryHeader(
     isEditable: Boolean,
     onEdit: () -> Unit,
     modifier: Modifier = Modifier,
+    header: String = "",
     horizontalPadding: Dp = 24.dp,
     content: @Composable (ColumnScope.() -> Unit) = {},
 ) {
     Column(modifier.fillMaxWidth()) {
         val style = MaterialTheme.typography.headlineSmall
-        val headerText = stringResource(headerResId)
         Row(
             modifier
                 .clickable(
@@ -64,6 +64,8 @@ fun EditCaseSummaryHeader(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            val headerText = if (headerResId == 0) header
+            else stringResource(headerResId)
             Text(
                 text = headerText,
                 Modifier.weight(1f),

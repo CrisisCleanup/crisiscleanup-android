@@ -36,7 +36,6 @@ class EditCaseDetailsViewModel @Inject constructor(
         detailsInputData = DetailsInputData(
             worksite,
             groupNode,
-            resourceProvider,
             setOf("cross_street", "email"),
         )
     }
