@@ -21,6 +21,7 @@ fun CrisisCleanupTextCheckbox(
     onToggle: () -> Unit = {},
     onCheckChange: (Boolean) -> Unit = {},
     textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
+    trailingContent: (@Composable () -> Unit)? = null,
 ) {
     Row(
         Modifier
@@ -37,5 +38,6 @@ fun CrisisCleanupTextCheckbox(
             textValue,
             style = textStyle,
         )
+        trailingContent?.let { it() }
     }
 }

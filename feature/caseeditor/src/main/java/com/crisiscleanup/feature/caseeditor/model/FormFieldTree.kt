@@ -44,13 +44,15 @@ data class FormFieldNode(
                     groupedByParent[fieldKey]?.map { buildNode(it.fieldKey) } ?: emptyList()
                 val formField = lookup[fieldKey]!!
                 val options = formField.values.ifEmpty {
-                    formField.valuesDefault?.entries?.associate {
-                        val phraseKey = it.value ?: ""
-                        val value = keyTranslator.translate(phraseKey) ?: phraseKey
-                        it.key to value
-                    } ?: emptyMap()
+                    formField.valuesDefault?.entries?.associate { it.key to (it.value ?: "") }
+                        ?: emptyMap()
                 }
-                return FormFieldNode(formField, children, options)
+                val translatedOptions = options.entries.associate {
+                    val phraseKey = it.value
+                    val value = keyTranslator.translate(phraseKey) ?: phraseKey
+                    it.key to value
+                }
+                return FormFieldNode(formField, children, translatedOptions)
             }
 
             return buildNode("").children

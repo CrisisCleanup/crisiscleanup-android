@@ -32,7 +32,7 @@ fun Modifier.scrollFlingListener(
         object : NestedScrollConnection {
             override suspend fun onPreFling(available: Velocity): Velocity {
                 listenAction()
-                return available
+                return super.onPreFling(available)
             }
         }
     }

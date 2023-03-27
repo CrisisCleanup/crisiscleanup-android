@@ -3,18 +3,21 @@ package com.crisiscleanup.feature.caseeditor.model
 import com.crisiscleanup.core.model.data.IncidentFormField
 import com.crisiscleanup.core.network.model.DynamicValue
 
-class FieldState(
-    val node: FormFieldNode,
-    val field: IncidentFormField = node.formField,
+data class FieldDynamicValue(
+    val field: IncidentFormField,
+    val selectOptions: Map<String, String>,
+    val dynamicValue: DynamicValue = DynamicValue(""),
+    val breakGlass: FieldEditProperties = FieldEditProperties(field.isReadOnlyBreakGlass),
 ) {
-    val listItemContentType = "item-${field.htmlType}"
+    val key = field.fieldKey
 }
 
-data class FieldDynamicValue(
-    val dynamicValue: DynamicValue = DynamicValue(""),
-    val isGlass: Boolean = false,
+data class FieldEditProperties(
+    val isGlass: Boolean,
     val isGlassBroken: Boolean = false,
 ) {
+    val isNotEditable = isGlass && !isGlassBroken
+
     private var brokenGlassFocus = true
 
     fun takeBrokenGlassFocus(): Boolean {

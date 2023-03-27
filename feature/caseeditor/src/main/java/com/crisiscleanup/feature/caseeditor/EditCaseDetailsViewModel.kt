@@ -41,6 +41,11 @@ class EditCaseDetailsViewModel @Inject constructor(
     }
 
     private fun validateSaveWorksite(): Boolean {
+        val updatedWorksite = detailsInputData.updateCase()
+        if (updatedWorksite != null) {
+            worksiteProvider.editableWorksite.value = updatedWorksite
+            return true
+        }
         return false
     }
 

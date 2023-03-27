@@ -1,15 +1,16 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
+import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
@@ -37,9 +38,23 @@ internal val columnItemModifier = Modifier
     .padding(16.dp, 8.dp)
 
 @Composable
+fun keyboardAsState(): State<Boolean> {
+    val isImeVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+    return rememberUpdatedState(isImeVisible)
+}
+
+@Composable
 fun rememberCloseKeyboard(rememberKey: Any): () -> Unit {
+    val isKeyboardOpen by keyboardAsState()
     val focusManager = LocalFocusManager.current
-    return remember(rememberKey) { { focusManager.clearFocus(true) } }
+    return remember(rememberKey) {
+        {
+            Log.w("scroll-close-keyboard", "Close keyboard $isKeyboardOpen")
+            if (isKeyboardOpen) {
+                focusManager.clearFocus(true)
+            }
+        }
+    }
 }
 
 @Composable

@@ -17,4 +17,6 @@ data class DynamicValue(
     val valueString: String,
     val isBoolean: Boolean = false,
     val valueBoolean: Boolean = false,
-)
+) {
+    val isBooleanTrue = isBoolean && valueBoolean
+}

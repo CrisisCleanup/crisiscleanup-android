@@ -12,6 +12,7 @@ class NetworkFormFieldTest {
             Pair("/incidentFormFields1.json", 61),
             Pair("/incidentFormFields2.json", 89),
             Pair("/incidentFormFields3.json", 70),
+            Pair("/incidentFormFields4.json", 59),
         )
         testCases.onEach {
             val result = TestUtil.decodeResource<IncidentFormField>(it.first)
