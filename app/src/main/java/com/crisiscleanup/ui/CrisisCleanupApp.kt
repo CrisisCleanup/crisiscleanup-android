@@ -241,7 +241,11 @@ private fun NavigableContent(
         topBar = {
             // TODO Profile recompose and optimize if necessary
             val showTopBar = !notDefaultTopBar
-            if (showTopBar) {
+            AnimatedVisibility(
+                visible = showTopBar,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
                 val titleResId = appState.currentTopLevelDestination?.titleTextId ?: 0
                 val title = if (titleResId != 0) stringResource(titleResId) else headerTitle
                 val onOpenIncidents = if (appState.isCasesRoute) openIncidentsSelect else null
@@ -261,13 +265,23 @@ private fun NavigableContent(
             }
         },
         bottomBar = {
-            if (showNavBar && appState.shouldShowBottomBar) {
+            val showBottomBar = showNavBar && appState.shouldShowBottomBar
+            AnimatedVisibility(
+                visible = showBottomBar,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
                 CrisisCleanupBottomBar(
                     destinations = appState.topLevelDestinations,
                     onNavigateToDestination = appState::navigateToTopLevelDestination,
                     currentDestination = appState.currentDestination,
                     modifier = Modifier.testTag("CrisisCleanupBottomBar")
                 )
+            }
+
+            // TODO Is it possible to adjust window insets instead of adding space?
+            if (!showNavBar) {
+                Spacer(modifier = Modifier.height(16.dp))
             }
         },
     ) { padding ->
@@ -300,8 +314,7 @@ private fun NavigableContent(
                 )
             }
 
-            // TODO: We may want to add padding or spacer when the snackbar is shown so that
-            //  content doesn't display behind it.
+            // TODO Adjust padding/space when the snackbar is shown so content doesn't display behind it.
         }
     }
 }
