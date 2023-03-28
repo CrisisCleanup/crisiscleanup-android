@@ -11,12 +11,11 @@ import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.toSize
@@ -26,6 +25,7 @@ import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.*
 import com.crisiscleanup.core.network.model.DynamicValue
+import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.model.FieldDynamicValue
 
 @Composable
@@ -93,7 +93,6 @@ internal fun DynamicFormListItem(
                 showHelp,
             )
         }
-        // TODO h5 should expand/collapse child views if children exist
         "h5",
         "h4" -> {
             val updateGroupValue = { value: FieldDynamicValue ->
@@ -194,20 +193,15 @@ private fun SingleLineTextItem(
     val rowModifier = if (hasMultipleRowItems) modifier else Modifier
     Row(
         rowModifier,
-        // TODO Alignment is off by space due to hint
         verticalAlignment = Alignment.CenterVertically,
     ) {
         val textFieldModifier = if (hasMultipleRowItems) Modifier.weight(1f)
         else modifier
 
-        // TODO Figure out why OutlinedClearableTextField won't focus with flag and needs focus code here.
-        val focusRequester = FocusRequester()
         val hasFocus = if (glassState.isGlassBroken) glassState.takeBrokenGlassFocus() else false
-        val focusModifier =
-            if (hasFocus) textFieldModifier.then(Modifier.focusRequester(focusRequester)) else textFieldModifier
 
         OutlinedClearableTextField(
-            modifier = focusModifier,
+            modifier = textFieldModifier,
             labelResId = 0,
             label = label,
             value = itemData.dynamicValue.valueString,
@@ -222,17 +216,15 @@ private fun SingleLineTextItem(
 
         if (isGlass) {
             IconButton(
-                modifier = Modifier.listRowItemStartPadding(),
+                modifier = Modifier
+                    .listRowItemStartPadding()
+                    .centerAlignTextFieldLabelOffset(),
                 onClick = onBreakGlass
             ) {
                 Icon(
                     imageVector = CrisisCleanupIcons.Edit,
                     contentDescription = breakGlassHint,
                 )
-            }
-        } else if (hasFocus) {
-            LaunchedEffect(Unit) {
-                focusRequester.requestFocus()
             }
         }
 
@@ -322,8 +314,7 @@ private fun SelectItem(
                 Spacer(modifier = Modifier.weight(1f))
                 Icon(
                     imageVector = CrisisCleanupIcons.UnfoldMore,
-                    // TODO String res "Select option for %s"
-                    contentDescription = "",
+                    contentDescription = stringResource(R.string.select_option_for_field, label),
                 )
             }
             val selectedOption = itemData.dynamicValue.valueString

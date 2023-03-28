@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackCancel
+import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseEditorUiState
 import com.crisiscleanup.feature.caseeditor.CaseEditorViewModel
@@ -40,6 +41,7 @@ internal fun CaseEditorRoute(
     BackHandler {
         if (!viewModel.saveChanges()) {
             // TODO Prompt if there are unsaved changes on back click
+            //      Validate fields where required
             onBackClick()
         }
     }
@@ -149,7 +151,7 @@ private fun BoxScope.CaseSummary(
 
     val closeKeyboard = rememberCloseKeyboard(viewModel)
     val scrollState = rememberScrollState()
-    // TODO Convert to LazyColumn and pass scope into children for lazy views as well
+    // TODO Convert to LazyColumn if input is not too complex. Pass scope to lazy children views.
     Column(
         modifier
             .scrollFlingListener(closeKeyboard)
@@ -158,8 +160,9 @@ private fun BoxScope.CaseSummary(
     ) {
         Text(
             worksiteData.incident.name,
-            // TODO Consistent spacing between all (forms) elements
-            modifier = modifier.padding(16.dp),
+            modifier = modifier
+                .listItemHorizontalPadding()
+                .padding(vertical = 24.dp),
             style = MaterialTheme.typography.headlineMedium,
         )
 
@@ -214,8 +217,6 @@ private fun BoxScope.CaseSummary(
                 onEdit = editWork,
                 translate = translate,
             )
-        } else {
-            // TODO Show view with actions for one less click
         }
 
         if (viewModel.isCreateWorksite) {
@@ -234,8 +235,6 @@ private fun BoxScope.CaseSummary(
                 onEdit = editVolunteerReport,
                 translate = translate,
             )
-        } else {
-            // TODO
         }
     }
 

@@ -42,4 +42,6 @@
     <string name="notes_flags">Notes &amp; flags</string>
     <string name="note">Note</string>
     <string name="add_note">Add note</string>
+
+    <string name="select_option_for_field">Select option for %s</string>
 </resources>

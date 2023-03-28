@@ -39,3 +39,5 @@ fun Modifier.textBoxHeight() = heightIn(min = 128.dp, max = 256.dp)
 fun Modifier.textMessagePadding() = padding(16.dp)
 
 val listItemDropdownMenuOffset = DpOffset(16.dp, 0.dp)
+
+fun Modifier.centerAlignTextFieldLabelOffset() = offset(y = 3.dp)
