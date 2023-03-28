@@ -14,10 +14,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
-import com.crisiscleanup.core.designsystem.theme.listItemHeight
-import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
-import com.crisiscleanup.core.designsystem.theme.listItemPadding
-import com.crisiscleanup.core.designsystem.theme.listItemTopPadding
+import com.crisiscleanup.core.designsystem.theme.*
 import com.crisiscleanup.feature.caseeditor.R
 
 private val errorMessageModifier = Modifier
@@ -96,7 +93,10 @@ fun EditCaseSummaryHeader(
             }
         }
 
-        val contentModifier = if (noContentPadding) modifier else modifier.listItemPadding()
+        val contentModifier =
+            if (noContentPadding) modifier else modifier
+                .listItemPadding()
+                .listItemNestedPadding()
         Column(contentModifier) {
             content()
         }

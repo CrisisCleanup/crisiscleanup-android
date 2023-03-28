@@ -252,45 +252,39 @@ private fun MultiLineTextItem(
     helpHint: String,
     showHelp: () -> Unit = {},
 ) {
-    val hasHelp = itemData.field.help.isNotBlank()
-    val helpModifier = Modifier
-        .fillMaxWidth()
-        .listItemHorizontalPadding()
-    if (hasHelp) {
-        Row(
-            helpModifier,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = label,
-            )
-            HelpAction(helpHint, showHelp)
+    Column(modifier) {
+        val hasHelp = itemData.field.help.isNotBlank()
+        if (hasHelp) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(label)
+                HelpAction(helpHint, showHelp)
+            }
         }
-    }
 
-    // TODO Next or done (if last in list). Callback to next/done action as well
-    val keyboardOptions = KeyboardOptions(
-        imeAction = ImeAction.Next,
-        keyboardType = KeyboardType.Password,
-    )
-    val focusManager = LocalFocusManager.current
-    val keyboardActions = KeyboardActions(
-        onNext = {
-            focusManager.moveFocus(FocusDirection.Down)
-        },
-        onDone = {
-        },
-    )
-    val textFieldModifier = if (hasHelp) helpModifier.listItemBottomPadding()
-    else modifier
-    OutlinedTextField(
-        itemData.dynamicValue.valueString,
-        onValueChange = onChange,
-        modifier = textFieldModifier.textBoxHeight(),
-        label = { Text(label) },
-        keyboardOptions = keyboardOptions,
-        keyboardActions = keyboardActions,
-    )
+        // TODO Next or done (if last in list). Callback to next/done action as well
+        val keyboardOptions = KeyboardOptions(
+            imeAction = ImeAction.Next,
+            keyboardType = KeyboardType.Password,
+        )
+        val focusManager = LocalFocusManager.current
+        val keyboardActions = KeyboardActions(
+            onNext = {
+                focusManager.moveFocus(FocusDirection.Down)
+            },
+            onDone = {
+            },
+        )
+        OutlinedTextField(
+            itemData.dynamicValue.valueString,
+            onValueChange = onChange,
+            modifier = Modifier
+                .fillMaxWidth()
+                .textBoxHeight(),
+            label = { Text(label) },
+            keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
+        )
+    }
 }
 
 @Composable
@@ -312,10 +306,10 @@ private fun SelectItem(
             Modifier
                 .clickable { showDropdown = true }
                 .fillMaxWidth()
-                .listItemPadding()
                 .onGloballyPositioned {
                     contentWidth = it.size.toSize()
-                },
+                }
+                .then(modifier),
         ) {
             Row(
                 Modifier.listItemHeight(),
@@ -350,7 +344,9 @@ private fun SelectItem(
             }
             DropdownMenu(
                 modifier = Modifier
-                    .width(with(LocalDensity.current) { contentWidth.width.toDp() }),
+                    .width(with(LocalDensity.current) {
+                        contentWidth.width.toDp().minus(listItemDropdownMenuOffset.x.times(2))
+                    }),
                 expanded = true,
                 onDismissRequest = { showDropdown = false },
                 offset = listItemDropdownMenuOffset,

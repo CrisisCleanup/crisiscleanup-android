@@ -83,6 +83,11 @@ internal fun NotesFlagsSummaryView(
     val notes = worksite.notes
     val isExpandable = notes.size > collapsedNotesVisibleCount
 
+    val contentModifier = if (isExpandable) modifier
+        .listItemHorizontalPadding()
+        .listItemNestedPadding()
+    else modifier
+
     EditCaseSummaryHeader(
         ScreenTitleResId,
         isEditable,
@@ -93,9 +98,7 @@ internal fun NotesFlagsSummaryView(
         if (worksite.hasHighPriorityFlag) {
             Text(
                 text = stringResource(R.string.high_priority),
-                modifier = modifier
-                    .listItemPadding()
-                    .listItemNestedPadding()
+                modifier = contentModifier
             )
         }
 
@@ -103,15 +106,16 @@ internal fun NotesFlagsSummaryView(
             var isExpanded by remember { mutableStateOf(false) }
             val toggleExpand = remember(worksite) { { isExpanded = !isExpanded } }
             Row(
-                Modifier
-                    .clickable(
-                        enabled = isExpandable,
-                        onClick = toggleExpand,
-                    )
-                    .fillMaxWidth()
-                    .listItemHeight()
-                    .listItemPadding()
-                    .listItemNestedPadding(),
+                modifier = if (isExpandable) {
+                    Modifier
+                        .clickable(onClick = toggleExpand)
+                        .fillMaxWidth()
+                        .listItemHeight()
+                        .listItemPadding()
+                        .listItemNestedPadding()
+                } else {
+                    modifier
+                },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
@@ -132,9 +136,8 @@ internal fun NotesFlagsSummaryView(
 
             val visibleCount = if (isExpanded) notes.size
             else collapsedNotesVisibleCount
-            val noteModifier = Modifier
-                .listItemHorizontalPadding()
-                .listItemNestedPadding(2)
+            val noteModifier = contentModifier
+                .listItemNestedPadding()
                 // TODO Common dimensions
                 .padding(vertical = 4.dp)
             for (i in 0 until min(notes.size, visibleCount)) {

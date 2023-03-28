@@ -37,6 +37,12 @@ open class FormFieldsInputData(
     }
 
     val groupExpandState = mutableStateMapOf<String, Boolean>()
+        .also { map ->
+            formFieldData.filter { it.childrenCount > 0 && it.dynamicValue.isBooleanTrue }
+                .forEach {
+                    map[it.key] = true
+                }
+        }
 
     override fun updateCase() = updateCase(worksiteIn)
 

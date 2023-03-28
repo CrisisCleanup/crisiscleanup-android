@@ -7,6 +7,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
+import com.crisiscleanup.core.designsystem.theme.listItemNestedPadding
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
 import com.crisiscleanup.feature.caseeditor.model.FieldDynamicValue
@@ -62,11 +63,14 @@ internal fun FormDataView(
                     }
                 }
                 val fieldShowHelp = remember(viewModel) { { showHelp(state) } }
+                val modifier =
+                    if (state.nestLevel > 0) listItemModifier.listItemNestedPadding(state.nestLevel * 2)
+                    else listItemModifier
                 DynamicFormListItem(
                     state,
                     label,
                     groupExpandState,
-                    listItemModifier,
+                    modifier,
                     breakGlassHint,
                     helpHint,
                     fieldShowHelp,
