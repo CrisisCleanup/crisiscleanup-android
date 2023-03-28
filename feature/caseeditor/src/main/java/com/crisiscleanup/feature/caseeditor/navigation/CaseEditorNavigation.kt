@@ -6,18 +6,16 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.*
 import androidx.navigation.compose.composable
 import com.crisiscleanup.core.appnav.RouteConstant.caseEditDetailsRoute
+import com.crisiscleanup.core.appnav.RouteConstant.caseEditHazardsRoute
 import com.crisiscleanup.core.appnav.RouteConstant.caseEditLocationRoute
 import com.crisiscleanup.core.appnav.RouteConstant.caseEditNotesFlagsRoute
 import com.crisiscleanup.core.appnav.RouteConstant.caseEditPropertyRoute
+import com.crisiscleanup.core.appnav.RouteConstant.caseEditVolunteerReportRoute
+import com.crisiscleanup.core.appnav.RouteConstant.caseEditWorkRoute
 import com.crisiscleanup.core.appnav.RouteConstant.caseEditorRoute
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
 import com.crisiscleanup.feature.caseeditor.ui.*
-import com.crisiscleanup.feature.caseeditor.ui.CaseEditorRoute
-import com.crisiscleanup.feature.caseeditor.ui.EditCaseDetailsRoute
-import com.crisiscleanup.feature.caseeditor.ui.EditCaseLocationRoute
-import com.crisiscleanup.feature.caseeditor.ui.EditCaseNotesFlagsRoute
-import com.crisiscleanup.feature.caseeditor.ui.EditCasePropertyRoute
 
 @VisibleForTesting
 internal const val incidentIdArg = "incidentId"
@@ -61,12 +59,21 @@ fun NavGraphBuilder.caseEditorScreen(
             remember(navController) { { navController.navigateToCaseEditNotesFlags() } }
         val onEditDetails =
             remember(navController) { { navController.navigateToCaseEditDetails() } }
+        val onEditWork =
+            remember(navController) { { navController.navigateToCaseEditWork() } }
+        val onEditHazards =
+            remember(navController) { { navController.navigateToCaseEditHazards() } }
+        val onEditVolunteerReport =
+            remember(navController) { { navController.navigateToCaseEditVolunteerReport() } }
         CaseEditorRoute(
             onBackClick = onBackClick,
             onEditPropertyData = onEditPropertyData,
             onEditLocation = onEditLocation,
             onEditNotesFlags = onEditNotesFlags,
             onEditDetails = onEditDetails,
+            onEditWork = onEditWork,
+            onEditHazards = onEditHazards,
+            onEditVolunteerReport = onEditVolunteerReport,
         )
     }
 }
@@ -75,6 +82,9 @@ fun NavController.navigateToCaseEditProperty() = this.navigate(caseEditPropertyR
 fun NavController.navigateToCaseEditLocation() = this.navigate(caseEditLocationRoute)
 fun NavController.navigateToCaseEditNotesFlags() = this.navigate(caseEditNotesFlagsRoute)
 fun NavController.navigateToCaseEditDetails() = this.navigate(caseEditDetailsRoute)
+fun NavController.navigateToCaseEditWork() = this.navigate(caseEditWorkRoute)
+fun NavController.navigateToCaseEditHazards() = this.navigate(caseEditHazardsRoute)
+fun NavController.navigateToCaseEditVolunteerReport() = this.navigate(caseEditVolunteerReportRoute)
 
 fun NavController.rerouteToCaseEdit(ids: ExistingWorksiteIdentifier) {
     popBackStack()
@@ -137,5 +147,29 @@ fun NavGraphBuilder.caseEditDetailsScreen(
 ) {
     composable(caseEditDetailsRoute) {
         EditCaseDetailsRoute(onBackClick = onBackClick)
+    }
+}
+
+fun NavGraphBuilder.caseEditWorkScreen(
+    onBackClick: () -> Unit,
+) {
+    composable(caseEditWorkRoute) {
+        EditCaseWorkRoute(onBackClick = onBackClick)
+    }
+}
+
+fun NavGraphBuilder.caseEditHazardsScreen(
+    onBackClick: () -> Unit,
+) {
+    composable(caseEditHazardsRoute) {
+        EditCaseHazardsRoute(onBackClick = onBackClick)
+    }
+}
+
+fun NavGraphBuilder.caseEditVolunteerReportScreen(
+    onBackClick: () -> Unit,
+) {
+    composable(caseEditVolunteerReportRoute) {
+        EditCaseVolunteerReportRoute(onBackClick = onBackClick)
     }
 }

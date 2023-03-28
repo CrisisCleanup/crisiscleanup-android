@@ -1,6 +1,5 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
@@ -24,7 +23,6 @@ import androidx.compose.ui.window.PopupProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
-import com.crisiscleanup.core.designsystem.component.TopAppBarBackCancel
 import com.crisiscleanup.core.model.data.AutoContactFrequency
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.ui.scrollFlingListener
@@ -87,32 +85,11 @@ private fun EditCasePropertyView(
     viewModel: EditCasePropertyViewModel = hiltViewModel(),
     onBackClick: () -> Unit = {},
 ) {
-    BackHandler {
-        if (viewModel.onSystemBack()) {
-            onBackClick()
-        }
-    }
-
-    val onNavigateBack = remember(viewModel) {
-        {
-            if (viewModel.onNavigateBack()) {
-                onBackClick()
-            }
-        }
-    }
-    val onNavigateCancel = remember(viewModel) {
-        {
-            if (viewModel.onNavigateCancel()) {
-                onBackClick()
-            }
-        }
-    }
-    Column {
-        TopAppBarBackCancel(
-            title = viewModel.translate(ScreenTitleTranslateKey),
-            onBack = onNavigateBack,
-            onCancel = onNavigateCancel,
-        )
+    EditCaseBackCancelView(
+        viewModel,
+        onBackClick,
+        viewModel.translate(ScreenTitleTranslateKey)
+    ) {
 
         val closeKeyboard = rememberCloseKeyboard(viewModel)
         val scrollState = rememberScrollState()

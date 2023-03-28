@@ -362,11 +362,7 @@ class EditCaseLocationViewModel @Inject constructor(
         return validateSaveWorksite()
     }
 
-    fun onSystemBack() = onBackValidateSaveWorksite()
+    override fun onSystemBack() = onBackValidateSaveWorksite()
 
-    fun onNavigateBack() = onBackValidateSaveWorksite()
-
-    fun onNavigateCancel(): Boolean {
-        return true
-    }
+    override fun onNavigateBack() = onBackValidateSaveWorksite()
 }

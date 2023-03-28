@@ -1,28 +1,19 @@
 package com.crisiscleanup.feature.caseeditor
 
-import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
-import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.Default
-import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
-import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.feature.caseeditor.model.DetailsInputData
 import com.crisiscleanup.feature.caseeditor.model.EmptyFormFieldNode
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
 
 @HiltViewModel
 class EditCaseDetailsViewModel @Inject constructor(
     worksiteProvider: EditableWorksiteProvider,
-    resourceProvider: AndroidResourceProvider,
     translator: KeyTranslator,
     @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
-    @Dispatcher(Default) private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
-    @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : EditCaseBaseViewModel(worksiteProvider, translator, logger) {
     val detailsInputData: DetailsInputData
 
@@ -49,11 +40,7 @@ class EditCaseDetailsViewModel @Inject constructor(
         return false
     }
 
-    fun onSystemBack() = validateSaveWorksite()
+    override fun onSystemBack() = validateSaveWorksite()
 
-    fun onNavigateBack() = validateSaveWorksite()
-
-    fun onNavigateCancel(): Boolean {
-        return true
-    }
+    override fun onNavigateBack() = validateSaveWorksite()
 }

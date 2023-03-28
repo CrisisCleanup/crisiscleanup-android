@@ -1,13 +1,15 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.*
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -16,7 +18,6 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
-import com.crisiscleanup.core.designsystem.component.TopAppBarBackCancel
 import com.crisiscleanup.core.designsystem.component.fabEdgeSpace
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.model.data.Worksite
@@ -146,39 +147,16 @@ internal fun NotesFlagsSummaryView(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun EditCaseNotesFlagsRoute(
     viewModel: EditCaseNotesFlagsViewModel = hiltViewModel(),
     onBackClick: () -> Unit = {},
 ) {
-    BackHandler {
-        if (viewModel.onSystemBack()) {
-            onBackClick()
-        }
-    }
-
-    val onNavigateBack = remember(viewModel) {
-        {
-            if (viewModel.onNavigateBack()) {
-                onBackClick()
-            }
-        }
-    }
-    val onNavigateCancel = remember(viewModel) {
-        {
-            if (viewModel.onNavigateCancel()) {
-                onBackClick()
-            }
-        }
-    }
-    Column {
-        TopAppBarBackCancel(
-            titleResId = ScreenTitleResId,
-            onBack = onNavigateBack,
-            onCancel = onNavigateCancel,
-        )
-
+    EditCaseBackCancelView(
+        viewModel,
+        onBackClick,
+        stringResource(ScreenTitleResId),
+    ) {
         NotesFlagsView()
     }
 }

@@ -1,12 +1,12 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
-import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -101,41 +101,16 @@ internal fun EditCaseLocationRoute(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EditCaseLocationView(
     viewModel: EditCaseLocationViewModel = hiltViewModel(),
     onBackClick: () -> Unit = {},
 ) {
-    BackHandler {
-        if (viewModel.onSystemBack()) {
-            onBackClick()
-        }
-    }
-
-    val onNavigateBack = remember(viewModel) {
-        {
-            if (viewModel.onNavigateBack()) {
-                onBackClick()
-            }
-        }
-    }
-    val onNavigateCancel = remember(viewModel) {
-        {
-            if (viewModel.onNavigateCancel()) {
-                onBackClick()
-            }
-        }
-    }
-    Column {
-        // TODO This seems to be recomposing when map is moved.
-        //      Is it possible to not recompose due to surrounding views?
-        TopAppBarBackCancel(
-            title = viewModel.translate(ScreenTitleTranslateKey),
-            onBack = onNavigateBack,
-            onCancel = onNavigateCancel,
-        )
-        // TODO Remove the gap between the top bar above and location view below
+    EditCaseBackCancelView(
+        viewModel,
+        onBackClick,
+        viewModel.translate(ScreenTitleTranslateKey)
+    ) {
         LocationView()
     }
 

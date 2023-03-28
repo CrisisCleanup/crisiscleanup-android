@@ -4,28 +4,34 @@ import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
-import com.crisiscleanup.feature.caseeditor.model.NotesFlagsInputData
+import com.crisiscleanup.feature.caseeditor.model.EmptyFormFieldNode
+import com.crisiscleanup.feature.caseeditor.model.WorkInputData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-class EditCaseNotesFlagsViewModel @Inject constructor(
+class EditCaseWorkViewModel @Inject constructor(
     worksiteProvider: EditableWorksiteProvider,
     translator: KeyTranslator,
     @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
 ) : EditCaseBaseViewModel(worksiteProvider, translator, logger) {
-    val notesFlagsInputData: NotesFlagsInputData
+    val workInputData: WorkInputData
 
     init {
+        val groupNode =
+            worksiteProvider.formFields.firstOrNull { it.fieldKey == "work_info" }
+                ?: EmptyFormFieldNode
+
         val worksite = worksiteProvider.editableWorksite.value
 
-        notesFlagsInputData = NotesFlagsInputData(
+        workInputData = WorkInputData(
             worksite,
+            groupNode,
         )
     }
 
     private fun validateSaveWorksite(): Boolean {
-        val updatedWorksite = notesFlagsInputData.updateCase()
+        val updatedWorksite = workInputData.updateCase()
         if (updatedWorksite != null) {
             worksiteProvider.editableWorksite.value = updatedWorksite
             return true

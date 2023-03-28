@@ -8,6 +8,7 @@ data class FormFieldNode(
     val children: List<FormFieldNode>,
     val options: Map<String, String>,
     val fieldKey: String = formField.fieldKey,
+    val parentKey: String = formField.parentKey,
     val isRootNode: Boolean = fieldKey.isEmpty(),
 ) {
     companion object {

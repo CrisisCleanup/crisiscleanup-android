@@ -96,11 +96,7 @@ class EditCasePropertyViewModel @Inject constructor(
         }
     }
 
-    fun onSystemBack() = validateSaveWorksite()
+    override fun onSystemBack() = validateSaveWorksite()
 
-    fun onNavigateBack() = validateSaveWorksite()
-
-    fun onNavigateCancel(): Boolean {
-        return true
-    }
+    override fun onNavigateBack() = validateSaveWorksite()
 }

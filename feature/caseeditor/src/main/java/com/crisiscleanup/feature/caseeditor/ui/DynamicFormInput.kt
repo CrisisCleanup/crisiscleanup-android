@@ -99,6 +99,7 @@ internal fun DynamicFormListItem(
                 showHelp,
             )
         }
+        // TODO h5 should expand/collapse child views if children exist
         "h5",
         "h4" -> {
             Text(
@@ -167,12 +168,15 @@ private fun SingleLineTextItem(
 ) {
     val glassState = itemData.breakGlass
     val isGlass = glassState.isNotEditable
-    val rowModifier = if (isGlass) modifier else Modifier
+    val hasHelp = itemData.field.help.isNotBlank()
+    val hasMultipleRowItems = isGlass || hasHelp
+    val rowModifier = if (hasMultipleRowItems) modifier else Modifier
     Row(
         rowModifier,
+        // TODO Alignment is off by space due to hint
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        val textFieldModifier = if (isGlass) Modifier.weight(1f)
+        val textFieldModifier = if (hasMultipleRowItems) Modifier.weight(1f)
         else modifier
 
         // TODO Figure out why OutlinedClearableTextField won't focus with flag and needs focus code here.
@@ -212,7 +216,7 @@ private fun SingleLineTextItem(
             }
         }
 
-        if (itemData.field.help.isNotBlank()) {
+        if (hasHelp) {
             HelpAction(helpHint, showHelp)
         }
     }

@@ -4,12 +4,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.crisiscleanup.core.model.data.Worksite
-import com.crisiscleanup.feature.caseeditor.EditCaseDetailsViewModel
+import com.crisiscleanup.feature.caseeditor.EditCaseHazardsViewModel
 
-private const val ScreenTitleTranslateKey = "property_info"
+private const val ScreenTitleTranslateKey = "hazards_info"
 
 @Composable
-internal fun DetailsSummaryView(
+internal fun HazardsSummaryView(
     worksite: Worksite,
     isEditable: Boolean,
     modifier: Modifier = Modifier,
@@ -30,8 +30,8 @@ internal fun DetailsSummaryView(
 }
 
 @Composable
-internal fun EditCaseDetailsRoute(
-    viewModel: EditCaseDetailsViewModel = hiltViewModel(),
+internal fun EditCaseHazardsRoute(
+    viewModel: EditCaseHazardsViewModel = hiltViewModel(),
     onBackClick: () -> Unit = {},
 ) {
     EditCaseBackCancelView(
@@ -39,15 +39,15 @@ internal fun EditCaseDetailsRoute(
         onBackClick,
         viewModel.translate(ScreenTitleTranslateKey)
     ) {
-        DetailsView()
+        HazardsView()
     }
 }
 
 @Composable
-private fun DetailsView(
-    viewModel: EditCaseDetailsViewModel = hiltViewModel(),
+private fun HazardsView(
+    viewModel: EditCaseHazardsViewModel = hiltViewModel(),
 ) {
-    val inputData = viewModel.detailsInputData
+    val inputData = viewModel.hazardsInputData
     FormDataView(
         viewModel,
         inputData,

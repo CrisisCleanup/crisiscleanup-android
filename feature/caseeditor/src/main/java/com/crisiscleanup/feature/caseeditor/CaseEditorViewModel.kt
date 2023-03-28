@@ -272,11 +272,15 @@ class CaseEditorViewModel @Inject constructor(
         return false
     }
 
-    fun onNavigateBack(): Boolean {
+    override fun onSystemBack(): Boolean {
         return !saveChanges(true)
     }
 
-    fun onNavigateCancel(): Boolean {
+    override fun onNavigateBack(): Boolean {
+        return !saveChanges(true)
+    }
+
+    override fun onNavigateCancel(): Boolean {
         return true
     }
 }

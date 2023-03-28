@@ -31,6 +31,9 @@ internal fun CaseEditorRoute(
     onEditLocation: () -> Unit = {},
     onEditNotesFlags: () -> Unit = {},
     onEditDetails: () -> Unit = {},
+    onEditWork: () -> Unit = {},
+    onEditHazards: () -> Unit = {},
+    onEditVolunteerReport: () -> Unit = {},
     onBackClick: () -> Unit = {},
     viewModel: CaseEditorViewModel = hiltViewModel(),
 ) {
@@ -71,6 +74,9 @@ internal fun CaseEditorRoute(
                 onEditLocation = onEditLocation,
                 onEditNotesFlags = onEditNotesFlags,
                 onEditDetails = onEditDetails,
+                onEditWork = onEditWork,
+                onEditHazards = onEditHazards,
+                onEditVolunteerReport = onEditVolunteerReport,
             )
         }
     }
@@ -84,6 +90,9 @@ internal fun CaseEditorScreen(
     onEditLocation: () -> Unit = {},
     onEditNotesFlags: () -> Unit = {},
     onEditDetails: () -> Unit = {},
+    onEditWork: () -> Unit = {},
+    onEditHazards: () -> Unit,
+    onEditVolunteerReport: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     when (uiState) {
@@ -100,6 +109,9 @@ internal fun CaseEditorScreen(
                     editLocation = onEditLocation,
                     editNotesFlags = onEditNotesFlags,
                     editDetails = onEditDetails,
+                    editWork = onEditWork,
+                    editHazards = onEditHazards,
+                    editVolunteerReport = onEditVolunteerReport,
                 )
             }
         }
@@ -128,6 +140,9 @@ private fun BoxScope.CaseSummary(
     editLocation: () -> Unit = {},
     editNotesFlags: () -> Unit = {},
     editDetails: () -> Unit = {},
+    editWork: () -> Unit = {},
+    editHazards: () -> Unit = {},
+    editVolunteerReport: () -> Unit = {},
 ) {
     val isLoadingWorksite by viewModel.isLoading.collectAsStateWithLifecycle()
     val isEditable = worksiteData.isEditable
@@ -183,13 +198,44 @@ private fun BoxScope.CaseSummary(
             translate = translate,
         )
 
-        if (worksite.isNew) {
+        if (viewModel.isCreateWorksite) {
             DetailsSummaryView(
                 worksite,
                 isEditable,
                 onEdit = editDetails,
                 translate = translate,
             )
+        }
+
+        if (viewModel.isCreateWorksite) {
+            WorkSummaryView(
+                worksite,
+                isEditable,
+                onEdit = editWork,
+                translate = translate,
+            )
+        } else {
+            // TODO Show view with actions for one less click
+        }
+
+        if (viewModel.isCreateWorksite) {
+            HazardsSummaryView(
+                worksite,
+                isEditable,
+                onEdit = editHazards,
+                translate = translate,
+            )
+        }
+
+        if (viewModel.isCreateWorksite) {
+            VolunteerReportSummaryView(
+                worksite,
+                isEditable,
+                onEdit = editVolunteerReport,
+                translate = translate,
+            )
+        } else {
+            // TODO
         }
     }
 
