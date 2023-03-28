@@ -34,6 +34,7 @@ internal fun FormDataView(
 
     val closeKeyboard = rememberCloseKeyboard(viewModel)
     val scrollState = rememberScrollState()
+    val groupExpandState = remember { inputData.groupExpandState }
     Column(
         Modifier
             .scrollFlingListener(closeKeyboard)
@@ -42,6 +43,14 @@ internal fun FormDataView(
     ) {
         for (field in inputData.mutableFormFieldData) {
             var state by remember { field }
+
+            if (state.nestLevel > 0) {
+                val isParentExpanded = groupExpandState[state.field.parentKey] ?: false
+                if (!isParentExpanded) {
+                    continue
+                }
+            }
+
             // TODO Is it possible to isolate recomposition only to each changed item?
             //      key(){} is recomposing the entire list when only a single element changes.
             //      Try a simplified example first.
@@ -55,6 +64,7 @@ internal fun FormDataView(
                 DynamicFormListItem(
                     state,
                     label,
+                    groupExpandState,
                     columnItemModifier,
                     breakGlassHint,
                     helpHint,

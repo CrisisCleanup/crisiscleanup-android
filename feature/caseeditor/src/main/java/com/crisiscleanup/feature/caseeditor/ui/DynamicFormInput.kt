@@ -7,6 +7,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
@@ -32,6 +33,7 @@ import com.crisiscleanup.feature.caseeditor.model.FieldDynamicValue
 internal fun DynamicFormListItem(
     field: FieldDynamicValue,
     label: String,
+    groupExpandState: SnapshotStateMap<String, Boolean>,
     modifier: Modifier = Modifier,
     breakGlassHint: String = "",
     helpHint: String = "",
@@ -51,18 +53,11 @@ internal fun DynamicFormListItem(
     }
     when (field.field.htmlType) {
         "checkbox" -> {
-            val updateBoolean = { b: Boolean ->
-                val valueState = field.copy(
-                    dynamicValue = DynamicValue("", true, b)
-                )
-                updateValue(valueState)
-            }
             CheckboxItem(
                 field,
+                updateValue,
                 modifier,
                 text = label,
-                onToggle = { updateBoolean(!field.dynamicValue.valueBoolean) },
-                onCheckChange = { updateBoolean(it) },
                 helpHint,
                 showHelp,
             )
@@ -102,11 +97,26 @@ internal fun DynamicFormListItem(
         // TODO h5 should expand/collapse child views if children exist
         "h5",
         "h4" -> {
-            Text(
-                modifier = modifier,
-                text = label,
-                style = MaterialTheme.typography.headlineSmall,
-            )
+            val updateGroupValue = { value: FieldDynamicValue ->
+                groupExpandState[field.key] = value.dynamicValue.isBooleanTrue
+                updateValue(value)
+            }
+            if (field.childrenCount > 0) {
+                CheckboxItem(
+                    field,
+                    updateGroupValue,
+                    modifier,
+                    text = label,
+                    helpHint,
+                    showHelp,
+                )
+            } else {
+                Text(
+                    modifier = modifier,
+                    text = label,
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            }
         }
         else -> {
             Text("$label ${field.key} ${field.field.htmlType}")
@@ -156,6 +166,32 @@ private fun CheckboxItem(
 }
 
 @Composable
+private fun CheckboxItem(
+    itemData: FieldDynamicValue,
+    updateValue: (FieldDynamicValue) -> Unit,
+    modifier: Modifier = Modifier,
+    text: String = "",
+    helpHint: String,
+    showHelp: () -> Unit = {},
+) {
+    val updateBoolean = { b: Boolean ->
+        val valueState = itemData.copy(
+            dynamicValue = DynamicValue("", true, b)
+        )
+        updateValue(valueState)
+    }
+    CheckboxItem(
+        itemData,
+        modifier,
+        text = text,
+        onToggle = { updateBoolean(!itemData.dynamicValue.valueBoolean) },
+        onCheckChange = { updateBoolean(it) },
+        helpHint,
+        showHelp,
+    )
+}
+
+@Composable
 private fun SingleLineTextItem(
     itemData: FieldDynamicValue,
     modifier: Modifier = Modifier,
@@ -181,7 +217,7 @@ private fun SingleLineTextItem(
 
         // TODO Figure out why OutlinedClearableTextField won't focus with flag and needs focus code here.
         val focusRequester = FocusRequester()
-        val hasFocus = glassState.takeBrokenGlassFocus()
+        val hasFocus = if (glassState.isGlassBroken) glassState.takeBrokenGlassFocus() else false
         val focusModifier =
             if (hasFocus) textFieldModifier.then(Modifier.focusRequester(focusRequester)) else textFieldModifier
 

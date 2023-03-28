@@ -1,5 +1,6 @@
 package com.crisiscleanup.feature.caseeditor.model
 
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.network.model.DynamicValue
@@ -27,13 +28,15 @@ open class FormFieldsInputData(
                 node.formField,
                 node.options,
                 node.children.size,
-                if (node.parentKey == groupNode.fieldKey) 1 else 0,
+                if (node.parentKey == groupNode.fieldKey) 0 else 1,
                 dynamicValue,
             )
         }
     val mutableFormFieldData = formFieldData.map {
         mutableStateOf(it)
     }
+
+    val groupExpandState = mutableStateMapOf<String, Boolean>()
 
     override fun updateCase() = updateCase(worksiteIn)
 
