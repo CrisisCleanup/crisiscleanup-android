@@ -16,13 +16,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.window.PopupProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
+import com.crisiscleanup.core.designsystem.theme.*
 import com.crisiscleanup.core.model.data.AutoContactFrequency
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.ui.scrollFlingListener
@@ -79,7 +79,6 @@ internal fun EditCasePropertyRoute(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EditCasePropertyView(
     viewModel: EditCasePropertyViewModel = hiltViewModel(),
@@ -119,7 +118,7 @@ private fun PropertyFormView(
     val focusPhone = isPhoneError
     ErrorText(inputData.phoneNumberError)
     OutlinedClearableTextField(
-        modifier = columnItemModifier,
+        modifier = listItemModifier,
         labelResId = 0,
         label = viewModel.translate("formLabels.phone1"),
         value = inputData.phoneNumber,
@@ -135,7 +134,7 @@ private fun PropertyFormView(
         { s: String -> inputData.phoneNumberSecondary = s }
     }
     OutlinedClearableTextField(
-        modifier = columnItemModifier,
+        modifier = listItemModifier,
         labelResId = 0,
         label = viewModel.translate("formLabels.phone2"),
         value = inputData.phoneNumberSecondary,
@@ -152,7 +151,7 @@ private fun PropertyFormView(
     val closeKeyboard = rememberCloseKeyboard(viewModel)
     ErrorText(inputData.emailError)
     OutlinedClearableTextField(
-        modifier = columnItemModifier,
+        modifier = listItemModifier,
         labelResId = 0,
         label = viewModel.translate("formLabels.email"),
         value = inputData.email,
@@ -166,11 +165,23 @@ private fun PropertyFormView(
         onEnter = closeKeyboard
     )
 
-    // TODO Help action showing help text.
-    Text(
-        text = viewModel.translate("casesVue.auto_contact_frequency"),
-        modifier = columnItemModifier,
-    )
+    val autoContactFrequencyLabel = viewModel.translate("casesVue.auto_contact_frequency")
+
+    var helpTitle by remember { mutableStateOf("") }
+    var helpText by remember { mutableStateOf("") }
+    val showHelp = remember(viewModel) {
+        {
+            helpTitle = autoContactFrequencyLabel
+            helpText = viewModel.translate("casesVue.auto_contact_frequency_help")
+        }
+    }
+    Row(
+        modifier = listItemModifier,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(text = autoContactFrequencyLabel)
+        HelpAction(viewModel.helpHint, showHelp)
+    }
     val updateContactFrequency = remember(inputData) {
         { it: AutoContactFrequency -> inputData.autoContactFrequency = it }
     }
@@ -182,26 +193,34 @@ private fun PropertyFormView(
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
+                    .listItemHeight()
                     .selectable(
                         selected = isSelected,
                         onClick = { updateContactFrequency(it.first) },
                         role = Role.RadioButton,
                     )
-                    // TODO Match padding to rest of items
-                    .padding(16.dp, 8.dp),
+                    .listItemPadding(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 RadioButton(
                     selected = isSelected,
+                    modifier = Modifier.listRowItemStartPadding(),
                     onClick = null,
                 )
                 Text(
                     text = it.second,
-                    modifier = Modifier.padding(start = 16.dp),
+                    modifier = Modifier.listRowItemStartPadding(),
                 )
             }
         }
+    }
+
+    if (helpText.isNotBlank()) {
+        HelpDialog(
+            title = helpTitle,
+            text = helpText,
+            onClose = { helpText = "" },
+        )
     }
 }
 
@@ -221,7 +240,7 @@ private fun PropertyFormResidentNameView(
         var contentWidth by remember { mutableStateOf(Size.Zero) }
 
         OutlinedClearableTextField(
-            modifier = columnItemModifier.onGloballyPositioned {
+            modifier = listItemModifier.onGloballyPositioned {
                 contentWidth = it.size.toSize()
             },
             labelResId = 0,
@@ -257,16 +276,14 @@ private fun PropertyFormResidentNameView(
                     .width(with(LocalDensity.current) { contentWidth.width.toDp() }),
                 expanded = true,
                 onDismissRequest = onStopSuggestions,
-                // TODO Use common styles
-                offset = DpOffset(16.dp, 0.dp),
+                offset = listItemDropdownMenuOffset,
                 properties = PopupProperties(focusable = false)
             ) {
                 DropdownMenuItem(
                     text = {
                         Text(
                             stringResource(R.string.stop_suggesting_existing_cases),
-                            // TODO Use common styles
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 16.dp),
+                            modifier = Modifier.offset(x = 12.dp),
                         )
                     },
                     onClick = onStopSuggestions,

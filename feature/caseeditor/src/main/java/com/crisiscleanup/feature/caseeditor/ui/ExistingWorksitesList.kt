@@ -5,15 +5,17 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.unit.dp
+import com.crisiscleanup.core.designsystem.theme.listItemOptionPadding
+import com.crisiscleanup.core.designsystem.theme.listRowItemStartPadding
+import com.crisiscleanup.core.designsystem.theme.optionItemPadding
 import com.crisiscleanup.feature.caseeditor.model.ExistingCaseLocation
 import com.crisiscleanup.feature.caseeditor.util.combineTrimText
 
@@ -22,7 +24,10 @@ private fun CaseView(
     caseLocation: ExistingCaseLocation,
     modifier: Modifier,
 ) {
-    Row(modifier) {
+    Row(
+        modifier,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         with(caseLocation) {
             if (icon != null && workType != null) {
                 Image(
@@ -31,9 +36,9 @@ private fun CaseView(
                 )
             }
             Column(
-                androidx.compose.ui.Modifier
+                Modifier
                     .weight(1f)
-                    .padding(start = 16.dp)
+                    .listRowItemStartPadding()
             ) {
                 Text(listOf(name, caseNumber).combineTrimText())
                 Text(listOf(address, city, state).combineTrimText())
@@ -55,7 +60,7 @@ internal fun LazyListScope.existingCaseLocations(
             it,
             Modifier
                 .clickable { onCaseSelect(it) }
-                .padding(16.dp),
+                .listItemOptionPadding()
         )
     }
 }
@@ -72,8 +77,7 @@ internal fun ExistingCaseLocationsDropdownItems(
                     caseLocation,
                     Modifier
                         .fillMaxWidth()
-                        // TODO Use common styles
-                        .padding(vertical = 16.dp)
+                        .optionItemPadding()
                 )
             },
             onClick = { onCaseSelect(caseLocation) },

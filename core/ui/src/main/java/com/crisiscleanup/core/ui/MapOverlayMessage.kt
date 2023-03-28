@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.crisiscleanup.core.designsystem.theme.textMessagePadding
 
 @Composable
 fun BoxScope.MapOverlayMessage(
@@ -31,7 +32,7 @@ fun BoxScope.MapOverlayMessage(
         ) {
             Text(
                 text = message,
-                modifier = Modifier.padding(8.dp),
+                modifier = Modifier.textMessagePadding(),
                 style = MaterialTheme.typography.bodyMedium,
             )
         }

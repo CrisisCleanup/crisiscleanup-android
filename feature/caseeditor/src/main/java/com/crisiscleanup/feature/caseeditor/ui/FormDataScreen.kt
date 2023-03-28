@@ -6,6 +6,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
 import com.crisiscleanup.feature.caseeditor.model.FieldDynamicValue
@@ -65,7 +66,7 @@ internal fun FormDataView(
                     state,
                     label,
                     groupExpandState,
-                    columnItemModifier,
+                    listItemModifier,
                     breakGlassHint,
                     helpHint,
                     fieldShowHelp,

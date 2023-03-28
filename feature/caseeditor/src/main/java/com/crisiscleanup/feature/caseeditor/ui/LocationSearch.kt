@@ -13,10 +13,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
+import com.crisiscleanup.core.designsystem.theme.listItemModifier
+import com.crisiscleanup.core.designsystem.theme.listItemOptionPadding
+import com.crisiscleanup.core.designsystem.theme.textMessagePadding
 import com.crisiscleanup.core.model.data.LocationAddress
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.EditCaseLocationViewModel
@@ -41,11 +43,10 @@ internal fun ColumnScope.SearchContents(
         val locationSearchResults by viewModel.searchResults.collectAsStateWithLifecycle()
         if (locationSearchResults.isEmpty) {
             if (!isBusySearching && locationSearchResults.query == query) {
-                // TODO Use common styles
                 val text = stringResource(R.string.no_location_results, locationSearchResults.query)
                 Text(
                     text,
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.textMessagePadding(),
                     style = MaterialTheme.typography.bodyLarge,
                 )
             }
@@ -71,7 +72,6 @@ internal fun ColumnScope.SearchContents(
     }
 }
 
-// TODO Use common style
 @Composable
 private fun ListTitle(
     @StringRes textResId: Int = 0,
@@ -79,7 +79,7 @@ private fun ListTitle(
 ) {
     Text(
         if (textResId == 0) text else stringResource(textResId),
-        modifier = Modifier.padding(16.dp),
+        modifier = listItemModifier,
         style = MaterialTheme.typography.headlineSmall,
     )
 }
@@ -134,7 +134,7 @@ private fun ListSearchResults(
                     Modifier
                         .fillMaxWidth()
                         .clickable { onAddressSelect(keyAddress.address) }
-                        .padding(16.dp)
+                        .listItemOptionPadding()
                 ) {
                     with(keyAddress.address) {
                         Column {

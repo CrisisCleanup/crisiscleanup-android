@@ -11,6 +11,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -20,6 +21,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
 import com.crisiscleanup.core.designsystem.component.fabEdgeSpace
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.*
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteNote
 import com.crisiscleanup.core.ui.scrollFlingListener
@@ -78,29 +80,26 @@ internal fun NotesFlagsSummaryView(
     translate: (String) -> String = { s -> s },
     collapsedNotesVisibleCount: Int = 3,
 ) {
+    val notes = worksite.notes
+    val isExpandable = notes.size > collapsedNotesVisibleCount
+
     EditCaseSummaryHeader(
         ScreenTitleResId,
         isEditable,
         onEdit,
         modifier,
-        horizontalPadding = 0.dp,
+        noContentPadding = isExpandable,
     ) {
-        val paddingStart = 16.dp
-        val paddingEnd = 16.dp
         if (worksite.hasHighPriorityFlag) {
             Text(
                 text = stringResource(R.string.high_priority),
-                // TODO Common styling dimensions
-                modifier = modifier.padding(
-                    start = paddingStart.plus(8.dp), end = paddingEnd,
-                    bottom = 8.dp, top = 8.dp,
-                ),
+                modifier = modifier
+                    .listItemPadding()
+                    .listItemNestedPadding()
             )
         }
 
-        val notes = worksite.notes
         if (notes.isNotEmpty()) {
-            val isExpandable = notes.size > collapsedNotesVisibleCount
             var isExpanded by remember { mutableStateOf(false) }
             val toggleExpand = remember(worksite) { { isExpanded = !isExpanded } }
             Row(
@@ -110,11 +109,10 @@ internal fun NotesFlagsSummaryView(
                         onClick = toggleExpand,
                     )
                     .fillMaxWidth()
-                    // TODO Common styling dimensions
-                    .padding(
-                        start = paddingStart.plus(8.dp), end = paddingEnd,
-                        bottom = 16.dp, top = 16.dp,
-                    ),
+                    .listItemHeight()
+                    .listItemPadding()
+                    .listItemNestedPadding(),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     text = translate("formLabels.notes"),
@@ -134,11 +132,11 @@ internal fun NotesFlagsSummaryView(
 
             val visibleCount = if (isExpanded) notes.size
             else collapsedNotesVisibleCount
-            // TODO Common styling dimensions
-            val noteModifier = Modifier.padding(
-                start = paddingStart.plus(16.dp), end = paddingEnd,
-                bottom = 4.dp, top = 4.dp,
-            )
+            val noteModifier = Modifier
+                .listItemHorizontalPadding()
+                .listItemNestedPadding(2)
+                // TODO Common dimensions
+                .padding(vertical = 4.dp)
             for (i in 0 until min(notes.size, visibleCount)) {
                 val note = notes[i]
                 NoteView(note, noteModifier)
@@ -230,7 +228,7 @@ private fun FlagsInputNotesList(
             val updateHighPriority =
                 remember(inputData) { { b: Boolean -> inputData.isHighPriority = b } }
             CrisisCleanupTextCheckbox(
-                columnItemModifier,
+                listItemModifier.listCheckboxAlignStartOffset(),
                 inputData.isHighPriority,
                 text = viewModel.translate("flag.flag_high_priority"),
                 onToggle = toggleHighPriority,
@@ -249,7 +247,7 @@ private fun FlagsInputNotesList(
                 val updateAssignTo =
                     remember(inputData) { { b: Boolean -> inputData.isAssignedToOrgMember = b } }
                 CrisisCleanupTextCheckbox(
-                    columnItemModifier,
+                    listItemModifier.listCheckboxAlignStartOffset(),
                     inputData.isAssignedToOrgMember,
                     text = viewModel.translate("actions.member_of_my_org"),
                     onToggle = toggleAssignTo,
@@ -265,14 +263,14 @@ private fun FlagsInputNotesList(
             ) {
                 Text(
                     text = viewModel.translate("formLabels.notes"),
-                    modifier = columnItemModifier,
+                    modifier = listItemModifier,
                 )
             }
 
             staticNoteItems(
                 notes,
                 notes.size,
-                columnItemModifier.padding(8.dp),
+                listItemModifier.listItemNestedPadding(),
             )
         }
     }

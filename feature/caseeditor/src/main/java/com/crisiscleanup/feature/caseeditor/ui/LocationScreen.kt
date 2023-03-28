@@ -23,6 +23,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.*
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.listCheckboxAlignStartOffset
+import com.crisiscleanup.core.designsystem.theme.listItemModifier
+import com.crisiscleanup.core.designsystem.theme.listItemPadding
+import com.crisiscleanup.core.designsystem.theme.textMessagePadding
 import com.crisiscleanup.core.mapmarker.model.DefaultCoordinates
 import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
 import com.crisiscleanup.core.mapmarker.ui.rememberMapUiSettings
@@ -194,7 +198,7 @@ internal fun ColumnScope.LocationView(
             OutlinedClearableTextField(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp),
+                    .listItemPadding(),
                 labelResId = R.string.location_address_search,
                 value = locationQuery,
                 onValueChange = updateLocation,
@@ -237,8 +241,7 @@ internal fun ColumnScope.LocationView(
             } else if (isShortQuery) {
                 Text(
                     stringResource(R.string.location_query_hint),
-                    // TODO Use common styles
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.textMessagePadding(),
                     style = MaterialTheme.typography.bodyLarge,
                 )
             } else {
@@ -399,7 +402,7 @@ internal fun LocationFormView(
         }
     }
     OutlinedClearableTextField(
-        modifier = columnItemModifier,
+        modifier = listItemModifier,
         labelResId = 0,
         // TODO Translation from key
         label = viewModel.translate("cross_street"),
@@ -422,7 +425,7 @@ internal fun LocationFormView(
         }
     }
     CrisisCleanupTextCheckbox(
-        columnItemModifier,
+        listItemModifier.listCheckboxAlignStartOffset(),
         inputData.hasWrongLocation,
         // TODO Translator from form fields data?
         R.string.wrong_location,
@@ -446,7 +449,7 @@ internal fun LocationFormView(
         } else {
             AddressSummaryInColumn(
                 addressSummary,
-                columnItemModifier,
+                listItemModifier,
             )
         }
     }
@@ -465,7 +468,7 @@ internal fun LocationAddressFormView(
     val focusAddress = isAddressError
     ErrorText(inputData.streetAddressError)
     OutlinedClearableTextField(
-        modifier = columnItemModifier,
+        modifier = listItemModifier,
         labelResId = 0,
         label = viewModel.translate("formLabels.address"),
         value = inputData.streetAddress,
@@ -485,7 +488,7 @@ internal fun LocationAddressFormView(
     val focusZipCode = isZipCodeError
     ErrorText(inputData.zipCodeError)
     OutlinedClearableTextField(
-        modifier = columnItemModifier,
+        modifier = listItemModifier,
         labelResId = 0,
         label = viewModel.translate("formLabels.postal_code"),
         value = inputData.zipCode,
@@ -503,7 +506,7 @@ internal fun LocationAddressFormView(
     val focusCounty = isCountyError
     ErrorText(inputData.countyError)
     OutlinedClearableTextField(
-        modifier = columnItemModifier,
+        modifier = listItemModifier,
         labelResId = 0,
         label = viewModel.translate("formLabels.county"),
         value = inputData.county,
@@ -521,7 +524,7 @@ internal fun LocationAddressFormView(
     val focusCity = isCityError
     ErrorText(inputData.cityError)
     OutlinedClearableTextField(
-        modifier = columnItemModifier,
+        modifier = listItemModifier,
         labelResId = 0,
         label = viewModel.translate("formLabels.city"),
         value = inputData.city,
@@ -544,7 +547,7 @@ internal fun LocationAddressFormView(
     val focusState = isStateError
     ErrorText(inputData.stateError)
     OutlinedClearableTextField(
-        modifier = columnItemModifier,
+        modifier = listItemModifier,
         labelResId = 0,
         label = viewModel.translate("formLabels.state"),
         value = inputData.state,

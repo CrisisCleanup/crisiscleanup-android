@@ -13,12 +13,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.listItemHeight
+import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
+import com.crisiscleanup.core.designsystem.theme.listItemPadding
+import com.crisiscleanup.core.designsystem.theme.listItemTopPadding
 import com.crisiscleanup.feature.caseeditor.R
 
-private val errorMessageModifier = Modifier.padding(top = 8.dp, start = 16.dp, end = 16.dp)
+private val errorMessageModifier = Modifier
+    .listItemHorizontalPadding()
+    .listItemTopPadding()
 
 @Composable
 internal fun ErrorText(
@@ -32,10 +36,6 @@ internal fun ErrorText(
         )
     }
 }
-
-internal val columnItemModifier = Modifier
-    .fillMaxWidth()
-    .padding(16.dp, 8.dp)
 
 @Composable
 fun keyboardAsState(): State<Boolean> {
@@ -64,7 +64,7 @@ fun EditCaseSummaryHeader(
     onEdit: () -> Unit,
     modifier: Modifier = Modifier,
     header: String = "",
-    horizontalPadding: Dp = 24.dp,
+    noContentPadding: Boolean = false,
     content: @Composable (ColumnScope.() -> Unit) = {},
 ) {
     Column(modifier.fillMaxWidth()) {
@@ -75,8 +75,8 @@ fun EditCaseSummaryHeader(
                     enabled = isEditable,
                     onClick = onEdit
                 )
-                // TODO Consistent styling
-                .padding(16.dp),
+                .listItemHeight()
+                .listItemPadding(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             val headerText = if (headerResId == 0) header
@@ -96,13 +96,8 @@ fun EditCaseSummaryHeader(
             }
         }
 
-        // TODO Consistent styling
-        Column(
-            modifier.padding(
-                horizontal = horizontalPadding,
-                vertical = 8.dp,
-            )
-        ) {
+        val contentModifier = if (noContentPadding) modifier else modifier.listItemPadding()
+        Column(contentModifier) {
             content()
         }
     }

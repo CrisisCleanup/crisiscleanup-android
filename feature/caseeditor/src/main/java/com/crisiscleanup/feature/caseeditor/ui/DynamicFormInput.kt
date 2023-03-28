@@ -19,13 +19,12 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.DpOffset
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.window.PopupProperties
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.*
 import com.crisiscleanup.core.network.model.DynamicValue
 import com.crisiscleanup.feature.caseeditor.model.FieldDynamicValue
 
@@ -125,19 +124,6 @@ internal fun DynamicFormListItem(
 }
 
 @Composable
-private fun HelpAction(
-    helpHint: String,
-    showHelp: () -> Unit,
-) {
-    IconButton(onClick = showHelp) {
-        Icon(
-            imageVector = CrisisCleanupIcons.Help,
-            contentDescription = helpHint,
-        )
-    }
-}
-
-@Composable
 private fun CheckboxItem(
     itemData: FieldDynamicValue,
     modifier: Modifier = Modifier,
@@ -154,8 +140,7 @@ private fun CheckboxItem(
         }
     }
     CrisisCleanupTextCheckbox(
-        // TODO Common dimensions
-        modifier.offset(x = (-12).dp),
+        modifier.listCheckboxAlignStartOffset(),
         itemData.dynamicValue.valueBoolean,
         0,
         text,
@@ -237,8 +222,7 @@ private fun SingleLineTextItem(
 
         if (isGlass) {
             IconButton(
-                // TODO Use common dimensions
-                modifier = Modifier.padding(start = 8.dp),
+                modifier = Modifier.listRowItemStartPadding(),
                 onClick = onBreakGlass
             ) {
                 Icon(
@@ -271,8 +255,7 @@ private fun MultiLineTextItem(
     val hasHelp = itemData.field.help.isNotBlank()
     val helpModifier = Modifier
         .fillMaxWidth()
-        // TODO Common dimensions
-        .padding(horizontal = 16.dp)
+        .listItemHorizontalPadding()
     if (hasHelp) {
         Row(
             helpModifier,
@@ -298,14 +281,12 @@ private fun MultiLineTextItem(
         onDone = {
         },
     )
-    // TODO Common dimensions
-    val textFieldModifier = if (hasHelp) helpModifier.padding(bottom = 8.dp)
+    val textFieldModifier = if (hasHelp) helpModifier.listItemBottomPadding()
     else modifier
     OutlinedTextField(
         itemData.dynamicValue.valueString,
         onValueChange = onChange,
-        // TODO Use common dimensions
-        modifier = textFieldModifier.heightIn(min = 128.dp, max = 256.dp),
+        modifier = textFieldModifier.textBoxHeight(),
         label = { Text(label) },
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
@@ -331,27 +312,23 @@ private fun SelectItem(
             Modifier
                 .clickable { showDropdown = true }
                 .fillMaxWidth()
-                // TODO Common dimensions
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .listItemPadding()
                 .onGloballyPositioned {
                     contentWidth = it.size.toSize()
                 },
         ) {
             Row(
-                // TODO Common dimensions
-                Modifier.heightIn(min = 48.dp),
+                Modifier.listItemHeight(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    text = label,
-                )
+                Text(label)
                 if (itemData.field.help.isNotBlank()) {
                     HelpAction(helpHint, showHelp)
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 Icon(
                     imageVector = CrisisCleanupIcons.UnfoldMore,
-                    // TODO Options for ...
+                    // TODO String res "Select option for %s"
                     contentDescription = "",
                 )
             }
@@ -359,8 +336,9 @@ private fun SelectItem(
             if (selectedOption.isNotBlank()) {
                 Text(
                     selectedOption,
-                    // TODO Common dimensions
-                    modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
+                    modifier = Modifier
+                        .listItemHorizontalPadding()
+                        .listItemBottomPadding()
                 )
             }
         }
@@ -375,8 +353,7 @@ private fun SelectItem(
                     .width(with(LocalDensity.current) { contentWidth.width.toDp() }),
                 expanded = true,
                 onDismissRequest = { showDropdown = false },
-                // TODO Common dimensions
-                offset = DpOffset(16.dp, 0.dp),
+                offset = listItemDropdownMenuOffset,
                 properties = PopupProperties(focusable = false)
             ) {
                 DropdownItems(
@@ -397,6 +374,7 @@ private fun DropdownItems(
 ) {
     if (addEmptyOption) {
         DropdownMenuItem(
+            modifier = Modifier.optionItemHeight(),
             text = { Text("") },
             onClick = { onSelect("") },
         )
@@ -404,6 +382,7 @@ private fun DropdownItems(
     for (option in options) {
         key(option.key) {
             DropdownMenuItem(
+                modifier = Modifier.optionItemHeight(),
                 text = { Text(option.value) },
                 onClick = { onSelect(option.key) },
             )

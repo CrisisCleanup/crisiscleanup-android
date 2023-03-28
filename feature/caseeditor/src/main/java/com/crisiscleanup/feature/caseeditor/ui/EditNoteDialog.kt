@@ -1,6 +1,5 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -12,8 +11,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
+import com.crisiscleanup.core.designsystem.theme.textBoxHeight
 import com.crisiscleanup.core.model.data.WorksiteNote
 import com.crisiscleanup.feature.caseeditor.R
 
@@ -48,8 +47,7 @@ fun EditNoteDialog(
                 noteContent,
                 { value: String -> noteContent = value },
                 modifier = Modifier
-                    // TODO Use common dimensions
-                    .heightIn(min = 128.dp, max = 256.dp)
+                    .textBoxHeight()
                     .focusRequester(focusRequester),
                 label = { Text(stringResource(R.string.note)) },
                 keyboardOptions = keyboardOptions,
