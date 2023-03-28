@@ -14,6 +14,7 @@ data class LocationLatLng(
 data class LocationBounds(
     val locationLatLng: LocationLatLng,
     val multiBounds: List<LatLngBounds?>,
+    val boundAreas: List<Double>,
 ) {
     fun containsLocation(location: LatLng): Boolean {
         locationLatLng.multiCoordinates.forEachIndexed { index, latLngs ->
@@ -32,7 +33,7 @@ data class LocationBounds(
 data class IncidentBounds(
     val locations: Collection<LocationBounds>,
     val bounds: LatLngBounds,
-    val center: LatLng = bounds.center,
+    val centroid: LatLng = bounds.center,
 ) {
     fun containsLocation(location: LatLng) =
         bounds.contains(location) && locations.any { it.containsLocation(location) }

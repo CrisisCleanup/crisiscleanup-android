@@ -79,8 +79,8 @@ internal class LocationSearchManager(
                         center = deviceLocation
                     }
                 }
-                if (center == null && incidentBounds.center != DefaultCoordinates) {
-                    center = incidentBounds.center
+                if (center == null && incidentBounds.centroid != DefaultCoordinates) {
+                    center = incidentBounds.centroid
                 }
 
                 var searchSw: LatLng? = null

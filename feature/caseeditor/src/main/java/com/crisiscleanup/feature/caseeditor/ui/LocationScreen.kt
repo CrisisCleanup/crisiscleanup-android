@@ -404,7 +404,6 @@ internal fun LocationFormView(
     OutlinedClearableTextField(
         modifier = listItemModifier,
         labelResId = 0,
-        // TODO Translation from key
         label = viewModel.translate("cross_street"),
         value = inputData.crossStreetNearbyLandmark,
         onValueChange = updateCrossStreet,
@@ -480,8 +479,7 @@ internal fun LocationAddressFormView(
         enabled = true,
     )
 
-    // TODO Move into view model to query for and present autofill.
-    //      See ExposedDropdownMenu for presenting options.
+    // TODO Move into view model to query for and present menu options.
     val updateZipCode = remember(inputData) { { s: String -> inputData.zipCode = s } }
     val clearZipCodeError = remember(inputData) { { inputData.zipCodeError = "" } }
     val isZipCodeError = inputData.zipCodeError.isNotEmpty()

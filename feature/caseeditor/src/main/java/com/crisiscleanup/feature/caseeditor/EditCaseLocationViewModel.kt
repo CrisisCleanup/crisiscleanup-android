@@ -92,7 +92,7 @@ class EditCaseLocationViewModel @Inject constructor(
                     worksite.coordinates() == DefaultCoordinates)
         ) {
             val incidentBounds = worksiteProvider.incidentBounds
-            var worksiteCoordinates: LatLng = incidentBounds.center
+            var worksiteCoordinates: LatLng = incidentBounds.centroid
             locationProvider.coordinates?.let {
                 val deviceLocation = LatLng(it.first, it.second)
                 if (incidentBounds.containsLocation(deviceLocation)) {
