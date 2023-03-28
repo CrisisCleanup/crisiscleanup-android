@@ -27,7 +27,7 @@ open class FormFieldsInputData(
             FieldDynamicValue(
                 node.formField,
                 node.options,
-                node.children.size,
+                node.children.map(FormFieldNode::fieldKey).toSet(),
                 if (node.parentKey == groupNode.fieldKey) 0 else 1,
                 dynamicValue,
             )
@@ -36,9 +36,11 @@ open class FormFieldsInputData(
         mutableStateOf(it)
     }
 
+    private val groupFields = formFieldData.filter { it.childrenCount > 0 }
+
     val groupExpandState = mutableStateMapOf<String, Boolean>()
         .also { map ->
-            formFieldData.filter { it.childrenCount > 0 && it.dynamicValue.isBooleanTrue }
+            groupFields.filter { it.dynamicValue.isBooleanTrue }
                 .forEach {
                     map[it.key] = true
                 }
@@ -46,15 +48,42 @@ open class FormFieldsInputData(
 
     override fun updateCase() = updateCase(worksiteIn)
 
-    override fun updateCase(worksite: Worksite): Worksite? {
-        val snapshotValues =
-            mutableFormFieldData.associate { it.value.key to it.value.dynamicValue }
+    private fun resetUnmodifiedGroups(fieldData: Map<String, DynamicValue>): Map<String, DynamicValue> {
+        if (groupFields.isEmpty()) {
+            return fieldData
+        }
 
-        if (!worksite.seekChange(snapshotValues)) {
+        val updatedFieldData = fieldData.toMutableMap()
+        groupFields
+            .filter { field ->
+                val fieldValue = updatedFieldData[field.key]
+                fieldValue?.isBoolean == true && !fieldValue.valueBoolean
+            }
+            .flatMap { it.childKeys }
+            .forEach { childKey ->
+                updatedFieldData[childKey]?.let { childValue ->
+                    updatedFieldData[childKey] = childValue.copy(
+                        valueString = "",
+                        valueBoolean = false,
+                    )
+                }
+            }
+        return updatedFieldData
+    }
+
+    override fun updateCase(worksite: Worksite): Worksite? {
+        var snapshotFieldData = mutableFormFieldData.associate {
+            it.value.key to it.value.dynamicValue
+        }
+
+        // TODO Add test coverage
+        snapshotFieldData = resetUnmodifiedGroups(snapshotFieldData)
+
+        if (!worksite.seekChange(snapshotFieldData)) {
             return worksite
         }
 
-        val formData = worksite.copyModifiedFormData(snapshotValues)
+        val formData = worksite.copyModifiedFormData(snapshotFieldData)
         return worksite.copy(
             formData = formData,
         )

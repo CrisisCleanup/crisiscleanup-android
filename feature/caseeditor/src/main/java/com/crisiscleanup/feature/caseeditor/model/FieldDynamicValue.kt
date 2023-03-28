@@ -6,12 +6,13 @@ import com.crisiscleanup.core.network.model.DynamicValue
 data class FieldDynamicValue(
     val field: IncidentFormField,
     val selectOptions: Map<String, String>,
-    val childrenCount: Int = 0,
+    val childKeys: Set<String> = emptySet(),
     val nestLevel: Int = 0,
     val dynamicValue: DynamicValue = DynamicValue(""),
     val breakGlass: FieldEditProperties = FieldEditProperties(field.isReadOnlyBreakGlass),
 ) {
     val key = field.fieldKey
+    val childrenCount = childKeys.size
 }
 
 data class FieldEditProperties(
