@@ -86,5 +86,6 @@ data class ResidentNameSearchResults(
     val worksites: List<ExistingCaseLocation>,
 ) {
     val isEmpty = worksites.isEmpty()
+    val isNotEmpty = !isEmpty
 }
 

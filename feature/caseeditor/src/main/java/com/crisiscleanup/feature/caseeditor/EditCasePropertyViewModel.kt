@@ -79,6 +79,14 @@ class EditCasePropertyViewModel @Inject constructor(
         )
     }
 
+    fun stopSearchingWorksites() = nameSearchManager.stopSearchingWorksites()
+
+    fun onExistingWorksiteSelected(caseLocation: ExistingCaseLocation) {
+        viewModelScope.launch(ioDispatcher) {
+            existingWorksiteSelector.onNetworkWorksiteSelected(caseLocation.networkWorksiteId)
+        }
+    }
+
     private fun validateSaveWorksite(): Boolean {
         val updatedWorksite = propertyInputData.updateCase()
         if (updatedWorksite != null) {
@@ -88,15 +96,16 @@ class EditCasePropertyViewModel @Inject constructor(
         return false
     }
 
-    fun stopSearchingWorksites() = nameSearchManager.stopSearchingWorksites()
-
-    fun onExistingWorksiteSelected(caseLocation: ExistingCaseLocation) {
-        viewModelScope.launch(ioDispatcher) {
-            existingWorksiteSelector.onNetworkWorksiteSelected(caseLocation.networkWorksiteId)
+    private fun onBackValidateSaveWorksite(): Boolean {
+        if (searchResults.value.isNotEmpty) {
+            stopSearchingWorksites()
+            return false
         }
+
+        return validateSaveWorksite()
     }
 
-    override fun onSystemBack() = validateSaveWorksite()
+    override fun onSystemBack() = onBackValidateSaveWorksite()
 
-    override fun onNavigateBack() = validateSaveWorksite()
+    override fun onNavigateBack() = onBackValidateSaveWorksite()
 }

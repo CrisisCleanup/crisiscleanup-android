@@ -9,7 +9,7 @@
 
     <string name="edit_section">Edit %s</string>
 
-    <string name="stop_suggesting_existing_cases">Stop showing existing cases</string>
+    <string name="stop_suggesting_existing_cases">Stop searching existing cases</string>
     <string name="name_is_required">Enter a name for the resident</string>
     <string name="phone_is_required">Enter a phone number</string>
     <string name="invalid_email">Enter a valid email address</string>
