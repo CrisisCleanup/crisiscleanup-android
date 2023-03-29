@@ -1,28 +1,29 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.ConstraintLayoutScope
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.designsystem.component.AnimatedBusyIndicator
+import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackCancel
+import com.crisiscleanup.core.designsystem.component.actionEdgeSpace
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseEditorUiState
 import com.crisiscleanup.feature.caseeditor.CaseEditorViewModel
+import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.core.common.R as commonR
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,9 +40,7 @@ internal fun CaseEditorRoute(
     viewModel: CaseEditorViewModel = hiltViewModel(),
 ) {
     BackHandler {
-        if (!viewModel.saveChanges()) {
-            // TODO Prompt if there are unsaved changes on back click
-            //      Validate fields where required
+        if (!viewModel.promptSaveChanges()) {
             onBackClick()
         }
     }
@@ -104,7 +103,7 @@ internal fun CaseEditorScreen(
             }
         }
         is CaseEditorUiState.WorksiteData -> {
-            Box(Modifier.fillMaxSize()) {
+            ConstraintLayout(Modifier.fillMaxSize()) {
                 CaseSummary(
                     uiState as CaseEditorUiState.WorksiteData,
                     editPropertyData = onEditProperty,
@@ -133,7 +132,7 @@ internal fun CaseEditorScreen(
 }
 
 @Composable
-private fun BoxScope.CaseSummary(
+private fun ConstraintLayoutScope.CaseSummary(
     worksiteData: CaseEditorUiState.WorksiteData,
     modifier: Modifier = Modifier,
     viewModel: CaseEditorViewModel = hiltViewModel(),
@@ -146,6 +145,8 @@ private fun BoxScope.CaseSummary(
     editHazards: () -> Unit = {},
     editVolunteerReport: () -> Unit = {},
 ) {
+    val (mainContent, busyIndicator, saveChangesRef) = createRefs()
+
     val isLoadingWorksite by viewModel.isLoading.collectAsStateWithLifecycle()
     val isEditable = worksiteData.isEditable
 
@@ -154,9 +155,13 @@ private fun BoxScope.CaseSummary(
     // TODO Convert to LazyColumn if input is not too complex. Pass scope to lazy children views.
     Column(
         modifier
+            .constrainAs(mainContent) {
+                top.linkTo(parent.top)
+                start.linkTo(parent.start)
+                end.linkTo(parent.end)
+            }
             .scrollFlingListener(closeKeyboard)
             .verticalScroll(scrollState)
-            .matchParentSize()
     ) {
         Text(
             worksiteData.incident.name,
@@ -233,17 +238,31 @@ private fun BoxScope.CaseSummary(
         )
     }
 
-    AnimatedVisibility(
-        modifier = Modifier.align(Alignment.TopCenter),
-        visible = isLoadingWorksite,
-        enter = fadeIn(),
-        exit = fadeOut(),
-    ) {
-        CircularProgressIndicator(
-            Modifier
-                .wrapContentSize()
-                .padding(48.dp)
-                .size(24.dp)
+    AnimatedBusyIndicator(
+        isBusy = isLoadingWorksite,
+        modifier = Modifier.constrainAs(busyIndicator) {
+            top.linkTo(parent.top)
+            centerHorizontallyTo(parent)
+        },
+        // TODO Common dimensions
+        padding = 48.dp
+    )
+
+    val isDataChanged by viewModel.hasChanges.collectAsStateWithLifecycle()
+    val isSavingData by viewModel.isSavingWorksite.collectAsStateWithLifecycle()
+    val saveChanges = remember(viewModel) { { viewModel.saveChanges() } }
+    if (isDataChanged) {
+        BusyButton(
+            modifier = Modifier
+                .constrainAs(saveChangesRef) {
+                    bottom.linkTo(parent.bottom, margin = actionEdgeSpace)
+                    end.linkTo(parent.end, margin = actionEdgeSpace)
+                }
+                .animateContentSize(),
+            textResId = R.string.save_changes,
+            enabled = !isSavingData,
+            indicateBusy = isSavingData,
+            onClick = saveChanges,
         )
     }
 }

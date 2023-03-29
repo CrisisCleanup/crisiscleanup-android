@@ -22,6 +22,7 @@ import com.crisiscleanup.core.mapmarker.util.smallOffset
 import com.crisiscleanup.core.mapmarker.util.toLatLng
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.LocationAddress
+import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.feature.caseeditor.model.*
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.BitmapDescriptor
@@ -54,6 +55,9 @@ class EditCaseLocationViewModel @Inject constructor(
     @Dispatcher(Default) private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : EditCaseBaseViewModel(worksiteProvider, translator, logger) {
+    // Worksite before lat,lng may have been auto updated
+    private val worksiteIn: Worksite
+
     val locationInputData: LocationInputData
 
     private val locationSearchManager: LocationSearchManager
@@ -86,6 +90,7 @@ class EditCaseLocationViewModel @Inject constructor(
 
     init {
         var worksite = worksiteProvider.editableWorksite.value
+        worksiteIn = worksite
 
         if (worksite.isNew &&
             (worksite.coordinates() == EmptyWorksite.coordinates() ||
@@ -213,7 +218,22 @@ class EditCaseLocationViewModel @Inject constructor(
     private fun validateSaveWorksite(): Boolean {
         val updatedWorksite = locationInputData.updateCase()
         if (updatedWorksite != null) {
-            worksiteProvider.editableWorksite.value = updatedWorksite
+            var hasActualChanges = true
+
+            if (worksiteIn.isNew && updatedWorksite.address.isBlank()) {
+                val unchangedLatLngWorksite = updatedWorksite.copy(
+                    latitude = worksiteIn.latitude,
+                    longitude = worksiteIn.longitude,
+                )
+                if (unchangedLatLngWorksite == worksiteIn) {
+                    hasActualChanges = false
+                }
+            }
+
+            // Do not update editable if only the coordinates were auto completed
+            if (hasActualChanges) {
+                worksiteProvider.editableWorksite.value = updatedWorksite
+            }
             return true
         }
         return false

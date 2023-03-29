@@ -11,14 +11,28 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun BoxScope.BusyIndicatorFloatingTopCenter(
     isBusy: Boolean,
 ) {
+    AnimatedBusyIndicator(
+        isBusy,
+        Modifier.align(Alignment.TopCenter)
+    )
+}
+
+@Composable
+fun AnimatedBusyIndicator(
+    isBusy: Boolean,
+    modifier: Modifier = Modifier,
+    padding: Dp = 96.dp,
+    size: Dp = 24.dp,
+) {
     AnimatedVisibility(
-        modifier = Modifier.align(Alignment.TopCenter),
+        modifier = modifier,
         visible = isBusy,
         enter = fadeIn(),
         exit = fadeOut(),
@@ -26,8 +40,8 @@ fun BoxScope.BusyIndicatorFloatingTopCenter(
         CircularProgressIndicator(
             Modifier
                 .wrapContentSize()
-                .padding(96.dp)
-                .size(24.dp)
+                .padding(padding)
+                .size(size)
         )
     }
 }

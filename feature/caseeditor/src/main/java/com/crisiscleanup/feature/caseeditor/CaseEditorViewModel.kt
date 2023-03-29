@@ -21,6 +21,7 @@ import com.crisiscleanup.feature.caseeditor.model.flatten
 import com.crisiscleanup.feature.caseeditor.navigation.CaseEditorArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
@@ -78,6 +79,9 @@ class CaseEditorViewModel @Inject constructor(
     val editingWorksite = editableWorksiteProvider.editableWorksite
 
     val navigateBack = mutableStateOf(false)
+    val promptUnsavedChanges = mutableStateOf(false)
+    val promptCancelChanges = mutableStateOf(false)
+    val isSavingWorksite = MutableStateFlow(false)
 
     private val incidentStream = incidentsRepository.streamIncident(incidentIdArg)
         .mapLatest { it ?: EmptyIncident }
@@ -220,6 +224,21 @@ class CaseEditorViewModel @Inject constructor(
 
     val uiState: MutableStateFlow<CaseEditorUiState> = MutableStateFlow(CaseEditorUiState.Loading)
 
+    val hasChanges = combine(
+        editableWorksiteProvider.editableWorksite,
+        uiState,
+    ) { editableWorksite, state ->
+        var isChanged = false
+        (state as? CaseEditorUiState.WorksiteData)?.let { data ->
+            isChanged = editableWorksite != data.worksite
+        }
+        isChanged
+    }.stateIn(
+        scope = viewModelScope,
+        initialValue = false,
+        started = SharingStarted.WhileSubscribed(),
+    )
+
     init {
         val headerTitleResId =
             if (isCreateWorksite) R.string.create_case
@@ -284,25 +303,75 @@ class CaseEditorViewModel @Inject constructor(
         }
     }
 
+    fun saveChanges(backOnSuccess: Boolean = true) {
+        synchronized(isSavingWorksite) {
+            if (isSavingWorksite.value) {
+                return
+            }
+            isSavingWorksite.value = true
+        }
+
+        var saveJob: Job? = null
+        try {
+            val initialWorksite = (uiState.value as? CaseEditorUiState.WorksiteData)?.worksite
+            val worksite = worksiteProvider.editableWorksite.value
+            if (worksite == initialWorksite) {
+                if (backOnSuccess) {
+                    navigateBack.value = true
+                }
+            } else if (initialWorksite != null) {
+
+                // TODO Validate required fields or open to screen and show prompt
+                //      Location
+                //      Person info
+                //      Work type
+
+                saveJob = viewModelScope.launch(ioDispatcher) {
+                    // TODO
+
+                    try {
+                        logger.logDebug(
+                            "Save changes in worksite",
+                            worksite,
+                            "from",
+                            initialWorksite
+                        )
+                    } finally {
+                        synchronized(isSavingWorksite) {
+                            isSavingWorksite.value = false
+                        }
+                    }
+                }
+            }
+        } finally {
+            if (saveJob == null) {
+                synchronized(isSavingWorksite) {
+                    isSavingWorksite.value = false
+                }
+            }
+        }
+    }
+
     /**
-     * @return true if save is ongoing or false if not and processes can continue
+     * @return true if prompt is shown or false if there are no changes
      */
-    fun saveChanges(promptSave: Boolean = false): Boolean {
-        // TODO Compare current and save if there are changes. Show progress.
-        //      Close on successful save.
-        //      Alert on fail with option to abandon (should never happen when saving and queueing locally).
+    fun promptSaveChanges(): Boolean {
+        if (hasChanges.value) {
+            promptUnsavedChanges.value = true
+            return true
+        }
         return false
     }
 
-    override fun onSystemBack(): Boolean {
-        return !saveChanges(true)
-    }
+    override fun onSystemBack() = !promptSaveChanges()
 
-    override fun onNavigateBack(): Boolean {
-        return !saveChanges(true)
-    }
+    override fun onNavigateBack() = !promptSaveChanges()
 
     override fun onNavigateCancel(): Boolean {
+        if (hasChanges.value) {
+            promptCancelChanges.value = true
+            return false
+        }
         return true
     }
 }

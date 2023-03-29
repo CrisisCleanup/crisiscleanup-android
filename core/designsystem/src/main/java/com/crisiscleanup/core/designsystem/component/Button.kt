@@ -1,12 +1,9 @@
 package com.crisiscleanup.core.designsystem.component
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -14,13 +11,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 private fun roundedRectangleButtonShape() = RoundedCornerShape(4.dp)
-private val buttonMinHeight = 48.dp
 
 val mapButtonSize = 48.dp
 val mapButtonSpace = 1.dp
 val mapButtonEdgeSpace = 8.dp
 
-val fabEdgeSpace = 16.dp
+val actionEdgeSpace = 16.dp
+val fabEdgeSpace = actionEdgeSpace
+
+fun Modifier.actionHeight() = heightIn(48.dp)
 
 @Composable
 private fun Text(
@@ -38,18 +37,19 @@ private fun Text(
 @Composable
 fun BusyButton(
     modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-    enabled: Boolean,
+    onClick: () -> Unit = {},
+    enabled: Boolean = true,
     @StringRes
     textResId: Int = 0,
     text: String = "",
     indicateBusy: Boolean = false,
 ) {
     Button(
-        modifier = modifier.sizeIn(minHeight = buttonMinHeight),
+        modifier = modifier.actionHeight(),
         onClick = onClick,
         enabled = enabled,
         shape = roundedRectangleButtonShape(),
+        elevation = if (indicateBusy) null else ButtonDefaults.elevatedButtonElevation(),
     ) {
         if (indicateBusy) {
             CircularProgressIndicator()
@@ -69,7 +69,7 @@ fun CrisisCleanupButton(
     text: String = "",
 ) {
     Button(
-        modifier = modifier.sizeIn(minHeight = buttonMinHeight),
+        modifier = modifier.actionHeight(),
         onClick = onClick,
         enabled = enabled,
         shape = roundedRectangleButtonShape(),
@@ -88,7 +88,7 @@ fun CrisisCleanupTextButton(
     text: String = "",
 ) {
     TextButton(
-        modifier = modifier.sizeIn(minHeight = buttonMinHeight),
+        modifier = modifier.actionHeight(),
         onClick = onClick,
         enabled = enabled,
         shape = roundedRectangleButtonShape(),
@@ -103,5 +103,16 @@ fun CrisisCleanupButtonPreview() {
     CrisisCleanupButton(
         enabled = true,
         text = "Press"
+    )
+}
+
+@Preview
+@Composable
+fun BusyButtonPreview() {
+    // Disable button to see progress or colors will be matching
+    BusyButton(
+        enabled = false,
+        text = "Press",
+        indicateBusy = true,
     )
 }

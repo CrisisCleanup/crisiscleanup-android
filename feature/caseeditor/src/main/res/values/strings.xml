@@ -44,4 +44,6 @@
     <string name="add_note">Add note</string>
 
     <string name="select_option_for_field">Select option for %s</string>
+
+    <string name="save_changes">Save changes</string>
 </resources>
