@@ -11,7 +11,6 @@ import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.IncidentWorksitesSyncer
 import com.crisiscleanup.core.data.model.asEntity
 import com.crisiscleanup.core.data.model.asWorksiteEntity
-import com.crisiscleanup.core.data.util.NetworkMonitor
 import com.crisiscleanup.core.data.util.WorksitesDataPullReporter
 import com.crisiscleanup.core.database.dao.WorksiteDao
 import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
@@ -25,7 +24,6 @@ import com.crisiscleanup.core.network.model.NetworkFlag
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -41,7 +39,6 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private val worksitesSyncStatsDao: WorksitesSyncStatsDao,
     private val worksiteDao: WorksiteDao,
     private val worksiteDaoPlus: WorksiteDaoPlus,
-    private val networkMonitor: NetworkMonitor,
     private val appVersionProvider: AppVersionProvider,
     private val authEventManager: AuthEventManager,
     private val keyTranslator: KeyTranslator,
@@ -52,8 +49,6 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         private set
 
     override val worksitesDataPullStats = worksitesSyncer.dataPullStats
-
-    private suspend fun isNotOnline() = networkMonitor.isNotOnline.first()
 
     override fun streamWorksites(incidentId: Long, limit: Int, offset: Int) =
         worksiteDao.streamWorksites(incidentId, limit, offset)
@@ -207,10 +202,6 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         incidentId: Long,
         worksiteNetworkId: Long,
     ): Pair<Long, NetworkWorksiteFull>? {
-        if (isNotOnline()) {
-            return null
-        }
-
         // TODO Surface meaningful error(s) to user
 
         try {

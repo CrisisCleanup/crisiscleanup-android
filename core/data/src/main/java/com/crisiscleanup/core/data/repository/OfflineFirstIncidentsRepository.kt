@@ -9,7 +9,6 @@ import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.model.asEntity
 import com.crisiscleanup.core.data.model.incidentLocationCrossReferences
 import com.crisiscleanup.core.data.model.locationsAsEntity
-import com.crisiscleanup.core.data.util.NetworkMonitor
 import com.crisiscleanup.core.database.dao.IncidentDao
 import com.crisiscleanup.core.database.dao.IncidentDaoPlus
 import com.crisiscleanup.core.database.dao.LocationDaoPlus
@@ -17,7 +16,6 @@ import com.crisiscleanup.core.database.dao.LocationEntitySource
 import com.crisiscleanup.core.database.model.PopulatedIncident
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
-import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.tryThrowException
@@ -27,12 +25,10 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Duration.Companion.days
@@ -45,14 +41,10 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     private val locationDaoPlus: LocationDaoPlus,
     private val appPreferences: LocalAppPreferencesDataSource,
     private val authEventManager: AuthEventManager,
-    private val networkMonitor: NetworkMonitor,
     @Logger(CrisisCleanupLoggers.Incidents) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : IncidentsRepository {
     private var isSyncing = MutableStateFlow(false)
-
-    private val isPullingSingleIncident = MutableStateFlow(false)
-    private val pullSingleIncidentId = AtomicLong(0)
 
     private val incidentsQueryFields = listOf(
         "id",
@@ -67,8 +59,6 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     )
     private val fullIncidentQueryFields: List<String> =
         incidentsQueryFields.toMutableList().also { it.add("form_fields") }
-
-    private suspend fun isNotOnline() = networkMonitor.isNotOnline.first()
 
     override val isLoading: Flow<Boolean> = isSyncing
 
@@ -192,27 +182,13 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     }
 
     override suspend fun pullIncident(id: Long) {
-        if (isNotOnline()) {
-            return
-        }
+        val networkIncident = networkDataSource.getIncident(id, fullIncidentQueryFields)
+        tryThrowException(authEventManager, networkIncident.errors)
 
-        synchronized(pullSingleIncidentId) {
-            pullSingleIncidentId.set(id)
-            isPullingSingleIncident.value = true
-        }
-        try {
-            val networkIncident = networkDataSource.getIncident(id, fullIncidentQueryFields)
-            tryThrowException(authEventManager, networkIncident.errors)
-
-            networkIncident.incident?.let { incident ->
-                val incidents = listOf(incident)
-                saveIncidentsPrimaryData(incidents)
-                saveIncidentsSecondaryData(incidents)
-            }
-        } finally {
-            if (pullSingleIncidentId.compareAndSet(id, EmptyIncident.id)) {
-                isPullingSingleIncident.value = false
-            }
+        networkIncident.incident?.let { incident ->
+            val incidents = listOf(incident)
+            saveIncidentsPrimaryData(incidents)
+            saveIncidentsSecondaryData(incidents)
         }
     }
 }

@@ -11,6 +11,7 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.repository.*
+import com.crisiscleanup.core.data.util.NetworkMonitor
 import com.crisiscleanup.core.mapmarker.model.IncidentBounds
 import com.crisiscleanup.core.mapmarker.util.toBounds
 import com.crisiscleanup.core.mapmarker.util.toLatLng
@@ -37,8 +38,10 @@ internal const val VolunteerReportFormGroupKey = "claim_status_report_info"
 class CaseEditorViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     incidentsRepository: IncidentsRepository,
+    private val incidentRefresher: IncidentRefresher,
     locationsRepository: LocationsRepository,
     private val worksitesRepository: WorksitesRepository,
+    private val networkMonitor: NetworkMonitor,
     languageRepository: LanguageTranslationsRepository,
     private val editableWorksiteProvider: EditableWorksiteProvider,
     translator: KeyTranslator,
@@ -55,13 +58,13 @@ class CaseEditorViewModel @Inject constructor(
 
     val visibleNoteCount: Int = 2
 
-    val incidentFieldLookup = MutableStateFlow(emptyMap<String, Map<String, String>>())
+    private val incidentFieldLookup = MutableStateFlow(emptyMap<String, GroupSummaryFieldLookup>())
 
-    val detailsFieldLookup: Map<String, String>?
+    val detailsFieldLookup: GroupSummaryFieldLookup?
         get() = incidentFieldLookup.value[DetailsFormGroupKey]
-    val hazardsFieldLookup: Map<String, String>?
+    val hazardsFieldLookup: GroupSummaryFieldLookup?
         get() = incidentFieldLookup.value[HazardsFormGroupKey]
-    val volunteerReportFieldLookup: Map<String, String>?
+    val volunteerReportFieldLookup: GroupSummaryFieldLookup?
         get() = incidentFieldLookup.value[VolunteerReportFormGroupKey]
 
     private val isRefreshingIncident = MutableStateFlow(false)
@@ -131,11 +134,13 @@ class CaseEditorViewModel @Inject constructor(
                 if (networkId > 0 &&
                     !isWorksitePulled.getAndSet(true)
                 ) {
-                    isPullingWorksite.set(true)
-                    try {
-                        refreshWorksite(networkId)
-                    } finally {
-                        isPullingWorksite.set(false)
+                    if (networkMonitor.isOnline.first()) {
+                        isPullingWorksite.set(true)
+                        try {
+                            refreshWorksite(networkId)
+                        } finally {
+                            isPullingWorksite.set(false)
+                        }
                     }
                 }
             }
@@ -201,7 +206,13 @@ class CaseEditorViewModel @Inject constructor(
                         val groupFieldMap = node.children.associate { child ->
                             child.fieldKey to child.formField.getFieldLabel(localTranslate)
                         }
-                        node.fieldKey to groupFieldMap
+                        val groupOptionsMap = node.children.map(FormFieldNode::options)
+                            .flatMap { it.entries }
+                            .associate { it.key to it.value }
+                        node.fieldKey to GroupSummaryFieldLookup(
+                            groupFieldMap,
+                            groupOptionsMap,
+                        )
                     }
                 }
                 editableWorksite.value = initialWorksite
@@ -258,14 +269,12 @@ class CaseEditorViewModel @Inject constructor(
         viewModelScope.launch(ioDispatcher) {
             isRefreshingIncident.value = true
             try {
-                incidentsRepository.pullIncident(incidentIdArg)
+                incidentRefresher.refreshIncident(incidentIdArg)
             } catch (e: Exception) {
                 logger.logException(e)
             } finally {
                 isRefreshingIncident.value = false
             }
-
-            // TODO Query backend for updated locations if incident is recent
         }
 
         worksiteStream
@@ -303,6 +312,32 @@ class CaseEditorViewModel @Inject constructor(
         }
     }
 
+    private fun validate(worksite: Worksite): Boolean {
+        var section = ""
+        var message = ""
+        if (worksite.name.isBlank() ||
+            worksite.phone1.isBlank()
+        ) {
+            return false
+        }
+
+        if (worksite.latitude == 0.0 ||
+            worksite.longitude == 0.0 ||
+            worksite.address.isBlank() ||
+            worksite.postalCode.isBlank() ||
+            worksite.county.isBlank() ||
+            worksite.city.isBlank() ||
+            worksite.state.isBlank()
+        ) {
+
+            return false
+        }
+
+        // TODO At least one work type is specified
+
+        return true
+    }
+
     fun saveChanges(backOnSuccess: Boolean = true) {
         synchronized(isSavingWorksite) {
             if (isSavingWorksite.value) {
@@ -320,25 +355,21 @@ class CaseEditorViewModel @Inject constructor(
                     navigateBack.value = true
                 }
             } else if (initialWorksite != null) {
+                if (validate(worksite)) {
+                    saveJob = viewModelScope.launch(ioDispatcher) {
+                        // TODO
 
-                // TODO Validate required fields or open to screen and show prompt
-                //      Location
-                //      Person info
-                //      Work type
-
-                saveJob = viewModelScope.launch(ioDispatcher) {
-                    // TODO
-
-                    try {
-                        logger.logDebug(
-                            "Save changes in worksite",
-                            worksite,
-                            "from",
-                            initialWorksite
-                        )
-                    } finally {
-                        synchronized(isSavingWorksite) {
-                            isSavingWorksite.value = false
+                        try {
+                            logger.logDebug(
+                                "Save changes in worksite",
+                                worksite,
+                                "from",
+                                initialWorksite
+                            )
+                        } finally {
+                            synchronized(isSavingWorksite) {
+                                isSavingWorksite.value = false
+                            }
                         }
                     }
                 }
@@ -410,3 +441,8 @@ sealed interface CaseEditorUiState {
         val errorMessage: String = "",
     ) : CaseEditorUiState
 }
+
+data class GroupSummaryFieldLookup(
+    val fieldMap: Map<String, String>,
+    val optionTranslations: Map<String, String>,
+)

@@ -32,12 +32,12 @@ fun NetworkIncidentFormField.asEntity(incidentId: Long): IncidentFormFieldEntity
     val valuesMap = values
         ?.filter { it.value?.isNotEmpty() == true }
         ?.fold(mutableMapOf<String, String>()) { acc, curr ->
-            acc[curr.name] = curr.value!!
+            acc[curr.value!!] = curr.name
             acc
         } ?: emptyMap()
     val valuesJson = if (valuesMap.isNotEmpty()) Json.encodeToString(valuesMap) else null
     val valuesDefaultJson =
-        if (valuesMap.isEmpty() &&
+        if (valuesJson == null &&
             valuesDefault?.isNotEmpty() == true &&
             !isCheckboxDefaultTrue
         ) {

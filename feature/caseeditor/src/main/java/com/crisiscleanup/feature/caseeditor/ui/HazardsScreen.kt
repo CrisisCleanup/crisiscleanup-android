@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.feature.caseeditor.EditCaseHazardsViewModel
+import com.crisiscleanup.feature.caseeditor.GroupSummaryFieldLookup
 import com.crisiscleanup.feature.caseeditor.HazardsFormGroupKey
 
 private const val ScreenTitleTranslateKey = HazardsFormGroupKey
@@ -16,7 +17,7 @@ internal fun HazardsSummaryView(
     modifier: Modifier = Modifier,
     onEdit: () -> Unit = {},
     translate: (String) -> String = { s -> s },
-    fieldMap: Map<String, String>?,
+    summaryFieldLookup: GroupSummaryFieldLookup? = null,
 ) {
     EditCaseSummaryHeader(
         0,
@@ -27,7 +28,7 @@ internal fun HazardsSummaryView(
     ) {
         FormDataSummary(
             worksite,
-            fieldMap,
+            summaryFieldLookup,
         )
     }
 }

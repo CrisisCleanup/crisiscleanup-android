@@ -8,6 +8,8 @@ import com.crisiscleanup.feature.caseeditor.model.DetailsInputData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
+internal val excludeDetailsFormFields = setOf("cross_street", "email")
+
 @HiltViewModel
 class EditCaseDetailsViewModel @Inject constructor(
     worksiteProvider: EditableWorksiteProvider,
@@ -24,7 +26,7 @@ class EditCaseDetailsViewModel @Inject constructor(
         detailsInputData = DetailsInputData(
             worksite,
             groupNode,
-            setOf("cross_street", "email"),
+            excludeDetailsFormFields,
         )
     }
 

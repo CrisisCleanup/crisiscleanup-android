@@ -12,6 +12,7 @@ import com.crisiscleanup.core.designsystem.theme.listItemNestedPadding
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
+import com.crisiscleanup.feature.caseeditor.GroupSummaryFieldLookup
 import com.crisiscleanup.feature.caseeditor.model.FieldDynamicValue
 import com.crisiscleanup.feature.caseeditor.model.FormFieldsInputData
 import org.apache.commons.text.StringEscapeUtils
@@ -19,19 +20,26 @@ import org.apache.commons.text.StringEscapeUtils
 @Composable
 internal fun FormDataSummary(
     worksite: Worksite,
-    fieldMap: Map<String, String>?,
+    translations: GroupSummaryFieldLookup?,
     modifier: Modifier = Modifier,
+    excludeFields: Set<String>? = null,
 ) {
-    fieldMap?.let {
-        for ((key, fieldName) in fieldMap) {
+    translations?.let { lookup ->
+        for ((key, fieldName) in lookup.fieldMap) {
+            if (excludeFields?.contains(key) == true) {
+                continue
+            }
+
             worksite.formData?.get(key)?.let {
+
                 var text = ""
                 if (it.isBoolean) {
                     if (it.valueBoolean) {
                         text = fieldName
                     }
                 } else if (it.valueString.isNotBlank()) {
-                    text = "$fieldName: ${it.valueString}"
+                    val value = lookup.optionTranslations[it.valueString] ?: it.valueString
+                    text = "$fieldName: $value"
                 }
 
                 if (text.isNotBlank()) {

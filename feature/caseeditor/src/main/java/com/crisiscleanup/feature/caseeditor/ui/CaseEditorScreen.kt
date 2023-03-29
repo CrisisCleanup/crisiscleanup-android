@@ -210,7 +210,7 @@ private fun ConstraintLayoutScope.CaseSummary(
             isEditable,
             onEdit = editDetails,
             translate = translate,
-            fieldMap = viewModel.detailsFieldLookup,
+            summaryFieldLookup = viewModel.detailsFieldLookup,
         )
 
         WorkSummaryView(
@@ -218,6 +218,8 @@ private fun ConstraintLayoutScope.CaseSummary(
             isEditable,
             onEdit = editWork,
             translate = translate,
+            // TODO
+            // summaryFieldLookup = viewModel.workFieldLookup,
         )
 
         HazardsSummaryView(
@@ -225,7 +227,7 @@ private fun ConstraintLayoutScope.CaseSummary(
             isEditable,
             onEdit = editHazards,
             translate = translate,
-            fieldMap = viewModel.hazardsFieldLookup,
+            summaryFieldLookup = viewModel.hazardsFieldLookup,
         )
 
         VolunteerReportSummaryView(
@@ -233,7 +235,7 @@ private fun ConstraintLayoutScope.CaseSummary(
             isEditable,
             onEdit = editVolunteerReport,
             translate = translate,
-            fieldMap = viewModel.volunteerReportFieldLookup,
+            summaryFieldLookup = viewModel.volunteerReportFieldLookup,
         )
     }
 

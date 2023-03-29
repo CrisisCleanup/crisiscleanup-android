@@ -6,6 +6,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.feature.caseeditor.DetailsFormGroupKey
 import com.crisiscleanup.feature.caseeditor.EditCaseDetailsViewModel
+import com.crisiscleanup.feature.caseeditor.GroupSummaryFieldLookup
+import com.crisiscleanup.feature.caseeditor.excludeDetailsFormFields
 
 private const val ScreenTitleTranslateKey = DetailsFormGroupKey
 
@@ -16,7 +18,7 @@ internal fun DetailsSummaryView(
     modifier: Modifier = Modifier,
     onEdit: () -> Unit = {},
     translate: (String) -> String = { s -> s },
-    fieldMap: Map<String, String>?,
+    summaryFieldLookup: GroupSummaryFieldLookup? = null,
 ) {
     EditCaseSummaryHeader(
         0,
@@ -27,7 +29,8 @@ internal fun DetailsSummaryView(
     ) {
         FormDataSummary(
             worksite,
-            fieldMap,
+            summaryFieldLookup,
+            excludeFields = excludeDetailsFormFields,
         )
     }
 }

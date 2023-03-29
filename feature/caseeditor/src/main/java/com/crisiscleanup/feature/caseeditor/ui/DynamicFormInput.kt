@@ -56,7 +56,7 @@ internal fun DynamicFormListItem(
                 field,
                 updateValue,
                 modifier,
-                text = label,
+                label,
                 helpHint,
                 showHelp,
             )
@@ -65,10 +65,10 @@ internal fun DynamicFormListItem(
             SingleLineTextItem(
                 field,
                 modifier,
-                label = label,
-                onChange = { updateString(it) },
-                breakGlassHint = breakGlassHint,
-                onBreakGlass = breakGlass,
+                label,
+                { updateString(it) },
+                breakGlassHint,
+                breakGlass,
                 helpHint,
                 showHelp,
             )
@@ -77,8 +77,8 @@ internal fun DynamicFormListItem(
             MultiLineTextItem(
                 field,
                 modifier,
-                label = label,
-                onChange = { updateString(it) },
+                label,
+                { updateString(it) },
                 helpHint,
                 showHelp,
             )
@@ -87,8 +87,8 @@ internal fun DynamicFormListItem(
             SelectItem(
                 field,
                 modifier,
-                label = label,
-                onChange = { updateString(it) },
+                label,
+                { updateString(it) },
                 helpHint,
                 showHelp,
             )
@@ -104,7 +104,7 @@ internal fun DynamicFormListItem(
                     field,
                     updateGroupValue,
                     modifier,
-                    text = label,
+                    label,
                     helpHint,
                     showHelp,
                 )
@@ -320,7 +320,7 @@ private fun SelectItem(
             val selectedOption = itemData.dynamicValue.valueString
             if (selectedOption.isNotBlank()) {
                 Text(
-                    selectedOption,
+                    itemData.selectOptions[selectedOption] ?: selectedOption,
                     modifier = Modifier
                         .listItemHorizontalPadding()
                         .listItemBottomPadding()

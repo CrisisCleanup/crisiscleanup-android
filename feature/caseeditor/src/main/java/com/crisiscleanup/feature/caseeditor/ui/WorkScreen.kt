@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.feature.caseeditor.EditCaseWorkViewModel
+import com.crisiscleanup.feature.caseeditor.GroupSummaryFieldLookup
 import com.crisiscleanup.feature.caseeditor.WorkFormGroupKey
 
 private const val ScreenTitleTranslateKey = WorkFormGroupKey
@@ -16,6 +17,7 @@ internal fun WorkSummaryView(
     modifier: Modifier = Modifier,
     onEdit: () -> Unit = {},
     translate: (String) -> String = { s -> s },
+    summaryFieldLookup: GroupSummaryFieldLookup? = null,
 ) {
     EditCaseSummaryHeader(
         0,
