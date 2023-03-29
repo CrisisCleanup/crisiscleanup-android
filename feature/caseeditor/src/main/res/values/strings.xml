@@ -46,4 +46,10 @@
     <string name="select_option_for_field">Select option for %s</string>
 
     <string name="save_changes">Save changes</string>
+    <string name="undo_changes">Undo changes</string>
+    <string name="cancel_changes">Cancel changes</string>
+    <string name="undo_changes_summary">Changes have been made to this case. Would you like to back out and lose these changes?</string>
+    <string name="cancel_changes_summary">Changes have been made to this case. Would you like to cancel these changes?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -15,10 +16,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintLayoutScope
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.crisiscleanup.core.designsystem.component.AnimatedBusyIndicator
-import com.crisiscleanup.core.designsystem.component.BusyButton
-import com.crisiscleanup.core.designsystem.component.TopAppBarBackCancel
-import com.crisiscleanup.core.designsystem.component.actionEdgeSpace
+import com.crisiscleanup.core.designsystem.component.*
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseEditorUiState
@@ -40,7 +38,7 @@ internal fun CaseEditorRoute(
     viewModel: CaseEditorViewModel = hiltViewModel(),
 ) {
     BackHandler {
-        if (!viewModel.promptSaveChanges()) {
+        if (viewModel.onSystemBack()) {
             onBackClick()
         }
     }
@@ -148,7 +146,8 @@ private fun ConstraintLayoutScope.CaseSummary(
     val (mainContent, busyIndicator, saveChangesRef) = createRefs()
 
     val isLoadingWorksite by viewModel.isLoading.collectAsStateWithLifecycle()
-    val isEditable = worksiteData.isEditable
+    val isSavingData by viewModel.isSavingWorksite.collectAsStateWithLifecycle()
+    val isEditable = worksiteData.isEditable && !isSavingData
 
     val closeKeyboard = rememberCloseKeyboard(viewModel)
     val scrollState = rememberScrollState()
@@ -249,7 +248,6 @@ private fun ConstraintLayoutScope.CaseSummary(
     )
 
     val isDataChanged by viewModel.hasChanges.collectAsStateWithLifecycle()
-    val isSavingData by viewModel.isSavingWorksite.collectAsStateWithLifecycle()
     val saveChanges = remember(viewModel) { { viewModel.saveChanges() } }
     if (isDataChanged) {
         BusyButton(
@@ -265,4 +263,53 @@ private fun ConstraintLayoutScope.CaseSummary(
             onClick = saveChanges,
         )
     }
+
+    val showBackChangesDialog by viewModel.promptUnsavedChanges
+    val showCancelChangesDialog by viewModel.promptCancelChanges
+    val abandonChanges = remember(viewModel) { { viewModel.abandonChanges() } }
+    if (showBackChangesDialog) {
+        val closeChangesDialog = { viewModel.promptUnsavedChanges.value = false }
+        PromptChangesDialog(
+            R.string.undo_changes,
+            R.string.undo_changes_summary,
+            abandonChanges,
+            closeChangesDialog,
+        )
+    } else if (showCancelChangesDialog) {
+        val closeChangesDialog = { viewModel.promptCancelChanges.value = false }
+        PromptChangesDialog(
+            R.string.cancel_changes,
+            R.string.cancel_changes_summary,
+            abandonChanges,
+            closeChangesDialog,
+        )
+    }
+}
+
+@Composable
+private fun PromptChangesDialog(
+    @StringRes titleResId: Int,
+    @StringRes textResId: Int,
+    onConfirm: () -> Unit = {},
+    onDismiss: () -> Unit = {},
+    @StringRes confirmTextId: Int = R.string.yes,
+    @StringRes dismissTextId: Int = R.string.no,
+) {
+    AlertDialog(
+        title = { Text(stringResource(titleResId)) },
+        text = { Text(stringResource(textResId)) },
+        onDismissRequest = onDismiss,
+        dismissButton = {
+            CrisisCleanupTextButton(
+                textResId = dismissTextId,
+                onClick = onDismiss
+            )
+        },
+        confirmButton = {
+            CrisisCleanupTextButton(
+                textResId = confirmTextId,
+                onClick = onConfirm,
+            )
+        },
+    )
 }

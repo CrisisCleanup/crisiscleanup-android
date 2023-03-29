@@ -352,10 +352,14 @@ class CaseEditorViewModel @Inject constructor(
         }
     }
 
+    fun abandonChanges() {
+        navigateBack.value = true
+    }
+
     /**
      * @return true if prompt is shown or false if there are no changes
      */
-    fun promptSaveChanges(): Boolean {
+    private fun promptSaveChanges(): Boolean {
         if (hasChanges.value) {
             promptUnsavedChanges.value = true
             return true
@@ -363,11 +367,23 @@ class CaseEditorViewModel @Inject constructor(
         return false
     }
 
-    override fun onSystemBack() = !promptSaveChanges()
+    private fun onBackNavigate(): Boolean {
+        if (isSavingWorksite.value) {
+            return false
+        }
 
-    override fun onNavigateBack() = !promptSaveChanges()
+        return !promptSaveChanges()
+    }
+
+    override fun onSystemBack() = onBackNavigate()
+
+    override fun onNavigateBack() = onBackNavigate()
 
     override fun onNavigateCancel(): Boolean {
+        if (isSavingWorksite.value) {
+            return false
+        }
+
         if (hasChanges.value) {
             promptCancelChanges.value = true
             return false
