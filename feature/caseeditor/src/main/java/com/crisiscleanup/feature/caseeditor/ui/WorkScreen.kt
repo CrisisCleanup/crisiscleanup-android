@@ -5,8 +5,9 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.feature.caseeditor.EditCaseWorkViewModel
+import com.crisiscleanup.feature.caseeditor.WorkFormGroupKey
 
-private const val ScreenTitleTranslateKey = "work_info"
+private const val ScreenTitleTranslateKey = WorkFormGroupKey
 
 @Composable
 internal fun WorkSummaryView(

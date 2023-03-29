@@ -5,8 +5,9 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.feature.caseeditor.EditCaseVolunteerReportViewModel
+import com.crisiscleanup.feature.caseeditor.VolunteerReportFormGroupKey
 
-private const val ScreenTitleTranslateKey = "claim_status_report_info"
+private const val ScreenTitleTranslateKey = VolunteerReportFormGroupKey
 
 @Composable
 internal fun VolunteerReportSummaryView(
@@ -15,6 +16,7 @@ internal fun VolunteerReportSummaryView(
     modifier: Modifier = Modifier,
     onEdit: () -> Unit = {},
     translate: (String) -> String = { s -> s },
+    fieldMap: Map<String, String>?,
 ) {
     EditCaseSummaryHeader(
         0,
@@ -23,9 +25,10 @@ internal fun VolunteerReportSummaryView(
         modifier,
         header = translate(ScreenTitleTranslateKey),
     ) {
-        worksite.run {
-            // TODO
-        }
+        FormDataSummary(
+            worksite,
+            fieldMap,
+        )
     }
 }
 

@@ -4,7 +4,6 @@ import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
-import com.crisiscleanup.feature.caseeditor.model.EmptyFormFieldNode
 import com.crisiscleanup.feature.caseeditor.model.HazardsInputData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -18,9 +17,7 @@ class EditCaseHazardsViewModel @Inject constructor(
     val hazardsInputData: HazardsInputData
 
     init {
-        val groupNode =
-            worksiteProvider.formFields.firstOrNull { it.fieldKey == "hazards_info" }
-                ?: EmptyFormFieldNode
+        val groupNode = worksiteProvider.getGroupNode(HazardsFormGroupKey)
 
         val worksite = worksiteProvider.editableWorksite.value
 

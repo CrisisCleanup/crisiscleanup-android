@@ -27,6 +27,11 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 
+internal const val DetailsFormGroupKey = "property_info"
+internal const val WorkFormGroupKey = "work_info"
+internal const val HazardsFormGroupKey = "hazards_info"
+internal const val VolunteerReportFormGroupKey = "claim_status_report_info"
+
 @HiltViewModel
 class CaseEditorViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -48,6 +53,15 @@ class CaseEditorViewModel @Inject constructor(
     val headerTitle = MutableStateFlow("")
 
     val visibleNoteCount: Int = 2
+
+    val incidentFieldLookup = MutableStateFlow(emptyMap<String, Map<String, String>>())
+
+    val detailsFieldLookup: Map<String, String>?
+        get() = incidentFieldLookup.value[DetailsFormGroupKey]
+    val hazardsFieldLookup: Map<String, String>?
+        get() = incidentFieldLookup.value[HazardsFormGroupKey]
+    val volunteerReportFieldLookup: Map<String, String>?
+        get() = incidentFieldLookup.value[VolunteerReportFormGroupKey]
 
     private val isRefreshingIncident = MutableStateFlow(false)
     private val isRefreshingWorksite = MutableStateFlow(false)
@@ -177,6 +191,14 @@ class CaseEditorViewModel @Inject constructor(
                         incident.formFields
                             .filter { it.fieldKey.isNotBlank() && it.label.isNotBlank() }
                             .associate { it.fieldKey to it.label }
+
+                    val localTranslate = { s: String -> translate(s) }
+                    incidentFieldLookup.value = formFields.associate { node ->
+                        val groupFieldMap = node.children.associate { child ->
+                            child.fieldKey to child.formField.getFieldLabel(localTranslate)
+                        }
+                        node.fieldKey to groupFieldMap
+                    }
                 }
                 editableWorksite.value = initialWorksite
                 incidentBounds = bounds ?: DefaultIncidentBounds

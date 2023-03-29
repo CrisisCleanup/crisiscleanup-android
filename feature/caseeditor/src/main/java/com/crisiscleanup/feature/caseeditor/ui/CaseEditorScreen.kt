@@ -201,41 +201,36 @@ private fun BoxScope.CaseSummary(
             translate = translate,
         )
 
-        if (viewModel.isCreateWorksite) {
-            DetailsSummaryView(
-                worksite,
-                isEditable,
-                onEdit = editDetails,
-                translate = translate,
-            )
-        }
+        DetailsSummaryView(
+            worksite,
+            isEditable,
+            onEdit = editDetails,
+            translate = translate,
+            fieldMap = viewModel.detailsFieldLookup,
+        )
 
-        if (viewModel.isCreateWorksite) {
-            WorkSummaryView(
-                worksite,
-                isEditable,
-                onEdit = editWork,
-                translate = translate,
-            )
-        }
+        WorkSummaryView(
+            worksite,
+            isEditable,
+            onEdit = editWork,
+            translate = translate,
+        )
 
-        if (viewModel.isCreateWorksite) {
-            HazardsSummaryView(
-                worksite,
-                isEditable,
-                onEdit = editHazards,
-                translate = translate,
-            )
-        }
+        HazardsSummaryView(
+            worksite,
+            isEditable,
+            onEdit = editHazards,
+            translate = translate,
+            fieldMap = viewModel.hazardsFieldLookup,
+        )
 
-        if (viewModel.isCreateWorksite) {
-            VolunteerReportSummaryView(
-                worksite,
-                isEditable,
-                onEdit = editVolunteerReport,
-                translate = translate,
-            )
-        }
+        VolunteerReportSummaryView(
+            worksite,
+            isEditable,
+            onEdit = editVolunteerReport,
+            translate = translate,
+            fieldMap = viewModel.volunteerReportFieldLookup,
+        )
     }
 
     AnimatedVisibility(

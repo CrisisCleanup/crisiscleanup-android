@@ -6,6 +6,7 @@ import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.Worksite
+import com.crisiscleanup.feature.caseeditor.model.EmptyFormFieldNode
 import com.crisiscleanup.feature.caseeditor.model.FormFieldNode
 import dagger.Binds
 import dagger.Module
@@ -22,6 +23,9 @@ interface EditableWorksiteProvider {
     var formFields: List<FormFieldNode>
     var formFieldTranslationLookup: Map<String, String>
 }
+
+fun EditableWorksiteProvider.getGroupNode(key: String) =
+    formFields.firstOrNull { it.fieldKey == key } ?: EmptyFormFieldNode
 
 fun EditableWorksiteProvider.reset(incidentId: Long = EmptyIncident.id) = run {
     incident = EmptyIncident
