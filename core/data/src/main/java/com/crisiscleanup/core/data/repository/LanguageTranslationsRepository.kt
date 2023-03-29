@@ -9,7 +9,6 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.model.asEntity
-import com.crisiscleanup.core.data.util.NetworkMonitor
 import com.crisiscleanup.core.database.dao.LanguageDao
 import com.crisiscleanup.core.database.dao.LanguageDaoPlus
 import com.crisiscleanup.core.database.model.asExternalModel
@@ -44,18 +43,16 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
     private val languageDaoPlus: LanguageDaoPlus,
     private val authEventManager: AuthEventManager,
     @Logger(CrisisCleanupLoggers.Language) private val logger: AppLogger,
-    private val networkMonitor: NetworkMonitor,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
     @ApplicationScope private val coroutineScope: CoroutineScope,
 ) : LanguageTranslationsRepository {
     private var isLoadingLanguages = MutableStateFlow(false)
     private var isSettingLanguage = MutableStateFlow(false)
 
-    override val isLoading =
-        combine(
-            isLoadingLanguages,
-            isSettingLanguage,
-        ) { b, b1 -> b || b1 }
+    override val isLoading = combine(
+        isLoadingLanguages,
+        isSettingLanguage,
+    ) { b, b1 -> b || b1 }
 
     override val supportedLanguages = languageDao.streamLanguages().map {
         it.map { translation -> Language(translation.entity.key, translation.entity.name) }
@@ -81,7 +78,8 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
             replay = 1,
         )
 
-    override val translationCount = languageTranslations.map { it?.translations?.size ?: 0 }
+    override val translationCount = languageTranslations
+        .map { it?.translations?.size ?: 0 }
         .stateIn(
             scope = coroutineScope,
             initialValue = 0,
@@ -105,8 +103,6 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
             .launchIn(coroutineScope)
     }
 
-    private suspend fun isNotOnline() = networkMonitor.isNotOnline.first()
-
     private suspend fun pullLanguages() = coroutineScope {
         val languagesResult = dataSource.getLanguages()
         tryThrowException(authEventManager, languagesResult.errors)
@@ -128,10 +124,6 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
     }
 
     override suspend fun loadLanguages(force: Boolean) {
-        if (isNotOnline()) {
-            return
-        }
-
         // TODO Track language sync attempts and skip if not forced and last attempt is recent
 
         isLoadingLanguages.value = true
@@ -169,11 +161,11 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
     override fun setLanguage(key: String) {
         setLanguageJob?.cancel()
         setLanguageJob = coroutineScope.launch(ioDispatcher) {
-            if (isNotOnline()) {
-                return@launch
-            }
-
             try {
+                // TODO Set the language if local translations exist.
+                //      Pull does not need to succeed in this case.
+                //      Consider possible race condition if ordering changes.
+
                 pullUpdatedTranslations(key)
 
                 ensureActive()

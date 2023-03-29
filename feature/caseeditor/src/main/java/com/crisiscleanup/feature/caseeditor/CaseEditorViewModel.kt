@@ -43,6 +43,7 @@ class CaseEditorViewModel @Inject constructor(
     private val worksitesRepository: WorksitesRepository,
     private val networkMonitor: NetworkMonitor,
     languageRepository: LanguageTranslationsRepository,
+    languageRefresher: LanguageRefresher,
     private val editableWorksiteProvider: EditableWorksiteProvider,
     translator: KeyTranslator,
     resourceProvider: AndroidResourceProvider,
@@ -260,7 +261,7 @@ class CaseEditorViewModel @Inject constructor(
 
         viewModelScope.launch(ioDispatcher) {
             try {
-                languageRepository.loadLanguages()
+                languageRefresher.pullLanguages()
             } catch (e: Exception) {
                 logger.logException(e)
             }
@@ -269,7 +270,7 @@ class CaseEditorViewModel @Inject constructor(
         viewModelScope.launch(ioDispatcher) {
             isRefreshingIncident.value = true
             try {
-                incidentRefresher.refreshIncident(incidentIdArg)
+                incidentRefresher.pullIncident(incidentIdArg)
             } catch (e: Exception) {
                 logger.logException(e)
             } finally {

@@ -10,14 +10,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toSize
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintLayoutScope
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.*
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
+import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseEditorUiState
 import com.crisiscleanup.feature.caseeditor.CaseEditorViewModel
@@ -149,6 +154,11 @@ private fun ConstraintLayoutScope.CaseSummary(
     val isSavingData by viewModel.isSavingWorksite.collectAsStateWithLifecycle()
     val isEditable = worksiteData.isEditable && !isSavingData
 
+    val isDataChanged by viewModel.hasChanges.collectAsStateWithLifecycle()
+
+    val saveChanges = remember(viewModel) { { viewModel.saveChanges() } }
+    var saveChangesButtonSize by remember { mutableStateOf(Size.Zero) }
+
     val closeKeyboard = rememberCloseKeyboard(viewModel)
     val scrollState = rememberScrollState()
     // TODO Convert to LazyColumn if input is not too complex. Pass scope to lazy children views.
@@ -237,6 +247,14 @@ private fun ConstraintLayoutScope.CaseSummary(
             translate = translate,
             summaryFieldLookup = viewModel.volunteerReportFieldLookup,
         )
+
+        if (isDataChanged) {
+            Spacer(
+                modifier = listItemModifier.height(
+                    with(LocalDensity.current) { saveChangesButtonSize.height.toDp() }
+                ),
+            )
+        }
     }
 
     AnimatedBusyIndicator(
@@ -249,8 +267,6 @@ private fun ConstraintLayoutScope.CaseSummary(
         padding = 48.dp
     )
 
-    val isDataChanged by viewModel.hasChanges.collectAsStateWithLifecycle()
-    val saveChanges = remember(viewModel) { { viewModel.saveChanges() } }
     if (isDataChanged) {
         BusyButton(
             modifier = Modifier
@@ -258,7 +274,10 @@ private fun ConstraintLayoutScope.CaseSummary(
                     bottom.linkTo(parent.bottom, margin = actionEdgeSpace)
                     end.linkTo(parent.end, margin = actionEdgeSpace)
                 }
-                .animateContentSize(),
+                .animateContentSize()
+                .onGloballyPositioned {
+                    saveChangesButtonSize = it.size.toSize()
+                },
             textResId = R.string.save_changes,
             enabled = !isSavingData,
             indicateBusy = isSavingData,
