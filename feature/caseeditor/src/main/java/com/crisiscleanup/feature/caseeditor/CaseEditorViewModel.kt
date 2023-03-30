@@ -212,11 +212,13 @@ class CaseEditorViewModel @Inject constructor(
                     workTypeGroupChildrenLookup.value =
                         formFields.firstOrNull { it.fieldKey == WorkFormGroupKey }
                             ?.let { node ->
-                                node.children.associate {
-                                    it.fieldKey to it.children.map(
-                                        FormFieldNode::fieldKey
-                                    )
-                                }
+                                node.children
+                                    .filter { it.parentKey == WorkFormGroupKey && it.children.isNotEmpty() }
+                                    .associate {
+                                        it.fieldKey to it.children.map(
+                                            FormFieldNode::fieldKey
+                                        )
+                                    }
                             }
                             ?: emptyMap()
 
@@ -292,7 +294,7 @@ class CaseEditorViewModel @Inject constructor(
         (state as? CaseEditorUiState.WorksiteData)?.let { stateData ->
             worksite.formData?.let { formData ->
                 val incident = stateData.incident
-                val keys = formData.keys
+                return@combine formData.keys
                     .asSequence()
                     .filter { incident.workTypeLookup[it] != null }
                     .mapNotNull {
@@ -300,11 +302,8 @@ class CaseEditorViewModel @Inject constructor(
                         else incident.formFieldLookup[it]?.parentKey
                     }
                     .toSet()
-                    .filter { workTypeGroupChildrenLookup.value.containsKey(it) }
                     .sorted()
                     .toList()
-                logger.logDebug("work types $keys ${formData.keys}")
-                return@combine keys
             }
         }
         emptyList()
