@@ -46,10 +46,15 @@
     <string name="select_option_for_field">Select option for %s</string>
 
     <string name="save_changes">Save changes</string>
-    <string name="undo_changes">Undo changes</string>
-    <string name="cancel_changes">Cancel changes</string>
-    <string name="undo_changes_summary">Changes have been made to this case. Would you like to back out and lose these changes?</string>
-    <string name="cancel_changes_summary">Changes have been made to this case. Would you like to cancel these changes?</string>
+    <string name="changes">Changes</string>
+    <string name="changes_choice">Changes have been made to this case.\nWould you like to continue making changes?\nPressing No loses these changes.</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+
+    <string name="incomplete_worksite">Incomplete information</string>
+    <string name="incomplete_property_info">A name and phone is required.</string>
+    <string name="incomplete_location_info">A location with address is required.</string>
+    <string name="incomplete_work_type_info">At least one work type must be specified.</string>
+    <string name="incomplete_worksite_data">Required data is fully defined. Sorry for not being able to identify where.</string>
+    <string name="fix">Fix</string>
 </resources>

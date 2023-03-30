@@ -6,6 +6,4 @@ class VolunteerReportInputData(
     worksite: Worksite,
     groupNode: FormFieldNode,
     ignoreFieldKeys: Set<String> = emptySet(),
-) : FormFieldsInputData(worksite, groupNode, ignoreFieldKeys) {
-
-}
+) : FormFieldsInputData(worksite, groupNode, ignoreFieldKeys)

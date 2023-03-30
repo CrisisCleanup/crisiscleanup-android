@@ -20,6 +20,7 @@ val listItemModifier = Modifier
 fun Modifier.listItemHeight() = heightIn(min = 56.dp)
 fun Modifier.listItemPadding() = padding(horizontal = 16.dp, vertical = 8.dp)
 fun Modifier.listItemHorizontalPadding() = padding(horizontal = 16.dp)
+fun Modifier.listItemVerticalPadding() = padding(vertical = 8.dp)
 fun Modifier.listItemTopPadding() = padding(top = 8.dp)
 fun Modifier.listItemBottomPadding() = padding(bottom = 8.dp)
 fun Modifier.listRowItemStartPadding() = padding(start = 16.dp)

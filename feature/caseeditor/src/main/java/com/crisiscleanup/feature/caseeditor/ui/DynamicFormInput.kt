@@ -303,8 +303,10 @@ private fun SelectItem(
                 }
                 .then(modifier),
         ) {
+            val selectedOption = itemData.dynamicValue.valueString
+            val hasSelection = selectedOption.isNotBlank()
             Row(
-                Modifier.listItemHeight(),
+                Modifier.listItemVerticalPadding(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(label)
@@ -317,8 +319,7 @@ private fun SelectItem(
                     contentDescription = stringResource(R.string.select_option_for_field, label),
                 )
             }
-            val selectedOption = itemData.dynamicValue.valueString
-            if (selectedOption.isNotBlank()) {
+            if (hasSelection) {
                 Text(
                     itemData.selectOptions[selectedOption] ?: selectedOption,
                     modifier = Modifier

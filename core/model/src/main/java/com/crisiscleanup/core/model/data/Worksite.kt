@@ -96,6 +96,7 @@ data class WorksiteFormValue(
     val valueBoolean: Boolean = false,
 ) {
     val isBooleanTrue = isBoolean && valueBoolean
+    val hasValue = isBooleanTrue || (!isBoolean && valueString.isNotBlank())
 }
 
 internal const val HIGH_PRIORITY_FLAG = "flag.worksite_high_priority"

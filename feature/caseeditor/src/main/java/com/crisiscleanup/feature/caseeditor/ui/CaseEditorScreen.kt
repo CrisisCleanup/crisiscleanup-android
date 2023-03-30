@@ -1,7 +1,6 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
 import androidx.activity.compose.BackHandler
-import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -27,6 +26,7 @@ import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseEditorUiState
 import com.crisiscleanup.feature.caseeditor.CaseEditorViewModel
 import com.crisiscleanup.feature.caseeditor.R
+import com.crisiscleanup.feature.caseeditor.WorksiteSection
 import com.crisiscleanup.core.common.R as commonR
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -223,13 +223,16 @@ private fun ConstraintLayoutScope.CaseSummary(
             summaryFieldLookup = viewModel.detailsFieldLookup,
         )
 
+        val workTypeGroups by viewModel.worksiteWorkTypeGroups.collectAsStateWithLifecycle()
+        val groupChildren by viewModel.workTypeGroupChildrenLookup.collectAsStateWithLifecycle()
         WorkSummaryView(
             worksite,
             isEditable,
             onEdit = editWork,
             translate = translate,
-            // TODO
-            // summaryFieldLookup = viewModel.workFieldLookup,
+            workTypeGroups = workTypeGroups,
+            groupChildren = groupChildren,
+            summaryFieldLookup = viewModel.workFieldLookup,
         )
 
         HazardsSummaryView(
@@ -291,46 +294,90 @@ private fun ConstraintLayoutScope.CaseSummary(
     if (showBackChangesDialog) {
         val closeChangesDialog = { viewModel.promptUnsavedChanges.value = false }
         PromptChangesDialog(
-            R.string.undo_changes,
-            R.string.undo_changes_summary,
-            abandonChanges,
-            closeChangesDialog,
+            onStay = closeChangesDialog,
+            onAbort = abandonChanges,
         )
     } else if (showCancelChangesDialog) {
         val closeChangesDialog = { viewModel.promptCancelChanges.value = false }
         PromptChangesDialog(
-            R.string.cancel_changes,
-            R.string.cancel_changes_summary,
-            abandonChanges,
-            closeChangesDialog,
+            onStay = closeChangesDialog,
+            onAbort = abandonChanges,
         )
     }
+
+    InvalidSaveDialog(
+        onEditLocation = editLocation,
+        onEditPropertyData = editPropertyData,
+        onEditWork = editWork,
+    )
 }
 
 @Composable
 private fun PromptChangesDialog(
-    @StringRes titleResId: Int,
-    @StringRes textResId: Int,
-    onConfirm: () -> Unit = {},
-    onDismiss: () -> Unit = {},
-    @StringRes confirmTextId: Int = R.string.yes,
-    @StringRes dismissTextId: Int = R.string.no,
+    onStay: () -> Unit = {},
+    onAbort: () -> Unit = {},
 ) {
     AlertDialog(
-        title = { Text(stringResource(titleResId)) },
-        text = { Text(stringResource(textResId)) },
-        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.changes)) },
+        text = { Text(stringResource(R.string.changes_choice)) },
+        onDismissRequest = onAbort,
         dismissButton = {
             CrisisCleanupTextButton(
-                textResId = dismissTextId,
-                onClick = onDismiss
+                textResId = R.string.no,
+                onClick = onAbort
             )
         },
         confirmButton = {
             CrisisCleanupTextButton(
-                textResId = confirmTextId,
-                onClick = onConfirm,
+                textResId = R.string.yes,
+                onClick = onStay,
             )
         },
     )
+}
+
+@Composable
+private fun InvalidSaveDialog(
+    onEditPropertyData: () -> Unit = {},
+    onEditLocation: () -> Unit = {},
+    onEditWork: () -> Unit = {},
+    viewModel: CaseEditorViewModel = hiltViewModel(),
+) {
+
+    val promptInvalidSave by viewModel.showInvalidWorksiteSave.collectAsStateWithLifecycle()
+    if (promptInvalidSave) {
+        val invalidWorksiteInfo = viewModel.invalidWorksiteInfo.value
+        if (invalidWorksiteInfo.invalidSection != WorksiteSection.None) {
+            val messageResId =
+                if (invalidWorksiteInfo.messageResId == 0) R.string.incomplete_worksite_data
+                else invalidWorksiteInfo.messageResId
+            val onDismiss =
+                remember(viewModel) { { viewModel.showInvalidWorksiteSave.value = false } }
+            AlertDialog(
+                title = { Text(stringResource(R.string.incomplete_worksite)) },
+                text = { Text(stringResource(messageResId)) },
+                onDismissRequest = onDismiss,
+                dismissButton = {
+                    CrisisCleanupTextButton(
+                        textResId = android.R.string.cancel,
+                        onClick = onDismiss
+                    )
+                },
+                confirmButton = {
+                    CrisisCleanupTextButton(
+                        textResId = R.string.fix,
+                        onClick = {
+                            when (invalidWorksiteInfo.invalidSection) {
+                                WorksiteSection.Location -> onEditLocation()
+                                WorksiteSection.Property -> onEditPropertyData()
+                                WorksiteSection.WorkType -> onEditWork()
+                                else -> {}
+                            }
+                            onDismiss()
+                        },
+                    )
+                },
+            )
+        }
+    }
 }

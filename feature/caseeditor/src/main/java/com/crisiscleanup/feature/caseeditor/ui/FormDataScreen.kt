@@ -10,12 +10,38 @@ import androidx.compose.ui.Modifier
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemNestedPadding
 import com.crisiscleanup.core.model.data.Worksite
+import com.crisiscleanup.core.model.data.WorksiteFormValue
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
 import com.crisiscleanup.feature.caseeditor.GroupSummaryFieldLookup
 import com.crisiscleanup.feature.caseeditor.model.FieldDynamicValue
 import com.crisiscleanup.feature.caseeditor.model.FormFieldsInputData
 import org.apache.commons.text.StringEscapeUtils
+
+@Composable
+internal fun FormFieldSummary(
+    key: String,
+    fieldName: String,
+    formValue: WorksiteFormValue,
+    lookup: GroupSummaryFieldLookup,
+    modifier: Modifier = Modifier,
+) {
+    if (formValue.hasValue) {
+        val text = if (formValue.isBooleanTrue) {
+            fieldName
+        } else {
+            val value = lookup.optionTranslations[formValue.valueString] ?: formValue.valueString
+            "$fieldName: $value"
+        }
+
+        key(key) {
+            Text(
+                text,
+                modifier = modifier,
+            )
+        }
+    }
+}
 
 @Composable
 internal fun FormDataSummary(
@@ -31,23 +57,13 @@ internal fun FormDataSummary(
             }
 
             worksite.formData?.get(key)?.let {
-
-                var text = ""
-                if (it.isBoolean) {
-                    if (it.valueBoolean) {
-                        text = fieldName
-                    }
-                } else if (it.valueString.isNotBlank()) {
-                    val value = lookup.optionTranslations[it.valueString] ?: it.valueString
-                    text = "$fieldName: $value"
-                }
-
-                if (text.isNotBlank()) {
-                    Text(
-                        text,
-                        modifier = modifier,
-                    )
-                }
+                FormFieldSummary(
+                    key,
+                    fieldName,
+                    it,
+                    lookup,
+                    modifier,
+                )
             }
         }
     }

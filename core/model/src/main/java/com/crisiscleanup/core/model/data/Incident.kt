@@ -7,7 +7,20 @@ data class Incident(
     val locations: List<IncidentLocation>,
     val activePhoneNumbers: List<String>,
     val formFields: List<IncidentFormField>,
-)
+) {
+    val formFieldLookup: Map<String, IncidentFormField> by lazy {
+        formFields.associateBy { it.fieldKey }
+    }
+
+    /**
+     * Form data fields categorized under a work type
+     */
+    val workTypeLookup: Map<String, String> by lazy {
+        formFields
+            .filter { it.selectToggleWorkType.isNotBlank() }
+            .associate { it.fieldKey to it.selectToggleWorkType }
+    }
+}
 
 val EmptyIncident = Incident(-1, "", "", emptyList(), emptyList(), emptyList())
 

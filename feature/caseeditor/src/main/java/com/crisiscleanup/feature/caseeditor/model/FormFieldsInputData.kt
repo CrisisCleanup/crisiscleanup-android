@@ -9,6 +9,7 @@ open class FormFieldsInputData(
     worksite: Worksite,
     groupNode: FormFieldNode,
     ignoreFieldKeys: Set<String> = emptySet(),
+    private val autoManageGroups: Boolean = false,
 ) : CaseDataWriter {
     private val worksiteIn = worksite.copy()
 
@@ -24,6 +25,18 @@ open class FormFieldsInputData(
                     it.valueBoolean,
                 )
             }
+
+            // TODO Add test coverage
+            val isActiveGroup = autoManageGroups &&
+                    node.children.isNotEmpty() &&
+                    node.children.any { child ->
+                        val childFormValue = worksiteFormData[child.fieldKey]
+                        childFormValue?.hasValue == true
+                    }
+            if (isActiveGroup && !dynamicValue.isBooleanTrue) {
+                dynamicValue = DynamicValue("", isBoolean = true, true)
+            }
+
             FieldDynamicValue(
                 node.formField,
                 node.options,
@@ -45,8 +58,6 @@ open class FormFieldsInputData(
                     map[it.key] = true
                 }
         }
-
-    override fun updateCase() = updateCase(worksiteIn)
 
     private fun resetUnmodifiedGroups(fieldData: Map<String, DynamicValue>): Map<String, DynamicValue> {
         if (groupFields.isEmpty()) {
@@ -71,6 +82,23 @@ open class FormFieldsInputData(
         return updatedFieldData
     }
 
+    private fun removeGroupFields(data: Map<String, DynamicValue>): Map<String, DynamicValue> {
+        val groups = formFieldData
+            .filter { it.childrenCount > 0 }
+            .map { it.key }
+            .toSet()
+        if (groups.isNotEmpty()) {
+            return data.filter { !groups.contains(it.key) }
+        }
+
+        return data
+    }
+
+    protected open fun onPreCommitFieldData(data: Map<String, DynamicValue>) =
+        if (autoManageGroups) removeGroupFields(data) else data
+
+    override fun updateCase() = updateCase(worksiteIn)
+
     override fun updateCase(worksite: Worksite): Worksite? {
         var snapshotFieldData = mutableFormFieldData.associate {
             it.value.key to it.value.dynamicValue
@@ -79,11 +107,14 @@ open class FormFieldsInputData(
         // TODO Add test coverage
         snapshotFieldData = resetUnmodifiedGroups(snapshotFieldData)
 
-        if (!worksite.seekChange(snapshotFieldData)) {
+        // TODO Add test coverage of default removeGroupFields and autoManageGroups behavior does not cause a change in worksite form data
+        val committingFieldData = onPreCommitFieldData(snapshotFieldData)
+
+        if (!worksite.seekChange(committingFieldData)) {
             return worksite
         }
 
-        val formData = worksite.copyModifiedFormData(snapshotFieldData)
+        val formData = worksite.copyModifiedFormData(committingFieldData)
         return worksite.copy(
             formData = formData,
         )
