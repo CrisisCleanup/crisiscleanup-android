@@ -80,7 +80,8 @@ fun NetworkFlag.asEntity() = WorksiteFlagEntity(
     id = 0,
     localGlobalUuid = "",
     worksiteId = 0,
-    networkId = id,
+    // Incoming network ID is always defined
+    networkId = id!!,
     action = action,
     createdAt = createdAt,
     isHighPriority = isHighPriority,
@@ -94,7 +95,8 @@ fun NetworkWorksiteFull.Note.asEntity() = WorksiteNoteEntity(
     id = 0,
     localGlobalUuid = "",
     worksiteId = 0,
-    networkId = id,
+    // Incoming network ID is always defined
+    networkId = id!!,
     createdAt = createdAt,
     isSurvivor = isSurvivor,
     note = note ?: "",

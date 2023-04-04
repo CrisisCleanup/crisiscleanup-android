@@ -22,9 +22,10 @@ data class ExistingCaseLocation(
 
 fun NetworkWorksiteLocationSearch.asCaseLocation(iconProvider: MapCaseIconProvider): ExistingCaseLocation {
     var workType: WorkType? = null
-    keyWorkType?.apply {
+    keyWorkType.apply {
         workType = WorkType(
-            id = id,
+            // Incoming network ID is always defined
+            id = id!!,
             orgClaim = orgClaim,
             statusLiteral = status,
             workTypeLiteral = this.workType,

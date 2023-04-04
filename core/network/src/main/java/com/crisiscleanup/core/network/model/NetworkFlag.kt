@@ -6,7 +6,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class NetworkFlag(
-    val id: Long,
+    // Incoming network ID is always defined
+    val id: Long?,
     val action: String?,
     @SerialName("created_at")
     val createdAt: Instant,

@@ -41,7 +41,7 @@ data class Worksite(
     val state: String,
     val svi: Float?,
     val updatedAt: Instant?,
-    val what3words: String? = null,
+    val what3Words: String? = null,
     val workTypes: List<WorkType>,
     // Member of My Organization flag when new worksite is created.
     // Use [favoriteId] when worksite is pre-existing.

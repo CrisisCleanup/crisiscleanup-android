@@ -19,4 +19,10 @@ data class DynamicValue(
     val valueBoolean: Boolean = false,
 ) {
     val isBooleanTrue = isBoolean && valueBoolean
+
+    fun isBooleanEqual(other: DynamicValue) =
+        isBoolean && other.isBoolean && valueBoolean == other.valueBoolean
+
+    fun isStringEqual(other: DynamicValue) =
+        !isBoolean && !other.isBoolean && valueString.trim() == other.valueString.trim()
 }

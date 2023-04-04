@@ -3,6 +3,7 @@ package com.crisiscleanup.core.data.repository
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.data.model.asEntity
 import com.crisiscleanup.core.database.dao.SyncLogDao
 import com.crisiscleanup.core.model.data.SyncLog
@@ -18,20 +19,15 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.Clock
 import javax.inject.Inject
 
-interface SyncLogRepository {
-    fun log(message: String, type: String = "", details: String = ""): SyncLogRepository
-    fun flush()
-}
-
-class DatabaseSyncLogRepository @Inject constructor(
+class SyncLogRepository @Inject constructor(
     private val syncLogDao: SyncLogDao,
     @ApplicationScope private val coroutineScope: CoroutineScope,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
-) : SyncLogRepository {
+) : SyncLogger {
     private val logEntriesMutex = Mutex()
     private var logEntries = mutableListOf<SyncLog>()
 
-    override fun log(message: String, type: String, details: String): SyncLogRepository {
+    override fun log(message: String, type: String, details: String): SyncLogger {
         // TODO Enable logging only if dev mode/sync logging is enabled
         logEntries.add(
             SyncLog(
@@ -62,5 +58,5 @@ class DatabaseSyncLogRepository @Inject constructor(
 @InstallIn(SingletonComponent::class)
 interface SyncLogModule {
     @Binds
-    fun bindsSyncLogRepository(repository: DatabaseSyncLogRepository): SyncLogRepository
+    fun bindsSyncLogRepository(repository: SyncLogRepository): SyncLogger
 }

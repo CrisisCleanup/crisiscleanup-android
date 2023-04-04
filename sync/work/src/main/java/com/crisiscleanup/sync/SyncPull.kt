@@ -1,8 +1,8 @@
 package com.crisiscleanup.sync
 
 import com.crisiscleanup.core.common.AndroidResourceProvider
+import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.data.repository.IncidentsRepository
-import com.crisiscleanup.core.data.repository.SyncLogRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.sync.model.SyncPlan
@@ -45,7 +45,7 @@ internal object SyncPull {
         plan: SyncPlan,
         incidentsRepository: IncidentsRepository,
         worksitesRepository: WorksitesRepository,
-        syncLogger: SyncLogRepository,
+        syncLogger: SyncLogger,
         resourceProvider: AndroidResourceProvider? = null,
         updateNotificationMessage: suspend CoroutineScope.(String) -> Unit = {},
     ): Boolean = coroutineScope {

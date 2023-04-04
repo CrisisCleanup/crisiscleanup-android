@@ -48,7 +48,7 @@ fun PopulatedWorksite.asExternalModel(): Worksite {
         state = entity.state,
         svi = entity.svi,
         updatedAt = entity.updatedAt,
-        what3words = entity.what3Words ?: "",
+        what3Words = entity.what3Words ?: "",
         workTypes = validWorkTypes.map(WorkTypeEntity::asExternalModel),
     )
 }

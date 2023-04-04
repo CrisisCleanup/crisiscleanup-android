@@ -1,0 +1,16 @@
+package com.crisiscleanup.core.model.data
+
+interface WorksiteChangeSerializer {
+    /**
+     * Serializes changes to a worksite for applying (on a reference) later
+     *
+     * Lookups map local ID to network ID where network IDs are specified.
+     */
+    fun serialize(
+        worksiteStart: Worksite,
+        worksiteChange: Worksite,
+        flagIdLookup: Map<Long, Long> = emptyMap(),
+        noteIdLookup: Map<Long, Long> = emptyMap(),
+        workTypeIdLookup: Map<Long, Long> = emptyMap(),
+    ): String
+}

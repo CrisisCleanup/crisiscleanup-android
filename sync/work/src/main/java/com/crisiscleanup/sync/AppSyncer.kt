@@ -7,6 +7,7 @@ import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.data.repository.*
 import com.crisiscleanup.core.data.util.NetworkMonitor
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
@@ -31,7 +32,7 @@ class AppSyncer @Inject constructor(
     private val worksitesRepository: WorksitesRepository,
     private val languageRepository: LanguageTranslationsRepository,
     private val appPreferences: LocalAppPreferencesDataSource,
-    private val syncLogger: SyncLogRepository,
+    private val syncLogger: SyncLogger,
     private val authEventManager: AuthEventManager,
     private val networkMonitor: NetworkMonitor,
     @ApplicationScope private val applicationScope: CoroutineScope,

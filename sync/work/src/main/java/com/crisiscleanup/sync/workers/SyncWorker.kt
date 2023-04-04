@@ -8,8 +8,8 @@ import com.crisiscleanup.core.common.SyncPuller
 import com.crisiscleanup.core.common.SyncResult
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.data.Synchronizer
-import com.crisiscleanup.core.data.repository.SyncLogRepository
 import com.crisiscleanup.sync.initializers.SyncConstraints
 import com.crisiscleanup.sync.initializers.syncForegroundInfo
 import dagger.assisted.Assisted
@@ -24,7 +24,7 @@ class SyncWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted workerParams: WorkerParameters,
     private val syncPuller: SyncPuller,
-    private val syncLogger: SyncLogRepository,
+    private val syncLogger: SyncLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : CoroutineWorker(appContext, workerParams), Synchronizer {
 

@@ -47,7 +47,7 @@ fun makeTestWorksite(
     state = "state",
     svi = 0.5f,
     updatedAt = prevUpdatedAt,
-    what3words = "what-three-words",
+    what3Words = "what-three-words",
     workTypes = listOf(
         WorkType(
             id = 523,

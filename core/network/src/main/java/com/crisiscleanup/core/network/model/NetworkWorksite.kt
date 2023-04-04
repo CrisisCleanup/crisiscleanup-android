@@ -46,7 +46,8 @@ data class NetworkWorksiteFull(
     val reportedBy: Long?,
     val state: String,
     val svi: Float?,
-    val time: List<Time>,
+    @SerialName("time")
+    val times: List<Time>,
     @Serializable(InstantSerializer::class)
     @SerialName("updated_at")
     val updatedAt: Instant,
@@ -60,6 +61,9 @@ data class NetworkWorksiteFull(
         val id: Long,
         @SerialName("type_t")
         val typeT: String,
+        @Serializable(InstantSerializer::class)
+        @SerialName("created_at")
+        val createdAt: Instant,
     )
 
     @Serializable
@@ -70,7 +74,8 @@ data class NetworkWorksiteFull(
 
     @Serializable
     data class Note(
-        val id: Long,
+        // Incoming network ID is always defined
+        val id: Long?,
         @Serializable(InstantSerializer::class)
         @SerialName("created_at")
         val createdAt: Instant,
@@ -93,7 +98,8 @@ data class NetworkWorksiteFull(
 
     @Serializable
     data class WorkType(
-        val id: Long,
+        // Incoming network ID is always defined
+        val id: Long?,
         @Serializable(InstantSerializer::class)
         @SerialName("created_at")
         val createdAt: Instant? = null,

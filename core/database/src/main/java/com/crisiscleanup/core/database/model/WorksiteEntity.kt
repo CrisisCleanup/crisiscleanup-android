@@ -303,5 +303,3 @@ fun WorksiteNoteEntity.asExternalModel() = WorksiteNote(
 // TODO Files XR
 
 // TODO Worksites FTS
-
-// TODO Unsynced views

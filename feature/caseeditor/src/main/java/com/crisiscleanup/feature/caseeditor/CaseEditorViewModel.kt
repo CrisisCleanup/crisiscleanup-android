@@ -93,6 +93,8 @@ class CaseEditorViewModel @Inject constructor(
     val promptCancelChanges = mutableStateOf(false)
     val isSavingWorksite = MutableStateFlow(false)
 
+    // TODO Organization ID. Use cached if no internet otherwise pull regularly?
+
     private val incidentStream = incidentsRepository.streamIncident(incidentIdArg)
         .mapLatest { it ?: EmptyIncident }
         .flowOn(ioDispatcher)
@@ -366,7 +368,8 @@ class CaseEditorViewModel @Inject constructor(
                 )
             )
 
-            // TODO How to reliably resolve changes between local and network if exists? Ask to overwrite from network or continue with local? Which may overwrite network when pushed?
+            // TODO Try and merge changes if exists.
+            //      If not show message that local changes have deviated from backend.
             // val isLocalModified = cachedWorksite.localChanges.isLocalModified
         } catch (e: Exception) {
             // TODO This is going to be difficult. Plenty of state for possible change... Show error message that backend has changes not resolved on local?
@@ -438,6 +441,10 @@ class CaseEditorViewModel @Inject constructor(
                     return@launch
                 }
 
+                // TODO Clear What3Words if set initially but coordinates have changed
+                // TODO Set updated at to now
+                // TODO Reported by is the org ID
+                // TODO Keep favorite/favorite ID/member of my org synced in local data (likely on initial load)
                 logger.logDebug(
                     "Save changes in worksite",
                     worksite,
