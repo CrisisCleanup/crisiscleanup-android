@@ -22,6 +22,10 @@ interface EditableWorksiteProvider {
     val editableWorksite: MutableStateFlow<Worksite>
     var formFields: List<FormFieldNode>
     var formFieldTranslationLookup: Map<String, String>
+
+    val isStale: Boolean
+    fun setStale()
+    fun takeStale(): Boolean
 }
 
 fun EditableWorksiteProvider.getGroupNode(key: String) =
@@ -44,6 +48,21 @@ class SingleEditableWorksiteProvider @Inject constructor() : EditableWorksitePro
     override val editableWorksite = MutableStateFlow(EmptyWorksite)
     override var formFields = emptyList<FormFieldNode>()
     override var formFieldTranslationLookup = emptyMap<String, String>()
+
+    override var isStale = false
+        private set
+
+    override fun setStale() {
+        isStale = true
+    }
+
+    override fun takeStale(): Boolean {
+        if (isStale) {
+            isStale = false
+            return true
+        }
+        return false
+    }
 }
 
 internal val DefaultIncidentBounds = IncidentBounds(emptyList(), MapViewCameraBoundsDefault.bounds)

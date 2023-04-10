@@ -31,17 +31,17 @@ private fun statusFromLiteral(status: String) = when (status.lowercase()) {
     else -> WorkTypeStatus.Unknown
 }
 
-enum class WorkTypeStatus {
-    Unknown,
-    OpenAssigned,
-    OpenUnassigned,
-    OpenPartiallyCompleted,
-    OpenNeedsFollowUp,
-    OpenUnresponsive,
-    ClosedCompleted,
-    ClosedIncomplete,
-    ClosedOutOfScope,
-    ClosedDoneByOthers,
+enum class WorkTypeStatus(val literal: String) {
+    Unknown("unknown"),
+    OpenAssigned("open_assigned"),
+    OpenUnassigned("open_unassigned"),
+    OpenPartiallyCompleted("open_partially-completed"),
+    OpenNeedsFollowUp("open_needs-follow-up"),
+    OpenUnresponsive("open_unresponsive"),
+    ClosedCompleted("closed_completed"),
+    ClosedIncomplete("closed_incomplete"),
+    ClosedOutOfScope("closed_out-of-scope"),
+    ClosedDoneByOthers("closed_done-by-others"),
 }
 
 data class WorkTypeStatusClaim(

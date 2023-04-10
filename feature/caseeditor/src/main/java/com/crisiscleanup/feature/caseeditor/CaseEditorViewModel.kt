@@ -13,21 +13,14 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.repository.*
 import com.crisiscleanup.core.data.util.NetworkMonitor
-import com.crisiscleanup.core.mapmarker.model.IncidentBounds
-import com.crisiscleanup.core.mapmarker.util.toBounds
-import com.crisiscleanup.core.mapmarker.util.toLatLng
 import com.crisiscleanup.core.model.data.*
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
-import com.crisiscleanup.feature.caseeditor.model.FormFieldNode
-import com.crisiscleanup.feature.caseeditor.model.flatten
 import com.crisiscleanup.feature.caseeditor.navigation.CaseEditorArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 
 internal const val DetailsFormGroupKey = "property_info"
@@ -40,29 +33,31 @@ class CaseEditorViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     accountDataRepository: AccountDataRepository,
     incidentsRepository: IncidentsRepository,
-    private val incidentRefresher: IncidentRefresher,
+    incidentRefresher: IncidentRefresher,
     locationsRepository: LocationsRepository,
-    private val worksitesRepository: WorksitesRepository,
-    private val networkMonitor: NetworkMonitor,
+    worksitesRepository: WorksitesRepository,
+    networkMonitor: NetworkMonitor,
     languageRepository: LanguageTranslationsRepository,
     languageRefresher: LanguageRefresher,
-    private val editableWorksiteProvider: EditableWorksiteProvider,
+    editableWorksiteProvider: EditableWorksiteProvider,
     translator: KeyTranslator,
+    private val worksiteChangeRepository: WorksiteChangeRepository,
     resourceProvider: AndroidResourceProvider,
     @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : EditCaseBaseViewModel(editableWorksiteProvider, translator, logger) {
     private val caseEditorArgs = CaseEditorArgs(savedStateHandle)
     private val incidentIdArg = caseEditorArgs.incidentId
-    private val worksiteIdArg = caseEditorArgs.worksiteId
-    val isCreateWorksite = worksiteIdArg == null
+    private var worksiteIdArg = caseEditorArgs.worksiteId
+    val isCreateWorksite: Boolean
+        get() = worksiteIdArg == null
 
     val headerTitle = MutableStateFlow("")
 
     val visibleNoteCount: Int = 2
 
-    private val incidentFieldLookup = MutableStateFlow(emptyMap<String, GroupSummaryFieldLookup>())
-    val workTypeGroupChildrenLookup = MutableStateFlow(emptyMap<String, Collection<String>>())
+    private val incidentFieldLookup: StateFlow<Map<String, GroupSummaryFieldLookup>>
+    val workTypeGroupChildrenLookup: StateFlow<Map<String, Collection<String>>>
 
     val detailsFieldLookup: GroupSummaryFieldLookup?
         get() = incidentFieldLookup.value[DetailsFormGroupKey]
@@ -76,18 +71,6 @@ class CaseEditorViewModel @Inject constructor(
     val showInvalidWorksiteSave = MutableStateFlow(false)
     val invalidWorksiteInfo = mutableStateOf(InvalidWorksiteInfo())
 
-    private val isRefreshingIncident = MutableStateFlow(false)
-    private val isRefreshingWorksite = MutableStateFlow(false)
-    val isLoading = combine(
-        isRefreshingIncident,
-        isRefreshingWorksite,
-    ) { b0, b1 -> b0 || b1 }
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = false,
-            started = SharingStarted.WhileSubscribed(),
-        )
-
     val editingWorksite = editableWorksiteProvider.editableWorksite
 
     val navigateBack = mutableStateOf(false)
@@ -95,202 +78,61 @@ class CaseEditorViewModel @Inject constructor(
     val promptCancelChanges = mutableStateOf(false)
     val isSavingWorksite = MutableStateFlow(false)
 
-    private val organizationStream = accountDataRepository.accountData
-        .map { it.org }
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = null,
-            started = SharingStarted.WhileSubscribed(3_000),
+    private val dataLoader: CaseEditorDataLoader
+
+    init {
+        val headerTitleResId =
+            if (isCreateWorksite) R.string.create_case
+            else R.string.view_case
+        headerTitle.value = resourceProvider.getString(headerTitleResId)
+
+        editableWorksiteProvider.reset(incidentIdArg)
+
+        dataLoader = CaseEditorDataLoader(
+            isCreateWorksite,
+            incidentIdArg,
+            worksiteIdArg,
+            accountDataRepository,
+            incidentsRepository,
+            incidentRefresher,
+            locationsRepository,
+            worksitesRepository,
+            networkMonitor,
+            languageRepository,
+            languageRefresher,
+            { key -> translate(key) },
+            editableWorksiteProvider,
+            viewModelScope,
+            ioDispatcher,
+            logger,
         )
 
-    private val incidentStream = incidentsRepository.streamIncident(incidentIdArg)
-        .mapLatest { it ?: EmptyIncident }
-        .flowOn(ioDispatcher)
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = null,
-            started = SharingStarted.WhileSubscribed(3_000),
-        )
+        incidentFieldLookup = dataLoader.incidentFieldLookup
+        workTypeGroupChildrenLookup = dataLoader.workTypeGroupChildrenLookup
 
-    private val incidentBoundsStream = incidentStream
-        .mapLatest {
-            var bounds: IncidentBounds? = null
-            it?.locations?.map(IncidentLocation::location)?.let { locationIds ->
-                val locations = locationsRepository.getLocations(locationIds).toLatLng()
-                bounds = if (locations.isEmpty()) null
-                else locations.toBounds()
-            }
-            bounds
-        }
-        .flowOn(ioDispatcher)
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = null,
-            started = SharingStarted.WhileSubscribed(3_000),
-        )
-
-    private val worksiteStream = flowOf(worksiteIdArg)
-        .flatMapLatest { worksiteId ->
-            if (worksiteId == null) flowOf(null)
-            else worksitesRepository.streamLocalWorksite(worksiteId)
-        }
-        .flowOn(ioDispatcher)
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = null,
-            started = SharingStarted.WhileSubscribed(3_000),
-        )
-
-    private val isWorksitePulled = AtomicBoolean(false)
-    private val isPullingWorksite = AtomicBoolean(false)
-    private val networkWorksiteSync = AtomicReference<Pair<Long, NetworkWorksiteFull>?>(null)
-    private val networkWorksiteStream = worksiteStream
-        .mapLatest { cachedWorksite ->
-            cachedWorksite?.let { localWorksite ->
-                val networkId = localWorksite.worksite.networkId
-                if (networkId > 0 &&
-                    !isWorksitePulled.getAndSet(true)
-                ) {
-                    if (networkMonitor.isOnline.first()) {
-                        isPullingWorksite.set(true)
-                        try {
-                            refreshWorksite(networkId)
-                        } finally {
-                            isPullingWorksite.set(false)
-                        }
-                    }
+        dataLoader.worksiteStream
+            .onEach {
+                it?.let { cachedWorksite ->
+                    val caseNumber = cachedWorksite.worksite.caseNumber
+                    // TODO Show different text if case number is empty (not yet synced)
+                    headerTitle.value =
+                        resourceProvider.getString(R.string.view_case_number, caseNumber)
                 }
             }
-            networkWorksiteSync.get()
-        }
-        .flowOn(ioDispatcher)
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = null,
-            started = SharingStarted.WhileSubscribed(3_000),
-        )
-
-    private val _uiState = com.crisiscleanup.core.common.combine(
-        organizationStream,
-        incidentStream,
-        incidentBoundsStream,
-        isRefreshingIncident,
-        worksiteStream,
-        networkWorksiteStream,
-    ) { organization, incident, bounds, pullingIncident, worksite, networkWorksiteSync ->
-        Pair(
-            Triple(incident, bounds, pullingIncident),
-            Triple(organization, worksite, networkWorksiteSync)
-        )
+            .launchIn(viewModelScope)
     }
-        .mapLatest { (first, second) ->
-            val (incident, bounds, pullingIncident) = first
-            val (organization, localWorksite, networkWorksiteSync) = second
 
-            if (organization == null || incident == null) {
-                return@mapLatest CaseEditorUiState.Loading
-            }
+    val uiState = dataLoader.uiState
 
-            if (organization.id <= 0) {
-                logger.logException(Exception("Organization $organization is not set when editing worksite $worksiteIdArg"))
-                return@mapLatest CaseEditorUiState.Error(R.string.organization_issue_try_re_authenticating)
-            }
-
-            if (!pullingIncident && incident.formFields.isEmpty()) {
-                logger.logException(Exception("Incident $incidentIdArg is missing form fields when editing worksite $worksiteIdArg"))
-                return@mapLatest CaseEditorUiState.Error(R.string.incident_issue_try_again)
-            }
-
-            bounds?.let {
-                if (it.locations.isEmpty()) {
-                    logger.logException(Exception("Incident $incidentIdArg is lacking locations."))
-                    return@mapLatest CaseEditorUiState.Error(R.string.incident_issue_try_again)
-                }
-            }
-
-            var initialWorksite = localWorksite?.worksite ?: EmptyWorksite.copy(
-                incidentId = incidentIdArg,
-                autoContactFrequencyT = AutoContactFrequency.Often.literal,
-            )
-
-            with(editableWorksiteProvider) {
-                this.incident = incident
-                if (formFields.isEmpty()) {
-                    formFields = FormFieldNode.buildTree(incident.formFields, languageRepository)
-                        .map(FormFieldNode::flatten)
-
-                    formFieldTranslationLookup =
-                        incident.formFields
-                            .filter { it.fieldKey.isNotBlank() && it.label.isNotBlank() }
-                            .associate { it.fieldKey to it.label }
-
-                    workTypeGroupChildrenLookup.value =
-                        formFields.firstOrNull { it.fieldKey == WorkFormGroupKey }
-                            ?.let { node ->
-                                node.children
-                                    .filter { it.parentKey == WorkFormGroupKey && it.children.isNotEmpty() }
-                                    .associate {
-                                        it.fieldKey to it.children.map(
-                                            FormFieldNode::fieldKey
-                                        )
-                                    }
-                            }
-                            ?: emptyMap()
-
-                    val localTranslate = { s: String -> translate(s) }
-                    incidentFieldLookup.value = formFields.associate { node ->
-                        val groupFieldMap = node.children.associate { child ->
-                            child.fieldKey to child.formField.getFieldLabel(localTranslate)
-                        }
-                        val groupOptionsMap = node.children.map(FormFieldNode::options)
-                            .flatMap { it.entries }
-                            .associate { it.key to it.value }
-                        node.fieldKey to GroupSummaryFieldLookup(
-                            groupFieldMap,
-                            groupOptionsMap,
-                        )
-                    }
-                }
-
-                val updatedFormData = initialWorksite.formData?.toMutableMap() ?: mutableMapOf()
-                val workTypeGroups = updatedFormData.keys
-                    .filter { incident.workTypeLookup[it] != null }
-                    .mapNotNull { incident.formFieldLookup[it]?.parentKey }
-                    .toSet()
-                if (workTypeGroups.isNotEmpty()) {
-                    workTypeGroups.onEach {
-                        updatedFormData[it] = WorksiteFormValue(true, "", true)
-                    }
-                }
-                if (updatedFormData.size != (initialWorksite.formData?.size ?: 0) ||
-                    initialWorksite.favoriteId != null
-                ) {
-                    initialWorksite = initialWorksite.copy(
-                        formData = updatedFormData,
-                        isAssignedToOrgMember = initialWorksite.favoriteId != null,
-                    )
-                }
-
-                editableWorksite.value = initialWorksite
-                incidentBounds = bounds ?: DefaultIncidentBounds
-            }
-
-            val isLoadFinished =
-                isCreateWorksite ||
-                        (!pullingIncident &&
-                                localWorksite != null && isWorksitePulled.get())
-            val isEditable = bounds != null && isLoadFinished
-            CaseEditorUiState.WorksiteData(
-                organization.id,
-                isEditable,
-                initialWorksite,
-                incident,
-                localWorksite,
-                networkWorksiteSync,
-            )
-        }
-
-    val uiState: MutableStateFlow<CaseEditorUiState> = MutableStateFlow(CaseEditorUiState.Loading)
+    val isLoading = combine(
+        dataLoader.isRefreshingIncident,
+        dataLoader.isRefreshingWorksite,
+    ) { b0, b1 -> b0 || b1 }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
+            started = SharingStarted.WhileSubscribed(),
+        )
 
     val hasChanges = combine(
         editingWorksite,
@@ -306,6 +148,7 @@ class CaseEditorViewModel @Inject constructor(
         initialValue = false,
         started = SharingStarted.WhileSubscribed(),
     )
+
     val worksiteWorkTypeGroups = combine(
         editingWorksite,
         uiState,
@@ -332,69 +175,6 @@ class CaseEditorViewModel @Inject constructor(
             initialValue = emptyList(),
             started = SharingStarted.WhileSubscribed(),
         )
-
-    init {
-        val headerTitleResId =
-            if (isCreateWorksite) R.string.create_case
-            else R.string.view_case
-        headerTitle.value = resourceProvider.getString(headerTitleResId)
-
-        editableWorksiteProvider.reset(incidentIdArg)
-
-        viewModelScope.launch(ioDispatcher) {
-            try {
-                languageRefresher.pullLanguages()
-            } catch (e: Exception) {
-                logger.logException(e)
-            }
-        }
-
-        viewModelScope.launch(ioDispatcher) {
-            isRefreshingIncident.value = true
-            try {
-                incidentRefresher.pullIncident(incidentIdArg)
-            } catch (e: Exception) {
-                logger.logException(e)
-            } finally {
-                isRefreshingIncident.value = false
-            }
-        }
-
-        worksiteStream
-            .onEach {
-                it?.let { cachedWorksite ->
-                    val caseNumber = cachedWorksite.worksite.caseNumber
-                    headerTitle.value =
-                        resourceProvider.getString(R.string.view_case_number, caseNumber)
-                }
-            }
-            .launchIn(viewModelScope)
-
-        _uiState
-            .onEach { uiState.value = it }
-            .launchIn(viewModelScope)
-    }
-
-    private suspend fun refreshWorksite(networkWorksiteId: Long) {
-        isRefreshingWorksite.value = true
-        try {
-            networkWorksiteSync.set(
-                worksitesRepository.syncWorksite(
-                    incidentIdArg,
-                    networkWorksiteId,
-                )
-            )
-
-            // TODO Try and merge changes if exists.
-            //      If not show message that local changes have deviated from backend.
-            // val isLocalModified = cachedWorksite.localChanges.isLocalModified
-        } catch (e: Exception) {
-            // TODO This is going to be difficult. Plenty of state for possible change... Show error message that backend has changes not resolved on local?
-            logger.logException(e)
-        } finally {
-            isRefreshingWorksite.value = false
-        }
-    }
 
     private fun validate(worksite: Worksite): InvalidWorksiteInfo {
         if (worksite.name.isBlank() ||
@@ -431,6 +211,48 @@ class CaseEditorViewModel @Inject constructor(
         return InvalidWorksiteInfo()
     }
 
+    // TODO Refactor and add test coverage
+    private fun getChangeWorkTypes(
+        workTypeLookup: Map<String, String>,
+        initialWorksite: Worksite,
+        modifiedWorksite: Worksite,
+    ): Pair<List<WorkType>, WorkType?> {
+        val worksiteWorkTypes =
+            initialWorksite.workTypes.associateBy(WorkType::workTypeLiteral)
+        val formWorkTypes = modifiedWorksite.formData!!
+            .mapNotNull { workTypeLookup[it.key] }
+            .toSet()
+            .map {
+                val now = Clock.System.now()
+                worksiteWorkTypes[it] ?: WorkType(
+                    id = 0,
+                    createdAt = now,
+                    orgClaim = null,
+                    nextRecurAt = null,
+                    // TODO Does this matter
+                    phase = 0,
+                    recur = null,
+                    statusLiteral = WorkTypeStatus.OpenUnassigned.literal,
+                    workTypeLiteral = it,
+                )
+            }
+        val initialWorkTypes = initialWorksite.workTypes.sortedBy(WorkType::workTypeLiteral)
+        val modifiedWorkTypes = formWorkTypes.sortedBy(WorkType::workTypeLiteral)
+        if (initialWorkTypes == modifiedWorkTypes) {
+            return Pair(initialWorksite.workTypes, initialWorksite.keyWorkType)
+        }
+
+        val formWorkTypeTypes = formWorkTypes.map(WorkType::workType)
+        var keyWorkType = initialWorksite.keyWorkType
+        if (keyWorkType == null || !formWorkTypeTypes.contains(keyWorkType.workType)) {
+            keyWorkType = formWorkTypes.toMutableList()
+                .sortedBy(WorkType::workTypeLiteral)
+                .firstOrNull()
+        }
+
+        return Pair(formWorkTypes, keyWorkType)
+    }
+
     fun saveChanges(backOnSuccess: Boolean = true) {
         synchronized(isSavingWorksite) {
             if (isSavingWorksite.value) {
@@ -459,6 +281,23 @@ class CaseEditorViewModel @Inject constructor(
                     return@launch
                 }
 
+                val workTypeLookup = worksiteData.incident.workTypeLookup
+                val (workTypes, primaryWorkType) = getChangeWorkTypes(
+                    workTypeLookup,
+                    initialWorksite,
+                    worksite,
+                )
+
+                if (primaryWorkType == null) {
+                    // TODO Different message? Add test coverage.
+                    invalidWorksiteInfo.value = InvalidWorksiteInfo(
+                        WorksiteSection.WorkType,
+                        R.string.incomplete_work_type_info,
+                    )
+                    showInvalidWorksiteSave.value = true
+                    return@launch
+                }
+
                 val updatedReportedBy =
                     if (worksite.isNew) worksiteData.orgId else worksite.reportedBy
                 val clearWhat3Words = worksite.what3Words?.isNotBlank() == true &&
@@ -467,18 +306,24 @@ class CaseEditorViewModel @Inject constructor(
                 val updatedWhat3Words = if (clearWhat3Words) "" else worksite.what3Words
 
                 val updatedWorksite = worksite.copy(
+                    workTypes = workTypes,
+                    keyWorkType = primaryWorkType,
                     reportedBy = updatedReportedBy,
                     updatedAt = Clock.System.now(),
                     what3Words = updatedWhat3Words,
                 )
 
-                // TODO (partial) success must clear changes and reload data if not closing completely
-                logger.logDebug(
-                    "Save changes in worksite",
+                worksiteIdArg = worksiteChangeRepository.saveWorksiteChange(
+                    initialWorksite,
                     updatedWorksite,
-                    "from",
-                    initialWorksite
+                    primaryWorkType,
+                    worksiteData.orgId,
                 )
+
+                dataLoader.reloadData(worksiteIdArg!!)
+
+            } catch (e: Exception) {
+                // TODO Show dialog save failed. Try again. If still fails seek help.
             } finally {
                 synchronized(isSavingWorksite) {
                     isSavingWorksite.value = false

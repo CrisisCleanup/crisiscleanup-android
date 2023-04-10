@@ -3,6 +3,10 @@ package com.crisiscleanup.core.network.worksitechange
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteChangeSerializer
 import com.crisiscleanup.core.network.model.asSnapshotModel
+import dagger.Binds
+import dagger.Module
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
@@ -25,4 +29,13 @@ class NetworkWorksiteChangeSerializer @Inject constructor() : WorksiteChangeSeri
         )
         return Json.encodeToString(change)
     }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+interface WorksiteChangeSerializerModule {
+    @Binds
+    fun bindsWorksiteChangeSerializer(
+        serializer: NetworkWorksiteChangeSerializer
+    ): WorksiteChangeSerializer
 }

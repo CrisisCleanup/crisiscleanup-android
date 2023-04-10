@@ -99,7 +99,13 @@ internal fun DynamicFormListItem(
                 groupExpandState[field.key] = value.dynamicValue.isBooleanTrue
                 updateValue(value)
             }
-            if (field.childrenCount > 0) {
+            if (field.childrenCount == 0 && field.field.isReadOnly) {
+                Text(
+                    modifier = modifier,
+                    text = label,
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            } else {
                 CheckboxItem(
                     field,
                     updateGroupValue,
@@ -107,12 +113,6 @@ internal fun DynamicFormListItem(
                     label,
                     helpHint,
                     showHelp,
-                )
-            } else {
-                Text(
-                    modifier = modifier,
-                    text = label,
-                    style = MaterialTheme.typography.bodyLarge,
                 )
             }
         }

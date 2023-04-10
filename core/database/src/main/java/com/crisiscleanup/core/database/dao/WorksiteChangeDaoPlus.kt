@@ -66,13 +66,15 @@ class WorksiteChangeDaoPlus @Inject constructor(
         worksiteChange: Worksite,
         primaryWorkType: WorkType,
         organizationId: Long,
-    ) {
+    ): Long {
+        var worksiteId = worksiteChange.id
+
         if (worksiteStart == worksiteChange) {
-            return
+            return worksiteId
         }
 
         syncLogger.type = if (worksiteChange.isNew) "worksite-new"
-        else "worksite-update-${worksiteChange.id}"
+        else "worksite-update-$worksiteId"
 
         db.withTransaction {
             try {
@@ -98,7 +100,6 @@ class WorksiteChangeDaoPlus @Inject constructor(
                 var insertNotes = changeEntities.notes.filter { it.id <= 0 }
                 var workTypes = changeEntities.workTypes
 
-                var worksiteId = worksiteChange.id
                 if (worksiteChange.isNew) {
                     val rootEntity = WorksiteRootEntity(
                         id = 0,
@@ -170,14 +171,15 @@ class WorksiteChangeDaoPlus @Inject constructor(
                     appVersionProvider.versionCode,
                     organizationId,
                 )
-
             } catch (e: Exception) {
                 appLogger.logException(e)
                 throw e
+            } finally {
+                syncLogger.flush()
             }
         }
 
-        syncLogger.flush()
+        return worksiteId
     }
 
     private fun saveWorksiteChange(

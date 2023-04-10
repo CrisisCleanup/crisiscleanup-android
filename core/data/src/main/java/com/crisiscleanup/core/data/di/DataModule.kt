@@ -76,6 +76,11 @@ interface DataModule {
     fun bindsSearchWorksitesRepository(
         repository: MemoryCacheSearchWorksitesRepository
     ): SearchWorksitesRepository
+
+    @Binds
+    fun bindsWorksiteChangeRepository(
+        repository: CrisisCleanupWorksiteChangeRepository
+    ): WorksiteChangeRepository
 }
 
 @Module
