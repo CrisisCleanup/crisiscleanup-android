@@ -41,6 +41,13 @@ android {
             }
         }
     }
+
+    // Due to test errors "files found with path 'META-INF/LICENSE.md'" and related
+    packagingOptions {
+        resources {
+            merges.add("META-INF/{LICENSE.md,LICENSE-notice.md}")
+        }
+    }
 }
 
 dependencies {
@@ -57,4 +64,5 @@ dependencies {
 
     androidTestImplementation(project(":core:testing"))
     androidTestImplementation(libs.room.testing)
+    androidTestImplementation(libs.mockk.android)
 }

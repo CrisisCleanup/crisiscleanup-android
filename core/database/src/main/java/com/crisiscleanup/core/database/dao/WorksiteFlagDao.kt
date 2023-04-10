@@ -1,6 +1,7 @@
 package com.crisiscleanup.core.database.dao
 
 import androidx.room.*
+import com.crisiscleanup.core.database.model.PopulatedIdNetworkId
 import com.crisiscleanup.core.database.model.WorksiteFlagEntity
 import kotlinx.datetime.Instant
 
@@ -41,4 +42,32 @@ interface WorksiteFlagDao {
         """
     )
     fun syncDeleteUnspecified(worksiteId: Long, networkIds: Collection<Long>)
+
+    @Transaction
+    @Query(
+        """
+        DELETE FROM worksite_flags
+        WHERE worksite_id=:worksiteId AND id NOT IN(:ids)
+        """
+    )
+    fun deleteUnspecified(worksiteId: Long, ids: Collection<Long>)
+
+    @Transaction
+    @Query(
+        """
+        SELECT id, network_id
+        FROM worksite_flags
+        WHERE worksite_id=:worksiteId AND network_id>-1 AND id IN(:ids)
+        """
+    )
+    fun getNetworkedIdMap(
+        worksiteId: Long,
+        ids: Collection<Long>,
+    ): List<PopulatedIdNetworkId>
+
+    @Insert
+    fun insert(flags: Collection<WorksiteFlagEntity>)
+
+    @Update
+    fun update(flags: Collection<WorksiteFlagEntity>)
 }

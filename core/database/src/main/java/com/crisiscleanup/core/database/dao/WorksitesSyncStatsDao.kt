@@ -53,6 +53,6 @@ interface WorksitesSyncStatsDao {
         successfulSync: Instant?,
         attemptedSync: Instant?,
         attemptedCounter: Int,
-        appBuildVersionCode: Int,
+        appBuildVersionCode: Long,
     )
 }

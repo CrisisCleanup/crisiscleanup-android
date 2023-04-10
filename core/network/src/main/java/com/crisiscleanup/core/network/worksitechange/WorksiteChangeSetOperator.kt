@@ -15,6 +15,7 @@ import javax.inject.Inject
 // - Partially applied deltas
 
 class WorksiteChangeSetOperator @Inject constructor() {
+    // TODO Write tests
     fun getNewSet(snapshot: WorksiteSnapshot): WorksiteChangeSet {
         val coreB = snapshot.core
 
@@ -58,6 +59,7 @@ class WorksiteChangeSetOperator @Inject constructor() {
         )
     }
 
+    // TODO Write tests
     fun getChangeSet(
         base: NetworkWorksiteFull,
         start: WorksiteSnapshot,

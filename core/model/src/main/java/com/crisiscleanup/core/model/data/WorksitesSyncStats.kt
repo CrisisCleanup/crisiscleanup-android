@@ -31,7 +31,7 @@ data class WorksitesSyncStats(
      */
     val syncAttempt: SyncAttempt,
 
-    val appBuildVersionCode: Int,
+    val appBuildVersionCode: Long,
 ) {
     val isDataVersionOutdated = appBuildVersionCode < WORKSITES_STABLE_MODEL_BUILD_VERSION
 

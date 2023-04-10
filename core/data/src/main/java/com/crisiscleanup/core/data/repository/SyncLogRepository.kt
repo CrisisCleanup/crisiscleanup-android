@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.data.repository
 
+import android.util.Log
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
@@ -27,12 +28,14 @@ class SyncLogRepository @Inject constructor(
     private val logEntriesMutex = Mutex()
     private var logEntries = mutableListOf<SyncLog>()
 
-    override fun log(message: String, type: String, details: String): SyncLogger {
+    override var type = ""
+
+    override fun log(message: String, details: String, type: String): SyncLogger {
         // TODO Enable logging only if dev mode/sync logging is enabled
         logEntries.add(
             SyncLog(
                 Clock.System.now(),
-                logType = type,
+                logType = type.ifEmpty { this.type },
                 message = message,
                 details = details,
             )
@@ -48,7 +51,11 @@ class SyncLogRepository @Inject constructor(
                 logEntries = mutableListOf()
             }
             if (entries.isNotEmpty()) {
-                syncLogDao.insertSyncLogs(entries.map(SyncLog::asEntity))
+                try {
+                    syncLogDao.insertSyncLogs(entries.map(SyncLog::asEntity))
+                } catch (e: Exception) {
+                    Log.e("sync-log-exception", e.message, e)
+                }
             }
         }
     }

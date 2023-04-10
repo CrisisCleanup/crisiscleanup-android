@@ -5,6 +5,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
 import com.crisiscleanup.core.database.model.LanguageTranslationEntity
+import com.crisiscleanup.core.database.model.PopulatedLanguage
 import com.crisiscleanup.core.database.model.PopulatedLanguageTranslation
 import kotlinx.coroutines.flow.Flow
 
@@ -16,7 +17,7 @@ interface LanguageDao {
 
     @Transaction
     @Query("SELECT key, name FROM language_translations")
-    fun streamLanguages(): Flow<List<PopulatedLanguageTranslation>>
+    fun streamLanguages(): Flow<List<PopulatedLanguage>>
 
     @Transaction
     @Query("SELECT * FROM language_translations WHERE key=:key")

@@ -17,8 +17,8 @@ object WorksiteTestUtil {
 
     suspend fun insertWorksites(
         db: CrisisCleanupDatabase,
-        worksites: List<WorksiteEntity>,
         syncedAt: Instant,
+        vararg worksites: WorksiteEntity,
     ): List<WorksiteEntity> {
         return db.withTransaction {
             val worksiteDao = db.worksiteDao()
@@ -26,7 +26,7 @@ object WorksiteTestUtil {
                 val id =
                     worksiteDao.insertOrRollbackWorksiteRoot(syncedAt, it.networkId, it.incidentId)
                 val updated = it.copy(id = id)
-                worksiteDao.insertWorksite(updated)
+                worksiteDao.insert(updated)
                 updated
             }
         }

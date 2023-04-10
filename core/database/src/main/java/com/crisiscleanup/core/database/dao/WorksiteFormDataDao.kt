@@ -12,8 +12,8 @@ interface WorksiteFormDataDao {
         WHERE worksite_id=:worksiteId AND field_key NOT IN(:fieldKeys)
         """
     )
-    fun syncDeleteUnspecified(worksiteId: Long, fieldKeys: Collection<String>)
+    fun deleteUnspecifiedKeys(worksiteId: Long, fieldKeys: Collection<String>)
 
     @Upsert
-    fun syncUpsert(formData: Collection<WorksiteFormDataEntity>)
+    fun upsert(formData: Collection<WorksiteFormDataEntity>)
 }

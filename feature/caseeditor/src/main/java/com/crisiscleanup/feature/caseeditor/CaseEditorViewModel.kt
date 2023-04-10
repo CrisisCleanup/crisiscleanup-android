@@ -25,6 +25,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
@@ -37,6 +38,7 @@ internal const val VolunteerReportFormGroupKey = "claim_status_report_info"
 @HiltViewModel
 class CaseEditorViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
+    accountDataRepository: AccountDataRepository,
     incidentsRepository: IncidentsRepository,
     private val incidentRefresher: IncidentRefresher,
     locationsRepository: LocationsRepository,
@@ -93,7 +95,13 @@ class CaseEditorViewModel @Inject constructor(
     val promptCancelChanges = mutableStateOf(false)
     val isSavingWorksite = MutableStateFlow(false)
 
-    // TODO Organization ID. Use cached if no internet otherwise pull regularly?
+    private val organizationStream = accountDataRepository.accountData
+        .map { it.org }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = null,
+            started = SharingStarted.WhileSubscribed(3_000),
+        )
 
     private val incidentStream = incidentsRepository.streamIncident(incidentIdArg)
         .mapLatest { it ?: EmptyIncident }
@@ -163,22 +171,29 @@ class CaseEditorViewModel @Inject constructor(
         )
 
     private val _uiState = com.crisiscleanup.core.common.combine(
+        organizationStream,
         incidentStream,
         incidentBoundsStream,
         isRefreshingIncident,
         worksiteStream,
         networkWorksiteStream,
-    ) { incident, bounds, pullingIncident, worksite, networkWorksiteSync ->
+    ) { organization, incident, bounds, pullingIncident, worksite, networkWorksiteSync ->
         Pair(
             Triple(incident, bounds, pullingIncident),
-            Pair(worksite, networkWorksiteSync)
+            Triple(organization, worksite, networkWorksiteSync)
         )
     }
         .mapLatest { (first, second) ->
             val (incident, bounds, pullingIncident) = first
+            val (organization, localWorksite, networkWorksiteSync) = second
 
-            if (incident == null) {
+            if (organization == null || incident == null) {
                 return@mapLatest CaseEditorUiState.Loading
+            }
+
+            if (organization.id <= 0) {
+                logger.logException(Exception("Organization $organization is not set when editing worksite $worksiteIdArg"))
+                return@mapLatest CaseEditorUiState.Error(R.string.organization_issue_try_re_authenticating)
             }
 
             if (!pullingIncident && incident.formFields.isEmpty()) {
@@ -192,8 +207,6 @@ class CaseEditorViewModel @Inject constructor(
                     return@mapLatest CaseEditorUiState.Error(R.string.incident_issue_try_again)
                 }
             }
-
-            val (localWorksite, networkWorksiteSync) = second
 
             var initialWorksite = localWorksite?.worksite ?: EmptyWorksite.copy(
                 incidentId = incidentIdArg,
@@ -239,20 +252,23 @@ class CaseEditorViewModel @Inject constructor(
                     }
                 }
 
-                initialWorksite.formData?.let { formData ->
-                    val workTypeGroups = formData.keys
-                        .filter { incident.workTypeLookup[it] != null }
-                        .mapNotNull { incident.formFieldLookup[it]?.parentKey }
-                        .toSet()
-                    if (workTypeGroups.isNotEmpty()) {
-                        val updatedFormData = formData.toMutableMap()
-                        workTypeGroups.onEach {
-                            updatedFormData[it] = WorksiteFormValue(true, "", true)
-                        }
-                        initialWorksite = initialWorksite.copy(
-                            formData = updatedFormData,
-                        )
+                val updatedFormData = initialWorksite.formData?.toMutableMap() ?: mutableMapOf()
+                val workTypeGroups = updatedFormData.keys
+                    .filter { incident.workTypeLookup[it] != null }
+                    .mapNotNull { incident.formFieldLookup[it]?.parentKey }
+                    .toSet()
+                if (workTypeGroups.isNotEmpty()) {
+                    workTypeGroups.onEach {
+                        updatedFormData[it] = WorksiteFormValue(true, "", true)
                     }
+                }
+                if (updatedFormData.size != (initialWorksite.formData?.size ?: 0) ||
+                    initialWorksite.favoriteId != null
+                ) {
+                    initialWorksite = initialWorksite.copy(
+                        formData = updatedFormData,
+                        isAssignedToOrgMember = initialWorksite.favoriteId != null,
+                    )
                 }
 
                 editableWorksite.value = initialWorksite
@@ -265,7 +281,8 @@ class CaseEditorViewModel @Inject constructor(
                                 localWorksite != null && isWorksitePulled.get())
             val isEditable = bounds != null && isLoadFinished
             CaseEditorUiState.WorksiteData(
-                isEditable = isEditable,
+                organization.id,
+                isEditable,
                 initialWorksite,
                 incident,
                 localWorksite,
@@ -423,7 +440,8 @@ class CaseEditorViewModel @Inject constructor(
         }
         viewModelScope.launch(ioDispatcher) {
             try {
-                val initialWorksite = (uiState.value as? CaseEditorUiState.WorksiteData)?.worksite
+                val worksiteData = uiState.value as? CaseEditorUiState.WorksiteData
+                val initialWorksite = worksiteData?.worksite
                     ?: return@launch
 
                 val worksite = worksiteProvider.editableWorksite.value
@@ -441,13 +459,23 @@ class CaseEditorViewModel @Inject constructor(
                     return@launch
                 }
 
-                // TODO Clear What3Words if set initially but coordinates have changed
-                // TODO Set updated at to now
-                // TODO Reported by is the org ID
-                // TODO Keep favorite/favorite ID/member of my org synced in local data (likely on initial load)
+                val updatedReportedBy =
+                    if (worksite.isNew) worksiteData.orgId else worksite.reportedBy
+                val clearWhat3Words = worksite.what3Words?.isNotBlank() == true &&
+                        worksite.latitude != initialWorksite.latitude ||
+                        worksite.longitude != initialWorksite.longitude
+                val updatedWhat3Words = if (clearWhat3Words) "" else worksite.what3Words
+
+                val updatedWorksite = worksite.copy(
+                    reportedBy = updatedReportedBy,
+                    updatedAt = Clock.System.now(),
+                    what3Words = updatedWhat3Words,
+                )
+
+                // TODO (partial) success must clear changes and reload data if not closing completely
                 logger.logDebug(
                     "Save changes in worksite",
-                    worksite,
+                    updatedWorksite,
                     "from",
                     initialWorksite
                 )
@@ -503,6 +531,7 @@ sealed interface CaseEditorUiState {
     object Loading : CaseEditorUiState
 
     data class WorksiteData(
+        val orgId: Long,
         val isEditable: Boolean,
         val worksite: Worksite,
         val incident: Incident,

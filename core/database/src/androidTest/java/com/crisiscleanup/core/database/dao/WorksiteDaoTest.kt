@@ -40,9 +40,12 @@ class WorksiteDaoTest {
     private suspend fun insertWorksites(
         worksites: List<WorksiteEntity>,
         syncedAt: Instant,
-    ): List<WorksiteEntity> {
-        return WorksiteTestUtil.insertWorksites(db, worksites, syncedAt)
-    }
+    ) = WorksiteTestUtil.insertWorksites(
+        db,
+        syncedAt,
+        *worksites.toTypedArray(),
+    )
+
 
     private val nowInstant = Clock.System.now()
 

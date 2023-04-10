@@ -7,6 +7,11 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
+data class PopulatedLanguage(
+    val key: String,
+    val name: String,
+)
+
 data class PopulatedLanguageTranslation(
     @Embedded
     val entity: LanguageTranslationEntity,

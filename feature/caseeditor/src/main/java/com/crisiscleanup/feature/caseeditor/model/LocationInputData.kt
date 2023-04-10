@@ -11,7 +11,6 @@ import com.crisiscleanup.core.model.data.WorksiteFormValue
 import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.util.summarizeAddress
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.datetime.Clock
 
 class LocationInputData(
     worksite: Worksite,
@@ -131,7 +130,6 @@ class LocationInputData(
             state = state.trim(),
             flags = if (flags?.isNotEmpty() == true) flags else null,
             formData = if (formData?.isNotEmpty() == true) formData else null,
-            updatedAt = Clock.System.now(),
         )
     }
 }

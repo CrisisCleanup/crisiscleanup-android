@@ -4,7 +4,6 @@ import com.crisiscleanup.core.database.TestCrisisCleanupDatabase
 import com.crisiscleanup.core.database.TestUtil
 import com.crisiscleanup.core.database.WorksiteTestUtil
 import com.crisiscleanup.core.database.model.WorkTypeEntity
-import com.crisiscleanup.core.database.model.WorksiteEntity
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -24,13 +23,6 @@ class WorkTypeDaoTest {
     private val now = Clock.System.now()
     private val updatedA = now.plus((-9999).seconds)
 
-    private suspend fun insertWorksites(
-        worksites: List<WorksiteEntity>,
-        syncedAt: Instant,
-    ): List<WorksiteEntity> {
-        return WorksiteTestUtil.insertWorksites(db, worksites, syncedAt)
-    }
-
     @Before
     fun createDb() {
         db = TestUtil.getTestDatabase()
@@ -46,7 +38,7 @@ class WorkTypeDaoTest {
         incidentDao.upsertIncidents(WorksiteTestUtil.testIncidents)
 
         val worksite = testWorksiteEntity(1, 1, "address", updatedA)
-        insertWorksites(listOf(worksite), now)
+        WorksiteTestUtil.insertWorksites(db, now, worksite)
     }
 
     /**
@@ -72,7 +64,7 @@ class WorkTypeDaoTest {
             // Overwrites
             workTypeFull.copy(id = 1),
         )
-        val workTypes = db.testWorkTypeDao().getWorksiteWorkTypes(1)
+        val workTypes = db.testWorkTypeDao().getEntities(1)
         assertEquals(expected, workTypes)
     }
 
@@ -112,7 +104,7 @@ class WorkTypeDaoTest {
             // Unchanged
             testWorkTypeEntity(112).copy(id = 2),
         )
-        val workTypes = db.testWorkTypeDao().getWorksiteWorkTypes(1)
+        val workTypes = db.testWorkTypeDao().getEntities(1)
         // id=4 because upsert.insert failed
         assertEquals(listOf(1L, 4, 2), workTypes.map(WorkTypeEntity::id))
         for (i in expecteds.indices) {

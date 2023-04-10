@@ -39,4 +39,7 @@ object DaoModule {
 
     @Provides
     fun providesSyncLogDao(db: CrisisCleanupDatabase) = db.syncLogDao()
+
+    @Provides
+    fun providesWorksiteChangeDao(db: CrisisCleanupDatabase) = db.worksiteChangeDao()
 }

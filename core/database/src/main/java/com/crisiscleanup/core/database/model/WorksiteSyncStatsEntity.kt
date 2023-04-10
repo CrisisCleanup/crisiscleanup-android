@@ -27,7 +27,7 @@ data class WorksiteSyncStatsEntity(
     @ColumnInfo("attempted_counter")
     val attemptedCounter: Int,
     @ColumnInfo("app_build_version_code", defaultValue = "0")
-    val appBuildVersionCode: Int,
+    val appBuildVersionCode: Long,
 )
 
 fun WorksiteSyncStatsEntity.asExternalModel() = WorksitesSyncStats(

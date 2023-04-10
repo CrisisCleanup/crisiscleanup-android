@@ -12,8 +12,8 @@ interface AppVersionProvider {
     /**
      * Code is first, name is second
      */
-    val version: Pair<Int, String>
-    val versionCode: Int
+    val version: Pair<Long, String>
+    val versionCode: Long
     val versionName: String
 }
 
@@ -34,14 +34,14 @@ class AndroidAppVersionProvider @Inject constructor(
             context.packageManager.getPackageInfo(context.packageName, 0)
         }
 
-    override val version: Pair<Int, String>
+    override val version: Pair<Long, String>
         get() {
-            val code = packageInfo.longVersionCode.toInt()
+            val code = packageInfo.longVersionCode
             val name = packageInfo.versionName
             return Pair(code, name)
         }
 
-    override val versionCode: Int
+    override val versionCode: Long
         get() = version.first
 
     override val versionName: String

@@ -5,6 +5,7 @@
     <string name="create_case">Create Case</string>
     <string name="view_case">View Case</string>
     <string name="view_case_number">Case %1$s</string>
+    <string name="organization_issue_try_re_authenticating">There seems to be an issue with your organization. Try logging out and logging in again.</string>
     <string name="incident_issue_try_again">There seems to be an issue with the current incident. Please try again. Connect to the internet if possible.</string>
 
     <string name="edit_section">Edit %s</string>

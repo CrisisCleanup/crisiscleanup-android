@@ -55,7 +55,7 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
     ) { b, b1 -> b || b1 }
 
     override val supportedLanguages = languageDao.streamLanguages().map {
-        it.map { translation -> Language(translation.entity.key, translation.entity.name) }
+        it.map { translation -> Language(translation.key, translation.name) }
     }
         .flowOn(ioDispatcher)
         .stateIn(

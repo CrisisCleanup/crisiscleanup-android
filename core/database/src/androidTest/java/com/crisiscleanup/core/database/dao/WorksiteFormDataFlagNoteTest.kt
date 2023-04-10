@@ -27,9 +27,11 @@ class WorksiteFormDataFlagNoteTest {
     private suspend fun insertWorksites(
         worksites: List<WorksiteEntity>,
         syncedAt: Instant,
-    ): List<WorksiteEntity> {
-        return WorksiteTestUtil.insertWorksites(db, worksites, syncedAt)
-    }
+    ) = WorksiteTestUtil.insertWorksites(
+        db,
+        syncedAt,
+        *worksites.toTypedArray(),
+    )
 
     @Before
     fun createDb() {
@@ -170,20 +172,20 @@ class WorksiteFormDataFlagNoteTest {
         )
         existingWorksites = insertWorksites(existingWorksites, previousSyncedAt)
 
-        db.worksiteFormDataDao().syncUpsert(
+        db.worksiteFormDataDao().upsert(
             listOf(
                 testFormDataEntity(1, "form-field-a"),
                 testFormDataEntity(1, "form-field-b"),
                 testFormDataEntity(1, "form-field-c", isBoolValue = true, valueBool = true),
             )
         )
-        db.testWorksiteFlagDao().insertFlags(
+        db.worksiteFlagDao().insert(
             listOf(
                 testFlagEntity(11, 1, createdAtA, "flag-a"),
                 testFlagEntity(12, 1, createdAtA, "flag-b"),
             )
         )
-        db.testWorksiteNoteDao().insertNotes(
+        db.worksiteNoteDao().insert(
             listOf(
                 testNotesEntity(21, 1, createdAtA, "note-a"),
                 testNotesEntity(22, 1, createdAtA, "note-b"),
@@ -406,7 +408,7 @@ class WorksiteFormDataFlagNoteTest {
         )
         insertWorksites(existingWorksites, previousSyncedAt)
 
-        db.testWorksiteFlagDao().insertFlags(
+        db.worksiteFlagDao().insert(
             listOf(
                 testFullFlagEntity(432, 1, updatedAtA, false, "flag-a", isInvalid = true),
                 testFullFlagEntity(12, 1, updatedAtA, true, "flag-a"),

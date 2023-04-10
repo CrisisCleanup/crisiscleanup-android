@@ -96,6 +96,7 @@ class AuthenticationViewModelTest {
                 disableSaveCredentialsPrompt = false,
                 syncAttempt = SyncAttempt(0, 0, 0),
                 selectedIncidentId = 0,
+                languageKey = EnglishLanguage.key,
             )
         )
 

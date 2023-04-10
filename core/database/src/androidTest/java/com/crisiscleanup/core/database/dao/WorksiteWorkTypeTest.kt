@@ -27,9 +27,11 @@ class WorksiteWorkTypeTest {
     private suspend fun insertWorksites(
         worksites: List<WorksiteEntity>,
         syncedAt: Instant,
-    ): List<WorksiteEntity> {
-        return WorksiteTestUtil.insertWorksites(db, worksites, syncedAt)
-    }
+    ) = WorksiteTestUtil.insertWorksites(
+        db,
+        syncedAt,
+        *worksites.toTypedArray(),
+    )
 
     @Before
     fun createDb() {
@@ -78,7 +80,7 @@ class WorksiteWorkTypeTest {
             testWorksiteEntity(2, 1, "address", updatedAtA),
         )
         existingWorksites = insertWorksites(existingWorksites, previousSyncedAt)
-        db.testWorkTypeDao().insertWorkTypes(
+        db.workTypeDao().insert(
             listOf(
                 testWorkTypeEntity(1, worksiteId = 1),
                 testWorkTypeEntity(11, worksiteId = 1),
@@ -231,7 +233,7 @@ class WorksiteWorkTypeTest {
         existingWorksites = insertWorksites(existingWorksites, previousSyncedAt)
         db.testWorksiteDao().setLocallyModified(2, updatedAtA)
 
-        db.testWorkTypeDao().insertWorkTypes(
+        db.workTypeDao().insert(
             listOf(
                 testWorkTypeEntity(1, worksiteId = 1),
                 testWorkTypeEntity(11, worksiteId = 1),
@@ -302,7 +304,7 @@ class WorksiteWorkTypeTest {
         )
         insertWorksites(existingWorksites, previousSyncedAt)
 
-        db.testWorkTypeDao().insertWorkTypes(
+        db.workTypeDao().insert(
             listOf(
                 testWorkTypeEntity(11, worksiteId = 1, isInvalid = true),
                 testWorkTypeEntity(

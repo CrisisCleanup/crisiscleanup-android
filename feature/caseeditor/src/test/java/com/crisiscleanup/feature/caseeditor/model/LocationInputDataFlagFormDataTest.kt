@@ -60,13 +60,10 @@ class LocationInputDataFlagFormDataTest {
     ) {
         val expected = worksite.copy(
             flags = updated?.flags,
-            updatedAt = updated?.updatedAt
         )
         assertEquals(expected, updated)
 
-        assertTrue(Clock.System.now().minus(updated!!.updatedAt!!) < 1.seconds)
-
-        val actual = updated.flags
+        val actual = updated!!.flags
         val expectedFlagCount = (worksite.flags?.size ?: 0) + 1
         assertEquals(expectedFlagCount, actual?.size)
         val lastFlag = actual?.lastOrNull()
@@ -147,13 +144,10 @@ class LocationInputDataFlagFormDataTest {
     ) {
         val expected = worksite.copy(
             flags = updated?.flags,
-            updatedAt = updated?.updatedAt
         )
         assertEquals(expected, updated)
 
-        assertTrue(Clock.System.now().minus(updated!!.updatedAt!!) < 1.seconds)
-
-        assertEquals(expectedFlags, updated.flags)
+        assertEquals(expectedFlags, updated!!.flags)
     }
 
     @Test
@@ -231,13 +225,10 @@ class LocationInputDataFlagFormDataTest {
     ) {
         val expected = worksite.copy(
             formData = updated?.formData,
-            updatedAt = updated?.updatedAt
         )
         assertEquals(expected, updated)
 
-        assertTrue(Clock.System.now().minus(updated!!.updatedAt!!) < 1.seconds)
-
-        val actual = updated.formData
+        val actual = updated!!.formData
         val expectedFormDataCount = (worksite.formData?.size ?: 0) + 1
         assertEquals(expectedFormDataCount, actual?.size)
         val formDataMap = worksite.formData?.toMutableMap() ?: mutableMapOf()
@@ -311,13 +302,10 @@ class LocationInputDataFlagFormDataTest {
     ) {
         val expected = worksite.copy(
             formData = updated?.formData,
-            updatedAt = updated?.updatedAt
         )
         assertEquals(expected, updated)
 
-        assertTrue(Clock.System.now().minus(updated!!.updatedAt!!) < 1.seconds)
-
-        assertEquals(expectedFormData, updated.formData)
+        assertEquals(expectedFormData, updated!!.formData)
     }
 
     @Test

@@ -19,7 +19,6 @@ fun NetworkWorksiteFull.asEntity(incidentId: Long) = WorksiteEntity(
     city = city,
     county = county,
     email = email,
-    // TODO Is this the correct interpretation?
     favoriteId = favorite?.id,
     keyWorkTypeType = keyWorkType?.workType ?: "",
     keyWorkTypeOrgClaim = keyWorkType?.orgClaim,

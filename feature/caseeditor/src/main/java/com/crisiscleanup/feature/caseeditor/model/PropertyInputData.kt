@@ -9,7 +9,6 @@ import com.crisiscleanup.core.model.data.AutoContactFrequency
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.feature.caseeditor.R
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.datetime.Clock
 
 class PropertyInputData(
     private val inputValidator: InputValidator,
@@ -87,7 +86,6 @@ class PropertyInputData(
             phone2 = phoneNumberSecondary.trim(),
             email = email.trim(),
             autoContactFrequencyT = autoContactFrequency.literal,
-            updatedAt = Clock.System.now(),
         )
     }
 }

@@ -43,8 +43,10 @@ data class Worksite(
     val updatedAt: Instant?,
     val what3Words: String? = null,
     val workTypes: List<WorkType>,
-    // Member of My Organization flag when new worksite is created.
-    // Use [favoriteId] when worksite is pre-existing.
+    // TODO Save this flag to db and UI should differentiate this value vs when favorite ID is (synced and) defined.
+    /**
+     * Has precedent over [favoriteId]. If [favoriteId] is defined but this is false it means the favorite was untoggled (or member flag was unchecked).
+     */
     val isAssignedToOrgMember: Boolean = false,
 ) {
     companion object {
@@ -53,6 +55,9 @@ data class Worksite(
     }
 
     val isNew = id <= 0
+
+    val isFavorited: Boolean
+        get() = isAssignedToOrgMember
 
     val hasHighPriorityFlag: Boolean
         get() = flags?.any(WorksiteFlag::isHighPriorityFlag) ?: false

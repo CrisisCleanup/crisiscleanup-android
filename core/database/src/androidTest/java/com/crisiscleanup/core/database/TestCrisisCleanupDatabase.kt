@@ -22,6 +22,8 @@ import kotlinx.datetime.Instant
         WorksiteNoteEntity::class,
         LanguageTranslationEntity::class,
         SyncLogEntity::class,
+        WorksiteChangeEntity::class,
+        WorksiteChangeNoticeEntity::class,
     ],
     version = 1,
 )
@@ -31,9 +33,11 @@ import kotlinx.datetime.Instant
 abstract class TestCrisisCleanupDatabase : CrisisCleanupDatabase() {
     abstract fun testIncidentDao(): TestIncidentDao
     abstract fun testWorksiteDao(): TestWorksiteDao
+    abstract fun testFlagDao(): TestFlagDao
+    abstract fun testFormDataDao(): TestFormDataDao
+    abstract fun testNoteDao(): TestNoteDao
     abstract fun testWorkTypeDao(): TestWorkTypeDao
-    abstract fun testWorksiteFlagDao(): TestWorksiteFlagDao
-    abstract fun testWorksiteNoteDao(): TestWorksiteNoteDao
+    abstract fun testWorksiteChangeDao(): TestWorksiteChangeDao
 }
 
 @Dao
@@ -64,6 +68,57 @@ interface TestWorksiteDao {
     @Transaction
     @Query("SELECT * FROM worksites WHERE id=:id")
     fun getLocalWorksite(id: Long): PopulatedLocalWorksite
+
+    @Transaction
+    @Query("SELECT * FROM worksites_root WHERE id=:id")
+    fun getRootEntity(id: Long): WorksiteRootEntity?
+
+    @Transaction
+    @Query("SELECT * FROM worksites WHERE id=:id")
+    fun getWorksiteEntity(id: Long): WorksiteEntity?
+}
+
+@Dao
+interface TestFlagDao {
+    @Transaction
+    @Query("SELECT * FROM worksite_flags WHERE worksite_id=:worksiteId")
+    fun getEntities(worksiteId: Long): List<WorksiteFlagEntity>
+
+    @Transaction
+    @Query(
+        """
+        UPDATE worksite_flags
+        SET network_id=:networkId,
+            local_global_uuid=:localGlobalUuid
+        WHERE id=:id
+        """
+    )
+    fun updateNetworkId(id: Long, networkId: Long, localGlobalUuid: String = "")
+}
+
+@Dao
+interface TestFormDataDao {
+    @Transaction
+    @Query("SELECT * FROM worksite_form_data WHERE worksite_id=:worksiteId")
+    fun getEntities(worksiteId: Long): List<WorksiteFormDataEntity>
+}
+
+@Dao
+interface TestNoteDao {
+    @Transaction
+    @Query("SELECT * FROM worksite_notes WHERE worksite_id=:worksiteId")
+    fun getEntities(worksiteId: Long): List<WorksiteNoteEntity>
+
+    @Transaction
+    @Query(
+        """
+        UPDATE worksite_notes
+        SET network_id=:networkId,
+            local_global_uuid=:localGlobalUuid
+        WHERE id=:id
+        """
+    )
+    fun updateNetworkId(id: Long, networkId: Long, localGlobalUuid: String = "")
 }
 
 @Dao
@@ -77,20 +132,30 @@ interface TestWorkTypeDao {
         ORDER BY work_type ASC, id ASC
         """
     )
-    fun getWorksiteWorkTypes(worksiteId: Long): List<WorkTypeEntity>
+    fun getEntities(worksiteId: Long): List<WorkTypeEntity>
 
-    @Insert
-    fun insertWorkTypes(workTypes: Collection<WorkTypeEntity>)
+    @Transaction
+    @Query(
+        """
+        UPDATE work_types
+        SET network_id=:networkId,
+            local_global_uuid=:localGlobalUuid
+        WHERE id=:id
+        """
+    )
+    fun updateNetworkId(id: Long, networkId: Long, localGlobalUuid: String = "")
 }
 
 @Dao
-interface TestWorksiteFlagDao {
-    @Insert
-    fun insertFlags(flags: Collection<WorksiteFlagEntity>)
-}
-
-@Dao
-interface TestWorksiteNoteDao {
-    @Insert
-    fun insertNotes(notes: Collection<WorksiteNoteEntity>)
+interface TestWorksiteChangeDao {
+    @Transaction
+    @Query(
+        """
+        SELECT *
+        FROM worksite_changes
+        WHERE worksite_id=:worksiteId
+        ORDER BY created_at DESC
+        """
+    )
+    fun getEntities(worksiteId: Long): List<WorksiteChangeEntity>
 }

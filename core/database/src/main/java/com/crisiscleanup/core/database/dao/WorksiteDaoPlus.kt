@@ -53,8 +53,8 @@ class WorksiteDaoPlus @Inject constructor(
         val worksiteFormData = unassociatedFormData.map { it.copy(worksiteId = worksiteId) }
         val fieldKeys = worksiteFormData.map(WorksiteFormDataEntity::fieldKey)
         val formDataDao = db.worksiteFormDataDao()
-        formDataDao.syncDeleteUnspecified(worksiteId, fieldKeys)
-        formDataDao.syncUpsert(worksiteFormData)
+        formDataDao.deleteUnspecifiedKeys(worksiteId, fieldKeys)
+        formDataDao.upsert(worksiteFormData)
     }
 
     private suspend fun syncFlags(
@@ -108,7 +108,7 @@ class WorksiteDaoPlus @Inject constructor(
                 networkId = worksite.networkId,
                 incidentId = worksite.incidentId,
             )
-            worksiteDao.insertWorksite(worksite.copy(id = id))
+            worksiteDao.insert(worksite.copy(id = id))
 
             syncWorkTypes(id, workTypes)
             formData?.let { syncFormData(id, it) }

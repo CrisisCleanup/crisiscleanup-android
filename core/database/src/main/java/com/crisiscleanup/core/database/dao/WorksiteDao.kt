@@ -1,9 +1,6 @@
 package com.crisiscleanup.core.database.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
-import androidx.room.Transaction
+import androidx.room.*
 import com.crisiscleanup.core.database.model.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Instant
@@ -190,8 +187,8 @@ interface WorksiteDao {
     @Query(
         """
         INSERT OR ROLLBACK INTO worksites_root (
-            synced_at, 
-            network_id, 
+            synced_at,
+            network_id,
             incident_id
         )
         VALUES (
@@ -208,7 +205,29 @@ interface WorksiteDao {
     ): Long
 
     @Insert
-    fun insertWorksite(worksite: WorksiteEntity)
+    fun insertRoot(worksiteRoot: WorksiteRootEntity): Long
+
+    @Transaction
+    @Query(
+        """
+        UPDATE worksites_root
+        SET sync_uuid           =:syncUuid,
+             local_modified_at  =:localModifiedAt,
+             is_local_modified  =1
+        WHERE id=:id
+        """
+    )
+    fun updateRoot(
+        id: Long,
+        syncUuid: String,
+        localModifiedAt: Instant,
+    )
+
+    @Insert
+    fun insert(worksite: WorksiteEntity)
+
+    @Update
+    fun update(worksite: WorksiteEntity)
 
     @Transaction
     @Query(

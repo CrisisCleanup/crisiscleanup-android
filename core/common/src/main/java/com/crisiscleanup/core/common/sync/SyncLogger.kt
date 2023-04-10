@@ -1,6 +1,7 @@
 package com.crisiscleanup.core.common.sync
 
 interface SyncLogger {
-    fun log(message: String, type: String = "", details: String = ""): SyncLogger
+    var type: String
+    fun log(message: String, details: String = "", type: String = ""): SyncLogger
     fun flush()
 }
