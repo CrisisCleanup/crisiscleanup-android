@@ -172,13 +172,23 @@ private fun ConstraintLayoutScope.CaseSummary(
             .scrollFlingListener(closeKeyboard)
             .verticalScroll(scrollState)
     ) {
-        Text(
-            worksiteData.incident.name,
+        Column(
             modifier = modifier
                 .listItemHorizontalPadding()
                 .padding(vertical = 24.dp),
-            style = MaterialTheme.typography.headlineMedium,
-        )
+        ) {
+            Text(
+                worksiteData.incident.name,
+                style = MaterialTheme.typography.headlineMedium,
+            )
+
+            if (worksiteData.isLocalModified) {
+                Text(
+                    stringResource(R.string.is_pending_sync),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+        }
 
         val translate = remember(viewModel) { { s: String -> viewModel.translate(s) } }
 

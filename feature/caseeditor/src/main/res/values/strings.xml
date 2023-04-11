@@ -58,4 +58,6 @@
     <string name="incomplete_work_type_info">At least one work type must be specified.</string>
     <string name="incomplete_worksite_data">Required data is fully defined. Sorry for not being able to identify where.</string>
     <string name="fix">Fix</string>
+
+    <string name="is_pending_sync">Pending sync</string>
 </resources>
