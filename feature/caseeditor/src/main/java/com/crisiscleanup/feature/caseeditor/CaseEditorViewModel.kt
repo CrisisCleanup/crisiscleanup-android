@@ -15,6 +15,7 @@ import com.crisiscleanup.core.data.repository.*
 import com.crisiscleanup.core.data.util.NetworkMonitor
 import com.crisiscleanup.core.model.data.*
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
+import com.crisiscleanup.feature.caseeditor.model.coordinates
 import com.crisiscleanup.feature.caseeditor.navigation.CaseEditorArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -321,6 +322,7 @@ class CaseEditorViewModel @Inject constructor(
                 )
 
                 dataLoader.reloadData(worksiteIdArg!!)
+                worksiteProvider.setEditedLocation(worksite.coordinates())
 
             } catch (e: Exception) {
                 // TODO Show dialog save failed. Try again. If still fails seek help.

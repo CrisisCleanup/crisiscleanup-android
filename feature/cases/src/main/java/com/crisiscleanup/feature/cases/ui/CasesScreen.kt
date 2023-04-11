@@ -40,6 +40,7 @@ import com.crisiscleanup.feature.cases.model.WorksiteGoogleMapMark
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.TileProvider
 import com.google.maps.android.compose.*
 import com.crisiscleanup.core.mapmarker.R as mapMarkerR
@@ -106,6 +107,7 @@ internal fun CasesRoute(
         val onMapMarkerSelect = remember(casesViewModel) {
             { mark: WorksiteMapMark -> openCase(casesViewModel.incidentId, mark.id) }
         }
+        val editedWorksiteLocation = casesViewModel.editedWorksiteLocation
         CasesScreen(
             showDataProgress = showDataProgress,
             dataProgress = dataProgress,
@@ -124,6 +126,7 @@ internal fun CasesRoute(
             onMapCameraChange = onMapCameraChange,
             hiddenMarkersMessage = hiddenMarkersMessage,
             onMarkerSelect = onMapMarkerSelect,
+            editedWorksiteLocation = editedWorksiteLocation,
         )
     } else {
         val isSyncingIncidents by casesViewModel.isSyncingIncidents.collectAsState(true)
@@ -185,6 +188,7 @@ internal fun CasesScreen(
     onMapCameraChange: (CameraPosition, Projection?, Boolean) -> Unit = { _, _, _ -> },
     hiddenMarkersMessage: () -> String = { "" },
     onMarkerSelect: (WorksiteMapMark) -> Boolean = { false },
+    editedWorksiteLocation: LatLng? = null,
 ) {
     Box(modifier.then(Modifier.fillMaxSize())) {
         if (isTableView) {
@@ -203,6 +207,7 @@ internal fun CasesScreen(
                 onMapCameraChange,
                 hiddenMarkersMessage,
                 onMarkerSelect,
+                editedWorksiteLocation,
             )
         }
         CasesOverlayActions(
@@ -238,6 +243,7 @@ internal fun BoxScope.CasesMapView(
     onMapCameraChange: (CameraPosition, Projection?, Boolean) -> Unit = { _, _, _ -> },
     hiddenMarkersMessage: () -> String = { "" },
     onMarkerSelect: (WorksiteMapMark) -> Boolean = { false },
+    editedWorksiteLocation: LatLng? = null,
 ) {
     // TODO Profile and optimize recompositions when map is changed (by user) if possible.
 
@@ -319,6 +325,14 @@ internal fun BoxScope.CasesMapView(
             } else {
                 cameraPositionState.move(update)
             }
+        }
+    }
+
+    editedWorksiteLocation?.let {
+        LaunchedEffect(Unit) {
+            // TODO Use zoom parameter/constant
+            val update = CameraUpdateFactory.newLatLngZoom(it, 12f)
+            cameraPositionState.move(update)
         }
     }
 

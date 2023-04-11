@@ -5,9 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.appheader.AppHeaderUiState
-import com.crisiscleanup.core.common.AndroidResourceProvider
-import com.crisiscleanup.core.common.AppMemoryStats
-import com.crisiscleanup.core.common.SyncPuller
+import com.crisiscleanup.core.common.*
 import com.crisiscleanup.core.common.event.TrimMemoryEventManager
 import com.crisiscleanup.core.common.event.TrimMemoryListener
 import com.crisiscleanup.core.common.log.AppLogger
@@ -15,7 +13,6 @@ import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
-import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocationsRepository
@@ -32,6 +29,7 @@ import com.crisiscleanup.feature.cases.map.*
 import com.crisiscleanup.feature.cases.model.*
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.TileProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -56,6 +54,7 @@ class CasesViewModel @Inject constructor(
     private val mapTileRenderer: CasesOverviewMapTileRenderer,
     private val tileProvider: TileProvider,
     searchManager: SearchManager,
+    private val worksiteLocationEditor: WorksiteLocationEditor,
     private val syncPuller: SyncPuller,
     private val resourceProvider: AndroidResourceProvider,
     appMemoryStats: AppMemoryStats,
@@ -90,6 +89,9 @@ class CasesViewModel @Inject constructor(
     fun toggleLayersView() {
         isLayerView.value = !isLayerView.value
     }
+
+    val editedWorksiteLocation: LatLng?
+        get() = worksiteLocationEditor.takeEditedLocation()?.let { LatLng(it.first, it.second) }
 
     val showDataProgress = dataPullReporter.worksitesDataPullStats.map { it.isOngoing }
     val dataProgress = dataPullReporter.worksitesDataPullStats.map { it.progress }

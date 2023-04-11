@@ -183,14 +183,7 @@ private fun ConstraintLayoutScope.CaseSummary(
         val translate = remember(viewModel) { { s: String -> viewModel.translate(s) } }
 
         val worksite by viewModel.editingWorksite.collectAsStateWithLifecycle()
-        if (viewModel.isCreateWorksite) {
-            LocationSummaryView(
-                worksite,
-                isEditable,
-                onEdit = editLocation,
-                translate = translate,
-            )
-        }
+
         PropertySummaryView(
             worksite,
             isEditable,
@@ -198,14 +191,12 @@ private fun ConstraintLayoutScope.CaseSummary(
             translate = translate,
         )
 
-        if (!viewModel.isCreateWorksite) {
-            LocationSummaryView(
-                worksite,
-                isEditable,
-                onEdit = editLocation,
-                translate = translate,
-            )
-        }
+        LocationSummaryView(
+            worksite,
+            isEditable,
+            onEdit = editLocation,
+            translate = translate,
+        )
 
         NotesFlagsSummaryView(
             worksite,
