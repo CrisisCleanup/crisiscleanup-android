@@ -25,17 +25,17 @@ data class NetworkWorksiteFull(
     val county: String,
     val email: String? = null,
     val events: List<NetworkEvent>,
-    val favorite: Favorite?,
+    val favorite: NetworkType?,
     val files: List<NetworkFile>,
     val flags: List<NetworkFlag>,
     @SerialName("form_data")
     val formData: List<KeyDynamicValuePair>,
     val incident: Long,
     @SerialName("key_work_type")
-    val keyWorkType: WorkType?,
+    val keyWorkType: NetworkWorkType?,
     val location: Location,
     val name: String,
-    val notes: List<Note>,
+    val notes: List<NetworkNote>,
     val phone1: String,
     val phone2: String?,
     @SerialName("pluscode")
@@ -54,34 +54,12 @@ data class NetworkWorksiteFull(
     @SerialName("what3words")
     val what3words: String? = null,
     @SerialName("work_types")
-    val workTypes: List<WorkType>,
+    val workTypes: List<NetworkWorkType>,
 ) {
-    @Serializable
-    data class Favorite(
-        val id: Long,
-        @SerialName("type_t")
-        val typeT: String,
-        @Serializable(InstantSerializer::class)
-        @SerialName("created_at")
-        val createdAt: Instant,
-    )
-
     @Serializable
     data class Location(
         val type: String,
         val coordinates: List<Double>,
-    )
-
-    @Serializable
-    data class Note(
-        // Incoming network ID is always defined
-        val id: Long?,
-        @Serializable(InstantSerializer::class)
-        @SerialName("created_at")
-        val createdAt: Instant,
-        @SerialName("is_survivor")
-        val isSurvivor: Boolean,
-        val note: String?,
     )
 
     @Serializable
@@ -94,25 +72,6 @@ data class NetworkWorksiteFull(
         val seconds: Int,
         val volunteers: Int,
         val worksite: Int
-    )
-
-    @Serializable
-    data class WorkType(
-        // Incoming network ID is always defined
-        val id: Long?,
-        @Serializable(InstantSerializer::class)
-        @SerialName("created_at")
-        val createdAt: Instant? = null,
-        @SerialName("claimed_by")
-        val orgClaim: Long? = null,
-        @Serializable(InstantSerializer::class)
-        @SerialName("next_recur_at")
-        val nextRecurAt: Instant? = null,
-        val phase: Int? = null,
-        val recur: String? = null,
-        val status: String,
-        @SerialName("work_type")
-        val workType: String,
     )
 
     @Serializable
@@ -189,23 +148,4 @@ data class NetworkWorksiteShort(
     val updatedAt: Instant,
     @SerialName("work_types")
     val workTypes: List<NetworkWorksiteFull.WorkTypeShort>,
-)
-
-@Serializable
-data class NetworkWorksiteLocationSearch(
-    @SerialName("incident")
-    val incidentId: Long,
-    val id: Long,
-    val address: String,
-    @SerialName("case_number")
-    val caseNumber: String,
-    val city: String,
-    val county: String,
-    @SerialName("key_work_type")
-    val keyWorkType: NetworkWorksiteFull.WorkType,
-    val location: NetworkLocation.LocationPoint,
-    val name: String,
-    @SerialName("postal_code")
-    val postalCode: String?,
-    val state: String,
 )

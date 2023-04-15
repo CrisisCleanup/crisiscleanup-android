@@ -1,25 +1,24 @@
 package com.crisiscleanup.core.database.dao
 
-import com.crisiscleanup.core.common.AppVersionProvider
-import com.crisiscleanup.core.common.UuidGenerator
-import com.crisiscleanup.core.common.log.AppLogger
-import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.database.TestCrisisCleanupDatabase
 import com.crisiscleanup.core.database.TestUtil
+import com.crisiscleanup.core.database.TestUtil.testAppLogger
+import com.crisiscleanup.core.database.TestUtil.testAppVersionProvider
+import com.crisiscleanup.core.database.TestUtil.testChangeSerializer
+import com.crisiscleanup.core.database.TestUtil.testSyncLogger
+import com.crisiscleanup.core.database.TestUtil.testUuidGenerator
 import com.crisiscleanup.core.database.WorksiteTestUtil.insertWorksites
 import com.crisiscleanup.core.database.WorksiteTestUtil.testIncidents
 import com.crisiscleanup.core.database.model.*
 import com.crisiscleanup.core.model.data.*
 import io.mockk.MockKAnnotations
 import io.mockk.every
-import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.junit.Before
 import org.junit.Test
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.days
@@ -34,45 +33,11 @@ class WorksiteChangeDaoTest {
     private lateinit var worksiteDaoPlus: WorksiteDaoPlus
     private lateinit var worksiteChangeDaoPlus: WorksiteChangeDaoPlus
 
-    // TODO Change spys to mock when https://github.com/mockk/mockk/issues/1035 is fixed
-
-    private val uuidGenerator: UuidGenerator = spyk(object : UuidGenerator {
-        private val counter = AtomicInteger()
-        override fun uuid() = "uuid-${counter.incrementAndGet()}"
-    })
-
-    private val changeSerializer: WorksiteChangeSerializer =
-        spyk(object : WorksiteChangeSerializer {
-            override fun serialize(
-                worksiteStart: Worksite,
-                worksiteChange: Worksite,
-                flagIdLookup: Map<Long, Long>,
-                noteIdLookup: Map<Long, Long>,
-                workTypeIdLookup: Map<Long, Long>
-            ) = "test-worksite-change"
-        })
-
-    private val appVersionProvider: AppVersionProvider = spyk(object : AppVersionProvider {
-        override val version: Pair<Long, String> = Pair(81, "1.0.81")
-        override val versionCode: Long = version.first
-        override val versionName: String = version.second
-    })
-
-    private val syncLogger: SyncLogger = spyk(object : SyncLogger {
-        override var type: String = "test"
-
-        override fun log(message: String, details: String, type: String): SyncLogger {
-            return this
-        }
-
-        override fun flush() {}
-    })
-
-    private val appLogger: AppLogger = spyk(object : AppLogger {
-        override fun logDebug(vararg logs: Any) {}
-
-        override fun logException(e: Exception) {}
-    })
+    private val uuidGenerator = testUuidGenerator()
+    private val changeSerializer = testChangeSerializer()
+    private val appVersionProvider = testAppVersionProvider()
+    private val syncLogger = testSyncLogger()
+    private val appLogger = testAppLogger()
 
     private val testIncidentId = testIncidents.last().id
 
@@ -251,7 +216,7 @@ class WorksiteChangeDaoTest {
     fun createDb() {
         db = TestUtil.getTestDatabase()
         worksiteDao = db.worksiteDao()
-        worksiteDaoPlus = WorksiteDaoPlus(db)
+        worksiteDaoPlus = WorksiteDaoPlus(db, syncLogger)
         worksiteChangeDaoPlus = WorksiteChangeDaoPlus(
             db,
             uuidGenerator,
@@ -365,13 +330,14 @@ class WorksiteChangeDaoTest {
                 emptyMap(),
                 emptyMap(),
             )
-        } returns "serialized-new-worksite-changes"
+        } returns Pair(2, "serialized-new-worksite-changes")
 
         worksiteChangeDaoPlus.saveChange(
             EmptyWorksite,
             newWorksite,
             primaryWorkType,
             385,
+            now,
         )
 
         val worksiteEntity = entities.core.copy(id = 1)
@@ -381,7 +347,7 @@ class WorksiteChangeDaoTest {
         val expectedRoot = WorksiteRootEntity(
             id = 1,
             syncUuid = "uuid-13",
-            localModifiedAt = newWorksite.updatedAt!!,
+            localModifiedAt = now,
             syncedAt = Instant.fromEpochSeconds(0),
             localGlobalUuid = "uuid-14",
             isLocalModified = true,
@@ -444,6 +410,8 @@ class WorksiteChangeDaoTest {
             appVersion = 81,
             organizationId = 385,
             worksiteId = worksiteId,
+            syncUuid = "uuid-15",
+            changeModelVersion = 2,
             changeData = "serialized-new-worksite-changes",
             createdAt = actualChanges.first().createdAt,
         )
@@ -579,7 +547,7 @@ class WorksiteChangeDaoTest {
                     23L to 223,
                 ),
             )
-        } returns "serialized-edit-worksite-changes"
+        } returns Pair(3, "serialized-edit-worksite-changes")
 
         val primaryWorkType = worksiteModified.workTypes[0]
 
@@ -596,6 +564,7 @@ class WorksiteChangeDaoTest {
             worksiteModified,
             primaryWorkType,
             385,
+            now,
         )
 
         val worksiteEntity = entities.core
@@ -605,7 +574,7 @@ class WorksiteChangeDaoTest {
         val expectedRoot = WorksiteRootEntity(
             id = 56,
             syncUuid = "uuid-23",
-            localModifiedAt = worksiteModified.updatedAt!!,
+            localModifiedAt = now,
             syncedAt = worksiteSynced.updatedAt!!,
             localGlobalUuid = "",
             isLocalModified = true,
@@ -728,6 +697,8 @@ class WorksiteChangeDaoTest {
             appVersion = 81,
             organizationId = 385,
             worksiteId = worksiteId,
+            syncUuid = "uuid-24",
+            changeModelVersion = 3,
             changeData = "serialized-edit-worksite-changes",
             createdAt = actualChanges.first().createdAt,
         )

@@ -1,14 +1,17 @@
 package com.crisiscleanup.core.database.dao
 
 import androidx.room.withTransaction
+import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
 import com.crisiscleanup.core.database.model.*
 import kotlinx.coroutines.flow.Flow
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
 
 class WorksiteDaoPlus @Inject constructor(
     private val db: CrisisCleanupDatabase,
+    private val syncLogger: SyncLogger,
 ) {
     private suspend fun getWorksiteLocalModifiedAt(
         incidentId: Long,
@@ -165,7 +168,9 @@ class WorksiteDaoPlus @Inject constructor(
             return@withTransaction true
 
         } else {
-            // TODO Log local modified not overwritten (for sync logs)
+            // Resolving changes at this point is not worth the complexity.
+            // Defer to worksite (snapshot) changes resolving successfully and completely.
+            syncLogger.log("Skip sync overwriting locally modified worksite ${worksite.id} (${worksite.networkId})")
         }
 
         return@withTransaction false
@@ -209,28 +214,25 @@ class WorksiteDaoPlus @Inject constructor(
 
     suspend fun syncWorksite(
         incidentId: Long,
-        worksite: WorksiteEntity,
-        workTypes: List<WorkTypeEntity>,
-        formData: List<WorksiteFormDataEntity>,
-        flags: List<WorksiteFlagEntity>,
-        notes: List<WorksiteNoteEntity>,
+        entities: WorksiteEntities,
         syncedAt: Instant,
     ): Long = db.withTransaction {
-        val modifiedAtLookup = getWorksiteLocalModifiedAt(incidentId, setOf(worksite.networkId))
-        val modifiedAt = modifiedAtLookup[worksite.networkId]
+        val core = entities.core
+        val modifiedAtLookup = getWorksiteLocalModifiedAt(incidentId, setOf(core.networkId))
+        val modifiedAt = modifiedAtLookup[core.networkId]
         val isUpdated = syncWorksite(
             incidentId,
-            worksite,
+            core,
             modifiedAt,
-            workTypes,
+            entities.workTypes,
             syncedAt,
-            formData,
-            flags,
-            notes,
+            entities.formData,
+            entities.flags,
+            entities.notes,
         )
 
         return@withTransaction if (isUpdated) db.worksiteDao()
-            .getWorksiteId(incidentId, worksite.networkId) else -1
+            .getWorksiteId(incidentId, core.networkId) else -1
     }
 
     fun streamWorksitesMapVisual(
@@ -289,5 +291,20 @@ class WorksiteDaoPlus @Inject constructor(
             longitudeLeft,
             longitudeRight,
         )
+    }
+
+    suspend fun onSyncEnd(worksiteId: Long, syncedAt: Instant = Clock.System.now()): Boolean {
+        return db.withTransaction {
+            val hasModification = db.worksiteFlagDao().getUnsyncedCount(worksiteId) > 0 ||
+                    db.worksiteNoteDao().getUnsyncedCount(worksiteId) > 0 ||
+                    db.workTypeDao().getUnsyncedCount(worksiteId) > 0 ||
+                    db.worksiteChangeDao().getChangeCount(worksiteId) > 0
+            return@withTransaction if (hasModification) {
+                false
+            } else {
+                db.worksiteDao().setRootUnmodified(worksiteId, syncedAt)
+                true
+            }
+        }
     }
 }

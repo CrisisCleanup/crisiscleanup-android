@@ -1,9 +1,6 @@
 package com.crisiscleanup.core.network.worksitechange
 
-import com.crisiscleanup.core.network.model.DynamicValue
-import com.crisiscleanup.core.network.model.KeyDynamicValuePair
-import com.crisiscleanup.core.network.model.NetworkFlag
-import com.crisiscleanup.core.network.model.NetworkWorksiteFull
+import com.crisiscleanup.core.network.model.*
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 
@@ -17,17 +14,21 @@ data class WorksiteSnapshot(
     /**
      * @param noteIdLookup Local ID to network ID. Missing in map or non-positive network ID indicates not yet successfully synced to backend.
      */
-    fun getNewNetworkNotes(noteIdLookup: Map<Long, Long>): List<NetworkWorksiteFull.Note> {
+    fun getNewNetworkNotes(noteIdLookup: Map<Long, Long>): List<Pair<Long, NetworkNote>> {
         return notes
             .filter { (noteIdLookup[it.localId] ?: -1) <= 0 }
             .filter { it.note.id <= 0 }
+            .filter { it.note.note.isNotBlank() }
             .map {
                 with(it.note) {
-                    NetworkWorksiteFull.Note(
-                        id = null,
-                        createdAt = createdAt,
-                        isSurvivor = isSurvivor,
-                        note = note,
+                    Pair(
+                        it.localId,
+                        NetworkNote(
+                            id = null,
+                            createdAt = createdAt,
+                            isSurvivor = isSurvivor,
+                            note = note,
+                        ),
                     )
                 }
             }
@@ -38,7 +39,7 @@ data class WorksiteSnapshot(
             ?.workType?.let { workType ->
                 with(workType) {
                     if (id >= 0) {
-                        NetworkWorksiteFull.WorkType(
+                        NetworkWorkType(
                             id = id,
                             createdAt = createdAt,
                             orgClaim = orgClaim,
@@ -165,12 +166,13 @@ data class WorkTypeSnapshot(
         val status: String,
         val workType: String,
     ) {
-        fun changeFrom(reference: WorkType, changedAt: Instant): WorkTypeChange? {
+        fun changeFrom(reference: WorkType, localId: Long, changedAt: Instant): WorkTypeChange? {
             if (workType.trim() != reference.workType.trim()) {
                 return null
             }
 
             return WorkTypeChange(
+                localId,
                 -1,
                 this,
                 changedAt,
@@ -182,6 +184,7 @@ data class WorkTypeSnapshot(
 }
 
 data class WorkTypeChange(
+    val localId: Long,
     val networkId: Long,
     val workType: WorkTypeSnapshot.WorkType,
     val changedAt: Instant,

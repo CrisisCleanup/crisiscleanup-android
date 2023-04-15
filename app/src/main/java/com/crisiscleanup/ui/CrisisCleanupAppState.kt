@@ -17,7 +17,7 @@ import com.crisiscleanup.core.appnav.RouteConstant.dashboardRoute
 import com.crisiscleanup.core.appnav.RouteConstant.menuRoute
 import com.crisiscleanup.core.appnav.RouteConstant.teamRoute
 import com.crisiscleanup.core.common.NavigationObserver
-import com.crisiscleanup.core.data.util.NetworkMonitor
+import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.ui.TrackDisposableJank
 import com.crisiscleanup.feature.cases.navigation.navigateToCases
 import com.crisiscleanup.feature.dashboard.navigation.navigateToDashboard

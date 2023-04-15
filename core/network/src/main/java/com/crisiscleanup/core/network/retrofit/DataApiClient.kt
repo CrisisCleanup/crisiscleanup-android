@@ -8,9 +8,8 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
 import javax.inject.Inject
-import javax.inject.Singleton
 
-private interface CrisisCleanupNetworkApi {
+private interface DataSourceApi {
     @TokenAuthenticationHeader
     @GET("incidents")
     suspend fun getIncidents(
@@ -126,11 +125,10 @@ private interface CrisisCleanupNetworkApi {
     ): NetworkCountResult
 }
 
-@Singleton
-class RetrofitNetworkDataSource @Inject constructor(
+class DataApiClient @Inject constructor(
     @CrisisCleanupRetrofit retrofit: Retrofit
 ) : CrisisCleanupNetworkDataSource {
-    private val networkApi = retrofit.create(CrisisCleanupNetworkApi::class.java)
+    private val networkApi = retrofit.create(DataSourceApi::class.java)
     override suspend fun getIncidents(
         fields: List<String>,
         limit: Int,
@@ -150,6 +148,11 @@ class RetrofitNetworkDataSource @Inject constructor(
 
     override suspend fun getWorksites(worksiteIds: Collection<Long>) =
         networkApi.getWorksites(worksiteIds.joinToString(","))
+
+    override suspend fun getWorksite(id: Long): NetworkWorksiteFull? {
+        val result = getWorksites(listOf(id))
+        return result.results?.get(0)
+    }
 
     override suspend fun getWorksitesCount(incidentId: Long, updatedAtAfter: Instant?) =
         networkApi.getWorksitesCount(incidentId, updatedAtAfter)

@@ -1,6 +1,7 @@
 package com.crisiscleanup.core.database.model
 
 import androidx.room.*
+import androidx.room.Index.Order
 import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.WorksiteFlag
@@ -22,7 +23,10 @@ import kotlinx.datetime.Instant
         // Locally created unsynced worksites will have a network_id=-1. The local/global UUID keeps these worksites unique within the table.
         Index(value = ["incident_id", "network_id", "local_global_uuid"], unique = true),
         // Locally modified worksites for querying sync queue and showing pending syncs.
-        Index(value = ["is_local_modified", "sync_attempt"]),
+        Index(
+            value = ["is_local_modified", "local_modified_at"],
+            orders = [Order.DESC, Order.DESC],
+        ),
     ],
 )
 data class WorksiteRootEntity(
@@ -128,8 +132,9 @@ data class WorksiteEntity(
             value = ["worksite_id", "network_id", "local_global_uuid"], unique = true,
             name = "unique_worksite_work_type",
         ),
-        Index(value = ["status"]),
-        Index(value = ["claimed_by"]),
+        Index(value = ["worksite_id", "work_type"]),
+        Index(value = ["status", "worksite_id"]),
+        Index(value = ["claimed_by", "worksite_id"]),
     ],
 )
 data class WorkTypeEntity(

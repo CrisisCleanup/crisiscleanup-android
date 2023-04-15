@@ -22,7 +22,7 @@ class NetworkWorksitesSearchTest {
             address = "test address",
             caseNumber = "W10",
             postalCode = "32034",
-            keyWorkType = NetworkWorksiteFull.WorkType(
+            keyWorkType = NetworkWorkType(
                 id = 1101893,
                 workType = "tarp",
                 orgClaim = null,

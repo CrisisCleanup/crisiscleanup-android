@@ -1,13 +1,13 @@
 package com.crisiscleanup.core.data.di
 
 import com.crisiscleanup.core.common.KeyTranslator
+import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.data.IncidentWorksitesSyncer
 import com.crisiscleanup.core.data.WorksitesNetworkDataCache
 import com.crisiscleanup.core.data.WorksitesNetworkDataFileCache
 import com.crisiscleanup.core.data.WorksitesSyncer
 import com.crisiscleanup.core.data.repository.*
 import com.crisiscleanup.core.data.util.ConnectivityManagerNetworkMonitor
-import com.crisiscleanup.core.data.util.NetworkMonitor
 import com.crisiscleanup.core.data.util.WorksitesDataPullReporter
 import dagger.Binds
 import dagger.Module
@@ -77,6 +77,7 @@ interface DataModule {
         repository: MemoryCacheSearchWorksitesRepository
     ): SearchWorksitesRepository
 
+    @Singleton
     @Binds
     fun bindsWorksiteChangeRepository(
         repository: CrisisCleanupWorksiteChangeRepository

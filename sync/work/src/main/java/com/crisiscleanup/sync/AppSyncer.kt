@@ -1,5 +1,6 @@
 package com.crisiscleanup.sync
 
+import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.SyncPuller
 import com.crisiscleanup.core.common.SyncPusher
 import com.crisiscleanup.core.common.SyncResult
@@ -9,13 +10,11 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.data.repository.*
-import com.crisiscleanup.core.data.util.NetworkMonitor
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.sync.SyncPull.determineSyncSteps
 import com.crisiscleanup.sync.SyncPull.executePlan
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
@@ -31,6 +30,7 @@ class AppSyncer @Inject constructor(
     private val incidentsRepository: IncidentsRepository,
     private val worksitesRepository: WorksitesRepository,
     private val languageRepository: LanguageTranslationsRepository,
+    private val worksiteChangeRepository: WorksiteChangeRepository,
     private val appPreferences: LocalAppPreferencesDataSource,
     private val syncLogger: SyncLogger,
     private val authEventManager: AuthEventManager,
@@ -209,7 +209,11 @@ class AppSyncer @Inject constructor(
 
     private suspend fun languagePull() {
         if (languagePullMutex.tryLock()) {
-            languageRepository.loadLanguages()
+            try {
+                languageRepository.loadLanguages()
+            } finally {
+                languagePullMutex.unlock()
+            }
         }
     }
 
@@ -234,47 +238,38 @@ class AppSyncer @Inject constructor(
         }
     }
 
-    private val _isSyncPushing = MutableStateFlow(false)
-    override val isSyncPushing: Flow<Boolean> = _isSyncPushing
+    override val isSyncPushing = MutableStateFlow(false)
 
-    private val syncPushMutex = Mutex()
     private var pushJob: Job? = null
 
-    override fun stopPushWorksite() {
+    override fun stopPushWorksites() {
         pushJob?.cancel()
     }
 
-    private suspend fun pushWorksite(worksiteId: Long): SyncResult {
-        onSyncPreconditions()?.let {
-            return SyncResult.PreconditionsNotMet
-        }
-
-        return if (syncPushMutex.tryLock()) {
-            _isSyncPushing.value = true
-            try {
-                // TODO
-                SyncResult.NotAttempted("Not yet implemented")
-            } finally {
-                _isSyncPushing.value = false
-            }
-        } else {
-            SyncResult.NotAttempted("Push sync is already in progress")
-        }
-    }
-
     override fun appPushWorksite(worksiteId: Long) {
-        stopPushWorksite()
-        pushJob = applicationScope.launch(ioDispatcher) {
-            pushWorksite(worksiteId)
+        applicationScope.launch(ioDispatcher) {
+            onSyncPreconditions()?.let {
+                return@launch
+            }
+
+            worksiteChangeRepository.trySyncWorksite(worksiteId)
         }
     }
 
     override suspend fun syncPushWorksitesAsync(): Deferred<SyncResult> {
         val deferred = applicationScope.async {
-            // TODO Loop through pending local changes one by one newest to oldest and sync each. Check for cancellation after change sync.
-            ensureActive()
+            onSyncPreconditions()?.let {
+                return@async SyncResult.PreconditionsNotMet
+            }
 
-            return@async SyncResult.NotAttempted("Not yet implemented")
+            isSyncPushing.value = true
+            try {
+                val isSyncAttempted = worksiteChangeRepository.syncWorksites()
+                return@async if (isSyncAttempted) SyncResult.Success("")
+                else SyncResult.NotAttempted("Sync not attempted")
+            } finally {
+                isSyncPushing.value = false
+            }
         }
         pushJob = deferred
         return deferred

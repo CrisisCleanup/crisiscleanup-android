@@ -28,7 +28,6 @@ import com.crisiscleanup.core.database.util.InstantConverter
         LanguageTranslationEntity::class,
         SyncLogEntity::class,
         WorksiteChangeEntity::class,
-        WorksiteChangeNoticeEntity::class,
     ],
     version = 10,
     autoMigrations = [

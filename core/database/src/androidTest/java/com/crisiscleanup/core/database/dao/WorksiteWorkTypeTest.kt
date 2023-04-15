@@ -2,7 +2,9 @@ package com.crisiscleanup.core.database.dao
 
 import com.crisiscleanup.core.database.TestCrisisCleanupDatabase
 import com.crisiscleanup.core.database.TestUtil
+import com.crisiscleanup.core.database.TestUtil.testSyncLogger
 import com.crisiscleanup.core.database.WorksiteTestUtil
+import com.crisiscleanup.core.database.model.WorkTypeEntity
 import com.crisiscleanup.core.database.model.WorksiteEntity
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.WorkType
@@ -24,6 +26,8 @@ class WorksiteWorkTypeTest {
     private lateinit var worksiteDao: WorksiteDao
     private lateinit var worksiteDaoPlus: WorksiteDaoPlus
 
+    private val syncLogger = testSyncLogger()
+
     private suspend fun insertWorksites(
         worksites: List<WorksiteEntity>,
         syncedAt: Instant,
@@ -37,7 +41,7 @@ class WorksiteWorkTypeTest {
     fun createDb() {
         db = TestUtil.getTestDatabase()
         worksiteDao = db.worksiteDao()
-        worksiteDaoPlus = WorksiteDaoPlus(db)
+        worksiteDaoPlus = WorksiteDaoPlus(db, syncLogger)
     }
 
     @Before
@@ -169,7 +173,7 @@ class WorksiteWorkTypeTest {
                 recur = "recur-synced-new",
             ),
         )
-        assertEquals(expectedWorkTypeEntitiesA, actual.workTypes)
+        assertEquals(expectedWorkTypeEntitiesA, actual.workTypes.sortedBy(WorkTypeEntity::id))
 
         val expectedWorkTypes = listOf(
             WorkType(
@@ -203,7 +207,7 @@ class WorksiteWorkTypeTest {
                 recur = "recur-synced-new",
             ),
         )
-        assertEquals(expectedWorkTypes, actual.asExternalModel().workTypes)
+        assertEquals(expectedWorkTypes, actual.asExternalModel().workTypes.sortedBy(WorkType::id))
 
         actual = worksiteDao.getWorksite(2)
         val expectedWorkTypesB = listOf(

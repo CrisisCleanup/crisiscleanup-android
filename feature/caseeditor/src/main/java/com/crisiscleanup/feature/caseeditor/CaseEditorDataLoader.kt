@@ -1,8 +1,8 @@
 package com.crisiscleanup.feature.caseeditor
 
+import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.data.repository.*
-import com.crisiscleanup.core.data.util.NetworkMonitor
 import com.crisiscleanup.core.mapmarker.model.IncidentBounds
 import com.crisiscleanup.core.mapmarker.util.toBounds
 import com.crisiscleanup.core.mapmarker.util.toLatLng

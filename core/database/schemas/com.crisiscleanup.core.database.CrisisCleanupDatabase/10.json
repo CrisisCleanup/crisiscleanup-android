@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 10,
-    "identityHash": "f77e928d8f98da7c543739ae56a94bd4",
+    "identityHash": "6ef792fa3325e8ed1122752f9db3d1d6",
     "entities": [
       {
         "tableName": "incidents",
@@ -518,14 +518,17 @@
             "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_worksites_root_incident_id_network_id_local_global_uuid` ON `${TABLE_NAME}` (`incident_id`, `network_id`, `local_global_uuid`)"
           },
           {
-            "name": "index_worksites_root_is_local_modified_sync_attempt",
+            "name": "index_worksites_root_is_local_modified_local_modified_at",
             "unique": false,
             "columnNames": [
               "is_local_modified",
-              "sync_attempt"
+              "local_modified_at"
             ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_worksites_root_is_local_modified_sync_attempt` ON `${TABLE_NAME}` (`is_local_modified`, `sync_attempt`)"
+            "orders": [
+              "DESC",
+              "DESC"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_worksites_root_is_local_modified_local_modified_at` ON `${TABLE_NAME}` (`is_local_modified` DESC, `local_modified_at` DESC)"
           }
         ],
         "foreignKeys": [
@@ -892,22 +895,34 @@
             "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `unique_worksite_work_type` ON `${TABLE_NAME}` (`worksite_id`, `network_id`, `local_global_uuid`)"
           },
           {
-            "name": "index_work_types_status",
+            "name": "index_work_types_worksite_id_work_type",
             "unique": false,
             "columnNames": [
-              "status"
+              "worksite_id",
+              "work_type"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_work_types_status` ON `${TABLE_NAME}` (`status`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_work_types_worksite_id_work_type` ON `${TABLE_NAME}` (`worksite_id`, `work_type`)"
           },
           {
-            "name": "index_work_types_claimed_by",
+            "name": "index_work_types_status_worksite_id",
             "unique": false,
             "columnNames": [
-              "claimed_by"
+              "status",
+              "worksite_id"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_work_types_claimed_by` ON `${TABLE_NAME}` (`claimed_by`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_work_types_status_worksite_id` ON `${TABLE_NAME}` (`status`, `worksite_id`)"
+          },
+          {
+            "name": "index_work_types_claimed_by_worksite_id",
+            "unique": false,
+            "columnNames": [
+              "claimed_by",
+              "worksite_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_work_types_claimed_by_worksite_id` ON `${TABLE_NAME}` (`claimed_by`, `worksite_id`)"
           }
         ],
         "foreignKeys": [
@@ -1282,7 +1297,7 @@
       },
       {
         "tableName": "worksite_changes",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `app_version` INTEGER NOT NULL, `organization_id` INTEGER NOT NULL, `worksite_id` INTEGER NOT NULL, `change_data` TEXT NOT NULL, `created_at` INTEGER NOT NULL, `save_attempt` INTEGER NOT NULL DEFAULT 0, `save_fail_response` TEXT NOT NULL DEFAULT '', `archive_action` TEXT NOT NULL, `archived_at` INTEGER NOT NULL, FOREIGN KEY(`worksite_id`) REFERENCES `worksites_root`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `app_version` INTEGER NOT NULL, `organization_id` INTEGER NOT NULL, `worksite_id` INTEGER NOT NULL, `sync_uuid` TEXT NOT NULL DEFAULT '', `change_model_version` INTEGER NOT NULL, `change_data` TEXT NOT NULL, `created_at` INTEGER NOT NULL, `save_attempt` INTEGER NOT NULL DEFAULT 0, `archive_action` TEXT NOT NULL, `save_attempt_at` INTEGER NOT NULL DEFAULT 0, FOREIGN KEY(`worksite_id`) REFERENCES `worksites_root`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -1309,6 +1324,19 @@
             "notNull": true
           },
           {
+            "fieldPath": "syncUuid",
+            "columnName": "sync_uuid",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "changeModelVersion",
+            "columnName": "change_model_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
             "fieldPath": "changeData",
             "columnName": "change_data",
             "affinity": "TEXT",
@@ -1328,23 +1356,17 @@
             "defaultValue": "0"
           },
           {
-            "fieldPath": "saveFailResponse",
-            "columnName": "save_fail_response",
-            "affinity": "TEXT",
-            "notNull": true,
-            "defaultValue": "''"
-          },
-          {
             "fieldPath": "archiveAction",
             "columnName": "archive_action",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "archivedAt",
-            "columnName": "archived_at",
+            "fieldPath": "saveAttemptAt",
+            "columnName": "save_attempt_at",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": true,
+            "defaultValue": "0"
           }
         ],
         "primaryKey": {
@@ -1361,129 +1383,8 @@
               "worksite_id",
               "created_at"
             ],
-            "orders": [
-              "ASC",
-              "DESC"
-            ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_worksite_changes_worksite_id_created_at` ON `${TABLE_NAME}` (`worksite_id` ASC, `created_at` DESC)"
-          }
-        ],
-        "foreignKeys": [
-          {
-            "table": "worksites_root",
-            "onDelete": "CASCADE",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "worksite_id"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
-          }
-        ]
-      },
-      {
-        "tableName": "worksite_change_notice",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `worksite_id` INTEGER NOT NULL, `created_at` INTEGER NOT NULL, `worksite_change_id` INTEGER NOT NULL, `code` INTEGER NOT NULL, `notice_type` TEXT NOT NULL, `message` TEXT NOT NULL, `details` TEXT NOT NULL, `is_acknowledged` INTEGER NOT NULL DEFAULT 0, FOREIGN KEY(`worksite_id`) REFERENCES `worksites_root`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`worksite_change_id`) REFERENCES `worksite_changes`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
-        "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "worksiteId",
-            "columnName": "worksite_id",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "createdAt",
-            "columnName": "created_at",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "changeId",
-            "columnName": "worksite_change_id",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "code",
-            "columnName": "code",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "noticeType",
-            "columnName": "notice_type",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "message",
-            "columnName": "message",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "details",
-            "columnName": "details",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "isAcknowledged",
-            "columnName": "is_acknowledged",
-            "affinity": "INTEGER",
-            "notNull": true,
-            "defaultValue": "0"
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": true,
-          "columnNames": [
-            "id"
-          ]
-        },
-        "indices": [
-          {
-            "name": "index_worksite_change_notice_worksite_id_created_at",
-            "unique": false,
-            "columnNames": [
-              "worksite_id",
-              "created_at"
-            ],
-            "orders": [
-              "ASC",
-              "DESC"
-            ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_worksite_change_notice_worksite_id_created_at` ON `${TABLE_NAME}` (`worksite_id` ASC, `created_at` DESC)"
-          },
-          {
-            "name": "index_worksite_change_notice_worksite_id_worksite_change_id",
-            "unique": false,
-            "columnNames": [
-              "worksite_id",
-              "worksite_change_id"
-            ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_worksite_change_notice_worksite_id_worksite_change_id` ON `${TABLE_NAME}` (`worksite_id`, `worksite_change_id`)"
-          },
-          {
-            "name": "index_worksite_change_notice_created_at_is_acknowledged",
-            "unique": false,
-            "columnNames": [
-              "created_at",
-              "is_acknowledged"
-            ],
-            "orders": [
-              "DESC",
-              "ASC"
-            ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_worksite_change_notice_created_at_is_acknowledged` ON `${TABLE_NAME}` (`created_at` DESC, `is_acknowledged` ASC)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_worksite_changes_worksite_id_created_at` ON `${TABLE_NAME}` (`worksite_id`, `created_at`)"
           }
         ],
         "foreignKeys": [
@@ -1493,17 +1394,6 @@
             "onUpdate": "NO ACTION",
             "columns": [
               "worksite_id"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
-          },
-          {
-            "table": "worksite_changes",
-            "onDelete": "NO ACTION",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "worksite_change_id"
             ],
             "referencedColumns": [
               "id"
@@ -1515,7 +1405,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f77e928d8f98da7c543739ae56a94bd4')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6ef792fa3325e8ed1122752f9db3d1d6')"
     ]
   }
 }

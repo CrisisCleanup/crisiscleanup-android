@@ -30,7 +30,7 @@ import com.crisiscleanup.MainActivityViewModel
 import com.crisiscleanup.R
 import com.crisiscleanup.core.appheader.AppHeaderState
 import com.crisiscleanup.core.common.NavigationObserver
-import com.crisiscleanup.core.data.util.NetworkMonitor
+import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.designsystem.component.*
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.icon.Icon.DrawableResourceIcon

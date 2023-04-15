@@ -1,6 +1,6 @@
 package com.crisiscleanup.core.network.worksitechange
 
-import com.crisiscleanup.core.network.model.NetworkWorksiteFull
+import com.crisiscleanup.core.network.model.NetworkType
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -15,7 +15,7 @@ class FavoriteChangeTest {
 
     private val nullFavoriteWorksite = testNetworkWorksite()
     private val favoriteWorksite =
-        testNetworkWorksite(favorite = NetworkWorksiteFull.Favorite(53, "", createdAtA))
+        testNetworkWorksite(favorite = NetworkType(53, "", createdAtA))
 
     @Test
     fun noChange() {

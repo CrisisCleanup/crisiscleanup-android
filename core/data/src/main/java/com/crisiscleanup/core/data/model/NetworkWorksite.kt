@@ -1,13 +1,7 @@
 package com.crisiscleanup.core.data.model
 
-import com.crisiscleanup.core.database.model.WorksiteEntity
-import com.crisiscleanup.core.database.model.WorksiteFlagEntity
-import com.crisiscleanup.core.database.model.WorksiteFormDataEntity
-import com.crisiscleanup.core.database.model.WorksiteNoteEntity
-import com.crisiscleanup.core.network.model.KeyDynamicValuePair
-import com.crisiscleanup.core.network.model.NetworkFlag
-import com.crisiscleanup.core.network.model.NetworkWorksiteFull
-import com.crisiscleanup.core.network.model.NetworkWorksiteShort
+import com.crisiscleanup.core.database.model.*
+import com.crisiscleanup.core.network.model.*
 
 fun NetworkWorksiteFull.asEntity(incidentId: Long) = WorksiteEntity(
     id = 0,
@@ -90,7 +84,7 @@ fun NetworkFlag.asEntity() = WorksiteFlagEntity(
     isInvalid = false,
 )
 
-fun NetworkWorksiteFull.Note.asEntity() = WorksiteNoteEntity(
+fun NetworkNote.asEntity() = WorksiteNoteEntity(
     id = 0,
     localGlobalUuid = "",
     worksiteId = 0,
@@ -100,3 +94,18 @@ fun NetworkWorksiteFull.Note.asEntity() = WorksiteNoteEntity(
     isSurvivor = isSurvivor,
     note = note ?: "",
 )
+
+fun NetworkWorksiteFull.asEntities(incidentId: Long): WorksiteEntities {
+    val core = asEntity(incidentId)
+    val workTypes = workTypes.map(NetworkWorkType::asEntity)
+    val formData = formData.map(KeyDynamicValuePair::asWorksiteEntity)
+    val flags = flags.map(NetworkFlag::asEntity)
+    val notes = notes.map(NetworkNote::asEntity)
+    return WorksiteEntities(
+        core,
+        flags,
+        formData,
+        notes,
+        workTypes,
+    )
+}

@@ -5,6 +5,7 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+@Serializable
 data class NetworkWorksitePush(
     val id: Long?,
     val address: String,
@@ -16,7 +17,7 @@ data class NetworkWorksitePush(
     val county: String,
     val email: String?,
     // val events: List<NetworkEvent>,
-    val favorite: NetworkWorksiteFull.Favorite?,
+    val favorite: NetworkType?,
     // val files: List<NetworkFile>,
     // Flags are followup requests.
     // val flags
@@ -24,7 +25,7 @@ data class NetworkWorksitePush(
     val formData: List<KeyDynamicValuePair>,
     val incident: Long,
     @SerialName("key_work_type")
-    val keyWorkType: NetworkWorksiteFull.WorkType?,
+    val keyWorkType: NetworkWorkType?,
     val location: NetworkWorksiteFull.Location,
     val name: String,
     // Notes are followup requests.
@@ -47,7 +48,7 @@ data class NetworkWorksitePush(
     @SerialName("what3words")
     val what3words: String?,
     @SerialName("work_types")
-    val workTypes: List<NetworkWorksiteFull.WorkType>?,
+    val workTypes: List<NetworkWorkType>?,
 
     @SerialName("skip_duplicate_check")
     val skipDuplicateCheck: Boolean? = null,

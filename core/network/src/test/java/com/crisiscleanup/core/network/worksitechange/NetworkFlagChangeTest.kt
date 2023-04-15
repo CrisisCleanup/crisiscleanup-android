@@ -47,7 +47,9 @@ class NetworkFlagChangeTest {
         val startOne = listOf(testFlagSnapshot(3, -1, "reasono"))
 
         val actualOneLocal = noFlagsWorksite.getFlagChanges(emptyStart, startOne, emptyMap())
-        assertEquals(listOf(testNetworkFlag(null, "reasono")), actualOneLocal.first)
+        assertEquals(
+            listOf(Pair(3L, testNetworkFlag(null, "reasono"))), actualOneLocal.first,
+        )
         assertEquals(emptyList(), actualOneLocal.second)
     }
 
@@ -62,7 +64,7 @@ class NetworkFlagChangeTest {
         )
 
         val actualAdd = noFlagsWorksite.getFlagChanges(startOne, addedFlags, emptyMap())
-        assertEquals(listOf(testNetworkFlag(null, "newer")), actualAdd.first)
+        assertEquals(listOf(Pair(4L, testNetworkFlag(null, "newer"))), actualAdd.first)
         assertEquals(emptyList(), actualAdd.second)
     }
 
@@ -77,23 +79,20 @@ class NetworkFlagChangeTest {
         )
 
         // Assume all unmapped local flags are new.
-        // This could happen if prior snapshots were not pushed successfully.
+        // This could happen if prior snapshots were skipped/not pushed successfully.
         val actualAddAll = noFlagsWorksite.getFlagChanges(startOne, addedFlags, emptyMap())
         assertEquals(
             listOf(
-                testNetworkFlag(null, "reasono"),
-                testNetworkFlag(null, "newer"),
-            ), actualAddAll.first
+                Pair(3L, testNetworkFlag(null, "reasono")),
+                Pair(4L, testNetworkFlag(null, "newer")),
+            ),
+            actualAddAll.first
         )
         assertEquals(emptyList(), actualAddAll.second)
 
         // A prior snapshot was successfully pushed and ID mapped.
         val actualAdd = noFlagsWorksite.getFlagChanges(startOne, addedFlags, mapOf(3L to 43L))
-        assertEquals(
-            listOf(
-                testNetworkFlag(null, "newer"),
-            ), actualAdd.first
-        )
+        assertEquals(listOf(Pair(4L, testNetworkFlag(null, "newer"))), actualAdd.first)
         assertEquals(emptyList(), actualAdd.second)
 
         // This could happen when a snapshot was previously synced but
@@ -120,8 +119,8 @@ class NetworkFlagChangeTest {
         val actualMultiple = noFlagsWorksite.getFlagChanges(emptyStart, addedFlags, emptyMap())
         assertEquals(
             listOf(
-                testNetworkFlag(null, "reasono"),
-                testNetworkFlag(null, "newer"),
+                Pair(3L, testNetworkFlag(null, "reasono")),
+                Pair(4L, testNetworkFlag(null, "newer")),
             ),
             actualMultiple.first,
         )
@@ -144,7 +143,7 @@ class NetworkFlagChangeTest {
             testFlagSnapshot(4, -1, "newer"),
         )
         val actualAdd = flagsWorksite.getFlagChanges(emptyStart, addedFlags, emptyMap())
-        assertEquals(listOf(testNetworkFlag(null, "newer")), actualAdd.first)
+        assertEquals(listOf(Pair(4L, testNetworkFlag(null, "newer"))), actualAdd.first)
         assertEquals(emptyList(), actualAdd.second)
 
         val flagsWorksiteMultiple = testNetworkWorksite(
@@ -244,8 +243,8 @@ class NetworkFlagChangeTest {
         val actual = worksite.getFlagChanges(startFlags, changeFlags, flagIdLookup)
         assertEquals(
             listOf(
-                testNetworkFlag(null, "add-flag"),
-                testNetworkFlag(null, "change-as-well"),
+                Pair(43L, testNetworkFlag(null, "add-flag")),
+                Pair(53L, testNetworkFlag(null, "change-as-well")),
             ),
             actual.first,
         )

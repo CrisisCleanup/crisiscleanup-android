@@ -4,6 +4,8 @@ import com.crisiscleanup.core.network.model.*
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
 
 // Updates to below (and related) must pass regression tests.
 // Think through any and all data changes carefully and completely in terms of
@@ -55,7 +57,7 @@ class WorksiteChangeSetOperator @Inject constructor() {
             worksitePush,
             if (coreB.isAssignedToOrgMember) true else null,
             snapshot.getNewNetworkNotes(emptyMap()),
-            Pair(snapshot.flags.map(FlagSnapshot::asNetworkFlag), emptyList()),
+            Pair(snapshot.flags.map { Pair(it.localId, it.asNetworkFlag()) }, emptyList()),
         )
     }
 
@@ -66,11 +68,21 @@ class WorksiteChangeSetOperator @Inject constructor() {
         change: WorksiteSnapshot,
         flagIdLookup: Map<Long, Long>,
         noteIdLookup: Map<Long, Long>,
+        workTypeIdLookup: Map<Long, Long>,
     ): WorksiteChangeSet {
         val coreA = start.core
         val coreB = change.core
 
         val updatedAt = coreB.updatedAt ?: Clock.System.now()
+
+        // TODO Add new and delete from base properly.
+        //      Probably best to apply changes to coreA and coreB and have getCoreChanges resolve.
+        val (newWorkTypes, workTypeChanges, deleteWorkTypeIds) = base.getWorkTypeChanges(
+            start.workTypes,
+            change.workTypes,
+            updatedAt,
+            workTypeIdLookup,
+        )
 
         // TODO Is this correct? And complete? Select one by default if no match?
         val keyWorkType =
@@ -82,16 +94,21 @@ class WorksiteChangeSetOperator @Inject constructor() {
         val isAssignedToOrgMember = base.getFavoriteChange(coreA, coreB)
 
         val addNotes = change.getNewNetworkNotes(noteIdLookup)
+        val newNotes = base.filterDuplicateNotes(addNotes)
 
         val flagChanges = base.getFlagChanges(start.flags, change.flags, flagIdLookup)
 
-        val workTypeChanges = base.getWorkTypeChanges(start.workTypes, change.workTypes, updatedAt)
+        // TODO Review data consistency rules and guarantee correctness.
+        //      This applies to both form data and work types.
+        //      - At least one work type must be specified.
+        //        This should not be an issue if local guarantees each snapshot has at least one work type.
+        //      - Fallback to keeping at least one of the existing work types
 
         return WorksiteChangeSet(
             updatedAt,
             worksitePush,
             isAssignedToOrgMember,
-            addNotes,
+            newNotes,
             flagChanges,
             workTypeChanges,
         )
@@ -102,7 +119,7 @@ internal fun NetworkWorksiteFull.getCoreChange(
     coreA: CoreSnapshot,
     coreB: CoreSnapshot,
     formDataPush: List<KeyDynamicValuePair>,
-    keyWorkTypePush: NetworkWorksiteFull.WorkType?,
+    keyWorkTypePush: NetworkWorkType?,
     updatedAtPush: Instant,
 ): NetworkWorksitePush? {
     if (coreA.copy(updatedAt = coreB.updatedAt) == coreB) {
@@ -172,8 +189,8 @@ internal fun NetworkWorksiteFull.getFlagChanges(
     start: List<FlagSnapshot>,
     change: List<FlagSnapshot>,
     flagIdLookup: Map<Long, Long>,
-): Pair<List<NetworkFlag>, Collection<Long>> {
-    fun updateLocalFlags(snapshots: List<FlagSnapshot>) = snapshots.map {
+): Pair<List<Pair<Long, NetworkFlag>>, Collection<Long>> {
+    fun updateNetworkIds(snapshots: List<FlagSnapshot>) = snapshots.map {
         var snapshot = it
         if (it.flag.id <= 0) {
             flagIdLookup[it.localId]?.let { networkId ->
@@ -187,28 +204,25 @@ internal fun NetworkWorksiteFull.getFlagChanges(
         snapshot
     }
 
-    val startUpdated = updateLocalFlags(start)
-    val changeUpdated = updateLocalFlags(change)
+    val startUpdated = updateNetworkIds(start)
+    val changeUpdated = updateNetworkIds(change)
 
-    val existingFlagReasonIdMap = flags.associate {
-        it.reasonT to it.id
-    }
+    val startReasons = startUpdated.map { it.flag.reasonT }.toSet()
+    val existingReasons = flags.map(NetworkFlag::reasonT).toSet()
 
     val newFlags = changeUpdated
         .filter { it.flag.id <= 0 }
-        .filter { !existingFlagReasonIdMap.contains(it.flag.reasonT) }
-        .map(FlagSnapshot::asNetworkFlag)
+        .filter { !existingReasons.contains(it.flag.reasonT) }
+        .map { Pair(it.localId, it.asNetworkFlag()) }
 
-    val keepFlagReasons = changeUpdated
-        .map { it.flag.reasonT }
-        .toSet()
-    val deleteFlagReasons = startUpdated
-        .map { it.flag.reasonT }
-        .filter { !keepFlagReasons.contains(it) }
+    val keepReasons = changeUpdated.map { it.flag.reasonT }.toSet()
+    val deleteReasons = startReasons
+        .filter { !keepReasons.contains(it) }
         .toSet()
     val deleteFlagIds = flags
-        .filter { deleteFlagReasons.contains(it.reasonT) }
-        .mapNotNull { it.id }
+        .filter { deleteReasons.contains(it.reasonT) }
+        // Incoming network ID is always defined
+        .map { it.id!! }
 
     return Pair(newFlags, deleteFlagIds)
 }
@@ -260,11 +274,6 @@ internal fun NetworkWorksiteFull.getFormDataChanges(
         return formData
     }
 
-    // TODO Data consistency rules
-    //      - At least one work type must be specified.
-    //        This should not be an issue if local guarantees each snapshot has at least one work type.
-    //      - Any other?
-
     val mutableFormData = formData
         .associate { it.key to it.value }
         .toMutableMap()
@@ -282,15 +291,29 @@ internal fun NetworkWorksiteFull.getFormDataChanges(
     }
 }
 
+internal fun NetworkWorksiteFull.filterDuplicateNotes(
+    addNotes: List<Pair<Long, NetworkNote>>,
+    matchDuration: Duration = 12.hours,
+): List<Pair<Long, NetworkNote>> {
+    val existingNotes = notes.filter { it.note?.isNotEmpty() == true }
+        .associateBy { it.note!!.trim().lowercase() }
+    return addNotes.filter { (_, addNote) ->
+        existingNotes[addNote.note?.trim()?.lowercase()]?.let { matchingNote ->
+            val timeSpan = addNote.createdAt - matchingNote.createdAt
+            if (timeSpan.absoluteValue < matchDuration) {
+                return@filter false
+            }
+        }
+        true
+    }
+}
+
 internal fun NetworkWorksiteFull.getWorkTypeChanges(
     start: List<WorkTypeSnapshot>,
     change: List<WorkTypeSnapshot>,
     changedAt: Instant,
-): Triple<List<WorkTypeSnapshot.WorkType>, List<WorkTypeChange>, Collection<Long>> {
-    if (start == change) {
-        return Triple(emptyList(), emptyList(), emptyList())
-    }
-
+    workTypeIdLookup: Map<Long, Long> = emptyMap(),
+): Triple<List<Pair<Long, WorkTypeSnapshot.WorkType>>, List<WorkTypeChange>, Collection<Long>> {
     val existingWorkTypes = workTypes.associate {
         with(it) {
             val workTypeCopy = WorkTypeSnapshot.WorkType(
@@ -308,16 +331,38 @@ internal fun NetworkWorksiteFull.getWorkTypeChanges(
         }
     }
 
-    val startMap = start.associateBy { it.workType.workType }
-    val changeMap = change.associateBy { it.workType.workType }
+    // TODO Add test where coverage is lacking. Start,change (not) in lookup,existing.
+    fun updateNetworkIds(snapshots: List<WorkTypeSnapshot>) = snapshots.map {
+        var snapshot = it
+        var changeNetworkId = it.workType.id
+        if (changeNetworkId <= 0) {
+            workTypeIdLookup[it.localId]?.let { networkId ->
+                changeNetworkId = networkId
+            }
+        }
+        if (changeNetworkId <= 0) {
+            existingWorkTypes[it.workType.workType]?.let { existingWorkType ->
+                changeNetworkId = existingWorkType.id
+            }
+        }
+        if (it.workType.id != changeNetworkId) {
+            snapshot = it.copy(
+                workType = it.workType.copy(
+                    id = changeNetworkId
+                )
+            )
+        }
+        snapshot
+    }
+
+    val startMap = updateNetworkIds(start).associateBy { it.workType.workType }
+    val changeMap = updateNetworkIds(change).associateBy { it.workType.workType }
 
     val newWorkTypes = changeMap
-        .mapNotNull {
-            if (startMap.contains(it.key)) null
-            else it
-        }
+        .filter { it.value.workType.id <= 0 }
         .map {
             WorkTypeChange(
+                it.value.localId,
                 -1,
                 it.value.workType,
                 changedAt,
@@ -325,20 +370,19 @@ internal fun NetworkWorksiteFull.getWorkTypeChanges(
                 isStatusChange = true,
             )
         }
+
     val deletedWorkTypes = startMap
-        .mapNotNull {
-            if (changeMap.contains(it.key)) null
-            else it
-        }
+        .filter { !changeMap.contains(it.key) }
         .mapNotNull { existingWorkTypes[it.key]?.id }
+
     val changedWorkTypes = changeMap
         .mapNotNull {
-            if (startMap.contains(it.key)) it
-            else null
-        }
-        .mapNotNull {
-            val crossStartValue = startMap[it.key]!!
-            it.value.workType.changeFrom(crossStartValue.workType, changedAt)
+            val localId = it.value.localId
+            startMap[it.key]?.let { crossStartSnapshot ->
+                it.value.workType.changeFrom(crossStartSnapshot.workType, localId, changedAt)
+            } ?: existingWorkTypes[it.key]?.let { crossExisting ->
+                it.value.workType.changeFrom(crossExisting, localId, changedAt)
+            }
         }
         .filter(WorkTypeChange::hasChange)
 
@@ -358,23 +402,25 @@ internal fun NetworkWorksiteFull.getWorkTypeChanges(
             if (existingWorkType == null) {
                 it.value
             } else {
-                it.value.workType.changeFrom(existingWorkType, changedAt)?.let { changeTo ->
-                    val networkId = existingWorkType.id
-                    changeTo.copy(
-                        networkId = networkId,
-                        workType = changeTo.workType.copy(
-                            id = networkId,
-                            createdAt = existingWorkType.createdAt,
-                            nextRecurAt = existingWorkType.nextRecurAt,
-                            phase = existingWorkType.phase,
-                            recur = existingWorkType.recur,
+                val localId = it.value.localId
+                it.value.workType.changeFrom(existingWorkType, localId, changedAt)
+                    ?.let { changeTo ->
+                        val networkId = existingWorkType.id
+                        changeTo.copy(
+                            networkId = networkId,
+                            workType = changeTo.workType.copy(
+                                id = networkId,
+                                createdAt = existingWorkType.createdAt,
+                                nextRecurAt = existingWorkType.nextRecurAt,
+                                phase = existingWorkType.phase,
+                                recur = existingWorkType.recur,
+                            )
                         )
-                    )
-                }
+                    }
             }
         }
         .filter(WorkTypeChange::hasChange)
-    val create = modified.filter { it.networkId <= 0 }.map { it.workType }
+    val create = modified.filter { it.networkId <= 0 }.map { Pair(it.localId, it.workType) }
     val changing = modified.filter { it.networkId > 0 }
 
     return Triple(create, changing, deletedWorkTypes)

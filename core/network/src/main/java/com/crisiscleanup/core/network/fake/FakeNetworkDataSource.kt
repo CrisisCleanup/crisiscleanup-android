@@ -140,6 +140,8 @@ class FakeNetworkDataSource @Inject constructor() : CrisisCleanupNetworkDataSour
 
     override suspend fun getWorksites(worksiteIds: Collection<Long>) = worksitesResult
 
+    override suspend fun getWorksite(id: Long): NetworkWorksiteFull? = null
+
     override suspend fun getWorksitesCount(incidentId: Long, updatedAtAfter: Instant?) =
         worksitesCountResult
 

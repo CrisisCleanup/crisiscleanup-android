@@ -59,17 +59,40 @@ interface WorkTypeDao {
         """
         SELECT id, network_id
         FROM work_types
-        WHERE worksite_id=:worksiteId AND network_id>-1 AND id IN(:ids)
+        WHERE worksite_id=:worksiteId AND network_id>-1
         """
     )
-    fun getNetworkedIdMap(
-        worksiteId: Long,
-        ids: Collection<Long>,
-    ): List<PopulatedIdNetworkId>
+    fun getNetworkedIdMap(worksiteId: Long): List<PopulatedIdNetworkId>
 
     @Insert
     fun insert(workTypes: Collection<WorkTypeEntity>)
 
     @Update
     fun update(workTypes: Collection<WorkTypeEntity>)
+
+    @Transaction
+    @Query(
+        """
+        UPDATE OR IGNORE work_types
+        SET network_id          =:networkId,
+            local_global_uuid   =''
+        WHERE id=:id
+        """
+    )
+    fun updateNetworkId(id: Long, networkId: Long)
+
+    @Transaction
+    @Query(
+        """
+        UPDATE OR IGNORE work_types
+        SET network_id          =:networkId,
+            local_global_uuid   =''
+        WHERE worksite_id=:worksiteId AND work_type=:workType
+        """
+    )
+    fun updateNetworkId(worksiteId: Long, workType: String, networkId: Long)
+
+    @Transaction
+    @Query("SELECT COUNT(id) FROM work_types WHERE worksite_id=:worksiteId AND network_id<=0")
+    fun getUnsyncedCount(worksiteId: Long): Int
 }

@@ -42,14 +42,26 @@ interface WorksiteNoteDao {
         """
         SELECT id, network_id
         FROM worksite_notes
-        WHERE worksite_id=:worksiteId AND network_id>-1 AND id IN(:ids)
+        WHERE worksite_id=:worksiteId AND network_id>-1
         """
     )
-    fun getNetworkedIdMap(
-        worksiteId: Long,
-        ids: Collection<Long>,
-    ): List<PopulatedIdNetworkId>
+    fun getNetworkedIdMap(worksiteId: Long): List<PopulatedIdNetworkId>
 
     @Insert
     fun insert(notes: Collection<WorksiteNoteEntity>)
+
+    @Transaction
+    @Query(
+        """
+        UPDATE OR IGNORE worksite_notes
+        SET network_id          =:networkId,
+            local_global_uuid   =''
+        WHERE id=:id
+        """
+    )
+    fun updateNetworkId(id: Long, networkId: Long)
+
+    @Transaction
+    @Query("SELECT COUNT(id) FROM worksite_notes WHERE worksite_id=:worksiteId AND network_id<=0")
+    fun getUnsyncedCount(worksiteId: Long): Int
 }

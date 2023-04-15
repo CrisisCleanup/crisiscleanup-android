@@ -15,12 +15,12 @@ class WorksiteCoreChangeTest {
         county = "county-min",
         email = null,
         events = emptyList(),
-        favorite = NetworkWorksiteFull.Favorite(38, "", createdAtA),
+        favorite = NetworkType(38, "", createdAtA),
         files = emptyList(),
         flags = emptyList(),
         formData = emptyList(),
         incident = 486,
-        keyWorkType = NetworkWorksiteFull.WorkType(
+        keyWorkType = NetworkWorkType(
             454,
             createdAtA,
             status = "status-min",
@@ -40,7 +40,7 @@ class WorksiteCoreChangeTest {
         updatedAt = updatedAtA,
         what3words = null,
         workTypes = listOf(
-            NetworkWorksiteFull.WorkType(
+            NetworkWorkType(
                 454,
                 createdAtA,
                 status = "status-min",
@@ -68,7 +68,7 @@ class WorksiteCoreChangeTest {
                 NetworkEvent.Description("key", "description", "name")
             ),
         ),
-        favorite = NetworkWorksiteFull.Favorite(38, "favorite", createdAtA),
+        favorite = NetworkType(38, "favorite", createdAtA),
         files = emptyList(),
         flags = listOf(
             NetworkFlag(53853, "action", createdAtA, false, "notes", "reason", null)
@@ -77,7 +77,7 @@ class WorksiteCoreChangeTest {
             KeyDynamicValuePair("key", DynamicValue("dynamic-value"))
         ),
         incident = 875,
-        keyWorkType = NetworkWorksiteFull.WorkType(
+        keyWorkType = NetworkWorkType(
             5498,
             createdAtB,
             status = "status-b",
@@ -86,7 +86,7 @@ class WorksiteCoreChangeTest {
         location = NetworkWorksiteFull.Location("Point", listOf(-534.53513, 534.1353)),
         name = "name",
         notes = listOf(
-            NetworkWorksiteFull.Note(4845, createdAtA, false, "note"),
+            NetworkNote(4845, createdAtA, false, "note"),
         ),
         phone1 = "phone",
         phone2 = "phone-2",
@@ -99,13 +99,13 @@ class WorksiteCoreChangeTest {
         updatedAt = updatedAtA,
         what3words = "what-three-words",
         workTypes = listOf(
-            NetworkWorksiteFull.WorkType(
+            NetworkWorkType(
                 95,
                 createdAtA,
                 status = "status-a",
                 workType = "work-type-a",
             ),
-            NetworkWorksiteFull.WorkType(
+            NetworkWorkType(
                 5498,
                 createdAtB,
                 status = "status-b",

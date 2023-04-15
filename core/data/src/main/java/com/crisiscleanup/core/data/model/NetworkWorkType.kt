@@ -1,10 +1,10 @@
 package com.crisiscleanup.core.data.model
 
 import com.crisiscleanup.core.database.model.WorkTypeEntity
-import com.crisiscleanup.core.network.model.NetworkWorksiteFull.WorkType
+import com.crisiscleanup.core.network.model.NetworkWorkType
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull.WorkTypeShort
 
-fun WorkType.asEntity() = WorkTypeEntity(
+fun NetworkWorkType.asEntity() = WorkTypeEntity(
     id = 0,
     localGlobalUuid = "",
     // Incoming network ID is always defined

@@ -1,11 +1,11 @@
 package com.crisiscleanup.core.data.test
 
+import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.data.di.DataModule
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.OfflineFirstLocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.fake.FakeAccountRepository
-import com.crisiscleanup.core.data.util.NetworkMonitor
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.components.SingletonComponent

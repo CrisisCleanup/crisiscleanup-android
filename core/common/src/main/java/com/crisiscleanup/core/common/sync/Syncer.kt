@@ -21,7 +21,7 @@ interface SyncPusher {
 
     fun appPushWorksite(worksiteId: Long)
     suspend fun syncPushWorksitesAsync(): Deferred<SyncResult>
-    fun stopPushWorksite()
+    fun stopPushWorksites()
 }
 
 sealed interface SyncResult {

@@ -23,7 +23,6 @@ import kotlinx.datetime.Instant
         LanguageTranslationEntity::class,
         SyncLogEntity::class,
         WorksiteChangeEntity::class,
-        WorksiteChangeNoticeEntity::class,
     ],
     version = 1,
 )
@@ -158,4 +157,14 @@ interface TestWorksiteChangeDao {
         """
     )
     fun getEntities(worksiteId: Long): List<WorksiteChangeEntity>
+
+    @Transaction
+    @Query(
+        """
+        SELECT *
+        FROM worksite_changes
+        WHERE worksite_id=:worksiteId
+        """
+    )
+    fun getEntitiesOrderId(worksiteId: Long): List<WorksiteChangeEntity>
 }

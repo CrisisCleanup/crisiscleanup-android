@@ -1,9 +1,6 @@
 package com.crisiscleanup.core.network.worksitechange
 
-import com.crisiscleanup.core.network.model.DynamicValue
-import com.crisiscleanup.core.network.model.KeyDynamicValuePair
-import com.crisiscleanup.core.network.model.NetworkFlag
-import com.crisiscleanup.core.network.model.NetworkWorksiteFull
+import com.crisiscleanup.core.network.model.*
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlin.time.Duration.Companion.days
@@ -16,9 +13,10 @@ internal val updatedAtB = createdAtB.plus(2.hours)
 
 internal fun testNetworkWorksite(
     flags: List<NetworkFlag> = emptyList(),
-    favorite: NetworkWorksiteFull.Favorite? = null,
+    favorite: NetworkType? = null,
     formData: List<KeyDynamicValuePair> = emptyList(),
-    workTypes: List<NetworkWorksiteFull.WorkType> = emptyList(),
+    notes: List<NetworkNote> = emptyList(),
+    workTypes: List<NetworkWorkType> = emptyList(),
 ) = NetworkWorksiteFull(
     id = 0,
     address = "",
@@ -36,7 +34,7 @@ internal fun testNetworkWorksite(
     keyWorkType = null,
     location = NetworkWorksiteFull.Location("", emptyList()),
     name = "",
-    notes = emptyList(),
+    notes = notes,
     phone1 = "",
     phone2 = null,
     plusCode = null,

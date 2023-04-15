@@ -12,6 +12,10 @@ interface WorksiteDao {
     fun getWorksiteId(incidentId: Long, networkId: Long): Long
 
     @Transaction
+    @Query("SELECT network_id FROM worksites_root WHERE id=:id")
+    fun getWorksiteNetworkId(id: Long): Long
+
+    @Transaction
     @Query("SELECT * FROM worksites WHERE id=:id")
     fun getWorksite(id: Long): PopulatedWorksite
 
@@ -212,8 +216,8 @@ interface WorksiteDao {
         """
         UPDATE worksites_root
         SET sync_uuid           =:syncUuid,
-             local_modified_at  =:localModifiedAt,
-             is_local_modified  =1
+            local_modified_at   =:localModifiedAt,
+            is_local_modified   =1
         WHERE id=:id
         """
     )
@@ -233,11 +237,10 @@ interface WorksiteDao {
     @Query(
         """
         UPDATE OR ROLLBACK worksites_root
-        SET
-        synced_at=:syncedAt,
-        sync_attempt=0,
-        is_local_modified=0,
-        incident_id=:incidentId
+        SET synced_at=:syncedAt,
+            sync_attempt=0,
+            is_local_modified=0,
+            incident_id=:incidentId
         WHERE id=:id AND
               network_id=:networkId AND
               local_modified_at=:expectedLocalModifiedAt
@@ -311,4 +314,43 @@ interface WorksiteDao {
         what3Words: String?,
         updatedAt: Instant,
     )
+
+    @Transaction
+    @Query(
+        """
+        SELECT id
+        FROM worksites_root
+        WHERE is_local_modified!=0
+        ORDER BY local_modified_at DESC
+        LIMIT :limit
+        """
+    )
+    fun getLocallyModifiedWorksites(limit: Int): List<Long>
+
+    @Transaction
+    @Query(
+        """
+        UPDATE worksites_root
+        SET network_id=:networkId,
+            local_global_uuid=''
+        WHERE id=:id;
+        """
+    )
+    fun updateRootNetworkId(id: Long, networkId: Long)
+
+    @Transaction
+    @Query("UPDATE worksites SET network_id=:networkId WHERE id=:id;")
+    fun updateWorksiteNetworkId(id: Long, networkId: Long)
+
+    @Transaction
+    @Query(
+        """
+        UPDATE worksites_root
+        SET synced_at           =:syncedAt,
+            is_local_modified   =0,
+            sync_attempt        =0
+        WHERE id=:worksiteId
+        """
+    )
+    fun setRootUnmodified(worksiteId: Long, syncedAt: Instant)
 }

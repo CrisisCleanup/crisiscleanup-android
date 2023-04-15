@@ -6,6 +6,8 @@ import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.core.model.data.WorksitesSyncStats
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import kotlinx.coroutines.flow.Flow
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 
 interface WorksitesRepository {
     /**
@@ -69,6 +71,12 @@ interface WorksitesRepository {
         incidentId: Long,
         worksiteNetworkId: Long,
     ): Pair<Long, NetworkWorksiteFull>?
+
+    suspend fun syncNetworkWorksite(
+        incidentId: Long,
+        worksite: NetworkWorksiteFull,
+        syncedAt: Instant = Clock.System.now(),
+    ): Pair<Long, NetworkWorksiteFull>
 
     suspend fun getLocalId(incidentId: Long, networkWorksiteId: Long): Long
 }

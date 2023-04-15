@@ -2,6 +2,7 @@ package com.crisiscleanup.core.database.dao
 
 import com.crisiscleanup.core.database.TestCrisisCleanupDatabase
 import com.crisiscleanup.core.database.TestUtil
+import com.crisiscleanup.core.database.TestUtil.testSyncLogger
 import com.crisiscleanup.core.database.TestWorksiteDao
 import com.crisiscleanup.core.database.WorksiteTestUtil
 import com.crisiscleanup.core.database.model.*
@@ -24,6 +25,8 @@ class WorksiteFormDataFlagNoteTest {
     private lateinit var worksiteDaoPlus: WorksiteDaoPlus
     private lateinit var testWorksiteDao: TestWorksiteDao
 
+    private val syncLogger = testSyncLogger()
+
     private suspend fun insertWorksites(
         worksites: List<WorksiteEntity>,
         syncedAt: Instant,
@@ -37,7 +40,7 @@ class WorksiteFormDataFlagNoteTest {
     fun createDb() {
         db = TestUtil.getTestDatabase()
         worksiteDao = db.worksiteDao()
-        worksiteDaoPlus = WorksiteDaoPlus(db)
+        worksiteDaoPlus = WorksiteDaoPlus(db, syncLogger)
         testWorksiteDao = db.testWorksiteDao()
     }
 
@@ -78,15 +81,14 @@ class WorksiteFormDataFlagNoteTest {
         )
         // Sync existing
         val syncedAt = previousSyncedAt.plus(499_999.seconds)
-        val syncedWorksiteId = worksiteDaoPlus.syncWorksite(
-            1,
+        val entities = WorksiteEntities(
             syncingWorksite,
-            emptyList(),
-            syncingFormData,
             syncingFlags,
+            syncingFormData,
             syncingNotes,
-            syncedAt,
+            emptyList(),
         )
+        val syncedWorksiteId = worksiteDaoPlus.syncWorksite(1, entities, syncedAt)
 
         // Assert
 
@@ -225,15 +227,14 @@ class WorksiteFormDataFlagNoteTest {
         )
         // Sync existing
         val syncedAt = previousSyncedAt.plus(499_999.seconds)
-        val syncedWorksiteId = worksiteDaoPlus.syncWorksite(
-            1,
+        val entities = WorksiteEntities(
             syncingWorksite,
-            emptyList(),
-            syncingFormData,
             syncingFlags,
+            syncingFormData,
             syncingNotes,
-            syncedAt,
+            emptyList(),
         )
+        val syncedWorksiteId = worksiteDaoPlus.syncWorksite(1, entities, syncedAt)
 
         // Assert
 
@@ -319,15 +320,14 @@ class WorksiteFormDataFlagNoteTest {
 
         // Sync locally unchanged
         val syncedAt = previousSyncedAt.plus(499_999.seconds)
-        val syncedWorksiteId = worksiteDaoPlus.syncWorksite(
-            1,
+        val entities = WorksiteEntities(
             syncingWorksite,
-            emptyList(),
-            syncingFormData,
             syncingFlags,
+            syncingFormData,
             syncingNotes,
-            syncedAt,
+            emptyList(),
         )
+        val syncedWorksiteId = worksiteDaoPlus.syncWorksite(1, entities, syncedAt)
 
         // Sync locally changed
         val syncingWorksiteB = testWorksiteEntity(2, 1, "sync-address", updatedAtB)
@@ -341,15 +341,14 @@ class WorksiteFormDataFlagNoteTest {
             testNotesEntity(45, 2, updatedAtA, "note-b"),
         )
         // Sync existing
-        val syncedLocallyChangedWorksiteId = worksiteDaoPlus.syncWorksite(
-            1,
+        val entitiesB = WorksiteEntities(
             syncingWorksiteB,
-            emptyList(),
-            syncingFormDataB,
             syncingFlagsB,
+            syncingFormDataB,
             syncingNotesB,
-            syncedAt,
+            emptyList(),
         )
+        val syncedLocallyChangedWorksiteId = worksiteDaoPlus.syncWorksite(1, entitiesB, syncedAt)
 
         // Assert
 
@@ -458,9 +457,10 @@ internal fun testFlagEntity(
     requestedAction: String? = null,
     id: Long = 0,
     isInvalid: Boolean = false,
+    localGlobalUuid: String = "",
 ) = WorksiteFlagEntity(
     id = id,
-    localGlobalUuid = "",
+    localGlobalUuid = localGlobalUuid,
     isInvalid = isInvalid,
     networkId = networkId,
     worksiteId = worksiteId,
@@ -500,9 +500,10 @@ internal fun testNotesEntity(
     note: String,
     isSurvivor: Boolean = false,
     id: Long = 0,
+    localGlobalUuid: String = "",
 ) = WorksiteNoteEntity(
     id = id,
-    localGlobalUuid = "",
+    localGlobalUuid = localGlobalUuid,
     networkId = networkId,
     worksiteId = worksiteId,
     createdAt = createdAt,

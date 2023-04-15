@@ -8,6 +8,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:common"))
     api(project(":core:data"))
     implementation(project(":core:testing"))
 }

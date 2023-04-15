@@ -1,6 +1,6 @@
 package com.crisiscleanup.core.testing.util
 
-import com.crisiscleanup.core.data.util.NetworkMonitor
+import com.crisiscleanup.core.common.NetworkMonitor
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map

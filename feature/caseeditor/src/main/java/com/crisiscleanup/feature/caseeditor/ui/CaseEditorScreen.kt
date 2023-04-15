@@ -321,7 +321,7 @@ private fun PromptChangesDialog(
     AlertDialog(
         title = { Text(stringResource(R.string.changes)) },
         text = { Text(stringResource(R.string.changes_choice)) },
-        onDismissRequest = onAbort,
+        onDismissRequest = onStay,
         dismissButton = {
             CrisisCleanupTextButton(
                 textResId = R.string.no,

@@ -19,3 +19,9 @@ data class NetworkFlag(
     @SerialName("requested_action")
     val requestedAction: String?,
 )
+
+@Serializable
+data class NetworkFlagId(
+    @SerialName("flag_id")
+    val flagId: Long,
+)

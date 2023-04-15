@@ -6,13 +6,14 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.KeyTranslator
+import com.crisiscleanup.core.common.NetworkMonitor
+import com.crisiscleanup.core.common.SyncPusher
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.repository.*
-import com.crisiscleanup.core.data.util.NetworkMonitor
 import com.crisiscleanup.core.model.data.*
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import com.crisiscleanup.feature.caseeditor.model.coordinates
@@ -43,6 +44,7 @@ class CaseEditorViewModel @Inject constructor(
     editableWorksiteProvider: EditableWorksiteProvider,
     translator: KeyTranslator,
     private val worksiteChangeRepository: WorksiteChangeRepository,
+    private val syncPusher: SyncPusher,
     resourceProvider: AndroidResourceProvider,
     @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
@@ -320,10 +322,12 @@ class CaseEditorViewModel @Inject constructor(
                     primaryWorkType,
                     worksiteData.orgId,
                 )
+                val worksiteId = worksiteIdArg!!
 
-                dataLoader.reloadData(worksiteIdArg!!)
+                dataLoader.reloadData(worksiteId)
                 worksiteProvider.setEditedLocation(worksite.coordinates())
 
+                syncPusher.appPushWorksite(worksiteId)
             } catch (e: Exception) {
                 // TODO Show dialog save failed. Try again. If still fails seek help.
             } finally {

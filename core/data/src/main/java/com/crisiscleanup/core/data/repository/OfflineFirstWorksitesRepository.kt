@@ -9,8 +9,7 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.IncidentWorksitesSyncer
-import com.crisiscleanup.core.data.model.asEntity
-import com.crisiscleanup.core.data.model.asWorksiteEntity
+import com.crisiscleanup.core.data.model.asEntities
 import com.crisiscleanup.core.data.util.WorksitesDataPullReporter
 import com.crisiscleanup.core.database.dao.WorksiteDao
 import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
@@ -18,10 +17,8 @@ import com.crisiscleanup.core.database.dao.WorksitesSyncStatsDao
 import com.crisiscleanup.core.database.model.*
 import com.crisiscleanup.core.model.data.*
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
-import com.crisiscleanup.core.network.model.KeyDynamicValuePair
+import com.crisiscleanup.core.network.model.*
 import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.tryThrowException
-import com.crisiscleanup.core.network.model.NetworkFlag
-import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -210,30 +207,23 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             val result = networkDataSource.getWorksites(listOf(worksiteNetworkId))
             tryThrowException(authEventManager, result.errors)
 
-            if (result.results?.size == 1) {
-                val worksite = result.results!![0]
-                val worksiteEntity = worksite.asEntity(incidentId)
-                val workTypes = worksite.workTypes.map(NetworkWorksiteFull.WorkType::asEntity)
-                val formData = worksite.formData.map(KeyDynamicValuePair::asWorksiteEntity)
-                val flags = worksite.flags.map(NetworkFlag::asEntity)
-                val notes = worksite.notes.map(NetworkWorksiteFull.Note::asEntity)
-
-                val localWorksiteId = worksiteDaoPlus.syncWorksite(
-                    incidentId,
-                    worksiteEntity,
-                    workTypes,
-                    formData,
-                    flags,
-                    notes,
-                    syncedAt,
-                )
-
-                return Pair(localWorksiteId, worksite)
+            result.results?.firstOrNull()?.let {
+                return syncNetworkWorksite(incidentId, it, syncedAt)
             }
         } catch (e: Exception) {
             logger.logException(e)
         }
 
         return null
+    }
+
+    override suspend fun syncNetworkWorksite(
+        incidentId: Long,
+        worksite: NetworkWorksiteFull,
+        syncedAt: Instant,
+    ): Pair<Long, NetworkWorksiteFull> {
+        val entities = worksite.asEntities(incidentId)
+        val localWorksiteId = worksiteDaoPlus.syncWorksite(incidentId, entities, syncedAt)
+        return Pair(localWorksiteId, worksite)
     }
 }

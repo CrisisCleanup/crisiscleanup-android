@@ -13,7 +13,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
-import retrofit2.Retrofit
 import javax.inject.Singleton
 
 @Module
@@ -22,19 +21,17 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun providesNetworkJson(): Json = Json {
-        ignoreUnknownKeys = true
-    }
+    fun providesNetworkJson() = Json { ignoreUnknownKeys = true }
 
     @Provides
     @Singleton
     fun providesFakeAssetManager(
         @ApplicationContext context: Context,
-    ): FakeAssetManager = FakeAssetManager(context.assets::open)
+    ) = FakeAssetManager(context.assets::open)
 
     @Provides
     @Singleton
-    fun providesRequestHeaderKeysLookup(): RequestHeaderKeysLookup = RequestHeaderKeysLookup()
+    fun providesRequestHeaderKeysLookup() = RequestHeaderKeysLookup()
 
     @CrisisCleanupRetrofit
     @Provides
@@ -44,5 +41,5 @@ object NetworkModule {
         headerKeysLookup: RequestHeaderKeysLookup,
         json: Json,
         appEnv: AppEnv,
-    ): Retrofit = getCrisisCleanupApiBuilder(interceptorProvider, headerKeysLookup, json, appEnv)
+    ) = getCrisisCleanupApiBuilder(interceptorProvider, headerKeysLookup, json, appEnv)
 }

@@ -1,4 +1,4 @@
-package com.crisiscleanup.core.data.util
+package com.crisiscleanup.core.common
 
 import kotlinx.coroutines.flow.Flow
 

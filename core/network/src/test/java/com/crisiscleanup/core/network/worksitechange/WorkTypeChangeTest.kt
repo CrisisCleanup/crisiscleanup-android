@@ -1,6 +1,6 @@
 package com.crisiscleanup.core.network.worksitechange
 
-import com.crisiscleanup.core.network.model.NetworkWorksiteFull
+import com.crisiscleanup.core.network.model.NetworkWorkType
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.junit.Test
@@ -11,10 +11,12 @@ import kotlin.time.Duration.Companion.days
 
 class WorkTypeChangeTest {
     private val emptyChangesResult = Triple(
-        emptyList<WorkTypeSnapshot.WorkType>(),
+        emptyList<Pair<Long, WorkTypeSnapshot.WorkType>>(),
         emptyList<WorkTypeChange>(),
         emptyList<Long>(),
     )
+
+    private val now = Clock.System.now()
 
     @Test
     fun workTypeChangeFrom_differentWorkType() {
@@ -22,7 +24,7 @@ class WorkTypeChangeTest {
             WorkTypeSnapshot.WorkType(id = 1, status = "status", workType = "work-type-a")
         val workTypeB =
             WorkTypeSnapshot.WorkType(id = 1, status = "status", workType = "work-type-b")
-        assertNull(workTypeA.changeFrom(workTypeB, createdAtA))
+        assertNull(workTypeA.changeFrom(workTypeB, 1, createdAtA))
     }
 
     @Test
@@ -39,7 +41,7 @@ class WorkTypeChangeTest {
             status = "status",
             orgClaim = null,
         )
-        assertFalse(workTypeB.changeFrom(workTypeA, createdAtA)!!.hasChange)
+        assertFalse(workTypeB.changeFrom(workTypeA, 2, createdAtA)!!.hasChange)
     }
 
     @Test
@@ -58,13 +60,14 @@ class WorkTypeChangeTest {
         )
 
         val expected = WorkTypeChange(
+            2L,
             -1,
             workTypeB,
             createdAtB,
             isClaimChange = true,
             isStatusChange = true,
         )
-        assertEquals(expected, workTypeB.changeFrom(workTypeA, createdAtB))
+        assertEquals(expected, workTypeB.changeFrom(workTypeA, 2, createdAtB))
     }
 
     @Test
@@ -78,7 +81,7 @@ class WorkTypeChangeTest {
         val start = listOf(testWorkTypeSnapshot("work-type", "status"))
         val worksite = testNetworkWorksite(
             workTypes = listOf(
-                NetworkWorksiteFull.WorkType(
+                NetworkWorkType(
                     326,
                     status = "status",
                     workType = "work-type-a",
@@ -89,13 +92,65 @@ class WorkTypeChangeTest {
         assertEquals(emptyChangesResult, actual)
     }
 
+    /**
+     * No changes between snapshots that have been synced
+     *   does not apply even when existing has the same work type with a different status.
+     */
     @Test
     fun workTypeChanges_noChanges() {
         val start = listOf(testWorkTypeSnapshot("work-type-a", "status-b"))
         val change = listOf(testWorkTypeSnapshot("work-type-a", "status-b"))
         val worksite = testNetworkWorksite(
             workTypes = listOf(
-                NetworkWorksiteFull.WorkType(
+                NetworkWorkType(
+                    326,
+                    status = "status",
+                    workType = "work-type-a",
+                )
+            )
+        )
+        val actual = worksite.getWorkTypeChanges(start, change, updatedAtA)
+        assertEquals(emptyChangesResult, actual)
+    }
+
+    /**
+     * No changes between snapshots that are not synced
+     *   is new when not in existing.
+     */
+    @Test
+    fun workTypeChanges_noChangesNotSyncedNotInExisting() {
+        val start = listOf(testWorkTypeSnapshot("work-type-a", "status-b", id = -1))
+        val change = listOf(testWorkTypeSnapshot("work-type-a", "status-b", id = -1))
+        val worksite = testNetworkWorksite()
+        val actual = worksite.getWorkTypeChanges(start, change, updatedAtA)
+        assertEquals(
+            emptyChangesResult.copy(
+                first = listOf(
+                    Pair(
+                        59,
+                        WorkTypeSnapshot.WorkType(
+                            -1,
+                            workType = "work-type-a",
+                            status = "status-b",
+                        )
+                    )
+                )
+            ),
+            actual,
+        )
+    }
+
+    /**
+     * No changes between snapshots that are not synced
+     *   is ignored when in existing and status is different.
+     */
+    @Test
+    fun workTypeChanges_noChangesNotSyncedInExisting() {
+        val start = listOf(testWorkTypeSnapshot("work-type-a", "status-b", id = -1))
+        val change = listOf(testWorkTypeSnapshot("work-type-a", "status-b", id = -1))
+        val worksite = testNetworkWorksite(
+            workTypes = listOf(
+                NetworkWorkType(
                     326,
                     status = "status",
                     workType = "work-type-a",
@@ -112,7 +167,7 @@ class WorkTypeChangeTest {
         val change = listOf(testWorkTypeSnapshot("work-type-a", "status"))
         val worksite = testNetworkWorksite(
             workTypes = listOf(
-                NetworkWorksiteFull.WorkType(
+                NetworkWorkType(
                     326,
                     status = "status",
                     workType = "work-type-a",
@@ -128,12 +183,12 @@ class WorkTypeChangeTest {
         val start = listOf(testWorkTypeSnapshot("work-type-a", "status-b"))
         val worksite = testNetworkWorksite(
             workTypes = listOf(
-                NetworkWorksiteFull.WorkType(
+                NetworkWorkType(
                     326,
                     status = "status",
                     workType = "work-type-a",
                 ),
-                NetworkWorksiteFull.WorkType(
+                NetworkWorkType(
                     81,
                     status = "status",
                     workType = "work-type-b",
@@ -146,11 +201,11 @@ class WorkTypeChangeTest {
 
     @Test
     fun workTypeChanges_new() {
-        val nextRecurAt = Clock.System.now().plus(10.days)
-        val change = listOf(testWorkTypeSnapshot("work-type-a", "status-b"))
+        val nextRecurAt = now.plus(10.days)
+        val change = listOf(testWorkTypeSnapshot("work-type-a", "status-b", id = -1))
         val worksite = testNetworkWorksite(
             workTypes = listOf(
-                NetworkWorksiteFull.WorkType(
+                NetworkWorkType(
                     81,
                     createdAtA,
                     status = "status",
@@ -162,29 +217,34 @@ class WorkTypeChangeTest {
                 ),
             )
         )
+
         val actual = worksite.getWorkTypeChanges(emptyList(), change, updatedAtA)
+
         val expectedChanges = listOf(
-            WorkTypeSnapshot.WorkType(
-                id = 53,
-                createdAt = null,
-                orgClaim = null,
-                nextRecurAt = null,
-                phase = null,
-                recur = null,
-                status = "status-b",
-                workType = "work-type-a",
-            ),
+            Pair(
+                59L,
+                WorkTypeSnapshot.WorkType(
+                    id = -1,
+                    createdAt = null,
+                    orgClaim = null,
+                    nextRecurAt = null,
+                    phase = null,
+                    recur = null,
+                    status = "status-b",
+                    workType = "work-type-a",
+                ),
+            )
         )
         assertEquals(emptyChangesResult.copy(first = expectedChanges), actual)
     }
 
     @Test
-    fun workTypeChanges_newChange() {
-        val nextRecurAt = Clock.System.now().plus(10.days)
-        val change = listOf(testWorkTypeSnapshot("work-type-b", "status-b"))
+    fun workTypeChanges_newInExisting() {
+        val nextRecurAt = now.plus(10.days)
+        val change = listOf(testWorkTypeSnapshot("work-type-b", "status-b", id = -1))
         val worksite = testNetworkWorksite(
             workTypes = listOf(
-                NetworkWorksiteFull.WorkType(
+                NetworkWorkType(
                     81,
                     createdAtA,
                     status = "status",
@@ -196,9 +256,12 @@ class WorkTypeChangeTest {
                 ),
             )
         )
+
         val actual = worksite.getWorkTypeChanges(emptyList(), change, updatedAtA)
+
         val expectedChanges = listOf(
             WorkTypeChange(
+                59,
                 81,
                 WorkTypeSnapshot.WorkType(
                     id = 81,
@@ -228,14 +291,14 @@ class WorkTypeChangeTest {
             testWorkTypeSnapshot("work-type-d", "status-d"),
         )
         val change = listOf(
-            testWorkTypeSnapshot("work-type-a", "status-a-change"),
-            testWorkTypeSnapshot("work-type-b", "status-b", orgClaim = 456),
-            testWorkTypeSnapshot("work-type-c", "status-c"),
-            testWorkTypeSnapshot("work-type-d", "status-d", orgClaim = 89),
+            testWorkTypeSnapshot("work-type-a", "status-a-change", localId = 61),
+            testWorkTypeSnapshot("work-type-b", "status-b", orgClaim = 456, localId = 62),
+            testWorkTypeSnapshot("work-type-c", "status-c", localId = 63),
+            testWorkTypeSnapshot("work-type-d", "status-d", orgClaim = 89, localId = 64),
         )
         val worksite = testNetworkWorksite(
             workTypes = listOf(
-                NetworkWorksiteFull.WorkType(
+                NetworkWorkType(
                     81,
                     createdAtA,
                     status = "status",
@@ -245,7 +308,7 @@ class WorkTypeChangeTest {
                     phase = 2,
                     recur = "recur",
                 ),
-                NetworkWorksiteFull.WorkType(
+                NetworkWorkType(
                     82,
                     createdAtB,
                     status = "status",
@@ -253,7 +316,7 @@ class WorkTypeChangeTest {
                     orgClaim = null,
                     phase = 3,
                 ),
-                NetworkWorksiteFull.WorkType(
+                NetworkWorkType(
                     91,
                     createdAtA,
                     status = "status-d",
@@ -263,7 +326,7 @@ class WorkTypeChangeTest {
                     phase = 1,
                     recur = "recur",
                 ),
-                NetworkWorksiteFull.WorkType(
+                NetworkWorkType(
                     99,
                     createdAtB,
                     status = "status-a-change",
@@ -276,6 +339,7 @@ class WorkTypeChangeTest {
         val actual = worksite.getWorkTypeChanges(start, change, updatedAtA)
         val expectedChanges = listOf(
             WorkTypeChange(
+                61,
                 99,
                 WorkTypeSnapshot.WorkType(
                     id = 99,
@@ -290,6 +354,7 @@ class WorkTypeChangeTest {
                 isStatusChange = false,
             ),
             WorkTypeChange(
+                62,
                 81,
                 WorkTypeSnapshot.WorkType(
                     id = 81,
@@ -306,6 +371,7 @@ class WorkTypeChangeTest {
                 isStatusChange = true,
             ),
             WorkTypeChange(
+                63,
                 82,
                 WorkTypeSnapshot.WorkType(
                     id = 82,
@@ -320,6 +386,7 @@ class WorkTypeChangeTest {
                 isStatusChange = true,
             ),
             WorkTypeChange(
+                64,
                 91,
                 WorkTypeSnapshot.WorkType(
                     id = 91,

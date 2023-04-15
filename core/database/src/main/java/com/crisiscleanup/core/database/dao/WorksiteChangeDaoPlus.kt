@@ -9,13 +9,12 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.split
 import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
-import com.crisiscleanup.core.database.model.WorksiteChangeEntity
-import com.crisiscleanup.core.database.model.WorksiteFormDataEntity
-import com.crisiscleanup.core.database.model.WorksiteRootEntity
-import com.crisiscleanup.core.database.model.asEntities
+import com.crisiscleanup.core.database.model.*
 import com.crisiscleanup.core.model.data.*
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
+import kotlin.ranges.IntProgression.Companion.fromClosedRange
 
 class WorksiteChangeDaoPlus @Inject constructor(
     private val db: CrisisCleanupDatabase,
@@ -30,28 +29,13 @@ class WorksiteChangeDaoPlus @Inject constructor(
             return IdNetworkIdMaps()
         }
 
-        val localFlagIds = worksite.flags?.map(WorksiteFlag::id) ?: emptyList()
-        val flagIdMap = db.worksiteFlagDao()
-            .getNetworkedIdMap(
-                worksite.id,
-                localFlagIds.toSet(),
-            )
+        val flagIdMap = db.worksiteFlagDao().getNetworkedIdMap(worksite.id)
             .associate { it.id to it.networkId }
 
-        val localNoteIds = worksite.notes.map(WorksiteNote::id).toSet()
-        val noteIdMap = db.worksiteNoteDao()
-            .getNetworkedIdMap(
-                worksite.id,
-                localNoteIds,
-            )
+        val noteIdMap = db.worksiteNoteDao().getNetworkedIdMap(worksite.id)
             .associate { it.id to it.networkId }
 
-        val localWorkTypeIds = worksite.workTypes.map(WorkType::id).toSet()
-        val workTypeIdMap = db.workTypeDao()
-            .getNetworkedIdMap(
-                worksite.id,
-                localWorkTypeIds,
-            )
+        val workTypeIdMap = db.workTypeDao().getNetworkedIdMap(worksite.id)
             .associate { it.id to it.networkId }
 
         return IdNetworkIdMaps(
@@ -66,6 +50,7 @@ class WorksiteChangeDaoPlus @Inject constructor(
         worksiteChange: Worksite,
         primaryWorkType: WorkType,
         organizationId: Long,
+        localModifiedAt: Instant = Clock.System.now(),
     ): Long {
         var worksiteId = worksiteChange.id
 
@@ -104,7 +89,7 @@ class WorksiteChangeDaoPlus @Inject constructor(
                     val rootEntity = WorksiteRootEntity(
                         id = 0,
                         syncUuid = uuidGenerator.uuid(),
-                        localModifiedAt = changeEntities.core.updatedAt,
+                        localModifiedAt = localModifiedAt,
                         syncedAt = Instant.fromEpochSeconds(0),
                         localGlobalUuid = uuidGenerator.uuid(),
                         isLocalModified = true,
@@ -129,7 +114,7 @@ class WorksiteChangeDaoPlus @Inject constructor(
                     worksiteDao.updateRoot(
                         core.id,
                         uuidGenerator.uuid(),
-                        core.updatedAt,
+                        localModifiedAt,
                     )
 
                     worksiteDao.update(changeEntities.core)
@@ -189,7 +174,7 @@ class WorksiteChangeDaoPlus @Inject constructor(
         appVersion: Long,
         organizationId: Long,
     ) {
-        val serializedChange = changeSerializer.serialize(
+        val (changeVersion, serializedChange) = changeSerializer.serialize(
             worksiteStart,
             worksiteChange,
             flagIdLookup = idMapping.flag,
@@ -201,9 +186,91 @@ class WorksiteChangeDaoPlus @Inject constructor(
             appVersion,
             organizationId,
             worksiteChange.id,
+            uuidGenerator.uuid(),
+            changeVersion,
             serializedChange,
         )
-        db.worksiteChangeDao().insertChange(changeEntity)
+        db.worksiteChangeDao().insert(changeEntity)
+    }
+
+    suspend fun updateSyncIds(
+        worksiteId: Long,
+        ids: WorksiteSyncResult.ChangeIds,
+    ) {
+        db.withTransaction {
+            val worksiteDao = db.worksiteDao()
+            worksiteDao.updateRootNetworkId(worksiteId, ids.worksiteNetworkId)
+            worksiteDao.updateWorksiteNetworkId(worksiteId, ids.worksiteNetworkId)
+
+            val flagDao = db.worksiteFlagDao()
+            for ((key, value) in ids.flagIdMap) {
+                flagDao.updateNetworkId(key, value)
+            }
+
+            val notesDao = db.worksiteNoteDao()
+            for ((key, value) in ids.noteIdMap) {
+                notesDao.updateNetworkId(key, value)
+            }
+
+            val workTypeDao = db.workTypeDao()
+            for ((key, value) in ids.workTypeIdMap) {
+                workTypeDao.updateNetworkId(key, value)
+            }
+            for ((key, value) in ids.workTypeKeyMap) {
+                workTypeDao.updateNetworkId(worksiteId, key, value)
+            }
+        }
+    }
+
+    suspend fun updateSyncChanges(
+        worksiteId: Long,
+        changeResults: Collection<WorksiteSyncResult.ChangeResult>,
+        maxSyncAttempts: Int = 3,
+    ) {
+        db.withTransaction {
+            val worksiteChangeDao = db.worksiteChangeDao()
+            changeResults.forEach { result ->
+                if (result.isFail) {
+                    worksiteChangeDao.updateSyncAttempt(result.id)
+                } else if (result.isSuccessful || result.isPartiallySuccessful) {
+                    val action = if (result.isSuccessful) WorksiteChangeArchiveAction.Synced
+                    else WorksiteChangeArchiveAction.PartiallySynced
+                    worksiteChangeDao.updateAction(result.id, action.literal)
+                }
+            }
+        }
+
+        db.withTransaction {
+            val worksiteChangeDao = db.worksiteChangeDao()
+            val syncChanges = worksiteChangeDao.getOrdered(worksiteId)
+                .map { it.asExternalModel(maxSyncAttempts) }
+
+            if (syncChanges.isNotEmpty()) {
+                var deleteIds = emptySet<Long>()
+                if (syncChanges.last().isSynced) {
+                    deleteIds = syncChanges.map(SavedWorksiteChange::id).toSet()
+                } else {
+                    var lastSyncedIndex = syncChanges.size
+                    for (index in fromClosedRange(syncChanges.size - 1, 0, -1)) {
+                        if (syncChanges[index].isSynced) {
+                            lastSyncedIndex = index
+                            break
+                        }
+                    }
+
+                    if (lastSyncedIndex < syncChanges.size) {
+                        deleteIds = syncChanges
+                            .subList(0, lastSyncedIndex + 1)
+                            .map(SavedWorksiteChange::id)
+                            .toSet()
+                    }
+                }
+
+                if (deleteIds.isNotEmpty()) {
+                    worksiteChangeDao.delete(deleteIds)
+                }
+            }
+        }
     }
 }
 

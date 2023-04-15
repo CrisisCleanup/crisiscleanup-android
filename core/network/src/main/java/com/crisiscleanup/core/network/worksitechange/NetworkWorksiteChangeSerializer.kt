@@ -18,8 +18,8 @@ class NetworkWorksiteChangeSerializer @Inject constructor() : WorksiteChangeSeri
         flagIdLookup: Map<Long, Long>,
         noteIdLookup: Map<Long, Long>,
         workTypeIdLookup: Map<Long, Long>,
-    ): String {
-        val snapshotStart = if (worksiteChange.isNew) null
+    ): Pair<Int, String> {
+        val snapshotStart = if (worksiteStart.isNew) null
         else worksiteStart.asSnapshotModel(flagIdLookup, noteIdLookup, workTypeIdLookup)
         val snapshotChange =
             worksiteChange.asSnapshotModel(flagIdLookup, noteIdLookup, workTypeIdLookup)
@@ -27,7 +27,8 @@ class NetworkWorksiteChangeSerializer @Inject constructor() : WorksiteChangeSeri
             snapshotStart,
             snapshotChange,
         )
-        return Json.encodeToString(change)
+        val serializedChange = Json.encodeToString(change)
+        return Pair(WorksiteChangeModelVersion, serializedChange)
     }
 }
 
