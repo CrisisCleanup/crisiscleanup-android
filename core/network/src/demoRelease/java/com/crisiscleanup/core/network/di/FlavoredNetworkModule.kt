@@ -2,8 +2,10 @@ package com.crisiscleanup.core.network.di
 
 import com.crisiscleanup.core.network.CrisisCleanupAuthApi
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
+import com.crisiscleanup.core.network.CrisisCleanupWriteApi
 import com.crisiscleanup.core.network.retrofit.AuthApiClient
-import com.crisiscleanup.core.network.retrofit.RetrofitNetworkDataSource
+import com.crisiscleanup.core.network.retrofit.DataApiClient
+import com.crisiscleanup.core.network.retrofit.WriteApiClient
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -17,5 +19,8 @@ interface DemoReleaseFlavoredNetworkModule {
     fun bindsAuthApiClient(apiClient: AuthApiClient): CrisisCleanupAuthApi
 
     @Binds
-    fun bindsNetworkDataSource(apiClient: RetrofitNetworkDataSource): CrisisCleanupNetworkDataSource
+    fun bindsDataApiClient(dataSource: DataApiClient): CrisisCleanupNetworkDataSource
+
+    @Binds
+    fun bindsWriteApiClient(dataSource: WriteApiClient): CrisisCleanupWriteApi
 }
