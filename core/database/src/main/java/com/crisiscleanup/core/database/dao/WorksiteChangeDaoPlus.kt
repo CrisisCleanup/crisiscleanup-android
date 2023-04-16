@@ -199,24 +199,31 @@ class WorksiteChangeDaoPlus @Inject constructor(
     ) {
         db.withTransaction {
             val worksiteDao = db.worksiteDao()
-            worksiteDao.updateRootNetworkId(worksiteId, ids.worksiteNetworkId)
-            worksiteDao.updateWorksiteNetworkId(worksiteId, ids.worksiteNetworkId)
+            val networkId = ids.worksiteNetworkId
+            if (networkId > 0) {
+                worksiteDao.updateRootNetworkId(worksiteId, ids.worksiteNetworkId)
+                worksiteDao.updateWorksiteNetworkId(worksiteId, ids.worksiteNetworkId)
+            }
 
             val flagDao = db.worksiteFlagDao()
-            for ((key, value) in ids.flagIdMap) {
+            val flagIds = ids.flagIdMap.filter { it.value > 0 }
+            for ((key, value) in flagIds) {
                 flagDao.updateNetworkId(key, value)
             }
 
             val notesDao = db.worksiteNoteDao()
-            for ((key, value) in ids.noteIdMap) {
+            val noteIds = ids.noteIdMap.filter { it.value > 0 }
+            for ((key, value) in noteIds) {
                 notesDao.updateNetworkId(key, value)
             }
 
             val workTypeDao = db.workTypeDao()
-            for ((key, value) in ids.workTypeIdMap) {
+            val workTypeIds = ids.workTypeIdMap.filter { it.value > 0 }
+            for ((key, value) in workTypeIds) {
                 workTypeDao.updateNetworkId(key, value)
             }
-            for ((key, value) in ids.workTypeKeyMap) {
+            val workTypeKeyIds = ids.workTypeKeyMap.filter { it.value > 0 }
+            for ((key, value) in workTypeKeyIds) {
                 workTypeDao.updateNetworkId(worksiteId, key, value)
             }
         }

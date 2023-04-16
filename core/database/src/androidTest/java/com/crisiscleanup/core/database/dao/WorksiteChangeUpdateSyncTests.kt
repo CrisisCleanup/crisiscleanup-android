@@ -174,20 +174,55 @@ class WorksiteChangeUpdateSyncTests {
 
         assertEquals(884L, worksiteDao.getWorksiteNetworkId(51))
 
-        val actualFlagIds = flagDao.getNetworkedIdMap(51)
-        assertEquals(listOf(PopulatedIdNetworkId(1, 43)), actualFlagIds)
+        assertEquals(
+            listOf(PopulatedIdNetworkId(1, 43)),
+            flagDao.getNetworkedIdMap(51),
+        )
 
-        val actualNoteIds = noteDao.getNetworkedIdMap(51)
-        assertEquals(listOf(PopulatedIdNetworkId(1, 385)), actualNoteIds)
+        assertEquals(
+            listOf(PopulatedIdNetworkId(1, 385)),
+            noteDao.getNetworkedIdMap(51),
+        )
 
-        val actualWorkTypeIds = workTypeDao.getNetworkedIdMap(51)
-            .sortedBy(PopulatedIdNetworkId::id)
         assertEquals(
             listOf(
                 PopulatedIdNetworkId(1, 385),
                 PopulatedIdNetworkId(2, 124),
             ),
-            actualWorkTypeIds
+            workTypeDao.getNetworkedIdMap(51)
+                .sortedBy(PopulatedIdNetworkId::id),
+        )
+
+        worksiteChangeDaoPlus.updateSyncIds(
+            51,
+            WorksiteSyncResult.ChangeIds(
+                -1,
+                flagIdMap = mapOf(1L to -1),
+                noteIdMap = mapOf(9L to -1),
+                workTypeIdMap = mapOf(2L to -1L),
+                workTypeKeyMap = mapOf("work-type-c" to -1),
+            )
+        )
+
+        assertEquals(884L, worksiteDao.getWorksiteNetworkId(51))
+
+        assertEquals(
+            listOf(PopulatedIdNetworkId(1, 43)),
+            flagDao.getNetworkedIdMap(51),
+        )
+
+        assertEquals(
+            listOf(PopulatedIdNetworkId(1, 385)),
+            noteDao.getNetworkedIdMap(51),
+        )
+
+        assertEquals(
+            listOf(
+                PopulatedIdNetworkId(1, 385),
+                PopulatedIdNetworkId(2, 124),
+            ),
+            workTypeDao.getNetworkedIdMap(51)
+                .sortedBy(PopulatedIdNetworkId::id),
         )
     }
 

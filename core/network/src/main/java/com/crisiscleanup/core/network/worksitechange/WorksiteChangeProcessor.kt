@@ -154,6 +154,10 @@ class WorksiteChangeProcessor(
                 }
             }
 
+            if ((_networkWorksite?.id ?: -1) <= 0) {
+                throw WorksiteNotFoundException(worksiteNetworkId)
+            }
+
             changeSet.isOrgMember?.let { isOrgMember ->
                 val favoriteId = worksite?.favorite?.id
                 result = syncFavorite(isOrgMember, favoriteId, result)
@@ -330,7 +334,9 @@ class WorksiteChangeProcessor(
     }
 }
 
-class WorksiteNotFoundException(val worksiteNetworkId: Long) : Exception()
+class WorksiteNotFoundException(worksiteNetworkId: Long) :
+    Exception("Worksite $worksiteNetworkId not found/created")
+
 private class NoInternetConnection : Exception("No internet")
 
 internal data class SyncChangeSetResult(

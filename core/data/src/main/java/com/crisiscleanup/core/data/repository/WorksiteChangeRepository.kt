@@ -247,7 +247,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
 
             appEnv.runInNonProd {
                 syncLogger.log(
-                    "Applying sync change results",
+                    "Sync change results",
                     syncResult.getSummary(sortedChanges.size),
                 )
             }
