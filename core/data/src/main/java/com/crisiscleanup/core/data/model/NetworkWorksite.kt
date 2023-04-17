@@ -81,7 +81,6 @@ fun NetworkFlag.asEntity() = WorksiteFlagEntity(
     notes = notes,
     reasonT = reasonT,
     requestedAction = requestedAction,
-    isInvalid = false,
 )
 
 fun NetworkNote.asEntity() = WorksiteNoteEntity(

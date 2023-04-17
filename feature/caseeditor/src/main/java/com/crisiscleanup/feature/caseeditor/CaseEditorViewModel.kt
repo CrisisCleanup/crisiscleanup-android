@@ -291,7 +291,7 @@ class CaseEditorViewModel @Inject constructor(
                 )
 
                 if (primaryWorkType == null) {
-                    // TODO Different message? Add test coverage.
+                    // TODO Different message (same as web)? Add test coverage.
                     invalidWorksiteInfo.value = InvalidWorksiteInfo(
                         WorksiteSection.WorkType,
                         R.string.incomplete_work_type_info,

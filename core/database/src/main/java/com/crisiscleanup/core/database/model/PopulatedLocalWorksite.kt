@@ -39,8 +39,7 @@ data class PopulatedLocalWorksite(
 )
 
 fun PopulatedLocalWorksite.asExternalModel(translator: KeyTranslator? = null): LocalWorksite {
-    val validWorkTypes = workTypes.filter { !it.isInvalid }
-    val validFlags = flags.filter { !it.isInvalid }
+    val validWorkTypes = workTypes
     val formDataMap = formData.associate {
         it.fieldKey to WorksiteFormValue(
             isBoolean = it.isBoolValue,
@@ -62,7 +61,7 @@ fun PopulatedLocalWorksite.asExternalModel(translator: KeyTranslator? = null): L
             createdAt = entity.createdAt,
             email = entity.email,
             favoriteId = entity.favoriteId,
-            flags = validFlags.map { it.asExternalModel(translator) },
+            flags = flags.map { it.asExternalModel(translator) },
             formData = formDataMap,
             incidentId = entity.incidentId,
             keyWorkType = validWorkTypes.find { it.workType == entity.keyWorkTypeType }

@@ -182,7 +182,8 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
             syncLogger.log("Sync changes over.")
         }
 
-        // TODO Query unsynced data (in transaction) if exists and no changes and try syncing.
+        // TODO There is a possibility all changes have been synced but there is still unsynced accessory data.
+        //      Try to sync in isolation, create a new change, or create notice with options to take action.
 
         val isFullySynced = worksiteDaoPlus.onSyncEnd(worksiteId)
         if (isFullySynced) {

@@ -131,7 +131,7 @@ data class NetworkWorksiteShort(
     @Serializable(InstantSerializer::class)
     @SerialName("created_at")
     val createdAt: Instant,
-    // TODO Differs from full
+    // Differs from full
     @SerialName("favorite_id")
     val favoriteId: Long? = null,
     val flags: List<NetworkWorksiteFull.FlagShort>,

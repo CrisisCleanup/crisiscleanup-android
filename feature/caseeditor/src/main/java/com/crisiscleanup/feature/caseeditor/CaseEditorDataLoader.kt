@@ -288,8 +288,8 @@ internal class CaseEditorDataLoader(
             if (!isSynced) {
                 // TODO Indicate local changes may not be up-to-date with backend.
             }
-            return isSynced
             // val isLocalModified = cachedWorksite.localChanges.isLocalModified
+            return isSynced
         } finally {
             isRefreshingWorksite.value = false
         }

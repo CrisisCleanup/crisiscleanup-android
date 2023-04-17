@@ -50,7 +50,6 @@ fun Worksite.asEntities(
         WorksiteFlagEntity(
             id = flag.id,
             localGlobalUuid = if (isNew) uuidGenerator.uuid() else "",
-            isInvalid = false,
             networkId = networkId,
             worksiteId = id,
             action = flag.action,
@@ -93,7 +92,6 @@ fun Worksite.asEntities(
         WorkTypeEntity(
             id = workType.id,
             localGlobalUuid = if (isNew) uuidGenerator.uuid() else "",
-            isInvalid = false,
             networkId = networkId,
             worksiteId = id,
             createdAt = workType.createdAt,

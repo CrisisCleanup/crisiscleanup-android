@@ -19,7 +19,7 @@ data class PopulatedWorksite(
 )
 
 fun PopulatedWorksite.asExternalModel(): Worksite {
-    val validWorkTypes = workTypes.filter { !it.isInvalid }
+    val validWorkTypes = workTypes
     return Worksite(
 
         // Be sure to copy changes below to PopulatedLocalWorksite.asExternalModel

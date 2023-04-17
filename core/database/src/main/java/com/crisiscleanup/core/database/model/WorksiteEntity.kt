@@ -142,9 +142,6 @@ data class WorkTypeEntity(
     val id: Long,
     @ColumnInfo("local_global_uuid", defaultValue = "")
     val localGlobalUuid: String,
-    // TODO Delete if unused
-    @ColumnInfo("is_invalid", defaultValue = "0")
-    val isInvalid: Boolean,
 
     @ColumnInfo("network_id", defaultValue = "-1")
     val networkId: Long,
@@ -225,9 +222,6 @@ data class WorksiteFlagEntity(
     val id: Long,
     @ColumnInfo("local_global_uuid", defaultValue = "")
     val localGlobalUuid: String,
-    // TODO Delete if unused
-    @ColumnInfo("is_invalid", defaultValue = "0")
-    val isInvalid: Boolean,
 
     @ColumnInfo("network_id", defaultValue = "-1")
     val networkId: Long,
