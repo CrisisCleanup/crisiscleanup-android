@@ -15,7 +15,6 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.repository.*
 import com.crisiscleanup.core.model.data.*
-import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import com.crisiscleanup.feature.caseeditor.model.coordinates
 import com.crisiscleanup.feature.caseeditor.navigation.CaseEditorArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -387,7 +386,7 @@ sealed interface CaseEditorUiState {
         val worksite: Worksite,
         val incident: Incident,
         val localWorksite: LocalWorksite?,
-        val networkWorksiteSync: Pair<Long, NetworkWorksiteFull>?,
+        val isLocalSyncToBackend: Boolean?,
     ) : CaseEditorUiState {
         val isLocalModified = localWorksite?.localChanges?.isLocalModified ?: false
     }

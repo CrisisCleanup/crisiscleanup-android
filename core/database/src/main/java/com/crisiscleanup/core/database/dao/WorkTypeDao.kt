@@ -64,8 +64,8 @@ interface WorkTypeDao {
     )
     fun getNetworkedIdMap(worksiteId: Long): List<PopulatedIdNetworkId>
 
-    @Insert
-    fun insert(workTypes: Collection<WorkTypeEntity>)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insertIgnore(workTypes: Collection<WorkTypeEntity>)
 
     @Update
     fun update(workTypes: Collection<WorkTypeEntity>)
@@ -95,4 +95,8 @@ interface WorkTypeDao {
     @Transaction
     @Query("SELECT COUNT(id) FROM work_types WHERE worksite_id=:worksiteId AND network_id<=0")
     fun getUnsyncedCount(worksiteId: Long): Int
+
+    @Transaction
+    @Query("SELECT DISTINCT work_type FROM work_types WHERE worksite_id=:worksiteId")
+    fun getWorkTypes(worksiteId: Long): List<String>
 }

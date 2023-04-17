@@ -84,7 +84,7 @@ class WorksiteWorkTypeTest {
             testWorksiteEntity(2, 1, "address", updatedAtA),
         )
         existingWorksites = insertWorksites(existingWorksites, previousSyncedAt)
-        db.workTypeDao().insert(
+        db.workTypeDao().insertIgnore(
             listOf(
                 testWorkTypeEntity(1, worksiteId = 1),
                 testWorkTypeEntity(11, worksiteId = 1),
@@ -237,7 +237,7 @@ class WorksiteWorkTypeTest {
         existingWorksites = insertWorksites(existingWorksites, previousSyncedAt)
         db.testWorksiteDao().setLocallyModified(2, updatedAtA)
 
-        db.workTypeDao().insert(
+        db.workTypeDao().insertIgnore(
             listOf(
                 testWorkTypeEntity(1, worksiteId = 1),
                 testWorkTypeEntity(11, worksiteId = 1),
@@ -308,7 +308,7 @@ class WorksiteWorkTypeTest {
         )
         insertWorksites(existingWorksites, previousSyncedAt)
 
-        db.workTypeDao().insert(
+        db.workTypeDao().insertIgnore(
             listOf(
                 testWorkTypeEntity(11, worksiteId = 1, isInvalid = true),
                 testWorkTypeEntity(

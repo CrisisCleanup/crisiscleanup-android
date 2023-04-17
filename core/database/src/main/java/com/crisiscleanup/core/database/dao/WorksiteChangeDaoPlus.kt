@@ -130,7 +130,7 @@ class WorksiteChangeDaoPlus @Inject constructor(
                 flags
                     .split { it.id <= 0 }
                     .also { (inserts, updates) ->
-                        flagDao.insert(inserts)
+                        flagDao.insertIgnore(inserts)
                         flagDao.update(updates)
 
                         syncLogger.log("Flags. Inserted ${inserts.size}. Updated ${updates.size}")
@@ -139,11 +139,11 @@ class WorksiteChangeDaoPlus @Inject constructor(
                 formDataDao.upsert(formData)
                 syncLogger.log("Form data. Upserted ${formData.size}.")
 
-                noteDao.insert(insertNotes)
+                noteDao.insertIgnore(insertNotes)
                 syncLogger.log("Notes. Inserted ${insertNotes.size}.")
 
                 workTypes.split { it.id <= 0 }.also { (inserts, updates) ->
-                    workTypeDao.insert(inserts)
+                    workTypeDao.insertIgnore(inserts)
                     workTypeDao.update(updates)
 
                     syncLogger.log("Work types. Inserted ${inserts.size}. Updated ${updates.size}")

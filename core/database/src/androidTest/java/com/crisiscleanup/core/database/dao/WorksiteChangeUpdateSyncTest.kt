@@ -23,7 +23,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
 
-class WorksiteChangeUpdateSyncTests {
+class WorksiteChangeUpdateSyncTest {
     private lateinit var db: TestCrisisCleanupDatabase
     private lateinit var worksiteChangeDaoPlus: WorksiteChangeDaoPlus
     private lateinit var worksiteDao: WorksiteDao
@@ -118,7 +118,7 @@ class WorksiteChangeUpdateSyncTests {
         worksiteDao.insert(worksiteEntity)
 
         val flagDao = db.worksiteFlagDao()
-        flagDao.insert(
+        flagDao.insertIgnore(
             listOf(
                 testFlagEntity(
                     -1,
@@ -131,7 +131,7 @@ class WorksiteChangeUpdateSyncTests {
         )
 
         val noteDao = db.worksiteNoteDao()
-        noteDao.insert(
+        noteDao.insertIgnore(
             listOf(
                 testNotesEntity(
                     -1,
@@ -144,7 +144,7 @@ class WorksiteChangeUpdateSyncTests {
         )
 
         val workTypeDao = db.workTypeDao()
-        workTypeDao.insert(
+        workTypeDao.insertIgnore(
             listOf(
                 testWorkTypeEntity(
                     -1,

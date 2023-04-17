@@ -216,7 +216,7 @@ class WorksiteDaoPlus @Inject constructor(
         incidentId: Long,
         entities: WorksiteEntities,
         syncedAt: Instant,
-    ): Long = db.withTransaction {
+    ): Pair<Boolean, Long> = db.withTransaction {
         val core = entities.core
         val modifiedAtLookup = getWorksiteLocalModifiedAt(incidentId, setOf(core.networkId))
         val modifiedAt = modifiedAtLookup[core.networkId]
@@ -231,8 +231,58 @@ class WorksiteDaoPlus @Inject constructor(
             entities.notes,
         )
 
-        return@withTransaction if (isUpdated) db.worksiteDao()
-            .getWorksiteId(incidentId, core.networkId) else -1
+        val worksiteId =
+            if (isUpdated) db.worksiteDao().getWorksiteId(incidentId, core.networkId)
+            else -1
+        return@withTransaction Pair(isUpdated, worksiteId)
+    }
+
+    suspend fun syncFillWorksite(
+        incidentId: Long,
+        entities: WorksiteEntities,
+    ): Boolean = db.withTransaction {
+        val worksiteDao = db.worksiteDao()
+        val (core, flags, formData, notes, workTypes) = entities
+        val worksiteId = worksiteDao.getWorksiteId(incidentId, core.networkId)
+        if (worksiteId > 0) {
+            worksiteDao.syncFillWorksite(
+                worksiteId,
+                core.autoContactFrequencyT,
+                core.email,
+                core.phone1,
+                core.phone2,
+                core.plusCode,
+                core.reportedBy,
+                core.what3Words,
+            )
+
+            val flagDao = db.worksiteFlagDao()
+            val flagsReasons = flagDao.getReasons(worksiteId).toSet()
+            val newFlags = flags.filter { !flagsReasons.contains(it.reasonT) }
+                .map { it.copy(worksiteId = worksiteId) }
+            flagDao.insertIgnore(newFlags)
+
+            val formDataDao = db.worksiteFormDataDao()
+            val formDataKeys = formDataDao.getDataKeys(worksiteId).toSet()
+            val newFormData = formData.filter { !formDataKeys.contains(it.fieldKey) }
+                .map { it.copy(worksiteId = worksiteId) }
+            formDataDao.upsert(newFormData)
+
+            val noteDao = db.worksiteNoteDao()
+            val recentNotes = noteDao.getNotes(worksiteId).map(String::trim).toSet()
+            val newNotes = notes.filter { !recentNotes.contains(it.note) }
+                .map { it.copy(worksiteId = worksiteId) }
+            noteDao.insertIgnore(newNotes)
+
+            val workTypeDao = db.workTypeDao()
+            val workTypeKeys = workTypeDao.getWorkTypes(worksiteId).toSet()
+            val newWorkTypes = workTypes.filter { !workTypeKeys.contains(it.workType) }
+                .map { it.copy(worksiteId = worksiteId) }
+            workTypeDao.insertIgnore(newWorkTypes)
+
+            return@withTransaction true
+        }
+        return@withTransaction false
     }
 
     fun streamWorksitesMapVisual(

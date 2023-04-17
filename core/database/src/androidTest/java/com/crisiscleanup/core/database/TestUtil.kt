@@ -46,9 +46,9 @@ object TestUtil {
     fun testSyncLogger(): SyncLogger = spyk(object : SyncLogger {
         override var type: String = "test"
 
-        override fun log(message: String, details: String, type: String): SyncLogger {
-            return this
-        }
+        override fun log(message: String, details: String, type: String) = this
+
+        override fun clear() = this
 
         override fun flush() {}
     })

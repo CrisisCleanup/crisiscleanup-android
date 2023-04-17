@@ -43,6 +43,11 @@ class SyncLogRepository @Inject constructor(
         return this
     }
 
+    override fun clear(): SyncLogger {
+        logEntries = mutableListOf()
+        return this
+    }
+
     override fun flush() {
         coroutineScope.launch(ioDispatcher) {
             val entries: Collection<SyncLog>

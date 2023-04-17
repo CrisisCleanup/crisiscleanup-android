@@ -70,13 +70,13 @@ interface WorksitesRepository {
     suspend fun syncWorksite(
         incidentId: Long,
         worksiteNetworkId: Long,
-    ): Pair<Long, NetworkWorksiteFull>?
+    ): Boolean
 
     suspend fun syncNetworkWorksite(
         incidentId: Long,
         worksite: NetworkWorksiteFull,
         syncedAt: Instant = Clock.System.now(),
-    ): Pair<Long, NetworkWorksiteFull>
+    ): Boolean
 
     suspend fun getLocalId(incidentId: Long, networkWorksiteId: Long): Long
 }

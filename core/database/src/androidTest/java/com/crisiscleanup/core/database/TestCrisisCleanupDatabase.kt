@@ -80,7 +80,7 @@ interface TestWorksiteDao {
 @Dao
 interface TestFlagDao {
     @Transaction
-    @Query("SELECT * FROM worksite_flags WHERE worksite_id=:worksiteId")
+    @Query("SELECT * FROM worksite_flags WHERE worksite_id=:worksiteId ORDER BY id")
     fun getEntities(worksiteId: Long): List<WorksiteFlagEntity>
 
     @Transaction
@@ -98,14 +98,14 @@ interface TestFlagDao {
 @Dao
 interface TestFormDataDao {
     @Transaction
-    @Query("SELECT * FROM worksite_form_data WHERE worksite_id=:worksiteId")
+    @Query("SELECT * FROM worksite_form_data WHERE worksite_id=:worksiteId ORDER BY field_key")
     fun getEntities(worksiteId: Long): List<WorksiteFormDataEntity>
 }
 
 @Dao
 interface TestNoteDao {
     @Transaction
-    @Query("SELECT * FROM worksite_notes WHERE worksite_id=:worksiteId")
+    @Query("SELECT * FROM worksite_notes WHERE worksite_id=:worksiteId ORDER BY id")
     fun getEntities(worksiteId: Long): List<WorksiteNoteEntity>
 
     @Transaction

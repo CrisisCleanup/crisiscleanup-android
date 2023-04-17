@@ -16,4 +16,8 @@ interface WorksiteFormDataDao {
 
     @Upsert
     fun upsert(formData: Collection<WorksiteFormDataEntity>)
+
+    @Transaction
+    @Query("SELECT DISTINCT field_key FROM worksite_form_data WHERE worksite_id=:worksiteId")
+    fun getDataKeys(worksiteId: Long): List<String>
 }

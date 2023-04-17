@@ -3,7 +3,9 @@ package com.crisiscleanup.core.database.dao
 import androidx.room.*
 import com.crisiscleanup.core.database.model.PopulatedIdNetworkId
 import com.crisiscleanup.core.database.model.WorksiteNoteEntity
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlin.time.Duration.Companion.hours
 
 @Dao
 interface WorksiteNoteDao {
@@ -47,8 +49,8 @@ interface WorksiteNoteDao {
     )
     fun getNetworkedIdMap(worksiteId: Long): List<PopulatedIdNetworkId>
 
-    @Insert
-    fun insert(notes: Collection<WorksiteNoteEntity>)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insertIgnore(notes: Collection<WorksiteNoteEntity>)
 
     @Transaction
     @Query(
@@ -64,4 +66,11 @@ interface WorksiteNoteDao {
     @Transaction
     @Query("SELECT COUNT(id) FROM worksite_notes WHERE worksite_id=:worksiteId AND network_id<=0")
     fun getUnsyncedCount(worksiteId: Long): Int
+
+    @Transaction
+    @Query("SELECT note FROM worksite_notes WHERE worksite_id=:worksiteId AND created_at>:createdAt")
+    fun getNotes(
+        worksiteId: Long,
+        createdAt: Instant = Clock.System.now().minus(12.hours),
+    ): List<String>
 }

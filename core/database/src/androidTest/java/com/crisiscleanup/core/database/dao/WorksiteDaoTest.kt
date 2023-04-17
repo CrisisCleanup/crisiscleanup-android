@@ -49,7 +49,6 @@ class WorksiteDaoTest {
         *worksites.toTypedArray(),
     )
 
-
     private val nowInstant = Clock.System.now()
 
     private val previousSyncedAt = nowInstant.plus((-9999).seconds)

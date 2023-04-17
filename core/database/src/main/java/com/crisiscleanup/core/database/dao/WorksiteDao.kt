@@ -16,6 +16,10 @@ interface WorksiteDao {
     fun getWorksiteNetworkId(id: Long): Long
 
     @Transaction
+    @Query("SELECT incident_id FROM worksites_root WHERE id=:id")
+    fun getIncidentId(id: Long): Long
+
+    @Transaction
     @Query("SELECT * FROM worksites WHERE id=:id")
     fun getWorksite(id: Long): PopulatedWorksite
 
@@ -313,6 +317,32 @@ interface WorksiteDao {
         svi: Float?,
         what3Words: String?,
         updatedAt: Instant,
+    )
+
+    @Transaction
+    @Query(
+        """
+        UPDATE OR ROLLBACK worksites
+        SET
+        auto_contact_frequency_t=COALESCE(auto_contact_frequency_t, :autoContactFrequencyT),
+        email       =COALESCE(email, :email),
+        phone1      =CASE WHEN LENGTH(COALESCE(phone1,''))<2 THEN :phone1 ELSE phone1 END,
+        phone2      =COALESCE(phone2, :phone2),
+        plus_code   =COALESCE(plus_code, :plusCode),
+        reported_by =COALESCE(reported_by, :reportedBy),
+        what3Words  =COALESCE(what3Words, :what3Words)
+        WHERE id=:id
+        """
+    )
+    fun syncFillWorksite(
+        id: Long,
+        autoContactFrequencyT: String?,
+        email: String?,
+        phone1: String?,
+        phone2: String?,
+        plusCode: String?,
+        reportedBy: Long?,
+        what3Words: String?,
     )
 
     @Transaction

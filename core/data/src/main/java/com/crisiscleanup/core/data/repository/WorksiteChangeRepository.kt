@@ -12,6 +12,7 @@ import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.SavedWorksiteChange
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.Worksite
+import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.worksitechange.WorksiteChangeSyncer
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
@@ -55,6 +56,8 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
     private val workTypeDao: WorkTypeDao,
     private val worksiteChangeSyncer: WorksiteChangeSyncer,
     private val accountDataRepository: AccountDataRepository,
+    private val networkDataSource: CrisisCleanupNetworkDataSource,
+    private val worksitesRepository: WorksitesRepository,
     private val networkMonitor: NetworkMonitor,
     private val appEnv: AppEnv,
     private val syncLogger: SyncLogger,
@@ -80,7 +83,6 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
     override suspend fun syncWorksites(syncWorksiteCount: Int): Boolean = coroutineScope {
         if (syncWorksiteMutex.tryLock()) {
             var worksiteId: Long
-            var isSyncClosed = false
             try {
                 var syncCounter = 0
                 val syncCountLimit = if (syncWorksiteCount < 1) 20 else syncWorksiteCount
@@ -91,7 +93,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
                     }
                     worksiteId = worksiteIds.first()
 
-                    isSyncClosed = trySyncWorksite(worksiteId, true).second
+                    trySyncWorksite(worksiteId, true)
 
                     ensureActive()
                 }
@@ -99,9 +101,6 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
                 // TODO Indicate error with notification
             } finally {
                 syncWorksiteMutex.unlock()
-                if (!isSyncClosed) {
-                    syncLogger.flush()
-                }
             }
 
             return@coroutineScope true
@@ -110,37 +109,35 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
         return@coroutineScope false
     }
 
-    override suspend fun trySyncWorksite(worksiteId: Long) =
-        trySyncWorksite(worksiteId, false).first
+    override suspend fun trySyncWorksite(worksiteId: Long) = trySyncWorksite(worksiteId, false)
 
     private suspend fun trySyncWorksite(
         worksiteId: Long,
         rethrowError: Boolean,
-    ): Pair<Boolean, Boolean> {
+    ): Boolean {
         if (networkMonitor.isNotOnline.first()) {
             syncLogger.log("Not syncing. No internet connection.")
-            return Pair(false, false)
+            return false
         }
 
         val accountData = accountDataRepository.accountData.first()
         if (accountData.isTokenInvalid) {
             syncLogger.log("Not syncing. Invalid account token.")
-            return Pair(false, false)
+            return false
         }
 
-        var isSyncClosed = false
         try {
             synchronized(syncingWorksiteIds) {
                 if (syncingWorksiteIds.contains(worksiteId)) {
                     syncLogger.log("Not syncing. Currently being synced.")
-                    return Pair(false, false)
+                    return false
                 }
                 syncingWorksiteIds[worksiteId] = true
             }
 
             syncingWorksiteId.value = worksiteId
 
-            isSyncClosed = syncWorksite(worksiteId)
+            syncWorksite(worksiteId)
         } catch (e: Exception) {
             appLogger.logException(e)
 
@@ -154,11 +151,13 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
                 syncingWorksiteIds.remove(worksiteId)
             }
             syncingWorksiteId.value = EmptyWorksite.id
+
+            syncLogger.flush()
         }
-        return Pair(true, isSyncClosed)
+        return true
     }
 
-    private suspend fun syncWorksite(worksiteId: Long): Boolean {
+    private suspend fun syncWorksite(worksiteId: Long) {
         syncLogger.type = "syncing-worksite-$worksiteId"
 
         val sortedChanges = worksiteChangeDao.getOrdered(worksiteId)
@@ -172,7 +171,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
             if (newestChangeOrgId != organizationId) {
                 syncLogger.log("Not syncing. Org mismatch $organizationId != $newestChangeOrgId.")
                 // TODO Insert notice that newest change of worksite was with a different organization
-                return false
+                return
             }
 
             syncLogger.log("Sync changes starting.")
@@ -185,14 +184,22 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
 
         // TODO Query unsynced data (in transaction) if exists and no changes and try syncing.
 
-        val isSyncClosed = worksiteDaoPlus.onSyncEnd(worksiteId)
-        val syncEndMessage = if (isSyncClosed) "Worksite fully synced." else "Unsynced data exists."
-        syncLogger.log(syncEndMessage)
+        val isFullySynced = worksiteDaoPlus.onSyncEnd(worksiteId)
+        if (isFullySynced) {
+            syncLogger.clear()
+                .log("Worksite fully synced.")
+        } else {
+            syncLogger.log("Unsynced data exists.")
+        }
 
-        // TODO Query and apply latest worksite cleanly or if local modifications exist
-        //        merge change by filling and adding where not conflicting
-
-        return isSyncClosed
+        val worksiteNetworkId = worksiteDao.getWorksiteNetworkId(worksiteId)
+        val networkWorksite = networkDataSource.getWorksite(worksiteNetworkId)
+        networkWorksite?.let {
+            val incidentId = worksiteDao.getIncidentId(worksiteId)
+            if (incidentId > 0) {
+                worksitesRepository.syncNetworkWorksite(incidentId, it)
+            }
+        }
     }
 
     // TODO Complete test coverage

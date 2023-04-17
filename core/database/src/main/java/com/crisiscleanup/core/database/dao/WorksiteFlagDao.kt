@@ -62,8 +62,8 @@ interface WorksiteFlagDao {
     )
     fun getNetworkedIdMap(worksiteId: Long): List<PopulatedIdNetworkId>
 
-    @Insert
-    fun insert(flags: Collection<WorksiteFlagEntity>)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insertIgnore(flags: Collection<WorksiteFlagEntity>)
 
     @Update
     fun update(flags: Collection<WorksiteFlagEntity>)
@@ -82,4 +82,8 @@ interface WorksiteFlagDao {
     @Transaction
     @Query("SELECT COUNT(id) FROM worksite_flags WHERE worksite_id=:worksiteId AND network_id<=0")
     fun getUnsyncedCount(worksiteId: Long): Int
+
+    @Transaction
+    @Query("SELECT DISTINCT reason_t FROM worksite_flags WHERE worksite_id=:worksiteId")
+    fun getReasons(worksiteId: Long): List<String>
 }

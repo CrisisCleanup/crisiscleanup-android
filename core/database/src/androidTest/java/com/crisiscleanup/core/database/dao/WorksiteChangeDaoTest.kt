@@ -243,13 +243,13 @@ class WorksiteChangeDaoTest {
         val inserted = insertWorksites(db, now, entities.core)
         val worksiteId = inserted[0].id
         val flags = entities.flags.map { it.copy(worksiteId = worksiteId) }
-        db.worksiteFlagDao().insert(flags)
+        db.worksiteFlagDao().insertIgnore(flags)
         val formData = entities.formData.map { it.copy(worksiteId = worksiteId) }
         db.worksiteFormDataDao().upsert(formData)
         val notes = entities.notes.map { it.copy(worksiteId = worksiteId) }
-        db.worksiteNoteDao().insert(notes)
+        db.worksiteNoteDao().insertIgnore(notes)
         val workTypes = entities.workTypes.map { it.copy(worksiteId = worksiteId) }
-        db.workTypeDao().insert(workTypes)
+        db.workTypeDao().insertIgnore(workTypes)
 
         val worksiteEntity = entities.core.copy(id = worksiteId)
         return EditWorksiteEntities(worksiteEntity, flags, formData, notes, workTypes)
@@ -446,16 +446,16 @@ class WorksiteChangeDaoTest {
             )
         )
         db.worksiteDao().insert(entities.core)
-        db.worksiteFlagDao().insert(entities.flags)
+        db.worksiteFlagDao().insertIgnore(entities.flags)
         db.worksiteFormDataDao().upsert(entities.formData)
-        db.worksiteNoteDao().insert(entities.notes)
-        db.workTypeDao().insert(entities.workTypes)
+        db.worksiteNoteDao().insertIgnore(entities.notes)
+        db.workTypeDao().insertIgnore(entities.workTypes)
 
         val worksiteId = if (worksite.id > 0) worksite.id else 1
 
         // For mapping
         db.testFlagDao().updateNetworkId(1, 201)
-        db.worksiteFlagDao().insert(
+        db.worksiteFlagDao().insertIgnore(
             listOf(
                 WorksiteFlagEntity(
                     11,
@@ -474,7 +474,7 @@ class WorksiteChangeDaoTest {
         )
 
         db.testNoteDao().updateNetworkId(64, 264)
-        db.worksiteNoteDao().insert(
+        db.worksiteNoteDao().insertIgnore(
             listOf(
                 WorksiteNoteEntity(
                     41,
@@ -489,7 +489,7 @@ class WorksiteChangeDaoTest {
         )
 
         db.testWorkTypeDao().updateNetworkId(1, 301)
-        db.workTypeDao().insert(
+        db.workTypeDao().insertIgnore(
             listOf(
                 WorkTypeEntity(
                     23,

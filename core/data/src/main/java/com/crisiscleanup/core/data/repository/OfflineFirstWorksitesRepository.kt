@@ -1,7 +1,6 @@
 package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.common.AppVersionProvider
-import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
@@ -38,7 +37,6 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private val worksiteDaoPlus: WorksiteDaoPlus,
     private val appVersionProvider: AppVersionProvider,
     private val authEventManager: AuthEventManager,
-    private val keyTranslator: KeyTranslator,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : WorksitesRepository, WorksitesDataPullReporter {
@@ -198,7 +196,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     override suspend fun syncWorksite(
         incidentId: Long,
         worksiteNetworkId: Long,
-    ): Pair<Long, NetworkWorksiteFull>? {
+    ): Boolean {
         // TODO Surface meaningful error(s) to user
 
         try {
@@ -214,16 +212,20 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             logger.logException(e)
         }
 
-        return null
+        return false
     }
 
     override suspend fun syncNetworkWorksite(
         incidentId: Long,
         worksite: NetworkWorksiteFull,
         syncedAt: Instant,
-    ): Pair<Long, NetworkWorksiteFull> {
+    ): Boolean {
         val entities = worksite.asEntities(incidentId)
-        val localWorksiteId = worksiteDaoPlus.syncWorksite(incidentId, entities, syncedAt)
-        return Pair(localWorksiteId, worksite)
+        val result = worksiteDaoPlus.syncWorksite(incidentId, entities, syncedAt)
+        if (!result.first) {
+            // TODO Log analytics worksite was filled
+            worksiteDaoPlus.syncFillWorksite(incidentId, entities)
+        }
+        return result.first
     }
 }

@@ -15,7 +15,6 @@ import kotlinx.datetime.Instant
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 
 class WorksiteFormDataFlagNoteTest {
@@ -88,11 +87,11 @@ class WorksiteFormDataFlagNoteTest {
             syncingNotes,
             emptyList(),
         )
-        val syncedWorksiteId = worksiteDaoPlus.syncWorksite(1, entities, syncedAt)
+        val actual = worksiteDaoPlus.syncWorksite(1, entities, syncedAt)
 
         // Assert
 
-        assertEquals(1, syncedWorksiteId)
+        assertEquals(Pair(true, 1L), actual)
 
         val actualPopulatedWorksite = testWorksiteDao.getLocalWorksite(1)
         assertEquals(
@@ -181,13 +180,13 @@ class WorksiteFormDataFlagNoteTest {
                 testFormDataEntity(1, "form-field-c", isBoolValue = true, valueBool = true),
             )
         )
-        db.worksiteFlagDao().insert(
+        db.worksiteFlagDao().insertIgnore(
             listOf(
                 testFlagEntity(11, 1, createdAtA, "flag-a"),
                 testFlagEntity(12, 1, createdAtA, "flag-b"),
             )
         )
-        db.worksiteNoteDao().insert(
+        db.worksiteNoteDao().insertIgnore(
             listOf(
                 testNotesEntity(21, 1, createdAtA, "note-a"),
                 testNotesEntity(22, 1, createdAtA, "note-b"),
@@ -234,11 +233,11 @@ class WorksiteFormDataFlagNoteTest {
             syncingNotes,
             emptyList(),
         )
-        val syncedWorksiteId = worksiteDaoPlus.syncWorksite(1, entities, syncedAt)
+        val actual = worksiteDaoPlus.syncWorksite(1, entities, syncedAt)
 
         // Assert
 
-        assertEquals(existingWorksites[0].id, syncedWorksiteId)
+        assertEquals(Pair(true, existingWorksites[0].id), actual)
 
         val actualPopulatedWorksite = testWorksiteDao.getLocalWorksite(1)
         assertEquals(
@@ -327,7 +326,7 @@ class WorksiteFormDataFlagNoteTest {
             syncingNotes,
             emptyList(),
         )
-        val syncedWorksiteId = worksiteDaoPlus.syncWorksite(1, entities, syncedAt)
+        val actualSyncWorksite = worksiteDaoPlus.syncWorksite(1, entities, syncedAt)
 
         // Sync locally changed
         val syncingWorksiteB = testWorksiteEntity(2, 1, "sync-address", updatedAtB)
@@ -348,11 +347,11 @@ class WorksiteFormDataFlagNoteTest {
             syncingNotesB,
             emptyList(),
         )
-        val syncedLocallyChangedWorksiteId = worksiteDaoPlus.syncWorksite(1, entitiesB, syncedAt)
+        val actualSyncChangeWorksite = worksiteDaoPlus.syncWorksite(1, entitiesB, syncedAt)
 
         // Assert
 
-        assertEquals(existingWorksites[0].id, syncedWorksiteId)
+        assertEquals(Pair(true, existingWorksites[0].id), actualSyncWorksite)
 
         val actualPopulatedWorksite = testWorksiteDao.getLocalWorksite(1)
         assertEquals(
@@ -390,7 +389,7 @@ class WorksiteFormDataFlagNoteTest {
 
         // Locally changed did not sync
 
-        assertTrue(syncedLocallyChangedWorksiteId < 0)
+        assertEquals(Pair(false, -1L), actualSyncChangeWorksite)
         val actualPopulatedWorksiteB = testWorksiteDao.getLocalWorksite(2)
         assertEquals(existingWorksites[1], actualPopulatedWorksiteB.entity)
         val actualWorksiteB =
@@ -407,7 +406,7 @@ class WorksiteFormDataFlagNoteTest {
         )
         insertWorksites(existingWorksites, previousSyncedAt)
 
-        db.worksiteFlagDao().insert(
+        db.worksiteFlagDao().insertIgnore(
             listOf(
                 testFullFlagEntity(432, 1, updatedAtA, false, "flag-a", isInvalid = true),
                 testFullFlagEntity(12, 1, updatedAtA, true, "flag-a"),

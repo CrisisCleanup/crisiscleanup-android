@@ -7,7 +7,6 @@ import com.crisiscleanup.core.mapmarker.model.IncidentBounds
 import com.crisiscleanup.core.mapmarker.util.toBounds
 import com.crisiscleanup.core.mapmarker.util.toLatLng
 import com.crisiscleanup.core.model.data.*
-import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import com.crisiscleanup.feature.caseeditor.model.FormFieldNode
 import com.crisiscleanup.feature.caseeditor.model.flatten
 import kotlinx.coroutines.CoroutineDispatcher
@@ -15,7 +14,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicReference
 
 internal class CaseEditorDataLoader(
     private val isCreateWorksite: Boolean,
@@ -91,7 +89,6 @@ internal class CaseEditorDataLoader(
         )
 
     private val isWorksitePulled = AtomicBoolean(false)
-    private val networkWorksiteSync = AtomicReference<Pair<Long, NetworkWorksiteFull>?>(null)
     private val networkWorksiteStream = worksiteStream
         .mapLatest { cachedWorksite ->
             cachedWorksite?.let { localWorksite ->
@@ -100,11 +97,11 @@ internal class CaseEditorDataLoader(
                     !isWorksitePulled.getAndSet(true)
                 ) {
                     if (networkMonitor.isOnline.first()) {
-                        refreshWorksite(networkId)
+                        return@mapLatest refreshWorksite(networkId)
                     }
                 }
             }
-            networkWorksiteSync.get()
+            null
         }
         .flowOn(coroutineDispatcher)
         .stateIn(
@@ -124,12 +121,12 @@ internal class CaseEditorDataLoader(
     ) {
             dataLoadCount, organization,
             incident, bounds, pullingIncident,
-            worksite, networkWorksiteSync,
+            worksite, isWorksiteSynced,
         ->
         Triple(
             Pair(dataLoadCount, organization),
             Triple(incident, bounds, pullingIncident),
-            Pair(worksite, networkWorksiteSync),
+            Pair(worksite, isWorksiteSynced),
         )
     }
         .mapLatest { (first, second, third) ->
@@ -159,7 +156,7 @@ internal class CaseEditorDataLoader(
                 }
             }
 
-            val (localWorksite, networkWorksiteSync) = third
+            val (localWorksite, isWorksiteSynced) = third
 
             val loadedWorksite = localWorksite?.worksite
             var initialWorksite = loadedWorksite ?: EmptyWorksite.copy(
@@ -244,7 +241,7 @@ internal class CaseEditorDataLoader(
                 initialWorksite,
                 incident,
                 localWorksite,
-                networkWorksiteSync,
+                isWorksiteSynced,
             )
         }
 
@@ -281,22 +278,18 @@ internal class CaseEditorDataLoader(
         dataLoadCountStream.value++
     }
 
-    private suspend fun refreshWorksite(networkWorksiteId: Long) {
+    private suspend fun refreshWorksite(networkWorksiteId: Long): Boolean {
         isRefreshingWorksite.value = true
         try {
-            networkWorksiteSync.set(
-                worksitesRepository.syncWorksite(
-                    incidentIdIn,
-                    networkWorksiteId,
-                )
+            val isSynced = worksitesRepository.syncWorksite(
+                incidentIdIn,
+                networkWorksiteId,
             )
-
-            // TODO Try and merge changes if exists.
-            //      If not show message that local changes have deviated from backend.
+            if (!isSynced) {
+                // TODO Indicate local changes may not be up-to-date with backend.
+            }
+            return isSynced
             // val isLocalModified = cachedWorksite.localChanges.isLocalModified
-        } catch (e: Exception) {
-            // TODO This is going to be difficult. Plenty of state for possible change... Show error message that backend has changes not resolved on local?
-            logger.logException(e)
         } finally {
             isRefreshingWorksite.value = false
         }
