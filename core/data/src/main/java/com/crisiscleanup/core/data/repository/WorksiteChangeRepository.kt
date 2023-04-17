@@ -193,11 +193,12 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
         }
 
         val worksiteNetworkId = worksiteDao.getWorksiteNetworkId(worksiteId)
-        val networkWorksite = networkDataSource.getWorksite(worksiteNetworkId)
-        networkWorksite?.let {
-            val incidentId = worksiteDao.getIncidentId(worksiteId)
-            if (incidentId > 0) {
-                worksitesRepository.syncNetworkWorksite(incidentId, it)
+        if (worksiteNetworkId > 0) {
+            networkDataSource.getWorksite(worksiteNetworkId)?.let {
+                val incidentId = worksiteDao.getIncidentId(worksiteId)
+                if (incidentId > 0) {
+                    worksitesRepository.syncNetworkWorksite(incidentId, it)
+                }
             }
         }
     }

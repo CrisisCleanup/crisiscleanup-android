@@ -151,7 +151,7 @@ class DataApiClient @Inject constructor(
 
     override suspend fun getWorksite(id: Long): NetworkWorksiteFull? {
         val result = getWorksites(listOf(id))
-        return result.results?.get(0)
+        return result.results?.firstOrNull()
     }
 
     override suspend fun getWorksitesCount(incidentId: Long, updatedAtAfter: Instant?) =
