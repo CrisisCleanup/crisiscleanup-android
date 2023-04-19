@@ -300,40 +300,4 @@ class WorksiteWorkTypeTest {
         assertEquals(existingWorksites[1], actual.entity)
         assertEquals(actualWorkTypes, actual.workTypes)
     }
-
-    @Test
-    fun skipInvalidWorkTypes() = runTest {
-        val existingWorksites = listOf(
-            testWorksiteEntity(1, 1, "address", updatedAtA),
-        )
-        insertWorksites(existingWorksites, previousSyncedAt)
-
-        db.workTypeDao().insertIgnore(
-            listOf(
-                testWorkTypeEntity(11, worksiteId = 1, isInvalid = true),
-                testWorkTypeEntity(
-                    1, worksiteId = 1,
-                    createdAt = createdAtA,
-                    nextRecurAt = updatedAtA,
-                    phase = 3,
-                    recur = "recur",
-                ),
-            )
-        )
-
-        val actual = worksiteDao.getWorksite(1).asExternalModel().workTypes
-        val expected = listOf(
-            WorkType(
-                id = 2,
-                createdAt = createdAtA,
-                orgClaim = 201,
-                nextRecurAt = updatedAtA,
-                phase = 3,
-                recur = "recur",
-                statusLiteral = "status",
-                workTypeLiteral = "work-type-a",
-            )
-        )
-        assertEquals(expected, actual)
-    }
 }

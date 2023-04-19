@@ -127,7 +127,6 @@ internal fun testWorkTypeEntity(
     phase: Int? = null,
     recur: String? = null,
     id: Long = 0,
-    isInvalid: Boolean = false,
     localGlobalUuid: String = "",
 ) = WorkTypeEntity(
     id = id,
@@ -141,7 +140,6 @@ internal fun testWorkTypeEntity(
     recur = recur,
     status = status,
     workType = workType,
-    isInvalid = isInvalid,
 )
 
 internal fun fullWorkTypeEntity(

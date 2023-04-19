@@ -334,7 +334,6 @@ class WorksiteSyncFillTest {
     ) = WorksiteFlagEntity(
         id = id,
         localGlobalUuid = "",
-        isInvalid = false,
         networkId = networkId,
         worksiteId = worksiteId,
         action = action,

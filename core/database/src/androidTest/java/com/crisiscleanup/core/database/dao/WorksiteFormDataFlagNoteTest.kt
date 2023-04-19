@@ -110,7 +110,6 @@ class WorksiteFormDataFlagNoteTest {
             WorksiteFlagEntity(
                 1,
                 "",
-                false,
                 432,
                 1,
                 "action-new-a",
@@ -398,37 +397,6 @@ class WorksiteFormDataFlagNoteTest {
         assertEquals(emptyList(), actualWorksiteB.worksite.flags)
         assertEquals(emptyList(), actualWorksiteB.worksite.notes)
     }
-
-    @Test
-    fun skipInvalidData() = runTest {
-        val existingWorksites = listOf(
-            testWorksiteEntity(1, 1, "address", updatedAtA),
-        )
-        insertWorksites(existingWorksites, previousSyncedAt)
-
-        db.worksiteFlagDao().insertIgnore(
-            listOf(
-                testFullFlagEntity(432, 1, updatedAtA, false, "flag-a", isInvalid = true),
-                testFullFlagEntity(12, 1, updatedAtA, true, "flag-a"),
-            )
-        )
-
-        val actual = testWorksiteDao.getLocalWorksite(1)
-            .asExternalModel(WorksiteTestUtil.TestTranslator).worksite.flags
-        val expected = listOf(
-            WorksiteFlag(
-                id = 2,
-                createdAt = updatedAtA,
-                action = "action-flag-a",
-                isHighPriority = true,
-                notes = "notes-flag-a",
-                reasonT = "reason-flag-a",
-                reason = "reason-flag-a-translated",
-                requestedAction = "requested-action-flag-a",
-            )
-        )
-        assertEquals(expected, actual)
-    }
 }
 
 internal fun testFormDataEntity(
@@ -460,7 +428,6 @@ internal fun testFlagEntity(
 ) = WorksiteFlagEntity(
     id = id,
     localGlobalUuid = localGlobalUuid,
-    isInvalid = isInvalid,
     networkId = networkId,
     worksiteId = worksiteId,
     action = action,
@@ -478,7 +445,6 @@ internal fun testFullFlagEntity(
     isHighPriority: Boolean?,
     postfix: String,
     id: Long = 0,
-    isInvalid: Boolean = false,
 ) = testFlagEntity(
     networkId,
     worksiteId,
@@ -489,7 +455,6 @@ internal fun testFullFlagEntity(
     notes = "notes-$postfix",
     requestedAction = "requested-action-$postfix",
     id = id,
-    isInvalid = isInvalid,
 )
 
 internal fun testNotesEntity(

@@ -460,7 +460,6 @@ class WorksiteChangeDaoTest {
                 WorksiteFlagEntity(
                     11,
                     "",
-                    false,
                     211,
                     worksiteId,
                     "",
@@ -494,7 +493,6 @@ class WorksiteChangeDaoTest {
                 WorkTypeEntity(
                     23,
                     "",
-                    false,
                     223,
                     worksiteId,
                     createdAt = createdAtC,
