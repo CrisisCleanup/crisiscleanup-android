@@ -85,7 +85,8 @@ class WorksiteChangeProcessor(
     ) {
         var start: WorksiteSnapshot? = startingReferenceChange.worksiteChange.start
 
-        for (syncChange in sortedChanges) {
+        val lastLoopIndex = sortedChanges.size - 1
+        sortedChanges.forEachIndexed { index, syncChange ->
             val changes = if (hasPriorUnsyncedChanges) WorksiteChange(
                 start,
                 syncChange.worksiteChange.change,
@@ -122,10 +123,10 @@ class WorksiteChangeProcessor(
             }
 
             if (!syncResult.canContinueSyncing) {
-                break
+                return@forEachIndexed
             }
 
-            if (syncResult.isPartiallySynced) {
+            if (syncResult.isPartiallySynced && index < lastLoopIndex) {
                 getNetworkWorksite(true)
             }
         }
