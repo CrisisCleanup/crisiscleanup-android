@@ -3,12 +3,14 @@ package com.crisiscleanup.feature.caseeditor.model
 import com.crisiscleanup.core.model.data.WorksiteNote
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toJavaInstant
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
-private val absoluteDateFormat = DateTimeFormatter.ofPattern("MMM d yyyy")
+private val absoluteDateFormat =
+    DateTimeFormatter.ofPattern("MMM d yyyy").withZone(ZoneId.systemDefault())
 
 private fun pluralize(amount: Long, singular: String): String {
     val plural = if (amount > 1) "s" else ""
