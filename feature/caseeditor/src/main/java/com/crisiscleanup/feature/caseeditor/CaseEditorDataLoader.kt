@@ -235,6 +235,8 @@ internal class CaseEditorDataLoader(
                             localWorksite != null &&
                             isWorksitePulled.get())
             val isEditable = bounds != null && isLoadFinished
+            val isTranslationUpdated =
+                editableWorksiteProvider.formFieldTranslationLookup.isNotEmpty()
             CaseEditorUiState.WorksiteData(
                 organization.id,
                 isEditable,
@@ -242,6 +244,7 @@ internal class CaseEditorDataLoader(
                 incident,
                 localWorksite,
                 isWorksiteSynced,
+                isTranslationUpdated,
             )
         }
 

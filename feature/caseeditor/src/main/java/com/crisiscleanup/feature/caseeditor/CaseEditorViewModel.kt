@@ -44,7 +44,7 @@ class CaseEditorViewModel @Inject constructor(
     translator: KeyTranslator,
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val syncPusher: SyncPusher,
-    resourceProvider: AndroidResourceProvider,
+    private val resourceProvider: AndroidResourceProvider,
     @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : EditCaseBaseViewModel(editableWorksiteProvider, translator, logger) {
@@ -83,10 +83,7 @@ class CaseEditorViewModel @Inject constructor(
     private val dataLoader: CaseEditorDataLoader
 
     init {
-        val headerTitleResId =
-            if (isCreateWorksite) R.string.create_case
-            else R.string.view_case
-        headerTitle.value = resourceProvider.getString(headerTitleResId)
+        updateHeaderTitle()
 
         editableWorksiteProvider.reset(incidentIdArg)
 
@@ -115,10 +112,7 @@ class CaseEditorViewModel @Inject constructor(
         dataLoader.worksiteStream
             .onEach {
                 it?.let { cachedWorksite ->
-                    val caseNumber = cachedWorksite.worksite.caseNumber
-                    // TODO Show different text if case number is empty (not yet synced)
-                    headerTitle.value =
-                        resourceProvider.getString(R.string.view_case_number, caseNumber)
+                    updateHeaderTitle(cachedWorksite.worksite.caseNumber)
                 }
             }
             .launchIn(viewModelScope)
@@ -177,6 +171,17 @@ class CaseEditorViewModel @Inject constructor(
             initialValue = emptyList(),
             started = SharingStarted.WhileSubscribed(),
         )
+
+    private fun updateHeaderTitle(caseNumber: String = "") {
+        headerTitle.value = if (caseNumber.isEmpty()) {
+            val headerTitleResId =
+                if (isCreateWorksite) R.string.create_case
+                else R.string.view_case
+            resourceProvider.getString(headerTitleResId)
+        } else {
+            resourceProvider.getString(R.string.view_case_number, caseNumber)
+        }
+    }
 
     private fun validate(worksite: Worksite): InvalidWorksiteInfo {
         if (worksite.name.isBlank() ||
@@ -387,6 +392,7 @@ sealed interface CaseEditorUiState {
         val incident: Incident,
         val localWorksite: LocalWorksite?,
         val isLocalSyncToBackend: Boolean?,
+        val isTranslationUpdated: Boolean,
     ) : CaseEditorUiState {
         val isLocalModified = localWorksite?.localChanges?.isLocalModified ?: false
     }
