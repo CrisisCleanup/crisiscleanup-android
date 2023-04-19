@@ -248,10 +248,13 @@ class WorksiteDaoPlus @Inject constructor(
             worksiteDao.syncFillWorksite(
                 worksiteId,
                 core.autoContactFrequencyT,
+                core.caseNumber,
                 core.email,
+                core.favoriteId,
                 core.phone1,
                 core.phone2,
                 core.plusCode,
+                core.svi,
                 core.reportedBy,
                 core.what3Words,
             )

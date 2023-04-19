@@ -325,10 +325,13 @@ interface WorksiteDao {
         UPDATE OR ROLLBACK worksites
         SET
         auto_contact_frequency_t=COALESCE(auto_contact_frequency_t, :autoContactFrequencyT),
+        case_number =CASE WHEN LENGTH(case_number)==0 THEN :caseNumber ELSE case_number END,
         email       =COALESCE(email, :email),
+        favorite_id =COALESCE(favorite_id, :favoriteId),
         phone1      =CASE WHEN LENGTH(COALESCE(phone1,''))<2 THEN :phone1 ELSE phone1 END,
         phone2      =COALESCE(phone2, :phone2),
         plus_code   =COALESCE(plus_code, :plusCode),
+        svi         =COALESCE(svi, :svi),
         reported_by =COALESCE(reported_by, :reportedBy),
         what3Words  =COALESCE(what3Words, :what3Words)
         WHERE id=:id
@@ -337,10 +340,13 @@ interface WorksiteDao {
     fun syncFillWorksite(
         id: Long,
         autoContactFrequencyT: String?,
+        caseNumber: String,
         email: String?,
+        favoriteId: Long?,
         phone1: String?,
         phone2: String?,
         plusCode: String?,
+        svi: Float?,
         reportedBy: Long?,
         what3Words: String?,
     )

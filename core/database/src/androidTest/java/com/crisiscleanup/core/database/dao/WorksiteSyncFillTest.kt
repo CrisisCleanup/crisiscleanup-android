@@ -45,9 +45,6 @@ class WorksiteSyncFillTest {
     private val now = Clock.System.now()
     private val epoch0 = Instant.fromEpochSeconds(0)
 
-    private val createdAtA = now.plus((-854812).seconds)
-    private val updatedAtA = createdAtA.plus(78458.seconds)
-
     @Test
     fun syncFillWorksite() = runTest {
         val incidentId = testIncidents[0].id
@@ -58,21 +55,26 @@ class WorksiteSyncFillTest {
         worksiteDao.insertRoot(rootB)
         worksiteDao.insertRoot(rootD)
 
-        val coreA = testWorksiteFullEntity(rootA.networkId, incidentId, now, id = rootA.id)
+        val coreA = testWorksiteFullEntity(rootA.networkId, incidentId, now, id = rootA.id).copy(
+        )
         val coreB = coreA.copy(
             id = rootB.id,
             networkId = rootB.networkId,
             autoContactFrequencyT = null,
+            caseNumber = "",
             email = null,
+            favoriteId = null,
             phone1 = null,
             phone2 = null,
             plusCode = null,
+            svi = null,
             reportedBy = null,
             what3Words = null,
         )
         val coreD = coreB.copy(
             id = rootD.id,
             networkId = rootD.networkId,
+            caseNumber = coreA.caseNumber,
             phone1 = "0",
         )
         worksiteDao.insert(coreA)
@@ -125,7 +127,7 @@ class WorksiteSyncFillTest {
             county = "${coreA.county}-update",
             createdAt = coreA.createdAt!!.plus(1.hours),
             email = "${coreA.email}-update",
-            favoriteId = coreA.favoriteId,
+            favoriteId = 854,
             keyWorkTypeType = "${coreA.keyWorkTypeType}-update",
             keyWorkTypeOrgClaim = coreA.keyWorkTypeOrgClaim,
             keyWorkTypeStatus = "${coreA.keyWorkTypeStatus}-update",
@@ -199,10 +201,13 @@ class WorksiteSyncFillTest {
             id = coreB.id,
             networkId = coreB.networkId,
             autoContactFrequencyT = updateCore.autoContactFrequencyT,
+            caseNumber = "case-update",
             email = updateCore.email,
+            favoriteId = updateCore.favoriteId!!,
             phone1 = updateCore.phone1,
             phone2 = updateCore.phone2,
             plusCode = updateCore.plusCode,
+            svi = updateCore.svi!!,
             reportedBy = updateCore.reportedBy,
             what3Words = updateCore.what3Words,
         )
@@ -210,6 +215,7 @@ class WorksiteSyncFillTest {
         val entitiesD = WorksiteEntities(
             updateCore.copy(
                 id = coreD.id,
+                caseNumber = "c",
                 networkId = coreD.networkId,
             ),
             emptyList(),
@@ -219,6 +225,7 @@ class WorksiteSyncFillTest {
         )
         val expectedCoreD = expectedCoreUpdate.copy(
             id = coreD.id,
+            caseNumber = coreA.caseNumber,
             networkId = coreD.networkId,
         )
 
