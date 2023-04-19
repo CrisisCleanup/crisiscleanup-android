@@ -17,7 +17,6 @@ import com.crisiscleanup.core.database.model.*
 import com.crisiscleanup.core.model.data.*
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.*
-import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.tryThrowException
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -193,39 +192,17 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         }
     }
 
-    override suspend fun syncWorksite(
-        incidentId: Long,
-        worksiteNetworkId: Long,
-    ): Boolean {
-        // TODO Surface meaningful error(s) to user
-
-        try {
-            val syncedAt = Clock.System.now()
-
-            val result = networkDataSource.getWorksites(listOf(worksiteNetworkId))
-            tryThrowException(authEventManager, result.errors)
-
-            result.results?.firstOrNull()?.let {
-                return syncNetworkWorksite(incidentId, it, syncedAt)
-            }
-        } catch (e: Exception) {
-            logger.logException(e)
-        }
-
-        return false
-    }
-
     override suspend fun syncNetworkWorksite(
         incidentId: Long,
         worksite: NetworkWorksiteFull,
         syncedAt: Instant,
     ): Boolean {
         val entities = worksite.asEntities(incidentId)
-        val result = worksiteDaoPlus.syncWorksite(incidentId, entities, syncedAt)
-        if (!result.first) {
-            // TODO Log analytics worksite was filled
+        val (isSynced, _) = worksiteDaoPlus.syncWorksite(incidentId, entities, syncedAt)
+        if (!isSynced) {
+            // TODO Log analytics worksite was filled due to local changes being present
             worksiteDaoPlus.syncFillWorksite(incidentId, entities)
         }
-        return result.first
+        return isSynced
     }
 }

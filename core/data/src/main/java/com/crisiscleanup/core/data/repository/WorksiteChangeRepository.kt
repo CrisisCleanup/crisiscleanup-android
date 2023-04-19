@@ -93,7 +93,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
                     }
                     worksiteId = worksiteIds.first()
 
-                    trySyncWorksite(worksiteId, true)
+                    trySyncWorksite(worksiteId)
 
                     ensureActive()
                 }

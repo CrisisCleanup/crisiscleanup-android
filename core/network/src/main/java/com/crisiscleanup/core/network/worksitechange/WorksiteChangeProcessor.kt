@@ -161,14 +161,14 @@ class WorksiteChangeProcessor(
 
             changeSet.isOrgMember?.let { isOrgMember ->
                 val favoriteId = worksite?.favorite?.id
-                result = syncFavorite(isOrgMember, favoriteId, result)
+                result = syncFavorite(changeCreatedAt, isOrgMember, favoriteId, result)
             }
 
-            result = syncFlags(changeSet.flagChanges, result)
+            result = syncFlags(changeCreatedAt, changeSet.flagChanges, result)
 
             result = syncNotes(changeSet.extraNotes, result)
 
-            result = syncWorkTypes(changeSet.workTypeChanges, result)
+            result = syncWorkTypes(changeCreatedAt, changeSet.workTypeChanges, result)
 
             result = result.copy(isFullySynced = true)
 
@@ -189,16 +189,17 @@ class WorksiteChangeProcessor(
     }
 
     private suspend fun syncFavorite(
+        changeAt: Instant,
         favorite: Boolean,
         favoriteId: Long?,
         baseResult: SyncChangeSetResult,
     ): SyncChangeSetResult {
         try {
             if (favorite) {
-                writeApiClient.favoriteWorksite(worksiteNetworkId)
+                writeApiClient.favoriteWorksite(changeAt, worksiteNetworkId)
             } else {
                 if (favoriteId != null) {
-                    writeApiClient.unfavoriteWorksite(worksiteNetworkId, favoriteId)
+                    writeApiClient.unfavoriteWorksite(changeAt, worksiteNetworkId, favoriteId)
                 }
             }
 
@@ -211,6 +212,7 @@ class WorksiteChangeProcessor(
     }
 
     private suspend fun syncFlags(
+        changeAt: Instant,
         flagChanges: Pair<List<Pair<Long, NetworkFlag>>, Collection<Long>>,
         baseResult: SyncChangeSetResult,
     ): SyncChangeSetResult {
@@ -218,7 +220,7 @@ class WorksiteChangeProcessor(
         val (newFlags, deleteFlagIds) = flagChanges
         for ((localId, flag) in newFlags) {
             try {
-                val syncedFlag = writeApiClient.addFlag(worksiteNetworkId, flag)
+                val syncedFlag = writeApiClient.addFlag(changeAt, worksiteNetworkId, flag)
                 flagIdMap[localId] = syncedFlag.id!!
                 syncLogger.log("Synced flag $localId (${syncedFlag.id}).")
 
@@ -231,7 +233,7 @@ class WorksiteChangeProcessor(
         val deleteFlagExceptions = mutableMapOf<Long, Exception>()
         for (flagId in deleteFlagIds) {
             try {
-                writeApiClient.deleteFlag(worksiteNetworkId, flagId)
+                writeApiClient.deleteFlag(changeAt, worksiteNetworkId, flagId)
                 syncLogger.log("Synced delete flag $flagId.")
             } catch (e: Exception) {
                 ensureSyncConditions()
@@ -265,6 +267,7 @@ class WorksiteChangeProcessor(
     }
 
     private suspend fun syncWorkTypes(
+        changeAt: Instant,
         workTypeChanges: List<WorkTypeChange>,
         baseResult: SyncChangeSetResult,
     ): SyncChangeSetResult {
@@ -277,7 +280,7 @@ class WorksiteChangeProcessor(
             if (workTypeChange.isStatusChange) {
                 try {
                     val syncedWorkType =
-                        writeApiClient.updateWorkTypeStatus(workType.id, workType.status)
+                        writeApiClient.updateWorkTypeStatus(changeAt, workType.id, workType.status)
                     workTypeIdMap[localId] = syncedWorkType.id!!
                     syncLogger.log("Synced work type status $localId (${syncedWorkType.id}).")
                 } catch (e: Exception) {
@@ -299,7 +302,7 @@ class WorksiteChangeProcessor(
         // Do not call to API with empty arrays as it may indicate all.
         if (claimWorkTypes.isNotEmpty()) {
             try {
-                writeApiClient.claimWorkTypes(worksiteNetworkId, claimWorkTypes)
+                writeApiClient.claimWorkTypes(changeAt, worksiteNetworkId, claimWorkTypes)
                 syncLogger.log("Synced work type claim ${claimWorkTypes.joinToString(", ")}.")
             } catch (e: Exception) {
                 ensureSyncConditions()
@@ -309,7 +312,7 @@ class WorksiteChangeProcessor(
         // Do not call to API with empty arrays as it may indicate all.
         if (unclaimWorkTypes.isNotEmpty()) {
             try {
-                writeApiClient.unclaimWorkTypes(worksiteNetworkId, unclaimWorkTypes)
+                writeApiClient.unclaimWorkTypes(changeAt, worksiteNetworkId, unclaimWorkTypes)
                 syncLogger.log("Synced work type unclaim ${unclaimWorkTypes.joinToString(", ")}.")
             } catch (e: Exception) {
                 ensureSyncConditions()

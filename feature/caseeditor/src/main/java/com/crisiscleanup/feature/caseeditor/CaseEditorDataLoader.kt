@@ -1,6 +1,5 @@
 package com.crisiscleanup.feature.caseeditor
 
-import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.data.repository.*
 import com.crisiscleanup.core.mapmarker.model.IncidentBounds
@@ -13,7 +12,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.util.concurrent.atomic.AtomicBoolean
 
 internal class CaseEditorDataLoader(
     private val isCreateWorksite: Boolean,
@@ -24,7 +22,7 @@ internal class CaseEditorDataLoader(
     private val incidentRefresher: IncidentRefresher,
     locationsRepository: LocationsRepository,
     private val worksitesRepository: WorksitesRepository,
-    private val networkMonitor: NetworkMonitor,
+    private val worksiteChangeRepository: WorksiteChangeRepository,
     languageRepository: LanguageTranslationsRepository,
     languageRefresher: LanguageRefresher,
     translate: (String) -> String,
@@ -88,27 +86,7 @@ internal class CaseEditorDataLoader(
             started = SharingStarted.WhileSubscribed(3_000),
         )
 
-    private val isWorksitePulled = AtomicBoolean(false)
-    private val networkWorksiteStream = worksiteStream
-        .mapLatest { cachedWorksite ->
-            cachedWorksite?.let { localWorksite ->
-                val networkId = localWorksite.worksite.networkId
-                if (networkId > 0 &&
-                    !isWorksitePulled.getAndSet(true)
-                ) {
-                    if (networkMonitor.isOnline.first()) {
-                        return@mapLatest refreshWorksite(networkId)
-                    }
-                }
-            }
-            null
-        }
-        .flowOn(coroutineDispatcher)
-        .stateIn(
-            scope = coroutineScope,
-            initialValue = null,
-            started = SharingStarted.WhileSubscribed(3_000),
-        )
+    private val isInitiallySynced = MutableStateFlow(false)
 
     private val _uiState = com.crisiscleanup.core.common.combine(
         dataLoadCountStream,
@@ -117,16 +95,17 @@ internal class CaseEditorDataLoader(
         incidentBoundsStream,
         isRefreshingIncident,
         worksiteStream,
-        networkWorksiteStream,
+        isRefreshingWorksite,
+        isInitiallySynced,
     ) {
             dataLoadCount, organization,
             incident, bounds, pullingIncident,
-            worksite, isWorksiteSynced,
+            worksite, pullingWorksite, isSynced,
         ->
         Triple(
             Pair(dataLoadCount, organization),
             Triple(incident, bounds, pullingIncident),
-            Pair(worksite, isWorksiteSynced),
+            Triple(worksite, pullingWorksite, isSynced),
         )
     }
         .mapLatest { (first, second, third) ->
@@ -156,7 +135,7 @@ internal class CaseEditorDataLoader(
                 }
             }
 
-            val (localWorksite, isWorksiteSynced) = third
+            val (localWorksite, pullingWorksite, isWorksiteSynced) = third
 
             val loadedWorksite = localWorksite?.worksite
             var initialWorksite = loadedWorksite ?: EmptyWorksite.copy(
@@ -232,8 +211,9 @@ internal class CaseEditorDataLoader(
 
             val isLoadFinished = isCreateWorksite ||
                     (!pullingIncident &&
+                            !pullingWorksite &&
                             localWorksite != null &&
-                            isWorksitePulled.get())
+                            isWorksiteSynced)
             val isEditable = bounds != null && isLoadFinished
             val isTranslationUpdated =
                 editableWorksiteProvider.formFieldTranslationLookup.isNotEmpty()
@@ -270,6 +250,30 @@ internal class CaseEditorDataLoader(
             }
         }
 
+        worksiteStream
+            .onEach {
+                it?.let { localWorksite ->
+                    if (isInitiallySynced.value) {
+                        return@onEach
+                    }
+                    isInitiallySynced.value = true
+
+                    val worksite = localWorksite.worksite
+                    if (worksite.id > 0 &&
+                        worksite.networkId > 0
+                    ) {
+                        isRefreshingWorksite.value = true
+                        try {
+                            worksiteChangeRepository.trySyncWorksite(worksite.id)
+                        } finally {
+                            isRefreshingWorksite.value = false
+                        }
+                    }
+                }
+            }
+            .flowOn(coroutineDispatcher)
+            .launchIn(coroutineScope)
+
         _uiState
             .onEach { uiState.value = it }
             .launchIn(coroutineScope)
@@ -279,22 +283,5 @@ internal class CaseEditorDataLoader(
         editableWorksiteProvider.setStale()
         worksiteIdStream.value = worksiteId
         dataLoadCountStream.value++
-    }
-
-    private suspend fun refreshWorksite(networkWorksiteId: Long): Boolean {
-        isRefreshingWorksite.value = true
-        try {
-            val isSynced = worksitesRepository.syncWorksite(
-                incidentIdIn,
-                networkWorksiteId,
-            )
-            if (!isSynced) {
-                // TODO Indicate local changes may not be up-to-date with backend.
-            }
-            // val isLocalModified = cachedWorksite.localChanges.isLocalModified
-            return isSynced
-        } finally {
-            isRefreshingWorksite.value = false
-        }
     }
 }

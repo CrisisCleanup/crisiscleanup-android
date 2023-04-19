@@ -6,7 +6,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.KeyTranslator
-import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.SyncPusher
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
@@ -37,7 +36,6 @@ class CaseEditorViewModel @Inject constructor(
     incidentRefresher: IncidentRefresher,
     locationsRepository: LocationsRepository,
     worksitesRepository: WorksitesRepository,
-    networkMonitor: NetworkMonitor,
     languageRepository: LanguageTranslationsRepository,
     languageRefresher: LanguageRefresher,
     editableWorksiteProvider: EditableWorksiteProvider,
@@ -51,7 +49,7 @@ class CaseEditorViewModel @Inject constructor(
     private val caseEditorArgs = CaseEditorArgs(savedStateHandle)
     private val incidentIdArg = caseEditorArgs.incidentId
     private var worksiteIdArg = caseEditorArgs.worksiteId
-    val isCreateWorksite: Boolean
+    private val isCreateWorksite: Boolean
         get() = worksiteIdArg == null
 
     val headerTitle = MutableStateFlow("")
@@ -96,7 +94,7 @@ class CaseEditorViewModel @Inject constructor(
             incidentRefresher,
             locationsRepository,
             worksitesRepository,
-            networkMonitor,
+            worksiteChangeRepository,
             languageRepository,
             languageRefresher,
             { key -> translate(key) },
