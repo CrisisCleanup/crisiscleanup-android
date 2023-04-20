@@ -8,15 +8,15 @@ import kotlin.math.roundToLong
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds
 
-interface WorksitesDataPullReporter {
-    val worksitesDataPullStats: Flow<IncidentWorksitesDataPullStats>
+interface IncidentDataPullReporter {
+    val incidentDataPullStats: Flow<IncidentDataPullStats>
 }
 
-data class IncidentWorksitesDataPullStats(
+data class IncidentDataPullStats(
     val isStarted: Boolean = false,
     val incidentId: Long = EmptyIncident.id,
     val pullStart: Instant = Clock.System.now(),
-    val worksitesCount: Int = 0,
+    val dataCount: Int = 0,
     val isPagingRequest: Boolean = false,
     val requestedCount: Int = 0,
     val savedCount: Int = 0,
@@ -35,11 +35,11 @@ data class IncidentWorksitesDataPullStats(
             if (isStarted) {
                 // Pull has started
                 progress = startProgressAmount
-                if (worksitesCount > 0) {
+                if (dataCount > 0) {
                     progress = countProgressAmount
 
                     val remainingProgress = if (isPagingRequest) {
-                        (requestedCount + savedCount) * 0.5f / worksitesCount
+                        (requestedCount + savedCount) * 0.5f / dataCount
                     } else {
                         if (savedCount > 0) {
                             saveStartedAmount + (1 - saveStartedAmount) * savedCount / requestedCount
@@ -70,11 +70,11 @@ data class IncidentWorksitesDataPullStats(
         }
 }
 
-internal class WorksitesDataPullStatsUpdater(
-    private var pullStats: IncidentWorksitesDataPullStats = IncidentWorksitesDataPullStats(),
-    private val updatePullStats: (IncidentWorksitesDataPullStats) -> Unit,
+internal class IncidentDataPullStatsUpdater(
+    private var pullStats: IncidentDataPullStats = IncidentDataPullStats(),
+    private val updatePullStats: (IncidentDataPullStats) -> Unit,
 ) {
-    private fun reportChange(pullStats: IncidentWorksitesDataPullStats) {
+    private fun reportChange(pullStats: IncidentDataPullStats) {
         this.pullStats = pullStats
         updatePullStats(pullStats)
     }
@@ -93,8 +93,8 @@ internal class WorksitesDataPullStatsUpdater(
         reportChange(pullStats.copy(isPagingRequest = true))
     }
 
-    fun updateWorksitesCount(worksitesCount: Int) {
-        reportChange(pullStats.copy(worksitesCount = worksitesCount))
+    fun updateDataCount(dataCount: Int) {
+        reportChange(pullStats.copy(dataCount = dataCount))
     }
 
     fun updateRequestedCount(requestedCount: Int) {

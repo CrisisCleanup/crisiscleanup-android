@@ -23,6 +23,10 @@ import kotlinx.datetime.Instant
         LanguageTranslationEntity::class,
         SyncLogEntity::class,
         WorksiteChangeEntity::class,
+        IncidentOrganizationEntity::class,
+        PersonContactEntity::class,
+        OrganizationPrimaryContactCrossRef::class,
+        IncidentOrganizationSyncStatsEntity::class,
     ],
     version = 1,
 )

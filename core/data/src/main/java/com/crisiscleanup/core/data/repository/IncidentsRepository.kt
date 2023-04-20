@@ -14,6 +14,8 @@ interface IncidentsRepository {
      */
     val incidents: Flow<List<Incident>>
 
+    val organizationNameLookup: Flow<Map<Long, String>>
+
     suspend fun getIncident(id: Long, loadFormFields: Boolean = false): Incident?
 
     fun streamIncident(id: Long): Flow<Incident?>
@@ -21,4 +23,6 @@ interface IncidentsRepository {
     suspend fun pullIncidents()
 
     suspend fun pullIncident(id: Long)
+
+    suspend fun pullIncidentOrganizations(incidentId: Long, force: Boolean = false)
 }

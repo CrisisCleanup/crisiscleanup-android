@@ -7,13 +7,13 @@ import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.data.model.asEntity
-import com.crisiscleanup.core.data.util.IncidentWorksitesDataPullStats
-import com.crisiscleanup.core.data.util.WorksitesDataPullStatsUpdater
+import com.crisiscleanup.core.data.util.IncidentDataPullStats
+import com.crisiscleanup.core.data.util.IncidentDataPullStatsUpdater
 import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
 import com.crisiscleanup.core.database.dao.WorksitesSyncStatsDao
 import com.crisiscleanup.core.database.model.WorkTypeEntity
 import com.crisiscleanup.core.database.model.WorksiteEntity
-import com.crisiscleanup.core.model.data.WorksitesSyncStats
+import com.crisiscleanup.core.model.data.IncidentDataSyncStats
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.tryThrowException
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
@@ -32,7 +32,7 @@ interface WorksitesSyncer {
 
     suspend fun sync(
         incidentId: Long,
-        syncStats: WorksitesSyncStats,
+        syncStats: IncidentDataSyncStats,
     )
 }
 
@@ -48,7 +48,7 @@ class IncidentWorksitesSyncer @Inject constructor(
     private val appVersionProvider: AppVersionProvider,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
 ) : WorksitesSyncer {
-    val dataPullStats = MutableStateFlow(IncidentWorksitesDataPullStats())
+    val dataPullStats = MutableStateFlow(IncidentDataPullStats())
 
     // TODO Defer to provider instead. So amount can vary according to (WifiManager) signal level or equivalent. Must track request timeouts and give feedback or adjust.
 
@@ -75,9 +75,9 @@ class IncidentWorksitesSyncer @Inject constructor(
 
     override suspend fun sync(
         incidentId: Long,
-        syncStats: WorksitesSyncStats,
+        syncStats: IncidentDataSyncStats,
     ) {
-        val statsUpdater = WorksitesDataPullStatsUpdater(
+        val statsUpdater = IncidentDataPullStatsUpdater(
             updatePullStats = { stats -> dataPullStats.value = stats }
         ).also {
             it.beginPull(incidentId)
@@ -91,10 +91,10 @@ class IncidentWorksitesSyncer @Inject constructor(
 
     private suspend fun saveWorksitesData(
         incidentId: Long,
-        syncStats: WorksitesSyncStats,
-        statsUpdater: WorksitesDataPullStatsUpdater,
+        syncStats: IncidentDataSyncStats,
+        statsUpdater: IncidentDataPullStatsUpdater,
     ) = coroutineScope {
-        val isDeltaPull = syncStats.pagedCount >= syncStats.worksitesCount
+        val isDeltaPull = syncStats.pagedCount >= syncStats.dataCount
         val updatedAfter: Instant?
         val syncCount: Int
         if (isDeltaPull) {
@@ -102,13 +102,13 @@ class IncidentWorksitesSyncer @Inject constructor(
             syncCount = networkWorksitesCount(incidentId, updatedAfter, true)
         } else {
             updatedAfter = null
-            syncCount = syncStats.worksitesCount
+            syncCount = syncStats.dataCount
         }
         if (syncCount <= 0) {
             return@coroutineScope
         }
 
-        statsUpdater.updateWorksitesCount(syncCount)
+        statsUpdater.updateDataCount(syncCount)
 
         statsUpdater.setPagingRequest()
 
@@ -181,7 +181,7 @@ class IncidentWorksitesSyncer @Inject constructor(
                     worksitesSyncStatsDao.updateStatsSuccessful(
                         incidentId,
                         syncStats.syncStart,
-                        syncStats.worksitesCount,
+                        syncStats.dataCount,
                         startSyncRequestTime,
                         startSyncRequestTime,
                         0,
@@ -214,7 +214,7 @@ class IncidentWorksitesSyncer @Inject constructor(
         worksites: List<WorksiteEntity>,
         workTypes: List<List<WorkTypeEntity>>,
         syncStart: Instant,
-        statsUpdater: WorksitesDataPullStatsUpdater,
+        statsUpdater: IncidentDataPullStatsUpdater,
     ): Int = coroutineScope {
         var offset = 0
         // TODO Make configurable. Depends on the capabilities and/or OS version of the device as well.

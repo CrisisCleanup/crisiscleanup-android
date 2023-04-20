@@ -136,6 +136,12 @@ class FakeNetworkDataSource @Inject constructor() : CrisisCleanupNetworkDataSour
     override suspend fun getIncident(id: Long, fields: List<String>) =
         NetworkIncidentResult(incident = incidents[0])
 
+    override suspend fun getIncidentOrganizations(
+        incidentId: Long,
+        limit: Int,
+        offset: Int,
+    ) = NetworkIncidentOrganizationsResult()
+
     override suspend fun getWorksites(incidentId: Long, limit: Int, offset: Int) = worksitesResult
 
     override suspend fun getWorksites(worksiteIds: Collection<Long>) = worksitesResult

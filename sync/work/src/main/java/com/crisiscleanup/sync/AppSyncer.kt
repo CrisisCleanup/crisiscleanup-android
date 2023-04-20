@@ -160,6 +160,7 @@ class AppSyncer @Inject constructor(
 
     private suspend fun incidentPull(id: Long) {
         incidentsRepository.pullIncident(id)
+        incidentsRepository.pullIncidentOrganizations(id)
 
         syncLogger.log("Incident $id pulled")
     }

@@ -14,7 +14,6 @@ import com.crisiscleanup.core.model.data.*
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
-import kotlin.ranges.IntProgression.Companion.fromClosedRange
 
 class WorksiteChangeDaoPlus @Inject constructor(
     private val db: CrisisCleanupDatabase,
@@ -258,7 +257,7 @@ class WorksiteChangeDaoPlus @Inject constructor(
                     deleteIds = syncChanges.map(SavedWorksiteChange::id).toSet()
                 } else {
                     var lastSyncedIndex = syncChanges.size
-                    for (index in fromClosedRange(syncChanges.size - 1, 0, -1)) {
+                    for (index in syncChanges.size - 1 downTo 0) {
                         if (syncChanges[index].isSynced) {
                             lastSyncedIndex = index
                             break

@@ -5,53 +5,41 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.crisiscleanup.core.model.data.IncidentDataSyncStats
 import com.crisiscleanup.core.model.data.SyncAttempt
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
 @Entity(
-    "worksite_sync_stats",
+    "incident_organization_sync_stats",
 )
-data class WorksiteSyncStatsEntity(
+data class IncidentOrganizationSyncStatsEntity(
     @PrimaryKey
     @ColumnInfo("incident_id")
     val incidentId: Long,
-    @ColumnInfo("sync_start", defaultValue = "0")
-    val syncStart: Instant,
     @ColumnInfo("target_count")
     val targetCount: Int,
-    @ColumnInfo("paged_count", defaultValue = "0")
-    val pagedCount: Int,
     @ColumnInfo("successful_sync")
     val successfulSync: Instant?,
-    @ColumnInfo("attempted_sync")
-    val attemptedSync: Instant?,
-    @ColumnInfo("attempted_counter")
-    val attemptedCounter: Int,
     @ColumnInfo("app_build_version_code", defaultValue = "0")
     val appBuildVersionCode: Long,
 )
 
-fun WorksiteSyncStatsEntity.asExternalModel() = IncidentDataSyncStats(
+fun IncidentOrganizationSyncStatsEntity.asExternalModel() = IncidentDataSyncStats(
     incidentId = incidentId,
-    syncStart = syncStart,
+    syncStart = Clock.System.now(),
     dataCount = targetCount,
-    pagedCount = pagedCount,
+    pagedCount = targetCount,
     syncAttempt = SyncAttempt(
         successfulSync?.epochSeconds ?: 0,
-        attemptedSync?.epochSeconds ?: 0,
-        attemptedCounter,
+        0,
+        0,
     ),
     appBuildVersionCode = appBuildVersionCode,
 )
 
-fun IncidentDataSyncStats.asWorksiteSyncStatsEntity() = WorksiteSyncStatsEntity(
+fun IncidentDataSyncStats.asOrganizationSyncStatsEntity() = IncidentOrganizationSyncStatsEntity(
     incidentId = incidentId,
-    syncStart = syncStart,
     targetCount = dataCount,
-    pagedCount = pagedCount,
     successfulSync = if (syncAttempt.successfulSeconds <= 0) null
     else Instant.fromEpochSeconds(syncAttempt.successfulSeconds),
-    attemptedSync = if (syncAttempt.attemptedSeconds <= 0) null
-    else Instant.fromEpochSeconds(syncAttempt.attemptedSeconds),
-    attemptedCounter = syncAttempt.attemptedCounter,
     appBuildVersionCode = appBuildVersionCode,
 )

@@ -1,9 +1,9 @@
 package com.crisiscleanup.core.data.repository
 
+import com.crisiscleanup.core.model.data.IncidentDataSyncStats
 import com.crisiscleanup.core.model.data.LocalWorksite
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteMapMark
-import com.crisiscleanup.core.model.data.WorksitesSyncStats
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Clock
@@ -65,7 +65,7 @@ interface WorksitesRepository {
         forceRefreshAll: Boolean = false,
     )
 
-    fun getWorksitesSyncStats(incidentId: Long): WorksitesSyncStats?
+    fun getWorksitesSyncStats(incidentId: Long): IncidentDataSyncStats?
 
     suspend fun getLocalId(incidentId: Long, networkWorksiteId: Long): Long
 

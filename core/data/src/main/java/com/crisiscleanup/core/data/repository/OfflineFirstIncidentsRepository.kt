@@ -6,17 +6,17 @@ import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.data.IncidentOrganizationsSyncer
 import com.crisiscleanup.core.data.model.asEntity
 import com.crisiscleanup.core.data.model.incidentLocationCrossReferences
 import com.crisiscleanup.core.data.model.locationsAsEntity
-import com.crisiscleanup.core.database.dao.IncidentDao
-import com.crisiscleanup.core.database.dao.IncidentDaoPlus
-import com.crisiscleanup.core.database.dao.LocationDaoPlus
-import com.crisiscleanup.core.database.dao.LocationEntitySource
+import com.crisiscleanup.core.database.dao.*
 import com.crisiscleanup.core.database.model.PopulatedIncident
 import com.crisiscleanup.core.database.model.asExternalModel
+import com.crisiscleanup.core.database.model.asLookup
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.core.model.data.Incident
+import com.crisiscleanup.core.model.data.IncidentOrganizationsStableModelBuildVersion
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.tryThrowException
 import com.crisiscleanup.core.network.model.NetworkIncident
@@ -39,6 +39,8 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val incidentDaoPlus: IncidentDaoPlus,
     private val locationDaoPlus: LocationDaoPlus,
+    private val incidentOrganizationDao: IncidentOrganizationDao,
+    private val incidentOrganizationsSyncer: IncidentOrganizationsSyncer,
     private val appPreferences: LocalAppPreferencesDataSource,
     private val authEventManager: AuthEventManager,
     @Logger(CrisisCleanupLoggers.Incidents) private val logger: AppLogger,
@@ -64,6 +66,9 @@ class OfflineFirstIncidentsRepository @Inject constructor(
 
     override val incidents: Flow<List<Incident>> =
         incidentDao.streamIncidents().map { it.map(PopulatedIncident::asExternalModel) }
+
+    override val organizationNameLookup =
+        incidentOrganizationDao.getOrganizations().map { it.asLookup() }
 
     override suspend fun getIncident(id: Long, loadFormFields: Boolean) =
         withContext(ioDispatcher) {
@@ -190,5 +195,20 @@ class OfflineFirstIncidentsRepository @Inject constructor(
             saveIncidentsPrimaryData(incidents)
             saveIncidentsSecondaryData(incidents)
         }
+    }
+
+    override suspend fun pullIncidentOrganizations(incidentId: Long, force: Boolean) {
+        if (!force) {
+            incidentOrganizationDao.getSyncStats(incidentId)?.let {
+                if (it.targetCount > 0 &&
+                    it.successfulSync?.let { date -> Clock.System.now() - date < 14.days } == true &&
+                    it.appBuildVersionCode >= IncidentOrganizationsStableModelBuildVersion
+                ) {
+                    return
+                }
+            }
+        }
+
+        incidentOrganizationsSyncer.sync(incidentId)
     }
 }

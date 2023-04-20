@@ -23,10 +23,8 @@ fun NetworkIncident.asEntity() = IncidentEntity(
 fun NetworkIncident.locationsAsEntity(): List<IncidentLocationEntity> =
     locations.map { location -> IncidentLocationEntity(location.id, location.location) }
 
-fun NetworkIncident.incidentLocationCrossReferences():
-        List<IncidentIncidentLocationCrossRef> = locations.map { location ->
-    IncidentIncidentLocationCrossRef(id, location.id)
-}
+fun NetworkIncident.incidentLocationCrossReferences() =
+    locations.map { IncidentIncidentLocationCrossRef(id, it.id) }
 
 fun NetworkIncidentFormField.asEntity(incidentId: Long): IncidentFormFieldEntity {
     val valuesMap = values

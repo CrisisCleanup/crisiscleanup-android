@@ -17,8 +17,8 @@ import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocationsRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
-import com.crisiscleanup.core.data.util.IncidentWorksitesDataPullStats
-import com.crisiscleanup.core.data.util.WorksitesDataPullReporter
+import com.crisiscleanup.core.data.util.IncidentDataPullReporter
+import com.crisiscleanup.core.data.util.IncidentDataPullStats
 import com.crisiscleanup.core.domain.LoadIncidentDataUseCase
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
@@ -49,7 +49,7 @@ class CasesViewModel @Inject constructor(
     private val incidentSelector: IncidentSelector,
     appHeaderUiState: AppHeaderUiState,
     loadIncidentDataUseCase: LoadIncidentDataUseCase,
-    dataPullReporter: WorksitesDataPullReporter,
+    dataPullReporter: IncidentDataPullReporter,
     private val mapCaseIconProvider: MapCaseIconProvider,
     private val mapTileRenderer: CasesOverviewMapTileRenderer,
     private val tileProvider: TileProvider,
@@ -93,8 +93,8 @@ class CasesViewModel @Inject constructor(
     val editedWorksiteLocation: LatLng?
         get() = worksiteLocationEditor.takeEditedLocation()?.let { LatLng(it.first, it.second) }
 
-    val showDataProgress = dataPullReporter.worksitesDataPullStats.map { it.isOngoing }
-    val dataProgress = dataPullReporter.worksitesDataPullStats.map { it.progress }
+    val showDataProgress = dataPullReporter.incidentDataPullStats.map { it.isOngoing }
+    val dataProgress = dataPullReporter.incidentDataPullStats.map { it.progress }
 
     private var _mapCameraZoom = MutableStateFlow(MapViewCameraZoomDefault)
     val mapCameraZoom = _mapCameraZoom.asStateFlow()
@@ -199,7 +199,7 @@ class CasesViewModel @Inject constructor(
 
         combine(
             incidentWorksitesCount,
-            dataPullReporter.worksitesDataPullStats,
+            dataPullReporter.incidentDataPullStats,
             ::Pair,
         )
             .debounce(16)
@@ -275,7 +275,7 @@ class CasesViewModel @Inject constructor(
 
     private suspend fun refreshTiles(
         idCount: IncidentIdWorksiteCount,
-        pullStats: IncidentWorksitesDataPullStats,
+        pullStats: IncidentDataPullStats,
     ) = coroutineScope {
         var refreshTiles = true
         var clearCache = false
@@ -288,7 +288,7 @@ class CasesViewModel @Inject constructor(
             refreshTiles = isEnded
             clearCache = isEnded
 
-            if (this.worksitesCount < 3000) {
+            if (this.dataCount < 3000) {
                 return@run
             }
 
@@ -300,7 +300,7 @@ class CasesViewModel @Inject constructor(
                         sinceLastRefresh > tileClearRefreshInterval &&
                         projectedDelta > tileClearRefreshInterval
                 if (idCount.count - tileClearWorksitesCount >= 6000 &&
-                    worksitesCount - tileClearWorksitesCount > 3000
+                    dataCount - tileClearWorksitesCount > 3000
                 ) {
                     clearCache = true
                     refreshTiles = true

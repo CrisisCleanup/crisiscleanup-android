@@ -42,7 +42,7 @@ interface WorksitesNetworkDataCache {
 }
 
 class WorksitesNetworkDataFileCache @Inject constructor(
-    private val worksiteNetworkDataSource: CrisisCleanupNetworkDataSource,
+    private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val authEventManager: AuthEventManager,
     @ApplicationContext private val context: Context,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
@@ -93,7 +93,7 @@ class WorksitesNetworkDataFileCache @Inject constructor(
         }
 
         val requestTime = Clock.System.now()
-        val worksitesRequest = worksiteNetworkDataSource.getWorksitesPage(
+        val worksitesRequest = networkDataSource.getWorksitesPage(
             incidentId,
             updatedAfter,
             pageCount,

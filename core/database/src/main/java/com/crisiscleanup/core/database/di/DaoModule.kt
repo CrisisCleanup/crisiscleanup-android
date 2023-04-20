@@ -42,4 +42,10 @@ object DaoModule {
 
     @Provides
     fun providesWorksiteChangeDao(db: CrisisCleanupDatabase) = db.worksiteChangeDao()
+
+    @Provides
+    fun providesIncidentOrganizationDao(db: CrisisCleanupDatabase) = db.incidentOrganizationDao()
+
+    @Provides
+    fun providesPersonContactDao(db: CrisisCleanupDatabase) = db.personContactDao()
 }

@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.data.model
 
+import com.crisiscleanup.core.network.model.NetworkIncidentOrganization
 import com.crisiscleanup.core.network.model.NetworkWorksiteShort
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
@@ -13,4 +14,12 @@ data class IncidentWorksitesPageRequest(
     val startCount: Int,
     val totalCount: Int,
     val worksites: List<NetworkWorksiteShort>,
+)
+
+@Serializable
+data class IncidentOrganizationsPageRequest(
+    val incidentId: Long,
+    val offset: Int,
+    val totalCount: Int,
+    val organizations: List<NetworkIncidentOrganization>,
 )

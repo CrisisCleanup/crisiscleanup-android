@@ -32,6 +32,8 @@ class FakeIncidentsRepository @Inject constructor() : IncidentsRepository {
         )
     )
 
+    override val organizationNameLookup: Flow<Map<Long, String>> = flowOf(emptyMap())
+
     override suspend fun getIncident(id: Long, loadFormFields: Boolean) =
         makeIncident(id, "Incident $id")
 
@@ -41,6 +43,8 @@ class FakeIncidentsRepository @Inject constructor() : IncidentsRepository {
     override suspend fun pullIncidents() {}
 
     override suspend fun pullIncident(id: Long) {}
+
+    override suspend fun pullIncidentOrganizations(incidentId: Long, force: Boolean) {}
 }
 
 private fun makeIncident(id: Long, name: String) =

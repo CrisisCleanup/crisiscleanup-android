@@ -8,6 +8,8 @@ import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteNote
 import kotlinx.datetime.Instant
 
+// Changes below should update WorksitesStableModelBuildVersion in core.network
+
 @Entity(
     "worksites_root",
     foreignKeys = [
@@ -71,7 +73,7 @@ data class WorksiteRootEntity(
     ]
 )
 data class WorksiteEntity(
-    @PrimaryKey(true)
+    @PrimaryKey
     val id: Long,
     @ColumnInfo("network_id", defaultValue = "-1")
     val networkId: Long,

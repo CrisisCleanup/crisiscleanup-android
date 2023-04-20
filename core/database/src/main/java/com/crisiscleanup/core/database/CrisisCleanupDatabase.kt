@@ -29,8 +29,12 @@ import com.crisiscleanup.core.database.util.InstantConverter
         LanguageTranslationEntity::class,
         SyncLogEntity::class,
         WorksiteChangeEntity::class,
+        IncidentOrganizationEntity::class,
+        PersonContactEntity::class,
+        OrganizationPrimaryContactCrossRef::class,
+        IncidentOrganizationSyncStatsEntity::class,
     ],
-    version = 11,
+    version = 12,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
@@ -42,6 +46,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         AutoMigration(from = 8, to = 9),
         AutoMigration(from = 9, to = 10),
         AutoMigration(from = 10, to = 11, spec = Schema10To11::class),
+        AutoMigration(from = 11, to = 12),
     ],
     exportSchema = true,
 )
@@ -63,4 +68,6 @@ abstract class CrisisCleanupDatabase : RoomDatabase(), DatabaseVersionProvider {
     abstract fun languageDao(): LanguageDao
     abstract fun syncLogDao(): SyncLogDao
     abstract fun worksiteChangeDao(): WorksiteChangeDao
+    abstract fun incidentOrganizationDao(): IncidentOrganizationDao
+    abstract fun personContactDao(): PersonContactDao
 }

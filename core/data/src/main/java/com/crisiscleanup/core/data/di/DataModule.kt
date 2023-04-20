@@ -2,13 +2,10 @@ package com.crisiscleanup.core.data.di
 
 import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.NetworkMonitor
-import com.crisiscleanup.core.data.IncidentWorksitesSyncer
-import com.crisiscleanup.core.data.WorksitesNetworkDataCache
-import com.crisiscleanup.core.data.WorksitesNetworkDataFileCache
-import com.crisiscleanup.core.data.WorksitesSyncer
+import com.crisiscleanup.core.data.*
 import com.crisiscleanup.core.data.repository.*
 import com.crisiscleanup.core.data.util.ConnectivityManagerNetworkMonitor
-import com.crisiscleanup.core.data.util.WorksitesDataPullReporter
+import com.crisiscleanup.core.data.util.IncidentDataPullReporter
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -58,7 +55,7 @@ interface DataModule {
     @Binds
     fun bindsWorksitesDataPullReporter(
         reporter: OfflineFirstWorksitesRepository
-    ): WorksitesDataPullReporter
+    ): IncidentDataPullReporter
 
     @Singleton
     @Binds
@@ -94,4 +91,9 @@ interface DataInternalModule {
 
     @Binds
     fun providesWorksitesSyncer(syncer: IncidentWorksitesSyncer): WorksitesSyncer
+
+    @Binds
+    fun providesIncidentOrganizationsNetworkDataCache(
+        cache: IncidentOrganizationsDataFileCache
+    ): IncidentOrganizationsDataCache
 }

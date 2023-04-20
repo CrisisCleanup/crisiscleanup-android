@@ -30,6 +30,7 @@ class IncidentRefresher @Inject constructor(
 
         try {
             incidentsRepository.pullIncident(id)
+            incidentsRepository.pullIncidentOrganizations(id)
 
             // TODO Query backend for updated locations if incident is recent
         } catch (e: Exception) {
