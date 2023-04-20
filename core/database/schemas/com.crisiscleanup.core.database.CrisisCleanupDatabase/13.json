@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 13,
-    "identityHash": "ed8fe5f0b1805c857349f32ec9f9282e",
+    "identityHash": "7c520e9004bb92208388580cb9717c3f",
     "entities": [
       {
         "tableName": "incidents",
@@ -1369,11 +1369,8 @@
               "worksite_id",
               "created_at"
             ],
-            "orders": [
-              "ASC",
-              "DESC"
-            ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_worksite_changes_worksite_id_created_at` ON `${TABLE_NAME}` (`worksite_id` ASC, `created_at` DESC)"
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_worksite_changes_worksite_id_created_at` ON `${TABLE_NAME}` (`worksite_id`, `created_at`)"
           }
         ],
         "foreignKeys": [
@@ -1622,7 +1619,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ed8fe5f0b1805c857349f32ec9f9282e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7c520e9004bb92208388580cb9717c3f')"
     ]
   }
 }

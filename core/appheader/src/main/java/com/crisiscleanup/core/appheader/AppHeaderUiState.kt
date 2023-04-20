@@ -21,9 +21,6 @@ enum class AppHeaderState {
     /** Custom on left and account on right */
     TopLevel,
 
-    /** Search bar in title */
-    SearchInTitle,
-
     /** Back action on left, title center, single action on right */
     BackTitleAction,
 }

@@ -24,7 +24,6 @@ import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
 import com.crisiscleanup.core.model.data.EmptyIncident
-import com.crisiscleanup.core.ui.SearchManager
 import com.crisiscleanup.feature.cases.map.*
 import com.crisiscleanup.feature.cases.model.*
 import com.google.android.gms.maps.Projection
@@ -53,7 +52,6 @@ class CasesViewModel @Inject constructor(
     private val mapCaseIconProvider: MapCaseIconProvider,
     private val mapTileRenderer: CasesOverviewMapTileRenderer,
     private val tileProvider: TileProvider,
-    searchManager: SearchManager,
     private val worksiteLocationEditor: WorksiteLocationEditor,
     private val syncPuller: SyncPuller,
     private val resourceProvider: AndroidResourceProvider,
@@ -193,10 +191,6 @@ class CasesViewModel @Inject constructor(
 
         mapTileRenderer.enableTileBoundaries()
 
-        searchManager.searchQueryFlow.onEach {
-            qsm.casesSearchQueryFlow.value = it
-        }.launchIn(viewModelScope)
-
         combine(
             incidentWorksitesCount,
             dataPullReporter.incidentDataPullStats,
@@ -262,16 +256,26 @@ class CasesViewModel @Inject constructor(
         }
     }
 
+    private fun adjustMapZoom(zoomLevel: Float) {
+        if (zoomLevel < 3 || zoomLevel > 17) {
+            return
+        }
+
+        _mapCameraZoom.value = MapViewCameraZoom(
+            mapBoundsManager.centerCache,
+            (zoomLevel + Math.random() * 1e-3).toFloat(),
+        )
+    }
+
+    fun zoomIn() = adjustMapZoom(qsm.mapZoom.value + 1)
+
+    fun zoomOut() = adjustMapZoom(qsm.mapZoom.value - 1)
+
     fun zoomToIncidentBounds() {
         mapBoundsManager.restoreIncidentBounds()
     }
 
-    fun zoomToInteractive() {
-        _mapCameraZoom.value = MapViewCameraZoom(
-            mapBoundsManager.centerCache,
-            ((mapTileRenderer.zoomThreshold + 1) + Math.random() * 1e-3).toFloat(),
-        )
-    }
+    fun zoomToInteractive() = adjustMapZoom(mapTileRenderer.zoomThreshold + 1f)
 
     private suspend fun refreshTiles(
         idCount: IncidentIdWorksiteCount,

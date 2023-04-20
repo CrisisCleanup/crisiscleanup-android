@@ -4,8 +4,7 @@ import android.os.Bundle
 import com.crisiscleanup.core.appheader.AppHeaderState
 import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.appnav.RouteConstant.caseEditorRoute
-import com.crisiscleanup.core.appnav.RouteConstant.casesRoute
-import com.crisiscleanup.core.appnav.RouteConstant.topLevelRoutes
+import com.crisiscleanup.core.appnav.RouteConstant.menuRoute
 import com.crisiscleanup.core.common.NavigationObserver
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.log.AppLogger
@@ -32,23 +31,18 @@ class CrisisCleanupNavigationObserver @Inject constructor(
 
     init {
         navigationRoute.onEach {
-            val (fromRoute, toRoute) = navigationRoute.value
+            // TODO Research a better pattern when there is a shared top level component between
+            //      routes rather than observing and reacting outside of compose context.
 
-            // TODO Research a better pattern when there is a shared top level component between routes
-            if (fromRoute == casesRoute &&
-                toRoute != casesRoute &&
-                headerUiState.appHeaderState.value == AppHeaderState.SearchInTitle
-            ) {
-                headerUiState.setState(AppHeaderState.TopLevel)
-            } else if (toRoute?.startsWith("$caseEditorRoute?") == true) {
-                headerUiState.setState(AppHeaderState.BackTitleAction)
+            val (_, toRoute) = navigationRoute.value
+            val appHeaderState = if (toRoute?.startsWith("$caseEditorRoute?") == true) {
+                AppHeaderState.BackTitleAction
+            } else if (toRoute == menuRoute) {
+                AppHeaderState.TopLevel
+            } else {
+                AppHeaderState.None
             }
-
-            if (topLevelRoutes.contains(toRoute) &&
-                !topLevelRoutes.contains(fromRoute)
-            ) {
-                headerUiState.setState(AppHeaderState.TopLevel)
-            }
+            headerUiState.setState(appHeaderState)
         }
             .launchIn(coroutineScope)
     }

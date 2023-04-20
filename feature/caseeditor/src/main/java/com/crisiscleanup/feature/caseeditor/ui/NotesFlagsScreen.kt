@@ -19,7 +19,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
-import com.crisiscleanup.core.designsystem.component.fabEdgeSpace
+import com.crisiscleanup.core.designsystem.component.actionEdgeSpace
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.*
 import com.crisiscleanup.core.model.data.Worksite
@@ -175,8 +175,8 @@ private fun NotesFlagsView(
 
         FloatingActionButton(
             modifier = Modifier.constrainAs(newNoteFab) {
-                end.linkTo(parent.end, margin = fabEdgeSpace)
-                bottom.linkTo(parent.bottom, margin = fabEdgeSpace)
+                end.linkTo(parent.end, margin = actionEdgeSpace)
+                bottom.linkTo(parent.bottom, margin = actionEdgeSpace)
             },
             onClick = { isCreatingNote = true },
             shape = CircleShape,

@@ -14,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -114,20 +113,11 @@ private fun LoadedContent(
             false
         )
 
-        val appSearchQuery =
-            remember(viewModel) { { viewModel.searchManager.searchQuery.value } }
-        val updateAppSearchQuery = remember(viewModel) {
-            { q: String -> viewModel.searchManager.updateSearchQuery(q) }
-        }
-
         val onCasesAction = remember(viewModel) {
             { casesAction: CasesAction ->
                 when (casesAction) {
                     CasesAction.Search -> {
-                        val isOnSearch = appHeaderState == AppHeaderState.SearchInTitle
-                        val toggleState = if (isOnSearch) AppHeaderState.TopLevel
-                        else AppHeaderState.SearchInTitle
-                        viewModel.appHeaderUiState.setState(toggleState)
+                        // TODO Go to search screen
                     }
 
                     else -> {
@@ -152,8 +142,6 @@ private fun LoadedContent(
             isAccountExpired,
             openIncidentsSelect,
             onCasesAction,
-            appSearchQuery,
-            updateAppSearchQuery,
         )
 
         if (isAccountExpired) {
@@ -224,8 +212,6 @@ private fun NavigableContent(
     isAccountExpired: Boolean,
     openIncidentsSelect: () -> Unit,
     onCasesAction: (CasesAction) -> Unit = { },
-    searchQuery: () -> String = { "" },
-    onQueryChange: (String) -> Unit = {},
 ) {
     val showNavBar = !appState.isFullscreenRoute
     // TODO Fix resize jitter when going from nested to top level
@@ -249,7 +235,6 @@ private fun NavigableContent(
                 val titleResId = appState.currentTopLevelDestination?.titleTextId ?: 0
                 val title = if (titleResId != 0) stringResource(titleResId) else headerTitle
                 val onOpenIncidents = if (appState.isCasesRoute) openIncidentsSelect else null
-                // TODO Back when search is showing should dismiss search
                 AppHeader(
                     modifier = Modifier.testTag("CrisisCleanupAppHeader"),
                     title = title,
@@ -259,8 +244,6 @@ private fun NavigableContent(
                     isAccountExpired = isAccountExpired,
                     openAuthentication = openAuthentication,
                     onOpenIncidents = onOpenIncidents,
-                    searchQuery = searchQuery,
-                    onQueryChange = onQueryChange,
                 )
             }
         },
@@ -337,7 +320,6 @@ private fun ExpiredTokenAlert(
 
 @OptIn(
     ExperimentalMaterial3Api::class,
-    ExperimentalComposeUiApi::class
 )
 @Composable
 private fun AppHeader(
@@ -350,8 +332,6 @@ private fun AppHeader(
     isAccountExpired: Boolean = false,
     openAuthentication: () -> Unit = {},
     onOpenIncidents: (() -> Unit)? = null,
-    searchQuery: () -> String = { "" },
-    onQueryChange: (String) -> Unit = {},
 ) {
     when (appHeaderState) {
         AppHeaderState.TopLevel -> {
@@ -394,17 +374,6 @@ private fun AppHeader(
                         }
                     }
                 }
-            )
-        }
-
-        AppHeaderState.SearchInTitle -> {
-            val keyboardController = LocalSoftwareKeyboardController.current
-
-            TopAppBarSearch(
-                modifier = modifier,
-                q = searchQuery,
-                onQueryChange = onQueryChange,
-                onSearch = { keyboardController?.hide() },
             )
         }
 
@@ -474,15 +443,16 @@ private fun CrisisCleanupBottomBar(
                 icon = {
                     val icon = if (selected) destination.selectedIcon
                     else destination.unselectedIcon
+                    val description = stringResource(destination.iconTextId)
                     when (icon) {
                         is ImageVectorIcon -> Icon(
                             imageVector = icon.imageVector,
-                            contentDescription = null
+                            contentDescription = description,
                         )
 
                         is DrawableResourceIcon -> Icon(
                             painter = painterResource(id = icon.id),
-                            contentDescription = null
+                            contentDescription = description,
                         )
                     }
                 },

@@ -9,11 +9,9 @@ import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.common.*
 import com.crisiscleanup.core.common.log.TagLogger
 import com.crisiscleanup.core.network.RetrofitInterceptorProvider
-import com.crisiscleanup.core.ui.SearchManager
 import com.crisiscleanup.log.CrisisCleanupAppLogger
 import com.crisiscleanup.navigation.CrisisCleanupNavigationObserver
 import com.crisiscleanup.network.CrisisCleanupInterceptorProvider
-import com.crisiscleanup.ui.AppSearchManager
 import com.crisiscleanup.ui.CrisisCleanupAppHeaderUiState
 import dagger.Binds
 import dagger.Module
@@ -46,10 +44,6 @@ interface AppModule {
     @Singleton
     @Binds
     fun bindsNavigationObserver(navigationObserver: CrisisCleanupNavigationObserver): NavigationObserver
-
-    @Singleton
-    @Binds
-    fun bindSearchManager(searchManager: AppSearchManager): SearchManager
 
     @Singleton
     @Binds

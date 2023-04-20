@@ -9,10 +9,12 @@ import com.crisiscleanup.core.common.SyncPuller
 import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.event.ExpiredTokenListener
 import com.crisiscleanup.core.data.IncidentSelector
-import com.crisiscleanup.core.data.repository.*
+import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.IncidentsRepository
+import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
+import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.model.data.UserData
-import com.crisiscleanup.core.ui.SearchManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
@@ -24,10 +26,8 @@ class MainActivityViewModel @Inject constructor(
     incidentSelector: IncidentSelector,
     val appHeaderUiState: AppHeaderUiState,
     private val authEventManager: AuthEventManager,
-    val searchManager: SearchManager,
     incidentsRepository: IncidentsRepository,
     worksitesRepository: WorksitesRepository,
-    languageTranslationsRepository: LanguageTranslationsRepository,
     private val syncPuller: SyncPuller,
     appEnv: AppEnv,
 ) : ViewModel(), ExpiredTokenListener {

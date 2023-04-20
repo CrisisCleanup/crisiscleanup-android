@@ -4,11 +4,43 @@ import android.os.Build
 import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
+
+@VisibleForTesting
+val SingleColors = lightColorScheme(
+    primary = md_theme_primary,
+    onPrimary = md_theme_onPrimary,
+    primaryContainer = md_theme_primaryContainer,
+    onPrimaryContainer = md_theme_onPrimaryContainer,
+    secondary = md_theme_secondary,
+    onSecondary = md_theme_onSecondary,
+    secondaryContainer = md_theme_secondaryContainer,
+    onSecondaryContainer = md_theme_onSecondaryContainer,
+    tertiary = md_theme_tertiary,
+    onTertiary = md_theme_onTertiary,
+    tertiaryContainer = md_theme_tertiaryContainer,
+    onTertiaryContainer = md_theme_onTertiaryContainer,
+    error = md_theme_error,
+    errorContainer = md_theme_errorContainer,
+    onError = md_theme_onError,
+    onErrorContainer = md_theme_onErrorContainer,
+    background = md_theme_background,
+    onBackground = md_theme_onBackground,
+    surface = md_theme_surface,
+    onSurface = md_theme_onSurface,
+    surfaceVariant = md_theme_surfaceVariant,
+    onSurfaceVariant = md_theme_onSurfaceVariant,
+    outline = md_theme_outline,
+    inverseOnSurface = md_theme_inverseOnSurface,
+    inverseSurface = md_theme_inverseSurface,
+    inversePrimary = md_theme_inversePrimary,
+    surfaceTint = md_theme_surfaceTint,
+//    surfaceTintColor = md_theme_surfaceTintColor,
+)
 
 @VisibleForTesting
 val LightColors = lightColorScheme(
@@ -95,7 +127,7 @@ fun CrisisCleanupTheme(
  *
  * @param darkTheme Whether the theme should use a dark color scheme (follows system by default).
  * @param disableDynamicTheming If `true`, disables the use of dynamic theming, even when it is
- *        supported. This parameter has no effect if [androidTheme] is `true`.
+ *        supported.
  */
 @Composable
 internal fun CrisisCleanupTheme(
@@ -104,17 +136,11 @@ internal fun CrisisCleanupTheme(
     content: @Composable () -> Unit
 ) {
     // Color scheme
-    val colorScheme = when {
-        !disableDynamicTheming && supportsDynamicTheming() -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        else -> if (darkTheme) DarkColors else LightColors
-    }
+    val colorScheme = SingleColors
+
     // Background theme
     val defaultBackgroundTheme = BackgroundTheme(
-        color = colorScheme.surface,
-        tonalElevation = 2.dp
+        color = colorScheme.background,
     )
     // Composition locals
     CompositionLocalProvider(

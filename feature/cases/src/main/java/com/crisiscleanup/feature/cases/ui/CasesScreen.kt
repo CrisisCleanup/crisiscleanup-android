@@ -6,7 +6,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
@@ -14,16 +13,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
-import com.crisiscleanup.core.designsystem.component.fabEdgeSpace
-import com.crisiscleanup.core.designsystem.component.mapButtonEdgeSpace
+import com.crisiscleanup.core.designsystem.component.*
 import com.crisiscleanup.core.domain.IncidentsData
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraBounds
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraBoundsDefault
@@ -75,6 +72,8 @@ internal fun CasesRoute(
                     CasesAction.Layers -> casesViewModel.toggleLayersView()
                     CasesAction.ZoomToInteractive -> casesViewModel.zoomToInteractive()
                     CasesAction.ZoomToIncident -> casesViewModel.zoomToIncidentBounds()
+                    CasesAction.ZoomIn -> casesViewModel.zoomIn()
+                    CasesAction.ZoomOut -> casesViewModel.zoomOut()
                     else -> onCasesAction(action)
                 }
             }
@@ -355,13 +354,13 @@ internal fun CasesOverlayActions(
     isTableView: Boolean = false,
 ) {
     ConstraintLayout(Modifier.fillMaxSize()) {
-        val (zoomBar, actionBar, newCaseFab) = createRefs()
+        val (zoomBar, actionBar, newCaseFab, toggleTableMap) = createRefs()
 
         if (!isTableView) {
             CasesZoomBar(
                 modifier.constrainAs(zoomBar) {
-                    top.linkTo(parent.top, margin = mapButtonEdgeSpace)
-                    start.linkTo(parent.start, margin = mapButtonEdgeSpace)
+                    top.linkTo(parent.top, margin = actionEdgeSpace)
+                    start.linkTo(parent.start, margin = actionEdgeSpace)
                 },
                 onCasesAction,
             )
@@ -369,25 +368,44 @@ internal fun CasesOverlayActions(
 
         CasesActionBar(
             modifier.constrainAs(actionBar) {
-                top.linkTo(parent.top, margin = mapButtonEdgeSpace)
-                end.linkTo(parent.end, margin = mapButtonEdgeSpace)
+                top.linkTo(parent.top, margin = actionEdgeSpace)
+                end.linkTo(parent.end, margin = actionEdgeSpace)
             },
             onCasesAction,
-            isTableView,
         )
 
         val onNewCase = remember(onCasesAction) { { onCasesAction(CasesAction.CreateNew) } }
         FloatingActionButton(
-            modifier = modifier.constrainAs(newCaseFab) {
-                end.linkTo(parent.end, margin = fabEdgeSpace)
-                bottom.linkTo(parent.bottom, margin = fabEdgeSpace)
-            },
+            modifier = modifier
+                .actionSize()
+                .constrainAs(newCaseFab) {
+                    end.linkTo(toggleTableMap.end)
+                    bottom.linkTo(toggleTableMap.top, margin = actionEdgeSpace)
+                },
             onClick = onNewCase,
-            shape = CircleShape,
+            shape = actionRoundCornerShape,
         ) {
             Icon(
                 imageVector = Icons.Default.Add,
                 contentDescription = stringResource(R.string.create_case),
+            )
+        }
+
+        val tableMapAction = if (isTableView) CasesAction.MapView else CasesAction.TableView
+        val toggleMapTableView = remember(tableMapAction) { { onCasesAction(tableMapAction) } }
+        FloatingActionButton(
+            modifier = modifier
+                .actionSize()
+                .constrainAs(toggleTableMap) {
+                    end.linkTo(parent.end, margin = actionEdgeSpace)
+                    bottom.linkTo(parent.bottom, margin = actionInnerSpace)
+                },
+            onClick = toggleMapTableView,
+            shape = actionRoundCornerShape,
+        ) {
+            Icon(
+                painter = painterResource(tableMapAction.iconResId),
+                contentDescription = stringResource(tableMapAction.contentDescriptionResId),
             )
         }
     }

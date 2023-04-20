@@ -6,7 +6,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 
 /**
  * App navigation bar item with icon and label content slots. Wraps Material 3
@@ -50,7 +52,7 @@ fun RowScope.CrisisCleanupNavigationBarItem(
             unselectedIconColor = unselectedColor,
             selectedTextColor = selectedColor,
             unselectedTextColor = unselectedColor,
-            indicatorColor = MaterialTheme.colorScheme.surface,
+            indicatorColor = CrisisCleanupNavigationDefaults.navigationIndicatorColor(),
         )
     )
 }
@@ -69,6 +71,7 @@ fun CrisisCleanupNavigationBar(
 ) {
     NavigationBar(
         modifier = modifier,
+        containerColor = CrisisCleanupNavigationDefaults.navigationContainerColor(),
         contentColor = CrisisCleanupNavigationDefaults.navigationContentColor(),
         tonalElevation = 0.dp,
         content = content
@@ -114,7 +117,7 @@ fun CrisisCleanupNavigationRailItem(
             unselectedIconColor = CrisisCleanupNavigationDefaults.navigationContentColor(),
             selectedTextColor = CrisisCleanupNavigationDefaults.navigationSelectedItemColor(),
             unselectedTextColor = CrisisCleanupNavigationDefaults.navigationContentColor(),
-            indicatorColor = CrisisCleanupNavigationDefaults.navigationIndicatorColor()
+            indicatorColor = CrisisCleanupNavigationDefaults.navigationIndicatorColor(),
         )
     )
 }
@@ -135,7 +138,7 @@ fun CrisisCleanupNavigationRail(
 ) {
     NavigationRail(
         modifier = modifier,
-        containerColor = Color.Transparent,
+        containerColor = CrisisCleanupNavigationDefaults.navigationContainerColor(),
         contentColor = CrisisCleanupNavigationDefaults.navigationContentColor(),
         header = header,
         content = content
@@ -146,12 +149,75 @@ fun CrisisCleanupNavigationRail(
  * Navigation default colors.
  */
 object CrisisCleanupNavigationDefaults {
-    @Composable
-    fun navigationContentColor() = MaterialTheme.colorScheme.onSurfaceVariant
+    private val navigationSurfaceColor = Color(0xFF2D2D2D)
 
     @Composable
-    fun navigationSelectedItemColor() = MaterialTheme.colorScheme.onPrimaryContainer
+    fun navigationContainerColor() = navigationSurfaceColor
 
     @Composable
-    fun navigationIndicatorColor() = MaterialTheme.colorScheme.primaryContainer
+    fun navigationContentColor() = Color(0xFFB8B8B8)
+
+    @Composable
+    fun navigationSelectedItemColor() = Color(0xFFF6F8F9)
+
+    @Composable
+    fun navigationIndicatorColor() = navigationSurfaceColor
+}
+
+@Preview
+@Composable
+private fun CrisisCleanupNavigationBarPreview() {
+    CrisisCleanupNavigationBar {
+        CrisisCleanupNavigationBarItem(
+            selected = false,
+            onClick = {},
+            icon = {
+                Icon(
+                    imageVector = CrisisCleanupIcons.Edit,
+                    contentDescription = null,
+                )
+            },
+            label = { Text("eay") },
+        )
+        CrisisCleanupNavigationBarItem(
+            selected = true,
+            onClick = {},
+            icon = {
+                Icon(
+                    imageVector = CrisisCleanupIcons.Visibility,
+                    contentDescription = null,
+                )
+            },
+            label = { Text("baa") },
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun CrisisCleanupNavigationRailPreview() {
+    CrisisCleanupNavigationRail {
+        CrisisCleanupNavigationRailItem(
+            selected = false,
+            onClick = {},
+            icon = {
+                Icon(
+                    imageVector = CrisisCleanupIcons.Edit,
+                    contentDescription = null,
+                )
+            },
+            label = { Text("eay") },
+        )
+        CrisisCleanupNavigationRailItem(
+            selected = true,
+            onClick = {},
+            icon = {
+                Icon(
+                    imageVector = CrisisCleanupIcons.Visibility,
+                    contentDescription = null,
+                )
+            },
+            label = { Text("baa") },
+        )
+    }
 }

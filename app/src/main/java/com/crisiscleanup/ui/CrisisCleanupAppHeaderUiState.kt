@@ -8,7 +8,7 @@ import javax.inject.Singleton
 
 @Singleton
 class CrisisCleanupAppHeaderUiState @Inject constructor() : AppHeaderUiState {
-    override var appHeaderState = MutableStateFlow(AppHeaderState.TopLevel)
+    override var appHeaderState = MutableStateFlow(AppHeaderState.None)
         private set
 
     override var title = MutableStateFlow("")

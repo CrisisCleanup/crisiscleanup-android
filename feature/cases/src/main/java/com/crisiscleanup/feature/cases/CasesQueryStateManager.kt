@@ -5,21 +5,14 @@ import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.feature.cases.model.CoordinateBoundsDefault
 import com.crisiscleanup.feature.cases.model.WorksiteQueryStateDefault
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.*
 
 class CasesQueryStateManager constructor(
     incidentSelector: IncidentSelector,
     private val appHeaderUiState: AppHeaderUiState,
     coroutineScope: CoroutineScope,
-    searchQueryDebounceTimeout: Long = 150,
     mapChangeDebounceTimeout: Long = 50,
 ) {
-    internal val casesSearchQueryFlow = MutableStateFlow("")
-
     internal val isTableView = MutableStateFlow(false)
 
     internal val mapZoom = MutableStateFlow(0f)
@@ -34,13 +27,6 @@ class CasesQueryStateManager constructor(
 
             worksiteQueryState.value = worksiteQueryState.value.copy(incidentId = it.id)
         }
-            .launchIn(coroutineScope)
-
-        casesSearchQueryFlow.asStateFlow()
-            .debounce(searchQueryDebounceTimeout)
-            .onEach {
-                worksiteQueryState.value = worksiteQueryState.value.copy(q = it)
-            }
             .launchIn(coroutineScope)
 
         isTableView.asStateFlow().onEach {

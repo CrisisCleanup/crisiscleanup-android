@@ -283,7 +283,7 @@ internal fun LocationMapActions(
                 top.linkTo(parent.top, margin = mapButtonEdgeSpace)
                 end.linkTo(parent.end, margin = mapButtonEdgeSpace)
             },
-            horizontalArrangement = Arrangement.spacedBy(mapButtonSpace),
+            horizontalArrangement = Arrangement.spacedBy(adjacentButtonSpace),
         ) {
             // TODO Likely hint with translator
             MapButton(
