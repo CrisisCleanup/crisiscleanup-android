@@ -65,7 +65,7 @@ interface WorksitesRepository {
         forceRefreshAll: Boolean = false,
     )
 
-    fun getWorksitesSyncStats(incidentId: Long): IncidentDataSyncStats?
+    fun getWorksiteSyncStats(incidentId: Long): IncidentDataSyncStats?
 
     suspend fun getLocalId(incidentId: Long, networkWorksiteId: Long): Long
 
@@ -74,4 +74,10 @@ interface WorksitesRepository {
         worksite: NetworkWorksiteFull,
         syncedAt: Instant = Clock.System.now(),
     ): Boolean
+
+    suspend fun setRecentWorksite(
+        incidentId: Long,
+        worksiteId: Long,
+        viewStart: Instant,
+    )
 }

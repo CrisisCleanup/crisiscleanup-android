@@ -27,6 +27,7 @@ import kotlinx.datetime.Instant
         PersonContactEntity::class,
         OrganizationPrimaryContactCrossRef::class,
         IncidentOrganizationSyncStatsEntity::class,
+        RecentWorksiteEntity::class,
     ],
     version = 1,
 )

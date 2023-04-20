@@ -17,7 +17,7 @@ object DaoModule {
     fun providesLocationDao(db: CrisisCleanupDatabase) = db.locationDao()
 
     @Provides
-    fun providesWorksiteSyncStatsDao(db: CrisisCleanupDatabase) = db.worksitesSyncStatsDao()
+    fun providesWorksiteSyncStatDao(db: CrisisCleanupDatabase) = db.worksiteSyncStatDao()
 
     @Provides
     fun providesWorksiteDao(db: CrisisCleanupDatabase) = db.worksiteDao()
@@ -48,4 +48,7 @@ object DaoModule {
 
     @Provides
     fun providesPersonContactDao(db: CrisisCleanupDatabase) = db.personContactDao()
+
+    @Provides
+    fun recentWorksiteDao(db: CrisisCleanupDatabase) = db.recentWorksiteDao()
 }

@@ -9,9 +9,10 @@ import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.IncidentWorksitesSyncer
 import com.crisiscleanup.core.data.model.asEntities
 import com.crisiscleanup.core.data.util.IncidentDataPullReporter
+import com.crisiscleanup.core.database.dao.RecentWorksiteDao
 import com.crisiscleanup.core.database.dao.WorksiteDao
 import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
-import com.crisiscleanup.core.database.dao.WorksitesSyncStatsDao
+import com.crisiscleanup.core.database.dao.WorksiteSyncStatDao
 import com.crisiscleanup.core.database.model.*
 import com.crisiscleanup.core.model.data.*
 import com.crisiscleanup.core.network.model.*
@@ -28,9 +29,10 @@ import javax.inject.Singleton
 @Singleton
 class OfflineFirstWorksitesRepository @Inject constructor(
     private val worksitesSyncer: IncidentWorksitesSyncer,
-    private val worksitesSyncStatsDao: WorksitesSyncStatsDao,
+    private val worksiteSyncStatDao: WorksiteSyncStatDao,
     private val worksiteDao: WorksiteDao,
     private val worksiteDaoPlus: WorksiteDaoPlus,
+    private val recentWorksiteDao: RecentWorksiteDao,
     private val appVersionProvider: AppVersionProvider,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
@@ -117,15 +119,15 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         networkWorksiteId: Long,
     ) = worksiteDao.getWorksiteId(incidentId, networkWorksiteId)
 
-    override fun getWorksitesSyncStats(incidentId: Long) =
-        worksitesSyncStatsDao.getSyncStats(incidentId).firstOrNull()?.asExternalModel()
+    override fun getWorksiteSyncStats(incidentId: Long) =
+        worksiteSyncStatDao.getSyncStats(incidentId).firstOrNull()?.asExternalModel()
 
     private suspend fun queryUpdatedSyncStats(
         incidentId: Long,
         reset: Boolean,
     ): IncidentDataSyncStats {
         if (!reset) {
-            val syncStatsQuery = worksitesSyncStatsDao.getSyncStats(incidentId)
+            val syncStatsQuery = worksiteSyncStatDao.getSyncStats(incidentId)
             syncStatsQuery.firstOrNull()?.let {
                 val syncStats = it.asExternalModel()
                 if (!syncStats.isDataVersionOutdated) {
@@ -146,7 +148,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             SyncAttempt(0, 0, 0),
             appVersionProvider.versionCode,
         )
-        worksitesSyncStatsDao.upsertStats(syncStats.asWorksiteSyncStatsEntity())
+        worksiteSyncStatDao.upsertStats(syncStats.asWorksiteSyncStatsEntity())
         return syncStats
     }
 
@@ -199,5 +201,23 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             worksiteDaoPlus.syncFillWorksite(incidentId, entities)
         }
         return isSynced
+    }
+
+    override suspend fun setRecentWorksite(
+        incidentId: Long,
+        worksiteId: Long,
+        viewStart: Instant,
+    ) {
+        if (worksiteId <= 0) {
+            return
+        }
+
+        recentWorksiteDao.upsert(
+            RecentWorksiteEntity(
+                id = worksiteId,
+                incidentId = incidentId,
+                viewedAt = viewStart,
+            )
+        )
     }
 }

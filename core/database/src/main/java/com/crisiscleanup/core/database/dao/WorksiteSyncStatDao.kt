@@ -5,7 +5,7 @@ import com.crisiscleanup.core.database.model.WorksiteSyncStatsEntity
 import kotlinx.datetime.Instant
 
 @Dao
-interface WorksitesSyncStatsDao {
+interface WorksiteSyncStatDao {
     @Transaction
     @Query(
         """

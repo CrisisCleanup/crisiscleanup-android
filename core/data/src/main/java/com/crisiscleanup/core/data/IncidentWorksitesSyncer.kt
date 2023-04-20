@@ -10,7 +10,7 @@ import com.crisiscleanup.core.data.model.asEntity
 import com.crisiscleanup.core.data.util.IncidentDataPullStats
 import com.crisiscleanup.core.data.util.IncidentDataPullStatsUpdater
 import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
-import com.crisiscleanup.core.database.dao.WorksitesSyncStatsDao
+import com.crisiscleanup.core.database.dao.WorksiteSyncStatDao
 import com.crisiscleanup.core.database.model.WorkTypeEntity
 import com.crisiscleanup.core.database.model.WorksiteEntity
 import com.crisiscleanup.core.model.data.IncidentDataSyncStats
@@ -42,7 +42,7 @@ class IncidentWorksitesSyncer @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val networkDataCache: WorksitesNetworkDataCache,
     private val worksiteDaoPlus: WorksiteDaoPlus,
-    private val worksitesSyncStatsDao: WorksitesSyncStatsDao,
+    private val worksiteSyncStatDao: WorksiteSyncStatDao,
     private val authEventManager: AuthEventManager,
     memoryStats: AppMemoryStats,
     private val appVersionProvider: AppVersionProvider,
@@ -178,7 +178,7 @@ class IncidentWorksitesSyncer @Inject constructor(
 
             if (saveData) {
                 if (isSyncEnd) {
-                    worksitesSyncStatsDao.updateStatsSuccessful(
+                    worksiteSyncStatDao.updateStatsSuccessful(
                         incidentId,
                         syncStats.syncStart,
                         syncStats.dataCount,
@@ -188,7 +188,7 @@ class IncidentWorksitesSyncer @Inject constructor(
                         appVersionProvider.versionCode,
                     )
                 } else if (!isDeltaPull) {
-                    worksitesSyncStatsDao.updateStatsPaged(
+                    worksiteSyncStatDao.updateStatsPaged(
                         incidentId,
                         syncStats.syncStart,
                         dbSaveCount,

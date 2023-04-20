@@ -31,7 +31,7 @@ internal object SyncPull {
         val incidentId = appPreferences.userData.first().selectedIncidentId
         if (incidentId > 0) {
             incidentsRepository.getIncident(incidentId)?.let {
-                val syncStats = worksitesRepository.getWorksitesSyncStats(incidentId)
+                val syncStats = worksitesRepository.getWorksiteSyncStats(incidentId)
                 if (syncStats?.shouldSync != false) {
                     stepsBuilder.setPullIncidentIdWorksites(incidentId)
                 }

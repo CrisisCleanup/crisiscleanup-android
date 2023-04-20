@@ -80,6 +80,8 @@ class CaseEditorViewModel @Inject constructor(
 
     private val dataLoader: CaseEditorDataLoader
 
+    private val editOpenedAt = Clock.System.now()
+
     init {
         updateHeaderTitle()
 
@@ -108,6 +110,16 @@ class CaseEditorViewModel @Inject constructor(
         workTypeGroupChildrenLookup = dataLoader.workTypeGroupChildrenLookup
 
         dataLoader.worksiteStream
+            .onEach {
+                it?.let { cachedWorksite ->
+                    worksitesRepository.setRecentWorksite(
+                        incidentIdArg,
+                        cachedWorksite.worksite.id,
+                        editOpenedAt,
+                    )
+                }
+            }
+            .flowOn(ioDispatcher)
             .onEach {
                 it?.let { cachedWorksite ->
                     updateHeaderTitle(cachedWorksite.worksite.caseNumber)
