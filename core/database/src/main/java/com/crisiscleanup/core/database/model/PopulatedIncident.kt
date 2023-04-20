@@ -29,6 +29,7 @@ fun PopulatedIncident.asExternalModel() = Incident(
         ?: emptyList(),
     locations = locations.map(IncidentLocationEntity::asExternalModel),
     formFields = emptyList(),
+    disasterLiteral = entity.type,
 )
 
 data class PopulatedFormFieldsIncident(

@@ -32,6 +32,9 @@ internal val md_theme_shadow = Color(0xFF000000)
 internal val md_theme_surfaceTint = Color(0xFFEFC100)
 internal val md_theme_surfaceTintColor = Color(0xFFEFC100)
 
+val incidentDisasterContainerColor = Color(0xFF378DFF)
+val incidentDisasterContentColor = Color(0xFFFFFFFF)
+
 internal val md_theme_light_primary = Color(0xFF735C00)
 internal val md_theme_light_onPrimary = Color(0xFFFFFFFF)
 internal val md_theme_light_primaryContainer = Color(0xFFFFE085)

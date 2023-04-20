@@ -7,6 +7,8 @@ data class Incident(
     val locations: List<IncidentLocation>,
     val activePhoneNumbers: List<String>,
     val formFields: List<IncidentFormField>,
+    val disasterLiteral: String = "",
+    val disaster: Disaster = disasterFromLiteral(disasterLiteral),
 ) {
     val formFieldLookup: Map<String, IncidentFormField> by lazy {
         formFields.associateBy { it.fieldKey }

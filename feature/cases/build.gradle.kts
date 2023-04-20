@@ -17,7 +17,7 @@ secrets {
 }
 
 dependencies {
-    implementation(project(":core:appheader"))
+    implementation(project(":core:commonassets"))
     implementation(project(":core:mapmarker"))
 
     implementation(libs.kotlinx.datetime)

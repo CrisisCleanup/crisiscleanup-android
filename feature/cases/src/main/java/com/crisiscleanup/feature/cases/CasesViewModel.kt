@@ -4,7 +4,6 @@ import android.content.ComponentCallbacks2
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.common.*
 import com.crisiscleanup.core.common.event.TrimMemoryEventManager
 import com.crisiscleanup.core.common.event.TrimMemoryListener
@@ -13,6 +12,7 @@ import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.commonassets.getDisasterIcon
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocationsRepository
@@ -39,6 +39,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
+import com.crisiscleanup.core.commonassets.R as commonAssetsR
 
 @HiltViewModel
 class CasesViewModel @Inject constructor(
@@ -46,7 +47,6 @@ class CasesViewModel @Inject constructor(
     locationsRepository: LocationsRepository,
     private val worksitesRepository: WorksitesRepository,
     private val incidentSelector: IncidentSelector,
-    appHeaderUiState: AppHeaderUiState,
     loadIncidentDataUseCase: LoadIncidentDataUseCase,
     dataPullReporter: IncidentDataPullReporter,
     private val mapCaseIconProvider: MapCaseIconProvider,
@@ -65,9 +65,15 @@ class CasesViewModel @Inject constructor(
     val incidentId: Long
         get() = incidentSelector.incidentId.value
 
+    val disasterIconResId = incidentSelector.incident.map { getDisasterIcon(it.disaster) }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = commonAssetsR.drawable.ic_disaster_other,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
     private val qsm = CasesQueryStateManager(
         incidentSelector,
-        appHeaderUiState,
         viewModelScope,
     )
 

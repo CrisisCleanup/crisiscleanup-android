@@ -2,10 +2,12 @@ package com.crisiscleanup.feature.cases.ui
 
 import android.util.Log
 import androidx.activity.compose.BackHandler
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
@@ -21,6 +23,8 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.*
+import com.crisiscleanup.core.designsystem.theme.incidentDisasterContainerColor
+import com.crisiscleanup.core.designsystem.theme.incidentDisasterContentColor
 import com.crisiscleanup.core.domain.IncidentsData
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraBounds
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraBoundsDefault
@@ -40,6 +44,7 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.TileProvider
 import com.google.maps.android.compose.*
+import com.crisiscleanup.core.commonassets.R as commonAssetsR
 import com.crisiscleanup.core.mapmarker.R as mapMarkerR
 
 @Composable
@@ -57,6 +62,14 @@ internal fun CasesRoute(
         }
 
         val isLayerView by casesViewModel.isLayerView
+
+        val disasterResId by casesViewModel.disasterIconResId.collectAsState()
+        val onIncidentSelect =
+            remember(casesViewModel) {
+                {
+                    // TODO Show incident select over
+                }
+            }
 
         val rememberOnCasesAction = remember(onCasesAction, casesViewModel) {
             { action: CasesAction ->
@@ -110,6 +123,8 @@ internal fun CasesRoute(
         CasesScreen(
             showDataProgress = showDataProgress,
             dataProgress = dataProgress,
+            disasterResId = disasterResId,
+            onSelectIncident = onIncidentSelect,
             onCasesAction = rememberOnCasesAction,
             isTableView = isTableView,
             isLayerView = isLayerView,
@@ -172,6 +187,8 @@ internal fun CasesScreen(
     modifier: Modifier = Modifier,
     showDataProgress: Boolean = false,
     dataProgress: Float = 0f,
+    onSelectIncident: () -> Unit = {},
+    @DrawableRes disasterResId: Int = commonAssetsR.drawable.ic_disaster_other,
     onCasesAction: (CasesAction) -> Unit = {},
     isTableView: Boolean = false,
     isLayerView: Boolean = false,
@@ -211,6 +228,8 @@ internal fun CasesScreen(
         }
         CasesOverlayActions(
             modifier,
+            onSelectIncident,
+            disasterResId,
             onCasesAction,
             isTableView,
         )
@@ -350,17 +369,37 @@ internal fun BoxScope.CasesMapView(
 @Composable
 internal fun CasesOverlayActions(
     modifier: Modifier = Modifier,
+    onSelectIncident: () -> Unit = {},
+    @DrawableRes disasterResId: Int = commonAssetsR.drawable.ic_disaster_other,
     onCasesAction: (CasesAction) -> Unit = {},
     isTableView: Boolean = false,
 ) {
     ConstraintLayout(Modifier.fillMaxSize()) {
-        val (zoomBar, actionBar, newCaseFab, toggleTableMap) = createRefs()
+        val (disasterAction, zoomBar, actionBar, newCaseFab, toggleTableMap) = createRefs()
+
+        FloatingActionButton(
+            modifier = modifier
+                .constrainAs(disasterAction) {
+                    start.linkTo(parent.start, margin = actionEdgeSpace)
+                    top.linkTo(parent.top, margin = actionEdgeSpace)
+                },
+            onClick = onSelectIncident,
+            shape = CircleShape,
+            containerColor = incidentDisasterContainerColor,
+            contentColor = incidentDisasterContentColor,
+        ) {
+            Icon(
+                painter = painterResource(disasterResId),
+                contentDescription = stringResource(R.string.change_incident),
+            )
+        }
 
         if (!isTableView) {
             CasesZoomBar(
                 modifier.constrainAs(zoomBar) {
-                    top.linkTo(parent.top, margin = actionEdgeSpace)
-                    start.linkTo(parent.start, margin = actionEdgeSpace)
+                    top.linkTo(disasterAction.bottom, margin = actionInnerSpace)
+                    start.linkTo(disasterAction.start)
+                    end.linkTo(disasterAction.end)
                 },
                 onCasesAction,
             )
