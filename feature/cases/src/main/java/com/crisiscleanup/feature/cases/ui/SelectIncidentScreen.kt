@@ -1,10 +1,7 @@
 package com.crisiscleanup.feature.cases.ui
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
@@ -18,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -25,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
@@ -33,25 +32,25 @@ import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.feature.cases.R
 import com.crisiscleanup.feature.cases.SelectIncidentViewModel
 
-// TODO Is it possible to use a single dialog wrapper and switch content inside?
-//      Using a single wrapper initially the dialog wasn't resizing when state was changing.
-//      Maybe newer versions of Compose will resize correctly.
-//      Logs are reporting jank when switching due to state changes as well.
-
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun WrapInDialog(
     onBackClick: () -> Unit,
-    content: @Composable () -> Unit,
     cornerRound: Dp = 4.dp,
+    content: @Composable () -> Unit,
 ) = Dialog(
     onDismissRequest = onBackClick,
-    content = {
-        Surface(
-            shape = RoundedCornerShape(cornerRound),
-            color = MaterialTheme.colorScheme.surface,
-            content = content,
-        )
-    })
+    properties = DialogProperties(usePlatformDefaultWidth = false),
+) {
+    Surface(
+        // TODO Adjust when screen is wide
+        Modifier.fillMaxWidth(0.8f),
+        shape = RoundedCornerShape(cornerRound),
+        color = MaterialTheme.colorScheme.surface,
+    ) {
+        content()
+    }
+}
 
 @Composable
 internal fun SelectIncidentRoute(
@@ -63,17 +62,16 @@ internal fun SelectIncidentRoute(
     val incidentsData by selectIncidentViewModel.incidentsData.collectAsStateWithLifecycle(
         IncidentsData.Loading
     )
-    when (incidentsData) {
-        IncidentsData.Loading -> {
-            WrapInDialog(onBackClick, {
+
+    WrapInDialog(onBackClick) {
+        when (incidentsData) {
+            IncidentsData.Loading -> {
                 Box(Modifier.padding(padding)) {
                     CircularProgressIndicator()
                 }
-            })
-        }
+            }
 
-        is IncidentsData.Incidents -> {
-            WrapInDialog(onBackClick, {
+            is IncidentsData.Incidents -> {
                 Column {
                     Text(
                         modifier = Modifier.padding(textPadding),
@@ -81,8 +79,7 @@ internal fun SelectIncidentRoute(
                         style = MaterialTheme.typography.titleLarge
                     )
 
-                    val incidents =
-                        (incidentsData as IncidentsData.Incidents).incidents
+                    val incidents = (incidentsData as IncidentsData.Incidents).incidents
                     IncidentSelectContent(
                         selectIncidentViewModel,
                         incidents,
@@ -90,16 +87,14 @@ internal fun SelectIncidentRoute(
                         padding = padding,
                     )
                 }
-            })
-        }
+            }
 
-        else -> {
-            WrapInDialog(onBackClick, {
+            else -> {
                 NoIncidentsContent(
                     onBackClick = onBackClick,
                     padding = padding,
                 )
-            })
+            }
         }
     }
 }

@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
@@ -64,12 +65,8 @@ internal fun CasesRoute(
         val isLayerView by casesViewModel.isLayerView
 
         val disasterResId by casesViewModel.disasterIconResId.collectAsState()
-        val onIncidentSelect =
-            remember(casesViewModel) {
-                {
-                    // TODO Show incident select over
-                }
-            }
+        var showChangeIncident by rememberSaveable { mutableStateOf(false) }
+        val onIncidentSelect = remember(casesViewModel) { { showChangeIncident = true } }
 
         val rememberOnCasesAction = remember(onCasesAction, casesViewModel) {
             { action: CasesAction ->
@@ -142,6 +139,11 @@ internal fun CasesRoute(
             onMarkerSelect = onMapMarkerSelect,
             editedWorksiteLocation = editedWorksiteLocation,
         )
+
+        if (showChangeIncident) {
+            val closeDialog = remember(casesViewModel) { { showChangeIncident = false } }
+            SelectIncidentRoute(closeDialog)
+        }
     } else {
         val isSyncingIncidents by casesViewModel.isSyncingIncidents.collectAsState(true)
         val isLoading = incidentsData is IncidentsData.Loading || isSyncingIncidents
