@@ -4,22 +4,21 @@ androidDesugarJdkLibs = "2.0.2"
 androidGradlePlugin = "7.4.1"
 androidMapsUtil = "2.3.0"
 androidMapsUtilKtx = "3.4.0"
-androidMaterial = "1.8.0"
-androidxActivity = "1.6.1"
+androidMaterial = "1.9.0-rc01"
+androidxActivity = "1.7.1"
 androidxAppCompat = "1.6.1"
 androidxBrowser = "1.5.0"
-androidxComposeBom = "2023.01.00"
+androidxComposeBom = "2023.03.00"
 androidxComposeCompiler = "1.4.2"
 androidxComposeRuntimeTracing = "1.0.0-alpha02"
-androidxComposeUi = "1.3.3"
-androidxConstraintLayout = "1.0.1"
-androidxCore = "1.9.0"
-androidxCoreSplashscreen = "1.0.0"
+androidxConstraintLayout = "1.1.0-alpha09"
+androidxCore = "1.10.0"
+androidxCoreSplashscreen = "1.0.1"
 androidXCredentials = "1.0.0-alpha04"
 androidxDataStore = "1.0.0"
 androidxEspresso = "3.5.1"
 androidxHiltNavigationCompose = "1.0.0"
-androidxLifecycle = "2.6.0-beta01"
+androidxLifecycle = "2.6.1"
 androidxMacroBenchmark = "1.1.1"
 androidxMetrics = "1.0.0-alpha03"
 androidxNavigation = "2.5.3"
@@ -32,10 +31,11 @@ androidxTestRunner = "1.5.2"
 androidxTracing = "1.1.0"
 androidxUiAutomator = "2.2.0"
 androidxWindowManager = "1.0.0"
-androidxWork = "2.8.0"
+androidxWork = "2.8.1"
 apacheCommonsText = "1.10.0"
 coil = "2.2.2"
 firebaseAppDistribution = "16.0.0-beta06"
+firebaseBom = "31.5.0"
 googleMapsCompose = "2.9.1"
 googlePlaces = "3.0.0"
 hilt = "2.44.2"
@@ -58,7 +58,7 @@ protobuf = "3.21.12"
 protobufPlugin = "0.8.19"
 retrofit = "2.9.0"
 retrofitKotlinxSerializationJson = "0.8.0"
-room = "2.5.0"
+room = "2.5.1"
 secrets = "2.0.1"
 squareSeismic = "1.0.3"
 turbine = "0.12.1"
@@ -84,7 +84,7 @@ androidx-compose-material3-windowSizeClass = { group = "androidx.compose.materia
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
 androidx-compose-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata" }
 androidx-compose-runtime-tracing = { group = "androidx.compose.runtime", name = "runtime-tracing", version.ref = "androidxComposeRuntimeTracing" }
-androidx-compose-ui = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "androidxComposeUi" }
+androidx-compose-ui = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-compose-ui-test = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-compose-ui-testManifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
@@ -119,6 +119,9 @@ androidx-work-testing = { group = "androidx.work", name = "work-testing", versio
 apache-commons-text = { group = "org.apache.commons", name = "commons-text", version.ref = "apacheCommonsText" }
 firebase-appdistribution-api = { group = "com.google.firebase", name = "firebase-appdistribution-api-ktx", version.ref = "firebaseAppDistribution" }
 firebase-appdistribution = { group = "com.google.firebase", name = "firebase-appdistribution", version.ref = "firebaseAppDistribution" }
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics-ktx" }
+firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics-ktx" }
 google-maps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "googleMapsCompose" }
 google-places = { group = "com.google.android.libraries.places", name = "places", version.ref = "googlePlaces" }
 coil-kt = { group = "io.coil-kt", name = "coil", version.ref = "coil" }

@@ -15,8 +15,8 @@ plugins {
 android {
     defaultConfig {
         applicationId = "com.crisiscleanup"
-        versionCode = 62
-        versionName = "0.0.62"
+        versionCode = 63
+        versionName = "0.0.63"
 
         // Custom test runner to set up Hilt dependency graph
         testInstrumentationRunner = "com.crisiscleanup.core.testing.CrisisCleanupTestRunner"
@@ -138,9 +138,9 @@ dependencies {
     implementation(libs.coil.kt.svg)
 
     // For Firebase support
-    implementation(platform("com.google.firebase:firebase-bom:31.1.1"))
-    implementation("com.google.firebase:firebase-crashlytics")
-    implementation("com.google.firebase:firebase-analytics")
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.crashlytics)
     implementation(libs.firebase.appdistribution.api)
     demoImplementation(libs.firebase.appdistribution)
 
