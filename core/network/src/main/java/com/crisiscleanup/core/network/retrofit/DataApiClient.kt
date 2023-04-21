@@ -65,6 +65,15 @@ private interface DataSourceApi {
     ): NetworkWorksitesFullResult
 
     @TokenAuthenticationHeader
+    @GET("worksites_all")
+    suspend fun getWorksitesSearch(
+        @Query("incident")
+        incidentId: Long,
+        @Query("search")
+        q: String,
+    ): NetworkWorksitesShortResult
+
+    @TokenAuthenticationHeader
     @GET("worksites")
     suspend fun getWorksitesLocationSearch(
         @Query("incident")
@@ -222,6 +231,11 @@ class DataApiClient @Inject constructor(
         q,
         limit
     )
+
+    override suspend fun getSearchWorksites(
+        incidentId: Long,
+        q: String,
+    ) = networkApi.getWorksitesSearch(incidentId, q)
 
     override suspend fun getLanguages() = networkApi.getLanguages()
 

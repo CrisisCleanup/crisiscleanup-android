@@ -15,6 +15,7 @@ fun NavController.navigateToSelectIncident(navOptions: NavOptions? = null) {
 fun NavGraphBuilder.selectIncidentScreen(
     onBackClick: () -> Unit
 ) {
+    // TODO Refactor related code. SelectIncidentRoute also wraps in Dialog (with properties)
     dialog(
         route = selectIncidentRoute,
         dialogProperties = DialogProperties()

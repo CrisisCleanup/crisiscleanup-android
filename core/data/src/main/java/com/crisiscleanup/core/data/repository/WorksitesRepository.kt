@@ -1,9 +1,6 @@
 package com.crisiscleanup.core.data.repository
 
-import com.crisiscleanup.core.model.data.IncidentDataSyncStats
-import com.crisiscleanup.core.model.data.LocalWorksite
-import com.crisiscleanup.core.model.data.Worksite
-import com.crisiscleanup.core.model.data.WorksiteMapMark
+import com.crisiscleanup.core.model.data.*
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Clock
@@ -36,6 +33,8 @@ interface WorksitesRepository {
     fun streamIncidentWorksitesCount(id: Long): Flow<Int>
 
     fun streamLocalWorksite(worksiteId: Long): Flow<LocalWorksite?>
+
+    fun streamRecentWorksites(incidentId: Long): Flow<List<WorksiteSummary>>
 
     fun getWorksitesMapVisual(incidentId: Long, limit: Int, offset: Int): List<WorksiteMapMark>
 

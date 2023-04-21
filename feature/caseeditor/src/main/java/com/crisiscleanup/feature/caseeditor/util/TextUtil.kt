@@ -1,12 +1,6 @@
 package com.crisiscleanup.feature.caseeditor.util
 
-
-internal fun Collection<String?>.filterNotBlankTrim(): List<String> {
-    val notBlank = filter { it?.isNotBlank() == true }.filterNotNull()
-    return notBlank.map(String::trim)
-}
-
-internal fun Collection<String>.combineTrimText() = filterNotBlankTrim().joinToString(", ")
+import com.crisiscleanup.core.common.combineTrimText
 
 internal fun summarizeAddress(
     streetAddress: String,

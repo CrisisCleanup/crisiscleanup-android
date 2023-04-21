@@ -1,5 +1,6 @@
 package com.crisiscleanup.navigation
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -8,6 +9,8 @@ import androidx.navigation.compose.NavHost
 import com.crisiscleanup.core.appnav.RouteConstant.casesGraphRoutePattern
 import com.crisiscleanup.feature.caseeditor.navigation.*
 import com.crisiscleanup.feature.cases.navigation.casesGraph
+import com.crisiscleanup.feature.cases.navigation.casesSearchScreen
+import com.crisiscleanup.feature.cases.navigation.navigateToCasesSearch
 import com.crisiscleanup.feature.cases.navigation.selectIncidentScreen
 import com.crisiscleanup.feature.cases.ui.CasesAction
 import com.crisiscleanup.feature.dashboard.navigation.dashboardScreen
@@ -27,7 +30,6 @@ fun CrisisCleanupNavHost(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     startDestination: String = casesGraphRoutePattern,
-    onCasesAction: (CasesAction) -> Unit = { },
 ) {
     val createNewCase = remember(navController) {
         { incidentId: Long -> navController.navigateToCaseEditor(incidentId) }
@@ -40,6 +42,24 @@ fun CrisisCleanupNavHost(
         }
     }
 
+    val onCasesAction = remember(navController) {
+        { casesAction: CasesAction ->
+            when (casesAction) {
+                CasesAction.Search -> navController.navigateToCasesSearch()
+                else -> Log.w("cases-action", "New cases action $casesAction requires handling")
+            }
+            Unit
+        }
+    }
+
+    val replaceRouteOpenCase = remember(navController) {
+        { incidentId: Long, worksiteId: Long ->
+            navController.popBackStack()
+            openCase(incidentId, worksiteId)
+            true
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -48,6 +68,7 @@ fun CrisisCleanupNavHost(
         casesGraph(
             nestedGraphs = {
                 selectIncidentScreen(onBackClick)
+                casesSearchScreen(onBackClick, replaceRouteOpenCase)
                 caseEditorScreen(navController, onBackClick)
                 caseEditPropertyScreen(navController, onBackClick)
                 caseEditLocationScreen(navController, onBackClick)

@@ -11,7 +11,7 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.Default
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
-import com.crisiscleanup.core.data.repository.IncidentsRepository
+import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
@@ -40,7 +40,6 @@ import com.crisiscleanup.core.mapmarker.R as mapMarkerR
 
 @HiltViewModel
 class EditCaseLocationViewModel @Inject constructor(
-    private val incidentsRepository: IncidentsRepository,
     worksiteProvider: EditableWorksiteProvider,
     private val permissionManager: PermissionManager,
     private val locationProvider: LocationProvider,
@@ -347,9 +346,9 @@ class EditCaseLocationViewModel @Inject constructor(
         clearQuery()
     }
 
-    fun onExistingWorksiteSelected(caseLocation: ExistingCaseLocation) {
+    fun onExistingWorksiteSelected(result: CaseSummaryResult) {
         viewModelScope.launch(ioDispatcher) {
-            existingWorksiteSelector.onNetworkWorksiteSelected(caseLocation.networkWorksiteId)
+            existingWorksiteSelector.onNetworkWorksiteSelected(result.networkWorksiteId)
         }
     }
 

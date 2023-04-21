@@ -1,4 +1,4 @@
-package com.crisiscleanup.feature.caseeditor.ui
+package com.crisiscleanup.core.commoncase.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -13,26 +13,26 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
+import com.crisiscleanup.core.common.combineTrimText
+import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.designsystem.theme.listItemOptionPadding
 import com.crisiscleanup.core.designsystem.theme.listRowItemStartPadding
 import com.crisiscleanup.core.designsystem.theme.optionItemPadding
-import com.crisiscleanup.feature.caseeditor.model.ExistingCaseLocation
-import com.crisiscleanup.feature.caseeditor.util.combineTrimText
 
 @Composable
 private fun CaseView(
-    caseLocation: ExistingCaseLocation,
+    caseSummary: CaseSummaryResult,
     modifier: Modifier,
 ) {
     Row(
         modifier,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        with(caseLocation) {
-            if (icon != null && workType != null) {
+        with(caseSummary) {
+            icon?.let {
                 Image(
-                    bitmap = icon.asImageBitmap(),
-                    contentDescription = workType.workTypeLiteral,
+                    bitmap = it.asImageBitmap(),
+                    contentDescription = summary.workType?.workTypeLiteral,
                 )
             }
             Column(
@@ -40,20 +40,23 @@ private fun CaseView(
                     .weight(1f)
                     .listRowItemStartPadding()
             ) {
-                Text(listOf(name, caseNumber).combineTrimText())
-                Text(listOf(address, city, state).combineTrimText())
+                with(summary) {
+                    Text(listOf(name, caseNumber).combineTrimText())
+                    Text(listOf(address, city, state).combineTrimText())
+                }
             }
         }
     }
 }
 
-internal fun LazyListScope.existingCaseLocations(
-    worksites: List<ExistingCaseLocation>,
-    onCaseSelect: (ExistingCaseLocation) -> Unit = {},
+fun LazyListScope.listCaseResults(
+    worksites: List<CaseSummaryResult>,
+    onCaseSelect: (CaseSummaryResult) -> Unit = {},
+    itemKey: (CaseSummaryResult) -> Any = { it.networkWorksiteId },
 ) {
     items(
         worksites,
-        key = { it.networkWorksiteId },
+        key = itemKey,
         contentType = { "item-worksite" },
     ) {
         CaseView(
@@ -66,9 +69,9 @@ internal fun LazyListScope.existingCaseLocations(
 }
 
 @Composable
-internal fun ExistingCaseLocationsDropdownItems(
-    worksites: List<ExistingCaseLocation>,
-    onCaseSelect: (ExistingCaseLocation) -> Unit = {},
+fun ExistingCaseLocationsDropdownItems(
+    worksites: List<CaseSummaryResult>,
+    onCaseSelect: (CaseSummaryResult) -> Unit = {},
 ) {
     worksites.forEach { caseLocation ->
         DropdownMenuItem(

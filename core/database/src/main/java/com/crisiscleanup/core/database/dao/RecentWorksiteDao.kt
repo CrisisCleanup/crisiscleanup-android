@@ -21,9 +21,9 @@ interface RecentWorksiteDao {
         OFFSET :offset
         """
     )
-    fun getRecentWorksites(
+    fun streamRecentWorksites(
         incidentId: Long,
-        limit: Int = 30,
+        limit: Int = 16,
         offset: Int = 0
-    ): Flow<PopulatedRecentWorksite>
+    ): Flow<List<PopulatedRecentWorksite>>
 }

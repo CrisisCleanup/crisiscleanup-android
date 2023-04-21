@@ -172,6 +172,11 @@ class FakeNetworkDataSource @Inject constructor() : CrisisCleanupNetworkDataSour
         limit: Int
     ) = locationSearchResult
 
+    override suspend fun getSearchWorksites(
+        incidentId: Long,
+        q: String
+    ) = worksitesShortResult
+
     override suspend fun getLanguages() =
         NetworkLanguagesResult(
             results = listOf(NetworkLanguageDescription("en-US", "English US"))

@@ -35,7 +35,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         IncidentOrganizationSyncStatsEntity::class,
         RecentWorksiteEntity::class,
     ],
-    version = 13,
+    version = 14,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
@@ -49,6 +49,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         AutoMigration(from = 10, to = 11, spec = Schema10To11::class),
         AutoMigration(from = 11, to = 12),
         AutoMigration(from = 12, to = 13),
+        AutoMigration(from = 13, to = 14),
     ],
     exportSchema = true,
 )

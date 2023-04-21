@@ -36,7 +36,6 @@ import com.crisiscleanup.core.designsystem.icon.Icon.DrawableResourceIcon
 import com.crisiscleanup.core.designsystem.icon.Icon.ImageVectorIcon
 import com.crisiscleanup.feature.authentication.AuthenticateScreen
 import com.crisiscleanup.feature.cases.navigation.navigateToSelectIncident
-import com.crisiscleanup.feature.cases.ui.CasesAction
 import com.crisiscleanup.navigation.CrisisCleanupNavHost
 import com.crisiscleanup.navigation.TopLevelDestination
 import com.crisiscleanup.feature.cases.R as casesR
@@ -113,20 +112,6 @@ private fun LoadedContent(
             false
         )
 
-        val onCasesAction = remember(viewModel) {
-            { casesAction: CasesAction ->
-                when (casesAction) {
-                    CasesAction.Search -> {
-                        // TODO Go to search screen
-                    }
-
-                    else -> {
-                        // TODO Report unhandled cases action
-                    }
-                }
-            }
-        }
-
         val openIncidentsSelect = remember(appHeaderState) {
             { appState.navController.navigateToSelectIncident() }
         }
@@ -141,7 +126,6 @@ private fun LoadedContent(
             profilePictureUri,
             isAccountExpired,
             openIncidentsSelect,
-            onCasesAction,
         )
 
         if (isAccountExpired) {
@@ -211,7 +195,6 @@ private fun NavigableContent(
     profilePictureUri: String,
     isAccountExpired: Boolean,
     openIncidentsSelect: () -> Unit,
-    onCasesAction: (CasesAction) -> Unit = { },
 ) {
     val showNavBar = !appState.isFullscreenRoute
     // TODO Fix resize jitter when going from nested to top level
@@ -234,6 +217,7 @@ private fun NavigableContent(
             ) {
                 val titleResId = appState.currentTopLevelDestination?.titleTextId ?: 0
                 val title = if (titleResId != 0) stringResource(titleResId) else headerTitle
+                // TODO Update this to menu route and test completely
                 val onOpenIncidents = if (appState.isCasesRoute) openIncidentsSelect else null
                 AppHeader(
                     modifier = Modifier.testTag("CrisisCleanupAppHeader"),
@@ -293,7 +277,6 @@ private fun NavigableContent(
                 CrisisCleanupNavHost(
                     navController = appState.navController,
                     onBackClick = appState::onBackClick,
-                    onCasesAction = onCasesAction,
                 )
             }
 

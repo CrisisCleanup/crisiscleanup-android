@@ -19,6 +19,8 @@ object RouteConstant {
 
     const val selectIncidentRoute = "select_incident"
 
+    const val casesSearchRoute = "cases_search"
+
     const val caseEditorRoute = "case_editor"
     const val caseEditPropertyRoute = "$caseEditorRoute/edit_property"
     const val caseEditLocationRoute = "$caseEditorRoute/edit_location"

@@ -2,6 +2,8 @@ package com.crisiscleanup.core.database.model
 
 import androidx.room.Embedded
 import androidx.room.Relation
+import com.crisiscleanup.core.model.data.WorkType
+import com.crisiscleanup.core.model.data.WorksiteSummary
 
 data class PopulatedRecentWorksite(
     @Embedded
@@ -12,3 +14,23 @@ data class PopulatedRecentWorksite(
     )
     val worksite: WorksiteEntity
 )
+
+fun PopulatedRecentWorksite.asSummaryEntity(): WorksiteSummary {
+    with(worksite) {
+        return WorksiteSummary(
+            networkId,
+            name,
+            address,
+            city,
+            state,
+            postalCode,
+            county,
+            caseNumber,
+            WorkType(
+                0,
+                statusLiteral = keyWorkTypeStatus,
+                workTypeLiteral = keyWorkTypeType,
+            ),
+        )
+    }
+}

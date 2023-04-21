@@ -72,6 +72,10 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             .map { it.map(PopulatedWorksiteMapVisual::asExternalModel) }
     }
 
+    override fun streamRecentWorksites(incidentId: Long) =
+        recentWorksiteDao.streamRecentWorksites(incidentId)
+            .map { it.map(PopulatedRecentWorksite::asSummaryEntity) }
+
     override fun getWorksitesMapVisual(
         incidentId: Long,
         limit: Int,

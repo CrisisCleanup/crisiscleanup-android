@@ -9,10 +9,10 @@ import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.model.data.AutoContactFrequency
-import com.crisiscleanup.feature.caseeditor.model.ExistingCaseLocation
 import com.crisiscleanup.feature.caseeditor.model.PropertyInputData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -81,9 +81,9 @@ class EditCasePropertyViewModel @Inject constructor(
 
     fun stopSearchingWorksites() = nameSearchManager.stopSearchingWorksites()
 
-    fun onExistingWorksiteSelected(caseLocation: ExistingCaseLocation) {
+    fun onExistingWorksiteSelected(result: CaseSummaryResult) {
         viewModelScope.launch(ioDispatcher) {
-            existingWorksiteSelector.onNetworkWorksiteSelected(caseLocation.networkWorksiteId)
+            existingWorksiteSelector.onNetworkWorksiteSelected(result.networkWorksiteId)
         }
     }
 

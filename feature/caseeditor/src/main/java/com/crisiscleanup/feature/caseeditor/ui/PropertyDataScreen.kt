@@ -21,16 +21,18 @@ import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.window.PopupProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.common.filterNotBlankTrim
+import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
+import com.crisiscleanup.core.commoncase.ui.ExistingCaseLocationsDropdownItems
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.theme.*
 import com.crisiscleanup.core.model.data.AutoContactFrequency
 import com.crisiscleanup.core.model.data.Worksite
+import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.EditCasePropertyViewModel
 import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
 import com.crisiscleanup.feature.caseeditor.R
-import com.crisiscleanup.feature.caseeditor.model.ExistingCaseLocation
-import com.crisiscleanup.feature.caseeditor.util.filterNotBlankTrim
 
 private const val ScreenTitleTranslateKey = "caseForm.property_information"
 
@@ -257,7 +259,7 @@ private fun PropertyFormResidentNameView(
         val existingCasesResults by viewModel.searchResults.collectAsStateWithLifecycle()
 
         val onCaseSelect = remember(viewModel) {
-            { caseLocation: ExistingCaseLocation ->
+            { caseLocation: CaseSummaryResult ->
                 viewModel.onExistingWorksiteSelected(caseLocation)
             }
         }
@@ -279,6 +281,8 @@ private fun PropertyFormResidentNameView(
                 offset = listItemDropdownMenuOffset,
                 properties = PopupProperties(focusable = false)
             ) {
+                // TODO Add same option in location search dropdown.
+                //      Stop searching entirely for the editing session when selected.
                 DropdownMenuItem(
                     text = {
                         Text(

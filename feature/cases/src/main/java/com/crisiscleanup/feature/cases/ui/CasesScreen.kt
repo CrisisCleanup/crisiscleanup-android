@@ -89,7 +89,6 @@ internal fun CasesRoute(
             }
         }
         val isMapBusy by casesViewModel.isMapBusy.collectAsStateWithLifecycle(false)
-        // TODO Delay evaluation only when necessary by remembering data
         val worksitesOnMap by casesViewModel.worksitesMapMarkers.collectAsStateWithLifecycle()
         val mapCameraBounds by casesViewModel.incidentLocationBounds.collectAsStateWithLifecycle()
         val mapCameraZoom by casesViewModel.mapCameraZoom.collectAsStateWithLifecycle()
@@ -264,6 +263,7 @@ internal fun BoxScope.CasesMapView(
     hiddenMarkersMessage: () -> String = { "" },
     onMarkerSelect: (WorksiteMapMark) -> Boolean = { false },
     editedWorksiteLocation: LatLng? = null,
+    onEditLocationZoom: Float = 12f,
 ) {
     // TODO Profile and optimize recompositions when map is changed (by user) if possible.
 
@@ -350,8 +350,7 @@ internal fun BoxScope.CasesMapView(
 
     editedWorksiteLocation?.let {
         LaunchedEffect(Unit) {
-            // TODO Use zoom parameter/constant
-            val update = CameraUpdateFactory.newLatLngZoom(it, 12f)
+            val update = CameraUpdateFactory.newLatLngZoom(it, onEditLocationZoom)
             cameraPositionState.move(update)
         }
     }

@@ -19,6 +19,10 @@ import kotlinx.datetime.Instant
             value = ["incident_id", "viewed_at"],
             orders = [Order.ASC, Order.DESC],
         ),
+        Index(
+            value = ["viewed_at"],
+            orders = [Order.DESC],
+        ),
     ]
 )
 data class RecentWorksiteEntity(

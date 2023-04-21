@@ -15,17 +15,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.common.combineTrimText
+import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
+import com.crisiscleanup.core.commoncase.ui.listCaseResults
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemOptionPadding
 import com.crisiscleanup.core.designsystem.theme.textMessagePadding
 import com.crisiscleanup.core.model.data.LocationAddress
+import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.EditCaseLocationViewModel
 import com.crisiscleanup.feature.caseeditor.LocationSearchResults
 import com.crisiscleanup.feature.caseeditor.R
-import com.crisiscleanup.feature.caseeditor.model.ExistingCaseLocation
-import com.crisiscleanup.feature.caseeditor.util.combineTrimText
 
 @Composable
 internal fun ColumnScope.SearchContents(
@@ -52,7 +54,7 @@ internal fun ColumnScope.SearchContents(
             }
         } else {
             val onCaseSelect = remember(viewModel) {
-                { caseLocation: ExistingCaseLocation ->
+                { caseLocation: CaseSummaryResult ->
                     viewModel.onExistingWorksiteSelected(caseLocation)
                 }
             }
@@ -102,7 +104,7 @@ private fun LazyListScope.listItemTitle(
 private fun ListSearchResults(
     results: LocationSearchResults,
     modifier: Modifier = Modifier,
-    onCaseSelect: (ExistingCaseLocation) -> Unit = {},
+    onCaseSelect: (CaseSummaryResult) -> Unit = {},
     onAddressSelect: (LocationAddress) -> Unit = {},
     closeKeyboard: () -> Unit = {},
 ) {
@@ -113,7 +115,7 @@ private fun ListSearchResults(
                 textResId = R.string.existing_worksites,
             )
 
-            existingCaseLocations(
+            listCaseResults(
                 results.worksites,
                 onCaseSelect,
             )

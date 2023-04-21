@@ -3,10 +3,10 @@ package com.crisiscleanup.feature.caseeditor
 import com.crisiscleanup.core.addresssearch.AddressSearchRepository
 import com.crisiscleanup.core.addresssearch.model.KeyLocationAddress
 import com.crisiscleanup.core.common.LocationProvider
+import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.mapmarker.model.DefaultCoordinates
-import com.crisiscleanup.feature.caseeditor.model.ExistingCaseLocation
 import com.crisiscleanup.feature.caseeditor.model.LocationInputData
 import com.crisiscleanup.feature.caseeditor.model.asCaseLocation
 import com.google.android.gms.maps.model.LatLng
@@ -130,7 +130,7 @@ internal class LocationSearchManager(
 data class LocationSearchResults(
     val query: String,
     val addresses: List<KeyLocationAddress>,
-    val worksites: List<ExistingCaseLocation>,
+    val worksites: List<CaseSummaryResult>,
 ) {
     val isEmpty = addresses.isEmpty() && worksites.isEmpty()
 }

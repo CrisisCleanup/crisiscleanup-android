@@ -1,8 +1,8 @@
 package com.crisiscleanup.feature.caseeditor
 
+import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
-import com.crisiscleanup.feature.caseeditor.model.ExistingCaseLocation
 import com.crisiscleanup.feature.caseeditor.model.PropertyInputData
 import com.crisiscleanup.feature.caseeditor.model.asCaseLocation
 import kotlinx.coroutines.CoroutineDispatcher
@@ -83,7 +83,7 @@ class ResidentNameSearchManager(
 
 data class ResidentNameSearchResults(
     val query: String,
-    val worksites: List<ExistingCaseLocation>,
+    val worksites: List<CaseSummaryResult>,
 ) {
     val isEmpty = worksites.isEmpty()
     val isNotEmpty = !isEmpty

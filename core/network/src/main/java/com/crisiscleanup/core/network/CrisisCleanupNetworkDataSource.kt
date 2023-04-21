@@ -70,6 +70,11 @@ interface CrisisCleanupNetworkDataSource {
         limit: Int = 5,
     ): NetworkWorksiteLocationSearchResult
 
+    suspend fun getSearchWorksites(
+        incidentId: Long,
+        q: String,
+    ): NetworkWorksitesShortResult
+
     suspend fun getLanguages(): NetworkLanguagesResult
 
     suspend fun getLanguageTranslations(key: String): NetworkLanguageTranslationResult
