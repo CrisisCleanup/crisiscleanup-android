@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 
 private fun roundedRectangleButtonShape() = RoundedCornerShape(4.dp)
 
@@ -45,6 +46,12 @@ fun Modifier.actionSize() = size(48.dp)
 fun Modifier.actionSmallSize() = size(44.dp)
 
 @Composable
+private fun buttonColors() = ButtonDefaults.buttonColors(
+    containerColor = MaterialTheme.colorScheme.primaryContainer,
+    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+)
+
+@Composable
 private fun Text(
     @StringRes
     textResId: Int = 0,
@@ -72,6 +79,7 @@ fun BusyButton(
         onClick = onClick,
         enabled = enabled,
         shape = roundedRectangleButtonShape(),
+        colors = buttonColors(),
         elevation = if (indicateBusy) null else ButtonDefaults.elevatedButtonElevation(),
     ) {
         if (indicateBusy) {
@@ -95,6 +103,7 @@ fun CrisisCleanupButton(
         modifier = modifier.actionHeight(),
         onClick = onClick,
         enabled = enabled,
+        colors = buttonColors(),
         shape = roundedRectangleButtonShape(),
     ) {
         Text(textResId, text)
@@ -114,6 +123,7 @@ fun CrisisCleanupTextButton(
         modifier = modifier.actionHeight(),
         onClick = onClick,
         enabled = enabled,
+        colors = buttonColors(),
         shape = roundedRectangleButtonShape(),
     ) {
         Text(textResId, text)
@@ -123,19 +133,23 @@ fun CrisisCleanupTextButton(
 @Preview
 @Composable
 fun CrisisCleanupButtonPreview() {
-    CrisisCleanupButton(
-        enabled = true,
-        text = "Press"
-    )
+    CrisisCleanupTheme {
+        CrisisCleanupButton(
+            enabled = true,
+            text = "Press"
+        )
+    }
 }
 
 @Preview
 @Composable
 fun BusyButtonPreview() {
-    // Disable button to see progress or colors will be matching
-    BusyButton(
-        enabled = false,
-        text = "Press",
-        indicateBusy = true,
-    )
+    CrisisCleanupTheme {
+        // Disable button to see progress or colors will be matching
+        BusyButton(
+            enabled = false,
+            text = "Press",
+            indicateBusy = true,
+        )
+    }
 }
