@@ -1,30 +1,27 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.toSize
-import androidx.constraintlayout.compose.ConstraintLayoutScope
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.*
@@ -80,12 +77,12 @@ internal fun CaseEditorRoute(
             }
         }
         Column {
-            TopAppBarBackCancel(
+            TopAppBarCancel(
                 title = headerTitle,
-                onBack = onNavigateBack,
                 onCancel = onNavigateCancel,
             )
             CaseEditorScreen(
+                onNavigateBack = onNavigateBack,
                 onEditProperty = onEditPropertyData,
                 onEditLocation = onEditLocation,
                 onEditNotesFlags = onEditNotesFlags,
@@ -102,6 +99,7 @@ internal fun CaseEditorRoute(
 internal fun ColumnScope.CaseEditorScreen(
     modifier: Modifier = Modifier,
     viewModel: CaseEditorViewModel = hiltViewModel(),
+    onNavigateBack: () -> Unit = {},
     onEditProperty: () -> Unit = {},
     onEditLocation: () -> Unit = {},
     onEditNotesFlags: () -> Unit = {},
@@ -118,7 +116,10 @@ internal fun ColumnScope.CaseEditorScreen(
             }
         }
         is CaseEditorUiState.WorksiteData -> {
-            FullEditView(uiState as CaseEditorUiState.WorksiteData)
+            FullEditView(
+                uiState as CaseEditorUiState.WorksiteData,
+                onBack = onNavigateBack,
+            )
         }
         else -> {
             val errorData = uiState as CaseEditorUiState.Error
@@ -140,6 +141,7 @@ private fun ColumnScope.FullEditView(
     worksiteData: CaseEditorUiState.WorksiteData,
     modifier: Modifier = Modifier,
     viewModel: CaseEditorViewModel = hiltViewModel(),
+    onBack: () -> Unit,
 ) {
     // TODO Pager should not affect or recompose content except when change in content to focus on should change
 
@@ -186,22 +188,61 @@ private fun ColumnScope.FullEditView(
         }
     }
 
-    Text("Bottom")
+    val isSavingData by viewModel.isSavingWorksite.collectAsStateWithLifecycle()
+    val isEditable by remember(worksiteData, isSavingData) {
+        derivedStateOf {
+            worksiteData.isEditable && !isSavingData
+        }
+    }
+    Box(Modifier.weight(1f)) {
+        // TODO Why does content recompose when pager is scrolled?
+        //      Optimize after all content is complete and eliminate unnecessary recompositions.
+        //      Replace content with static text and it doesn't seem to recompose...
+        FullEditContent(
+            worksiteData,
+            editSections,
+            modifier,
+            viewModel,
+            isEditable,
+        )
 
-//    ConstraintLayout(Modifier.fillMaxSize()) {
-//        FullEditContent(
-//            worksiteData,
-//            modifier,
-//            viewModel,
-//            editPropertyData,
-//            editLocation,
-//            editNotesFlags,
-//            editDetails,
-//            editWork,
-//            editHazards,
-//            editVolunteerReport,
-//        )
-//    }
+        val isLoadingWorksite by viewModel.isLoading.collectAsStateWithLifecycle()
+        BusyIndicatorFloatingTopCenter(isLoadingWorksite)
+    }
+
+    val isDataChanged by viewModel.hasChanges.collectAsStateWithLifecycle()
+    if (isDataChanged) {
+        val saveChanges = remember(viewModel) { { viewModel.saveChanges() } }
+        SaveActionBar(
+            !isSavingData,
+            onBack,
+            saveChanges,
+        )
+    }
+
+    val showBackChangesDialog by viewModel.promptUnsavedChanges
+    val showCancelChangesDialog by viewModel.promptCancelChanges
+    val abandonChanges = remember(viewModel) { { viewModel.abandonChanges() } }
+    if (showBackChangesDialog) {
+        val closeChangesDialog = { viewModel.promptUnsavedChanges.value = false }
+        PromptChangesDialog(
+            onStay = closeChangesDialog,
+            onAbort = abandonChanges,
+        )
+    } else if (showCancelChangesDialog) {
+        val closeChangesDialog = { viewModel.promptCancelChanges.value = false }
+        PromptChangesDialog(
+            onStay = closeChangesDialog,
+            onAbort = abandonChanges,
+        )
+    }
+
+    // TODO Prompt where required or inconsistent
+//    InvalidSaveDialog(
+//        onEditLocation = editLocation,
+//        onEditPropertyData = editPropertyData,
+//        onEditWork = editWork,
+//    )
 }
 
 @Composable
@@ -249,107 +290,103 @@ private fun SectionPager(
 }
 
 @Composable
-private fun ConstraintLayoutScope.FullEditContent(
+private fun BoxScope.FullEditContent(
     worksiteData: CaseEditorUiState.WorksiteData,
+    sectionTitles: List<String> = emptyList(),
     modifier: Modifier = Modifier,
     viewModel: CaseEditorViewModel = hiltViewModel(),
-
-    editPropertyData: () -> Unit = {},
-    editLocation: () -> Unit = {},
-    editWork: () -> Unit = {},
+    isEditable: Boolean = false,
 ) {
-    val (mainContent, busyIndicator, saveChangesRef) = createRefs()
-
-    val isLoadingWorksite by viewModel.isLoading.collectAsStateWithLifecycle()
-    val isSavingData by viewModel.isSavingWorksite.collectAsStateWithLifecycle()
-    val isEditable = worksiteData.isEditable && !isSavingData
-
-    val isDataChanged by viewModel.hasChanges.collectAsStateWithLifecycle()
-
-    val saveChanges = remember(viewModel) { { viewModel.saveChanges() } }
-    var saveChangesButtonSize by remember { mutableStateOf(Size.Zero) }
-
     val closeKeyboard = rememberCloseKeyboard(viewModel)
     val scrollState = rememberScrollState()
     Column(
         modifier
-            .constrainAs(mainContent) {
-                top.linkTo(parent.top)
-                start.linkTo(parent.start)
-                end.linkTo(parent.end)
-            }
             .scrollFlingListener(closeKeyboard)
             .verticalScroll(scrollState)
+            .fillMaxSize()
     ) {
+        val isLocalModified by remember { derivedStateOf { worksiteData.isLocalModified } }
         CaseIncident(
             modifier,
             worksiteData.incident.name,
-            worksiteData.isLocalModified,
+            isLocalModified,
         )
 
         val translate = remember(viewModel) { { s: String -> viewModel.translate(s) } }
 
         val worksite by viewModel.editingWorksite.collectAsStateWithLifecycle()
 
-        if (isDataChanged) {
-            Spacer(
-                modifier = listItemModifier.height(
-                    with(LocalDensity.current) { saveChangesButtonSize.height.toDp() }
-                ),
-            )
+        viewModel.propertyEditor?.let {
+            if (sectionTitles.isNotEmpty()) {
+                var isPropertyCollapsed by remember { mutableStateOf(false) }
+                val togglePropertySection =
+                    remember(viewModel) { { isPropertyCollapsed = !isPropertyCollapsed } }
+                SectionHeader(
+                    sectionIndex = 0,
+                    sectionTitle = sectionTitles[0],
+                    isCollapsed = isPropertyCollapsed,
+                    toggleCollapse = togglePropertySection,
+                )
+                if (!isPropertyCollapsed) {
+                    PropertyFormView(
+                        viewModel,
+                        it,
+                        isEditable,
+                    )
+                }
+            }
         }
     }
+}
 
-    AnimatedBusyIndicator(
-        isBusy = isLoadingWorksite,
-        modifier = Modifier.constrainAs(busyIndicator) {
-            top.linkTo(parent.top)
-            centerHorizontallyTo(parent)
-        },
-        // TODO Common dimensions
-        padding = 48.dp
-    )
-
-    if (isDataChanged) {
-        BusyButton(
-            modifier = Modifier
-                .constrainAs(saveChangesRef) {
-                    bottom.linkTo(parent.bottom, margin = actionEdgeSpace)
-                    end.linkTo(parent.end, margin = actionEdgeSpace)
-                }
-                .animateContentSize()
-                .onGloballyPositioned {
-                    saveChangesButtonSize = it.size.toSize()
-                },
-            textResId = R.string.save_changes,
-            enabled = !isSavingData,
-            indicateBusy = isSavingData,
-            onClick = saveChanges,
+@Composable
+private fun SectionHeader(
+    modifier: Modifier = Modifier,
+    sectionIndex: Int,
+    sectionTitle: String,
+    isCollapsed: Boolean = false,
+    toggleCollapse: () -> Unit = {},
+) {
+    Row(
+        modifier
+            .clickable(onClick = toggleCollapse)
+            .listItemHeight()
+            .listItemPadding(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = listItemSpacedBy,
+    ) {
+        // TODO Bold
+        val textStyle = MaterialTheme.typography.bodyLarge
+        // TODO Can surface and box be combined into a single element?
+        Surface(
+            // TODO Common dimensions
+            Modifier.size(26.dp),
+            shape = CircleShape,
+            // TODO Common colors
+            color = Color(0xFFFECE09),
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Text(
+                    "${sectionIndex + 1}",
+                    style = textStyle,
+                )
+            }
+        }
+        Text(
+            sectionTitle,
+            Modifier.weight(1f),
+            style = textStyle,
+        )
+        val iconVector =
+            if (isCollapsed) CrisisCleanupIcons.ExpandLess else CrisisCleanupIcons.ExpandMore
+        val descriptionResId =
+            if (isCollapsed) R.string.collapse_section else R.string.expand_section
+        val description = stringResource(descriptionResId, sectionTitle)
+        Icon(
+            imageVector = iconVector,
+            contentDescription = description,
         )
     }
-
-    val showBackChangesDialog by viewModel.promptUnsavedChanges
-    val showCancelChangesDialog by viewModel.promptCancelChanges
-    val abandonChanges = remember(viewModel) { { viewModel.abandonChanges() } }
-    if (showBackChangesDialog) {
-        val closeChangesDialog = { viewModel.promptUnsavedChanges.value = false }
-        PromptChangesDialog(
-            onStay = closeChangesDialog,
-            onAbort = abandonChanges,
-        )
-    } else if (showCancelChangesDialog) {
-        val closeChangesDialog = { viewModel.promptCancelChanges.value = false }
-        PromptChangesDialog(
-            onStay = closeChangesDialog,
-            onAbort = abandonChanges,
-        )
-    }
-
-    InvalidSaveDialog(
-        onEditLocation = editLocation,
-        onEditPropertyData = editPropertyData,
-        onEditWork = editWork,
-    )
 }
 
 @Composable
@@ -522,6 +559,46 @@ private fun InvalidSaveDialog(
     }
 }
 
+@Composable
+private fun SaveActionBar(
+    enable: Boolean = true,
+    onBack: () -> Unit = {},
+    onSave: () -> Unit = {},
+) {
+    Row(
+        modifier = Modifier
+            // TODO Common dimensions
+            .padding(16.dp),
+        horizontalArrangement = listItemSpacedBy,
+    ) {
+        // TODO Use translations
+        BusyButton(
+            Modifier.weight(2f),
+            textResId = R.string.back,
+            enabled = enable,
+            onClick = onBack,
+            colors = ButtonDefaults.buttonColors(
+                // TODO Move into colors
+                containerColor = Color(0xFFEAEAEA)
+            ),
+        )
+        BusyButton(
+            Modifier.weight(3f),
+            textResId = R.string.claim_and_save,
+            enabled = enable,
+            indicateBusy = !enable,
+            onClick = onSave,
+        )
+        BusyButton(
+            Modifier.weight(3f),
+            textResId = R.string.save,
+            enabled = enable,
+            indicateBusy = !enable,
+            onClick = onSave,
+        )
+    }
+}
+
 @Preview
 @Composable
 private fun CaseIncidentPreview() {
@@ -531,4 +608,10 @@ private fun CaseIncidentPreview() {
             isLocalModified = true,
         )
     }
+}
+
+@Preview
+@Composable
+private fun SaveActionBarPreview() {
+    SaveActionBar()
 }

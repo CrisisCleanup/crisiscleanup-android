@@ -34,7 +34,7 @@ internal fun HelpDialog(
         confirmButton = {
             CrisisCleanupTextButton(
                 textResId = android.R.string.ok,
-                onClick = onClose
+                onClick = onClose,
             )
         },
     )

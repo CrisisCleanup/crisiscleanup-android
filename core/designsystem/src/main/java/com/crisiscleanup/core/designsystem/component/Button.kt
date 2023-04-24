@@ -46,7 +46,7 @@ fun Modifier.actionSize() = size(48.dp)
 fun Modifier.actionSmallSize() = size(44.dp)
 
 @Composable
-private fun buttonColors() = ButtonDefaults.buttonColors(
+private fun primaryButtonColors() = ButtonDefaults.buttonColors(
     containerColor = MaterialTheme.colorScheme.primaryContainer,
     contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
 )
@@ -73,13 +73,14 @@ fun BusyButton(
     textResId: Int = 0,
     text: String = "",
     indicateBusy: Boolean = false,
+    colors: ButtonColors = primaryButtonColors(),
 ) {
     Button(
         modifier = modifier.actionHeight(),
         onClick = onClick,
         enabled = enabled,
         shape = roundedRectangleButtonShape(),
-        colors = buttonColors(),
+        colors = colors,
         elevation = if (indicateBusy) null else ButtonDefaults.elevatedButtonElevation(),
     ) {
         if (indicateBusy) {
@@ -103,7 +104,7 @@ fun CrisisCleanupButton(
         modifier = modifier.actionHeight(),
         onClick = onClick,
         enabled = enabled,
-        colors = buttonColors(),
+        colors = primaryButtonColors(),
         shape = roundedRectangleButtonShape(),
     ) {
         Text(textResId, text)
@@ -118,16 +119,15 @@ fun CrisisCleanupTextButton(
     @StringRes
     textResId: Int = 0,
     text: String = "",
+    colors: ButtonColors = ButtonDefaults.textButtonColors(),
+) = TextButton(
+    modifier = modifier.actionHeight(),
+    onClick = onClick,
+    enabled = enabled,
+    colors = colors,
+    shape = roundedRectangleButtonShape(),
 ) {
-    TextButton(
-        modifier = modifier.actionHeight(),
-        onClick = onClick,
-        enabled = enabled,
-        colors = buttonColors(),
-        shape = roundedRectangleButtonShape(),
-    ) {
-        Text(textResId, text)
-    }
+    Text(textResId, text)
 }
 
 @Preview

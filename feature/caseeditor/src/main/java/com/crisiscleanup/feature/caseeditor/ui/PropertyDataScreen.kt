@@ -30,8 +30,7 @@ import com.crisiscleanup.core.model.data.AutoContactFrequency
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
-import com.crisiscleanup.feature.caseeditor.EditCasePropertyViewModel
-import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
+import com.crisiscleanup.feature.caseeditor.*
 import com.crisiscleanup.feature.caseeditor.R
 
 private const val ScreenTitleTranslateKey = "caseForm.property_information"
@@ -73,7 +72,7 @@ internal fun EditCasePropertyRoute(
     onBackClick: () -> Unit = {},
     openExistingCase: (ids: ExistingWorksiteIdentifier) -> Unit = { _ -> },
 ) {
-    val editDifferentWorksite by viewModel.editIncidentWorksite.collectAsStateWithLifecycle()
+    val editDifferentWorksite by viewModel.editor.editIncidentWorksite.collectAsStateWithLifecycle()
     if (editDifferentWorksite.isDefined) {
         openExistingCase(editDifferentWorksite)
     } else {
@@ -100,18 +99,20 @@ private fun EditCasePropertyView(
                 .verticalScroll(scrollState)
                 .weight(1f)
         ) {
-            PropertyFormView()
+            PropertyFormView(viewModel, viewModel.editor)
         }
     }
 }
 
 @Composable
-private fun PropertyFormView(
-    viewModel: EditCasePropertyViewModel = hiltViewModel(),
+internal fun PropertyFormView(
+    viewModel: EditCaseBaseViewModel,
+    editor: CasePropertyDataEditor,
+    isEditable: Boolean = true,
 ) {
-    val inputData = viewModel.propertyInputData
+    val inputData = editor.propertyInputData
 
-    PropertyFormResidentNameView()
+    PropertyFormResidentNameView(viewModel, editor, isEditable)
 
     // TODO Apply mask with dashes if input is purely numbers (and dashes)
     val updatePhone = remember(inputData) { { s: String -> inputData.phoneNumber = s } }
@@ -129,7 +130,7 @@ private fun PropertyFormView(
         isError = isPhoneError,
         hasFocus = focusPhone,
         onNext = clearPhoneError,
-        enabled = true,
+        enabled = isEditable,
     )
 
     val updateAdditionalPhone = remember(inputData) {
@@ -143,14 +144,14 @@ private fun PropertyFormView(
         onValueChange = updateAdditionalPhone,
         keyboardType = KeyboardType.Password,
         isError = false,
-        enabled = true,
+        enabled = isEditable,
     )
 
     val updateEmail = remember(inputData) { { s: String -> inputData.email = s } }
     val clearEmailError = remember(inputData) { { inputData.emailError = "" } }
     val isEmailError = inputData.emailError.isNotEmpty()
     val focusEmail = isEmailError
-    val closeKeyboard = rememberCloseKeyboard(viewModel)
+    val closeKeyboard = rememberCloseKeyboard(editor)
     ErrorText(inputData.emailError)
     OutlinedClearableTextField(
         modifier = listItemModifier,
@@ -162,7 +163,7 @@ private fun PropertyFormView(
         isError = isEmailError,
         hasFocus = focusEmail,
         onNext = clearEmailError,
-        enabled = true,
+        enabled = isEditable,
         imeAction = ImeAction.Done,
         onEnter = closeKeyboard
     )
@@ -187,7 +188,7 @@ private fun PropertyFormView(
     val updateContactFrequency = remember(inputData) {
         { it: AutoContactFrequency -> inputData.autoContactFrequency = it }
     }
-    val contactFrequencyOptions by viewModel.contactFrequencyOptions.collectAsStateWithLifecycle()
+    val contactFrequencyOptions by editor.contactFrequencyOptions.collectAsStateWithLifecycle()
     ErrorText(inputData.frequencyError)
     Column(modifier = Modifier.selectableGroup()) {
         contactFrequencyOptions.forEach {
@@ -208,6 +209,7 @@ private fun PropertyFormView(
                     selected = isSelected,
                     modifier = Modifier.listRowItemStartPadding(),
                     onClick = null,
+                    enabled = isEditable,
                 )
                 Text(
                     text = it.second,
@@ -228,9 +230,11 @@ private fun PropertyFormView(
 
 @Composable
 private fun PropertyFormResidentNameView(
-    viewModel: EditCasePropertyViewModel = hiltViewModel(),
+    viewModel: EditCaseBaseViewModel,
+    editor: CasePropertyDataEditor,
+    isEditable: Boolean = true,
 ) {
-    val inputData = viewModel.propertyInputData
+    val inputData = editor.propertyInputData
 
     val residentName by inputData.residentName.collectAsStateWithLifecycle()
     val updateName = remember(inputData) { { s: String -> inputData.residentName.value = s } }
@@ -253,22 +257,22 @@ private fun PropertyFormResidentNameView(
             isError = isNameError,
             hasFocus = focusName,
             onNext = clearNameError,
-            enabled = true,
+            enabled = isEditable,
         )
 
-        val existingCasesResults by viewModel.searchResults.collectAsStateWithLifecycle()
+        val existingCasesResults by editor.searchResults.collectAsStateWithLifecycle()
 
-        val onCaseSelect = remember(viewModel) {
+        val onCaseSelect = remember(editor) {
             { caseLocation: CaseSummaryResult ->
-                viewModel.onExistingWorksiteSelected(caseLocation)
+                editor.onExistingWorksiteSelected(caseLocation)
             }
         }
 
         var hideDropdown by remember { mutableStateOf(false) }
-        val onStopSuggestions = remember(viewModel) {
+        val onStopSuggestions = remember(editor) {
             {
                 hideDropdown = true
-                viewModel.stopSearchingWorksites()
+                editor.stopSearchingWorksites()
             }
         }
 

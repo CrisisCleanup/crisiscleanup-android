@@ -16,29 +16,46 @@ import com.crisiscleanup.core.model.data.AutoContactFrequency
 import com.crisiscleanup.feature.caseeditor.model.PropertyInputData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-@HiltViewModel
-class EditCasePropertyViewModel @Inject constructor(
-    worksiteProvider: EditableWorksiteProvider,
+interface CasePropertyDataEditor {
+    val propertyInputData: PropertyInputData
+
+    val searchResults: StateFlow<ResidentNameSearchResults>
+
+    val editIncidentWorksite: StateFlow<ExistingWorksiteIdentifier>
+
+    val contactFrequencyOptions: StateFlow<List<Pair<AutoContactFrequency, String>>>
+
+    fun stopSearchingWorksites()
+
+    fun onExistingWorksiteSelected(result: CaseSummaryResult)
+
+    fun onBackValidateSaveWorksite(): Boolean
+}
+
+internal class EditablePropertyDataEditor(
+    private val worksiteProvider: EditableWorksiteProvider,
     inputValidator: InputValidator,
     resourceProvider: AndroidResourceProvider,
     searchWorksitesRepository: SearchWorksitesRepository,
     caseIconProvider: MapCaseIconProvider,
     translator: KeyTranslator,
     private val existingWorksiteSelector: ExistingWorksiteSelector,
-    @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-    @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
-) : EditCaseBaseViewModel(worksiteProvider, translator, logger) {
-    val propertyInputData: PropertyInputData
+    private val ioDispatcher: CoroutineDispatcher,
+    private val logger: AppLogger,
+    private val coroutineScope: CoroutineScope,
+) : CasePropertyDataEditor {
+    override val propertyInputData: PropertyInputData
 
     private val nameSearchManager: ResidentNameSearchManager
-    val searchResults: StateFlow<ResidentNameSearchResults>
+    override val searchResults: StateFlow<ResidentNameSearchResults>
 
-    val editIncidentWorksite = existingWorksiteSelector.selected
+    override val editIncidentWorksite = existingWorksiteSelector.selected
 
     private val contactFrequencyOptionValues = listOf(
         AutoContactFrequency.Often,
@@ -46,12 +63,12 @@ class EditCasePropertyViewModel @Inject constructor(
         AutoContactFrequency.Never,
     )
 
-    val contactFrequencyOptions = translator.translationCount.map {
+    override val contactFrequencyOptions = translator.translationCount.map {
         contactFrequencyOptionValues.map {
             Pair(it, translator.translate(it.literal) ?: it.literal)
         }
     }.stateIn(
-        scope = viewModelScope,
+        scope = coroutineScope,
         initialValue = emptyList(),
         started = SharingStarted.WhileSubscribed(),
     )
@@ -73,16 +90,16 @@ class EditCasePropertyViewModel @Inject constructor(
             ioDispatcher,
         )
         searchResults = nameSearchManager.searchResults.stateIn(
-            scope = viewModelScope,
+            scope = coroutineScope,
             initialValue = ResidentNameSearchResults("", emptyList()),
             started = SharingStarted.WhileSubscribed(),
         )
     }
 
-    fun stopSearchingWorksites() = nameSearchManager.stopSearchingWorksites()
+    override fun stopSearchingWorksites() = nameSearchManager.stopSearchingWorksites()
 
-    fun onExistingWorksiteSelected(result: CaseSummaryResult) {
-        viewModelScope.launch(ioDispatcher) {
+    override fun onExistingWorksiteSelected(result: CaseSummaryResult) {
+        coroutineScope.launch(ioDispatcher) {
             existingWorksiteSelector.onNetworkWorksiteSelected(result.networkWorksiteId)
         }
     }
@@ -96,7 +113,7 @@ class EditCasePropertyViewModel @Inject constructor(
         return false
     }
 
-    private fun onBackValidateSaveWorksite(): Boolean {
+    override fun onBackValidateSaveWorksite(): Boolean {
         if (searchResults.value.isNotEmpty) {
             stopSearchingWorksites()
             return false
@@ -104,8 +121,34 @@ class EditCasePropertyViewModel @Inject constructor(
 
         return validateSaveWorksite()
     }
+}
 
-    override fun onSystemBack() = onBackValidateSaveWorksite()
+@HiltViewModel
+class EditCasePropertyViewModel @Inject constructor(
+    worksiteProvider: EditableWorksiteProvider,
+    inputValidator: InputValidator,
+    resourceProvider: AndroidResourceProvider,
+    searchWorksitesRepository: SearchWorksitesRepository,
+    caseIconProvider: MapCaseIconProvider,
+    translator: KeyTranslator,
+    existingWorksiteSelector: ExistingWorksiteSelector,
+    @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
+) : EditCaseBaseViewModel(worksiteProvider, translator, logger) {
+    val editor: CasePropertyDataEditor = EditablePropertyDataEditor(
+        worksiteProvider,
+        inputValidator,
+        resourceProvider,
+        searchWorksitesRepository,
+        caseIconProvider,
+        translator,
+        existingWorksiteSelector,
+        ioDispatcher,
+        logger,
+        viewModelScope
+    )
 
-    override fun onNavigateBack() = onBackValidateSaveWorksite()
+    override fun onSystemBack() = editor.onBackValidateSaveWorksite()
+
+    override fun onNavigateBack() = editor.onBackValidateSaveWorksite()
 }

@@ -31,6 +31,8 @@ internal class CaseEditorDataLoader(
     coroutineDispatcher: CoroutineDispatcher,
     private val logger: AppLogger,
 ) {
+    val editSections = MutableStateFlow<List<String>>(emptyList())
+
     val incidentFieldLookup = MutableStateFlow(emptyMap<String, GroupSummaryFieldLookup>())
     val workTypeGroupChildrenLookup = MutableStateFlow(emptyMap<String, Collection<String>>())
 
@@ -156,6 +158,11 @@ internal class CaseEditorDataLoader(
                         incident.formFields
                             .filter { it.fieldKey.isNotBlank() && it.label.isNotBlank() }
                             .associate { it.fieldKey to it.label }
+
+                    editSections.value = mutableListOf<String>().apply {
+                        add(translate("caseForm.property_information"))
+                        addAll(formFields.map { it.formField.label })
+                    }
 
                     workTypeGroupChildrenLookup.value =
                         formFields.firstOrNull { it.fieldKey == WorkFormGroupKey }

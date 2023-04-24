@@ -174,6 +174,38 @@ fun TopAppBarBackCancel(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+fun TopAppBarCancel(
+    modifier: Modifier = Modifier,
+    @StringRes titleResId: Int = 0,
+    title: String = "",
+    onCancel: () -> Unit = {},
+    colors: TopAppBarColors = TopAppBarDefaults.centerAlignedTopAppBarColors(),
+) {
+    val titleContent = @Composable {
+        TruncatedAppBarText(modifier, titleResId, title)
+    }
+    val navigationContent: (@Composable (() -> Unit)) =
+        @Composable {
+            // TODO Style, icon, height of app bar
+            Row(
+                modifier
+                    .clickable(onClick = onCancel)
+                    .padding(8.dp)
+            ) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    CenterAlignedTopAppBar(
+        title = titleContent,
+        navigationIcon = navigationContent,
+        actions = { },
+        colors = colors,
+        modifier = modifier
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 private fun AttentionBadge(
     addBadge: Boolean,
     padding: Dp = 0.dp,

@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AndroidResourceProvider
+import com.crisiscleanup.core.common.InputValidator
 import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.SyncPusher
 import com.crisiscleanup.core.common.log.AppLogger
@@ -13,6 +14,7 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.repository.*
+import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.model.data.*
 import com.crisiscleanup.feature.caseeditor.model.coordinates
 import com.crisiscleanup.feature.caseeditor.navigation.CaseEditorArgs
@@ -45,6 +47,11 @@ class CaseEditorViewModel @Inject constructor(
     private val resourceProvider: AndroidResourceProvider,
     @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
+
+    inputValidator: InputValidator,
+    searchWorksitesRepository: SearchWorksitesRepository,
+    caseIconProvider: MapCaseIconProvider,
+    existingWorksiteSelector: ExistingWorksiteSelector,
 ) : EditCaseBaseViewModel(editableWorksiteProvider, translator, logger) {
     private val caseEditorArgs = CaseEditorArgs(savedStateHandle)
     private val incidentIdArg = caseEditorArgs.incidentId
@@ -55,17 +62,6 @@ class CaseEditorViewModel @Inject constructor(
     val headerTitle = MutableStateFlow("")
 
     val visibleNoteCount: Int = 2
-
-    val editSections = MutableStateFlow(
-        listOf(
-            // TODO Use resources and translations
-            "Property & Personal Information",
-            "Case Details",
-            "Work",
-            "Hazards",
-            "Volunteer Report",
-        )
-    )
 
     private val incidentFieldLookup: StateFlow<Map<String, GroupSummaryFieldLookup>>
     val workTypeGroupChildrenLookup: StateFlow<Map<String, Collection<String>>>
@@ -137,9 +133,33 @@ class CaseEditorViewModel @Inject constructor(
                 }
             }
             .launchIn(viewModelScope)
+
+        dataLoader.uiState.onEach {
+            if (propertyEditor != null) {
+                return@onEach
+            }
+
+            (it as? CaseEditorUiState.WorksiteData)?.let {
+                propertyEditor = EditablePropertyDataEditor(
+                    editableWorksiteProvider,
+                    inputValidator,
+                    resourceProvider,
+                    searchWorksitesRepository,
+                    caseIconProvider,
+                    translator,
+                    existingWorksiteSelector,
+                    ioDispatcher,
+                    logger,
+                    viewModelScope
+                )
+            }
+        }
+            .launchIn(viewModelScope)
     }
 
     val uiState = dataLoader.uiState
+
+    val editSections = dataLoader.editSections
 
     val isLoading = combine(
         dataLoader.isRefreshingIncident,
@@ -192,6 +212,8 @@ class CaseEditorViewModel @Inject constructor(
             initialValue = emptyList(),
             started = SharingStarted.WhileSubscribed(),
         )
+
+    var propertyEditor: CasePropertyDataEditor? = null
 
     private fun updateHeaderTitle(caseNumber: String = "") {
         headerTitle.value = if (caseNumber.isEmpty()) {
