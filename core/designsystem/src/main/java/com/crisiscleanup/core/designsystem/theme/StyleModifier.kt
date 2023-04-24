@@ -1,9 +1,6 @@
 package com.crisiscleanup.core.designsystem.theme
 
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
@@ -16,6 +13,9 @@ val fillWidthPadded = Modifier
 val listItemModifier = Modifier
     .fillMaxWidth()
     .listItemPadding()
+
+val listItemHorizontalPadding = PaddingValues(horizontal = 16.dp)
+val listItemSpacedBy = Arrangement.spacedBy(16.dp)
 
 fun Modifier.listItemHeight() = heightIn(min = 56.dp)
 fun Modifier.listItemPadding() = padding(horizontal = 16.dp, vertical = 8.dp)

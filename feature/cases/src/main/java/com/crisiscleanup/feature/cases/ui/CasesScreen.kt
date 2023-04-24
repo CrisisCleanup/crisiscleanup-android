@@ -64,7 +64,7 @@ internal fun CasesRoute(
 
         val isLayerView by casesViewModel.isLayerView
 
-        val disasterResId by casesViewModel.disasterIconResId.collectAsState()
+        val disasterResId by casesViewModel.disasterIconResId.collectAsStateWithLifecycle()
         var showChangeIncident by rememberSaveable { mutableStateOf(false) }
         val onIncidentSelect = remember(casesViewModel) { { showChangeIncident = true } }
 

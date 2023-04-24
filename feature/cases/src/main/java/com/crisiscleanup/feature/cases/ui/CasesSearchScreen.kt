@@ -10,13 +10,13 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.commoncase.ui.listCaseResults
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
@@ -36,14 +36,14 @@ internal fun CasesSearchRoute(
     openCase: (Long, Long) -> Boolean = { _, _ -> false },
     viewModel: CasesSearchViewModel = hiltViewModel(),
 ) {
-    val selectedWorksite by viewModel.selectedWorksite.collectAsState()
+    val selectedWorksite by viewModel.selectedWorksite.collectAsStateWithLifecycle()
     if (selectedWorksite.second != EmptyWorksite.id) {
         openCase(selectedWorksite.first, selectedWorksite.second)
     } else {
-        val isLoading by viewModel.isLoading.collectAsState()
+        val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
         val isNotLoading = !isLoading
 
-        val isSelectingResult by viewModel.isSelectingResult.collectAsState()
+        val isSelectingResult by viewModel.isSelectingResult.collectAsStateWithLifecycle()
 
         BackHandler(isNotLoading) {
             if (viewModel.onBack()) {
@@ -59,13 +59,13 @@ internal fun CasesSearchRoute(
             }
         }
 
-        val q by viewModel.searchQuery.collectAsState()
+        val q by viewModel.searchQuery.collectAsStateWithLifecycle()
         val updateQuery =
             remember(viewModel) { { text: String -> viewModel.searchQuery.value = text } }
 
-        val searchResults by viewModel.searchResults.collectAsState()
+        val searchResults by viewModel.searchResults.collectAsStateWithLifecycle()
 
-        val recentCases by viewModel.recentWorksites.collectAsState()
+        val recentCases by viewModel.recentWorksites.collectAsStateWithLifecycle()
 
         Box(Modifier.fillMaxSize()) {
             Column {

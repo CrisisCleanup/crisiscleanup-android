@@ -108,9 +108,7 @@ private fun LoadedContent(
         val appHeaderBar = viewModel.appHeaderUiState
         val appHeaderState by appHeaderBar.appHeaderState.collectAsStateWithLifecycle()
         val appHeaderTitle by appHeaderBar.title.collectAsStateWithLifecycle()
-        val isHeaderLoading by viewModel.showHeaderLoading.collectAsState(
-            false
-        )
+        val isHeaderLoading by viewModel.showHeaderLoading.collectAsState(false)
 
         val openIncidentsSelect = remember(appHeaderState) {
             { appState.navController.navigateToSelectIncident() }
@@ -165,7 +163,7 @@ private fun AuthenticateContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .consumedWindowInsets(padding)
+                    .consumeWindowInsets(padding)
                     .windowInsetsPadding(
                         WindowInsets.safeDrawing.only(
                             WindowInsetsSides.Horizontal
@@ -256,7 +254,7 @@ private fun NavigableContent(
             Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .consumedWindowInsets(padding)
+                .consumeWindowInsets(padding)
                 .windowInsetsPadding(
                     if (notDefaultTopBar) WindowInsets.safeDrawing
                     else WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)

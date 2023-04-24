@@ -56,6 +56,17 @@ class CaseEditorViewModel @Inject constructor(
 
     val visibleNoteCount: Int = 2
 
+    val editSections = MutableStateFlow(
+        listOf(
+            // TODO Use resources and translations
+            "Property & Personal Information",
+            "Case Details",
+            "Work",
+            "Hazards",
+            "Volunteer Report",
+        )
+    )
+
     private val incidentFieldLookup: StateFlow<Map<String, GroupSummaryFieldLookup>>
     val workTypeGroupChildrenLookup: StateFlow<Map<String, Collection<String>>>
 

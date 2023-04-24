@@ -187,7 +187,7 @@ private fun PropertyFormView(
     val updateContactFrequency = remember(inputData) {
         { it: AutoContactFrequency -> inputData.autoContactFrequency = it }
     }
-    val contactFrequencyOptions by viewModel.contactFrequencyOptions.collectAsState()
+    val contactFrequencyOptions by viewModel.contactFrequencyOptions.collectAsStateWithLifecycle()
     ErrorText(inputData.frequencyError)
     Column(modifier = Modifier.selectableGroup()) {
         contactFrequencyOptions.forEach {
