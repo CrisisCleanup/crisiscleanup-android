@@ -35,8 +35,7 @@ import com.crisiscleanup.core.ui.MapOverlayMessage
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.core.ui.touchDownConsumer
-import com.crisiscleanup.feature.caseeditor.EditCaseLocationViewModel
-import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
+import com.crisiscleanup.feature.caseeditor.*
 import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.util.summarizeAddress
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -98,30 +97,39 @@ internal fun EditCaseLocationRoute(
     onBackClick: () -> Unit = {},
     openExistingCase: (ids: ExistingWorksiteIdentifier) -> Unit = { _ -> },
 ) {
-    val editDifferentWorksite by viewModel.editIncidentWorksite.collectAsStateWithLifecycle()
+    val editor = viewModel.editor
+
+    val editDifferentWorksite by editor.editIncidentWorksite.collectAsStateWithLifecycle()
     if (editDifferentWorksite.isDefined) {
         openExistingCase(editDifferentWorksite)
     } else {
-        EditCaseLocationView(onBackClick = onBackClick)
+        EditCaseLocationView(
+            viewModel,
+            editor,
+            onBackClick = onBackClick
+        )
     }
 }
 
 @Composable
 private fun EditCaseLocationView(
-    viewModel: EditCaseLocationViewModel = hiltViewModel(),
+    viewModel: EditCaseBaseViewModel,
+    editor: CaseLocationDataEditor,
     onBackClick: () -> Unit = {},
 ) {
     EditCaseBackCancelView(
         viewModel,
         onBackClick,
-        viewModel.translate(ScreenTitleTranslateKey)
+        viewModel.translate(ScreenTitleTranslateKey),
     ) {
-        LocationView()
+        LocationView(viewModel, editor)
     }
 
+    // TODO Handle out of bounds properly
+
     val closePermissionDialog =
-        remember(viewModel) { { viewModel.showExplainPermissionLocation.value = false } }
-    val explainPermission by viewModel.showExplainPermissionLocation
+        remember(viewModel) { { editor.showExplainPermissionLocation.value = false } }
+    val explainPermission by editor.showExplainPermissionLocation
     ExplainLocationPermissionDialog(
         showDialog = explainPermission,
         closeDialog = closePermissionDialog,
@@ -129,7 +137,7 @@ private fun EditCaseLocationView(
 }
 
 @Composable
-private fun getLayoutParameters(isMoveLocationMode: Boolean): Pair<Boolean, Modifier> {
+internal fun getLayoutParameters(isMoveLocationMode: Boolean): Pair<Boolean, Modifier> {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val screenHeight = configuration.screenHeightDp.dp
@@ -153,21 +161,24 @@ private fun getLayoutParameters(isMoveLocationMode: Boolean): Pair<Boolean, Modi
 
 @Composable
 internal fun ColumnScope.LocationView(
-    viewModel: EditCaseLocationViewModel = hiltViewModel(),
+    viewModel: EditCaseBaseViewModel,
+    editor: CaseLocationDataEditor,
 ) {
-    val isMoveLocationMode by viewModel.isMoveLocationOnMapMode
+    val isMoveLocationMode by editor.isMoveLocationOnMapMode
 
     val cameraPositionState = rememberCameraPositionState("edit-location") {
         position = CameraPosition.fromLatLngZoom(
             DefaultCoordinates,
-            viewModel.defaultMapZoom,
+            editor.defaultMapZoom,
         )
     }
 
-    val (isRowOriented, mapModifier) = getLayoutParameters(isMoveLocationMode)
+    val (_, mapModifier) = getLayoutParameters(isMoveLocationMode)
 
     if (isMoveLocationMode) {
         LocationMapContainerView(
+            viewModel,
+            editor,
             mapModifier,
             cameraPositionState,
             true,
@@ -180,7 +191,7 @@ internal fun ColumnScope.LocationView(
             }
         }
 
-        val locationQuery by viewModel.locationInputData.locationQuery.collectAsStateWithLifecycle()
+        val locationQuery by editor.locationInputData.locationQuery.collectAsStateWithLifecycle()
         val query = locationQuery.trim()
         val showMapFormViews = query.isEmpty()
 
@@ -195,7 +206,7 @@ internal fun ColumnScope.LocationView(
                 )
                 .weight(1f)
         ) {
-            val updateLocation = remember(viewModel) { { s: String -> viewModel.onQueryChange(s) } }
+            val updateLocation = remember(viewModel) { { s: String -> editor.onQueryChange(s) } }
             OutlinedClearableTextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -208,11 +219,11 @@ internal fun ColumnScope.LocationView(
                 enabled = true,
             )
 
-            if (viewModel.takeClearSearchInputFocus) {
+            if (editor.takeClearSearchInputFocus) {
                 LocalFocusManager.current.clearFocus(true)
             }
 
-            val isShortQuery by viewModel.isShortQuery.collectAsStateWithLifecycle()
+            val isShortQuery by editor.isShortQuery.collectAsStateWithLifecycle()
             if (showMapFormViews) {
                 val onMapTouched = remember(viewModel) {
                     {
@@ -220,25 +231,14 @@ internal fun ColumnScope.LocationView(
                         closeKeyboard()
                     }
                 }
-                if (isRowOriented) {
-                    Row {
-                        LocationMapContainerView(
-                            mapModifier,
-                            cameraPositionState,
-                            onMapTouched = onMapTouched,
-                        )
-                        Column {
-                            LocationFormView()
-                        }
-                    }
-                } else {
-                    LocationMapContainerView(
-                        mapModifier,
-                        cameraPositionState,
-                        onMapTouched = onMapTouched,
-                    )
-                    LocationFormView()
-                }
+                LocationMapContainerView(
+                    viewModel,
+                    editor,
+                    mapModifier,
+                    cameraPositionState,
+                    onMapTouched = onMapTouched,
+                )
+                LocationFormView(viewModel, editor)
             } else if (isShortQuery) {
                 Text(
                     stringResource(R.string.location_query_hint),
@@ -246,7 +246,11 @@ internal fun ColumnScope.LocationView(
                     style = MaterialTheme.typography.bodyLarge,
                 )
             } else {
-                SearchContents(query)
+                SearchContents(
+                    viewModel,
+                    editor,
+                    query,
+                )
             }
         }
     }
@@ -257,6 +261,7 @@ internal fun MapButton(
     imageVector: ImageVector? = null,
     @DrawableRes iconResId: Int = 0,
     @StringRes contentDescriptionResId: Int = 0,
+    contentDescription: String = "",
     onClick: () -> Unit = {},
 ) {
     CrisisCleanupIconButton(
@@ -264,18 +269,20 @@ internal fun MapButton(
         imageVector = imageVector,
         iconResId = iconResId,
         contentDescriptionResId = contentDescriptionResId,
+        contentDescription = contentDescription,
         onClick = onClick,
     )
 }
 
 @Composable
 internal fun LocationMapActions(
+    viewModel: EditCaseBaseViewModel,
+    editor: CaseLocationDataEditor,
     isMoveLocationMode: Boolean,
-    viewModel: EditCaseLocationViewModel = hiltViewModel(),
 ) {
-    val useMyLocation = remember(viewModel) { { viewModel.useMyLocation() } }
-    val moveLocationOnMap = remember(viewModel) { { viewModel.toggleMoveLocationOnMap() } }
-    val centerOnLocation = remember(viewModel) { { viewModel.centerOnLocation() } }
+    val useMyLocation = remember(viewModel) { { editor.useMyLocation() } }
+    val moveLocationOnMap = remember(viewModel) { { editor.toggleMoveLocationOnMap() } }
+    val centerOnLocation = remember(viewModel) { { editor.centerOnLocation() } }
 
     ConstraintLayout(Modifier.fillMaxSize()) {
         val (actionBar) = createRefs()
@@ -286,13 +293,13 @@ internal fun LocationMapActions(
             },
             horizontalArrangement = Arrangement.spacedBy(adjacentButtonSpace),
         ) {
-            // TODO Likely hint with translator
             MapButton(
                 iconResId = R.drawable.ic_move_location,
-                contentDescriptionResId = R.string.select_on_map,
+                contentDescription = viewModel.translate("caseForm.select_on_map"),
                 onClick = moveLocationOnMap,
             )
             if (!isMoveLocationMode) {
+                // TODO Likely hint with translator
                 MapButton(
                     imageVector = CrisisCleanupIcons.Location,
                     contentDescriptionResId = R.string.center_on_location,
@@ -300,7 +307,7 @@ internal fun LocationMapActions(
                 )
                 MapButton(
                     imageVector = CrisisCleanupIcons.MyLocation,
-                    contentDescriptionResId = R.string.use_my_location,
+                    contentDescription = viewModel.translate("caseForm.use_my_location"),
                     onClick = useMyLocation,
                 )
             }
@@ -310,28 +317,34 @@ internal fun LocationMapActions(
 
 @Composable
 internal fun BoxScope.LocationMapView(
+    viewModel: EditCaseBaseViewModel,
+    editor: CaseLocationDataEditor,
     modifier: Modifier = Modifier,
-    viewModel: EditCaseLocationViewModel = hiltViewModel(),
+    zoomControls: Boolean = false,
+    disablePanning: Boolean = false,
     cameraPositionState: CameraPositionState = rememberCameraPositionState(),
 ) {
-    val onMapLoaded = remember(viewModel) { { viewModel.onMapLoaded() } }
+    val onMapLoaded = remember(viewModel) { { editor.onMapLoaded() } }
     val onMapCameraChange = remember(viewModel) {
         { position: CameraPosition,
           projection: Projection?,
           isUserInteraction: Boolean ->
-            viewModel.onMapCameraChange(position, projection, isUserInteraction)
+            editor.onMapCameraChange(position, projection, isUserInteraction)
         }
     }
 
-    val mapCameraZoom by viewModel.mapCameraZoom.collectAsStateWithLifecycle()
+    val mapCameraZoom by editor.mapCameraZoom.collectAsStateWithLifecycle()
 
-    val uiSettings by rememberMapUiSettings()
+    val uiSettings by rememberMapUiSettings(
+        zoomControls = zoomControls,
+        disablePanning = disablePanning,
+    )
 
     val markerState = rememberMarkerState()
-    val coordinates by viewModel.locationInputData.coordinates.collectAsStateWithLifecycle()
+    val coordinates by editor.locationInputData.coordinates.collectAsStateWithLifecycle()
     markerState.position = coordinates
 
-    val mapMarkerIcon by viewModel.mapMarkerIcon.collectAsStateWithLifecycle()
+    val mapMarkerIcon by editor.mapMarkerIcon.collectAsStateWithLifecycle()
 
     val mapProperties by rememberMapProperties()
     GoogleMap(
@@ -347,7 +360,7 @@ internal fun BoxScope.LocationMapView(
         )
     }
 
-    val outOfBoundsMessage by viewModel.locationOutOfBoundsMessage.collectAsStateWithLifecycle()
+    val outOfBoundsMessage by editor.locationOutOfBoundsMessage.collectAsStateWithLifecycle()
     MapOverlayMessage(outOfBoundsMessage)
 
     LaunchedEffect(mapCameraZoom) {
@@ -378,22 +391,34 @@ internal fun BoxScope.LocationMapView(
 
 @Composable
 internal fun LocationMapContainerView(
+    viewModel: EditCaseBaseViewModel,
+    editor: CaseLocationDataEditor,
     modifier: Modifier = Modifier,
     cameraPositionState: CameraPositionState = rememberCameraPositionState(),
     isMoveLocationMode: Boolean = false,
     onMapTouched: () -> Unit = {},
 ) {
     Box(modifier.touchDownConsumer(onMapTouched)) {
-        LocationMapView(cameraPositionState = cameraPositionState)
-        LocationMapActions(isMoveLocationMode)
+        LocationMapView(
+            viewModel,
+            editor,
+            cameraPositionState = cameraPositionState,
+        )
+        LocationMapActions(
+            viewModel,
+            editor,
+            isMoveLocationMode,
+        )
     }
 }
 
 @Composable
 internal fun LocationFormView(
-    viewModel: EditCaseLocationViewModel = hiltViewModel(),
+    viewModel: EditCaseBaseViewModel,
+    editor: CaseLocationDataEditor,
+    isEditable: Boolean = false,
 ) {
-    val inputData = viewModel.locationInputData
+    val inputData = editor.locationInputData
 
     val closeKeyboard = rememberCloseKeyboard(inputData)
 
@@ -410,7 +435,7 @@ internal fun LocationFormView(
         onValueChange = updateCrossStreet,
         keyboardType = KeyboardType.Text,
         isError = false,
-        enabled = true,
+        enabled = isEditable,
         imeAction = ImeAction.Next,
     )
 
@@ -445,7 +470,12 @@ internal fun LocationFormView(
             derivedStateOf { hasAddressError || hasWrongLocation }
         }
         if (showAddressForm) {
-            LocationAddressFormView(closeKeyboard = closeKeyboard)
+            LocationAddressFormView(
+                viewModel,
+                editor,
+                closeKeyboard,
+                isEditable,
+            )
         } else {
             AddressSummaryInColumn(
                 addressSummary,
@@ -457,10 +487,12 @@ internal fun LocationFormView(
 
 @Composable
 internal fun LocationAddressFormView(
-    viewModel: EditCaseLocationViewModel = hiltViewModel(),
+    viewModel: EditCaseBaseViewModel,
+    editor: CaseLocationDataEditor,
     closeKeyboard: () -> Unit = {},
+    isEditable: Boolean = false,
 ) {
-    val inputData = viewModel.locationInputData
+    val inputData = editor.locationInputData
 
     val updateAddress = remember(inputData) { { s: String -> inputData.streetAddress = s } }
     val clearAddressError = remember(inputData) { { inputData.streetAddressError = "" } }
@@ -477,7 +509,7 @@ internal fun LocationAddressFormView(
         isError = isAddressError,
         hasFocus = focusAddress,
         onNext = clearAddressError,
-        enabled = true,
+        enabled = isEditable,
     )
 
     // TODO Move into view model to query for and present menu options.
@@ -496,7 +528,7 @@ internal fun LocationAddressFormView(
         isError = isZipCodeError,
         hasFocus = focusZipCode,
         onNext = clearZipCodeError,
-        enabled = true,
+        enabled = isEditable,
     )
 
     val updateCounty = remember(inputData) { { s: String -> inputData.county = s } }
@@ -514,7 +546,7 @@ internal fun LocationAddressFormView(
         isError = isCountyError,
         hasFocus = focusCounty,
         onNext = clearCountyError,
-        enabled = true,
+        enabled = isEditable,
     )
 
     val updateCity = remember(inputData) { { s: String -> inputData.city = s } }
@@ -532,7 +564,7 @@ internal fun LocationAddressFormView(
         isError = isCityError,
         hasFocus = focusCity,
         onNext = clearCityError,
-        enabled = true,
+        enabled = isEditable,
     )
 
     val updateState = remember(inputData) { { s: String -> inputData.state = s } }
@@ -556,6 +588,6 @@ internal fun LocationAddressFormView(
         hasFocus = focusState,
         imeAction = ImeAction.Done,
         onEnter = onStateEnd,
-        enabled = true,
+        enabled = isEditable,
     )
 }

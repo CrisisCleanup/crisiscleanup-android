@@ -41,6 +41,7 @@ fun OutlinedSingleLineTextField(
     trailingIcon: (@Composable () -> Unit)? = null,
     imeAction: ImeAction = ImeAction.Next,
     nextDirection: FocusDirection = FocusDirection.Down,
+    readOnly: Boolean = false,
 ) {
     val focusRequester = FocusRequester()
     val modifier2 =
@@ -87,6 +88,7 @@ fun OutlinedSingleLineTextField(
         isError = isError,
         visualTransformation = visualTransformation,
         trailingIcon = trailingIconContent,
+        readOnly = readOnly,
     )
 
     if (hasFocus) {

@@ -17,28 +17,22 @@ class ResidentNameSearchManager(
     iconProvider: MapCaseIconProvider,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
     private val querySearchThresholdLength: Int = 3,
+    private val ignoreNetworkId: Long = -1,
+    disableNameSearch: Boolean = false,
 ) {
-    private val initialName = propertyInputData.residentName.value
-    private var isInitialQuery = true
+    private val steadyStateName = AtomicReference(propertyInputData.residentName.value.trim())
 
     private val activeQuery = AtomicReference("")
 
     private val isSearchingWorksites = MutableStateFlow(false)
 
-    private var stopSearching = MutableStateFlow(false)
+    private var stopSearching = MutableStateFlow(disableNameSearch)
 
     private val searchQuery = propertyInputData.residentName
         .debounce(100)
+        .filter { !stopSearching.value }
         .map(String::trim)
-        .map {
-            if (it == initialName && isInitialQuery || stopSearching.value) {
-                if (isInitialQuery) {
-                    isInitialQuery = false
-                }
-                return@map ""
-            }
-            it
-        }
+        .filter { it != steadyStateName.get() }
         .distinctUntilChanged()
         .onEach {
             synchronized(activeQuery) {
@@ -71,13 +65,22 @@ class ResidentNameSearchManager(
         worksitesSearch,
     ) { stop, q, worksiteResults ->
         val isValid = !stop && q.isNotBlank() && q.contains(worksiteResults.first)
-        val worksites = if (isValid) worksiteResults.second
-        else emptyList()
+        val worksites = if (isValid) {
+            if (ignoreNetworkId > 0) {
+                worksiteResults.second.filter { it.networkWorksiteId != ignoreNetworkId }
+            } else {
+                worksiteResults.second
+            }
+        } else emptyList()
         ResidentNameSearchResults(q, worksites)
     }
 
     fun stopSearchingWorksites() {
         stopSearching.value = true
+    }
+
+    fun updateSteadyStateName(name: String) {
+        steadyStateName.set(name.trim())
     }
 }
 

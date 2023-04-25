@@ -13,15 +13,18 @@ import com.google.maps.android.compose.MapUiSettings
 @Composable
 fun rememberMapUiSettings(
     myLocation: Boolean = false,
+    zoomControls: Boolean = false,
+    disablePanning: Boolean = false,
 ): MutableState<MapUiSettings> {
     return remember {
         mutableStateOf(
             MapUiSettings(
-                zoomControlsEnabled = false,
+                zoomControlsEnabled = zoomControls,
                 tiltGesturesEnabled = false,
                 rotationGesturesEnabled = false,
                 mapToolbarEnabled = false,
                 myLocationButtonEnabled = myLocation,
+                scrollGesturesEnabled = !disablePanning,
             )
         )
     }

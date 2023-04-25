@@ -31,6 +31,8 @@ interface CasePropertyDataEditor {
 
     val contactFrequencyOptions: StateFlow<List<Pair<AutoContactFrequency, String>>>
 
+    fun setSteadyStateSearchName()
+
     fun stopSearchingWorksites()
 
     fun onExistingWorksiteSelected(result: CaseSummaryResult)
@@ -88,12 +90,17 @@ internal class EditablePropertyDataEditor(
             searchWorksitesRepository,
             caseIconProvider,
             ioDispatcher,
+            ignoreNetworkId = worksite.networkId,
         )
         searchResults = nameSearchManager.searchResults.stateIn(
             scope = coroutineScope,
             initialValue = ResidentNameSearchResults("", emptyList()),
             started = SharingStarted.WhileSubscribed(),
         )
+    }
+
+    override fun setSteadyStateSearchName() {
+        nameSearchManager.updateSteadyStateName(propertyInputData.residentName.value)
     }
 
     override fun stopSearchingWorksites() = nameSearchManager.stopSearchingWorksites()

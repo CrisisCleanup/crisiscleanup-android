@@ -16,7 +16,7 @@ fun Pair<Double, Double>.toLatLng() = LatLng(first, second)
 // TODO Invoke map changes more elegantly
 fun LatLng.smallOffset() = LatLng(
     latitude,
-    longitude + Math.random() * 1e-9,
+    longitude + Math.random() * 1e-15,
 )
 
 fun Collection<Location>.toLatLng(): Collection<LocationLatLng> {

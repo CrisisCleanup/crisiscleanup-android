@@ -99,7 +99,12 @@ private fun EditCasePropertyView(
                 .verticalScroll(scrollState)
                 .weight(1f)
         ) {
-            PropertyFormView(viewModel, viewModel.editor)
+            PropertyFormView(
+                viewModel,
+                viewModel.editor,
+                isEditable = true,
+                focusOnOpen = true,
+            )
         }
     }
 }
@@ -108,11 +113,12 @@ private fun EditCasePropertyView(
 internal fun PropertyFormView(
     viewModel: EditCaseBaseViewModel,
     editor: CasePropertyDataEditor,
-    isEditable: Boolean = true,
+    isEditable: Boolean = false,
+    focusOnOpen: Boolean = false,
 ) {
     val inputData = editor.propertyInputData
 
-    PropertyFormResidentNameView(viewModel, editor, isEditable)
+    PropertyFormResidentNameView(viewModel, editor, isEditable, focusOnOpen)
 
     // TODO Apply mask with dashes if input is purely numbers (and dashes)
     val updatePhone = remember(inputData) { { s: String -> inputData.phoneNumber = s } }
@@ -178,13 +184,7 @@ internal fun PropertyFormView(
             helpText = viewModel.translate("casesVue.auto_contact_frequency_help")
         }
     }
-    Row(
-        modifier = listItemModifier,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(text = autoContactFrequencyLabel)
-        HelpAction(viewModel.helpHint, showHelp)
-    }
+    HelpRow(autoContactFrequencyLabel, viewModel.helpHint, showHelp = showHelp)
     val updateContactFrequency = remember(inputData) {
         { it: AutoContactFrequency -> inputData.autoContactFrequency = it }
     }
@@ -233,6 +233,7 @@ private fun PropertyFormResidentNameView(
     viewModel: EditCaseBaseViewModel,
     editor: CasePropertyDataEditor,
     isEditable: Boolean = true,
+    focusOnOpen: Boolean = false,
 ) {
     val inputData = editor.propertyInputData
 
@@ -240,7 +241,7 @@ private fun PropertyFormResidentNameView(
     val updateName = remember(inputData) { { s: String -> inputData.residentName.value = s } }
     val clearNameError = remember(inputData) { { inputData.residentNameError = "" } }
     val isNameError = inputData.residentNameError.isNotEmpty()
-    val focusName = residentName.isEmpty() || isNameError
+    val focusName = (focusOnOpen && residentName.isEmpty()) || isNameError
     ErrorText(inputData.residentNameError)
     Box(Modifier.fillMaxWidth()) {
         var contentWidth by remember { mutableStateOf(Size.Zero) }

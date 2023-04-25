@@ -13,7 +13,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
@@ -30,10 +29,8 @@ import com.crisiscleanup.core.designsystem.theme.*
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
-import com.crisiscleanup.feature.caseeditor.CaseEditorUiState
-import com.crisiscleanup.feature.caseeditor.CaseEditorViewModel
+import com.crisiscleanup.feature.caseeditor.*
 import com.crisiscleanup.feature.caseeditor.R
-import com.crisiscleanup.feature.caseeditor.WorksiteSection
 import kotlinx.coroutines.launch
 import java.lang.Integer.min
 import com.crisiscleanup.core.common.R as commonR
@@ -41,6 +38,7 @@ import com.crisiscleanup.core.common.R as commonR
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun CaseEditorRoute(
+    onOpenExistingCase: (ExistingWorksiteIdentifier) -> Unit = {},
     onEditPropertyData: () -> Unit = {},
     onEditLocation: () -> Unit = {},
     onEditNotesFlags: () -> Unit = {},
@@ -48,49 +46,58 @@ internal fun CaseEditorRoute(
     onEditWork: () -> Unit = {},
     onEditHazards: () -> Unit = {},
     onEditVolunteerReport: () -> Unit = {},
+    onEditSearchAddress: () -> Unit = {},
+    onEditMoveLocationOnMap: () -> Unit = {},
     onBackClick: () -> Unit = {},
     viewModel: CaseEditorViewModel = hiltViewModel(),
 ) {
-    BackHandler {
-        if (viewModel.onSystemBack()) {
-            onBackClick()
-        }
-    }
-
-    val navigateBack by remember { viewModel.navigateBack }
-    if (navigateBack) {
-        onBackClick()
+    val editDifferentWorksite by viewModel.editIncidentWorksite.collectAsStateWithLifecycle()
+    if (editDifferentWorksite.isDefined) {
+        onOpenExistingCase(editDifferentWorksite)
     } else {
-        val headerTitle by viewModel.headerTitle.collectAsStateWithLifecycle()
-        val onNavigateBack = remember(viewModel) {
-            {
-                if (viewModel.onNavigateBack()) {
+        val navigateBack by remember { viewModel.navigateBack }
+        if (navigateBack) {
+            onBackClick()
+        } else {
+            BackHandler {
+                if (viewModel.onSystemBack()) {
                     onBackClick()
                 }
             }
-        }
-        val onNavigateCancel = remember(viewModel) {
-            {
-                if (viewModel.onNavigateCancel()) {
-                    onBackClick()
+
+            val headerTitle by viewModel.headerTitle.collectAsStateWithLifecycle()
+            val onNavigateBack = remember(viewModel) {
+                {
+                    if (viewModel.onNavigateBack()) {
+                        onBackClick()
+                    }
                 }
             }
-        }
-        Column {
-            TopAppBarCancel(
-                title = headerTitle,
-                onCancel = onNavigateCancel,
-            )
-            CaseEditorScreen(
-                onNavigateBack = onNavigateBack,
-                onEditProperty = onEditPropertyData,
-                onEditLocation = onEditLocation,
-                onEditNotesFlags = onEditNotesFlags,
-                onEditDetails = onEditDetails,
-                onEditWork = onEditWork,
-                onEditHazards = onEditHazards,
-                onEditVolunteerReport = onEditVolunteerReport,
-            )
+            val onNavigateCancel = remember(viewModel) {
+                {
+                    if (viewModel.onNavigateCancel()) {
+                        onBackClick()
+                    }
+                }
+            }
+            Column {
+                TopAppBarCancel(
+                    title = headerTitle,
+                    onCancel = onNavigateCancel,
+                )
+                CaseEditorScreen(
+                    onNavigateBack = onNavigateBack,
+                    onEditProperty = onEditPropertyData,
+                    onEditLocation = onEditLocation,
+                    onEditNotesFlags = onEditNotesFlags,
+                    onEditDetails = onEditDetails,
+                    onEditWork = onEditWork,
+                    onEditHazards = onEditHazards,
+                    onEditVolunteerReport = onEditVolunteerReport,
+                    onEditSearchAddress = onEditSearchAddress,
+                    onEditMoveLocationOnMap = onEditMoveLocationOnMap,
+                )
+            }
         }
     }
 }
@@ -107,6 +114,8 @@ internal fun ColumnScope.CaseEditorScreen(
     onEditWork: () -> Unit = {},
     onEditHazards: () -> Unit,
     onEditVolunteerReport: () -> Unit,
+    onEditSearchAddress: () -> Unit = {},
+    onEditMoveLocationOnMap: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     when (uiState) {
@@ -119,6 +128,8 @@ internal fun ColumnScope.CaseEditorScreen(
             FullEditView(
                 uiState as CaseEditorUiState.WorksiteData,
                 onBack = onNavigateBack,
+                onSearchAddress = onEditSearchAddress,
+                onMoveLocation = onEditMoveLocationOnMap,
             )
         }
         else -> {
@@ -141,15 +152,18 @@ private fun ColumnScope.FullEditView(
     worksiteData: CaseEditorUiState.WorksiteData,
     modifier: Modifier = Modifier,
     viewModel: CaseEditorViewModel = hiltViewModel(),
-    onBack: () -> Unit,
+    onBack: () -> Unit = {},
+    onMoveLocation: () -> Unit = {},
+    onSearchAddress: () -> Unit = {},
 ) {
     // TODO Pager should not affect or recompose content except when change in content to focus on should change
 
     val editSections by viewModel.editSections.collectAsStateWithLifecycle()
-    val pagerState = rememberLazyListState()
+
     var snapOnEndScroll by remember { mutableStateOf(false) }
     val rememberSnapOnEndScroll = remember(viewModel) { { snapOnEndScroll = true } }
 
+    val pagerState = rememberLazyListState()
     SectionPager(
         editSections,
         modifier,
@@ -200,10 +214,12 @@ private fun ColumnScope.FullEditView(
         //      Replace content with static text and it doesn't seem to recompose...
         FullEditContent(
             worksiteData,
-            editSections,
             modifier,
+            editSections,
             viewModel,
             isEditable,
+            onMoveLocation = onMoveLocation,
+            onSearchAddress = onSearchAddress,
         )
 
         val isLoadingWorksite by viewModel.isLoading.collectAsStateWithLifecycle()
@@ -292,10 +308,13 @@ private fun SectionPager(
 @Composable
 private fun BoxScope.FullEditContent(
     worksiteData: CaseEditorUiState.WorksiteData,
-    sectionTitles: List<String> = emptyList(),
     modifier: Modifier = Modifier,
+    sectionTitles: List<String> = emptyList(),
     viewModel: CaseEditorViewModel = hiltViewModel(),
     isEditable: Boolean = false,
+    openExistingCase: (ExistingWorksiteIdentifier) -> Unit = {},
+    onMoveLocation: () -> Unit = {},
+    onSearchAddress: () -> Unit = {},
 ) {
     val closeKeyboard = rememberCloseKeyboard(viewModel)
     val scrollState = rememberScrollState()
@@ -316,24 +335,18 @@ private fun BoxScope.FullEditContent(
 
         val worksite by viewModel.editingWorksite.collectAsStateWithLifecycle()
 
-        viewModel.propertyEditor?.let {
-            if (sectionTitles.isNotEmpty()) {
-                var isPropertyCollapsed by remember { mutableStateOf(false) }
-                val togglePropertySection =
-                    remember(viewModel) { { isPropertyCollapsed = !isPropertyCollapsed } }
-                SectionHeader(
-                    sectionIndex = 0,
-                    sectionTitle = sectionTitles[0],
-                    isCollapsed = isPropertyCollapsed,
-                    toggleCollapse = togglePropertySection,
+        var isRerouted by remember { mutableStateOf(false) }
+
+        if (sectionTitles.isNotEmpty()) {
+            viewModel.propertyEditor?.let { propertyEditor ->
+                PropertyLocationSection(
+                    viewModel,
+                    propertyEditor,
+                    sectionTitles[0],
+                    isEditable,
+                    onMoveLocation,
+                    onSearchAddress,
                 )
-                if (!isPropertyCollapsed) {
-                    PropertyFormView(
-                        viewModel,
-                        it,
-                        isEditable,
-                    )
-                }
             }
         }
     }
@@ -362,8 +375,7 @@ private fun SectionHeader(
             // TODO Common dimensions
             Modifier.size(26.dp),
             shape = CircleShape,
-            // TODO Common colors
-            color = Color(0xFFFECE09),
+            color = attentionBackgroundColor,
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Text(
@@ -386,6 +398,43 @@ private fun SectionHeader(
             imageVector = iconVector,
             contentDescription = description,
         )
+    }
+}
+
+@Composable
+private fun PropertyLocationSection(
+    viewModel: CaseEditorViewModel,
+    propertyEditor: CasePropertyDataEditor,
+    sectionTitle: String,
+    isEditable: Boolean,
+    onMoveLocation: () -> Unit = {},
+    onSearchAddress: () -> Unit = {}
+) {
+    var isPropertyCollapsed by remember { mutableStateOf(false) }
+    val togglePropertySection =
+        remember(viewModel) { { isPropertyCollapsed = !isPropertyCollapsed } }
+    SectionHeader(
+        sectionIndex = 0,
+        sectionTitle = sectionTitle,
+        isCollapsed = isPropertyCollapsed,
+        toggleCollapse = togglePropertySection,
+    )
+    if (!isPropertyCollapsed) {
+        PropertyFormView(
+            viewModel,
+            propertyEditor,
+            isEditable,
+        )
+
+        viewModel.locationEditor?.let { locationEditor ->
+            PropertyLocationView(
+                viewModel,
+                locationEditor,
+                isEditable,
+                onMoveLocationOnMap = onMoveLocation,
+                openAddressSearch = onSearchAddress,
+            )
+        }
     }
 }
 
@@ -578,8 +627,7 @@ private fun SaveActionBar(
             enabled = enable,
             onClick = onBack,
             colors = ButtonDefaults.buttonColors(
-                // TODO Move into colors
-                containerColor = Color(0xFFEAEAEA)
+                containerColor = cancelButtonContainerColor
             ),
         )
         BusyButton(

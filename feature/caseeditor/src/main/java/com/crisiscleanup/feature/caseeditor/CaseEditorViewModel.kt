@@ -4,22 +4,24 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.crisiscleanup.core.common.AndroidResourceProvider
-import com.crisiscleanup.core.common.InputValidator
-import com.crisiscleanup.core.common.KeyTranslator
-import com.crisiscleanup.core.common.SyncPusher
+import com.crisiscleanup.core.addresssearch.AddressSearchRepository
+import com.crisiscleanup.core.common.*
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
+import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.Default
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.repository.*
+import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.model.data.*
 import com.crisiscleanup.feature.caseeditor.model.coordinates
 import com.crisiscleanup.feature.caseeditor.navigation.CaseEditorArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -46,12 +48,18 @@ class CaseEditorViewModel @Inject constructor(
     private val syncPusher: SyncPusher,
     private val resourceProvider: AndroidResourceProvider,
     @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
-    @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
+    @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 
     inputValidator: InputValidator,
     searchWorksitesRepository: SearchWorksitesRepository,
     caseIconProvider: MapCaseIconProvider,
     existingWorksiteSelector: ExistingWorksiteSelector,
+
+    permissionManager: PermissionManager,
+    locationProvider: LocationProvider,
+    addressSearchRepository: AddressSearchRepository,
+    drawableResourceBitmapProvider: DrawableResourceBitmapProvider,
+    @Dispatcher(Default) coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : EditCaseBaseViewModel(editableWorksiteProvider, translator, logger) {
     private val caseEditorArgs = CaseEditorArgs(savedStateHandle)
     private val incidentIdArg = caseEditorArgs.incidentId
@@ -84,6 +92,9 @@ class CaseEditorViewModel @Inject constructor(
     val promptUnsavedChanges = mutableStateOf(false)
     val promptCancelChanges = mutableStateOf(false)
     val isSavingWorksite = MutableStateFlow(false)
+
+    val editIncidentWorksite = MutableStateFlow(existingWorksiteIdentifierNone)
+    private var editIncidentWorksiteJob: Job? = null
 
     private val dataLoader: CaseEditorDataLoader
 
@@ -134,12 +145,12 @@ class CaseEditorViewModel @Inject constructor(
             }
             .launchIn(viewModelScope)
 
-        dataLoader.uiState.onEach {
-            if (propertyEditor != null) {
-                return@onEach
+        dataLoader.uiState
+            .filter {
+                (it as? CaseEditorUiState.WorksiteData)?.isEditable == true &&
+                        propertyEditor == null
             }
-
-            (it as? CaseEditorUiState.WorksiteData)?.let {
+            .onEach {
                 propertyEditor = EditablePropertyDataEditor(
                     editableWorksiteProvider,
                     inputValidator,
@@ -152,8 +163,51 @@ class CaseEditorViewModel @Inject constructor(
                     logger,
                     viewModelScope
                 )
+                locationEditor = EditableLocationDataEditor(
+                    editableWorksiteProvider,
+                    permissionManager,
+                    locationProvider,
+                    searchWorksitesRepository,
+                    addressSearchRepository,
+                    caseIconProvider,
+                    resourceProvider,
+                    drawableResourceBitmapProvider,
+                    existingWorksiteSelector,
+                    logger,
+                    coroutineDispatcher,
+                    ioDispatcher,
+                    viewModelScope,
+                )
+
+                editIncidentWorksiteJob?.cancel()
+                editIncidentWorksiteJob = combine(
+                    propertyEditor!!.editIncidentWorksite,
+                    locationEditor!!.editIncidentWorksite,
+                ) { w0, w1 ->
+                    if (w0.isDefined) w0
+                    else if (w1.isDefined) w1
+                    else w0
+                }
+                    .distinctUntilChanged()
+                    .onEach { identifier ->
+                        editIncidentWorksite.value = identifier
+                    }
+                    .launchIn(viewModelScope)
             }
-        }
+            .launchIn(viewModelScope)
+
+
+        editingWorksite
+            .onEach { worksite ->
+                propertyEditor?.setSteadyStateSearchName()
+
+                locationEditor?.locationInputData?.let { inputData ->
+                    if (editableWorksiteProvider.takeAddressChanged()) {
+                        inputData.assumeLocationAddressChanges(worksite)
+                        // TODO Expand address fields if partially defined
+                    }
+                }
+            }
             .launchIn(viewModelScope)
     }
 
@@ -214,6 +268,7 @@ class CaseEditorViewModel @Inject constructor(
         )
 
     var propertyEditor: CasePropertyDataEditor? = null
+    var locationEditor: CaseLocationDataEditor? = null
 
     private fun updateHeaderTitle(caseNumber: String = "") {
         headerTitle.value = if (caseNumber.isEmpty()) {
@@ -315,6 +370,8 @@ class CaseEditorViewModel @Inject constructor(
                 val worksiteData = uiState.value as? CaseEditorUiState.WorksiteData
                 val initialWorksite = worksiteData?.worksite
                     ?: return@launch
+
+                // TODO Apply changes from each section
 
                 val worksite = worksiteProvider.editableWorksite.value
                 if (worksite == initialWorksite) {

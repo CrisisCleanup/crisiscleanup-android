@@ -10,13 +10,14 @@ import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteFormValue
 import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.util.summarizeAddress
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class LocationInputData(
     worksite: Worksite,
     private val resourceProvider: AndroidResourceProvider,
 ) : CaseDataWriter {
-    private val worksiteIn = worksite.copy()
+    private var referenceWorksite = worksite
 
     var locationQuery = MutableStateFlow("")
     val coordinates = MutableStateFlow(worksite.coordinates())
@@ -43,6 +44,21 @@ class LocationInputData(
                 cityError.isNotBlank() ||
                 countyError.isNotBlank() ||
                 stateError.isNotBlank()
+
+    val addressChangeWorksite: Worksite
+        get() {
+            val worksite = referenceWorksite
+            val coordinatesSnapshot = coordinates.value
+            return worksite.copy(
+                latitude = coordinatesSnapshot.latitude,
+                longitude = coordinatesSnapshot.longitude,
+                address = streetAddress.trim(),
+                city = city.trim(),
+                county = county.trim(),
+                postalCode = zipCode.trim(),
+                state = state.trim(),
+            )
+        }
 
     private fun isChanged(worksite: Worksite): Boolean {
         return this.coordinates.value != worksite.coordinates() ||
@@ -94,7 +110,7 @@ class LocationInputData(
         return true
     }
 
-    override fun updateCase() = updateCase(worksiteIn)
+    override fun updateCase() = updateCase(referenceWorksite)
 
     override fun updateCase(worksite: Worksite): Worksite? {
         if (!isChanged(worksite)) {
@@ -131,5 +147,23 @@ class LocationInputData(
             flags = if (flags?.isNotEmpty() == true) flags else null,
             formData = if (formData?.isNotEmpty() == true) formData else null,
         )
+    }
+
+    fun assumeLocationAddressChanges(worksite: Worksite) {
+        referenceWorksite = referenceWorksite.copy(
+            latitude = worksite.latitude,
+            longitude = worksite.longitude,
+            address = worksite.address,
+            city = worksite.city,
+            county = worksite.county,
+            postalCode = worksite.postalCode,
+            state = worksite.state,
+        )
+        coordinates.value = LatLng(worksite.latitude, worksite.longitude)
+        streetAddress = worksite.address
+        zipCode = worksite.postalCode
+        city = worksite.city
+        county = worksite.county
+        state = worksite.state
     }
 }

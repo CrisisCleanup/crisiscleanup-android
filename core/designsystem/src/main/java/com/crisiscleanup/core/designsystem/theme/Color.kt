@@ -34,6 +34,8 @@ internal val md_theme_surfaceTintColor = Color(0xFFEFC100)
 
 val incidentDisasterContainerColor = Color(0xFF378DFF)
 val incidentDisasterContentColor = Color(0xFFFFFFFF)
+val attentionBackgroundColor = md_theme_primaryContainer
+val cancelButtonContainerColor = Color(0xFFEAEAEA)
 
 internal val md_theme_light_primary = Color(0xFF735C00)
 internal val md_theme_light_onPrimary = Color(0xFFFFFFFF)

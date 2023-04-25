@@ -13,7 +13,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.common.combineTrimText
 import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
@@ -25,16 +24,19 @@ import com.crisiscleanup.core.designsystem.theme.textMessagePadding
 import com.crisiscleanup.core.model.data.LocationAddress
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
-import com.crisiscleanup.feature.caseeditor.EditCaseLocationViewModel
+import com.crisiscleanup.feature.caseeditor.CaseLocationDataEditor
+import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
 import com.crisiscleanup.feature.caseeditor.LocationSearchResults
 import com.crisiscleanup.feature.caseeditor.R
 
 @Composable
 internal fun ColumnScope.SearchContents(
+    viewModel: EditCaseBaseViewModel,
+    editor: CaseLocationDataEditor,
     query: String = "",
-    viewModel: EditCaseLocationViewModel = hiltViewModel(),
+    onAddressSelect: () -> Unit = {},
 ) {
-    val isBusySearching by viewModel.isLocationSearching.collectAsStateWithLifecycle(false)
+    val isBusySearching by editor.isLocationSearching.collectAsStateWithLifecycle(false)
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -42,7 +44,7 @@ internal fun ColumnScope.SearchContents(
     ) {
         BusyIndicatorFloatingTopCenter(isBusySearching)
 
-        val locationSearchResults by viewModel.searchResults.collectAsStateWithLifecycle()
+        val locationSearchResults by editor.searchResults.collectAsStateWithLifecycle()
         if (locationSearchResults.isEmpty) {
             if (!isBusySearching && locationSearchResults.query == query) {
                 val text = stringResource(R.string.no_location_results, locationSearchResults.query)
@@ -55,19 +57,20 @@ internal fun ColumnScope.SearchContents(
         } else {
             val onCaseSelect = remember(viewModel) {
                 { caseLocation: CaseSummaryResult ->
-                    viewModel.onExistingWorksiteSelected(caseLocation)
+                    editor.onExistingWorksiteSelected(caseLocation)
                 }
             }
-            val onAddressSelect = remember(viewModel) {
+            val onAddress = remember(viewModel) {
                 { address: LocationAddress ->
-                    viewModel.onGeocodeAddressSelected(address)
+                    editor.onGeocodeAddressSelected(address)
+                    onAddressSelect()
                 }
             }
             val closeKeyboard = rememberCloseKeyboard(viewModel)
             ListSearchResults(
                 locationSearchResults,
                 onCaseSelect = onCaseSelect,
-                onAddressSelect = onAddressSelect,
+                onAddressSelect = onAddress,
                 closeKeyboard = closeKeyboard,
             )
         }

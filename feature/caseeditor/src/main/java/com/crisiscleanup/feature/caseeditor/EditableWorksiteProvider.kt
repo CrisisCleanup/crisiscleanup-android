@@ -15,6 +15,7 @@ import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.MutableStateFlow
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -32,6 +33,10 @@ interface EditableWorksiteProvider {
 
     fun setEditedLocation(coordinates: LatLng)
     fun clearEditedLocation()
+
+    val isAddressChanged: Boolean
+    fun setAddressChanged(worksite: Worksite)
+    fun takeAddressChanged(): Boolean
 }
 
 fun EditableWorksiteProvider.getGroupNode(key: String) =
@@ -59,22 +64,17 @@ class SingleEditableWorksiteProvider @Inject constructor() : EditableWorksitePro
     override var formFields = emptyList<FormFieldNode>()
     override var formFieldTranslationLookup = emptyMap<String, String>()
 
-    override var isStale = false
-        private set
+    private val _isStale = AtomicBoolean(false)
+    override val isStale: Boolean
+        get() = _isStale.get()
 
     private val editedLocation: AtomicReference<Pair<Double, Double>?> = AtomicReference()
 
     override fun setStale() {
-        isStale = true
+        _isStale.set(true)
     }
 
-    override fun takeStale(): Boolean {
-        if (isStale) {
-            isStale = false
-            return true
-        }
-        return false
-    }
+    override fun takeStale() = _isStale.getAndSet(false)
 
     private fun setCoordinates(coordinates: LatLng? = null) {
         val latLngPair = if (coordinates == null) null
@@ -87,6 +87,17 @@ class SingleEditableWorksiteProvider @Inject constructor() : EditableWorksitePro
     override fun clearEditedLocation() = setCoordinates(null)
 
     override fun takeEditedLocation(): Pair<Double, Double>? = editedLocation.getAndSet(null)
+
+    private val _isAddressChanged = AtomicBoolean()
+    override val isAddressChanged: Boolean
+        get() = _isAddressChanged.get()
+
+    override fun setAddressChanged(worksite: Worksite) {
+        _isAddressChanged.set(true)
+        editableWorksite.value = worksite
+    }
+
+    override fun takeAddressChanged() = _isAddressChanged.getAndSet(false)
 }
 
 internal val DefaultIncidentBounds = IncidentBounds(emptyList(), MapViewCameraBoundsDefault.bounds)
