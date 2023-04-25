@@ -8,13 +8,16 @@ import com.crisiscleanup.feature.caseeditor.model.NotesFlagsInputData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
-@HiltViewModel
-class EditCaseNotesFlagsViewModel @Inject constructor(
-    worksiteProvider: EditableWorksiteProvider,
-    translator: KeyTranslator,
-    @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
-) : EditCaseBaseViewModel(worksiteProvider, translator, logger) {
+interface CaseNotesFlagsDataEditor {
     val notesFlagsInputData: NotesFlagsInputData
+
+    fun validateSaveWorksite(): Boolean
+}
+
+internal class EditableNotesFlagsDataEditor(
+    private val worksiteProvider: EditableWorksiteProvider,
+) : CaseNotesFlagsDataEditor {
+    override val notesFlagsInputData: NotesFlagsInputData
 
     init {
         val worksite = worksiteProvider.editableWorksite.value
@@ -24,7 +27,7 @@ class EditCaseNotesFlagsViewModel @Inject constructor(
         )
     }
 
-    private fun validateSaveWorksite(): Boolean {
+    override fun validateSaveWorksite(): Boolean {
         val updatedWorksite = notesFlagsInputData.updateCase()
         if (updatedWorksite != null) {
             worksiteProvider.editableWorksite.value = updatedWorksite
@@ -32,6 +35,17 @@ class EditCaseNotesFlagsViewModel @Inject constructor(
         }
         return false
     }
+}
+
+@HiltViewModel
+class EditCaseNotesFlagsViewModel @Inject constructor(
+    worksiteProvider: EditableWorksiteProvider,
+    translator: KeyTranslator,
+    @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
+) : EditCaseBaseViewModel(worksiteProvider, translator, logger) {
+    val editor: CaseNotesFlagsDataEditor = EditableNotesFlagsDataEditor(worksiteProvider)
+
+    private fun validateSaveWorksite() = editor.validateSaveWorksite()
 
     override fun onSystemBack() = validateSaveWorksite()
 

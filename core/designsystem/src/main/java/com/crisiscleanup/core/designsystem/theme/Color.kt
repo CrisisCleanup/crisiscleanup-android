@@ -2,8 +2,8 @@ package com.crisiscleanup.core.designsystem.theme
 
 import androidx.compose.ui.graphics.Color
 
-internal val md_theme_primary = Color(0xFF555555)
-internal val md_theme_onPrimary = Color(0xFF2D2D2D)
+internal val md_theme_primary = Color(0xFF555555) // Button icon, control activated, control action
+internal val md_theme_onPrimary = Color(0xFF2D2D2D) // Check in checkbox
 internal val md_theme_primaryContainer = Color(0xFFFECE09)
 internal val md_theme_onPrimaryContainer = Color(0xFF2D2D2D)
 internal val md_theme_secondary = Color(0xFF52DBCB)
@@ -23,10 +23,10 @@ internal val md_theme_onBackground = Color(0xFF2D2D2D)
 internal val md_theme_surface = Color(0xFFFFFFFF)
 internal val md_theme_onSurface = Color(0xFF2D2D2D)
 internal val md_theme_surfaceVariant = Color(0xFF4C4639)
-internal val md_theme_onSurfaceVariant = Color(0xFFCEC6B4)
-internal val md_theme_outline = Color(0xFF979080)
+internal val md_theme_onSurfaceVariant = Color(0xFF818181) // Hints
+internal val md_theme_outline = Color(0xFFDADADA) // Outline
 internal val md_theme_inverseOnSurface = Color(0xFFFFFFFF)
-internal val md_theme_inverseSurface = Color(0xFF2D2D2D)
+internal val md_theme_inverseSurface = Color(0xFF2D2D2D) // Snackbar background
 internal val md_theme_inversePrimary = Color(0xFF735C00)
 internal val md_theme_shadow = Color(0xFF000000)
 internal val md_theme_surfaceTint = Color(0xFFEFC100)

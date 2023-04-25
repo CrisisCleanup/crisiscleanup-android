@@ -207,13 +207,13 @@ internal fun PropertyFormView(
             ) {
                 RadioButton(
                     selected = isSelected,
-                    modifier = Modifier.listRowItemStartPadding(),
+                    modifier = Modifier.listItemNestedPadding(),
                     onClick = null,
                     enabled = isEditable,
                 )
                 Text(
                     text = it.second,
-                    modifier = Modifier.listRowItemStartPadding(),
+                    modifier = Modifier.listItemNestedPadding(),
                 )
             }
         }

@@ -69,7 +69,7 @@ class CaseEditorViewModel @Inject constructor(
 
     val headerTitle = MutableStateFlow("")
 
-    val visibleNoteCount: Int = 2
+    val visibleNoteCount: Int = 3
 
     private val incidentFieldLookup: StateFlow<Map<String, GroupSummaryFieldLookup>>
     val workTypeGroupChildrenLookup: StateFlow<Map<String, Collection<String>>>
@@ -99,6 +99,10 @@ class CaseEditorViewModel @Inject constructor(
     private val dataLoader: CaseEditorDataLoader
 
     private val editOpenedAt = Clock.System.now()
+
+    var propertyEditor: CasePropertyDataEditor? = null
+    var locationEditor: CaseLocationDataEditor? = null
+    var notesFlagsEditor: CaseNotesFlagsDataEditor? = null
 
     init {
         updateHeaderTitle()
@@ -178,6 +182,7 @@ class CaseEditorViewModel @Inject constructor(
                     ioDispatcher,
                     viewModelScope,
                 )
+                notesFlagsEditor = EditableNotesFlagsDataEditor(editableWorksiteProvider)
 
                 editIncidentWorksiteJob?.cancel()
                 editIncidentWorksiteJob = combine(
@@ -266,9 +271,6 @@ class CaseEditorViewModel @Inject constructor(
             initialValue = emptyList(),
             started = SharingStarted.WhileSubscribed(),
         )
-
-    var propertyEditor: CasePropertyDataEditor? = null
-    var locationEditor: CaseLocationDataEditor? = null
 
     private fun updateHeaderTitle(caseNumber: String = "") {
         headerTitle.value = if (caseNumber.isEmpty()) {

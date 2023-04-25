@@ -26,15 +26,18 @@ import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteNote
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
+import com.crisiscleanup.feature.caseeditor.CaseNotesFlagsDataEditor
+import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
 import com.crisiscleanup.feature.caseeditor.EditCaseNotesFlagsViewModel
 import com.crisiscleanup.feature.caseeditor.R
+import com.crisiscleanup.feature.caseeditor.model.NotesFlagsInputData
 import com.crisiscleanup.feature.caseeditor.model.getRelativeDate
 import java.lang.Integer.min
 
 private val ScreenTitleResId = R.string.notes_flags
 
 @Composable
-private fun NoteView(
+internal fun NoteView(
     note: WorksiteNote,
     modifier: Modifier = Modifier,
 ) {
@@ -51,7 +54,7 @@ private fun NoteView(
     }
 }
 
-private fun LazyListScope.staticNoteItems(
+internal fun LazyListScope.staticNoteItems(
     notes: List<WorksiteNote>,
     visibleCount: Int,
     modifier: Modifier,
@@ -191,28 +194,37 @@ private fun NotesFlagsView(
 
     if (isCreatingNote) {
         val dismissNoteDialog = { isCreatingNote = false }
-        val onCreateNote = remember(viewModel) {
-            { note: WorksiteNote ->
-                if (note.note.isNotBlank()) {
-                    viewModel.notesFlagsInputData.notes.add(0, note)
-                }
-                dismissNoteDialog()
-            }
-        }
-        EditNoteDialog(
-            note = WorksiteNote.create(),
-            dialogTitle = stringResource(R.string.add_note),
-            onSave = onCreateNote,
-            onCancel = dismissNoteDialog,
-        )
+        OnCreateNote(viewModel, viewModel.editor, dismissNoteDialog)
     }
+}
+
+@Composable
+internal fun OnCreateNote(
+    viewModel: EditCaseBaseViewModel,
+    editor: CaseNotesFlagsDataEditor,
+    dismissDialog: () -> Unit = {},
+) {
+    val onCreateNote = remember(viewModel) {
+        { note: WorksiteNote ->
+            if (note.note.isNotBlank()) {
+                editor.notesFlagsInputData.notes.add(0, note)
+            }
+            dismissDialog()
+        }
+    }
+    EditNoteDialog(
+        note = WorksiteNote.create(),
+        dialogTitle = stringResource(R.string.add_note),
+        onSave = onCreateNote,
+        onCancel = dismissDialog,
+    )
 }
 
 @Composable
 private fun FlagsInputNotesList(
     viewModel: EditCaseNotesFlagsViewModel = hiltViewModel(),
 ) {
-    val inputData = viewModel.notesFlagsInputData
+    val inputData = viewModel.editor.notesFlagsInputData
 
     val notes by inputData.notesStream.collectAsStateWithLifecycle(emptyList())
 
@@ -226,18 +238,7 @@ private fun FlagsInputNotesList(
             key = "high-priority",
             contentType = "item-checkbox",
         ) {
-            val toggleHighPriority = remember(inputData) {
-                { inputData.isHighPriority = !inputData.isHighPriority }
-            }
-            val updateHighPriority =
-                remember(inputData) { { b: Boolean -> inputData.isHighPriority = b } }
-            CrisisCleanupTextCheckbox(
-                listItemModifier.listCheckboxAlignStartOffset(),
-                inputData.isHighPriority,
-                text = viewModel.translate("flag.flag_high_priority"),
-                onToggle = toggleHighPriority,
-                onCheckChange = updateHighPriority,
-            )
+            HighPriorityFlagInput(viewModel, inputData)
         }
 
         if (inputData.isNewWorksite) {
@@ -245,18 +246,7 @@ private fun FlagsInputNotesList(
                 key = "assigned-to-org-member",
                 contentType = "item-checkbox",
             ) {
-                val toggleAssignTo = remember(inputData) {
-                    { inputData.isAssignedToOrgMember = !inputData.isAssignedToOrgMember }
-                }
-                val updateAssignTo =
-                    remember(inputData) { { b: Boolean -> inputData.isAssignedToOrgMember = b } }
-                CrisisCleanupTextCheckbox(
-                    listItemModifier.listCheckboxAlignStartOffset(),
-                    inputData.isAssignedToOrgMember,
-                    text = viewModel.translate("actions.member_of_my_org"),
-                    onToggle = toggleAssignTo,
-                    onCheckChange = updateAssignTo,
-                )
+                MemberOfMyOrgFlagInput(viewModel, inputData)
             }
         }
 
@@ -278,4 +268,42 @@ private fun FlagsInputNotesList(
             )
         }
     }
+}
+
+@Composable
+internal fun HighPriorityFlagInput(
+    viewModel: EditCaseBaseViewModel,
+    inputData: NotesFlagsInputData,
+) {
+    val toggleHighPriority = remember(inputData) {
+        { inputData.isHighPriority = !inputData.isHighPriority }
+    }
+    val updateHighPriority =
+        remember(inputData) { { b: Boolean -> inputData.isHighPriority = b } }
+    CrisisCleanupTextCheckbox(
+        listItemModifier.listCheckboxAlignStartOffset(),
+        inputData.isHighPriority,
+        text = viewModel.translate("flag.flag_high_priority"),
+        onToggle = toggleHighPriority,
+        onCheckChange = updateHighPriority,
+    )
+}
+
+@Composable
+internal fun MemberOfMyOrgFlagInput(
+    viewModel: EditCaseBaseViewModel,
+    inputData: NotesFlagsInputData,
+) {
+    val toggleAssignTo = remember(inputData) {
+        { inputData.isAssignedToOrgMember = !inputData.isAssignedToOrgMember }
+    }
+    val updateAssignTo =
+        remember(inputData) { { b: Boolean -> inputData.isAssignedToOrgMember = b } }
+    CrisisCleanupTextCheckbox(
+        listItemModifier.listCheckboxAlignStartOffset(),
+        inputData.isAssignedToOrgMember,
+        text = viewModel.translate("actions.member_of_my_org"),
+        onToggle = toggleAssignTo,
+        onCheckChange = updateAssignTo,
+    )
 }

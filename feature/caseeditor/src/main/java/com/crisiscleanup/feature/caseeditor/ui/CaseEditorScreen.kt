@@ -435,6 +435,14 @@ private fun PropertyLocationSection(
                 openAddressSearch = onSearchAddress,
             )
         }
+
+        viewModel.notesFlagsEditor?.let { notesFlagsEditor ->
+            PropertyNotesFlagsView(
+                viewModel,
+                notesFlagsEditor,
+                viewModel.visibleNoteCount,
+            )
+        }
     }
 }
 
