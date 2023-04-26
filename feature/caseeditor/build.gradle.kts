@@ -18,6 +18,7 @@ secrets {
 
 dependencies {
     implementation(project(":core:addresssearch"))
+    implementation(project(":core:commonassets"))
     implementation(project(":core:commoncase"))
     implementation(project(":core:mapmarker"))
     implementation(project(":core:network"))

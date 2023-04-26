@@ -72,17 +72,6 @@ internal fun EditCaseWorkRoute(
         onBackClick,
         viewModel.translate(ScreenTitleTranslateKey)
     ) {
-        WorkView()
+        FormDataView(viewModel, viewModel.editor.inputData)
     }
-}
-
-@Composable
-private fun WorkView(
-    viewModel: EditCaseWorkViewModel = hiltViewModel(),
-) {
-    val inputData = viewModel.workInputData
-    FormDataView(
-        viewModel,
-        inputData,
-    )
 }

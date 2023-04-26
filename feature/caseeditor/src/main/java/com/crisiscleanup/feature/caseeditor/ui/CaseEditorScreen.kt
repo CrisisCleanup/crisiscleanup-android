@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.commonassets.getDisasterIcon
 import com.crisiscleanup.core.designsystem.component.*
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.*
@@ -33,9 +35,11 @@ import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.*
 import com.crisiscleanup.feature.caseeditor.R
+import com.crisiscleanup.feature.caseeditor.model.FormFieldsInputData
 import kotlinx.coroutines.launch
 import java.lang.Integer.min
 import com.crisiscleanup.core.common.R as commonR
+import com.crisiscleanup.core.commonassets.R as commonAssetsR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -238,15 +242,12 @@ private fun ColumnScope.FullEditView(
         BusyIndicatorFloatingTopCenter(isLoadingWorksite)
     }
 
-    val isDataChanged by viewModel.hasChanges.collectAsStateWithLifecycle()
-    if (isDataChanged) {
-        val saveChanges = remember(viewModel) { { viewModel.saveChanges() } }
-        SaveActionBar(
-            !isSavingData,
-            onBack,
-            saveChanges,
-        )
-    }
+    val saveChanges = remember(viewModel) { { viewModel.saveChanges() } }
+    SaveActionBar(
+        !isSavingData,
+        onBack,
+        saveChanges,
+    )
 
     val showBackChangesDialog by viewModel.promptUnsavedChanges
     val showCancelChangesDialog by viewModel.promptCancelChanges
@@ -328,8 +329,10 @@ private fun FullEditContent(
     onSearchAddress: () -> Unit = {},
 ) {
     val isLocalModified by remember { derivedStateOf { worksiteData.isLocalModified } }
+    val incidentResId = getDisasterIcon(worksiteData.incident.disaster)
     CaseIncident(
         modifier,
+        incidentResId,
         worksiteData.incident.name,
         isLocalModified,
     )
@@ -348,17 +351,19 @@ private fun FullEditContent(
             )
         }
 
-        if (sectionTitles.size > 1) {
+        viewModel.formDataEditors.forEachIndexed { index, editor ->
             SectionSeparator()
 
-            viewModel.detailsEditor?.let { detailsEditor ->
-                DetailsSection(
-                    viewModel,
-                    detailsEditor,
-                    sectionTitles[1],
-                    isEditable,
-                )
-            }
+            val sectionIndex = index + 1
+            val sectionTitle =
+                if (sectionIndex < sectionTitles.size) sectionTitles[sectionIndex] else ""
+            FormDataSection(
+                viewModel,
+                editor.inputData,
+                sectionTitle,
+                isEditable,
+                sectionIndex,
+            )
         }
     }
 }
@@ -477,16 +482,15 @@ private fun PropertyLocationSection(
 }
 
 @Composable
-private fun DetailsSection(
+private fun FormDataSection(
     viewModel: CaseEditorViewModel,
-    detailsDataEditor: CaseDetailsDataEditor,
+    inputData: FormFieldsInputData,
     sectionTitle: String,
     isEditable: Boolean,
-    sectionIndex: Int = 1,
+    sectionIndex: Int,
 ) {
     var isSectionCollapsed by remember { mutableStateOf(false) }
     val togglePropertySection = remember(viewModel) { { isSectionCollapsed = !isSectionCollapsed } }
-    val inputData = detailsDataEditor.detailsInputData
     SectionHeader(
         viewModel,
         sectionIndex = sectionIndex,
@@ -577,6 +581,7 @@ private fun SectionSummaries(
 @Composable
 private fun CaseIncident(
     modifier: Modifier = Modifier,
+    disasterResId: Int = commonAssetsR.drawable.ic_disaster_other,
     incidentName: String = "",
     isLocalModified: Boolean = false,
 ) {
@@ -586,6 +591,16 @@ private fun CaseIncident(
         // TODO Common dimensions
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        Surface(
+            shape = CircleShape,
+            color = incidentDisasterContainerColor,
+            contentColor = incidentDisasterContentColor,
+        ) {
+            Icon(
+                painter = painterResource(disasterResId),
+                contentDescription = incidentName,
+            )
+        }
         Text(
             incidentName,
             style = MaterialTheme.typography.headlineMedium,

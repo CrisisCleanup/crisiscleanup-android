@@ -103,7 +103,11 @@ class CaseEditorViewModel @Inject constructor(
     var propertyEditor: CasePropertyDataEditor? = null
     var locationEditor: CaseLocationDataEditor? = null
     var notesFlagsEditor: CaseNotesFlagsDataEditor? = null
-    var detailsEditor: CaseDetailsDataEditor? = null
+    var formDataEditors = emptyList<FormDataEditor>()
+    private var detailsEditor: EditableFormDataEditor? = null
+    private var workEditor: EditableFormDataEditor? = null
+    private var hazardsEditor: EditableFormDataEditor? = null
+    private var volunteerReportEditor: EditableFormDataEditor? = null
 
     init {
         updateHeaderTitle()
@@ -185,6 +189,15 @@ class CaseEditorViewModel @Inject constructor(
                 )
                 notesFlagsEditor = EditableNotesFlagsDataEditor(editableWorksiteProvider)
                 detailsEditor = EditableDetailsDataEditor(editableWorksiteProvider)
+                workEditor = EditableWorkDataEditor(editableWorksiteProvider)
+                hazardsEditor = EditableHazardsDataEditor(editableWorksiteProvider)
+                volunteerReportEditor = EditableVolunteerReportDataEditor(editableWorksiteProvider)
+                formDataEditors = listOf(
+                    detailsEditor!!,
+                    workEditor!!,
+                    hazardsEditor!!,
+                    volunteerReportEditor!!,
+                )
 
                 editIncidentWorksiteJob?.cancel()
                 editIncidentWorksiteJob = combine(

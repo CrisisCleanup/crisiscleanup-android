@@ -43,17 +43,6 @@ internal fun EditCaseHazardsRoute(
         onBackClick,
         viewModel.translate(ScreenTitleTranslateKey)
     ) {
-        HazardsView()
+        FormDataView(viewModel, viewModel.editor.inputData)
     }
-}
-
-@Composable
-private fun HazardsView(
-    viewModel: EditCaseHazardsViewModel = hiltViewModel(),
-) {
-    val inputData = viewModel.hazardsInputData
-    FormDataView(
-        viewModel,
-        inputData,
-    )
 }

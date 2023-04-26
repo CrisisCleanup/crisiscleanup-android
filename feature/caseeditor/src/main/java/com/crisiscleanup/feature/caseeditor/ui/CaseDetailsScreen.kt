@@ -45,6 +45,6 @@ internal fun EditCaseDetailsRoute(
         onBackClick,
         viewModel.translate(ScreenTitleTranslateKey),
     ) {
-        FormDataView(viewModel, viewModel.editor.detailsInputData, true)
+        FormDataView(viewModel, viewModel.editor.inputData, true)
     }
 }

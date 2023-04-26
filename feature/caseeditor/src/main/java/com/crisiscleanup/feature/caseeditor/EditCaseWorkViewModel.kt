@@ -4,9 +4,12 @@ import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
-import com.crisiscleanup.feature.caseeditor.model.WorkInputData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+
+internal class EditableWorkDataEditor(
+    worksiteProvider: EditableWorksiteProvider,
+) : EditableFormDataEditor(WorkFormGroupKey, worksiteProvider)
 
 @HiltViewModel
 class EditCaseWorkViewModel @Inject constructor(
@@ -14,27 +17,9 @@ class EditCaseWorkViewModel @Inject constructor(
     translator: KeyTranslator,
     @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
 ) : EditCaseBaseViewModel(worksiteProvider, translator, logger) {
-    val workInputData: WorkInputData
+    val editor: FormDataEditor = EditableWorkDataEditor(worksiteProvider)
 
-    init {
-        val groupNode = worksiteProvider.getGroupNode(WorkFormGroupKey)
-
-        val worksite = worksiteProvider.editableWorksite.value
-
-        workInputData = WorkInputData(
-            worksite,
-            groupNode,
-        )
-    }
-
-    private fun validateSaveWorksite(): Boolean {
-        val updatedWorksite = workInputData.updateCase()
-        if (updatedWorksite != null) {
-            worksiteProvider.editableWorksite.value = updatedWorksite
-            return true
-        }
-        return false
-    }
+    private fun validateSaveWorksite() = editor.validateSaveWorksite()
 
     override fun onSystemBack() = validateSaveWorksite()
 

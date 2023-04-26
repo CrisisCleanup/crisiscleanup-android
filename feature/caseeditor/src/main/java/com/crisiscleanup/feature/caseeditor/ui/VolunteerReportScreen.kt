@@ -43,17 +43,7 @@ internal fun EditCaseVolunteerReportRoute(
         onBackClick,
         viewModel.translate(ScreenTitleTranslateKey)
     ) {
-        VolunteerReportView()
+        FormDataView(viewModel, viewModel.editor.inputData)
     }
 }
 
-@Composable
-private fun VolunteerReportView(
-    viewModel: EditCaseVolunteerReportViewModel = hiltViewModel(),
-) {
-    val inputData = viewModel.volunteerReportInputData
-    FormDataView(
-        viewModel,
-        inputData,
-    )
-}
