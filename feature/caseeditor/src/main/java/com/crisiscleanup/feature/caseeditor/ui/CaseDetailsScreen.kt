@@ -43,19 +43,8 @@ internal fun EditCaseDetailsRoute(
     EditCaseBackCancelView(
         viewModel,
         onBackClick,
-        viewModel.translate(ScreenTitleTranslateKey)
+        viewModel.translate(ScreenTitleTranslateKey),
     ) {
-        DetailsView()
+        FormDataView(viewModel, viewModel.editor.detailsInputData, true)
     }
-}
-
-@Composable
-private fun DetailsView(
-    viewModel: EditCaseDetailsViewModel = hiltViewModel(),
-) {
-    val inputData = viewModel.detailsInputData
-    FormDataView(
-        viewModel,
-        inputData,
-    )
 }

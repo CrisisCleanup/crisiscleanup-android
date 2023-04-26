@@ -37,6 +37,8 @@ internal fun DynamicFormListItem(
     breakGlassHint: String = "",
     helpHint: String = "",
     showHelp: () -> Unit = {},
+    // TODO Set on all items
+    enable: Boolean = true,
     updateValue: (FieldDynamicValue) -> Unit = {},
 ) {
     val updateString = if (field.dynamicValue.isBoolean) {

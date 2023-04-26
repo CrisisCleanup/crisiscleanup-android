@@ -103,6 +103,7 @@ class CaseEditorViewModel @Inject constructor(
     var propertyEditor: CasePropertyDataEditor? = null
     var locationEditor: CaseLocationDataEditor? = null
     var notesFlagsEditor: CaseNotesFlagsDataEditor? = null
+    var detailsEditor: CaseDetailsDataEditor? = null
 
     init {
         updateHeaderTitle()
@@ -183,6 +184,7 @@ class CaseEditorViewModel @Inject constructor(
                     viewModelScope,
                 )
                 notesFlagsEditor = EditableNotesFlagsDataEditor(editableWorksiteProvider)
+                detailsEditor = EditableDetailsDataEditor(editableWorksiteProvider)
 
                 editIncidentWorksiteJob?.cancel()
                 editIncidentWorksiteJob = combine(

@@ -10,13 +10,15 @@ import javax.inject.Inject
 
 internal val excludeDetailsFormFields = setOf("cross_street", "email")
 
-@HiltViewModel
-class EditCaseDetailsViewModel @Inject constructor(
-    worksiteProvider: EditableWorksiteProvider,
-    translator: KeyTranslator,
-    @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
-) : EditCaseBaseViewModel(worksiteProvider, translator, logger) {
+interface CaseDetailsDataEditor {
     val detailsInputData: DetailsInputData
+    fun validateSaveWorksite(): Boolean
+}
+
+class EditableDetailsDataEditor(
+    private val worksiteProvider: EditableWorksiteProvider,
+) : CaseDetailsDataEditor {
+    override val detailsInputData: DetailsInputData
 
     init {
         val groupNode = worksiteProvider.getGroupNode(DetailsFormGroupKey)
@@ -30,7 +32,7 @@ class EditCaseDetailsViewModel @Inject constructor(
         )
     }
 
-    private fun validateSaveWorksite(): Boolean {
+    override fun validateSaveWorksite(): Boolean {
         val updatedWorksite = detailsInputData.updateCase()
         if (updatedWorksite != null) {
             worksiteProvider.editableWorksite.value = updatedWorksite
@@ -38,6 +40,17 @@ class EditCaseDetailsViewModel @Inject constructor(
         }
         return false
     }
+}
+
+@HiltViewModel
+class EditCaseDetailsViewModel @Inject constructor(
+    worksiteProvider: EditableWorksiteProvider,
+    translator: KeyTranslator,
+    @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
+) : EditCaseBaseViewModel(worksiteProvider, translator, logger) {
+    val editor = EditableDetailsDataEditor(worksiteProvider)
+
+    private fun validateSaveWorksite() = editor.validateSaveWorksite()
 
     override fun onSystemBack() = validateSaveWorksite()
 

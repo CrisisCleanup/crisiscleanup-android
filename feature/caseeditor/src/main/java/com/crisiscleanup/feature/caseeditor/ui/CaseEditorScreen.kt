@@ -1,6 +1,7 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
@@ -13,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
@@ -80,7 +82,7 @@ internal fun CaseEditorRoute(
                     }
                 }
             }
-            Column {
+            Column(Modifier.background(color = Color.White)) {
                 TopAppBarSingleAction(
                     title = headerTitle,
                     onAction = onNavigateCancel,
@@ -164,6 +166,7 @@ private fun ColumnScope.FullEditView(
     val rememberSnapOnEndScroll = remember(viewModel) { { snapOnEndScroll = true } }
 
     val pagerState = rememberLazyListState()
+    // TODO Animate elevation when content scrolls below
     SectionPager(
         editSections,
         modifier,
@@ -212,15 +215,24 @@ private fun ColumnScope.FullEditView(
         // TODO Why does content recompose when pager is scrolled?
         //      Optimize after all content is complete and eliminate unnecessary recompositions.
         //      Replace content with static text and it doesn't seem to recompose...
-        FullEditContent(
-            worksiteData,
-            modifier,
-            editSections,
-            viewModel,
-            isEditable,
-            onMoveLocation = onMoveLocation,
-            onSearchAddress = onSearchAddress,
-        )
+        val closeKeyboard = rememberCloseKeyboard(viewModel)
+        val scrollState = rememberScrollState()
+        Column(
+            modifier
+                .scrollFlingListener(closeKeyboard)
+                .verticalScroll(scrollState)
+                .fillMaxSize()
+        ) {
+            FullEditContent(
+                worksiteData,
+                modifier,
+                editSections,
+                viewModel,
+                isEditable,
+                onMoveLocation = onMoveLocation,
+                onSearchAddress = onSearchAddress,
+            )
+        }
 
         val isLoadingWorksite by viewModel.isLoading.collectAsStateWithLifecycle()
         BusyIndicatorFloatingTopCenter(isLoadingWorksite)
@@ -306,7 +318,7 @@ private fun SectionPager(
 }
 
 @Composable
-private fun BoxScope.FullEditContent(
+private fun FullEditContent(
     worksiteData: CaseEditorUiState.WorksiteData,
     modifier: Modifier = Modifier,
     sectionTitles: List<String> = emptyList(),
@@ -315,32 +327,36 @@ private fun BoxScope.FullEditContent(
     onMoveLocation: () -> Unit = {},
     onSearchAddress: () -> Unit = {},
 ) {
-    val closeKeyboard = rememberCloseKeyboard(viewModel)
-    val scrollState = rememberScrollState()
-    Column(
-        modifier
-            .scrollFlingListener(closeKeyboard)
-            .verticalScroll(scrollState)
-            .fillMaxSize()
-    ) {
-        val isLocalModified by remember { derivedStateOf { worksiteData.isLocalModified } }
-        CaseIncident(
-            modifier,
-            worksiteData.incident.name,
-            isLocalModified,
-        )
+    val isLocalModified by remember { derivedStateOf { worksiteData.isLocalModified } }
+    CaseIncident(
+        modifier,
+        worksiteData.incident.name,
+        isLocalModified,
+    )
 
-        val worksite by viewModel.editingWorksite.collectAsStateWithLifecycle()
+    val worksite by viewModel.editingWorksite.collectAsStateWithLifecycle()
 
-        if (sectionTitles.isNotEmpty()) {
-            viewModel.propertyEditor?.let { propertyEditor ->
-                PropertyLocationSection(
+    if (sectionTitles.isNotEmpty()) {
+        viewModel.propertyEditor?.let { propertyEditor ->
+            PropertyLocationSection(
+                viewModel,
+                propertyEditor,
+                sectionTitles[0],
+                isEditable,
+                onMoveLocation,
+                onSearchAddress,
+            )
+        }
+
+        if (sectionTitles.size > 1) {
+            SectionSeparator()
+
+            viewModel.detailsEditor?.let { detailsEditor ->
+                DetailsSection(
                     viewModel,
-                    propertyEditor,
-                    sectionTitles[0],
+                    detailsEditor,
+                    sectionTitles[1],
                     isEditable,
-                    onMoveLocation,
-                    onSearchAddress,
                 )
             }
         }
@@ -397,6 +413,17 @@ private fun SectionHeader(
 }
 
 @Composable
+private fun SectionSeparator() {
+    Box(
+        Modifier
+            .fillMaxWidth()
+            // TODO Common dimensions
+            .height(32.dp)
+            .background(color = separatorColor)
+    )
+}
+
+@Composable
 private fun PropertyLocationSection(
     viewModel: CaseEditorViewModel,
     propertyEditor: CasePropertyDataEditor,
@@ -405,16 +432,15 @@ private fun PropertyLocationSection(
     onMoveLocation: () -> Unit = {},
     onSearchAddress: () -> Unit = {}
 ) {
-    var isPropertyCollapsed by remember { mutableStateOf(false) }
-    val togglePropertySection =
-        remember(viewModel) { { isPropertyCollapsed = !isPropertyCollapsed } }
+    var isSectionCollapsed by remember { mutableStateOf(false) }
+    val togglePropertySection = remember(viewModel) { { isSectionCollapsed = !isSectionCollapsed } }
     SectionHeader(
         sectionIndex = 0,
         sectionTitle = sectionTitle,
-        isCollapsed = isPropertyCollapsed,
+        isCollapsed = isSectionCollapsed,
         toggleCollapse = togglePropertySection,
     )
-    if (!isPropertyCollapsed) {
+    if (!isSectionCollapsed) {
         PropertyFormView(
             viewModel,
             propertyEditor,
@@ -439,6 +465,26 @@ private fun PropertyLocationSection(
                 viewModel.visibleNoteCount,
             )
         }
+    }
+}
+
+@Composable
+private fun DetailsSection(
+    viewModel: CaseEditorViewModel,
+    detailsDataEditor: CaseDetailsDataEditor,
+    sectionTitle: String,
+    isEditable: Boolean,
+) {
+    var isSectionCollapsed by remember { mutableStateOf(false) }
+    val togglePropertySection = remember(viewModel) { { isSectionCollapsed = !isSectionCollapsed } }
+    SectionHeader(
+        sectionIndex = 1,
+        sectionTitle = sectionTitle,
+        isCollapsed = isSectionCollapsed,
+        toggleCollapse = togglePropertySection,
+    )
+    if (!isSectionCollapsed) {
+        FormDataItems(viewModel, detailsDataEditor.detailsInputData, isEditable)
     }
 }
 

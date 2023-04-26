@@ -71,13 +71,91 @@ internal fun FormDataSummary(
 }
 
 @Composable
-internal fun FormDataView(
+private fun FormItems(
     viewModel: EditCaseBaseViewModel,
     inputData: FormFieldsInputData,
+    isEditable: Boolean = true,
+    showHelp: (FieldDynamicValue) -> Unit = {},
 ) {
     val breakGlassHint = viewModel.breakGlassHint
     val helpHint = viewModel.helpHint
 
+    val translate = remember(viewModel) { { s: String -> viewModel.translate(s) } }
+
+    val groupExpandState = remember { inputData.groupExpandState }
+
+    for (field in inputData.mutableFormFieldData) {
+        var state by remember { field }
+
+        if (state.nestLevel > 0) {
+            val isParentExpanded = groupExpandState[state.field.parentKey] ?: false
+            if (!isParentExpanded) {
+                continue
+            }
+        }
+
+        // TODO Is it possible to isolate recomposition only to each changed item?
+        //      key(){} is recomposing the entire list when only a single element changes.
+        //      Try a simplified example first.
+        key(state.key) {
+            val label = state.field.getFieldLabel(translate)
+            val fieldShowHelp = remember(viewModel) { { showHelp(state) } }
+            val modifier =
+                if (state.nestLevel > 0) listItemModifier.listItemNestedPadding(state.nestLevel * 2)
+                else listItemModifier
+            DynamicFormListItem(
+                state,
+                label,
+                groupExpandState,
+                modifier,
+                breakGlassHint,
+                helpHint,
+                fieldShowHelp,
+                isEditable,
+            ) { value: FieldDynamicValue ->
+                state = state.copy(
+                    dynamicValue = value.dynamicValue,
+                    breakGlass = value.breakGlass,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+internal fun FormDataView(
+    viewModel: EditCaseBaseViewModel,
+    inputData: FormFieldsInputData,
+    isEditable: Boolean = true,
+) {
+    HelpContent(viewModel) { showHelp ->
+        val closeKeyboard = rememberCloseKeyboard(viewModel)
+        val scrollState = rememberScrollState()
+        Column(
+            Modifier
+                .scrollFlingListener(closeKeyboard)
+                .verticalScroll(scrollState)
+                .fillMaxSize()
+        ) {
+            FormItems(viewModel, inputData, isEditable, showHelp)
+        }
+    }
+}
+
+@Composable
+internal fun FormDataItems(
+    viewModel: EditCaseBaseViewModel,
+    inputData: FormFieldsInputData,
+    isEditable: Boolean = true,
+) {
+    HelpContent(viewModel) { FormItems(viewModel, inputData, isEditable, it) }
+}
+
+@Composable
+private fun HelpContent(
+    viewModel: EditCaseBaseViewModel,
+    content: @Composable ((FieldDynamicValue) -> Unit) -> Unit,
+) {
     var helpTitle by remember { mutableStateOf("") }
     var helpText by remember { mutableStateOf("") }
     val showHelp = remember(viewModel) {
@@ -90,53 +168,7 @@ internal fun FormDataView(
         }
     }
 
-    val closeKeyboard = rememberCloseKeyboard(viewModel)
-    val scrollState = rememberScrollState()
-    val groupExpandState = remember { inputData.groupExpandState }
-    Column(
-        Modifier
-            .scrollFlingListener(closeKeyboard)
-            .verticalScroll(scrollState)
-            .fillMaxSize()
-    ) {
-        val translate = remember(viewModel) { { s: String -> viewModel.translate(s) } }
-
-        for (field in inputData.mutableFormFieldData) {
-            var state by remember { field }
-
-            if (state.nestLevel > 0) {
-                val isParentExpanded = groupExpandState[state.field.parentKey] ?: false
-                if (!isParentExpanded) {
-                    continue
-                }
-            }
-
-            // TODO Is it possible to isolate recomposition only to each changed item?
-            //      key(){} is recomposing the entire list when only a single element changes.
-            //      Try a simplified example first.
-            key(state.key) {
-                val label = state.field.getFieldLabel(translate)
-                val fieldShowHelp = remember(viewModel) { { showHelp(state) } }
-                val modifier =
-                    if (state.nestLevel > 0) listItemModifier.listItemNestedPadding(state.nestLevel * 2)
-                    else listItemModifier
-                DynamicFormListItem(
-                    state,
-                    label,
-                    groupExpandState,
-                    modifier,
-                    breakGlassHint,
-                    helpHint,
-                    fieldShowHelp,
-                ) { value: FieldDynamicValue ->
-                    state = state.copy(
-                        dynamicValue = value.dynamicValue,
-                        breakGlass = value.breakGlass,
-                    )
-                }
-            }
-        }
-    }
+    content(showHelp)
 
     if (helpText.isNotBlank()) {
         HelpDialog(

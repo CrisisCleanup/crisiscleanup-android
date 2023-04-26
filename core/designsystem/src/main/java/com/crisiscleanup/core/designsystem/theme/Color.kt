@@ -39,6 +39,7 @@ val attentionBackgroundColor = md_theme_primaryContainer
 val cancelButtonContainerColor = Color(0xFFEAEAEA)
 val cancelButtonContentColor = md_theme_primary
 val actionLinkColor = primaryBlueColor
+val separatorColor = Color(0xFFF6F8F9)
 
 internal val md_theme_light_primary = Color(0xFF735C00)
 internal val md_theme_light_onPrimary = Color(0xFFFFFFFF)
