@@ -377,7 +377,7 @@ internal fun BoxScope.LocationMapView(
         }
     }
 
-    val movingCamera = remember {
+    val movingCamera by remember {
         derivedStateOf {
             cameraPositionState.isMoving && cameraPositionState.cameraMoveStartedReason == CameraMoveStartedReason.GESTURE
         }
@@ -385,7 +385,7 @@ internal fun BoxScope.LocationMapView(
     onMapCameraChange(
         cameraPositionState.position,
         cameraPositionState.projection,
-        movingCamera.value,
+        movingCamera,
     )
 }
 
@@ -439,25 +439,6 @@ internal fun LocationFormView(
         imeAction = ImeAction.Next,
     )
 
-    val updateWrongLocation = remember(inputData) {
-        { b: Boolean ->
-            inputData.hasWrongLocation = b
-        }
-    }
-    val toggleWrongLocation = remember(inputData) {
-        {
-            updateWrongLocation(!inputData.hasWrongLocation)
-        }
-    }
-    CrisisCleanupTextCheckbox(
-        listItemModifier.listCheckboxAlignStartOffset(),
-        inputData.hasWrongLocation,
-        // TODO Translator from form fields data?
-        R.string.wrong_location,
-        onToggle = toggleWrongLocation,
-        onCheckChange = updateWrongLocation,
-    )
-
     inputData.run {
         val showAddressForm by remember(
             streetAddressError,
@@ -483,6 +464,24 @@ internal fun LocationFormView(
             )
         }
     }
+
+    val updateWrongLocation = remember(inputData) {
+        { b: Boolean ->
+            inputData.hasWrongLocation = b
+        }
+    }
+    val toggleWrongLocation = remember(inputData) {
+        {
+            updateWrongLocation(!inputData.hasWrongLocation)
+        }
+    }
+    CrisisCleanupTextCheckbox(
+        listItemModifier.listCheckboxAlignStartOffset(),
+        inputData.hasWrongLocation,
+        text = viewModel.translate("flag.worksite_wrong_location"),
+        onToggle = toggleWrongLocation,
+        onCheckChange = updateWrongLocation,
+    )
 }
 
 @Composable

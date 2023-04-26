@@ -65,6 +65,8 @@ interface CaseLocationDataEditor {
 
     val locationOutOfBoundsMessage: StateFlow<String>
 
+    var isMapLoaded: Boolean
+
     fun useMyLocation()
 
     fun onQueryChange(q: String)
@@ -139,6 +141,8 @@ internal class EditableLocationDataEditor(
     private val isMapMoved = AtomicBoolean(false)
 
     override val showExplainPermissionLocation = mutableStateOf(false)
+
+    override var isMapLoaded: Boolean = false
 
     init {
         var worksite = worksiteProvider.editableWorksite.value
@@ -337,6 +341,7 @@ internal class EditableLocationDataEditor(
         val isResultSelected = isSearchResultSelected.compareAndSet(true, false)
         val duration = if (isResultSelected) 500 else 0
         _mapCameraZoom.value = centerCoordinatesZoom(duration)
+        isMapLoaded = true
     }
 
     override fun onMapCameraChange(
@@ -349,8 +354,10 @@ internal class EditableLocationDataEditor(
         if (isMoveLocationOnMapMode.value) {
             projection?.let {
                 if (hasEnteredMoveLocationMapMode) {
-                    val center = it.visibleRegion.latLngBounds.center
-                    locationInputData.coordinates.value = center
+                    if (isMapLoaded) {
+                        val center = it.visibleRegion.latLngBounds.center
+                        locationInputData.coordinates.value = center
+                    }
                 } else {
                     hasEnteredMoveLocationMapMode = true
                     _mapCameraZoom.value = centerCoordinatesZoom()

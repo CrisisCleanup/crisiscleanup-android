@@ -22,16 +22,21 @@ fun CrisisCleanupTextCheckbox(
     onCheckChange: (Boolean) -> Unit = {},
     textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
     trailingContent: (@Composable () -> Unit)? = null,
+    enabled: Boolean = true,
 ) {
     Row(
         Modifier
-            .clickable(onClick = onToggle)
+            .clickable(
+                enabled = enabled,
+                onClick = onToggle
+            )
             .then(modifier),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Checkbox(
             checked = checked,
             onCheckedChange = onCheckChange,
+            enabled = enabled,
         )
         val textValue = if (textResId == 0) text else stringResource(textResId)
         Text(

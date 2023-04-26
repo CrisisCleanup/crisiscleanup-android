@@ -11,8 +11,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
+import com.crisiscleanup.core.designsystem.theme.cancelButtonContainerColor
+import com.crisiscleanup.core.designsystem.theme.cancelButtonContentColor
 
 private fun roundedRectangleButtonShape() = RoundedCornerShape(4.dp)
+
+@Composable
+fun cancelButtonColors() = ButtonDefaults.buttonColors(
+    containerColor = cancelButtonContainerColor,
+    contentColor = cancelButtonContentColor,
+)
 
 val mapButtonSize = 48.dp
 val mapButtonEdgeSpace = 8.dp

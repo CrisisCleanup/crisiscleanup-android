@@ -1,6 +1,5 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -8,10 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconTextButton
 import com.crisiscleanup.core.designsystem.component.OutlinedSingleLineTextField
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.feature.caseeditor.CaseLocationDataEditor
@@ -54,9 +51,9 @@ internal fun PropertyLocationView(
 
         OutlinedSingleLineTextField(
             modifier = Modifier
-                .clickable(onClick = openAddressSearch)
                 .fillMaxWidth()
-                .listItemPadding(),
+                .listItemPadding()
+                .clickable(onClick = openAddressSearch),
             labelResId = 0,
             label = viewModel.translate("caseView.full_address"),
             value = "",
@@ -110,25 +107,6 @@ internal fun PropertyLocationView(
 }
 
 @Composable
-internal fun MapButton(
-    modifier: Modifier = Modifier,
-    imageVector: ImageVector? = null,
-    @DrawableRes iconResId: Int = 0,
-    label: String = "",
-    onClick: () -> Unit = {},
-    enabled: Boolean = false,
-) {
-    CrisisCleanupIconTextButton(
-        modifier = modifier,
-        imageVector = imageVector,
-        iconResId = iconResId,
-        label = label,
-        onClick = onClick,
-        enabled = enabled,
-    )
-}
-
-@Composable
 private fun LocationMapActionBar(
     viewModel: EditCaseBaseViewModel,
     editor: CaseLocationDataEditor,
@@ -138,14 +116,14 @@ private fun LocationMapActionBar(
     val useMyLocation = remember(viewModel) { { editor.useMyLocation() } }
 
     Row(modifier = Modifier.listItemPadding()) {
-        MapButton(
+        IconButton(
             modifier = Modifier.weight(1f),
             iconResId = R.drawable.ic_select_on_map,
             label = viewModel.translate("caseForm.select_on_map"),
             onClick = moveLocationOnMap,
             enabled = isEditable,
         )
-        MapButton(
+        IconButton(
             modifier = Modifier.weight(1f),
             iconResId = R.drawable.ic_use_my_location,
             label = viewModel.translate("caseForm.use_my_location"),

@@ -81,9 +81,9 @@ internal fun CaseEditorRoute(
                 }
             }
             Column {
-                TopAppBarCancel(
+                TopAppBarSingleAction(
                     title = headerTitle,
-                    onCancel = onNavigateCancel,
+                    onAction = onNavigateCancel,
                 )
                 CaseEditorScreen(
                     onNavigateBack = onNavigateBack,
@@ -312,7 +312,6 @@ private fun BoxScope.FullEditContent(
     sectionTitles: List<String> = emptyList(),
     viewModel: CaseEditorViewModel = hiltViewModel(),
     isEditable: Boolean = false,
-    openExistingCase: (ExistingWorksiteIdentifier) -> Unit = {},
     onMoveLocation: () -> Unit = {},
     onSearchAddress: () -> Unit = {},
 ) {
@@ -331,11 +330,7 @@ private fun BoxScope.FullEditContent(
             isLocalModified,
         )
 
-        val translate = remember(viewModel) { { s: String -> viewModel.translate(s) } }
-
         val worksite by viewModel.editingWorksite.collectAsStateWithLifecycle()
-
-        var isRerouted by remember { mutableStateOf(false) }
 
         if (sectionTitles.isNotEmpty()) {
             viewModel.propertyEditor?.let { propertyEditor ->
@@ -440,6 +435,7 @@ private fun PropertyLocationSection(
             PropertyNotesFlagsView(
                 viewModel,
                 notesFlagsEditor,
+                isEditable,
                 viewModel.visibleNoteCount,
             )
         }
@@ -630,23 +626,21 @@ private fun SaveActionBar(
     ) {
         // TODO Use translations
         BusyButton(
-            Modifier.weight(2f),
-            textResId = R.string.back,
+            Modifier.weight(1f),
+            textResId = R.string.cancel,
             enabled = enable,
             onClick = onBack,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = cancelButtonContainerColor
-            ),
+            colors = cancelButtonColors(),
         )
         BusyButton(
-            Modifier.weight(3f),
+            Modifier.weight(1.2f),
             textResId = R.string.claim_and_save,
             enabled = enable,
             indicateBusy = !enable,
             onClick = onSave,
         )
         BusyButton(
-            Modifier.weight(3f),
+            Modifier.weight(1f),
             textResId = R.string.save,
             enabled = enable,
             indicateBusy = !enable,

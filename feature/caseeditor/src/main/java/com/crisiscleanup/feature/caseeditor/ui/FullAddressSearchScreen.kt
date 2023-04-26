@@ -16,7 +16,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
-import com.crisiscleanup.core.designsystem.component.TopAppBarCancel
+import com.crisiscleanup.core.designsystem.component.TopAppBarSingleAction
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.textMessagePadding
 import com.crisiscleanup.feature.caseeditor.*
@@ -34,27 +34,30 @@ internal fun EditCaseAddressSearchRoute(
         openExistingCase(editDifferentWorksite)
     } else {
         Column {
-            TopAppBarCancel(
+            TopAppBarSingleAction(
                 title = stringResource(R.string.location_address_search),
-                onCancel = onBack,
+                onAction = onBack,
             )
-            AddressSearchView(
-                viewModel,
-                editor,
-                onBack,
-            )
+            val locationQuery by editor.locationInputData.locationQuery.collectAsStateWithLifecycle()
+            FullAddressSearchInput(viewModel, editor, locationQuery, true)
+            val onAddressSelect = remember(viewModel) {
+                {
+                    editor.commitChanges()
+                    onBack()
+                }
+            }
+            AddressSearchResults(viewModel, editor, locationQuery, onAddressSelect)
         }
     }
 }
 
 @Composable
-private fun ColumnScope.AddressSearchView(
+internal fun FullAddressSearchInput(
     viewModel: EditCaseBaseViewModel,
     editor: CaseLocationDataEditor,
-    onBack: () -> Unit = {},
+    locationQuery: String,
+    hasFocus: Boolean = false,
 ) {
-    val locationQuery by editor.locationInputData.locationQuery.collectAsStateWithLifecycle()
-    val query = locationQuery.trim()
     val updateQuery = remember(viewModel) { { s: String -> editor.onQueryChange(s) } }
     OutlinedClearableTextField(
         modifier = Modifier
@@ -65,14 +68,22 @@ private fun ColumnScope.AddressSearchView(
         onValueChange = updateQuery,
         keyboardType = KeyboardType.Password,
         isError = false,
-        hasFocus = true,
+        hasFocus = hasFocus,
         enabled = true,
     )
 
     if (editor.takeClearSearchInputFocus) {
         LocalFocusManager.current.clearFocus(true)
     }
+}
 
+@Composable
+internal fun ColumnScope.AddressSearchResults(
+    viewModel: EditCaseBaseViewModel,
+    editor: CaseLocationDataEditor,
+    locationQuery: String,
+    onAddressSelect: () -> Unit = {},
+) {
     val isShortQuery by editor.isShortQuery.collectAsStateWithLifecycle()
     if (isShortQuery) {
         Text(
@@ -81,12 +92,7 @@ private fun ColumnScope.AddressSearchView(
             style = MaterialTheme.typography.bodyLarge,
         )
     } else {
-        val onAddressSelect = remember(viewModel) {
-            {
-                editor.commitChanges()
-                onBack()
-            }
-        }
+        val query = locationQuery.trim()
         SearchContents(
             viewModel,
             editor,

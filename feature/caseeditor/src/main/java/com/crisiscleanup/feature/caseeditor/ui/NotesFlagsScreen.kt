@@ -274,6 +274,7 @@ private fun FlagsInputNotesList(
 internal fun HighPriorityFlagInput(
     viewModel: EditCaseBaseViewModel,
     inputData: NotesFlagsInputData,
+    enabled: Boolean = true,
 ) {
     val toggleHighPriority = remember(inputData) {
         { inputData.isHighPriority = !inputData.isHighPriority }
@@ -286,6 +287,7 @@ internal fun HighPriorityFlagInput(
         text = viewModel.translate("flag.flag_high_priority"),
         onToggle = toggleHighPriority,
         onCheckChange = updateHighPriority,
+        enabled = enabled,
     )
 }
 
@@ -293,6 +295,7 @@ internal fun HighPriorityFlagInput(
 internal fun MemberOfMyOrgFlagInput(
     viewModel: EditCaseBaseViewModel,
     inputData: NotesFlagsInputData,
+    enabled: Boolean = true,
 ) {
     val toggleAssignTo = remember(inputData) {
         { inputData.isAssignedToOrgMember = !inputData.isAssignedToOrgMember }
@@ -305,5 +308,6 @@ internal fun MemberOfMyOrgFlagInput(
         text = viewModel.translate("actions.member_of_my_org"),
         onToggle = toggleAssignTo,
         onCheckChange = updateAssignTo,
+        enabled = enabled,
     )
 }

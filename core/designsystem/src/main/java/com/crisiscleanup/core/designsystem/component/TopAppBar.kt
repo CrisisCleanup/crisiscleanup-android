@@ -174,11 +174,12 @@ fun TopAppBarBackCancel(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopAppBarCancel(
+fun TopAppBarSingleAction(
     modifier: Modifier = Modifier,
     @StringRes titleResId: Int = 0,
     title: String = "",
-    onCancel: () -> Unit = {},
+    @StringRes actionResId: Int = R.string.back,
+    onAction: () -> Unit = {},
     colors: TopAppBarColors = TopAppBarDefaults.centerAlignedTopAppBarColors(),
 ) {
     val titleContent = @Composable {
@@ -189,10 +190,10 @@ fun TopAppBarCancel(
             // TODO Style, icon, height of app bar
             Row(
                 modifier
-                    .clickable(onClick = onCancel)
+                    .clickable(onClick = onAction)
                     .padding(8.dp)
             ) {
-                Text(stringResource(R.string.cancel))
+                Text(stringResource(actionResId))
             }
         }
     CenterAlignedTopAppBar(

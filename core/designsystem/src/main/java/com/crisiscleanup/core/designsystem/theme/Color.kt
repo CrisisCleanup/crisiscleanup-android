@@ -2,8 +2,8 @@ package com.crisiscleanup.core.designsystem.theme
 
 import androidx.compose.ui.graphics.Color
 
-internal val md_theme_primary = Color(0xFF555555) // Button icon, control activated, control action
-internal val md_theme_onPrimary = Color(0xFF2D2D2D) // Check in checkbox
+internal val md_theme_primary = Color(0xFF2D2D2D) // Button icon, control activated, control action
+internal val md_theme_onPrimary = Color(0xFFFFFFFF) // Check in checkbox
 internal val md_theme_primaryContainer = Color(0xFFFECE09)
 internal val md_theme_onPrimaryContainer = Color(0xFF2D2D2D)
 internal val md_theme_secondary = Color(0xFF52DBCB)
@@ -32,10 +32,13 @@ internal val md_theme_shadow = Color(0xFF000000)
 internal val md_theme_surfaceTint = Color(0xFFEFC100)
 internal val md_theme_surfaceTintColor = Color(0xFFEFC100)
 
-val incidentDisasterContainerColor = Color(0xFF378DFF)
+internal val primaryBlueColor = Color(0xFF378DFF)
+val incidentDisasterContainerColor = primaryBlueColor
 val incidentDisasterContentColor = Color(0xFFFFFFFF)
 val attentionBackgroundColor = md_theme_primaryContainer
 val cancelButtonContainerColor = Color(0xFFEAEAEA)
+val cancelButtonContentColor = md_theme_primary
+val actionLinkColor = primaryBlueColor
 
 internal val md_theme_light_primary = Color(0xFF735C00)
 internal val md_theme_light_onPrimary = Color(0xFFFFFFFF)

@@ -5,10 +5,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
@@ -23,6 +25,8 @@ fun CrisisCleanupIconTextButton(
     onClick: () -> Unit = {},
     enabled: Boolean = true,
     spacing: Dp = 0.dp,
+    iconTint: Color = LocalContentColor.current,
+    textColor: Color = Color.Unspecified,
 ) {
     Row(
         modifier = modifier.clickable(
@@ -36,18 +40,21 @@ fun CrisisCleanupIconTextButton(
             Icon(
                 painter = painterResource(iconResId),
                 contentDescription = label,
+                tint = iconTint,
             )
         } else {
             imageVector?.let {
                 Icon(
                     imageVector = it,
                     contentDescription = label,
+                    tint = iconTint,
                 )
             }
         }
         Text(
             label,
             Modifier.weight(1f),
+            color = textColor,
         )
     }
 }

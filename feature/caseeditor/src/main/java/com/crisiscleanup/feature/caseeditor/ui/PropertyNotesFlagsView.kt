@@ -1,6 +1,5 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,16 +23,17 @@ import com.crisiscleanup.feature.caseeditor.R
 internal fun PropertyNotesFlagsView(
     viewModel: EditCaseBaseViewModel,
     editor: CaseNotesFlagsDataEditor,
+    isEditable: Boolean = false,
     collapsedNotesVisibleCount: Int = 3,
 ) {
     var isCreatingNote by remember { mutableStateOf(false) }
 
     val inputData = editor.notesFlagsInputData
 
-    HighPriorityFlagInput(viewModel, inputData)
+    HighPriorityFlagInput(viewModel, inputData, enabled = isEditable)
 
     if (inputData.isNewWorksite) {
-        MemberOfMyOrgFlagInput(viewModel, inputData)
+        MemberOfMyOrgFlagInput(viewModel, inputData, enabled = isEditable)
     }
 
     val notes by inputData.notesStream.collectAsStateWithLifecycle(emptyList())
@@ -69,16 +69,16 @@ internal fun PropertyNotesFlagsView(
         NoteView(note, noteModifier)
     }
 
-    Row(
-        Modifier
-            .clickable { isCreatingNote = true }
-            .fillMaxWidth()
+    val onAddNote = remember(viewModel) { { isCreatingNote = true } }
+    IconButton(
+        modifier = Modifier
             .listItemHeight()
-            .listItemPadding(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(viewModel.translate("caseView.add_note"))
-    }
+            .fillMaxWidth(),
+        iconResId = R.drawable.ic_note,
+        label = viewModel.translate("caseView.add_note"),
+        onClick = onAddNote,
+        enabled = isEditable,
+    )
 
     if (isCreatingNote) {
         val dismissNoteDialog = { isCreatingNote = false }
