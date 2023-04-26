@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -32,22 +34,21 @@ internal fun PropertyLocationView(
     } else {
         editor.setMoveLocationOnMap(false)
 
-        var helpTitle by remember { mutableStateOf("") }
-        var helpText by remember { mutableStateOf("") }
         val locationText = viewModel.translate("formLabels.location")
-        val showHelp = remember(viewModel) {
-            {
-                helpTitle = locationText
-                helpText = viewModel.translate("caseForm.location_instructions")
-            }
+        WithHelpDialog(
+            viewModel,
+            helpTitle = locationText,
+            helpText = viewModel.translate("caseForm.location_instructions"),
+            hasHtml = true,
+        ) { showHelp ->
+            HelpRow(
+                locationText,
+                viewModel.helpHint,
+                // TODO Common dimensions
+                modifier = Modifier.padding(top = 16.dp),
+                showHelp = showHelp,
+            )
         }
-        HelpRow(
-            locationText,
-            viewModel.helpHint,
-            // TODO Common dimensions
-            modifier = Modifier.padding(top = 16.dp),
-            showHelp = showHelp,
-        )
 
         OutlinedSingleLineTextField(
             modifier = Modifier
@@ -86,15 +87,6 @@ internal fun PropertyLocationView(
         LocationFormView(viewModel, editor, isEditable)
 
         // TODO Handle out of bounds properly
-
-        if (helpText.isNotBlank()) {
-            HelpDialog(
-                title = helpTitle,
-                text = helpText,
-                onClose = { helpText = "" },
-                hasHtml = true,
-            )
-        }
 
         val closePermissionDialog =
             remember(viewModel) { { editor.showExplainPermissionLocation.value = false } }

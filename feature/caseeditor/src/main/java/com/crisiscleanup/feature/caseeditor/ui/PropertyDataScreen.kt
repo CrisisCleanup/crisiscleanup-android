@@ -175,16 +175,13 @@ internal fun PropertyFormView(
     )
 
     val autoContactFrequencyLabel = viewModel.translate("casesVue.auto_contact_frequency")
-
-    var helpTitle by remember { mutableStateOf("") }
-    var helpText by remember { mutableStateOf("") }
-    val showHelp = remember(viewModel) {
-        {
-            helpTitle = autoContactFrequencyLabel
-            helpText = viewModel.translate("casesVue.auto_contact_frequency_help")
-        }
+    WithHelpDialog(
+        viewModel,
+        helpTitle = autoContactFrequencyLabel,
+        helpText = viewModel.translate("casesVue.auto_contact_frequency_help")
+    ) { showHelp ->
+        HelpRow(autoContactFrequencyLabel, viewModel.helpHint, showHelp = showHelp)
     }
-    HelpRow(autoContactFrequencyLabel, viewModel.helpHint, showHelp = showHelp)
     val updateContactFrequency = remember(inputData) {
         { it: AutoContactFrequency -> inputData.autoContactFrequency = it }
     }
@@ -217,14 +214,6 @@ internal fun PropertyFormView(
                 )
             }
         }
-    }
-
-    if (helpText.isNotBlank()) {
-        HelpDialog(
-            title = helpTitle,
-            text = helpText,
-            onClose = { helpText = "" },
-        )
     }
 }
 

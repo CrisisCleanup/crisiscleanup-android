@@ -365,11 +365,13 @@ private fun FullEditContent(
 
 @Composable
 private fun SectionHeader(
+    viewModel: CaseEditorViewModel,
     modifier: Modifier = Modifier,
     sectionIndex: Int,
     sectionTitle: String,
     isCollapsed: Boolean = false,
     toggleCollapse: () -> Unit = {},
+    help: String = "",
 ) {
     Row(
         modifier
@@ -377,7 +379,6 @@ private fun SectionHeader(
             .listItemHeight()
             .listItemPadding(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = listItemSpacedBy,
     ) {
         // TODO Bold
         val textStyle = MaterialTheme.typography.bodyLarge
@@ -397,7 +398,7 @@ private fun SectionHeader(
         }
         Text(
             sectionTitle,
-            Modifier.weight(1f),
+            Modifier.listRowItemStartPadding(),
             style = textStyle,
         )
         val iconVector =
@@ -405,6 +406,12 @@ private fun SectionHeader(
         val descriptionResId =
             if (isCollapsed) R.string.collapse_section else R.string.expand_section
         val description = stringResource(descriptionResId, sectionTitle)
+        if (help.isNotBlank()) {
+            WithHelpDialog(viewModel, sectionTitle, help, true) { showHelp ->
+                HelpAction(viewModel.helpHint, showHelp)
+            }
+        }
+        Spacer(Modifier.weight(1f))
         Icon(
             imageVector = iconVector,
             contentDescription = description,
@@ -435,6 +442,7 @@ private fun PropertyLocationSection(
     var isSectionCollapsed by remember { mutableStateOf(false) }
     val togglePropertySection = remember(viewModel) { { isSectionCollapsed = !isSectionCollapsed } }
     SectionHeader(
+        viewModel,
         sectionIndex = 0,
         sectionTitle = sectionTitle,
         isCollapsed = isSectionCollapsed,
@@ -474,17 +482,21 @@ private fun DetailsSection(
     detailsDataEditor: CaseDetailsDataEditor,
     sectionTitle: String,
     isEditable: Boolean,
+    sectionIndex: Int = 1,
 ) {
     var isSectionCollapsed by remember { mutableStateOf(false) }
     val togglePropertySection = remember(viewModel) { { isSectionCollapsed = !isSectionCollapsed } }
+    val inputData = detailsDataEditor.detailsInputData
     SectionHeader(
-        sectionIndex = 1,
+        viewModel,
+        sectionIndex = sectionIndex,
         sectionTitle = sectionTitle,
         isCollapsed = isSectionCollapsed,
         toggleCollapse = togglePropertySection,
+        help = inputData.helpText,
     )
     if (!isSectionCollapsed) {
-        FormDataItems(viewModel, detailsDataEditor.detailsInputData, isEditable)
+        FormDataItems(viewModel, inputData, isEditable)
     }
 }
 

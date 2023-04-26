@@ -7,8 +7,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -79,4 +78,33 @@ internal fun HelpDialog(
             )
         },
     )
+}
+
+@Composable
+internal fun WithHelpDialog(
+    rememberKey: Any,
+    helpTitle: String,
+    helpText: String,
+    hasHtml: Boolean = false,
+    content: @Composable (() -> Unit) -> Unit,
+) {
+    var rememberHelpTitle by remember { mutableStateOf("") }
+    var rememberHelpText by remember { mutableStateOf("") }
+    val showHelp = remember(rememberKey) {
+        {
+            rememberHelpTitle = helpTitle
+            rememberHelpText = helpText
+        }
+    }
+
+    content(showHelp)
+
+    if (rememberHelpText.isNotBlank()) {
+        HelpDialog(
+            title = rememberHelpTitle,
+            text = rememberHelpText,
+            onClose = { rememberHelpText = "" },
+            hasHtml = hasHtml,
+        )
+    }
 }

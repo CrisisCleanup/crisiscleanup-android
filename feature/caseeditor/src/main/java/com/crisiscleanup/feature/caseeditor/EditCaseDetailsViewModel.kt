@@ -12,6 +12,7 @@ internal val excludeDetailsFormFields = setOf("cross_street", "email")
 
 interface CaseDetailsDataEditor {
     val detailsInputData: DetailsInputData
+
     fun validateSaveWorksite(): Boolean
 }
 

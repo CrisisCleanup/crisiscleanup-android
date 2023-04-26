@@ -10,6 +10,7 @@ open class FormFieldsInputData(
     groupNode: FormFieldNode,
     ignoreFieldKeys: Set<String> = emptySet(),
     private val autoManageGroups: Boolean = false,
+    val helpText: String = groupNode.formField.help,
 ) : CaseDataWriter {
     private val worksiteIn = worksite.copy()
 
