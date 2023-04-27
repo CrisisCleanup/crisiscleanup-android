@@ -94,9 +94,6 @@ private fun FormItems(
             }
         }
 
-        // TODO Is it possible to isolate recomposition only to each changed item?
-        //      key(){} is recomposing the entire list when only a single element changes.
-        //      Try a simplified example first.
         key(state.key) {
             val label = state.field.getFieldLabel(translate)
             val fieldShowHelp = remember(viewModel) { { showHelp(state) } }

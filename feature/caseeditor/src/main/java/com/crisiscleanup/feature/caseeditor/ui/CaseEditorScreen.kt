@@ -4,14 +4,11 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,6 +37,9 @@ import kotlinx.coroutines.launch
 import java.lang.Integer.min
 import com.crisiscleanup.core.common.R as commonR
 import com.crisiscleanup.core.commonassets.R as commonAssetsR
+
+private const val SectionHeaderContentType = "section-header-content-type"
+private const val SectionSeparatorContentType = "section-header-content-type"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -154,38 +154,17 @@ internal fun ColumnScope.CaseEditorScreen(
 }
 
 @Composable
-private fun ColumnScope.FullEditView(
-    worksiteData: CaseEditorUiState.WorksiteData,
-    modifier: Modifier = Modifier,
-    viewModel: CaseEditorViewModel = hiltViewModel(),
-    onBack: () -> Unit = {},
-    onMoveLocation: () -> Unit = {},
-    onSearchAddress: () -> Unit = {},
+private fun OnSliderScrollRest(
+    sectionCount: Int,
+    sliderState: LazyListState,
+    onScrollRest: (Int) -> Unit,
 ) {
-    // TODO Pager should not affect or recompose content except when change in content to focus on should change
-
-    val editSections by viewModel.editSections.collectAsStateWithLifecycle()
-
-    var snapOnEndScroll by remember { mutableStateOf(false) }
-    val rememberSnapOnEndScroll = remember(viewModel) { { snapOnEndScroll = true } }
-
-    val pagerState = rememberLazyListState()
-    // TODO Animate elevation when content scrolls below
-    SectionPager(
-        editSections,
-        modifier,
-        rememberSnapOnEndScroll,
-        pagerState,
-    )
-
-    var navigateToSectionIndex by remember { mutableStateOf(-1) }
-    val coroutineScope = rememberCoroutineScope()
-    LaunchedEffect(pagerState.isScrollInProgress) {
-        if (!pagerState.isScrollInProgress) {
-            val snapToIndex = if (pagerState.firstVisibleItemIndex >= editSections.size) {
-                editSections.size - 1
+    LaunchedEffect(sliderState.isScrollInProgress) {
+        if (!sliderState.isScrollInProgress) {
+            val snapToIndex = if (sliderState.firstVisibleItemIndex >= sectionCount) {
+                sectionCount - 1
             } else {
-                pagerState.layoutInfo.visibleItemsInfo.firstOrNull()?.let {
+                sliderState.layoutInfo.visibleItemsInfo.firstOrNull()?.let {
                     // TODO Account for (start) padding/spacing
                     if (it.offset < -it.size * 0.5) {
                         it.index + 1
@@ -196,18 +175,116 @@ private fun ColumnScope.FullEditView(
             }
 
             if (snapToIndex >= 0) {
-                val sectionIndex = min(snapToIndex, editSections.size - 1)
-                if (snapOnEndScroll) {
-                    snapOnEndScroll = false
-                    coroutineScope.launch {
-                        pagerState.animateScrollToItem(sectionIndex)
-                    }
-                } else {
-                    navigateToSectionIndex = sectionIndex
+                val sectionIndex = min(snapToIndex, sectionCount - 1)
+                onScrollRest(sectionIndex)
+            }
+        }
+    }
+}
+
+@Composable
+private fun OnContentScrollRest(
+    contentListState: LazyListState,
+    indexLookups: SectionContentIndexLookup,
+    takeScrollToSection: () -> Boolean = { false },
+    onScrollRest: (Int) -> Unit,
+) {
+    LaunchedEffect(contentListState.isScrollInProgress) {
+        if (!contentListState.isScrollInProgress && takeScrollToSection()) {
+            val firstVisibleIndex = contentListState.firstVisibleItemIndex
+            val sliderIndex = if (firstVisibleIndex < indexLookups.maxItemIndex) {
+                indexLookups.itemSection[firstVisibleIndex] ?: -1
+            } else {
+                indexLookups.maxSectionIndex
+            }
+            if (sliderIndex >= 0 && sliderIndex <= indexLookups.maxSectionIndex) {
+                onScrollRest(sliderIndex)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ColumnScope.FullEditView(
+    worksiteData: CaseEditorUiState.WorksiteData,
+    modifier: Modifier = Modifier,
+    viewModel: CaseEditorViewModel = hiltViewModel(),
+    onBack: () -> Unit = {},
+    onMoveLocation: () -> Unit = {},
+    onSearchAddress: () -> Unit = {},
+) {
+    val editSections by viewModel.editSections.collectAsStateWithLifecycle()
+
+    var snapOnEndScroll by remember { mutableStateOf(false) }
+    val rememberSnapOnEndScroll = remember(viewModel) { { snapOnEndScroll = true } }
+
+    val pagerState = rememberLazyListState()
+
+    val indexLookups by rememberSectionContentIndexLookup(
+        mapOf(
+            0 to 1,
+            1 to 6,
+            2 to 9,
+            3 to 12,
+            4 to 15,
+        )
+    )
+    val contentListState = rememberLazyListState()
+
+    val coroutineScope = rememberCoroutineScope()
+    var isSliderScrollToSection by remember { mutableStateOf(false) }
+    val sliderScrollToSection = remember(viewModel) {
+        { index: Int ->
+            coroutineScope.launch {
+                isSliderScrollToSection = true
+                pagerState.animateScrollToItem(index)
+                indexLookups.sectionItem[index]?.let { itemIndex ->
+                    contentListState.animateScrollToItem(itemIndex)
+                }
+            }
+            Unit
+        }
+    }
+
+    // TODO Animate elevation when content scrolls below
+    SectionPager(
+        editSections,
+        modifier,
+        rememberSnapOnEndScroll,
+        pagerState,
+        sliderScrollToSection,
+    )
+
+    val onSliderScrollRest = remember(pagerState) {
+        { sectionIndex: Int ->
+            if (snapOnEndScroll) {
+                snapOnEndScroll = false
+                sliderScrollToSection(sectionIndex)
+            }
+        }
+    }
+    OnSliderScrollRest(editSections.size, pagerState, onSliderScrollRest)
+
+    val takeScrollToSection = remember(contentListState) {
+        {
+            if (isSliderScrollToSection) {
+                isSliderScrollToSection = false
+                false
+            } else {
+                true
+            }
+        }
+    }
+    val onContentScrollRest = remember(contentListState) {
+        { sliderIndex: Int ->
+            if (sliderIndex != pagerState.firstVisibleItemIndex) {
+                coroutineScope.launch {
+                    pagerState.animateScrollToItem(sliderIndex)
                 }
             }
         }
     }
+    OnContentScrollRest(contentListState, indexLookups, takeScrollToSection, onContentScrollRest)
 
     val isSavingData by viewModel.isSavingWorksite.collectAsStateWithLifecycle()
     val isEditable by remember(worksiteData, isSavingData) {
@@ -215,26 +292,44 @@ private fun ColumnScope.FullEditView(
             worksiteData.isEditable && !isSavingData
         }
     }
+
+    val sectionCollapseStates = remember(viewModel) {
+        val collapseStates = SnapshotStateList<Boolean>()
+        for (i in editSections) {
+            collapseStates.add(false)
+        }
+        collapseStates
+    }
+    val isSectionCollapsed =
+        remember(viewModel) { { sectionIndex: Int -> sectionCollapseStates[sectionIndex] } }
+    val toggleSectionCollapse = remember(viewModel) {
+        { sectionIndex: Int ->
+            sectionCollapseStates[sectionIndex] = !sectionCollapseStates[sectionIndex]
+        }
+    }
+    val togglePropertySection = remember(viewModel) { { toggleSectionCollapse(0) } }
+
     Box(Modifier.weight(1f)) {
-        // TODO Why does content recompose when pager is scrolled?
-        //      Optimize after all content is complete and eliminate unnecessary recompositions.
-        //      Replace content with static text and it doesn't seem to recompose...
         val closeKeyboard = rememberCloseKeyboard(viewModel)
-        val scrollState = rememberScrollState()
-        Column(
+
+        LazyColumn(
             modifier
                 .scrollFlingListener(closeKeyboard)
-                .verticalScroll(scrollState)
-                .fillMaxSize()
+                .fillMaxSize(),
+            state = contentListState,
         ) {
-            FullEditContent(
+            fullEditContent(
                 worksiteData,
+                viewModel,
                 modifier,
                 editSections,
-                viewModel,
                 isEditable,
                 onMoveLocation = onMoveLocation,
                 onSearchAddress = onSearchAddress,
+                isPropertySectionCollapsed = sectionCollapseStates[0],
+                togglePropertySection = togglePropertySection,
+                isSectionCollapsed = isSectionCollapsed,
+                toggleSection = toggleSectionCollapse,
             )
         }
 
@@ -280,6 +375,7 @@ private fun SectionPager(
     modifier: Modifier = Modifier,
     snapToNearestIndex: () -> Unit = {},
     pagerState: LazyListState = rememberLazyListState(),
+    scrollToSection: (Int) -> Unit = {},
 ) {
 
     val pagerScrollConnection = remember(pagerState) {
@@ -298,7 +394,9 @@ private fun SectionPager(
     ) {
         items(editSections.size + 1) { index ->
             Box(
-                modifier = modifier.listItemHeight(),
+                modifier = modifier
+                    .clickable { scrollToSection(index) }
+                    .listItemHeight(),
                 contentAlignment = Alignment.CenterStart,
             ) {
                 if (index < editSections.size) {
@@ -318,51 +416,65 @@ private fun SectionPager(
     }
 }
 
-@Composable
-private fun FullEditContent(
+private fun LazyListScope.fullEditContent(
     worksiteData: CaseEditorUiState.WorksiteData,
+    viewModel: CaseEditorViewModel,
     modifier: Modifier = Modifier,
     sectionTitles: List<String> = emptyList(),
-    viewModel: CaseEditorViewModel = hiltViewModel(),
     isEditable: Boolean = false,
     onMoveLocation: () -> Unit = {},
     onSearchAddress: () -> Unit = {},
+    isPropertySectionCollapsed: Boolean = false,
+    togglePropertySection: () -> Unit = {},
+    isSectionCollapsed: (Int) -> Boolean = { false },
+    toggleSection: (Int) -> Unit = {},
 ) {
-    val isLocalModified by remember { derivedStateOf { worksiteData.isLocalModified } }
-    val incidentResId = getDisasterIcon(worksiteData.incident.disaster)
-    CaseIncident(
-        modifier,
-        incidentResId,
-        worksiteData.incident.name,
-        isLocalModified,
-    )
+    item(key = "incident-info") {
+        val isLocalModified by remember { derivedStateOf { worksiteData.isLocalModified } }
+        val incidentResId = getDisasterIcon(worksiteData.incident.disaster)
+        CaseIncident(
+            modifier,
+            incidentResId,
+            worksiteData.incident.name,
+            isLocalModified,
+        )
+    }
 
-    val worksite by viewModel.editingWorksite.collectAsStateWithLifecycle()
+    // val worksite by viewModel.editingWorksite.collectAsStateWithLifecycle()
 
     if (sectionTitles.isNotEmpty()) {
         viewModel.propertyEditor?.let { propertyEditor ->
-            PropertyLocationSection(
+            propertyLocationSection(
                 viewModel,
                 propertyEditor,
                 sectionTitles[0],
                 isEditable,
                 onMoveLocation,
                 onSearchAddress,
+                isSectionCollapsed = isPropertySectionCollapsed,
+                togglePropertySection = togglePropertySection,
             )
         }
 
         viewModel.formDataEditors.forEachIndexed { index, editor ->
-            SectionSeparator()
+            item(
+                key = "section-separator-$index",
+                contentType = SectionSeparatorContentType,
+            ) {
+                SectionSeparator()
+            }
 
             val sectionIndex = index + 1
             val sectionTitle =
                 if (sectionIndex < sectionTitles.size) sectionTitles[sectionIndex] else ""
-            FormDataSection(
+            formDataSection(
                 viewModel,
                 editor.inputData,
                 sectionTitle,
                 isEditable,
                 sectionIndex,
+                isSectionCollapsed(sectionIndex),
+                toggleSection,
             )
         }
     }
@@ -435,72 +547,92 @@ private fun SectionSeparator() {
     )
 }
 
-@Composable
-private fun PropertyLocationSection(
+private fun LazyListScope.propertyLocationSection(
     viewModel: CaseEditorViewModel,
     propertyEditor: CasePropertyDataEditor,
     sectionTitle: String,
     isEditable: Boolean,
     onMoveLocation: () -> Unit = {},
-    onSearchAddress: () -> Unit = {}
+    onSearchAddress: () -> Unit = {},
+    isSectionCollapsed: Boolean = false,
+    togglePropertySection: () -> Unit = {},
 ) {
-    var isSectionCollapsed by remember { mutableStateOf(false) }
-    val togglePropertySection = remember(viewModel) { { isSectionCollapsed = !isSectionCollapsed } }
-    SectionHeader(
-        viewModel,
-        sectionIndex = 0,
-        sectionTitle = sectionTitle,
-        isCollapsed = isSectionCollapsed,
-        toggleCollapse = togglePropertySection,
-    )
-    if (!isSectionCollapsed) {
-        PropertyFormView(
+    item(
+        key = "section-header-0",
+        contentType = SectionHeaderContentType,
+    ) {
+        SectionHeader(
             viewModel,
-            propertyEditor,
-            isEditable,
+            sectionIndex = 0,
+            sectionTitle = sectionTitle,
+            isCollapsed = isSectionCollapsed,
+            toggleCollapse = togglePropertySection,
         )
-
-        viewModel.locationEditor?.let { locationEditor ->
-            PropertyLocationView(
+    }
+    if (!isSectionCollapsed) {
+        item(key = "section-property") {
+            PropertyFormView(
                 viewModel,
-                locationEditor,
+                propertyEditor,
                 isEditable,
-                onMoveLocationOnMap = onMoveLocation,
-                openAddressSearch = onSearchAddress,
             )
         }
 
+        viewModel.locationEditor?.let { locationEditor ->
+            item(key = "section-location") {
+                PropertyLocationView(
+                    viewModel,
+                    locationEditor,
+                    isEditable,
+                    onMoveLocationOnMap = onMoveLocation,
+                    openAddressSearch = onSearchAddress,
+                )
+            }
+        }
+
         viewModel.notesFlagsEditor?.let { notesFlagsEditor ->
-            PropertyNotesFlagsView(
-                viewModel,
-                notesFlagsEditor,
-                isEditable,
-                viewModel.visibleNoteCount,
-            )
+            item(key = "section-notes-flags") {
+                PropertyNotesFlagsView(
+                    viewModel,
+                    notesFlagsEditor,
+                    isEditable,
+                    viewModel.visibleNoteCount,
+                )
+            }
         }
     }
 }
 
-@Composable
-private fun FormDataSection(
+private fun LazyListScope.formDataSection(
     viewModel: CaseEditorViewModel,
     inputData: FormFieldsInputData,
     sectionTitle: String,
     isEditable: Boolean,
     sectionIndex: Int,
+    isSectionCollapsed: Boolean = false,
+    toggleSectionCollapse: (Int) -> Unit = {},
 ) {
-    var isSectionCollapsed by remember { mutableStateOf(false) }
-    val togglePropertySection = remember(viewModel) { { isSectionCollapsed = !isSectionCollapsed } }
-    SectionHeader(
-        viewModel,
-        sectionIndex = sectionIndex,
-        sectionTitle = sectionTitle,
-        isCollapsed = isSectionCollapsed,
-        toggleCollapse = togglePropertySection,
-        help = inputData.helpText,
-    )
+    item(
+        key = "section-header-$sectionIndex",
+        contentType = SectionHeaderContentType,
+    ) {
+        val toggle = remember(viewModel) { { toggleSectionCollapse(sectionIndex) } }
+        SectionHeader(
+            viewModel,
+            sectionIndex = sectionIndex,
+            sectionTitle = sectionTitle,
+            isCollapsed = isSectionCollapsed,
+            toggleCollapse = toggle,
+            help = inputData.helpText,
+        )
+    }
+
     if (!isSectionCollapsed) {
-        FormDataItems(viewModel, inputData, isEditable)
+        item(
+            key = "section-$sectionIndex",
+        ) {
+            FormDataItems(viewModel, inputData, isEditable)
+        }
     }
 }
 
