@@ -63,7 +63,8 @@ internal fun FullAddressSearchInput(
         modifier = Modifier
             .fillMaxWidth()
             .listItemPadding(),
-        labelResId = R.string.location_address_search,
+        labelResId = 0,
+        label = viewModel.translate("caseView.full_address"),
         value = locationQuery,
         onValueChange = updateQuery,
         keyboardType = KeyboardType.Password,

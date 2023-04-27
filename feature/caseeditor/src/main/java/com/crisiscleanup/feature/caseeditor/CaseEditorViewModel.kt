@@ -12,10 +12,14 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.Default
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.data.repository.*
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.model.data.*
+import com.crisiscleanup.feature.caseeditor.model.CaseDataWriter
+import com.crisiscleanup.feature.caseeditor.model.LocationInputData
+import com.crisiscleanup.feature.caseeditor.model.PropertyInputData
 import com.crisiscleanup.feature.caseeditor.model.coordinates
 import com.crisiscleanup.feature.caseeditor.navigation.CaseEditorArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -86,7 +90,7 @@ class CaseEditorViewModel @Inject constructor(
     val showInvalidWorksiteSave = MutableStateFlow(false)
     val invalidWorksiteInfo = mutableStateOf(InvalidWorksiteInfo())
 
-    val editingWorksite = editableWorksiteProvider.editableWorksite
+    private val editingWorksite = editableWorksiteProvider.editableWorksite
 
     val navigateBack = mutableStateOf(false)
     val promptUnsavedChanges = mutableStateOf(false)
@@ -108,6 +112,7 @@ class CaseEditorViewModel @Inject constructor(
     private var workEditor: EditableFormDataEditor? = null
     private var hazardsEditor: EditableFormDataEditor? = null
     private var volunteerReportEditor: EditableFormDataEditor? = null
+    var caseDataWriters = emptyList<CaseDataWriter>()
 
     init {
         updateHeaderTitle()
@@ -198,6 +203,13 @@ class CaseEditorViewModel @Inject constructor(
                     hazardsEditor!!,
                     volunteerReportEditor!!,
                 )
+                caseDataWriters = mutableListOf(
+                    propertyEditor!!.propertyInputData,
+                    locationEditor!!.locationInputData,
+                    notesFlagsEditor!!.notesFlagsInputData,
+                ).apply {
+                    addAll(formDataEditors.map(FormDataEditor::inputData))
+                }
 
                 editIncidentWorksiteJob?.cancel()
                 editIncidentWorksiteJob = combine(
@@ -245,7 +257,7 @@ class CaseEditorViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val hasChanges = combine(
+    private val hasChanges = combine(
         editingWorksite,
         uiState,
     ) { worksite, state ->
@@ -260,14 +272,11 @@ class CaseEditorViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(),
     )
 
-    val worksiteWorkTypeGroups = combine(
-        editingWorksite,
-        uiState,
-    ) { worksite, state ->
+    private fun getWorkTypeGroups(state: CaseEditorUiState, worksite: Worksite): List<String> {
         (state as? CaseEditorUiState.WorksiteData)?.let { stateData ->
             worksite.formData?.let { formData ->
                 val incident = stateData.incident
-                return@combine formData.keys
+                return formData.keys
                     .asSequence()
                     .filter { incident.workTypeLookup[it] != null }
                     .mapNotNull {
@@ -279,8 +288,13 @@ class CaseEditorViewModel @Inject constructor(
                     .toList()
             }
         }
-        emptyList()
+        return emptyList()
     }
+
+    val worksiteWorkTypeGroups = combine(
+        editingWorksite,
+        uiState,
+    ) { worksite, state -> getWorkTypeGroups(state, worksite) }
         .stateIn(
             scope = viewModelScope,
             initialValue = emptyList(),
@@ -298,14 +312,21 @@ class CaseEditorViewModel @Inject constructor(
         }
     }
 
+    private val incompletePropertyInfo = InvalidWorksiteInfo(
+        WorksiteSection.Property,
+        R.string.incomplete_property_info,
+    )
+
+    private val incompleteLocationInfo = InvalidWorksiteInfo(
+        WorksiteSection.Location,
+        R.string.incomplete_location_info,
+    )
+
     private fun validate(worksite: Worksite): InvalidWorksiteInfo {
         if (worksite.name.isBlank() ||
             worksite.phone1.isBlank()
         ) {
-            return InvalidWorksiteInfo(
-                WorksiteSection.Property,
-                R.string.incomplete_property_info,
-            )
+            return incompletePropertyInfo
         }
 
         if (worksite.latitude == 0.0 ||
@@ -316,13 +337,11 @@ class CaseEditorViewModel @Inject constructor(
             worksite.city.isBlank() ||
             worksite.state.isBlank()
         ) {
-            return InvalidWorksiteInfo(
-                WorksiteSection.Location,
-                R.string.incomplete_location_info,
-            )
+            return incompleteLocationInfo
         }
 
-        val workTypeCount = worksiteWorkTypeGroups.value.size
+        val workTypeGroups = getWorkTypeGroups(uiState.value, editingWorksite.value)
+        val workTypeCount = workTypeGroups.size
         if (workTypeCount == 0) {
             return InvalidWorksiteInfo(
                 WorksiteSection.WorkType,
@@ -375,7 +394,11 @@ class CaseEditorViewModel @Inject constructor(
         return Pair(formWorkTypes, keyWorkType)
     }
 
-    fun saveChanges(backOnSuccess: Boolean = true) {
+    fun saveChanges(claim: Boolean, backOnSuccess: Boolean = true) {
+        if (!transferChanges(true)) {
+            return
+        }
+
         synchronized(isSavingWorksite) {
             if (isSavingWorksite.value) {
                 return
@@ -387,8 +410,6 @@ class CaseEditorViewModel @Inject constructor(
                 val worksiteData = uiState.value as? CaseEditorUiState.WorksiteData
                 val initialWorksite = worksiteData?.worksite
                     ?: return@launch
-
-                // TODO Apply changes from each section
 
                 val worksite = worksiteProvider.editableWorksite.value
                 if (worksite == initialWorksite) {
@@ -449,6 +470,10 @@ class CaseEditorViewModel @Inject constructor(
                 worksiteProvider.setEditedLocation(worksite.coordinates())
 
                 syncPusher.appPushWorksite(worksiteId)
+
+                if (backOnSuccess) {
+                    navigateBack.value = true
+                }
             } catch (e: Exception) {
                 // TODO Show dialog save failed. Try again. If still fails seek help.
             } finally {
@@ -463,11 +488,41 @@ class CaseEditorViewModel @Inject constructor(
         navigateBack.value = true
     }
 
+    private fun transferChanges(indicateInvalidSection: Boolean = false): Boolean {
+        (uiState.value as? CaseEditorUiState.WorksiteData)?.let {
+            val initialWorksite = it.worksite
+            var worksite: Worksite? = initialWorksite
+            caseDataWriters.forEach { dataWriter ->
+                worksite = dataWriter.updateCase(worksite!!)
+                if (worksite == null) {
+                    if (indicateInvalidSection) {
+                        when (dataWriter) {
+                            is PropertyInputData -> {
+                                invalidWorksiteInfo.value = incompletePropertyInfo
+                                showInvalidWorksiteSave.value = true
+                            }
+                            is LocationInputData -> {
+                                invalidWorksiteInfo.value = incompleteLocationInfo
+                                showInvalidWorksiteSave.value = true
+                            }
+                        }
+                    }
+
+                    return false
+                }
+            }
+
+            worksiteProvider.editableWorksite.value = worksite!!
+        }
+
+        return true
+    }
+
     /**
      * @return true if prompt is shown or false if there are no changes
      */
     private fun promptSaveChanges(): Boolean {
-        if (hasChanges.value) {
+        if (!transferChanges() || hasChanges.value) {
             promptUnsavedChanges.value = true
             return true
         }
@@ -486,17 +541,7 @@ class CaseEditorViewModel @Inject constructor(
 
     override fun onNavigateBack() = onBackNavigate()
 
-    override fun onNavigateCancel(): Boolean {
-        if (isSavingWorksite.value) {
-            return false
-        }
-
-        if (hasChanges.value) {
-            promptCancelChanges.value = true
-            return false
-        }
-        return true
-    }
+    override fun onNavigateCancel() = onBackNavigate()
 }
 
 sealed interface CaseEditorUiState {

@@ -478,7 +478,7 @@ internal fun LocationFormView(
     CrisisCleanupTextCheckbox(
         listItemModifier.listCheckboxAlignStartOffset(),
         inputData.hasWrongLocation,
-        text = viewModel.translate("flag.worksite_wrong_location"),
+        text = viewModel.translate("caseForm.address_problems"),
         onToggle = toggleWrongLocation,
         onCheckChange = updateWrongLocation,
     )

@@ -1,7 +1,7 @@
 package com.crisiscleanup.sync.di
 
-import com.crisiscleanup.core.common.SyncPuller
-import com.crisiscleanup.core.common.SyncPusher
+import com.crisiscleanup.core.common.sync.SyncPuller
+import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.data.util.SyncStatusMonitor
 import com.crisiscleanup.sync.AppSyncer
 import com.crisiscleanup.sync.status.WorkManagerSyncStatusMonitor

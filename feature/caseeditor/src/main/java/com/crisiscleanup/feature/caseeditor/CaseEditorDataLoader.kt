@@ -159,11 +159,6 @@ internal class CaseEditorDataLoader(
                             .filter { it.fieldKey.isNotBlank() && it.label.isNotBlank() }
                             .associate { it.fieldKey to it.label }
 
-                    editSections.value = mutableListOf<String>().apply {
-                        add(translate("caseForm.property_information"))
-                        addAll(formFields.map { it.formField.label })
-                    }
-
                     workTypeGroupChildrenLookup.value =
                         formFields.firstOrNull { it.fieldKey == WorkFormGroupKey }
                             ?.let { node ->
@@ -188,6 +183,11 @@ internal class CaseEditorDataLoader(
                             groupFieldMap,
                             groupOptionsMap,
                         )
+                    }
+
+                    editSections.value = mutableListOf<String>().apply {
+                        add(translate("caseForm.property_information"))
+                        addAll(formFields.map { it.formField.label })
                     }
                 }
 
@@ -219,6 +219,7 @@ internal class CaseEditorDataLoader(
             val isLoadFinished = isCreateWorksite ||
                     (!pullingIncident &&
                             !pullingWorksite &&
+                            editSections.value.isNotEmpty() &&
                             localWorksite != null &&
                             isWorksiteSynced)
             val isEditable = bounds != null && isLoadFinished

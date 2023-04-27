@@ -53,7 +53,7 @@ internal fun CaseEditorRoute(
     onEditVolunteerReport: () -> Unit = {},
     onEditSearchAddress: () -> Unit = {},
     onEditMoveLocationOnMap: () -> Unit = {},
-    onBackClick: () -> Unit = {},
+    onBack: () -> Unit = {},
     viewModel: CaseEditorViewModel = hiltViewModel(),
 ) {
     val editDifferentWorksite by viewModel.editIncidentWorksite.collectAsStateWithLifecycle()
@@ -62,11 +62,11 @@ internal fun CaseEditorRoute(
     } else {
         val navigateBack by remember { viewModel.navigateBack }
         if (navigateBack) {
-            onBackClick()
+            onBack()
         } else {
             BackHandler {
                 if (viewModel.onSystemBack()) {
-                    onBackClick()
+                    onBack()
                 }
             }
 
@@ -74,14 +74,14 @@ internal fun CaseEditorRoute(
             val onNavigateBack = remember(viewModel) {
                 {
                     if (viewModel.onNavigateBack()) {
-                        onBackClick()
+                        onBack()
                     }
                 }
             }
             val onNavigateCancel = remember(viewModel) {
                 {
                     if (viewModel.onNavigateCancel()) {
-                        onBackClick()
+                        onBack()
                     }
                 }
             }
@@ -376,10 +376,12 @@ private fun ColumnScope.FullEditView(
         BusyIndicatorFloatingTopCenter(isLoadingWorksite)
     }
 
-    val saveChanges = remember(viewModel) { { viewModel.saveChanges() } }
+    val claimAndSaveChanges = remember(viewModel) { { viewModel.saveChanges(true) } }
+    val saveChanges = remember(viewModel) { { viewModel.saveChanges(false) } }
     SaveActionBar(
         !isSavingData,
         onBack,
+        claimAndSaveChanges,
         saveChanges,
     )
 
@@ -400,12 +402,14 @@ private fun ColumnScope.FullEditView(
         )
     }
 
-    // TODO Prompt where required or inconsistent
-//    InvalidSaveDialog(
-//        onEditLocation = editLocation,
-//        onEditPropertyData = editPropertyData,
-//        onEditWork = editWork,
-//    )
+    val editPropertyData = remember(viewModel) { { sliderScrollToSectionItem(0, 2) } }
+    val editLocation = remember(viewModel) { { sliderScrollToSectionItem(0, 3) } }
+    val editWork = remember(viewModel) { { sliderScrollToSection(2) } }
+    InvalidSaveDialog(
+        onEditLocation = editLocation,
+        onEditPropertyData = editPropertyData,
+        onEditWork = editWork,
+    )
 }
 
 @Composable
@@ -859,7 +863,8 @@ private fun InvalidSaveDialog(
 @Composable
 private fun SaveActionBar(
     enable: Boolean = true,
-    onBack: () -> Unit = {},
+    onCancel: () -> Unit = {},
+    onClaimAndSave: () -> Unit = {},
     onSave: () -> Unit = {},
 ) {
     Row(
@@ -873,7 +878,7 @@ private fun SaveActionBar(
             Modifier.weight(1f),
             textResId = R.string.cancel,
             enabled = enable,
-            onClick = onBack,
+            onClick = onCancel,
             colors = cancelButtonColors(),
         )
         BusyButton(
@@ -881,7 +886,7 @@ private fun SaveActionBar(
             textResId = R.string.claim_and_save,
             enabled = enable,
             indicateBusy = !enable,
-            onClick = onSave,
+            onClick = onClaimAndSave,
         )
         BusyButton(
             Modifier.weight(1f),

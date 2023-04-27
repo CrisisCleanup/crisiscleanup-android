@@ -273,23 +273,8 @@ internal class EditableLocationDataEditor(
 
     private fun validateSaveWorksite(): Boolean {
         val updatedWorksite = locationInputData.updateCase()
-        if (updatedWorksite != null) {
-            var hasActualChanges = true
-
-            if (worksiteIn.isNew && updatedWorksite.address.isBlank()) {
-                val unchangedLatLngWorksite = updatedWorksite.copy(
-                    latitude = worksiteIn.latitude,
-                    longitude = worksiteIn.longitude,
-                )
-                if (unchangedLatLngWorksite == worksiteIn) {
-                    hasActualChanges = false
-                }
-            }
-
-            // Do not update editable if only the coordinates were auto completed
-            if (hasActualChanges) {
-                worksiteProvider.editableWorksite.value = updatedWorksite
-            }
+        updatedWorksite?.let {
+            worksiteProvider.editableWorksite.value = it
             return true
         }
         return false

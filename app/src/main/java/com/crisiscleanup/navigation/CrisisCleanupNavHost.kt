@@ -77,6 +77,8 @@ fun CrisisCleanupNavHost(
                 caseEditWorkScreen(onBackClick)
                 caseEditHazardsScreen(onBackClick)
                 caseEditVolunteerReportScreen(onBackClick)
+                caseEditSearchAddressScreen(navController, onBackClick)
+                caseEditMoveLocationOnMapScreen(onBackClick)
             },
             onCasesAction = onCasesAction,
             createCase = createNewCase,

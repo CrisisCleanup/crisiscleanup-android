@@ -120,7 +120,7 @@ internal class CasesMapBoundsManager constructor(
     fun restoreIncidentBounds() {
         val incidentId = incidentSelector.incidentId.value
         incidentBoundsCache[incidentId]?.let {
-            val ne = it.northeast.smallOffset()
+            val ne = it.northeast.smallOffset(1e-9)
             val bounds = LatLngBounds(it.southwest, ne)
 
             _mapCameraBounds.value = MapViewCameraBounds(bounds)

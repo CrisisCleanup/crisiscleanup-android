@@ -1,14 +1,14 @@
 package com.crisiscleanup.sync
 
 import com.crisiscleanup.core.common.NetworkMonitor
-import com.crisiscleanup.core.common.SyncPuller
-import com.crisiscleanup.core.common.SyncPusher
-import com.crisiscleanup.core.common.SyncResult
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncLogger
+import com.crisiscleanup.core.common.sync.SyncPuller
+import com.crisiscleanup.core.common.sync.SyncPusher
+import com.crisiscleanup.core.common.sync.SyncResult
 import com.crisiscleanup.core.data.repository.*
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.core.model.data.EmptyIncident

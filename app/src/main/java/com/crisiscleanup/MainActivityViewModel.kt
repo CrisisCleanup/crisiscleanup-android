@@ -5,17 +5,21 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.common.AppEnv
-import com.crisiscleanup.core.common.SyncPuller
 import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.event.ExpiredTokenListener
+import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
+import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.model.data.AccountData
+import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.UserData
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
@@ -30,6 +34,7 @@ class MainActivityViewModel @Inject constructor(
     worksitesRepository: WorksitesRepository,
     private val syncPuller: SyncPuller,
     appEnv: AppEnv,
+    @Dispatcher(IO) ioDispatcher: CoroutineDispatcher,
 ) : ViewModel(), ExpiredTokenListener {
     val isDebuggable = appEnv.isDebuggable
 
@@ -45,8 +50,6 @@ class MainActivityViewModel @Inject constructor(
         private set
 
     val authState: StateFlow<AuthState> = accountDataRepository.accountData.map {
-        syncIncidents()
-
         isAccessTokenExpired.value = it.isTokenExpired
 
         val isAuthenticated = it.accessToken.isNotEmpty()
@@ -75,11 +78,19 @@ class MainActivityViewModel @Inject constructor(
     init {
         expiredTokenListenerId = authEventManager.addExpiredTokenListener(this)
 
+        authState
+            .filter { it is AuthState.Authenticated }
+            .onEach { sync(false) }
+            .launchIn(viewModelScope)
+
         incidentSelector.incidentId
+            .filter { it != EmptyIncident.id }
             .onEach {
-                syncIncidents()
+                val worksitesCount = worksitesRepository.getWorksitesCount(it)
+                sync(worksitesCount == 0)
                 syncPuller.appPullIncident(it)
             }
+            .flowOn(ioDispatcher)
             .launchIn(viewModelScope)
 
         syncPuller.appPullLanguage()
@@ -89,8 +100,8 @@ class MainActivityViewModel @Inject constructor(
         authEventManager.removeExpiredTokenListener(expiredTokenListenerId)
     }
 
-    private fun syncIncidents() {
-        syncPuller.appPull(force = false, false)
+    private fun sync(cancelOngoing: Boolean) {
+        syncPuller.appPull(false, cancelOngoing)
     }
 
     // ExpiredTokenListener

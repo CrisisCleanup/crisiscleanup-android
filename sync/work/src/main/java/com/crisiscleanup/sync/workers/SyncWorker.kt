@@ -4,11 +4,11 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.tracing.traceAsync
 import androidx.work.*
-import com.crisiscleanup.core.common.SyncPuller
-import com.crisiscleanup.core.common.SyncResult
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncLogger
+import com.crisiscleanup.core.common.sync.SyncPuller
+import com.crisiscleanup.core.common.sync.SyncResult
 import com.crisiscleanup.core.data.Synchronizer
 import com.crisiscleanup.sync.initializers.SyncConstraints
 import com.crisiscleanup.sync.initializers.syncForegroundInfo

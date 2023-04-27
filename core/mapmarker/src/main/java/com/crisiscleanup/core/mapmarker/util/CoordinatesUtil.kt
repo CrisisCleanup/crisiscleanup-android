@@ -14,9 +14,9 @@ import kotlin.math.sqrt
 fun Pair<Double, Double>.toLatLng() = LatLng(first, second)
 
 // TODO Invoke map changes more elegantly
-fun LatLng.smallOffset() = LatLng(
+fun LatLng.smallOffset(offsetScale: Double = 1e-15) = LatLng(
     latitude,
-    longitude + Math.random() * 1e-15,
+    longitude + Math.random() * offsetScale,
 )
 
 fun Collection<Location>.toLatLng(): Collection<LocationLatLng> {

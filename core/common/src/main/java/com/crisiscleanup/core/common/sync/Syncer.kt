@@ -1,4 +1,4 @@
-package com.crisiscleanup.core.common
+package com.crisiscleanup.core.common.sync
 
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.flow.Flow

@@ -115,6 +115,15 @@ class LocationInputData(
     override fun updateCase(worksite: Worksite): Worksite? {
         if (!isChanged(worksite)) {
             return worksite
+        } else if (worksite.isNew && streetAddress.isBlank()) {
+            val latLng = coordinates.value
+            val copyCoordinates = worksite.copy(
+                latitude = latLng.latitude,
+                longitude = latLng.longitude,
+            )
+            if (!isChanged(copyCoordinates)) {
+                return worksite
+            }
         }
 
         if (!validate()) {

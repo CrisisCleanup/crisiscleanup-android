@@ -75,7 +75,7 @@ fun NavGraphBuilder.caseEditorScreen(
         val onEditMoveLocationOnMap =
             remember(navController) { { navController.navigateToCaseEditLocationMapMove() } }
         CaseEditorRoute(
-            onBackClick = onBackClick,
+            onBack = onBackClick,
             onOpenExistingCase = navToEditCase,
             onEditPropertyData = onEditPropertyData,
             onEditLocation = onEditLocation,
