@@ -130,7 +130,7 @@ class IncidentWorksitesSyncer @Inject constructor(
 
                 ensureActive()
 
-                val requestedCount = kotlin.math.min(requestingCount, syncCount)
+                val requestedCount = requestingCount.coerceAtMost(syncCount)
                 statsUpdater.updateRequestedCount(requestedCount)
             }
         } catch (e: Exception) {
@@ -222,7 +222,7 @@ class IncidentWorksitesSyncer @Inject constructor(
         val limit = dbOperationLimit.coerceAtLeast(100)
         var pagedCount = 0
         while (offset < worksites.size) {
-            val offsetEnd = Integer.min(offset + limit, worksites.size)
+            val offsetEnd = (offset + limit).coerceAtMost(worksites.size)
             val worksiteSubset = worksites.slice(offset until offsetEnd)
             val workTypeSubset = workTypes.slice(offset until offsetEnd)
             worksiteDaoPlus.syncWorksites(

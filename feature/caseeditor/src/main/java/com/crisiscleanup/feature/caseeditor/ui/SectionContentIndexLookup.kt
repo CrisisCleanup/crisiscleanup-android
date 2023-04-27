@@ -10,6 +10,7 @@ data class SectionContentIndexLookup(
     val maxItemIndex: Int,
     val sectionItem: Map<Int, Int>,
     val itemSection: Map<Int, Int>,
+    val sectionItemCount: Map<Int, Int>,
 )
 
 @Composable
@@ -17,12 +18,17 @@ fun rememberSectionContentIndexLookup(sectionItemLookup: Map<Int, Int>): Mutable
     var minItemSectionIndex = Int.MAX_VALUE
     var maxSectionIndex = -1
     var maxItemSectionIndex = -1
+    val sectionItemCount = mutableMapOf<Int, Int>()
     val itemSectionLookup = mutableMapOf<Int, Int>().apply {
         sectionItemLookup.forEach { entry ->
             put(entry.value, entry.key)
-            minItemSectionIndex = Integer.min(minItemSectionIndex, entry.value)
-            maxSectionIndex = Integer.max(maxSectionIndex, entry.key)
-            maxItemSectionIndex = Integer.max(maxItemSectionIndex, entry.value)
+            minItemSectionIndex = minItemSectionIndex.coerceAtMost(entry.value)
+            maxSectionIndex = maxSectionIndex.coerceAtLeast(entry.key)
+            maxItemSectionIndex = maxItemSectionIndex.coerceAtLeast(entry.value)
+            val previousSectionIndex = entry.key - 1
+            sectionItemLookup[previousSectionIndex]?.let { previousItemIndex ->
+                sectionItemCount[previousSectionIndex] = entry.value - previousItemIndex - 2
+            }
         }
         var section = get(minItemSectionIndex)!!
         var itemIndex = minItemSectionIndex
@@ -43,6 +49,7 @@ fun rememberSectionContentIndexLookup(sectionItemLookup: Map<Int, Int>): Mutable
                 maxItemIndex = maxItemSectionIndex,
                 sectionItem = sectionItemLookup,
                 itemSection = itemSectionLookup,
+                sectionItemCount = sectionItemCount,
             )
         )
     }

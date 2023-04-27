@@ -32,7 +32,6 @@ import com.crisiscleanup.feature.caseeditor.EditCaseNotesFlagsViewModel
 import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.model.NotesFlagsInputData
 import com.crisiscleanup.feature.caseeditor.model.getRelativeDate
-import java.lang.Integer.min
 
 private val ScreenTitleResId = R.string.notes_flags
 
@@ -60,7 +59,7 @@ internal fun LazyListScope.staticNoteItems(
     modifier: Modifier,
 ) {
     // TODO Animate on expand/collapse
-    val count = min(notes.size, visibleCount)
+    val count = notes.size.coerceAtMost(visibleCount)
     items(
         count,
         key = {
@@ -144,7 +143,7 @@ internal fun NotesFlagsSummaryView(
                 .listItemNestedPadding()
                 // TODO Common dimensions
                 .padding(vertical = 4.dp)
-            for (i in 0 until min(notes.size, visibleCount)) {
+            for (i in 0 until notes.size.coerceAtMost(visibleCount)) {
                 val note = notes[i]
                 NoteView(note, noteModifier)
             }

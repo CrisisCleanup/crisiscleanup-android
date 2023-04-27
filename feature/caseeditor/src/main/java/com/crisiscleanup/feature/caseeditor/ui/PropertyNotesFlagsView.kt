@@ -64,7 +64,7 @@ internal fun PropertyNotesFlagsView(
     val noteModifier = Modifier
         .listItemPadding()
         .listItemNestedPadding()
-    for (i in 0 until Integer.min(notes.size, collapsedNotesVisibleCount)) {
+    for (i in 0 until notes.size.coerceAtMost(collapsedNotesVisibleCount)) {
         val note = notes[i]
         NoteView(note, noteModifier)
     }

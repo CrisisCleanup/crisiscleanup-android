@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import java.lang.Integer.max
 
 val fillWidthPadded = Modifier
     .fillMaxWidth()
@@ -25,7 +24,7 @@ fun Modifier.listItemTopPadding() = padding(top = 8.dp)
 fun Modifier.listItemBottomPadding() = padding(bottom = 8.dp)
 fun Modifier.listRowItemStartPadding() = padding(start = 16.dp)
 fun Modifier.listItemNestedPadding(nestLevel: Int = 1) =
-    padding(start = 8.dp.times(max(1, nestLevel)))
+    padding(start = 8.dp.times(nestLevel.coerceAtLeast(1)))
 
 // Horizontal list item padding, vertical option padding
 fun Modifier.listItemOptionPadding() = padding(16.dp)

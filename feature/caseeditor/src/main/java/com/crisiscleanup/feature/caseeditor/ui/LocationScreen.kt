@@ -16,8 +16,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.coerceAtMost
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.min
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -141,7 +141,7 @@ internal fun getLayoutParameters(isMoveLocationMode: Boolean): Pair<Boolean, Mod
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val screenHeight = configuration.screenHeightDp.dp
-    val minScreenDimension = min(screenWidth, screenHeight)
+    val minScreenDimension = screenWidth.coerceAtMost(screenHeight)
     // TODO Revisit for all screen sizes. Adjust map size as necessary
     val isRowOriented = screenWidth > screenHeight.times(1.3f)
 

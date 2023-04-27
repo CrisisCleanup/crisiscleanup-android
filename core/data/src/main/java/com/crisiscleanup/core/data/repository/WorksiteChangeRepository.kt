@@ -20,7 +20,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
-import java.lang.Integer.max
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -218,7 +217,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
             startingSyncIndex--
         }
 
-        var oldestReferenceChangeIndex = max(0, startingSyncIndex - 1)
+        var oldestReferenceChangeIndex = (startingSyncIndex - 1).coerceAtLeast(0)
         while (oldestReferenceChangeIndex > 0) {
             if (sortedChanges[oldestReferenceChangeIndex].isSynced) {
                 break

@@ -11,7 +11,6 @@ import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlin.math.cos
-import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sin
 
@@ -108,7 +107,7 @@ internal class CasesMapMarkerManager(
                 sw.longitude,
                 ne.longitude,
                 // TODO Review if this is sufficient and mostly complete
-                min(q.queryCount, 2 * maxMarkersOnMap),
+                q.queryCount.coerceAtMost(2 * maxMarkersOnMap),
                 0,
             )
                 .mapIndexed { index, mark ->
@@ -123,7 +122,7 @@ internal class CasesMapMarkerManager(
                 }
                 .sortedWith { a, b -> if (a.distanceMeasure - b.distanceMeasure <= 0) -1 else 1 }
 
-            val endIndex = min(maxMarkersOnMap, distanceToMiddleSorted.size)
+            val endIndex = distanceToMiddleSorted.size.coerceAtMost(maxMarkersOnMap)
             val marks = distanceToMiddleSorted
                 .slice(0 until endIndex)
                 .sortedWith { a, b -> if (a.sortOrder <= b.sortOrder) -1 else 1 }

@@ -34,7 +34,6 @@ import com.crisiscleanup.feature.caseeditor.*
 import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.model.FormFieldsInputData
 import kotlinx.coroutines.launch
-import java.lang.Integer.min
 import com.crisiscleanup.core.common.R as commonR
 import com.crisiscleanup.core.commonassets.R as commonAssetsR
 
@@ -175,7 +174,7 @@ private fun OnSliderScrollRest(
             }
 
             if (snapToIndex >= 0) {
-                val sectionIndex = min(snapToIndex, sectionCount - 1)
+                val sectionIndex = snapToIndex.coerceAtMost(sectionCount - 1)
                 onScrollRest(sectionIndex)
             }
         }
@@ -186,14 +185,27 @@ private fun OnSliderScrollRest(
 private fun OnContentScrollRest(
     contentListState: LazyListState,
     indexLookups: SectionContentIndexLookup,
+    sectionCollapseStates: SnapshotStateList<Boolean>,
     takeScrollToSection: () -> Boolean = { false },
     onScrollRest: (Int) -> Unit,
 ) {
     LaunchedEffect(contentListState.isScrollInProgress) {
         if (!contentListState.isScrollInProgress && takeScrollToSection()) {
-            val firstVisibleIndex = contentListState.firstVisibleItemIndex
-            val sliderIndex = if (firstVisibleIndex < indexLookups.maxItemIndex) {
-                indexLookups.itemSection[firstVisibleIndex] ?: -1
+            var actualItemIndex = contentListState.firstVisibleItemIndex
+            sectionCollapseStates.forEachIndexed { index, isCollapsed ->
+                indexLookups.sectionItem[index]?.let { sectionItemIndex ->
+                    if (isCollapsed) {
+                        indexLookups.sectionItemCount[index]?.let { sectionItemCount ->
+                            actualItemIndex += sectionItemCount
+                        }
+                    }
+                    if (actualItemIndex >= sectionItemIndex) {
+                        return@forEachIndexed
+                    }
+                } ?: return@forEachIndexed
+            }
+            val sliderIndex = if (actualItemIndex < indexLookups.maxItemIndex) {
+                indexLookups.itemSection[actualItemIndex] ?: -1
             } else {
                 indexLookups.maxSectionIndex
             }
@@ -214,6 +226,13 @@ private fun ColumnScope.FullEditView(
     onSearchAddress: () -> Unit = {},
 ) {
     val editSections by viewModel.editSections.collectAsStateWithLifecycle()
+    val sectionCollapseStates = remember(viewModel) {
+        val collapseStates = SnapshotStateList<Boolean>()
+        for (i in editSections) {
+            collapseStates.add(false)
+        }
+        collapseStates
+    }
 
     var snapOnEndScroll by remember { mutableStateOf(false) }
     val rememberSnapOnEndScroll = remember(viewModel) { { snapOnEndScroll = true } }
@@ -233,14 +252,35 @@ private fun ColumnScope.FullEditView(
 
     val coroutineScope = rememberCoroutineScope()
     var isSliderScrollToSection by remember { mutableStateOf(false) }
+    val sliderScrollToSectionItem = remember(viewModel) {
+        { sectionIndex: Int, itemIndex: Int ->
+            if (sectionIndex >= 0 && sectionIndex < sectionCollapseStates.size) {
+                coroutineScope.launch {
+                    isSliderScrollToSection = true
+
+                    if (sectionCollapseStates[sectionIndex]) {
+                        sectionCollapseStates[sectionIndex] = false
+                    }
+
+                    var visibleItemIndex = itemIndex
+                    for (i in (sectionIndex - 1) downTo 0) {
+                        if (sectionCollapseStates[i]) {
+                            indexLookups.sectionItemCount[i]?.let { sectionItemCount ->
+                                visibleItemIndex -= sectionItemCount
+                            }
+                        }
+                    }
+
+                    pagerState.animateScrollToItem(sectionIndex)
+                    contentListState.animateScrollToItem(visibleItemIndex.coerceAtLeast(0))
+                }
+            }
+        }
+    }
     val sliderScrollToSection = remember(viewModel) {
         { index: Int ->
-            coroutineScope.launch {
-                isSliderScrollToSection = true
-                pagerState.animateScrollToItem(index)
-                indexLookups.sectionItem[index]?.let { itemIndex ->
-                    contentListState.animateScrollToItem(itemIndex)
-                }
+            indexLookups.sectionItem[index]?.let { itemIndex ->
+                sliderScrollToSectionItem(index, itemIndex)
             }
             Unit
         }
@@ -284,7 +324,13 @@ private fun ColumnScope.FullEditView(
             }
         }
     }
-    OnContentScrollRest(contentListState, indexLookups, takeScrollToSection, onContentScrollRest)
+    OnContentScrollRest(
+        contentListState,
+        indexLookups,
+        sectionCollapseStates,
+        takeScrollToSection,
+        onContentScrollRest,
+    )
 
     val isSavingData by viewModel.isSavingWorksite.collectAsStateWithLifecycle()
     val isEditable by remember(worksiteData, isSavingData) {
@@ -293,13 +339,6 @@ private fun ColumnScope.FullEditView(
         }
     }
 
-    val sectionCollapseStates = remember(viewModel) {
-        val collapseStates = SnapshotStateList<Boolean>()
-        for (i in editSections) {
-            collapseStates.add(false)
-        }
-        collapseStates
-    }
     val isSectionCollapsed =
         remember(viewModel) { { sectionIndex: Int -> sectionCollapseStates[sectionIndex] } }
     val toggleSectionCollapse = remember(viewModel) {

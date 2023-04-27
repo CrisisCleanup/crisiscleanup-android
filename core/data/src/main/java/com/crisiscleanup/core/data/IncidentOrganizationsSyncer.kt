@@ -96,7 +96,7 @@ class IncidentOrganizationsSyncer @Inject constructor(
 
                 ensureActive()
 
-                requestedCount = kotlin.math.min(networkDataOffset, syncCount)
+                requestedCount = networkDataOffset.coerceAtMost(syncCount)
                 statsUpdater.updateRequestedCount(requestedCount)
             }
         } catch (e: Exception) {
