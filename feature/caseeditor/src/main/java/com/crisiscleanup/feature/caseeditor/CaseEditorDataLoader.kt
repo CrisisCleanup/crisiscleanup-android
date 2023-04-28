@@ -25,6 +25,7 @@ internal class CaseEditorDataLoader(
     private val worksiteChangeRepository: WorksiteChangeRepository,
     languageRepository: LanguageTranslationsRepository,
     languageRefresher: LanguageRefresher,
+    workTypeStatusRepository: WorkTypeStatusRepository,
     translate: (String) -> String,
     private val editableWorksiteProvider: EditableWorksiteProvider,
     coroutineScope: CoroutineScope,
@@ -90,9 +91,12 @@ internal class CaseEditorDataLoader(
 
     private val isInitiallySynced = MutableStateFlow(false)
 
+    private val workTypeStatusStream = workTypeStatusRepository.workTypeStatusOptions
+
     private val _uiState = com.crisiscleanup.core.common.combine(
         dataLoadCountStream,
         organizationStream,
+        workTypeStatusStream,
         incidentStream,
         incidentBoundsStream,
         isRefreshingIncident,
@@ -100,18 +104,18 @@ internal class CaseEditorDataLoader(
         isRefreshingWorksite,
         isInitiallySynced,
     ) {
-            dataLoadCount, organization,
+            dataLoadCount, organization, statuses,
             incident, bounds, pullingIncident,
             worksite, pullingWorksite, isSynced,
         ->
         Triple(
-            Pair(dataLoadCount, organization),
+            Triple(dataLoadCount, organization, statuses),
             Triple(incident, bounds, pullingIncident),
             Triple(worksite, pullingWorksite, isSynced),
         )
     }
         .mapLatest { (first, second, third) ->
-            val (_, organization) = first
+            val (_, organization, workTypeStatuses) = first
             val (incident, bounds, pullingIncident) = second
 
             if (organization == null || incident == null) {
@@ -228,7 +232,8 @@ internal class CaseEditorDataLoader(
                             !pullingWorksite &&
                             editSections.value.isNotEmpty() &&
                             localWorksite != null &&
-                            isWorksiteSynced)
+                            isWorksiteSynced &&
+                            workTypeStatuses.isNotEmpty())
             val isEditable = bounds != null && isLoadFinished
             val isTranslationUpdated =
                 editableWorksiteProvider.formFieldTranslationLookup.isNotEmpty()
@@ -240,6 +245,7 @@ internal class CaseEditorDataLoader(
                 localWorksite,
                 isWorksiteSynced,
                 isTranslationUpdated,
+                workTypeStatuses,
             )
         }
 
@@ -249,6 +255,14 @@ internal class CaseEditorDataLoader(
         coroutineScope.launch(coroutineDispatcher) {
             try {
                 languageRefresher.pullLanguages()
+            } catch (e: Exception) {
+                logger.logException(e)
+            }
+        }
+
+        coroutineScope.launch(coroutineDispatcher) {
+            try {
+                workTypeStatusRepository.loadStatuses()
             } catch (e: Exception) {
                 logger.logException(e)
             }

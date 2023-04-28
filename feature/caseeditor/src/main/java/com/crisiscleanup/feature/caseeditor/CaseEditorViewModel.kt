@@ -44,6 +44,7 @@ class CaseEditorViewModel @Inject constructor(
     worksitesRepository: WorksitesRepository,
     languageRepository: LanguageTranslationsRepository,
     languageRefresher: LanguageRefresher,
+    workTypeStatusRepository: WorkTypeStatusRepository,
     editableWorksiteProvider: EditableWorksiteProvider,
     translator: KeyTranslator,
     private val worksiteChangeRepository: WorksiteChangeRepository,
@@ -129,6 +130,7 @@ class CaseEditorViewModel @Inject constructor(
             worksiteChangeRepository,
             languageRepository,
             languageRefresher,
+            workTypeStatusRepository,
             { key -> translate(key) },
             editableWorksiteProvider,
             viewModelScope,
@@ -540,6 +542,7 @@ sealed interface CaseEditorUiState {
         val localWorksite: LocalWorksite?,
         val isLocalSyncToBackend: Boolean?,
         val isTranslationUpdated: Boolean,
+        val statusOptions: List<WorkTypeStatus>,
     ) : CaseEditorUiState {
         val isLocalModified = localWorksite?.localChanges?.isLocalModified ?: false
     }

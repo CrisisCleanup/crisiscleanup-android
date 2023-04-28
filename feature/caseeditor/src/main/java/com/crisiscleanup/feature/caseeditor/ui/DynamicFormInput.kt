@@ -3,6 +3,7 @@ package com.crisiscleanup.feature.caseeditor.ui
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -10,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -18,12 +20,14 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.window.PopupProperties
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.*
+import com.crisiscleanup.core.model.data.WorkTypeStatus
 import com.crisiscleanup.core.network.model.DynamicValue
 import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.model.FieldDynamicValue
@@ -38,6 +42,8 @@ internal fun DynamicFormListItem(
     helpHint: String = "",
     showHelp: () -> Unit = {},
     enabled: Boolean = true,
+    translate: (String) -> String = { s -> s },
+    workTypeStatusOptions: List<WorkTypeStatus> = emptyList(),
     updateValue: (FieldDynamicValue) -> Unit = {},
 ) {
     val updateString = if (field.dynamicValue.isBoolean) {
@@ -100,10 +106,6 @@ internal fun DynamicFormListItem(
         }
         "h5",
         "h4" -> {
-            val updateGroupValue = { value: FieldDynamicValue ->
-                groupExpandState[field.key] = value.dynamicValue.isBooleanTrue
-                updateValue(value)
-            }
             if (field.childrenCount == 0 && field.field.isReadOnly) {
                 Text(
                     modifier = modifier,
@@ -111,14 +113,28 @@ internal fun DynamicFormListItem(
                     style = MaterialTheme.typography.bodyLarge,
                 )
             } else {
+                val updateGroupExpandValue = { value: FieldDynamicValue ->
+                    groupExpandState[field.key] = value.dynamicValue.isBooleanTrue
+                    updateValue(value)
+                }
+                val isActiveWorkType = field.dynamicValue.isBooleanTrue && field.isWorkTypeGroup
+                val updateWorkTypeStatus = { status: WorkTypeStatus ->
+                    if (isActiveWorkType) {
+                        val valueState = field.copy(workTypeStatus = status)
+                        updateValue(valueState)
+                    }
+                }
                 CheckboxItem(
                     field,
-                    updateGroupValue,
+                    updateGroupExpandValue,
                     modifier,
                     label,
                     helpHint,
                     showHelp,
                     enabled,
+                    translate = translate,
+                    statusOptions = workTypeStatusOptions,
+                    updateWorkTypeStatus = updateWorkTypeStatus,
                 )
             }
         }
@@ -131,41 +147,15 @@ internal fun DynamicFormListItem(
 @Composable
 private fun CheckboxItem(
     itemData: FieldDynamicValue,
-    modifier: Modifier = Modifier,
-    text: String = "",
-    onToggle: () -> Unit = {},
-    onCheckChange: (Boolean) -> Unit = {},
-    helpHint: String,
-    showHelp: () -> Unit = {},
-    enabled: Boolean = true,
-) {
-    val helpAction: (@Composable () -> Unit)? = if (itemData.field.help.isBlank()) null
-    else {
-        @Composable {
-            HelpAction(helpHint, showHelp)
-        }
-    }
-    CrisisCleanupTextCheckbox(
-        modifier.listCheckboxAlignStartOffset(),
-        itemData.dynamicValue.valueBoolean,
-        0,
-        text,
-        onToggle,
-        onCheckChange,
-        trailingContent = helpAction,
-        enabled = enabled,
-    )
-}
-
-@Composable
-private fun CheckboxItem(
-    itemData: FieldDynamicValue,
     updateValue: (FieldDynamicValue) -> Unit,
     modifier: Modifier = Modifier,
     text: String = "",
     helpHint: String,
     showHelp: () -> Unit = {},
     enabled: Boolean = true,
+    translate: (String) -> String = { s -> s },
+    statusOptions: List<WorkTypeStatus> = emptyList(),
+    updateWorkTypeStatus: (WorkTypeStatus) -> Unit = {},
 ) {
     val updateBoolean = { b: Boolean ->
         val valueState = itemData.copy(
@@ -173,16 +163,96 @@ private fun CheckboxItem(
         )
         updateValue(valueState)
     }
-    CheckboxItem(
-        itemData,
-        modifier,
-        text = text,
-        onToggle = { updateBoolean(!itemData.dynamicValue.valueBoolean) },
-        onCheckChange = { updateBoolean(it) },
-        helpHint,
-        showHelp,
-        enabled,
+
+    val isChecked = itemData.dynamicValue.valueBoolean
+    val isActiveWorkType = isChecked && itemData.isWorkTypeGroup
+
+    val trailingContent: (@Composable () -> Unit)? = if (isActiveWorkType) {
+        @Composable {
+            WorkTypeStatusDropdown(itemData, updateWorkTypeStatus, translate, statusOptions)
+        }
+    } else if (itemData.field.help.isNotBlank()) {
+        @Composable {
+            HelpAction(helpHint, showHelp)
+        }
+    } else null
+
+    CrisisCleanupTextCheckbox(
+        modifier.listCheckboxAlignStartOffset(),
+        isChecked,
+        0,
+        text,
+        { updateBoolean(!itemData.dynamicValue.valueBoolean) },
+        { updateBoolean(it) },
+        trailingContent = trailingContent,
+        enabled = enabled,
+        enableToggle = !isActiveWorkType,
+        spaceTrailingContent = itemData.isWorkTypeGroup,
     )
+}
+
+@Composable
+private fun WorkTypeStatusDropdown(
+    itemData: FieldDynamicValue,
+    updateWorkTypeStatus: (WorkTypeStatus) -> Unit,
+    translate: (String) -> String = { s -> s },
+    statusOptions: List<WorkTypeStatus> = emptyList(),
+) {
+    // TODO Colors (indicators) and shape
+    val status = translate(itemData.workTypeStatus.literal)
+    var showOptions by remember { mutableStateOf(false) }
+    Box {
+        Text(
+            status,
+            modifier = Modifier
+                .clickable(
+                    enabled = statusOptions.isNotEmpty(),
+                    onClick = { showOptions = true },
+                )
+                .listItemPadding()
+                .clip(RoundedCornerShape(8.dp)),
+            style = MaterialTheme.typography.bodySmall
+        )
+
+        if (showOptions && statusOptions.isNotEmpty()) {
+            val onSelect = { selected: WorkTypeStatus ->
+                updateWorkTypeStatus(selected)
+                showOptions = false
+            }
+            DropdownMenu(
+                expanded = true,
+                onDismissRequest = { showOptions = false },
+                offset = listItemDropdownMenuOffset,
+                properties = PopupProperties(focusable = false),
+            ) {
+                WorkTypeStatusOptions(
+                    onSelect,
+                    statusOptions,
+                    translate,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun WorkTypeStatusOptions(
+    onSelect: (WorkTypeStatus) -> Unit = {},
+    statusOptions: List<WorkTypeStatus> = emptyList(),
+    translate: (String) -> String = { s -> s },
+) {
+    for (option in statusOptions) {
+        DropdownMenuItem(
+            modifier = Modifier.optionItemHeight(),
+            text = {
+                Text(
+                    translate(option.literal),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            },
+            onClick = { onSelect(option) },
+        )
+    }
 }
 
 @Composable

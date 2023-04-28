@@ -30,6 +30,7 @@ class AppSyncer @Inject constructor(
     private val incidentsRepository: IncidentsRepository,
     private val worksitesRepository: WorksitesRepository,
     private val languageRepository: LanguageTranslationsRepository,
+    private val statusRepository: WorkTypeStatusRepository,
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val appPreferences: LocalAppPreferencesDataSource,
     private val syncLogger: SyncLogger,
@@ -235,6 +236,27 @@ class AppSyncer @Inject constructor(
                 SyncResult.Success("Language pulled")
             } catch (e: Exception) {
                 SyncResult.Error(e.message ?: "Language pull fail")
+            }
+        }
+    }
+
+    override fun appPullStatuses() {
+        applicationScope.launch(ioDispatcher) {
+            statusRepository.loadStatuses()
+        }
+    }
+
+    override suspend fun syncPullStatusesAsync(): Deferred<SyncResult> {
+        return applicationScope.async {
+            if (isNotOnline()) {
+                return@async SyncResult.NotAttempted("not-online")
+            }
+
+            try {
+                statusRepository.loadStatuses()
+                SyncResult.Success("Statuses pulled")
+            } catch (e: Exception) {
+                SyncResult.Error(e.message ?: "Statuses pull fail")
             }
         }
     }

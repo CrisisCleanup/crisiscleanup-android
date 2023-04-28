@@ -94,6 +94,7 @@ class MainActivityViewModel @Inject constructor(
             .launchIn(viewModelScope)
 
         syncPuller.appPullLanguage()
+        syncPuller.appPullStatuses()
     }
 
     override fun onCleared() {

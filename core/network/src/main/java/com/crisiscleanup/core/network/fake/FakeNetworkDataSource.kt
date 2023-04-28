@@ -123,6 +123,8 @@ private val locationSearchResult = NetworkWorksiteLocationSearchResult()
 
 @Singleton
 class FakeNetworkDataSource @Inject constructor() : CrisisCleanupNetworkDataSource {
+    override suspend fun getStatuses() = NetworkWorkTypeStatusResult()
+
     override suspend fun getIncidents(
         fields: List<String>,
         limit: Int,

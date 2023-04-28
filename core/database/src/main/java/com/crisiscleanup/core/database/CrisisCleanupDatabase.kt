@@ -14,6 +14,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
 
 @Database(
     entities = [
+        WorkTypeStatusEntity::class,
         IncidentEntity::class,
         IncidentLocationEntity::class,
         IncidentIncidentLocationCrossRef::class,
@@ -35,7 +36,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         IncidentOrganizationSyncStatsEntity::class,
         RecentWorksiteEntity::class,
     ],
-    version = 14,
+    version = 15,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
@@ -50,6 +51,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         AutoMigration(from = 11, to = 12),
         AutoMigration(from = 12, to = 13),
         AutoMigration(from = 13, to = 14),
+        AutoMigration(from = 14, to = 15),
     ],
     exportSchema = true,
 )
@@ -65,6 +67,7 @@ abstract class CrisisCleanupDatabase : RoomDatabase(), DatabaseVersionProvider {
     abstract fun worksiteSyncStatDao(): WorksiteSyncStatDao
     abstract fun worksiteDao(): WorksiteDao
     abstract fun workTypeDao(): WorkTypeDao
+    abstract fun workTypeStatusDao(): WorkTypeStatusDao
     abstract fun worksiteFormDataDao(): WorksiteFormDataDao
     abstract fun worksiteFlagDao(): WorksiteFlagDao
     abstract fun worksiteNoteDao(): WorksiteNoteDao

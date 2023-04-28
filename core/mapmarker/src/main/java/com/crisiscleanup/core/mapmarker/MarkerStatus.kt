@@ -6,7 +6,6 @@ import com.crisiscleanup.core.model.data.WorkTypeStatus
 import com.crisiscleanup.core.model.data.WorkTypeStatus.*
 import com.crisiscleanup.core.model.data.WorkTypeStatusClaim
 
-
 internal val statusClaimToStatus = mapOf(
     WorkTypeStatusClaim(WorkTypeStatus.Unknown, true) to CaseStatus.Unknown,
     WorkTypeStatusClaim(OpenAssigned, true) to InProgress,

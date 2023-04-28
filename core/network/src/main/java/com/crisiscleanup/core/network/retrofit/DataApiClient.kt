@@ -10,6 +10,9 @@ import retrofit2.http.Query
 import javax.inject.Inject
 
 private interface DataSourceApi {
+    @GET("statuses")
+    suspend fun getStatuses(): NetworkWorkTypeStatusResult
+
     @TokenAuthenticationHeader
     @GET("incidents")
     suspend fun getIncidents(
@@ -149,6 +152,9 @@ class DataApiClient @Inject constructor(
     @CrisisCleanupRetrofit retrofit: Retrofit
 ) : CrisisCleanupNetworkDataSource {
     private val networkApi = retrofit.create(DataSourceApi::class.java)
+
+    override suspend fun getStatuses() = networkApi.getStatuses()
+
     override suspend fun getIncidents(
         fields: List<String>,
         limit: Int,

@@ -84,6 +84,8 @@ private fun FormItems(
 
     val groupExpandState = remember { inputData.groupExpandState }
 
+    val statusOptions = LocalCaseEditor.current.statusOptions
+
     for (field in inputData.mutableFormFieldData) {
         var state by remember { field }
 
@@ -112,10 +114,13 @@ private fun FormItems(
                 helpHint,
                 fieldShowHelp,
                 isEditable,
+                translate,
+                statusOptions,
             ) { value: FieldDynamicValue ->
                 state = state.copy(
                     dynamicValue = value.dynamicValue,
                     breakGlass = value.breakGlass,
+                    workTypeStatus = value.workTypeStatus,
                 )
             }
         }

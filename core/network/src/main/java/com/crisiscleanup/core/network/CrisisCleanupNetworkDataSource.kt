@@ -10,6 +10,8 @@ interface CrisisCleanupAuthApi {
 }
 
 interface CrisisCleanupNetworkDataSource {
+    suspend fun getStatuses(): NetworkWorkTypeStatusResult
+
     suspend fun getIncidents(
         fields: List<String>,
         limit: Int = 250,

@@ -14,6 +14,9 @@ interface SyncPuller {
 
     fun appPullLanguage()
     suspend fun syncPullLanguageAsync(): Deferred<SyncResult>
+
+    fun appPullStatuses()
+    suspend fun syncPullStatusesAsync(): Deferred<SyncResult>
 }
 
 interface SyncPusher {

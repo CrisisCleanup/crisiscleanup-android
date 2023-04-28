@@ -136,7 +136,7 @@ class WorkTypeIconProvider @Inject constructor(
                             colors.fillInt,
                             colors.strokeInt,
                         )
-                    val color = android.graphics.Color.argb(
+                    val color = Color.argb(
                         alpha,
                         colorValue shr 16,
                         colorValue shr 8,

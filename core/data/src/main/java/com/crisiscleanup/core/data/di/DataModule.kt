@@ -35,6 +35,12 @@ interface DataModule {
 
     @Singleton
     @Binds
+    fun bindsWorkTypeStatusRepository(
+        repository: CrisisCleanupWorkTypeStatusRepository
+    ): WorkTypeStatusRepository
+
+    @Singleton
+    @Binds
     fun bindsIncidentsRepository(
         incidentsRepository: OfflineFirstIncidentsRepository
     ): IncidentsRepository

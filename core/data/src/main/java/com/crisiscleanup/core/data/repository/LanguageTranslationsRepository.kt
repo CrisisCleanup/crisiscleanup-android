@@ -42,6 +42,7 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
     private val languageDao: LanguageDao,
     private val languageDaoPlus: LanguageDaoPlus,
     private val authEventManager: AuthEventManager,
+    private val statusRepository: WorkTypeStatusRepository,
     @Logger(CrisisCleanupLoggers.Language) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
     @ApplicationScope private val coroutineScope: CoroutineScope,
@@ -179,5 +180,7 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
         }
     }
 
-    override fun translate(phraseKey: String): String? = translationCache[phraseKey]
+    override fun translate(phraseKey: String): String? {
+        return translationCache[phraseKey] ?: statusRepository.translateStatus(phraseKey)
+    }
 }

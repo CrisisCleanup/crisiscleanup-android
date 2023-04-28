@@ -8,6 +8,7 @@ import kotlinx.datetime.Instant
 
 @Database(
     entities = [
+        WorkTypeStatusEntity::class,
         IncidentEntity::class,
         IncidentLocationEntity::class,
         IncidentIncidentLocationCrossRef::class,

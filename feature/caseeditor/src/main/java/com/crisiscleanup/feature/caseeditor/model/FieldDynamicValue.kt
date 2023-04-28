@@ -1,7 +1,9 @@
 package com.crisiscleanup.feature.caseeditor.model
 
 import com.crisiscleanup.core.model.data.IncidentFormField
+import com.crisiscleanup.core.model.data.WorkTypeStatus
 import com.crisiscleanup.core.network.model.DynamicValue
+import com.crisiscleanup.feature.caseeditor.WorkFormGroupKey
 
 data class FieldDynamicValue(
     val field: IncidentFormField,
@@ -10,9 +12,12 @@ data class FieldDynamicValue(
     val nestLevel: Int = 0,
     val dynamicValue: DynamicValue = DynamicValue(""),
     val breakGlass: FieldEditProperties = FieldEditProperties(field.isReadOnlyBreakGlass),
+    val workTypeStatus: WorkTypeStatus = WorkTypeStatus.OpenUnassigned
 ) {
     val key = field.fieldKey
     val childrenCount = childKeys.size
+
+    val isWorkTypeGroup = field.parentKey == WorkFormGroupKey
 }
 
 data class FieldEditProperties(

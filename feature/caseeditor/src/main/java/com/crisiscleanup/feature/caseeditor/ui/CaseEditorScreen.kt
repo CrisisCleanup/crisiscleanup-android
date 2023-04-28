@@ -354,26 +354,29 @@ private fun ColumnScope.FullEditView(
     Box(Modifier.weight(1f)) {
         val closeKeyboard = rememberCloseKeyboard(viewModel)
 
-        LazyColumn(
-            modifier
-                .scrollFlingListener(closeKeyboard)
-                .fillMaxSize(),
-            state = contentListState,
-        ) {
-            fullEditContent(
-                worksiteData,
-                viewModel,
-                modifier,
-                editSections,
-                isEditable,
-                onMoveLocation = onMoveLocation,
-                onSearchAddress = onSearchAddress,
-                isPropertySectionCollapsed = sectionCollapseStates[0],
-                togglePropertySection = togglePropertySection,
-                isSectionCollapsed = isSectionCollapsed,
-                toggleSection = toggleSectionCollapse,
-                translate = translate,
-            )
+        val caseEditor = CaseEditor(worksiteData.statusOptions)
+        CompositionLocalProvider(LocalCaseEditor provides caseEditor) {
+            LazyColumn(
+                modifier
+                    .scrollFlingListener(closeKeyboard)
+                    .fillMaxSize(),
+                state = contentListState,
+            ) {
+                fullEditContent(
+                    worksiteData,
+                    viewModel,
+                    modifier,
+                    editSections,
+                    isEditable,
+                    onMoveLocation = onMoveLocation,
+                    onSearchAddress = onSearchAddress,
+                    isPropertySectionCollapsed = sectionCollapseStates[0],
+                    togglePropertySection = togglePropertySection,
+                    isSectionCollapsed = isSectionCollapsed,
+                    toggleSection = toggleSectionCollapse,
+                    translate = translate,
+                )
+            }
         }
 
         val isLoadingWorksite by viewModel.isLoading.collectAsStateWithLifecycle()

@@ -26,6 +26,9 @@ object DaoModule {
     fun providesWorkTypeDao(db: CrisisCleanupDatabase) = db.workTypeDao()
 
     @Provides
+    fun providesWorkTypeStatusDao(db: CrisisCleanupDatabase) = db.workTypeStatusDao()
+
+    @Provides
     fun providesWorksiteFormDataDao(db: CrisisCleanupDatabase) = db.worksiteFormDataDao()
 
     @Provides

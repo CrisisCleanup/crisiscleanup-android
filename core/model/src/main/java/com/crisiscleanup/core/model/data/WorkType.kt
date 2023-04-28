@@ -18,19 +18,6 @@ data class WorkType(
     val workType: WorkTypeType = typeFromLiteral(workTypeLiteral)
 }
 
-private fun statusFromLiteral(status: String) = when (status.lowercase()) {
-    "open_unassigned" -> WorkTypeStatus.OpenUnassigned
-    "open_assigned" -> WorkTypeStatus.OpenAssigned
-    "open_partially-completed" -> WorkTypeStatus.OpenPartiallyCompleted
-    "open_needs-follow-up" -> WorkTypeStatus.OpenNeedsFollowUp
-    "open_unresponsive" -> WorkTypeStatus.OpenUnresponsive
-    "closed_completed" -> WorkTypeStatus.ClosedCompleted
-    "closed_incomplete" -> WorkTypeStatus.ClosedIncomplete
-    "closed_out-of-scope" -> WorkTypeStatus.ClosedOutOfScope
-    "closed_done-by-others" -> WorkTypeStatus.ClosedDoneByOthers
-    else -> WorkTypeStatus.Unknown
-}
-
 enum class WorkTypeStatus(val literal: String) {
     Unknown("unknown"),
     OpenAssigned("open_assigned"),
@@ -42,7 +29,14 @@ enum class WorkTypeStatus(val literal: String) {
     ClosedIncomplete("closed_incomplete"),
     ClosedOutOfScope("closed_out-of-scope"),
     ClosedDoneByOthers("closed_done-by-others"),
+    ClosedNoHelpWanted("closed_no-help-wanted"),
+    ClosedDuplicate("closed_duplicate"),
+    ClosedRejected("closed_rejected"),
 }
+
+private val literalStatusLookup = WorkTypeStatus.values().associateBy(WorkTypeStatus::literal)
+fun statusFromLiteral(literal: String) =
+    literalStatusLookup[literal] ?: WorkTypeStatus.Unknown
 
 data class WorkTypeStatusClaim(
     val status: WorkTypeStatus,

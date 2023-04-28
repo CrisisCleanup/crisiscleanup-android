@@ -43,7 +43,10 @@ class SyncWorker @AssistedInject constructor(
                 },
                 async {
                     syncPuller.syncPullLanguageAsync().await() !is SyncResult.Error
-                }
+                },
+                async {
+                    syncPuller.syncPullStatusesAsync().await() !is SyncResult.Error
+                },
             ).all { it }
 
             syncLogger
