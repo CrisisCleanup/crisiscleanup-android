@@ -3,7 +3,7 @@ package com.crisiscleanup.feature.caseeditor.ui
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -11,7 +11,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -43,7 +42,6 @@ internal fun DynamicFormListItem(
     showHelp: () -> Unit = {},
     enabled: Boolean = true,
     translate: (String) -> String = { s -> s },
-    workTypeStatusOptions: List<WorkTypeStatus> = emptyList(),
     updateValue: (FieldDynamicValue) -> Unit = {},
 ) {
     val updateString = if (field.dynamicValue.isBoolean) {
@@ -133,7 +131,6 @@ internal fun DynamicFormListItem(
                     showHelp,
                     enabled,
                     translate = translate,
-                    statusOptions = workTypeStatusOptions,
                     updateWorkTypeStatus = updateWorkTypeStatus,
                 )
             }
@@ -154,7 +151,6 @@ private fun CheckboxItem(
     showHelp: () -> Unit = {},
     enabled: Boolean = true,
     translate: (String) -> String = { s -> s },
-    statusOptions: List<WorkTypeStatus> = emptyList(),
     updateWorkTypeStatus: (WorkTypeStatus) -> Unit = {},
 ) {
     val updateBoolean = { b: Boolean ->
@@ -169,7 +165,7 @@ private fun CheckboxItem(
 
     val trailingContent: (@Composable () -> Unit)? = if (isActiveWorkType) {
         @Composable {
-            WorkTypeStatusDropdown(itemData, updateWorkTypeStatus, translate, statusOptions)
+            WorkTypeStatusDropdown(itemData, updateWorkTypeStatus, translate)
         }
     } else if (itemData.field.help.isNotBlank()) {
         @Composable {
@@ -196,25 +192,27 @@ private fun WorkTypeStatusDropdown(
     itemData: FieldDynamicValue,
     updateWorkTypeStatus: (WorkTypeStatus) -> Unit,
     translate: (String) -> String = { s -> s },
-    statusOptions: List<WorkTypeStatus> = emptyList(),
 ) {
-    // TODO Colors (indicators) and shape
-    val status = translate(itemData.workTypeStatus.literal)
+    val (statusOptions) = LocalCaseEditor.current
+    val hasOptions = statusOptions.isNotEmpty()
+
     var showOptions by remember { mutableStateOf(false) }
     Box {
-        Text(
-            status,
-            modifier = Modifier
+        WorkTypeStatusIndication(
+            itemData.workTypeStatus,
+            Modifier
+                .listCheckboxAlignItemPaddingCounterOffset()
                 .clickable(
-                    enabled = statusOptions.isNotEmpty(),
+                    enabled = hasOptions,
                     onClick = { showOptions = true },
                 )
-                .listItemPadding()
-                .clip(RoundedCornerShape(8.dp)),
-            style = MaterialTheme.typography.bodySmall
+                .listItemHeight()
+                .listItemPadding(),
+            translate,
+            true,
         )
 
-        if (showOptions && statusOptions.isNotEmpty()) {
+        if (showOptions && hasOptions) {
             val onSelect = { selected: WorkTypeStatus ->
                 updateWorkTypeStatus(selected)
                 showOptions = false
@@ -226,6 +224,7 @@ private fun WorkTypeStatusDropdown(
                 properties = PopupProperties(focusable = false),
             ) {
                 WorkTypeStatusOptions(
+                    itemData.workTypeStatus,
                     onSelect,
                     statusOptions,
                     translate,
@@ -237,21 +236,50 @@ private fun WorkTypeStatusDropdown(
 
 @Composable
 private fun WorkTypeStatusOptions(
+    selectedStatus: WorkTypeStatus,
     onSelect: (WorkTypeStatus) -> Unit = {},
     statusOptions: List<WorkTypeStatus> = emptyList(),
     translate: (String) -> String = { s -> s },
 ) {
+    val modifier = Modifier.optionItemHeight()
     for (option in statusOptions) {
         DropdownMenuItem(
-            modifier = Modifier.optionItemHeight(),
-            text = {
-                Text(
-                    translate(option.literal),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            },
+            // TODO Change color of selected option
+            modifier = modifier,
+            text = { WorkTypeStatusIndication(option, translate = translate) },
             onClick = { onSelect(option) },
         )
+    }
+}
+
+@Composable
+private fun WorkTypeStatusIndication(
+    status: WorkTypeStatus,
+    modifier: Modifier = Modifier,
+    translate: (String) -> String = { s -> s },
+    showOpenIcon: Boolean = false,
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = listItemSpacedByHalf,
+    ) {
+
+        Surface(
+            Modifier.size(16.dp),
+            shape = CircleShape,
+            color = statusOptionColors[status] ?: statusUnknownColor,
+        ) {}
+        Text(
+            translate(status.literal),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        if (showOpenIcon) {
+            Icon(
+                imageVector = CrisisCleanupIcons.ArrowDropDown,
+                contentDescription = stringResource(R.string.change_status)
+            )
+        }
     }
 }
 

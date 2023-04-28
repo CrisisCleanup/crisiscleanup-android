@@ -15,6 +15,7 @@ val listItemModifier = Modifier
 
 val listItemHorizontalPadding = PaddingValues(horizontal = 16.dp)
 val listItemSpacedBy = Arrangement.spacedBy(16.dp)
+val listItemSpacedByHalf = Arrangement.spacedBy(8.dp)
 
 fun Modifier.listItemHeight() = heightIn(min = 56.dp)
 fun Modifier.listItemPadding() = padding(horizontal = 16.dp, vertical = 8.dp)
@@ -30,6 +31,7 @@ fun Modifier.listItemNestedPadding(nestLevel: Int = 1) =
 fun Modifier.listItemOptionPadding() = padding(16.dp)
 
 fun Modifier.listCheckboxAlignStartOffset() = offset(x = (-14).dp)
+fun Modifier.listCheckboxAlignItemPaddingCounterOffset() = offset(x = 14.dp.plus(16.dp))
 
 fun Modifier.optionItemHeight() = heightIn(min = 56.dp)
 fun Modifier.optionItemPadding() = padding(top = 16.dp, bottom = 16.dp)

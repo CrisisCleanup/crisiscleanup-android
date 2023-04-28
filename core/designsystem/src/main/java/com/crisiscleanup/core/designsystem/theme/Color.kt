@@ -40,10 +40,32 @@ val cancelButtonContainerColor = Color(0xFFEAEAEA)
 val cancelButtonContentColor = md_theme_primary
 val actionLinkColor = primaryBlueColor
 val separatorColor = Color(0xFFF6F8F9)
+val selectedOptionContainerColor = Color(0xFFF6F8F9)
 
 // Mirror FilledButtonTokens.class
 val disabledButtonContentColor = md_theme_onSurface
     .copy(alpha = 0.38f)
+
+const val statusUnknownColorCode = 0xFF000000
+const val statusUnclaimedColorCode = 0xFFD0021B
+const val statusNotStartedColorCode = 0xFFFAB92E
+const val statusInProgressColorCode = 0xFFF0F032
+const val statusPartiallyCompletedColorCode = 0xFF0054BB
+const val statusNeedsFollowUpColorCode = 0xFFEA51EB
+const val statusCompletedColorCode = 0xFF0fa355
+const val statusDoneByOthersNhwColorCode = 0xFF82D78C
+const val statusOutOfScopeRejectedColorCode = 0xFF1D1D1D
+const val statusUnresponsiveColorCode = 0xFF787878
+val statusUnknownColor = Color(statusUnknownColorCode)
+val statusUnclaimedColor = Color(statusUnclaimedColorCode)
+val statusNotStartedColor = Color(statusNotStartedColorCode)
+val statusInProgressColor = Color(statusInProgressColorCode)
+val statusPartiallyCompletedColor = Color(statusPartiallyCompletedColorCode)
+val statusNeedsFollowUpColor = Color(statusNeedsFollowUpColorCode)
+val statusCompletedColor = Color(statusCompletedColorCode)
+val statusDoneByOthersNhwDiColor = Color(statusDoneByOthersNhwColorCode)
+val statusOutOfScopeRejectedColor = Color(statusOutOfScopeRejectedColorCode)
+val statusUnresponsiveColor = Color(statusUnresponsiveColorCode)
 
 internal val md_theme_light_primary = Color(0xFF735C00)
 internal val md_theme_light_onPrimary = Color(0xFFFFFFFF)

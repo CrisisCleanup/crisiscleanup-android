@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.model.data
 
+// TODO Can this be consolidated with WorkTypeStatus? Or are these distinct states?
 enum class CaseStatus {
     Unknown,
     Unclaimed,
@@ -9,15 +10,16 @@ enum class CaseStatus {
     NeedsFollowUp,
     Completed,
 
+    // TODO Review colors (and names) on web. There are marker colors and status colors...
     /**
      * Nhw = no help wanted
      * Pc = partially completed
      */
-    DoneByOthersNhwPc,
+    DoneByOthersNhw,
 
     /**
      * Du = Duplicate or unresponsive
      */
-    OutOfScopeDu,
+    OutOfScope,
     Incomplete,
 }

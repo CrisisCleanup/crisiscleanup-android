@@ -62,5 +62,7 @@
     <string name="expand_section">Expand %s</string>
     <string name="collapse_section">Collapse %s</string>
 
+    <string name="change_status">Change status</string>
+
     <string name="is_pending_sync">Pending sync</string>
 </resources>
