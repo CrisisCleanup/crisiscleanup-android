@@ -19,6 +19,7 @@ import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.model.data.*
 import com.crisiscleanup.feature.caseeditor.model.*
 import com.crisiscleanup.feature.caseeditor.navigation.CaseEditorArgs
+import com.crisiscleanup.feature.caseeditor.util.resolveModifiedWorkTypes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -232,8 +233,7 @@ class CaseEditorViewModel @Inject constructor(
 
                 locationEditor?.locationInputData?.let { inputData ->
                     if (editableWorksiteProvider.takeAddressChanged()) {
-                        inputData.assumeLocationAddressChanges(worksite)
-                        // TODO Expand address fields if partially defined
+                        inputData.assumeLocationAddressChanges(worksite, true)
                     }
                 }
             }
@@ -360,49 +360,11 @@ class CaseEditorViewModel @Inject constructor(
         return InvalidWorksiteInfo()
     }
 
-    // TODO Refactor and add test coverage
-    private fun getChangeWorkTypes(
-        workTypeLookup: Map<String, String>,
-        initialWorksite: Worksite,
-        modifiedWorksite: Worksite,
-    ): Pair<List<WorkType>, WorkType?> {
-        val worksiteWorkTypes =
-            initialWorksite.workTypes.associateBy(WorkType::workTypeLiteral)
-        val formWorkTypes = modifiedWorksite.formData!!
-            .mapNotNull { workTypeLookup[it.key] }
-            .toSet()
-            .map {
-                val now = Clock.System.now()
-                worksiteWorkTypes[it] ?: WorkType(
-                    id = 0,
-                    createdAt = now,
-                    orgClaim = null,
-                    nextRecurAt = null,
-                    // TODO Does this matter
-                    phase = 0,
-                    recur = null,
-                    statusLiteral = WorkTypeStatus.OpenUnassigned.literal,
-                    workTypeLiteral = it,
-                )
-            }
-        val initialWorkTypes = initialWorksite.workTypes.sortedBy(WorkType::workTypeLiteral)
-        val modifiedWorkTypes = formWorkTypes.sortedBy(WorkType::workTypeLiteral)
-        if (initialWorkTypes == modifiedWorkTypes) {
-            return Pair(initialWorksite.workTypes, initialWorksite.keyWorkType)
-        }
-
-        val formWorkTypeTypes = formWorkTypes.map(WorkType::workType)
-        var keyWorkType = initialWorksite.keyWorkType
-        if (keyWorkType == null || !formWorkTypeTypes.contains(keyWorkType.workType)) {
-            keyWorkType = formWorkTypes.toMutableList()
-                .sortedBy(WorkType::workTypeLiteral)
-                .firstOrNull()
-        }
-
-        return Pair(formWorkTypes, keyWorkType)
-    }
-
-    fun saveChanges(claim: Boolean, backOnSuccess: Boolean = true) {
+    fun saveChanges(
+        claimUnclaimed: Boolean,
+        claimAll: Boolean = false,
+        backOnSuccess: Boolean = true
+    ) {
         if (!transferChanges(true)) {
             return
         }
@@ -415,8 +377,8 @@ class CaseEditorViewModel @Inject constructor(
         }
         viewModelScope.launch(ioDispatcher) {
             try {
-                val worksiteData = uiState.value as? CaseEditorUiState.WorksiteData
-                val initialWorksite = worksiteData?.worksite
+                val editorStateData = uiState.value as? CaseEditorUiState.WorksiteData
+                val initialWorksite = editorStateData?.worksite
                     ?: return@launch
 
                 val worksite = worksiteProvider.editableWorksite.value
@@ -434,25 +396,34 @@ class CaseEditorViewModel @Inject constructor(
                     return@launch
                 }
 
-                val workTypeLookup = worksiteData.incident.workTypeLookup
-                val (workTypes, primaryWorkType) = getChangeWorkTypes(
+                val workTypeLookup = editorStateData.incident.workTypeLookup
+                var (workTypes, primaryWorkType) = resolveModifiedWorkTypes(
                     workTypeLookup,
                     initialWorksite,
                     worksite,
                 )
 
                 if (primaryWorkType == null) {
-                    // TODO Different message (same as web)? Add test coverage.
                     invalidWorksiteInfo.value = InvalidWorksiteInfo(
                         WorksiteSection.WorkType,
-                        R.string.incomplete_work_type_info,
+                        message = translate("caseForm.select_work_type_error"),
                     )
                     showInvalidWorksiteSave.value = true
                     return@launch
                 }
 
+                if (claimUnclaimed) {
+                    workTypes = workTypes
+                        .map {
+                            if (it.orgClaim != null) it
+                            else it.copy(orgClaim = editorStateData.orgId)
+                        }
+                } else if (claimAll) {
+                    workTypes = workTypes.map { it.copy(orgClaim = editorStateData.orgId) }
+                }
+
                 val updatedReportedBy =
-                    if (worksite.isNew) worksiteData.orgId else worksite.reportedBy
+                    if (worksite.isNew) editorStateData.orgId else worksite.reportedBy
                 val clearWhat3Words = worksite.what3Words?.isNotBlank() == true &&
                         worksite.latitude != initialWorksite.latitude ||
                         worksite.longitude != initialWorksite.longitude
@@ -470,7 +441,7 @@ class CaseEditorViewModel @Inject constructor(
                     initialWorksite,
                     updatedWorksite,
                     primaryWorkType,
-                    worksiteData.orgId,
+                    editorStateData.orgId,
                 )
                 val worksiteId = worksiteIdArg!!
 
@@ -483,6 +454,8 @@ class CaseEditorViewModel @Inject constructor(
                     navigateBack.value = true
                 }
             } catch (e: Exception) {
+                logger.logException(e)
+
                 // TODO Show dialog save failed. Try again. If still fails seek help.
             } finally {
                 synchronized(isSavingWorksite) {
@@ -585,6 +558,7 @@ data class GroupSummaryFieldLookup(
 data class InvalidWorksiteInfo(
     val invalidSection: WorksiteSection = WorksiteSection.None,
     @StringRes val messageResId: Int = 0,
+    val message: String = "",
 )
 
 enum class WorksiteSection {

@@ -380,7 +380,8 @@ private fun ColumnScope.FullEditView(
         BusyIndicatorFloatingTopCenter(isLoadingWorksite)
     }
 
-    val claimAndSaveChanges = remember(viewModel) { { viewModel.saveChanges(true) } }
+    val claimAndSaveChanges =
+        remember(viewModel) { { viewModel.saveChanges(false, claimAll = true) } }
     val saveChanges = remember(viewModel) { { viewModel.saveChanges(false) } }
     SaveActionBar(
         !isSavingData,
@@ -831,19 +832,21 @@ private fun InvalidSaveDialog(
     onEditFormData: (Int) -> Unit = {},
     viewModel: CaseEditorViewModel = hiltViewModel(),
 ) {
-
     val promptInvalidSave by viewModel.showInvalidWorksiteSave.collectAsStateWithLifecycle()
     if (promptInvalidSave) {
         val invalidWorksiteInfo = viewModel.invalidWorksiteInfo.value
         if (invalidWorksiteInfo.invalidSection != WorksiteSection.None) {
-            val messageResId =
-                if (invalidWorksiteInfo.messageResId == 0) R.string.incomplete_required_data
-                else invalidWorksiteInfo.messageResId
+            val message = invalidWorksiteInfo.message.ifBlank {
+                val messageResId =
+                    if (invalidWorksiteInfo.messageResId == 0) R.string.incomplete_required_data
+                    else invalidWorksiteInfo.messageResId
+                stringResource(messageResId)
+            }
             val onDismiss =
                 remember(viewModel) { { viewModel.showInvalidWorksiteSave.value = false } }
             AlertDialog(
                 title = { Text(stringResource(R.string.incomplete_worksite)) },
-                text = { Text(stringResource(messageResId)) },
+                text = { Text(message) },
                 onDismissRequest = onDismiss,
                 dismissButton = {
                     CrisisCleanupTextButton(

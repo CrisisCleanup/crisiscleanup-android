@@ -158,7 +158,7 @@ class LocationInputData(
         )
     }
 
-    fun assumeLocationAddressChanges(worksite: Worksite) {
+    fun assumeLocationAddressChanges(worksite: Worksite, updateAddressProblem: Boolean = false) {
         referenceWorksite = referenceWorksite.copy(
             latitude = worksite.latitude,
             longitude = worksite.longitude,
@@ -174,5 +174,15 @@ class LocationInputData(
         city = worksite.city
         county = worksite.county
         state = worksite.state
+
+        if (updateAddressProblem) {
+            hasWrongLocation = listOf(
+                streetAddress,
+                zipCode,
+                county,
+                city,
+                state,
+            ).any(String::isBlank)
+        }
     }
 }
