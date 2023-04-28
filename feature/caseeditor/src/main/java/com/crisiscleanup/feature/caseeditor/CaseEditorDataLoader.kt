@@ -187,7 +187,14 @@ internal class CaseEditorDataLoader(
 
                     editSections.value = mutableListOf<String>().apply {
                         add(translate("caseForm.property_information"))
-                        addAll(formFields.map { it.formField.label })
+                        val requiredGroups = setOf("workInfo")
+                        addAll(formFields.map {
+                            with(it.formField) {
+                                val isRequired = requiredGroups.contains(group)
+                                if (isRequired) "$label *"
+                                else label
+                            }
+                        })
                     }
                 }
 

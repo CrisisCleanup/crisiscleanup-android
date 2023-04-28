@@ -17,10 +17,7 @@ import com.crisiscleanup.core.data.repository.*
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.model.data.*
-import com.crisiscleanup.feature.caseeditor.model.CaseDataWriter
-import com.crisiscleanup.feature.caseeditor.model.LocationInputData
-import com.crisiscleanup.feature.caseeditor.model.PropertyInputData
-import com.crisiscleanup.feature.caseeditor.model.coordinates
+import com.crisiscleanup.feature.caseeditor.model.*
 import com.crisiscleanup.feature.caseeditor.navigation.CaseEditorArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -322,6 +319,17 @@ class CaseEditorViewModel @Inject constructor(
         R.string.incomplete_location_info,
     )
 
+    private fun incompleteFormDataInfo(writerIndex: Int) = InvalidWorksiteInfo(
+        when (writerIndex) {
+            3 -> WorksiteSection.Details
+            4 -> WorksiteSection.WorkType
+            5 -> WorksiteSection.Hazards
+            6 -> WorksiteSection.VolunteerReport
+            else -> WorksiteSection.None
+        },
+        R.string.incomplete_required_data,
+    )
+
     private fun validate(worksite: Worksite): InvalidWorksiteInfo {
         if (worksite.name.isBlank() ||
             worksite.phone1.isBlank()
@@ -492,7 +500,7 @@ class CaseEditorViewModel @Inject constructor(
         (uiState.value as? CaseEditorUiState.WorksiteData)?.let {
             val initialWorksite = it.worksite
             var worksite: Worksite? = initialWorksite
-            caseDataWriters.forEach { dataWriter ->
+            caseDataWriters.forEachIndexed { index, dataWriter ->
                 worksite = dataWriter.updateCase(worksite!!)
                 if (worksite == null) {
                     if (indicateInvalidSection) {
@@ -503,6 +511,10 @@ class CaseEditorViewModel @Inject constructor(
                             }
                             is LocationInputData -> {
                                 invalidWorksiteInfo.value = incompleteLocationInfo
+                                showInvalidWorksiteSave.value = true
+                            }
+                            is FormFieldsInputData -> {
+                                invalidWorksiteInfo.value = incompleteFormDataInfo(index)
                                 showInvalidWorksiteSave.value = true
                             }
                         }
@@ -579,5 +591,8 @@ enum class WorksiteSection {
     None,
     Property,
     Location,
+    Details,
+    Hazards,
+    VolunteerReport,
     WorkType,
 }

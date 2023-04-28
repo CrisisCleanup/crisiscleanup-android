@@ -10,6 +10,7 @@ internal fun summarizeAddress(
     state: String,
 ) = listOf(
     streetAddress,
-    listOf(city, state, county).combineTrimText(),
+    listOf(city, state).combineTrimText(),
+    county,
     zipCode,
 ).filter(String::isNotBlank)

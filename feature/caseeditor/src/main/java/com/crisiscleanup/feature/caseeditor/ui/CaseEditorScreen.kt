@@ -1,5 +1,6 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -126,7 +127,7 @@ internal fun ColumnScope.CaseEditorScreen(
     when (uiState) {
         is CaseEditorUiState.Loading -> {
             Box(modifier.fillMaxSize()) {
-                CircularProgressIndicator(Modifier.align(Alignment.Center))
+                AnimatedBusyIndicator(true)
             }
         }
         is CaseEditorUiState.WorksiteData -> {
@@ -348,6 +349,8 @@ private fun ColumnScope.FullEditView(
     }
     val togglePropertySection = remember(viewModel) { { toggleSectionCollapse(0) } }
 
+    val translate = remember(viewModel) { { s: String -> viewModel.translate(s) } }
+
     Box(Modifier.weight(1f)) {
         val closeKeyboard = rememberCloseKeyboard(viewModel)
 
@@ -369,6 +372,7 @@ private fun ColumnScope.FullEditView(
                 togglePropertySection = togglePropertySection,
                 isSectionCollapsed = isSectionCollapsed,
                 toggleSection = toggleSectionCollapse,
+                translate = translate,
             )
         }
 
@@ -404,11 +408,11 @@ private fun ColumnScope.FullEditView(
 
     val editPropertyData = remember(viewModel) { { sliderScrollToSectionItem(0, 2) } }
     val editLocation = remember(viewModel) { { sliderScrollToSectionItem(0, 3) } }
-    val editWork = remember(viewModel) { { sliderScrollToSection(2) } }
+    val editFormData = remember(viewModel) { { index: Int -> sliderScrollToSection(index) } }
     InvalidSaveDialog(
         onEditLocation = editLocation,
         onEditPropertyData = editPropertyData,
-        onEditWork = editWork,
+        onEditFormData = editFormData,
     )
 }
 
@@ -471,6 +475,7 @@ private fun LazyListScope.fullEditContent(
     togglePropertySection: () -> Unit = {},
     isSectionCollapsed: (Int) -> Boolean = { false },
     toggleSection: (Int) -> Unit = {},
+    translate: (String) -> String = { s -> s },
 ) {
     item(key = "incident-info") {
         val isLocalModified by remember { derivedStateOf { worksiteData.isLocalModified } }
@@ -496,6 +501,7 @@ private fun LazyListScope.fullEditContent(
                 onSearchAddress,
                 isSectionCollapsed = isPropertySectionCollapsed,
                 togglePropertySection = togglePropertySection,
+                translate = translate,
             )
         }
 
@@ -599,6 +605,7 @@ private fun LazyListScope.propertyLocationSection(
     onSearchAddress: () -> Unit = {},
     isSectionCollapsed: Boolean = false,
     togglePropertySection: () -> Unit = {},
+    translate: (String) -> String = { s -> s },
 ) {
     item(
         key = "section-header-0",
@@ -618,6 +625,7 @@ private fun LazyListScope.propertyLocationSection(
                 viewModel,
                 propertyEditor,
                 isEditable,
+                translate = translate,
             )
         }
 
@@ -629,6 +637,7 @@ private fun LazyListScope.propertyLocationSection(
                     isEditable,
                     onMoveLocationOnMap = onMoveLocation,
                     openAddressSearch = onSearchAddress,
+                    translate = translate,
                 )
             }
         }
@@ -640,6 +649,7 @@ private fun LazyListScope.propertyLocationSection(
                     notesFlagsEditor,
                     isEditable,
                     viewModel.visibleNoteCount,
+                    translate = translate,
                 )
             }
         }
@@ -818,7 +828,7 @@ private fun PromptChangesDialog(
 private fun InvalidSaveDialog(
     onEditPropertyData: () -> Unit = {},
     onEditLocation: () -> Unit = {},
-    onEditWork: () -> Unit = {},
+    onEditFormData: (Int) -> Unit = {},
     viewModel: CaseEditorViewModel = hiltViewModel(),
 ) {
 
@@ -827,7 +837,7 @@ private fun InvalidSaveDialog(
         val invalidWorksiteInfo = viewModel.invalidWorksiteInfo.value
         if (invalidWorksiteInfo.invalidSection != WorksiteSection.None) {
             val messageResId =
-                if (invalidWorksiteInfo.messageResId == 0) R.string.incomplete_worksite_data
+                if (invalidWorksiteInfo.messageResId == 0) R.string.incomplete_required_data
                 else invalidWorksiteInfo.messageResId
             val onDismiss =
                 remember(viewModel) { { viewModel.showInvalidWorksiteSave.value = false } }
@@ -845,11 +855,19 @@ private fun InvalidSaveDialog(
                     CrisisCleanupTextButton(
                         textResId = R.string.fix,
                         onClick = {
-                            when (invalidWorksiteInfo.invalidSection) {
+                            when (val section = invalidWorksiteInfo.invalidSection) {
                                 WorksiteSection.Location -> onEditLocation()
                                 WorksiteSection.Property -> onEditPropertyData()
-                                WorksiteSection.WorkType -> onEditWork()
-                                else -> {}
+                                WorksiteSection.Details -> onEditFormData(1)
+                                WorksiteSection.WorkType -> onEditFormData(2)
+                                WorksiteSection.Hazards -> onEditFormData(3)
+                                WorksiteSection.VolunteerReport -> onEditFormData(4)
+                                else -> {
+                                    Log.w(
+                                        "case-edit-invalid-alert",
+                                        "Section $section is not configured for invalid alert",
+                                    )
+                                }
                             }
                             onDismiss()
                         },

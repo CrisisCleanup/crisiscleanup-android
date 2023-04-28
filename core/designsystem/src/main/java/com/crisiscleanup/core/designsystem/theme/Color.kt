@@ -41,6 +41,10 @@ val cancelButtonContentColor = md_theme_primary
 val actionLinkColor = primaryBlueColor
 val separatorColor = Color(0xFFF6F8F9)
 
+// Mirror FilledButtonTokens.class
+val disabledButtonContentColor = md_theme_onSurface
+    .copy(alpha = 0.38f)
+
 internal val md_theme_light_primary = Color(0xFF735C00)
 internal val md_theme_light_onPrimary = Color(0xFFFFFFFF)
 internal val md_theme_light_primaryContainer = Color(0xFFFFE085)

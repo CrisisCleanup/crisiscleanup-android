@@ -25,15 +25,16 @@ internal fun PropertyNotesFlagsView(
     editor: CaseNotesFlagsDataEditor,
     isEditable: Boolean = false,
     collapsedNotesVisibleCount: Int = 3,
+    translate: (String) -> String = { s -> s },
 ) {
     var isCreatingNote by remember { mutableStateOf(false) }
 
     val inputData = editor.notesFlagsInputData
 
-    HighPriorityFlagInput(viewModel, inputData, enabled = isEditable)
+    HighPriorityFlagInput(inputData, isEditable, translate)
 
     if (inputData.isNewWorksite) {
-        MemberOfMyOrgFlagInput(viewModel, inputData, enabled = isEditable)
+        MemberOfMyOrgFlagInput(inputData, isEditable, translate)
     }
 
     val notes by inputData.notesStream.collectAsStateWithLifecycle(emptyList())
@@ -50,13 +51,13 @@ internal fun PropertyNotesFlagsView(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = viewModel.translate("formLabels.notes"),
+            text = translate("formLabels.notes"),
             Modifier.weight(1f),
         )
         if (isExpandable) {
             CrisisCleanupTextButton(
                 onClick = showAllNotes,
-                text = viewModel.translate("actions.all_notes"),
+                text = translate("actions.all_notes"),
             )
         }
     }
@@ -75,7 +76,7 @@ internal fun PropertyNotesFlagsView(
             .listItemHeight()
             .fillMaxWidth(),
         iconResId = R.drawable.ic_note,
-        label = viewModel.translate("caseView.add_note"),
+        label = translate("caseView.add_note"),
         onClick = onAddNote,
         enabled = isEditable,
     )

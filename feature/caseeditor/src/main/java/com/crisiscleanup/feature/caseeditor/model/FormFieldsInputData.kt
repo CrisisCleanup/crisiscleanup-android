@@ -60,6 +60,10 @@ open class FormFieldsInputData(
                 }
         }
 
+    private val requiredFormFields = groupNode.children
+        .filter { it.formField.isRequired }
+        .map { it.formField }
+
     private fun resetUnmodifiedGroups(fieldData: Map<String, DynamicValue>): Map<String, DynamicValue> {
         if (groupFields.isEmpty()) {
             return fieldData
@@ -105,10 +109,19 @@ open class FormFieldsInputData(
             it.value.key to it.value.dynamicValue
         }
 
-        // TODO Add test coverage
+        // TODO Test coverage
+        requiredFormFields.forEach {
+            if (it.htmlType != "checkbox" &&
+                snapshotFieldData[it.fieldKey]?.valueString?.isNotBlank() != true
+            ) {
+                return null
+            }
+        }
+
+        // TODO Test coverage
         snapshotFieldData = resetUnmodifiedGroups(snapshotFieldData)
 
-        // TODO Add test coverage of default removeGroupFields and autoManageGroups behavior does not cause a change in worksite form data
+        // TODO Test coverage of default removeGroupFields and autoManageGroups behavior does not cause a change in worksite form data
         val committingFieldData = onPreCommitFieldData(snapshotFieldData)
 
         if (!worksite.seekChange(committingFieldData)) {

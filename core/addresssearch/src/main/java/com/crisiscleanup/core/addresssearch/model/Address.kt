@@ -16,13 +16,10 @@ fun List<Address?>.filterLatLng(): List<Address> {
 fun Address.toKeyLocationAddress(key: String): KeyLocationAddress {
     val addressLine = getAddressLine(0) ?: ""
     val streetAddress =
-        if (addressLine.isNotEmpty()) addressLine.split(",")[0]
+        if (addressLine.isNotBlank()) addressLine.split(",")[0]
         else thoroughfare ?: ""
 
-    val countyLine = subAdminArea ?: ""
-    val county = if (countyLine.contains(" County")) {
-        countyLine.subSequence(0, countyLine.indexOf(" County")).toString()
-    } else countyLine
+    val county = subAdminArea ?: ""
 
     val locationAddress = LocationAddress(
         latitude = latitude,

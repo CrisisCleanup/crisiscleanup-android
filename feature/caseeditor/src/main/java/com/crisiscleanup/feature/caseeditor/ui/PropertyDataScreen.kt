@@ -76,7 +76,11 @@ internal fun EditCasePropertyRoute(
     if (editDifferentWorksite.isDefined) {
         openExistingCase(editDifferentWorksite)
     } else {
-        EditCasePropertyView(onBackClick = onBackClick)
+        val translate = remember(viewModel) { { s: String -> viewModel.translate(s) } }
+        EditCasePropertyView(
+            onBackClick = onBackClick,
+            translate = translate,
+        )
     }
 }
 
@@ -84,11 +88,12 @@ internal fun EditCasePropertyRoute(
 private fun EditCasePropertyView(
     viewModel: EditCasePropertyViewModel = hiltViewModel(),
     onBackClick: () -> Unit = {},
+    translate: (String) -> String = { s -> s },
 ) {
     EditCaseBackCancelView(
         viewModel,
         onBackClick,
-        viewModel.translate(ScreenTitleTranslateKey)
+        translate(ScreenTitleTranslateKey)
     ) {
 
         val closeKeyboard = rememberCloseKeyboard(viewModel)
@@ -104,6 +109,7 @@ private fun EditCasePropertyView(
                 viewModel.editor,
                 isEditable = true,
                 focusOnOpen = true,
+                translate = translate,
             )
         }
     }
@@ -115,21 +121,23 @@ internal fun PropertyFormView(
     editor: CasePropertyDataEditor,
     isEditable: Boolean = false,
     focusOnOpen: Boolean = false,
+    translate: (String) -> String = { s -> s },
 ) {
     val inputData = editor.propertyInputData
 
-    PropertyFormResidentNameView(viewModel, editor, isEditable, focusOnOpen)
+    PropertyFormResidentNameView(editor, isEditable, focusOnOpen, translate)
 
     // TODO Apply mask with dashes if input is purely numbers (and dashes)
     val updatePhone = remember(inputData) { { s: String -> inputData.phoneNumber = s } }
     val clearPhoneError = remember(inputData) { { inputData.phoneNumberError = "" } }
     val isPhoneError = inputData.phoneNumberError.isNotEmpty()
     val focusPhone = isPhoneError
+    val phone1Label = translate("formLabels.phone1")
     ErrorText(inputData.phoneNumberError)
     OutlinedClearableTextField(
         modifier = listItemModifier,
         labelResId = 0,
-        label = viewModel.translate("formLabels.phone1"),
+        label = "$phone1Label *",
         value = inputData.phoneNumber,
         onValueChange = updatePhone,
         keyboardType = KeyboardType.Password,
@@ -145,7 +153,7 @@ internal fun PropertyFormView(
     OutlinedClearableTextField(
         modifier = listItemModifier,
         labelResId = 0,
-        label = viewModel.translate("formLabels.phone2"),
+        label = translate("formLabels.phone2"),
         value = inputData.phoneNumberSecondary,
         onValueChange = updateAdditionalPhone,
         keyboardType = KeyboardType.Password,
@@ -162,7 +170,7 @@ internal fun PropertyFormView(
     OutlinedClearableTextField(
         modifier = listItemModifier,
         labelResId = 0,
-        label = viewModel.translate("formLabels.email"),
+        label = translate("formLabels.email"),
         value = inputData.email,
         onValueChange = updateEmail,
         keyboardType = KeyboardType.Email,
@@ -174,11 +182,11 @@ internal fun PropertyFormView(
         onEnter = closeKeyboard
     )
 
-    val autoContactFrequencyLabel = viewModel.translate("casesVue.auto_contact_frequency")
+    val autoContactFrequencyLabel = translate("casesVue.auto_contact_frequency")
     WithHelpDialog(
         viewModel,
         helpTitle = autoContactFrequencyLabel,
-        helpText = viewModel.translate("casesVue.auto_contact_frequency_help")
+        helpText = translate("casesVue.auto_contact_frequency_help")
     ) { showHelp ->
         HelpRow(autoContactFrequencyLabel, viewModel.helpHint, showHelp = showHelp)
     }
@@ -219,10 +227,10 @@ internal fun PropertyFormView(
 
 @Composable
 private fun PropertyFormResidentNameView(
-    viewModel: EditCaseBaseViewModel,
     editor: CasePropertyDataEditor,
     isEditable: Boolean = true,
     focusOnOpen: Boolean = false,
+    translate: (String) -> String = { s -> s },
 ) {
     val inputData = editor.propertyInputData
 
@@ -235,12 +243,13 @@ private fun PropertyFormResidentNameView(
     Box(Modifier.fillMaxWidth()) {
         var contentWidth by remember { mutableStateOf(Size.Zero) }
 
+        val nameLabel = translate("formLabels.name")
         OutlinedClearableTextField(
             modifier = listItemModifier.onGloballyPositioned {
                 contentWidth = it.size.toSize()
             },
             labelResId = 0,
-            label = viewModel.translate("formLabels.name"),
+            label = "$nameLabel *",
             value = residentName,
             onValueChange = updateName,
             keyboardType = KeyboardType.Text,

@@ -37,8 +37,7 @@ internal fun DynamicFormListItem(
     breakGlassHint: String = "",
     helpHint: String = "",
     showHelp: () -> Unit = {},
-    // TODO Set on all items
-    enable: Boolean = true,
+    enabled: Boolean = true,
     updateValue: (FieldDynamicValue) -> Unit = {},
 ) {
     val updateString = if (field.dynamicValue.isBoolean) {
@@ -61,6 +60,7 @@ internal fun DynamicFormListItem(
                 label,
                 helpHint,
                 showHelp,
+                enabled,
             )
         }
         "text" -> {
@@ -73,6 +73,7 @@ internal fun DynamicFormListItem(
                 breakGlass,
                 helpHint,
                 showHelp,
+                enabled,
             )
         }
         "textarea" -> {
@@ -83,6 +84,7 @@ internal fun DynamicFormListItem(
                 { updateString(it) },
                 helpHint,
                 showHelp,
+                enabled,
             )
         }
         "select" -> {
@@ -93,6 +95,7 @@ internal fun DynamicFormListItem(
                 { updateString(it) },
                 helpHint,
                 showHelp,
+                enabled,
             )
         }
         "h5",
@@ -115,6 +118,7 @@ internal fun DynamicFormListItem(
                     label,
                     helpHint,
                     showHelp,
+                    enabled,
                 )
             }
         }
@@ -133,6 +137,7 @@ private fun CheckboxItem(
     onCheckChange: (Boolean) -> Unit = {},
     helpHint: String,
     showHelp: () -> Unit = {},
+    enabled: Boolean = true,
 ) {
     val helpAction: (@Composable () -> Unit)? = if (itemData.field.help.isBlank()) null
     else {
@@ -148,6 +153,7 @@ private fun CheckboxItem(
         onToggle,
         onCheckChange,
         trailingContent = helpAction,
+        enabled = enabled,
     )
 }
 
@@ -159,6 +165,7 @@ private fun CheckboxItem(
     text: String = "",
     helpHint: String,
     showHelp: () -> Unit = {},
+    enabled: Boolean = true,
 ) {
     val updateBoolean = { b: Boolean ->
         val valueState = itemData.copy(
@@ -174,6 +181,7 @@ private fun CheckboxItem(
         onCheckChange = { updateBoolean(it) },
         helpHint,
         showHelp,
+        enabled,
     )
 }
 
@@ -187,6 +195,7 @@ private fun SingleLineTextItem(
     onBreakGlass: () -> Unit = {},
     helpHint: String,
     showHelp: () -> Unit = {},
+    enabled: Boolean = true,
 ) {
     val glassState = itemData.breakGlass
     val isGlass = glassState.isNotEditable
@@ -208,7 +217,7 @@ private fun SingleLineTextItem(
             label = label,
             value = itemData.dynamicValue.valueString,
             onValueChange = onChange,
-            enabled = !isGlass,
+            enabled = !isGlass && enabled,
             isError = false,
             keyboardType = KeyboardType.Password,
             // TODO Support done with closeKeyboard behavior if last item list
@@ -221,7 +230,8 @@ private fun SingleLineTextItem(
                 modifier = Modifier
                     .listRowItemStartPadding()
                     .centerAlignTextFieldLabelOffset(),
-                onClick = onBreakGlass
+                onClick = onBreakGlass,
+                enabled = enabled,
             ) {
                 Icon(
                     imageVector = CrisisCleanupIcons.Edit,
@@ -245,6 +255,7 @@ private fun MultiLineTextItem(
     onChange: (String) -> Unit = {},
     helpHint: String,
     showHelp: () -> Unit = {},
+    enabled: Boolean = true,
 ) {
     Column(modifier) {
         val hasHelp = itemData.field.help.isNotBlank()
@@ -277,6 +288,7 @@ private fun MultiLineTextItem(
             label = { Text(label) },
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
+            enabled = enabled,
         )
     }
 }
@@ -289,6 +301,7 @@ private fun SelectItem(
     onChange: (String) -> Unit = {},
     helpHint: String,
     showHelp: () -> Unit = {},
+    enabled: Boolean = true,
 ) {
     Box(Modifier.fillMaxWidth()) {
         var contentWidth by remember { mutableStateOf(Size.Zero) }
@@ -298,7 +311,10 @@ private fun SelectItem(
         }
         Column(
             Modifier
-                .clickable { showDropdown = true }
+                .clickable(
+                    onClick = { showDropdown = true },
+                    enabled = enabled,
+                )
                 .fillMaxWidth()
                 .onGloballyPositioned {
                     contentWidth = it.size.toSize()

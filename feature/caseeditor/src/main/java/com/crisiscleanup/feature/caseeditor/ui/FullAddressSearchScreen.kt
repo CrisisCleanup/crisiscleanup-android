@@ -59,12 +59,13 @@ internal fun FullAddressSearchInput(
     hasFocus: Boolean = false,
 ) {
     val updateQuery = remember(viewModel) { { s: String -> editor.onQueryChange(s) } }
+    val fullAddressLabel = viewModel.translate("caseView.full_address")
     OutlinedClearableTextField(
         modifier = Modifier
             .fillMaxWidth()
             .listItemPadding(),
         labelResId = 0,
-        label = viewModel.translate("caseView.full_address"),
+        label = "$fullAddressLabel *",
         value = locationQuery,
         onValueChange = updateQuery,
         keyboardType = KeyboardType.Password,

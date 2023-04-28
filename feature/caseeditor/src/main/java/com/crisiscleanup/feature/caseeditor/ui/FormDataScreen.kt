@@ -95,7 +95,10 @@ private fun FormItems(
         }
 
         key(state.key) {
-            val label = state.field.getFieldLabel(translate)
+            var label = state.field.getFieldLabel(translate)
+            if (state.field.isRequired) {
+                label = "$label *"
+            }
             val fieldShowHelp = remember(viewModel) { { showHelp(state) } }
             val modifier =
                 if (state.nestLevel > 0) listItemModifier.listItemNestedPadding(state.nestLevel * 2)

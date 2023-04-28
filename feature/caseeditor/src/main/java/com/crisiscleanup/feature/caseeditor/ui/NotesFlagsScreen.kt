@@ -223,6 +223,8 @@ internal fun OnCreateNote(
 private fun FlagsInputNotesList(
     viewModel: EditCaseNotesFlagsViewModel = hiltViewModel(),
 ) {
+    val translate = remember(viewModel) { { s: String -> viewModel.translate(s) } }
+
     val inputData = viewModel.editor.notesFlagsInputData
 
     val notes by inputData.notesStream.collectAsStateWithLifecycle(emptyList())
@@ -237,7 +239,7 @@ private fun FlagsInputNotesList(
             key = "high-priority",
             contentType = "item-checkbox",
         ) {
-            HighPriorityFlagInput(viewModel, inputData)
+            HighPriorityFlagInput(inputData, translate = translate)
         }
 
         if (inputData.isNewWorksite) {
@@ -245,7 +247,7 @@ private fun FlagsInputNotesList(
                 key = "assigned-to-org-member",
                 contentType = "item-checkbox",
             ) {
-                MemberOfMyOrgFlagInput(viewModel, inputData)
+                MemberOfMyOrgFlagInput(inputData, translate = translate)
             }
         }
 
@@ -255,7 +257,7 @@ private fun FlagsInputNotesList(
                 contentType = "item-notes-title",
             ) {
                 Text(
-                    text = viewModel.translate("formLabels.notes"),
+                    text = translate("formLabels.notes"),
                     modifier = listItemModifier,
                 )
             }
@@ -271,9 +273,9 @@ private fun FlagsInputNotesList(
 
 @Composable
 internal fun HighPriorityFlagInput(
-    viewModel: EditCaseBaseViewModel,
     inputData: NotesFlagsInputData,
     enabled: Boolean = true,
+    translate: (String) -> String = { s -> s },
 ) {
     val toggleHighPriority = remember(inputData) {
         { inputData.isHighPriority = !inputData.isHighPriority }
@@ -283,7 +285,7 @@ internal fun HighPriorityFlagInput(
     CrisisCleanupTextCheckbox(
         listItemModifier.listCheckboxAlignStartOffset(),
         inputData.isHighPriority,
-        text = viewModel.translate("flag.flag_high_priority"),
+        text = translate("flag.flag_high_priority"),
         onToggle = toggleHighPriority,
         onCheckChange = updateHighPriority,
         enabled = enabled,
@@ -292,9 +294,9 @@ internal fun HighPriorityFlagInput(
 
 @Composable
 internal fun MemberOfMyOrgFlagInput(
-    viewModel: EditCaseBaseViewModel,
     inputData: NotesFlagsInputData,
     enabled: Boolean = true,
+    translate: (String) -> String = { s -> s },
 ) {
     val toggleAssignTo = remember(inputData) {
         { inputData.isAssignedToOrgMember = !inputData.isAssignedToOrgMember }
@@ -304,7 +306,7 @@ internal fun MemberOfMyOrgFlagInput(
     CrisisCleanupTextCheckbox(
         listItemModifier.listCheckboxAlignStartOffset(),
         inputData.isAssignedToOrgMember,
-        text = viewModel.translate("actions.member_of_my_org"),
+        text = translate("actions.member_of_my_org"),
         onToggle = toggleAssignTo,
         onCheckChange = updateAssignTo,
         enabled = enabled,

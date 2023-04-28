@@ -27,6 +27,7 @@ internal fun PropertyLocationView(
     openExistingCase: (ExistingWorksiteIdentifier) -> Unit = {},
     onMoveLocationOnMap: () -> Unit = {},
     openAddressSearch: () -> Unit = {},
+    translate: (String) -> String = { s -> s },
 ) {
     val editDifferentWorksite by editor.editIncidentWorksite.collectAsStateWithLifecycle()
     if (editDifferentWorksite.isDefined) {
@@ -34,11 +35,11 @@ internal fun PropertyLocationView(
     } else {
         editor.setMoveLocationOnMap(false)
 
-        val locationText = viewModel.translate("formLabels.location")
+        val locationText = translate("formLabels.location")
         WithHelpDialog(
             viewModel,
             helpTitle = locationText,
-            helpText = viewModel.translate("caseForm.location_instructions"),
+            helpText = translate("caseForm.location_instructions"),
             hasHtml = true,
         ) { showHelp ->
             HelpRow(
@@ -50,13 +51,17 @@ internal fun PropertyLocationView(
             )
         }
 
+        val fullAddressLabel = translate("caseView.full_address")
         OutlinedSingleLineTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .listItemPadding()
-                .clickable(onClick = openAddressSearch),
+                .clickable(
+                    onClick = openAddressSearch,
+                    enabled = isEditable,
+                ),
             labelResId = 0,
-            label = viewModel.translate("caseView.full_address"),
+            label = "$fullAddressLabel *",
             value = "",
             onValueChange = {},
             enabled = false,
@@ -77,14 +82,15 @@ internal fun PropertyLocationView(
             )
         }
 
+        val useMyLocation = remember(viewModel) { { editor.useMyLocation() } }
         LocationMapActionBar(
-            viewModel,
-            editor,
             isEditable,
-            onMoveLocationOnMap,
+            moveLocationOnMap = onMoveLocationOnMap,
+            useMyLocation = useMyLocation,
+            translate = translate,
         )
 
-        LocationFormView(viewModel, editor, isEditable)
+        LocationFormView(editor, isEditable, translate)
 
         // TODO Handle out of bounds properly
 
@@ -100,25 +106,23 @@ internal fun PropertyLocationView(
 
 @Composable
 private fun LocationMapActionBar(
-    viewModel: EditCaseBaseViewModel,
-    editor: CaseLocationDataEditor,
     isEditable: Boolean = false,
     moveLocationOnMap: () -> Unit = {},
+    useMyLocation: () -> Unit = {},
+    translate: (String) -> String = { s -> s },
 ) {
-    val useMyLocation = remember(viewModel) { { editor.useMyLocation() } }
-
     Row(modifier = Modifier.listItemPadding()) {
         IconButton(
             modifier = Modifier.weight(1f),
             iconResId = R.drawable.ic_select_on_map,
-            label = viewModel.translate("caseForm.select_on_map"),
+            label = translate("caseForm.select_on_map"),
             onClick = moveLocationOnMap,
             enabled = isEditable,
         )
         IconButton(
             modifier = Modifier.weight(1f),
             iconResId = R.drawable.ic_use_my_location,
-            label = viewModel.translate("caseForm.use_my_location"),
+            label = translate("caseForm.use_my_location"),
             onClick = useMyLocation,
             enabled = isEditable,
         )

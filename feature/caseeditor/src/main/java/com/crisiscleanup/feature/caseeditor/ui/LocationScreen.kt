@@ -103,10 +103,12 @@ internal fun EditCaseLocationRoute(
     if (editDifferentWorksite.isDefined) {
         openExistingCase(editDifferentWorksite)
     } else {
+        val translate = remember(viewModel) { { s: String -> viewModel.translate(s) } }
         EditCaseLocationView(
             viewModel,
             editor,
-            onBackClick = onBackClick
+            onBackClick = onBackClick,
+            translate = translate,
         )
     }
 }
@@ -116,13 +118,14 @@ private fun EditCaseLocationView(
     viewModel: EditCaseBaseViewModel,
     editor: CaseLocationDataEditor,
     onBackClick: () -> Unit = {},
+    translate: (String) -> String = { s -> s },
 ) {
     EditCaseBackCancelView(
         viewModel,
         onBackClick,
-        viewModel.translate(ScreenTitleTranslateKey),
+        translate(ScreenTitleTranslateKey),
     ) {
-        LocationView(viewModel, editor)
+        LocationView(viewModel, editor, translate)
     }
 
     // TODO Handle out of bounds properly
@@ -163,6 +166,7 @@ internal fun getLayoutParameters(isMoveLocationMode: Boolean): Pair<Boolean, Mod
 internal fun ColumnScope.LocationView(
     viewModel: EditCaseBaseViewModel,
     editor: CaseLocationDataEditor,
+    translate: (String) -> String = { s -> s },
 ) {
     val isMoveLocationMode by editor.isMoveLocationOnMapMode
 
@@ -238,7 +242,7 @@ internal fun ColumnScope.LocationView(
                     cameraPositionState,
                     onMapTouched = onMapTouched,
                 )
-                LocationFormView(viewModel, editor)
+                LocationFormView(editor, translate = translate)
             } else if (isShortQuery) {
                 Text(
                     stringResource(R.string.location_query_hint),
@@ -279,6 +283,7 @@ internal fun LocationMapActions(
     viewModel: EditCaseBaseViewModel,
     editor: CaseLocationDataEditor,
     isMoveLocationMode: Boolean,
+    translate: (String) -> String = { s -> s },
 ) {
     val useMyLocation = remember(viewModel) { { editor.useMyLocation() } }
     val moveLocationOnMap = remember(viewModel) { { editor.toggleMoveLocationOnMap() } }
@@ -295,7 +300,7 @@ internal fun LocationMapActions(
         ) {
             MapButton(
                 iconResId = R.drawable.ic_move_location,
-                contentDescription = viewModel.translate("caseForm.select_on_map"),
+                contentDescription = translate("caseForm.select_on_map"),
                 onClick = moveLocationOnMap,
             )
             if (!isMoveLocationMode) {
@@ -307,7 +312,7 @@ internal fun LocationMapActions(
                 )
                 MapButton(
                     imageVector = CrisisCleanupIcons.MyLocation,
-                    contentDescription = viewModel.translate("caseForm.use_my_location"),
+                    contentDescription = translate("caseForm.use_my_location"),
                     onClick = useMyLocation,
                 )
             }
@@ -414,9 +419,9 @@ internal fun LocationMapContainerView(
 
 @Composable
 internal fun LocationFormView(
-    viewModel: EditCaseBaseViewModel,
     editor: CaseLocationDataEditor,
     isEditable: Boolean = false,
+    translate: (String) -> String = { s -> s },
 ) {
     val inputData = editor.locationInputData
 
@@ -430,7 +435,7 @@ internal fun LocationFormView(
     OutlinedClearableTextField(
         modifier = listItemModifier,
         labelResId = 0,
-        label = viewModel.translate("cross_street"),
+        label = translate("cross_street"),
         value = inputData.crossStreetNearbyLandmark,
         onValueChange = updateCrossStreet,
         keyboardType = KeyboardType.Text,
@@ -452,10 +457,10 @@ internal fun LocationFormView(
         }
         if (showAddressForm) {
             LocationAddressFormView(
-                viewModel,
                 editor,
                 closeKeyboard,
                 isEditable,
+                translate,
             )
         } else {
             AddressSummaryInColumn(
@@ -478,18 +483,19 @@ internal fun LocationFormView(
     CrisisCleanupTextCheckbox(
         listItemModifier.listCheckboxAlignStartOffset(),
         inputData.hasWrongLocation,
-        text = viewModel.translate("caseForm.address_problems"),
+        text = translate("caseForm.address_problems"),
         onToggle = toggleWrongLocation,
         onCheckChange = updateWrongLocation,
+        enabled = isEditable,
     )
 }
 
 @Composable
 internal fun LocationAddressFormView(
-    viewModel: EditCaseBaseViewModel,
     editor: CaseLocationDataEditor,
     closeKeyboard: () -> Unit = {},
     isEditable: Boolean = false,
+    translate: (String) -> String = { s -> s },
 ) {
     val inputData = editor.locationInputData
 
@@ -497,11 +503,12 @@ internal fun LocationAddressFormView(
     val clearAddressError = remember(inputData) { { inputData.streetAddressError = "" } }
     val isAddressError = inputData.streetAddressError.isNotEmpty()
     val focusAddress = isAddressError
+    val addressLabel = translate("formLabels.address")
     ErrorText(inputData.streetAddressError)
     OutlinedClearableTextField(
         modifier = listItemModifier,
         labelResId = 0,
-        label = viewModel.translate("formLabels.address"),
+        label = "$addressLabel *",
         value = inputData.streetAddress,
         onValueChange = updateAddress,
         keyboardType = KeyboardType.Password,
@@ -516,11 +523,12 @@ internal fun LocationAddressFormView(
     val clearZipCodeError = remember(inputData) { { inputData.zipCodeError = "" } }
     val isZipCodeError = inputData.zipCodeError.isNotEmpty()
     val focusZipCode = isZipCodeError
+    val postalCodeLabel = translate("formLabels.postal_code")
     ErrorText(inputData.zipCodeError)
     OutlinedClearableTextField(
         modifier = listItemModifier,
         labelResId = 0,
-        label = viewModel.translate("formLabels.postal_code"),
+        label = "$postalCodeLabel *",
         value = inputData.zipCode,
         onValueChange = updateZipCode,
         keyboardType = KeyboardType.Password,
@@ -534,11 +542,12 @@ internal fun LocationAddressFormView(
     val clearCountyError = remember(inputData) { { inputData.countyError = "" } }
     val isCountyError = inputData.countyError.isNotEmpty()
     val focusCounty = isCountyError
+    val countyLabel = translate("formLabels.county")
     ErrorText(inputData.countyError)
     OutlinedClearableTextField(
         modifier = listItemModifier,
         labelResId = 0,
-        label = viewModel.translate("formLabels.county"),
+        label = "$countyLabel *",
         value = inputData.county,
         onValueChange = updateCounty,
         keyboardType = KeyboardType.Password,
@@ -552,11 +561,12 @@ internal fun LocationAddressFormView(
     val clearCityError = remember(inputData) { { inputData.cityError = "" } }
     val isCityError = inputData.cityError.isNotEmpty()
     val focusCity = isCityError
+    val cityLabel = translate("formLabels.city")
     ErrorText(inputData.cityError)
     OutlinedClearableTextField(
         modifier = listItemModifier,
         labelResId = 0,
-        label = viewModel.translate("formLabels.city"),
+        label = "$cityLabel *",
         value = inputData.city,
         onValueChange = updateCity,
         keyboardType = KeyboardType.Password,
@@ -575,11 +585,12 @@ internal fun LocationAddressFormView(
     }
     val isStateError = inputData.stateError.isNotEmpty()
     val focusState = isStateError
+    val stateLabel = translate("formLabels.state")
     ErrorText(inputData.stateError)
     OutlinedClearableTextField(
         modifier = listItemModifier,
         labelResId = 0,
-        label = viewModel.translate("formLabels.state"),
+        label = "$stateLabel *",
         value = inputData.state,
         onValueChange = updateState,
         keyboardType = KeyboardType.Password,

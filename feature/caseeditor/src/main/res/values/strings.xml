@@ -56,7 +56,7 @@
     <string name="incomplete_property_info">A name and phone is required.</string>
     <string name="incomplete_location_info">A location with address is required.</string>
     <string name="incomplete_work_type_info">At least one work type must be specified.</string>
-    <string name="incomplete_worksite_data">Required data is fully defined. Sorry for not being able to identify where.</string>
+    <string name="incomplete_required_data">All required fields are not defined.</string>
     <string name="fix">Fix</string>
 
     <string name="expand_section">Expand %s</string>

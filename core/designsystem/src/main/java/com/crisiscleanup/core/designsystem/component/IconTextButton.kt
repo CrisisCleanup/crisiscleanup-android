@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.crisiscleanup.core.designsystem.theme.disabledButtonContentColor
 
 @Composable
 fun CrisisCleanupIconTextButton(
@@ -36,25 +37,26 @@ fun CrisisCleanupIconTextButton(
         horizontalArrangement = Arrangement.spacedBy(spacing),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        val tint = if (enabled) iconTint else disabledButtonContentColor
         if (iconResId != 0) {
             Icon(
                 painter = painterResource(iconResId),
                 contentDescription = label,
-                tint = iconTint,
+                tint = tint,
             )
         } else {
             imageVector?.let {
                 Icon(
                     imageVector = it,
                     contentDescription = label,
-                    tint = iconTint,
+                    tint = tint,
                 )
             }
         }
         Text(
             label,
             Modifier.weight(1f),
-            color = textColor,
+            color = if (enabled) textColor else disabledButtonContentColor,
         )
     }
 }
