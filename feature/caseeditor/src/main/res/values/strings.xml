@@ -65,4 +65,5 @@
     <string name="change_status">Change status</string>
 
     <string name="is_pending_sync">Pending sync</string>
+    <string name="is_syncing">Syncing</string>
 </resources>

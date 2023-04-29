@@ -18,6 +18,7 @@ object CrisisCleanupIcons {
     val Cases = R.drawable.ic_cases
     val Check = Icons.Default.Check
     val Clear = Icons.Default.Clear
+    val CloudSync = Icons.Default.CloudSync
     val CloudOff = Icons.Default.CloudOff
     val Dashboard = R.drawable.ic_dashboard
     val Edit = Icons.Default.Edit

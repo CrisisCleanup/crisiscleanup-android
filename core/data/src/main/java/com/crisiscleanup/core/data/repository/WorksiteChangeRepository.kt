@@ -8,7 +8,6 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.database.dao.*
 import com.crisiscleanup.core.database.model.asExternalModel
-import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.SavedWorksiteChange
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.Worksite
@@ -20,12 +19,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
-import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 
 interface WorksiteChangeRepository {
-    val syncingWorksiteId: StateFlow<Long>
+    val syncingWorksiteIds: StateFlow<Set<Long>>
 
     suspend fun saveWorksiteChange(
         worksiteStart: Worksite,
@@ -62,10 +60,10 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
     private val syncLogger: SyncLogger,
     @Logger(CrisisCleanupLoggers.App) private val appLogger: AppLogger,
 ) : WorksiteChangeRepository {
-    override val syncingWorksiteId = MutableStateFlow(EmptyWorksite.id)
+    private val _syncingWorksiteIds = mutableSetOf<Long>()
+    override val syncingWorksiteIds = MutableStateFlow(emptySet<Long>())
 
     private val syncWorksiteMutex = Mutex()
-    private val syncingWorksiteIds = ConcurrentHashMap<Long, Boolean>()
 
     override suspend fun saveWorksiteChange(
         worksiteStart: Worksite,
@@ -126,15 +124,15 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
         }
 
         try {
-            synchronized(syncingWorksiteIds) {
-                if (syncingWorksiteIds.contains(worksiteId)) {
+            synchronized(_syncingWorksiteIds) {
+                if (_syncingWorksiteIds.contains(worksiteId)) {
                     syncLogger.log("Not syncing. Currently being synced.")
                     return false
                 }
-                syncingWorksiteIds[worksiteId] = true
+                _syncingWorksiteIds.add(worksiteId)
+                syncingWorksiteIds.value = _syncingWorksiteIds.toSet()
             }
 
-            syncingWorksiteId.value = worksiteId
 
             syncWorksite(worksiteId)
         } catch (e: Exception) {
@@ -146,10 +144,10 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
                 // TODO Indicate error visually
             }
         } finally {
-            synchronized(syncingWorksiteIds) {
-                syncingWorksiteIds.remove(worksiteId)
+            synchronized(_syncingWorksiteIds) {
+                _syncingWorksiteIds.remove(worksiteId)
+                syncingWorksiteIds.value = _syncingWorksiteIds.toSet()
             }
-            syncingWorksiteId.value = EmptyWorksite.id
 
             syncLogger.flush()
         }

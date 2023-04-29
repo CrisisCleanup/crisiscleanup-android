@@ -256,20 +256,14 @@ class CaseEditorViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    private val hasChanges = combine(
-        editingWorksite,
-        uiState,
-    ) { worksite, state ->
-        var isChanged = false
-        (state as? CaseEditorUiState.WorksiteData)?.let { data ->
-            isChanged = worksite != data.worksite
-        }
-        isChanged
-    }.stateIn(
-        scope = viewModelScope,
-        initialValue = false,
-        started = SharingStarted.WhileSubscribed(),
-    )
+    val isSyncing = worksiteChangeRepository.syncingWorksiteIds.mapLatest {
+        it.contains(worksiteIdArg)
+    }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
+            started = SharingStarted.WhileSubscribed(),
+        )
 
     private fun getWorkTypeGroups(state: CaseEditorUiState, worksite: Worksite): List<String> {
         (state as? CaseEditorUiState.WorksiteData)?.let { stateData ->

@@ -482,17 +482,16 @@ private fun LazyListScope.fullEditContent(
     translate: (String) -> String = { s -> s },
 ) {
     item(key = "incident-info") {
-        val isLocalModified by remember { derivedStateOf { worksiteData.isLocalModified } }
+        val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
         val incidentResId = getDisasterIcon(worksiteData.incident.disaster)
         CaseIncident(
             modifier,
             incidentResId,
             worksiteData.incident.name,
-            isLocalModified,
+            worksiteData.isLocalModified,
+            isSyncing = isSyncing,
         )
     }
-
-    // val worksite by viewModel.editingWorksite.collectAsStateWithLifecycle()
 
     if (sectionTitles.isNotEmpty()) {
         viewModel.propertyEditor?.let { propertyEditor ->
@@ -773,6 +772,7 @@ private fun CaseIncident(
     disasterResId: Int = commonAssetsR.drawable.ic_disaster_other,
     incidentName: String = "",
     isLocalModified: Boolean = false,
+    isSyncing: Boolean = false,
 ) {
     Row(
         modifier = modifier.listItemPadding(),
@@ -795,7 +795,12 @@ private fun CaseIncident(
             style = MaterialTheme.typography.headlineMedium,
         )
 
-        if (isLocalModified) {
+        if (isSyncing) {
+            Icon(
+                imageVector = CrisisCleanupIcons.CloudSync,
+                contentDescription = stringResource(R.string.is_syncing),
+            )
+        } else if (isLocalModified) {
             Icon(
                 imageVector = CrisisCleanupIcons.CloudOff,
                 contentDescription = stringResource(R.string.is_pending_sync),
