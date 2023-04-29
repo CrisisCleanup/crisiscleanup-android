@@ -19,4 +19,7 @@
     <string name="close">Close</string>
     <string name="worksite_markers_hidden">%1$d worksites not shown</string>
     <string name="recently_viewed">Recently viewed</string>
+
+    <string name="visible_total_case_count">%d Cases\nof %d</string>
+    <string name="total_case_count">%d Cases</string>
 </resources>

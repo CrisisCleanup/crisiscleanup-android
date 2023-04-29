@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
@@ -15,9 +16,11 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -35,7 +38,6 @@ import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
 import com.crisiscleanup.core.mapmarker.ui.rememberMapUiSettings
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.WorksiteMapMark
-import com.crisiscleanup.core.ui.MapOverlayMessage
 import com.crisiscleanup.feature.cases.CasesViewModel
 import com.crisiscleanup.feature.cases.R
 import com.crisiscleanup.feature.cases.model.WorksiteGoogleMapMark
@@ -89,6 +91,7 @@ internal fun CasesRoute(
             }
         }
         val isMapBusy by casesViewModel.isMapBusy.collectAsStateWithLifecycle(false)
+        val casesCount by casesViewModel.casesCount.collectAsStateWithLifecycle()
         val worksitesOnMap by casesViewModel.worksitesMapMarkers.collectAsStateWithLifecycle()
         val mapCameraBounds by casesViewModel.incidentLocationBounds.collectAsStateWithLifecycle()
         val mapCameraZoom by casesViewModel.mapCameraZoom.collectAsStateWithLifecycle()
@@ -110,8 +113,6 @@ internal fun CasesRoute(
         }
         val showDataProgress by casesViewModel.showDataProgress.collectAsStateWithLifecycle(false)
         val dataProgress by casesViewModel.dataProgress.collectAsStateWithLifecycle(0f)
-        val hiddenMarkersMessage =
-            remember(casesViewModel) { { casesViewModel.hiddenMarkersMessage } }
         val onMapMarkerSelect = remember(casesViewModel) {
             { mark: WorksiteMapMark -> openCase(casesViewModel.incidentId, mark.id) }
         }
@@ -125,6 +126,7 @@ internal fun CasesRoute(
             isTableView = isTableView,
             isLayerView = isLayerView,
             isMapBusy = isMapBusy,
+            casesCount = casesCount,
             worksitesOnMap = worksitesOnMap,
             mapCameraBounds = mapCameraBounds,
             mapCameraZoom = mapCameraZoom,
@@ -134,7 +136,6 @@ internal fun CasesRoute(
             casesDotTileProvider = casesDotTileProvider,
             onMapLoaded = onMapLoaded,
             onMapCameraChange = onMapCameraChange,
-            hiddenMarkersMessage = hiddenMarkersMessage,
             onMarkerSelect = onMapMarkerSelect,
             editedWorksiteLocation = editedWorksiteLocation,
         )
@@ -194,6 +195,7 @@ internal fun CasesScreen(
     isTableView: Boolean = false,
     isLayerView: Boolean = false,
     isMapBusy: Boolean = false,
+    casesCount: Pair<Int, Int> = Pair(0, 0),
     worksitesOnMap: List<WorksiteGoogleMapMark> = emptyList(),
     mapCameraBounds: MapViewCameraBounds = MapViewCameraBoundsDefault,
     mapCameraZoom: MapViewCameraZoom = MapViewCameraZoomDefault,
@@ -203,7 +205,6 @@ internal fun CasesScreen(
     casesDotTileProvider: () -> TileProvider? = { null },
     onMapLoaded: () -> Unit = {},
     onMapCameraChange: (CameraPosition, Projection?, Boolean) -> Unit = { _, _, _ -> },
-    hiddenMarkersMessage: () -> String = { "" },
     onMarkerSelect: (WorksiteMapMark) -> Boolean = { false },
     editedWorksiteLocation: LatLng? = null,
 ) {
@@ -222,7 +223,6 @@ internal fun CasesScreen(
                 casesDotTileProvider,
                 onMapLoaded,
                 onMapCameraChange,
-                hiddenMarkersMessage,
                 onMarkerSelect,
                 editedWorksiteLocation,
             )
@@ -233,6 +233,7 @@ internal fun CasesScreen(
             disasterResId,
             onCasesAction,
             isTableView,
+            casesCount,
         )
 
         AnimatedVisibility(
@@ -260,7 +261,6 @@ internal fun BoxScope.CasesMapView(
     casesDotTileProvider: () -> TileProvider? = { null },
     onMapLoaded: () -> Unit = {},
     onMapCameraChange: (CameraPosition, Projection?, Boolean) -> Unit = { _, _, _ -> },
-    hiddenMarkersMessage: () -> String = { "" },
     onMarkerSelect: (WorksiteMapMark) -> Boolean = { false },
     editedWorksiteLocation: LatLng? = null,
     onEditLocationZoom: Float = 12f,
@@ -315,9 +315,6 @@ internal fun BoxScope.CasesMapView(
     }
 
     BusyIndicatorFloatingTopCenter(isMapBusy)
-
-    val message = hiddenMarkersMessage()
-    MapOverlayMessage(message)
 
     val currentLocalDensity = LocalDensity.current
     LaunchedEffect(mapCameraBounds) {
@@ -374,9 +371,17 @@ internal fun CasesOverlayActions(
     @DrawableRes disasterResId: Int = commonAssetsR.drawable.ic_disaster_other,
     onCasesAction: (CasesAction) -> Unit = {},
     isTableView: Boolean = false,
+    casesCount: Pair<Int, Int> = Pair(0, 0),
 ) {
     ConstraintLayout(Modifier.fillMaxSize()) {
-        val (disasterAction, zoomBar, actionBar, newCaseFab, toggleTableMap) = createRefs()
+        val (
+            disasterAction,
+            zoomBar,
+            actionBar,
+            newCaseFab,
+            toggleTableMap,
+            countTextRef,
+        ) = createRefs()
 
         FloatingActionButton(
             modifier = modifier
@@ -414,6 +419,15 @@ internal fun CasesOverlayActions(
             onCasesAction,
         )
 
+        CasesCountView(
+            casesCount,
+            Modifier.constrainAs(countTextRef) {
+                top.linkTo(parent.top, margin = actionEdgeSpace)
+                start.linkTo(disasterAction.end)
+                end.linkTo(actionBar.start)
+            },
+        )
+
         val onNewCase = remember(onCasesAction) { { onCasesAction(CasesAction.CreateNew) } }
         FloatingActionButton(
             modifier = modifier
@@ -446,6 +460,45 @@ internal fun CasesOverlayActions(
             Icon(
                 painter = painterResource(tableMapAction.iconResId),
                 contentDescription = stringResource(tableMapAction.contentDescriptionResId),
+            )
+        }
+    }
+}
+
+@Composable
+private fun CasesCountView(
+    casesCount: Pair<Int, Int>,
+    modifier: Modifier = Modifier,
+) {
+    val (visibleCount, totalCount) = casesCount
+    if (totalCount > 0) {
+        val countText = if (visibleCount > 0) {
+            stringResource(
+                R.string.visible_total_case_count,
+                casesCount.first,
+                casesCount.second,
+            )
+        } else {
+            stringResource(R.string.total_case_count, casesCount.second)
+        }
+
+        // Common dimensions and styles
+        Surface(
+            modifier,
+            color = Color(0xFF393939),
+            contentColor = Color.White,
+            shadowElevation = 4.dp,
+            shape = RoundedCornerShape(4.dp),
+        ) {
+            Text(
+                countText,
+                modifier = Modifier.padding(
+                    horizontal = 15.dp,
+                    vertical = 9.dp,
+                ),
+                color = Color.White,
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.bodyMedium,
             )
         }
     }

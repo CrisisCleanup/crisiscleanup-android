@@ -136,9 +136,7 @@ class CasesViewModel @Inject constructor(
         logger,
     )
 
-    private var _hiddenMarkersMessage = ""
-    val hiddenMarkersMessage: String
-        get() = if (mapTileRenderer.rendersAt(qsm.mapZoom.value)) "" else _hiddenMarkersMessage
+    private val visibleMarkerCount = MutableStateFlow(0)
 
     val worksitesMapMarkers = qsm.worksiteQueryState
         // TODO Make debounce a parameter
@@ -193,6 +191,16 @@ class CasesViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(1_000)
     )
 
+    val casesCount = combine(
+        visibleMarkerCount,
+        incidentWorksitesCount,
+    ) { markerCount, worksitesCount -> Pair(markerCount, worksitesCount.count) }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = Pair(0, 0),
+            started = SharingStarted.WhileSubscribed(),
+        )
+
     init {
         trimMemoryEventManager.addListener(this)
 
@@ -228,12 +236,7 @@ class CasesViewModel @Inject constructor(
             mark.asWorksiteGoogleMapMark(mapCaseIconProvider)
         }
 
-        val hiddenWorksites = marksQuery.second - visuals.size
-        _hiddenMarkersMessage = if (hiddenWorksites > 0) resourceProvider.getString(
-            R.string.worksite_markers_hidden,
-            hiddenWorksites
-        )
-        else ""
+        visibleMarkerCount.value = visuals.size
 
         flowOf(visuals)
     }
