@@ -25,6 +25,7 @@ import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
 import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.feature.cases.map.*
 import com.crisiscleanup.feature.cases.model.*
 import com.google.android.gms.maps.Projection
@@ -34,11 +35,16 @@ import com.google.android.gms.maps.model.TileProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sin
 import kotlin.time.Duration.Companion.seconds
 import com.crisiscleanup.core.commonassets.R as commonAssetsR
 
@@ -136,8 +142,6 @@ class CasesViewModel @Inject constructor(
         logger,
     )
 
-    private val visibleMarkerCount = MutableStateFlow(0)
-
     val worksitesMapMarkers = qsm.worksiteQueryState
         // TODO Make debounce a parameter
         .debounce(250)
@@ -155,7 +159,8 @@ class CasesViewModel @Inject constructor(
                 isGeneratingWorksiteMarkers.value = true
                 withContext(ioDispatcher) {
                     try {
-                        generateWorksiteMarkers(wqs)
+                        val markers = generateWorksiteMarkers(wqs)
+                        flowOf(markers)
                     } finally {
                         isGeneratingWorksiteMarkers.value = false
                     }
@@ -192,9 +197,9 @@ class CasesViewModel @Inject constructor(
     )
 
     val casesCount = combine(
-        visibleMarkerCount,
+        worksitesMapMarkers,
         incidentWorksitesCount,
-    ) { markerCount, worksitesCount -> Pair(markerCount, worksitesCount.count) }
+    ) { markers, worksitesCount -> Pair(markers.size, worksitesCount.count) }
         .stateIn(
             scope = viewModelScope,
             initialValue = Pair(0, 0),
@@ -227,18 +232,19 @@ class CasesViewModel @Inject constructor(
         return tileProvider
     }
 
+    private val zeroOffset = Pair(0f, 0f)
     private suspend fun generateWorksiteMarkers(wqs: WorksiteQueryState) = coroutineScope {
         val id = wqs.incidentId
         val sw = wqs.coordinateBounds.southWest
         val ne = wqs.coordinateBounds.northEast
         val marksQuery = mapMarkerManager.queryWorksitesInBounds(id, sw, ne)
-        val visuals = marksQuery.first.map { mark ->
-            mark.asWorksiteGoogleMapMark(mapCaseIconProvider)
+        val marks = marksQuery.first
+        val markOffsets = denseMarkerOffsets(marks)
+        ensureActive()
+        marks.mapIndexed { index, mark ->
+            val offset = if (index < markOffsets.size) markOffsets[index] else zeroOffset
+            mark.asWorksiteGoogleMapMark(mapCaseIconProvider, offset)
         }
-
-        visibleMarkerCount.value = visuals.size
-
-        flowOf(visuals)
     }
 
     fun onMapLoaded() {
@@ -338,6 +344,71 @@ class CasesViewModel @Inject constructor(
             casesMapTileManager.onTileChange()
         }
     }
+
+    private val denseMarkCountThreshold = 15
+    private val denseMarkZoomThreshold = 13
+    private val denseDegreeThreshold = 0.0005
+    private val denseScreenOffsetScale = 0.4f
+    private suspend fun denseMarkerOffsets(marks: List<WorksiteMapMark>): List<Pair<Float, Float>> =
+        coroutineScope {
+            if (marks.size > denseMarkCountThreshold ||
+                qsm.mapZoom.value < denseMarkZoomThreshold
+            ) {
+                return@coroutineScope emptyList()
+            }
+
+            ensureActive()
+
+            val bucketIndices = IntArray(marks.size) { -1 }
+            val buckets = mutableListOf<MutableList<Int>>()
+            for (i in 0 until marks.size - 1) {
+                val iMark = marks[i]
+                for (j in i + 1 until marks.size) {
+                    val jMark = marks[j]
+                    if (abs(iMark.latitude - jMark.latitude) < denseDegreeThreshold &&
+                        abs(iMark.longitude - jMark.longitude) < denseDegreeThreshold
+                    ) {
+                        val bucketI = bucketIndices[i]
+                        if (bucketI >= 0) {
+                            bucketIndices[j] = bucketI
+                            buckets[bucketI].add(j)
+                        } else {
+                            val bucketJ = bucketIndices[j]
+                            if (bucketJ >= 0) {
+                                bucketIndices[i] = bucketJ
+                                buckets[bucketJ].add(i)
+                            } else {
+                                val bucketIndex = buckets.size
+                                bucketIndices[i] = bucketIndex
+                                bucketIndices[j] = bucketIndex
+                                buckets.add(mutableListOf(i, j))
+                            }
+                        }
+                        break
+                    }
+                }
+                ensureActive()
+            }
+
+            val markOffsets = marks.map { Pair(0f, 0f) }.toMutableList()
+            if (buckets.isNotEmpty()) {
+                buckets.map {
+                    val count = it.size
+                    if (count > 1) {
+                        var offsetDir = (PI * 0.5).toFloat()
+                        val deltaDirDegrees = (2 * PI / count).toFloat()
+                        it.forEach { index ->
+                            markOffsets[index] = Pair(
+                                denseScreenOffsetScale * cos(offsetDir),
+                                denseScreenOffsetScale * sin(offsetDir),
+                            )
+                            offsetDir += deltaDirDegrees
+                        }
+                    }
+                }
+            }
+            markOffsets
+        }
 
     // TrimMemoryListener
 
