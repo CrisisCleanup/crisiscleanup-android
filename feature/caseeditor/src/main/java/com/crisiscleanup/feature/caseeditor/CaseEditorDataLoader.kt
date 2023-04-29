@@ -208,7 +208,7 @@ internal class CaseEditorDataLoader(
                     .mapNotNull { incident.formFieldLookup[it]?.parentKey }
                     .toSet()
                 if (workTypeGroups.isNotEmpty()) {
-                    workTypeGroups.onEach {
+                    workTypeGroups.forEach {
                         updatedFormData[it] = WorksiteFormValue(true, "", true)
                     }
                 }
@@ -217,7 +217,7 @@ internal class CaseEditorDataLoader(
                     val formField = incident.formFieldLookup[it]
                     formField!!.selectToggleWorkType to formField
                 }
-                initialWorksite.workTypes.onEach {
+                initialWorksite.workTypes.forEach {
                     workTypeGroupFormFields[it.workTypeLiteral]?.let { formField ->
                         updatedFormData[formField.fieldKey] = WorksiteFormValue(true, "", true)
                     }

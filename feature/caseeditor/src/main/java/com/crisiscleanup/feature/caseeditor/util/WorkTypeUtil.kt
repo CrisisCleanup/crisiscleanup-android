@@ -49,7 +49,16 @@ fun updateWorkTypeStatuses(
             }
         }
 
-    val workTypes = worksite.workTypes
+    // Some work types may appear multiple times (with different IDs)...
+    val distinctWorkTypes = worksite.workTypes.map(WorkType::workType).toSet()
+    var workTypes = if (distinctWorkTypes.size < worksite.workTypes.size) {
+        worksite.workTypes.sortedBy(WorkType::id)
+            .associateBy(WorkType::workType)
+            .values
+            .sortedBy { workType -> worksite.workTypes.indexOf(workType) }
+    } else worksite.workTypes
+
+    workTypes = workTypes
         .mapNotNull { keepWorkTypes[it.workTypeLiteral] }
         .toMutableList().apply { addAll(newWorkTypes) }
 

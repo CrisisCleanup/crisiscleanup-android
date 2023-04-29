@@ -89,10 +89,10 @@ internal fun CaseEditorRoute(
             Column(Modifier.background(color = Color.White)) {
                 TopAppBarSingleAction(
                     title = headerTitle,
-                    onAction = onNavigateCancel,
+                    onAction = onNavigateBack,
                 )
                 CaseEditorScreen(
-                    onNavigateBack = onNavigateBack,
+                    onNavigateCancel = onNavigateCancel,
                     onEditProperty = onEditPropertyData,
                     onEditLocation = onEditLocation,
                     onEditNotesFlags = onEditNotesFlags,
@@ -112,7 +112,7 @@ internal fun CaseEditorRoute(
 internal fun ColumnScope.CaseEditorScreen(
     modifier: Modifier = Modifier,
     viewModel: CaseEditorViewModel = hiltViewModel(),
-    onNavigateBack: () -> Unit = {},
+    onNavigateCancel: () -> Unit = {},
     onEditProperty: () -> Unit = {},
     onEditLocation: () -> Unit = {},
     onEditNotesFlags: () -> Unit = {},
@@ -133,7 +133,7 @@ internal fun ColumnScope.CaseEditorScreen(
         is CaseEditorUiState.WorksiteData -> {
             FullEditView(
                 uiState as CaseEditorUiState.WorksiteData,
-                onBack = onNavigateBack,
+                onCancel = onNavigateCancel,
                 onSearchAddress = onEditSearchAddress,
                 onMoveLocation = onEditMoveLocationOnMap,
             )
@@ -222,7 +222,7 @@ private fun ColumnScope.FullEditView(
     worksiteData: CaseEditorUiState.WorksiteData,
     modifier: Modifier = Modifier,
     viewModel: CaseEditorViewModel = hiltViewModel(),
-    onBack: () -> Unit = {},
+    onCancel: () -> Unit = {},
     onMoveLocation: () -> Unit = {},
     onSearchAddress: () -> Unit = {},
 ) {
@@ -388,7 +388,7 @@ private fun ColumnScope.FullEditView(
     val saveChanges = remember(viewModel) { { viewModel.saveChanges(false) } }
     SaveActionBar(
         !isSavingData,
-        onBack,
+        onCancel,
         claimAndSaveChanges,
         saveChanges,
     )

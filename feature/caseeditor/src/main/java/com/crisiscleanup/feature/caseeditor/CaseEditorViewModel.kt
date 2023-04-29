@@ -498,7 +498,7 @@ class CaseEditorViewModel @Inject constructor(
     /**
      * @return true if prompt is shown or false if there are no changes
      */
-    private fun promptSaveChanges(): Boolean {
+    private fun promptUnsaved(): Boolean {
         if (!transferChanges()) {
             promptUnsavedChanges.value = true
             return true
@@ -514,17 +514,17 @@ class CaseEditorViewModel @Inject constructor(
         return false
     }
 
-    private fun onBackNavigate(): Boolean {
+    private fun onBackNavigate(promptOnChange: Boolean = false): Boolean {
         if (isSavingWorksite.value) {
             return false
         }
 
-        return !promptSaveChanges()
+        return !promptOnChange || !promptUnsaved()
     }
 
     override fun onSystemBack() = onBackNavigate()
 
-    override fun onNavigateBack() = onBackNavigate()
+    override fun onNavigateBack() = onBackNavigate(true)
 
     override fun onNavigateCancel() = onBackNavigate()
 }
