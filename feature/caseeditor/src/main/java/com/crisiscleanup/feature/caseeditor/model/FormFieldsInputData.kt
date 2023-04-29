@@ -2,6 +2,8 @@ package com.crisiscleanup.feature.caseeditor.model
 
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import com.crisiscleanup.core.model.data.WorkType
+import com.crisiscleanup.core.model.data.WorkTypeStatus
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.network.model.DynamicValue
 
@@ -11,8 +13,13 @@ open class FormFieldsInputData(
     ignoreFieldKeys: Set<String> = emptySet(),
     private val autoManageGroups: Boolean = false,
     val helpText: String = groupNode.formField.help,
+    private val isWorkInputData: Boolean = false,
 ) : CaseDataWriter {
     private val worksiteIn = worksite.copy()
+
+    private val managedGroups = mutableSetOf<String>()
+
+    private val workTypeMap = worksite.workTypes.associateBy(WorkType::workTypeLiteral)
 
     private val worksiteFormData = worksite.formData ?: emptyMap()
     private val formFieldData = groupNode.children
@@ -35,16 +42,26 @@ open class FormFieldsInputData(
                         childFormValue?.hasValue == true
                     }
             if (isActiveGroup && !dynamicValue.isBooleanTrue) {
+                managedGroups.add(node.fieldKey)
                 dynamicValue = DynamicValue("", isBoolean = true, true)
             }
 
-            FieldDynamicValue(
+            var fieldData = FieldDynamicValue(
                 node.formField,
                 node.options,
                 node.children.map(FormFieldNode::fieldKey).toSet(),
                 if (node.parentKey == groupNode.fieldKey) 0 else 1,
                 dynamicValue,
             )
+
+            // TODO Add test coverage
+            if (isWorkInputData && fieldData.isWorkTypeGroup) {
+                val fieldWorkType = node.formField.selectToggleWorkType
+                val status = workTypeMap[fieldWorkType]?.status
+                fieldData = fieldData.copy(workTypeStatus = status ?: WorkTypeStatus.OpenUnassigned)
+            }
+
+            fieldData
         }
     val mutableFormFieldData = formFieldData.map {
         mutableStateOf(it)
@@ -87,20 +104,9 @@ open class FormFieldsInputData(
         return updatedFieldData
     }
 
-    private fun removeGroupFields(data: Map<String, DynamicValue>): Map<String, DynamicValue> {
-        val groups = formFieldData
-            .filter { it.childrenCount > 0 }
-            .map { it.key }
-            .toSet()
-        if (groups.isNotEmpty()) {
-            return data.filter { !groups.contains(it.key) }
-        }
-
-        return data
-    }
-
     protected open fun onPreCommitFieldData(data: Map<String, DynamicValue>) =
-        if (autoManageGroups) removeGroupFields(data) else data
+        if (!autoManageGroups || managedGroups.isEmpty()) data
+        else data.filter { !managedGroups.contains(it.key) }
 
     override fun updateCase() = updateCase(worksiteIn)
 
@@ -121,7 +127,7 @@ open class FormFieldsInputData(
         // TODO Test coverage
         snapshotFieldData = resetUnmodifiedGroups(snapshotFieldData)
 
-        // TODO Test coverage of default removeGroupFields and autoManageGroups behavior does not cause a change in worksite form data
+        // TODO Test coverage of default autoManageGroups behavior does not cause a change in worksite form data
         val committingFieldData = onPreCommitFieldData(snapshotFieldData)
 
         if (!worksite.seekChange(committingFieldData)) {

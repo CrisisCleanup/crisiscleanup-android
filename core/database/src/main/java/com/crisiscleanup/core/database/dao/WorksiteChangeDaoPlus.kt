@@ -118,12 +118,15 @@ class WorksiteChangeDaoPlus @Inject constructor(
 
                     worksiteDao.update(changeEntities.core)
 
-                    flagDao.deleteUnspecified(worksiteId, idMapping.flag.keys)
+                    flagDao.deleteUnspecified(worksiteId, flags.map(WorksiteFlagEntity::id).toSet())
                     formDataDao.deleteUnspecifiedKeys(
                         worksiteId,
                         formData.map(WorksiteFormDataEntity::fieldKey).toSet(),
                     )
-                    workTypeDao.deleteUnspecified(worksiteId, idMapping.workType.keys)
+                    workTypeDao.deleteUnspecified(
+                        worksiteId,
+                        workTypes.map(WorkTypeEntity::id).toSet(),
+                    )
                 }
 
                 flags

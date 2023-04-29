@@ -421,7 +421,10 @@ class WorksiteChangeDaoTest {
         verify(exactly = 0) { appLogger.logException(any()) }
     }
 
-    private fun editWorksiteInitialConditions(
+    /**
+     * Establishes initial conditions for [editSyncedWorksite]
+     */
+    private fun editSyncedWorksiteInitialConditions(
         worksite: Worksite,
         worksiteLocalGlobalUuid: String = "",
     ): EditWorksiteEntities {
@@ -471,6 +474,7 @@ class WorksiteChangeDaoTest {
                 )
             )
         )
+        db.worksiteFlagDao().updateNetworkId(21, 221)
 
         db.testNoteDao().updateNetworkId(64, 264)
         db.worksiteNoteDao().insertIgnore(
@@ -487,7 +491,7 @@ class WorksiteChangeDaoTest {
             )
         )
 
-        db.testWorkTypeDao().updateNetworkId(1, 301)
+        db.workTypeDao().updateNetworkId(1, 301)
         db.workTypeDao().insertIgnore(
             listOf(
                 WorkTypeEntity(
@@ -505,6 +509,7 @@ class WorksiteChangeDaoTest {
                 )
             )
         )
+        db.workTypeDao().updateNetworkId(37, 237)
 
         val savedWorksite = db.testWorksiteDao().getWorksiteEntity(worksiteId)
         val flags = db.testFlagDao().getEntities(worksiteId)
@@ -523,8 +528,31 @@ class WorksiteChangeDaoTest {
 
     @Test
     fun editSyncedWorksite() = runTest {
-        val worksiteSynced = worksiteFull.copy(networkId = 515)
-        val initialEntities = editWorksiteInitialConditions(worksiteSynced)
+        val worksiteSynced = worksiteFull.copy(
+            networkId = 515,
+            flags = worksiteFull.flags?.toMutableList()?.apply {
+                add(
+                    testWorksiteFlag(
+                        21,
+                        createdAtB,
+                        "reason-network-synced-local-deleted",
+                        isHighPriority = true,
+                    )
+                )
+            },
+            workTypes = worksiteFull.workTypes.toMutableList().apply {
+                add(
+                    testWorkType(
+                        37,
+                        createdAtB,
+                        128,
+                        "status-network-synced-local-deleted",
+                        "work-type-c",
+                    ),
+                )
+            }
+        )
+        val initialEntities = editSyncedWorksiteInitialConditions(worksiteSynced)
 
         val worksiteModified = worksiteChanged.copy(networkId = worksiteSynced.networkId)
 
@@ -535,6 +563,7 @@ class WorksiteChangeDaoTest {
                 mapOf(
                     1L to 201,
                     11L to 211,
+                    21L to 221,
                 ),
                 mapOf(
                     41L to 241,
@@ -543,6 +572,7 @@ class WorksiteChangeDaoTest {
                 mapOf(
                     1L to 301,
                     23L to 223,
+                    37L to 237,
                 ),
             )
         } returns Pair(3, "serialized-edit-worksite-changes")
@@ -571,7 +601,7 @@ class WorksiteChangeDaoTest {
         val actualRoot = db.testWorksiteDao().getRootEntity(worksiteId)
         val expectedRoot = WorksiteRootEntity(
             id = 56,
-            syncUuid = "uuid-23",
+            syncUuid = "uuid-25",
             localModifiedAt = now,
             syncedAt = worksiteSynced.updatedAt!!,
             localGlobalUuid = "",
@@ -585,13 +615,16 @@ class WorksiteChangeDaoTest {
         val actualWorksite = db.testWorksiteDao().getWorksiteEntity(worksiteId)
         assertEquals(worksiteEntity, actualWorksite)
 
-        var localGlobalIndex = 18L
+        var localGlobalIndex = 20L
 
         val expectedFlags = initialEntities.flags
             .toMutableList()
             .also {
-                val deleteIndex = it.indexOfFirst { entity -> entity.id == 33L }
-                it.removeAt(deleteIndex)
+                val deletedIds = arrayOf(21L, 33L)
+                deletedIds.forEach { flagId ->
+                    val deleteIndex = it.indexOfFirst { entity -> entity.id == flagId }
+                    it.removeAt(deleteIndex)
+                }
 
                 val updateIndex = it.indexOfFirst { entity -> entity.id == 1L }
                 it[updateIndex] = it[updateIndex].copy(createdAt = createdAtC)
@@ -634,14 +667,14 @@ class WorksiteChangeDaoTest {
         assertEquals(expectedFormData, actualFormData)
 
         var entityIndex = 65L
-        localGlobalIndex = 20
+        localGlobalIndex = 22
         val expectedNotes = initialEntities.notes
             .toMutableList()
             .also {
                 val updateIndex = it.indexOfFirst { entity -> entity.id == 1L }
                 it[updateIndex] = it[updateIndex].copy(
                     // Is updated in preconditions
-                    localGlobalUuid = "uuid-3",
+                    localGlobalUuid = "uuid-4",
                 )
 
                 entities.notes.forEach { entity ->
@@ -662,12 +695,15 @@ class WorksiteChangeDaoTest {
             .sortedBy(WorksiteNoteEntity::id)
         assertEquals(expectedNotes, actualNotes)
 
-        localGlobalIndex = 22
+        localGlobalIndex = 24
         val expectedWorkTypes = initialEntities.workTypes
             .toMutableList()
             .also {
-                val deleteIndex = it.indexOfFirst { entity -> entity.id == 57L }
-                it.removeAt(deleteIndex)
+                val deletedIds = arrayOf(37L, 57)
+                deletedIds.forEach { workTypeId ->
+                    val deleteIndex = it.indexOfFirst { entity -> entity.id == workTypeId }
+                    it.removeAt(deleteIndex)
+                }
 
                 val updateIndex = it.indexOfFirst { entity -> entity.id == 1L }
                 it[updateIndex] = it[updateIndex].copy(status = "status-a-change")
@@ -695,7 +731,7 @@ class WorksiteChangeDaoTest {
             appVersion = 81,
             organizationId = 385,
             worksiteId = worksiteId,
-            syncUuid = "uuid-24",
+            syncUuid = "uuid-26",
             changeModelVersion = 3,
             changeData = "serialized-edit-worksite-changes",
             createdAt = actualChanges.first().createdAt,

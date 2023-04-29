@@ -138,17 +138,6 @@ interface TestWorkTypeDao {
         """
     )
     fun getEntities(worksiteId: Long): List<WorkTypeEntity>
-
-    @Transaction
-    @Query(
-        """
-        UPDATE work_types
-        SET network_id=:networkId,
-            local_global_uuid=:localGlobalUuid
-        WHERE id=:id
-        """
-    )
-    fun updateNetworkId(id: Long, networkId: Long, localGlobalUuid: String = "")
 }
 
 @Dao

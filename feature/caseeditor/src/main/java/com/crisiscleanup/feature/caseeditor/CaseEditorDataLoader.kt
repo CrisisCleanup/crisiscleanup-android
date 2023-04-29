@@ -158,10 +158,9 @@ internal class CaseEditorDataLoader(
                     )
                         .map(FormFieldNode::flatten)
 
-                    formFieldTranslationLookup =
-                        incident.formFields
-                            .filter { it.fieldKey.isNotBlank() && it.label.isNotBlank() }
-                            .associate { it.fieldKey to it.label }
+                    formFieldTranslationLookup = incident.formFields
+                        .filter { it.fieldKey.isNotBlank() && it.label.isNotBlank() }
+                        .associate { it.fieldKey to it.label }
 
                     workTypeGroupChildrenLookup.value =
                         formFields.firstOrNull { it.fieldKey == WorkFormGroupKey }
@@ -203,6 +202,7 @@ internal class CaseEditorDataLoader(
                 }
 
                 val updatedFormData = initialWorksite.formData?.toMutableMap() ?: mutableMapOf()
+                // Set work type groups where child has value
                 val workTypeGroups = updatedFormData.keys
                     .filter { incident.workTypeLookup[it] != null }
                     .mapNotNull { incident.formFieldLookup[it]?.parentKey }
@@ -210,6 +210,16 @@ internal class CaseEditorDataLoader(
                 if (workTypeGroups.isNotEmpty()) {
                     workTypeGroups.onEach {
                         updatedFormData[it] = WorksiteFormValue(true, "", true)
+                    }
+                }
+                // Set work type group where work type is defined
+                val workTypeGroupFormFields = workTypeGroupChildrenLookup.value.keys.associate {
+                    val formField = incident.formFieldLookup[it]
+                    formField!!.selectToggleWorkType to formField
+                }
+                initialWorksite.workTypes.onEach {
+                    workTypeGroupFormFields[it.workTypeLiteral]?.let { formField ->
+                        updatedFormData[formField.fieldKey] = WorksiteFormValue(true, "", true)
                     }
                 }
                 if (updatedFormData.size != (initialWorksite.formData?.size ?: 0) ||

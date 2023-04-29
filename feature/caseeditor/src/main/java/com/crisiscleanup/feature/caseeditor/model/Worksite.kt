@@ -13,7 +13,7 @@ fun Worksite.copyModifiedFlags(
     flagPredicate: (WorksiteFlag) -> Boolean,
     flagProducer: () -> WorksiteFlag,
 ): List<WorksiteFlag>? {
-    val outFlags: List<WorksiteFlag>? = flags
+    val outFlags = flags
     val hadFlag = outFlags?.any(flagPredicate) ?: false
     if (hasFlag == hadFlag) {
         return outFlags

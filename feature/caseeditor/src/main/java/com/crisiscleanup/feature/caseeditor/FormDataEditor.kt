@@ -12,13 +12,21 @@ open class EditableFormDataEditor(
     formGroupKey: String,
     private val worksiteProvider: EditableWorksiteProvider,
     ignoreFieldKeys: Set<String> = emptySet(),
+    autoManageGroups: Boolean = false,
+    isWorkInputData: Boolean = false,
 ) : FormDataEditor {
     final override val inputData: FormFieldsInputData
 
     init {
         val groupNode = worksiteProvider.getGroupNode(formGroupKey)
         val worksite = worksiteProvider.editableWorksite.value
-        inputData = FormFieldsInputData(worksite, groupNode, ignoreFieldKeys)
+        inputData = FormFieldsInputData(
+            worksite,
+            groupNode,
+            ignoreFieldKeys,
+            autoManageGroups = autoManageGroups,
+            isWorkInputData = isWorkInputData
+        )
     }
 
     override fun validateSaveWorksite(): Boolean {

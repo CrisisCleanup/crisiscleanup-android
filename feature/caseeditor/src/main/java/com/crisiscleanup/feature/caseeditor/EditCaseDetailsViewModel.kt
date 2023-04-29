@@ -11,7 +11,12 @@ internal val excludeDetailsFormFields = setOf("cross_street", "email")
 
 internal class EditableDetailsDataEditor(
     worksiteProvider: EditableWorksiteProvider,
-) : EditableFormDataEditor(DetailsFormGroupKey, worksiteProvider, excludeDetailsFormFields)
+) : EditableFormDataEditor(
+    DetailsFormGroupKey,
+    worksiteProvider,
+    excludeDetailsFormFields,
+    autoManageGroups = true,
+)
 
 @HiltViewModel
 class EditCaseDetailsViewModel @Inject constructor(

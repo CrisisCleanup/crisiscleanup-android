@@ -19,7 +19,7 @@ import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.model.data.*
 import com.crisiscleanup.feature.caseeditor.model.*
 import com.crisiscleanup.feature.caseeditor.navigation.CaseEditorArgs
-import com.crisiscleanup.feature.caseeditor.util.resolveModifiedWorkTypes
+import com.crisiscleanup.feature.caseeditor.util.updateKeyWorkType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -332,30 +332,31 @@ class CaseEditorViewModel @Inject constructor(
         R.string.incomplete_required_data,
     )
 
-    private fun validate(worksite: Worksite): InvalidWorksiteInfo {
-        if (worksite.name.isBlank() ||
-            worksite.phone1.isBlank()
+    private fun validate(worksite: Worksite): InvalidWorksiteInfo = with(worksite) {
+        if (name.isBlank() ||
+            phone1.isBlank()
         ) {
             return incompletePropertyInfo
         }
 
-        if (worksite.latitude == 0.0 ||
-            worksite.longitude == 0.0 ||
-            worksite.address.isBlank() ||
-            worksite.postalCode.isBlank() ||
-            worksite.county.isBlank() ||
-            worksite.city.isBlank() ||
-            worksite.state.isBlank()
+        if (latitude == 0.0 ||
+            longitude == 0.0 ||
+            address.isBlank() ||
+            postalCode.isBlank() ||
+            county.isBlank() ||
+            city.isBlank() ||
+            state.isBlank()
         ) {
             return incompleteLocationInfo
         }
 
-        val workTypeGroups = getWorkTypeGroups(uiState.value, editingWorksite.value)
-        val workTypeCount = workTypeGroups.size
-        if (workTypeCount == 0) {
+        if (workTypes.isEmpty() ||
+            keyWorkType == null ||
+            workTypes.find { it.workType == keyWorkType!!.workType } == null
+        ) {
             return InvalidWorksiteInfo(
                 WorksiteSection.WorkType,
-                R.string.incomplete_work_type_info,
+                message = translate("caseForm.select_work_type_error"),
             )
         }
 
@@ -384,6 +385,7 @@ class CaseEditorViewModel @Inject constructor(
                     ?: return@launch
 
                 val worksite = worksiteProvider.editableWorksite.value
+                    .updateKeyWorkType(initialWorksite)
                 if (worksite == initialWorksite) {
                     if (backOnSuccess) {
                         navigateBack.value = true
@@ -398,22 +400,7 @@ class CaseEditorViewModel @Inject constructor(
                     return@launch
                 }
 
-                val workTypeLookup = editorStateData.incident.workTypeLookup
-                var (workTypes, primaryWorkType) = resolveModifiedWorkTypes(
-                    workTypeLookup,
-                    initialWorksite,
-                    worksite,
-                )
-
-                if (primaryWorkType == null) {
-                    invalidWorksiteInfo.value = InvalidWorksiteInfo(
-                        WorksiteSection.WorkType,
-                        message = translate("caseForm.select_work_type_error"),
-                    )
-                    showInvalidWorksiteSave.value = true
-                    return@launch
-                }
-
+                var workTypes = worksite.workTypes
                 if (claimUnclaimed) {
                     workTypes = workTypes
                         .map {
@@ -433,7 +420,6 @@ class CaseEditorViewModel @Inject constructor(
 
                 val updatedWorksite = worksite.copy(
                     workTypes = workTypes,
-                    keyWorkType = primaryWorkType,
                     reportedBy = updatedReportedBy,
                     updatedAt = Clock.System.now(),
                     what3Words = updatedWhat3Words,
@@ -442,7 +428,7 @@ class CaseEditorViewModel @Inject constructor(
                 worksiteIdArg = worksiteChangeRepository.saveWorksiteChange(
                     initialWorksite,
                     updatedWorksite,
-                    primaryWorkType,
+                    updatedWorksite.keyWorkType!!,
                     editorStateData.orgId,
                 )
                 val worksiteId = worksiteIdArg!!
@@ -499,6 +485,10 @@ class CaseEditorViewModel @Inject constructor(
                 }
             }
 
+            val workTypeLookup = it.incident.workTypeLookup
+            val workDataEditor = workEditor as EditableWorkDataEditor
+            worksite = workDataEditor.transferWorkTypes(workTypeLookup, worksite!!)
+
             worksiteProvider.editableWorksite.value = worksite!!
         }
 
@@ -509,10 +499,18 @@ class CaseEditorViewModel @Inject constructor(
      * @return true if prompt is shown or false if there are no changes
      */
     private fun promptSaveChanges(): Boolean {
-        if (!transferChanges() || hasChanges.value) {
+        if (!transferChanges()) {
             promptUnsavedChanges.value = true
             return true
         }
+
+        (uiState.value as? CaseEditorUiState.WorksiteData)?.let {
+            if (it.worksite != worksiteProvider.editableWorksite.value) {
+                promptUnsavedChanges.value = true
+                return true
+            }
+        }
+
         return false
     }
 

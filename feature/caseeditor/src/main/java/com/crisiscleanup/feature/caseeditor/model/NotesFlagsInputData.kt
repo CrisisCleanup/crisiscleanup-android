@@ -5,7 +5,6 @@ import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteNote
 
-
 class NotesFlagsInputData(
     worksite: Worksite,
 ) : CaseDataWriter {
@@ -19,8 +18,8 @@ class NotesFlagsInputData(
 
     val notesStream = snapshotFlow { notes.toList() }
 
-    private fun isChanged(worksite: Worksite): Boolean {
-        return this.notes != worksite.notes ||
+    private fun isChanged(notes: List<WorksiteNote>, worksite: Worksite): Boolean {
+        return notes != worksite.notes ||
                 isHighPriority != worksite.hasHighPriorityFlag ||
                 isAssignedToOrgMember != worksite.isAssignedToOrgMember
     }
@@ -28,7 +27,8 @@ class NotesFlagsInputData(
     override fun updateCase() = updateCase(worksiteIn)
 
     override fun updateCase(worksite: Worksite): Worksite? {
-        if (!isChanged(worksite)) {
+        val notes = notes.toList()
+        if (!isChanged(notes, worksite)) {
             return worksite
         }
 
