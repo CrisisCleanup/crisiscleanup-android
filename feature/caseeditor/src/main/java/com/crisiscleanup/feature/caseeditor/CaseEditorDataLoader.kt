@@ -12,6 +12,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicBoolean
 
 internal class CaseEditorDataLoader(
     private val isCreateWorksite: Boolean,
@@ -89,7 +90,8 @@ internal class CaseEditorDataLoader(
             started = SharingStarted.WhileSubscribed(3_000),
         )
 
-    private val isInitiallySynced = MutableStateFlow(false)
+    private val isInitiallySynced = AtomicBoolean(false)
+    private val isWorksitePulled = MutableStateFlow(false)
 
     private val workTypeStatusStream = workTypeStatusRepository.workTypeStatusOptions
 
@@ -102,16 +104,16 @@ internal class CaseEditorDataLoader(
         isRefreshingIncident,
         worksiteStream,
         isRefreshingWorksite,
-        isInitiallySynced,
+        isWorksitePulled,
     ) {
             dataLoadCount, organization, statuses,
             incident, bounds, pullingIncident,
-            worksite, pullingWorksite, isSynced,
+            worksite, pullingWorksite, isPulled,
         ->
         Triple(
             Triple(dataLoadCount, organization, statuses),
             Triple(incident, bounds, pullingIncident),
-            Triple(worksite, pullingWorksite, isSynced),
+            Triple(worksite, pullingWorksite, isPulled),
         )
     }
         .mapLatest { (first, second, third) ->
@@ -141,7 +143,7 @@ internal class CaseEditorDataLoader(
                 }
             }
 
-            val (localWorksite, pullingWorksite, isWorksiteSynced) = third
+            val (localWorksite, pullingWorksite, isPulled) = third
 
             val loadedWorksite = localWorksite?.worksite
             var initialWorksite = loadedWorksite ?: EmptyWorksite.copy(
@@ -242,7 +244,7 @@ internal class CaseEditorDataLoader(
                             !pullingWorksite &&
                             editSections.value.isNotEmpty() &&
                             localWorksite != null &&
-                            isWorksiteSynced &&
+                            isPulled &&
                             workTypeStatuses.isNotEmpty())
             val isEditable = bounds != null && isLoadFinished
             val isTranslationUpdated =
@@ -253,7 +255,7 @@ internal class CaseEditorDataLoader(
                 initialWorksite,
                 incident,
                 localWorksite,
-                isWorksiteSynced,
+                isPulled,
                 isTranslationUpdated,
                 workTypeStatuses,
             )
@@ -292,21 +294,21 @@ internal class CaseEditorDataLoader(
         worksiteStream
             .onEach {
                 it?.let { localWorksite ->
-                    if (isInitiallySynced.value) {
+                    if (isInitiallySynced.getAndSet(true)) {
                         return@onEach
                     }
-                    isInitiallySynced.value = true
 
-                    val worksite = localWorksite.worksite
-                    if (worksite.id > 0 &&
-                        worksite.networkId > 0
-                    ) {
-                        isRefreshingWorksite.value = true
-                        try {
+                    try {
+                        val worksite = localWorksite.worksite
+                        if (worksite.id > 0 &&
+                            worksite.networkId > 0
+                        ) {
+                            isRefreshingWorksite.value = true
                             worksiteChangeRepository.trySyncWorksite(worksite.id)
-                        } finally {
-                            isRefreshingWorksite.value = false
                         }
+                    } finally {
+                        isRefreshingWorksite.value = false
+                        isWorksitePulled.value = true
                     }
                 }
             }

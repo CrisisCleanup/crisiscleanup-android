@@ -61,7 +61,6 @@ class CasesViewModel @Inject constructor(
     private val tileProvider: TileProvider,
     private val worksiteLocationEditor: WorksiteLocationEditor,
     private val syncPuller: SyncPuller,
-    private val resourceProvider: AndroidResourceProvider,
     appMemoryStats: AppMemoryStats,
     trimMemoryEventManager: TrimMemoryEventManager,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
