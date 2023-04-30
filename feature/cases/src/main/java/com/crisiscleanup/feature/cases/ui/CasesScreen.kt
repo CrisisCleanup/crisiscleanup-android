@@ -472,7 +472,7 @@ private fun CasesCountView(
 ) {
     val (visibleCount, totalCount) = casesCount
     if (totalCount > 0) {
-        val countText = if (visibleCount > 0) {
+        val countText = if (visibleCount in 1 until totalCount) {
             stringResource(
                 R.string.visible_total_case_count,
                 casesCount.first,
