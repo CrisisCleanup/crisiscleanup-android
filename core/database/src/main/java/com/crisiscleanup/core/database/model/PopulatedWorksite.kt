@@ -76,6 +76,13 @@ data class PopulatedWorksiteMapVisual(
     val keyWorkTypeStatus: String,
     @ColumnInfo("work_type_count")
     val workTypeCount: Int,
+    @ColumnInfo("favorite_id")
+    val favoriteId: Long?,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "worksite_id",
+    )
+    val flags: List<WorksiteFlagEntity>,
 )
 
 fun PopulatedWorksiteMapVisual.asExternalModel() = WorksiteMapMark(
@@ -85,4 +92,6 @@ fun PopulatedWorksiteMapVisual.asExternalModel() = WorksiteMapMark(
     statusClaim = WorkTypeStatusClaim.make(keyWorkTypeStatus, keyWorkTypeOrgClaim),
     workType = WorkTypeStatusClaim.getType(keyWorkTypeType),
     workTypeCount = workTypeCount,
+    isFavorite = favoriteId != null,
+    isHighPriority = flags.find { it.isHighPriority == true } != null,
 )

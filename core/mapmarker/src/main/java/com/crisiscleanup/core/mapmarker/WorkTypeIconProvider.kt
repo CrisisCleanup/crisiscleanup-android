@@ -66,9 +66,17 @@ class WorkTypeIconProvider @Inject constructor(
     override fun getIcon(
         statusClaim: WorkTypeStatusClaim,
         workType: WorkTypeType,
+        isFavorite: Boolean,
+        isImportant: Boolean,
         hasMultipleWorkTypes: Boolean,
     ): BitmapDescriptor? {
-        val cacheKey = CacheKey(statusClaim, workType, hasMultipleWorkTypes)
+        val cacheKey = CacheKey(
+            statusClaim,
+            workType,
+            hasMultipleWorkTypes,
+            isFavorite = isFavorite,
+            isImportant = isImportant,
+        )
         synchronized(cache) {
             cache.get(cacheKey)?.let {
                 return it
@@ -102,7 +110,10 @@ class WorkTypeIconProvider @Inject constructor(
     private fun drawIcon(cacheKey: CacheKey): Bitmap {
         val status = statusClaimToStatus[cacheKey.statusClaim]
 
-        val iconResId = statusIcons[cacheKey.workType] ?: R.drawable.ic_work_type_unknown
+        val iconResId = if (cacheKey.isFavorite) statusIcons[Favorite]!!
+        else if (cacheKey.isImportant) statusIcons[Important]!!
+        else statusIcons[cacheKey.workType] ?: R.drawable.ic_work_type_unknown
+
         val drawable = resourceProvider.getDrawable(iconResId)
         val output = Bitmap.createBitmap(
             bitmapSize,
@@ -193,9 +204,11 @@ class WorkTypeIconProvider @Inject constructor(
         DomesticServices to R.drawable.ic_work_type_domestic_services,
         Erosion to R.drawable.ic_work_type_erosion,
         Escort to R.drawable.ic_work_type_escort,
+        Favorite to R.drawable.ic_work_type_favorite,
         Fence to R.drawable.ic_work_type_fence,
         Fire to R.drawable.ic_work_type_fire,
         Food to R.drawable.ic_work_type_food,
+        Important to R.drawable.ic_work_type_important,
         Landslide to R.drawable.ic_work_type_landslide,
         Leak to R.drawable.ic_work_type_leak,
         Meals to R.drawable.ic_work_type_meals,
@@ -230,4 +243,6 @@ private data class CacheKey(
     val statusClaim: WorkTypeStatusClaim,
     val workType: WorkTypeType,
     val hasMultipleWorkTypes: Boolean,
+    val isFavorite: Boolean = false,
+    val isImportant: Boolean = false,
 )

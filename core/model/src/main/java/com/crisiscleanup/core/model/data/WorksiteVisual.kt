@@ -7,4 +7,6 @@ data class WorksiteMapMark(
     val statusClaim: WorkTypeStatusClaim,
     val workType: WorkTypeType,
     val workTypeCount: Int,
+    val isFavorite: Boolean = false,
+    val isHighPriority: Boolean = false,
 )

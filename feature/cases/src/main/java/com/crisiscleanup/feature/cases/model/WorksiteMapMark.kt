@@ -28,7 +28,13 @@ fun WorksiteMapMark.asWorksiteGoogleMapMark(
         source = this,
         latLng = latLng,
         markerState = MarkerState(latLng),
-        mapIcon = iconProvider.getIcon(statusClaim, workType, workTypeCount > 1),
+        mapIcon = iconProvider.getIcon(
+            statusClaim,
+            workType,
+            isFavorite,
+            isHighPriority,
+            workTypeCount > 1,
+        ),
         mapIconOffset = Offset(0.5f + xOffset, 0.5f + yOffset),
     )
 }

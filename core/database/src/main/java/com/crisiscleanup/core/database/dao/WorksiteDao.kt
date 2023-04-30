@@ -5,6 +5,11 @@ import com.crisiscleanup.core.database.model.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Instant
 
+private const val selectFromMapVisualClause = """
+        SELECT w.id, latitude, longitude, key_work_type_type, key_work_type_org, key_work_type_status, COUNT(wt.id) as work_type_count, favorite_id
+        FROM worksites w LEFT JOIN work_types wt ON w.id=wt.worksite_id
+        """
+
 @Dao
 interface WorksiteDao {
     @Transaction
@@ -47,8 +52,7 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
-        SELECT w.id, latitude, longitude, key_work_type_type, key_work_type_org, key_work_type_status, COUNT(wt.id) as work_type_count
-        FROM worksites w LEFT JOIN work_types wt ON w.id=wt.worksite_id
+        $selectFromMapVisualClause
         WHERE incident_id=:incidentId AND
               (longitude BETWEEN :longitudeWest AND :longitudeEast) AND
               (latitude BETWEEN :latitudeSouth AND :latitudeNorth)
@@ -71,8 +75,7 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
-        SELECT w.id, latitude, longitude, key_work_type_type, key_work_type_org, key_work_type_status, COUNT(wt.id) as work_type_count
-        FROM worksites w LEFT JOIN work_types wt ON w.id=wt.worksite_id
+        $selectFromMapVisualClause
         WHERE incident_id=:incidentId AND
               (longitude>=:longitudeLeft OR longitude<=:longitudeRight) AND
               (latitude BETWEEN :latitudeSouth AND :latitudeNorth)
@@ -108,8 +111,7 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
-        SELECT w.id, latitude, longitude, key_work_type_type, key_work_type_org, key_work_type_status, COUNT(wt.id) as work_type_count
-        FROM worksites w LEFT JOIN work_types wt ON w.id=wt.worksite_id
+        $selectFromMapVisualClause
         WHERE incident_id=:incidentId
         GROUP BY w.id
         ORDER BY updated_at DESC, w.id DESC
@@ -126,8 +128,7 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
-        SELECT w.id, latitude, longitude, key_work_type_type, key_work_type_org, key_work_type_status, COUNT(wt.id) as work_type_count
-        FROM worksites w LEFT JOIN work_types wt ON w.id=wt.worksite_id
+        $selectFromMapVisualClause
         WHERE incident_id=:incidentId AND
               (longitude BETWEEN :longitudeWest AND :longitudeEast) AND
               (latitude BETWEEN :latitudeSouth AND :latitudeNorth)

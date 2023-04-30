@@ -15,6 +15,8 @@ interface MapCaseIconProvider {
     fun getIcon(
         statusClaim: WorkTypeStatusClaim,
         workType: WorkTypeType,
+        isFavorite: Boolean,
+        isImportant: Boolean,
         hasMultipleWorkTypes: Boolean,
     ): BitmapDescriptor?
 
