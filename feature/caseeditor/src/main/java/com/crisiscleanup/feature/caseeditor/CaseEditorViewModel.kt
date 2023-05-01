@@ -21,11 +21,8 @@ import com.crisiscleanup.feature.caseeditor.model.*
 import com.crisiscleanup.feature.caseeditor.navigation.CaseEditorArgs
 import com.crisiscleanup.feature.caseeditor.util.updateKeyWorkType
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
@@ -242,10 +239,10 @@ class CaseEditorViewModel @Inject constructor(
                     propertyEditor,
                     locationEditor,
                     notesFlagsEditor,
-                    detailsEditor,
-                    workEditor,
-                    hazardsEditor,
-                    volunteerReportEditor,
+                    details = detailsEditor,
+                    work = workEditor,
+                    hazards = hazardsEditor,
+                    volunteerReport = volunteerReportEditor,
                 )
             }
             .stateIn(
@@ -491,37 +488,38 @@ class CaseEditorViewModel @Inject constructor(
 
     private fun transferChanges(indicateInvalidSection: Boolean = false): Boolean {
         (uiState.value as? CaseEditorUiState.WorksiteData)?.let {
-            val initialWorksite = it.worksite
-            var worksite: Worksite? = initialWorksite
-            caseDataWriters.forEachIndexed { index, dataWriter ->
-                worksite = dataWriter.updateCase(worksite!!)
-                if (worksite == null) {
-                    if (indicateInvalidSection) {
-                        when (dataWriter) {
-                            is PropertyInputData -> {
-                                invalidWorksiteInfo.value = incompletePropertyInfo
-                                showInvalidWorksiteSave.value = true
-                            }
-                            is LocationInputData -> {
-                                invalidWorksiteInfo.value = incompleteLocationInfo
-                                showInvalidWorksiteSave.value = true
-                            }
-                            is FormFieldsInputData -> {
-                                invalidWorksiteInfo.value = incompleteFormDataInfo(index)
-                                showInvalidWorksiteSave.value = true
+            (workEditor as? EditableWorkDataEditor)?.let { workDataEditor ->
+                val initialWorksite = it.worksite
+                var worksite: Worksite? = initialWorksite
+                caseDataWriters.forEachIndexed { index, dataWriter ->
+                    worksite = dataWriter.updateCase(worksite!!)
+                    if (worksite == null) {
+                        if (indicateInvalidSection) {
+                            when (dataWriter) {
+                                is PropertyInputData -> {
+                                    invalidWorksiteInfo.value = incompletePropertyInfo
+                                    showInvalidWorksiteSave.value = true
+                                }
+                                is LocationInputData -> {
+                                    invalidWorksiteInfo.value = incompleteLocationInfo
+                                    showInvalidWorksiteSave.value = true
+                                }
+                                is FormFieldsInputData -> {
+                                    invalidWorksiteInfo.value = incompleteFormDataInfo(index)
+                                    showInvalidWorksiteSave.value = true
+                                }
                             }
                         }
+
+                        return false
                     }
-
-                    return false
                 }
+
+                val workTypeLookup = it.incident.workTypeLookup
+                worksite = workDataEditor.transferWorkTypes(workTypeLookup, worksite!!)
+
+                worksiteProvider.editableWorksite.value = worksite!!
             }
-
-            val workTypeLookup = it.incident.workTypeLookup
-            val workDataEditor = workEditor as EditableWorkDataEditor
-            worksite = workDataEditor.transferWorkTypes(workTypeLookup, worksite!!)
-
-            worksiteProvider.editableWorksite.value = worksite!!
         }
 
         return true

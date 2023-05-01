@@ -103,17 +103,16 @@ internal class CaseEditorDataLoader(
         incidentBoundsStream,
         isRefreshingIncident,
         worksiteStream,
-        isRefreshingWorksite,
         isWorksitePulled,
     ) {
             dataLoadCount, organization, statuses,
             incident, bounds, pullingIncident,
-            worksite, pullingWorksite, isPulled,
+            worksite, isPulled,
         ->
         Triple(
             Triple(dataLoadCount, organization, statuses),
             Triple(incident, bounds, pullingIncident),
-            Triple(worksite, pullingWorksite, isPulled),
+            Pair(worksite, isPulled),
         )
     }
         .mapLatest { (first, second, third) ->
@@ -143,7 +142,7 @@ internal class CaseEditorDataLoader(
                 }
             }
 
-            val (localWorksite, pullingWorksite, isPulled) = third
+            val (localWorksite, isPulled) = third
 
             val loadedWorksite = localWorksite?.worksite
             var initialWorksite = loadedWorksite ?: EmptyWorksite.copy(
@@ -242,11 +241,8 @@ internal class CaseEditorDataLoader(
             val isReadyForEditing = bounds != null &&
                     editSections.value.isNotEmpty() &&
                     workTypeStatuses.isNotEmpty() &&
-                    localWorksite != null
-            val isNetworkLoadFinished = isReadyForEditing &&
-                    !pullingIncident &&
-                    !pullingWorksite &&
-                    isPulled
+                    (isCreateWorksite || localWorksite != null)
+            val isNetworkLoadFinished = isReadyForEditing && (isCreateWorksite || isPulled)
             val isLocalLoadFinished = isNetworkLoadFinished &&
                     (isCreateWorksite || initialWorksite.phone1.isNotBlank())
             val isTranslationUpdated =
