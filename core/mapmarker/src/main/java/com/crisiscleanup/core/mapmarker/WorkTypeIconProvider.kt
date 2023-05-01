@@ -8,7 +8,6 @@ import androidx.core.graphics.alpha
 import androidx.core.graphics.get
 import androidx.core.graphics.red
 import com.crisiscleanup.core.common.AndroidResourceProvider
-import com.crisiscleanup.core.model.data.CaseStatus
 import com.crisiscleanup.core.model.data.WorkTypeStatusClaim
 import com.crisiscleanup.core.model.data.WorkTypeType
 import com.crisiscleanup.core.model.data.WorkTypeType.*
@@ -108,8 +107,6 @@ class WorkTypeIconProvider @Inject constructor(
     }
 
     private fun drawIcon(cacheKey: CacheKey): Bitmap {
-        val status = statusClaimToStatus[cacheKey.statusClaim]
-
         val iconResId = if (cacheKey.isFavorite) statusIcons[Favorite]!!
         else if (cacheKey.isImportant) statusIcons[Important]!!
         else statusIcons[cacheKey.workType] ?: R.drawable.ic_work_type_unknown
@@ -133,7 +130,7 @@ class WorkTypeIconProvider @Inject constructor(
         )
         drawable.draw(canvas)
 
-        val colors = mapMarkerColors[status] ?: mapMarkerColors[CaseStatus.Unknown]!!
+        val colors = getMapMarkerColors(cacheKey.statusClaim)
 
         for (w in shadowRadius until rightBounds) {
             for (h in shadowRadius until bottomBounds) {

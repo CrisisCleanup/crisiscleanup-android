@@ -3,6 +3,8 @@ package com.crisiscleanup.core.mapmarker
 import androidx.compose.ui.graphics.Color
 import com.crisiscleanup.core.designsystem.theme.*
 import com.crisiscleanup.core.model.data.CaseStatus.*
+import com.crisiscleanup.core.model.data.WorkTypeStatus
+import com.crisiscleanup.core.model.data.WorkTypeStatusClaim
 
 data class MapMarkerColor(
     private val fillLong: Long,
@@ -13,7 +15,7 @@ data class MapMarkerColor(
     val stroke: Color = Color(strokeLong),
 )
 
-internal val mapMarkerColors = mapOf(
+private val statusMapMarkerColors = mapOf(
     Unknown to MapMarkerColor(statusUnknownColorCode),
     Unclaimed to MapMarkerColor(statusUnclaimedColorCode),
     ClaimedNotStarted to MapMarkerColor(statusNotStartedColorCode),
@@ -22,8 +24,32 @@ internal val mapMarkerColors = mapOf(
     PartiallyCompleted to MapMarkerColor(statusPartiallyCompletedColorCode),
     NeedsFollowUp to MapMarkerColor(statusNeedsFollowUpColorCode),
     Completed to MapMarkerColor(statusCompletedColorCode),
-    DoneByOthersNhw to MapMarkerColor(statusDoneByOthersNhwColorCode),
+    DoneByOthersNhwPc to MapMarkerColor(statusDoneByOthersNhwColorCode),
     // Unresponsive
-    OutOfScope to MapMarkerColor(statusOutOfScopeRejectedColorCode),
+    OutOfScopeDu to MapMarkerColor(statusOutOfScopeRejectedColorCode),
     Incomplete to MapMarkerColor(statusDoneByOthersNhwColorCode),
 )
+
+private val statusClaimMapMarkerColors = mapOf(
+    WorkTypeStatusClaim(WorkTypeStatus.ClosedDuplicate, true) to MapMarkerColor(
+        statusDuplicateClaimedColorCode
+    ),
+    WorkTypeStatusClaim(WorkTypeStatus.OpenPartiallyCompleted, false) to MapMarkerColor(
+        statusUnclaimedColorCode
+    ),
+    WorkTypeStatusClaim(WorkTypeStatus.OpenNeedsFollowUp, false) to MapMarkerColor(
+        statusUnclaimedColorCode
+    ),
+    WorkTypeStatusClaim(WorkTypeStatus.ClosedDuplicate, false) to MapMarkerColor(
+        statusDuplicateUnclaimedColorCode
+    ),
+)
+
+internal fun getMapMarkerColors(statusClaim: WorkTypeStatusClaim): MapMarkerColor {
+    var colors = statusClaimMapMarkerColors[statusClaim]
+    if (colors == null) {
+        val status = statusClaimToStatus[statusClaim]
+        colors = statusMapMarkerColors[status] ?: statusMapMarkerColors[Unknown]!!
+    }
+    return colors
+}

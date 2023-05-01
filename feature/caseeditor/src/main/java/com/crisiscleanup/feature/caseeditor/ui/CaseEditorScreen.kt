@@ -911,14 +911,14 @@ private fun SaveActionBar(
             colors = cancelButtonColors(),
         )
         BusyButton(
-            Modifier.weight(1.2f),
+            Modifier.weight(1.5f),
             textResId = R.string.claim_and_save,
             enabled = enable,
             indicateBusy = !enable,
             onClick = onClaimAndSave,
         )
         BusyButton(
-            Modifier.weight(1f),
+            Modifier.weight(1.1f),
             textResId = R.string.save,
             enabled = enable,
             indicateBusy = !enable,

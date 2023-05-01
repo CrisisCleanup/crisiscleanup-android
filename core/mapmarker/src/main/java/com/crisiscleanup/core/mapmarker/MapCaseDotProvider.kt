@@ -6,7 +6,6 @@ import android.graphics.Paint
 import androidx.collection.LruCache
 import androidx.compose.ui.geometry.Offset
 import com.crisiscleanup.core.common.AndroidResourceProvider
-import com.crisiscleanup.core.model.data.CaseStatus.Unknown
 import com.crisiscleanup.core.model.data.WorkTypeStatusClaim
 import com.crisiscleanup.core.model.data.WorkTypeType
 import com.google.android.gms.maps.model.BitmapDescriptor
@@ -56,8 +55,7 @@ class InMemoryDotProvider @Inject constructor(
         statusClaim: WorkTypeStatusClaim,
         dotDrawProperties: DotDrawProperties,
     ): BitmapDescriptor? {
-        val status = statusClaimToStatus[statusClaim]
-        val colors = mapMarkerColors[status] ?: mapMarkerColors[Unknown]!!
+        val colors = getMapMarkerColors(statusClaim)
         val bitmap = drawDot(colors, dotDrawProperties)
         val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap)
         synchronized(cache) {

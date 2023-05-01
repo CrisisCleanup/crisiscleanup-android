@@ -15,11 +15,11 @@ enum class CaseStatus {
      * Nhw = no help wanted
      * Pc = partially completed
      */
-    DoneByOthersNhw,
+    DoneByOthersNhwPc,
 
     /**
      * Du = Duplicate or unresponsive
      */
-    OutOfScope,
+    OutOfScopeDu,
     Incomplete,
 }

@@ -345,9 +345,9 @@ class CasesViewModel @Inject constructor(
     }
 
     private val denseMarkCountThreshold = 15
-    private val denseMarkZoomThreshold = 13
-    private val denseDegreeThreshold = 0.0005
-    private val denseScreenOffsetScale = 0.4f
+    private val denseMarkZoomThreshold = 14
+    private val denseDegreeThreshold = 0.0001
+    private val denseScreenOffsetScale = 0.6f
     private suspend fun denseMarkerOffsets(marks: List<WorksiteMapMark>): List<Pair<Float, Float>> =
         coroutineScope {
             if (marks.size > denseMarkCountThreshold ||
