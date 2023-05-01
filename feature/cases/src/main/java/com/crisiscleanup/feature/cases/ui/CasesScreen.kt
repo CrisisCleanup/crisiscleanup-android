@@ -55,7 +55,7 @@ internal fun CasesRoute(
     onCasesAction: (CasesAction) -> Unit = { },
     casesViewModel: CasesViewModel = hiltViewModel(),
     createNewCase: (Long) -> Unit = {},
-    openCase: (Long, Long) -> Boolean = { _, _ -> false },
+    viewCase: (Long, Long) -> Boolean = { _, _ -> false },
 ) {
     val incidentsData by casesViewModel.incidentsData.collectAsStateWithLifecycle(IncidentsData.Loading)
     if (incidentsData is IncidentsData.Incidents) {
@@ -114,7 +114,7 @@ internal fun CasesRoute(
         val showDataProgress by casesViewModel.showDataProgress.collectAsStateWithLifecycle(false)
         val dataProgress by casesViewModel.dataProgress.collectAsStateWithLifecycle(0f)
         val onMapMarkerSelect = remember(casesViewModel) {
-            { mark: WorksiteMapMark -> openCase(casesViewModel.incidentId, mark.id) }
+            { mark: WorksiteMapMark -> viewCase(casesViewModel.incidentId, mark.id) }
         }
         val editedWorksiteLocation = casesViewModel.editedWorksiteLocation
         CasesScreen(

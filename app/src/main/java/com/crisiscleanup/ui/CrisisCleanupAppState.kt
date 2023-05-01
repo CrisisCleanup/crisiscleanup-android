@@ -13,10 +13,11 @@ import androidx.navigation.navOptions
 import androidx.tracing.trace
 import com.crisiscleanup.core.appnav.RouteConstant.caseEditorRoute
 import com.crisiscleanup.core.appnav.RouteConstant.casesRoute
-import com.crisiscleanup.core.appnav.RouteConstant.casesSearchRoute
 import com.crisiscleanup.core.appnav.RouteConstant.dashboardRoute
+import com.crisiscleanup.core.appnav.RouteConstant.fullscreenRoutes
 import com.crisiscleanup.core.appnav.RouteConstant.menuRoute
 import com.crisiscleanup.core.appnav.RouteConstant.teamRoute
+import com.crisiscleanup.core.appnav.RouteConstant.viewCaseRoute
 import com.crisiscleanup.core.common.NavigationObserver
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.ui.TrackDisposableJank
@@ -72,7 +73,9 @@ class CrisisCleanupAppState(
     val isFullscreenRoute: Boolean
         @Composable get() {
             val route = currentDestination?.route ?: ""
-            return route == casesSearchRoute || route.startsWith(caseEditorRoute)
+            return fullscreenRoutes.contains(route) ||
+                    route.startsWith(caseEditorRoute) ||
+                    route.startsWith(viewCaseRoute)
         }
 
     val hasCustomTopBar: Boolean

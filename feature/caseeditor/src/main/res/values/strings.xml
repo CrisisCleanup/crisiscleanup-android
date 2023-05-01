@@ -4,9 +4,12 @@
     <string name="cancel">Cancel</string>
     <string name="create_case">Create Case</string>
     <string name="view_case">View Case</string>
-    <string name="view_case_number">Case %1$s</string>
+    <string name="case_case_number">Case %1$s</string>
+    <string name="view_case_number">View %1$s</string>
     <string name="organization_issue_try_re_authenticating">There seems to be an issue with your organization. Try logging out and logging in again.</string>
     <string name="incident_issue_try_again">There seems to be an issue with the current incident. Please try again. Connect to the internet if possible.</string>
+
+    <string name="edit_case">Edit Case</string>
 
     <string name="edit_section">Edit %s</string>
 
@@ -38,6 +41,7 @@
     <string name="state_is_required">State is required</string>
 
     <string name="high_priority">"High priority"</string>
+    <string name="not_high_priority">Not high priority</string>
     <string name="notes_flags">Notes &amp; flags</string>
     <string name="note">Note</string>
     <string name="add_note">Add note</string>
@@ -66,4 +70,7 @@
 
     <string name="is_pending_sync">Pending sync</string>
     <string name="is_syncing">Syncing</string>
+
+    <string name="favorite">Favorite</string>
+    <string name="not_favorite">Not favorite</string>
 </resources>

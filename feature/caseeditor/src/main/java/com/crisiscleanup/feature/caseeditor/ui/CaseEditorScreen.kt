@@ -45,13 +45,6 @@ private const val SectionSeparatorContentType = "section-header-content-type"
 @Composable
 internal fun CaseEditorRoute(
     onOpenExistingCase: (ExistingWorksiteIdentifier) -> Unit = {},
-    onEditPropertyData: () -> Unit = {},
-    onEditLocation: () -> Unit = {},
-    onEditNotesFlags: () -> Unit = {},
-    onEditDetails: () -> Unit = {},
-    onEditWork: () -> Unit = {},
-    onEditHazards: () -> Unit = {},
-    onEditVolunteerReport: () -> Unit = {},
     onEditSearchAddress: () -> Unit = {},
     onEditMoveLocationOnMap: () -> Unit = {},
     onBack: () -> Unit = {},
@@ -93,13 +86,6 @@ internal fun CaseEditorRoute(
                 )
                 CaseEditorScreen(
                     onNavigateCancel = onNavigateCancel,
-                    onEditProperty = onEditPropertyData,
-                    onEditLocation = onEditLocation,
-                    onEditNotesFlags = onEditNotesFlags,
-                    onEditDetails = onEditDetails,
-                    onEditWork = onEditWork,
-                    onEditHazards = onEditHazards,
-                    onEditVolunteerReport = onEditVolunteerReport,
                     onEditSearchAddress = onEditSearchAddress,
                     onEditMoveLocationOnMap = onEditMoveLocationOnMap,
                 )
@@ -113,13 +99,6 @@ internal fun ColumnScope.CaseEditorScreen(
     modifier: Modifier = Modifier,
     viewModel: CaseEditorViewModel = hiltViewModel(),
     onNavigateCancel: () -> Unit = {},
-    onEditProperty: () -> Unit = {},
-    onEditLocation: () -> Unit = {},
-    onEditNotesFlags: () -> Unit = {},
-    onEditDetails: () -> Unit = {},
-    onEditWork: () -> Unit = {},
-    onEditHazards: () -> Unit,
-    onEditVolunteerReport: () -> Unit,
     onEditSearchAddress: () -> Unit = {},
     onEditMoveLocationOnMap: () -> Unit = {},
 ) {

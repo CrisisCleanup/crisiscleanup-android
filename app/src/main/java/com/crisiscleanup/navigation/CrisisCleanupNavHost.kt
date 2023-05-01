@@ -7,6 +7,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.crisiscleanup.core.appnav.RouteConstant.casesGraphRoutePattern
+import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.feature.caseeditor.navigation.*
 import com.crisiscleanup.feature.cases.navigation.casesGraph
 import com.crisiscleanup.feature.cases.navigation.casesSearchScreen
@@ -35,10 +37,23 @@ fun CrisisCleanupNavHost(
         { incidentId: Long -> navController.navigateToCaseEditor(incidentId) }
     }
 
-    val openCase = remember(navController) {
+    val editCase = remember(navController) {
         { incidentId: Long, worksiteId: Long ->
-            navController.navigateToCaseEditor(incidentId, worksiteId)
-            true
+            val isValid = incidentId != EmptyIncident.id && worksiteId != EmptyWorksite.id
+            if (isValid) {
+                navController.navigateToCaseEditor(incidentId, worksiteId)
+            }
+            isValid
+        }
+    }
+
+    val viewCase = remember(navController) {
+        { incidentId: Long, worksiteId: Long ->
+            val isValid = incidentId != EmptyIncident.id && worksiteId != EmptyWorksite.id
+            if (isValid) {
+                navController.navigateToExistingCase(incidentId, worksiteId)
+            }
+            isValid
         }
     }
 
@@ -55,7 +70,8 @@ fun CrisisCleanupNavHost(
     val replaceRouteOpenCase = remember(navController) {
         { incidentId: Long, worksiteId: Long ->
             navController.popBackStack()
-            openCase(incidentId, worksiteId)
+            // TODO Change this to view case when complete
+            editCase(incidentId, worksiteId)
             true
         }
     }
@@ -79,10 +95,11 @@ fun CrisisCleanupNavHost(
                 caseEditVolunteerReportScreen(onBackClick)
                 caseEditSearchAddressScreen(navController, onBackClick)
                 caseEditMoveLocationOnMapScreen(onBackClick)
+                existingCaseScreen(navController, onBackClick)
             },
             onCasesAction = onCasesAction,
             createCase = createNewCase,
-            editCase = openCase,
+            viewCase = viewCase,
         )
         dashboardScreen()
         teamScreen()

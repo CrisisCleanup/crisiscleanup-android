@@ -15,7 +15,9 @@ import com.crisiscleanup.core.appnav.RouteConstant.caseEditSearchAddressRoute
 import com.crisiscleanup.core.appnav.RouteConstant.caseEditVolunteerReportRoute
 import com.crisiscleanup.core.appnav.RouteConstant.caseEditWorkRoute
 import com.crisiscleanup.core.appnav.RouteConstant.caseEditorRoute
+import com.crisiscleanup.core.appnav.RouteConstant.viewCaseRoute
 import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
 import com.crisiscleanup.feature.caseeditor.ui.*
 
@@ -30,11 +32,23 @@ internal class CaseEditorArgs(val incidentId: Long, val worksiteId: Long?) {
     )
 }
 
+internal class ExistingCaseArgs(val incidentId: Long, val worksiteId: Long) {
+    constructor(savedStateHandle: SavedStateHandle) : this(
+        checkNotNull(savedStateHandle[incidentIdArg]),
+        checkNotNull(savedStateHandle[worksiteIdArg]),
+    )
+}
+
 fun NavController.navigateToCaseEditor(incidentId: Long, worksiteId: Long? = null) {
     val routeParts = mutableListOf("$caseEditorRoute?$incidentIdArg=$incidentId")
     worksiteId?.let { routeParts.add("$worksiteIdArg=$worksiteId") }
     val route = routeParts.joinToString("&")
     this.navigate(route)
+}
+
+
+fun NavController.navigateToExistingCase(incidentId: Long, worksiteId: Long) {
+    this.navigate("$viewCaseRoute?$incidentIdArg=$incidentId&$worksiteIdArg=$worksiteId")
 }
 
 fun NavGraphBuilder.caseEditorScreen(
@@ -56,20 +70,6 @@ fun NavGraphBuilder.caseEditorScreen(
         val navToEditCase = remember(navController) {
             { ids: ExistingWorksiteIdentifier -> navController.rerouteToCaseEdit(ids) }
         }
-        val onEditPropertyData =
-            remember(navController) { { navController.navigateToCaseEditProperty() } }
-        val onEditLocation =
-            remember(navController) { { navController.navigateToCaseEditLocation() } }
-        val onEditNotesFlags =
-            remember(navController) { { navController.navigateToCaseEditNotesFlags() } }
-        val onEditDetails =
-            remember(navController) { { navController.navigateToCaseEditDetails() } }
-        val onEditWork =
-            remember(navController) { { navController.navigateToCaseEditWork() } }
-        val onEditHazards =
-            remember(navController) { { navController.navigateToCaseEditHazards() } }
-        val onEditVolunteerReport =
-            remember(navController) { { navController.navigateToCaseEditVolunteerReport() } }
         val onEditSearchAddress =
             remember(navController) { { navController.navigateToCaseEditSearchAddress() } }
         val onEditMoveLocationOnMap =
@@ -77,13 +77,6 @@ fun NavGraphBuilder.caseEditorScreen(
         CaseEditorRoute(
             onBack = onBackClick,
             onOpenExistingCase = navToEditCase,
-            onEditPropertyData = onEditPropertyData,
-            onEditLocation = onEditLocation,
-            onEditNotesFlags = onEditNotesFlags,
-            onEditDetails = onEditDetails,
-            onEditWork = onEditWork,
-            onEditHazards = onEditHazards,
-            onEditVolunteerReport = onEditVolunteerReport,
             onEditSearchAddress = onEditSearchAddress,
             onEditMoveLocationOnMap = onEditMoveLocationOnMap,
         )
@@ -99,6 +92,38 @@ fun NavController.navigateToCaseEditHazards() = this.navigate(caseEditHazardsRou
 fun NavController.navigateToCaseEditVolunteerReport() = this.navigate(caseEditVolunteerReportRoute)
 fun NavController.navigateToCaseEditSearchAddress() = this.navigate(caseEditSearchAddressRoute)
 fun NavController.navigateToCaseEditLocationMapMove() = this.navigate(caseEditMapMoveLocationRoute)
+
+fun NavGraphBuilder.existingCaseScreen(
+    navController: NavHostController,
+    onBackClick: () -> Unit,
+) {
+    composable(
+        route = "$viewCaseRoute?$incidentIdArg={$incidentIdArg}&$worksiteIdArg={$worksiteIdArg}",
+        arguments = listOf(
+            navArgument(incidentIdArg) {
+                type = NavType.LongType
+                defaultValue = EmptyIncident.id
+            },
+            navArgument(worksiteIdArg) {
+                type = NavType.LongType
+                defaultValue = EmptyWorksite.id
+            },
+        ),
+    ) {
+        val navToEditCase = remember(navController) {
+            { ids: ExistingWorksiteIdentifier ->
+                navController.navigateToCaseEditor(
+                    ids.incidentId,
+                    ids.worksiteId,
+                )
+            }
+        }
+        EditExistingCaseRoute(
+            onBack = onBackClick,
+            onFullEdit = navToEditCase,
+        )
+    }
+}
 
 fun NavController.rerouteToCaseEdit(ids: ExistingWorksiteIdentifier) {
     popBackStack()

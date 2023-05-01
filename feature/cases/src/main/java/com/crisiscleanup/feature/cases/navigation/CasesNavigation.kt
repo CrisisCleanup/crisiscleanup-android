@@ -19,7 +19,7 @@ fun NavGraphBuilder.casesGraph(
     nestedGraphs: NavGraphBuilder.() -> Unit,
     onCasesAction: (CasesAction) -> Unit = { },
     createCase: (Long) -> Unit = {},
-    editCase: (Long, Long) -> Boolean = { _, _ -> false },
+    viewCase: (Long, Long) -> Boolean = { _, _ -> false },
 ) {
     navigation(
         route = casesGraphRoutePattern,
@@ -40,7 +40,7 @@ fun NavGraphBuilder.casesGraph(
             CasesRoute(
                 onCasesAction = rememberOnCasesAction,
                 createNewCase = createCase,
-                openCase = editCase,
+                viewCase = viewCase,
             )
         }
 
