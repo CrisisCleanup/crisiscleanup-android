@@ -239,25 +239,28 @@ internal class CaseEditorDataLoader(
                 incidentBounds = bounds ?: DefaultIncidentBounds
             }
 
-            val isLoadFinished = isCreateWorksite ||
-                    (!pullingIncident &&
-                            !pullingWorksite &&
-                            editSections.value.isNotEmpty() &&
-                            localWorksite != null &&
-                            isPulled &&
-                            workTypeStatuses.isNotEmpty())
-            val isEditable = bounds != null && isLoadFinished
+            val isReadyForEditing = bounds != null &&
+                    editSections.value.isNotEmpty() &&
+                    workTypeStatuses.isNotEmpty() &&
+                    localWorksite != null
+            val isNetworkLoadFinished = isReadyForEditing &&
+                    !pullingIncident &&
+                    !pullingWorksite &&
+                    isPulled
+            val isLocalLoadFinished = isNetworkLoadFinished &&
+                    (isCreateWorksite || initialWorksite.phone1.isNotBlank())
             val isTranslationUpdated =
                 editableWorksiteProvider.formFieldTranslationLookup.isNotEmpty()
             CaseEditorUiState.WorksiteData(
                 organization.id,
-                isEditable,
+                isReadyForEditing,
+                workTypeStatuses,
                 initialWorksite,
                 incident,
                 localWorksite,
-                isPulled,
-                isTranslationUpdated,
-                workTypeStatuses,
+                isNetworkLoadFinished = isNetworkLoadFinished,
+                isLocalLoadFinished = isLocalLoadFinished,
+                isTranslationUpdated = isTranslationUpdated,
             )
         }
 

@@ -333,12 +333,11 @@ private fun ColumnScope.FullEditView(
         onContentScrollRest,
     )
 
+    val areEditorsReady by viewModel.areEditorsReady.collectAsStateWithLifecycle()
     val isSavingData by viewModel.isSavingWorksite.collectAsStateWithLifecycle()
-    val isEditable by remember(worksiteData, isSavingData) {
-        derivedStateOf {
-            worksiteData.isEditable && !isSavingData
-        }
-    }
+    val isEditable = areEditorsReady &&
+            worksiteData.isNetworkLoadFinished &&
+            !isSavingData
 
     val isSectionCollapsed =
         remember(viewModel) { { sectionIndex: Int -> sectionCollapseStates[sectionIndex] } }
@@ -488,7 +487,7 @@ private fun LazyListScope.fullEditContent(
             modifier,
             incidentResId,
             worksiteData.incident.name,
-            worksiteData.isLocalModified,
+            worksiteData.isPendingSync,
             isSyncing = isSyncing,
         )
     }
@@ -771,7 +770,7 @@ private fun CaseIncident(
     modifier: Modifier = Modifier,
     disasterResId: Int = commonAssetsR.drawable.ic_disaster_other,
     incidentName: String = "",
-    isLocalModified: Boolean = false,
+    isPendingSync: Boolean = false,
     isSyncing: Boolean = false,
 ) {
     Row(
@@ -792,6 +791,7 @@ private fun CaseIncident(
         }
         Text(
             incidentName,
+            Modifier.weight(1f),
             style = MaterialTheme.typography.headlineMedium,
         )
 
@@ -800,7 +800,7 @@ private fun CaseIncident(
                 imageVector = CrisisCleanupIcons.CloudSync,
                 contentDescription = stringResource(R.string.is_syncing),
             )
-        } else if (isLocalModified) {
+        } else if (isPendingSync) {
             Icon(
                 imageVector = CrisisCleanupIcons.CloudOff,
                 contentDescription = stringResource(R.string.is_pending_sync),
@@ -933,7 +933,7 @@ private fun CaseIncidentPreview() {
     Column {
         CaseIncident(
             incidentName = "Big sweeping hurricane across the gulf",
-            isLocalModified = true,
+            isPendingSync = true,
         )
     }
 }

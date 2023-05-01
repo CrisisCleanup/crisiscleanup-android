@@ -27,7 +27,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 
 internal const val DetailsFormGroupKey = "property_info"
 internal const val WorkFormGroupKey = "work_info"
@@ -103,15 +105,33 @@ class CaseEditorViewModel @Inject constructor(
 
     private val editOpenedAt = Clock.System.now()
 
-    var propertyEditor: CasePropertyDataEditor? = null
-    var locationEditor: CaseLocationDataEditor? = null
-    var notesFlagsEditor: CaseNotesFlagsDataEditor? = null
-    var formDataEditors = emptyList<FormDataEditor>()
-    private var detailsEditor: EditableFormDataEditor? = null
-    private var workEditor: EditableFormDataEditor? = null
-    private var hazardsEditor: EditableFormDataEditor? = null
-    private var volunteerReportEditor: EditableFormDataEditor? = null
-    var caseDataWriters = emptyList<CaseDataWriter>()
+    /**
+     * For preventing editor reloads when unwanted
+     *
+     * Editors should be set only "once" during an editing session.
+     * External data change signals should be ignored once editing begins or input data may be lost.
+     * Managing state internally is much cleaner than weaving and managing related external state.
+     */
+    private var editorSetInstant: Instant? = null
+
+    /**
+     * A sufficient amount of time for local storage to commit and publish network data
+     */
+    private val editorSetWindow = 10.seconds
+    private val caseEditors: StateFlow<CaseEditors?>
+
+    val propertyEditor: CasePropertyDataEditor?
+        get() = caseEditors.value?.property
+    val locationEditor: CaseLocationDataEditor?
+        get() = caseEditors.value?.location
+    val notesFlagsEditor: CaseNotesFlagsDataEditor?
+        get() = caseEditors.value?.notesFlags
+    val formDataEditors: List<FormDataEditor>
+        get() = caseEditors.value?.formData ?: emptyList()
+    private val workEditor: EditableFormDataEditor?
+        get() = caseEditors.value?.work
+    private val caseDataWriters: List<CaseDataWriter>
+        get() = caseEditors.value?.dataWriters ?: emptyList()
 
     init {
         updateHeaderTitle()
@@ -159,13 +179,17 @@ class CaseEditorViewModel @Inject constructor(
             }
             .launchIn(viewModelScope)
 
-        dataLoader.uiState
+        caseEditors = dataLoader.uiState
             .filter {
-                (it as? CaseEditorUiState.WorksiteData)?.isEditable == true &&
-                        propertyEditor == null
+                (it as? CaseEditorUiState.WorksiteData)?.isNetworkLoadFinished == true &&
+                        editorSetInstant?.let { setInstant ->
+                            Clock.System.now().minus(setInstant) < editorSetWindow
+                        } ?: true
             }
-            .onEach {
-                propertyEditor = EditablePropertyDataEditor(
+            .mapLatest {
+                editorSetInstant = Clock.System.now()
+
+                val propertyEditor = EditablePropertyDataEditor(
                     editableWorksiteProvider,
                     inputValidator,
                     resourceProvider,
@@ -177,7 +201,7 @@ class CaseEditorViewModel @Inject constructor(
                     logger,
                     viewModelScope
                 )
-                locationEditor = EditableLocationDataEditor(
+                val locationEditor = EditableLocationDataEditor(
                     editableWorksiteProvider,
                     permissionManager,
                     locationProvider,
@@ -192,29 +216,17 @@ class CaseEditorViewModel @Inject constructor(
                     ioDispatcher,
                     viewModelScope,
                 )
-                notesFlagsEditor = EditableNotesFlagsDataEditor(editableWorksiteProvider)
-                detailsEditor = EditableDetailsDataEditor(editableWorksiteProvider)
-                workEditor = EditableWorkDataEditor(editableWorksiteProvider)
-                hazardsEditor = EditableHazardsDataEditor(editableWorksiteProvider)
-                volunteerReportEditor = EditableVolunteerReportDataEditor(editableWorksiteProvider)
-                formDataEditors = listOf(
-                    detailsEditor!!,
-                    workEditor!!,
-                    hazardsEditor!!,
-                    volunteerReportEditor!!,
-                )
-                caseDataWriters = mutableListOf(
-                    propertyEditor!!.propertyInputData,
-                    locationEditor!!.locationInputData,
-                    notesFlagsEditor!!.notesFlagsInputData,
-                ).apply {
-                    addAll(formDataEditors.map(FormDataEditor::inputData))
-                }
+                val notesFlagsEditor = EditableNotesFlagsDataEditor(editableWorksiteProvider)
+                val detailsEditor = EditableDetailsDataEditor(editableWorksiteProvider)
+                val workEditor = EditableWorkDataEditor(editableWorksiteProvider)
+                val hazardsEditor = EditableHazardsDataEditor(editableWorksiteProvider)
+                val volunteerReportEditor =
+                    EditableVolunteerReportDataEditor(editableWorksiteProvider)
 
                 editIncidentWorksiteJob?.cancel()
                 editIncidentWorksiteJob = combine(
-                    propertyEditor!!.editIncidentWorksite,
-                    locationEditor!!.editIncidentWorksite,
+                    propertyEditor.editIncidentWorksite,
+                    locationEditor.editIncidentWorksite,
                 ) { w0, w1 ->
                     if (w0.isDefined) w0
                     else if (w1.isDefined) w1
@@ -225,15 +237,32 @@ class CaseEditorViewModel @Inject constructor(
                         editIncidentWorksite.value = identifier
                     }
                     .launchIn(viewModelScope)
+
+                CaseEditors(
+                    propertyEditor,
+                    locationEditor,
+                    notesFlagsEditor,
+                    detailsEditor,
+                    workEditor,
+                    hazardsEditor,
+                    volunteerReportEditor,
+                )
             }
-            .launchIn(viewModelScope)
+            .stateIn(
+                scope = viewModelScope,
+                initialValue = null,
+                started = SharingStarted.WhileSubscribed(),
+            )
 
+        combine(
+            caseEditors,
+            editingWorksite,
+            ::Pair,
+        )
+            .onEach { (editors, worksite) ->
+                editors?.property?.setSteadyStateSearchName()
 
-        editingWorksite
-            .onEach { worksite ->
-                propertyEditor?.setSteadyStateSearchName()
-
-                locationEditor?.locationInputData?.let { inputData ->
+                editors?.location?.locationInputData?.let { inputData ->
                     if (editableWorksiteProvider.takeAddressChanged()) {
                         inputData.assumeLocationAddressChanges(worksite, true)
                     }
@@ -259,6 +288,14 @@ class CaseEditorViewModel @Inject constructor(
     val isSyncing = worksiteChangeRepository.syncingWorksiteIds.mapLatest {
         it.contains(worksiteIdArg)
     }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    // Every change matters. This must NOT be distinct.
+    val areEditorsReady = caseEditors.mapLatest { it != null }
         .stateIn(
             scope = viewModelScope,
             initialValue = false,
@@ -427,6 +464,7 @@ class CaseEditorViewModel @Inject constructor(
                 )
                 val worksiteId = worksiteIdArg!!
 
+                editorSetInstant = null
                 dataLoader.reloadData(worksiteId)
                 worksiteProvider.setEditedLocation(worksite.coordinates())
 
@@ -528,15 +566,17 @@ sealed interface CaseEditorUiState {
 
     data class WorksiteData(
         val orgId: Long,
-        val isEditable: Boolean,
+        val isEditCapable: Boolean,
+        val statusOptions: List<WorkTypeStatus>,
         val worksite: Worksite,
         val incident: Incident,
         val localWorksite: LocalWorksite?,
-        val isLocalSyncToBackend: Boolean?,
+        val isNetworkLoadFinished: Boolean,
+        val isLocalLoadFinished: Boolean,
         val isTranslationUpdated: Boolean,
-        val statusOptions: List<WorkTypeStatus>,
     ) : CaseEditorUiState {
-        val isLocalModified = localWorksite?.localChanges?.isLocalModified ?: false
+        val isPendingSync = !isLocalLoadFinished ||
+                localWorksite?.localChanges?.isLocalModified ?: false
     }
 
     data class Error(
@@ -564,4 +604,28 @@ enum class WorksiteSection {
     Hazards,
     VolunteerReport,
     WorkType,
+}
+
+internal data class CaseEditors(
+    val property: EditablePropertyDataEditor,
+    val location: EditableLocationDataEditor,
+    val notesFlags: EditableNotesFlagsDataEditor,
+    val details: EditableDetailsDataEditor,
+    val work: EditableWorkDataEditor,
+    val hazards: EditableHazardsDataEditor,
+    val volunteerReport: EditableVolunteerReportDataEditor,
+    val formData: List<FormDataEditor> = listOf(
+        details,
+        work,
+        hazards,
+        volunteerReport
+    ),
+) {
+    val dataWriters: List<CaseDataWriter> = mutableListOf(
+        property.propertyInputData,
+        location.locationInputData,
+        notesFlags.notesFlagsInputData,
+    ).apply {
+        addAll(formData.map(FormDataEditor::inputData))
+    }
 }
