@@ -12,11 +12,9 @@ import com.crisiscleanup.core.designsystem.R
  */
 object CrisisCleanupIcons {
     val Account = Icons.Default.PersonOutline
-    val Add = Icons.Default.Add
     val AddNote = Icons.Default.NoteAdd
     val ArrowDropDown = Icons.Default.ArrowDropDown
     val Cases = R.drawable.ic_cases
-    val Check = Icons.Default.Check
     val Clear = Icons.Default.Clear
     val CloudSync = Icons.Default.CloudSync
     val CloudOff = Icons.Default.CloudOff

@@ -42,7 +42,8 @@ val actionLinkColor = primaryBlueColor
 val separatorColor = Color(0xFFF6F8F9)
 val selectedOptionContainerColor = Color(0xFFF6F8F9)
 val neutralIconColor = Color(0xFF848F99)
-val primaryRedIconColor = Color(0xFFED4747)
+val primaryRedColor = Color(0xFFED4747)
+val primaryOrangeColor = Color(0xFFF79820)
 
 // Mirror FilledButtonTokens.class
 val disabledButtonContentColor = md_theme_onSurface

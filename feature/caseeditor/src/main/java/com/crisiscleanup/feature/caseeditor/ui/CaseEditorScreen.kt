@@ -511,62 +511,6 @@ private fun LazyListScope.fullEditContent(
 }
 
 @Composable
-private fun SectionHeader(
-    viewModel: CaseEditorViewModel,
-    modifier: Modifier = Modifier,
-    sectionIndex: Int,
-    sectionTitle: String,
-    isCollapsed: Boolean = false,
-    toggleCollapse: () -> Unit = {},
-    help: String = "",
-) {
-    Row(
-        modifier
-            .clickable(onClick = toggleCollapse)
-            .listItemHeight()
-            .listItemPadding(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        // TODO Bold
-        val textStyle = MaterialTheme.typography.bodyLarge
-        // TODO Can surface and box be combined into a single element?
-        Surface(
-            // TODO Common dimensions
-            Modifier.size(26.dp),
-            shape = CircleShape,
-            color = attentionBackgroundColor,
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Text(
-                    "${sectionIndex + 1}",
-                    style = textStyle,
-                )
-            }
-        }
-        Text(
-            sectionTitle,
-            Modifier.listRowItemStartPadding(),
-            style = textStyle,
-        )
-        val iconVector =
-            if (isCollapsed) CrisisCleanupIcons.ExpandLess else CrisisCleanupIcons.ExpandMore
-        val descriptionResId =
-            if (isCollapsed) R.string.collapse_section else R.string.expand_section
-        val description = stringResource(descriptionResId, sectionTitle)
-        if (help.isNotBlank()) {
-            WithHelpDialog(viewModel, sectionTitle, help, true) { showHelp ->
-                HelpAction(viewModel.helpHint, showHelp)
-            }
-        }
-        Spacer(Modifier.weight(1f))
-        Icon(
-            imageVector = iconVector,
-            contentDescription = description,
-        )
-    }
-}
-
-@Composable
 private fun SectionSeparator() {
     Box(
         Modifier
@@ -592,7 +536,7 @@ private fun LazyListScope.propertyLocationSection(
         key = "section-header-0",
         contentType = SectionHeaderContentType,
     ) {
-        SectionHeader(
+        SectionHeaderCollapsible(
             viewModel,
             sectionIndex = 0,
             sectionTitle = sectionTitle,
@@ -651,7 +595,7 @@ private fun LazyListScope.formDataSection(
         contentType = SectionHeaderContentType,
     ) {
         val toggle = remember(viewModel) { { toggleSectionCollapse(sectionIndex) } }
-        SectionHeader(
+        SectionHeaderCollapsible(
             viewModel,
             sectionIndex = sectionIndex,
             sectionTitle = sectionTitle,

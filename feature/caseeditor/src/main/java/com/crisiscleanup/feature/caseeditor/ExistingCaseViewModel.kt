@@ -45,7 +45,7 @@ class ExistingCaseViewModel @Inject constructor(
 ) : ViewModel() {
     private val caseEditorArgs = ExistingCaseArgs(savedStateHandle)
     private val incidentIdArg = caseEditorArgs.incidentId
-    private var worksiteIdArg = caseEditorArgs.worksiteId
+    val worksiteIdArg = caseEditorArgs.worksiteId
 
     val headerTitle = MutableStateFlow("")
 
@@ -95,7 +95,6 @@ class ExistingCaseViewModel @Inject constructor(
                 }
             }
             .launchIn(viewModelScope)
-
     }
 
     val worksite = dataLoader.worksiteStream

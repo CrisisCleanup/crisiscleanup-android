@@ -73,4 +73,16 @@
 
     <string name="favorite">Favorite</string>
     <string name="not_favorite">Not favorite</string>
+
+    <string name="no_worksite_selected">A worksite was not selected. Therefore this should not have appeared.</string>
+
+    <string name="share">Share</string>
+    <string name="flag">Flag</string>
+    <string name="history">History</string>
+    <string name="edit">Edit</string>
+
+    <string name="info">Info</string>
+    <string name="photos">Photos</string>
+    <string name="notes">Notes</string>
+    <string name="release">Release</string>
 </resources>

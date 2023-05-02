@@ -80,7 +80,7 @@ internal class CaseEditorDataLoader(
 
     val worksiteStream = worksiteIdStream
         .flatMapLatest { worksiteId ->
-            if (worksiteId == null) flowOf(null)
+            if (worksiteId == null || worksiteId <= 0) flowOf(null)
             else worksitesRepository.streamLocalWorksite(worksiteId)
         }
         .flowOn(coroutineDispatcher)
