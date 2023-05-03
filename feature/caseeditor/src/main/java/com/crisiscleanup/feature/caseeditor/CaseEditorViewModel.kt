@@ -103,7 +103,7 @@ class CaseEditorViewModel @Inject constructor(
     private val editOpenedAt = Clock.System.now()
 
     /**
-     * For preventing editor reloads when unwanted
+     * For preventing unwanted editor reloads
      *
      * Editors should be set only "once" during an editing session.
      * External data change signals should be ignored once editing begins or input data may be lost.

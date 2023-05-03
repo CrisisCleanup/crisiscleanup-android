@@ -8,12 +8,6 @@ object RouteConstant {
     const val dashboardRoute = "dashboard_route"
     const val menuRoute = "menu_route"
     const val teamRoute = "team_route"
-    val topLevelRoutes = setOf(
-        casesRoute,
-        dashboardRoute,
-        menuRoute,
-        teamRoute,
-    )
 
     const val settingsRoute = "settings_route"
 
@@ -22,13 +16,6 @@ object RouteConstant {
     const val casesSearchRoute = "cases_search"
 
     const val caseEditorRoute = "case_editor"
-    const val caseEditPropertyRoute = "$caseEditorRoute/edit_property"
-    const val caseEditLocationRoute = "$caseEditorRoute/edit_location"
-    const val caseEditNotesFlagsRoute = "$caseEditorRoute/edit_notes_flags"
-    const val caseEditDetailsRoute = "$caseEditorRoute/edit_details"
-    const val caseEditWorkRoute = "$caseEditorRoute/edit_work"
-    const val caseEditHazardsRoute = "$caseEditorRoute/edit_hazards"
-    const val caseEditVolunteerReportRoute = "$caseEditorRoute/edit_volunteer_report"
     const val caseEditSearchAddressRoute = "$caseEditorRoute/edit_search_address"
     const val caseEditMapMoveLocationRoute = "$caseEditorRoute/edit_map_move_location"
 

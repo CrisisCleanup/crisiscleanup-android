@@ -3,7 +3,6 @@ package com.crisiscleanup.feature.caseeditor.ui
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -19,7 +18,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.window.PopupProperties
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
@@ -165,7 +163,12 @@ private fun CheckboxItem(
 
     val trailingContent: (@Composable () -> Unit)? = if (isActiveWorkType) {
         @Composable {
-            WorkTypeStatusDropdown(itemData, updateWorkTypeStatus, translate)
+            WorkTypeStatusDropdown(
+                itemData.workTypeStatus,
+                updateWorkTypeStatus,
+                translate,
+                true,
+            )
         }
     } else if (itemData.field.help.isNotBlank()) {
         @Composable {
@@ -185,102 +188,6 @@ private fun CheckboxItem(
         enableToggle = !isActiveWorkType,
         spaceTrailingContent = itemData.isWorkTypeGroup,
     )
-}
-
-@Composable
-private fun WorkTypeStatusDropdown(
-    itemData: FieldDynamicValue,
-    updateWorkTypeStatus: (WorkTypeStatus) -> Unit,
-    translate: (String) -> String = { s -> s },
-) {
-    val (statusOptions) = LocalCaseEditor.current
-    val hasOptions = statusOptions.isNotEmpty()
-
-    var showOptions by remember { mutableStateOf(false) }
-    Box {
-        WorkTypeStatusIndication(
-            itemData.workTypeStatus,
-            Modifier
-                .listCheckboxAlignItemPaddingCounterOffset()
-                .clickable(
-                    enabled = hasOptions,
-                    onClick = { showOptions = true },
-                )
-                .listItemHeight()
-                .listItemPadding(),
-            translate,
-            true,
-        )
-
-        if (showOptions && hasOptions) {
-            val onSelect = { selected: WorkTypeStatus ->
-                updateWorkTypeStatus(selected)
-                showOptions = false
-            }
-            DropdownMenu(
-                expanded = true,
-                onDismissRequest = { showOptions = false },
-                offset = listItemDropdownMenuOffset,
-                properties = PopupProperties(focusable = false),
-            ) {
-                WorkTypeStatusOptions(
-                    itemData.workTypeStatus,
-                    onSelect,
-                    statusOptions,
-                    translate,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun WorkTypeStatusOptions(
-    selectedStatus: WorkTypeStatus,
-    onSelect: (WorkTypeStatus) -> Unit = {},
-    statusOptions: List<WorkTypeStatus> = emptyList(),
-    translate: (String) -> String = { s -> s },
-) {
-    val modifier = Modifier.optionItemHeight()
-    for (option in statusOptions) {
-        DropdownMenuItem(
-            // TODO Change color of selected option
-            modifier = modifier,
-            text = { WorkTypeStatusIndication(option, translate = translate) },
-            onClick = { onSelect(option) },
-        )
-    }
-}
-
-@Composable
-private fun WorkTypeStatusIndication(
-    status: WorkTypeStatus,
-    modifier: Modifier = Modifier,
-    translate: (String) -> String = { s -> s },
-    showOpenIcon: Boolean = false,
-) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = listItemSpacedByHalf,
-    ) {
-
-        Surface(
-            Modifier.size(16.dp),
-            shape = CircleShape,
-            color = statusOptionColors[status] ?: statusUnknownColor,
-        ) {}
-        Text(
-            translate(status.literal),
-            style = MaterialTheme.typography.bodyMedium,
-        )
-        if (showOpenIcon) {
-            Icon(
-                imageVector = CrisisCleanupIcons.ArrowDropDown,
-                contentDescription = stringResource(R.string.change_status)
-            )
-        }
-    }
 }
 
 @Composable
@@ -430,9 +337,14 @@ private fun SelectItem(
                     HelpAction(helpHint, showHelp)
                 }
                 Spacer(modifier = Modifier.weight(1f))
+                var tint = LocalContentColor.current
+                if (!enabled) {
+                    tint = tint.disabledAlpha()
+                }
                 Icon(
                     imageVector = CrisisCleanupIcons.UnfoldMore,
                     contentDescription = stringResource(R.string.select_option_for_field, label),
+                    tint = tint,
                 )
             }
             if (hasSelection) {

@@ -23,10 +23,11 @@ import com.crisiscleanup.feature.caseeditor.R
 internal fun PropertyNotesFlagsView(
     viewModel: EditCaseBaseViewModel,
     editor: CaseNotesFlagsDataEditor,
-    isEditable: Boolean = false,
     collapsedNotesVisibleCount: Int = 3,
     translate: (String) -> String = { s -> s },
 ) {
+    val isEditable = LocalCaseEditor.current.isEditable
+
     var isCreatingNote by remember { mutableStateOf(false) }
 
     val inputData = editor.notesFlagsInputData

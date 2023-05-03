@@ -24,9 +24,12 @@ object CrisisCleanupIcons {
     val ExpandMore = Icons.Default.ExpandMore
     val Help = Icons.Default.HelpOutline
     val Location = Icons.Default.LocationOn
+    val Mail = Icons.Default.Mail
     val Menu = Icons.Default.Menu
     val MoreVert = Icons.Default.MoreVert
     val MyLocation = Icons.Default.MyLocation
+    val Person = Icons.Default.Person
+    val Phone = Icons.Default.Phone
     val Search = Icons.Rounded.Search
     val Team = R.drawable.ic_team
     val UnfoldMore = Icons.Default.UnfoldMore

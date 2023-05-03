@@ -28,7 +28,6 @@ import com.crisiscleanup.core.commonassets.getDisasterIcon
 import com.crisiscleanup.core.designsystem.component.*
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.*
-import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.*
@@ -332,7 +331,7 @@ private fun ColumnScope.FullEditView(
     Box(Modifier.weight(1f)) {
         val closeKeyboard = rememberCloseKeyboard(viewModel)
 
-        val caseEditor = CaseEditor(worksiteData.statusOptions)
+        val caseEditor = CaseEditor(isEditable, worksiteData.statusOptions)
         CompositionLocalProvider(LocalCaseEditor provides caseEditor) {
             LazyColumn(
                 modifier
@@ -345,7 +344,6 @@ private fun ColumnScope.FullEditView(
                     viewModel,
                     modifier,
                     editSections,
-                    isEditable,
                     onMoveLocation = onMoveLocation,
                     onSearchAddress = onSearchAddress,
                     isPropertySectionCollapsed = sectionCollapseStates[0],
@@ -450,7 +448,6 @@ private fun LazyListScope.fullEditContent(
     viewModel: CaseEditorViewModel,
     modifier: Modifier = Modifier,
     sectionTitles: List<String> = emptyList(),
-    isEditable: Boolean = false,
     onMoveLocation: () -> Unit = {},
     onSearchAddress: () -> Unit = {},
     isPropertySectionCollapsed: Boolean = false,
@@ -477,7 +474,6 @@ private fun LazyListScope.fullEditContent(
                 viewModel,
                 propertyEditor,
                 sectionTitles[0],
-                isEditable,
                 onMoveLocation,
                 onSearchAddress,
                 isSectionCollapsed = isPropertySectionCollapsed,
@@ -501,7 +497,6 @@ private fun LazyListScope.fullEditContent(
                 viewModel,
                 editor.inputData,
                 sectionTitle,
-                isEditable,
                 sectionIndex,
                 isSectionCollapsed(sectionIndex),
                 toggleSection,
@@ -525,7 +520,6 @@ private fun LazyListScope.propertyLocationSection(
     viewModel: CaseEditorViewModel,
     propertyEditor: CasePropertyDataEditor,
     sectionTitle: String,
-    isEditable: Boolean,
     onMoveLocation: () -> Unit = {},
     onSearchAddress: () -> Unit = {},
     isSectionCollapsed: Boolean = false,
@@ -549,7 +543,6 @@ private fun LazyListScope.propertyLocationSection(
             PropertyFormView(
                 viewModel,
                 propertyEditor,
-                isEditable,
                 translate = translate,
             )
         }
@@ -559,7 +552,6 @@ private fun LazyListScope.propertyLocationSection(
                 PropertyLocationView(
                     viewModel,
                     locationEditor,
-                    isEditable,
                     onMoveLocationOnMap = onMoveLocation,
                     openAddressSearch = onSearchAddress,
                     translate = translate,
@@ -572,7 +564,6 @@ private fun LazyListScope.propertyLocationSection(
                 PropertyNotesFlagsView(
                     viewModel,
                     notesFlagsEditor,
-                    isEditable,
                     viewModel.visibleNoteCount,
                     translate = translate,
                 )
@@ -585,7 +576,6 @@ private fun LazyListScope.formDataSection(
     viewModel: CaseEditorViewModel,
     inputData: FormFieldsInputData,
     sectionTitle: String,
-    isEditable: Boolean,
     sectionIndex: Int,
     isSectionCollapsed: Boolean = false,
     toggleSectionCollapse: (Int) -> Unit = {},
@@ -609,83 +599,9 @@ private fun LazyListScope.formDataSection(
         item(
             key = "section-$sectionIndex",
         ) {
-            FormDataItems(viewModel, inputData, isEditable)
+            FormDataItems(viewModel, inputData, LocalCaseEditor.current.isEditable)
         }
     }
-}
-
-@Composable
-private fun SectionSummaries(
-    worksite: Worksite,
-    isEditable: Boolean = true,
-    translate: (String) -> String = { it },
-    viewModel: CaseEditorViewModel = hiltViewModel(),
-    editPropertyData: () -> Unit = {},
-    editLocation: () -> Unit = {},
-    editNotesFlags: () -> Unit = {},
-    editDetails: () -> Unit = {},
-    editWork: () -> Unit = {},
-    editHazards: () -> Unit = {},
-    editVolunteerReport: () -> Unit = {},
-) {
-
-    PropertySummaryView(
-        worksite,
-        isEditable,
-        onEdit = editPropertyData,
-        translate = translate,
-    )
-
-    LocationSummaryView(
-        worksite,
-        isEditable,
-        onEdit = editLocation,
-        translate = translate,
-    )
-
-    NotesFlagsSummaryView(
-        worksite,
-        isEditable,
-        onEdit = editNotesFlags,
-        collapsedNotesVisibleCount = viewModel.visibleNoteCount,
-        translate = translate,
-    )
-
-    DetailsSummaryView(
-        worksite,
-        isEditable,
-        onEdit = editDetails,
-        translate = translate,
-        summaryFieldLookup = viewModel.detailsFieldLookup,
-    )
-
-    val workTypeGroups by viewModel.worksiteWorkTypeGroups.collectAsStateWithLifecycle()
-    val groupChildren by viewModel.workTypeGroupChildrenLookup.collectAsStateWithLifecycle()
-    WorkSummaryView(
-        worksite,
-        isEditable,
-        onEdit = editWork,
-        translate = translate,
-        workTypeGroups = workTypeGroups,
-        groupChildren = groupChildren,
-        summaryFieldLookup = viewModel.workFieldLookup,
-    )
-
-    HazardsSummaryView(
-        worksite,
-        isEditable,
-        onEdit = editHazards,
-        translate = translate,
-        summaryFieldLookup = viewModel.hazardsFieldLookup,
-    )
-
-    VolunteerReportSummaryView(
-        worksite,
-        isEditable,
-        onEdit = editVolunteerReport,
-        translate = translate,
-        summaryFieldLookup = viewModel.volunteerReportFieldLookup,
-    )
 }
 
 @Composable

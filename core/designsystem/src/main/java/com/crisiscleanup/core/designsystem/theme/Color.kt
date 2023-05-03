@@ -46,8 +46,9 @@ val primaryRedColor = Color(0xFFED4747)
 val primaryOrangeColor = Color(0xFFF79820)
 
 // Mirror FilledButtonTokens.class
-val disabledButtonContentColor = md_theme_onSurface
-    .copy(alpha = 0.38f)
+private const val disabledAlpha = 0.38f
+fun Color.disabledAlpha() = copy(alpha = disabledAlpha)
+val disabledButtonContentColor = md_theme_onSurface.disabledAlpha()
 
 const val statusUnknownColorCode = 0xFF000000
 const val statusUnclaimedColorCode = 0xFFD0021B

@@ -1,11 +1,12 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,110 +20,26 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.window.PopupProperties
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.crisiscleanup.core.common.filterNotBlankTrim
 import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.commoncase.ui.ExistingCaseLocationsDropdownItems
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.theme.*
 import com.crisiscleanup.core.model.data.AutoContactFrequency
-import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
-import com.crisiscleanup.core.ui.scrollFlingListener
-import com.crisiscleanup.feature.caseeditor.*
+import com.crisiscleanup.feature.caseeditor.CasePropertyDataEditor
+import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
 import com.crisiscleanup.feature.caseeditor.R
-
-private const val ScreenTitleTranslateKey = "caseForm.property_information"
-
-@Composable
-internal fun PropertySummaryView(
-    worksite: Worksite,
-    isEditable: Boolean,
-    modifier: Modifier = Modifier,
-    onEdit: () -> Unit = {},
-    translate: (String) -> String = { s -> s },
-) {
-    EditCaseSummaryHeader(
-        0,
-        isEditable,
-        onEdit,
-        modifier,
-        translate(ScreenTitleTranslateKey),
-    ) {
-        val texts = listOf(
-            worksite.name,
-            worksite.phone1,
-            worksite.phone2,
-            worksite.email,
-        ).filterNotBlankTrim()
-        texts.forEach {
-            Text(
-                text = it,
-                modifier = modifier.fillMaxWidth(),
-                style = MaterialTheme.typography.bodyLarge,
-            )
-        }
-    }
-}
-
-@Composable
-internal fun EditCasePropertyRoute(
-    viewModel: EditCasePropertyViewModel = hiltViewModel(),
-    onBackClick: () -> Unit = {},
-    openExistingCase: (ids: ExistingWorksiteIdentifier) -> Unit = { _ -> },
-) {
-    val editDifferentWorksite by viewModel.editor.editIncidentWorksite.collectAsStateWithLifecycle()
-    if (editDifferentWorksite.isDefined) {
-        openExistingCase(editDifferentWorksite)
-    } else {
-        val translate = remember(viewModel) { { s: String -> viewModel.translate(s) } }
-        EditCasePropertyView(
-            onBackClick = onBackClick,
-            translate = translate,
-        )
-    }
-}
-
-@Composable
-private fun EditCasePropertyView(
-    viewModel: EditCasePropertyViewModel = hiltViewModel(),
-    onBackClick: () -> Unit = {},
-    translate: (String) -> String = { s -> s },
-) {
-    EditCaseBackCancelView(
-        viewModel,
-        onBackClick,
-        translate(ScreenTitleTranslateKey)
-    ) {
-
-        val closeKeyboard = rememberCloseKeyboard(viewModel)
-        val scrollState = rememberScrollState()
-        Column(
-            Modifier
-                .scrollFlingListener(closeKeyboard)
-                .verticalScroll(scrollState)
-                .weight(1f)
-        ) {
-            PropertyFormView(
-                viewModel,
-                viewModel.editor,
-                isEditable = true,
-                focusOnOpen = true,
-                translate = translate,
-            )
-        }
-    }
-}
 
 @Composable
 internal fun PropertyFormView(
     viewModel: EditCaseBaseViewModel,
     editor: CasePropertyDataEditor,
-    isEditable: Boolean = false,
     focusOnOpen: Boolean = false,
     translate: (String) -> String = { s -> s },
 ) {
+    val isEditable = LocalCaseEditor.current.isEditable
+
     val inputData = editor.propertyInputData
 
     PropertyFormResidentNameView(editor, isEditable, focusOnOpen, translate)

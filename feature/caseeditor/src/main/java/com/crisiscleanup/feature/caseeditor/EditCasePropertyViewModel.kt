@@ -1,26 +1,21 @@
 package com.crisiscleanup.feature.caseeditor
 
-import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.InputValidator
 import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.log.AppLogger
-import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
-import com.crisiscleanup.core.common.log.Logger
-import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
-import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.model.data.AutoContactFrequency
 import com.crisiscleanup.feature.caseeditor.model.PropertyInputData
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 interface CasePropertyDataEditor {
     val propertyInputData: PropertyInputData
@@ -128,34 +123,4 @@ internal class EditablePropertyDataEditor(
 
         return validateSaveWorksite()
     }
-}
-
-@HiltViewModel
-class EditCasePropertyViewModel @Inject constructor(
-    worksiteProvider: EditableWorksiteProvider,
-    inputValidator: InputValidator,
-    resourceProvider: AndroidResourceProvider,
-    searchWorksitesRepository: SearchWorksitesRepository,
-    caseIconProvider: MapCaseIconProvider,
-    translator: KeyTranslator,
-    existingWorksiteSelector: ExistingWorksiteSelector,
-    @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-    @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
-) : EditCaseBaseViewModel(worksiteProvider, translator, logger) {
-    val editor: CasePropertyDataEditor = EditablePropertyDataEditor(
-        worksiteProvider,
-        inputValidator,
-        resourceProvider,
-        searchWorksitesRepository,
-        caseIconProvider,
-        translator,
-        existingWorksiteSelector,
-        ioDispatcher,
-        logger,
-        viewModelScope
-    )
-
-    override fun onSystemBack() = editor.onBackValidateSaveWorksite()
-
-    override fun onNavigateBack() = editor.onBackValidateSaveWorksite()
 }

@@ -89,9 +89,10 @@ data class IncidentIncidentLocationCrossRef(
             onDelete = ForeignKey.CASCADE,
         ),
     ],
-    primaryKeys = ["incident_id", "field_key"],
+    // TODO Write test inserting fields with different parents same key
+    primaryKeys = ["incident_id", "parent_key", "field_key"],
     indices = [
-        Index(value = ["data_group", "field_parent_key", "list_order"]),
+        Index(value = ["data_group", "parent_key", "list_order"]),
     ]
 )
 data class IncidentFormFieldEntity(
@@ -130,8 +131,11 @@ data class IncidentFormFieldEntity(
     val isInvalidated: Boolean,
     @ColumnInfo("field_key")
     val fieldKey: String,
+    @Deprecated(message = "Use parentKeyNonNull", replaceWith = ReplaceWith("parentKeyNonNull"))
     @ColumnInfo("field_parent_key", defaultValue = "")
-    val fieldParentKey: String?,
+    val fieldParentKey: String? = null,
+    @ColumnInfo("parent_key", defaultValue = "")
+    val parentKeyNonNull: String,
     @ColumnInfo("selected_toggle_work_type", defaultValue = "")
     val selectToggleWorkType: String?,
 )
@@ -161,7 +165,7 @@ fun IncidentFormFieldEntity.asExternalModel(): IncidentFormField {
         listOrder = listOrder,
         isInvalidated = isInvalidated,
         fieldKey = fieldKey,
-        parentKey = fieldParentKey ?: "",
+        parentKey = parentKeyNonNull,
         selectToggleWorkType = selectToggleWorkType ?: "",
     )
 }

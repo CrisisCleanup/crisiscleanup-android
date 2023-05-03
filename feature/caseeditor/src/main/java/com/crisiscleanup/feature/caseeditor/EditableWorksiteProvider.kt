@@ -26,6 +26,7 @@ interface EditableWorksiteProvider {
     val editableWorksite: MutableStateFlow<Worksite>
     var formFields: List<FormFieldNode>
     var formFieldTranslationLookup: Map<String, String>
+    var workTypeTranslationLookup: Map<String, String>
 
     val isStale: Boolean
     fun setStale()
@@ -37,6 +38,8 @@ interface EditableWorksiteProvider {
     val isAddressChanged: Boolean
     fun setAddressChanged(worksite: Worksite)
     fun takeAddressChanged(): Boolean
+
+    fun translate(key: String): String?
 }
 
 fun EditableWorksiteProvider.getGroupNode(key: String) =
@@ -50,6 +53,7 @@ fun EditableWorksiteProvider.reset(incidentId: Long = EmptyIncident.id) = run {
     )
     formFields = emptyList()
     formFieldTranslationLookup = emptyMap()
+    workTypeTranslationLookup = emptyMap()
 
     takeStale()
     clearEditedLocation()
@@ -63,6 +67,7 @@ class SingleEditableWorksiteProvider @Inject constructor() : EditableWorksitePro
     override val editableWorksite = MutableStateFlow(EmptyWorksite)
     override var formFields = emptyList<FormFieldNode>()
     override var formFieldTranslationLookup = emptyMap<String, String>()
+    override var workTypeTranslationLookup = emptyMap<String, String>()
 
     private val _isStale = AtomicBoolean(false)
     override val isStale: Boolean
@@ -98,6 +103,9 @@ class SingleEditableWorksiteProvider @Inject constructor() : EditableWorksitePro
     }
 
     override fun takeAddressChanged() = _isAddressChanged.getAndSet(false)
+
+    override fun translate(key: String) =
+        formFieldTranslationLookup[key] ?: workTypeTranslationLookup[key]
 }
 
 internal val DefaultIncidentBounds = IncidentBounds(emptyList(), MapViewCameraBoundsDefault.bounds)

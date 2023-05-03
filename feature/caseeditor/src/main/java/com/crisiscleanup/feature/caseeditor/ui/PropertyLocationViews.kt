@@ -23,12 +23,13 @@ import com.google.maps.android.compose.rememberCameraPositionState
 internal fun PropertyLocationView(
     viewModel: EditCaseBaseViewModel,
     editor: CaseLocationDataEditor,
-    isEditable: Boolean = false,
     openExistingCase: (ExistingWorksiteIdentifier) -> Unit = {},
     onMoveLocationOnMap: () -> Unit = {},
     openAddressSearch: () -> Unit = {},
     translate: (String) -> String = { s -> s },
 ) {
+    val isEditable = LocalCaseEditor.current.isEditable
+
     val editDifferentWorksite by editor.editIncidentWorksite.collectAsStateWithLifecycle()
     if (editDifferentWorksite.isDefined) {
         openExistingCase(editDifferentWorksite)
@@ -90,7 +91,7 @@ internal fun PropertyLocationView(
             translate = translate,
         )
 
-        LocationFormView(editor, isEditable, translate)
+        LocationFormView(editor, translate)
 
         // TODO Handle out of bounds properly
 

@@ -1,6 +1,10 @@
 package com.crisiscleanup.feature.caseeditor
 
+import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.feature.caseeditor.model.FormFieldsInputData
+import com.crisiscleanup.feature.caseeditor.util.updateWorkTypeStatuses
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 
 interface FormDataEditor {
     val inputData: FormFieldsInputData
@@ -38,3 +42,32 @@ open class EditableFormDataEditor(
         return false
     }
 }
+
+internal val excludeDetailsFormFields = setOf("cross_street", "email")
+
+internal class EditableDetailsDataEditor(
+    worksiteProvider: EditableWorksiteProvider,
+) : EditableFormDataEditor(
+    DetailsFormGroupKey,
+    worksiteProvider,
+    excludeDetailsFormFields,
+    autoManageGroups = true,
+)
+
+internal class EditableWorkDataEditor(
+    worksiteProvider: EditableWorksiteProvider,
+) : EditableFormDataEditor(WorkFormGroupKey, worksiteProvider, isWorkInputData = true) {
+    fun transferWorkTypes(
+        workTypeLookup: Map<String, String>,
+        worksite: Worksite,
+        createdAt: Instant = Clock.System.now(),
+    ) = updateWorkTypeStatuses(workTypeLookup, worksite, inputData, createdAt)
+}
+
+internal class EditableHazardsDataEditor(
+    worksiteProvider: EditableWorksiteProvider,
+) : EditableFormDataEditor(HazardsFormGroupKey, worksiteProvider)
+
+internal class EditableVolunteerReportDataEditor(
+    worksiteProvider: EditableWorksiteProvider,
+) : EditableFormDataEditor(VolunteerReportFormGroupKey, worksiteProvider)

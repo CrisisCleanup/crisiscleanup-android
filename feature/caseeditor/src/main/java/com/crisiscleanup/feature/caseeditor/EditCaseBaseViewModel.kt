@@ -15,12 +15,8 @@ abstract class EditCaseBaseViewModel constructor(
     val breakGlassHint = translator.translate("actions.edit") ?: ""
     val helpHint = translator.translate("actions.help_alt") ?: ""
 
-    fun translate(key: String, fallback: String? = null): String {
-        return translator.translate(key) ?: (
-                worksiteProvider.formFieldTranslationLookup[key]
-                    ?: (fallback ?: key)
-                )
-    }
+    fun translate(key: String, fallback: String? = null) = translator.translate(key)
+        ?: (worksiteProvider.translate(key) ?: (fallback ?: key))
 
     abstract fun onSystemBack(): Boolean
 

@@ -9,7 +9,12 @@ import androidx.navigation.compose.NavHost
 import com.crisiscleanup.core.appnav.RouteConstant.casesGraphRoutePattern
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
-import com.crisiscleanup.feature.caseeditor.navigation.*
+import com.crisiscleanup.feature.caseeditor.navigation.caseEditMoveLocationOnMapScreen
+import com.crisiscleanup.feature.caseeditor.navigation.caseEditSearchAddressScreen
+import com.crisiscleanup.feature.caseeditor.navigation.caseEditorScreen
+import com.crisiscleanup.feature.caseeditor.navigation.existingCaseScreen
+import com.crisiscleanup.feature.caseeditor.navigation.navigateToCaseEditor
+import com.crisiscleanup.feature.caseeditor.navigation.navigateToExistingCase
 import com.crisiscleanup.feature.cases.navigation.casesGraph
 import com.crisiscleanup.feature.cases.navigation.casesSearchScreen
 import com.crisiscleanup.feature.cases.navigation.navigateToCasesSearch
@@ -70,8 +75,7 @@ fun CrisisCleanupNavHost(
     val replaceRouteOpenCase = remember(navController) {
         { incidentId: Long, worksiteId: Long ->
             navController.popBackStack()
-            // TODO Change this to view case when complete
-            editCase(incidentId, worksiteId)
+            viewCase(incidentId, worksiteId)
             true
         }
     }
@@ -86,13 +90,6 @@ fun CrisisCleanupNavHost(
                 selectIncidentScreen(onBackClick)
                 casesSearchScreen(onBackClick, replaceRouteOpenCase)
                 caseEditorScreen(navController, onBackClick)
-                caseEditPropertyScreen(navController, onBackClick)
-                caseEditLocationScreen(navController, onBackClick)
-                caseEditNotesFlagsScreen(onBackClick)
-                caseEditDetailsScreen(onBackClick)
-                caseEditWorkScreen(onBackClick)
-                caseEditHazardsScreen(onBackClick)
-                caseEditVolunteerReportScreen(onBackClick)
                 caseEditSearchAddressScreen(navController, onBackClick)
                 caseEditMoveLocationOnMapScreen(onBackClick)
                 existingCaseScreen(navController, onBackClick)

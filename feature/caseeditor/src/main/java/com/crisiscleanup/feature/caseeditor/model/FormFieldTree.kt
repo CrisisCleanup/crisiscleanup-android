@@ -18,8 +18,8 @@ data class FormFieldNode(
         ): List<FormFieldNode> {
             val inputFormFields = formFields.filter { !it.isHidden }
 
-            val lookup = mutableMapOf("" to EmptyIncidentFormField)
-            inputFormFields.forEach { lookup[it.fieldKey] = it }
+            val lookup = mutableMapOf(Pair("", "") to EmptyIncidentFormField)
+            inputFormFields.forEach { lookup[Pair(it.parentKey, it.fieldKey)] = it }
 
             val groupedByParent = mutableMapOf<String, MutableList<IncidentFormField>>()
             inputFormFields.forEach {
@@ -40,10 +40,11 @@ data class FormFieldNode(
                 }
             }
 
-            fun buildNode(fieldKey: String): FormFieldNode {
+            fun buildNode(parentKey: String, fieldKey: String): FormFieldNode {
                 val children =
-                    groupedByParent[fieldKey]?.map { buildNode(it.fieldKey) } ?: emptyList()
-                val formField = lookup[fieldKey]!!
+                    groupedByParent[fieldKey]?.map { buildNode(it.parentKey, it.fieldKey) }
+                        ?: emptyList()
+                val formField = lookup[Pair(parentKey, fieldKey)]!!
                 val options = formField.values.ifEmpty {
                     formField.valuesDefault?.entries?.associate { it.key to (it.value ?: "") }
                         ?: emptyMap()
@@ -56,7 +57,7 @@ data class FormFieldNode(
                 return FormFieldNode(formField, children, translatedOptions)
             }
 
-            return buildNode("").children
+            return buildNode("", "").children
         }
     }
 }

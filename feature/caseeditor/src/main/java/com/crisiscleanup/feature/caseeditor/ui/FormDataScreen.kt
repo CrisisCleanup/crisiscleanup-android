@@ -150,7 +150,9 @@ internal fun FormDataItems(
     inputData: FormFieldsInputData,
     isEditable: Boolean = true,
 ) {
-    HelpContent(viewModel) { FormItems(viewModel, inputData, isEditable, it) }
+    HelpContent(viewModel) {
+        FormItems(viewModel, inputData, isEditable, it)
+    }
 }
 
 @Composable

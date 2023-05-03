@@ -163,16 +163,19 @@ internal class CaseEditorDataLoader(
                         .filter { it.fieldKey.isNotBlank() && it.label.isNotBlank() }
                         .associate { it.fieldKey to it.label }
 
-                    workTypeGroupChildrenLookup.value =
+                    val workTypeFormFields =
                         formFields.firstOrNull { it.fieldKey == WorkFormGroupKey }
-                            ?.let { node ->
-                                node.children
-                                    .filter { it.parentKey == WorkFormGroupKey }
-                                    .associate {
-                                        it.fieldKey to it.children.map(FormFieldNode::fieldKey)
-                                    }
-                            }
-                            ?: emptyMap()
+                            ?.let { node -> node.children.filter { it.parentKey == WorkFormGroupKey } }
+                            ?: emptyList()
+
+                    workTypeGroupChildrenLookup.value = workTypeFormFields.associate {
+                        it.fieldKey to it.children.map(FormFieldNode::fieldKey).toSet()
+                    }
+
+                    workTypeTranslationLookup = workTypeFormFields.associate {
+                        val name = formFieldTranslationLookup[it.fieldKey] ?: it.fieldKey
+                        it.formField.selectToggleWorkType to name
+                    }
 
                     val localTranslate = { s: String -> translate(s) }
                     incidentFieldLookup.value = formFields.associate { node ->

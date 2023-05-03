@@ -18,6 +18,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import com.crisiscleanup.core.designsystem.R
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 
 @OptIn(
     ExperimentalMaterial3Api::class,
@@ -115,6 +116,10 @@ fun OutlinedClearableTextField(
     onSearch: (() -> Unit)? = null,
     imeAction: ImeAction = ImeAction.Next,
 ) {
+    var tint = MaterialTheme.colorScheme.primary
+    if (!enabled) {
+        tint = tint.disabledAlpha()
+    }
     val trailingIcon = @Composable {
         IconButton(
             onClick = { onValueChange("") },
@@ -123,7 +128,7 @@ fun OutlinedClearableTextField(
             Icon(
                 CrisisCleanupIcons.Clear,
                 contentDescription = stringResource(R.string.clear),
-                tint = MaterialTheme.colorScheme.primary,
+                tint = tint,
             )
         }
     }

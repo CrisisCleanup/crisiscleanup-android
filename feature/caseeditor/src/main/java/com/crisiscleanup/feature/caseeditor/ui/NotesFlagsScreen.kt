@@ -152,20 +152,6 @@ internal fun NotesFlagsSummaryView(
 }
 
 @Composable
-internal fun EditCaseNotesFlagsRoute(
-    viewModel: EditCaseNotesFlagsViewModel = hiltViewModel(),
-    onBackClick: () -> Unit = {},
-) {
-    EditCaseBackCancelView(
-        viewModel,
-        onBackClick,
-        stringResource(ScreenTitleResId),
-    ) {
-        NotesFlagsView()
-    }
-}
-
-@Composable
 private fun NotesFlagsView(
     viewModel: EditCaseNotesFlagsViewModel = hiltViewModel(),
 ) {

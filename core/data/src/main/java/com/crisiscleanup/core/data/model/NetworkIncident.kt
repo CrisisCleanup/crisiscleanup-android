@@ -62,7 +62,7 @@ fun NetworkIncidentFormField.asEntity(incidentId: Long): IncidentFormFieldEntity
         listOrder = listOrder,
         isInvalidated = invalidatedAt != null,
         fieldKey = fieldKey,
-        fieldParentKey = fieldParentKey,
+        parentKeyNonNull = fieldParentKey ?: "",
         selectToggleWorkType = selectToggleWorkType,
     )
 }

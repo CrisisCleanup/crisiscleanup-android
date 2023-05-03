@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.coerceAtMost
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.*
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
@@ -30,20 +29,17 @@ import com.crisiscleanup.core.designsystem.theme.textMessagePadding
 import com.crisiscleanup.core.mapmarker.model.DefaultCoordinates
 import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
 import com.crisiscleanup.core.mapmarker.ui.rememberMapUiSettings
-import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.ui.MapOverlayMessage
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.core.ui.touchDownConsumer
-import com.crisiscleanup.feature.caseeditor.*
+import com.crisiscleanup.feature.caseeditor.CaseLocationDataEditor
+import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
 import com.crisiscleanup.feature.caseeditor.R
-import com.crisiscleanup.feature.caseeditor.util.summarizeAddress
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.maps.android.compose.*
-
-private const val ScreenTitleTranslateKey = "formLabels.location"
 
 @Composable
 private fun AddressSummaryInColumn(
@@ -58,85 +54,6 @@ private fun AddressSummaryInColumn(
             style = MaterialTheme.typography.bodyLarge,
         )
     }
-}
-
-@Composable
-internal fun LocationSummaryView(
-    worksite: Worksite,
-    isEditable: Boolean,
-    modifier: Modifier = Modifier,
-    onEdit: () -> Unit = {},
-    translate: (String) -> String = { s -> s },
-) {
-    EditCaseSummaryHeader(
-        0,
-        isEditable,
-        onEdit,
-        modifier,
-        header = translate(ScreenTitleTranslateKey),
-    ) {
-        worksite.run {
-            val addressSummaryLines = summarizeAddress(address, postalCode, county, city, state)
-            if (addressSummaryLines.isNotEmpty()) {
-                AddressSummaryInColumn(addressSummaryLines)
-            }
-
-            if (worksite.crossStreetNearbyLandmark.isNotEmpty()) {
-                Text(
-                    text = worksite.crossStreetNearbyLandmark,
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-internal fun EditCaseLocationRoute(
-    viewModel: EditCaseLocationViewModel = hiltViewModel(),
-    onBackClick: () -> Unit = {},
-    openExistingCase: (ids: ExistingWorksiteIdentifier) -> Unit = { _ -> },
-) {
-    val editor = viewModel.editor
-
-    val editDifferentWorksite by editor.editIncidentWorksite.collectAsStateWithLifecycle()
-    if (editDifferentWorksite.isDefined) {
-        openExistingCase(editDifferentWorksite)
-    } else {
-        val translate = remember(viewModel) { { s: String -> viewModel.translate(s) } }
-        EditCaseLocationView(
-            viewModel,
-            editor,
-            onBackClick = onBackClick,
-            translate = translate,
-        )
-    }
-}
-
-@Composable
-private fun EditCaseLocationView(
-    viewModel: EditCaseBaseViewModel,
-    editor: CaseLocationDataEditor,
-    onBackClick: () -> Unit = {},
-    translate: (String) -> String = { s -> s },
-) {
-    EditCaseBackCancelView(
-        viewModel,
-        onBackClick,
-        translate(ScreenTitleTranslateKey),
-    ) {
-        LocationView(viewModel, editor, translate)
-    }
-
-    // TODO Handle out of bounds properly
-
-    val closePermissionDialog =
-        remember(viewModel) { { editor.showExplainPermissionLocation.value = false } }
-    val explainPermission by editor.showExplainPermissionLocation
-    ExplainLocationPermissionDialog(
-        showDialog = explainPermission,
-        closeDialog = closePermissionDialog,
-    )
 }
 
 @Composable
@@ -261,7 +178,7 @@ internal fun ColumnScope.LocationView(
 }
 
 @Composable
-internal fun MapButton(
+private fun MapButton(
     imageVector: ImageVector? = null,
     @DrawableRes iconResId: Int = 0,
     @StringRes contentDescriptionResId: Int = 0,
@@ -420,9 +337,10 @@ internal fun LocationMapContainerView(
 @Composable
 internal fun LocationFormView(
     editor: CaseLocationDataEditor,
-    isEditable: Boolean = false,
     translate: (String) -> String = { s -> s },
 ) {
+    val isEditable = LocalCaseEditor.current.isEditable
+
     val inputData = editor.locationInputData
 
     val closeKeyboard = rememberCloseKeyboard(inputData)
@@ -491,7 +409,7 @@ internal fun LocationFormView(
 }
 
 @Composable
-internal fun LocationAddressFormView(
+private fun LocationAddressFormView(
     editor: CaseLocationDataEditor,
     closeKeyboard: () -> Unit = {},
     isEditable: Boolean = false,

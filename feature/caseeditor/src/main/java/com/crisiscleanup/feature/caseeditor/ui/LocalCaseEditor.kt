@@ -6,6 +6,7 @@ import com.crisiscleanup.core.model.data.WorkTypeStatus
 import com.crisiscleanup.core.model.data.WorkTypeStatus.*
 
 data class CaseEditor(
+    val isEditable: Boolean,
     val statusOptions: List<WorkTypeStatus>,
 )
 
@@ -26,6 +27,7 @@ val statusOptionColors = mapOf(
 )
 
 private val caseEditor = CaseEditor(
+    isEditable = false,
     statusOptions = emptyList(),
 )
 
