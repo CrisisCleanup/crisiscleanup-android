@@ -2,8 +2,20 @@ package com.crisiscleanup
 
 import android.app.Activity
 import android.util.Log
-import androidx.credentials.*
-import androidx.credentials.exceptions.*
+import androidx.credentials.CreatePasswordRequest
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.GetCredentialResponse
+import androidx.credentials.GetPasswordOption
+import androidx.credentials.PasswordCredential
+import androidx.credentials.exceptions.CreateCredentialCancellationException
+import androidx.credentials.exceptions.CreateCredentialException
+import androidx.credentials.exceptions.CreateCredentialInterruptedException
+import androidx.credentials.exceptions.CreateCredentialProviderConfigurationException
+import androidx.credentials.exceptions.CreateCredentialUnknownException
+import androidx.credentials.exceptions.CreateCustomCredentialException
+import androidx.credentials.exceptions.GetCredentialException
+import androidx.credentials.exceptions.NoCredentialException
 import androidx.credentials.exceptions.publickeycredential.CreatePublicKeyCredentialDomException
 import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.event.PasswordRequestCode
@@ -89,21 +101,26 @@ internal class CredentialSaveRetrieveManager(
                 // Handle the passkey DOM errors thrown according to the
                 // WebAuthn spec.
             }
+
             is CreateCredentialCancellationException -> {
                 // The user intentionally canceled the operation and chose not
                 // to register the credential.
             }
+
             is CreateCredentialInterruptedException -> {
                 // Retry-able error. Consider retrying the call.
             }
+
             is CreateCredentialProviderConfigurationException -> {
                 // Your app is missing the provider configuration dependency.
                 // Most likely, you're missing the
                 // "credentials-play-services-auth" module.
             }
+
             is CreateCredentialUnknownException -> {
                 // Do something
             }
+
             is CreateCustomCredentialException -> {
                 // You have encountered an error from a 3rd-party SDK. If you
                 // make the API call with a request object that's a subclass of
@@ -112,6 +129,7 @@ internal class CredentialSaveRetrieveManager(
                 // that SDK to match with e.type. Otherwise, drop or log the
                 // exception.
             }
+
             else -> Log.e(
                 "credential-manager",
                 "Unexpected exception type ${e::class.java.name}",

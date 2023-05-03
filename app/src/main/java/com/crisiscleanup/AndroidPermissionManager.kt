@@ -63,6 +63,7 @@ class AndroidPermissionManager @Inject constructor(
                     activity,
                     permission
                 ) -> PermissionStatus.ShowRationale
+
                 else -> {
                     permissionChanges.value = Pair(permission, PermissionStatus.Requesting)
                     requestPermissionLauncher?.launch(permission)

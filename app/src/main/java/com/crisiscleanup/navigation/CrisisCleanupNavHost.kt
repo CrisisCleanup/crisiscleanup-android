@@ -42,16 +42,6 @@ fun CrisisCleanupNavHost(
         { incidentId: Long -> navController.navigateToCaseEditor(incidentId) }
     }
 
-    val editCase = remember(navController) {
-        { incidentId: Long, worksiteId: Long ->
-            val isValid = incidentId != EmptyIncident.id && worksiteId != EmptyWorksite.id
-            if (isValid) {
-                navController.navigateToCaseEditor(incidentId, worksiteId)
-            }
-            isValid
-        }
-    }
-
     val viewCase = remember(navController) {
         { incidentId: Long, worksiteId: Long ->
             val isValid = incidentId != EmptyIncident.id && worksiteId != EmptyWorksite.id

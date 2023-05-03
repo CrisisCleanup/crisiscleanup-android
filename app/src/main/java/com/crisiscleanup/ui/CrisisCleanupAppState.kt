@@ -2,7 +2,11 @@ package com.crisiscleanup.ui
 
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -26,7 +30,10 @@ import com.crisiscleanup.feature.dashboard.navigation.navigateToDashboard
 import com.crisiscleanup.feature.menu.navigation.navigateToMenu
 import com.crisiscleanup.feature.team.navigation.navigateToTeam
 import com.crisiscleanup.navigation.TopLevelDestination
-import com.crisiscleanup.navigation.TopLevelDestination.*
+import com.crisiscleanup.navigation.TopLevelDestination.CASES
+import com.crisiscleanup.navigation.TopLevelDestination.DASHBOARD
+import com.crisiscleanup.navigation.TopLevelDestination.MENU
+import com.crisiscleanup.navigation.TopLevelDestination.TEAM
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
