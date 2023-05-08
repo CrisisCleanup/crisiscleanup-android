@@ -1,6 +1,11 @@
 package com.crisiscleanup.core.network
 
-import com.crisiscleanup.core.network.model.*
+import com.crisiscleanup.core.network.model.NetworkFlag
+import com.crisiscleanup.core.network.model.NetworkNote
+import com.crisiscleanup.core.network.model.NetworkType
+import com.crisiscleanup.core.network.model.NetworkWorkType
+import com.crisiscleanup.core.network.model.NetworkWorksiteFull
+import com.crisiscleanup.core.network.model.NetworkWorksitePush
 import kotlinx.datetime.Instant
 
 interface CrisisCleanupWriteApi {
@@ -27,4 +32,7 @@ interface CrisisCleanupWriteApi {
         worksiteId: Long,
         workTypes: Collection<String>,
     )
+
+    suspend fun requestWorkTypes(worksiteId: Long, workTypes: List<String>, reason: String)
+    suspend fun releaseWorkTypes(worksiteId: Long, workTypes: List<String>, reason: String)
 }

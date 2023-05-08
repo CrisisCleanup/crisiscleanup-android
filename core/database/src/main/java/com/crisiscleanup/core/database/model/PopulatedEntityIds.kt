@@ -7,3 +7,9 @@ data class PopulatedIdNetworkId(
     @ColumnInfo("network_id")
     val networkId: Long,
 )
+
+data class PopulatedIdReasonT(
+    val id: Long,
+    @ColumnInfo("reason_t")
+    val reason: String,
+)

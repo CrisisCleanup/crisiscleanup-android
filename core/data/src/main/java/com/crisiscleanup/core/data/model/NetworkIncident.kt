@@ -16,6 +16,7 @@ fun NetworkIncident.asEntity() = IncidentEntity(
     shortName = shortName,
     // Active phone numbers are unique to incidents and not complex in structure so treat as comma delimited string value
     activePhoneNumber = activePhoneNumber?.joinToString(",", transform = String::trim),
+    turnOnRelease = turnOnRelease,
     isArchived = isArchived ?: false,
     type = type,
 )

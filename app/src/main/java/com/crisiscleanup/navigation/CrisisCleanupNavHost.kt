@@ -22,6 +22,8 @@ import com.crisiscleanup.feature.cases.navigation.selectIncidentScreen
 import com.crisiscleanup.feature.cases.ui.CasesAction
 import com.crisiscleanup.feature.dashboard.navigation.dashboardScreen
 import com.crisiscleanup.feature.menu.navigation.menuScreen
+import com.crisiscleanup.feature.syncinsights.navigation.navigateToSyncInsights
+import com.crisiscleanup.feature.syncinsights.navigation.syncInsightsScreen
 import com.crisiscleanup.feature.team.navigation.teamScreen
 
 /**
@@ -70,6 +72,12 @@ fun CrisisCleanupNavHost(
         }
     }
 
+    val openSyncLogs = remember(navController) {
+        {
+            navController.navigateToSyncInsights()
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -90,6 +98,9 @@ fun CrisisCleanupNavHost(
         )
         dashboardScreen()
         teamScreen()
-        menuScreen()
+        menuScreen(
+            openSyncLogs,
+        )
+        syncInsightsScreen(viewCase)
     }
 }

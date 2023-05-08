@@ -4,6 +4,7 @@ import com.crisiscleanup.core.network.model.util.InstantSerializer
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 data class NetworkWorksitesFullResult(
@@ -32,7 +33,7 @@ data class NetworkWorksiteFull(
     val formData: List<KeyDynamicValuePair>,
     val incident: Long,
     @SerialName("key_work_type")
-    val keyWorkType: NetworkWorkType?,
+    internal val keyWorkType: NetworkWorkType?,
     val location: Location,
     val name: String,
     val notes: List<NetworkNote>,
@@ -54,8 +55,39 @@ data class NetworkWorksiteFull(
     @SerialName("what3words")
     val what3words: String? = null,
     @SerialName("work_types")
-    val workTypes: List<NetworkWorkType>,
+    internal val workTypes: List<NetworkWorkType>,
 ) {
+    @Transient
+    var newestWorkTypes: List<NetworkWorkType> = emptyList()
+        private set
+
+    @Transient
+    var newestKeyWorkType: NetworkWorkType? = null
+        private set
+
+    init {
+        val newMap = mutableMapOf<String, Pair<Int, NetworkWorkType>>()
+        workTypes.forEachIndexed { index, workType ->
+            val literal = workType.workType
+            val similar = newMap[literal]
+            if (similar == null || workType.id!! > similar.second.id!!) {
+                newMap[literal] = Pair(index, workType)
+            }
+        }
+
+        if (newMap.size == workTypes.size) {
+            newestWorkTypes = workTypes
+            newestKeyWorkType = keyWorkType
+        } else {
+            newestWorkTypes = newMap.values
+                .sortedBy { it.first }
+                .map { it.second }
+            newestKeyWorkType = keyWorkType?.let {
+                newMap[it.workType]?.second
+            }
+        }
+    }
+
     @Serializable
     data class Location(
         val type: String,
@@ -136,7 +168,7 @@ data class NetworkWorksiteShort(
     val favoriteId: Long? = null,
     val flags: List<NetworkWorksiteFull.FlagShort>,
     @SerialName("key_work_type")
-    val keyWorkType: NetworkWorksiteFull.KeyWorkTypeShort?,
+    internal val keyWorkType: NetworkWorksiteFull.KeyWorkTypeShort?,
     val location: NetworkWorksiteFull.Location,
     val name: String,
     @SerialName("postal_code")
@@ -147,5 +179,42 @@ data class NetworkWorksiteShort(
     @SerialName("updated_at")
     val updatedAt: Instant,
     @SerialName("work_types")
-    val workTypes: List<NetworkWorksiteFull.WorkTypeShort>,
-)
+    internal val workTypes: List<NetworkWorksiteFull.WorkTypeShort>,
+) {
+    @Transient
+    var newestWorkTypes: List<NetworkWorksiteFull.WorkTypeShort> = emptyList()
+        private set
+
+    @Transient
+    var newestKeyWorkType: NetworkWorksiteFull.KeyWorkTypeShort? = null
+        private set
+
+    init {
+        val newMap = mutableMapOf<String, Pair<Int, NetworkWorksiteFull.WorkTypeShort>>()
+        workTypes.forEachIndexed { index, workType ->
+            val literal = workType.workType
+            val similar = newMap[literal]
+            if (similar == null || workType.id > similar.second.id) {
+                newMap[literal] = Pair(index, workType)
+            }
+        }
+
+        if (newMap.size == workTypes.size) {
+            newestWorkTypes = workTypes
+            newestKeyWorkType = keyWorkType
+        } else {
+            newestWorkTypes = newMap.values
+                .sortedBy { it.first }
+                .map { it.second }
+            newestKeyWorkType = keyWorkType?.let {
+                newMap[it.workType]?.second?.let { kwt ->
+                    NetworkWorksiteFull.KeyWorkTypeShort(
+                        kwt.workType,
+                        kwt.orgClaim,
+                        kwt.status,
+                    )
+                }
+            }
+        }
+    }
+}

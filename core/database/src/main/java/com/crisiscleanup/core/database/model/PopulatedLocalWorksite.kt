@@ -36,9 +36,17 @@ data class PopulatedLocalWorksite(
         entityColumn = "worksite_id",
     )
     val notes: List<WorksiteNoteEntity>,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "worksite_id",
+    )
+    val workTypeRequests: List<WorkTypeTransferRequestEntity>,
 )
 
-fun PopulatedLocalWorksite.asExternalModel(translator: KeyTranslator? = null): LocalWorksite {
+fun PopulatedLocalWorksite.asExternalModel(
+    orgId: Long,
+    translator: KeyTranslator? = null,
+): LocalWorksite {
     val validWorkTypes = workTypes
     val formDataMap = formData.associate {
         it.fieldKey to WorksiteFormValue(
@@ -47,48 +55,53 @@ fun PopulatedLocalWorksite.asExternalModel(translator: KeyTranslator? = null): L
             valueBoolean = it.valueBool,
         )
     }
-    return LocalWorksite(
-        Worksite(
+    return with(entity) {
+        LocalWorksite(
+            Worksite(
 
-            // Be sure to copy changes from PopulatedWorksite.asExternalModel to here
+                // Be sure to copy changes from PopulatedWorksite.asExternalModel to here
 
-            id = entity.id,
-            address = entity.address,
-            autoContactFrequencyT = entity.autoContactFrequencyT ?: "",
-            caseNumber = entity.caseNumber,
-            city = entity.city,
-            county = entity.county,
-            createdAt = entity.createdAt,
-            email = entity.email,
-            favoriteId = entity.favoriteId,
-            flags = flags.map { it.asExternalModel(translator) },
-            formData = formDataMap,
-            incidentId = entity.incidentId,
-            keyWorkType = validWorkTypes.find { it.workType == entity.keyWorkTypeType }
-                ?.asExternalModel(),
-            latitude = entity.latitude,
-            longitude = entity.longitude,
-            name = entity.name,
-            notes = notes
-                .filter { it.note.isNotBlank() }
-                .map(WorksiteNoteEntity::asExternalModel)
-                .sortedWith { a, b -> if (a.createdAt < b.createdAt) 1 else -1 },
-            networkId = entity.networkId,
-            phone1 = entity.phone1 ?: "",
-            phone2 = entity.phone2 ?: "",
-            plusCode = entity.plusCode,
-            postalCode = entity.postalCode,
-            reportedBy = entity.reportedBy,
-            state = entity.state,
-            svi = entity.svi,
-            updatedAt = entity.updatedAt,
-            what3Words = entity.what3Words ?: "",
-            workTypes = validWorkTypes.map(WorkTypeEntity::asExternalModel),
-        ),
-        LocalChange(
-            isLocalModified = root.isLocalModified,
-            localModifiedAt = root.localModifiedAt,
-            syncedAt = root.syncedAt,
-        ),
-    )
+                id = id,
+                address = address,
+                autoContactFrequencyT = autoContactFrequencyT ?: "",
+                caseNumber = caseNumber,
+                city = city,
+                county = county,
+                createdAt = createdAt,
+                email = email,
+                favoriteId = favoriteId,
+                flags = flags.map { it.asExternalModel(translator) },
+                formData = formDataMap,
+                incidentId = incidentId,
+                keyWorkType = validWorkTypes.find { it.workType == keyWorkTypeType }
+                    ?.asExternalModel(),
+                latitude = latitude,
+                longitude = longitude,
+                name = name,
+                notes = notes
+                    .filter { it.note.isNotBlank() }
+                    .map(WorksiteNoteEntity::asExternalModel)
+                    .sortedWith { a, b -> if (a.createdAt < b.createdAt) 1 else -1 },
+                networkId = networkId,
+                phone1 = phone1 ?: "",
+                phone2 = phone2 ?: "",
+                plusCode = plusCode,
+                postalCode = postalCode,
+                reportedBy = reportedBy,
+                state = state,
+                svi = svi,
+                updatedAt = updatedAt,
+                what3Words = what3Words ?: "",
+                workTypes = validWorkTypes.map(WorkTypeEntity::asExternalModel),
+                workTypeRequests = workTypeRequests.filter { it.byOrg == orgId }
+                    .map(WorkTypeTransferRequestEntity::asExternalModel),
+                isAssignedToOrgMember = if (root.isLocalModified) isLocalFavorite else favoriteId != null,
+            ),
+            LocalChange(
+                isLocalModified = root.isLocalModified,
+                localModifiedAt = root.localModifiedAt,
+                syncedAt = root.syncedAt,
+            ),
+        )
+    }
 }

@@ -92,6 +92,7 @@ dependencies {
     implementation(project(":feature:cases"))
     implementation(project(":feature:dashboard"))
     implementation(project(":feature:menu"))
+    implementation(project(":feature:syncinsights"))
     implementation(project(":feature:team"))
 
     implementation(project(":core:appheader"))

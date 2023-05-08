@@ -1,20 +1,24 @@
 package com.crisiscleanup.feature.menu
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 
 @Composable
 internal fun MenuRoute(
-    modifier: Modifier = Modifier,
+    openSyncLogs: () -> Unit = {},
 ) {
     MenuScreen(
-        modifier = modifier,
+        openSyncLogs = openSyncLogs,
     )
 }
 
@@ -22,6 +26,7 @@ internal fun MenuRoute(
 internal fun MenuScreen(
     modifier: Modifier = Modifier,
     viewModel: MenuViewModel = hiltViewModel(),
+    openSyncLogs: () -> Unit = {},
 ) {
     val databaseText = viewModel.databaseVersionText
 
@@ -48,9 +53,17 @@ internal fun MenuScreen(
             }
 
             expireTokenAction?.let {
-                TextButton(onClick = it) {
-                    Text("Expire token")
-                }
+                CrisisCleanupTextButton(
+                    onClick = it,
+                    text = "Expire token",
+                )
+            }
+
+            if (viewModel.isNotProduction) {
+                CrisisCleanupTextButton(
+                    onClick = openSyncLogs,
+                    text = "See sync logs",
+                )
             }
         }
     }

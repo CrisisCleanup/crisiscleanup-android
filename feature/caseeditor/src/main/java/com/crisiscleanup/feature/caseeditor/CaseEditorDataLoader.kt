@@ -1,16 +1,36 @@
 package com.crisiscleanup.feature.caseeditor
 
 import com.crisiscleanup.core.common.log.AppLogger
-import com.crisiscleanup.core.data.repository.*
+import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.IncidentsRepository
+import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
+import com.crisiscleanup.core.data.repository.LocationsRepository
+import com.crisiscleanup.core.data.repository.WorkTypeStatusRepository
+import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
+import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.model.IncidentBounds
 import com.crisiscleanup.core.mapmarker.util.toBounds
 import com.crisiscleanup.core.mapmarker.util.toLatLng
-import com.crisiscleanup.core.model.data.*
+import com.crisiscleanup.core.model.data.AutoContactFrequency
+import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.model.data.EmptyWorksite
+import com.crisiscleanup.core.model.data.IncidentLocation
+import com.crisiscleanup.core.model.data.WorksiteFormValue
 import com.crisiscleanup.feature.caseeditor.model.FormFieldNode
 import com.crisiscleanup.feature.caseeditor.model.flatten
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -231,7 +251,6 @@ internal class CaseEditorDataLoader(
                 ) {
                     initialWorksite = initialWorksite.copy(
                         formData = updatedFormData,
-                        isAssignedToOrgMember = initialWorksite.favoriteId != null,
                     )
                 }
 
@@ -302,11 +321,19 @@ internal class CaseEditorDataLoader(
 
                     try {
                         val worksite = localWorksite.worksite
+                        val networkId = worksite.networkId
                         if (worksite.id > 0 &&
-                            worksite.networkId > 0
+                            (networkId > 0 || localWorksite.localChanges.isLocalModified)
                         ) {
                             isRefreshingWorksite.value = true
-                            worksiteChangeRepository.trySyncWorksite(worksite.id)
+                            if (worksiteChangeRepository.trySyncWorksite(worksite.id) &&
+                                networkId > 0
+                            ) {
+                                worksitesRepository.pullWorkTypeRequests(
+                                    worksite.incidentId,
+                                    networkId,
+                                )
+                            }
                         }
                     } finally {
                         isRefreshingWorksite.value = false

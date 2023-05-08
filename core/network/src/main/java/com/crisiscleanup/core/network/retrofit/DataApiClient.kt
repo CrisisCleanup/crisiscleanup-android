@@ -146,6 +146,13 @@ private interface DataSourceApi {
         @Query("updated_at__gt")
         after: Instant,
     ): NetworkCountResult
+
+    @TokenAuthenticationHeader
+    @GET("worksite_requests")
+    suspend fun getWorkTypeRequests(
+        @Query("worksite_work_type__worksite")
+        id: Long,
+    ): NetworkWorkTypeRequestResult
 }
 
 class DataApiClient @Inject constructor(
@@ -250,4 +257,6 @@ class DataApiClient @Inject constructor(
 
     override suspend fun getLocalizationCount(after: Instant) =
         networkApi.getLocalizationCount(after)
+
+    override suspend fun getWorkTypeRequests(id: Long) = networkApi.getWorkTypeRequests(id)
 }

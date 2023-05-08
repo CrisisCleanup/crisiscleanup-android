@@ -75,7 +75,7 @@ class MemoryCacheSearchWorksitesRepository @Inject constructor(
 
             result.results?.let {
                 val searchResult = it.map { networkWorksite ->
-                    val workType = networkWorksite.keyWorkType?.let { keyWorkType ->
+                    val workType = networkWorksite.newestKeyWorkType?.let { keyWorkType ->
                         WorkType(
                             0,
                             statusLiteral = keyWorkType.status,
@@ -84,7 +84,8 @@ class MemoryCacheSearchWorksitesRepository @Inject constructor(
                     }
                     with(networkWorksite) {
                         WorksiteSummary(
-                            id,
+                            id = 0,
+                            networkId = id,
                             name,
                             address,
                             city,
@@ -134,7 +135,8 @@ class MemoryCacheSearchWorksitesRepository @Inject constructor(
                     }
                     with(networkWorksite) {
                         WorksiteSummary(
-                            id,
+                            id = 0,
+                            networkId = id,
                             name,
                             address,
                             city,

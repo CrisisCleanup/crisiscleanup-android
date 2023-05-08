@@ -1,6 +1,12 @@
 package com.crisiscleanup.core.network.worksitechange
 
-import com.crisiscleanup.core.network.model.*
+import com.crisiscleanup.core.network.model.DynamicValue
+import com.crisiscleanup.core.network.model.KeyDynamicValuePair
+import com.crisiscleanup.core.network.model.NetworkFlag
+import com.crisiscleanup.core.network.model.NetworkNote
+import com.crisiscleanup.core.network.model.NetworkWorkType
+import com.crisiscleanup.core.network.model.NetworkWorksiteFull
+import com.crisiscleanup.core.network.model.NetworkWorksitePush
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
@@ -314,7 +320,7 @@ internal fun NetworkWorksiteFull.getWorkTypeChanges(
     changedAt: Instant,
     workTypeIdLookup: Map<Long, Long> = emptyMap(),
 ): Triple<List<Pair<Long, WorkTypeSnapshot.WorkType>>, List<WorkTypeChange>, Collection<Long>> {
-    val existingWorkTypes = workTypes.associate {
+    val existingWorkTypes = newestWorkTypes.associate {
         with(it) {
             val workTypeCopy = WorkTypeSnapshot.WorkType(
                 // Incoming network ID is always defined

@@ -11,6 +11,8 @@ object RouteConstant {
 
     const val settingsRoute = "settings_route"
 
+    const val syncInsightsRoute = "sync_insights_route"
+
     const val selectIncidentRoute = "select_incident"
 
     const val casesSearchRoute = "cases_search"

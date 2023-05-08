@@ -3,6 +3,7 @@ package com.crisiscleanup.core.network.retrofit
 import com.crisiscleanup.core.network.CrisisCleanupWriteApi
 import com.crisiscleanup.core.network.model.*
 import kotlinx.datetime.Instant
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.http.*
 import javax.inject.Inject
@@ -36,13 +37,13 @@ private interface DataChangeApi {
     ): NetworkType
 
     @TokenAuthenticationHeader
-    @DELETE("worksites/{worksiteId}/favorite")
+    @HTTP(method = "DELETE", path = "worksites/{worksiteId}/favorite", hasBody = true)
     suspend fun unfavorite(
         @Header("cc-created-at") createdAt: Instant,
         @Path("worksiteId")
         worksiteId: Long,
         @Body favoriteId: NetworkFavoriteId,
-    )
+    ): Response<Unit>
 
     @TokenAuthenticationHeader
     @POST("worksites/{worksiteId}/flags")
@@ -54,13 +55,13 @@ private interface DataChangeApi {
     ): NetworkFlag
 
     @TokenAuthenticationHeader
-    @DELETE("worksites/{worksiteId}/flags")
+    @HTTP(method = "DELETE", path = "worksites/{worksiteId}/flags", hasBody = true)
     suspend fun deleteFlag(
         @Header("cc-created-at") createdAt: Instant,
         @Path("worksiteId")
         worksiteId: Long,
         @Body flagId: NetworkFlagId,
-    )
+    ): Response<Unit>
 
     @TokenAuthenticationHeader
     @POST("worksites/{worksiteId}/notes")
@@ -96,6 +97,22 @@ private interface DataChangeApi {
         worksiteId: Long,
         @Body workTypes: NetworkWorkTypeTypes,
     )
+
+    @TokenAuthenticationHeader
+    @POST("worksites/{worksiteId}/request_take")
+    suspend fun requestWorkTypes(
+        @Path("worksiteId")
+        worksiteId: Long,
+        @Body request: NetworkWorkTypeChangeRequest,
+    )
+
+    @TokenAuthenticationHeader
+    @POST("worksites/{worksiteId}/release")
+    suspend fun releaseWorkTypes(
+        @Path("worksiteId")
+        worksiteId: Long,
+        @Body release: NetworkWorkTypeChangeRelease,
+    )
 }
 
 class WriteApiClient @Inject constructor(
@@ -120,14 +137,16 @@ class WriteApiClient @Inject constructor(
         createdAt: Instant,
         worksiteId: Long,
         favoriteId: Long,
-    ) =
+    ) {
         changeWorksiteApi.unfavorite(createdAt, worksiteId, NetworkFavoriteId(favoriteId))
+    }
 
     override suspend fun addFlag(createdAt: Instant, worksiteId: Long, flag: NetworkFlag) =
         changeWorksiteApi.addFlag(createdAt, worksiteId, flag)
 
-    override suspend fun deleteFlag(createdAt: Instant, worksiteId: Long, flagId: Long) =
+    override suspend fun deleteFlag(createdAt: Instant, worksiteId: Long, flagId: Long) {
         changeWorksiteApi.deleteFlag(createdAt, worksiteId, NetworkFlagId(flagId))
+    }
 
     override suspend fun addNote(worksiteId: Long, note: String) =
         changeWorksiteApi.addNote(worksiteId, NetworkNoteNote(note))
@@ -150,6 +169,23 @@ class WriteApiClient @Inject constructor(
         createdAt: Instant,
         worksiteId: Long,
         workTypes: Collection<String>,
-    ) =
-        changeWorksiteApi.unclaimWorkTypes(createdAt, worksiteId, NetworkWorkTypeTypes(workTypes))
+    ) = changeWorksiteApi.unclaimWorkTypes(createdAt, worksiteId, NetworkWorkTypeTypes(workTypes))
+
+    override suspend fun requestWorkTypes(
+        worksiteId: Long,
+        workTypes: List<String>,
+        reason: String
+    ) = changeWorksiteApi.requestWorkTypes(
+        worksiteId,
+        NetworkWorkTypeChangeRequest(workTypes, reason),
+    )
+
+    override suspend fun releaseWorkTypes(
+        worksiteId: Long,
+        workTypes: List<String>,
+        reason: String
+    ) = changeWorksiteApi.releaseWorkTypes(
+        worksiteId,
+        NetworkWorkTypeChangeRelease(workTypes, reason),
+    )
 }

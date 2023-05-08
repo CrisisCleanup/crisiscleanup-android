@@ -57,8 +57,9 @@ class WorksiteChangeDaoPlus @Inject constructor(
             return worksiteId
         }
 
-        syncLogger.type = if (worksiteChange.isNew) "worksite-new"
-        else "worksite-update-$worksiteId"
+        val logPostfix = localModifiedAt.epochSeconds.toString()
+        syncLogger.type = if (worksiteChange.isNew) "worksite-new-$logPostfix"
+        else "worksite-update-$worksiteId-$logPostfix"
 
         db.withTransaction {
             try {
@@ -129,10 +130,28 @@ class WorksiteChangeDaoPlus @Inject constructor(
                     )
                 }
 
+                var worksiteUpdatedIds = worksiteChange.copy(id = worksiteId)
+
                 flags
                     .split { it.id <= 0 }
                     .also { (inserts, updates) ->
-                        flagDao.insertIgnore(inserts)
+                        val insertIds = flagDao.insertIgnore(inserts)
+                        val unsyncedLookup = inserts
+                            .mapIndexedNotNull { index, flag ->
+                                val id = insertIds[index]
+                                if (id > 0) Pair(flag.reasonT, id)
+                                else null
+                            }
+                            .associate { it.first to it.second }
+                        if (unsyncedLookup.isNotEmpty()) {
+                            val updatedIds = worksiteUpdatedIds.flags?.map {
+                                val localId = unsyncedLookup[it.reasonT]
+                                if (localId == null || it.id > 0) it
+                                else it.copy(id = localId)
+                            }
+                            worksiteUpdatedIds = worksiteUpdatedIds.copy(flags = updatedIds)
+                        }
+
                         flagDao.update(updates)
 
                         syncLogger.log("Flags. Inserted ${inserts.size}. Updated ${updates.size}")
@@ -141,11 +160,44 @@ class WorksiteChangeDaoPlus @Inject constructor(
                 formDataDao.upsert(formData)
                 syncLogger.log("Form data. Upserted ${formData.size}.")
 
-                noteDao.insertIgnore(insertNotes)
-                syncLogger.log("Notes. Inserted ${insertNotes.size}.")
+                if (insertNotes.isNotEmpty()) {
+                    val insertIds = noteDao.insertIgnore(insertNotes)
+                    var insertedIndex = 0
+                    worksiteUpdatedIds = worksiteUpdatedIds.copy(
+                        notes = worksiteUpdatedIds.notes.map { note ->
+                            if (note.id <= 0) {
+                                if (insertedIndex < insertNotes.size &&
+                                    note.note == insertNotes[insertedIndex].note
+                                ) {
+                                    val insertId = insertIds[insertedIndex]
+                                    insertedIndex++
+                                    return@map note.copy(id = insertId)
+                                }
+                            }
+                            note
+                        }
+                    )
+                    syncLogger.log("Notes. Inserted ${insertNotes.size}.")
+                }
 
                 workTypes.split { it.id <= 0 }.also { (inserts, updates) ->
-                    workTypeDao.insertIgnore(inserts)
+                    val insertIds = workTypeDao.insertIgnore(inserts)
+                    val unsyncedLookup = inserts
+                        .mapIndexedNotNull { index, flag ->
+                            val id = insertIds[index]
+                            if (id > 0) Pair(flag.workType, id)
+                            else null
+                        }
+                        .associate { it.first to it.second }
+                    if (unsyncedLookup.isNotEmpty()) {
+                        val updatedIds = worksiteUpdatedIds.workTypes.map {
+                            val localId = unsyncedLookup[it.workTypeLiteral]
+                            if (localId == null || it.id > 0) it
+                            else it.copy(id = localId)
+                        }
+                        worksiteUpdatedIds = worksiteUpdatedIds.copy(workTypes = updatedIds)
+                    }
+
                     workTypeDao.update(updates)
 
                     syncLogger.log("Work types. Inserted ${inserts.size}. Updated ${updates.size}")
@@ -153,7 +205,7 @@ class WorksiteChangeDaoPlus @Inject constructor(
 
                 saveWorksiteChange(
                     worksiteStart,
-                    worksiteChange.copy(id = worksiteId),
+                    worksiteUpdatedIds,
                     idMapping,
                     appVersionProvider.versionCode,
                     organizationId,
@@ -201,10 +253,10 @@ class WorksiteChangeDaoPlus @Inject constructor(
     ) {
         db.withTransaction {
             val worksiteDao = db.worksiteDao()
-            val networkId = ids.worksiteNetworkId
+            val networkId = ids.networkWorksiteId
             if (networkId > 0) {
-                worksiteDao.updateRootNetworkId(worksiteId, ids.worksiteNetworkId)
-                worksiteDao.updateWorksiteNetworkId(worksiteId, ids.worksiteNetworkId)
+                worksiteDao.updateRootNetworkId(worksiteId, ids.networkWorksiteId)
+                worksiteDao.updateWorksiteNetworkId(worksiteId, ids.networkWorksiteId)
             }
 
             val flagDao = db.worksiteFlagDao()

@@ -48,4 +48,4 @@ class FakeIncidentsRepository @Inject constructor() : IncidentsRepository {
 }
 
 private fun makeIncident(id: Long, name: String) =
-    Incident(id, name, name, emptyList(), emptyList(), emptyList())
+    Incident(id, name, name, emptyList(), emptyList(), emptyList(), false)

@@ -5,7 +5,12 @@ import com.crisiscleanup.core.database.TestUtil
 import com.crisiscleanup.core.database.TestUtil.testSyncLogger
 import com.crisiscleanup.core.database.TestWorksiteDao
 import com.crisiscleanup.core.database.WorksiteTestUtil
-import com.crisiscleanup.core.database.model.*
+import com.crisiscleanup.core.database.model.WorksiteEntities
+import com.crisiscleanup.core.database.model.WorksiteEntity
+import com.crisiscleanup.core.database.model.WorksiteFlagEntity
+import com.crisiscleanup.core.database.model.WorksiteFormDataEntity
+import com.crisiscleanup.core.database.model.WorksiteNoteEntity
+import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteFormValue
 import com.crisiscleanup.core.model.data.WorksiteNote
@@ -57,6 +62,8 @@ class WorksiteFormDataFlagNoteTest {
     private val updatedAtA = createdAtA.plus(18_458.seconds)
 
     private val updatedAtB = updatedAtA.plus(49_841.seconds)
+
+    private val myOrgId = 217L
 
     @Test
     fun syncNewWorksite() = runTest {
@@ -133,7 +140,7 @@ class WorksiteFormDataFlagNoteTest {
         assertEquals(expectedNoteEntities, actualPopulatedWorksite.notes)
 
         val actualWorksite =
-            actualPopulatedWorksite.asExternalModel(WorksiteTestUtil.TestTranslator)
+            actualPopulatedWorksite.asExternalModel(myOrgId, WorksiteTestUtil.TestTranslator)
 
         val expectedFormData = mapOf(
             "form-field-c" to WorksiteFormValue(true, "doesn't matter", false),
@@ -248,7 +255,7 @@ class WorksiteFormDataFlagNoteTest {
         )
 
         val actualWorksite =
-            actualPopulatedWorksite.asExternalModel(WorksiteTestUtil.TestTranslator)
+            actualPopulatedWorksite.asExternalModel(myOrgId, WorksiteTestUtil.TestTranslator)
 
         val expectedFormData = mapOf(
             "form-field-b" to WorksiteFormValue(false, "updated-value", false),
@@ -362,7 +369,7 @@ class WorksiteFormDataFlagNoteTest {
         )
 
         val actualWorksite =
-            actualPopulatedWorksite.asExternalModel(WorksiteTestUtil.TestTranslator)
+            actualPopulatedWorksite.asExternalModel(myOrgId, WorksiteTestUtil.TestTranslator)
 
         val expectedFormData = mapOf(
             "form-field-a" to WorksiteFormValue(true, "doesn't-matter", false),
@@ -392,7 +399,7 @@ class WorksiteFormDataFlagNoteTest {
         val actualPopulatedWorksiteB = testWorksiteDao.getLocalWorksite(2)
         assertEquals(existingWorksites[1], actualPopulatedWorksiteB.entity)
         val actualWorksiteB =
-            actualPopulatedWorksiteB.asExternalModel(WorksiteTestUtil.TestTranslator)
+            actualPopulatedWorksiteB.asExternalModel(myOrgId, WorksiteTestUtil.TestTranslator)
         assertEquals(emptyMap(), actualWorksiteB.worksite.formData)
         assertEquals(emptyList(), actualWorksiteB.worksite.flags)
         assertEquals(emptyList(), actualWorksiteB.worksite.notes)

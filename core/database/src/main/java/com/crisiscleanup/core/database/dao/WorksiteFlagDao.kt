@@ -63,7 +63,7 @@ interface WorksiteFlagDao {
     fun getNetworkedIdMap(worksiteId: Long): List<PopulatedIdNetworkId>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insertIgnore(flags: Collection<WorksiteFlagEntity>)
+    fun insertIgnore(flags: Collection<WorksiteFlagEntity>): List<Long>
 
     @Update
     fun update(flags: Collection<WorksiteFlagEntity>)

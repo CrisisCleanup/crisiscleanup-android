@@ -52,7 +52,7 @@ private fun CaseView(
 fun LazyListScope.listCaseResults(
     worksites: List<CaseSummaryResult>,
     onCaseSelect: (CaseSummaryResult) -> Unit = {},
-    itemKey: (CaseSummaryResult) -> Any = { it.networkWorksiteId },
+    itemKey: (CaseSummaryResult) -> Any = { it.listItemKey },
 ) {
     items(
         worksites,

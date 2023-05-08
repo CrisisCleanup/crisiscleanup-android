@@ -3,7 +3,14 @@ package com.crisiscleanup.core.database.dao
 import androidx.room.withTransaction
 import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
-import com.crisiscleanup.core.database.model.*
+import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
+import com.crisiscleanup.core.database.model.WorkTypeEntity
+import com.crisiscleanup.core.database.model.WorksiteEntities
+import com.crisiscleanup.core.database.model.WorksiteEntity
+import com.crisiscleanup.core.database.model.WorksiteFlagEntity
+import com.crisiscleanup.core.database.model.WorksiteFormDataEntity
+import com.crisiscleanup.core.database.model.WorksiteLocalModifiedAt
+import com.crisiscleanup.core.database.model.WorksiteNoteEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -356,8 +363,16 @@ class WorksiteDaoPlus @Inject constructor(
                 false
             } else {
                 db.worksiteDao().setRootUnmodified(worksiteId, syncedAt)
+                db.workTypeTransferRequestDao().deleteUnsynced(worksiteId)
                 true
             }
         }
     }
+
+    fun getUnsyncedChangeCount(worksiteId: Long): List<Int> = listOf(
+        db.worksiteFlagDao().getUnsyncedCount(worksiteId),
+        db.worksiteNoteDao().getUnsyncedCount(worksiteId),
+        db.workTypeDao().getUnsyncedCount(worksiteId),
+        db.worksiteChangeDao().getChangeCount(worksiteId),
+    )
 }

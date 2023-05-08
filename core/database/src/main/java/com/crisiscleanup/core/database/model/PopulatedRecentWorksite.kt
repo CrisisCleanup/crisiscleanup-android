@@ -18,6 +18,7 @@ data class PopulatedRecentWorksite(
 fun PopulatedRecentWorksite.asSummaryEntity(): WorksiteSummary {
     with(worksite) {
         return WorksiteSummary(
+            id,
             networkId,
             name,
             address,

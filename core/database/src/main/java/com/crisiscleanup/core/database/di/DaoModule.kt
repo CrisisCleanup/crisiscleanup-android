@@ -54,4 +54,7 @@ object DaoModule {
 
     @Provides
     fun recentWorksiteDao(db: CrisisCleanupDatabase) = db.recentWorksiteDao()
+
+    @Provides
+    fun workTypeTransferRequestDao(db: CrisisCleanupDatabase) = db.workTypeTransferRequestDao()
 }

@@ -1,6 +1,7 @@
 package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.common.AppVersionProvider
+import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -8,16 +9,21 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.IncidentWorksitesSyncer
 import com.crisiscleanup.core.data.model.asEntities
+import com.crisiscleanup.core.data.model.asEntity
 import com.crisiscleanup.core.data.util.IncidentDataPullReporter
 import com.crisiscleanup.core.database.dao.RecentWorksiteDao
+import com.crisiscleanup.core.database.dao.WorkTypeTransferRequestDaoPlus
 import com.crisiscleanup.core.database.dao.WorksiteDao
 import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
 import com.crisiscleanup.core.database.dao.WorksiteSyncStatDao
 import com.crisiscleanup.core.database.model.*
 import com.crisiscleanup.core.model.data.*
+import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.*
+import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.tryThrowException
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -32,7 +38,12 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private val worksiteSyncStatDao: WorksiteSyncStatDao,
     private val worksiteDao: WorksiteDao,
     private val worksiteDaoPlus: WorksiteDaoPlus,
+    accountDataRepository: AccountDataRepository,
+    private val languageTranslationsRepository: LanguageTranslationsRepository,
     private val recentWorksiteDao: RecentWorksiteDao,
+    private val dataSource: CrisisCleanupNetworkDataSource,
+    private val authEventManager: AuthEventManager,
+    private val workTypeTransferRequestDaoPlus: WorkTypeTransferRequestDaoPlus,
     private val appVersionProvider: AppVersionProvider,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
@@ -48,8 +59,15 @@ class OfflineFirstWorksitesRepository @Inject constructor(
 
     override fun streamIncidentWorksitesCount(id: Long) = worksiteDao.streamWorksitesCount(id)
 
+    private val orgId = accountDataRepository.accountData.map { it.org.id }
+
     override fun streamLocalWorksite(worksiteId: Long) =
-        worksiteDao.streamLocalWorksite(worksiteId).map { it?.asExternalModel() }
+        worksiteDao.streamLocalWorksite(worksiteId).map {
+            it?.asExternalModel(
+                orgId.first(),
+                languageTranslationsRepository,
+            )
+        }
 
     override suspend fun streamWorksitesMapVisual(
         incidentId: Long,
@@ -207,6 +225,24 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         return isSynced
     }
 
+    override suspend fun pullWorkTypeRequests(incidentId: Long, networkWorksiteId: Long) {
+        try {
+            val workTypeRequests = dataSource.getWorkTypeRequests(networkWorksiteId)
+            tryThrowException(authEventManager, workTypeRequests.errors)
+
+            workTypeRequests.results?.let { requests ->
+                if (requests.isNotEmpty()) {
+                    val worksiteId = worksiteDao.getWorksiteId(incidentId, networkWorksiteId)
+                    val entities = requests.map { it.asEntity(worksiteId) }
+                    workTypeTransferRequestDaoPlus.syncUpsert(entities)
+                }
+            }
+
+        } catch (e: Exception) {
+            logger.logException(e)
+        }
+    }
+
     override suspend fun setRecentWorksite(
         incidentId: Long,
         worksiteId: Long,
@@ -224,4 +260,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             )
         )
     }
+
+    override fun getUnsyncedCounts(worksiteId: Long) =
+        worksiteDaoPlus.getUnsyncedChangeCount(worksiteId)
 }

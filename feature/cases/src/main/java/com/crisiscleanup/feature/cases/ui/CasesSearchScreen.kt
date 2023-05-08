@@ -54,9 +54,7 @@ internal fun CasesSearchRoute(
         val onCaseSelect = if (isLoading) {
             {}
         } else remember(viewModel) {
-            { result: CaseSummaryResult ->
-                viewModel.onSelectWorksite(result.networkWorksiteId)
-            }
+            { result: CaseSummaryResult -> viewModel.onSelectWorksite(result) }
         }
 
         val q by viewModel.searchQuery.collectAsStateWithLifecycle()

@@ -53,6 +53,7 @@ class CasesSearchViewModel @Inject constructor(
                             CaseSummaryResult(
                                 summary,
                                 getIcon(summary.workType),
+                                listItemKey = summary.id,
                             )
                         }
                     }
@@ -117,12 +118,15 @@ class CasesSearchViewModel @Inject constructor(
         return true
     }
 
-    fun onSelectWorksite(networkWorksiteId: Long) {
+    fun onSelectWorksite(result: CaseSummaryResult) {
         viewModelScope.launch(ioDispatcher) {
             isSelectingResult.value = true
             try {
                 val incidentId = incidentSelector.incidentId.value
-                val worksiteId = worksitesRepository.getLocalId(incidentId, networkWorksiteId)
+                val worksiteId = with(result) {
+                    if (summary.id > 0) summary.id
+                    else worksitesRepository.getLocalId(incidentId, networkWorksiteId)
+                }
                 selectedWorksite.value = Pair(incidentId, worksiteId)
             } catch (e: Exception) {
                 logger.logException(e)

@@ -50,7 +50,7 @@ interface WorksiteNoteDao {
     fun getNetworkedIdMap(worksiteId: Long): List<PopulatedIdNetworkId>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insertIgnore(notes: Collection<WorksiteNoteEntity>)
+    fun insertIgnore(notes: Collection<WorksiteNoteEntity>): List<Long>
 
     @Transaction
     @Query(

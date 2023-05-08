@@ -1,6 +1,19 @@
 package com.crisiscleanup.core.network
 
-import com.crisiscleanup.core.network.model.*
+import com.crisiscleanup.core.network.model.NetworkAuthResult
+import com.crisiscleanup.core.network.model.NetworkCountResult
+import com.crisiscleanup.core.network.model.NetworkIncidentOrganizationsResult
+import com.crisiscleanup.core.network.model.NetworkIncidentResult
+import com.crisiscleanup.core.network.model.NetworkIncidentsResult
+import com.crisiscleanup.core.network.model.NetworkLanguageTranslationResult
+import com.crisiscleanup.core.network.model.NetworkLanguagesResult
+import com.crisiscleanup.core.network.model.NetworkLocationsResult
+import com.crisiscleanup.core.network.model.NetworkWorkTypeRequestResult
+import com.crisiscleanup.core.network.model.NetworkWorkTypeStatusResult
+import com.crisiscleanup.core.network.model.NetworkWorksiteFull
+import com.crisiscleanup.core.network.model.NetworkWorksiteLocationSearchResult
+import com.crisiscleanup.core.network.model.NetworkWorksitesFullResult
+import com.crisiscleanup.core.network.model.NetworkWorksitesShortResult
 import kotlinx.datetime.Instant
 
 interface CrisisCleanupAuthApi {
@@ -82,4 +95,6 @@ interface CrisisCleanupNetworkDataSource {
     suspend fun getLanguageTranslations(key: String): NetworkLanguageTranslationResult
 
     suspend fun getLocalizationCount(after: Instant): NetworkCountResult
+
+    suspend fun getWorkTypeRequests(id: Long): NetworkWorkTypeRequestResult
 }

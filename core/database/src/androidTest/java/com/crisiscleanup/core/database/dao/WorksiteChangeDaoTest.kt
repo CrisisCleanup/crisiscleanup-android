@@ -9,8 +9,21 @@ import com.crisiscleanup.core.database.TestUtil.testSyncLogger
 import com.crisiscleanup.core.database.TestUtil.testUuidGenerator
 import com.crisiscleanup.core.database.WorksiteTestUtil.insertWorksites
 import com.crisiscleanup.core.database.WorksiteTestUtil.testIncidents
-import com.crisiscleanup.core.database.model.*
-import com.crisiscleanup.core.model.data.*
+import com.crisiscleanup.core.database.model.EditWorksiteEntities
+import com.crisiscleanup.core.database.model.WorkTypeEntity
+import com.crisiscleanup.core.database.model.WorksiteChangeEntity
+import com.crisiscleanup.core.database.model.WorksiteFlagEntity
+import com.crisiscleanup.core.database.model.WorksiteFormDataEntity
+import com.crisiscleanup.core.database.model.WorksiteNoteEntity
+import com.crisiscleanup.core.database.model.WorksiteRootEntity
+import com.crisiscleanup.core.database.model.asEntities
+import com.crisiscleanup.core.model.data.AutoContactFrequency
+import com.crisiscleanup.core.model.data.EmptyWorksite
+import com.crisiscleanup.core.model.data.WorkType
+import com.crisiscleanup.core.model.data.Worksite
+import com.crisiscleanup.core.model.data.WorksiteFlag
+import com.crisiscleanup.core.model.data.WorksiteFormValue
+import com.crisiscleanup.core.model.data.WorksiteNote
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.verify
@@ -48,6 +61,19 @@ class WorksiteChangeDaoTest {
     private val updatedAtB = createdAtB.plus(51.minutes)
     private val createdAtC = createdAtB.plus(23.hours)
 
+    /**
+     * Flags are
+     * - 0, reason-a
+     * - 33, reason-b
+     *
+     * Notes are
+     * - 0, note-a, atA
+     * - 64, note-b, atB
+     *
+     * Work types are
+     * - 0, work-type-a, atA, status-a, null
+     * - 57, work-type-b, atB, status-b, 523
+     */
     private val worksiteFull = Worksite(
         id = 56,
         address = "address",
@@ -114,6 +140,25 @@ class WorksiteChangeDaoTest {
         ),
         isAssignedToOrgMember = true,
     )
+
+    /**
+     * Flags are
+     * - 1, reason-a
+     * - 11, reason-c
+     * - 0, reason-d
+     *
+     * Notes are
+     * - 1, note-a, atA
+     * - 64, note-b, atB
+     * - 0, note-c, atC
+     * - 0, note-d, atC
+     * - 41, note-e, atB
+     *
+     * Work types are
+     * - 1, work-type-a, atA, status-a-change, null
+     * - 23, work-type-c, atC, status-c, 523
+     * - 0, work-type-d, atC, status-d, 523
+     */
     private val worksiteChanged = worksiteFull.copy(
         address = "address-change",
         autoContactFrequencyT = AutoContactFrequency.Often.literal,
@@ -305,12 +350,15 @@ class WorksiteChangeDaoTest {
 
     @Test
     fun newWorksite() = runTest {
+        val newFlags = worksiteFull.flags!!.map { it.copy(id = 0) }
+        val newNotes = worksiteFull.notes.map { it.copy(id = 0) }
+        val newWorkTypes = worksiteFull.workTypes.map { it.copy(id = 0) }
         val newWorksite = worksiteFull.copy(
             id = 0,
             networkId = -1,
-            flags = worksiteFull.flags!!.map { it.copy(id = 0) },
-            notes = worksiteFull.notes.map { it.copy(id = 0) },
-            workTypes = worksiteFull.workTypes.map { it.copy(id = 0) },
+            flags = newFlags,
+            notes = newNotes,
+            workTypes = newWorkTypes,
         )
 
         val primaryWorkType = newWorksite.workTypes[0]
@@ -325,7 +373,12 @@ class WorksiteChangeDaoTest {
         every {
             changeSerializer.serialize(
                 EmptyWorksite,
-                newWorksite.copy(id = 1),
+                newWorksite.copy(
+                    id = 1,
+                    flags = newFlags.mapIndexed { index, flag -> flag.copy(id = index + 1L) },
+                    notes = newNotes.mapIndexed { index, note -> note.copy(id = index + 1L) },
+                    workTypes = newWorkTypes.mapIndexed { index, workType -> workType.copy(id = index + 1L) },
+                ),
                 emptyMap(),
                 emptyMap(),
                 emptyMap(),
@@ -421,10 +474,39 @@ class WorksiteChangeDaoTest {
         verify(exactly = 0) { appLogger.logException(any()) }
     }
 
+    private fun editWorksiteEntities(worksiteId: Long): EditWorksiteEntities {
+        val savedWorksite = db.testWorksiteDao().getWorksiteEntity(worksiteId)
+        val flags = db.testFlagDao().getEntities(worksiteId)
+        val formData = db.testFormDataDao().getEntities(worksiteId)
+        val notes = db.testNoteDao().getEntities(worksiteId)
+        val workTypes = db.testWorkTypeDao().getEntities(worksiteId)
+
+        return EditWorksiteEntities(
+            savedWorksite!!,
+            flags,
+            formData,
+            notes,
+            workTypes,
+        )
+    }
+
     /**
      * Establishes initial conditions for [editSyncedWorksite]
+     *
+     * Maps flags
+     * - 1 to 201
+     * - 11 to 211, reason-c
+     * - 21 to 221
+     *
+     * Notes
+     * - 64 to 264
+     * - 41 to 241, note-e, atB
+     *
+     * Work types
+     * - 1 to 301
+     * - 23 to 223, work-type-c, atC, ...
      */
-    private fun editSyncedWorksiteInitialConditions(
+    private fun editSyncedWorksite_initialConditions(
         worksite: Worksite,
         worksiteLocalGlobalUuid: String = "",
     ): EditWorksiteEntities {
@@ -511,19 +593,7 @@ class WorksiteChangeDaoTest {
         )
         db.workTypeDao().updateNetworkId(37, 237)
 
-        val savedWorksite = db.testWorksiteDao().getWorksiteEntity(worksiteId)
-        val flags = db.testFlagDao().getEntities(worksiteId)
-        val formData = db.testFormDataDao().getEntities(worksiteId)
-        val notes = db.testNoteDao().getEntities(worksiteId)
-        val workTypes = db.testWorkTypeDao().getEntities(worksiteId)
-
-        return EditWorksiteEntities(
-            savedWorksite!!,
-            flags,
-            formData,
-            notes,
-            workTypes,
-        )
+        return editWorksiteEntities(worksiteId)
     }
 
     @Test
@@ -532,6 +602,7 @@ class WorksiteChangeDaoTest {
             networkId = 515,
             flags = worksiteFull.flags?.toMutableList()?.apply {
                 add(
+                    // Is mapped to 221 in initialConditions
                     testWorksiteFlag(
                         21,
                         createdAtB,
@@ -552,14 +623,45 @@ class WorksiteChangeDaoTest {
                 )
             }
         )
-        val initialEntities = editSyncedWorksiteInitialConditions(worksiteSynced)
+        /*
+         * Flags
+         * 1 to 201, reason-a
+         * 33, reason-b
+         * 11 to 211, reason-c
+         * 21 to 221, reason-network-synced-local-deleted
+         *
+         * Notes
+         * 1 to -1
+         * 41 to 241
+         * 64 to 264
+         *
+         * Work types
+         * 1 to 301
+         * 23 to 223
+         * 37 to 327
+         * 57 to -1
+         */
+        val initialEntities = editSyncedWorksite_initialConditions(worksiteSynced)
 
         val worksiteModified = worksiteChanged.copy(networkId = worksiteSynced.networkId)
 
         every {
             changeSerializer.serialize(
                 worksiteSynced,
-                worksiteModified,
+                worksiteModified.copy(
+                    flags = worksiteModified.flags!!.map {
+                        if (it.id == 0L) it.copy(id = 34)
+                        else it
+                    },
+                    notes = worksiteModified.notes.mapIndexed { index, note ->
+                        if (note.id == 0L) note.copy(id = index + 63L)
+                        else note
+                    },
+                    workTypes = worksiteModified.workTypes.map {
+                        if (it.id == 0L) it.copy(id = 58)
+                        else it
+                    }
+                ),
                 mapOf(
                     1L to 201,
                     11L to 211,
@@ -615,32 +717,31 @@ class WorksiteChangeDaoTest {
         val actualWorksite = db.testWorksiteDao().getWorksiteEntity(worksiteId)
         assertEquals(worksiteEntity, actualWorksite)
 
-        var localGlobalIndex = 20L
+        fun expectedFlagEntity(
+            id: Long,
+            networkId: Long,
+            reasonT: String,
+            createdAt: Instant = createdAtB,
+            localGlobalUuid: String = "",
+        ) =
+            testFlagEntity(
+                id = id,
+                localGlobalUuid = localGlobalUuid,
+                networkId = networkId,
+                worksiteId = 56,
+                createdAt = createdAt,
+                reasonT = reasonT,
+                isHighPriority = false,
+                action = "",
+                notes = "",
+                requestedAction = "",
+            )
 
-        val expectedFlags = initialEntities.flags
-            .toMutableList()
-            .also {
-                val deletedIds = arrayOf(21L, 33L)
-                deletedIds.forEach { flagId ->
-                    val deleteIndex = it.indexOfFirst { entity -> entity.id == flagId }
-                    it.removeAt(deleteIndex)
-                }
-
-                val updateIndex = it.indexOfFirst { entity -> entity.id == 1L }
-                it[updateIndex] = it[updateIndex].copy(createdAt = createdAtC)
-
-                val addedFlag = entities.flags
-                    .find { entity -> entity.id == 0L }!!
-                    .copy(id = 34)
-                it.add(addedFlag)
-            }
-            .map {
-                it.copy(
-                    worksiteId = 56,
-                    localGlobalUuid = if (it.networkId > 0) it.localGlobalUuid else "uuid-${localGlobalIndex++}",
-                )
-            }
-            .sortedBy(WorksiteFlagEntity::id)
+        val expectedFlags = listOf(
+            expectedFlagEntity(1, 201, "reason-a", createdAtC),
+            expectedFlagEntity(11, 211, "reason-c"),
+            expectedFlagEntity(34, -1, "reason-d", localGlobalUuid = "uuid-20"),
+        )
         val actualFlags = db.testFlagDao().getEntities(worksiteId)
             .sortedBy(WorksiteFlagEntity::id)
         assertEquals(expectedFlags, actualFlags)
@@ -666,53 +767,223 @@ class WorksiteChangeDaoTest {
             .sortedBy(WorksiteFormDataEntity::fieldKey)
         assertEquals(expectedFormData, actualFormData)
 
-        var entityIndex = 65L
-        localGlobalIndex = 22
-        val expectedNotes = initialEntities.notes
-            .toMutableList()
-            .also {
-                val updateIndex = it.indexOfFirst { entity -> entity.id == 1L }
-                it[updateIndex] = it[updateIndex].copy(
-                    // Is updated in preconditions
-                    localGlobalUuid = "uuid-4",
-                )
+        fun expectedNote(
+            id: Long,
+            networkId: Long,
+            note: String,
+            createdAt: Instant = createdAtB,
+            localGlobalUuid: String = "",
+        ) = testNotesEntity(
+            id = id,
+            networkId = networkId,
+            worksiteId = 56,
+            createdAt = createdAt,
+            note = note,
+            localGlobalUuid = localGlobalUuid,
+        )
 
-                entities.notes.forEach { entity ->
-                    if (it.find { preEntity -> preEntity.id == entity.id } == null) {
-                        it.add(entity.copy(entityIndex++))
-                    }
-                }
-            }
-            .map {
-                it.copy(
-                    worksiteId = 56,
-                    localGlobalUuid = if (it.networkId > 0 || it.id == 1L) it.localGlobalUuid
-                    else "uuid-${localGlobalIndex++}"
-                )
-            }
-            .sortedBy(WorksiteNoteEntity::id)
+        val expectedNotes = listOf(
+            expectedNote(1, -1, "note-a", createdAtA, "uuid-4"),
+            expectedNote(41, 241, "note-e", createdAtB),
+            expectedNote(64, 264, "note-b", createdAtB),
+            expectedNote(65, -1, "note-c", createdAtC, "uuid-22"),
+            expectedNote(66, -1, "note-d", createdAtC, "uuid-23"),
+        )
         val actualNotes = db.testNoteDao().getEntities(worksiteId)
             .sortedBy(WorksiteNoteEntity::id)
         assertEquals(expectedNotes, actualNotes)
 
-        localGlobalIndex = 24
+        fun expectedWorkType(
+            id: Long,
+            networkId: Long,
+            workType: String,
+            status: String,
+            orgClaim: Long? = 523,
+            createdAt: Instant? = createdAtC,
+            localGlobalUuid: String = "",
+            phase: Int? = 2,
+            nextRecurAt: Instant? = null,
+            recur: String? = null,
+        ) = testWorkTypeEntity(
+            worksiteId = 56,
+            id = id,
+            networkId = networkId,
+            workType = workType,
+            status = status,
+            orgClaim = orgClaim,
+            createdAt = createdAt,
+            localGlobalUuid = localGlobalUuid,
+            phase = phase,
+            nextRecurAt = nextRecurAt,
+            recur = recur,
+        )
+
+        val expectedWorkTypes = listOf(
+            expectedWorkType(1, 301, "work-type-a", "status-a-change", null, createdAtA),
+            expectedWorkType(23, 223, "work-type-c", "status-c"),
+            expectedWorkType(58, -1, "work-type-d", "status-d", localGlobalUuid = "uuid-24"),
+        )
+        val actualWorkTypes = db.testWorkTypeDao().getEntities(worksiteId)
+            .sortedBy(WorkTypeEntity::id)
+        assertEquals(expectedWorkTypes, actualWorkTypes)
+
+        val actualChanges = db.testWorksiteChangeDao().getEntities(worksiteId)
+        val expectedWorksiteChange = WorksiteChangeEntity(
+            id = 1,
+            appVersion = 81,
+            organizationId = 385,
+            worksiteId = worksiteId,
+            syncUuid = "uuid-26",
+            changeModelVersion = 3,
+            changeData = "serialized-edit-worksite-changes",
+            createdAt = actualChanges.first().createdAt,
+        )
+        assertEquals(listOf(expectedWorksiteChange), actualChanges)
+        assertTrue(now.minus(actualChanges.first().createdAt) < 1.seconds)
+
+        verify(exactly = 0) { appLogger.logException(any()) }
+    }
+
+
+    /**
+     * Establishes initial conditions for [editSyncedWorksite_deleteExistingFlags]
+     */
+    private fun editSyncedWorksite_deleteExistingFlags_initialConditions(
+        worksite: Worksite,
+        worksiteLocalGlobalUuid: String = "",
+    ): EditWorksiteEntities {
+        val entities = worksite.asEntities(
+            uuidGenerator,
+            worksite.workTypes[0],
+            emptyMap(),
+            emptyMap(),
+            emptyMap(),
+        )
+        db.worksiteDao().insertRoot(
+            WorksiteRootEntity(
+                worksite.id,
+                "sync-uuid",
+                worksite.updatedAt!!,
+                worksite.updatedAt!!,
+                worksiteLocalGlobalUuid,
+                false,
+                0,
+                worksite.networkId,
+                worksite.incidentId,
+            )
+        )
+        db.worksiteDao().insert(entities.core)
+        db.worksiteFlagDao().insertIgnore(entities.flags)
+        db.worksiteFormDataDao().upsert(entities.formData)
+        db.worksiteNoteDao().insertIgnore(entities.notes)
+        db.workTypeDao().insertIgnore(entities.workTypes)
+
+        val worksiteId = if (worksite.id > 0) worksite.id else 1
+
+        db.testFlagDao().updateNetworkId(1, 201)
+        db.worksiteFlagDao().updateNetworkId(21, 221)
+
+        return editWorksiteEntities(worksiteId)
+    }
+
+    @Test
+    fun editSyncedWorksite_deleteExistingFlags() = runTest {
+        val worksiteSynced = worksiteFull.copy(
+            networkId = 515,
+            flags = worksiteFull.flags?.toMutableList()?.apply {
+                add(
+                    testWorksiteFlag(
+                        21,
+                        createdAtB,
+                        "reason-network-synced-local-deleted",
+                        isHighPriority = true,
+                    )
+                )
+            },
+        )
+        val initialEntities =
+            editSyncedWorksite_deleteExistingFlags_initialConditions(worksiteSynced)
+
+        // Delete all flags. Keep everything else the same.
+        val worksiteModified = worksiteChanged.copy(
+            networkId = worksiteSynced.networkId,
+            flags = emptyList(),
+            formData = worksiteSynced.formData,
+            notes = worksiteSynced.notes.mapIndexed { index, note ->
+                if (note.id == 0L) note.copy(id = index + 1L)
+                else note
+            },
+            workTypes = worksiteSynced.workTypes.map {
+                if (it.id == 0L) it.copy(id = 1)
+                else it
+            },
+        )
+
+        every {
+            changeSerializer.serialize(
+                worksiteSynced,
+                worksiteModified,
+                mapOf(
+                    1L to 201,
+                    21L to 221,
+                ),
+                emptyMap(),
+                emptyMap(),
+            )
+        } returns Pair(3, "serialized-edit-worksite-changes")
+
+        val primaryWorkType = worksiteModified.workTypes[0]
+
+        val entities = worksiteModified.asEntities(
+            uuidGenerator,
+            primaryWorkType,
+            emptyMap(),
+            emptyMap(),
+            emptyMap(),
+        )
+
+        worksiteChangeDaoPlus.saveChange(
+            worksiteSynced,
+            worksiteModified,
+            primaryWorkType,
+            385,
+            now,
+        )
+
+        val worksiteEntity = entities.core
+        val worksiteId = worksiteEntity.id
+
+        val actualRoot = db.testWorksiteDao().getRootEntity(worksiteId)
+        val expectedRoot = WorksiteRootEntity(
+            id = 56,
+            syncUuid = "uuid-16",
+            localModifiedAt = now,
+            syncedAt = worksiteSynced.updatedAt!!,
+            localGlobalUuid = "",
+            isLocalModified = true,
+            syncAttempt = 0,
+            networkId = 515,
+            incidentId = testIncidentId,
+        )
+        assertEquals(expectedRoot, actualRoot)
+
+        val actualWorksite = db.testWorksiteDao().getWorksiteEntity(worksiteId)
+        assertEquals(worksiteEntity, actualWorksite)
+
+        val actualFlags = db.testFlagDao().getEntities(worksiteId)
+        assertEquals(emptyList(), actualFlags)
+
+        val expectedFormData = initialEntities.formData
+            .map { it.copy(worksiteId = 56) }
+        val actualFormData = db.testFormDataDao().getEntities(worksiteId)
+        assertEquals(expectedFormData, actualFormData)
+
+        val expectedNotes = initialEntities.notes
+        val actualNotes = db.testNoteDao().getEntities(worksiteId)
+        assertEquals(expectedNotes, actualNotes)
+
+        var localGlobalIndex = 14
         val expectedWorkTypes = initialEntities.workTypes
-            .toMutableList()
-            .also {
-                val deletedIds = arrayOf(37L, 57)
-                deletedIds.forEach { workTypeId ->
-                    val deleteIndex = it.indexOfFirst { entity -> entity.id == workTypeId }
-                    it.removeAt(deleteIndex)
-                }
-
-                val updateIndex = it.indexOfFirst { entity -> entity.id == 1L }
-                it[updateIndex] = it[updateIndex].copy(status = "status-a-change")
-
-                val added = entities.workTypes
-                    .find { entity -> entity.id == 0L }!!
-                    .copy(id = 58)
-                it.add(added)
-            }
             .map {
                 it.copy(
                     worksiteId = 56,
@@ -731,7 +1002,7 @@ class WorksiteChangeDaoTest {
             appVersion = 81,
             organizationId = 385,
             worksiteId = worksiteId,
-            syncUuid = "uuid-26",
+            syncUuid = "uuid-17",
             changeModelVersion = 3,
             changeData = "serialized-edit-worksite-changes",
             createdAt = actualChanges.first().createdAt,

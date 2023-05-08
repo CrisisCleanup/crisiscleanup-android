@@ -1,5 +1,6 @@
 package com.crisiscleanup.sync
 
+import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.event.AuthEventManager
@@ -36,6 +37,7 @@ class AppSyncer @Inject constructor(
     private val syncLogger: SyncLogger,
     private val authEventManager: AuthEventManager,
     private val networkMonitor: NetworkMonitor,
+    private val appVersionProvider: AppVersionProvider,
     @ApplicationScope private val applicationScope: CoroutineScope,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : SyncPuller, SyncPusher {

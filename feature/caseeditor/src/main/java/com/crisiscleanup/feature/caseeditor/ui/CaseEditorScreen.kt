@@ -28,6 +28,8 @@ import com.crisiscleanup.core.commonassets.getDisasterIcon
 import com.crisiscleanup.core.designsystem.component.*
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.*
+import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.*
@@ -35,7 +37,6 @@ import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.model.FormFieldsInputData
 import kotlinx.coroutines.launch
 import com.crisiscleanup.core.common.R as commonR
-import com.crisiscleanup.core.commonassets.R as commonAssetsR
 
 private const val SectionHeaderContentType = "section-header-content-type"
 private const val SectionSeparatorContentType = "section-header-content-type"
@@ -108,6 +109,7 @@ internal fun ColumnScope.CaseEditorScreen(
                 AnimatedBusyIndicator(true)
             }
         }
+
         is CaseEditorUiState.WorksiteData -> {
             FullEditView(
                 uiState as CaseEditorUiState.WorksiteData,
@@ -116,6 +118,7 @@ internal fun ColumnScope.CaseEditorScreen(
                 onMoveLocation = onEditMoveLocationOnMap,
             )
         }
+
         else -> {
             val errorData = uiState as CaseEditorUiState.Error
             val errorMessage = if (errorData.errorResId != 0) stringResource(errorData.errorResId)
@@ -458,11 +461,9 @@ private fun LazyListScope.fullEditContent(
 ) {
     item(key = "incident-info") {
         val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
-        val incidentResId = getDisasterIcon(worksiteData.incident.disaster)
         CaseIncident(
             modifier,
-            incidentResId,
-            worksiteData.incident.name,
+            worksiteData.incident,
             worksiteData.isPendingSync,
             isSyncing = isSyncing,
         )
@@ -605,13 +606,14 @@ private fun LazyListScope.formDataSection(
 }
 
 @Composable
-private fun CaseIncident(
+internal fun CaseIncident(
     modifier: Modifier = Modifier,
-    disasterResId: Int = commonAssetsR.drawable.ic_disaster_other,
-    incidentName: String = "",
+    incident: Incident = EmptyIncident,
     isPendingSync: Boolean = false,
     isSyncing: Boolean = false,
 ) {
+    val incidentName = incident.name
+    val disasterResId = getDisasterIcon(incident.disaster)
     Row(
         modifier = modifier.listItemPadding(),
         verticalAlignment = Alignment.CenterVertically,
@@ -771,7 +773,9 @@ private fun SaveActionBar(
 private fun CaseIncidentPreview() {
     Column {
         CaseIncident(
-            incidentName = "Big sweeping hurricane across the gulf",
+            incident = EmptyIncident.copy(
+                name = "Big sweeping hurricane across the gulf",
+            ),
             isPendingSync = true,
         )
     }

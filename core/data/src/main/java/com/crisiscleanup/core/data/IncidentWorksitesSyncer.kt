@@ -161,7 +161,9 @@ class IncidentWorksitesSyncer @Inject constructor(
             if (saveData) {
                 val worksites = cachedData.worksites.map { it.asEntity(incidentId) }
                 val workTypes =
-                    cachedData.worksites.map { it.workTypes.map(NetworkWorksiteFull.WorkTypeShort::asEntity) }
+                    cachedData.worksites.map {
+                        it.newestWorkTypes.map(NetworkWorksiteFull.WorkTypeShort::asEntity)
+                    }
                 saveToDb(
                     incidentId,
                     worksites,

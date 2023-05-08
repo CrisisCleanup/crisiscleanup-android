@@ -1,6 +1,12 @@
 package com.crisiscleanup.core.network.worksitechange
 
-import com.crisiscleanup.core.network.model.*
+import com.crisiscleanup.core.network.model.DynamicValue
+import com.crisiscleanup.core.network.model.KeyDynamicValuePair
+import com.crisiscleanup.core.network.model.NetworkFlag
+import com.crisiscleanup.core.network.model.NetworkNote
+import com.crisiscleanup.core.network.model.NetworkType
+import com.crisiscleanup.core.network.model.NetworkWorkType
+import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlin.time.Duration.Companion.days
@@ -16,6 +22,7 @@ internal fun testNetworkWorksite(
     favorite: NetworkType? = null,
     formData: List<KeyDynamicValuePair> = emptyList(),
     notes: List<NetworkNote> = emptyList(),
+    keyWorkType: NetworkWorkType? = null,
     workTypes: List<NetworkWorkType> = emptyList(),
 ) = NetworkWorksiteFull(
     id = 0,
@@ -31,7 +38,7 @@ internal fun testNetworkWorksite(
     flags = flags,
     formData = formData,
     incident = 0,
-    keyWorkType = null,
+    keyWorkType = keyWorkType,
     location = NetworkWorksiteFull.Location("", emptyList()),
     name = "",
     notes = notes,

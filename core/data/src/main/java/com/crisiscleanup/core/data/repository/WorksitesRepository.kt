@@ -1,6 +1,10 @@
 package com.crisiscleanup.core.data.repository
 
-import com.crisiscleanup.core.model.data.*
+import com.crisiscleanup.core.model.data.IncidentDataSyncStats
+import com.crisiscleanup.core.model.data.LocalWorksite
+import com.crisiscleanup.core.model.data.Worksite
+import com.crisiscleanup.core.model.data.WorksiteMapMark
+import com.crisiscleanup.core.model.data.WorksiteSummary
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Clock
@@ -74,9 +78,13 @@ interface WorksitesRepository {
         syncedAt: Instant = Clock.System.now(),
     ): Boolean
 
+    suspend fun pullWorkTypeRequests(incidentId: Long, networkWorksiteId: Long)
+
     suspend fun setRecentWorksite(
         incidentId: Long,
         worksiteId: Long,
         viewStart: Instant,
     )
+
+    fun getUnsyncedCounts(worksiteId: Long): List<Int>
 }

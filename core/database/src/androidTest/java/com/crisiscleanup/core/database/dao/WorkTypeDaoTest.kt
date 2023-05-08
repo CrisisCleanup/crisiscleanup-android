@@ -120,7 +120,7 @@ internal fun testWorkTypeEntity(
     networkId: Long,
     status: String = "status",
     workType: String = "work-type-a",
-    orgClaim: Long = 201,
+    orgClaim: Long? = 201,
     worksiteId: Long = 1,
     createdAt: Instant? = null,
     nextRecurAt: Instant? = null,

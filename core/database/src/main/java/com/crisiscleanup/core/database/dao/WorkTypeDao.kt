@@ -65,7 +65,7 @@ interface WorkTypeDao {
     fun getNetworkedIdMap(worksiteId: Long): List<PopulatedIdNetworkId>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insertIgnore(workTypes: Collection<WorkTypeEntity>)
+    fun insertIgnore(workTypes: Collection<WorkTypeEntity>): List<Long>
 
     @Update
     fun update(workTypes: Collection<WorkTypeEntity>)

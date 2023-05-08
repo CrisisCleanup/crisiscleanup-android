@@ -2,7 +2,11 @@ package com.crisiscleanup.core.database.dao
 
 import com.crisiscleanup.core.database.TestCrisisCleanupDatabase
 import com.crisiscleanup.core.database.TestUtil
-import com.crisiscleanup.core.database.model.*
+import com.crisiscleanup.core.database.model.IncidentEntity
+import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
+import com.crisiscleanup.core.database.model.IncidentLocationEntity
+import com.crisiscleanup.core.database.model.PopulatedIncident
+import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.Incident
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -159,6 +163,7 @@ class IncidentDaoTest {
             emptyList(),
             phoneNumbers,
             emptyList(),
+            false,
         )
 
         val expecteds = listOf(

@@ -393,13 +393,14 @@ class CasesViewModel @Inject constructor(
             if (buckets.isNotEmpty()) {
                 buckets.map {
                     val count = it.size
+                    val offsetScale = denseScreenOffsetScale + (count - 5).coerceAtLeast(0) * 0.2f
                     if (count > 1) {
                         var offsetDir = (PI * 0.5).toFloat()
                         val deltaDirDegrees = (2 * PI / count).toFloat()
                         it.forEach { index ->
                             markOffsets[index] = Pair(
-                                denseScreenOffsetScale * cos(offsetDir),
-                                denseScreenOffsetScale * sin(offsetDir),
+                                offsetScale * cos(offsetDir),
+                                offsetScale * sin(offsetDir),
                             )
                             offsetDir += deltaDirDegrees
                         }

@@ -16,41 +16,49 @@ data class PopulatedWorksite(
         entityColumn = "worksite_id",
     )
     val workTypes: List<WorkTypeEntity>,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "id",
+    )
+    val root: WorksiteRootEntity,
 )
 
 fun PopulatedWorksite.asExternalModel(): Worksite {
     val validWorkTypes = workTypes
-    return Worksite(
+    return with(entity) {
+        Worksite(
 
-        // Be sure to copy changes below to PopulatedLocalWorksite.asExternalModel
+            // Be sure to copy changes below to PopulatedLocalWorksite.asExternalModel
 
-        id = entity.id,
-        networkId = entity.networkId,
-        address = entity.address,
-        autoContactFrequencyT = entity.autoContactFrequencyT ?: "",
-        caseNumber = entity.caseNumber,
-        city = entity.city,
-        county = entity.county,
-        createdAt = entity.createdAt,
-        email = entity.email,
-        favoriteId = entity.favoriteId,
-        incidentId = entity.incidentId,
-        keyWorkType = validWorkTypes.find { it.workType == entity.keyWorkTypeType }
-            ?.asExternalModel(),
-        latitude = entity.latitude,
-        longitude = entity.longitude,
-        name = entity.name,
-        phone1 = entity.phone1 ?: "",
-        phone2 = entity.phone2 ?: "",
-        plusCode = entity.plusCode,
-        postalCode = entity.postalCode,
-        reportedBy = entity.reportedBy,
-        state = entity.state,
-        svi = entity.svi,
-        updatedAt = entity.updatedAt,
-        what3Words = entity.what3Words ?: "",
-        workTypes = validWorkTypes.map(WorkTypeEntity::asExternalModel),
-    )
+            id = id,
+            networkId = networkId,
+            address = address,
+            autoContactFrequencyT = autoContactFrequencyT ?: "",
+            caseNumber = caseNumber,
+            city = city,
+            county = county,
+            createdAt = createdAt,
+            email = email,
+            favoriteId = favoriteId,
+            incidentId = incidentId,
+            keyWorkType = validWorkTypes.find { it.workType == keyWorkTypeType }
+                ?.asExternalModel(),
+            latitude = latitude,
+            longitude = longitude,
+            name = name,
+            phone1 = phone1 ?: "",
+            phone2 = phone2 ?: "",
+            plusCode = plusCode,
+            postalCode = postalCode,
+            reportedBy = reportedBy,
+            state = state,
+            svi = svi,
+            updatedAt = updatedAt,
+            what3Words = what3Words ?: "",
+            workTypes = validWorkTypes.map(WorkTypeEntity::asExternalModel),
+            isAssignedToOrgMember = if (root.isLocalModified) isLocalFavorite else favoriteId != null,
+        )
+    }
 }
 
 data class WorksiteLocalModifiedAt(

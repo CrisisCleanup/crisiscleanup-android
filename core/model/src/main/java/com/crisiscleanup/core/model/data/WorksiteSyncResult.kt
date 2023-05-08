@@ -13,7 +13,7 @@ data class WorksiteSyncResult(
     )
 
     data class ChangeIds(
-        val worksiteNetworkId: Long,
+        val networkWorksiteId: Long,
         val flagIdMap: Map<Long, Long>,
         val noteIdMap: Map<Long, Long>,
         val workTypeIdMap: Map<Long, Long>,
@@ -60,7 +60,7 @@ data class WorksiteSyncResult(
         }
 
         return listOf(
-            "Network ID: ${changeIds.worksiteNetworkId}",
+            "Network ID: ${changeIds.networkWorksiteId}",
             outcomeSummary,
             changeTypeSummary
         )

@@ -48,7 +48,7 @@ private fun CircleNumber(
 
 // TODO Common styles
 private val headerTextStyle: TextStyle
-    @Composable @ReadOnlyComposable get() = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold)
+    @Composable @ReadOnlyComposable get() = MaterialTheme.typography.titleMedium
 
 @Composable
 internal fun SectionHeaderCollapsible(

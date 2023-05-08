@@ -43,8 +43,10 @@ data class Worksite(
     val updatedAt: Instant?,
     val what3Words: String? = null,
     val workTypes: List<WorkType>,
-    // TODO Save this flag to db and UI should differentiate this value vs when favorite ID is (synced and) defined.
+    val workTypeRequests: List<WorkTypeRequest> = emptyList(),
     /**
+     * Local state of favorite when editing a worksite
+     *
      * Has precedent over [favoriteId]. If [favoriteId] is defined but this is false it means the favorite was untoggled (or member flag was unchecked).
      */
     val isAssignedToOrgMember: Boolean = false,
@@ -56,7 +58,7 @@ data class Worksite(
 
     val isNew = id <= 0
 
-    val isFavorited: Boolean
+    val isLocalFavorite: Boolean
         get() = isAssignedToOrgMember
 
     val hasHighPriorityFlag: Boolean
@@ -66,6 +68,18 @@ data class Worksite(
 
     val crossStreetNearbyLandmark: String
         get() = formData?.get(CROSS_STREET_FIELD_KEY)?.valueString ?: ""
+
+    private fun toggleFlag(flagReason: String): Worksite {
+        val toggledFlags = if (flags?.any { it.reasonT == flagReason } == true) {
+            flags.filterNot(WorksiteFlag::isHighPriorityFlag)
+        } else {
+            val highPriorityFlag = WorksiteFlag.highPriority()
+            flags?.toMutableList()?.apply { add(highPriorityFlag) } ?: listOf(highPriorityFlag)
+        }
+        return copy(flags = toggledFlags)
+    }
+
+    fun toggleHighPriorityFlag() = toggleFlag(HIGH_PRIORITY_FLAG)
 }
 
 val EmptyWorksite = Worksite(

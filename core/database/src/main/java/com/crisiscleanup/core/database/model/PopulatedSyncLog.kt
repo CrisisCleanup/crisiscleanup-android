@@ -8,9 +8,12 @@ data class PopulatedSyncLog(
     val entity: SyncLogEntity,
 )
 
-fun PopulatedSyncLog.asExternalModel() = SyncLog(
-    logTime = entity.logTime,
-    logType = entity.logType,
-    message = entity.message,
-    details = entity.details,
-)
+fun PopulatedSyncLog.asExternalModel() = with(entity) {
+    SyncLog(
+        id = id,
+        logTime = logTime,
+        logType = logType,
+        message = message,
+        details = details,
+    )
+}

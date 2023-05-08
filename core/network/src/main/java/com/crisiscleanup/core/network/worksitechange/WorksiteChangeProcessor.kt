@@ -25,7 +25,7 @@ class WorksiteChangeProcessor(
     private val appEnv: AppEnv,
     private val syncLogger: SyncLogger,
     private var hasPriorUnsyncedChanges: Boolean,
-    private var worksiteNetworkId: Long,
+    private var networkWorksiteId: Long,
     flagIdLookup: Map<Long, Long>,
     noteIdLookup: Map<Long, Long>,
     workTypeIdLookup: Map<Long, Long>,
@@ -41,26 +41,26 @@ class WorksiteChangeProcessor(
     private suspend fun getNetworkWorksite(force: Boolean = false): NetworkWorksiteFull {
         networkWorksiteMutex.withLock {
             if (force || _networkWorksite == null) {
-                if (worksiteNetworkId <= 0) {
+                if (networkWorksiteId <= 0) {
                     error("Attempted to query worksite when not yet created")
                 }
-                _networkWorksite = networkDataSource.getWorksite(worksiteNetworkId)
+                _networkWorksite = networkDataSource.getWorksite(networkWorksiteId)
             }
         }
         _networkWorksite?.let { return it }
         ensureSyncConditions()
-        throw WorksiteNotFoundException(worksiteNetworkId)
+        throw WorksiteNotFoundException(networkWorksiteId)
     }
 
     val syncResult: WorksiteSyncResult
         get() = WorksiteSyncResult(
             syncChangeResults,
             WorksiteSyncResult.ChangeIds(
-                worksiteNetworkId,
+                networkWorksiteId,
                 flagIdMap = flagIdMap,
                 noteIdMap = noteIdMap,
                 workTypeIdMap = workTypeIdMap,
-                workTypeKeyMap = _networkWorksite?.workTypes
+                workTypeKeyMap = _networkWorksite?.newestWorkTypes
                     ?.associate { it.workType to it.id!! }
                     ?: emptyMap()
             ),
@@ -93,7 +93,7 @@ class WorksiteChangeProcessor(
             )
             else syncChange.worksiteChange
             val changeSet = getChangeSet(changes)
-            val isPartiallySynced = syncChange.isPartiallySynced && worksiteNetworkId > 0
+            val isPartiallySynced = syncChange.isPartiallySynced && networkWorksiteId > 0
             val syncResult = syncChangeSet(
                 syncChange.createdAt,
                 syncChange.syncUuid,
@@ -146,17 +146,17 @@ class WorksiteChangeProcessor(
             } else {
                 changeSet.worksite?.let {
                     worksite = writeApiClient.saveWorksite(changeCreatedAt, changeSyncUuid, it)
-                    worksiteNetworkId = worksite!!.id
+                    networkWorksiteId = worksite!!.id
                     _networkWorksite = worksite
 
                     result = result.copy(isPartiallySynced = true)
 
-                    syncLogger.log("Synced core $worksiteNetworkId.")
+                    syncLogger.log("Synced core $networkWorksiteId.")
                 }
             }
 
             if ((_networkWorksite?.id ?: -1) <= 0) {
-                throw WorksiteNotFoundException(worksiteNetworkId)
+                throw WorksiteNotFoundException(networkWorksiteId)
             }
 
             changeSet.isOrgMember?.let { isOrgMember ->
@@ -196,10 +196,10 @@ class WorksiteChangeProcessor(
     ): SyncChangeSetResult {
         try {
             if (favorite) {
-                writeApiClient.favoriteWorksite(changeAt, worksiteNetworkId)
+                writeApiClient.favoriteWorksite(changeAt, networkWorksiteId)
             } else {
                 if (favoriteId != null) {
-                    writeApiClient.unfavoriteWorksite(changeAt, worksiteNetworkId, favoriteId)
+                    writeApiClient.unfavoriteWorksite(changeAt, networkWorksiteId, favoriteId)
                 }
             }
 
@@ -220,7 +220,7 @@ class WorksiteChangeProcessor(
         val (newFlags, deleteFlagIds) = flagChanges
         for ((localId, flag) in newFlags) {
             try {
-                val syncedFlag = writeApiClient.addFlag(changeAt, worksiteNetworkId, flag)
+                val syncedFlag = writeApiClient.addFlag(changeAt, networkWorksiteId, flag)
                 flagIdMap[localId] = syncedFlag.id!!
                 syncLogger.log("Synced flag $localId (${syncedFlag.id}).")
 
@@ -233,7 +233,7 @@ class WorksiteChangeProcessor(
         val deleteFlagExceptions = mutableMapOf<Long, Exception>()
         for (flagId in deleteFlagIds) {
             try {
-                writeApiClient.deleteFlag(changeAt, worksiteNetworkId, flagId)
+                writeApiClient.deleteFlag(changeAt, networkWorksiteId, flagId)
                 syncLogger.log("Synced delete flag $flagId.")
             } catch (e: Exception) {
                 ensureSyncConditions()
@@ -254,7 +254,7 @@ class WorksiteChangeProcessor(
         for ((localId, note) in notes) {
             note.note?.let { noteContent ->
                 try {
-                    val syncedNote = writeApiClient.addNote(worksiteNetworkId, noteContent)
+                    val syncedNote = writeApiClient.addNote(networkWorksiteId, noteContent)
                     noteIdMap[localId] = syncedNote.id!!
                     syncLogger.log("Synced note $localId (${syncedNote.id}).")
                 } catch (e: Exception) {
@@ -302,7 +302,7 @@ class WorksiteChangeProcessor(
         // Do not call to API with empty arrays as it may indicate all.
         if (claimWorkTypes.isNotEmpty()) {
             try {
-                writeApiClient.claimWorkTypes(changeAt, worksiteNetworkId, claimWorkTypes)
+                writeApiClient.claimWorkTypes(changeAt, networkWorksiteId, claimWorkTypes)
                 syncLogger.log("Synced work type claim ${claimWorkTypes.joinToString(", ")}.")
             } catch (e: Exception) {
                 ensureSyncConditions()
@@ -312,7 +312,7 @@ class WorksiteChangeProcessor(
         // Do not call to API with empty arrays as it may indicate all.
         if (unclaimWorkTypes.isNotEmpty()) {
             try {
-                writeApiClient.unclaimWorkTypes(changeAt, worksiteNetworkId, unclaimWorkTypes)
+                writeApiClient.unclaimWorkTypes(changeAt, networkWorksiteId, unclaimWorkTypes)
                 syncLogger.log("Synced work type unclaim ${unclaimWorkTypes.joinToString(", ")}.")
             } catch (e: Exception) {
                 ensureSyncConditions()
@@ -338,8 +338,8 @@ class WorksiteChangeProcessor(
     }
 }
 
-class WorksiteNotFoundException(worksiteNetworkId: Long) :
-    Exception("Worksite $worksiteNetworkId not found/created")
+class WorksiteNotFoundException(networkWorksiteId: Long) :
+    Exception("Worksite $networkWorksiteId not found/created")
 
 private class NoInternetConnection : Exception("No internet")
 

@@ -7,6 +7,7 @@ data class Incident(
     val locations: List<IncidentLocation>,
     val activePhoneNumbers: List<String>,
     val formFields: List<IncidentFormField>,
+    val turnOnRelease: Boolean,
     val disasterLiteral: String = "",
     val disaster: Disaster = disasterFromLiteral(disasterLiteral),
 ) {
@@ -24,7 +25,15 @@ data class Incident(
     }
 }
 
-val EmptyIncident = Incident(-1, "", "", emptyList(), emptyList(), emptyList())
+val EmptyIncident = Incident(
+    -1,
+    "",
+    "",
+    emptyList(),
+    emptyList(),
+    emptyList(),
+    false,
+)
 
 data class IncidentLocation(
     val id: Long,
@@ -52,8 +61,9 @@ data class IncidentFormField(
     val parentKey: String,
     val selectToggleWorkType: String,
 ) {
-    val isDivEnd = htmlType.lowercase() == "divend"
-    val isHidden = htmlType.lowercase() == "hidden"
+    private val htmlTypeLower = htmlType.lowercase()
+    val isDivEnd = htmlTypeLower == "divend"
+    val isHidden = htmlTypeLower == "hidden"
 
     fun getFieldLabel(translate: (String) -> String) = label.ifBlank { translate(fieldKey) }
 }

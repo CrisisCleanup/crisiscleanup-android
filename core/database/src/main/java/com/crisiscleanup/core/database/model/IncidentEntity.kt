@@ -30,6 +30,8 @@ data class IncidentEntity(
     // Comma delimited phone numbers if defined
     @ColumnInfo("active_phone_number", defaultValue = "")
     val activePhoneNumber: String? = null,
+    @ColumnInfo("turn_on_release", defaultValue = "0")
+    val turnOnRelease: Boolean = false,
     @ColumnInfo("is_archived", defaultValue = "0")
     val isArchived: Boolean = false,
 )

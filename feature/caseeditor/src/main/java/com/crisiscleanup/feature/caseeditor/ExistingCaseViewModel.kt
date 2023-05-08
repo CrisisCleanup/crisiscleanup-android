@@ -8,7 +8,7 @@ import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.combineTrimText
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.log.AppLogger
-import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
+import com.crisiscleanup.core.common.log.CrisisCleanupLoggers.Worksites
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
@@ -17,7 +17,8 @@ import com.crisiscleanup.core.data.repository.*
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.WorkType
-import com.crisiscleanup.core.model.data.WorkTypeStatus
+import com.crisiscleanup.core.model.data.WorkTypeRequest
+import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.feature.caseeditor.navigation.ExistingCaseArgs
 import com.google.android.gms.maps.model.BitmapDescriptor
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,6 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
@@ -47,7 +49,7 @@ class ExistingCaseViewModel @Inject constructor(
     private val syncPusher: SyncPusher,
     private val resourceProvider: AndroidResourceProvider,
     drawableResourceBitmapProvider: DrawableResourceBitmapProvider,
-    @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
+    @Logger(Worksites) private val logger: AppLogger,
     @ApplicationScope private val externalScope: CoroutineScope,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
@@ -65,6 +67,15 @@ class ExistingCaseViewModel @Inject constructor(
     private var inBoundsPinIcon: BitmapDescriptor? = null
     private var outOfBoundsPinIcon: BitmapDescriptor? = null
 
+    val isSyncing = worksiteChangeRepository.syncingWorksiteIds.mapLatest {
+        it.contains(worksiteIdArg)
+    }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
     val isSavingWorksite = MutableStateFlow(false)
 
     private var isOrganizationsRefreshed = AtomicBoolean(false)
@@ -76,6 +87,7 @@ class ExistingCaseViewModel @Inject constructor(
         )
 
     val worksite = MutableStateFlow(EmptyWorksite)
+    private val worksiteChangeTime = MutableStateFlow(Instant.fromEpochSeconds(0))
 
     init {
         updateHeaderTitle()
@@ -150,6 +162,13 @@ class ExistingCaseViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
+    val worksiteData = dataLoader.uiState.map { it as? CaseEditorUiState.WorksiteData }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = null,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
     val subTitle = worksite.mapLatest {
         if (it == EmptyWorksite) ""
         else listOf(it.county, it.state)
@@ -175,30 +194,13 @@ class ExistingCaseViewModel @Inject constructor(
         }
         .mapLatest {
             val stateData = it.first as CaseEditorUiState.WorksiteData
+            val isTurnOnRelease = stateData.incident.turnOnRelease
             val myOrgId = stateData.orgId
             val worksiteWorkTypes = it.second.workTypes
 
-            var isMyOrgClaim = false
-            var myOrgName = ""
-            val otherOrgClaims = mutableListOf<String>()
-
-            val orgClaims = worksiteWorkTypes.mapNotNull(WorkType::orgClaim).toSet()
-            val orgLookup = it.third
-            orgClaims.forEach { orgId ->
-                val name = orgLookup[orgId]
-                if (name == null) {
-                    refreshOrganizationLookup()
-                } else {
-                    if (orgId == myOrgId) {
-                        isMyOrgClaim = true
-                        myOrgName = name
-                    } else {
-                        otherOrgClaims.add(name)
-                    }
-                }
-            }
-            val workTypeOrgClaims =
-                WorkTypeOrgClaims(isMyOrgClaim, myOrgName, otherOrgClaims.sorted())
+            val requestedTypes = stateData.worksite.workTypeRequests
+                .map(WorkTypeRequest::workType)
+                .toSet()
 
             val summaries = worksiteWorkTypes.map { workType ->
                 val workTypeLiteral = workType.workTypeLiteral
@@ -217,23 +219,49 @@ class ExistingCaseViewModel @Inject constructor(
                     workType,
                     name,
                     summaryJobTypes.combineTrimText(),
+                    requestedTypes.contains(workType.workTypeLiteral),
+                    isTurnOnRelease && workType.isReleaseEligible,
                     myOrgId,
                 )
             }
 
-            val unclaimedCount =
-                worksiteWorkTypes.filter { workType -> workType.orgClaim == null }.size
-            val myOrgClaimedCount =
-                worksiteWorkTypes.filter { workType -> workType.orgClaim == myOrgId }.size
-            val requestCount =
-                worksiteWorkTypes.filter { workType -> workType.orgClaim != null }.size - myOrgClaimedCount
+            val claimedWorkType = summaries.filter { summary -> summary.workType.orgClaim != null }
+            val unclaimed = summaries.filter { summary ->
+                summary.workType.orgClaim == null
+            }
+            val otherOrgClaimedWorkTypes =
+                claimedWorkType.filterNot(WorkTypeSummary::isClaimedByMyOrg)
+            val orgClaimedWorkTypes = claimedWorkType.filter(WorkTypeSummary::isClaimedByMyOrg)
 
+            val otherOrgClaimMap = mutableMapOf<Long, MutableList<WorkTypeSummary>>()
+            otherOrgClaimedWorkTypes.forEach { summary ->
+                val orgId = summary.workType.orgClaim!!
+                val otherOrgWorkTypes = otherOrgClaimMap[orgId] ?: mutableListOf()
+                otherOrgWorkTypes.add(summary)
+                otherOrgClaimMap[orgId] = otherOrgWorkTypes
+            }
+            val orgLookup = it.third
+            val otherOrgClaims = otherOrgClaimMap.map { (orgId, summaries) ->
+                val name = orgLookup[orgId]
+                if (name == null) {
+                    refreshOrganizationLookup()
+                }
+                OrgClaimWorkType(orgId, name ?: "", summaries, false)
+            }
+
+            val myOrgName = orgLookup[myOrgId] ?: ""
+            val orgClaimed = OrgClaimWorkType(myOrgId, myOrgName, orgClaimedWorkTypes, true)
+
+            val requestableCount = otherOrgClaimedWorkTypes.count { summary ->
+                !(summary.isReleasable || summary.isRequested)
+            }
+            val releasableCount = otherOrgClaimedWorkTypes.count { summary -> summary.isReleasable }
             WorkTypeProfile(
-                workTypeOrgClaims,
-                summaries,
-                unclaimedCount,
-                myOrgClaimedCount,
-                requestCount,
+                otherOrgClaims,
+                orgClaimed,
+                unclaimed,
+                releasableCount,
+                requestableCount,
             )
         }
         .stateIn(
@@ -250,9 +278,6 @@ class ExistingCaseViewModel @Inject constructor(
         else resourceProvider.getString(R.string.view_case_number, caseNumber)
     }
 
-    // TODO Queue and debounce saves. Save off view model thread in case is long running.
-    //      How to keep worksite state synced?
-
     private fun refreshOrganizationLookup() {
         if (!isOrganizationsRefreshed.getAndSet(true)) {
             viewModelScope.launch {
@@ -261,24 +286,91 @@ class ExistingCaseViewModel @Inject constructor(
         }
     }
 
-    fun toggleFavorite() {
+    // TODO Queue and debounce saves. Save off view model thread in case is long running.
+    //      How to keep worksite state synced?
 
+    private val uiStateWorksiteData: CaseEditorUiState.WorksiteData?
+        get() = dataLoader.uiState.value as? CaseEditorUiState.WorksiteData
+    private val organizationId: Long?
+        get() = uiStateWorksiteData?.orgId
+
+    private fun saveWorksiteChange(
+        startingWorksite: Worksite,
+        changedWorksite: Worksite,
+    ) {
+        if (startingWorksite == changedWorksite) {
+            return
+        }
+
+        organizationId?.let { orgId ->
+            viewModelScope.launch(ioDispatcher) {
+                isSavingWorksite.value = true
+                try {
+                    worksiteChangeRepository.saveWorksiteChange(
+                        startingWorksite,
+                        changedWorksite,
+                        changedWorksite.keyWorkType!!,
+                        orgId,
+                    )
+
+                    // TODO Queue up sync push debounce
+                    worksiteChangeTime.value = Clock.System.now()
+
+                } catch (e: Exception) {
+                    logger.logException(e)
+
+                    // TODO Show dialog save failed. Try again. If still fails seek help.
+                } finally {
+                    isSavingWorksite.value = false
+                }
+            }
+        }
+    }
+
+    fun toggleFavorite() {
+        val startingWorksite = worksite.value
+        val changedWorksite =
+            startingWorksite.copy(isAssignedToOrgMember = !startingWorksite.isLocalFavorite)
+        saveWorksiteChange(startingWorksite, changedWorksite)
     }
 
     fun toggleHighPriority() {
-
+        val startingWorksite = worksite.value
+        val changedWorksite = startingWorksite.toggleHighPriorityFlag()
+        saveWorksiteChange(startingWorksite, changedWorksite)
     }
 
     fun updateWorkType(workType: WorkType) {
-
+        val startingWorksite = worksite.value
+        val updatedWorkTypes =
+            startingWorksite.workTypes
+                .filter { it.workType != workType.workType }
+                .toMutableList()
+                .apply { add(workType) }
+        val changedWorksite = startingWorksite.copy(workTypes = updatedWorkTypes)
+        saveWorksiteChange(startingWorksite, changedWorksite)
     }
 
     fun requestWorkType(workType: WorkType) {
 
     }
 
-    fun claimAll() {
+    fun releaseWorkType(workType: WorkType) {
 
+    }
+
+    fun claimAll() {
+        organizationId?.let { orgId ->
+            val startingWorksite = worksite.value
+            val updatedWorkTypes =
+                startingWorksite.workTypes
+                    .map {
+                        if (it.isClaimed) it
+                        else it.copy(orgClaim = orgId)
+                    }
+            val changedWorksite = startingWorksite.copy(workTypes = updatedWorkTypes)
+            saveWorksiteChange(startingWorksite, changedWorksite)
+        }
     }
 
     fun requestAll() {
@@ -290,25 +382,28 @@ class ExistingCaseViewModel @Inject constructor(
     }
 }
 
-data class WorkTypeOrgClaims(
-    val isMyOrgClaim: Boolean,
-    val myOrgName: String,
-    val otherOrgClaims: List<String>,
-)
-
 data class WorkTypeSummary(
     val workType: WorkType,
     val name: String,
     val jobSummary: String,
+    val isRequested: Boolean,
+    val isReleasable: Boolean,
     val myOrgId: Long,
 ) {
     val isClaimedByMyOrg = workType.orgClaim == myOrgId
 }
 
+data class OrgClaimWorkType(
+    val orgId: Long,
+    val orgName: String,
+    val workTypes: List<WorkTypeSummary>,
+    val isMyOrg: Boolean,
+)
+
 data class WorkTypeProfile(
-    val orgClaims: WorkTypeOrgClaims,
-    val summaries: List<WorkTypeSummary>,
-    val unclaimedCount: Int,
-    val myOrgClaimedCount: Int,
-    val requestCount: Int,
+    val otherOrgClaims: List<OrgClaimWorkType>,
+    val orgClaims: OrgClaimWorkType,
+    val unclaimed: List<WorkTypeSummary>,
+    val releasableCount: Int,
+    val requestableCount: Int,
 )

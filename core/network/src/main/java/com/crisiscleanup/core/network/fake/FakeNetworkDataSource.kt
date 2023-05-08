@@ -1,7 +1,24 @@
 package com.crisiscleanup.core.network.fake
 
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
-import com.crisiscleanup.core.network.model.*
+import com.crisiscleanup.core.network.model.NetworkCountResult
+import com.crisiscleanup.core.network.model.NetworkIncident
+import com.crisiscleanup.core.network.model.NetworkIncidentLocation
+import com.crisiscleanup.core.network.model.NetworkIncidentOrganizationsResult
+import com.crisiscleanup.core.network.model.NetworkIncidentResult
+import com.crisiscleanup.core.network.model.NetworkIncidentsResult
+import com.crisiscleanup.core.network.model.NetworkLanguageDescription
+import com.crisiscleanup.core.network.model.NetworkLanguageTranslation
+import com.crisiscleanup.core.network.model.NetworkLanguageTranslationResult
+import com.crisiscleanup.core.network.model.NetworkLanguagesResult
+import com.crisiscleanup.core.network.model.NetworkLocation
+import com.crisiscleanup.core.network.model.NetworkLocationsResult
+import com.crisiscleanup.core.network.model.NetworkWorkTypeRequestResult
+import com.crisiscleanup.core.network.model.NetworkWorkTypeStatusResult
+import com.crisiscleanup.core.network.model.NetworkWorksiteFull
+import com.crisiscleanup.core.network.model.NetworkWorksiteLocationSearchResult
+import com.crisiscleanup.core.network.model.NetworkWorksitesFullResult
+import com.crisiscleanup.core.network.model.NetworkWorksitesShortResult
 import kotlinx.datetime.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -191,6 +208,8 @@ class FakeNetworkDataSource @Inject constructor() : CrisisCleanupNetworkDataSour
     )
 
     override suspend fun getLocalizationCount(after: Instant) = NetworkCountResult(count = 0)
+
+    override suspend fun getWorkTypeRequests(id: Long) = NetworkWorkTypeRequestResult()
 }
 
 internal fun fillNetworkIncident(
@@ -201,6 +220,7 @@ internal fun fillNetworkIncident(
     incidentType: String,
     locations: List<NetworkIncidentLocation>,
     activePhone: List<String>? = null,
+    turnOnRelease: Boolean = false,
     isArchived: Boolean = false
 ) = NetworkIncident(
     id,
@@ -209,6 +229,7 @@ internal fun fillNetworkIncident(
     locations,
     incidentType,
     activePhone,
+    turnOnRelease,
     isArchived,
 )
 

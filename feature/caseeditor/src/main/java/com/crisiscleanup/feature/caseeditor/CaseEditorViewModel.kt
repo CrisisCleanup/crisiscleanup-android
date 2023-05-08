@@ -74,16 +74,7 @@ class CaseEditorViewModel @Inject constructor(
     val visibleNoteCount: Int = 3
 
     private val incidentFieldLookup: StateFlow<Map<String, GroupSummaryFieldLookup>>
-    val workTypeGroupChildrenLookup: StateFlow<Map<String, Collection<String>>>
-
-    val detailsFieldLookup: GroupSummaryFieldLookup?
-        get() = incidentFieldLookup.value[DetailsFormGroupKey]
-    val workFieldLookup: GroupSummaryFieldLookup?
-        get() = incidentFieldLookup.value[WorkFormGroupKey]
-    val hazardsFieldLookup: GroupSummaryFieldLookup?
-        get() = incidentFieldLookup.value[HazardsFormGroupKey]
-    val volunteerReportFieldLookup: GroupSummaryFieldLookup?
-        get() = incidentFieldLookup.value[VolunteerReportFormGroupKey]
+    private val workTypeGroupChildrenLookup: StateFlow<Map<String, Collection<String>>>
 
     val showInvalidWorksiteSave = MutableStateFlow(false)
     val invalidWorksiteInfo = mutableStateOf(InvalidWorksiteInfo())
@@ -299,35 +290,6 @@ class CaseEditorViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    private fun getWorkTypeGroups(state: CaseEditorUiState, worksite: Worksite): List<String> {
-        (state as? CaseEditorUiState.WorksiteData)?.let { stateData ->
-            worksite.formData?.let { formData ->
-                val incident = stateData.incident
-                return formData.keys
-                    .asSequence()
-                    .filter { incident.workTypeLookup[it] != null }
-                    .mapNotNull {
-                        if (workTypeGroupChildrenLookup.value.containsKey(it)) it
-                        else incident.formFieldLookup[it]?.parentKey
-                    }
-                    .toSet()
-                    .sorted()
-                    .toList()
-            }
-        }
-        return emptyList()
-    }
-
-    val worksiteWorkTypeGroups = combine(
-        editingWorksite,
-        uiState,
-    ) { worksite, state -> getWorkTypeGroups(state, worksite) }
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = emptyList(),
-            started = SharingStarted.WhileSubscribed(),
-        )
-
     private fun updateHeaderTitle(caseNumber: String = "") {
         headerTitle.value = if (caseNumber.isEmpty()) {
             val headerTitleResId =
@@ -500,10 +462,12 @@ class CaseEditorViewModel @Inject constructor(
                                     invalidWorksiteInfo.value = incompletePropertyInfo
                                     showInvalidWorksiteSave.value = true
                                 }
+
                                 is LocationInputData -> {
                                     invalidWorksiteInfo.value = incompleteLocationInfo
                                     showInvalidWorksiteSave.value = true
                                 }
+
                                 is FormFieldsInputData -> {
                                     invalidWorksiteInfo.value = incompleteFormDataInfo(index)
                                     showInvalidWorksiteSave.value = true

@@ -42,6 +42,7 @@ fun Worksite.asEntities(
         svi = svi,
         what3Words = what3Words ?: "",
         updatedAt = modifiedAt,
+        isLocalFavorite = isLocalFavorite,
     )
 
     val flagsEntities = flags?.map { flag ->

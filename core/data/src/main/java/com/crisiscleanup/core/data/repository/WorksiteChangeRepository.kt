@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.datetime.Clock
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -142,6 +143,8 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
                 throw e
             } else {
                 // TODO Indicate error visually
+
+                syncLogger.log("Sync failed", e.message ?: "")
             }
         } finally {
             synchronized(_syncingWorksiteIds) {
@@ -155,7 +158,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
     }
 
     private suspend fun syncWorksite(worksiteId: Long) {
-        syncLogger.type = "syncing-worksite-$worksiteId"
+        syncLogger.type = "syncing-worksite-$worksiteId-${Clock.System.now().epochSeconds}"
 
         val sortedChanges = worksiteChangeDao.getOrdered(worksiteId)
         if (sortedChanges.isNotEmpty()) {
@@ -190,9 +193,9 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
             syncLogger.log("Unsynced data exists.")
         }
 
-        val worksiteNetworkId = worksiteDao.getWorksiteNetworkId(worksiteId)
-        if (worksiteNetworkId > 0) {
-            networkDataSource.getWorksite(worksiteNetworkId)?.let {
+        val networkWorksiteId = worksiteDao.getWorksiteNetworkId(worksiteId)
+        if (networkWorksiteId > 0) {
+            networkDataSource.getWorksite(networkWorksiteId)?.let {
                 val incidentId = worksiteDao.getIncidentId(worksiteId)
                 if (incidentId > 0) {
                     worksitesRepository.syncNetworkWorksite(incidentId, it)
@@ -232,7 +235,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
                 else listOf(newestChange)
             val hasPriorUnsyncedChanges = startingSyncIndex > oldestReferenceChangeIndex + 1
             val worksiteId = newestChange.worksiteId
-            val worksiteNetworkId = worksiteDao.getWorksiteNetworkId(worksiteId)
+            val networkWorksiteId = worksiteDao.getWorksiteNetworkId(worksiteId)
             val flagIdLookup = worksiteFlagDao.getNetworkedIdMap(worksiteId)
                 .associate { it.id to it.networkId }
             val noteIdLookup = worksiteNoteDao.getNetworkedIdMap(worksiteId)
@@ -244,7 +247,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
                 oldestReferenceChange,
                 syncChanges,
                 hasPriorUnsyncedChanges,
-                worksiteNetworkId,
+                networkWorksiteId,
                 flagIdLookup = flagIdLookup,
                 noteIdLookup = noteIdLookup,
                 workTypeIdLookup = workTypeIdLookup,

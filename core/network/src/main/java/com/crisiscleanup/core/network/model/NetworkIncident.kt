@@ -41,6 +41,8 @@ data class NetworkIncident(
     @Serializable(IterableStringSerializer::class)
     @SerialName("active_phone_number")
     val activePhoneNumber: List<String>?,
+    @SerialName("turn_on_release")
+    val turnOnRelease: Boolean,
     @SerialName("is_archived")
     val isArchived: Boolean?,
 

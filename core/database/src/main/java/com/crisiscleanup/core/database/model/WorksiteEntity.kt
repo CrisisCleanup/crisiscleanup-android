@@ -117,6 +117,13 @@ data class WorksiteEntity(
     val what3Words: String?,
     @ColumnInfo("updated_at")
     val updatedAt: Instant,
+
+    // TODO Write tests throughout (model, data, edit feature)
+    /**
+     * Is relevant when [WorksiteRootEntity.isLocalModified] otherwise ignore
+     */
+    @ColumnInfo("is_local_favorite", defaultValue = "0")
+    val isLocalFavorite: Boolean = false,
 )
 
 @Entity(

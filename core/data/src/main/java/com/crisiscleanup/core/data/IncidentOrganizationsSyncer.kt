@@ -5,6 +5,7 @@ import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
+import com.crisiscleanup.core.data.model.affiliateOrganizationCrossReferences
 import com.crisiscleanup.core.data.model.asEntity
 import com.crisiscleanup.core.data.model.primaryContactCrossReferences
 import com.crisiscleanup.core.data.util.IncidentDataPullStats
@@ -120,10 +121,13 @@ class IncidentOrganizationsSyncer @Inject constructor(
                 cachedData.organizations.flatMap { it.primaryContacts.map(NetworkPersonContact::asEntity) }
             val organizationContactCrossRefs =
                 cachedData.organizations.flatMap(NetworkIncidentOrganization::primaryContactCrossReferences)
+            val organizationAffiliates =
+                cachedData.organizations.flatMap(NetworkIncidentOrganization::affiliateOrganizationCrossReferences)
             incidentOrganizationDaoPlus.saveOrganizations(
                 organizations,
                 primaryContacts,
                 organizationContactCrossRefs,
+                organizationAffiliates,
             )
 
             statsUpdater.addSavedCount(organizations.size)

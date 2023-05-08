@@ -25,10 +25,12 @@ import kotlinx.datetime.Instant
         SyncLogEntity::class,
         WorksiteChangeEntity::class,
         IncidentOrganizationEntity::class,
+        OrganizationAffiliateEntity::class,
         PersonContactEntity::class,
         OrganizationPrimaryContactCrossRef::class,
         IncidentOrganizationSyncStatsEntity::class,
         RecentWorksiteEntity::class,
+        WorkTypeTransferRequestEntity::class,
     ],
     version = 1,
 )
@@ -43,6 +45,7 @@ abstract class TestCrisisCleanupDatabase : CrisisCleanupDatabase() {
     abstract fun testNoteDao(): TestNoteDao
     abstract fun testWorkTypeDao(): TestWorkTypeDao
     abstract fun testWorksiteChangeDao(): TestWorksiteChangeDao
+    abstract fun testWorkTypeRequestDao(): TestWorkTypeRequestDao
 }
 
 @Dao
@@ -162,4 +165,17 @@ interface TestWorksiteChangeDao {
         """
     )
     fun getEntitiesOrderId(worksiteId: Long): List<WorksiteChangeEntity>
+}
+
+@Dao
+interface TestWorkTypeRequestDao {
+    @Transaction
+    @Query(
+        """
+        SELECT *
+        FROM worksite_work_type_requests
+        WHERE worksite_id=:worksiteId
+        """
+    )
+    fun getEntities(worksiteId: Long): List<WorkTypeTransferRequestEntity>
 }

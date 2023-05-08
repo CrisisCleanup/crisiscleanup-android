@@ -6,7 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
@@ -16,8 +15,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -25,15 +22,12 @@ import com.crisiscleanup.core.common.combineTrimText
 import com.crisiscleanup.core.common.filterNotBlankTrim
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationDefaults
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupOutlinedButton
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.*
 import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
 import com.crisiscleanup.core.mapmarker.ui.rememberMapUiSettings
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.WorkType
-import com.crisiscleanup.core.model.data.WorkTypeStatus
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.feature.caseeditor.*
 import com.crisiscleanup.feature.caseeditor.R
@@ -43,7 +37,9 @@ import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 
-private val cardContainerColor = Color.White
+// TODO Use/move common dimensions
+internal val edgeSpacing = 20.dp
+internal val edgeSpacingHalf = edgeSpacing.times(0.5f)
 
 @Composable
 internal fun EditExistingCaseRoute(
@@ -62,7 +58,7 @@ internal fun EditExistingCaseRoute(
         TopBar(
             title,
             subTitle,
-            isFavorite = worksite.isFavorited,
+            isFavorite = worksite.isLocalFavorite,
             isHighPriority = worksite.hasHighPriorityFlag,
             onBack,
             isEmptyWorksite,
@@ -321,11 +317,25 @@ internal fun EditExistingCaseInfoView(
         remember(viewModel) { { updated: WorkType -> viewModel.updateWorkType(updated) } }
     val requestWorkType =
         remember(viewModel) { { workType: WorkType -> viewModel.requestWorkType(workType) } }
+    val releaseWorkType =
+        remember(viewModel) { { workType: WorkType -> viewModel.releaseWorkType(workType) } }
 
     LazyColumn {
+        item(key = "incident-info") {
+            val worksiteData by viewModel.worksiteData.collectAsStateWithLifecycle()
+            worksiteData?.let { uiData ->
+                val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
+                CaseIncident(
+                    Modifier,
+                    uiData.incident,
+                    uiData.isPendingSync,
+                    isSyncing = isSyncing,
+                )
+            }
+        }
+
         propertyInfoItems(worksite, translate, mapMarkerIcon)
         workItems(
-            worksite,
             translate,
             workTypeProfile,
             claimAll = claimAll,
@@ -333,54 +343,35 @@ internal fun EditExistingCaseInfoView(
             releaseAll = releaseAll,
             updateWorkType = updateWorkType,
             requestWorkType = requestWorkType,
+            releaseWorkType = releaseWorkType,
         )
         volunteerReportItems(worksite, translate)
     }
 }
 
-// TODO Use/move common dimensions
-private val edgeSpacing = 20.dp
-private val edgeSpacingHalf = edgeSpacing.times(0.5f)
-
-@Composable
-private fun CardSurface(
-    cornerRound: Dp = 4.dp,
-    elevation: Dp = 2.dp,
-    content: @Composable () -> Unit,
-) {
-    Surface(
-        modifier = Modifier
-            .listItemHorizontalPadding()
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(cornerRound),
-        color = cardContainerColor,
-        tonalElevation = 0.dp,
-        shadowElevation = elevation,
-    ) {
-        content()
-    }
-}
-
-@Composable
-private fun InfoSectionHeader(
+private fun LazyListScope.itemInfoSectionHeader(
     sectionIndex: Int,
     title: String,
     trailingContent: (@Composable () -> Unit)? = null,
-) = SectionHeader(
-    Modifier.padding(top = if (sectionIndex > 0) edgeSpacing else 0.dp),
-    sectionIndex,
-    title,
-    trailingContent,
-)
+) = item(
+    "section-header-$sectionIndex",
+    "content-header-$sectionIndex",
+) {
+    SectionHeader(
+        Modifier.padding(top = if (sectionIndex > 0) edgeSpacing else 0.dp),
+        sectionIndex,
+        title,
+        trailingContent,
+    )
+}
 
 private fun LazyListScope.propertyInfoItems(
     worksite: Worksite,
     translate: (String) -> String = { s -> s },
     mapMarkerIcon: BitmapDescriptor? = null,
 ) {
-    item(key = "section-header-property") {
-        InfoSectionHeader(0, translate("caseForm.property_information"))
-    }
+    itemInfoSectionHeader(0, translate("caseForm.property_information"))
+
     item(key = "section-content-property") {
         val rowItemModifier = Modifier.padding(horizontal = edgeSpacing)
         CardSurface {
@@ -427,157 +418,7 @@ private fun LazyListScope.propertyInfoItems(
     }
 }
 
-@Composable
-private fun ClaimingOrganization(
-    name: String,
-    isMyOrganization: Boolean,
-    modifier: Modifier = Modifier,
-    translate: (String) -> String = { s -> s },
-) {
-    if (isMyOrganization) {
-        Row(
-            modifier,
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(edgeSpacingHalf),
-        ) {
-            Text(name)
-            val myOrganizationLabel = translate("profileUser.your_organization")
-            Text(
-                "($myOrganizationLabel)",
-                style = MaterialTheme.typography.bodySmall,
-            )
-        }
-    } else {
-        Text(name, modifier)
-    }
-}
-
-@Composable
-private fun WorkTypeOrgClaims(
-    isMyOrgClaim: Boolean,
-    myOrgName: String,
-    translate: (String) -> String,
-    otherOrgClaims: List<String>,
-    rowItemModifier: Modifier = Modifier,
-) {
-    Text(
-        translate("caseView.claimed_by"),
-        rowItemModifier,
-        style = MaterialTheme.typography.bodySmall,
-    )
-    Column(
-        Modifier.padding(bottom = edgeSpacing),
-        verticalArrangement = Arrangement.spacedBy(
-            edgeSpacingHalf
-        ),
-    ) {
-        if (isMyOrgClaim) {
-            ClaimingOrganization(myOrgName, true, rowItemModifier, translate)
-        }
-        otherOrgClaims.forEach { otherOrganization ->
-            ClaimingOrganization(otherOrganization, false, rowItemModifier)
-        }
-    }
-}
-
-@Composable
-private fun WorkTypeSummaryView(
-    summary: WorkTypeSummary,
-    rowItemModifier: Modifier = Modifier,
-    translate: (String) -> String = { s -> s },
-    updateWorkType: (WorkType) -> Unit = {},
-    requestWorkType: (WorkType) -> Unit = {},
-) {
-    val updateWorkTypeStatus = remember(updateWorkType) {
-        { status: WorkTypeStatus ->
-            updateWorkType(summary.workType.copy(statusLiteral = status.literal))
-        }
-    }
-    CardSurface(elevation = 1.dp) {
-        Column {
-            Text(
-                summary.name,
-                rowItemModifier.padding(top = edgeSpacing),
-                style = MaterialTheme.typography.bodyLarge,
-            )
-            if (summary.jobSummary.isNotBlank()) {
-                Text(
-                    summary.jobSummary,
-                    rowItemModifier.padding(top = edgeSpacingHalf),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-            // TODO Row of actions with callbacks
-
-            Row(
-                modifier = rowItemModifier.listItemVerticalPadding(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                WorkTypeStatusDropdown(summary.workType.status, updateWorkTypeStatus, translate)
-                Spacer(Modifier.weight(1f))
-
-                val isEditable = LocalCaseEditor.current.isEditable
-
-                if (summary.workType.isClaimed) {
-                    if (summary.isClaimedByMyOrg) {
-                        WorkTypeAction(translate("actions.unclaim"), isEditable) {
-                            updateWorkType(summary.workType.copy(orgClaim = null))
-                        }
-                    } else {
-                        WorkTypeAction(translate("actions.request"), isEditable) {
-                            requestWorkType(summary.workType)
-                        }
-                    }
-                } else {
-                    WorkTypeAction(translate("actions.claim"), isEditable) {
-                        updateWorkType(summary.workType.copy(orgClaim = summary.myOrgId))
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun WorkTypeAction(
-    text: String,
-    isEditable: Boolean,
-    onClick: () -> Unit = {},
-) = CrisisCleanupOutlinedButton(
-    // TODO Common dimensions
-    modifier = Modifier.widthIn(100.dp),
-    text = text,
-    onClick = onClick,
-    enabled = isEditable,
-)
-
-private fun getWorkTypeAllActions(
-    workTypeProfile: WorkTypeProfile?,
-    translate: (String) -> String,
-    claimAll: () -> Unit = {},
-    releaseAll: () -> Unit = {},
-    requestAll: () -> Unit = {},
-): (@Composable () -> Unit)? =
-    workTypeProfile?.let {
-        {
-            Column(
-                horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.spacedBy(edgeSpacingHalf),
-            ) {
-                val isEditable = LocalCaseEditor.current.isEditable
-                // TODO actions.release_all
-                if (it.unclaimedCount > 0) {
-                    WorkTypeAction(translate("actions.claim_all_alt"), isEditable, claimAll)
-                }
-                if (it.requestCount > 0) {
-                    WorkTypeAction(translate("actions.request_all"), isEditable, requestAll)
-                }
-            }
-        }
-    }
-
 private fun LazyListScope.workItems(
-    worksite: Worksite,
     translate: (String) -> String = { s -> s },
     workTypeProfile: WorkTypeProfile? = null,
     claimAll: () -> Unit = {},
@@ -585,58 +426,63 @@ private fun LazyListScope.workItems(
     requestAll: () -> Unit = {},
     updateWorkType: (WorkType) -> Unit = {},
     requestWorkType: (WorkType) -> Unit = {},
+    releaseWorkType: (WorkType) -> Unit = {},
 ) {
-    item(key = "section-header-work") {
-        val trailingActions = getWorkTypeAllActions(
-            workTypeProfile,
-            translate,
-            claimAll,
-            releaseAll,
-            requestAll,
-        )
-        InfoSectionHeader(
-            2,
-            translate("caseForm.work"),
-            trailingActions,
-        )
-    }
-
-    val rowItemModifier = Modifier.padding(horizontal = edgeSpacing)
     workTypeProfile?.let { profile ->
-        with(profile.orgClaims) {
-            if (isMyOrgClaim || otherOrgClaims.isNotEmpty()) {
-                item("section-claimed-by") {
-                    WorkTypeOrgClaims(
-                        isMyOrgClaim,
-                        myOrgName,
-                        translate,
-                        otherOrgClaims,
-                        rowItemModifier,
-                    )
+        itemInfoSectionHeader(2, translate("caseForm.work")) {
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(edgeSpacingHalf),
+            ) {
+                if (profile.unclaimed.isNotEmpty()) {
+                    WorkTypeAction(translate("actions.claim_all_alt"), claimAll)
+                }
+                if (profile.releasableCount > 0) {
+                    WorkTypeAction(translate("actions.release_all"), releaseAll)
+                } else if (profile.requestableCount > 0) {
+                    WorkTypeAction(translate("actions.request_all"), requestAll)
                 }
             }
         }
 
-        profile.summaries.forEachIndexed { index, workTypeSummary ->
-            if (index > 0) {
-                item("section-work-type-summary-spacer-$index") {
-                    Spacer(
-                        Modifier
-                            .fillMaxWidth()
-                            .height(1.dp)
-                    )
-                }
-            }
+        val rowItemModifier = Modifier.padding(horizontal = edgeSpacing)
 
-            item("section-work-type-summary-$index") {
-                WorkTypeSummaryView(
-                    workTypeSummary,
+        if (profile.otherOrgClaims.isNotEmpty()) {
+            profile.otherOrgClaims.forEach { otherOrgClaim ->
+                organizationWorkClaims(
+                    otherOrgClaim,
                     rowItemModifier,
                     translate,
                     updateWorkType,
                     requestWorkType,
+                    releaseWorkType,
                 )
             }
+        }
+
+        if (profile.orgClaims.workTypes.isNotEmpty()) {
+            organizationWorkClaims(
+                profile.orgClaims,
+                rowItemModifier,
+                translate,
+                updateWorkType,
+                requestWorkType,
+                releaseWorkType,
+            )
+        }
+
+        if (profile.unclaimed.isNotEmpty()) {
+            val unclaimedTitle = translate("caseView.unclaimed_work_types")
+            workTypeSectionTitle(unclaimedTitle, "unclaimed")
+            existingWorkTypeItems(
+                "unclaimed",
+                profile.unclaimed,
+                rowItemModifier,
+                translate,
+                updateWorkType,
+                requestWorkType,
+                releaseWorkType,
+            )
         }
     }
 }
@@ -645,9 +491,7 @@ private fun LazyListScope.volunteerReportItems(
     worksite: Worksite,
     translate: (String) -> String = { s -> s },
 ) {
-    item(key = "section-header-report") {
-        InfoSectionHeader(4, translate("caseView.report"))
-    }
+    itemInfoSectionHeader(4, translate("caseView.report"))
 }
 
 @Composable
@@ -717,29 +561,6 @@ private fun PropertyInfoMapView(
         Marker(
             markerState,
             icon = mapMarkerIcon,
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun OrgClaimsPreview() {
-    val otherOrgClaims = listOf(
-        "Team green",
-        "True blue",
-        "Soarin Orange",
-    )
-    Column {
-        WorkTypeOrgClaims(
-            true,
-            "My organization",
-            { key ->
-                when (key) {
-                    "profileUser.your_organization" -> "My org"
-                    else -> "Claimed by"
-                }
-            },
-            otherOrgClaims,
         )
     }
 }

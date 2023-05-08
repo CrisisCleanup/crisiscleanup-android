@@ -1,6 +1,10 @@
 package com.crisiscleanup.core.model.data
 
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlin.time.Duration.Companion.days
+
+private val releaseDaysThreshold = 30.days
 
 data class WorkType(
     val id: Long,
@@ -16,6 +20,10 @@ data class WorkType(
     val status: WorkTypeStatus = statusFromLiteral(statusLiteral)
     val statusClaim = WorkTypeStatusClaim(status, isClaimed)
     val workType: WorkTypeType = typeFromLiteral(workTypeLiteral)
+
+    val isReleaseEligible = createdAt?.let {
+        Clock.System.now().minus(it) > releaseDaysThreshold
+    } ?: false
 }
 
 enum class WorkTypeStatus(val literal: String) {

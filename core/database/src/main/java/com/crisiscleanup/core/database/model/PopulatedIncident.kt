@@ -20,17 +20,20 @@ data class PopulatedIncident(
     val locations: List<IncidentLocationEntity>
 )
 
-fun PopulatedIncident.asExternalModel() = Incident(
-    id = entity.id,
-    name = entity.name,
-    shortName = entity.shortName,
-    activePhoneNumbers = entity.activePhoneNumber?.split(",")?.map { it.trim() }
-        ?.filter(String::isNotEmpty)
-        ?: emptyList(),
-    locations = locations.map(IncidentLocationEntity::asExternalModel),
-    formFields = emptyList(),
-    disasterLiteral = entity.type,
-)
+fun PopulatedIncident.asExternalModel() = with(entity) {
+    Incident(
+        id = id,
+        name = name,
+        shortName = shortName,
+        activePhoneNumbers = activePhoneNumber?.split(",")?.map { it.trim() }
+            ?.filter(String::isNotEmpty)
+            ?: emptyList(),
+        locations = locations.map(IncidentLocationEntity::asExternalModel),
+        formFields = emptyList(),
+        turnOnRelease = turnOnRelease,
+        disasterLiteral = type,
+    )
+}
 
 data class PopulatedFormFieldsIncident(
     @Embedded
