@@ -29,6 +29,9 @@ import com.crisiscleanup.core.mapmarker.ui.rememberMapUiSettings
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.Worksite
+import com.crisiscleanup.core.ui.LinkifyEmailText
+import com.crisiscleanup.core.ui.LinkifyLocationText
+import com.crisiscleanup.core.ui.LinkifyPhoneText
 import com.crisiscleanup.feature.caseeditor.*
 import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.model.coordinates
@@ -284,6 +287,10 @@ private fun PropertyInfoRow(
     image: ImageVector,
     text: String,
     modifier: Modifier = Modifier,
+    isPhone: Boolean = false,
+    isEmail: Boolean = false,
+    isLocation: Boolean = false,
+    locationQuery: String = "",
 ) {
     Row(
         modifier,
@@ -294,10 +301,17 @@ private fun PropertyInfoRow(
             imageVector = image,
             contentDescription = text,
         )
-        Text(
-            text,
-            style = MaterialTheme.typography.bodyLarge,
-        )
+
+        val style = MaterialTheme.typography.bodyLarge
+        if (isPhone) {
+            LinkifyPhoneText(text, style)
+        } else if (isEmail) {
+            LinkifyEmailText(text, style)
+        } else if (isLocation) {
+            LinkifyLocationText(text, locationQuery, style)
+        } else {
+            Text(text, style = style)
+        }
     }
 }
 
@@ -388,23 +402,35 @@ private fun LazyListScope.propertyInfoItems(
                     listOf(worksite.phone1, worksite.phone2).filterNotBlankTrim()
                         .joinToString("; "),
                     rowItemModifier,
+                    isPhone = true,
                 )
                 worksite.email?.let {
-                    PropertyInfoRow(
-                        CrisisCleanupIcons.Mail,
-                        it,
-                        rowItemModifier,
-                    )
+                    if (it.isNotBlank()) {
+                        PropertyInfoRow(
+                            CrisisCleanupIcons.Mail,
+                            it,
+                            rowItemModifier,
+                            isEmail = true,
+                        )
+                    }
                 }
+                // TODO Predetermine if address and coordinates are mismatching and change query if so
+                val hasWrongLocation = worksite.hasWrongLocationFlag
+                val fullAddress = listOf(
+                    worksite.address,
+                    worksite.city,
+                    worksite.state,
+                    worksite.postalCode,
+                ).combineTrimText()
+                val coordinates = worksite.coordinates()
+                val locationQuery = if (hasWrongLocation) ""
+                else "geo:${coordinates.latitude},${coordinates.longitude}?q=$fullAddress"
                 PropertyInfoRow(
                     CrisisCleanupIcons.Location,
-                    listOf(
-                        worksite.address,
-                        worksite.city,
-                        worksite.state,
-                        worksite.postalCode,
-                    ).combineTrimText(),
+                    fullAddress,
                     rowItemModifier,
+                    isLocation = !worksite.hasWrongLocationFlag,
+                    locationQuery = locationQuery,
                 )
 
                 PropertyInfoMapView(
