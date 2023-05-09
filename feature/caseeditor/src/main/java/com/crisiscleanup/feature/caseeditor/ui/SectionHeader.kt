@@ -15,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
@@ -83,7 +82,8 @@ internal fun SectionHeaderCollapsible(
             if (isCollapsed) R.string.collapse_section else R.string.expand_section
         val description = stringResource(descriptionResId, sectionTitle)
         if (help.isNotBlank()) {
-            WithHelpDialog(viewModel, sectionTitle, help, true) { showHelp ->
+            val okText = viewModel.translate("actions.ok")
+            WithHelpDialog(viewModel, sectionTitle, help, true, okText) { showHelp ->
                 HelpAction(viewModel.helpHint, showHelp)
             }
         }

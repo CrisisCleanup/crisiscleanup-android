@@ -17,7 +17,7 @@ import com.crisiscleanup.feature.caseeditor.R
 fun OpenSettingsDialog(
     @StringRes titleResId: Int,
     @StringRes textResId: Int,
-    @StringRes dismissResId: Int = R.string.close,
+    dismissText: String = "",
     @StringRes confirmResId: Int = R.string.app_settings,
     closeDialog: () -> Unit = {},
 ) {
@@ -32,7 +32,7 @@ fun OpenSettingsDialog(
         onDismissRequest = closeDialog,
         dismissButton = {
             CrisisCleanupTextButton(
-                textResId = dismissResId,
+                text = dismissText,
                 onClick = closeDialog
             )
         },
@@ -55,11 +55,13 @@ fun OpenSettingsDialog(
 fun ExplainLocationPermissionDialog(
     showDialog: Boolean,
     closeDialog: () -> Unit,
+    closeText: String = "",
 ) {
     if (showDialog) {
         OpenSettingsDialog(
             R.string.allow_location_permission,
             R.string.location_permission_explanation,
+            dismissText = closeText,
             closeDialog = closeDialog,
         )
     }

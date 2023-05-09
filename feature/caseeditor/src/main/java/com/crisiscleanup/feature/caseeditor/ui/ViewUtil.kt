@@ -28,7 +28,7 @@ private val errorMessageModifier = Modifier
 internal fun ErrorText(
     errorMessage: String,
 ) {
-    if (errorMessage.isNotEmpty()) {
+    if (errorMessage.isNotBlank()) {
         Text(
             errorMessage,
             modifier = errorMessageModifier,

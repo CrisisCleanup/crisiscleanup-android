@@ -15,7 +15,6 @@ import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.data.repository.*
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
-import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.WorkTypeRequest
 import com.crisiscleanup.core.model.data.Worksite
@@ -44,6 +43,7 @@ class ExistingCaseViewModel @Inject constructor(
     languageRefresher: LanguageRefresher,
     workTypeStatusRepository: WorkTypeStatusRepository,
     private val editableWorksiteProvider: EditableWorksiteProvider,
+    val transferWorkTypeProvider: TransferWorkTypeProvider,
     private val translator: KeyTranslator,
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val syncPusher: SyncPusher,
@@ -86,7 +86,7 @@ class ExistingCaseViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val worksite = MutableStateFlow(EmptyWorksite)
+    val editableWorksite = editableWorksiteProvider.editableWorksite
     private val worksiteChangeTime = MutableStateFlow(Instant.fromEpochSeconds(0))
 
     init {
@@ -144,12 +144,6 @@ class ExistingCaseViewModel @Inject constructor(
             )
             mapMarkerIcon.value = inBoundsPinIcon
         }
-
-        dataLoader.worksiteStream
-            .debounce { 100 }
-            .filter { it != null }
-            .onEach { worksite.value = it!!.worksite }
-            .launchIn(viewModelScope)
     }
 
     val isLoading = dataLoader.isLoading
@@ -171,8 +165,8 @@ class ExistingCaseViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val subTitle = worksite.mapLatest {
-        if (it == EmptyWorksite) ""
+    val subTitle = editableWorksite.mapLatest {
+        if (it.isNew) ""
         else listOf(it.county, it.state)
             .filter { s -> s.isNotBlank() }
             .joinToString(", ")
@@ -185,20 +179,23 @@ class ExistingCaseViewModel @Inject constructor(
 
     val workTypeProfile = combine(
         dataLoader.uiState,
-        worksite,
+        editableWorksite,
         organizationLookup,
         ::Triple,
     )
         .filter {
             it.first is CaseEditorUiState.WorksiteData &&
-                    it.second != EmptyWorksite &&
+                    !it.second.isNew &&
                     it.third.isNotEmpty()
         }
         .mapLatest {
+            // TODO Compare orgs on affiliation. Reference web code.
+
             val stateData = it.first as CaseEditorUiState.WorksiteData
             val isTurnOnRelease = stateData.incident.turnOnRelease
             val myOrgId = stateData.orgId
-            val worksiteWorkTypes = it.second.workTypes
+            val worksite = it.second
+            val worksiteWorkTypes = worksite.workTypes
 
             val requestedTypes = stateData.worksite.workTypeRequests
                 .map(WorkTypeRequest::workType)
@@ -207,7 +204,7 @@ class ExistingCaseViewModel @Inject constructor(
             val summaries = worksiteWorkTypes.map { workType ->
                 val workTypeLiteral = workType.workTypeLiteral
                 val workTypeLookup = stateData.incident.workTypeLookup
-                val summaryJobTypes = it.second.formData
+                val summaryJobTypes = worksite.formData
                     ?.filter { formValue -> workTypeLookup[formValue.key] == workTypeLiteral }
                     ?.filter { formValue -> formValue.value.isBooleanTrue }
                     ?.map { formValue -> translate(formValue.key) }
@@ -254,16 +251,21 @@ class ExistingCaseViewModel @Inject constructor(
             val myOrgName = orgLookup[myOrgId] ?: ""
             val orgClaimed = OrgClaimWorkType(myOrgId, myOrgName, orgClaimedWorkTypes, true)
 
-            val requestableCount = otherOrgClaimedWorkTypes.count { summary ->
-                !(summary.isReleasable || summary.isRequested)
-            }
-            val releasableCount = otherOrgClaimedWorkTypes.count { summary -> summary.isReleasable }
+            val releasable = otherOrgClaimedWorkTypes
+                .filter { summary -> summary.isReleasable }
+                .sortedBy(WorkTypeSummary::name)
+            val requestable = otherOrgClaimedWorkTypes
+                .filter { summary -> !(summary.isReleasable || summary.isRequested) }
+                .sortedBy(WorkTypeSummary::name)
             WorkTypeProfile(
                 otherOrgClaims,
                 orgClaimed,
                 unclaimed,
-                releasableCount,
-                requestableCount,
+                releasable,
+                requestable,
+
+                orgName = myOrgName,
+                caseNumber = worksite.caseNumber,
             )
         }
         .stateIn(
@@ -276,7 +278,7 @@ class ExistingCaseViewModel @Inject constructor(
         ?: (editableWorksiteProvider.translate(key) ?: (fallback ?: key))
 
     private fun updateHeaderTitle(caseNumber: String = "") {
-        headerTitle.value = if (caseNumber.isEmpty()) resourceProvider.getString(R.string.view_case)
+        headerTitle.value = if (caseNumber.isEmpty()) translate("nav.work_view_case")
         else resourceProvider.getString(R.string.view_case_number, caseNumber)
     }
 
@@ -300,7 +302,9 @@ class ExistingCaseViewModel @Inject constructor(
         startingWorksite: Worksite,
         changedWorksite: Worksite,
     ) {
-        if (startingWorksite == changedWorksite) {
+        if (startingWorksite.isNew ||
+            startingWorksite == changedWorksite
+        ) {
             return
         }
 
@@ -330,20 +334,20 @@ class ExistingCaseViewModel @Inject constructor(
     }
 
     fun toggleFavorite() {
-        val startingWorksite = worksite.value
+        val startingWorksite = editableWorksite.value
         val changedWorksite =
             startingWorksite.copy(isAssignedToOrgMember = !startingWorksite.isLocalFavorite)
         saveWorksiteChange(startingWorksite, changedWorksite)
     }
 
     fun toggleHighPriority() {
-        val startingWorksite = worksite.value
+        val startingWorksite = editableWorksite.value
         val changedWorksite = startingWorksite.toggleHighPriorityFlag()
         saveWorksiteChange(startingWorksite, changedWorksite)
     }
 
     fun updateWorkType(workType: WorkType) {
-        val startingWorksite = worksite.value
+        val startingWorksite = editableWorksite.value
         val updatedWorkTypes =
             startingWorksite.workTypes
                 .filter { it.workType != workType.workType }
@@ -354,16 +358,34 @@ class ExistingCaseViewModel @Inject constructor(
     }
 
     fun requestWorkType(workType: WorkType) {
-
+        workTypeProfile.value?.let { profile ->
+            transferWorkTypeProvider.startTransfer(
+                WorkTypeTransferType.Request,
+                profile.requestable.associate { summary ->
+                    val isSelected = summary.workType.id == workType.id
+                    summary.workType to isSelected
+                },
+                profile.orgName,
+                profile.caseNumber,
+            )
+        }
     }
 
     fun releaseWorkType(workType: WorkType) {
-
+        workTypeProfile.value?.releasable?.let {
+            transferWorkTypeProvider.startTransfer(
+                WorkTypeTransferType.Release,
+                it.associate { summary ->
+                    val isSelected = summary.workType.id == workType.id
+                    summary.workType to isSelected
+                },
+            )
+        }
     }
 
     fun claimAll() {
         organizationId?.let { orgId ->
-            val startingWorksite = worksite.value
+            val startingWorksite = editableWorksite.value
             val updatedWorkTypes =
                 startingWorksite.workTypes
                     .map {
@@ -376,11 +398,23 @@ class ExistingCaseViewModel @Inject constructor(
     }
 
     fun requestAll() {
-
+        workTypeProfile.value?.let { profile ->
+            transferWorkTypeProvider.startTransfer(
+                WorkTypeTransferType.Request,
+                profile.requestable.associate { summary -> summary.workType to true },
+                profile.orgName,
+                profile.caseNumber,
+            )
+        }
     }
 
     fun releaseAll() {
-
+        workTypeProfile.value?.releasable?.let {
+            transferWorkTypeProvider.startTransfer(
+                WorkTypeTransferType.Release,
+                it.associate { summary -> summary.workType to true },
+            )
+        }
     }
 }
 
@@ -406,6 +440,11 @@ data class WorkTypeProfile(
     val otherOrgClaims: List<OrgClaimWorkType>,
     val orgClaims: OrgClaimWorkType,
     val unclaimed: List<WorkTypeSummary>,
-    val releasableCount: Int,
-    val requestableCount: Int,
+    val releasable: List<WorkTypeSummary>,
+    val requestable: List<WorkTypeSummary>,
+    val releasableCount: Int = releasable.size,
+    val requestableCount: Int = requestable.size,
+
+    val orgName: String,
+    val caseNumber: String,
 )

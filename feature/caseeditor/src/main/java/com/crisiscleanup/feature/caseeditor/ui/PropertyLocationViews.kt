@@ -42,6 +42,7 @@ internal fun PropertyLocationView(
             helpTitle = locationText,
             helpText = translate("caseForm.location_instructions"),
             hasHtml = true,
+            translate("actions.ok"),
         ) { showHelp ->
             HelpRow(
                 locationText,
@@ -101,6 +102,7 @@ internal fun PropertyLocationView(
         ExplainLocationPermissionDialog(
             showDialog = explainPermission,
             closeDialog = closePermissionDialog,
+            closeText = translate("actions.close"),
         )
     }
 }

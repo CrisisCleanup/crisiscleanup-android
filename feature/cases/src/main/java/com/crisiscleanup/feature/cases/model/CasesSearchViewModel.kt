@@ -30,15 +30,17 @@ class CasesSearchViewModel @Inject constructor(
     @Logger(CrisisCleanupLoggers.Cases) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
+    private val isInitialLoading = MutableStateFlow(true)
     private val isSearching = MutableStateFlow(false)
     val isSelectingResult = MutableStateFlow(false)
     val isLoading = combine(
+        isInitialLoading,
         isSearching,
         isSelectingResult,
-    ) { b0, b1 -> b0 || b1 }
+    ) { b0, b1, b2 -> b0 || b1 || b2 }
         .stateIn(
             scope = viewModelScope,
-            initialValue = false,
+            initialValue = true,
             started = SharingStarted.WhileSubscribed(),
         )
 
@@ -46,19 +48,23 @@ class CasesSearchViewModel @Inject constructor(
 
     val recentWorksites = incidentSelector.incidentId
         .flatMapLatest { incidentId ->
-            if (incidentId > 0) {
-                worksitesRepository.streamRecentWorksites(incidentId)
-                    .mapLatest { list ->
-                        list.map { summary ->
-                            CaseSummaryResult(
-                                summary,
-                                getIcon(summary.workType),
-                                listItemKey = summary.id,
-                            )
+            try {
+                if (incidentId > 0) {
+                    worksitesRepository.streamRecentWorksites(incidentId)
+                        .mapLatest { list ->
+                            list.map { summary ->
+                                CaseSummaryResult(
+                                    summary,
+                                    getIcon(summary.workType),
+                                    listItemKey = summary.id,
+                                )
+                            }
                         }
-                    }
-            } else {
-                flowOf(emptyList())
+                } else {
+                    flowOf(emptyList())
+                }
+            } finally {
+                isInitialLoading.value = false
             }
         }
         .flowOn(ioDispatcher)

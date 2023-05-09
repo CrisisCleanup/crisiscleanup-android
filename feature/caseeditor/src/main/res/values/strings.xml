@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="save">Save</string>
-    <string name="cancel">Cancel</string>
     <string name="create_case">Create Case</string>
-    <string name="view_case">View Case</string>
     <string name="case_case_number">Case %1$s</string>
     <string name="view_case_number">View %1$s</string>
     <string name="organization_issue_try_re_authenticating">There seems to be an issue with your organization. Try logging out and logging in again.</string>
@@ -25,7 +22,6 @@
 
     <string name="allow_location_permission">Allow location</string>
     <string name="location_permission_explanation">My Location needs access to the device\'s location. Grant access in the App info/settings > Permissions.</string>
-    <string name="close">Close</string>
     <string name="app_settings">App settings</string>
 
     <string name="existing_worksites">Existing worksite</string>
@@ -44,13 +40,9 @@
     <string name="not_high_priority">Not high priority</string>
     <string name="notes_flags">Notes &amp; flags</string>
     <string name="note">Note</string>
-    <string name="add_note">Add note</string>
 
     <string name="select_option_for_field">Select option for %s</string>
 
-    <string name="back">Back</string>
-    <string name="claim_and_save">Claim &amp; Save</string>
-    <string name="save_changes">Save changes</string>
     <string name="changes">Changes</string>
     <string name="changes_choice">Changes have been made to this case.\nWould you like to continue making changes?\nPressing No loses these changes.</string>
     <string name="yes">Yes</string>
@@ -85,4 +77,8 @@
     <string name="photos">Photos</string>
     <string name="notes">Notes</string>
     <string name="release">Release</string>
+
+    <string name="release_reason_is_required">What is the reason for release?</string>
+    <string name="request_reason_is_required">What is the reason for request?</string>
+    <string name="transfer_work_type_is_required">Select at least one work type.</string>
 </resources>

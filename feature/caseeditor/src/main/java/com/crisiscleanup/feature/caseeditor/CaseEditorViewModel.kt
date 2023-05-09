@@ -284,10 +284,8 @@ class CaseEditorViewModel @Inject constructor(
 
     private fun updateHeaderTitle(caseNumber: String = "") {
         headerTitle.value = if (caseNumber.isEmpty()) {
-            val headerTitleResId =
-                if (isCreateWorksite) R.string.create_case
-                else R.string.view_case
-            resourceProvider.getString(headerTitleResId)
+            if (isCreateWorksite) resourceProvider.getString(R.string.create_case)
+            else translate("nav.work_view_case")
         } else {
             resourceProvider.getString(R.string.view_case_number, caseNumber)
         }

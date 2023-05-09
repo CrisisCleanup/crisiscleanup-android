@@ -3,12 +3,17 @@ package com.crisiscleanup.feature.caseeditor.navigation
 import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.remember
 import androidx.lifecycle.SavedStateHandle
-import androidx.navigation.*
+import androidx.navigation.NavController
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.crisiscleanup.core.appnav.RouteConstant.caseEditMapMoveLocationRoute
 import com.crisiscleanup.core.appnav.RouteConstant.caseEditSearchAddressRoute
 import com.crisiscleanup.core.appnav.RouteConstant.caseEditorRoute
 import com.crisiscleanup.core.appnav.RouteConstant.viewCaseRoute
+import com.crisiscleanup.core.appnav.RouteConstant.viewCaseTransferWorkTypesRoute
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
@@ -16,6 +21,7 @@ import com.crisiscleanup.feature.caseeditor.ui.CaseEditorRoute
 import com.crisiscleanup.feature.caseeditor.ui.EditCaseAddressSearchRoute
 import com.crisiscleanup.feature.caseeditor.ui.EditCaseMapMoveLocationRoute
 import com.crisiscleanup.feature.caseeditor.ui.EditExistingCaseRoute
+import com.crisiscleanup.feature.caseeditor.ui.TransferWorkTypesRoute
 
 @VisibleForTesting
 internal const val incidentIdArg = "incidentId"
@@ -41,7 +47,6 @@ fun NavController.navigateToCaseEditor(incidentId: Long, worksiteId: Long? = nul
     val route = routeParts.joinToString("&")
     this.navigate(route)
 }
-
 
 fun NavController.navigateToExistingCase(incidentId: Long, worksiteId: Long) {
     this.navigate("$viewCaseRoute?$incidentIdArg=$incidentId&$worksiteIdArg=$worksiteId")
@@ -107,12 +112,21 @@ fun NavGraphBuilder.existingCaseScreen(
                 )
             }
         }
+        val navToTransferWorkType = remember(navController) {
+            {
+                navController.navigateToExistingCaseTransferWorkType()
+            }
+        }
         EditExistingCaseRoute(
             onBack = onBackClick,
             onFullEdit = navToEditCase,
+            openTransferWorkType = navToTransferWorkType,
         )
     }
 }
+
+fun NavController.navigateToExistingCaseTransferWorkType() =
+    this.navigate(viewCaseTransferWorkTypesRoute)
 
 fun NavController.rerouteToCaseEdit(ids: ExistingWorksiteIdentifier) {
     popBackStack()
@@ -144,5 +158,13 @@ fun NavGraphBuilder.caseEditMoveLocationOnMapScreen(
 ) {
     composable(caseEditMapMoveLocationRoute) {
         EditCaseMapMoveLocationRoute(onBack = onBackClick)
+    }
+}
+
+fun NavGraphBuilder.existingCaseTransferWorkTypesScreen(
+    onBack: () -> Unit = {},
+) {
+    composable(route = viewCaseTransferWorkTypesRoute) {
+        TransferWorkTypesRoute(onBack = onBack)
     }
 }

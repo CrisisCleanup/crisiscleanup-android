@@ -43,7 +43,6 @@ internal fun SyncInsightsRoute(
         }
         viewModel.onListBlockPosition(listBlockPosition)
 
-        // Not the best pattern. Do not use in production
         val openWorksiteId by viewModel.openWorksiteId
         if (openWorksiteId.second != 0L) {
             openCase(openWorksiteId.first, openWorksiteId.second)

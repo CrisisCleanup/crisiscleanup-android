@@ -47,3 +47,5 @@ captures/
 debug.properties
 release.properties
 prod.properties
+
+_ignore*.kt

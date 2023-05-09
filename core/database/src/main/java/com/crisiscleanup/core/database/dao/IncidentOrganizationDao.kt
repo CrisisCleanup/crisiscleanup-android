@@ -6,6 +6,7 @@ import com.crisiscleanup.core.database.model.IncidentOrganizationSyncStatsEntity
 import com.crisiscleanup.core.database.model.OrganizationAffiliateEntity
 import com.crisiscleanup.core.database.model.OrganizationIdName
 import com.crisiscleanup.core.database.model.OrganizationPrimaryContactCrossRef
+import com.crisiscleanup.core.database.model.PopulatedIncidentOrganization
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -24,7 +25,11 @@ interface IncidentOrganizationDao {
 
     @Transaction
     @Query("SELECT id, name FROM incident_organizations")
-    fun getOrganizations(): Flow<List<OrganizationIdName>>
+    fun streamOrganizationNames(): Flow<List<OrganizationIdName>>
+
+    @Transaction
+    @Query("SELECT * FROM incident_organizations")
+    fun streamOrganizations(): Flow<List<PopulatedIncidentOrganization>>
 
     @Transaction
     @Query(

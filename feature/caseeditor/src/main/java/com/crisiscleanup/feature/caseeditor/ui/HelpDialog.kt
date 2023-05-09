@@ -52,6 +52,7 @@ internal fun HelpDialog(
     text: String,
     onClose: () -> Unit = {},
     hasHtml: Boolean = false,
+    okText: String = "",
 ) {
     AlertDialog(
         title = { Text(title) },
@@ -65,7 +66,7 @@ internal fun HelpDialog(
         onDismissRequest = onClose,
         confirmButton = {
             CrisisCleanupTextButton(
-                textResId = android.R.string.ok,
+                text = okText,
                 onClick = onClose,
             )
         },
@@ -78,6 +79,7 @@ internal fun WithHelpDialog(
     helpTitle: String,
     helpText: String,
     hasHtml: Boolean = false,
+    okText: String = "",
     content: @Composable (() -> Unit) -> Unit,
 ) {
     var rememberHelpTitle by remember { mutableStateOf("") }
@@ -97,6 +99,7 @@ internal fun WithHelpDialog(
             text = rememberHelpText,
             onClose = { rememberHelpText = "" },
             hasHtml = hasHtml,
+            okText = okText,
         )
     }
 }

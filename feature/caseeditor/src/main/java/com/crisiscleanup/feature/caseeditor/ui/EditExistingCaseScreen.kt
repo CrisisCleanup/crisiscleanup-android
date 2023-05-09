@@ -41,7 +41,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 
 // TODO Use/move common dimensions
-internal val edgeSpacing = 20.dp
+internal val edgeSpacing = 16.dp
 internal val edgeSpacingHalf = edgeSpacing.times(0.5f)
 
 @Composable
@@ -49,18 +49,24 @@ internal fun EditExistingCaseRoute(
     viewModel: ExistingCaseViewModel = hiltViewModel(),
     onBack: () -> Unit = {},
     onFullEdit: (ExistingWorksiteIdentifier) -> Unit = {},
+    openTransferWorkType: () -> Unit = {},
 ) {
+    val isPendingTransfer by viewModel.transferWorkTypeProvider.isPendingTransfer
+    if (isPendingTransfer) {
+        openTransferWorkType()
+    }
+
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val isSaving by viewModel.isSavingWorksite.collectAsStateWithLifecycle()
     val isBusy = isLoading || isSaving
-    val isEditable = !isBusy
+    val isEditable = !(isBusy || isPendingTransfer)
 
     val toggleFavorite = remember(viewModel) { { viewModel.toggleFavorite() } }
     val toggleHighPriority = remember(viewModel) { { viewModel.toggleHighPriority() } }
     Column {
         val title by viewModel.headerTitle.collectAsStateWithLifecycle()
         val subTitle by viewModel.subTitle.collectAsStateWithLifecycle()
-        val worksite by viewModel.worksite.collectAsStateWithLifecycle()
+        val worksite by viewModel.editableWorksite.collectAsStateWithLifecycle()
         val isEmptyWorksite = worksite == EmptyWorksite
         TopBar(
             title,
@@ -72,6 +78,7 @@ internal fun EditExistingCaseRoute(
             toggleFavorite,
             toggleHighPriority,
             isEditable,
+            viewModel.translate("actions.back"),
         )
 
         if (isEmptyWorksite) {
@@ -131,6 +138,7 @@ private fun TopBar(
     toggleFavorite: () -> Unit = {},
     toggleHighPriority: () -> Unit = {},
     isEditable: Boolean = false,
+    backText: String,
 ) {
     // TODO Style components as necessary
 
@@ -149,7 +157,7 @@ private fun TopBar(
 
     val navigationContent = @Composable {
         Text(
-            stringResource(R.string.back),
+            backText,
             Modifier
                 .clickable(onClick = onBack)
                 .padding(8.dp),
@@ -333,11 +341,11 @@ private fun PropertyInfoRow(
 
         val style = MaterialTheme.typography.bodyLarge
         if (isPhone) {
-            LinkifyPhoneText(text, style)
+            LinkifyPhoneText(text, style = style)
         } else if (isEmail) {
-            LinkifyEmailText(text, style)
+            LinkifyEmailText(text, style = style)
         } else if (isLocation) {
-            LinkifyLocationText(text, locationQuery, style)
+            LinkifyLocationText(text, locationQuery, style = style)
         } else {
             Text(text, style = style)
         }
@@ -444,6 +452,7 @@ private fun LazyListScope.propertyInfoItems(
                     }
                 }
                 // TODO Predetermine if address and coordinates are mismatching and change query if so
+                //      Or can alert if mismatch
                 val hasWrongLocation = worksite.hasWrongLocationFlag
                 val fullAddress = listOf(
                     worksite.address,

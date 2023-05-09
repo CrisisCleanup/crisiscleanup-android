@@ -22,6 +22,7 @@ object RouteConstant {
     const val caseEditMapMoveLocationRoute = "$caseEditorRoute/edit_map_move_location"
 
     const val viewCaseRoute = "view_case"
+    const val viewCaseTransferWorkTypesRoute = "$viewCaseRoute/transfer_work_types"
 
     val fullscreenRoutes = setOf(
         casesSearchRoute,

@@ -12,10 +12,12 @@ import com.crisiscleanup.core.data.model.incidentLocationCrossReferences
 import com.crisiscleanup.core.data.model.locationsAsEntity
 import com.crisiscleanup.core.database.dao.*
 import com.crisiscleanup.core.database.model.PopulatedIncident
+import com.crisiscleanup.core.database.model.PopulatedIncidentOrganization
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.database.model.asLookup
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.core.model.data.Incident
+import com.crisiscleanup.core.model.data.IncidentOrganization
 import com.crisiscleanup.core.model.data.IncidentOrganizationsStableModelBuildVersion
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.tryThrowException
@@ -25,7 +27,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -65,10 +67,16 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     override val isLoading: Flow<Boolean> = isSyncing
 
     override val incidents: Flow<List<Incident>> =
-        incidentDao.streamIncidents().map { it.map(PopulatedIncident::asExternalModel) }
+        incidentDao.streamIncidents().mapLatest { it.map(PopulatedIncident::asExternalModel) }
 
     override val organizationNameLookup =
-        incidentOrganizationDao.getOrganizations().map { it.asLookup() }
+        incidentOrganizationDao.streamOrganizationNames().mapLatest { it.asLookup() }
+
+    override val organizationLookup = incidentOrganizationDao.streamOrganizations()
+        .mapLatest {
+            it.map(PopulatedIncidentOrganization::asExternalModel)
+                .associateBy(IncidentOrganization::id)
+        }
 
     override suspend fun getIncident(id: Long, loadFormFields: Boolean) =
         withContext(ioDispatcher) {
@@ -80,7 +88,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
         }
 
     override fun streamIncident(id: Long) =
-        incidentDao.streamFormFieldsIncident(id).map { it?.asExternalModel() }
+        incidentDao.streamFormFieldsIncident(id).mapLatest { it?.asExternalModel() }
 
     private suspend fun saveLocations(incidents: Collection<NetworkIncident>) {
         val locationIds = incidents.flatMap { it.locations.map(NetworkIncidentLocation::location) }

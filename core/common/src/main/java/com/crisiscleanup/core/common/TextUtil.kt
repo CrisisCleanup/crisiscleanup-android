@@ -5,4 +5,5 @@ fun Collection<String?>.filterNotBlankTrim(): List<String> {
     return notBlank.map(String::trim)
 }
 
-fun Collection<String>.combineTrimText() = filterNotBlankTrim().joinToString(", ")
+fun Collection<String>.combineTrimText(separator: String = ", ") =
+    filterNotBlankTrim().joinToString(separator)

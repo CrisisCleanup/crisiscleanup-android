@@ -370,6 +370,9 @@ private fun ColumnScope.FullEditView(
         onCancel,
         claimAndSaveChanges,
         saveChanges,
+        saveText = viewModel.translate("actions.save"),
+        saveClaimText = viewModel.translate("actions.save_claim"),
+        cancelText = viewModel.translate("actions.cancel"),
     )
 
     val showBackChangesDialog by viewModel.promptUnsavedChanges
@@ -699,7 +702,7 @@ private fun InvalidSaveDialog(
                 onDismissRequest = onDismiss,
                 dismissButton = {
                     CrisisCleanupTextButton(
-                        textResId = android.R.string.cancel,
+                        text = viewModel.translate("actions.cancel"),
                         onClick = onDismiss
                     )
                 },
@@ -736,6 +739,9 @@ private fun SaveActionBar(
     onCancel: () -> Unit = {},
     onClaimAndSave: () -> Unit = {},
     onSave: () -> Unit = {},
+    saveText: String = "",
+    saveClaimText: String = "",
+    cancelText: String = "",
 ) {
     Row(
         modifier = Modifier
@@ -743,24 +749,23 @@ private fun SaveActionBar(
             .padding(16.dp),
         horizontalArrangement = listItemSpacedBy,
     ) {
-        // TODO Use translations
         BusyButton(
             Modifier.weight(1f),
-            textResId = R.string.cancel,
+            text = cancelText,
             enabled = enable,
             onClick = onCancel,
             colors = cancelButtonColors(),
         )
         BusyButton(
             Modifier.weight(1.5f),
-            textResId = R.string.claim_and_save,
+            text = saveClaimText,
             enabled = enable,
             indicateBusy = !enable,
             onClick = onClaimAndSave,
         )
         BusyButton(
             Modifier.weight(1.1f),
-            textResId = R.string.save,
+            text = saveText,
             enabled = enable,
             indicateBusy = !enable,
             onClick = onSave,
@@ -784,5 +789,9 @@ private fun CaseIncidentPreview() {
 @Preview
 @Composable
 private fun SaveActionBarPreview() {
-    SaveActionBar()
+    SaveActionBar(
+        saveText = "save",
+        saveClaimText = "+ claim",
+        cancelText = "cancel",
+    )
 }

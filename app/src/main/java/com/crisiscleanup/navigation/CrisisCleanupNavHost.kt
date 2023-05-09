@@ -13,6 +13,7 @@ import com.crisiscleanup.feature.caseeditor.navigation.caseEditMoveLocationOnMap
 import com.crisiscleanup.feature.caseeditor.navigation.caseEditSearchAddressScreen
 import com.crisiscleanup.feature.caseeditor.navigation.caseEditorScreen
 import com.crisiscleanup.feature.caseeditor.navigation.existingCaseScreen
+import com.crisiscleanup.feature.caseeditor.navigation.existingCaseTransferWorkTypesScreen
 import com.crisiscleanup.feature.caseeditor.navigation.navigateToCaseEditor
 import com.crisiscleanup.feature.caseeditor.navigation.navigateToExistingCase
 import com.crisiscleanup.feature.cases.navigation.casesGraph
@@ -91,6 +92,7 @@ fun CrisisCleanupNavHost(
                 caseEditSearchAddressScreen(navController, onBackClick)
                 caseEditMoveLocationOnMapScreen(onBackClick)
                 existingCaseScreen(navController, onBackClick)
+                existingCaseTransferWorkTypesScreen(onBackClick)
             },
             onCasesAction = onCasesAction,
             createCase = createNewCase,

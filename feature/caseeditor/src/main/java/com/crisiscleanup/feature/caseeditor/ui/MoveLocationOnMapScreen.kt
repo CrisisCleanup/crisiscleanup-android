@@ -164,17 +164,16 @@ private fun SaveActionBar(
             .padding(16.dp),
         horizontalArrangement = listItemSpacedBy,
     ) {
-        // TODO Use translations
         BusyButton(
             Modifier.weight(1f),
-            textResId = R.string.cancel,
+            text = viewModel.translate("actions.cancel"),
             enabled = true,
             onClick = onBack,
             colors = cancelButtonColors(),
         )
         BusyButton(
             Modifier.weight(1f),
-            textResId = R.string.save,
+            text = viewModel.translate("actions.save"),
             enabled = true,
             onClick = onSave,
         )

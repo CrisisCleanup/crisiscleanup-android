@@ -138,6 +138,7 @@ fun TopAppBarBackCancel(
     onBack: () -> Unit = {},
     onCancel: () -> Unit = {},
     colors: TopAppBarColors = TopAppBarDefaults.centerAlignedTopAppBarColors(),
+    cancelText: String = "",
 ) {
     val titleContent = @Composable {
         TruncatedAppBarText(modifier, titleResId, title)
@@ -156,7 +157,7 @@ fun TopAppBarBackCancel(
     val actionsContent: (@Composable (RowScope.() -> Unit)) =
         @Composable {
             Text(
-                stringResource(R.string.cancel),
+                cancelText,
                 // TODO Style, height of app bar
                 modifier
                     .clickable(onClick = onCancel)

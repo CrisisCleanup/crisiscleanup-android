@@ -23,6 +23,8 @@ fun EditNoteDialog(
     dialogTitle: String,
     onSave: (WorksiteNote) -> Unit = {},
     onCancel: () -> Unit = {},
+    saveText: String = "",
+    cancelText: String = "",
 ) {
     var isSaving by rememberSaveable { mutableStateOf(false) }
     var noteContent by rememberSaveable { mutableStateOf(note.note.trim()) }
@@ -60,13 +62,13 @@ fun EditNoteDialog(
         onDismissRequest = onCancel,
         dismissButton = {
             CrisisCleanupTextButton(
-                textResId = android.R.string.cancel,
+                text = cancelText,
                 onClick = onCancel
             )
         },
         confirmButton = {
             CrisisCleanupTextButton(
-                textResId = R.string.save,
+                text = saveText,
                 onClick = saveNote,
                 enabled = !isSaving,
             )
