@@ -52,15 +52,11 @@ data class OrganizationPrimaryContactCrossRef(
             childColumns = ["id"],
             onDelete = ForeignKey.CASCADE,
         ),
-        ForeignKey(
-            entity = IncidentOrganizationEntity::class,
-            parentColumns = ["id"],
-            childColumns = ["affiliate_id"],
-            onDelete = ForeignKey.CASCADE,
-        ),
+        // Do not key affiliate_id to IncidentOrganizationEntity::class as this requires
+        // all (affiliate) organizations exist at time of insert
     ],
     indices = [
-        Index(value = ["affiliate_id"]),
+        Index(value = ["affiliate_id", "id"]),
     ]
 )
 data class OrganizationAffiliateEntity(

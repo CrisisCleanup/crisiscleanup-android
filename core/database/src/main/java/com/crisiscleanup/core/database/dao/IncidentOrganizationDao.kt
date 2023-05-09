@@ -6,7 +6,6 @@ import com.crisiscleanup.core.database.model.IncidentOrganizationSyncStatsEntity
 import com.crisiscleanup.core.database.model.OrganizationAffiliateEntity
 import com.crisiscleanup.core.database.model.OrganizationIdName
 import com.crisiscleanup.core.database.model.OrganizationPrimaryContactCrossRef
-import com.crisiscleanup.core.database.model.PopulatedIncidentOrganization
 import kotlinx.coroutines.flow.Flow
 
 @Dao

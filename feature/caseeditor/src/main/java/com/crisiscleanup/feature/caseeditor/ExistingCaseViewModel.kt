@@ -280,7 +280,7 @@ class ExistingCaseViewModel @Inject constructor(
 
     private fun refreshOrganizationLookup() {
         if (!isOrganizationsRefreshed.getAndSet(true)) {
-            viewModelScope.launch {
+            viewModelScope.launch(ioDispatcher) {
                 incidentsRepository.pullIncidentOrganizations(incidentIdArg, true)
             }
         }
