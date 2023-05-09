@@ -152,6 +152,8 @@ class ExistingCaseViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
+    val isLoading = dataLoader.isLoading
+
     val statusOptions = dataLoader.uiState
         .mapLatest {
             (it as? CaseEditorUiState.WorksiteData)?.statusOptions ?: emptyList()

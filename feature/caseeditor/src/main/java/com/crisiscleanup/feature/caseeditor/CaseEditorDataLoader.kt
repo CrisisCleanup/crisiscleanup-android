@@ -22,6 +22,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -59,8 +60,18 @@ internal class CaseEditorDataLoader(
     val workTypeGroupChildrenLookup = MutableStateFlow(emptyMap<String, Collection<String>>())
 
     private val dataLoadCountStream = MutableStateFlow(0)
-    val isRefreshingIncident = MutableStateFlow(false)
-    val isRefreshingWorksite = MutableStateFlow(false)
+    private val isRefreshingIncident = MutableStateFlow(false)
+    private val isRefreshingWorksite = MutableStateFlow(false)
+
+    val isLoading = combine(
+        isRefreshingIncident,
+        isRefreshingWorksite,
+    ) { b0, b1 -> b0 || b1 }
+        .stateIn(
+            scope = coroutineScope,
+            initialValue = false,
+            started = SharingStarted.WhileSubscribed(),
+        )
 
     private val organizationStream = accountDataRepository.accountData
         .map { it.org }

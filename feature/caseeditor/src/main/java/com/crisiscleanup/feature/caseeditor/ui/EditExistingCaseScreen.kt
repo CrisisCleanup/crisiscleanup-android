@@ -50,14 +50,18 @@ internal fun EditExistingCaseRoute(
     onBack: () -> Unit = {},
     onFullEdit: (ExistingWorksiteIdentifier) -> Unit = {},
 ) {
-    val worksite by viewModel.worksite.collectAsStateWithLifecycle()
-    val isEmptyWorksite = worksite == EmptyWorksite
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val isSaving by viewModel.isSavingWorksite.collectAsStateWithLifecycle()
+    val isBusy = isLoading || isSaving
+    val isEditable = !isBusy
 
     val toggleFavorite = remember(viewModel) { { viewModel.toggleFavorite() } }
     val toggleHighPriority = remember(viewModel) { { viewModel.toggleHighPriority() } }
     Column {
         val title by viewModel.headerTitle.collectAsStateWithLifecycle()
         val subTitle by viewModel.subTitle.collectAsStateWithLifecycle()
+        val worksite by viewModel.worksite.collectAsStateWithLifecycle()
+        val isEmptyWorksite = worksite == EmptyWorksite
         TopBar(
             title,
             subTitle,
@@ -67,6 +71,7 @@ internal fun EditExistingCaseRoute(
             isEmptyWorksite,
             toggleFavorite,
             toggleHighPriority,
+            isEditable,
         )
 
         if (isEmptyWorksite) {
@@ -83,26 +88,35 @@ internal fun EditExistingCaseRoute(
         } else {
             val translate = remember(viewModel) { { s: String -> viewModel.translate(s) } }
 
-            val isSaving by viewModel.isSavingWorksite.collectAsStateWithLifecycle()
-            // TODO Test
-            val isEditable = !isSaving
-
             val statusOptions by viewModel.statusOptions.collectAsStateWithLifecycle()
             val caseEditor = CaseEditor(isEditable, statusOptions)
             CompositionLocalProvider(LocalCaseEditor provides caseEditor) {
                 ExistingCaseContent(
                     worksite,
-                    translate = translate,
+                    translate,
+                    isBusy,
+                )
+
+                BottomActions(
+                    worksite,
+                    translate,
+                    onFullEdit,
                 )
             }
-
-            BottomActions(
-                worksite,
-                translate,
-                onFullEdit,
-            )
         }
     }
+}
+
+private fun getTopIconActionColor(
+    isActive: Boolean,
+    isEditable: Boolean,
+): Color {
+    var tint = if (isActive) primaryRedColor
+    else neutralIconColor
+    if (!isEditable) {
+        tint = tint.disabledAlpha()
+    }
+    return tint
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -116,6 +130,7 @@ private fun TopBar(
     isLoading: Boolean = false,
     toggleFavorite: () -> Unit = {},
     toggleHighPriority: () -> Unit = {},
+    isEditable: Boolean = false,
 ) {
     // TODO Style components as necessary
 
@@ -148,30 +163,28 @@ private fun TopBar(
 
             IconButton(
                 onClick = toggleFavorite,
+                enabled = isEditable,
             ) {
                 val iconResId = if (isFavorite) R.drawable.ic_heart_filled
                 else R.drawable.ic_heart_outline
                 val descriptionResId = if (isFavorite) R.string.not_favorite
                 else R.string.favorite
-                val tint = if (isFavorite) primaryRedColor
-                else neutralIconColor
                 Icon(
                     painter = painterResource(iconResId),
                     contentDescription = stringResource(descriptionResId),
-                    tint = tint,
+                    tint = getTopIconActionColor(isFavorite, isEditable),
                 )
             }
             IconButton(
                 onClick = toggleHighPriority,
+                enabled = isEditable,
             ) {
                 val descriptionResId = if (isHighPriority) R.string.not_high_priority
                 else R.string.high_priority
-                val tint = if (isHighPriority) primaryRedColor
-                else neutralIconColor
                 Icon(
                     painter = painterResource(R.drawable.ic_important_filled),
                     contentDescription = stringResource(descriptionResId),
-                    tint = tint,
+                    tint = getTopIconActionColor(isHighPriority, isEditable),
                 )
             }
         }
@@ -196,6 +209,7 @@ private val tabTitles = listOf(
 private fun ColumnScope.ExistingCaseContent(
     worksite: Worksite,
     translate: (String) -> String = { s -> s },
+    isLoading: Boolean = false,
 ) {
     var selectedTabIndex by remember { mutableStateOf(0) }
     TabRow(
@@ -225,6 +239,8 @@ private fun ColumnScope.ExistingCaseContent(
             2 -> EditExistingCaseNotesView(worksite, translate = translate)
             3 -> {}
         }
+
+        BusyIndicatorFloatingTopCenter(isLoading)
     }
 }
 
@@ -234,7 +250,11 @@ private fun BottomActions(
     translate: (String) -> String? = { null },
     onFullEdit: (ExistingWorksiteIdentifier) -> Unit = {},
 ) {
-    val contentColor = Color.Black
+    val isEditable = LocalCaseEditor.current.isEditable
+    var contentColor = Color.Black
+    if (!isEditable) {
+        contentColor = contentColor.disabledAlpha()
+    }
     NavigationBar(
         containerColor = cardContainerColor,
         contentColor = contentColor,
@@ -251,32 +271,41 @@ private fun BottomActions(
                 label = stringResource(action.textResId)
             }
 
-            NavigationBarItem(selected = false, onClick = {
-                when (index) {
-                    0 -> {}
-                    1 -> {}
-                    2 -> {}
-                    3 -> {
-                        onFullEdit(ExistingWorksiteIdentifier(worksite.incidentId, worksite.id))
+            NavigationBarItem(
+                selected = false,
+                onClick = {
+                    when (index) {
+                        0 -> {}
+                        1 -> {}
+                        2 -> {}
+                        3 -> onFullEdit(
+                            ExistingWorksiteIdentifier(
+                                worksite.incidentId,
+                                worksite.id,
+                            )
+                        )
                     }
-                }
-            }, icon = {
-                if (action.iconResId != 0) {
-                    Icon(
-                        painter = painterResource(action.iconResId),
-                        contentDescription = label,
-                    )
-                } else if (action.imageVector != null) {
-                    Icon(
-                        imageVector = action.imageVector,
-                        contentDescription = label,
-                    )
-                }
-            }, label = { Text(label) }, colors = NavigationBarItemDefaults.colors(
-                unselectedIconColor = contentColor,
-                unselectedTextColor = contentColor,
-                indicatorColor = CrisisCleanupNavigationDefaults.navigationIndicatorColor(),
-            )
+                },
+                icon = {
+                    if (action.iconResId != 0) {
+                        Icon(
+                            painter = painterResource(action.iconResId),
+                            contentDescription = label,
+                        )
+                    } else if (action.imageVector != null) {
+                        Icon(
+                            imageVector = action.imageVector,
+                            contentDescription = label,
+                        )
+                    }
+                },
+                label = { Text(label) },
+                colors = NavigationBarItemDefaults.colors(
+                    unselectedIconColor = contentColor,
+                    unselectedTextColor = contentColor,
+                    indicatorColor = CrisisCleanupNavigationDefaults.navigationIndicatorColor(),
+                ),
+                enabled = isEditable,
             )
         }
     }

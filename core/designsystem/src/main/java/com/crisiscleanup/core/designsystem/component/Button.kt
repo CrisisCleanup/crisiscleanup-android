@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.cancelButtonContainerColor
 import com.crisiscleanup.core.designsystem.theme.cancelButtonContentColor
+import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 
 private fun roundedRectangleButtonShape() = RoundedCornerShape(4.dp)
 
@@ -151,11 +152,12 @@ fun CrisisCleanupOutlinedButton(
     text: String = "",
     onClick: () -> Unit = {},
     enabled: Boolean = false,
-    border: BorderStroke = BorderStroke(
-        width = 1.dp,
-        color = LocalContentColor.current,
-    ),
+    borderColor: Color = LocalContentColor.current,
 ) {
+    val border = BorderStroke(
+        width = 1.dp,
+        color = if (enabled) borderColor else borderColor.disabledAlpha(),
+    )
     OutlinedButton(
         modifier = modifier,
         onClick = onClick,

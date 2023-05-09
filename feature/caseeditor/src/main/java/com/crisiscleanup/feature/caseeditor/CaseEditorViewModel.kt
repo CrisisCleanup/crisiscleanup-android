@@ -263,15 +263,7 @@ class CaseEditorViewModel @Inject constructor(
 
     val editSections = dataLoader.editSections
 
-    val isLoading = combine(
-        dataLoader.isRefreshingIncident,
-        dataLoader.isRefreshingWorksite,
-    ) { b0, b1 -> b0 || b1 }
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = false,
-            started = SharingStarted.WhileSubscribed(),
-        )
+    val isLoading = dataLoader.isLoading
 
     val isSyncing = worksiteChangeRepository.syncingWorksiteIds.mapLatest {
         it.contains(worksiteIdArg)
