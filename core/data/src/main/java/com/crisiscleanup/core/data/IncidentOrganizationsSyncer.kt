@@ -119,20 +119,35 @@ class IncidentOrganizationsSyncer @Inject constructor(
             val organizations = cachedData.organizations.map { it.asEntity() }
             val primaryContacts =
                 cachedData.organizations.flatMap { it.primaryContacts.map(NetworkPersonContact::asEntity) }
+            incidentOrganizationDaoPlus.saveOrganizations(
+                organizations,
+                primaryContacts,
+            )
+
+            statsUpdater.addSavedCount((organizations.size * 0.5).toInt())
+
+            dbSaveCount += pageDataCount
+        }
+
+        for (dbSaveOffset in 0 until requestedCount step pageDataCount) {
+            val cachedData = networkDataCache.loadOrganizations(
+                incidentId,
+                dbSaveOffset,
+                syncCount,
+            ) ?: break
+
+            val organizations = cachedData.organizations.map { it.asEntity() }
             val organizationContactCrossRefs =
                 cachedData.organizations.flatMap(NetworkIncidentOrganization::primaryContactCrossReferences)
             val organizationAffiliates =
                 cachedData.organizations.flatMap(NetworkIncidentOrganization::affiliateOrganizationCrossReferences)
-            incidentOrganizationDaoPlus.saveOrganizations(
+            incidentOrganizationDaoPlus.saveOrganizationReferences(
                 organizations,
-                primaryContacts,
                 organizationContactCrossRefs,
                 organizationAffiliates,
             )
 
-            statsUpdater.addSavedCount(organizations.size)
-
-            dbSaveCount += pageDataCount
+            statsUpdater.addSavedCount((organizations.size * 0.5).toInt())
         }
 
         if (dbSaveCount >= syncCount) {

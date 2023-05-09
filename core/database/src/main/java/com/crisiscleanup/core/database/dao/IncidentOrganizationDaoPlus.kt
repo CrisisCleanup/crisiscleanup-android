@@ -14,20 +14,22 @@ class IncidentOrganizationDaoPlus @Inject constructor(
     suspend fun saveOrganizations(
         organizations: Collection<IncidentOrganizationEntity>,
         contacts: Collection<PersonContactEntity>,
+    ) = db.withTransaction {
+        db.incidentOrganizationDao().upsert(organizations)
+        db.personContactDao().upsert(contacts)
+    }
+
+    suspend fun saveOrganizationReferences(
+        organizations: Collection<IncidentOrganizationEntity>,
         organizationContactCrossRefs: Collection<OrganizationPrimaryContactCrossRef>,
         organizationAffiliates: Collection<OrganizationAffiliateEntity>,
-    ) {
-        db.withTransaction {
-            val organizationDao = db.incidentOrganizationDao()
-            organizationDao.upsert(organizations)
-            db.personContactDao().upsert(contacts)
-
-            // TODO Write tests that only specific organization data is deleted and updated
-            val organizationIds = organizations.map(IncidentOrganizationEntity::id).toSet()
-            organizationDao.deletePrimaryContactCrossRefs(organizationIds)
-            organizationDao.insertIgnorePrimaryContactCrossRefs(organizationContactCrossRefs)
-            organizationDao.deleteOrganizationAffiliates(organizationIds)
-            organizationDao.insertIgnoreAffiliateOrganization(organizationAffiliates)
-        }
+    ) = db.withTransaction {
+        val organizationDao = db.incidentOrganizationDao()
+        // TODO Write tests that only specific organization data is deleted and updated
+        val organizationIds = organizations.map(IncidentOrganizationEntity::id).toSet()
+        organizationDao.deletePrimaryContactCrossRefs(organizationIds)
+        organizationDao.insertIgnorePrimaryContactCrossRefs(organizationContactCrossRefs)
+        organizationDao.deleteOrganizationAffiliates(organizationIds)
+        organizationDao.insertIgnoreAffiliateOrganization(organizationAffiliates)
     }
 }
