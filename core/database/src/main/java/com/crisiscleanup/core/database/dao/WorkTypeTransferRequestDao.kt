@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Upsert
 import com.crisiscleanup.core.database.model.WorkTypeTransferRequestEntity
 import kotlinx.datetime.Instant
 
@@ -56,4 +57,7 @@ interface WorkTypeTransferRequestDao {
         rejectedAt: Instant?,
         approvedRejectedReason: String,
     )
+
+    @Upsert
+    fun upsert(requests: List<WorkTypeTransferRequestEntity>)
 }

@@ -27,7 +27,11 @@ object TestUtil {
                 worksiteChange: Worksite,
                 flagIdLookup: Map<Long, Long>,
                 noteIdLookup: Map<Long, Long>,
-                workTypeIdLookup: Map<Long, Long>
+                workTypeIdLookup: Map<Long, Long>,
+                requestReason: String,
+                requestWorkTypes: List<String>,
+                releaseReason: String,
+                releaseWorkTypes: List<String>,
             ) = Pair(1, "test-worksite-change")
         })
 

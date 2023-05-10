@@ -8,8 +8,4 @@ data class PopulatedIdNetworkId(
     val networkId: Long,
 )
 
-data class PopulatedIdReasonT(
-    val id: Long,
-    @ColumnInfo("reason_t")
-    val reason: String,
-)
+fun List<PopulatedIdNetworkId>.asLookup() = associate { it.id to it.networkId }

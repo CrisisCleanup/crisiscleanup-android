@@ -1,7 +1,11 @@
 package com.crisiscleanup.core.network.model
 
 import com.crisiscleanup.core.model.data.Worksite
-import com.crisiscleanup.core.network.worksitechange.*
+import com.crisiscleanup.core.network.worksitechange.CoreSnapshot
+import com.crisiscleanup.core.network.worksitechange.FlagSnapshot
+import com.crisiscleanup.core.network.worksitechange.NoteSnapshot
+import com.crisiscleanup.core.network.worksitechange.WorkTypeSnapshot
+import com.crisiscleanup.core.network.worksitechange.WorksiteSnapshot
 
 fun Worksite.asSnapshotModel(
     // ID maps are local to network

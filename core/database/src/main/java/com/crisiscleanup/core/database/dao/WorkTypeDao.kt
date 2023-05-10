@@ -46,13 +46,12 @@ interface WorkTypeDao {
     fun syncDeleteUnspecified(worksiteId: Long, networkIds: Collection<Long>)
 
     @Transaction
-    @Query(
-        """
-        DELETE FROM work_types
-        WHERE worksite_id=:worksiteId AND id NOT IN(:ids)
-        """
-    )
+    @Query("DELETE FROM work_types WHERE worksite_id=:worksiteId AND id NOT IN(:ids)")
     fun deleteUnspecified(worksiteId: Long, ids: Collection<Long>)
+
+    @Transaction
+    @Query("DELETE FROM work_types WHERE worksite_id=:worksiteId AND work_type IN(:workTypes)")
+    fun deleteSpecified(worksiteId: Long, workTypes: Set<String>)
 
     @Transaction
     @Query(

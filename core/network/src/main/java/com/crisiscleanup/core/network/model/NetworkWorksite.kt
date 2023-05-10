@@ -33,7 +33,7 @@ data class NetworkWorksiteFull(
     val formData: List<KeyDynamicValuePair>,
     val incident: Long,
     @SerialName("key_work_type")
-    internal val keyWorkType: NetworkWorkType?,
+    private val keyWorkType: NetworkWorkType?,
     val location: Location,
     val name: String,
     val notes: List<NetworkNote>,
@@ -55,7 +55,7 @@ data class NetworkWorksiteFull(
     @SerialName("what3words")
     val what3words: String? = null,
     @SerialName("work_types")
-    internal val workTypes: List<NetworkWorkType>,
+    private val workTypes: List<NetworkWorkType>,
 ) {
     @Transient
     var newestWorkTypes: List<NetworkWorkType> = emptyList()
@@ -168,7 +168,7 @@ data class NetworkWorksiteShort(
     val favoriteId: Long? = null,
     val flags: List<NetworkWorksiteFull.FlagShort>,
     @SerialName("key_work_type")
-    internal val keyWorkType: NetworkWorksiteFull.KeyWorkTypeShort?,
+    private val keyWorkType: NetworkWorksiteFull.KeyWorkTypeShort?,
     val location: NetworkWorksiteFull.Location,
     val name: String,
     @SerialName("postal_code")
@@ -179,7 +179,7 @@ data class NetworkWorksiteShort(
     @SerialName("updated_at")
     val updatedAt: Instant,
     @SerialName("work_types")
-    internal val workTypes: List<NetworkWorksiteFull.WorkTypeShort>,
+    private val workTypes: List<NetworkWorksiteFull.WorkTypeShort>,
 ) {
     @Transient
     var newestWorkTypes: List<NetworkWorksiteFull.WorkTypeShort> = emptyList()

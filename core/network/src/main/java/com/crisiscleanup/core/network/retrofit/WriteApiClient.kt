@@ -66,6 +66,7 @@ private interface DataChangeApi {
     @TokenAuthenticationHeader
     @POST("worksites/{worksiteId}/notes")
     suspend fun addNote(
+        @Header("cc-created-at") createdAt: Instant,
         @Path("worksiteId")
         worksiteId: Long,
         @Body note: NetworkNoteNote,
@@ -101,6 +102,7 @@ private interface DataChangeApi {
     @TokenAuthenticationHeader
     @POST("worksites/{worksiteId}/request_take")
     suspend fun requestWorkTypes(
+        @Header("cc-created-at") createdAt: Instant,
         @Path("worksiteId")
         worksiteId: Long,
         @Body request: NetworkWorkTypeChangeRequest,
@@ -109,6 +111,7 @@ private interface DataChangeApi {
     @TokenAuthenticationHeader
     @POST("worksites/{worksiteId}/release")
     suspend fun releaseWorkTypes(
+        @Header("cc-created-at") createdAt: Instant,
         @Path("worksiteId")
         worksiteId: Long,
         @Body release: NetworkWorkTypeChangeRelease,
@@ -148,8 +151,8 @@ class WriteApiClient @Inject constructor(
         changeWorksiteApi.deleteFlag(createdAt, worksiteId, NetworkFlagId(flagId))
     }
 
-    override suspend fun addNote(worksiteId: Long, note: String) =
-        changeWorksiteApi.addNote(worksiteId, NetworkNoteNote(note))
+    override suspend fun addNote(createdAt: Instant, worksiteId: Long, note: String) =
+        changeWorksiteApi.addNote(createdAt, worksiteId, NetworkNoteNote(note))
 
     override suspend fun updateWorkTypeStatus(
         createdAt: Instant,
@@ -172,20 +175,28 @@ class WriteApiClient @Inject constructor(
     ) = changeWorksiteApi.unclaimWorkTypes(createdAt, worksiteId, NetworkWorkTypeTypes(workTypes))
 
     override suspend fun requestWorkTypes(
+        createdAt: Instant,
         worksiteId: Long,
         workTypes: List<String>,
         reason: String
-    ) = changeWorksiteApi.requestWorkTypes(
-        worksiteId,
-        NetworkWorkTypeChangeRequest(workTypes, reason),
-    )
+    ) {
+        changeWorksiteApi.requestWorkTypes(
+            createdAt,
+            worksiteId,
+            NetworkWorkTypeChangeRequest(workTypes, reason),
+        )
+    }
 
     override suspend fun releaseWorkTypes(
+        createdAt: Instant,
         worksiteId: Long,
         workTypes: List<String>,
         reason: String
-    ) = changeWorksiteApi.releaseWorkTypes(
-        worksiteId,
-        NetworkWorkTypeChangeRelease(workTypes, reason),
-    )
+    ) {
+        changeWorksiteApi.releaseWorkTypes(
+            createdAt,
+            worksiteId,
+            NetworkWorkTypeChangeRelease(workTypes, reason),
+        )
+    }
 }

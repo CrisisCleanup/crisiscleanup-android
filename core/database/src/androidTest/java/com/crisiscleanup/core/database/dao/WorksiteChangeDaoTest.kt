@@ -252,7 +252,7 @@ class WorksiteChangeDaoTest {
         MockKAnnotations.init(this)
 
         // TODO Try mocking in a future version where tests are able to run properly
-        // every { syncLogger.log(any(), any(), any()) } returns syncLogger
+        // every { syncLogger.log(allAny()) } returns syncLogger
 
         every { appLogger.logDebug(*anyVararg()) } returns Unit
     }
@@ -344,7 +344,7 @@ class WorksiteChangeDaoTest {
         val actualWorkTypes = db.testWorkTypeDao().getEntities(worksiteId)
         assertEquals(expectedWorkTypes, actualWorkTypes)
 
-        verify(exactly = 0) { changeSerializer.serialize(any(), any(), any(), any(), any()) }
+        verify(exactly = 0) { changeSerializer.serialize(any(), allAny()) }
         verify(exactly = 0) { appLogger.logException(any()) }
     }
 
@@ -379,9 +379,7 @@ class WorksiteChangeDaoTest {
                     notes = newNotes.mapIndexed { index, note -> note.copy(id = index + 1L) },
                     workTypes = newWorkTypes.mapIndexed { index, workType -> workType.copy(id = index + 1L) },
                 ),
-                emptyMap(),
-                emptyMap(),
-                emptyMap(),
+                allAny(),
             )
         } returns Pair(2, "serialized-new-worksite-changes")
 
@@ -390,7 +388,7 @@ class WorksiteChangeDaoTest {
             newWorksite,
             primaryWorkType,
             385,
-            now,
+            localModifiedAt = now,
         )
 
         val worksiteEntity = entities.core.copy(id = 1)
@@ -694,7 +692,7 @@ class WorksiteChangeDaoTest {
             worksiteModified,
             primaryWorkType,
             385,
-            now,
+            localModifiedAt = now,
         )
 
         val worksiteEntity = entities.core
@@ -947,7 +945,7 @@ class WorksiteChangeDaoTest {
             worksiteModified,
             primaryWorkType,
             385,
-            now,
+            localModifiedAt = now,
         )
 
         val worksiteEntity = entities.core

@@ -26,6 +26,7 @@ interface WorksiteChangeSyncer {
         flagIdLookup: Map<Long, Long>,
         noteIdLookup: Map<Long, Long>,
         workTypeIdLookup: Map<Long, Long>,
+        affiliateOrganizations: Set<Long>,
         syncLogger: SyncLogger,
     ): WorksiteSyncResult
 }
@@ -39,7 +40,7 @@ class NetworkWorksiteChangeSyncer @Inject constructor(
 ) : WorksiteChangeSyncer {
     private fun deserializeChanges(savedChange: SavedWorksiteChange): SyncWorksiteChange {
         val worksiteChange: WorksiteChange = when (val version = savedChange.dataVersion) {
-            1 -> Json.decodeFromString(savedChange.serializedData)
+            1, 2 -> Json.decodeFromString(savedChange.serializedData)
             else -> error("Worksite change version $version not implemented")
         }
         return SyncWorksiteChange(
@@ -60,6 +61,7 @@ class NetworkWorksiteChangeSyncer @Inject constructor(
         flagIdLookup: Map<Long, Long>,
         noteIdLookup: Map<Long, Long>,
         workTypeIdLookup: Map<Long, Long>,
+        affiliateOrganizations: Set<Long>,
         syncLogger: SyncLogger,
     ): WorksiteSyncResult {
         val syncManager = WorksiteChangeProcessor(
@@ -75,6 +77,7 @@ class NetworkWorksiteChangeSyncer @Inject constructor(
             flagIdLookup,
             noteIdLookup,
             workTypeIdLookup,
+            affiliateOrganizations,
         )
         val changes = sortedChanges.map { deserializeChanges(it) }
         syncManager.process(

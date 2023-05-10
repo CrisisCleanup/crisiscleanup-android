@@ -53,5 +53,5 @@ interface IncidentOrganizationDao {
 
     @Transaction
     @Query("SELECT affiliate_id FROM organization_to_affiliate WHERE id=:orgId")
-    fun streamAffiliateOrganizationIds(orgId: Long): List<Long>
+    fun getAffiliateOrganizationIds(orgId: Long): List<Long>
 }

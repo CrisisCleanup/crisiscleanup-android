@@ -16,10 +16,12 @@ interface TransferWorkTypeProvider {
     val workTypes: Map<WorkType, Boolean>
     var reason: String
 
+    val organizationId: Long
     val organizationName: String
     val caseNumber: String
 
     fun startTransfer(
+        organizationId: Long,
         transferType: WorkTypeTransferType,
         workTypes: Map<WorkType, Boolean>,
         organizationName: String = "",
@@ -41,12 +43,15 @@ class SingleTransferWorkTypeProvider @Inject constructor() : TransferWorkTypePro
 
     override var reason = ""
 
+    override var organizationId = 0L
+        private set
     override var organizationName = ""
         private set
     override var caseNumber = ""
         private set
 
     override fun startTransfer(
+        organizationId: Long,
         transferType: WorkTypeTransferType,
         workTypes: Map<WorkType, Boolean>,
         organizationName: String,
@@ -55,6 +60,7 @@ class SingleTransferWorkTypeProvider @Inject constructor() : TransferWorkTypePro
         if (transferType != WorkTypeTransferType.None &&
             workTypes.isNotEmpty()
         ) {
+            this.organizationId = organizationId
             reason = ""
             this.transferType = transferType
             this.workTypes = workTypes

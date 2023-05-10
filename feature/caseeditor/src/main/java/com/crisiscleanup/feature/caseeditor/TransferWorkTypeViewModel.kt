@@ -8,15 +8,22 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.KeyTranslator
+import com.crisiscleanup.core.common.di.ApplicationScope
+import com.crisiscleanup.core.common.log.AppLogger
+import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
+import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
+import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.feature.caseeditor.WorkTypeTransferType.None
 import com.crisiscleanup.feature.caseeditor.WorkTypeTransferType.Release
 import com.crisiscleanup.feature.caseeditor.WorkTypeTransferType.Request
 import com.crisiscleanup.feature.caseeditor.model.contactList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -31,11 +38,15 @@ import javax.inject.Inject
 @HiltViewModel
 class TransferWorkTypeViewModel @Inject constructor(
     organizationsRepository: OrganizationsRepository,
+    private val worksiteChangeRepository: WorksiteChangeRepository,
     private val editableWorksiteProvider: EditableWorksiteProvider,
     private val transferWorkTypeProvider: TransferWorkTypeProvider,
     private val translator: KeyTranslator,
     private val resourceProvider: AndroidResourceProvider,
+    private val syncPusher: SyncPusher,
+    @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    @ApplicationScope private val externalScope: CoroutineScope,
 ) : ViewModel() {
     val transferType = transferWorkTypeProvider.transferType
 
@@ -159,8 +170,33 @@ class TransferWorkTypeViewModel @Inject constructor(
     private fun transferWorkTypes() {
         viewModelScope.launch(ioDispatcher) {
             isTransferring.value = true
+            val isRequest = transferType == Request
+            val workTypeIdLookup = transferWorkTypesState.keys
+                .map { it.id to it.workTypeLiteral }
+                .associate { it.first to it.second }
+            val workTypes = workTypesState.mapNotNull {
+                if (it.value) workTypeIdLookup[it.key]
+                else null
+            }
+            val worksite = editableWorksiteProvider.editableWorksite.value
             try {
-                // TODO Save changes for release or request
+                worksiteChangeRepository.saveWorkTypeTransfer(
+                    worksite,
+                    transferWorkTypeProvider.organizationId,
+                    if (isRequest) transferReason else "",
+                    if (isRequest) workTypes else emptyList(),
+                    if (isRequest) "" else transferReason,
+                    if (isRequest) emptyList() else workTypes,
+                )
+
+                externalScope.launch {
+                    syncPusher.appPushWorksite(worksite.id)
+                }
+
+                isTransferred.value = true
+            } catch (e: Exception) {
+                // TODO Show error
+                logger.logException(e)
             } finally {
                 isTransferring.value = false
             }

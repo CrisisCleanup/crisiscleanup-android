@@ -28,15 +28,9 @@ class WorksiteChangeDaoPlus @Inject constructor(
             return IdNetworkIdMaps()
         }
 
-        val flagIdMap = db.worksiteFlagDao().getNetworkedIdMap(worksite.id)
-            .associate { it.id to it.networkId }
-
-        val noteIdMap = db.worksiteNoteDao().getNetworkedIdMap(worksite.id)
-            .associate { it.id to it.networkId }
-
-        val workTypeIdMap = db.workTypeDao().getNetworkedIdMap(worksite.id)
-            .associate { it.id to it.networkId }
-
+        val flagIdMap = db.worksiteFlagDao().getNetworkedIdMap(worksite.id).asLookup()
+        val noteIdMap = db.worksiteNoteDao().getNetworkedIdMap(worksite.id).asLookup()
+        val workTypeIdMap = db.workTypeDao().getNetworkedIdMap(worksite.id).asLookup()
         return IdNetworkIdMaps(
             flag = flagIdMap,
             note = noteIdMap,
@@ -219,6 +213,183 @@ class WorksiteChangeDaoPlus @Inject constructor(
         }
 
         return worksiteId
+    }
+
+    private suspend fun saveWorkTypeTransfer(
+        worksite: Worksite,
+        transferType: String,
+        localModifiedAt: Instant,
+        saveBlock: suspend (Map<String, WorkType>) -> Unit,
+    ) {
+        val logPostfix = localModifiedAt.epochSeconds.toString()
+        syncLogger.type = "worksite-$transferType-${worksite.id}-$logPostfix"
+
+        val workTypeLookup = worksite.workTypes.associateBy(WorkType::workTypeLiteral)
+        db.withTransaction {
+            try {
+                saveBlock(workTypeLookup)
+            } catch (e: Exception) {
+                appLogger.logException(e)
+                throw e
+            } finally {
+                syncLogger.flush()
+            }
+        }
+    }
+
+    private fun saveWorksiteTransferChange(
+        worksite: Worksite,
+        organizationId: Long,
+        requestReason: String = "",
+        requests: List<String> = emptyList(),
+        releaseReason: String = "",
+        releases: List<String> = emptyList(),
+    ) {
+        val (flagIdMap, noteIdMap, workTypeIdMap) = getLocalNetworkIdMap(worksite)
+        val (changeVersion, serializedChange) = changeSerializer.serialize(
+            EmptyWorksite,
+            worksite,
+            flagIdMap,
+            noteIdMap,
+            workTypeIdMap,
+            requestReason,
+            requests,
+            releaseReason,
+            releases,
+        )
+        val changeEntity = WorksiteChangeEntity(
+            0,
+            appVersionProvider.versionCode,
+            organizationId,
+            worksite.id,
+            uuidGenerator.uuid(),
+            changeVersion,
+            serializedChange,
+        )
+        db.worksiteChangeDao().insert(changeEntity)
+    }
+
+    // TODO Tests
+    suspend fun saveWorkTypeRequests(
+        worksite: Worksite,
+        organizationId: Long,
+        reason: String,
+        requests: List<String>,
+        localModifiedAt: Instant = Clock.System.now(),
+    ) {
+        if (requests.isEmpty()) {
+            return
+        }
+
+        saveWorkTypeTransfer(
+            worksite,
+            "request",
+            localModifiedAt,
+        ) { workTypeLookup ->
+            val requestEntities = requests.mapNotNull {
+                workTypeLookup[it]?.let { workType ->
+                    if (workType.orgClaim == null) null
+                    else WorkTypeTransferRequestEntity(
+                        0,
+                        networkId = -1,
+                        worksiteId = worksite.id,
+                        workType = it,
+                        reason = reason,
+                        byOrg = organizationId,
+                        toOrg = workType.orgClaim!!,
+                        createdAt = localModifiedAt,
+                    )
+                }
+            }
+
+            if (requestEntities.isNotEmpty()) {
+                val requestedWorkTypes =
+                    requestEntities.map(WorkTypeTransferRequestEntity::workType)
+                db.workTypeTransferRequestDao().upsert(requestEntities)
+
+                syncLogger.log(
+                    "Requested ${requestEntities.size} work types.",
+                    "$requestedWorkTypes",
+                )
+
+                saveWorksiteTransferChange(
+                    worksite,
+                    organizationId,
+                    requestReason = reason,
+                    requests = requestedWorkTypes,
+                )
+            }
+        }
+    }
+
+    // TODO Tests
+    suspend fun saveWorkTypeReleases(
+        worksite: Worksite,
+        organizationId: Long,
+        reason: String,
+        releases: List<String>,
+        localModifiedAt: Instant = Clock.System.now(),
+    ) {
+        if (releases.isEmpty()) {
+            return
+        }
+
+        saveWorkTypeTransfer(
+            worksite,
+            "release",
+            localModifiedAt,
+        ) { workTypeLookup ->
+            val releaseWorkTypes = releases.filter {
+                workTypeLookup[it]?.let { workType -> workType.orgClaim != null } ?: false
+            }
+
+            if (releaseWorkTypes.isNotEmpty()) {
+                val worksiteId = worksite.id
+                val workTypeDao = db.workTypeDao()
+                workTypeDao.deleteSpecified(worksiteId, releaseWorkTypes.toSet())
+
+                val workTypeEntities = releaseWorkTypes.map {
+                    WorkTypeEntity(
+                        0,
+                        uuidGenerator.uuid(),
+                        networkId = -1,
+                        worksiteId = worksiteId,
+                        createdAt = localModifiedAt,
+                        status = WorkTypeStatus.OpenUnassigned.literal,
+                        workType = it,
+                    )
+                }
+                val insertIds = workTypeDao.insertIgnore(workTypeEntities)
+                val workTypeInsertIdLookup = workTypeEntities
+                    .mapIndexed { index, workType -> Pair(workType.workType, insertIds[index]) }
+                    .associate { it.first to it.second }
+                val updatedWorksite = worksite.copy(
+                    workTypes = worksite.workTypes.map { workType ->
+                        val workTypeLiteral = workType.workTypeLiteral
+                        workTypeInsertIdLookup[workTypeLiteral]?.let { insertId ->
+                            WorkType(
+                                id = insertId,
+                                createdAt = localModifiedAt,
+                                statusLiteral = WorkTypeStatus.OpenUnassigned.literal,
+                                workTypeLiteral = workTypeLiteral,
+                            )
+                        } ?: workType
+                    }
+                )
+
+                syncLogger.log(
+                    "Released ${releaseWorkTypes.size} work types",
+                    "$releaseWorkTypes",
+                )
+
+                saveWorksiteTransferChange(
+                    updatedWorksite,
+                    organizationId,
+                    releaseReason = reason,
+                    releases = releases,
+                )
+            }
+        }
     }
 
     private fun saveWorksiteChange(

@@ -19,7 +19,7 @@ interface CrisisCleanupWriteApi {
     suspend fun unfavoriteWorksite(createdAt: Instant, worksiteId: Long, favoriteId: Long)
     suspend fun addFlag(createdAt: Instant, worksiteId: Long, flag: NetworkFlag): NetworkFlag
     suspend fun deleteFlag(createdAt: Instant, worksiteId: Long, flagId: Long)
-    suspend fun addNote(worksiteId: Long, note: String): NetworkNote
+    suspend fun addNote(createdAt: Instant, worksiteId: Long, note: String): NetworkNote
     suspend fun updateWorkTypeStatus(
         createdAt: Instant,
         workTypeId: Long,
@@ -33,6 +33,17 @@ interface CrisisCleanupWriteApi {
         workTypes: Collection<String>,
     )
 
-    suspend fun requestWorkTypes(worksiteId: Long, workTypes: List<String>, reason: String)
-    suspend fun releaseWorkTypes(worksiteId: Long, workTypes: List<String>, reason: String)
+    suspend fun requestWorkTypes(
+        createdAt: Instant,
+        worksiteId: Long,
+        workTypes: List<String>,
+        reason: String
+    )
+
+    suspend fun releaseWorkTypes(
+        createdAt: Instant,
+        worksiteId: Long,
+        workTypes: List<String>,
+        reason: String
+    )
 }

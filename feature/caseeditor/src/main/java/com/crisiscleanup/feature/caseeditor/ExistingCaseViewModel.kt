@@ -8,7 +8,7 @@ import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.combineTrimText
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.log.AppLogger
-import com.crisiscleanup.core.common.log.CrisisCleanupLoggers.Worksites
+import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
@@ -27,7 +27,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
@@ -37,7 +36,7 @@ class ExistingCaseViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     accountDataRepository: AccountDataRepository,
     private val incidentsRepository: IncidentsRepository,
-    private val organizationsRepository: OrganizationsRepository,
+    organizationsRepository: OrganizationsRepository,
     incidentRefresher: IncidentRefresher,
     locationsRepository: LocationsRepository,
     worksitesRepository: WorksitesRepository,
@@ -51,7 +50,7 @@ class ExistingCaseViewModel @Inject constructor(
     private val syncPusher: SyncPusher,
     private val resourceProvider: AndroidResourceProvider,
     drawableResourceBitmapProvider: DrawableResourceBitmapProvider,
-    @Logger(Worksites) private val logger: AppLogger,
+    @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
     @ApplicationScope private val externalScope: CoroutineScope,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
@@ -89,7 +88,6 @@ class ExistingCaseViewModel @Inject constructor(
         )
 
     val editableWorksite = editableWorksiteProvider.editableWorksite
-    private val worksiteChangeTime = MutableStateFlow(Instant.fromEpochSeconds(0))
 
     // The first worksite loaded in the session
     private val worksiteIn = AtomicReference<Worksite>()
@@ -276,6 +274,7 @@ class ExistingCaseViewModel @Inject constructor(
                 .filter { summary -> !(summary.isReleasable || summary.isRequested) }
                 .sortedBy(WorkTypeSummary::name)
             WorkTypeProfile(
+                myOrgId,
                 otherOrgClaims,
                 orgClaimed,
                 unclaimed,
@@ -337,9 +336,9 @@ class ExistingCaseViewModel @Inject constructor(
                         orgId,
                     )
 
-                    // TODO Queue up sync push debounce
-                    worksiteChangeTime.value = Clock.System.now()
-
+                    externalScope.launch {
+                        syncPusher.appPushWorksite(worksiteIdArg)
+                    }
                 } catch (e: Exception) {
                     logger.logException(e)
 
@@ -378,6 +377,7 @@ class ExistingCaseViewModel @Inject constructor(
     fun requestWorkType(workType: WorkType) {
         workTypeProfile.value?.let { profile ->
             transferWorkTypeProvider.startTransfer(
+                profile.orgId,
                 WorkTypeTransferType.Request,
                 profile.requestable.associate { summary ->
                     val isSelected = summary.workType.id == workType.id
@@ -390,10 +390,11 @@ class ExistingCaseViewModel @Inject constructor(
     }
 
     fun releaseWorkType(workType: WorkType) {
-        workTypeProfile.value?.releasable?.let {
+        workTypeProfile.value?.let { profile ->
             transferWorkTypeProvider.startTransfer(
+                profile.orgId,
                 WorkTypeTransferType.Release,
-                it.associate { summary ->
+                profile.releasable.associate { summary ->
                     val isSelected = summary.workType.id == workType.id
                     summary.workType to isSelected
                 },
@@ -418,6 +419,7 @@ class ExistingCaseViewModel @Inject constructor(
     fun requestAll() {
         workTypeProfile.value?.let { profile ->
             transferWorkTypeProvider.startTransfer(
+                profile.orgId,
                 WorkTypeTransferType.Request,
                 profile.requestable.associate { summary -> summary.workType to true },
                 profile.orgName,
@@ -427,10 +429,11 @@ class ExistingCaseViewModel @Inject constructor(
     }
 
     fun releaseAll() {
-        workTypeProfile.value?.releasable?.let {
+        workTypeProfile.value?.let { profile ->
             transferWorkTypeProvider.startTransfer(
+                profile.orgId,
                 WorkTypeTransferType.Release,
-                it.associate { summary -> summary.workType to true },
+                profile.releasable.associate { summary -> summary.workType to true },
             )
         }
     }
@@ -454,6 +457,7 @@ data class OrgClaimWorkType(
 )
 
 data class WorkTypeProfile(
+    val orgId: Long,
     val otherOrgClaims: List<OrgClaimWorkType>,
     val orgClaims: OrgClaimWorkType,
     val unclaimed: List<WorkTypeSummary>,

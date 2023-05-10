@@ -12,5 +12,9 @@ interface WorksiteChangeSerializer {
         flagIdLookup: Map<Long, Long> = emptyMap(),
         noteIdLookup: Map<Long, Long> = emptyMap(),
         workTypeIdLookup: Map<Long, Long> = emptyMap(),
+        requestReason: String = "",
+        requestWorkTypes: List<String> = emptyList(),
+        releaseReason: String = "",
+        releaseWorkTypes: List<String> = emptyList(),
     ): Pair<Int, String>
 }

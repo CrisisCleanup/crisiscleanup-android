@@ -8,6 +8,7 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.database.dao.*
 import com.crisiscleanup.core.database.model.asExternalModel
+import com.crisiscleanup.core.database.model.asLookup
 import com.crisiscleanup.core.model.data.SavedWorksiteChange
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.Worksite
@@ -33,6 +34,15 @@ interface WorksiteChangeRepository {
         organizationId: Long,
     ): Long
 
+    suspend fun saveWorkTypeTransfer(
+        worksite: Worksite,
+        organizationId: Long,
+        requestReason: String = "",
+        requests: List<String> = emptyList(),
+        releaseReason: String = "",
+        releases: List<String> = emptyList(),
+    )
+
     /**
      * @return TRUE if sync was attempted or FALSE otherwise
      */
@@ -56,6 +66,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
     private val accountDataRepository: AccountDataRepository,
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val worksitesRepository: WorksitesRepository,
+    private val organizationsRepository: OrganizationsRepository,
     private val networkMonitor: NetworkMonitor,
     private val appEnv: AppEnv,
     private val syncLogger: SyncLogger,
@@ -70,13 +81,38 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
         worksiteStart: Worksite,
         worksiteChange: Worksite,
         primaryWorkType: WorkType,
-        organizationId: Long
+        organizationId: Long,
     ) = worksiteChangeDaoPlus.saveChange(
         worksiteStart,
         worksiteChange,
         primaryWorkType,
         organizationId,
     )
+
+    override suspend fun saveWorkTypeTransfer(
+        worksite: Worksite,
+        organizationId: Long,
+        requestReason: String,
+        requests: List<String>,
+        releaseReason: String,
+        releases: List<String>,
+    ) {
+        if (requestReason.isNotBlank() && requests.isNotEmpty()) {
+            worksiteChangeDaoPlus.saveWorkTypeRequests(
+                worksite,
+                organizationId,
+                requestReason,
+                requests,
+            )
+        } else if (releaseReason.isNotBlank() && releases.isNotEmpty()) {
+            worksiteChangeDaoPlus.saveWorkTypeReleases(
+                worksite,
+                organizationId,
+                releaseReason,
+                releases,
+            )
+        }
+    }
 
     override suspend fun syncWorksites(syncWorksiteCount: Int): Boolean = coroutineScope {
         if (syncWorksiteMutex.tryLock()) {
@@ -236,12 +272,11 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
             val hasPriorUnsyncedChanges = startingSyncIndex > oldestReferenceChangeIndex + 1
             val worksiteId = newestChange.worksiteId
             val networkWorksiteId = worksiteDao.getWorksiteNetworkId(worksiteId)
-            val flagIdLookup = worksiteFlagDao.getNetworkedIdMap(worksiteId)
-                .associate { it.id to it.networkId }
-            val noteIdLookup = worksiteNoteDao.getNetworkedIdMap(worksiteId)
-                .associate { it.id to it.networkId }
-            val workTypeIdLookup = workTypeDao.getNetworkedIdMap(worksiteId)
-                .associate { it.id to it.networkId }
+            val flagIdLookup = worksiteFlagDao.getNetworkedIdMap(worksiteId).asLookup()
+            val noteIdLookup = worksiteNoteDao.getNetworkedIdMap(worksiteId).asLookup()
+            val workTypeIdLookup = workTypeDao.getNetworkedIdMap(worksiteId).asLookup()
+            val affiliateOrganizations =
+                organizationsRepository.getOrganizationAffiliateIds(worksiteId)
             val syncResult = worksiteChangeSyncer.sync(
                 accountDataRepository.accountData.first(),
                 oldestReferenceChange,
@@ -251,6 +286,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
                 flagIdLookup = flagIdLookup,
                 noteIdLookup = noteIdLookup,
                 workTypeIdLookup = workTypeIdLookup,
+                affiliateOrganizations = affiliateOrganizations,
                 syncLogger,
             )
 

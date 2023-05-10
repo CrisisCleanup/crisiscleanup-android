@@ -13,10 +13,12 @@ interface OrganizationsRepository {
     val organizationNameLookup: Flow<Map<Long, String>>
 
     val organizationLookup: Flow<Map<Long, IncidentOrganization>>
+
+    fun getOrganizationAffiliateIds(organizationId: Long): Set<Long>
 }
 
 class OfflineFirstOrganizationsRepository @Inject constructor(
-    incidentOrganizationDao: IncidentOrganizationDao,
+    private val incidentOrganizationDao: IncidentOrganizationDao,
 ) : OrganizationsRepository {
     override val organizationNameLookup =
         incidentOrganizationDao.streamOrganizationNames().mapLatest { it.asLookup() }
@@ -26,4 +28,8 @@ class OfflineFirstOrganizationsRepository @Inject constructor(
             it.map(PopulatedIncidentOrganization::asExternalModel)
                 .associateBy(IncidentOrganization::id)
         }
+
+    override fun getOrganizationAffiliateIds(organizationId: Long) =
+        incidentOrganizationDao.getAffiliateOrganizationIds(organizationId).toMutableSet()
+            .apply { add(organizationId) }
 }
