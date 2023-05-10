@@ -205,12 +205,14 @@ private fun TopBar(
     )
 }
 
-// TODO Translate if available
+// TODO Translate where available
 private val tabTitles = listOf(
     R.string.info,
+    // caseForm.photos
     R.string.photos,
+    // phoneDashboard.notes
     R.string.notes,
-    R.string.release,
+    // R.string.release,
 )
 
 @Composable
@@ -245,7 +247,7 @@ private fun ColumnScope.ExistingCaseContent(
             0 -> EditExistingCaseInfoView(worksite, translate = translate)
             1 -> {}
             2 -> EditExistingCaseNotesView(worksite, translate = translate)
-            3 -> {}
+            // 3 -> {}
         }
 
         BusyIndicatorFloatingTopCenter(isLoading)
@@ -397,6 +399,14 @@ internal fun EditExistingCaseInfoView(
             releaseWorkType = releaseWorkType,
         )
         volunteerReportItems(worksite, translate)
+
+        item {
+            Spacer(
+                Modifier
+                    .fillMaxWidth()
+                    .height(edgeSpacing)
+            )
+        }
     }
 }
 
@@ -555,7 +565,7 @@ private fun LazyListScope.volunteerReportItems(
     worksite: Worksite,
     translate: (String) -> String = { s -> s },
 ) {
-    itemInfoSectionHeader(4, translate("caseView.report"))
+    // itemInfoSectionHeader(4, translate("caseView.report"))
 }
 
 @Composable
