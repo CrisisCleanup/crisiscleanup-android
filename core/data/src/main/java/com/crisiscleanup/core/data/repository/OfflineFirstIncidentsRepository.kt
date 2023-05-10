@@ -12,12 +12,9 @@ import com.crisiscleanup.core.data.model.incidentLocationCrossReferences
 import com.crisiscleanup.core.data.model.locationsAsEntity
 import com.crisiscleanup.core.database.dao.*
 import com.crisiscleanup.core.database.model.PopulatedIncident
-import com.crisiscleanup.core.database.model.PopulatedIncidentOrganization
 import com.crisiscleanup.core.database.model.asExternalModel
-import com.crisiscleanup.core.database.model.asLookup
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.core.model.data.Incident
-import com.crisiscleanup.core.model.data.IncidentOrganization
 import com.crisiscleanup.core.model.data.IncidentOrganizationsStableModelBuildVersion
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.tryThrowException
@@ -68,15 +65,6 @@ class OfflineFirstIncidentsRepository @Inject constructor(
 
     override val incidents: Flow<List<Incident>> =
         incidentDao.streamIncidents().mapLatest { it.map(PopulatedIncident::asExternalModel) }
-
-    override val organizationNameLookup =
-        incidentOrganizationDao.streamOrganizationNames().mapLatest { it.asLookup() }
-
-    override val organizationLookup = incidentOrganizationDao.streamOrganizations()
-        .mapLatest {
-            it.map(PopulatedIncidentOrganization::asExternalModel)
-                .associateBy(IncidentOrganization::id)
-        }
 
     override suspend fun getIncident(id: Long, loadFormFields: Boolean) =
         withContext(ioDispatcher) {

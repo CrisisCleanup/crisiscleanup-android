@@ -4,4 +4,5 @@ data class IncidentOrganization(
     val id: Long,
     val name: String,
     val primaryContacts: List<PersonContact>,
+    val affiliateIds: Set<Long>,
 )

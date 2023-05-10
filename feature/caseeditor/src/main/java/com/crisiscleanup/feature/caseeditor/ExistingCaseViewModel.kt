@@ -29,6 +29,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 
 @HiltViewModel
@@ -36,6 +37,7 @@ class ExistingCaseViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     accountDataRepository: AccountDataRepository,
     private val incidentsRepository: IncidentsRepository,
+    private val organizationsRepository: OrganizationsRepository,
     incidentRefresher: IncidentRefresher,
     locationsRepository: LocationsRepository,
     worksitesRepository: WorksitesRepository,
@@ -79,7 +81,7 @@ class ExistingCaseViewModel @Inject constructor(
     val isSavingWorksite = MutableStateFlow(false)
 
     private var isOrganizationsRefreshed = AtomicBoolean(false)
-    private val organizationLookup = incidentsRepository.organizationNameLookup
+    private val organizationLookup = organizationsRepository.organizationLookup
         .stateIn(
             scope = viewModelScope,
             initialValue = emptyMap(),
@@ -89,10 +91,20 @@ class ExistingCaseViewModel @Inject constructor(
     val editableWorksite = editableWorksiteProvider.editableWorksite
     private val worksiteChangeTime = MutableStateFlow(Instant.fromEpochSeconds(0))
 
+    // The first worksite loaded in the session
+    private val worksiteIn = AtomicReference<Worksite>()
+
     init {
         updateHeaderTitle()
 
         editableWorksiteProvider.reset(incidentIdArg)
+
+        editableWorksite.onEach {
+            if (!it.isNew) {
+                worksiteIn.compareAndSet(null, it)
+            }
+        }
+            .launchIn(viewModelScope)
 
         dataLoader = CaseEditorDataLoader(
             false,
@@ -188,14 +200,22 @@ class ExistingCaseViewModel @Inject constructor(
                     !it.second.isNew &&
                     it.third.isNotEmpty()
         }
+        .filter {
+            val (uiState, _, orgLookup) = it
+            val stateData = uiState as CaseEditorUiState.WorksiteData
+            val myOrg = orgLookup[stateData.orgId]
+            myOrg != null
+        }
         .mapLatest {
-            // TODO Compare orgs on affiliation. Reference web code.
+            val (uiState, worksite, orgLookup) = it
 
-            val stateData = it.first as CaseEditorUiState.WorksiteData
+            val stateData = uiState as CaseEditorUiState.WorksiteData
+
             val isTurnOnRelease = stateData.incident.turnOnRelease
             val myOrgId = stateData.orgId
-            val worksite = it.second
             val worksiteWorkTypes = worksite.workTypes
+
+            val myOrg = orgLookup[myOrgId]!!
 
             val requestedTypes = stateData.worksite.workTypeRequests
                 .map(WorkTypeRequest::workType)
@@ -221,13 +241,12 @@ class ExistingCaseViewModel @Inject constructor(
                     requestedTypes.contains(workType.workTypeLiteral),
                     isTurnOnRelease && workType.isReleaseEligible,
                     myOrgId,
+                    myOrg.affiliateIds.contains(workType.orgClaim),
                 )
             }
 
             val claimedWorkType = summaries.filter { summary -> summary.workType.orgClaim != null }
-            val unclaimed = summaries.filter { summary ->
-                summary.workType.orgClaim == null
-            }
+            val unclaimed = summaries.filter { summary -> summary.workType.orgClaim == null }
             val otherOrgClaimedWorkTypes =
                 claimedWorkType.filterNot(WorkTypeSummary::isClaimedByMyOrg)
             val orgClaimedWorkTypes = claimedWorkType.filter(WorkTypeSummary::isClaimedByMyOrg)
@@ -239,16 +258,15 @@ class ExistingCaseViewModel @Inject constructor(
                 otherOrgWorkTypes.add(summary)
                 otherOrgClaimMap[orgId] = otherOrgWorkTypes
             }
-            val orgLookup = it.third
             val otherOrgClaims = otherOrgClaimMap.map { (orgId, summaries) ->
-                val name = orgLookup[orgId]
+                val name = orgLookup[orgId]?.name
                 if (name == null) {
                     refreshOrganizationLookup()
                 }
                 OrgClaimWorkType(orgId, name ?: "", summaries, false)
             }
 
-            val myOrgName = orgLookup[myOrgId] ?: ""
+            val myOrgName = myOrg.name
             val orgClaimed = OrgClaimWorkType(myOrgId, myOrgName, orgClaimedWorkTypes, true)
 
             val releasable = otherOrgClaimedWorkTypes
@@ -425,9 +443,8 @@ data class WorkTypeSummary(
     val isRequested: Boolean,
     val isReleasable: Boolean,
     val myOrgId: Long,
-) {
-    val isClaimedByMyOrg = workType.orgClaim == myOrgId
-}
+    val isClaimedByMyOrg: Boolean,
+)
 
 data class OrgClaimWorkType(
     val orgId: Long,

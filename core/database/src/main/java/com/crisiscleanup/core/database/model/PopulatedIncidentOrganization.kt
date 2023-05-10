@@ -17,14 +17,24 @@ data class PopulatedIncidentOrganization(
             entityColumn = "contact_id",
         )
     )
-    val primaryContacts: List<PersonContactEntity>
+    val primaryContacts: List<PersonContactEntity>,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "id",
+    )
+    val affiliateIds: List<OrganizationAffiliateEntity>,
 )
 
-fun PopulatedIncidentOrganization.asExternalModel() = IncidentOrganization(
-    id = entity.id,
-    name = entity.name,
-    primaryContacts = primaryContacts.map(PersonContactEntity::asExternalModel)
-)
+fun PopulatedIncidentOrganization.asExternalModel() = with(entity) {
+    IncidentOrganization(
+        id = id,
+        name = name,
+        primaryContacts = primaryContacts.map(PersonContactEntity::asExternalModel),
+        affiliateIds = mutableSetOf(id).apply {
+            addAll(affiliateIds.map(OrganizationAffiliateEntity::affiliateId))
+        },
+    )
+}
 
 data class OrganizationIdName(
     val id: Long,

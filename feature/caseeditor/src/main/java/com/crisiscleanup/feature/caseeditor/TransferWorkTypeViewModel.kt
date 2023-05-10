@@ -10,7 +10,7 @@ import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
-import com.crisiscleanup.core.data.repository.OfflineFirstIncidentsRepository
+import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.feature.caseeditor.WorkTypeTransferType.None
 import com.crisiscleanup.feature.caseeditor.WorkTypeTransferType.Release
 import com.crisiscleanup.feature.caseeditor.WorkTypeTransferType.Request
@@ -30,7 +30,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TransferWorkTypeViewModel @Inject constructor(
-    incidentsRepository: OfflineFirstIncidentsRepository,
+    organizationsRepository: OrganizationsRepository,
     private val editableWorksiteProvider: EditableWorksiteProvider,
     private val transferWorkTypeProvider: TransferWorkTypeProvider,
     private val translator: KeyTranslator,
@@ -56,31 +56,36 @@ class TransferWorkTypeViewModel @Inject constructor(
 
     var transferReason by mutableStateOf("")
 
+    val reasonHint =
+        if (transferType == Request) translate("workTypeRequestModal.reason_requested")
+        else null
+
     val errorMessageReason = MutableStateFlow("")
     val errorMessageWorkType = MutableStateFlow("")
 
-    private val requestWorkTypesState = incidentsRepository.organizationLookup.map { orgLookup ->
-        val orgNameLookup = transferWorkTypesState
-            .mapNotNull { (workType, _) ->
-                orgLookup[workType.orgClaim]?.let { org ->
-                    workType.id to org.name
+    private val requestWorkTypesState =
+        organizationsRepository.organizationLookup.map { orgLookup ->
+            val orgNameLookup = transferWorkTypesState
+                .mapNotNull { (workType, _) ->
+                    orgLookup[workType.orgClaim]?.let { org ->
+                        workType.id to org.name
+                    }
                 }
-            }
-            .associate { it.first to it.second }
-        val contactLookup = transferWorkTypesState
-            .mapNotNull { (workType, _) ->
-                orgLookup[workType.orgClaim]?.let { org ->
-                    org.id to org.contactList
+                .associate { it.first to it.second }
+            val contactLookup = transferWorkTypesState
+                .mapNotNull { (workType, _) ->
+                    orgLookup[workType.orgClaim]?.let { org ->
+                        org.id to org.contactList
+                    }
                 }
-            }
-            .associate { it.first to it.second }
-        RequestWorkTypeState(orgNameLookup, contactLookup)
-    }
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = RequestWorkTypeState(),
-            started = SharingStarted.WhileSubscribed(),
-        )
+                .associate { it.first to it.second }
+            RequestWorkTypeState(orgNameLookup, contactLookup)
+        }
+            .stateIn(
+                scope = viewModelScope,
+                initialValue = RequestWorkTypeState(),
+                started = SharingStarted.WhileSubscribed(),
+            )
 
     val requestDescription = MutableStateFlow("")
     val contactList = requestWorkTypesState.mapLatest { workTypeState ->

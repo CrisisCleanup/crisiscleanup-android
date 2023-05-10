@@ -49,3 +49,4 @@ release.properties
 prod.properties
 
 _ignore*.kt
+core/database/schemas/com.crisiscleanup.core.database.TestCrisisCleanupDatabase

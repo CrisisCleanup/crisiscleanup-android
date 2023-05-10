@@ -155,9 +155,11 @@ internal fun TransferWorkTypesView(
             if (contacts.isNotEmpty()) {
                 Text(
                     translate("workTypeRequestModal.contacts"),
-                    textModifier.listItemTopPadding(),
+                    // TODO Common dimensions
+                    textModifier.padding(top = 16.dp),
+                    style = MaterialTheme.typography.titleMedium,
                 )
-                contacts.forEach { s ->
+                for (s in contacts) {
                     LinkifyPhoneEmailText(
                         s,
                         listItemModifier,
@@ -207,6 +209,9 @@ private fun ReasonSection(
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
         enabled = isEditable,
+        placeholder = viewModel.reasonHint?.let { reasonHint ->
+            { Text(reasonHint) }
+        },
     )
 
     if (hasFocus) {

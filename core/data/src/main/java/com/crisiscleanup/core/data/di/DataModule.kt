@@ -85,6 +85,11 @@ interface DataModule {
     fun bindsWorksiteChangeRepository(
         repository: CrisisCleanupWorksiteChangeRepository
     ): WorksiteChangeRepository
+
+    @Binds
+    fun bindsOrganizationsRepository(
+        repository: OfflineFirstOrganizationsRepository
+    ): OrganizationsRepository
 }
 
 @Module
