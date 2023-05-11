@@ -53,7 +53,7 @@ class WorkTypeTransferRequestDaoTest {
             testWorkTypeTransferRequestEntity("work-type-c", 331, createdAtA, networkId = 93),
             testWorkTypeTransferRequestEntity("work-type-d", 331, createdAtA),
         )
-        existingRequests.forEach { requestDao.insertIgnoreRequest(it) }
+        existingRequests.forEach { requestDao.insertIgnore(it) }
 
         val newRequests = listOf(
             // Update

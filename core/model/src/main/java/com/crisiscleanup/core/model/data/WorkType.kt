@@ -15,8 +15,8 @@ data class WorkType(
     val recur: String? = null,
     val statusLiteral: String,
     val workTypeLiteral: String,
-    val isClaimed: Boolean = orgClaim != null,
 ) {
+    val isClaimed: Boolean = orgClaim != null
     val status: WorkTypeStatus = statusFromLiteral(statusLiteral)
     val statusClaim = WorkTypeStatusClaim(status, isClaimed)
     val workType: WorkTypeType = typeFromLiteral(workTypeLiteral)

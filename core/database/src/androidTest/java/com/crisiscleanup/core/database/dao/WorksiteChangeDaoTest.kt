@@ -9,6 +9,7 @@ import com.crisiscleanup.core.database.TestUtil.testSyncLogger
 import com.crisiscleanup.core.database.TestUtil.testUuidGenerator
 import com.crisiscleanup.core.database.WorksiteTestUtil.insertWorksites
 import com.crisiscleanup.core.database.WorksiteTestUtil.testIncidents
+import com.crisiscleanup.core.database.isNearNow
 import com.crisiscleanup.core.database.model.EditWorksiteEntities
 import com.crisiscleanup.core.database.model.WorkTypeEntity
 import com.crisiscleanup.core.database.model.WorksiteChangeEntity
@@ -37,7 +38,6 @@ import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 
 class WorksiteChangeDaoTest {
     private lateinit var db: TestCrisisCleanupDatabase
@@ -78,7 +78,6 @@ class WorksiteChangeDaoTest {
         id = 56,
         address = "address",
         autoContactFrequencyT = AutoContactFrequency.NotOften.literal,
-        autoContactFrequency = AutoContactFrequency.NotOften,
         caseNumber = "case-number",
         city = "city",
         county = "county",
@@ -162,7 +161,6 @@ class WorksiteChangeDaoTest {
     private val worksiteChanged = worksiteFull.copy(
         address = "address-change",
         autoContactFrequencyT = AutoContactFrequency.Often.literal,
-        autoContactFrequency = AutoContactFrequency.Often,
         city = "city-change",
         county = "county-change",
         email = "email-change",
@@ -250,9 +248,6 @@ class WorksiteChangeDaoTest {
     @Before
     fun setUp() {
         MockKAnnotations.init(this)
-
-        // TODO Try mocking in a future version where tests are able to run properly
-        // every { syncLogger.log(allAny()) } returns syncLogger
 
         every { appLogger.logDebug(*anyVararg()) } returns Unit
     }
@@ -467,7 +462,7 @@ class WorksiteChangeDaoTest {
             createdAt = actualChanges.first().createdAt,
         )
         assertEquals(listOf(expectedWorksiteChange), actualChanges)
-        assertTrue(now.minus(actualChanges.first().createdAt) < 1.seconds)
+        assertTrue(actualChanges.first().createdAt.isNearNow())
 
         verify(exactly = 0) { appLogger.logException(any()) }
     }
@@ -837,7 +832,7 @@ class WorksiteChangeDaoTest {
             createdAt = actualChanges.first().createdAt,
         )
         assertEquals(listOf(expectedWorksiteChange), actualChanges)
-        assertTrue(now.minus(actualChanges.first().createdAt) < 1.seconds)
+        assertTrue(actualChanges.first().createdAt.isNearNow())
 
         verify(exactly = 0) { appLogger.logException(any()) }
     }
@@ -1006,7 +1001,7 @@ class WorksiteChangeDaoTest {
             createdAt = actualChanges.first().createdAt,
         )
         assertEquals(listOf(expectedWorksiteChange), actualChanges)
-        assertTrue(now.minus(actualChanges.first().createdAt) < 1.seconds)
+        assertTrue(actualChanges.first().createdAt.isNearNow())
 
         verify(exactly = 0) { appLogger.logException(any()) }
     }
@@ -1041,7 +1036,7 @@ private fun testWorksiteNote(
     note = note,
 )
 
-private fun testWorkType(
+internal fun testWorkType(
     id: Long,
     createdAt: Instant,
     orgClaim: Long?,
@@ -1059,6 +1054,3 @@ private fun testWorkType(
     statusLiteral = status,
     workTypeLiteral = workType,
 )
-
-internal fun WorksiteFormDataEntity.hasNoValue() =
-    isBoolValue && !valueBool || !isBoolValue && valueString.isBlank()

@@ -18,7 +18,7 @@ class WorkTypeTransferRequestDaoPlus @Inject constructor(
                     requests.map(WorkTypeTransferRequestEntity::workType).toSet(),
                 )
                 requests.forEach { request ->
-                    val id = transferRequestDao.insertIgnoreRequest(request)
+                    val id = transferRequestDao.insertIgnore(request)
                     if (id < 0) {
                         transferRequestDao.syncUpdateRequest(
                             worksiteId = request.worksiteId,

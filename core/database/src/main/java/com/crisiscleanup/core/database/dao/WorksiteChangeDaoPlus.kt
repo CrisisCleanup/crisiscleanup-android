@@ -269,7 +269,6 @@ class WorksiteChangeDaoPlus @Inject constructor(
         db.worksiteChangeDao().insert(changeEntity)
     }
 
-    // TODO Tests
     suspend fun saveWorkTypeRequests(
         worksite: Worksite,
         organizationId: Long,
@@ -277,7 +276,12 @@ class WorksiteChangeDaoPlus @Inject constructor(
         requests: List<String>,
         localModifiedAt: Instant = Clock.System.now(),
     ) {
-        if (requests.isEmpty()) {
+        if (worksite.isNew ||
+            organizationId <= 0 ||
+            reason.isBlank() ||
+            requests.isEmpty()
+        ) {
+            appLogger.logDebug("Not saving work type requests. Invalid data.")
             return
         }
 
@@ -303,9 +307,9 @@ class WorksiteChangeDaoPlus @Inject constructor(
             }
 
             if (requestEntities.isNotEmpty()) {
+                db.workTypeTransferRequestDao().insertIgnore(requestEntities)
                 val requestedWorkTypes =
                     requestEntities.map(WorkTypeTransferRequestEntity::workType)
-                db.workTypeTransferRequestDao().upsert(requestEntities)
 
                 syncLogger.log(
                     "Requested ${requestEntities.size} work types.",
@@ -322,7 +326,6 @@ class WorksiteChangeDaoPlus @Inject constructor(
         }
     }
 
-    // TODO Tests
     suspend fun saveWorkTypeReleases(
         worksite: Worksite,
         organizationId: Long,
@@ -330,7 +333,12 @@ class WorksiteChangeDaoPlus @Inject constructor(
         releases: List<String>,
         localModifiedAt: Instant = Clock.System.now(),
     ) {
-        if (releases.isEmpty()) {
+        if (worksite.isNew ||
+            organizationId <= 0 ||
+            reason.isBlank() ||
+            releases.isEmpty()
+        ) {
+            appLogger.logDebug("Not saving work type releases. Invalid data.")
             return
         }
 
@@ -360,21 +368,27 @@ class WorksiteChangeDaoPlus @Inject constructor(
                     )
                 }
                 val insertIds = workTypeDao.insertIgnore(workTypeEntities)
+
                 val workTypeInsertIdLookup = workTypeEntities
                     .mapIndexed { index, workType -> Pair(workType.workType, insertIds[index]) }
                     .associate { it.first to it.second }
+                val updatedWorkTypes = worksite.workTypes.map { workType ->
+                    val workTypeLiteral = workType.workTypeLiteral
+                    workTypeInsertIdLookup[workTypeLiteral]?.let { insertId ->
+                        WorkType(
+                            id = insertId,
+                            createdAt = localModifiedAt,
+                            statusLiteral = WorkTypeStatus.OpenUnassigned.literal,
+                            workTypeLiteral = workTypeLiteral,
+                        )
+                    } ?: workType
+                }
                 val updatedWorksite = worksite.copy(
-                    workTypes = worksite.workTypes.map { workType ->
-                        val workTypeLiteral = workType.workTypeLiteral
-                        workTypeInsertIdLookup[workTypeLiteral]?.let { insertId ->
-                            WorkType(
-                                id = insertId,
-                                createdAt = localModifiedAt,
-                                statusLiteral = WorkTypeStatus.OpenUnassigned.literal,
-                                workTypeLiteral = workTypeLiteral,
-                            )
-                        } ?: workType
-                    }
+                    keyWorkType = worksite.keyWorkType?.let { keyWorkType ->
+                        updatedWorkTypes.find { it.workTypeLiteral == keyWorkType.workTypeLiteral }
+                            ?: keyWorkType
+                    },
+                    workTypes = updatedWorkTypes,
                 )
 
                 syncLogger.log(
@@ -386,7 +400,7 @@ class WorksiteChangeDaoPlus @Inject constructor(
                     updatedWorksite,
                     organizationId,
                     releaseReason = reason,
-                    releases = releases,
+                    releases = releaseWorkTypes,
                 )
             }
         }

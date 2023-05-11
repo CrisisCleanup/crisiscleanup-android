@@ -51,6 +51,7 @@ class TransferWorkTypeViewModel @Inject constructor(
     val transferType = transferWorkTypeProvider.transferType
 
     val isTransferable = transferType != None && transferWorkTypeProvider.workTypes.isNotEmpty()
+    private val organizationId = transferWorkTypeProvider.organizationId
 
     val screenTitle = when (transferType) {
         Release -> translate("actions.release_cases")
@@ -182,7 +183,7 @@ class TransferWorkTypeViewModel @Inject constructor(
             try {
                 worksiteChangeRepository.saveWorkTypeTransfer(
                     worksite,
-                    transferWorkTypeProvider.organizationId,
+                    organizationId,
                     if (isRequest) transferReason else "",
                     if (isRequest) workTypes else emptyList(),
                     if (isRequest) "" else transferReason,

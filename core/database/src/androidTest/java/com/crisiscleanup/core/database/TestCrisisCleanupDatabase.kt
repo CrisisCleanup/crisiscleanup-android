@@ -178,4 +178,8 @@ interface TestWorkTypeRequestDao {
         """
     )
     fun getEntities(worksiteId: Long): List<WorkTypeTransferRequestEntity>
+
+    @Transaction
+    @Query("SELECT * FROM worksite_work_type_requests")
+    fun getEntities(): List<WorkTypeTransferRequestEntity>
 }

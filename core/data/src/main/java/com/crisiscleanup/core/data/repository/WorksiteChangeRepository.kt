@@ -41,7 +41,7 @@ interface WorksiteChangeRepository {
         requests: List<String> = emptyList(),
         releaseReason: String = "",
         releases: List<String> = emptyList(),
-    )
+    ): Boolean
 
     /**
      * @return TRUE if sync was attempted or FALSE otherwise
@@ -96,7 +96,11 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
         requests: List<String>,
         releaseReason: String,
         releases: List<String>,
-    ) {
+    ): Boolean {
+        if (organizationId <= 0) {
+            return false
+        }
+
         if (requestReason.isNotBlank() && requests.isNotEmpty()) {
             worksiteChangeDaoPlus.saveWorkTypeRequests(
                 worksite,
@@ -104,6 +108,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
                 requestReason,
                 requests,
             )
+            return true
         } else if (releaseReason.isNotBlank() && releases.isNotEmpty()) {
             worksiteChangeDaoPlus.saveWorkTypeReleases(
                 worksite,
@@ -111,7 +116,10 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
                 releaseReason,
                 releases,
             )
+            return true
         }
+
+        return false
     }
 
     override suspend fun syncWorksites(syncWorksiteCount: Int): Boolean = coroutineScope {
