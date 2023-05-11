@@ -243,6 +243,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
                 val incidentId = worksiteDao.getIncidentId(worksiteId)
                 if (incidentId > 0) {
                     worksitesRepository.syncNetworkWorksite(incidentId, it)
+                    worksitesRepository.pullWorkTypeRequests(incidentId, networkWorksiteId)
                 }
             }
         }
@@ -283,8 +284,9 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
             val flagIdLookup = worksiteFlagDao.getNetworkedIdMap(worksiteId).asLookup()
             val noteIdLookup = worksiteNoteDao.getNetworkedIdMap(worksiteId).asLookup()
             val workTypeIdLookup = workTypeDao.getNetworkedIdMap(worksiteId).asLookup()
+            val organizationId = accountDataRepository.accountData.first().org.id
             val affiliateOrganizations =
-                organizationsRepository.getOrganizationAffiliateIds(worksiteId)
+                organizationsRepository.getOrganizationAffiliateIds(organizationId)
             val syncResult = worksiteChangeSyncer.sync(
                 accountDataRepository.accountData.first(),
                 oldestReferenceChange,

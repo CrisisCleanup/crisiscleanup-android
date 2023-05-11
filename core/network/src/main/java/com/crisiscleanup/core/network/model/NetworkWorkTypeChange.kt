@@ -3,6 +3,7 @@ package com.crisiscleanup.core.network.model
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+@Serializable
 data class NetworkWorkTypeChangeRequest(
     @SerialName("work_types")
     val workTypes: List<String>,

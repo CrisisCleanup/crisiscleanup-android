@@ -50,10 +50,10 @@ data class WorksiteSyncResult(
         }
         val changeTypeSummary = with(changeIds) {
             listOf(
-                summarizeChanges(flagIdMap, "flag changes"),
-                summarizeChanges(noteIdMap, "note changes"),
-                summarizeChanges(workTypeIdMap, "work type ID changes"),
-                summarizeChanges(workTypeKeyMap, "work type key changes"),
+                summarizeChanges(flagIdMap, "flags"),
+                summarizeChanges(noteIdMap, "notes"),
+                summarizeChanges(workTypeIdMap, "work type IDs"),
+                summarizeChanges(workTypeKeyMap, "work type keys"),
             )
                 .filter { it?.isNotBlank() == true }
                 .joinToString("\n")

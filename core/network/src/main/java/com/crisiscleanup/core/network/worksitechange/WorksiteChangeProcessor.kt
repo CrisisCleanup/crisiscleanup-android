@@ -346,7 +346,7 @@ class WorksiteChangeProcessor(
                     workTypeStatusExceptions[localId] = e
                 }
             } else if (workTypeChange.isClaimChange) {
-                val isClaiming = workType.orgClaim == null
+                val isClaiming = workType.orgClaim != null
                 if (isClaiming) {
                     claimWorkTypes.add(workType.workType)
                 } else {
@@ -357,7 +357,7 @@ class WorksiteChangeProcessor(
 
         var hasClaimChange = false
         val workTypeOrgLookup =
-            getNetworkWorksite().newestWorkTypes.associate { it.workType to it.id!! }
+            getNetworkWorksite().newestWorkTypes.associate { it.workType to it.orgClaim }
 
         var workTypeClaimException: Exception? = null
         val networkClaimWorkTypes = claimWorkTypes.filter { workTypeOrgLookup[it] == null }

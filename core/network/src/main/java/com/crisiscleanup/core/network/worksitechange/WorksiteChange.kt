@@ -23,7 +23,8 @@ data class WorksiteChange(
     val requestWorkTypes: WorkTypeTransfer? = null,
     val releaseWorkTypes: WorkTypeTransfer? = null,
 ) {
-    val isWorkTypeTransfer = requestWorkTypes != null || releaseWorkTypes != null
+    val isWorkTypeTransfer =
+        requestWorkTypes?.hasValue == true || releaseWorkTypes?.hasValue == true
 }
 
 data class SyncWorksiteChange(
