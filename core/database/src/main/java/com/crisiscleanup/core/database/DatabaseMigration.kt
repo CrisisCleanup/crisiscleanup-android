@@ -41,4 +41,16 @@ object DatabaseMigrations {
         ),
     )
     class Schema10To11 : AutoMigrationSpec
+
+    @DeleteColumn.Entries(
+        DeleteColumn(
+            tableName = "worksite_flags",
+            columnName = "local_global_uuid"
+        ),
+        DeleteColumn(
+            tableName = "work_types",
+            columnName = "local_global_uuid"
+        ),
+    )
+    class Schema18To19 : AutoMigrationSpec
 }

@@ -6,7 +6,6 @@ import com.crisiscleanup.core.network.model.NetworkWorksiteFull.WorkTypeShort
 
 fun NetworkWorkType.asEntity() = WorkTypeEntity(
     id = 0,
-    localGlobalUuid = "",
     // Incoming network ID is always defined
     networkId = id!!,
     worksiteId = 0,
@@ -21,7 +20,6 @@ fun NetworkWorkType.asEntity() = WorkTypeEntity(
 
 fun WorkTypeShort.asEntity() = WorkTypeEntity(
     id = 0,
-    localGlobalUuid = "",
     networkId = id,
     worksiteId = 0,
     createdAt = null,

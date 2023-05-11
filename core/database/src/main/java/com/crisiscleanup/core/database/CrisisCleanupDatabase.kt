@@ -6,6 +6,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.crisiscleanup.core.common.DatabaseVersionProvider
 import com.crisiscleanup.core.database.DatabaseMigrations.Schema10To11
+import com.crisiscleanup.core.database.DatabaseMigrations.Schema18To19
 import com.crisiscleanup.core.database.DatabaseMigrations.Schema2To3
 import com.crisiscleanup.core.database.DatabaseMigrations.Schema3to4
 import com.crisiscleanup.core.database.dao.*
@@ -38,7 +39,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         RecentWorksiteEntity::class,
         WorkTypeTransferRequestEntity::class,
     ],
-    version = 18,
+    version = 19,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
@@ -57,6 +58,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         AutoMigration(from = 15, to = 16),
         AutoMigration(from = 16, to = 17),
         AutoMigration(from = 17, to = 18),
+        AutoMigration(from = 18, to = 19, spec = Schema18To19::class),
     ],
     exportSchema = true,
 )

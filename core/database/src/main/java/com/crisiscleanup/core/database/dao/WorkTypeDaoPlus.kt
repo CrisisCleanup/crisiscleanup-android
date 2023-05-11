@@ -8,11 +8,6 @@ import javax.inject.Inject
 class WorkTypeDaoPlus @Inject constructor(
     private val db: CrisisCleanupDatabase,
 ) {
-    /**
-     * Sync (network) work types
-     *
-     * These work types are expected to have a [WorkTypeEntity.networkId] and a blank [WorkTypeEntity.localGlobalUuid].
-     */
     suspend fun syncUpsert(workTypes: List<WorkTypeEntity>) = db.withTransaction {
         val workTypeDao = db.workTypeDao()
         workTypes.forEach { workType ->

@@ -52,23 +52,24 @@ class WorkTypeDaoTest {
         workTypeDaoPlus.syncUpsert(
             listOf(
                 testWorkTypeEntity(111),
-                testWorkTypeEntity(112),
+                testWorkTypeEntity(112, workType = "work-type-b"),
             )
         )
 
         val workTypeFull = fullWorkTypeEntity(
             111,
             createdAt = now,
+            workType = "work-type-a",
         )
         workTypeDaoPlus.syncUpsert(listOf(workTypeFull))
         val expected = listOf(
-            // Unchanged
-            testWorkTypeEntity(112).copy(id = 2),
-            // Overwrites
+            // Update
             workTypeFull.copy(id = 1),
+            // Unchanged
+            testWorkTypeEntity(112, workType = "work-type-b").copy(id = 2),
         )
-        val workTypes = db.testWorkTypeDao().getEntities(1)
-        assertEquals(expected, workTypes)
+        val actual = db.testWorkTypeDao().getEntities(1)
+        assertEquals(expected, actual)
     }
 
     /**
@@ -86,33 +87,29 @@ class WorkTypeDaoTest {
         workTypeDaoPlus.syncUpsert(
             listOf(
                 workTypeFull,
-                testWorkTypeEntity(112),
+                testWorkTypeEntity(112, workType = "work-type-b"),
             )
         )
 
         workTypeDaoPlus.syncUpsert(
             listOf(
-                testWorkTypeEntity(111, "s", "w"),
+                testWorkTypeEntity(111, "s", "work-type-a"),
                 testWorkTypeEntity(350, "sa", "wa"),
             )
         )
         val expecteds = listOf(
-            // Overwrites but keeps created_at
-            testWorkTypeEntity(111, "s", "w").copy(
+            // Inserts
+            testWorkTypeEntity(350, "sa", "wa").copy(id = 4),
+            // Update
+            testWorkTypeEntity(111, "s", "work-type-a").copy(
                 id = 1,
                 createdAt = now,
             ),
-            // Inserts
-            testWorkTypeEntity(350, "sa", "wa").copy(id = 4),
             // Unchanged
-            testWorkTypeEntity(112).copy(id = 2),
+            testWorkTypeEntity(112, workType = "work-type-b").copy(id = 2),
         )
-        val workTypes = db.testWorkTypeDao().getEntities(1)
-        // id=4 because upsert.insert failed
-        assertEquals(listOf(1L, 4, 2), workTypes.map(WorkTypeEntity::id))
-        for (i in expecteds.indices) {
-            assertEquals(expecteds[i], workTypes[i], "$i")
-        }
+        val actual = db.testWorkTypeDao().getEntities(1)
+        assertEquals(expecteds, actual)
     }
 }
 
@@ -127,10 +124,8 @@ internal fun testWorkTypeEntity(
     phase: Int? = null,
     recur: String? = null,
     id: Long = 0,
-    localGlobalUuid: String = "",
 ) = WorkTypeEntity(
     id = id,
-    localGlobalUuid = localGlobalUuid,
     networkId = networkId,
     worksiteId = worksiteId,
     createdAt = createdAt,

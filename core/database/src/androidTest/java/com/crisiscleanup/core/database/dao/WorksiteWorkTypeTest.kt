@@ -86,8 +86,8 @@ class WorksiteWorkTypeTest {
         existingWorksites = insertWorksites(existingWorksites, previousSyncedAt)
         db.workTypeDao().insertIgnore(
             listOf(
-                testWorkTypeEntity(1, worksiteId = 1),
-                testWorkTypeEntity(11, worksiteId = 1),
+                testWorkTypeEntity(1, worksiteId = 1, workType = "work-type-a"),
+                testWorkTypeEntity(11, worksiteId = 1, workType = "work-type-b"),
             )
         )
 
@@ -104,7 +104,7 @@ class WorksiteWorkTypeTest {
                 testWorkTypeEntity(
                     1,
                     worksiteId = 1,
-                    workType = "work-type-synced-update",
+                    workType = "work-type-a",
                     status = "status-synced-update",
                     orgClaim = 5498,
                     createdAt = createdAtC,
@@ -114,11 +114,11 @@ class WorksiteWorkTypeTest {
                 ),
                 // Delete 11
                 // New
-                testWorkTypeEntity(15, worksiteId = 1, workType = "synced"),
+                testWorkTypeEntity(15, worksiteId = 1, workType = "work-type-synced-c"),
                 testWorkTypeEntity(
                     22,
                     worksiteId = 1,
-                    workType = "work-type-synced-new",
+                    workType = "work-type-synced-d",
                     status = "status-synced-new",
                     orgClaim = 8456,
                     createdAt = createdAtC,
@@ -128,8 +128,8 @@ class WorksiteWorkTypeTest {
                 ),
             ),
             listOf(
-                testWorkTypeEntity(24, worksiteId = 2, workType = "new"),
-                testWorkTypeEntity(26, worksiteId = 2, workType = "new"),
+                testWorkTypeEntity(24, worksiteId = 2, workType = "work-type-a"),
+                testWorkTypeEntity(26, worksiteId = 2, workType = "work-type-b"),
             ),
         )
         // Sync new and existing
@@ -151,7 +151,7 @@ class WorksiteWorkTypeTest {
                 id = 1,
                 networkId = 1,
                 worksiteId = 1,
-                workType = "work-type-synced-update",
+                workType = "work-type-a",
                 status = "status-synced-update",
                 orgClaim = 5498,
                 createdAt = createdAtC,
@@ -159,12 +159,13 @@ class WorksiteWorkTypeTest {
                 phase = 84,
                 recur = "recur-synced-update",
             ),
-            testWorkTypeEntity(15, worksiteId = 1).copy(id = 4, workType = "synced"),
+            testWorkTypeEntity(15, worksiteId = 1)
+                .copy(id = 4, workType = "work-type-synced-c"),
             testWorkTypeEntity(
                 id = 5,
                 networkId = 22,
                 worksiteId = 1,
-                workType = "work-type-synced-new",
+                workType = "work-type-synced-d",
                 status = "status-synced-new",
                 orgClaim = 8456,
                 createdAt = createdAtC,
@@ -178,7 +179,7 @@ class WorksiteWorkTypeTest {
         val expectedWorkTypes = listOf(
             WorkType(
                 id = 1,
-                workTypeLiteral = "work-type-synced-update",
+                workTypeLiteral = "work-type-a",
                 statusLiteral = "status-synced-update",
                 orgClaim = 5498,
                 createdAt = createdAtC,
@@ -188,7 +189,7 @@ class WorksiteWorkTypeTest {
             ),
             WorkType(
                 id = 4,
-                workTypeLiteral = "synced",
+                workTypeLiteral = "work-type-synced-c",
                 statusLiteral = "status",
                 orgClaim = 201,
                 createdAt = null,
@@ -198,7 +199,7 @@ class WorksiteWorkTypeTest {
             ),
             WorkType(
                 id = 5,
-                workTypeLiteral = "work-type-synced-new",
+                workTypeLiteral = "work-type-synced-d",
                 statusLiteral = "status-synced-new",
                 orgClaim = 8456,
                 createdAt = createdAtC,
@@ -211,8 +212,8 @@ class WorksiteWorkTypeTest {
 
         actual = worksiteDao.getWorksite(2)
         val expectedWorkTypesB = listOf(
-            testWorkTypeEntity(24, worksiteId = 2).copy(id = 6, workType = "new"),
-            testWorkTypeEntity(26, worksiteId = 2).copy(id = 7, workType = "new"),
+            testWorkTypeEntity(24, worksiteId = 2).copy(id = 6, workType = "work-type-a"),
+            testWorkTypeEntity(26, worksiteId = 2).copy(id = 7, workType = "work-type-b"),
         )
         assertEquals(
             existingWorksites[1].copy(
@@ -239,10 +240,10 @@ class WorksiteWorkTypeTest {
 
         db.workTypeDao().insertIgnore(
             listOf(
-                testWorkTypeEntity(1, worksiteId = 1),
-                testWorkTypeEntity(11, worksiteId = 1),
-                testWorkTypeEntity(22, worksiteId = 2),
-                testWorkTypeEntity(24, worksiteId = 2),
+                testWorkTypeEntity(1, worksiteId = 1, workType = "work-type-a"),
+                testWorkTypeEntity(11, worksiteId = 1, workType = "work-type-b"),
+                testWorkTypeEntity(22, worksiteId = 2, workType = "work-type-a"),
+                testWorkTypeEntity(24, worksiteId = 2, workType = "work-type-b"),
             )
         )
 
@@ -254,14 +255,34 @@ class WorksiteWorkTypeTest {
         val syncingWorkTypes = listOf(
             listOf(
                 // Update
-                testWorkTypeEntity(1, worksiteId = 1, workType = "synced"),
+                testWorkTypeEntity(
+                    1,
+                    worksiteId = 1,
+                    status = "status-synced",
+                    workType = "work-type-a",
+                ),
                 // New
-                testWorkTypeEntity(15, worksiteId = 1, workType = "synced"),
+                testWorkTypeEntity(15, worksiteId = 1, workType = "work-type-synced-a"),
             ),
             listOf(
-                testWorkTypeEntity(22, worksiteId = 2, workType = "should-not-sync"),
-                testWorkTypeEntity(24, worksiteId = 2, workType = "should-not-sync"),
-                testWorkTypeEntity(26, worksiteId = 2, workType = "should-not-sync"),
+                testWorkTypeEntity(
+                    22,
+                    worksiteId = 2,
+                    status = "status-synced",
+                    workType = "work-type-a",
+                ),
+                testWorkTypeEntity(
+                    24,
+                    worksiteId = 2,
+                    status = "status-synced",
+                    workType = "work-type-b",
+                ),
+                testWorkTypeEntity(
+                    26,
+                    worksiteId = 2,
+                    status = "status-synced",
+                    workType = "work-type-c",
+                ),
             ),
         )
         // Sync new and existing
@@ -279,25 +300,26 @@ class WorksiteWorkTypeTest {
             ),
             actual.entity,
         )
-        var actualWorkTypes = listOf(
+        var expectedWorkTypes = listOf(
             testWorkTypeEntity(1, worksiteId = 1).copy(
                 id = 1,
-                workType = "synced",
+                status = "status-synced",
+                workType = "work-type-a",
             ),
             testWorkTypeEntity(15, worksiteId = 1).copy(
                 id = 6,
-                workType = "synced",
+                workType = "work-type-synced-a",
             ),
         )
-        assertEquals(actualWorkTypes, actual.workTypes)
+        assertEquals(expectedWorkTypes, actual.workTypes)
 
         // Worksite not synced
         actual = worksiteDao.getWorksite(2)
-        actualWorkTypes = listOf(
-            testWorkTypeEntity(22, worksiteId = 2).copy(id = 3),
-            testWorkTypeEntity(24, worksiteId = 2).copy(id = 4),
+        expectedWorkTypes = listOf(
+            testWorkTypeEntity(22, worksiteId = 2, workType = "work-type-a").copy(id = 3),
+            testWorkTypeEntity(24, worksiteId = 2, workType = "work-type-b").copy(id = 4),
         )
         assertEquals(existingWorksites[1], actual.entity)
-        assertEquals(actualWorkTypes, actual.workTypes)
+        assertEquals(expectedWorkTypes, actual.workTypes)
     }
 }

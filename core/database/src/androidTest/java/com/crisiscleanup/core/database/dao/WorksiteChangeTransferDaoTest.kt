@@ -145,7 +145,6 @@ class WorksiteChangeTransferDaoTest {
             listOf(
                 WorksiteFlagEntity(
                     id = 5,
-                    localGlobalUuid = "",
                     networkId = 55,
                     worksiteId = testWorksite.id,
                     action = "action",
@@ -172,7 +171,6 @@ class WorksiteChangeTransferDaoTest {
         db.workTypeDao().insertIgnoreWorkType(
             WorkTypeEntity(
                 id = 36,
-                localGlobalUuid = "",
                 networkId = 336,
                 worksiteId = testWorksite.id,
                 createdAt = createdAtA,
@@ -295,7 +293,7 @@ class WorksiteChangeTransferDaoTest {
             appVersion = 81,
             organizationId = 152,
             worksiteId = testWorksite.id,
-            syncUuid = "uuid-5",
+            syncUuid = "uuid-1",
             changeModelVersion = 2,
             changeData = "serialized-work-type-requests",
             createdAt = actualChanges.first().createdAt,
@@ -385,7 +383,6 @@ class WorksiteChangeTransferDaoTest {
             orgClaim: Long? = null,
             createdAt: Instant = createdAtA,
             phase: Int? = null,
-            localGlobalUuid: String = "",
         ) = testWorkTypeEntity(
             networkId,
             status,
@@ -395,7 +392,6 @@ class WorksiteChangeTransferDaoTest {
             createdAt,
             phase = phase,
             id = id,
-            localGlobalUuid = localGlobalUuid,
         )
 
         val expectedWorkTypes = listOf(
@@ -411,7 +407,6 @@ class WorksiteChangeTransferDaoTest {
                 WorkTypeStatus.OpenUnassigned.literal,
                 "work-type-b",
                 createdAt = now,
-                localGlobalUuid = "uuid-5",
             ),
             expectedWorkType(
                 58,
@@ -419,14 +414,12 @@ class WorksiteChangeTransferDaoTest {
                 "work-type-c",
                 -1,
                 phase = 2,
-                localGlobalUuid = "uuid-3",
             ),
             expectedWorkType(
                 61,
                 WorkTypeStatus.OpenUnassigned.literal,
                 "work-type-d",
                 createdAt = now,
-                localGlobalUuid = "uuid-6",
             ),
             expectedWorkType(
                 36,
@@ -446,7 +439,7 @@ class WorksiteChangeTransferDaoTest {
             appVersion = 81,
             organizationId = 152,
             worksiteId = testWorksite.id,
-            syncUuid = "uuid-7",
+            syncUuid = "uuid-1",
             changeModelVersion = 2,
             changeData = "serialized-work-type-releases",
             createdAt = actualChanges.first().createdAt,

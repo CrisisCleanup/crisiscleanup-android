@@ -118,7 +118,7 @@ data class WorksiteFormValue(
     val hasValue = isBooleanTrue || (!isBoolean && valueString.isNotBlank())
 }
 
-internal const val HIGH_PRIORITY_FLAG = "flag.worksite_high_priority"
+const val HIGH_PRIORITY_FLAG = "flag.worksite_high_priority"
 internal const val WRONG_LOCATION_FLAG = "flag.worksite_wrong_location"
 
 data class WorksiteFlag(

@@ -47,10 +47,8 @@ fun Worksite.asEntities(
 
     val flagsEntities = flags?.map { flag ->
         val networkId = flagIdLookup[flag.id] ?: -1
-        val isNew = networkId < 0
         WorksiteFlagEntity(
             id = flag.id,
-            localGlobalUuid = if (isNew) uuidGenerator.uuid() else "",
             networkId = networkId,
             worksiteId = id,
             action = flag.action,
@@ -89,10 +87,8 @@ fun Worksite.asEntities(
 
     val workTypesEntities = workTypes.map { workType ->
         val networkId = workTypeIdLookup[workType.id] ?: -1
-        val isNew = networkId < 0
         WorkTypeEntity(
             id = workType.id,
-            localGlobalUuid = if (isNew) uuidGenerator.uuid() else "",
             networkId = networkId,
             worksiteId = id,
             createdAt = workType.createdAt,

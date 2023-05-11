@@ -125,7 +125,6 @@ class WorksiteChangeUpdateSyncTest {
                     51,
                     createdAtA,
                     "reason-a",
-                    localGlobalUuid = "local-global-uuid-2"
                 )
             )
         )
@@ -150,13 +149,11 @@ class WorksiteChangeUpdateSyncTest {
                     -1,
                     workType = "work-type-a",
                     worksiteId = 51,
-                    localGlobalUuid = "local-global-uuid-3",
                 ),
                 testWorkTypeEntity(
                     -1,
                     workType = "work-type-b",
                     worksiteId = 51,
-                    localGlobalUuid = "local-global-uuid-4",
                 ),
             )
         )

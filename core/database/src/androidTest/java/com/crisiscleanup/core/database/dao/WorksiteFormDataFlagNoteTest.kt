@@ -116,7 +116,6 @@ class WorksiteFormDataFlagNoteTest {
         val expectedFlagEntities = listOf(
             WorksiteFlagEntity(
                 1,
-                "",
                 432,
                 1,
                 "action-new-a",
@@ -220,7 +219,16 @@ class WorksiteFormDataFlagNoteTest {
             testFullFlagEntity(432, 1, updatedAtA, false, "new-a"),
             // Delete 11
             // Update
-            testFullFlagEntity(12, 1, updatedAtA, true, "update-a"),
+            testFlagEntity(
+                12,
+                1,
+                updatedAtA,
+                "flag-b",
+                action = "updated-flag-b",
+                isHighPriority = true,
+                notes = "updated-notes-flag-b",
+                requestedAction = "updated-requested-action-flag-b",
+            ),
         )
         val syncingNotes = listOf(
             // Update
@@ -267,13 +275,13 @@ class WorksiteFormDataFlagNoteTest {
         val expectedFlags = listOf(
             WorksiteFlag(
                 2,
-                "action-update-a",
+                "updated-flag-b",
                 updatedAtA,
                 true,
-                "notes-update-a",
-                "reason-update-a",
-                "reason-update-a-translated",
-                "requested-action-update-a",
+                "updated-notes-flag-b",
+                "flag-b",
+                "flag-b-translated",
+                "updated-requested-action-flag-b",
             ),
             WorksiteFlag(
                 3,
@@ -430,11 +438,8 @@ internal fun testFlagEntity(
     notes: String? = null,
     requestedAction: String? = null,
     id: Long = 0,
-    isInvalid: Boolean = false,
-    localGlobalUuid: String = "",
 ) = WorksiteFlagEntity(
     id = id,
-    localGlobalUuid = localGlobalUuid,
     networkId = networkId,
     worksiteId = worksiteId,
     action = action,

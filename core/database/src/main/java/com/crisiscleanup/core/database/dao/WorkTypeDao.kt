@@ -16,12 +16,12 @@ interface WorkTypeDao {
         UPDATE work_types SET
         created_at      =COALESCE(:createdAt, created_at),
         claimed_by      =:orgClaim,
+        network_id      =:networkId,
         next_recur_at   =:nextRecurAt,
         phase           =:phase,
         recur           =:recur,
-        status          =:status,
-        work_type       =:workType
-        WHERE worksite_id=:worksiteId AND network_id=:networkId AND local_global_uuid=''
+        status          =:status
+        WHERE worksite_id=:worksiteId AND work_type=:workType
         """
     )
     fun syncUpdateWorkType(
@@ -46,8 +46,8 @@ interface WorkTypeDao {
     fun syncDeleteUnspecified(worksiteId: Long, networkIds: Collection<Long>)
 
     @Transaction
-    @Query("DELETE FROM work_types WHERE worksite_id=:worksiteId AND id NOT IN(:ids)")
-    fun deleteUnspecified(worksiteId: Long, ids: Collection<Long>)
+    @Query("DELETE FROM work_types WHERE worksite_id=:worksiteId AND work_type NOT IN(:workTypes)")
+    fun deleteUnspecified(worksiteId: Long, workTypes: Collection<String>)
 
     @Transaction
     @Query("DELETE FROM work_types WHERE worksite_id=:worksiteId AND work_type IN(:workTypes)")
@@ -73,8 +73,7 @@ interface WorkTypeDao {
     @Query(
         """
         UPDATE OR IGNORE work_types
-        SET network_id          =:networkId,
-            local_global_uuid   =''
+        SET network_id =:networkId
         WHERE id=:id
         """
     )
@@ -84,8 +83,7 @@ interface WorkTypeDao {
     @Query(
         """
         UPDATE OR IGNORE work_types
-        SET network_id          =:networkId,
-            local_global_uuid   =''
+        SET network_id =:networkId
         WHERE worksite_id=:worksiteId AND work_type=:workType
         """
     )

@@ -120,7 +120,7 @@ class WorksiteChangeDaoPlus @Inject constructor(
                     )
                     workTypeDao.deleteUnspecified(
                         worksiteId,
-                        workTypes.map(WorkTypeEntity::id).toSet(),
+                        workTypes.map(WorkTypeEntity::workType).toSet(),
                     )
                 }
 
@@ -359,7 +359,6 @@ class WorksiteChangeDaoPlus @Inject constructor(
                 val workTypeEntities = releaseWorkTypes.map {
                     WorkTypeEntity(
                         0,
-                        uuidGenerator.uuid(),
                         networkId = -1,
                         worksiteId = worksiteId,
                         createdAt = localModifiedAt,

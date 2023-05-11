@@ -13,6 +13,7 @@ import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
 import com.crisiscleanup.core.database.dao.WorksiteSyncStatDao
 import com.crisiscleanup.core.database.model.WorkTypeEntity
 import com.crisiscleanup.core.database.model.WorksiteEntity
+import com.crisiscleanup.core.database.model.WorksiteFlagEntity
 import com.crisiscleanup.core.model.data.IncidentDataSyncStats
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.tryThrowException
@@ -159,18 +160,24 @@ class IncidentWorksitesSyncer @Inject constructor(
 
             val saveData = syncStats.pagedCount < dbSaveCount + pageCount || isDeltaPull
             if (saveData) {
-                val worksites = cachedData.worksites.map { it.asEntity(incidentId) }
-                val workTypes =
-                    cachedData.worksites.map {
+                with(cachedData.worksites) {
+                    val worksites = map { it.asEntity(incidentId) }
+                    val flags = map {
+                        it.flags.filter { flag -> flag.invalidatedAt == null }
+                            .map(NetworkWorksiteFull.FlagShort::asEntity)
+                    }
+                    val workTypes = map {
                         it.newestWorkTypes.map(NetworkWorksiteFull.WorkTypeShort::asEntity)
                     }
-                saveToDb(
-                    incidentId,
-                    worksites,
-                    workTypes,
-                    cachedData.requestTime,
-                    statsUpdater,
-                )
+                    saveToDb(
+                        incidentId,
+                        worksites,
+                        flags,
+                        workTypes,
+                        cachedData.requestTime,
+                        statsUpdater,
+                    )
+                }
             } else {
                 statsUpdater.addSavedCount(pageCount)
             }
@@ -214,6 +221,7 @@ class IncidentWorksitesSyncer @Inject constructor(
     private suspend fun saveToDb(
         incidentId: Long,
         worksites: List<WorksiteEntity>,
+        flags: List<List<WorksiteFlagEntity>>,
         workTypes: List<List<WorkTypeEntity>>,
         syncStart: Instant,
         statsUpdater: IncidentDataPullStatsUpdater,
@@ -232,6 +240,13 @@ class IncidentWorksitesSyncer @Inject constructor(
                 worksiteSubset,
                 workTypeSubset,
                 syncStart,
+            )
+
+            val flagSubset = flags.slice(offset until offsetEnd)
+            worksiteDaoPlus.syncShortFlags(
+                incidentId,
+                worksiteSubset,
+                flagSubset,
             )
 
             statsUpdater.addSavedCount(worksiteSubset.size)

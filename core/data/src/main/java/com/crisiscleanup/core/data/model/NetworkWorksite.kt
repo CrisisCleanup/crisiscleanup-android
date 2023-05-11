@@ -80,7 +80,6 @@ fun KeyDynamicValuePair.asWorksiteEntity() = WorksiteFormDataEntity(
 
 fun NetworkFlag.asEntity() = WorksiteFlagEntity(
     id = 0,
-    localGlobalUuid = "",
     worksiteId = 0,
     // Incoming network ID is always defined
     networkId = id!!,

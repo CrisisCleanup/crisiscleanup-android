@@ -22,11 +22,11 @@ class WorksiteDaoPlus @Inject constructor(
 ) {
     private suspend fun getWorksiteLocalModifiedAt(
         incidentId: Long,
-        worksiteIds: Set<Long>,
+        networkWorksiteIds: Set<Long>,
     ): Map<Long, WorksiteLocalModifiedAt> = db.withTransaction {
         val worksitesUpdatedAt = db.worksiteDao().getWorksitesLocalModifiedAt(
             incidentId,
-            worksiteIds,
+            networkWorksiteIds,
         )
         return@withTransaction worksitesUpdatedAt.associateBy { it.networkId }
     }
@@ -76,9 +76,9 @@ class WorksiteDaoPlus @Inject constructor(
         }
 
         val flags = unassociatedFlags.map { it.copy(worksiteId = worksiteId) }
-        val networkIds = flags.map(WorksiteFlagEntity::networkId)
         val flagDao = db.worksiteFlagDao()
-        flagDao.syncDeleteUnspecified(worksiteId, networkIds)
+        val reasons = flags.map(WorksiteFlagEntity::reasonT)
+        flagDao.syncDeleteUnspecified(worksiteId, reasons)
         val daoPlus = WorksiteFlagDaoPlus(db)
         daoPlus.syncUpsert(flags)
     }
@@ -183,6 +183,12 @@ class WorksiteDaoPlus @Inject constructor(
         return@withTransaction false
     }
 
+    private fun throwSizeMismatch(worksitesSize: Int, size: Int, dataName: String) {
+        if (worksitesSize != size) {
+            throw Exception("Inconsistent data size. Each worksite must have corresponding $dataName.")
+        }
+    }
+
     /**
      * Syncs worksite data skipping worksites where local changes exist
      *
@@ -194,16 +200,11 @@ class WorksiteDaoPlus @Inject constructor(
         worksitesWorkTypes: List<List<WorkTypeEntity>>,
         syncedAt: Instant,
     ) {
-        fun throwSizeMismatch(size: Int, dataName: String) {
-            if (worksites.size != size) {
-                throw Exception("Inconsistent data size. Each worksite must have corresponding $dataName.")
-            }
-        }
-        throwSizeMismatch(worksitesWorkTypes.size, "work types")
+        throwSizeMismatch(worksites.size, worksitesWorkTypes.size, "work types")
 
-        val worksiteIds = worksites.map(WorksiteEntity::networkId).toSet()
+        val networkWorksiteIds = worksites.map(WorksiteEntity::networkId).toSet()
         db.withTransaction {
-            val modifiedAtLookup = getWorksiteLocalModifiedAt(incidentId, worksiteIds)
+            val modifiedAtLookup = getWorksiteLocalModifiedAt(incidentId, networkWorksiteIds)
 
             worksites.forEachIndexed { i, worksite ->
                 val workTypes = worksitesWorkTypes[i]
@@ -215,6 +216,35 @@ class WorksiteDaoPlus @Inject constructor(
                     workTypes,
                     syncedAt,
                 )
+            }
+        }
+    }
+
+    // TODO Write tests
+    suspend fun syncShortFlags(
+        incidentId: Long,
+        worksites: List<WorksiteEntity>,
+        worksitesFlags: List<List<WorksiteFlagEntity>>,
+    ) {
+        throwSizeMismatch(worksites.size, worksitesFlags.size, "flags")
+
+        val networkWorksiteIds = worksites.map(WorksiteEntity::networkId).toSet()
+        db.withTransaction {
+            val modifiedAtLookup = getWorksiteLocalModifiedAt(incidentId, networkWorksiteIds)
+
+            val worksiteDao = db.worksiteDao()
+            val flagDao = db.worksiteFlagDao()
+            worksitesFlags.forEachIndexed { i, flags ->
+                val networkWorksiteId = worksites[i].networkId
+                val modifiedAt = modifiedAtLookup[networkWorksiteId]
+                val isLocallyModified = modifiedAt?.isLocallyModified ?: false
+                if (!isLocallyModified) {
+                    val worksiteId = worksiteDao.getWorksiteId(incidentId, networkWorksiteId)
+                    val flagReasons = flags.map(WorksiteFlagEntity::reasonT)
+                    flagDao.syncDeleteUnspecified(worksiteId, flagReasons)
+                    val updatedFlags = flags.map { it.copy(worksiteId = worksiteId) }
+                    flagDao.insertIgnore(updatedFlags)
+                }
             }
         }
     }

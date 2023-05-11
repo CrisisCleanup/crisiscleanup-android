@@ -91,17 +91,6 @@ interface TestFlagDao {
     @Transaction
     @Query("SELECT * FROM worksite_flags WHERE worksite_id=:worksiteId ORDER BY id")
     fun getEntities(worksiteId: Long): List<WorksiteFlagEntity>
-
-    @Transaction
-    @Query(
-        """
-        UPDATE worksite_flags
-        SET network_id=:networkId,
-            local_global_uuid=:localGlobalUuid
-        WHERE id=:id
-        """
-    )
-    fun updateNetworkId(id: Long, networkId: Long, localGlobalUuid: String = "")
 }
 
 @Dao

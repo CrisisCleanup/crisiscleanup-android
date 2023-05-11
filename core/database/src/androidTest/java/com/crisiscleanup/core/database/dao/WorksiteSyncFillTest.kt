@@ -3,7 +3,11 @@ package com.crisiscleanup.core.database.dao
 import com.crisiscleanup.core.database.TestCrisisCleanupDatabase
 import com.crisiscleanup.core.database.TestUtil
 import com.crisiscleanup.core.database.WorksiteTestUtil.testIncidents
-import com.crisiscleanup.core.database.model.*
+import com.crisiscleanup.core.database.model.WorksiteEntities
+import com.crisiscleanup.core.database.model.WorksiteFlagEntity
+import com.crisiscleanup.core.database.model.WorksiteFormDataEntity
+import com.crisiscleanup.core.database.model.WorksiteNoteEntity
+import com.crisiscleanup.core.database.model.WorksiteRootEntity
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -162,7 +166,7 @@ class WorksiteSyncFillTest {
                     action = "action-change",
                 ),
                 testWorksiteFlagEntity(
-                    "reason-d-change",
+                    "reason-d",
                     rootA.id,
                     networkId = 81,
                     action = "action-change",
@@ -260,6 +264,7 @@ class WorksiteSyncFillTest {
                 action = "action-change",
             ),
         )
+
         val actualFlagsA = db.testFlagDao().getEntities(rootA.id)
         assertEquals(expectedFlagsA, actualFlagsA)
 
@@ -340,7 +345,6 @@ class WorksiteSyncFillTest {
         action: String = "",
     ) = WorksiteFlagEntity(
         id = id,
-        localGlobalUuid = "",
         networkId = networkId,
         worksiteId = worksiteId,
         action = action,

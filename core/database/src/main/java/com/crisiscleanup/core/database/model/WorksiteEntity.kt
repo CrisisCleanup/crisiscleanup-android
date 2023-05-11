@@ -138,10 +138,9 @@ data class WorksiteEntity(
     ],
     indices = [
         Index(
-            value = ["worksite_id", "network_id", "local_global_uuid"], unique = true,
+            value = ["worksite_id", "work_type"], unique = true,
             name = "unique_worksite_work_type",
         ),
-        Index(value = ["worksite_id", "work_type"]),
         Index(value = ["status", "worksite_id"]),
         Index(value = ["claimed_by", "worksite_id"]),
     ],
@@ -149,9 +148,6 @@ data class WorksiteEntity(
 data class WorkTypeEntity(
     @PrimaryKey(true)
     val id: Long,
-    @ColumnInfo("local_global_uuid", defaultValue = "")
-    val localGlobalUuid: String,
-
     @ColumnInfo("network_id", defaultValue = "-1")
     val networkId: Long,
     @ColumnInfo("worksite_id")
@@ -220,7 +216,7 @@ data class WorksiteFormDataEntity(
     ],
     indices = [
         Index(
-            value = ["worksite_id", "network_id", "local_global_uuid"], unique = true,
+            value = ["worksite_id", "reason_t"], unique = true,
             name = "unique_worksite_flag",
         ),
         Index(value = ["reason_t"]),
@@ -229,9 +225,6 @@ data class WorksiteFormDataEntity(
 data class WorksiteFlagEntity(
     @PrimaryKey(true)
     val id: Long,
-    @ColumnInfo("local_global_uuid", defaultValue = "")
-    val localGlobalUuid: String,
-
     @ColumnInfo("network_id", defaultValue = "-1")
     val networkId: Long,
     @ColumnInfo("worksite_id")

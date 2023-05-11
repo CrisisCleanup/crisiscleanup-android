@@ -5,12 +5,12 @@ import kotlinx.datetime.Instant
 /**
  * Build version of the app where worksite (related) entity models were last changed
  */
-private const val WorksitesStableModelBuildVersion = 67
+private const val WorksitesStableModelBuildVersion = 69
 
 /**
  * Build version of the app where incident organization (related) entity models were last changed
  */
-const val IncidentOrganizationsStableModelBuildVersion = 67
+const val IncidentOrganizationsStableModelBuildVersion = 69
 
 /**
  * Keeps track of incident data (worksites, organizations, ...) syncing

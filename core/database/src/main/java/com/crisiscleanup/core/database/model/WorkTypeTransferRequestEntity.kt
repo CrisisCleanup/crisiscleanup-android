@@ -21,6 +21,7 @@ import kotlinx.datetime.Instant
     indices = [
         Index(value = ["worksite_id", "work_type", "by_org"], unique = true),
         Index(value = ["network_id"]),
+        Index(value = ["worksite_id", "by_org"]),
     ],
 )
 data class WorkTypeTransferRequestEntity(

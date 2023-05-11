@@ -14,13 +14,13 @@ interface WorksiteFlagDao {
     @Query(
         """
         UPDATE worksite_flags SET
+        `action`        =:action,
         created_at      =:createdAt,
-        action          =:action,
         is_high_priority=:isHighPriority,
+        network_id      =:networkId,
         notes           =:notes,
-        reason_t        =:reasonT,
         requested_action=:requestedAction
-        WHERE worksite_id=:worksiteId AND network_id=:networkId AND local_global_uuid=''
+        WHERE worksite_id=:worksiteId AND reason_t=:reasonT
         """
     )
     fun syncUpdateFlag(
@@ -38,10 +38,10 @@ interface WorksiteFlagDao {
     @Query(
         """
         DELETE FROM worksite_flags
-        WHERE worksite_id=:worksiteId AND network_id NOT IN(:networkIds)
+        WHERE worksite_id=:worksiteId AND reason_t NOT IN(:reasons)
         """
     )
-    fun syncDeleteUnspecified(worksiteId: Long, networkIds: Collection<Long>)
+    fun syncDeleteUnspecified(worksiteId: Long, reasons: Collection<String>)
 
     @Transaction
     @Query(
@@ -72,8 +72,7 @@ interface WorksiteFlagDao {
     @Query(
         """
         UPDATE OR IGNORE worksite_flags
-        SET network_id          =:networkId,
-            local_global_uuid   =''
+        SET network_id=:networkId
         WHERE id=:id
         """
     )
