@@ -16,7 +16,6 @@ import com.crisiscleanup.core.database.model.asEntities
 import com.crisiscleanup.core.model.data.AutoContactFrequency
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.WorkType
-import com.crisiscleanup.core.model.data.WorkTypeStatus
 import com.crisiscleanup.core.model.data.Worksite
 import io.mockk.MockKAnnotations
 import io.mockk.every
@@ -334,7 +333,7 @@ class WorksiteChangeTransferDaoTest {
             keyWorkType = testWorksite.keyWorkType?.copy(
                 id = 60,
                 orgClaim = null,
-                statusLiteral = WorkTypeStatus.OpenUnassigned.literal,
+                statusLiteral = "status-b",
                 phase = null,
                 createdAt = now,
             ),
@@ -344,7 +343,7 @@ class WorksiteChangeTransferDaoTest {
                     WorkType(
                         id = workTypeInsertId++,
                         createdAt = now,
-                        statusLiteral = WorkTypeStatus.OpenUnassigned.literal,
+                        statusLiteral = workType.statusLiteral,
                         workTypeLiteral = workType.workTypeLiteral,
                     )
                 }
@@ -404,7 +403,7 @@ class WorksiteChangeTransferDaoTest {
             ),
             expectedWorkType(
                 60,
-                WorkTypeStatus.OpenUnassigned.literal,
+                "status-b",
                 "work-type-b",
                 createdAt = now,
             ),
@@ -417,7 +416,7 @@ class WorksiteChangeTransferDaoTest {
             ),
             expectedWorkType(
                 61,
-                WorkTypeStatus.OpenUnassigned.literal,
+                "status-d",
                 "work-type-d",
                 createdAt = now,
             ),

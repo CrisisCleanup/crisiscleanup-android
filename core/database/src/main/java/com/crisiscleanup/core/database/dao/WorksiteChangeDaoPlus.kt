@@ -9,8 +9,23 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.split
 import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
-import com.crisiscleanup.core.database.model.*
-import com.crisiscleanup.core.model.data.*
+import com.crisiscleanup.core.database.model.WorkTypeEntity
+import com.crisiscleanup.core.database.model.WorkTypeTransferRequestEntity
+import com.crisiscleanup.core.database.model.WorksiteChangeEntity
+import com.crisiscleanup.core.database.model.WorksiteFlagEntity
+import com.crisiscleanup.core.database.model.WorksiteFormDataEntity
+import com.crisiscleanup.core.database.model.WorksiteRootEntity
+import com.crisiscleanup.core.database.model.asEntities
+import com.crisiscleanup.core.database.model.asExternalModel
+import com.crisiscleanup.core.database.model.asLookup
+import com.crisiscleanup.core.model.data.EmptyWorksite
+import com.crisiscleanup.core.model.data.SavedWorksiteChange
+import com.crisiscleanup.core.model.data.WorkType
+import com.crisiscleanup.core.model.data.WorkTypeStatus
+import com.crisiscleanup.core.model.data.Worksite
+import com.crisiscleanup.core.model.data.WorksiteChangeArchiveAction
+import com.crisiscleanup.core.model.data.WorksiteChangeSerializer
+import com.crisiscleanup.core.model.data.WorksiteSyncResult
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
@@ -356,13 +371,18 @@ class WorksiteChangeDaoPlus @Inject constructor(
                 val workTypeDao = db.workTypeDao()
                 workTypeDao.deleteSpecified(worksiteId, releaseWorkTypes.toSet())
 
+                val workTypeStatusMap =
+                    worksite.workTypes.associate { it.workTypeLiteral to it.statusLiteral }
+
                 val workTypeEntities = releaseWorkTypes.map {
+                    val statusLiteral =
+                        workTypeStatusMap[it] ?: WorkTypeStatus.OpenUnassigned.literal
                     WorkTypeEntity(
                         0,
                         networkId = -1,
                         worksiteId = worksiteId,
                         createdAt = localModifiedAt,
-                        status = WorkTypeStatus.OpenUnassigned.literal,
+                        status = statusLiteral,
                         workType = it,
                     )
                 }
@@ -373,11 +393,13 @@ class WorksiteChangeDaoPlus @Inject constructor(
                     .associate { it.first to it.second }
                 val updatedWorkTypes = worksite.workTypes.map { workType ->
                     val workTypeLiteral = workType.workTypeLiteral
+                    val statusLiteral =
+                        workTypeStatusMap[workTypeLiteral] ?: WorkTypeStatus.OpenUnassigned.literal
                     workTypeInsertIdLookup[workTypeLiteral]?.let { insertId ->
                         WorkType(
                             id = insertId,
                             createdAt = localModifiedAt,
-                            statusLiteral = WorkTypeStatus.OpenUnassigned.literal,
+                            statusLiteral = statusLiteral,
                             workTypeLiteral = workTypeLiteral,
                         )
                     } ?: workType
