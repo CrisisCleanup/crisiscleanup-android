@@ -116,6 +116,8 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.testManifest)
     debugImplementation(project(":ui-test-hilt-manifest"))
 
+    implementation(libs.kotlinx.serialization.json)
+
     implementation(libs.accompanist.systemuicontroller)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.appcompat)

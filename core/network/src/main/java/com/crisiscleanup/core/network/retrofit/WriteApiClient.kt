@@ -10,6 +10,7 @@ import javax.inject.Inject
 
 private interface DataChangeApi {
     @TokenAuthenticationHeader
+    @ThrowClientErrorHeader
     @POST("worksites")
     suspend fun newWorksite(
         @Header("cc-created-at") createdAt: Instant,
@@ -18,6 +19,7 @@ private interface DataChangeApi {
     ): NetworkWorksiteFull
 
     @TokenAuthenticationHeader
+    @ThrowClientErrorHeader
     @PUT("worksites/{worksiteId}")
     suspend fun updateWorksite(
         @Header("cc-modified-at") modifiedAt: Instant,
@@ -119,7 +121,7 @@ private interface DataChangeApi {
 }
 
 class WriteApiClient @Inject constructor(
-    @CrisisCleanupRetrofit retrofit: Retrofit
+    @CrisisCleanupRetrofit retrofit: Retrofit,
 ) : CrisisCleanupWriteApi {
     private val changeWorksiteApi = retrofit.create(DataChangeApi::class.java)
 

@@ -3,17 +3,21 @@ package com.crisiscleanup.feature.syncinsights
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.relativeTime
+import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.data.repository.SyncLogRepository
+import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.model.data.SyncLog
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
@@ -29,9 +33,24 @@ import javax.inject.Inject
 class SyncInsightsViewModel @Inject constructor(
     private val syncLogRepository: SyncLogRepository,
     private val worksitesRepository: WorksitesRepository,
+    worksiteChangeRepository: WorksiteChangeRepository,
+    private val syncPusher: SyncPusher,
+    @ApplicationScope private val externalScope: CoroutineScope,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : ViewModel() {
+    val worksitesPendingSync = worksiteChangeRepository.streamWorksitesPendingSync.mapLatest {
+        it.map { worksite -> "(${worksite.incidentId}, ${worksite.id}) ${worksite.caseNumber}" }
+    }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = emptyList(),
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    val isSyncing = worksiteChangeRepository.syncingWorksiteIds.mapLatest {
+        it.isNotEmpty()
+    }
 
     private val logSliceCount = 40
     private val logSliceCountHalf = (logSliceCount * 0.5f).toInt()
@@ -70,9 +89,18 @@ class SyncInsightsViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
+    fun syncPending() {
+        if (worksitesPendingSync.value.isNotEmpty()) {
+            externalScope.launch {
+                syncPusher.syncPushWorksitesAsync().await()
+            }
+        }
+    }
+
     fun onListBlockPosition(blockPosition: Int) {
         with(syncLogs.value) {
-            val position = blockPosition * listBlockSize
+            var position = blockPosition * listBlockSize
+            position = (position - worksitesPendingSync.value.size - 2).coerceAtLeast(0)
             if (isBoundaryPosition(position)) {
                 queryLogState.value = Pair(position, count)
             }

@@ -10,6 +10,7 @@ data class WorksiteSyncResult(
         val isSuccessful: Boolean,
         val isPartiallySuccessful: Boolean,
         val isFail: Boolean,
+        val exception: Exception? = null,
     )
 
     data class ChangeIds(

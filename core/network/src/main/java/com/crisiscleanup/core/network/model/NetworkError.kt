@@ -3,8 +3,20 @@ package com.crisiscleanup.core.network.model
 import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.network.model.util.IterableStringSerializer
 import kotlinx.serialization.Serializable
+import okio.IOException
 
 class ExpiredTokenException : Exception("Auth token is expired")
+class CrisisCleanupNetworkException(
+    val url: String,
+    val statusCode: Int,
+    message: String,
+    val errors: List<NetworkCrisisCleanupApiError>,
+) : IOException(message)
+
+@Serializable
+data class NetworkErrors(
+    val errors: List<NetworkCrisisCleanupApiError>,
+)
 
 /**
  * General error from the API

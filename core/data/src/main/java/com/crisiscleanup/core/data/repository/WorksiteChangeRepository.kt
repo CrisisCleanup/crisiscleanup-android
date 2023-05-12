@@ -2,23 +2,37 @@ package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.NetworkMonitor
+import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.sync.SyncLogger
-import com.crisiscleanup.core.database.dao.*
+import com.crisiscleanup.core.database.dao.WorkTypeDao
+import com.crisiscleanup.core.database.dao.WorksiteChangeDao
+import com.crisiscleanup.core.database.dao.WorksiteChangeDaoPlus
+import com.crisiscleanup.core.database.dao.WorksiteDao
+import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
+import com.crisiscleanup.core.database.dao.WorksiteFlagDao
+import com.crisiscleanup.core.database.dao.WorksiteNoteDao
+import com.crisiscleanup.core.database.model.PopulatedWorksite
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.database.model.asLookup
 import com.crisiscleanup.core.model.data.SavedWorksiteChange
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
+import com.crisiscleanup.core.network.model.CrisisCleanupNetworkException
+import com.crisiscleanup.core.network.model.ExpiredTokenException
+import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.tryThrowException
+import com.crisiscleanup.core.network.worksitechange.NoInternetConnectionException
 import com.crisiscleanup.core.network.worksitechange.WorksiteChangeSyncer
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.datetime.Clock
 import javax.inject.Inject
@@ -26,6 +40,8 @@ import javax.inject.Singleton
 
 interface WorksiteChangeRepository {
     val syncingWorksiteIds: StateFlow<Set<Long>>
+
+    val streamWorksitesPendingSync: Flow<List<Worksite>>
 
     suspend fun saveWorksiteChange(
         worksiteStart: Worksite,
@@ -67,6 +83,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val worksitesRepository: WorksitesRepository,
     private val organizationsRepository: OrganizationsRepository,
+    private val authEventManager: AuthEventManager,
     private val networkMonitor: NetworkMonitor,
     private val appEnv: AppEnv,
     private val syncLogger: SyncLogger,
@@ -76,6 +93,9 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
     override val syncingWorksiteIds = MutableStateFlow(emptySet<Long>())
 
     private val syncWorksiteMutex = Mutex()
+
+    override val streamWorksitesPendingSync = worksiteChangeDao.getWorksitesPendingSync()
+        .map { it.map(PopulatedWorksite::asExternalModel) }
 
     override suspend fun saveWorksiteChange(
         worksiteStart: Worksite,
@@ -126,6 +146,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
         if (syncWorksiteMutex.tryLock()) {
             var worksiteId: Long
             try {
+                var previousWorksiteId = 0L
                 var syncCounter = 0
                 val syncCountLimit = if (syncWorksiteCount < 1) 20 else syncWorksiteCount
                 while (syncCounter++ < syncCountLimit) {
@@ -135,7 +156,12 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
                     }
                     worksiteId = worksiteIds.first()
 
-                    trySyncWorksite(worksiteId)
+                    if (worksiteId == previousWorksiteId) {
+                        break
+                    }
+                    previousWorksiteId = worksiteId
+
+                    trySyncWorksite(worksiteId, true)
 
                     ensureActive()
                 }
@@ -181,14 +207,35 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
 
             syncWorksite(worksiteId)
         } catch (e: Exception) {
-            appLogger.logException(e)
+            var unhandledException: Exception? = null
+            when (e) {
+                is NoInternetConnectionException -> {}
 
-            if (rethrowError) {
-                throw e
-            } else {
-                // TODO Indicate error visually
+                is ExpiredTokenException -> {
+                    authEventManager.onExpiredToken()
+                }
 
-                syncLogger.log("Sync failed", e.message ?: "")
+                is CrisisCleanupNetworkException -> {
+                    try {
+                        tryThrowException(authEventManager, e.errors)
+                    } catch (inner: Exception) {
+                        unhandledException = e
+                    }
+                }
+
+                else -> {
+                    unhandledException = e
+                }
+            }
+            unhandledException?.let { endException ->
+                appLogger.logException(endException)
+
+                if (rethrowError) {
+                    throw endException
+                } else {
+                    // TODO Indicate error visually
+                    syncLogger.log("Sync failed", endException.message ?: "")
+                }
             }
         } finally {
             synchronized(_syncingWorksiteIds) {
@@ -203,6 +250,8 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
 
     private suspend fun syncWorksite(worksiteId: Long) {
         syncLogger.type = "syncing-worksite-$worksiteId-${Clock.System.now().epochSeconds}"
+
+        var syncException: Exception? = null
 
         val sortedChanges = worksiteChangeDao.getOrdered(worksiteId)
         if (sortedChanges.isNotEmpty()) {
@@ -221,7 +270,11 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
             syncLogger.log("Sync changes starting.")
 
             val worksiteChanges = sortedChanges.map { it.asExternalModel(MaxSyncTries) }
-            syncWorksiteChanges(worksiteChanges)
+            try {
+                syncWorksiteChanges(worksiteChanges)
+            } catch (e: Exception) {
+                syncException = e
+            }
 
             syncLogger.log("Sync changes over.")
         }
@@ -247,6 +300,8 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
                 }
             }
         }
+
+        syncException?.let { throw it }
     }
 
     // TODO Complete test coverage
@@ -313,6 +368,14 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
                 syncResult.changeResults,
                 MaxSyncTries,
             )
+
+            syncResult.changeResults.mapNotNull { it.exception }
+                .forEach {
+                    when (it) {
+                        is NoInternetConnectionException,
+                        is ExpiredTokenException -> throw it
+                    }
+                }
         } else {
             with(newestChange) {
                 syncLogger.log("Not syncing. Worksite $worksiteId change is not syncable.")

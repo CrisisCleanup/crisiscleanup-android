@@ -7,6 +7,7 @@ import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.model.data.WorksiteSyncResult
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.CrisisCleanupWriteApi
+import com.crisiscleanup.core.network.model.CrisisCleanupNetworkException
 import com.crisiscleanup.core.network.model.ExpiredTokenException
 import com.crisiscleanup.core.network.model.NetworkFlag
 import com.crisiscleanup.core.network.model.NetworkNote
@@ -80,19 +81,6 @@ class WorksiteChangeProcessor(
             ),
         )
 
-    private suspend fun getChangeSet(changes: WorksiteChange) = if (changes.start == null) {
-        changeSetOperator.getNewSet(changes.change)
-    } else {
-        changeSetOperator.getChangeSet(
-            getNetworkWorksite(),
-            changes.start,
-            changes.change,
-            flagIdMap,
-            noteIdMap,
-            workTypeIdMap,
-        )
-    }
-
     suspend fun process(
         startingReferenceChange: SyncWorksiteChange,
         sortedChanges: List<SyncWorksiteChange>,
@@ -113,6 +101,7 @@ class WorksiteChangeProcessor(
                     isSuccessful = !hasError && syncResult.isFullySynced,
                     isPartiallySuccessful = syncResult.isPartiallySynced,
                     isFail = hasError,
+                    exception = syncResult.primaryException,
                 )
             )
 
@@ -147,10 +136,24 @@ class WorksiteChangeProcessor(
             deltaChange,
         )
     } else {
-        val changeSet = getChangeSet(deltaChange)
+        val isNewChange = deltaChange.start == null || networkWorksiteId <= 0
+        val changeSet = if (isNewChange) {
+            changeSetOperator.getNewSet(deltaChange.change)
+        } else {
+            changeSetOperator.getChangeSet(
+                getNetworkWorksite(),
+                deltaChange.start!!,
+                deltaChange.change,
+                flagIdMap,
+                noteIdMap,
+                workTypeIdMap,
+            )
+        }
+
         val isPartiallySynced = syncChange.isPartiallySynced && networkWorksiteId > 0
         syncChangeSet(
             syncChange.createdAt,
+            // TODO New changes should use a constant sync ID even if previous changes are skipped
             syncChange.syncUuid,
             isPartiallySynced,
             changeSet,
@@ -234,7 +237,7 @@ class WorksiteChangeProcessor(
 
         } catch (e: Exception) {
             result = when (e) {
-                is NoInternetConnection -> result.copy(isConnectedToInternet = false)
+                is NoInternetConnectionException -> result.copy(isConnectedToInternet = false)
                 is ExpiredTokenException -> result.copy(isValidToken = false)
                 else -> result.copy(exception = e)
             }
@@ -470,7 +473,7 @@ class WorksiteChangeProcessor(
 
     private suspend fun ensureSyncConditions() {
         if (networkMonitor.isNotOnline.first()) {
-            throw NoInternetConnection()
+            throw NoInternetConnectionException()
         }
         if (accountData.isTokenInvalid) {
             throw ExpiredTokenException()
@@ -481,7 +484,7 @@ class WorksiteChangeProcessor(
 class WorksiteNotFoundException(networkWorksiteId: Long) :
     Exception("Worksite $networkWorksiteId not found/created")
 
-private class NoInternetConnection : Exception("No internet")
+class NoInternetConnectionException : Exception("No internet")
 
 internal data class SyncChangeSetResult(
     /**
@@ -518,22 +521,43 @@ internal data class SyncChangeSetResult(
     val workTypeRequestException: Exception? = null,
     val workTypeReleaseException: Exception? = null,
 ) {
+    private val dataException: Exception?
+        get() {
+            return exception
+                ?: favoriteException
+                ?: addFlagExceptions.values.firstOrNull()
+                ?: deleteFlagExceptions.values.firstOrNull()
+                ?: noteExceptions.values.firstOrNull()
+                ?: workTypeStatusExceptions.values.firstOrNull()
+                ?: workTypeClaimException
+                ?: workTypeUnclaimException
+                ?: workTypeRequestException
+                ?: workTypeReleaseException
+        }
+
+    val primaryException: Exception?
+        get() {
+            return if (!isConnectedToInternet) NoInternetConnectionException()
+            else if (!isValidToken) ExpiredTokenException()
+            else dataException
+        }
+
     val hasError: Boolean
-        get() = exception != null ||
-                favoriteException != null ||
-                addFlagExceptions.isNotEmpty() ||
-                deleteFlagExceptions.isNotEmpty() ||
-                noteExceptions.isNotEmpty() ||
-                workTypeStatusExceptions.isNotEmpty() ||
-                workTypeClaimException != null ||
-                workTypeUnclaimException != null ||
-                workTypeRequestException != null ||
-                workTypeReleaseException != null
+        get() = dataException != null
+
+    private val Exception.errorMessage: String
+        get() = (this as? CrisisCleanupNetworkException)
+            ?.errors
+            ?.firstOrNull()
+            ?.message
+            ?.joinToString(", ")
+            ?: message
+            ?: ""
 
     private fun summarizeExceptions(key: String, exceptions: Map<Long, Exception>): String {
         if (exceptions.isNotEmpty()) {
             val summary = exceptions
-                .map { "  ${it.key}: ${it.value.message}" }
+                .map { "  ${it.key}: ${it.value.errorMessage}" }
                 .joinToString("\n")
             return "$key\n$summary"
         }
@@ -542,16 +566,16 @@ internal data class SyncChangeSetResult(
 
     val exceptionSummary: String
         get() = listOf(
-            exception?.let { "Overall: ${it.message}" },
-            favoriteException?.let { "Favorite: ${it.message}" },
+            exception?.let { "Overall: ${it.errorMessage}" },
+            favoriteException?.let { "Favorite: ${it.errorMessage}" },
             summarizeExceptions("Flags", addFlagExceptions),
             summarizeExceptions("Delete flags", deleteFlagExceptions),
             summarizeExceptions("Notes", noteExceptions),
             summarizeExceptions("Work type status", workTypeStatusExceptions),
-            workTypeClaimException?.let { "Claim work types: ${it.message}" },
-            workTypeUnclaimException?.let { "Unclaim work types: ${it.message}" },
-            workTypeRequestException?.let { "Request work types: ${it.message}" },
-            workTypeReleaseException?.let { "Release work types: ${it.message}" },
+            workTypeClaimException?.let { "Claim work types: ${it.errorMessage}" },
+            workTypeUnclaimException?.let { "Unclaim work types: ${it.errorMessage}" },
+            workTypeRequestException?.let { "Request work types: ${it.errorMessage}" },
+            workTypeReleaseException?.let { "Release work types: ${it.errorMessage}" },
         )
             .filter { it?.isNotBlank() == true }
             .joinToString("\n")
