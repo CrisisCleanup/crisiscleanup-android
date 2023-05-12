@@ -93,7 +93,11 @@ class ExistingCaseViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val isSavingWorksite = MutableStateFlow(false)
+    private val isSavingWorksite = MutableStateFlow(false)
+    val isSaving = combine(
+        isSyncing,
+        isSavingWorksite,
+    ) { b0, b1 -> b0 || b1 }
 
     private var isOrganizationsRefreshed = AtomicBoolean(false)
     private val organizationLookup = organizationsRepository.organizationLookup
