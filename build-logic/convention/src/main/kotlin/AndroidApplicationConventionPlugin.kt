@@ -14,10 +14,11 @@
  *   limitations under the License.
  */
 
-import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.dsl.ApplicationExtension
-import com.google.samples.apps.nowinandroid.configureFlavors
+import com.google.samples.apps.nowinandroid.configureGradleManagedDevices
+import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.google.samples.apps.nowinandroid.configureKotlinAndroid
+import com.google.samples.apps.nowinandroid.configureKotlinAndroidToolchain
 import com.google.samples.apps.nowinandroid.configurePrintApksTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -31,10 +32,11 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 apply("org.jetbrains.kotlin.android")
             }
 
+            configureKotlinAndroidToolchain()
             extensions.configure<ApplicationExtension> {
                 configureKotlinAndroid(this)
                 defaultConfig.targetSdk = 33
-                configureFlavors(this)
+                configureGradleManagedDevices(this)
             }
             extensions.configure<ApplicationAndroidComponentsExtension> {
                 configurePrintApksTask(this)

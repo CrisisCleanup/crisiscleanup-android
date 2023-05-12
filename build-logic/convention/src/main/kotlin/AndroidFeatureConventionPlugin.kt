@@ -15,6 +15,7 @@
  */
 
 import com.android.build.gradle.LibraryExtension
+import com.google.samples.apps.nowinandroid.configureGradleManagedDevices
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalogsExtension
@@ -35,18 +36,19 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
                     testInstrumentationRunner =
                         "com.crisiscleanup.core.testing.CrisisCleanupTestRunner"
                 }
+                configureGradleManagedDevices(this)
             }
 
             val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
             dependencies {
                 add("implementation", project(":core:appnav"))
-                add("implementation", project(":core:model"))
-                add("implementation", project(":core:ui"))
-                add("implementation", project(":core:designsystem"))
-                add("implementation", project(":core:data"))
                 add("implementation", project(":core:common"))
+                add("implementation", project(":core:model"))
+                add("implementation", project(":core:data"))
+                add("implementation", project(":core:designsystem"))
                 add("implementation", project(":core:domain"))
+                add("implementation", project(":core:ui"))
 
                 add("testImplementation", kotlin("test"))
                 add("testImplementation", project(":core:testing"))

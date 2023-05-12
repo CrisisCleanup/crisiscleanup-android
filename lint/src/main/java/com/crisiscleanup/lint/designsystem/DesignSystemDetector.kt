@@ -1,7 +1,13 @@
 package com.crisiscleanup.lint.designsystem
 
 import com.android.tools.lint.client.api.UElementHandler
-import com.android.tools.lint.detector.api.*
+import com.android.tools.lint.detector.api.Category
+import com.android.tools.lint.detector.api.Detector
+import com.android.tools.lint.detector.api.Implementation
+import com.android.tools.lint.detector.api.Issue
+import com.android.tools.lint.detector.api.JavaContext
+import com.android.tools.lint.detector.api.Scope
+import com.android.tools.lint.detector.api.Severity
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UQualifiedReferenceExpression
@@ -16,7 +22,7 @@ class DesignSystemDetector : Detector(), Detector.UastScanner {
     override fun getApplicableUastTypes(): List<Class<out UElement>> {
         return listOf(
             UCallExpression::class.java,
-            UQualifiedReferenceExpression::class.java
+            UQualifiedReferenceExpression::class.java,
         )
     }
 
@@ -49,8 +55,8 @@ class DesignSystemDetector : Detector(), Detector.UastScanner {
             severity = Severity.ERROR,
             implementation = Implementation(
                 DesignSystemDetector::class.java,
-                Scope.JAVA_FILE_SCOPE
-            )
+                Scope.JAVA_FILE_SCOPE,
+            ),
         )
 
         // Unfortunately :lint is a Java module and thus can't depend on the :core-designsystem
@@ -88,11 +94,13 @@ class DesignSystemDetector : Detector(), Detector.UastScanner {
             context: JavaContext,
             node: UElement,
             name: String,
-            preferredName: String
+            preferredName: String,
         ) {
             context.report(
-                ISSUE, node, context.getLocation(node),
-                "Using $name instead of $preferredName"
+                ISSUE,
+                node,
+                context.getLocation(node),
+                "Using $name instead of $preferredName",
             )
         }
     }

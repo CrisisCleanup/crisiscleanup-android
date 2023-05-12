@@ -1,18 +1,18 @@
 [versions]
 accompanist = "0.28.0"
-androidDesugarJdkLibs = "2.0.2"
-androidGradlePlugin = "7.4.1"
+androidDesugarJdkLibs = "2.0.3"
+androidGradlePlugin = "8.0.1"
 androidMapsUtil = "2.3.0"
 androidMapsUtilKtx = "3.4.0"
-androidMaterial = "1.9.0-rc01"
+androidMaterial = "1.9.0"
 androidxActivity = "1.7.1"
 androidxAppCompat = "1.6.1"
 androidxBrowser = "1.5.0"
-androidxComposeBom = "2023.03.00"
-androidxComposeCompiler = "1.4.2"
-androidxComposeRuntimeTracing = "1.0.0-alpha02"
+androidxComposeBom = "2023.05.01"
+androidxComposeCompiler = "1.4.7"
+androidxComposeRuntimeTracing = "1.0.0-alpha03"
 androidxConstraintLayout = "1.1.0-alpha09"
-androidxCore = "1.10.0"
+androidxCore = "1.10.1"
 androidxCoreSplashscreen = "1.0.1"
 androidXCredentials = "1.0.0-alpha04"
 androidxDataStore = "1.0.0"
@@ -20,9 +20,9 @@ androidxEspresso = "3.5.1"
 androidxHiltNavigationCompose = "1.0.0"
 androidxLifecycle = "2.6.1"
 androidxMacroBenchmark = "1.1.1"
-androidxMetrics = "1.0.0-alpha03"
+androidxMetrics = "1.0.0-alpha04"
 androidxNavigation = "2.5.3"
-androidxProfileinstaller = "1.2.2"
+androidxProfileinstaller = "1.3.1"
 androidxStartup = "1.1.1"
 androidxTestCore = "1.5.0"
 androidxTestExt = "1.1.5"
@@ -34,30 +34,33 @@ androidxWindowManager = "1.0.0"
 androidxWork = "2.8.1"
 apacheCommonsText = "1.10.0"
 coil = "2.2.2"
-firebaseAppDistribution = "16.0.0-beta06"
-firebaseBom = "31.5.0"
+firebaseAppDistribution = "16.0.0-beta08"
+firebaseBom = "32.0.0"
+firebaseCrashlyticsPlugin = "2.9.5"
+firebasePerfPlugin = "1.4.2"
+gmsPlugin = "4.3.14"
 googleMapsCompose = "2.9.1"
-googlePlaces = "3.0.0"
+googlePlaces = "3.1.0"
 hilt = "2.44.2"
 hiltExt = "1.0.0"
 jacoco = "0.8.7"
 junit4 = "4.13.2"
 jwtDecode = "2.0.1"
-kotlin = "1.8.10"
-kotlinxCoroutines = "1.6.4"
-kotlinxCoroutinesPlayServices = "1.4.1"
+kotlin = "1.8.21"
+kotlinxCoroutines = "1.7.0"
+kotlinxCoroutinesPlayServices = "1.7.0"
 kotlinxDatetime = "0.4.0"
-kotlinxSerializationJson = "1.4.1"
-ksp = "1.8.10-1.0.9"
-lint = "30.4.1"
-mockk = "1.13.4"
-okhttp = "4.10.0"
+kotlinxSerializationJson = "1.5.0"
+ksp = "1.8.21-1.0.11"
+lint = "31.0.1"
+mockk = "1.13.5"
+okhttp = "4.11.0"
 playServicesLocation = "21.0.1"
 playServicesMaps = "18.1.0"
 protobuf = "3.21.12"
-protobufPlugin = "0.8.19"
+protobufPlugin = "0.9.1"
 retrofit = "2.9.0"
-retrofitKotlinxSerializationJson = "0.8.0"
+retrofitKotlinxSerializationJson = "1.0.0"
 room = "2.5.1"
 secrets = "2.0.1"
 squareSeismic = "1.0.3"
@@ -122,6 +125,9 @@ firebase-appdistribution = { group = "com.google.firebase", name = "firebase-app
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics-ktx" }
 firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics-ktx" }
+firebase-crashlytics-gradle = { group = "com.google.firebase", name = "firebase-crashlytics-gradle", version.ref = "firebaseCrashlyticsPlugin" }
+firebase-performance = { group = "com.google.firebase", name = "firebase-perf-ktx" }
+firebase-performance-gradle = { group = "com.google.firebase", name = "perf-plugin", version.ref = "firebasePerfPlugin" }
 google-maps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "googleMapsCompose" }
 google-places = { group = "com.google.android.libraries.places", name = "places", version.ref = "googlePlaces" }
 coil-kt = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
@@ -161,11 +167,15 @@ turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine
 # Dependencies of the included build-logic
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
 android-test = { id = "com.android.test", version.ref = "androidGradlePlugin" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin" }
+firebase-perf = { id = "com.google.firebase.firebase-perf", version.ref = "firebasePerfPlugin" }
+gms = { id = "com.google.gms.google-services", version.ref = "gmsPlugin" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

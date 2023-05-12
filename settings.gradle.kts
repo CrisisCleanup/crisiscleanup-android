@@ -49,3 +49,7 @@ include(":lint")
 include(":sync:work")
 include(":sync:sync-test")
 include(":ui-test-hilt-manifest")
+
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version ("0.4.0")
+}

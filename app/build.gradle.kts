@@ -3,20 +3,18 @@ import com.google.samples.apps.nowinandroid.NiaBuildType
 plugins {
     id("nowinandroid.android.application")
     id("nowinandroid.android.application.compose")
+    id("nowinandroid.android.application.flavors")
     id("nowinandroid.android.application.jacoco")
     id("nowinandroid.android.hilt")
     id("jacoco")
-    id("nowinandroid.firebase-perf")
-    // For Firebase support
-    id("com.google.gms.google-services")
-    id("com.google.firebase.crashlytics")
+    id("nowinandroid.android.application.firebase")
 }
 
 android {
     defaultConfig {
         applicationId = "com.crisiscleanup"
-        versionCode = 69
-        versionName = "0.0.69"
+        versionCode = 70
+        versionName = "0.0.70"
 
         // Custom test runner to set up Hilt dependency graph
         testInstrumentationRunner = "com.crisiscleanup.core.testing.CrisisCleanupTestRunner"
@@ -64,7 +62,7 @@ android {
         }
     }
 
-    packagingOptions {
+    packaging {
         resources {
             excludes.add("/META-INF/{AL2.0,LGPL2.1}")
         }
@@ -140,8 +138,6 @@ dependencies {
 
     // For Firebase support
     implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.analytics)
-    implementation(libs.firebase.crashlytics)
     implementation(libs.firebase.appdistribution.api)
     demoImplementation(libs.firebase.appdistribution)
 
