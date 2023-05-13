@@ -59,4 +59,19 @@ interface WorkTypeTransferRequestDao {
         rejectedAt: Instant?,
         approvedRejectedReason: String,
     )
+
+    @Transaction
+    @Query(
+        """
+        UPDATE OR IGNORE worksite_work_type_requests
+        SET network_id =:networkId
+        WHERE worksite_id=:worksiteId AND work_type=:workType AND by_org=:orgId
+        """
+    )
+    fun updateNetworkId(
+        worksiteId: Long,
+        workType: String,
+        orgId: Long,
+        networkId: Long
+    )
 }

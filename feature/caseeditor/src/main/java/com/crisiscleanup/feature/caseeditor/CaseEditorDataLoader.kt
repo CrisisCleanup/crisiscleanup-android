@@ -1,6 +1,8 @@
 package com.crisiscleanup.feature.caseeditor
 
+import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.log.AppLogger
+import com.crisiscleanup.core.common.log.TagLogger
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
@@ -12,8 +14,9 @@ import com.crisiscleanup.core.mapmarker.model.IncidentBounds
 import com.crisiscleanup.core.mapmarker.util.toBounds
 import com.crisiscleanup.core.mapmarker.util.toLatLng
 import com.crisiscleanup.core.model.data.AutoContactFrequency
-import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
+import com.crisiscleanup.core.model.data.Incident
+import com.crisiscleanup.core.model.data.IncidentFormField
 import com.crisiscleanup.core.model.data.IncidentLocation
 import com.crisiscleanup.core.model.data.WorksiteFormValue
 import com.crisiscleanup.feature.caseeditor.model.FormFieldNode
@@ -23,12 +26,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
@@ -52,12 +56,17 @@ internal class CaseEditorDataLoader(
     private val editableWorksiteProvider: EditableWorksiteProvider,
     coroutineScope: CoroutineScope,
     coroutineDispatcher: CoroutineDispatcher,
+    appEnv: AppEnv,
     private val logger: AppLogger,
+    private val debugTag: String = "",
 ) {
+    private val logDebug = appEnv.isDebuggable && debugTag.isNotEmpty()
+
     val editSections = MutableStateFlow<List<String>>(emptyList())
 
     val incidentFieldLookup = MutableStateFlow(emptyMap<String, GroupSummaryFieldLookup>())
     val workTypeGroupChildrenLookup = MutableStateFlow(emptyMap<String, Collection<String>>())
+    private var workTypeGroupFormFields = emptyMap<String, IncidentFormField>()
 
     private val dataLoadCountStream = MutableStateFlow(0)
     private val isRefreshingIncident = MutableStateFlow(false)
@@ -74,33 +83,27 @@ internal class CaseEditorDataLoader(
         )
 
     private val organizationStream = accountDataRepository.accountData
-        .map { it.org }
+        .mapLatest { it.org }
+        .distinctUntilChanged()
         .stateIn(
             scope = coroutineScope,
             initialValue = null,
             started = SharingStarted.WhileSubscribed(3_000),
         )
 
-    private val incidentStream = incidentsRepository.streamIncident(incidentIdIn)
-        .mapLatest { it ?: EmptyIncident }
-        .flowOn(coroutineDispatcher)
-        .stateIn(
-            scope = coroutineScope,
-            initialValue = null,
-            started = SharingStarted.WhileSubscribed(3_000),
-        )
-
-    private val incidentBoundsStream = incidentStream
-        .mapLatest {
-            var bounds: IncidentBounds? = null
-            it?.locations?.map(IncidentLocation::location)?.let { locationIds ->
+    private val incidentDataStream = incidentsRepository.streamIncident(incidentIdIn)
+        .mapLatest { incident ->
+            var data: Pair<Incident, IncidentBounds>? = null
+            incident?.locations?.map(IncidentLocation::location)?.let { locationIds ->
                 val locations = locationsRepository.getLocations(locationIds).toLatLng()
-                bounds = if (locations.isEmpty()) null
-                else locations.toBounds()
+                if (locations.isNotEmpty()) {
+                    data = Pair(incident, locations.toBounds())
+                }
             }
-            bounds
+            data
         }
         .flowOn(coroutineDispatcher)
+        .distinctUntilChanged()
         .stateIn(
             scope = coroutineScope,
             initialValue = null,
@@ -114,6 +117,7 @@ internal class CaseEditorDataLoader(
             if (worksiteId == null || worksiteId <= 0) flowOf(null)
             else worksitesRepository.streamLocalWorksite(worksiteId)
         }
+        .distinctUntilChanged()
         .flowOn(coroutineDispatcher)
         .stateIn(
             scope = coroutineScope,
@@ -130,29 +134,32 @@ internal class CaseEditorDataLoader(
         dataLoadCountStream,
         organizationStream,
         workTypeStatusStream,
-        incidentStream,
-        incidentBoundsStream,
+        incidentDataStream,
         isRefreshingIncident,
         worksiteStream,
         isWorksitePulled,
     ) {
             dataLoadCount, organization, statuses,
-            incident, bounds, pullingIncident,
+            incidentData, pullingIncident,
             worksite, isPulled,
         ->
         Triple(
             Triple(dataLoadCount, organization, statuses),
-            Triple(incident, bounds, pullingIncident),
+            Pair(incidentData, pullingIncident),
             Pair(worksite, isPulled),
         )
     }
+        .filter { (first, second, _) ->
+            val (_, organization, _) = first
+            val (incidentData, _) = second
+            organization != null && incidentData != null
+        }
         .mapLatest { (first, second, third) ->
             val (_, organization, workTypeStatuses) = first
-            val (incident, bounds, pullingIncident) = second
+            val (incidentData, pullingIncident) = second
 
-            if (organization == null || incident == null) {
-                return@mapLatest CaseEditorUiState.Loading
-            }
+            organization!!
+            incidentData!!
 
             val worksiteId = worksiteIdStream.first() ?: -1
 
@@ -161,12 +168,14 @@ internal class CaseEditorDataLoader(
                 return@mapLatest CaseEditorUiState.Error(R.string.organization_issue_try_re_authenticating)
             }
 
+            val (incident, bounds) = incidentData
+
             if (!pullingIncident && incident.formFields.isEmpty()) {
                 logger.logException(Exception("Incident $incidentIdIn is missing form fields when editing worksite $worksiteId"))
                 return@mapLatest CaseEditorUiState.Error(R.string.incident_issue_try_again)
             }
 
-            bounds?.let {
+            bounds.let {
                 if (it.locations.isEmpty()) {
                     logger.logException(Exception("Incident $incidentIdIn is lacking locations."))
                     return@mapLatest CaseEditorUiState.Error(R.string.incident_issue_try_again)
@@ -183,6 +192,7 @@ internal class CaseEditorDataLoader(
 
             with(editableWorksiteProvider) {
                 this.incident = incident
+
                 if ((loadedWorksite != null && takeStale()) || formFields.isEmpty()) {
                     formFields = FormFieldNode.buildTree(
                         incident.formFields,
@@ -201,6 +211,10 @@ internal class CaseEditorDataLoader(
 
                     workTypeGroupChildrenLookup.value = workTypeFormFields.associate {
                         it.fieldKey to it.children.map(FormFieldNode::fieldKey).toSet()
+                    }
+                    workTypeGroupFormFields = workTypeFormFields.associate {
+                        val formField = incident.formFieldLookup[it.fieldKey]!!
+                        formField.selectToggleWorkType to formField
                     }
 
                     workTypeTranslationLookup = workTypeFormFields.associate {
@@ -244,22 +258,16 @@ internal class CaseEditorDataLoader(
                     .toSet()
                 if (workTypeGroups.isNotEmpty()) {
                     workTypeGroups.forEach {
-                        updatedFormData[it] = WorksiteFormValue(true, "", true)
+                        updatedFormData[it] = WorksiteFormValue.trueValue
                     }
                 }
                 // Set work type group where work type is defined
-                val workTypeGroupFormFields = workTypeGroupChildrenLookup.value.keys.associate {
-                    val formField = incident.formFieldLookup[it]
-                    formField!!.selectToggleWorkType to formField
-                }
                 initialWorksite.workTypes.forEach {
                     workTypeGroupFormFields[it.workTypeLiteral]?.let { formField ->
-                        updatedFormData[formField.fieldKey] = WorksiteFormValue(true, "", true)
+                        updatedFormData[formField.fieldKey] = WorksiteFormValue.trueValue
                     }
                 }
-                if (updatedFormData.size != (initialWorksite.formData?.size ?: 0) ||
-                    initialWorksite.favoriteId != null
-                ) {
+                if (updatedFormData.size != (initialWorksite.formData?.size ?: 0)) {
                     initialWorksite = initialWorksite.copy(
                         formData = updatedFormData,
                     )
@@ -268,11 +276,10 @@ internal class CaseEditorDataLoader(
                 if (!isStale || loadedWorksite != null) {
                     editableWorksite.value = initialWorksite
                 }
-                incidentBounds = bounds ?: DefaultIncidentBounds
+                incidentBounds = bounds
             }
 
-            val isReadyForEditing = bounds != null &&
-                    editSections.value.isNotEmpty() &&
+            val isReadyForEditing = editSections.value.isNotEmpty() &&
                     workTypeStatuses.isNotEmpty() &&
                     (isCreateWorksite || localWorksite != null)
             val isNetworkLoadFinished = isReadyForEditing && (isCreateWorksite || isPulled)
@@ -296,6 +303,12 @@ internal class CaseEditorDataLoader(
     val uiState: MutableStateFlow<CaseEditorUiState> = MutableStateFlow(CaseEditorUiState.Loading)
 
     init {
+        if (logDebug) {
+            (logger as? TagLogger)?.let {
+                it.tag = debugTag
+            }
+        }
+
         coroutineScope.launch(coroutineDispatcher) {
             try {
                 languageRefresher.pullLanguages()

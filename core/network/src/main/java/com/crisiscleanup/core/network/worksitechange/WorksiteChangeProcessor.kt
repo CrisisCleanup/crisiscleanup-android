@@ -36,6 +36,7 @@ class WorksiteChangeProcessor(
     private val flagIdMap = flagIdLookup.toMutableMap()
     private val noteIdMap = noteIdLookup.toMutableMap()
     private val workTypeIdMap = workTypeIdLookup.toMutableMap()
+    private val workTypeRequestIdMap = mutableMapOf<String, Long>()
 
     private val syncChangeResults = mutableListOf<WorksiteSyncResult.ChangeResult>()
 
@@ -77,7 +78,8 @@ class WorksiteChangeProcessor(
                 workTypeIdMap = workTypeIdMap,
                 workTypeKeyMap = _networkWorksite?.newestWorkTypes
                     ?.associate { it.workType to it.id!! }
-                    ?: emptyMap()
+                    ?: emptyMap(),
+                workTypeRequestIdMap = workTypeRequestIdMap,
             ),
         )
 
@@ -431,6 +433,12 @@ class WorksiteChangeProcessor(
                 requestWorkTypes,
                 transferRequest.reason,
             )
+
+            val workTypeRequests = networkDataSource.getWorkTypeRequests(networkWorksiteId)
+            workTypeRequests.results?.forEach {
+                workTypeRequestIdMap[it.workType.workType] = it.id
+            }
+
             baseResult
         } catch (e: Exception) {
             ensureSyncConditions()

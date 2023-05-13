@@ -16,7 +16,6 @@ import org.jetbrains.uast.UQualifiedReferenceExpression
  * A detector that checks for incorrect usages of Compose Material APIs over equivalents in
  * the design system module.
  */
-@Suppress("UnstableApiUsage")
 class DesignSystemDetector : Detector(), Detector.UastScanner {
 
     override fun getApplicableUastTypes(): List<Class<out UElement>> {
@@ -67,9 +66,9 @@ class DesignSystemDetector : Detector(), Detector.UastScanner {
             "Button" to "CrisisCleanupButton",
             "OutlinedButton" to "CrisisCleanupOutlinedButton",
             "TextButton" to "CrisisCleanupTextButton",
-            "FilterChip" to "CrisisCleanupFilterChip",
-            "ElevatedFilterChip" to "CrisisCleanupFilterChip",
-            "DropdownMenu" to "CrisisCleanupDropdownMenu",
+            // "FilterChip" to "CrisisCleanupFilterChip",
+            // "ElevatedFilterChip" to "CrisisCleanupFilterChip",
+            // "DropdownMenu" to "CrisisCleanupDropdownMenu",
             "NavigationBar" to "CrisisCleanupNavigationBar",
             "NavigationBarItem" to "CrisisCleanupNavigationBarItem",
             "NavigationRail" to "CrisisCleanupNavigationRail",

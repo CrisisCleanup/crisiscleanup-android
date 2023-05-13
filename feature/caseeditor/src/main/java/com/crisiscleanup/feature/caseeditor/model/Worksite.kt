@@ -52,7 +52,7 @@ fun Worksite.copyModifiedFormData(
 
     if (formValue.isBoolean) {
         if (formValue.valueBoolean) {
-            copyData[targetFieldKey] = WorksiteFormValue(true, "", true)
+            copyData[targetFieldKey] = WorksiteFormValue.trueValue
         } else {
             copyData.remove(targetFieldKey)
         }
@@ -113,7 +113,7 @@ fun Worksite.copyModifiedFormData(dynamicFormFields: Map<String, DynamicValue>):
     for ((key, value) in dynamicFormFields) {
         if (value.isBoolean) {
             if (value.valueBoolean) {
-                mutableFormData[key] = WorksiteFormValue(true, "", true)
+                mutableFormData[key] = WorksiteFormValue.trueValue
             }
         } else if (value.valueString.isNotBlank()) {
             mutableFormData[key] = WorksiteFormValue(false, value.valueString.trim())

@@ -8,6 +8,7 @@ import com.crisiscleanup.core.database.TestUtil.testChangeSerializer
 import com.crisiscleanup.core.database.TestUtil.testUuidGenerator
 import com.crisiscleanup.core.database.WorksiteTestUtil
 import com.crisiscleanup.core.database.model.PopulatedIdNetworkId
+import com.crisiscleanup.core.database.model.WorkTypeTransferRequestEntity
 import com.crisiscleanup.core.database.model.WorksiteChangeEntity
 import com.crisiscleanup.core.database.model.WorksiteRootEntity
 import com.crisiscleanup.core.model.data.WorksiteChangeArchiveAction
@@ -158,15 +159,44 @@ class WorksiteChangeUpdateSyncTest {
             )
         )
 
+        val workTypeRequestsDao = db.workTypeTransferRequestDao()
+        workTypeRequestsDao.insertIgnore(
+            listOf(
+                testWorkTypeRequestEntity(
+                    -1,
+                    51,
+                    "work-type-a",
+                    538,
+                ),
+                testWorkTypeRequestEntity(
+                    34,
+                    51,
+                    "work-type-b",
+                    623,
+                ),
+                testWorkTypeRequestEntity(
+                    58,
+                    51,
+                    "work-type-b",
+                    538,
+                ),
+            )
+        )
+
         worksiteChangeDaoPlus.updateSyncIds(
             51,
+            538,
             WorksiteSyncResult.ChangeIds(
                 884,
                 flagIdMap = mapOf(1L to 43, 4L to 83),
                 noteIdMap = mapOf(9L to 358, 1L to 385),
                 workTypeIdMap = mapOf(2L to 837, 83L to 358, 1L to 385),
                 workTypeKeyMap = mapOf("work-type-c" to 358, "work-type-b" to 124),
-            )
+                workTypeRequestIdMap = mapOf(
+                    "work-type-a" to 524,
+                    "work-type-b" to 529,
+                )
+            ),
         )
 
         assertEquals(884L, worksiteDao.getWorksiteNetworkId(51))
@@ -190,15 +220,27 @@ class WorksiteChangeUpdateSyncTest {
                 .sortedBy(PopulatedIdNetworkId::id),
         )
 
+        assertEquals(
+            listOf(
+                PopulatedIdNetworkId(1, 524),
+                PopulatedIdNetworkId(2, 34),
+                PopulatedIdNetworkId(3, 529),
+            ),
+            db.testWorkTypeRequestDao().getNetworkedIdMap(51)
+                .sortedBy(PopulatedIdNetworkId::id),
+        )
+
         worksiteChangeDaoPlus.updateSyncIds(
             51,
+            538,
             WorksiteSyncResult.ChangeIds(
                 -1,
                 flagIdMap = mapOf(1L to -1),
                 noteIdMap = mapOf(9L to -1),
                 workTypeIdMap = mapOf(2L to -1L),
                 workTypeKeyMap = mapOf("work-type-c" to -1),
-            )
+                workTypeRequestIdMap = mapOf("work-type-b" to -1),
+            ),
         )
 
         assertEquals(884L, worksiteDao.getWorksiteNetworkId(51))
@@ -219,6 +261,16 @@ class WorksiteChangeUpdateSyncTest {
                 PopulatedIdNetworkId(2, 124),
             ),
             workTypeDao.getNetworkedIdMap(51)
+                .sortedBy(PopulatedIdNetworkId::id),
+        )
+
+        assertEquals(
+            listOf(
+                PopulatedIdNetworkId(1, 524),
+                PopulatedIdNetworkId(2, 34),
+                PopulatedIdNetworkId(3, 529),
+            ),
+            db.testWorkTypeRequestDao().getNetworkedIdMap(51)
                 .sortedBy(PopulatedIdNetworkId::id),
         )
     }
@@ -494,5 +546,25 @@ class WorksiteChangeUpdateSyncTest {
         isSuccessful = isSuccessful,
         isPartiallySuccessful = isPartiallySuccessful,
         isFail = isFail,
+    )
+
+    private fun testWorkTypeRequestEntity(
+        networkId: Long,
+        worksiteId: Long,
+        workType: String,
+        byOrg: Long = 52,
+        reason: String = "reason",
+        toOrg: Long = 83,
+        createdAt: Instant = now,
+        id: Long = 0,
+    ) = WorkTypeTransferRequestEntity(
+        id = id,
+        networkId = networkId,
+        worksiteId = worksiteId,
+        workType = workType,
+        reason = reason,
+        byOrg = byOrg,
+        toOrg = toOrg,
+        createdAt = createdAt,
     )
 }

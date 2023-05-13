@@ -296,7 +296,6 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
                 val incidentId = worksiteDao.getIncidentId(worksiteId)
                 if (incidentId > 0) {
                     worksitesRepository.syncNetworkWorksite(incidentId, it)
-                    worksitesRepository.pullWorkTypeRequests(incidentId, networkWorksiteId)
                 }
             }
         }
@@ -362,7 +361,11 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
                 )
             }
 
-            worksiteChangeDaoPlus.updateSyncIds(worksiteId, syncResult.changeIds)
+            worksiteChangeDaoPlus.updateSyncIds(
+                worksiteId,
+                organizationId,
+                syncResult.changeIds,
+            )
             worksiteChangeDaoPlus.updateSyncChanges(
                 worksiteId,
                 syncResult.changeResults,

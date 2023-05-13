@@ -1,8 +1,35 @@
 package com.crisiscleanup.core.database
 
-import androidx.room.*
-import com.crisiscleanup.core.database.dao.*
-import com.crisiscleanup.core.database.model.*
+import androidx.room.Dao
+import androidx.room.Database
+import androidx.room.Query
+import androidx.room.Transaction
+import androidx.room.TypeConverters
+import com.crisiscleanup.core.database.model.IncidentEntity
+import com.crisiscleanup.core.database.model.IncidentFormFieldEntity
+import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
+import com.crisiscleanup.core.database.model.IncidentLocationEntity
+import com.crisiscleanup.core.database.model.IncidentOrganizationEntity
+import com.crisiscleanup.core.database.model.IncidentOrganizationSyncStatsEntity
+import com.crisiscleanup.core.database.model.LanguageTranslationEntity
+import com.crisiscleanup.core.database.model.LocationEntity
+import com.crisiscleanup.core.database.model.OrganizationAffiliateEntity
+import com.crisiscleanup.core.database.model.OrganizationPrimaryContactCrossRef
+import com.crisiscleanup.core.database.model.PersonContactEntity
+import com.crisiscleanup.core.database.model.PopulatedIdNetworkId
+import com.crisiscleanup.core.database.model.PopulatedLocalWorksite
+import com.crisiscleanup.core.database.model.RecentWorksiteEntity
+import com.crisiscleanup.core.database.model.SyncLogEntity
+import com.crisiscleanup.core.database.model.WorkTypeEntity
+import com.crisiscleanup.core.database.model.WorkTypeStatusEntity
+import com.crisiscleanup.core.database.model.WorkTypeTransferRequestEntity
+import com.crisiscleanup.core.database.model.WorksiteChangeEntity
+import com.crisiscleanup.core.database.model.WorksiteEntity
+import com.crisiscleanup.core.database.model.WorksiteFlagEntity
+import com.crisiscleanup.core.database.model.WorksiteFormDataEntity
+import com.crisiscleanup.core.database.model.WorksiteNoteEntity
+import com.crisiscleanup.core.database.model.WorksiteRootEntity
+import com.crisiscleanup.core.database.model.WorksiteSyncStatsEntity
 import com.crisiscleanup.core.database.util.InstantConverter
 import kotlinx.datetime.Instant
 
@@ -171,4 +198,8 @@ interface TestWorkTypeRequestDao {
     @Transaction
     @Query("SELECT * FROM worksite_work_type_requests")
     fun getEntities(): List<WorkTypeTransferRequestEntity>
+
+    @Transaction
+    @Query("SELECT id, network_id FROM worksite_work_type_requests WHERE worksite_id=:worksiteId")
+    fun getNetworkedIdMap(worksiteId: Long): List<PopulatedIdNetworkId>
 }

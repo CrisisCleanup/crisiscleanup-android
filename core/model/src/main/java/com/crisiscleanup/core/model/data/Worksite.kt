@@ -114,6 +114,10 @@ data class WorksiteFormValue(
     val valueString: String,
     val valueBoolean: Boolean = false,
 ) {
+    companion object {
+        val trueValue = WorksiteFormValue(true, "", true)
+    }
+
     val isBooleanTrue = isBoolean && valueBoolean
     val hasValue = isBooleanTrue || (!isBoolean && valueString.isNotBlank())
 }

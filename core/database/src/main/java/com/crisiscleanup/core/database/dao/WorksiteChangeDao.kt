@@ -3,6 +3,7 @@ package com.crisiscleanup.core.database.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Transaction
 import com.crisiscleanup.core.database.model.PopulatedWorksite
 import com.crisiscleanup.core.database.model.PopulatedWorksiteChange
@@ -52,6 +53,7 @@ interface WorksiteChangeDao {
     fun getChangeCount(worksiteId: Long): Int
 
     @Transaction
+    @RewriteQueriesToDropUnusedColumns
     @Query(
         """
         SELECT *

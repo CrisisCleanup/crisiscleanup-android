@@ -5,7 +5,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.addresssearch.AddressSearchRepository
-import com.crisiscleanup.core.common.*
+import com.crisiscleanup.core.common.AndroidResourceProvider
+import com.crisiscleanup.core.common.AppEnv
+import com.crisiscleanup.core.common.InputValidator
+import com.crisiscleanup.core.common.KeyTranslator
+import com.crisiscleanup.core.common.LocationProvider
+import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -13,16 +18,43 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.Default
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPusher
-import com.crisiscleanup.core.data.repository.*
+import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.IncidentsRepository
+import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
+import com.crisiscleanup.core.data.repository.LocationsRepository
+import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
+import com.crisiscleanup.core.data.repository.WorkTypeStatusRepository
+import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
+import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
-import com.crisiscleanup.core.model.data.*
-import com.crisiscleanup.feature.caseeditor.model.*
+import com.crisiscleanup.core.model.data.Incident
+import com.crisiscleanup.core.model.data.LocalWorksite
+import com.crisiscleanup.core.model.data.WorkTypeStatus
+import com.crisiscleanup.core.model.data.Worksite
+import com.crisiscleanup.feature.caseeditor.model.CaseDataWriter
+import com.crisiscleanup.feature.caseeditor.model.FormFieldsInputData
+import com.crisiscleanup.feature.caseeditor.model.LocationInputData
+import com.crisiscleanup.feature.caseeditor.model.PropertyInputData
+import com.crisiscleanup.feature.caseeditor.model.coordinates
 import com.crisiscleanup.feature.caseeditor.navigation.CaseEditorArgs
 import com.crisiscleanup.feature.caseeditor.util.updateKeyWorkType
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
@@ -49,6 +81,7 @@ class CaseEditorViewModel @Inject constructor(
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val syncPusher: SyncPusher,
     private val resourceProvider: AndroidResourceProvider,
+    appEnv: AppEnv,
     @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 
@@ -143,6 +176,7 @@ class CaseEditorViewModel @Inject constructor(
             editableWorksiteProvider,
             viewModelScope,
             ioDispatcher,
+            appEnv,
             logger,
         )
 

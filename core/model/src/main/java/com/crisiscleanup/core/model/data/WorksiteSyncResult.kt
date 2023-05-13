@@ -19,6 +19,7 @@ data class WorksiteSyncResult(
         val noteIdMap: Map<Long, Long>,
         val workTypeIdMap: Map<Long, Long>,
         val workTypeKeyMap: Map<String, Long>,
+        val workTypeRequestIdMap: Map<String, Long>,
     )
 
     private fun <T, R> summarizeChanges(changeMap: Map<T, R>, postText: String): String? =
@@ -55,6 +56,7 @@ data class WorksiteSyncResult(
                 summarizeChanges(noteIdMap, "notes"),
                 summarizeChanges(workTypeIdMap, "work type IDs"),
                 summarizeChanges(workTypeKeyMap, "work type keys"),
+                summarizeChanges(workTypeRequestIdMap, "work type requests"),
             )
                 .filter { it?.isNotBlank() == true }
                 .joinToString("\n")

@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AndroidResourceProvider
+import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.combineTrimText
 import com.crisiscleanup.core.common.di.ApplicationScope
@@ -66,6 +67,7 @@ class ExistingCaseViewModel @Inject constructor(
     private val syncPusher: SyncPusher,
     private val resourceProvider: AndroidResourceProvider,
     drawableResourceBitmapProvider: DrawableResourceBitmapProvider,
+    appEnv: AppEnv,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
     @ApplicationScope private val externalScope: CoroutineScope,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
@@ -93,11 +95,7 @@ class ExistingCaseViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    private val isSavingWorksite = MutableStateFlow(false)
-    val isSaving = combine(
-        isSyncing,
-        isSavingWorksite,
-    ) { b0, b1 -> b0 || b1 }
+    val isSavingWorksite = MutableStateFlow(false)
 
     private var isOrganizationsRefreshed = AtomicBoolean(false)
     private val organizationLookup = organizationsRepository.organizationLookup
@@ -141,6 +139,7 @@ class ExistingCaseViewModel @Inject constructor(
             editableWorksiteProvider,
             viewModelScope,
             ioDispatcher,
+            appEnv,
             logger,
         )
 

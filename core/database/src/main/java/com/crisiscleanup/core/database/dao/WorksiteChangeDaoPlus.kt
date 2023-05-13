@@ -455,6 +455,7 @@ class WorksiteChangeDaoPlus @Inject constructor(
 
     suspend fun updateSyncIds(
         worksiteId: Long,
+        organizationId: Long,
         ids: WorksiteSyncResult.ChangeIds,
     ) {
         db.withTransaction {
@@ -485,6 +486,12 @@ class WorksiteChangeDaoPlus @Inject constructor(
             val workTypeKeyIds = ids.workTypeKeyMap.filter { it.value > 0 }
             for ((key, value) in workTypeKeyIds) {
                 workTypeDao.updateNetworkId(worksiteId, key, value)
+            }
+
+            val workTypeRequestIds = ids.workTypeRequestIdMap.filter { it.value > 0 }
+            val requestsDao = db.workTypeTransferRequestDao()
+            for ((key, value) in workTypeRequestIds) {
+                requestsDao.updateNetworkId(worksiteId, key, organizationId, value)
             }
         }
     }
