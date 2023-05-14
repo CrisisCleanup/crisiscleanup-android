@@ -8,7 +8,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.Preview
-import com.crisiscleanup.core.designsystem.component.*
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupElevatedIconButton
+import com.crisiscleanup.core.designsystem.component.actionBottomRoundCornerShape
+import com.crisiscleanup.core.designsystem.component.actionEndRoundCornerShape
+import com.crisiscleanup.core.designsystem.component.actionRoundCornerShape
+import com.crisiscleanup.core.designsystem.component.actionSmallSize
+import com.crisiscleanup.core.designsystem.component.actionSmallSpace
+import com.crisiscleanup.core.designsystem.component.actionStartRoundCornerShape
+import com.crisiscleanup.core.designsystem.component.actionTopRoundCornerShape
+import com.crisiscleanup.core.designsystem.component.adjacentButtonSpace
 import com.crisiscleanup.feature.cases.R
 
 enum class CasesAction(
@@ -34,7 +42,7 @@ private fun CasesActionButton(
     onCasesAction: (CasesAction) -> Unit,
     shape: Shape = actionRoundCornerShape,
 ) {
-    CrisisCleanupIconButton(
+    CrisisCleanupElevatedIconButton(
         modifier = modifier.actionSmallSize(),
         iconResId = action.iconResId,
         contentDescriptionResId = action.contentDescriptionResId,

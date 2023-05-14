@@ -80,7 +80,6 @@ class DesignSystemDetector : Detector(), Detector.UastScanner {
             "FilledIconToggleButton" to "CrisisCleanupIconToggleButton",
             "FilledTonalIconToggleButton" to "CrisisCleanupIconToggleButton",
             "OutlinedIconToggleButton" to "CrisisCleanupIconToggleButton",
-            "CenterAlignedTopAppBar" to "CrisisCleanupTopAppBar",
             "SmallTopAppBar" to "CrisisCleanupTopAppBar",
             "MediumTopAppBar" to "CrisisCleanupTopAppBar",
             "LargeTopAppBar" to "CrisisCleanupTopAppBar"

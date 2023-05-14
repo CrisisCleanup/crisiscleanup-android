@@ -282,19 +282,21 @@ class WorksiteDaoPlus @Inject constructor(
         val (core, flags, formData, notes, workTypes) = entities
         val worksiteId = worksiteDao.getWorksiteId(incidentId, core.networkId)
         if (worksiteId > 0) {
-            worksiteDao.syncFillWorksite(
-                worksiteId,
-                core.autoContactFrequencyT,
-                core.caseNumber,
-                core.email,
-                core.favoriteId,
-                core.phone1,
-                core.phone2,
-                core.plusCode,
-                core.svi,
-                core.reportedBy,
-                core.what3Words,
-            )
+            with(core) {
+                worksiteDao.syncFillWorksite(
+                    worksiteId,
+                    autoContactFrequencyT,
+                    caseNumber,
+                    email,
+                    favoriteId,
+                    phone1,
+                    phone2,
+                    plusCode,
+                    svi,
+                    reportedBy,
+                    what3Words,
+                )
+            }
 
             val flagDao = db.worksiteFlagDao()
             val flagsReasons = flagDao.getReasons(worksiteId).toSet()

@@ -185,7 +185,7 @@ private fun MapButton(
     contentDescription: String = "",
     onClick: () -> Unit = {},
 ) {
-    CrisisCleanupIconButton(
+    CrisisCleanupElevatedIconButton(
         modifier = Modifier.size(mapButtonSize),
         imageVector = imageVector,
         iconResId = iconResId,

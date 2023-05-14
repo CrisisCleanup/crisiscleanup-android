@@ -128,7 +128,11 @@ internal fun NetworkWorksiteFull.getCoreChange(
     keyWorkTypePush: NetworkWorkType?,
     updatedAtPush: Instant,
 ): NetworkWorksitePush? {
-    if (coreA.copy(updatedAt = coreB.updatedAt) == coreB) {
+    if (coreA.copy(
+            updatedAt = coreB.updatedAt,
+            isAssignedToOrgMember = coreB.isAssignedToOrgMember,
+        ) == coreB
+    ) {
         return null
     }
 
@@ -174,9 +178,9 @@ internal fun NetworkWorksiteFull.getFavoriteChange(
     coreA: CoreSnapshot,
     coreB: CoreSnapshot,
 ): Boolean? {
-    val isFavoriteA = coreA.isAssignedToOrgMember || coreA.favoriteId != null
-    val isFavoriteB = coreB.isAssignedToOrgMember || coreB.favoriteId != null
-    return if (isFavoriteA == isFavoriteB || isFavoriteB == (favorite != null)) null
+    val isFavoriteA = coreA.isAssignedToOrgMember
+    val isFavoriteB = coreB.isAssignedToOrgMember
+    return if (isFavoriteA == isFavoriteB) null
     else isFavoriteB
 }
 

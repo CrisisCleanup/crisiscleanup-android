@@ -185,7 +185,7 @@ internal class CaseEditorDataLoader(
             val (localWorksite, isPulled) = third
 
             val loadedWorksite = localWorksite?.worksite
-            var initialWorksite = loadedWorksite ?: EmptyWorksite.copy(
+            var worksiteState = loadedWorksite ?: EmptyWorksite.copy(
                 incidentId = incidentIdIn,
                 autoContactFrequencyT = AutoContactFrequency.Often.literal,
             )
@@ -250,7 +250,7 @@ internal class CaseEditorDataLoader(
                     }
                 }
 
-                val updatedFormData = initialWorksite.formData?.toMutableMap() ?: mutableMapOf()
+                val updatedFormData = worksiteState.formData?.toMutableMap() ?: mutableMapOf()
                 // Set work type groups where child has value
                 val workTypeGroups = updatedFormData.keys
                     .filter { incident.workTypeLookup[it] != null }
@@ -262,19 +262,19 @@ internal class CaseEditorDataLoader(
                     }
                 }
                 // Set work type group where work type is defined
-                initialWorksite.workTypes.forEach {
+                worksiteState.workTypes.forEach {
                     workTypeGroupFormFields[it.workTypeLiteral]?.let { formField ->
                         updatedFormData[formField.fieldKey] = WorksiteFormValue.trueValue
                     }
                 }
-                if (updatedFormData.size != (initialWorksite.formData?.size ?: 0)) {
-                    initialWorksite = initialWorksite.copy(
+                if (updatedFormData.size != (worksiteState.formData?.size ?: 0)) {
+                    worksiteState = worksiteState.copy(
                         formData = updatedFormData,
                     )
                 }
 
                 if (!isStale || loadedWorksite != null) {
-                    editableWorksite.value = initialWorksite
+                    editableWorksite.value = worksiteState
                 }
                 incidentBounds = bounds
             }
@@ -284,14 +284,14 @@ internal class CaseEditorDataLoader(
                     (isCreateWorksite || localWorksite != null)
             val isNetworkLoadFinished = isReadyForEditing && (isCreateWorksite || isPulled)
             val isLocalLoadFinished = isNetworkLoadFinished &&
-                    (isCreateWorksite || initialWorksite.phone1.isNotBlank())
+                    (isCreateWorksite || worksiteState.phone1.isNotBlank())
             val isTranslationUpdated =
                 editableWorksiteProvider.formFieldTranslationLookup.isNotEmpty()
             CaseEditorUiState.WorksiteData(
                 organization.id,
                 isReadyForEditing,
                 workTypeStatuses,
-                initialWorksite,
+                worksiteState,
                 incident,
                 localWorksite,
                 isNetworkLoadFinished = isNetworkLoadFinished,

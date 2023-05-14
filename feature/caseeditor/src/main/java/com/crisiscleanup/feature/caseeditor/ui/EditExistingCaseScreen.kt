@@ -20,7 +20,6 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -48,6 +47,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.common.combineTrimText
 import com.crisiscleanup.core.common.filterNotBlankTrim
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationDefaults
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
@@ -207,43 +207,39 @@ private fun TopBar(
         @Composable {
             // TODO Translations if exist
 
-            IconButton(
+            val iconResId = if (isFavorite) R.drawable.ic_heart_filled
+            else R.drawable.ic_heart_outline
+            val favoriteResId = if (isFavorite) R.string.not_favorite
+            else R.string.favorite
+            val favoriteTint = getTopIconActionColor(isFavorite, isEditable)
+            CrisisCleanupIconButton(
+                iconResId = iconResId,
+                contentDescriptionResId = favoriteResId,
                 onClick = toggleFavorite,
                 enabled = isEditable,
-            ) {
-                val iconResId = if (isFavorite) R.drawable.ic_heart_filled
-                else R.drawable.ic_heart_outline
-                val descriptionResId = if (isFavorite) R.string.not_favorite
-                else R.string.favorite
-                Icon(
-                    painter = painterResource(iconResId),
-                    contentDescription = stringResource(descriptionResId),
-                    tint = getTopIconActionColor(isFavorite, isEditable),
-                )
-            }
-            IconButton(
+                tint = favoriteTint,
+            )
+
+            val highPriorityResId = if (isHighPriority) R.string.not_high_priority
+            else R.string.high_priority
+            val highPriorityTint = getTopIconActionColor(isHighPriority, isEditable)
+            CrisisCleanupIconButton(
+                iconResId = R.drawable.ic_important_filled,
+                contentDescriptionResId = highPriorityResId,
                 onClick = toggleHighPriority,
                 enabled = isEditable,
-            ) {
-                val descriptionResId = if (isHighPriority) R.string.not_high_priority
-                else R.string.high_priority
-                Icon(
-                    painter = painterResource(R.drawable.ic_important_filled),
-                    contentDescription = stringResource(descriptionResId),
-                    tint = getTopIconActionColor(isHighPriority, isEditable),
-                )
-            }
+                tint = highPriorityTint,
+            )
         }
     }
     CenterAlignedTopAppBar(
         title = titleContent,
         navigationIcon = navigationContent,
         actions = actionsContent,
-//        colors = TopAppBarDefaults.centerAlignedTopAppBarColors,
     )
 }
 
-// TODO Translate where available
+// TODO Move into view model and translate where available
 private val tabTitles = listOf(
     R.string.info,
     // caseForm.photos

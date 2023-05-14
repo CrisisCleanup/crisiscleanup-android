@@ -24,6 +24,7 @@ import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.CrisisCleanupNetworkException
 import com.crisiscleanup.core.network.model.ExpiredTokenException
 import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.tryThrowException
+import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import com.crisiscleanup.core.network.worksitechange.NoInternetConnectionException
 import com.crisiscleanup.core.network.worksitechange.WorksiteChangeSyncer
 import kotlinx.coroutines.coroutineScope
@@ -282,6 +283,20 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
         // TODO There is a possibility all changes have been synced but there is still unsynced accessory data.
         //      Try to sync in isolation, create a new change, or create notice with options to take action.
 
+        // These fetches are split from the save later because WorksiteDaoPlus.onSyncEnd]
+        // must run first as the [worksite_root.is_local_modified] value matters.
+        var incidentId = 0L
+        var syncNetworkWorksite: NetworkWorksiteFull? = null
+        val networkWorksiteId = worksiteDao.getWorksiteNetworkId(worksiteId)
+        if (networkWorksiteId > 0) {
+            try {
+                syncNetworkWorksite = networkDataSource.getWorksite(networkWorksiteId)
+            } catch (e: Exception) {
+                syncLogger.log("Worksite sync end fail ${e.message}")
+            }
+            incidentId = worksiteDao.getIncidentId(worksiteId)
+        }
+
         val isFullySynced = worksiteDaoPlus.onSyncEnd(worksiteId)
         if (isFullySynced) {
             syncLogger.clear()
@@ -290,14 +305,8 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
             syncLogger.log("Unsynced data exists.")
         }
 
-        val networkWorksiteId = worksiteDao.getWorksiteNetworkId(worksiteId)
-        if (networkWorksiteId > 0) {
-            networkDataSource.getWorksite(networkWorksiteId)?.let {
-                val incidentId = worksiteDao.getIncidentId(worksiteId)
-                if (incidentId > 0) {
-                    worksitesRepository.syncNetworkWorksite(incidentId, it)
-                }
-            }
+        if (syncNetworkWorksite != null && incidentId > 0) {
+            worksitesRepository.syncNetworkWorksite(incidentId, syncNetworkWorksite)
         }
 
         syncException?.let { throw it }
