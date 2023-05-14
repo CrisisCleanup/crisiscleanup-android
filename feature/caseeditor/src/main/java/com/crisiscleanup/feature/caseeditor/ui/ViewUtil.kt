@@ -38,7 +38,7 @@ internal fun ErrorText(
 }
 
 @Composable
-internal fun IconButton(
+internal fun CrisisCleanupIconTextButton(
     modifier: Modifier = Modifier,
     imageVector: ImageVector? = null,
     @DrawableRes iconResId: Int = 0,

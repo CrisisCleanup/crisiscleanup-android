@@ -3,14 +3,11 @@ package com.crisiscleanup.feature.caseeditor.ui
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -23,11 +20,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
-import com.crisiscleanup.core.designsystem.component.actionEdgeSpace
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.listCheckboxAlignStartOffset
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
@@ -39,8 +34,6 @@ import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteNote
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
-import com.crisiscleanup.feature.caseeditor.CaseNotesFlagsDataEditor
-import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
 import com.crisiscleanup.feature.caseeditor.EditCaseNotesFlagsViewModel
 import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.model.NotesFlagsInputData
@@ -165,58 +158,24 @@ internal fun NotesFlagsSummaryView(
 }
 
 @Composable
-private fun NotesFlagsView(
-    viewModel: EditCaseNotesFlagsViewModel = hiltViewModel(),
-) {
-    var isCreatingNote by remember { mutableStateOf(false) }
-
-    ConstraintLayout(Modifier.fillMaxSize()) {
-        val (newNoteFab) = createRefs()
-
-        FlagsInputNotesList()
-
-        FloatingActionButton(
-            modifier = Modifier.constrainAs(newNoteFab) {
-                end.linkTo(parent.end, margin = actionEdgeSpace)
-                bottom.linkTo(parent.bottom, margin = actionEdgeSpace)
-            },
-            onClick = { isCreatingNote = true },
-            shape = CircleShape,
-        ) {
-            Icon(
-                imageVector = CrisisCleanupIcons.AddNote,
-                contentDescription = viewModel.translate("caseView.add_note_alt"),
-            )
-        }
-    }
-
-    if (isCreatingNote) {
-        val dismissNoteDialog = { isCreatingNote = false }
-        OnCreateNote(viewModel, viewModel.editor, dismissNoteDialog)
-    }
-}
-
-@Composable
 internal fun OnCreateNote(
-    viewModel: EditCaseBaseViewModel,
-    editor: CaseNotesFlagsDataEditor,
+    translate: (String) -> String,
+    saveNote: (WorksiteNote) -> Unit = {},
     dismissDialog: () -> Unit = {},
 ) {
-    val onCreateNote = remember(viewModel) {
-        { note: WorksiteNote ->
-            if (note.note.isNotBlank()) {
-                editor.notesFlagsInputData.notes.add(0, note)
-            }
-            dismissDialog()
+    val onSave = { note: WorksiteNote ->
+        if (note.note.isNotBlank()) {
+            saveNote(note)
         }
+        dismissDialog()
     }
     EditNoteDialog(
         note = WorksiteNote.create(),
-        dialogTitle = viewModel.translate("caseView.add_note"),
-        onSave = onCreateNote,
+        dialogTitle = translate("caseView.add_note"),
+        onSave = onSave,
         onCancel = dismissDialog,
-        saveText = viewModel.translate("actions.save"),
-        cancelText = viewModel.translate("actions.cancel"),
+        saveText = translate("actions.save"),
+        cancelText = translate("actions.cancel"),
     )
 }
 

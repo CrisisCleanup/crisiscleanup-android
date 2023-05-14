@@ -84,7 +84,7 @@ internal fun PropertyNotesFlagsView(
     }
 
     val onAddNote = remember(viewModel) { { isCreatingNote = true } }
-    IconButton(
+    CrisisCleanupIconTextButton(
         modifier = Modifier
             .listItemHeight()
             .fillMaxWidth(),
@@ -96,7 +96,10 @@ internal fun PropertyNotesFlagsView(
 
     if (isCreatingNote) {
         val dismissNoteDialog = { isCreatingNote = false }
-        OnCreateNote(viewModel, editor, dismissNoteDialog)
+        val saveNote = remember(viewModel) {
+            { note: WorksiteNote -> editor.notesFlagsInputData.notes.add(0, note) }
+        }
+        OnCreateNote(translate, saveNote, dismissNoteDialog)
     }
 
     if (showAllNotesDialog) {

@@ -2,7 +2,7 @@ package com.crisiscleanup.core.designsystem.component
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -38,7 +38,7 @@ val mapButtonEdgeSpace = 8.dp
 val adjacentButtonSpace = 1.dp
 
 val actionInnerSpace = 16.dp
-val actionEdgeSpace = 20.dp
+val actionEdgeSpace = 16.dp
 
 val actionRoundCornerRadius = 4.dp
 val actionRoundCornerShape = RoundedCornerShape(actionRoundCornerRadius)
@@ -60,9 +60,12 @@ val actionEndRoundCornerShape = RoundedCornerShape(
 )
 val actionSmallSpace = 12.dp
 
-fun Modifier.actionHeight() = heightIn(48.dp)
+private val fabPlusSpaceHeight = 48.dp.plus(actionEdgeSpace.times(2))
+
+fun Modifier.actionHeight() = height(48.dp)
 fun Modifier.actionSize() = size(48.dp)
 fun Modifier.actionSmallSize() = size(44.dp)
+fun Modifier.fabPlusSpaceHeight() = size(fabPlusSpaceHeight)
 
 @Composable
 private fun primaryButtonColors() = ButtonDefaults.buttonColors(

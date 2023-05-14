@@ -166,7 +166,7 @@ data class WorksiteNote(
 ) {
     companion object {
         fun create(isSurvivor: Boolean = false) = WorksiteNote(
-            id = -1,
+            id = 0,
             createdAt = Clock.System.now(),
             isSurvivor = isSurvivor,
             note = "",

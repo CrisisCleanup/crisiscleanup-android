@@ -26,6 +26,7 @@ import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.WorkTypeRequest
 import com.crisiscleanup.core.model.data.Worksite
+import com.crisiscleanup.core.model.data.WorksiteNote
 import com.crisiscleanup.feature.caseeditor.navigation.ExistingCaseArgs
 import com.google.android.gms.maps.model.BitmapDescriptor
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -45,6 +46,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 
@@ -109,6 +111,8 @@ class ExistingCaseViewModel @Inject constructor(
 
     // The first worksite loaded in the session
     private val worksiteIn = AtomicReference<Worksite>()
+
+    private val previousNoteCount = AtomicInteger(0)
 
     init {
         updateHeaderTitle()
@@ -385,6 +389,11 @@ class ExistingCaseViewModel @Inject constructor(
         }
     }
 
+    fun takeNoteAdded(): Boolean {
+        val noteCount = editableWorksite.value.notes.size
+        return previousNoteCount.getAndSet(noteCount) + 1 == noteCount
+    }
+
     fun toggleFavorite() {
         val startingWorksite = editableWorksite.value
         val changedWorksite =
@@ -471,6 +480,17 @@ class ExistingCaseViewModel @Inject constructor(
                 profile.releasable.associate { summary -> summary.workType to true },
             )
         }
+    }
+
+    fun saveNote(note: WorksiteNote) {
+        if (note.note.isBlank()) {
+            return
+        }
+
+        val startingWorksite = editableWorksite.value
+        val notes = mutableListOf(note).apply { addAll(startingWorksite.notes) }
+        val changedWorksite = startingWorksite.copy(notes = notes)
+        saveWorksiteChange(startingWorksite, changedWorksite)
     }
 }
 

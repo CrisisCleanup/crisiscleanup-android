@@ -8,9 +8,9 @@ import javax.inject.Inject
 class WorksiteNoteDaoPlus @Inject constructor(
     private val db: CrisisCleanupDatabase,
 ) {
-    suspend fun syncUpsert(workTypes: List<WorksiteNoteEntity>) = db.withTransaction {
+    suspend fun syncUpsert(notes: List<WorksiteNoteEntity>) = db.withTransaction {
         val noteDao = db.worksiteNoteDao()
-        workTypes.forEach { note ->
+        notes.forEach { note ->
             val id = noteDao.insertIgnoreNote(note)
             if (id < 0) {
                 noteDao.syncUpdateNote(

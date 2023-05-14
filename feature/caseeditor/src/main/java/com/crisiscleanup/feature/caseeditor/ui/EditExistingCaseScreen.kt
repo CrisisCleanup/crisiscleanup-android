@@ -17,10 +17,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -33,9 +36,12 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -43,6 +49,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.common.combineTrimText
@@ -50,8 +57,11 @@ import com.crisiscleanup.core.common.filterNotBlankTrim
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationDefaults
+import com.crisiscleanup.core.designsystem.component.actionEdgeSpace
+import com.crisiscleanup.core.designsystem.component.fabPlusSpaceHeight
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
+import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.neutralIconColor
@@ -62,6 +72,7 @@ import com.crisiscleanup.core.mapmarker.ui.rememberMapUiSettings
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.Worksite
+import com.crisiscleanup.core.model.data.WorksiteNote
 import com.crisiscleanup.core.ui.LinkifyEmailText
 import com.crisiscleanup.core.ui.LinkifyLocationText
 import com.crisiscleanup.core.ui.LinkifyPhoneText
@@ -625,12 +636,66 @@ internal fun EditExistingCaseNotesView(
     worksite: Worksite,
     viewModel: ExistingCaseViewModel = hiltViewModel(),
     translate: (String) -> String = { s -> s },
-    isEditable: Boolean = false,
 ) {
-    Text(
-        "Notes",
-        Modifier.fillMaxSize(),
-    )
+    val isEditable = LocalCaseEditor.current.isEditable
+
+    var isCreatingNote by remember { mutableStateOf(false) }
+    val onAddNote = remember(viewModel) {
+        {
+            if (isEditable) {
+                isCreatingNote = true
+            }
+        }
+    }
+
+    val listState = rememberLazyListState()
+    ConstraintLayout(Modifier.fillMaxSize()) {
+        val (newNoteFab) = createRefs()
+
+        val notes = worksite.notes
+        LazyColumn(state = listState) {
+            staticNoteItems(
+                notes,
+                notes.size,
+                listItemModifier,
+            )
+            item {
+                Spacer(
+                    Modifier
+                        .fillMaxWidth()
+                        .fabPlusSpaceHeight()
+                )
+            }
+        }
+
+        FloatingActionButton(
+            onClick = onAddNote,
+            modifier = Modifier.constrainAs(newNoteFab) {
+                end.linkTo(parent.end, margin = actionEdgeSpace)
+                bottom.linkTo(parent.bottom, margin = actionEdgeSpace)
+            },
+            shape = CircleShape,
+        ) {
+            Icon(
+                imageVector = CrisisCleanupIcons.AddNote,
+                contentDescription = viewModel.translate("caseView.add_note_alt"),
+            )
+        }
+
+        if (viewModel.takeNoteAdded()) {
+            LaunchedEffect(Unit) {
+                listState.animateScrollToItem(0)
+            }
+        }
+    }
+
+    if (isCreatingNote) {
+        val dismissNoteDialog = { isCreatingNote = false }
+        val saveNote = remember(viewModel) {
+            { note: WorksiteNote -> viewModel.saveNote(note) }
+        }
+        OnCreateNote(translate, saveNote, dismissNoteDialog)
+    }
 }
 
 data class IconTextAction(

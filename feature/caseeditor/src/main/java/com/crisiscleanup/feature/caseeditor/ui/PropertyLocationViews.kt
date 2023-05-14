@@ -115,14 +115,14 @@ private fun LocationMapActionBar(
     translate: (String) -> String = { s -> s },
 ) {
     Row(modifier = Modifier.listItemPadding()) {
-        IconButton(
+        CrisisCleanupIconTextButton(
             modifier = Modifier.weight(1f),
             iconResId = R.drawable.ic_select_on_map,
             label = translate("caseForm.select_on_map"),
             onClick = moveLocationOnMap,
             enabled = isEditable,
         )
-        IconButton(
+        CrisisCleanupIconTextButton(
             modifier = Modifier.weight(1f),
             iconResId = R.drawable.ic_use_my_location,
             label = translate("caseForm.use_my_location"),

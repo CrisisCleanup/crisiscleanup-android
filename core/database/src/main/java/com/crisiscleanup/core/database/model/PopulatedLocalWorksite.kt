@@ -80,8 +80,16 @@ fun PopulatedLocalWorksite.asExternalModel(
                 name = name,
                 notes = notes
                     .filter { it.note.isNotBlank() }
-                    .map(WorksiteNoteEntity::asExternalModel)
-                    .sortedWith { a, b -> if (a.createdAt < b.createdAt) 1 else -1 },
+                    .sortedWith { a, b ->
+                        if (a.networkId == b.networkId) {
+                            if (a.createdAt < b.createdAt) 1 else -1
+                        } else {
+                            if (a.networkId < 0) -1
+                            else if (b.networkId < 0) 1
+                            else if (a.networkId > b.networkId) -1 else 1
+                        }
+                    }
+                    .map(WorksiteNoteEntity::asExternalModel),
                 networkId = networkId,
                 phone1 = phone1 ?: "",
                 phone2 = phone2 ?: "",

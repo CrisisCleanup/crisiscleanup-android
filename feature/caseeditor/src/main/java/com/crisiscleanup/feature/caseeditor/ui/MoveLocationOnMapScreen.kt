@@ -60,7 +60,7 @@ private fun EditCaseMapMoveLocationScreen(
             }
 
             val useMyLocation = remember(viewModel) { { editor.useMyLocation() } }
-            IconButton(
+            CrisisCleanupIconTextButton(
                 modifier = Modifier
                     .listItemHeight()
                     .fillMaxWidth(),
