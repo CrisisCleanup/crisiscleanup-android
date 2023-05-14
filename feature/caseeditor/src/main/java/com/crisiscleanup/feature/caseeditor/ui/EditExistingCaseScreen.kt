@@ -2,10 +2,10 @@ package com.crisiscleanup.feature.caseeditor.ui
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -32,9 +34,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -77,6 +78,7 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
+import kotlinx.coroutines.launch
 
 // TODO Use/move common dimensions
 internal val edgeSpacing = 16.dp
@@ -119,6 +121,7 @@ internal fun EditExistingCaseRoute(
             viewModel.translate("actions.back"),
         )
 
+        val tabTitles by viewModel.tabTitles.collectAsStateWithLifecycle()
         if (isEmptyWorksite) {
             if (viewModel.worksiteIdArg == EmptyWorksite.id) {
                 Text(
@@ -130,13 +133,14 @@ internal fun EditExistingCaseRoute(
                     BusyIndicatorFloatingTopCenter(true)
                 }
             }
-        } else {
+        } else if (tabTitles.isNotEmpty()) {
             val translate = remember(viewModel) { { s: String -> viewModel.translate(s) } }
 
             val statusOptions by viewModel.statusOptions.collectAsStateWithLifecycle()
             val caseEditor = CaseEditor(isEditable, statusOptions)
             CompositionLocalProvider(LocalCaseEditor provides caseEditor) {
                 ExistingCaseContent(
+                    tabTitles,
                     worksite,
                     translate,
                     isBusy,
@@ -239,23 +243,17 @@ private fun TopBar(
     )
 }
 
-// TODO Move into view model and translate where available
-private val tabTitles = listOf(
-    R.string.info,
-    // caseForm.photos
-    R.string.photos,
-    // phoneDashboard.notes
-    R.string.notes,
-    // R.string.release,
-)
-
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ColumnScope.ExistingCaseContent(
+    tabTitles: List<String>,
     worksite: Worksite,
     translate: (String) -> String = { s -> s },
     isLoading: Boolean = false,
 ) {
-    var selectedTabIndex by remember { mutableStateOf(0) }
+    val pagerState = rememberPagerState()
+    val selectedTabIndex = pagerState.currentPage
+    val coroutine = rememberCoroutineScope()
     TabRow(
         selectedTabIndex = selectedTabIndex,
         indicator = @Composable { tabPositions ->
@@ -267,23 +265,30 @@ private fun ColumnScope.ExistingCaseContent(
             )
         },
     ) {
-        tabTitles.forEachIndexed { index, titleResId ->
+        tabTitles.forEachIndexed { index, title ->
             Tab(
-                text = { Text(stringResource(titleResId)) },
+                text = { Text(title) },
                 selected = selectedTabIndex == index,
-                onClick = { selectedTabIndex = index },
+                onClick = {
+                    coroutine.launch {
+                        pagerState.animateScrollToPage(index)
+                    }
+                },
             )
         }
     }
 
     Box(Modifier.weight(1f)) {
-        when (selectedTabIndex) {
-            0 -> EditExistingCaseInfoView(worksite, translate = translate)
-            1 -> {}
-            2 -> EditExistingCaseNotesView(worksite, translate = translate)
-            // 3 -> {}
+        HorizontalPager(
+            pageCount = tabTitles.size,
+            state = pagerState,
+        ) { pagerIndex ->
+            when (pagerIndex) {
+                0 -> EditExistingCaseInfoView(worksite, translate = translate)
+                1 -> EditExistingCasePhotosView(worksite, translate = translate)
+                2 -> EditExistingCaseNotesView(worksite, translate = translate)
+            }
         }
-
         BusyIndicatorFloatingTopCenter(isLoading)
     }
 }
@@ -603,13 +608,29 @@ private fun LazyListScope.volunteerReportItems(
 }
 
 @Composable
-internal fun BoxScope.EditExistingCaseNotesView(
+internal fun EditExistingCasePhotosView(
     worksite: Worksite,
     viewModel: ExistingCaseViewModel = hiltViewModel(),
     translate: (String) -> String = { s -> s },
     isEditable: Boolean = false,
 ) {
-    Text("Notes")
+    Text(
+        "Photos",
+        Modifier.fillMaxSize(),
+    )
+}
+
+@Composable
+internal fun EditExistingCaseNotesView(
+    worksite: Worksite,
+    viewModel: ExistingCaseViewModel = hiltViewModel(),
+    translate: (String) -> String = { s -> s },
+    isEditable: Boolean = false,
+) {
+    Text(
+        "Notes",
+        Modifier.fillMaxSize(),
+    )
 }
 
 data class IconTextAction(

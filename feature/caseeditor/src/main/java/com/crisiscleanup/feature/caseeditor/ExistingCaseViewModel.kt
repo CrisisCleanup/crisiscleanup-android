@@ -177,7 +177,23 @@ class ExistingCaseViewModel @Inject constructor(
 
     val isLoading = dataLoader.isLoading
 
-    val statusOptions = dataLoader.uiState
+    private val uiState = dataLoader.uiState
+
+    val tabTitles = uiState.mapLatest {
+        listOf(
+            translate(resourceProvider.getString(R.string.info)),
+            translate("caseForm.photos"),
+            translate("phoneDashboard.notes"),
+        )
+    }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = emptyList(),
+            started = SharingStarted.WhileSubscribed(3_000)
+        )
+
+
+    val statusOptions = uiState
         .mapLatest {
             (it as? CaseEditorUiState.WorksiteData)?.statusOptions ?: emptyList()
         }
@@ -187,7 +203,7 @@ class ExistingCaseViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val worksiteData = dataLoader.uiState.map { it as? CaseEditorUiState.WorksiteData }
+    val worksiteData = uiState.map { it as? CaseEditorUiState.WorksiteData }
         .stateIn(
             scope = viewModelScope,
             initialValue = null,
@@ -207,7 +223,7 @@ class ExistingCaseViewModel @Inject constructor(
         )
 
     val workTypeProfile = combine(
-        dataLoader.uiState,
+        uiState,
         editableWorksite,
         organizationLookup,
         ::Triple,
@@ -218,15 +234,15 @@ class ExistingCaseViewModel @Inject constructor(
                     it.third.isNotEmpty()
         }
         .filter {
-            val (uiState, _, orgLookup) = it
-            val stateData = uiState as CaseEditorUiState.WorksiteData
+            val (viewModelState, _, orgLookup) = it
+            val stateData = viewModelState as CaseEditorUiState.WorksiteData
             val myOrg = orgLookup[stateData.orgId]
             myOrg != null
         }
         .mapLatest {
-            val (uiState, worksite, orgLookup) = it
+            val (viewModelState, worksite, orgLookup) = it
 
-            val stateData = uiState as CaseEditorUiState.WorksiteData
+            val stateData = viewModelState as CaseEditorUiState.WorksiteData
 
             val isTurnOnRelease = stateData.incident.turnOnRelease
             val myOrgId = stateData.orgId
@@ -330,7 +346,7 @@ class ExistingCaseViewModel @Inject constructor(
     //      How to keep worksite state synced?
 
     private val uiStateWorksiteData: CaseEditorUiState.WorksiteData?
-        get() = dataLoader.uiState.value as? CaseEditorUiState.WorksiteData
+        get() = uiState.value as? CaseEditorUiState.WorksiteData
     private val organizationId: Long?
         get() = uiStateWorksiteData?.orgId
 
