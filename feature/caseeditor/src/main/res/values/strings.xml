@@ -81,4 +81,8 @@
     <string name="release_reason_is_required">What is the reason for release?</string>
     <string name="request_reason_is_required">What is the reason for request?</string>
     <string name="transfer_work_type_is_required">Select at least one work type.</string>
+
+    <string name="before_cleanup">Before cleanup</string>
+    <string name="after_cleanup">After cleanup</string>
+    <string name="add_media">Add Media</string>
 </resources>

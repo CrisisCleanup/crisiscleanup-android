@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.crisiscleanup.core.model.data.NetworkImage
 import kotlinx.datetime.Instant
 
 @Entity(
@@ -56,4 +57,13 @@ data class WorksiteNetworkFileCrossRef(
     val worksiteId: Long,
     @ColumnInfo("network_file_id")
     val networkFileId: Long,
+)
+
+fun NetworkFileEntity.asImageModel() = NetworkImage(
+    id = id,
+    createdAt = createdAt,
+    title = title ?: "",
+    thumbnailUrl = smallThumbnailUrl ?: "",
+    imageUrl = url,
+    tag = tag ?: "",
 )

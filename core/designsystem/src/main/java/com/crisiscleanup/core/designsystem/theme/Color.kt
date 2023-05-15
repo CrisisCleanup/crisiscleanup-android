@@ -32,7 +32,10 @@ internal val md_theme_shadow = Color(0xFF000000)
 internal val md_theme_surfaceTint = Color(0xFFEFC100)
 internal val md_theme_surfaceTintColor = Color(0xFFEFC100)
 
-internal val primaryBlueColor = Color(0xFF378DFF)
+val primaryBlueColor = Color(0xFF378DFF)
+val primaryBlueOneTenthColor = primaryBlueColor.copy(alpha = 0.1f)
+val primaryRedColor = Color(0xFFED4747)
+val primaryOrangeColor = Color(0xFFF79820)
 val incidentDisasterContainerColor = primaryBlueColor
 val incidentDisasterContentColor = Color(0xFFFFFFFF)
 val attentionBackgroundColor = md_theme_primaryContainer
@@ -42,8 +45,6 @@ val actionLinkColor = primaryBlueColor
 val separatorColor = Color(0xFFF6F8F9)
 val selectedOptionContainerColor = Color(0xFFF6F8F9)
 val neutralIconColor = Color(0xFF848F99)
-val primaryRedColor = Color(0xFFED4747)
-val primaryOrangeColor = Color(0xFFF79820)
 
 // Mirror FilledButtonTokens.class
 private const val disabledAlpha = 0.38f

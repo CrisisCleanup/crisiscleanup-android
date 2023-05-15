@@ -23,6 +23,7 @@ import com.crisiscleanup.core.data.repository.WorkTypeStatusRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
+import com.crisiscleanup.core.model.data.NetworkImage
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.WorkTypeRequest
 import com.crisiscleanup.core.model.data.Worksite
@@ -327,6 +328,18 @@ class ExistingCaseViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = null,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    val beforeAfterPhotos = editableWorksiteProvider.editableWorksite.map { worksite ->
+        val photos = worksite.files
+        val after = photos.filter(NetworkImage::isAfter)
+        val notAfter = photos.filterNot(NetworkImage::isAfter)
+        Pair(notAfter, after)
+    }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = Pair(emptyList(), emptyList()),
             started = SharingStarted.WhileSubscribed(),
         )
 

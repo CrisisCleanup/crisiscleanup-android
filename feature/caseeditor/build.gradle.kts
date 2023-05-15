@@ -20,15 +20,17 @@ dependencies {
     implementation(project(":core:addresssearch"))
     implementation(project(":core:commonassets"))
     implementation(project(":core:commoncase"))
+    implementation(project(":core:designsystem"))
     implementation(project(":core:mapmarker"))
     implementation(project(":core:network"))
 
-    implementation(libs.kotlinx.datetime)
-
-    implementation(libs.androidx.constraintlayout)
-    implementation(libs.google.maps.compose)
-    implementation(libs.playservices.maps)
     implementation(libs.apache.commons.text)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.coil.kt)
+    implementation(libs.coil.kt.compose)
+    implementation(libs.google.maps.compose)
+    implementation(libs.kotlinx.datetime)
+    implementation(libs.playservices.maps)
 
     testImplementation(project(":core:testing"))
     testImplementation(libs.mockk.android)

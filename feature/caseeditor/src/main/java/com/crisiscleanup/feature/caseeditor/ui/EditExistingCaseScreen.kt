@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -64,6 +66,7 @@ import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
+import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
 import com.crisiscleanup.core.designsystem.theme.neutralIconColor
 import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
 import com.crisiscleanup.core.designsystem.theme.primaryRedColor
@@ -289,14 +292,22 @@ private fun ColumnScope.ExistingCaseContent(
         }
     }
 
+    var enablePagerScroll by remember { mutableStateOf(true) }
+    val setEnablePagerScroll = remember(pagerState) { { b: Boolean -> enablePagerScroll = b } }
+
     Box(Modifier.weight(1f)) {
         HorizontalPager(
             pageCount = tabTitles.size,
             state = pagerState,
+            userScrollEnabled = enablePagerScroll,
         ) { pagerIndex ->
             when (pagerIndex) {
                 0 -> EditExistingCaseInfoView(worksite, translate = translate)
-                1 -> EditExistingCasePhotosView(worksite, translate = translate)
+                1 -> EditExistingCasePhotosView(
+                    translate = translate,
+                    setEnablePagerScroll = setEnablePagerScroll,
+                )
+
                 2 -> EditExistingCaseNotesView(worksite, translate = translate)
             }
         }
@@ -618,17 +629,48 @@ private fun LazyListScope.volunteerReportItems(
     // itemInfoSectionHeader(4, translate("caseView.report"))
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun EditExistingCasePhotosView(
-    worksite: Worksite,
     viewModel: ExistingCaseViewModel = hiltViewModel(),
     translate: (String) -> String = { s -> s },
-    isEditable: Boolean = false,
+    setEnablePagerScroll: (Boolean) -> Unit = {},
 ) {
-    Text(
-        "Photos",
-        Modifier.fillMaxSize(),
+    val isEditable = LocalCaseEditor.current.isEditable
+
+    val photos by viewModel.beforeAfterPhotos.collectAsStateWithLifecycle()
+
+    val sectionTitleResIds = listOf(
+        R.string.before_cleanup,
+        R.string.after_cleanup,
     )
+    val photoTwoRowModifier = Modifier
+        .height(256.dp)
+        .listItemVerticalPadding()
+    val photoOneRowModifier = Modifier
+        .height(172.dp)
+        .listItemVerticalPadding()
+    val photoTwoRowGridCells = StaggeredGridCells.Adaptive(96.dp)
+    val photoOneRowGridCells = StaggeredGridCells.Fixed(1)
+    val (beforePhotos, afterPhotos) = photos
+    val rowsOfPhotos = listOf(beforePhotos, afterPhotos)
+
+    Column(
+        modifier = Modifier.fillMaxHeight(),
+    ) {
+        sectionTitleResIds.forEachIndexed { index, titleResId ->
+            val rowPhotos = rowsOfPhotos[index]
+            val isOneRow = beforePhotos.size < 6
+            PhotosSection(
+                stringResource(titleResId),
+                if (isOneRow) photoOneRowModifier else photoTwoRowModifier,
+                if (isOneRow) photoOneRowGridCells else photoTwoRowGridCells,
+                photos = rowPhotos,
+                isEditable = isEditable,
+                setEnableParentScroll = setEnablePagerScroll,
+            )
+        }
+    }
 }
 
 @Composable
@@ -706,6 +748,7 @@ data class IconTextAction(
     val translationKey: String = "",
 )
 
+// TODO Use translations where available
 private val existingCaseActions = listOf(
     IconTextAction(
         iconResId = R.drawable.ic_share_small,

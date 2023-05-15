@@ -24,6 +24,7 @@ data class Worksite(
     val createdAt: Instant?,
     val email: String? = null,
     val favoriteId: Long?,
+    val files: List<NetworkImage> = emptyList(),
     val flags: List<WorksiteFlag>? = null,
     val formData: Map<String, WorksiteFormValue>? = null,
     val incidentId: Long,

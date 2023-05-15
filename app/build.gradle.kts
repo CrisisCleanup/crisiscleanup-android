@@ -137,7 +137,6 @@ dependencies {
     implementation(libs.playservices.location)
 
     implementation(libs.coil.kt)
-    implementation(libs.coil.kt.svg)
 
     // For Firebase support
     implementation(platform(libs.firebase.bom))
