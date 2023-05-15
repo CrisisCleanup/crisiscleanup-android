@@ -39,6 +39,9 @@ interface WorksitesSyncer {
 
 // TODO Write tests
 
+internal class NoWorksitesException(incidentId: Long) :
+    Exception("Backend is reporting no worksites for incident $incidentId")
+
 class IncidentWorksitesSyncer @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val networkDataCache: WorksitesNetworkDataCache,
@@ -68,7 +71,7 @@ class IncidentWorksitesSyncer @Inject constructor(
 
         val count = worksitesCountResult.count ?: 0
         if (throwOnEmpty && count == 0) {
-            throw Exception("Backend is reporting no worksites for incident $incidentId")
+            throw NoWorksitesException(incidentId)
         }
 
         return count

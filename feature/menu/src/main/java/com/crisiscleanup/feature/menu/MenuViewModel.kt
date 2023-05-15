@@ -24,7 +24,7 @@ class MenuViewModel @Inject constructor(
     @Dispatcher(IO) ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     val isDebuggable = appEnv.isDebuggable
-    val isNotProduction = !appEnv.isProduction
+    val isNotProduction = appEnv.isNotProduction
 
     val versionText: String
         get() {

@@ -1,7 +1,11 @@
 package com.crisiscleanup.core.database.model
 
-import androidx.room.*
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.Index.Order
+import androidx.room.PrimaryKey
 import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.WorksiteFlag
@@ -303,6 +307,5 @@ fun WorksiteNoteEntity.asExternalModel() = WorksiteNote(
 )
 
 // TODO Events XR
-// TODO Files XR
 
 // TODO Worksites FTS

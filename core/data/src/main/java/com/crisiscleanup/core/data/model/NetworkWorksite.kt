@@ -6,6 +6,7 @@ import com.crisiscleanup.core.database.model.WorksiteFlagEntity
 import com.crisiscleanup.core.database.model.WorksiteFormDataEntity
 import com.crisiscleanup.core.database.model.WorksiteNoteEntity
 import com.crisiscleanup.core.network.model.KeyDynamicValuePair
+import com.crisiscleanup.core.network.model.NetworkFile
 import com.crisiscleanup.core.network.model.NetworkFlag
 import com.crisiscleanup.core.network.model.NetworkNote
 import com.crisiscleanup.core.network.model.NetworkWorkType
@@ -108,11 +109,13 @@ fun NetworkWorksiteFull.asEntities(incidentId: Long): WorksiteEntities {
     val formData = formData.map(KeyDynamicValuePair::asWorksiteEntity)
     val flags = flags.map(NetworkFlag::asEntity)
     val notes = notes.map(NetworkNote::asEntity)
+    val files = files.map(NetworkFile::asEntity)
     return WorksiteEntities(
         core,
         flags,
         formData,
         notes,
         workTypes,
+        files,
     )
 }

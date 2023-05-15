@@ -18,11 +18,16 @@ import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.model.data.OrgData
 import com.crisiscleanup.core.model.data.emptyOrgData
 import com.crisiscleanup.core.network.CrisisCleanupAuthApi
+import com.crisiscleanup.core.network.model.condenseMessages
 import com.crisiscleanup.feature.authentication.model.AuthenticationState
 import com.crisiscleanup.feature.authentication.model.LoginInputData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import javax.inject.Inject
@@ -156,11 +161,11 @@ class AuthenticationViewModel @Inject constructor(
         viewModelScope.launch(ioDispatcher) {
             try {
                 val result = authApiClient.login(emailAddress, password)
-                val hasError = (result.errors?.size ?: 0) > 0
+                val hasError = result.errors?.isNotEmpty() == true
                 if (hasError) {
                     errorMessage.value = resProvider.getString(R.string.error_during_authentication)
 
-                    val logErrorMessage = result.errors!![0].message?.get(0) ?: "Server error"
+                    val logErrorMessage = result.errors?.condenseMessages ?: "Server error"
                     logger.logException(Exception(logErrorMessage))
                 } else {
                     val accessToken = result.accessToken!!

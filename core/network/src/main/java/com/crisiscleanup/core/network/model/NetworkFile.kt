@@ -11,7 +11,7 @@ data class NetworkFile(
     val blogUrl: String? = null,
     @SerialName("created_at")
     val createdAt: Instant,
-    val file: Int? = null,
+    val file: Long? = null,
     @SerialName("file_type_t")
     val fileTypeT: String,
     @SerialName("filename")

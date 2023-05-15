@@ -3,6 +3,7 @@ package com.crisiscleanup.core.database.dao
 import androidx.room.withTransaction
 import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
+import com.crisiscleanup.core.database.model.NetworkFileEntity
 import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
 import com.crisiscleanup.core.database.model.WorkTypeEntity
 import com.crisiscleanup.core.database.model.WorksiteEntities
@@ -10,6 +11,7 @@ import com.crisiscleanup.core.database.model.WorksiteEntity
 import com.crisiscleanup.core.database.model.WorksiteFlagEntity
 import com.crisiscleanup.core.database.model.WorksiteFormDataEntity
 import com.crisiscleanup.core.database.model.WorksiteLocalModifiedAt
+import com.crisiscleanup.core.database.model.WorksiteNetworkFileCrossRef
 import com.crisiscleanup.core.database.model.WorksiteNoteEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Clock
@@ -99,6 +101,23 @@ class WorksiteDaoPlus @Inject constructor(
         daoPlus.syncUpsert(notes)
     }
 
+    private suspend fun syncFiles(
+        worksiteId: Long,
+        files: List<NetworkFileEntity>,
+    ) = db.withTransaction {
+        if (files.isEmpty()) {
+            return@withTransaction
+        }
+
+        val networkFileDao = db.networkFileDao()
+        networkFileDao.upsert(files)
+        val networkFileCrossReferences =
+            files.map { WorksiteNetworkFileCrossRef(worksiteId, it.id) }
+        val networkFileIds = files.map(NetworkFileEntity::id).toSet()
+        networkFileDao.deleteUnspecifiedCrossReferences(worksiteId, networkFileIds)
+        networkFileDao.insertIgnoreCrossReferences(networkFileCrossReferences)
+    }
+
     private suspend fun syncWorksite(
         incidentId: Long,
         worksite: WorksiteEntity,
@@ -108,6 +127,7 @@ class WorksiteDaoPlus @Inject constructor(
         formData: List<WorksiteFormDataEntity>? = null,
         flags: List<WorksiteFlagEntity>? = null,
         notes: List<WorksiteNoteEntity>? = null,
+        files: List<NetworkFileEntity>? = null,
     ): Boolean = db.withTransaction {
         val worksiteDao = db.worksiteDao()
 
@@ -124,6 +144,7 @@ class WorksiteDaoPlus @Inject constructor(
             formData?.let { syncFormData(id, it) }
             flags?.let { syncFlags(id, it) }
             notes?.let { syncNotes(id, it) }
+            files?.let { syncFiles(id, it) }
 
             return@withTransaction true
 
@@ -171,6 +192,7 @@ class WorksiteDaoPlus @Inject constructor(
             formData?.let { syncFormData(worksiteId, it) }
             flags?.let { syncFlags(worksiteId, it) }
             notes?.let { syncNotes(worksiteId, it) }
+            files?.let { syncFiles(worksiteId, it) }
 
             return@withTransaction true
 
@@ -266,6 +288,7 @@ class WorksiteDaoPlus @Inject constructor(
             entities.formData,
             entities.flags,
             entities.notes,
+            entities.files,
         )
 
         val worksiteId =
@@ -279,7 +302,7 @@ class WorksiteDaoPlus @Inject constructor(
         entities: WorksiteEntities,
     ): Boolean = db.withTransaction {
         val worksiteDao = db.worksiteDao()
-        val (core, flags, formData, notes, workTypes) = entities
+        val (core, flags, formData, notes, workTypes, files) = entities
         val worksiteId = worksiteDao.getWorksiteId(incidentId, core.networkId)
         if (worksiteId > 0) {
             with(core) {
@@ -321,6 +344,8 @@ class WorksiteDaoPlus @Inject constructor(
             val newWorkTypes = workTypes.filter { !workTypeKeys.contains(it.workType) }
                 .map { it.copy(worksiteId = worksiteId) }
             workTypeDao.insertIgnore(newWorkTypes)
+
+            syncFiles(worksiteId, files)
 
             return@withTransaction true
         }

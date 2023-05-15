@@ -9,8 +9,48 @@ import com.crisiscleanup.core.database.DatabaseMigrations.Schema10To11
 import com.crisiscleanup.core.database.DatabaseMigrations.Schema18To19
 import com.crisiscleanup.core.database.DatabaseMigrations.Schema2To3
 import com.crisiscleanup.core.database.DatabaseMigrations.Schema3to4
-import com.crisiscleanup.core.database.dao.*
-import com.crisiscleanup.core.database.model.*
+import com.crisiscleanup.core.database.dao.IncidentDao
+import com.crisiscleanup.core.database.dao.IncidentOrganizationDao
+import com.crisiscleanup.core.database.dao.LanguageDao
+import com.crisiscleanup.core.database.dao.LocationDao
+import com.crisiscleanup.core.database.dao.NetworkFileDao
+import com.crisiscleanup.core.database.dao.PersonContactDao
+import com.crisiscleanup.core.database.dao.RecentWorksiteDao
+import com.crisiscleanup.core.database.dao.SyncLogDao
+import com.crisiscleanup.core.database.dao.WorkTypeDao
+import com.crisiscleanup.core.database.dao.WorkTypeStatusDao
+import com.crisiscleanup.core.database.dao.WorkTypeTransferRequestDao
+import com.crisiscleanup.core.database.dao.WorksiteChangeDao
+import com.crisiscleanup.core.database.dao.WorksiteDao
+import com.crisiscleanup.core.database.dao.WorksiteFlagDao
+import com.crisiscleanup.core.database.dao.WorksiteFormDataDao
+import com.crisiscleanup.core.database.dao.WorksiteNoteDao
+import com.crisiscleanup.core.database.dao.WorksiteSyncStatDao
+import com.crisiscleanup.core.database.model.IncidentEntity
+import com.crisiscleanup.core.database.model.IncidentFormFieldEntity
+import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
+import com.crisiscleanup.core.database.model.IncidentLocationEntity
+import com.crisiscleanup.core.database.model.IncidentOrganizationEntity
+import com.crisiscleanup.core.database.model.IncidentOrganizationSyncStatsEntity
+import com.crisiscleanup.core.database.model.LanguageTranslationEntity
+import com.crisiscleanup.core.database.model.LocationEntity
+import com.crisiscleanup.core.database.model.NetworkFileEntity
+import com.crisiscleanup.core.database.model.OrganizationAffiliateEntity
+import com.crisiscleanup.core.database.model.OrganizationPrimaryContactCrossRef
+import com.crisiscleanup.core.database.model.PersonContactEntity
+import com.crisiscleanup.core.database.model.RecentWorksiteEntity
+import com.crisiscleanup.core.database.model.SyncLogEntity
+import com.crisiscleanup.core.database.model.WorkTypeEntity
+import com.crisiscleanup.core.database.model.WorkTypeStatusEntity
+import com.crisiscleanup.core.database.model.WorkTypeTransferRequestEntity
+import com.crisiscleanup.core.database.model.WorksiteChangeEntity
+import com.crisiscleanup.core.database.model.WorksiteEntity
+import com.crisiscleanup.core.database.model.WorksiteFlagEntity
+import com.crisiscleanup.core.database.model.WorksiteFormDataEntity
+import com.crisiscleanup.core.database.model.WorksiteNetworkFileCrossRef
+import com.crisiscleanup.core.database.model.WorksiteNoteEntity
+import com.crisiscleanup.core.database.model.WorksiteRootEntity
+import com.crisiscleanup.core.database.model.WorksiteSyncStatsEntity
 import com.crisiscleanup.core.database.util.InstantConverter
 
 @Database(
@@ -38,8 +78,10 @@ import com.crisiscleanup.core.database.util.InstantConverter
         IncidentOrganizationSyncStatsEntity::class,
         RecentWorksiteEntity::class,
         WorkTypeTransferRequestEntity::class,
+        NetworkFileEntity::class,
+        WorksiteNetworkFileCrossRef::class,
     ],
-    version = 19,
+    version = 20,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
@@ -59,6 +101,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         AutoMigration(from = 16, to = 17),
         AutoMigration(from = 17, to = 18),
         AutoMigration(from = 18, to = 19, spec = Schema18To19::class),
+        AutoMigration(from = 19, to = 20),
     ],
     exportSchema = true,
 )
@@ -85,4 +128,5 @@ abstract class CrisisCleanupDatabase : RoomDatabase(), DatabaseVersionProvider {
     abstract fun personContactDao(): PersonContactDao
     abstract fun recentWorksiteDao(): RecentWorksiteDao
     abstract fun workTypeTransferRequestDao(): WorkTypeTransferRequestDao
+    abstract fun networkFileDao(): NetworkFileDao
 }

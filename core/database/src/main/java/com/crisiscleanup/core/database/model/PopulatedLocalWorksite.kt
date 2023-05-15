@@ -1,6 +1,7 @@
 package com.crisiscleanup.core.database.model
 
 import androidx.room.Embedded
+import androidx.room.Junction
 import androidx.room.Relation
 import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.model.data.LocalChange
@@ -41,6 +42,16 @@ data class PopulatedLocalWorksite(
         entityColumn = "worksite_id",
     )
     val workTypeRequests: List<WorkTypeTransferRequestEntity>,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "id",
+        associateBy = Junction(
+            value = WorksiteNetworkFileCrossRef::class,
+            parentColumn = "worksite_id",
+            entityColumn = "network_file_id",
+        )
+    )
+    val files: List<NetworkFileEntity>,
 )
 
 fun PopulatedLocalWorksite.asExternalModel(

@@ -6,4 +6,5 @@ data class WorksiteEntities(
     val formData: List<WorksiteFormDataEntity>,
     val notes: List<WorksiteNoteEntity>,
     val workTypes: List<WorkTypeEntity>,
+    val files: List<NetworkFileEntity> = emptyList(),
 )

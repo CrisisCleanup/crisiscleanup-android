@@ -180,7 +180,7 @@ internal fun NetworkWorksiteFull.getFavoriteChange(
 ): Boolean? {
     val isFavoriteA = coreA.isAssignedToOrgMember
     val isFavoriteB = coreB.isAssignedToOrgMember
-    return if (isFavoriteA == isFavoriteB) null
+    return if (isFavoriteA == isFavoriteB || isFavoriteB == (favorite != null)) null
     else isFavoriteB
 }
 

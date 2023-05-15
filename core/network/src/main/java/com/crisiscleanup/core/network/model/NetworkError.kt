@@ -51,14 +51,10 @@ data class NetworkCrisisCleanupApiError(
                 if (errors.size == 1) {
                     exception = errors.first().tryGetException()
                 }
-                return exception ?: Exception(collapseMessages(errors))
+                return exception ?: Exception(errors.condenseMessages)
             }
             return null
         }
-
-        private fun collapseMessages(errors: Collection<NetworkCrisisCleanupApiError>) =
-            errors.map { it.message?.joinToString(". ") }
-                .joinToString("\n")
     }
 
     private fun tryGetException(): Exception? {
@@ -70,3 +66,8 @@ data class NetworkCrisisCleanupApiError(
         return null
     }
 }
+
+val Collection<NetworkCrisisCleanupApiError>.condenseMessages: String
+    get() = mapNotNull { it.message?.joinToString(". ") }
+        .filter(String::isNotBlank)
+        .joinToString("\n")

@@ -13,8 +13,8 @@ plugins {
 android {
     defaultConfig {
         applicationId = "com.crisiscleanup"
-        versionCode = 72
-        versionName = "0.0.72"
+        versionCode = 73
+        versionName = "0.0.73"
 
         // Custom test runner to set up Hilt dependency graph
         testInstrumentationRunner = "com.crisiscleanup.core.testing.CrisisCleanupTestRunner"
@@ -40,6 +40,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
                 "proguard-playservices.pro",
+                "proguard-crashlytics.pro",
             )
 
             buildConfigField("Boolean", "IS_RELEASE_BUILD", "true")

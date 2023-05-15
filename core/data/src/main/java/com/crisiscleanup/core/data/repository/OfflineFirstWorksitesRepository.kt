@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.data.repository
 
+import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.log.AppLogger
@@ -8,6 +9,7 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.IncidentWorksitesSyncer
+import com.crisiscleanup.core.data.NoWorksitesException
 import com.crisiscleanup.core.data.model.asEntities
 import com.crisiscleanup.core.data.model.asEntity
 import com.crisiscleanup.core.data.util.IncidentDataPullReporter
@@ -56,6 +58,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private val authEventManager: AuthEventManager,
     private val workTypeTransferRequestDaoPlus: WorkTypeTransferRequestDaoPlus,
     private val appVersionProvider: AppVersionProvider,
+    private val appEnv: AppEnv,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : WorksitesRepository, IncidentDataPullReporter {
@@ -215,7 +218,9 @@ class OfflineFirstWorksitesRepository @Inject constructor(
                 // Updating sync stats here (or in finally) could overwrite "concurrent" sync that previously started. Think it through before updating sync attempt.
 
                 // TODO User feedback?
-                logger.logException(e)
+                if (e !is NoWorksitesException || appEnv.isNotProduction) {
+                    logger.logException(e)
+                }
             }
         } finally {
             isLoading.value = false

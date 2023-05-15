@@ -13,6 +13,7 @@ import com.crisiscleanup.core.database.model.IncidentOrganizationEntity
 import com.crisiscleanup.core.database.model.IncidentOrganizationSyncStatsEntity
 import com.crisiscleanup.core.database.model.LanguageTranslationEntity
 import com.crisiscleanup.core.database.model.LocationEntity
+import com.crisiscleanup.core.database.model.NetworkFileEntity
 import com.crisiscleanup.core.database.model.OrganizationAffiliateEntity
 import com.crisiscleanup.core.database.model.OrganizationPrimaryContactCrossRef
 import com.crisiscleanup.core.database.model.PersonContactEntity
@@ -27,6 +28,7 @@ import com.crisiscleanup.core.database.model.WorksiteChangeEntity
 import com.crisiscleanup.core.database.model.WorksiteEntity
 import com.crisiscleanup.core.database.model.WorksiteFlagEntity
 import com.crisiscleanup.core.database.model.WorksiteFormDataEntity
+import com.crisiscleanup.core.database.model.WorksiteNetworkFileCrossRef
 import com.crisiscleanup.core.database.model.WorksiteNoteEntity
 import com.crisiscleanup.core.database.model.WorksiteRootEntity
 import com.crisiscleanup.core.database.model.WorksiteSyncStatsEntity
@@ -58,6 +60,8 @@ import kotlinx.datetime.Instant
         IncidentOrganizationSyncStatsEntity::class,
         RecentWorksiteEntity::class,
         WorkTypeTransferRequestEntity::class,
+        NetworkFileEntity::class,
+        WorksiteNetworkFileCrossRef::class,
     ],
     version = 1,
 )

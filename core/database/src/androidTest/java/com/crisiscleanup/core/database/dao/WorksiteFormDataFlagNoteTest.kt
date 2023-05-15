@@ -161,8 +161,8 @@ class WorksiteFormDataFlagNoteTest {
         assertEquals(expectedFlags, actualWorksite.worksite.flags)
 
         val expectedNotes = listOf(
-            WorksiteNote(1, updatedAtB, true, "note-new-a"),
             WorksiteNote(2, updatedAtA, false, "note-new-b"),
+            WorksiteNote(1, updatedAtB, true, "note-new-a"),
         )
         assertEquals(expectedNotes, actualWorksite.worksite.notes)
     }

@@ -57,4 +57,7 @@ object DaoModule {
 
     @Provides
     fun workTypeTransferRequestDao(db: CrisisCleanupDatabase) = db.workTypeTransferRequestDao()
+
+    @Provides
+    fun networkFileDao(db: CrisisCleanupDatabase) = db.networkFileDao()
 }
