@@ -22,6 +22,7 @@ import com.crisiscleanup.core.appnav.RouteConstant.fullscreenRoutes
 import com.crisiscleanup.core.appnav.RouteConstant.menuRoute
 import com.crisiscleanup.core.appnav.RouteConstant.teamRoute
 import com.crisiscleanup.core.appnav.RouteConstant.viewCaseRoute
+import com.crisiscleanup.core.appnav.RouteConstant.viewImageRoute
 import com.crisiscleanup.core.common.NavigationObserver
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.ui.TrackDisposableJank
@@ -82,7 +83,8 @@ class CrisisCleanupAppState(
             val route = currentDestination?.route ?: ""
             return fullscreenRoutes.contains(route) ||
                     route.startsWith(caseEditorRoute) ||
-                    route.startsWith(viewCaseRoute)
+                    route.startsWith(viewCaseRoute) ||
+                    route.startsWith(viewImageRoute)
         }
 
     val hasCustomTopBar: Boolean
@@ -146,7 +148,7 @@ class CrisisCleanupAppState(
         }
     }
 
-    fun onBackClick() {
+    fun onBack() {
         navController.popBackStack()
     }
 }

@@ -73,6 +73,8 @@ import com.crisiscleanup.core.designsystem.theme.primaryRedColor
 import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
 import com.crisiscleanup.core.mapmarker.ui.rememberMapUiSettings
 import com.crisiscleanup.core.model.data.EmptyWorksite
+import com.crisiscleanup.core.model.data.ImageCategory
+import com.crisiscleanup.core.model.data.NetworkImage
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteNote
@@ -104,6 +106,7 @@ internal fun EditExistingCaseRoute(
     onBack: () -> Unit = {},
     onFullEdit: (ExistingWorksiteIdentifier) -> Unit = {},
     openTransferWorkType: () -> Unit = {},
+    openPhoto: (Long, String, Boolean) -> Unit = { _, _, _ -> },
 ) {
     val isPendingTransfer by viewModel.transferWorkTypeProvider.isPendingTransfer
     if (isPendingTransfer) {
@@ -158,6 +161,7 @@ internal fun EditExistingCaseRoute(
                     worksite,
                     translate,
                     isBusy,
+                    openPhoto,
                 )
 
                 BottomActions(
@@ -264,6 +268,7 @@ private fun ColumnScope.ExistingCaseContent(
     worksite: Worksite,
     translate: (String) -> String = { s -> s },
     isLoading: Boolean = false,
+    openPhoto: (Long, String, Boolean) -> Unit = { _, _, _ -> },
 ) {
     val pagerState = rememberPagerState()
     val selectedTabIndex = pagerState.currentPage
@@ -306,6 +311,7 @@ private fun ColumnScope.ExistingCaseContent(
                 1 -> EditExistingCasePhotosView(
                     translate = translate,
                     setEnablePagerScroll = setEnablePagerScroll,
+                    onPhotoSelect = openPhoto,
                 )
 
                 2 -> EditExistingCaseNotesView(worksite, translate = translate)
@@ -635,14 +641,15 @@ internal fun EditExistingCasePhotosView(
     viewModel: ExistingCaseViewModel = hiltViewModel(),
     translate: (String) -> String = { s -> s },
     setEnablePagerScroll: (Boolean) -> Unit = {},
+    onPhotoSelect: (Long, String, Boolean) -> Unit = { _, _, _ -> },
 ) {
     val isEditable = LocalCaseEditor.current.isEditable
 
     val photos by viewModel.beforeAfterPhotos.collectAsStateWithLifecycle()
 
-    val sectionTitleResIds = listOf(
-        R.string.before_cleanup,
-        R.string.after_cleanup,
+    val sectionTitleResIds = mapOf(
+        ImageCategory.Before to R.string.before_cleanup,
+        ImageCategory.After to R.string.after_cleanup,
     )
     val photoTwoRowModifier = Modifier
         .height(256.dp)
@@ -652,23 +659,28 @@ internal fun EditExistingCasePhotosView(
         .listItemVerticalPadding()
     val photoTwoRowGridCells = StaggeredGridCells.Adaptive(96.dp)
     val photoOneRowGridCells = StaggeredGridCells.Fixed(1)
-    val (beforePhotos, afterPhotos) = photos
-    val rowsOfPhotos = listOf(beforePhotos, afterPhotos)
-
     Column(
         modifier = Modifier.fillMaxHeight(),
     ) {
-        sectionTitleResIds.forEachIndexed { index, titleResId ->
-            val rowPhotos = rowsOfPhotos[index]
-            val isOneRow = beforePhotos.size < 6
-            PhotosSection(
-                stringResource(titleResId),
-                if (isOneRow) photoOneRowModifier else photoTwoRowModifier,
-                if (isOneRow) photoOneRowGridCells else photoTwoRowGridCells,
-                photos = rowPhotos,
-                isEditable = isEditable,
-                setEnableParentScroll = setEnablePagerScroll,
-            )
+        sectionTitleResIds.onEach { (imageCategory, titleResId) ->
+            photos[imageCategory]?.let { rowPhotos ->
+                val isOneRow = rowPhotos.size < 6
+                PhotosSection(
+                    stringResource(titleResId),
+                    if (isOneRow) photoOneRowModifier else photoTwoRowModifier,
+                    if (isOneRow) photoOneRowGridCells else photoTwoRowGridCells,
+                    photos = rowPhotos,
+                    isEditable = isEditable,
+                    setEnableParentScroll = setEnablePagerScroll,
+                    onAddPhoto = {
+                        viewModel.addImageCategory = imageCategory
+                        // TODO Present options to camera or select file
+                    },
+                    onPhotoSelect = { image: NetworkImage ->
+                        onPhotoSelect(image.id, image.imageUrl, true)
+                    },
+                )
+            }
         }
     }
 }

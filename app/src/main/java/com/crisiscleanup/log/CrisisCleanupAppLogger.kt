@@ -22,6 +22,10 @@ class CrisisCleanupAppLogger @Inject constructor(
     }
 
     override fun logException(e: Exception) {
+        if (e is InterruptedException) {
+            return
+        }
+
         crashlytics.recordException(e)
 
         if (isDebuggable) {

@@ -104,7 +104,7 @@ internal fun PhotosSection(
     photoRowModifier: Modifier = Modifier,
     photoRowGridCells: StaggeredGridCells = StaggeredGridCells.Fixed(1),
     photos: List<NetworkImage> = emptyList(),
-    onAddPhoto: (String) -> Unit = {},
+    onAddPhoto: () -> Unit = {},
     onPhotoSelect: (NetworkImage) -> Unit = {},
     isEditable: Boolean = false,
     setEnableParentScroll: (Boolean) -> Unit = {},
@@ -144,7 +144,7 @@ internal fun PhotosSection(
                 AddMediaView(
                     Modifier
                         .padding(addMediaActionPadding)
-                        .clickable { onAddPhoto(title) }
+                        .clickable { onAddPhoto() }
                         .size(addActionSize),
                 )
             } else {

@@ -24,8 +24,11 @@ object RouteConstant {
     const val viewCaseRoute = "view_case"
     const val viewCaseTransferWorkTypesRoute = "$viewCaseRoute/transfer_work_types"
 
+    const val viewImageRoute = "view_image"
+
     val fullscreenRoutes = setOf(
         casesSearchRoute,
         caseEditorRoute,
+        syncInsightsRoute,
     )
 }

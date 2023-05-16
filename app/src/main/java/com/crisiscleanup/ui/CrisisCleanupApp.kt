@@ -274,7 +274,7 @@ private fun NavigableContent(
             Column(Modifier.fillMaxSize()) {
                 CrisisCleanupNavHost(
                     navController = appState.navController,
-                    onBackClick = appState::onBackClick,
+                    onBack = appState::onBack,
                 )
             }
 

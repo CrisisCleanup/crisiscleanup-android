@@ -1,5 +1,8 @@
 package com.crisiscleanup.feature.caseeditor
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -23,6 +26,7 @@ import com.crisiscleanup.core.data.repository.WorkTypeStatusRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
+import com.crisiscleanup.core.model.data.ImageCategory
 import com.crisiscleanup.core.model.data.NetworkImage
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.WorkTypeRequest
@@ -114,6 +118,8 @@ class ExistingCaseViewModel @Inject constructor(
     private val worksiteIn = AtomicReference<Worksite>()
 
     private val previousNoteCount = AtomicInteger(0)
+
+    var addImageCategory by mutableStateOf(ImageCategory.Before)
 
     init {
         updateHeaderTitle()
@@ -333,13 +339,14 @@ class ExistingCaseViewModel @Inject constructor(
 
     val beforeAfterPhotos = editableWorksiteProvider.editableWorksite.map { worksite ->
         val photos = worksite.files
-        val after = photos.filter(NetworkImage::isAfter)
-        val notAfter = photos.filterNot(NetworkImage::isAfter)
-        Pair(notAfter, after)
+        mapOf(
+            ImageCategory.Before to photos.filterNot(NetworkImage::isAfter),
+            ImageCategory.After to photos.filter(NetworkImage::isAfter),
+        )
     }
         .stateIn(
             scope = viewModelScope,
-            initialValue = Pair(emptyList(), emptyList()),
+            initialValue = emptyMap(),
             started = SharingStarted.WhileSubscribed(),
         )
 

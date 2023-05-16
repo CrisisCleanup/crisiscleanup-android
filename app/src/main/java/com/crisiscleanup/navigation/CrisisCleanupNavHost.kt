@@ -22,6 +22,7 @@ import com.crisiscleanup.feature.cases.navigation.navigateToCasesSearch
 import com.crisiscleanup.feature.cases.navigation.selectIncidentScreen
 import com.crisiscleanup.feature.cases.ui.CasesAction
 import com.crisiscleanup.feature.dashboard.navigation.dashboardScreen
+import com.crisiscleanup.feature.mediamanage.navigation.viewImageScreen
 import com.crisiscleanup.feature.menu.navigation.menuScreen
 import com.crisiscleanup.feature.syncinsights.navigation.navigateToSyncInsights
 import com.crisiscleanup.feature.syncinsights.navigation.syncInsightsScreen
@@ -37,7 +38,7 @@ import com.crisiscleanup.feature.team.navigation.teamScreen
 @Composable
 fun CrisisCleanupNavHost(
     navController: NavHostController,
-    onBackClick: () -> Unit,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier,
     startDestination: String = casesGraphRoutePattern,
 ) {
@@ -86,13 +87,13 @@ fun CrisisCleanupNavHost(
     ) {
         casesGraph(
             nestedGraphs = {
-                selectIncidentScreen(onBackClick)
-                casesSearchScreen(onBackClick, replaceRouteOpenCase)
-                caseEditorScreen(navController, onBackClick)
-                caseEditSearchAddressScreen(navController, onBackClick)
-                caseEditMoveLocationOnMapScreen(onBackClick)
-                existingCaseScreen(navController, onBackClick)
-                existingCaseTransferWorkTypesScreen(onBackClick)
+                selectIncidentScreen(onBack)
+                casesSearchScreen(onBack, replaceRouteOpenCase)
+                caseEditorScreen(navController, onBack)
+                caseEditSearchAddressScreen(navController, onBack)
+                caseEditMoveLocationOnMapScreen(onBack)
+                existingCaseScreen(navController, onBack)
+                existingCaseTransferWorkTypesScreen(onBack)
             },
             onCasesAction = onCasesAction,
             createCase = createNewCase,
@@ -103,6 +104,7 @@ fun CrisisCleanupNavHost(
         menuScreen(
             openSyncLogs,
         )
+        viewImageScreen(onBack)
         syncInsightsScreen(viewCase)
     }
 }
