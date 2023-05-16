@@ -4,7 +4,6 @@ import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.network.BuildConfig
 import com.crisiscleanup.core.network.RetrofitInterceptorProvider
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -47,7 +46,6 @@ internal fun getCrisisCleanupApiBuilder(
         .client(clientBuilder.build())
         .addCallAdapterFactory(RequestHeaderCallAdapterFactory(headerKeysLookup))
         .addConverterFactory(
-            @OptIn(ExperimentalSerializationApi::class)
             networkApiJson.asConverterFactory("application/json".toMediaType())
         )
         .build()

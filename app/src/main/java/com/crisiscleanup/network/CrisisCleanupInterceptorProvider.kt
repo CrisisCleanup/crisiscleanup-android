@@ -37,12 +37,7 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
             var request = chain.request()
 
             getHeaderKey(request, RequestHeaderKey.AccessTokenAuth)?.let {
-                val accessToken = accountDataRepository.accessTokenCached
-                if (accessToken.isNotEmpty()) {
-                    request = request.newBuilder()
-                        .addHeader("Authorization", "Bearer $accessToken")
-                        .build()
-                }
+                request = addAuthorizationHeader(request)
             }
 
             chain.proceed(request)
@@ -104,4 +99,15 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
         wrapResponseInterceptor,
         clientErrorInterceptor,
     )
+
+    private fun addAuthorizationHeader(request: Request): Request {
+        val accessToken = accountDataRepository.accessTokenCached
+        return if (accessToken.isNotEmpty()) {
+            request.newBuilder()
+                .addHeader("Authorization", "Bearer $accessToken")
+                .build()
+        } else {
+            request
+        }
+    }
 }

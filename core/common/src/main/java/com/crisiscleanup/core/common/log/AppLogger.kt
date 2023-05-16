@@ -25,4 +25,5 @@ enum class CrisisCleanupLoggers {
     Incidents,
     Worksites,
     Language,
+    Media,
 }

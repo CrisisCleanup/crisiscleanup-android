@@ -67,4 +67,11 @@ object LoggersModule {
         logger.tag = "language"
         return logger
     }
+
+    @Provides
+    @Logger(CrisisCleanupLoggers.Media)
+    fun providesMediaLogger(logger: TagLogger): AppLogger {
+        logger.tag = "media"
+        return logger
+    }
 }

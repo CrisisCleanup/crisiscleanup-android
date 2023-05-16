@@ -17,9 +17,7 @@ class LoginInputData(emailAddress: String = "", password: String = "") {
         other as LoginInputData
 
         if (emailAddress != other.emailAddress) return false
-        if (password != other.password) return false
-
-        return true
+        return password == other.password
     }
 
     override fun hashCode(): Int {
@@ -31,6 +29,6 @@ data class AuthenticationState(
     val accountData: AccountData = emptyAccountData,
     val hasAccessToken: Boolean = false,
 ) {
-    val isTokenExpired: Boolean
-        get() = accountData.isTokenExpired
+    val isTokenInvalid: Boolean
+        get() = accountData.isTokenInvalid
 }

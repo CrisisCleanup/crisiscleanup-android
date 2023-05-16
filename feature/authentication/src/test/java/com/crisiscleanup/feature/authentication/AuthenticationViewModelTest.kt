@@ -6,7 +6,13 @@ import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
-import com.crisiscleanup.core.model.data.*
+import com.crisiscleanup.core.model.data.AccountData
+import com.crisiscleanup.core.model.data.DarkThemeConfig
+import com.crisiscleanup.core.model.data.EnglishLanguage
+import com.crisiscleanup.core.model.data.OrgData
+import com.crisiscleanup.core.model.data.SyncAttempt
+import com.crisiscleanup.core.model.data.UserData
+import com.crisiscleanup.core.model.data.emptyAccountData
 import com.crisiscleanup.core.network.model.NetworkAuthOrganization
 import com.crisiscleanup.core.network.model.NetworkAuthResult
 import com.crisiscleanup.core.network.model.NetworkAuthUserClaims
@@ -100,14 +106,21 @@ class AuthenticationViewModelTest {
             )
         )
 
+        coEvery {
+            appPreferences.incrementSaveCredentialsPrompt()
+        } returns Unit
+
         every {
             authEventManager.addPasswordResultListener(any())
         } returns 1
 
-        every { accessTokenDecoder.decode("access-token") } returns
-                TestDecodedAccessToken(Clock.System.now().plus(864000L.seconds))
+        every {
+            accessTokenDecoder.decode("access-token")
+        } returns TestDecodedAccessToken(Clock.System.now().plus(864000L.seconds))
 
-        every { resProvider.getString(any()) } returns "test-string"
+        every {
+            resProvider.getString(any())
+        } returns "test-string"
     }
 
     private val emptyLoginData = LoginInputData()
@@ -157,6 +170,10 @@ class AuthenticationViewModelTest {
 
         every { inputValidator.validateEmailAddress(any()) } returns true
 
+        coEvery {
+            accountDataRepository.isAuthenticated
+        } returns flowOf(true)
+
         viewModel = buildViewModel()
 
         // Initial state tests
@@ -197,7 +214,7 @@ class AuthenticationViewModelTest {
         // TODO How to test state during authentication?
         viewModel.authenticateEmailPassword()
 
-        val nowMillis = Clock.System.now().epochSeconds
+        val nowSeconds = Clock.System.now().epochSeconds
         coVerify(exactly = 1) {
             accountDataRepository.setAccount(
                 id = 534,
@@ -205,7 +222,7 @@ class AuthenticationViewModelTest {
                 email = "email@address.com",
                 firstName = "first-name",
                 lastName = "last-name",
-                expirySeconds = match { millis -> abs(millis - nowMillis) < 8640000 },
+                expirySeconds = match { seconds -> abs(seconds - nowSeconds) < 864000L + 1000 },
                 profilePictureUri = "",
                 org = OrgData(813, "org"),
             )
@@ -261,6 +278,8 @@ class AuthenticationViewModelTest {
     }
 
     // TODO Other paths in logout()
+
+    // TODO Save credentials prompts
 }
 
 class TestDecodedAccessToken(override val expiresAt: Instant) : DecodedAccessToken

@@ -2,6 +2,7 @@ package com.crisiscleanup.core.appnav
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
+import com.crisiscleanup.core.common.urlEncode
 
 class ViewImageArgs(
     val imageId: Long,
@@ -15,7 +16,7 @@ class ViewImageArgs(
 
         fun queryString(imageId: Long, imageUrl: String, isNetworkImage: Boolean = true) = listOf(
             "$imageIdArg=$imageId",
-            "$imageUrlArg=$imageUrl",
+            "$imageUrlArg=${imageUrl.urlEncode()}",
             "$isNetworkImageArg=$isNetworkImage"
         ).joinToString("&")
     }

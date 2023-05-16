@@ -64,6 +64,6 @@ fun NetworkFileEntity.asImageModel() = NetworkImage(
     createdAt = createdAt,
     title = title ?: "",
     thumbnailUrl = smallThumbnailUrl ?: "",
-    imageUrl = url,
+    imageUrl = fullUrl ?: "",
     tag = tag ?: "",
 )

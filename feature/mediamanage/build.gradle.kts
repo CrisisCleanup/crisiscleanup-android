@@ -7,3 +7,8 @@ plugins {
 android {
     namespace = "com.crisiscleanup.feature.mediamanage"
 }
+
+dependencies {
+    implementation(libs.coil.kt)
+    implementation(libs.coil.kt.compose)
+}

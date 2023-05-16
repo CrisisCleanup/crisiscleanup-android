@@ -81,7 +81,8 @@ fun PopulatedLocalWorksite.asExternalModel(
                 createdAt = createdAt,
                 email = email,
                 favoriteId = favoriteId,
-                files = files.map(NetworkFileEntity::asImageModel),
+                files = files.filter { it.fullUrl?.isNotBlank() == true }
+                    .map(NetworkFileEntity::asImageModel),
                 flags = flags.map { it.asExternalModel(translator) },
                 formData = formDataMap,
                 incidentId = incidentId,

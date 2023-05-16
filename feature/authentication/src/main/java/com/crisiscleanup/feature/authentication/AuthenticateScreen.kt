@@ -77,7 +77,7 @@ fun AuthenticateScreen(
         is AuthenticateScreenUiState.Ready -> {
             val readyState = uiState as AuthenticateScreenUiState.Ready
             readyState.authenticationState.let {
-                if (!it.hasAccessToken || it.isTokenExpired) {
+                if (it.isTokenInvalid) {
                     LoginScreen(
                         it,
                         modifier,
