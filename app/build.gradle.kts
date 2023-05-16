@@ -13,8 +13,8 @@ plugins {
 android {
     defaultConfig {
         applicationId = "com.crisiscleanup"
-        versionCode = 73
-        versionName = "0.0.73"
+        versionCode = 74
+        versionName = "0.0.74"
 
         // Custom test runner to set up Hilt dependency graph
         testInstrumentationRunner = "com.crisiscleanup.core.testing.CrisisCleanupTestRunner"

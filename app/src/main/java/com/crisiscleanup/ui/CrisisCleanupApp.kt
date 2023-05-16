@@ -305,17 +305,19 @@ private fun NavigableContent(
             }
 
             Column(Modifier.fillMaxSize()) {
+                val snackbarAreaHeight =
+                    if (!showNavigation && snackbarHostState.currentSnackbarData != null) 64.dp else 0.dp
+
+                // TODO CompositionLocal providing snackbar visibility for nested views to arrange around
                 CrisisCleanupNavHost(
                     navController = appState.navController,
                     onBack = appState::onBack,
                     modifier = Modifier.weight(1f),
                 )
 
-                val bottomSpaceHeight =
-                    if (!showNavigation && snackbarHostState.currentSnackbarData != null) 64.dp else 0.dp
                 Spacer(
                     Modifier
-                        .height(bottomSpaceHeight)
+                        .height(snackbarAreaHeight)
                         .animateContentSize()
                 )
             }
@@ -334,6 +336,7 @@ private fun ExpiredTokenAlert(
         val result = snackbarHostState.showSnackbar(
             message,
             actionLabel = loginText,
+            withDismissAction = true,
             duration = SnackbarDuration.Indefinite,
         )
         when (result) {
