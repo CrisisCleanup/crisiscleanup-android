@@ -19,6 +19,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.PathEffect
@@ -40,7 +41,7 @@ import com.crisiscleanup.core.ui.touchDownConsumer
 import com.crisiscleanup.feature.caseeditor.R
 
 private val addMediaActionPadding = 4.dp
-private val addMediaCornerRadius = 4.dp
+private val mediaCornerRadius = 6.dp
 private val addMediaStrokeWidth = 2.dp
 private val addMediaStrokeDash = 6.dp
 private val addMediaStrokeGap = 6.dp
@@ -57,7 +58,7 @@ private fun AddMediaView(
     val strokeGap: Float
     val strokeWidth: Float
     with(LocalDensity.current) {
-        cornerRadius = addMediaCornerRadius.toPx()
+        cornerRadius = mediaCornerRadius.toPx()
         strokeWidth = addMediaStrokeWidth.toPx()
         strokeDash = addMediaStrokeDash.toPx()
         strokeGap = addMediaStrokeGap.toPx()
@@ -76,7 +77,7 @@ private fun AddMediaView(
                 )
             },
         color = backgroundColor,
-        shape = RoundedCornerShape(addMediaCornerRadius),
+        shape = RoundedCornerShape(mediaCornerRadius),
     ) {
         Column(
             verticalArrangement = Arrangement.Center,
@@ -106,7 +107,6 @@ internal fun PhotosSection(
     photos: List<NetworkImage> = emptyList(),
     onAddPhoto: () -> Unit = {},
     onPhotoSelect: (NetworkImage) -> Unit = {},
-    isEditable: Boolean = false,
     setEnableParentScroll: (Boolean) -> Unit = {},
     addActionSize: Dp = 128.dp,
 ) {
@@ -122,12 +122,14 @@ internal fun PhotosSection(
             setEnableParentScroll(true)
         }
     }
+    // TODO Common styles
+    val itemSpacing = 4.dp
     LazyHorizontalStaggeredGrid(
         modifier = photoRowModifier.touchDownConsumer { setEnableParentScroll(false) },
         rows = photoRowGridCells,
         state = gridState,
-        horizontalItemSpacing = 1.dp,
-        verticalArrangement = Arrangement.spacedBy(1.dp),
+        horizontalItemSpacing = itemSpacing,
+        verticalArrangement = Arrangement.spacedBy(itemSpacing),
     ) {
         items(
             1 + photos.size,
@@ -152,7 +154,9 @@ internal fun PhotosSection(
                 val photo = photos[photoIndex]
                 AsyncImage(
                     model = photo.thumbnailUrl.ifBlank { photo.imageUrl },
-                    modifier = Modifier.clickable { onPhotoSelect(photo) },
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(mediaCornerRadius))
+                        .clickable { onPhotoSelect(photo) },
                     placeholder = painterResource(R.drawable.cc_grayscale_pin),
                     contentDescription = photo.title,
                     contentScale = ContentScale.Crop,
