@@ -3,7 +3,6 @@ package com.crisiscleanup.navigation
 import android.os.Bundle
 import com.crisiscleanup.core.appheader.AppHeaderState
 import com.crisiscleanup.core.appheader.AppHeaderUiState
-import com.crisiscleanup.core.appnav.RouteConstant.caseEditorRoute
 import com.crisiscleanup.core.appnav.RouteConstant.menuRoute
 import com.crisiscleanup.core.common.NavigationObserver
 import com.crisiscleanup.core.common.di.ApplicationScope
@@ -35,9 +34,7 @@ class CrisisCleanupNavigationObserver @Inject constructor(
             //      routes rather than observing and reacting outside of compose context.
 
             val (_, toRoute) = navigationRoute.value
-            val appHeaderState = if (toRoute?.startsWith("$caseEditorRoute?") == true) {
-                AppHeaderState.BackTitleAction
-            } else if (toRoute == menuRoute) {
+            val appHeaderState = if (toRoute == menuRoute) {
                 AppHeaderState.TopLevel
             } else {
                 AppHeaderState.None

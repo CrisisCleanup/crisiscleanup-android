@@ -643,8 +643,6 @@ internal fun EditExistingCasePhotosView(
     setEnablePagerScroll: (Boolean) -> Unit = {},
     onPhotoSelect: (Long, String, Boolean) -> Unit = { _, _, _ -> },
 ) {
-    val isEditable = LocalCaseEditor.current.isEditable
-
     val photos by viewModel.beforeAfterPhotos.collectAsStateWithLifecycle()
 
     val sectionTitleResIds = mapOf(
@@ -670,7 +668,6 @@ internal fun EditExistingCasePhotosView(
                     if (isOneRow) photoOneRowModifier else photoTwoRowModifier,
                     if (isOneRow) photoOneRowGridCells else photoTwoRowGridCells,
                     photos = rowPhotos,
-                    isEditable = isEditable,
                     setEnableParentScroll = setEnablePagerScroll,
                     onAddPhoto = {
                         viewModel.addImageCategory = imageCategory

@@ -20,7 +20,4 @@ enum class AppHeaderState {
 
     /** Custom on left and account on right */
     TopLevel,
-
-    /** Back action on left, title center, single action on right */
-    BackTitleAction,
 }

@@ -4,12 +4,44 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideIn
+import androidx.compose.animation.slideOut
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -19,6 +51,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -30,7 +63,13 @@ import com.crisiscleanup.R
 import com.crisiscleanup.core.appheader.AppHeaderState
 import com.crisiscleanup.core.common.NavigationObserver
 import com.crisiscleanup.core.common.NetworkMonitor
-import com.crisiscleanup.core.designsystem.component.*
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupBackground
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationBar
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationBarItem
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationRail
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationRailItem
+import com.crisiscleanup.core.designsystem.component.TopAppBarDefault
+import com.crisiscleanup.core.designsystem.component.TruncatedAppBarText
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.icon.Icon.DrawableResourceIcon
 import com.crisiscleanup.core.designsystem.icon.Icon.ImageVectorIcon
@@ -178,7 +217,6 @@ private fun AuthenticateContent(
 }
 
 @OptIn(
-    ExperimentalMaterial3Api::class,
     ExperimentalLayoutApi::class,
     ExperimentalComposeUiApi::class,
 )
@@ -195,7 +233,6 @@ private fun NavigableContent(
     openIncidentsSelect: () -> Unit,
 ) {
     val showNavBar = !appState.isFullscreenRoute
-    // TODO Fix resize jitter when going from nested to top level
     val notDefaultTopBar = appHeaderState == AppHeaderState.None || appState.hasCustomTopBar
     Scaffold(
         modifier = Modifier.semantics {
@@ -210,13 +247,12 @@ private fun NavigableContent(
             val showTopBar = !notDefaultTopBar
             AnimatedVisibility(
                 visible = showTopBar,
-                enter = fadeIn(),
-                exit = fadeOut()
+                enter = slideIn { IntOffset.Zero },
+                exit = slideOut { IntOffset.Zero },
             ) {
                 val titleResId = appState.currentTopLevelDestination?.titleTextId ?: 0
                 val title = if (titleResId != 0) stringResource(titleResId) else headerTitle
-                // TODO Update this to menu route and test completely
-                val onOpenIncidents = if (appState.isCasesRoute) openIncidentsSelect else null
+                val onOpenIncidents = if (appState.isMenuRoute) openIncidentsSelect else null
                 AppHeader(
                     modifier = Modifier.testTag("CrisisCleanupAppHeader"),
                     title = title,
@@ -233,8 +269,8 @@ private fun NavigableContent(
             val showBottomBar = showNavBar && appState.shouldShowBottomBar
             AnimatedVisibility(
                 visible = showBottomBar,
-                enter = fadeIn(),
-                exit = fadeOut()
+                enter = slideIn { IntOffset.Zero },
+                exit = slideOut { IntOffset.Zero },
             ) {
                 CrisisCleanupBottomBar(
                     destinations = appState.topLevelDestinations,
@@ -244,7 +280,8 @@ private fun NavigableContent(
                 )
             }
 
-            // TODO Is it possible to adjust window insets instead of adding space?
+            // TODO Some emulators and devices incorrectly allow content to fall under the bottom
+            //      border when there is no bottom bar. How to enforce insets in these cases?
             if (!showNavBar) {
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -355,13 +392,6 @@ private fun AppHeader(
                         }
                     }
                 }
-            )
-        }
-
-        AppHeaderState.BackTitleAction -> {
-            CrisisCleanupTopAppBar(
-                titleResId = titleRes,
-                title = title,
             )
         }
 

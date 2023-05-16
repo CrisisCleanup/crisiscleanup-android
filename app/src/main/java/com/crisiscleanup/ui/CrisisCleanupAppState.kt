@@ -75,8 +75,8 @@ class CrisisCleanupAppState(
             else -> null
         }
 
-    val isCasesRoute: Boolean
-        @Composable get() = currentDestination?.route == casesRoute
+    val isMenuRoute: Boolean
+        @Composable get() = currentDestination?.route == menuRoute
 
     val isFullscreenRoute: Boolean
         @Composable get() {
