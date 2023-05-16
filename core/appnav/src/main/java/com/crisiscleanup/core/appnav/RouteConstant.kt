@@ -8,6 +8,7 @@ object RouteConstant {
     const val dashboardRoute = "dashboard_route"
     const val menuRoute = "menu_route"
     const val teamRoute = "team_route"
+    val topLevelRoutes = setOf(casesRoute, menuRoute)
 
     const val settingsRoute = "settings_route"
 
@@ -25,10 +26,4 @@ object RouteConstant {
     const val viewCaseTransferWorkTypesRoute = "$viewCaseRoute/transfer_work_types"
 
     const val viewImageRoute = "view_image"
-
-    val fullscreenRoutes = setOf(
-        casesSearchRoute,
-        caseEditorRoute,
-        syncInsightsRoute,
-    )
 }

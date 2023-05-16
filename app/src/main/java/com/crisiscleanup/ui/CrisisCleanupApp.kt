@@ -2,6 +2,7 @@ package com.crisiscleanup.ui
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideIn
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -32,6 +34,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
@@ -60,7 +63,6 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import com.crisiscleanup.AuthState
 import com.crisiscleanup.MainActivityViewModel
 import com.crisiscleanup.R
-import com.crisiscleanup.core.appheader.AppHeaderState
 import com.crisiscleanup.core.common.NavigationObserver
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupBackground
@@ -127,7 +129,6 @@ private fun LoadedContent(
     authState: AuthState,
 ) {
     val isAccountExpired by viewModel.isAccessTokenExpired
-    var isExpiredTokenReminderShown by rememberSaveable { mutableStateOf(false) }
 
     val isNotAuthenticatedState = authState !is AuthState.Authenticated
     var openAuthentication by rememberSaveable { mutableStateOf(isNotAuthenticatedState) }
@@ -145,18 +146,16 @@ private fun LoadedContent(
         val accountData = (authState as AuthState.Authenticated).accountData
         val profilePictureUri by remember { mutableStateOf(accountData.profilePictureUri) }
         val appHeaderBar = viewModel.appHeaderUiState
-        val appHeaderState by appHeaderBar.appHeaderState.collectAsStateWithLifecycle()
         val appHeaderTitle by appHeaderBar.title.collectAsStateWithLifecycle()
         val isHeaderLoading by viewModel.showHeaderLoading.collectAsState(false)
 
-        val openIncidentsSelect = remember(appHeaderState) {
+        val openIncidentsSelect = remember(viewModel) {
             { appState.navController.navigateToSelectIncident() }
         }
 
         NavigableContent(
             snackbarHostState,
             appState,
-            appHeaderState,
             appHeaderTitle,
             isHeaderLoading,
             { openAuthentication = true },
@@ -166,19 +165,15 @@ private fun LoadedContent(
         )
 
         if (isAccountExpired) {
-            if (!isExpiredTokenReminderShown) {
-                ExpiredTokenAlert(snackbarHostState) {
-                    isExpiredTokenReminderShown = true
-                }
-            }
-        } else {
-            isExpiredTokenReminderShown = false
+            ExpiredTokenAlert(
+                snackbarHostState,
+                { openAuthentication = true },
+            )
         }
     }
 }
 
 @OptIn(
-    ExperimentalMaterial3Api::class,
     ExperimentalComposeUiApi::class,
     ExperimentalLayoutApi::class,
 )
@@ -224,7 +219,6 @@ private fun AuthenticateContent(
 private fun NavigableContent(
     snackbarHostState: SnackbarHostState,
     appState: CrisisCleanupAppState,
-    appHeaderState: AppHeaderState,
     headerTitle: String = "",
     isHeaderLoading: Boolean,
     openAuthentication: () -> Unit,
@@ -232,8 +226,9 @@ private fun NavigableContent(
     isAccountExpired: Boolean,
     openIncidentsSelect: () -> Unit,
 ) {
-    val showNavBar = !appState.isFullscreenRoute
-    val notDefaultTopBar = appHeaderState == AppHeaderState.None || appState.hasCustomTopBar
+    val showNavigation = appState.isTopLevelRoute
+    val showAppBar = appState.isMenuRoute
+    val isFullscreen = appState.isFullscreenRoute
     Scaffold(
         modifier = Modifier.semantics {
             testTagsAsResourceId = true
@@ -244,9 +239,8 @@ private fun NavigableContent(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             // TODO Profile recompose and optimize if necessary
-            val showTopBar = !notDefaultTopBar
             AnimatedVisibility(
-                visible = showTopBar,
+                visible = showAppBar,
                 enter = slideIn { IntOffset.Zero },
                 exit = slideOut { IntOffset.Zero },
             ) {
@@ -256,7 +250,6 @@ private fun NavigableContent(
                 AppHeader(
                     modifier = Modifier.testTag("CrisisCleanupAppHeader"),
                     title = title,
-                    appHeaderState = appHeaderState,
                     isAppHeaderLoading = isHeaderLoading,
                     profilePictureUri = profilePictureUri,
                     isAccountExpired = isAccountExpired,
@@ -266,7 +259,7 @@ private fun NavigableContent(
             }
         },
         bottomBar = {
-            val showBottomBar = showNavBar && appState.shouldShowBottomBar
+            val showBottomBar = showNavigation && appState.shouldShowBottomBar
             AnimatedVisibility(
                 visible = showBottomBar,
                 enter = slideIn { IntOffset.Zero },
@@ -280,10 +273,13 @@ private fun NavigableContent(
                 )
             }
 
-            // TODO Some emulators and devices incorrectly allow content to fall under the bottom
-            //      border when there is no bottom bar. How to enforce insets in these cases?
-            if (!showNavBar) {
-                Spacer(modifier = Modifier.height(16.dp))
+            if (!showBottomBar) {
+                val windowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Bottom)
+                Spacer(
+                    Modifier
+                        .fillMaxWidth()
+                        .windowInsetsPadding(windowInsets)
+                )
             }
         },
     ) { padding ->
@@ -293,11 +289,11 @@ private fun NavigableContent(
                 .padding(padding)
                 .consumeWindowInsets(padding)
                 .windowInsetsPadding(
-                    if (notDefaultTopBar) WindowInsets.safeDrawing
-                    else WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)
+                    if (isFullscreen) WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)
+                    else WindowInsets.safeDrawing
                 )
         ) {
-            if (showNavBar && appState.shouldShowNavRail) {
+            if (showNavigation && appState.shouldShowNavRail) {
                 CrisisCleanupNavRail(
                     destinations = appState.topLevelDestinations,
                     onNavigateToDestination = appState::navigateToTopLevelDestination,
@@ -312,10 +308,17 @@ private fun NavigableContent(
                 CrisisCleanupNavHost(
                     navController = appState.navController,
                     onBack = appState::onBack,
+                    modifier = Modifier.weight(1f),
+                )
+
+                val bottomSpaceHeight =
+                    if (!showNavigation && snackbarHostState.currentSnackbarData != null) 64.dp else 0.dp
+                Spacer(
+                    Modifier
+                        .height(bottomSpaceHeight)
+                        .animateContentSize()
                 )
             }
-
-            // TODO Adjust padding/space when the snackbar is shown so content doesn't display behind it.
         }
     }
 }
@@ -323,16 +326,20 @@ private fun NavigableContent(
 @Composable
 private fun ExpiredTokenAlert(
     snackbarHostState: SnackbarHostState,
-    onSnackbarShown: () -> Unit,
+    openAuthentication: () -> Unit,
 ) {
     val message = stringResource(R.string.expired_token_message)
+    val loginText = stringResource(R.string.login)
     LaunchedEffect(Unit) {
-        snackbarHostState.showSnackbar(
+        val result = snackbarHostState.showSnackbar(
             message,
-            withDismissAction = true,
+            actionLabel = loginText,
             duration = SnackbarDuration.Indefinite,
         )
-        onSnackbarShown()
+        when (result) {
+            SnackbarResult.Dismissed -> {}
+            SnackbarResult.ActionPerformed -> openAuthentication()
+        }
     }
 }
 
@@ -344,59 +351,52 @@ private fun AppHeader(
     modifier: Modifier = Modifier,
     @StringRes titleRes: Int = 0,
     title: String = "",
-    appHeaderState: AppHeaderState = AppHeaderState.TopLevel,
     isAppHeaderLoading: Boolean = false,
     profilePictureUri: String = "",
     isAccountExpired: Boolean = false,
     openAuthentication: () -> Unit = {},
     onOpenIncidents: (() -> Unit)? = null,
 ) {
-    when (appHeaderState) {
-        AppHeaderState.TopLevel -> {
-            TopAppBarDefault(
-                modifier = modifier,
-                titleResId = titleRes,
-                title = title,
-                profilePictureUri = profilePictureUri,
-                actionIcon = CrisisCleanupIcons.Account,
-                actionResId = R.string.account,
-                isActionAttention = isAccountExpired,
-                onActionClick = openAuthentication,
-                onNavigationClick = null,
-                titleContent = @Composable {
-                    // TODO Match height of visible part of app bar (not the entire app bar)
-                    if (onOpenIncidents == null) {
-                        TruncatedAppBarText(title = title)
-                    } else {
-                        Row(
-                            modifier = modifier.clickable(onClick = onOpenIncidents),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            TruncatedAppBarText(title = title)
-                            Icon(
-                                imageVector = CrisisCleanupIcons.ArrowDropDown,
-                                contentDescription = stringResource(casesR.string.change_incident),
-                                tint = MaterialTheme.colorScheme.primary,
-                            )
-                            AnimatedVisibility(
-                                visible = isAppHeaderLoading,
-                                enter = fadeIn(),
-                                exit = fadeOut()
-                            ) {
-                                CircularProgressIndicator(
-                                    modifier
-                                        .size(48.dp)
-                                        .padding(8.dp)
-                                )
-                            }
-                        }
+    TopAppBarDefault(
+        modifier = modifier,
+        titleResId = titleRes,
+        title = title,
+        profilePictureUri = profilePictureUri,
+        actionIcon = CrisisCleanupIcons.Account,
+        actionResId = R.string.account,
+        isActionAttention = isAccountExpired,
+        onActionClick = openAuthentication,
+        onNavigationClick = null,
+        titleContent = @Composable {
+            // TODO Match height of visible part of app bar (not the entire app bar)
+            if (onOpenIncidents == null) {
+                TruncatedAppBarText(title = title)
+            } else {
+                Row(
+                    modifier = modifier.clickable(onClick = onOpenIncidents),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    TruncatedAppBarText(title = title)
+                    Icon(
+                        imageVector = CrisisCleanupIcons.ArrowDropDown,
+                        contentDescription = stringResource(casesR.string.change_incident),
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                    AnimatedVisibility(
+                        visible = isAppHeaderLoading,
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) {
+                        CircularProgressIndicator(
+                            modifier
+                                .size(48.dp)
+                                .padding(8.dp)
+                        )
                     }
                 }
-            )
+            }
         }
-
-        else -> {}
-    }
+    )
 }
 
 @Composable

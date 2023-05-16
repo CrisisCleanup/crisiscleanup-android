@@ -15,13 +15,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import androidx.tracing.trace
-import com.crisiscleanup.core.appnav.RouteConstant.caseEditorRoute
 import com.crisiscleanup.core.appnav.RouteConstant.casesRoute
 import com.crisiscleanup.core.appnav.RouteConstant.dashboardRoute
-import com.crisiscleanup.core.appnav.RouteConstant.fullscreenRoutes
 import com.crisiscleanup.core.appnav.RouteConstant.menuRoute
 import com.crisiscleanup.core.appnav.RouteConstant.teamRoute
-import com.crisiscleanup.core.appnav.RouteConstant.viewCaseRoute
+import com.crisiscleanup.core.appnav.RouteConstant.topLevelRoutes
 import com.crisiscleanup.core.appnav.RouteConstant.viewImageRoute
 import com.crisiscleanup.core.common.NavigationObserver
 import com.crisiscleanup.core.common.NetworkMonitor
@@ -75,22 +73,16 @@ class CrisisCleanupAppState(
             else -> null
         }
 
+    val isTopLevelRoute: Boolean
+        @Composable get() = topLevelRoutes.contains(currentDestination?.route)
+
     val isMenuRoute: Boolean
         @Composable get() = currentDestination?.route == menuRoute
 
     val isFullscreenRoute: Boolean
         @Composable get() {
             val route = currentDestination?.route ?: ""
-            return fullscreenRoutes.contains(route) ||
-                    route.startsWith(caseEditorRoute) ||
-                    route.startsWith(viewCaseRoute) ||
-                    route.startsWith(viewImageRoute)
-        }
-
-    val hasCustomTopBar: Boolean
-        @Composable get() {
-            val route = currentDestination?.route ?: ""
-            return route.startsWith(caseEditorRoute)
+            return route.startsWith(viewImageRoute)
         }
 
     val shouldShowBottomBar: Boolean
