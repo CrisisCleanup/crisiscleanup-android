@@ -17,7 +17,6 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.urlDecode
-import com.crisiscleanup.core.data.repository.AccountDataRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
@@ -32,7 +31,6 @@ class ViewImageViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     @ApplicationContext context: Context,
     imageLoader: ImageLoader,
-    accountDataRepository: AccountDataRepository,
     networkMonitor: NetworkMonitor,
     @Logger(CrisisCleanupLoggers.Media) logger: AppLogger,
     @Dispatcher(IO) ioDispatcher: CoroutineDispatcher,
@@ -61,24 +59,18 @@ class ViewImageViewModel @Inject constructor(
                     .target(
                         onSuccess = { result ->
                             val bitmap = (result as BitmapDrawable).bitmap.asImageBitmap()
-                            val width = bitmap.width
-                            val height = bitmap.height
-                            // TODO Determine min and max scales
                             uiState.value = ViewImageUiState.Image(bitmap)
                         },
                         onError = {
                             // TODO String res
                             val message = if (isOnline.value) "Unable to load photo"
                             else "Connect to the internet to download this photo"
-                            val isInvalidToken = false
-//                                accountDataRepository.accountData.first().isTokenInvalid
                             uiState.value = ViewImageUiState.Error(
                                 message,
                                 isOnline.value,
-                                isInvalidToken = isInvalidToken,
                             )
 
-                            logger.logDebug("Failed to load image ${isOnline.value} $isInvalidToken $imageId $imageUrl")
+                            logger.logDebug("Failed to load image ${isOnline.value} $imageId $imageUrl")
                         },
                     )
                     .build()
@@ -97,6 +89,5 @@ sealed interface ViewImageUiState {
     data class Error(
         val message: String,
         val hasInternet: Boolean = false,
-        val isInvalidToken: Boolean = false,
     ) : ViewImageUiState
 }

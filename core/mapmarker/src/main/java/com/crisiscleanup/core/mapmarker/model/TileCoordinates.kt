@@ -78,7 +78,7 @@ data class TileCoordinates(
         var siny = sin(Math.toRadians(latitude))
         // Truncating to 0.9999 effectively limits latitude to 89.189. This is
         // about a third of a tile past the edge of the world tile.
-        siny = siny.coerceAtLeast(-0.9999).coerceAtMost(0.9999)
+        siny = siny.coerceIn(-0.9999, 0.9999)
         var yNorm = 0.5 - ln((1 + siny) / (1 - siny)) / FOUR_PI
         yNorm = (yNorm * maxIndex) % 1
 
