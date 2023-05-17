@@ -1,6 +1,7 @@
 package com.crisiscleanup.feature.mediamanage.ui
 
 import android.app.Activity
+import android.util.DisplayMetrics
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -75,7 +76,12 @@ internal fun ViewImageRoute(
                 is ViewImageUiState.Image -> {
                     val imageData = uiState as ViewImageUiState.Image
 
-                    DynamicImageView(imageData, toggleFullscreen)
+                    DynamicImageView(imageData, isFullscreenMode, toggleFullscreen)
+
+                    if (!isFullscreenMode) {
+                        // TODO Show decoration and controls animating in and out.
+                        //      Signal back to view model to save.
+                    }
                 }
 
                 is ViewImageUiState.Error -> {
@@ -87,8 +93,6 @@ internal fun ViewImageRoute(
                     )
                 }
             }
-            // TODO Show decoration and controls animating in and out.
-            //      Signal back to view model to save.
         }
     }
 }
@@ -97,44 +101,67 @@ internal fun ViewImageRoute(
 @Composable
 private fun DynamicImageView(
     imageData: ViewImageUiState.Image,
+    isFullscreen: Boolean,
     toggleFullscreen: () -> Unit = {},
 ) {
-
-    var screenWidth by remember { mutableStateOf(0) }
-    var screenHeight by remember { mutableStateOf(0) }
-    var width by remember { mutableStateOf(0) }
-    var height by remember { mutableStateOf(0) }
+    var screenSizeInset by remember { mutableStateOf(Pair(0, 0)) }
+    var screenSizeFull by remember { mutableStateOf(Pair(0, 0)) }
+    var imageSize by remember { mutableStateOf(Pair(0, 0)) }
 
     var minScale by remember { mutableStateOf(1f) }
     var maxScale by remember { mutableStateOf(1f) }
     var fitScale by remember { mutableStateOf(1f) }
     var fillScale by remember { mutableStateOf(1f) }
+    var fitScalePx by remember { mutableStateOf(1f) }
 
     var scale by remember { mutableStateOf(1f) }
     var translation by remember { mutableStateOf(Offset.Zero) }
 
+    var wasFullscreen by remember { mutableStateOf(false) }
+
     val image = imageData.image
-    if (width == 0 && image.width > 0) {
+    val isDefaultDimensions = imageSize.first == 0 && image.width > 0
+    if (isDefaultDimensions) {
         val configuration = LocalConfiguration.current
-        width = image.width
-        height = image.height
+        imageSize = Pair(image.width, image.height)
         with(LocalDensity.current) {
-            // TODO These account for insets.
-            //      Use the correct value if in fullscreen mode.
-            screenWidth = configuration.screenWidthDp.dp.roundToPx()
-            screenHeight = configuration.screenHeightDp.dp.roundToPx()
+            screenSizeInset = Pair(
+                configuration.screenWidthDp.dp.roundToPx(),
+                configuration.screenHeightDp.dp.roundToPx(),
+            )
+
+            (LocalContext.current as? Activity)?.let {
+                val outMetrics = DisplayMetrics()
+                // TODO Use non-deprecated
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                    val display = it.display
+                    display?.getRealMetrics(outMetrics)
+                } else {
+                    val display = it.windowManager.defaultDisplay
+                    display.getMetrics(outMetrics)
+                }
+                screenSizeFull = Pair(outMetrics.widthPixels, outMetrics.heightPixels)
+            }
         }
 
+        wasFullscreen = isFullscreen
+    }
+
+    val screenSize =
+        if (isFullscreen && screenSizeFull.first > 0) screenSizeFull else screenSizeInset
+
+    if (isFullscreen != wasFullscreen || isDefaultDimensions) {
         val normalizedWidthScale =
-            if (width > 0) screenWidth.toFloat() / width else 1f
+            if (imageSize.first > 0) screenSize.first.toFloat() / imageSize.first else 1f
         val normalizedHeightScale =
-            if (height > 0) screenHeight.toFloat() / height else 1f
+            if (imageSize.second > 0) screenSize.second.toFloat() / imageSize.second else 1f
         fitScale = min(normalizedWidthScale, normalizedHeightScale)
         fillScale = max(normalizedWidthScale, normalizedHeightScale)
 
         minScale = 1f
         maxScale = fillScale * 10f
 
+        fitScalePx = fitScale
         fillScale = if (fitScale > fillScale) {
             if (fillScale > 0) fitScale / fillScale else 1f
         } else {
@@ -142,7 +169,10 @@ private fun DynamicImageView(
         }
 
         fitScale = 1f
-        scale = fitScale
+        scale = if (fillScale - scale < scale - fitScale) fillScale
+        else fitScale
+
+        wasFullscreen = isFullscreen
     }
 
     Image(
@@ -171,7 +201,15 @@ private fun DynamicImageView(
                 detectTransformGestures { _, pan, zoom, _ ->
                     scale = (scale * zoom).coerceIn(minScale, maxScale)
                     translation = (translation + pan)
-                    // TODO Disallow translation from taking image offscreen
+                    val trueScale = scale * fitScalePx
+                    val scaledWidth = imageSize.first * trueScale
+                    val scaledHeight = imageSize.second * trueScale
+                    val deltaX = ((scaledWidth - screenSize.first) * 0.5f).coerceAtLeast(0f)
+                    val deltaY = ((scaledHeight - screenSize.second) * 0.5f).coerceAtLeast(0f)
+                    translation = Offset(
+                        x = translation.x.coerceIn(-deltaX, deltaX),
+                        y = translation.y.coerceIn(-deltaY, deltaY),
+                    )
                 }
             }
             .graphicsLayer(
