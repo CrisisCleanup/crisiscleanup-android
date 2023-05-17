@@ -119,8 +119,8 @@ fun NavGraphBuilder.existingCaseScreen(
             }
         }
         val navToViewImage = remember(navController) {
-            { imageId: Long, imageUrl: String, isNetworkImage: Boolean ->
-                navController.navigateToViewImage(imageId, imageUrl, isNetworkImage)
+            { imageId: Long, imageUrl: String, isNetworkImage: Boolean, title: String ->
+                navController.navigateToViewImage(imageId, imageUrl, isNetworkImage, title)
             }
         }
         EditExistingCaseRoute(

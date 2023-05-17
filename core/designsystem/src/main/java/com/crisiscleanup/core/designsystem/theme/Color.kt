@@ -32,7 +32,7 @@ internal val md_theme_shadow = Color(0xFF000000)
 internal val md_theme_surfaceTint = Color(0xFFEFC100)
 internal val md_theme_surfaceTintColor = Color(0xFFEFC100)
 
-val primaryBlueColor = Color(0xFF378DFF)
+val primaryBlueColor = Color(0xFF009BFF)
 val primaryBlueOneTenthColor = primaryBlueColor.copy(alpha = 0.1f)
 val primaryRedColor = Color(0xFFED4747)
 val primaryOrangeColor = Color(0xFFF79820)

@@ -2,14 +2,22 @@ package com.crisiscleanup.feature.mediamanage.ui
 
 import android.app.Activity
 import android.util.DisplayMetrics
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -24,6 +32,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -31,11 +40,18 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
+import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
+import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.feature.mediamanage.ViewImageUiState
 import com.crisiscleanup.feature.mediamanage.ViewImageViewModel
 import kotlin.math.max
 import kotlin.math.min
+import com.crisiscleanup.core.designsystem.R as designSystemR
+
+// From TopAppBarSmallTokens.kt
+private val topBarHeight = 64.dp
 
 @Composable
 internal fun ViewImageRoute(
@@ -48,11 +64,13 @@ internal fun ViewImageRoute(
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
         var isFullscreenMode by remember { mutableStateOf(true) }
+        val isImageLoaded = uiState is ViewImageUiState.Image
+        val isFullscreenImage = isFullscreenMode && isImageLoaded
         (LocalContext.current as? Activity)?.window?.let { window ->
             with(WindowCompat.getInsetsController(window, window.decorView)) {
                 systemBarsBehavior =
                     WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-                if (isFullscreenMode && uiState is ViewImageUiState.Image) {
+                if (isFullscreenImage) {
                     hide(WindowInsetsCompat.Type.systemBars())
                 } else {
                     show(WindowInsetsCompat.Type.systemBars())
@@ -61,40 +79,112 @@ internal fun ViewImageRoute(
         }
         val toggleFullscreen = remember(viewModel) { { isFullscreenMode = !isFullscreenMode } }
 
-        val boxModifier = if (isFullscreenMode) Modifier
-        else Modifier.systemBarsPadding()
-        Box(
-            boxModifier
-                .background(color = Color.Black)
-                .fillMaxSize(),
+        val contentModifier = if (isFullscreenImage) Modifier else Modifier.systemBarsPadding()
+        Column(
+            modifier = contentModifier,
         ) {
-            when (uiState) {
-                ViewImageUiState.Loading -> {
-                    BusyIndicatorFloatingTopCenter(true)
-                }
+            if (!isFullscreenImage) {
+                TopBar(onBack = onBack)
 
-                is ViewImageUiState.Image -> {
-                    val imageData = uiState as ViewImageUiState.Image
-
-                    DynamicImageView(imageData, isFullscreenMode, toggleFullscreen)
-
-                    if (!isFullscreenMode) {
-                        // TODO Show decoration and controls animating in and out.
-                        //      Signal back to view model to save.
-                    }
-                }
-
-                is ViewImageUiState.Error -> {
+                if (uiState is ViewImageUiState.Error) {
                     val errorState = uiState as ViewImageUiState.Error
-                    // TODO Show error and message
                     Text(
                         errorState.message,
-                        listItemModifier,
+                        listItemModifier.systemBarsPadding(),
+                        color = Color.White,
                     )
                 }
             }
+
+            Box(
+                Modifier
+                    .weight(1f)
+                    .background(color = Color.Black)
+                    .fillMaxSize(),
+            ) {
+                when (uiState) {
+                    ViewImageUiState.Loading -> {
+                        BusyIndicatorFloatingTopCenter(
+                            true,
+                            // TODO Common styles
+                            color = Color.White,
+                        )
+                    }
+
+                    is ViewImageUiState.Image -> {
+                        val imageData = uiState as ViewImageUiState.Image
+
+                        DynamicImageView(imageData, isFullscreenMode, toggleFullscreen)
+                    }
+
+                    else -> {}
+                }
+
+                // TODO Show controls animating in and out.
+                //      Send changes back to view model for saving.
+            }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TopBar(
+    viewModel: ViewImageViewModel = hiltViewModel(),
+    onBack: () -> Unit = {},
+) {
+    val deleteImage = remember(viewModel) { { viewModel.deleteImage() } }
+
+    val navigationContent: (@Composable (() -> Unit)) =
+        @Composable {
+            // TODO Style and heights
+            Row(
+                Modifier
+                    .clickable(onClick = onBack)
+                    .padding(8.dp)
+            ) {
+                Text(
+                    stringResource(designSystemR.string.back),
+                    color = primaryBlueColor,
+                )
+            }
+        }
+    val isDeletable by viewModel.isImageDeletable.collectAsStateWithLifecycle()
+    val actionsContent: (@Composable (RowScope.() -> Unit)) = if (isDeletable) {
+        {
+            CrisisCleanupIconButton(
+                imageVector = CrisisCleanupIcons.Delete,
+                contentDescription = "actions.delete",
+                onClick = deleteImage,
+                enabled = true,
+            )
+        }
+    } else {
+        {}
+    }
+    CenterAlignedTopAppBar(
+        title = { Text(viewModel.translate(viewModel.screenTitle)) },
+        navigationIcon = navigationContent,
+        actions = actionsContent,
+    )
+}
+
+private fun Float.snapToNearest(min: Float, max: Float) = if (this - min < max - this) min else max
+
+private fun capPanOffset(
+    imageSize: Pair<Int, Int>,
+    scale: Float,
+    screenSize: Pair<Int, Int>,
+    offset: Offset,
+): Offset {
+    val scaledWidth = imageSize.first * scale
+    val scaledHeight = imageSize.second * scale
+    val deltaX = ((scaledWidth - screenSize.first) * 0.5f).coerceAtLeast(0f)
+    val deltaY = ((scaledHeight - screenSize.second) * 0.5f).coerceAtLeast(0f)
+    return Offset(
+        x = offset.x.coerceIn(-deltaX, deltaX),
+        y = offset.y.coerceIn(-deltaY, deltaY),
+    )
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -127,20 +217,20 @@ private fun DynamicImageView(
         with(LocalDensity.current) {
             screenSizeInset = Pair(
                 configuration.screenWidthDp.dp.roundToPx(),
-                configuration.screenHeightDp.dp.roundToPx(),
+                configuration.screenHeightDp.dp.minus(topBarHeight).roundToPx(),
             )
 
             (LocalContext.current as? Activity)?.let {
                 val outMetrics = DisplayMetrics()
-                // TODO Use non-deprecated
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                    val display = it.display
-                    display?.getRealMetrics(outMetrics)
-                } else {
-                    val display = it.windowManager.defaultDisplay
-                    display.getMetrics(outMetrics)
-                }
-                screenSizeFull = Pair(outMetrics.widthPixels, outMetrics.heightPixels)
+                screenSizeFull =
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                        val bounds = it.windowManager.currentWindowMetrics.bounds
+                        Pair(bounds.width(), bounds.height())
+                    } else {
+                        val display = it.windowManager.defaultDisplay
+                        display.getMetrics(outMetrics)
+                        Pair(outMetrics.widthPixels, outMetrics.heightPixels)
+                    }
             }
         }
 
@@ -169,8 +259,12 @@ private fun DynamicImageView(
         }
 
         fitScale = 1f
-        scale = if (fillScale - scale < scale - fitScale) fillScale
-        else fitScale
+        Log.w("photo", "Scale to $scale [$fitScale, $fillScale]")
+        scale = scale.snapToNearest(fitScale, fillScale)
+        Log.w("photo", "After scale $scale")
+
+        val trueScale = scale * fitScalePx
+        translation = capPanOffset(imageSize, trueScale, screenSize, translation)
 
         wasFullscreen = isFullscreen
     }
@@ -185,10 +279,7 @@ private fun DynamicImageView(
                         scale = when (scale) {
                             fitScale -> fillScale
                             fillScale -> fitScale
-                            else -> {
-                                if (fillScale - scale < scale - fitScale) fillScale
-                                else fitScale
-                            }
+                            else -> scale.snapToNearest(fitScale, fillScale)
                         }
                     } else {
                         scale = if (scale > fillScale) fillScale
@@ -202,14 +293,7 @@ private fun DynamicImageView(
                     scale = (scale * zoom).coerceIn(minScale, maxScale)
                     translation = (translation + pan)
                     val trueScale = scale * fitScalePx
-                    val scaledWidth = imageSize.first * trueScale
-                    val scaledHeight = imageSize.second * trueScale
-                    val deltaX = ((scaledWidth - screenSize.first) * 0.5f).coerceAtLeast(0f)
-                    val deltaY = ((scaledHeight - screenSize.second) * 0.5f).coerceAtLeast(0f)
-                    translation = Offset(
-                        x = translation.x.coerceIn(-deltaX, deltaX),
-                        y = translation.y.coerceIn(-deltaY, deltaY),
-                    )
+                    translation = capPanOffset(imageSize, trueScale, screenSize, translation)
                 }
             }
             .graphicsLayer(

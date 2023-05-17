@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.CloudSync
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -40,6 +41,7 @@ object CrisisCleanupIcons {
     val CloudSync = Icons.Default.CloudSync
     val CloudOff = Icons.Default.CloudOff
     val Dashboard = R.drawable.ic_dashboard
+    val Delete = Icons.Default.Delete
     val Edit = Icons.Default.Edit
     val ExpandLess = Icons.Default.ExpandLess
     val ExpandMore = Icons.Default.ExpandMore

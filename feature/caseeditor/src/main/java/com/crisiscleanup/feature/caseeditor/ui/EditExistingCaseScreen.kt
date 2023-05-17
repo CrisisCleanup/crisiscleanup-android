@@ -106,7 +106,7 @@ internal fun EditExistingCaseRoute(
     onBack: () -> Unit = {},
     onFullEdit: (ExistingWorksiteIdentifier) -> Unit = {},
     openTransferWorkType: () -> Unit = {},
-    openPhoto: (Long, String, Boolean) -> Unit = { _, _, _ -> },
+    openPhoto: (Long, String, Boolean, String) -> Unit = { _, _, _, _ -> },
 ) {
     val isPendingTransfer by viewModel.transferWorkTypeProvider.isPendingTransfer
     if (isPendingTransfer) {
@@ -641,7 +641,7 @@ internal fun EditExistingCasePhotosView(
     viewModel: ExistingCaseViewModel = hiltViewModel(),
     translate: (String) -> String = { s -> s },
     setEnablePagerScroll: (Boolean) -> Unit = {},
-    onPhotoSelect: (Long, String, Boolean) -> Unit = { _, _, _ -> },
+    onPhotoSelect: (Long, String, Boolean, String) -> Unit = { _, _, _, _ -> },
 ) {
     val photos by viewModel.beforeAfterPhotos.collectAsStateWithLifecycle()
 
@@ -674,7 +674,7 @@ internal fun EditExistingCasePhotosView(
                         // TODO Present options to camera or select file
                     },
                     onPhotoSelect = { image: NetworkImage ->
-                        onPhotoSelect(image.id, image.imageUrl, true)
+                        onPhotoSelect(image.id, image.imageUrl, true, viewModel.headerTitle.value)
                     },
                 )
             }
