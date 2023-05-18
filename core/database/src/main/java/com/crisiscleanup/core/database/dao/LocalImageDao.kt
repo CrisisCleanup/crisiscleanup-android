@@ -13,8 +13,8 @@ interface LocalImageDao {
     fun insertIgnore(localImage: NetworkFileLocalImageEntity)
 
     @Transaction
-    @Query("SELECT rotate_degrees FROM network_file_local_images WHERE id=:id")
-    fun getLocalImageRotation(id: Long): Int
+    @Query("SELECT * FROM network_file_local_images WHERE id=:id")
+    fun getNetworkFileLocalImage(id: Long): NetworkFileLocalImageEntity?
 
     @Transaction
     @Query("UPDATE network_file_local_images SET is_deleted=1 WHERE id=:id")

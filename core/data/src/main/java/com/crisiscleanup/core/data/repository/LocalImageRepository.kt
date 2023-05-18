@@ -23,7 +23,7 @@ class CrisisCleanupLocalImageRepository @Inject constructor(
 ) : LocalImageRepository {
     override fun streamNetworkImageUrl(id: Long) = networkFileDao.streamNetworkImageUrl(id)
     override fun getLocalImageRotation(id: Long, isNetworkImage: Boolean): Int {
-        return if (isNetworkImage) localImageDao.getLocalImageRotation(id)
+        return if (isNetworkImage) localImageDao.getNetworkFileLocalImage(id)?.rotateDegrees ?: 0
         else 0
     }
 
