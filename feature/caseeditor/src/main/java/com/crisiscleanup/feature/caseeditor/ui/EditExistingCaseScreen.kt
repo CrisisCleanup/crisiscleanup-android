@@ -576,7 +576,7 @@ private fun LazyListScope.workItems(
                 verticalArrangement = Arrangement.spacedBy(edgeSpacingHalf),
             ) {
                 if (profile.unclaimed.isNotEmpty()) {
-                    WorkTypeAction(translate("actions.claim_all_alt"), claimAll)
+                    WorkTypePrimaryAction(translate("actions.claim_all_alt"), claimAll)
                 }
                 if (profile.releasableCount > 0) {
                     WorkTypeAction(translate("actions.release_all"), releaseAll)

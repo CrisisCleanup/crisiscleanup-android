@@ -2,12 +2,14 @@ package com.crisiscleanup.core.designsystem.component
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonElevation
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -62,7 +64,7 @@ val actionSmallSpace = 12.dp
 
 private val fabPlusSpaceHeight = 48.dp.plus(actionEdgeSpace.times(2))
 
-fun Modifier.actionHeight() = height(48.dp)
+fun Modifier.actionHeight() = heightIn(min = 48.dp)
 fun Modifier.actionSize() = size(48.dp)
 fun Modifier.actionSmallSize() = size(44.dp)
 fun Modifier.fabPlusSpaceHeight() = size(fabPlusSpaceHeight)
@@ -104,7 +106,8 @@ fun BusyButton(
         elevation = if (indicateBusy) null else ButtonDefaults.elevatedButtonElevation(),
     ) {
         if (indicateBusy) {
-            CircularProgressIndicator()
+            // TODO Common dimensions
+            CircularProgressIndicator(Modifier.padding(vertical = 8.dp))
         } else {
             Text(textResId, text)
         }
@@ -118,6 +121,7 @@ fun CrisisCleanupButton(
     enabled: Boolean = true,
     @StringRes textResId: Int = 0,
     text: String = "",
+    elevation: ButtonElevation? = ButtonDefaults.buttonElevation(),
 ) {
     Button(
         modifier = modifier.actionHeight(),
@@ -125,6 +129,7 @@ fun CrisisCleanupButton(
         enabled = enabled,
         colors = primaryButtonColors(),
         shape = roundedRectangleButtonShape(),
+        elevation = elevation,
     ) {
         Text(textResId, text)
     }

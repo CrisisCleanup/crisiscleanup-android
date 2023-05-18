@@ -508,7 +508,7 @@ private fun CasesCountView(
     modifier: Modifier = Modifier,
 ) {
     val (visibleCount, totalCount) = casesCount
-    if (totalCount > 0) {
+    if (totalCount > -1) {
         val countText = if (visibleCount in 1 until totalCount) {
             stringResource(
                 R.string.visible_total_case_count,

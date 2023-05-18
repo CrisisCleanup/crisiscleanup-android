@@ -4,7 +4,8 @@ import android.content.ComponentCallbacks2
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.crisiscleanup.core.common.*
+import com.crisiscleanup.core.common.AppMemoryStats
+import com.crisiscleanup.core.common.WorksiteLocationEditor
 import com.crisiscleanup.core.common.event.TrimMemoryEventManager
 import com.crisiscleanup.core.common.event.TrimMemoryListener
 import com.crisiscleanup.core.common.log.AppLogger
@@ -13,6 +14,7 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPuller
+import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.commonassets.getDisasterIcon
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.IncidentsRepository
@@ -26,8 +28,14 @@ import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.WorksiteMapMark
-import com.crisiscleanup.feature.cases.map.*
-import com.crisiscleanup.feature.cases.model.*
+import com.crisiscleanup.feature.cases.map.CasesMapBoundsManager
+import com.crisiscleanup.feature.cases.map.CasesMapMarkerManager
+import com.crisiscleanup.feature.cases.map.CasesMapTileLayerManager
+import com.crisiscleanup.feature.cases.map.CasesOverviewMapTileRenderer
+import com.crisiscleanup.feature.cases.map.IncidentIdWorksiteCount
+import com.crisiscleanup.feature.cases.model.CoordinateBounds
+import com.crisiscleanup.feature.cases.model.WorksiteQueryState
+import com.crisiscleanup.feature.cases.model.asWorksiteGoogleMapMark
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -36,7 +44,18 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -196,12 +215,19 @@ class CasesViewModel @Inject constructor(
     )
 
     val casesCount = combine(
+        isSyncingIncidents,
         worksitesMapMarkers,
         incidentWorksitesCount,
-    ) { markers, worksitesCount -> Pair(markers.size, worksitesCount.count) }
+    ) { isSyncing, markers, worksitesCount ->
+        var totalCount = worksitesCount.count
+        if (totalCount == 0 && isSyncing) {
+            totalCount = -1
+        }
+        Pair(markers.size, totalCount)
+    }
         .stateIn(
             scope = viewModelScope,
-            initialValue = Pair(0, 0),
+            initialValue = Pair(0, -1),
             started = SharingStarted.WhileSubscribed(),
         )
 
