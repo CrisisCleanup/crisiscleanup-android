@@ -118,6 +118,14 @@ private interface DataChangeApi {
         worksiteId: Long,
         @Body release: NetworkWorkTypeChangeRelease,
     )
+
+    @TokenAuthenticationHeader
+    @HTTP(method = "DELETE", path = "worksites/{worksiteId}/files", hasBody = true)
+    suspend fun deleteFile(
+        @Path("worksiteId")
+        worksiteId: Long,
+        @Body file: NetworkFileId,
+    ): Response<Unit>
 }
 
 class WriteApiClient @Inject constructor(
@@ -200,5 +208,9 @@ class WriteApiClient @Inject constructor(
             worksiteId,
             NetworkWorkTypeChangeRelease(workTypes, reason),
         )
+    }
+
+    override suspend fun deleteFile(worksiteId: Long, file: Long) {
+        changeWorksiteApi.deleteFile(worksiteId, NetworkFileId(file))
     }
 }

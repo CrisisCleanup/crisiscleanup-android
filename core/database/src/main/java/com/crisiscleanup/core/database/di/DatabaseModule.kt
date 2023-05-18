@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Room
 import com.crisiscleanup.core.common.DatabaseVersionProvider
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
+import com.crisiscleanup.core.database.dao.LocalImageDaoPlus
+import com.crisiscleanup.core.model.data.PhotoChangeDataProvider
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -24,6 +26,11 @@ object DatabaseModule {
         CrisisCleanupDatabase::class.java,
         "crisis-cleanup-database"
     ).build()
+
+    @Provides
+    fun providesPhotoChangeDataProvider(
+        db: CrisisCleanupDatabase,
+    ): PhotoChangeDataProvider = LocalImageDaoPlus(db)
 }
 
 @Module

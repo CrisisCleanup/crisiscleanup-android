@@ -65,7 +65,7 @@ internal fun ViewImageRoute(
     viewModel: ViewImageViewModel = hiltViewModel(),
     onBack: () -> Unit = {},
 ) {
-    var isFullscreenMode by remember { mutableStateOf(true) }
+    var isFullscreenMode by remember { mutableStateOf(false) }
     val toggleFullscreen = remember(viewModel) { { isFullscreenMode = !isFullscreenMode } }
 
     val onBackRestoreFullscreen = remember(viewModel) {

@@ -46,4 +46,6 @@ interface CrisisCleanupWriteApi {
         workTypes: List<String>,
         reason: String
     )
+
+    suspend fun deleteFile(worksiteId: Long, file: Long)
 }

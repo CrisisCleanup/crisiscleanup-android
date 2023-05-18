@@ -5,8 +5,10 @@ import kotlinx.serialization.Serializable
 
 /**
  * 01 Initial model
+ * 02 Work type requests & releases
+ * 03 Photo change
  */
-const val WorksiteChangeModelVersion = 2
+const val WorksiteChangeModelVersion = 3
 
 @Serializable
 data class WorkTypeTransfer(
@@ -22,6 +24,7 @@ data class WorksiteChange(
     val change: WorksiteSnapshot,
     val requestWorkTypes: WorkTypeTransfer? = null,
     val releaseWorkTypes: WorkTypeTransfer? = null,
+    val isPhotoChange: Boolean? = false,
 ) {
     val isWorkTypeTransfer =
         requestWorkTypes?.hasValue == true || releaseWorkTypes?.hasValue == true

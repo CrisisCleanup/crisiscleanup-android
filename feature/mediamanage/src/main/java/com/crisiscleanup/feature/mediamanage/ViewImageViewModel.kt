@@ -12,16 +12,20 @@ import coil.request.ImageRequest
 import com.crisiscleanup.core.appnav.ViewImageArgs
 import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.NetworkMonitor
+import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.LocalImageRepository
+import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,11 +51,14 @@ class ViewImageViewModel @Inject constructor(
     @ApplicationContext context: Context,
     imageLoader: ImageLoader,
     private val localImageRepository: LocalImageRepository,
+    private val worksiteChangeRepository: WorksiteChangeRepository,
     private val translator: KeyTranslator,
     accountDataRepository: AccountDataRepository,
+    private val syncPusher: SyncPusher,
     networkMonitor: NetworkMonitor,
-    @Logger(CrisisCleanupLoggers.Media) logger: AppLogger,
+    @Logger(CrisisCleanupLoggers.Media) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
+    @ApplicationScope private val externalScope: CoroutineScope,
 ) : ViewModel() {
     private val caseEditorArgs = ViewImageArgs(savedStateHandle)
     private val imageId = caseEditorArgs.imageId
@@ -154,14 +161,24 @@ class ViewImageViewModel @Inject constructor(
     fun deleteImage() {
         if (isNetworkImage) {
             viewModelScope.launch(ioDispatcher) {
-                localImageRepository.deleteNetworkImage(imageId)
-                isDeleted.value = true
+                try {
+                    val worksiteId = worksiteChangeRepository.saveDeletePhoto(imageId)
+                    if (worksiteId > 0) {
+                        externalScope.launch {
+                            syncPusher.appPushWorksite(worksiteId)
+                        }
+                    }
+                    isDeleted.value = true
+                } catch (e: Exception) {
+                    // TODO Show error
+                    logger.logException(e)
+                }
             }
         }
     }
 
     fun rotateImage(rotateClockwise: Boolean) {
-        imageRotation.value += if (rotateClockwise) 90 else -90
+        imageRotation.value = (imageRotation.value + (if (rotateClockwise) 90 else -90)) % 360
     }
 }
 

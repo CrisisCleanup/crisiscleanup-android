@@ -1,7 +1,16 @@
 package com.crisiscleanup.core.database.dao
 
-import androidx.room.*
-import com.crisiscleanup.core.database.model.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.Query
+import androidx.room.Transaction
+import androidx.room.Update
+import com.crisiscleanup.core.database.model.PopulatedLocalWorksite
+import com.crisiscleanup.core.database.model.PopulatedWorksite
+import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
+import com.crisiscleanup.core.database.model.WorksiteEntity
+import com.crisiscleanup.core.database.model.WorksiteLocalModifiedAt
+import com.crisiscleanup.core.database.model.WorksiteRootEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Instant
 
@@ -357,7 +366,7 @@ interface WorksiteDao {
         """
         SELECT id
         FROM worksites_root
-        WHERE is_local_modified!=0
+        WHERE is_local_modified<>0
         ORDER BY local_modified_at DESC
         LIMIT :limit
         """

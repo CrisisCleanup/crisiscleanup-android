@@ -2,7 +2,6 @@ package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppVersionProvider
-import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -53,7 +52,6 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private val languageTranslationsRepository: LanguageTranslationsRepository,
     private val recentWorksiteDao: RecentWorksiteDao,
     private val dataSource: CrisisCleanupNetworkDataSource,
-    private val authEventManager: AuthEventManager,
     private val workTypeTransferRequestDaoPlus: WorkTypeTransferRequestDaoPlus,
     private val appVersionProvider: AppVersionProvider,
     private val appEnv: AppEnv,

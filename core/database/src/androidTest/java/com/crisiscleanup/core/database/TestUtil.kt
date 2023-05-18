@@ -36,6 +36,7 @@ object TestUtil {
                 requestWorkTypes: List<String>,
                 releaseReason: String,
                 releaseWorkTypes: List<String>,
+                isPhotoChange: Boolean,
             ) = Pair(1, "test-worksite-change")
         })
 

@@ -427,6 +427,32 @@ class WorksiteChangeDaoPlus @Inject constructor(
         }
     }
 
+    suspend fun saveDeletePhoto(fileId: Long, organizationId: Long) = db.withTransaction {
+        db.networkFileDao().getWorksiteFromFile(fileId)?.let { (worksiteId) ->
+            val localImageDaoPlus = LocalImageDaoPlus(db)
+            localImageDaoPlus.deleteNetworkImage(fileId)
+
+            val (changeVersion, serializedChange) = changeSerializer.serialize(
+                EmptyWorksite,
+                EmptyWorksite.copy(id = worksiteId),
+                isPhotoChange = true,
+            )
+            val changeEntity = WorksiteChangeEntity(
+                0,
+                appVersionProvider.versionCode,
+                organizationId,
+                worksiteId,
+                "",
+                changeVersion,
+                serializedChange,
+            )
+            db.worksiteChangeDao().insert(changeEntity)
+            return@withTransaction worksiteId
+        }
+
+        return@withTransaction -1
+    }
+
     private fun saveWorksiteChange(
         worksiteStart: Worksite,
         worksiteChange: Worksite,

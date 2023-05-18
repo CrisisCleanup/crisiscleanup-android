@@ -22,6 +22,7 @@ class NetworkWorksiteChangeSerializer @Inject constructor() : WorksiteChangeSeri
         requestWorkTypes: List<String>,
         releaseReason: String,
         releaseWorkTypes: List<String>,
+        isPhotoChange: Boolean,
     ): Pair<Int, String> {
         val snapshotStart = if (worksiteStart.isNew) null
         else worksiteStart.asSnapshotModel(flagIdLookup, noteIdLookup, workTypeIdLookup)
@@ -32,6 +33,7 @@ class NetworkWorksiteChangeSerializer @Inject constructor() : WorksiteChangeSeri
             snapshotChange,
             WorkTypeTransfer(requestReason, requestWorkTypes),
             WorkTypeTransfer(releaseReason, releaseWorkTypes),
+            isPhotoChange = isPhotoChange,
         )
         val serializedChange = Json.encodeToString(change)
         return Pair(WorksiteChangeModelVersion, serializedChange)

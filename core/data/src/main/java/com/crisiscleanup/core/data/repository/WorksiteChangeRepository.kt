@@ -63,6 +63,8 @@ interface WorksiteChangeRepository {
      */
     suspend fun syncWorksites(syncWorksiteCount: Int = 0): Boolean
 
+    suspend fun saveDeletePhoto(fileId: Long): Long
+
     suspend fun trySyncWorksite(worksiteId: Long): Boolean
 }
 
@@ -93,7 +95,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
 
     private val syncWorksiteMutex = Mutex()
 
-    override val streamWorksitesPendingSync = worksiteChangeDao.getWorksitesPendingSync()
+    override val streamWorksitesPendingSync = worksiteChangeDao.streamWorksitesPendingSync()
         .map { it.map(PopulatedWorksite::asExternalModel) }
 
     override suspend fun saveWorksiteChange(
@@ -141,6 +143,11 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
         return false
     }
 
+    override suspend fun saveDeletePhoto(fileId: Long): Long {
+        val orgId = accountDataRepository.accountData.first().org.id
+        return worksiteChangeDaoPlus.saveDeletePhoto(fileId, orgId)
+    }
+
     override suspend fun syncWorksites(syncWorksiteCount: Int): Boolean = coroutineScope {
         if (syncWorksiteMutex.tryLock()) {
             var worksiteId: Long
@@ -149,9 +156,12 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
                 var syncCounter = 0
                 val syncCountLimit = if (syncWorksiteCount < 1) 20 else syncWorksiteCount
                 while (syncCounter++ < syncCountLimit) {
-                    val worksiteIds = worksiteDao.getLocallyModifiedWorksites(1)
+                    var worksiteIds = worksiteDao.getLocallyModifiedWorksites(1)
                     if (worksiteIds.isEmpty()) {
-                        break
+                        worksiteIds = worksiteChangeDao.getWorksitesPendingSync(1)
+                        if (worksiteIds.isEmpty()) {
+                            break
+                        }
                     }
                     worksiteId = worksiteIds.first()
 

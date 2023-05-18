@@ -16,6 +16,8 @@ data class NetworkFileEntity(
     val id: Long,
     @ColumnInfo("created_at")
     val createdAt: Instant,
+    @ColumnInfo("file_id", defaultValue = "0")
+    val fileId: Long,
     @ColumnInfo("file_type_t")
     val fileTypeT: String,
     @ColumnInfo("full_url")

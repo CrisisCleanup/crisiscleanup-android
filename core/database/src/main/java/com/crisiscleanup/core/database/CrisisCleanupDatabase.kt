@@ -84,7 +84,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         WorksiteNetworkFileCrossRef::class,
         NetworkFileLocalImageEntity::class,
     ],
-    version = 21,
+    version = 22,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
@@ -106,6 +106,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         AutoMigration(from = 18, to = 19, spec = Schema18To19::class),
         AutoMigration(from = 19, to = 20),
         AutoMigration(from = 20, to = 21),
+        AutoMigration(from = 21, to = 22),
     ],
     exportSchema = true,
 )

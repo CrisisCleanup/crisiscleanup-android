@@ -16,5 +16,6 @@ interface WorksiteChangeSerializer {
         requestWorkTypes: List<String> = emptyList(),
         releaseReason: String = "",
         releaseWorkTypes: List<String> = emptyList(),
+        isPhotoChange: Boolean = false,
     ): Pair<Int, String>
 }

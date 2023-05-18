@@ -12,6 +12,7 @@ import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError
 import com.crisiscleanup.core.network.model.NetworkErrors
 import com.crisiscleanup.core.network.retrofit.RequestHeaderKey
 import com.crisiscleanup.core.network.retrofit.RequestHeaderKeysLookup
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import okhttp3.Interceptor
@@ -29,7 +30,11 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
     private val authEventManager: AuthEventManager,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : RetrofitInterceptorProvider {
-    private val json = Json { ignoreUnknownKeys = true }
+    @OptIn(ExperimentalSerializationApi::class)
+    private val json = Json {
+        ignoreUnknownKeys = true
+        explicitNulls = false
+    }
 
     private fun getHeaderKey(
         request: Request,

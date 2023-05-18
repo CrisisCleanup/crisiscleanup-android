@@ -10,10 +10,7 @@ interface LocalImageRepository {
     fun streamNetworkImageUrl(id: Long): Flow<String>
     fun getLocalImageRotation(id: Long, isNetworkImage: Boolean): Int
 
-    suspend fun deleteNetworkImage(id: Long)
-
     suspend fun setNetworkImageRotation(id: Long, rotationDegrees: Int)
-
 }
 
 class CrisisCleanupLocalImageRepository @Inject constructor(
@@ -26,8 +23,6 @@ class CrisisCleanupLocalImageRepository @Inject constructor(
         return if (isNetworkImage) localImageDao.getNetworkFileLocalImage(id)?.rotateDegrees ?: 0
         else 0
     }
-
-    override suspend fun deleteNetworkImage(id: Long) = localImageDaoPlus.deleteNetworkImage(id)
 
     override suspend fun setNetworkImageRotation(id: Long, rotationDegrees: Int) =
         localImageDaoPlus.setNetworkImageRotation(id, rotationDegrees)

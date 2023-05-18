@@ -31,3 +31,9 @@ data class NetworkFile(
     val title: String? = null,
     val url: String,
 )
+
+@Serializable
+data class NetworkFileId(
+    @SerialName("file")
+    val file: Long,
+)

@@ -101,6 +101,7 @@ class WorksiteDaoPlus @Inject constructor(
         daoPlus.syncUpsert(notes)
     }
 
+    // TODO Write tests
     private suspend fun syncFiles(
         worksiteId: Long,
         files: List<NetworkFileEntity>,
@@ -111,10 +112,10 @@ class WorksiteDaoPlus @Inject constructor(
 
         val networkFileDao = db.networkFileDao()
         networkFileDao.upsert(files)
-        val networkFileCrossReferences =
-            files.map { WorksiteNetworkFileCrossRef(worksiteId, it.id) }
-        val networkFileIds = files.map(NetworkFileEntity::id).toSet()
-        networkFileDao.deleteUnspecifiedCrossReferences(worksiteId, networkFileIds)
+        val ids = files.map(NetworkFileEntity::id).toSet()
+        networkFileDao.deleteDeleted(worksiteId, ids)
+        networkFileDao.deleteUnspecifiedCrossReferences(worksiteId, ids)
+        val networkFileCrossReferences = ids.map { WorksiteNetworkFileCrossRef(worksiteId, it) }
         networkFileDao.insertIgnoreCrossReferences(networkFileCrossReferences)
     }
 

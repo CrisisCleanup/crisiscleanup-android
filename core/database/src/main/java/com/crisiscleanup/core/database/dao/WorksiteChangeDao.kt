@@ -62,5 +62,9 @@ interface WorksiteChangeDao {
         ON w.id = wc.worksite_id
         """
     )
-    fun getWorksitesPendingSync(): Flow<List<PopulatedWorksite>>
+    fun streamWorksitesPendingSync(): Flow<List<PopulatedWorksite>>
+
+    @Transaction
+    @Query("SELECT DISTINCT worksite_id FROM worksite_changes LIMIT :limit")
+    fun getWorksitesPendingSync(limit: Int): List<Long>
 }
