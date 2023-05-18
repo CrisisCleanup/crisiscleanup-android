@@ -69,10 +69,9 @@ class AccountInfoDataSource @Inject constructor(
         }
     }
 
-    suspend fun clearToken() {
+    suspend fun expireToken() {
         dataStore.updateData {
             it.copy {
-                accessToken = ""
                 expirySeconds = 0
             }
         }

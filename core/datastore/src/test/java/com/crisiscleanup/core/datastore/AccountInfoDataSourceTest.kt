@@ -66,7 +66,7 @@ class AccountInfoDataSourceTest {
     }
 
     @Test
-    fun clearToken() = runTest {
+    fun expireToken() = runTest {
         subject.setAccount(
             523,
             "access-token",
@@ -81,11 +81,11 @@ class AccountInfoDataSourceTest {
             ),
         )
 
-        subject.clearToken()
+        subject.expireToken()
 
         val expected = AccountData(
             523,
-            "",
+            "access-token",
             Instant.fromEpochSeconds(0),
             "first last",
             "email",

@@ -80,7 +80,7 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
     override fun onExpiredToken() {
         accessTokenCached = ""
         externalScope.launch(ioDispatcher) {
-            dataSource.clearToken()
+            dataSource.expireToken()
         }
     }
 }
