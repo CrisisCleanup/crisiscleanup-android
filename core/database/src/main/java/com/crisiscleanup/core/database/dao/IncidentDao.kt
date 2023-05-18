@@ -1,7 +1,17 @@
 package com.crisiscleanup.core.database.dao
 
-import androidx.room.*
-import com.crisiscleanup.core.database.model.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Transaction
+import androidx.room.Upsert
+import com.crisiscleanup.core.database.model.IncidentEntity
+import com.crisiscleanup.core.database.model.IncidentFormFieldEntity
+import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
+import com.crisiscleanup.core.database.model.IncidentLocationEntity
+import com.crisiscleanup.core.database.model.PopulatedFormFieldsIncident
+import com.crisiscleanup.core.database.model.PopulatedIncident
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -11,7 +21,7 @@ interface IncidentDao {
 
     @Transaction
     @Query("SELECT COUNT(*) FROM incidents")
-    suspend fun getIncidentCount(): Int
+    fun getIncidentCount(): Int
 
     @Transaction
     @Query(
@@ -26,11 +36,11 @@ interface IncidentDao {
 
     @Transaction
     @Query("SELECT * FROM incidents WHERE id=:id")
-    suspend fun getIncident(id: Long): PopulatedIncident?
+    fun getIncident(id: Long): PopulatedIncident?
 
     @Transaction
     @Query("SELECT * FROM incidents WHERE id=:id")
-    suspend fun getFormFieldsIncident(id: Long): PopulatedFormFieldsIncident?
+    fun getFormFieldsIncident(id: Long): PopulatedFormFieldsIncident?
 
     @Transaction
     @Query("SELECT * FROM incidents WHERE id=:id")

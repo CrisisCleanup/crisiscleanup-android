@@ -59,11 +59,12 @@ data class WorksiteNetworkFileCrossRef(
     val networkFileId: Long,
 )
 
-fun NetworkFileEntity.asImageModel() = NetworkImage(
+fun NetworkFileEntity.asImageModel(rotateDegrees: Int) = NetworkImage(
     id = id,
     createdAt = createdAt,
     title = title ?: "",
     thumbnailUrl = smallThumbnailUrl ?: "",
     imageUrl = fullUrl ?: "",
     tag = tag ?: "",
+    rotateDegrees = rotateDegrees,
 )

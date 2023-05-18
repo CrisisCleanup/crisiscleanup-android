@@ -60,4 +60,7 @@ object DaoModule {
 
     @Provides
     fun networkFileDao(db: CrisisCleanupDatabase) = db.networkFileDao()
+
+    @Provides
+    fun localImageDao(db: CrisisCleanupDatabase) = db.localImageDao()
 }

@@ -16,6 +16,7 @@ data class NetworkImage(
     val thumbnailUrl: String,
     val imageUrl: String,
     val tag: String,
+    val rotateDegrees: Int,
     val category: ImageCategory = imageCategoryLookup[tag.lowercase()] ?: ImageCategory.Before,
     val isAfter: Boolean = category == ImageCategory.After,
 )

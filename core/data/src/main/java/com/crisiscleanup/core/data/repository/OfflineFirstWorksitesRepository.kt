@@ -148,10 +148,8 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         longitudeRight
     )
 
-    override suspend fun getLocalId(
-        incidentId: Long,
-        networkWorksiteId: Long,
-    ) = worksiteDao.getWorksiteId(incidentId, networkWorksiteId)
+    override fun getLocalId(incidentId: Long, networkWorksiteId: Long) =
+        worksiteDao.getWorksiteId(incidentId, networkWorksiteId)
 
     override fun getWorksiteSyncStats(incidentId: Long) =
         worksiteSyncStatDao.getSyncStats(incidentId).firstOrNull()?.asExternalModel()

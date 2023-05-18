@@ -32,6 +32,7 @@ import com.crisiscleanup.core.model.data.WorkTypeStatus
 import com.crisiscleanup.feature.caseeditor.OrgClaimWorkType
 import com.crisiscleanup.feature.caseeditor.WorkTypeSummary
 
+// Common colors
 internal val cardContainerColor = Color.White
 
 @Composable

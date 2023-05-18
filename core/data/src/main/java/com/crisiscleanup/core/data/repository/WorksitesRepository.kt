@@ -70,7 +70,7 @@ interface WorksitesRepository {
 
     fun getWorksiteSyncStats(incidentId: Long): IncidentDataSyncStats?
 
-    suspend fun getLocalId(incidentId: Long, networkWorksiteId: Long): Long
+    fun getLocalId(incidentId: Long, networkWorksiteId: Long): Long
 
     suspend fun syncNetworkWorksite(
         incidentId: Long,

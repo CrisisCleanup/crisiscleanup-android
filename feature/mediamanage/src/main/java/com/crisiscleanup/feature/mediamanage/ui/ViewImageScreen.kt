@@ -2,6 +2,9 @@ package com.crisiscleanup.feature.mediamanage.ui
 
 import android.app.Activity
 import android.util.DisplayMetrics
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -12,17 +15,21 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -42,6 +49,7 @@ import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCen
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.feature.mediamanage.ViewImageUiState
 import com.crisiscleanup.feature.mediamanage.ViewImageViewModel
@@ -57,9 +65,40 @@ internal fun ViewImageRoute(
     viewModel: ViewImageViewModel = hiltViewModel(),
     onBack: () -> Unit = {},
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
     var isFullscreenMode by remember { mutableStateOf(true) }
+    val toggleFullscreen = remember(viewModel) { { isFullscreenMode = !isFullscreenMode } }
+
+    val onBackRestoreFullscreen = remember(viewModel) {
+        {
+            isFullscreenMode = false
+            onBack()
+        }
+    }
+
+    BackHandler {
+        onBackRestoreFullscreen()
+    }
+
+    val isDeleted by viewModel.isDeleted.collectAsStateWithLifecycle()
+    if (isDeleted) {
+        onBackRestoreFullscreen()
+    } else {
+        ViewImageScreen(
+            onBack = onBackRestoreFullscreen,
+            isFullscreenMode = isFullscreenMode,
+            toggleFullscreen = toggleFullscreen,
+        )
+    }
+}
+
+@Composable
+private fun ViewImageScreen(
+    viewModel: ViewImageViewModel = hiltViewModel(),
+    onBack: () -> Unit = {},
+    isFullscreenMode: Boolean = false,
+    toggleFullscreen: () -> Unit = {},
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isImageLoaded = uiState is ViewImageUiState.Image
     val isFullscreenImage = isFullscreenMode && isImageLoaded
     (LocalContext.current as? Activity)?.window?.let { window ->
@@ -73,7 +112,6 @@ internal fun ViewImageRoute(
             }
         }
     }
-    val toggleFullscreen = remember(viewModel) { { isFullscreenMode = !isFullscreenMode } }
 
     val contentModifier = if (isFullscreenImage) Modifier else Modifier.systemBarsPadding()
     Column(
@@ -108,15 +146,21 @@ internal fun ViewImageRoute(
 
                 is ViewImageUiState.Image -> {
                     val imageData = uiState as ViewImageUiState.Image
+                    val imageRotation by viewModel.imageRotation.collectAsStateWithLifecycle()
+                    DynamicImageView(imageData, imageRotation, isFullscreenMode, toggleFullscreen)
 
-                    DynamicImageView(imageData, isFullscreenMode, toggleFullscreen)
+                    androidx.compose.animation.AnimatedVisibility(
+                        modifier = Modifier.align(Alignment.BottomCenter),
+                        visible = !isFullscreenImage,
+                        enter = fadeIn(),
+                        exit = fadeOut(),
+                    ) {
+                        ImageActionBar()
+                    }
                 }
 
                 else -> {}
             }
-
-            // TODO Show controls animating in and out.
-            //      Send changes back to view model for saving.
         }
     }
 }
@@ -185,6 +229,7 @@ private fun capPanOffset(
 @Composable
 private fun DynamicImageView(
     imageData: ViewImageUiState.Image,
+    rotationDegrees: Int = 0,
     isFullscreen: Boolean,
     toggleFullscreen: () -> Unit = {},
 ) {
@@ -192,11 +237,8 @@ private fun DynamicImageView(
     var screenSizeFull by remember { mutableStateOf(Pair(0, 0)) }
     var imageSize by remember { mutableStateOf(Pair(0, 0)) }
 
-    var minScale by remember { mutableStateOf(1f) }
-    var maxScale by remember { mutableStateOf(1f) }
-    var fitScale by remember { mutableStateOf(1f) }
-    var fillScale by remember { mutableStateOf(1f) }
-    var fitScalePx by remember { mutableStateOf(1f) }
+    var imageScalesRest by remember { mutableStateOf(RectangularScale()) }
+    var imageScalesRotated by remember { mutableStateOf(RectangularScale()) }
 
     var scale by remember { mutableStateOf(1f) }
     var translation by remember { mutableStateOf(Offset.Zero) }
@@ -233,33 +275,23 @@ private fun DynamicImageView(
 
     val screenSize =
         if (isFullscreen && screenSizeFull.first > 0) screenSizeFull else screenSizeInset
+    val isRotated = rotationDegrees % 180 != 0
 
     if (isFullscreen != wasFullscreen || isDefaultDimensions) {
-        val normalizedWidthScale =
-            if (imageSize.first > 0) screenSize.first.toFloat() / imageSize.first else 1f
-        val normalizedHeightScale =
-            if (imageSize.second > 0) screenSize.second.toFloat() / imageSize.second else 1f
-        fitScale = min(normalizedWidthScale, normalizedHeightScale)
-        fillScale = max(normalizedWidthScale, normalizedHeightScale)
+        imageScalesRest = RectangularScale.getScales(imageSize, screenSize)
+        imageScalesRotated = RectangularScale.getScales(imageSize, screenSize, true)
 
-        minScale = 1f
-        maxScale = fillScale * 10f
+        val scales = if (isRotated) imageScalesRotated else imageScalesRest
 
-        fitScalePx = fitScale
-        fillScale = if (fitScale > fillScale) {
-            if (fillScale > 0) fitScale / fillScale else 1f
-        } else {
-            if (fitScale > 0) fillScale / fitScale else 1f
-        }
+        scale = scale.snapToNearest(scales.fitScale, scales.fillScale)
 
-        fitScale = 1f
-        scale = scale.snapToNearest(fitScale, fillScale)
-
-        val trueScale = scale * fitScalePx
+        val trueScale = scale * scales.fitScalePx
         translation = capPanOffset(imageSize, trueScale, screenSize, translation)
 
         wasFullscreen = isFullscreen
     }
+
+    val imageScales = if (isRotated) imageScalesRotated else imageScalesRest
 
     Image(
         modifier = Modifier
@@ -267,24 +299,26 @@ private fun DynamicImageView(
             .combinedClickable(
                 onClick = toggleFullscreen,
                 onDoubleClick = {
-                    if (translation == Offset.Zero) {
-                        scale = when (scale) {
-                            fitScale -> fillScale
-                            fillScale -> fitScale
-                            else -> scale.snapToNearest(fitScale, fillScale)
+                    with(imageScales) {
+                        if (translation == Offset.Zero) {
+                            scale = when (scale) {
+                                fitScale -> fillScale
+                                fillScale -> fitScale
+                                else -> scale.snapToNearest(fitScale, fillScale)
+                            }
+                        } else {
+                            scale = if (scale > fillScale) fillScale
+                            else fitScale
+                            translation = Offset.Zero
                         }
-                    } else {
-                        scale = if (scale > fillScale) fillScale
-                        else fitScale
-                        translation = Offset.Zero
                     }
                 },
             )
             .pointerInput(Unit) {
                 detectTransformGestures { _, pan, zoom, _ ->
-                    scale = (scale * zoom).coerceIn(minScale, maxScale)
+                    scale = (scale * zoom).coerceIn(imageScales.minScale, imageScales.maxScale)
                     translation = (translation + pan)
-                    val trueScale = scale * fitScalePx
+                    val trueScale = scale * imageScales.fitScalePx
                     translation = capPanOffset(imageSize, trueScale, screenSize, translation)
                 }
             }
@@ -293,8 +327,81 @@ private fun DynamicImageView(
                 scaleY = scale,
                 translationX = translation.x,
                 translationY = translation.y,
+                rotationZ = rotationDegrees.toFloat(),
             ),
         contentDescription = null,
         bitmap = imageData.image,
     )
+}
+
+@Composable
+private fun ImageActionBar(
+    viewModel: ViewImageViewModel = hiltViewModel(),
+) {
+    Surface(
+        modifier = listItemModifier,
+        // TODO Common dimensions
+        shape = RoundedCornerShape(4.dp),
+        // TODO Common colors
+        color = Color.White,
+    ) {
+        Row(
+            horizontalArrangement = listItemSpacedBy,
+        ) {
+            Spacer(Modifier.weight(1f))
+            CrisisCleanupIconButton(
+                imageVector = CrisisCleanupIcons.RotateCcw,
+                onClick = { viewModel.rotateImage(false) }
+            )
+            CrisisCleanupIconButton(
+                imageVector = CrisisCleanupIcons.RotateClockwise,
+                onClick = { viewModel.rotateImage(true) }
+            )
+            Spacer(Modifier.weight(1f))
+        }
+    }
+}
+
+private data class RectangularScale(
+    val minScale: Float = 1f,
+    val maxScale: Float = 1f,
+    val fitScale: Float = 1f,
+    val fillScale: Float = 1f,
+    val fitScalePx: Float = 1f,
+) {
+    companion object {
+        fun getScales(
+            imageSize: Pair<Int, Int>,
+            screenSize: Pair<Int, Int>,
+            isRotated: Boolean = false,
+        ): RectangularScale {
+            val width: Int
+            val height: Int
+            val (screenWidth, screenHeight) = screenSize
+            if (isRotated) {
+                width = imageSize.second
+                height = imageSize.first
+            } else {
+                width = imageSize.first
+                height = imageSize.second
+            }
+            val normalizedWidthScale = if (width > 0) screenWidth.toFloat() / width else 1f
+            val normalizedHeightScale = if (height > 0) screenHeight.toFloat() / height else 1f
+            var fitScale = min(normalizedWidthScale, normalizedHeightScale)
+            var fillScale = max(normalizedWidthScale, normalizedHeightScale)
+
+            val minScale = 1f
+            val maxScale = fillScale * 10f
+
+            val fitScalePx = fitScale
+            fillScale = if (fitScale > fillScale) {
+                if (fillScale > 0) fitScale / fillScale else 1f
+            } else {
+                if (fitScale > 0) fillScale / fitScale else 1f
+            }
+
+            fitScale = 1f
+            return RectangularScale(minScale, maxScale, fitScale, fillScale, fitScalePx)
+        }
+    }
 }

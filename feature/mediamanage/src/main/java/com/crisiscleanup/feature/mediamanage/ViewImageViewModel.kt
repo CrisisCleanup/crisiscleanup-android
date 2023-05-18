@@ -22,14 +22,23 @@ import com.crisiscleanup.core.data.repository.LocalImageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 
 @HiltViewModel
@@ -45,18 +54,20 @@ class ViewImageViewModel @Inject constructor(
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     private val caseEditorArgs = ViewImageArgs(savedStateHandle)
-
-    // Better to go off of image ID in case new URL comes in.
     private val imageId = caseEditorArgs.imageId
     private val isNetworkImage = caseEditorArgs.isNetworkImage
     val screenTitle = caseEditorArgs.title
 
-    val isOffline = networkMonitor.isNotOnline
+    val isDeleted = MutableStateFlow(false)
+
+    private val isOffline = networkMonitor.isNotOnline
         .stateIn(
             scope = viewModelScope,
             initialValue = false,
             started = SharingStarted.WhileSubscribed(),
         )
+
+    val imageRotation = MutableStateFlow(0)
 
     val uiState = localImageRepository.streamNetworkImageUrl(imageId).flatMapLatest { url ->
         val imageUrl = url.ifBlank { caseEditorArgs.imageUrl }
@@ -111,22 +122,46 @@ class ViewImageViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
+    private var savedImageRotation = AtomicReference(999)
+
+    init {
+        viewModelScope.launch(ioDispatcher) {
+            val rotation = localImageRepository.getLocalImageRotation(imageId, isNetworkImage)
+            savedImageRotation = AtomicReference(rotation)
+            withContext(Dispatchers.Main) {
+                if (rotation != imageRotation.value) {
+                    imageRotation.value = rotation
+                }
+            }
+        }
+
+        imageRotation
+            .debounce(250)
+            .distinctUntilChanged()
+            .onEach { rotation ->
+                if (savedImageRotation.get() < 999) {
+                    if (isNetworkImage) {
+                        localImageRepository.setNetworkImageRotation(imageId, rotation)
+                    }
+                }
+            }
+            .flowOn(ioDispatcher)
+            .launchIn(viewModelScope)
+    }
+
     fun translate(key: String) = translator.translate(key) ?: key
 
     fun deleteImage() {
         if (isNetworkImage) {
             viewModelScope.launch(ioDispatcher) {
-                // localImageRepository.deleteNetworkImage(imageId)
+                localImageRepository.deleteNetworkImage(imageId)
+                isDeleted.value = true
             }
         }
     }
 
     fun rotateImage(rotateClockwise: Boolean) {
-        if (isNetworkImage) {
-            viewModelScope.launch(ioDispatcher) {
-                // localImageRepository.setNetworkImageRotation(imageId, rotation)
-            }
-        }
+        imageRotation.value += if (rotateClockwise) 90 else -90
     }
 }
 

@@ -21,6 +21,8 @@ import androidx.compose.material.icons.filled.NoteAdd
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonOutline
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Rotate90DegreesCcw
+import androidx.compose.material.icons.filled.Rotate90DegreesCw
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -53,6 +55,8 @@ object CrisisCleanupIcons {
     val MyLocation = Icons.Default.MyLocation
     val Person = Icons.Default.Person
     val Phone = Icons.Default.Phone
+    val RotateClockwise = Icons.Default.Rotate90DegreesCw
+    val RotateCcw = Icons.Default.Rotate90DegreesCcw
     val Search = Icons.Rounded.Search
     val Team = R.drawable.ic_team
     val UnfoldMore = Icons.Default.UnfoldMore

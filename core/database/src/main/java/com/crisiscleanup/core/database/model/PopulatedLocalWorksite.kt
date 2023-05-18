@@ -52,6 +52,16 @@ data class PopulatedLocalWorksite(
         )
     )
     val files: List<NetworkFileEntity>,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "id",
+        associateBy = Junction(
+            value = WorksiteNetworkFileCrossRef::class,
+            parentColumn = "worksite_id",
+            entityColumn = "network_file_id",
+        )
+    )
+    val localImages: List<NetworkFileLocalImageEntity>,
 )
 
 fun PopulatedLocalWorksite.asExternalModel(
@@ -66,6 +76,7 @@ fun PopulatedLocalWorksite.asExternalModel(
             valueBoolean = it.valueBool,
         )
     }
+    val localImageLookup = localImages.associateBy(NetworkFileLocalImageEntity::id)
     return with(entity) {
         LocalWorksite(
             Worksite(
@@ -81,8 +92,13 @@ fun PopulatedLocalWorksite.asExternalModel(
                 createdAt = createdAt,
                 email = email,
                 favoriteId = favoriteId,
-                files = files.filter { it.fullUrl?.isNotBlank() == true }
-                    .map(NetworkFileEntity::asImageModel),
+                files = files
+                    .filter { localImageLookup[it.id]?.isDeleted != true }
+                    .filter { it.fullUrl?.isNotBlank() == true }
+                    .map {
+                        val rotateDegrees = localImageLookup[it.id]?.rotateDegrees ?: 0
+                        it.asImageModel(rotateDegrees)
+                    },
                 flags = flags.map { it.asExternalModel(translator) },
                 formData = formDataMap,
                 incidentId = incidentId,
