@@ -7,7 +7,6 @@ import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.data.model.IncidentWorksitesPageRequest
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
-import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.coroutineScope
 import kotlinx.datetime.Clock
@@ -93,13 +92,12 @@ class WorksitesNetworkDataFileCache @Inject constructor(
         }
 
         val requestTime = Clock.System.now()
-        val worksitesRequest = networkDataSource.getWorksitesPage(
+        val worksites = networkDataSource.getWorksitesPage(
             incidentId,
             updatedAfter,
             pageCount,
             pageIndex + 1,
         )
-        NetworkCrisisCleanupApiError.tryThrowException(authEventManager, worksitesRequest.errors)
 
         val dataCache = IncidentWorksitesPageRequest(
             incidentId,
@@ -107,7 +105,7 @@ class WorksitesNetworkDataFileCache @Inject constructor(
             pageIndex,
             pageIndex * pageCount,
             expectedCount,
-            worksitesRequest.results ?: emptyList(),
+            worksites,
         )
 
         val cacheFile = File(context.cacheDir, cacheFileName)

@@ -10,14 +10,17 @@ import com.crisiscleanup.core.data.IncidentOrganizationsSyncer
 import com.crisiscleanup.core.data.model.asEntity
 import com.crisiscleanup.core.data.model.incidentLocationCrossReferences
 import com.crisiscleanup.core.data.model.locationsAsEntity
-import com.crisiscleanup.core.database.dao.*
+import com.crisiscleanup.core.database.dao.IncidentDao
+import com.crisiscleanup.core.database.dao.IncidentDaoPlus
+import com.crisiscleanup.core.database.dao.IncidentOrganizationDao
+import com.crisiscleanup.core.database.dao.LocationDaoPlus
+import com.crisiscleanup.core.database.dao.LocationEntitySource
 import com.crisiscleanup.core.database.model.PopulatedIncident
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.IncidentOrganizationsStableModelBuildVersion
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
-import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.tryThrowException
 import com.crisiscleanup.core.network.model.NetworkIncident
 import com.crisiscleanup.core.network.model.NetworkIncidentLocation
 import kotlinx.coroutines.CoroutineDispatcher
@@ -80,10 +83,8 @@ class OfflineFirstIncidentsRepository @Inject constructor(
 
     private suspend fun saveLocations(incidents: Collection<NetworkIncident>) {
         val locationIds = incidents.flatMap { it.locations.map(NetworkIncidentLocation::location) }
-        val networkLocations = networkDataSource.getIncidentLocations(locationIds)
-        tryThrowException(authEventManager, networkLocations.errors)
-
-        networkLocations.results?.let { locations ->
+        val locations = networkDataSource.getIncidentLocations(locationIds)
+        if (locations.isNotEmpty()) {
             val sourceLocations = locations.map {
                 val multiCoordinates = it.geom?.condensedCoordinates
                 val coordinates = it.poly?.condensedCoordinates ?: it.point?.coordinates
@@ -142,11 +143,8 @@ class OfflineFirstIncidentsRepository @Inject constructor(
                 queryFields = fullIncidentQueryFields
                 pullAfter = recentTimestamp
             }
-            val networkIncidents =
-                networkDataSource.getIncidents(queryFields, after = pullAfter)
-            tryThrowException(authEventManager, networkIncidents.errors)
-
-            networkIncidents.results?.let { incidents ->
+            val incidents = networkDataSource.getIncidents(queryFields, after = pullAfter)
+            if (incidents.isNotEmpty()) {
                 saveIncidentsPrimaryData(incidents)
 
                 // TODO Use configurable threshold
@@ -158,11 +156,8 @@ class OfflineFirstIncidentsRepository @Inject constructor(
                         incidents.sortedWith { a, b -> if (a.startAt > b.startAt) -1 else 1 }
                     ordered.subList(0, ordered.size.coerceAtMost(3))
                         .forEach { incident ->
-                            val networkIncident =
-                                networkDataSource.getIncident(incident.id, fullIncidentQueryFields)
-                            tryThrowException(authEventManager, networkIncident.errors)
-
-                            networkIncident.incident?.let { saveFormFields(listOf(it)) }
+                            networkDataSource.getIncident(incident.id, fullIncidentQueryFields)
+                                ?.let { saveFormFields(listOf(it)) }
                         }
                 }
             }
@@ -184,9 +179,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
 
     override suspend fun pullIncident(id: Long) {
         val networkIncident = networkDataSource.getIncident(id, fullIncidentQueryFields)
-        tryThrowException(authEventManager, networkIncident.errors)
-
-        networkIncident.incident?.let { incident ->
+        networkIncident?.let { incident ->
             val incidents = listOf(incident)
             saveIncidentsPrimaryData(incidents)
             saveIncidentsSecondaryData(incidents)

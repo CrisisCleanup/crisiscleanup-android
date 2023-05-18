@@ -435,7 +435,7 @@ class WorksiteChangeProcessor(
             )
 
             val workTypeRequests = networkDataSource.getWorkTypeRequests(networkWorksiteId)
-            workTypeRequests.results?.forEach {
+            workTypeRequests.forEach {
                 workTypeRequestIdMap[it.workType.workType] = it.id
             }
 
@@ -555,12 +555,9 @@ internal data class SyncChangeSetResult(
 
     private val Exception.errorMessage: String
         get() = (this as? CrisisCleanupNetworkException)
-            ?.errors
-            ?.firstOrNull()
-            ?.message
-            ?.joinToString(", ")
-            ?: message
-            ?: ""
+            ?.errors?.firstOrNull()
+            ?.message?.joinToString(", ")
+            ?: message ?: ""
 
     private fun summarizeExceptions(key: String, exceptions: Map<Long, Exception>): String {
         if (exceptions.isNotEmpty()) {

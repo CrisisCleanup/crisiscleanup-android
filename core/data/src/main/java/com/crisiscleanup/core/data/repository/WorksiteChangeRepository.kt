@@ -21,9 +21,7 @@ import com.crisiscleanup.core.model.data.SavedWorksiteChange
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
-import com.crisiscleanup.core.network.model.CrisisCleanupNetworkException
 import com.crisiscleanup.core.network.model.ExpiredTokenException
-import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.tryThrowException
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import com.crisiscleanup.core.network.worksitechange.NoInternetConnectionException
 import com.crisiscleanup.core.network.worksitechange.WorksiteChangeSyncer
@@ -214,14 +212,6 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
 
                 is ExpiredTokenException -> {
                     authEventManager.onExpiredToken()
-                }
-
-                is CrisisCleanupNetworkException -> {
-                    try {
-                        tryThrowException(authEventManager, e.errors)
-                    } catch (inner: Exception) {
-                        unhandledException = e
-                    }
                 }
 
                 else -> {

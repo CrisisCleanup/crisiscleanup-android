@@ -9,7 +9,6 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.IncidentWorksitesSyncer
-import com.crisiscleanup.core.data.NoWorksitesException
 import com.crisiscleanup.core.data.model.asEntities
 import com.crisiscleanup.core.data.model.asEntity
 import com.crisiscleanup.core.data.util.IncidentDataPullReporter
@@ -29,7 +28,6 @@ import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.IncidentDataSyncStats
 import com.crisiscleanup.core.model.data.SyncAttempt
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
-import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.tryThrowException
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
@@ -174,7 +172,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
 
         val syncStart = Clock.System.now()
         val worksitesCount =
-            worksitesSyncer.networkWorksitesCount(incidentId, Instant.fromEpochSeconds(0), true)
+            worksitesSyncer.networkWorksitesCount(incidentId, Instant.fromEpochSeconds(0))
         val syncStats = IncidentDataSyncStats(
             incidentId,
             syncStart,
@@ -218,7 +216,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
                 // Updating sync stats here (or in finally) could overwrite "concurrent" sync that previously started. Think it through before updating sync attempt.
 
                 // TODO User feedback?
-                if (e !is NoWorksitesException || appEnv.isNotProduction) {
+                if (appEnv.isNotProduction) {
                     logger.logException(e)
                 }
             }
@@ -244,16 +242,11 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     override suspend fun pullWorkTypeRequests(incidentId: Long, networkWorksiteId: Long) {
         try {
             val workTypeRequests = dataSource.getWorkTypeRequests(networkWorksiteId)
-            tryThrowException(authEventManager, workTypeRequests.errors)
-
-            workTypeRequests.results?.let { requests ->
-                if (requests.isNotEmpty()) {
-                    val worksiteId = worksiteDao.getWorksiteId(incidentId, networkWorksiteId)
-                    val entities = requests.map { it.asEntity(worksiteId) }
-                    workTypeTransferRequestDaoPlus.syncUpsert(entities)
-                }
+            if (workTypeRequests.isNotEmpty()) {
+                val worksiteId = worksiteDao.getWorksiteId(incidentId, networkWorksiteId)
+                val entities = workTypeRequests.map { it.asEntity(worksiteId) }
+                workTypeTransferRequestDaoPlus.syncUpsert(entities)
             }
-
         } catch (e: Exception) {
             logger.logException(e)
         }

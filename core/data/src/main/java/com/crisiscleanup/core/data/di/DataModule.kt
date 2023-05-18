@@ -90,6 +90,11 @@ interface DataModule {
     fun bindsOrganizationsRepository(
         repository: OfflineFirstOrganizationsRepository
     ): OrganizationsRepository
+
+    @Binds
+    fun bindsLocalImageRepository(
+        repository: CrisisCleanupLocalImageRepository
+    ): LocalImageRepository
 }
 
 @Module

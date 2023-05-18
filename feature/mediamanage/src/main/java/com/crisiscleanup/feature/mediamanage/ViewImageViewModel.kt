@@ -17,11 +17,16 @@ import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.LocalImageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -32,26 +37,70 @@ class ViewImageViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     @ApplicationContext context: Context,
     imageLoader: ImageLoader,
+    private val localImageRepository: LocalImageRepository,
     private val translator: KeyTranslator,
+    accountDataRepository: AccountDataRepository,
     networkMonitor: NetworkMonitor,
     @Logger(CrisisCleanupLoggers.Media) logger: AppLogger,
-    @Dispatcher(IO) ioDispatcher: CoroutineDispatcher,
+    @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     private val caseEditorArgs = ViewImageArgs(savedStateHandle)
 
     // Better to go off of image ID in case new URL comes in.
     private val imageId = caseEditorArgs.imageId
-    val imageUrl = caseEditorArgs.imageUrl
     private val isNetworkImage = caseEditorArgs.isNetworkImage
     val screenTitle = caseEditorArgs.title
 
-    private val isOnline = networkMonitor.isOnline.stateIn(
-        scope = viewModelScope,
-        initialValue = false,
-        started = SharingStarted.WhileSubscribed(),
-    )
+    val isOffline = networkMonitor.isNotOnline
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
+            started = SharingStarted.WhileSubscribed(),
+        )
 
-    val uiState: MutableStateFlow<ViewImageUiState> = MutableStateFlow(ViewImageUiState.Loading)
+    val uiState = localImageRepository.streamNetworkImageUrl(imageId).flatMapLatest { url ->
+        val imageUrl = url.ifBlank { caseEditorArgs.imageUrl }
+
+        if (imageUrl.isBlank()) {
+            // TODO String res
+            return@flatMapLatest flowOf(ViewImageUiState.Error("Image not selected"))
+        }
+
+        callbackFlow<ViewImageUiState> {
+            val request = ImageRequest.Builder(context)
+                .data(imageUrl)
+                .target(
+                    onStart = {
+                        channel.trySend(ViewImageUiState.Loading)
+                    },
+                    onSuccess = { result ->
+                        val bitmap = (result as BitmapDrawable).bitmap.asImageBitmap()
+                        channel.trySend(ViewImageUiState.Image(bitmap))
+                    },
+                    onError = {
+                        val isTokenInvalid = accountDataRepository.accessTokenCached.isBlank()
+
+                        logger.logDebug("Failed to load image $isOffline $isTokenInvalid $imageId $imageUrl")
+
+                        // TODO Test all three states show correctly
+                        // TODO String res
+                        val message =
+                            if (isOffline.value) "Connect to the internet to download this photo."
+                            else if (isTokenInvalid) "Login again and refresh the image."
+                            else "Unable to load photo. Try refreshing the image."
+                        channel.trySend(ViewImageUiState.Error(message))
+                    },
+                )
+                .build()
+            val disposable = imageLoader.enqueue(request)
+            awaitClose { disposable.job }
+        }
+    }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = ViewImageUiState.Loading,
+            started = SharingStarted.WhileSubscribed(),
+        )
 
     val isImageDeletable = uiState.map {
         it is ViewImageUiState.Image && imageId > 0
@@ -62,42 +111,22 @@ class ViewImageViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    init {
-        if (imageUrl.isBlank()) {
-            // TODO String res
-            uiState.value = ViewImageUiState.Error("No image is selected")
-        } else {
-            viewModelScope.launch(ioDispatcher) {
-                val request = ImageRequest.Builder(context)
-                    .data(imageUrl)
-                    .target(
-                        onSuccess = { result ->
-                            val bitmap = (result as BitmapDrawable).bitmap.asImageBitmap()
-                            uiState.value = ViewImageUiState.Image(bitmap)
-                        },
-                        onError = {
-                            // TODO Better visual or change background as may not be clear/visible
-                            // TODO String res
-                            val message = if (isOnline.value) "Unable to load photo"
-                            else "Connect to the internet to download this photo"
-                            uiState.value = ViewImageUiState.Error(
-                                message,
-                                isOnline.value,
-                            )
+    fun translate(key: String) = translator.translate(key) ?: key
 
-                            logger.logDebug("Failed to load image ${isOnline.value} $imageId $imageUrl")
-                        },
-                    )
-                    .build()
-                imageLoader.enqueue(request)
+    fun deleteImage() {
+        if (isNetworkImage) {
+            viewModelScope.launch(ioDispatcher) {
+                // localImageRepository.deleteNetworkImage(imageId)
             }
         }
     }
 
-    fun translate(key: String) = translator.translate(key) ?: key
-
-    fun deleteImage() {
-        // TODO
+    fun rotateImage(rotateClockwise: Boolean) {
+        if (isNetworkImage) {
+            viewModelScope.launch(ioDispatcher) {
+                // localImageRepository.setNetworkImageRotation(imageId, rotation)
+            }
+        }
     }
 }
 
@@ -109,6 +138,5 @@ sealed interface ViewImageUiState {
 
     data class Error(
         val message: String,
-        val hasInternet: Boolean = false,
     ) : ViewImageUiState
 }

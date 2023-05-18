@@ -8,7 +8,6 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.WorksiteSummary
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
-import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.tryThrowException
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import java.util.concurrent.CancellationException
@@ -70,11 +69,9 @@ class MemoryCacheSearchWorksitesRepository @Inject constructor(
         // TODO Search local as well
 
         try {
-            val result = networkDataSource.getSearchWorksites(incidentId, q)
-            tryThrowException(authEventManager, result.errors)
-
-            result.results?.let {
-                val searchResult = it.map { networkWorksite ->
+            val results = networkDataSource.getSearchWorksites(incidentId, q)
+            if (results.isNotEmpty()) {
+                val searchResult = results.map { networkWorksite ->
                     val workType = networkWorksite.newestKeyWorkType?.let { keyWorkType ->
                         WorkType(
                             0,
@@ -121,11 +118,9 @@ class MemoryCacheSearchWorksitesRepository @Inject constructor(
         // TODO Search local as well
 
         try {
-            val result = networkDataSource.getLocationSearchWorksites(incidentId, q)
-            tryThrowException(authEventManager, result.errors)
-
-            result.results?.let {
-                val searchResult = it.map { networkWorksite ->
+            val results = networkDataSource.getLocationSearchWorksites(incidentId, q)
+            if (results.isNotEmpty()) {
+                val searchResult = results.map { networkWorksite ->
                     val workType = networkWorksite.keyWorkType.let { keyWorkType ->
                         WorkType(
                             0,

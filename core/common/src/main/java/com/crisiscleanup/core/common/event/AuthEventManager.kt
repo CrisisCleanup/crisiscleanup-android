@@ -29,7 +29,7 @@ interface AuthEventManager {
         emailAddress: String,
         password: String,
         resultCode: PasswordRequestCode,
-    );
+    )
 }
 
 @Singleton

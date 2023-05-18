@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.network.retrofit
 
+import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.*
 import kotlinx.datetime.Instant
@@ -156,7 +157,8 @@ private interface DataSourceApi {
 }
 
 class DataApiClient @Inject constructor(
-    @CrisisCleanupRetrofit retrofit: Retrofit
+    @CrisisCleanupRetrofit retrofit: Retrofit,
+    private val authEventManager: AuthEventManager,
 ) : CrisisCleanupNetworkDataSource {
     private val networkApi = retrofit.create(DataSourceApi::class.java)
 
@@ -167,40 +169,61 @@ class DataApiClient @Inject constructor(
         limit: Int,
         ordering: String,
         after: Instant?
-    ) =
-        networkApi.getIncidents(fields.joinToString(","), limit, ordering, after)
+    ) = networkApi.getIncidents(fields.joinToString(","), limit, ordering, after)
+        .let {
+            authEventManager.tryThrowException(it.errors)
+            it.results ?: emptyList()
+        }
+
 
     override suspend fun getIncidentLocations(locationIds: List<Long>) =
         networkApi.getLocations(locationIds.joinToString(","), locationIds.size)
+            .let {
+                authEventManager.tryThrowException(it.errors)
+                it.results ?: emptyList()
+            }
 
     override suspend fun getIncident(id: Long, fields: List<String>) =
         networkApi.getIncident(id, fields.joinToString(","))
+            .let {
+                authEventManager.tryThrowException(it.errors)
+                it.incident
+            }
 
     override suspend fun getIncidentOrganizations(
         incidentId: Long,
         limit: Int,
         offset: Int,
     ) = networkApi.getIncidentOrganizations(incidentId, limit, offset)
+        .apply { authEventManager.tryThrowException(errors) }
 
     override suspend fun getWorksites(incidentId: Long, limit: Int, offset: Int) =
         networkApi.getWorksites(incidentId, limit, offset)
+            .apply { authEventManager.tryThrowException(errors) }
 
     override suspend fun getWorksites(worksiteIds: Collection<Long>) =
         networkApi.getWorksites(worksiteIds.joinToString(","))
+            .apply { authEventManager.tryThrowException(errors) }
 
-    override suspend fun getWorksite(id: Long): NetworkWorksiteFull? {
-        val result = getWorksites(listOf(id))
-        return result.results?.firstOrNull()
-    }
+    override suspend fun getWorksite(id: Long) = getWorksites(listOf(id))
+        .let {
+            authEventManager.tryThrowException(it.errors)
+            it.results?.firstOrNull()
+        }
 
     override suspend fun getWorksitesCount(incidentId: Long, updatedAtAfter: Instant?) =
         networkApi.getWorksitesCount(incidentId, updatedAtAfter)
+            .let {
+                authEventManager.tryThrowException(it.errors)
+                it.count ?: 0
+            }
 
     override suspend fun getWorksitesAll(
         incidentId: Long,
         updatedAtAfter: Instant?,
         updatedAtBefore: Instant?
     ) = networkApi.getWorksitesAll(incidentId, updatedAtAfter, updatedAtBefore)
+        .apply { authEventManager.tryThrowException(errors) }
 
     override suspend fun getWorksitesPage(
         incidentId: Long,
@@ -209,16 +232,18 @@ class DataApiClient @Inject constructor(
         pageOffset: Int?,
         latitude: Double?,
         longitude: Double?
-    ): NetworkWorksitesShortResult {
+    ): List<NetworkWorksiteShort> {
         val centerCoordinates: List<Double>? = if (latitude == null && longitude == null) null else
             listOf(latitude!!, longitude!!)
-        return networkApi.getWorksitesPage(
+        val result = networkApi.getWorksitesPage(
             incidentId,
             pageCount,
             if ((pageOffset ?: 0) <= 1) null else pageOffset,
             centerCoordinates,
             updatedAtAfter,
         )
+        authEventManager.tryThrowException(result.errors)
+        return result.results ?: emptyList()
     }
 
     private val locationSearchFields = listOf(
@@ -244,19 +269,32 @@ class DataApiClient @Inject constructor(
         q,
         limit
     )
+        .let {
+            authEventManager.tryThrowException(it.errors)
+            it.results ?: emptyList()
+        }
 
     override suspend fun getSearchWorksites(
         incidentId: Long,
         q: String,
     ) = networkApi.getWorksitesSearch(incidentId, q)
+        .let {
+            authEventManager.tryThrowException(it.errors)
+            it.results ?: emptyList()
+        }
 
-    override suspend fun getLanguages() = networkApi.getLanguages()
+    override suspend fun getLanguages() = networkApi.getLanguages().results
 
     override suspend fun getLanguageTranslations(key: String) =
-        networkApi.getLanguageTranslations(key)
+        networkApi.getLanguageTranslations(key).translation
 
     override suspend fun getLocalizationCount(after: Instant) =
         networkApi.getLocalizationCount(after)
 
-    override suspend fun getWorkTypeRequests(id: Long) = networkApi.getWorkTypeRequests(id)
+    override suspend fun getWorkTypeRequests(id: Long) =
+        networkApi.getWorkTypeRequests(id)
+            .let {
+                authEventManager.tryThrowException(it.errors)
+                it.results ?: emptyList()
+            }
 }

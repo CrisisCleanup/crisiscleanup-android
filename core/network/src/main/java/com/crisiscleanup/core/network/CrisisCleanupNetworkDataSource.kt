@@ -2,16 +2,16 @@ package com.crisiscleanup.core.network
 
 import com.crisiscleanup.core.network.model.NetworkAuthResult
 import com.crisiscleanup.core.network.model.NetworkCountResult
+import com.crisiscleanup.core.network.model.NetworkIncident
 import com.crisiscleanup.core.network.model.NetworkIncidentOrganizationsResult
-import com.crisiscleanup.core.network.model.NetworkIncidentResult
-import com.crisiscleanup.core.network.model.NetworkIncidentsResult
-import com.crisiscleanup.core.network.model.NetworkLanguageTranslationResult
-import com.crisiscleanup.core.network.model.NetworkLanguagesResult
-import com.crisiscleanup.core.network.model.NetworkLocationsResult
-import com.crisiscleanup.core.network.model.NetworkWorkTypeRequestResult
+import com.crisiscleanup.core.network.model.NetworkLanguageDescription
+import com.crisiscleanup.core.network.model.NetworkLanguageTranslation
+import com.crisiscleanup.core.network.model.NetworkLocation
+import com.crisiscleanup.core.network.model.NetworkWorkTypeRequest
 import com.crisiscleanup.core.network.model.NetworkWorkTypeStatusResult
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
-import com.crisiscleanup.core.network.model.NetworkWorksiteLocationSearchResult
+import com.crisiscleanup.core.network.model.NetworkWorksiteLocationSearch
+import com.crisiscleanup.core.network.model.NetworkWorksiteShort
 import com.crisiscleanup.core.network.model.NetworkWorksitesFullResult
 import com.crisiscleanup.core.network.model.NetworkWorksitesShortResult
 import kotlinx.datetime.Instant
@@ -30,11 +30,11 @@ interface CrisisCleanupNetworkDataSource {
         limit: Int = 250,
         ordering: String = "-start_at",
         after: Instant? = null,
-    ): NetworkIncidentsResult
+    ): List<NetworkIncident>
 
     suspend fun getIncidentLocations(
         locationIds: List<Long>,
-    ): NetworkLocationsResult
+    ): List<NetworkLocation>
 
     suspend fun getIncidentOrganizations(
         incidentId: Long,
@@ -45,7 +45,7 @@ interface CrisisCleanupNetworkDataSource {
     suspend fun getIncident(
         id: Long,
         fields: List<String>,
-    ): NetworkIncidentResult
+    ): NetworkIncident?
 
     suspend fun getWorksites(
         incidentId: Long,
@@ -62,7 +62,7 @@ interface CrisisCleanupNetworkDataSource {
     suspend fun getWorksitesCount(
         incidentId: Long,
         updatedAtAfter: Instant? = null,
-    ): NetworkCountResult
+    ): Int
 
     suspend fun getWorksitesAll(
         incidentId: Long,
@@ -77,24 +77,24 @@ interface CrisisCleanupNetworkDataSource {
         pageOffset: Int? = null,
         latitude: Double? = null,
         longitude: Double? = null,
-    ): NetworkWorksitesShortResult
+    ): List<NetworkWorksiteShort>
 
     suspend fun getLocationSearchWorksites(
         incidentId: Long,
         q: String,
         limit: Int = 5,
-    ): NetworkWorksiteLocationSearchResult
+    ): List<NetworkWorksiteLocationSearch>
 
     suspend fun getSearchWorksites(
         incidentId: Long,
         q: String,
-    ): NetworkWorksitesShortResult
+    ): List<NetworkWorksiteShort>
 
-    suspend fun getLanguages(): NetworkLanguagesResult
+    suspend fun getLanguages(): List<NetworkLanguageDescription>
 
-    suspend fun getLanguageTranslations(key: String): NetworkLanguageTranslationResult
+    suspend fun getLanguageTranslations(key: String): NetworkLanguageTranslation?
 
     suspend fun getLocalizationCount(after: Instant): NetworkCountResult
 
-    suspend fun getWorkTypeRequests(id: Long): NetworkWorkTypeRequestResult
+    suspend fun getWorkTypeRequests(id: Long): List<NetworkWorkTypeRequest>
 }

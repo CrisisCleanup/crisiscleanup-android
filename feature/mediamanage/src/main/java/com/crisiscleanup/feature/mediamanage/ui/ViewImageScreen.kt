@@ -2,7 +2,6 @@ package com.crisiscleanup.feature.mediamanage.ui
 
 import android.app.Activity
 import android.util.DisplayMetrics
-import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -58,71 +57,66 @@ internal fun ViewImageRoute(
     viewModel: ViewImageViewModel = hiltViewModel(),
     onBack: () -> Unit = {},
 ) {
-    if (viewModel.imageUrl.isBlank()) {
-        onBack()
-    } else {
-        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-        var isFullscreenMode by remember { mutableStateOf(true) }
-        val isImageLoaded = uiState is ViewImageUiState.Image
-        val isFullscreenImage = isFullscreenMode && isImageLoaded
-        (LocalContext.current as? Activity)?.window?.let { window ->
-            with(WindowCompat.getInsetsController(window, window.decorView)) {
-                systemBarsBehavior =
-                    WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-                if (isFullscreenImage) {
-                    hide(WindowInsetsCompat.Type.systemBars())
-                } else {
-                    show(WindowInsetsCompat.Type.systemBars())
-                }
+    var isFullscreenMode by remember { mutableStateOf(true) }
+    val isImageLoaded = uiState is ViewImageUiState.Image
+    val isFullscreenImage = isFullscreenMode && isImageLoaded
+    (LocalContext.current as? Activity)?.window?.let { window ->
+        with(WindowCompat.getInsetsController(window, window.decorView)) {
+            systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            if (isFullscreenImage) {
+                hide(WindowInsetsCompat.Type.systemBars())
+            } else {
+                show(WindowInsetsCompat.Type.systemBars())
             }
         }
-        val toggleFullscreen = remember(viewModel) { { isFullscreenMode = !isFullscreenMode } }
+    }
+    val toggleFullscreen = remember(viewModel) { { isFullscreenMode = !isFullscreenMode } }
 
-        val contentModifier = if (isFullscreenImage) Modifier else Modifier.systemBarsPadding()
-        Column(
-            modifier = contentModifier,
+    val contentModifier = if (isFullscreenImage) Modifier else Modifier.systemBarsPadding()
+    Column(
+        modifier = contentModifier,
+    ) {
+        if (!isFullscreenImage) {
+            TopBar(onBack = onBack)
+
+            if (uiState is ViewImageUiState.Error) {
+                val errorState = uiState as ViewImageUiState.Error
+                Text(
+                    errorState.message,
+                    listItemModifier.systemBarsPadding(),
+                )
+            }
+        }
+
+        Box(
+            Modifier
+                .weight(1f)
+                .background(color = Color.Black)
+                .fillMaxSize(),
         ) {
-            if (!isFullscreenImage) {
-                TopBar(onBack = onBack)
-
-                if (uiState is ViewImageUiState.Error) {
-                    val errorState = uiState as ViewImageUiState.Error
-                    Text(
-                        errorState.message,
-                        listItemModifier.systemBarsPadding(),
+            when (uiState) {
+                ViewImageUiState.Loading -> {
+                    BusyIndicatorFloatingTopCenter(
+                        true,
+                        // TODO Common styles
                         color = Color.White,
                     )
                 }
-            }
 
-            Box(
-                Modifier
-                    .weight(1f)
-                    .background(color = Color.Black)
-                    .fillMaxSize(),
-            ) {
-                when (uiState) {
-                    ViewImageUiState.Loading -> {
-                        BusyIndicatorFloatingTopCenter(
-                            true,
-                            // TODO Common styles
-                            color = Color.White,
-                        )
-                    }
+                is ViewImageUiState.Image -> {
+                    val imageData = uiState as ViewImageUiState.Image
 
-                    is ViewImageUiState.Image -> {
-                        val imageData = uiState as ViewImageUiState.Image
-
-                        DynamicImageView(imageData, isFullscreenMode, toggleFullscreen)
-                    }
-
-                    else -> {}
+                    DynamicImageView(imageData, isFullscreenMode, toggleFullscreen)
                 }
 
-                // TODO Show controls animating in and out.
-                //      Send changes back to view model for saving.
+                else -> {}
             }
+
+            // TODO Show controls animating in and out.
+            //      Send changes back to view model for saving.
         }
     }
 }
@@ -259,9 +253,7 @@ private fun DynamicImageView(
         }
 
         fitScale = 1f
-        Log.w("photo", "Scale to $scale [$fitScale, $fillScale]")
         scale = scale.snapToNearest(fitScale, fillScale)
-        Log.w("photo", "After scale $scale")
 
         val trueScale = scale * fitScalePx
         translation = capPanOffset(imageSize, trueScale, screenSize, translation)

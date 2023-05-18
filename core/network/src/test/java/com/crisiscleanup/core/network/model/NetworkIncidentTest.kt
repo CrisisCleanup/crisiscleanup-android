@@ -1,6 +1,5 @@
 package com.crisiscleanup.core.network.model
 
-import com.crisiscleanup.core.network.fake.fillNetworkIncident
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull

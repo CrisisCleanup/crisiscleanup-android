@@ -268,7 +268,7 @@ private fun ColumnScope.ExistingCaseContent(
     worksite: Worksite,
     translate: (String) -> String = { s -> s },
     isLoading: Boolean = false,
-    openPhoto: (Long, String, Boolean) -> Unit = { _, _, _ -> },
+    openPhoto: (Long, String, Boolean, String) -> Unit = { _, _, _, _ -> },
 ) {
     val pagerState = rememberPagerState()
     val selectedTabIndex = pagerState.currentPage

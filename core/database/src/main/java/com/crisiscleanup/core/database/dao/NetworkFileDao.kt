@@ -8,6 +8,7 @@ import androidx.room.Transaction
 import androidx.room.Upsert
 import com.crisiscleanup.core.database.model.NetworkFileEntity
 import com.crisiscleanup.core.database.model.WorksiteNetworkFileCrossRef
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface NetworkFileDao {
@@ -25,4 +26,8 @@ interface NetworkFileDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertIgnoreCrossReferences(crossReferences: Collection<WorksiteNetworkFileCrossRef>)
+
+    @Transaction
+    @Query("SELECT full_url FROM network_files WHERE id=:id")
+    fun streamNetworkImageUrl(id: Long): Flow<String>
 }

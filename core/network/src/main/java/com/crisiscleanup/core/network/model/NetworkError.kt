@@ -5,7 +5,8 @@ import com.crisiscleanup.core.network.model.util.IterableStringSerializer
 import kotlinx.serialization.Serializable
 import okio.IOException
 
-class ExpiredTokenException : Exception("Auth token is expired")
+// IO or Retrofit will crash the app
+class ExpiredTokenException : IOException("Auth token is expired")
 class CrisisCleanupNetworkException(
     val url: String,
     val statusCode: Int,
@@ -27,43 +28,19 @@ data class NetworkCrisisCleanupApiError(
     @Serializable(IterableStringSerializer::class)
     val message: List<String>? = null,
 ) {
-    companion object {
-        fun tryThrowException(
-            authEventManager: AuthEventManager,
-            errors: Collection<NetworkCrisisCleanupApiError>?,
-        ) {
-            errors?.let {
-                tryGetException(errors)?.let {
-                    if (it is ExpiredTokenException) {
-                        // TODO Move this broadcast into the network layer (and consolidate other broadcasts where possible)
-                        authEventManager.onExpiredToken()
-                    } else {
-                        throw it
-                    }
-                }
-            }
-        }
+    val isExpiredToken = message?.size == 1 && message[0] == "Token has expired."
+}
 
-        private fun tryGetException(errors: Collection<NetworkCrisisCleanupApiError>): Exception? {
-            if (errors.isNotEmpty()) {
-                var exception: Exception? = null
-                // Assume expired token will only be a singular exception
-                if (errors.size == 1) {
-                    exception = errors.first().tryGetException()
-                }
-                return exception ?: Exception(errors.condenseMessages)
-            }
-            return null
+internal fun AuthEventManager.tryThrowException(
+    errors: Collection<NetworkCrisisCleanupApiError>?,
+) {
+    errors?.let {
+        if (errors.isNotEmpty()) {
+            val exception =
+                if (errors.any(NetworkCrisisCleanupApiError::isExpiredToken)) ExpiredTokenException()
+                else Exception(errors.condenseMessages)
+            throw exception
         }
-    }
-
-    private fun tryGetException(): Exception? {
-        if (message?.size == 1) {
-            if (message[0] == "Token has expired.") {
-                return ExpiredTokenException()
-            }
-        }
-        return null
     }
 }
 

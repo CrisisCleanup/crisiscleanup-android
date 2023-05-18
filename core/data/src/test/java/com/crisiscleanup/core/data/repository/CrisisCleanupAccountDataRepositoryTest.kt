@@ -7,7 +7,11 @@ import com.crisiscleanup.core.datastore.test.testAccountInfoDataStore
 import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.model.data.OrgData
 import com.crisiscleanup.core.model.data.emptyOrgData
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Instant
 import org.junit.Before
@@ -29,15 +33,20 @@ class CrisisCleanupAccountDataRepositoryTest {
     val tmpFolder: TemporaryFolder = TemporaryFolder.builder().assureDeletion().build()
 
     @Before
-    fun setup() {
+    fun setup() = runTest {
         accountInfoDataSource = AccountInfoDataSource(
             tmpFolder.testAccountInfoDataStore()
         )
 
         authEventManager = CrisisCleanupAuthEventManager()
+
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val testScope = TestScope(dispatcher)
         subject = CrisisCleanupAccountDataRepository(
             accountInfoDataSource,
             authEventManager,
+            testScope,
+            dispatcher,
         )
     }
 
@@ -106,5 +115,49 @@ class CrisisCleanupAccountDataRepositoryTest {
         assertEquals(expectedData, subject.accountData.first())
         assertEquals(expectedData, accountInfoDataSource.accountData.first())
         assertFalse(subject.isAuthenticated.first())
+    }
+
+    @Test
+    fun onExpiredToken() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val manager = CrisisCleanupAuthEventManager()
+        val repository = CrisisCleanupAccountDataRepository(
+            accountInfoDataSource,
+            manager,
+            this,
+            dispatcher,
+        )
+
+        repository.setAccount(
+            5434,
+            "at",
+            "em",
+            "fn",
+            "ln",
+            6235234341,
+            "pp",
+            org = OrgData(83, "org"),
+        )
+
+        manager.onExpiredToken()
+
+        delay(99)
+        val delayed = advanceUntilIdle()
+        println("Logging delay $delayed so the test passes...")
+
+        val expectedData = AccountData(
+            5434,
+            "",
+            Instant.fromEpochSeconds(0),
+            "fn ln",
+            "em",
+            "pp",
+            OrgData(83, "org"),
+        )
+
+        assertTrue(repository.accessTokenCached.isEmpty())
+        assertEquals(expectedData, repository.accountData.first())
+        assertEquals(expectedData, accountInfoDataSource.accountData.first())
+        assertFalse(repository.isAuthenticated.first())
     }
 }

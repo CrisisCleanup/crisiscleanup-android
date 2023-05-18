@@ -1,11 +1,13 @@
 package com.crisiscleanup.network
 
+import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.network.RetrofitInterceptorProvider
 import com.crisiscleanup.core.network.model.CrisisCleanupNetworkException
+import com.crisiscleanup.core.network.model.ExpiredTokenException
 import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError
 import com.crisiscleanup.core.network.model.NetworkErrors
 import com.crisiscleanup.core.network.retrofit.RequestHeaderKey
@@ -15,6 +17,7 @@ import kotlinx.serialization.json.Json
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
+import okhttp3.ResponseBody
 import okhttp3.ResponseBody.Companion.toResponseBody
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -23,6 +26,7 @@ import javax.inject.Singleton
 class CrisisCleanupInterceptorProvider @Inject constructor(
     private val accountDataRepository: AccountDataRepository,
     private val headerKeysLookup: RequestHeaderKeysLookup,
+    private val authEventManager: AuthEventManager,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : RetrofitInterceptorProvider {
     private val json = Json { ignoreUnknownKeys = true }
@@ -32,7 +36,7 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
         key: RequestHeaderKey,
     ) = headerKeysLookup.getHeaderKeys(request)?.get(key)
 
-    private val headerInterceptor: Interceptor by lazy {
+    private val headerInterceptor by lazy {
         Interceptor { chain ->
             var request = chain.request()
 
@@ -44,7 +48,7 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
         }
     }
 
-    private val wrapResponseInterceptor: Interceptor by lazy {
+    private val wrapResponseInterceptor by lazy {
         Interceptor { chain ->
             val request = chain.request()
             var response: Response = chain.proceed(request)
@@ -66,21 +70,47 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
         }
     }
 
-    private val clientErrorInterceptor: Interceptor by lazy {
+    private fun parseNetworkErrors(responseBody: ResponseBody): List<NetworkCrisisCleanupApiError> {
+        val errorBody = responseBody.string()
+        var errors: List<NetworkCrisisCleanupApiError> = emptyList()
+        try {
+            val networkErrors = json.decodeFromString<NetworkErrors>(errorBody)
+            errors = networkErrors.errors
+        } catch (e: Exception) {
+            // No errors
+        }
+        return errors
+    }
+
+    private val expiredTokenInterceptor by lazy {
+        Interceptor { chain ->
+            val request = chain.request()
+            val response = chain.proceed(request)
+            if (response.code in 400..499) {
+                if (response.code == 401) {
+                    authEventManager.onExpiredToken()
+                    throw ExpiredTokenException()
+                }
+                response.body?.let { responseBody ->
+                    val errors = parseNetworkErrors(responseBody)
+                    if (errors.any(NetworkCrisisCleanupApiError::isExpiredToken)) {
+                        authEventManager.onExpiredToken()
+                        throw ExpiredTokenException()
+                    }
+                }
+            }
+            response
+        }
+    }
+
+    private val clientErrorInterceptor by lazy {
         Interceptor { chain ->
             val request = chain.request()
             val response = chain.proceed(request)
             if (response.code in 400..499) {
                 getHeaderKey(request, RequestHeaderKey.ThrowClientError)?.let {
                     response.body?.let { responseBody ->
-                        val errorBody = responseBody.string()
-                        var errors: List<NetworkCrisisCleanupApiError> = emptyList()
-                        try {
-                            val networkErrors = json.decodeFromString<NetworkErrors>(errorBody)
-                            errors = networkErrors.errors
-                        } catch (e: Exception) {
-                            // Ignore serialize fail
-                        }
+                        val errors = parseNetworkErrors(responseBody)
                         throw CrisisCleanupNetworkException(
                             request.url.toUrl().toString(),
                             response.code,
@@ -97,6 +127,7 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
     override val interceptors: List<Interceptor> = listOf(
         headerInterceptor,
         wrapResponseInterceptor,
+        expiredTokenInterceptor,
         clientErrorInterceptor,
     )
 

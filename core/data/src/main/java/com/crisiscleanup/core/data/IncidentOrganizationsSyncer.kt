@@ -15,7 +15,6 @@ import com.crisiscleanup.core.database.dao.IncidentOrganizationDaoPlus
 import com.crisiscleanup.core.database.dao.PersonContactDao
 import com.crisiscleanup.core.database.model.IncidentOrganizationSyncStatsEntity
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
-import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError
 import com.crisiscleanup.core.network.model.NetworkIncidentOrganization
 import com.crisiscleanup.core.network.model.NetworkPersonContact
 import kotlinx.coroutines.coroutineScope
@@ -75,10 +74,6 @@ class IncidentOrganizationsSyncer @Inject constructor(
                     incidentId,
                     pageDataCount,
                     networkDataOffset,
-                )
-                NetworkCrisisCleanupApiError.tryThrowException(
-                    authEventManager,
-                    worksitesRequest.errors
                 )
 
                 syncCount = worksitesRequest.count ?: 0

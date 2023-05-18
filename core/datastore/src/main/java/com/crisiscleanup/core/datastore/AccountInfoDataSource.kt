@@ -68,4 +68,13 @@ class AccountInfoDataSource @Inject constructor(
             }
         }
     }
+
+    suspend fun clearToken() {
+        dataStore.updateData {
+            it.copy {
+                accessToken = ""
+                expirySeconds = 0
+            }
+        }
+    }
 }

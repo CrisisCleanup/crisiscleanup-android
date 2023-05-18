@@ -15,10 +15,26 @@ import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.EnglishLanguage
 import com.crisiscleanup.core.model.data.Language
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
-import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.tryThrowException
 import com.crisiscleanup.core.network.model.NetworkLanguageDescription
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -105,21 +121,14 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
     }
 
     private suspend fun pullLanguages() = coroutineScope {
-        val languagesResult = dataSource.getLanguages()
-        tryThrowException(authEventManager, languagesResult.errors)
-
-        languageDaoPlus.saveLanguages(
-            languagesResult.results.map(NetworkLanguageDescription::asEntity)
-        )
+        val languageDescriptions =
+            dataSource.getLanguages().map(NetworkLanguageDescription::asEntity)
+        languageDaoPlus.saveLanguages(languageDescriptions)
     }
 
     private suspend fun pullTranslations(key: String) = coroutineScope {
         val syncAt = Clock.System.now()
-
-        val networkTranslations = dataSource.getLanguageTranslations(key)
-        tryThrowException(authEventManager, networkTranslations.errors)
-
-        networkTranslations.translation?.let {
+        dataSource.getLanguageTranslations(key)?.let {
             languageDao.upsertLanguageTranslation(it.asEntity(syncAt))
         }
     }

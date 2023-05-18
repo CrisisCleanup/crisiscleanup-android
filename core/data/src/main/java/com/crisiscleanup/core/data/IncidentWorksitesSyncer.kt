@@ -16,7 +16,6 @@ import com.crisiscleanup.core.database.model.WorksiteEntity
 import com.crisiscleanup.core.database.model.WorksiteFlagEntity
 import com.crisiscleanup.core.model.data.IncidentDataSyncStats
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
-import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError.Companion.tryThrowException
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
@@ -28,7 +27,6 @@ interface WorksitesSyncer {
     suspend fun networkWorksitesCount(
         incidentId: Long,
         updatedAfter: Instant? = null,
-        throwOnEmpty: Boolean = false,
     ): Int
 
     suspend fun sync(
@@ -38,9 +36,6 @@ interface WorksitesSyncer {
 }
 
 // TODO Write tests
-
-internal class NoWorksitesException(incidentId: Long) :
-    Exception("Backend is reporting no worksites for incident $incidentId")
 
 class IncidentWorksitesSyncer @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,
@@ -60,22 +55,8 @@ class IncidentWorksitesSyncer @Inject constructor(
 
     private val isCapableDevice = memoryStats.availableMemory >= allWorksitesMemoryThreshold
 
-    override suspend fun networkWorksitesCount(
-        incidentId: Long,
-        updatedAfter: Instant?,
-        throwOnEmpty: Boolean,
-    ): Int {
-        val worksitesCountResult =
-            networkDataSource.getWorksitesCount(incidentId, updatedAfter)
-        tryThrowException(authEventManager, worksitesCountResult.errors)
-
-        val count = worksitesCountResult.count ?: 0
-        if (throwOnEmpty && count == 0) {
-            throw NoWorksitesException(incidentId)
-        }
-
-        return count
-    }
+    override suspend fun networkWorksitesCount(incidentId: Long, updatedAfter: Instant?) =
+        networkDataSource.getWorksitesCount(incidentId, updatedAfter)
 
     override suspend fun sync(
         incidentId: Long,
@@ -103,7 +84,7 @@ class IncidentWorksitesSyncer @Inject constructor(
         val syncCount: Int
         if (isDeltaPull) {
             updatedAfter = Instant.fromEpochSeconds(syncStats.syncAttempt.successfulSeconds)
-            syncCount = networkWorksitesCount(incidentId, updatedAfter, true)
+            syncCount = networkWorksitesCount(incidentId, updatedAfter)
         } else {
             updatedAfter = null
             syncCount = syncStats.dataCount
