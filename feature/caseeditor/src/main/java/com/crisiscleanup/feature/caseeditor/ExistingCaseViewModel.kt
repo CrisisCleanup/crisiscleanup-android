@@ -1,5 +1,11 @@
 package com.crisiscleanup.feature.caseeditor
 
+import android.annotation.SuppressLint
+import android.content.ContentResolver
+import android.content.ContentValues
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.provider.MediaStore
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -9,6 +15,8 @@ import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.KeyTranslator
+import com.crisiscleanup.core.common.PermissionManager
+import com.crisiscleanup.core.common.PermissionStatus
 import com.crisiscleanup.core.common.combineTrimText
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.log.AppLogger
@@ -50,6 +58,8 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
@@ -69,10 +79,13 @@ class ExistingCaseViewModel @Inject constructor(
     workTypeStatusRepository: WorkTypeStatusRepository,
     private val editableWorksiteProvider: EditableWorksiteProvider,
     val transferWorkTypeProvider: TransferWorkTypeProvider,
+    private val permissionManager: PermissionManager,
     private val translator: KeyTranslator,
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val syncPusher: SyncPusher,
     private val resourceProvider: AndroidResourceProvider,
+    packageManager: PackageManager,
+    private val contentResolver: ContentResolver,
     drawableResourceBitmapProvider: DrawableResourceBitmapProvider,
     appEnv: AppEnv,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
@@ -120,6 +133,25 @@ class ExistingCaseViewModel @Inject constructor(
     private val previousNoteCount = AtomicInteger(0)
 
     var addImageCategory by mutableStateOf(ImageCategory.Before)
+
+    val hasCamera = packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)
+    var showExplainPermissionCamera by mutableStateOf(false)
+
+    val capturePhotoUri: Uri?
+        @SuppressLint("SimpleDateFormat")
+        get() {
+            val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+            val fileName = "IMG_${timeStamp}.jpg"
+            val contentValues = ContentValues().apply {
+                put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+                put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+                put(MediaStore.MediaColumns.RELATIVE_PATH, "DCIM/CrisisCleanup")
+            }
+            return contentResolver.insert(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                contentValues,
+            )
+        }
 
     init {
         updateHeaderTitle()
@@ -511,6 +543,35 @@ class ExistingCaseViewModel @Inject constructor(
         val notes = mutableListOf(note).apply { addAll(startingWorksite.notes) }
         val changedWorksite = startingWorksite.copy(notes = notes)
         saveWorksiteChange(startingWorksite, changedWorksite)
+    }
+
+    fun takePhoto(): Boolean {
+        when (permissionManager.requestCameraPermission()) {
+            PermissionStatus.Granted -> {
+                return true
+            }
+
+            PermissionStatus.ShowRationale -> {
+                showExplainPermissionCamera = true
+            }
+
+            PermissionStatus.Requesting,
+            PermissionStatus.Denied,
+            PermissionStatus.Undefined -> {
+                // Ignore these statuses as they're not important
+            }
+        }
+        return false
+    }
+
+    fun onMediaSelected(uri: Uri) {
+        // TODO Wrap in loading and disable interaction
+        // TODO Check file exists at URI and has size
+        //      Uniqueness on worksite ID and URI
+        //      No need to delete. Just delete record
+        //      Support rotation
+        //      Tag
+        logger.logDebug("On image $addImageCategory $uri")
     }
 }
 

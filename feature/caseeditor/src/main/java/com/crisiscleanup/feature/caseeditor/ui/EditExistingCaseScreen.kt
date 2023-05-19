@@ -645,6 +645,8 @@ internal fun EditExistingCasePhotosView(
 ) {
     val photos by viewModel.beforeAfterPhotos.collectAsStateWithLifecycle()
 
+    var showCameraMediaSelect by remember { mutableStateOf(false) }
+
     val sectionTitleResIds = mapOf(
         ImageCategory.Before to R.string.before_cleanup,
         ImageCategory.After to R.string.after_cleanup,
@@ -671,7 +673,7 @@ internal fun EditExistingCasePhotosView(
                     setEnableParentScroll = setEnablePagerScroll,
                     onAddPhoto = {
                         viewModel.addImageCategory = imageCategory
-                        // TODO Present options to camera or select file
+                        showCameraMediaSelect = true
                     },
                     onPhotoSelect = { image: NetworkImage ->
                         onPhotoSelect(image.id, image.imageUrl, true, viewModel.headerTitle.value)
@@ -680,6 +682,13 @@ internal fun EditExistingCasePhotosView(
             }
         }
     }
+
+    val closeCameraMediaSelect = remember(viewModel) { { showCameraMediaSelect = false } }
+    TakePhotoSelectImage(
+        translate = translate,
+        showOptions = showCameraMediaSelect,
+        closeOptions = closeCameraMediaSelect,
+    )
 }
 
 @Composable

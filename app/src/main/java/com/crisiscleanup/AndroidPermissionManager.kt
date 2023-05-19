@@ -1,6 +1,9 @@
 package com.crisiscleanup
 
-import android.Manifest.permission.*
+import android.Manifest.permission.ACCESS_COARSE_LOCATION
+import android.Manifest.permission.CAMERA
+import android.Manifest.permission.READ_EXTERNAL_STORAGE
+import android.Manifest.permission.READ_MEDIA_IMAGES
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.ComponentActivity
@@ -75,6 +78,7 @@ class AndroidPermissionManager @Inject constructor(
     }
 
     override fun requestLocationPermission() = requestPermission(ACCESS_COARSE_LOCATION)
+    override fun requestCameraPermission() = requestPermission(CAMERA)
 
     override fun requestScreenshotReadPermission() = requestPermission(screenshotReadPermission)
 }

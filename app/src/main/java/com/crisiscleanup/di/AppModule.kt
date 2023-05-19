@@ -1,6 +1,8 @@
 package com.crisiscleanup.di
 
+import android.content.ContentResolver
 import android.content.Context
+import android.content.pm.PackageManager
 import androidx.credentials.CredentialManager
 import com.crisiscleanup.AndroidLocationProvider
 import com.crisiscleanup.AndroidPermissionManager
@@ -61,4 +63,14 @@ object AppObjectModule {
     fun providesCredentialManager(
         @ApplicationContext context: Context,
     ) = CredentialManager.create(context)
+
+    @Provides
+    fun providesPackageManager(
+        @ApplicationContext context: Context,
+    ): PackageManager = context.packageManager
+
+    @Provides
+    fun providesContentResolver(
+        @ApplicationContext context: Context,
+    ): ContentResolver = context.contentResolver
 }

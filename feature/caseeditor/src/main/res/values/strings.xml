@@ -85,4 +85,9 @@
     <string name="before_cleanup">Before cleanup</string>
     <string name="after_cleanup">After cleanup</string>
     <string name="add_media">Add Media</string>
+    <string name="take_photo">Take photo</string>
+    <string name="select_image">Select image</string>
+    <string name="allow_camera_permission">Allow access to camera</string>
+    <string name="camera_permission_explanation">Grant access to camera in the App info/settings > Permissions.</string>
+
 </resources>

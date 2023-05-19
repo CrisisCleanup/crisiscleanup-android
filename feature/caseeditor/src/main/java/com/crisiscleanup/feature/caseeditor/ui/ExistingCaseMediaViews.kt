@@ -1,23 +1,33 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
@@ -31,13 +41,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.designsystem.theme.primaryBlueOneTenthColor
 import com.crisiscleanup.core.model.data.NetworkImage
 import com.crisiscleanup.core.ui.touchDownConsumer
+import com.crisiscleanup.feature.caseeditor.ExistingCaseViewModel
 import com.crisiscleanup.feature.caseeditor.R
 
 private val addMediaActionPadding = 4.dp
@@ -98,7 +112,7 @@ private fun AddMediaView(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun PhotosSection(
     title: String,
@@ -163,5 +177,91 @@ internal fun PhotosSection(
                 )
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun TakePhotoSelectImage(
+    viewModel: ExistingCaseViewModel = hiltViewModel(),
+    translate: (String) -> String = { s -> s },
+    showOptions: Boolean = false,
+    closeOptions: () -> Unit = {},
+) {
+
+    var cameraPhotoUri by remember { mutableStateOf(Uri.parse("")) }
+    val cameraPhotoLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { isTaken ->
+        if (isTaken) {
+            viewModel.onMediaSelected(cameraPhotoUri)
+        }
+        closeOptions()
+    }
+    val selectImageLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri: Uri? ->
+        uri?.let {
+            viewModel.onMediaSelected(uri)
+        }
+        closeOptions()
+    }
+
+    if (showOptions) {
+        ModalBottomSheet(
+            onDismissRequest = closeOptions,
+        ) {
+            if (viewModel.hasCamera) {
+                CrisisCleanupTextButton(
+                    listItemModifier,
+                    text = stringResource(R.string.take_photo),
+                    onClick = {
+                        if (viewModel.takePhoto()) {
+                            val uri = viewModel.capturePhotoUri
+                            if (uri == null) {
+                                // TODO Show error message
+                            } else {
+                                cameraPhotoUri = uri
+                                cameraPhotoLauncher.launch(cameraPhotoUri)
+                            }
+                        }
+                    },
+                )
+            }
+            CrisisCleanupTextButton(
+                listItemModifier,
+                text = stringResource(R.string.select_image),
+                onClick = {
+                    selectImageLauncher.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
+                },
+            )
+            Spacer(listItemModifier.listItemHeight())
+        }
+    }
+
+    val closePermissionDialog =
+        remember(viewModel) { { viewModel.showExplainPermissionCamera = false } }
+    ExplainCameraPermissionDialog(
+        showDialog = viewModel.showExplainPermissionCamera,
+        closeDialog = closePermissionDialog,
+        closeText = translate("actions.close"),
+    )
+}
+
+@Composable
+private fun ExplainCameraPermissionDialog(
+    showDialog: Boolean,
+    closeDialog: () -> Unit,
+    closeText: String = "",
+) {
+    if (showDialog) {
+        OpenSettingsDialog(
+            R.string.allow_camera_permission,
+            R.string.camera_permission_explanation,
+            dismissText = closeText,
+            closeDialog = closeDialog,
+        )
     }
 }

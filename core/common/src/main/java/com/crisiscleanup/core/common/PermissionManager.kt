@@ -9,6 +9,7 @@ interface PermissionManager {
      */
     val permissionChanges: StateFlow<Pair<String, PermissionStatus>>
     fun requestLocationPermission(): PermissionStatus
+    fun requestCameraPermission(): PermissionStatus
 
     fun requestScreenshotReadPermission(): PermissionStatus
 }
