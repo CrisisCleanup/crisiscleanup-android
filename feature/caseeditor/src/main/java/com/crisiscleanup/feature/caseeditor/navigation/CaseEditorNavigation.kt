@@ -14,6 +14,7 @@ import com.crisiscleanup.core.appnav.RouteConstant.caseEditSearchAddressRoute
 import com.crisiscleanup.core.appnav.RouteConstant.caseEditorRoute
 import com.crisiscleanup.core.appnav.RouteConstant.viewCaseRoute
 import com.crisiscleanup.core.appnav.RouteConstant.viewCaseTransferWorkTypesRoute
+import com.crisiscleanup.core.appnav.ViewImageArgs
 import com.crisiscleanup.core.appnav.navigateToViewImage
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
@@ -119,9 +120,7 @@ fun NavGraphBuilder.existingCaseScreen(
             }
         }
         val navToViewImage = remember(navController) {
-            { imageId: Long, imageUrl: String, isNetworkImage: Boolean, title: String ->
-                navController.navigateToViewImage(imageId, imageUrl, isNetworkImage, title)
-            }
+            { args: ViewImageArgs -> navController.navigateToViewImage(args) }
         }
         EditExistingCaseRoute(
             onBack = onBackClick,

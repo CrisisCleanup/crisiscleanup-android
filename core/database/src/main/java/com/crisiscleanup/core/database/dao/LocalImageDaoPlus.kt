@@ -24,6 +24,12 @@ class LocalImageDaoPlus @Inject constructor(
         }
     }
 
+    suspend fun setLocalImageRotation(id: Long, rotationDegrees: Int) = db.withTransaction {
+        with(db.localImageDao()) {
+            updateLocalImageRotation(id, rotationDegrees)
+        }
+    }
+
     suspend fun upsertLocalImage(image: WorksiteLocalImageEntity) = db.withTransaction {
         with(db.localImageDao()) {
             val insertId = insertIgnore(image)

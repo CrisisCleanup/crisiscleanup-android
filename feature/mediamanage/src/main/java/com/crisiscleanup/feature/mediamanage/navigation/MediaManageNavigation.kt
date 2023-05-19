@@ -5,10 +5,10 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.crisiscleanup.core.appnav.RouteConstant.viewImageRoute
+import com.crisiscleanup.core.appnav.ViewImageArgs.Companion.encodedTitleArg
+import com.crisiscleanup.core.appnav.ViewImageArgs.Companion.encodedUriArg
 import com.crisiscleanup.core.appnav.ViewImageArgs.Companion.imageIdArg
-import com.crisiscleanup.core.appnav.ViewImageArgs.Companion.imageUrlArg
 import com.crisiscleanup.core.appnav.ViewImageArgs.Companion.isNetworkImageArg
-import com.crisiscleanup.core.appnav.ViewImageArgs.Companion.titleArg
 import com.crisiscleanup.feature.mediamanage.ui.ViewImageRoute
 
 fun NavGraphBuilder.viewImageScreen(
@@ -16,9 +16,9 @@ fun NavGraphBuilder.viewImageScreen(
 ) {
     val queryString = listOf(
         "$imageIdArg={$imageIdArg}",
-        "$imageUrlArg={$imageUrlArg}",
+        "$encodedUriArg={$encodedUriArg}",
         "$isNetworkImageArg={$isNetworkImageArg}",
-        "$titleArg={$titleArg}",
+        "$encodedTitleArg={$encodedTitleArg}",
     ).joinToString("&")
     composable(
         route = "$viewImageRoute?$queryString",
@@ -26,13 +26,13 @@ fun NavGraphBuilder.viewImageScreen(
             navArgument(imageIdArg) {
                 type = NavType.LongType
             },
-            navArgument(imageUrlArg) {
+            navArgument(encodedUriArg) {
                 type = NavType.StringType
             },
             navArgument(isNetworkImageArg) {
                 type = NavType.BoolType
             },
-            navArgument(titleArg) {
+            navArgument(encodedTitleArg) {
                 type = NavType.StringType
             },
         ),

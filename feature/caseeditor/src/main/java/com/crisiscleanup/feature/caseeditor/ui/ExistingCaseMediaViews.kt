@@ -49,10 +49,10 @@ import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.designsystem.theme.primaryBlueOneTenthColor
-import com.crisiscleanup.core.model.data.NetworkImage
 import com.crisiscleanup.core.ui.touchDownConsumer
 import com.crisiscleanup.feature.caseeditor.ExistingCaseViewModel
 import com.crisiscleanup.feature.caseeditor.R
+import com.crisiscleanup.feature.caseeditor.model.CaseImage
 
 private val addMediaActionPadding = 4.dp
 private val mediaCornerRadius = 6.dp
@@ -118,9 +118,9 @@ internal fun PhotosSection(
     title: String,
     photoRowModifier: Modifier = Modifier,
     photoRowGridCells: StaggeredGridCells = StaggeredGridCells.Fixed(1),
-    photos: List<NetworkImage> = emptyList(),
+    photos: List<CaseImage> = emptyList(),
     onAddPhoto: () -> Unit = {},
-    onPhotoSelect: (NetworkImage) -> Unit = {},
+    onPhotoSelect: (CaseImage) -> Unit = {},
     setEnableParentScroll: (Boolean) -> Unit = {},
     addActionSize: Dp = 128.dp,
 ) {
@@ -149,7 +149,7 @@ internal fun PhotosSection(
             1 + photos.size,
             key = {
                 if (it == 0) "add-media"
-                else photos[it - 1].imageUrl
+                else photos[it - 1].imageUri
             },
             contentType = {
                 if (it == 0) "add-media"
@@ -167,7 +167,7 @@ internal fun PhotosSection(
                 val photoIndex = index - 1
                 val photo = photos[photoIndex]
                 AsyncImage(
-                    model = photo.thumbnailUrl.ifBlank { photo.imageUrl },
+                    model = photo.thumbnailUri.ifBlank { photo.imageUri },
                     modifier = Modifier
                         .clip(RoundedCornerShape(mediaCornerRadius))
                         .clickable { onPhotoSelect(photo) },

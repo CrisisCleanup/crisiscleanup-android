@@ -1,7 +1,10 @@
 package com.crisiscleanup.feature.mediamanage
 
+import android.content.ContentResolver
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
+import android.net.Uri
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.SavedStateHandle
@@ -38,6 +41,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -52,6 +56,7 @@ class ViewImageViewModel @Inject constructor(
     imageLoader: ImageLoader,
     private val localImageRepository: LocalImageRepository,
     private val worksiteChangeRepository: WorksiteChangeRepository,
+    private val contentResolver: ContentResolver,
     private val translator: KeyTranslator,
     accountDataRepository: AccountDataRepository,
     private val syncPusher: SyncPusher,
@@ -61,8 +66,8 @@ class ViewImageViewModel @Inject constructor(
     @ApplicationScope private val externalScope: CoroutineScope,
 ) : ViewModel() {
     private val caseEditorArgs = ViewImageArgs(savedStateHandle)
-    private val imageId = caseEditorArgs.imageId
     private val isNetworkImage = caseEditorArgs.isNetworkImage
+    private val imageId = caseEditorArgs.imageId
     val screenTitle = caseEditorArgs.title
 
     val isDeleted = MutableStateFlow(false)
@@ -76,44 +81,74 @@ class ViewImageViewModel @Inject constructor(
 
     val imageRotation = MutableStateFlow(0)
 
-    val uiState = localImageRepository.streamNetworkImageUrl(imageId).flatMapLatest { url ->
-        val imageUrl = url.ifBlank { caseEditorArgs.imageUrl }
+    private val streamNetworkImageState = localImageRepository.streamNetworkImageUrl(imageId)
+        .flatMapLatest { url ->
+            val imageUrl = url.ifBlank { caseEditorArgs.imageUri }
 
-        if (imageUrl.isBlank()) {
+            if (imageUrl.isBlank()) {
+                // TODO String res
+                return@flatMapLatest flowOf(ViewImageUiState.Error("Image not selected"))
+            }
+
+            callbackFlow<ViewImageUiState> {
+                val request = ImageRequest.Builder(context)
+                    .data(imageUrl)
+                    .target(
+                        onStart = {
+                            channel.trySend(ViewImageUiState.Loading)
+                        },
+                        onSuccess = { result ->
+                            val bitmap = (result as BitmapDrawable).bitmap.asImageBitmap()
+                            channel.trySend(ViewImageUiState.Image(bitmap))
+                        },
+                        onError = {
+                            val isTokenInvalid =
+                                accountDataRepository.accessTokenCached.isBlank()
+
+                            logger.logDebug("Failed to load image $isOffline $isTokenInvalid $imageId $imageUrl")
+
+                            // TODO Test all three states show correctly
+                            // TODO String res
+                            val message =
+                                if (isOffline.value) "Connect to the internet to download this photo."
+                                else if (isTokenInvalid) "Login again and refresh the image."
+                                else "Unable to load photo. Try refreshing the image."
+                            channel.trySend(ViewImageUiState.Error(message))
+                        },
+                    )
+                    .build()
+                val disposable = imageLoader.enqueue(request)
+                awaitClose { disposable.job }
+            }
+        }
+
+    private val streamLocalImageState = localImageRepository.streamLocalImageUri(imageId)
+        .mapLatest { uriString ->
+            val uri = Uri.parse(uriString)
+            if (uri != null) {
+                try {
+                    contentResolver.openFileDescriptor(uri, "r").use {
+                        it?.let { parcel ->
+                            val fileDescriptor = parcel.fileDescriptor
+                            val bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor)
+                            return@mapLatest ViewImageUiState.Image(bitmap.asImageBitmap())
+                        }
+                    }
+                } catch (e: Exception) {
+                    logger.logException(e)
+                }
+            }
+
             // TODO String res
-            return@flatMapLatest flowOf(ViewImageUiState.Error("Image not selected"))
+            val message = "There was an issue loading this image for viewing."
+            // TODO Delete entry in this case? Think it through
+            ViewImageUiState.Error(message)
         }
 
-        callbackFlow<ViewImageUiState> {
-            val request = ImageRequest.Builder(context)
-                .data(imageUrl)
-                .target(
-                    onStart = {
-                        channel.trySend(ViewImageUiState.Loading)
-                    },
-                    onSuccess = { result ->
-                        val bitmap = (result as BitmapDrawable).bitmap.asImageBitmap()
-                        channel.trySend(ViewImageUiState.Image(bitmap))
-                    },
-                    onError = {
-                        val isTokenInvalid = accountDataRepository.accessTokenCached.isBlank()
+    private val imageState = if (isNetworkImage) streamNetworkImageState
+    else streamLocalImageState
 
-                        logger.logDebug("Failed to load image $isOffline $isTokenInvalid $imageId $imageUrl")
-
-                        // TODO Test all three states show correctly
-                        // TODO String res
-                        val message =
-                            if (isOffline.value) "Connect to the internet to download this photo."
-                            else if (isTokenInvalid) "Login again and refresh the image."
-                            else "Unable to load photo. Try refreshing the image."
-                        channel.trySend(ViewImageUiState.Error(message))
-                    },
-                )
-                .build()
-            val disposable = imageLoader.enqueue(request)
-            awaitClose { disposable.job }
-        }
-    }
+    val uiState = imageState
         .stateIn(
             scope = viewModelScope,
             initialValue = ViewImageUiState.Loading,
@@ -147,9 +182,7 @@ class ViewImageViewModel @Inject constructor(
             .distinctUntilChanged()
             .onEach { rotation ->
                 if (savedImageRotation.get() < 999) {
-                    if (isNetworkImage) {
-                        localImageRepository.setNetworkImageRotation(imageId, rotation)
-                    }
+                    localImageRepository.setImageRotation(imageId, isNetworkImage, rotation)
                 }
             }
             .flowOn(ioDispatcher)
@@ -159,20 +192,22 @@ class ViewImageViewModel @Inject constructor(
     fun translate(key: String) = translator.translate(key) ?: key
 
     fun deleteImage() {
-        if (isNetworkImage) {
-            viewModelScope.launch(ioDispatcher) {
-                try {
+        viewModelScope.launch(ioDispatcher) {
+            try {
+                if (isNetworkImage) {
                     val worksiteId = worksiteChangeRepository.saveDeletePhoto(imageId)
                     if (worksiteId > 0) {
                         externalScope.launch {
                             syncPusher.appPushWorksite(worksiteId)
                         }
                     }
-                    isDeleted.value = true
-                } catch (e: Exception) {
-                    // TODO Show error
-                    logger.logException(e)
+                } else {
+                    localImageRepository.deleteLocalImage(imageId)
                 }
+                isDeleted.value = true
+            } catch (e: Exception) {
+                // TODO Show error
+                logger.logException(e)
             }
         }
     }

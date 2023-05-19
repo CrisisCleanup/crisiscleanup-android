@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.crisiscleanup.core.database.model.NetworkFileLocalImageEntity
 import com.crisiscleanup.core.database.model.WorksiteLocalImageEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface LocalImageDao {
@@ -29,6 +30,14 @@ interface LocalImageDao {
     fun insertIgnore(image: WorksiteLocalImageEntity): Long
 
     @Transaction
+    @Query("SELECT uri FROM worksite_local_images WHERE id=:id")
+    fun streamLocalImageUri(id: Long): Flow<String>
+
+    @Transaction
+    @Query("SELECT * FROM worksite_local_images WHERE id=:id")
+    fun getLocalImage(id: Long): WorksiteLocalImageEntity?
+
+    @Transaction
     @Query(
         """
         UPDATE worksite_local_images
@@ -41,4 +50,12 @@ interface LocalImageDao {
         documentId: String,
         tag: String,
     )
+
+    @Transaction
+    @Query("UPDATE OR IGNORE worksite_local_images SET rotate_degrees=:rotationDegrees WHERE id=:id")
+    fun updateLocalImageRotation(id: Long, rotationDegrees: Int)
+
+    @Transaction
+    @Query("DELETE FROM worksite_local_images WHERE id=:id")
+    fun deleteLocalImage(id: Long)
 }

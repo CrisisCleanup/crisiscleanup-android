@@ -54,8 +54,10 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.appnav.ViewImageArgs
 import com.crisiscleanup.core.common.combineTrimText
 import com.crisiscleanup.core.common.filterNotBlankTrim
+import com.crisiscleanup.core.common.urlEncode
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationDefaults
@@ -73,8 +75,6 @@ import com.crisiscleanup.core.designsystem.theme.primaryRedColor
 import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
 import com.crisiscleanup.core.mapmarker.ui.rememberMapUiSettings
 import com.crisiscleanup.core.model.data.EmptyWorksite
-import com.crisiscleanup.core.model.data.ImageCategory
-import com.crisiscleanup.core.model.data.NetworkImage
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteNote
@@ -85,6 +85,8 @@ import com.crisiscleanup.feature.caseeditor.ExistingCaseViewModel
 import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
 import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.WorkTypeProfile
+import com.crisiscleanup.feature.caseeditor.model.CaseImage
+import com.crisiscleanup.feature.caseeditor.model.ImageCategory
 import com.crisiscleanup.feature.caseeditor.model.coordinates
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptor
@@ -106,7 +108,7 @@ internal fun EditExistingCaseRoute(
     onBack: () -> Unit = {},
     onFullEdit: (ExistingWorksiteIdentifier) -> Unit = {},
     openTransferWorkType: () -> Unit = {},
-    openPhoto: (Long, String, Boolean, String) -> Unit = { _, _, _, _ -> },
+    openPhoto: (ViewImageArgs) -> Unit = { _ -> },
 ) {
     val isPendingTransfer by viewModel.transferWorkTypeProvider.isPendingTransfer
     if (isPendingTransfer) {
@@ -268,7 +270,7 @@ private fun ColumnScope.ExistingCaseContent(
     worksite: Worksite,
     translate: (String) -> String = { s -> s },
     isLoading: Boolean = false,
-    openPhoto: (Long, String, Boolean, String) -> Unit = { _, _, _, _ -> },
+    openPhoto: (ViewImageArgs) -> Unit = { _ -> },
 ) {
     val pagerState = rememberPagerState()
     val selectedTabIndex = pagerState.currentPage
@@ -641,7 +643,7 @@ internal fun EditExistingCasePhotosView(
     viewModel: ExistingCaseViewModel = hiltViewModel(),
     translate: (String) -> String = { s -> s },
     setEnablePagerScroll: (Boolean) -> Unit = {},
-    onPhotoSelect: (Long, String, Boolean, String) -> Unit = { _, _, _, _ -> },
+    onPhotoSelect: (ViewImageArgs) -> Unit = { _ -> },
 ) {
     val photos by viewModel.beforeAfterPhotos.collectAsStateWithLifecycle()
 
@@ -675,8 +677,16 @@ internal fun EditExistingCasePhotosView(
                         viewModel.addImageCategory = imageCategory
                         showCameraMediaSelect = true
                     },
-                    onPhotoSelect = { image: NetworkImage ->
-                        onPhotoSelect(image.id, image.imageUrl, true, viewModel.headerTitle.value)
+                    onPhotoSelect = { image: CaseImage ->
+                        with(image) {
+                            val viewImageArgs = ViewImageArgs(
+                                id,
+                                encodedUri = if (isNetworkImage) imageUri.urlEncode() else "",
+                                isNetworkImage,
+                                viewModel.headerTitle.value.urlEncode(),
+                            )
+                            onPhotoSelect(viewImageArgs)
+                        }
                     },
                 )
             }

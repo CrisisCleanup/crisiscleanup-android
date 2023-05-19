@@ -36,13 +36,15 @@ import com.crisiscleanup.core.data.repository.WorkTypeStatusRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
-import com.crisiscleanup.core.model.data.ImageCategory
 import com.crisiscleanup.core.model.data.NetworkImage
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.WorkTypeRequest
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteLocalImage
 import com.crisiscleanup.core.model.data.WorksiteNote
+import com.crisiscleanup.feature.caseeditor.model.CaseImage
+import com.crisiscleanup.feature.caseeditor.model.ImageCategory
+import com.crisiscleanup.feature.caseeditor.model.asCaseImage
 import com.crisiscleanup.feature.caseeditor.navigation.ExistingCaseArgs
 import com.google.android.gms.maps.model.BitmapDescriptor
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -383,13 +385,27 @@ class ExistingCaseViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val beforeAfterPhotos = editableWorksiteProvider.editableWorksite.map { worksite ->
-        val photos = worksite.files
-        mapOf(
-            ImageCategory.Before to photos.filterNot(NetworkImage::isAfter),
-            ImageCategory.After to photos.filter(NetworkImage::isAfter),
-        )
-    }
+    val beforeAfterPhotos = combine(
+        editableWorksiteProvider.editableWorksite,
+        uiState,
+        ::Pair,
+    )
+        .filter { (_, state) -> state is CaseEditorUiState.WorksiteData }
+        .mapLatest { (worksite, state) ->
+            val localImages = (state as CaseEditorUiState.WorksiteData).localWorksite
+                ?.localImages
+                ?.map(WorksiteLocalImage::asCaseImage)
+                ?: emptyList()
+            val fileImages = worksite.files.map(NetworkImage::asCaseImage)
+            val beforeImages = localImages.filterNot(CaseImage::isAfter).toMutableList()
+                .apply { addAll(fileImages.filterNot(CaseImage::isAfter)) }
+            val afterImages = localImages.filter(CaseImage::isAfter).toMutableList()
+                .apply { addAll(fileImages.filter(CaseImage::isAfter)) }
+            mapOf(
+                ImageCategory.Before to beforeImages,
+                ImageCategory.After to afterImages,
+            )
+        }
         .stateIn(
             scope = viewModelScope,
             initialValue = emptyMap(),
@@ -581,7 +597,6 @@ class ExistingCaseViewModel @Inject constructor(
     fun onMediaSelected(uri: Uri) {
         isSavingMedia.value = true
         viewModelScope.launch(ioDispatcher) {
-
             var documentId = ""
 
             val projection = arrayOf(

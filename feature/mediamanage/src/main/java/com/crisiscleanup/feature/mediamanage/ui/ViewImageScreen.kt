@@ -80,6 +80,8 @@ internal fun ViewImageRoute(
     }
 
     val isDeleted by viewModel.isDeleted.collectAsStateWithLifecycle()
+    // TODO Deleting shows white screen temporarily.
+    //      Design a better transition as photo displays over black screen with optional toolbar.
     if (isDeleted) {
         onBackRestoreFullscreen()
     } else {

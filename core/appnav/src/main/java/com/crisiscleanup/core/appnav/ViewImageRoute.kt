@@ -4,50 +4,39 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import com.crisiscleanup.core.appnav.RouteConstant.viewImageRoute
 import com.crisiscleanup.core.common.urlDecode
-import com.crisiscleanup.core.common.urlEncode
 
 class ViewImageArgs(
     val imageId: Long,
-    encodedImageUrl: String,
+    val encodedUri: String = "",
     val isNetworkImage: Boolean,
-    encodedTitle: String,
+    val encodedTitle: String,
 ) {
-    val imageUrl = encodedImageUrl.urlDecode()
+    val imageUri = encodedUri.urlDecode()
     val title = encodedTitle.urlDecode()
 
     companion object {
         const val imageIdArg = "imageId"
-        const val imageUrlArg = "imageUrl"
+        const val encodedUriArg = "encodedUri"
         const val isNetworkImageArg = "isNetworkImage"
-        const val titleArg = "title"
+        const val encodedTitleArg = "encodedTitle"
 
-        fun queryString(
-            imageId: Long,
-            imageUrl: String,
-            isNetworkImage: Boolean,
-            title: String = "",
-        ) = listOf(
-            "$imageIdArg=$imageId",
-            "$imageUrlArg=${imageUrl.urlEncode()}",
-            "$isNetworkImageArg=$isNetworkImage",
-            "$titleArg=${title.urlEncode()}",
+        fun queryString(args: ViewImageArgs) = listOf(
+            "$imageIdArg=${args.imageId}",
+            "$encodedUriArg=${args.encodedUri}",
+            "$isNetworkImageArg=${args.isNetworkImage}",
+            "$encodedTitleArg=${args.encodedTitle}",
         ).joinToString("&")
     }
 
     constructor(savedStateHandle: SavedStateHandle) : this(
         checkNotNull(savedStateHandle[imageIdArg]),
-        checkNotNull(savedStateHandle[imageUrlArg]),
+        checkNotNull(savedStateHandle[encodedUriArg]),
         checkNotNull(savedStateHandle[isNetworkImageArg]),
-        checkNotNull(savedStateHandle[titleArg]),
+        checkNotNull(savedStateHandle[encodedTitleArg]),
     )
 }
 
-fun NavController.navigateToViewImage(
-    imageId: Long,
-    imageUrl: String,
-    isNetworkImage: Boolean,
-    title: String,
-) {
-    val queryString = ViewImageArgs.queryString(imageId, imageUrl, isNetworkImage, title)
+fun NavController.navigateToViewImage(viewImageArgs: ViewImageArgs) {
+    val queryString = ViewImageArgs.queryString(viewImageArgs)
     this.navigate("$viewImageRoute?$queryString")
 }

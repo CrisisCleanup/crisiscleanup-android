@@ -61,7 +61,12 @@ data class PopulatedLocalWorksite(
             entityColumn = "network_file_id",
         )
     )
-    val localImages: List<NetworkFileLocalImageEntity>,
+    val fileImages: List<NetworkFileLocalImageEntity>,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "worksite_id",
+    )
+    val localImages: List<WorksiteLocalImageEntity>,
 )
 
 fun PopulatedLocalWorksite.asExternalModel(
@@ -76,8 +81,8 @@ fun PopulatedLocalWorksite.asExternalModel(
             valueBoolean = it.valueBool,
         )
     }
-    val localImageLookup = localImages.associateBy(NetworkFileLocalImageEntity::id)
-    val hasImagesPendingDelete = localImages.any(NetworkFileLocalImageEntity::isDeleted)
+    val localFileImageLookup = fileImages.associateBy(NetworkFileLocalImageEntity::id)
+    val hasImagesPendingDelete = fileImages.any(NetworkFileLocalImageEntity::isDeleted)
     return with(entity) {
         LocalWorksite(
             Worksite(
@@ -94,10 +99,10 @@ fun PopulatedLocalWorksite.asExternalModel(
                 email = email,
                 favoriteId = favoriteId,
                 files = files
-                    .filter { localImageLookup[it.id]?.isDeleted != true }
+                    .filter { localFileImageLookup[it.id]?.isDeleted != true }
                     .filter { it.fullUrl?.isNotBlank() == true }
                     .map {
-                        val rotateDegrees = localImageLookup[it.id]?.rotateDegrees ?: 0
+                        val rotateDegrees = localFileImageLookup[it.id]?.rotateDegrees ?: 0
                         it.asImageModel(rotateDegrees)
                     },
                 flags = flags.map { it.asExternalModel(translator) },
@@ -135,6 +140,7 @@ fun PopulatedLocalWorksite.asExternalModel(
                     .map(WorkTypeTransferRequestEntity::asExternalModel),
                 isAssignedToOrgMember = if (root.isLocalModified) isLocalFavorite else favoriteId != null,
             ),
+            localImages.map(WorksiteLocalImageEntity::asExternalModel),
             LocalChange(
                 isLocalModified = root.isLocalModified || hasImagesPendingDelete,
                 localModifiedAt = root.localModifiedAt,

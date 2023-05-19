@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.crisiscleanup.core.model.data.WorksiteLocalImage
 
 @Entity(
     "worksite_local_images",
@@ -31,4 +32,13 @@ data class WorksiteLocalImageEntity(
     val tag: String,
     @ColumnInfo("rotate_degrees")
     val rotateDegrees: Int = 0,
+)
+
+fun WorksiteLocalImageEntity.asExternalModel() = WorksiteLocalImage(
+    id = id,
+    worksiteId = worksiteId,
+    documentId = documentId,
+    uri = uri,
+    tag = tag,
+    rotateDegrees = rotateDegrees,
 )
