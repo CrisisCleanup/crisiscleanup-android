@@ -405,8 +405,7 @@ private fun ColumnScope.FullEditView(
         BusyIndicatorFloatingTopCenter(isLoadingWorksite)
     }
 
-    val claimAndSaveChanges =
-        remember(viewModel) { { viewModel.saveChanges(false, claimAll = true) } }
+    val claimAndSaveChanges = remember(viewModel) { { viewModel.saveChanges(true) } }
     val saveChanges = remember(viewModel) { { viewModel.saveChanges(false) } }
     SaveActionBar(
         !isSavingData,

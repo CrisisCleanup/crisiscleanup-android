@@ -379,7 +379,6 @@ class CaseEditorViewModel @Inject constructor(
 
     fun saveChanges(
         claimUnclaimed: Boolean,
-        claimAll: Boolean = false,
         backOnSuccess: Boolean = true
     ) {
         if (!transferChanges(true)) {
@@ -421,8 +420,6 @@ class CaseEditorViewModel @Inject constructor(
                             if (it.orgClaim != null) it
                             else it.copy(orgClaim = editorStateData.orgId)
                         }
-                } else if (claimAll) {
-                    workTypes = workTypes.map { it.copy(orgClaim = editorStateData.orgId) }
                 }
 
                 val updatedReportedBy =

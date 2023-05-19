@@ -77,6 +77,7 @@ fun PopulatedLocalWorksite.asExternalModel(
         )
     }
     val localImageLookup = localImages.associateBy(NetworkFileLocalImageEntity::id)
+    val hasImagesPendingDelete = localImages.any(NetworkFileLocalImageEntity::isDeleted)
     return with(entity) {
         LocalWorksite(
             Worksite(
@@ -135,7 +136,7 @@ fun PopulatedLocalWorksite.asExternalModel(
                 isAssignedToOrgMember = if (root.isLocalModified) isLocalFavorite else favoriteId != null,
             ),
             LocalChange(
-                isLocalModified = root.isLocalModified,
+                isLocalModified = root.isLocalModified || hasImagesPendingDelete,
                 localModifiedAt = root.localModifiedAt,
                 syncedAt = root.syncedAt,
             ),
