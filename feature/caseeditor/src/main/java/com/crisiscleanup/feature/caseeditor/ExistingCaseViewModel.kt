@@ -5,6 +5,7 @@ import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Bundle
 import android.provider.MediaStore
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +29,7 @@ import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
+import com.crisiscleanup.core.data.repository.LocalImageRepository
 import com.crisiscleanup.core.data.repository.LocationsRepository
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.WorkTypeStatusRepository
@@ -39,6 +41,7 @@ import com.crisiscleanup.core.model.data.NetworkImage
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.WorkTypeRequest
 import com.crisiscleanup.core.model.data.Worksite
+import com.crisiscleanup.core.model.data.WorksiteLocalImage
 import com.crisiscleanup.core.model.data.WorksiteNote
 import com.crisiscleanup.feature.caseeditor.navigation.ExistingCaseArgs
 import com.google.android.gms.maps.model.BitmapDescriptor
@@ -77,6 +80,7 @@ class ExistingCaseViewModel @Inject constructor(
     languageRepository: LanguageTranslationsRepository,
     languageRefresher: LanguageRefresher,
     workTypeStatusRepository: WorkTypeStatusRepository,
+    private val localImageRepository: LocalImageRepository,
     private val editableWorksiteProvider: EditableWorksiteProvider,
     val transferWorkTypeProvider: TransferWorkTypeProvider,
     private val permissionManager: PermissionManager,
@@ -115,7 +119,17 @@ class ExistingCaseViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val isSavingWorksite = MutableStateFlow(false)
+    private val isSavingWorksite = MutableStateFlow(false)
+    private val isSavingMedia = MutableStateFlow(false)
+    val isSaving = combine(
+        isSavingWorksite,
+        isSavingMedia,
+    ) { b0, b1 -> b0 || b1 }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
+            started = SharingStarted.WhileSubscribed(),
+        )
 
     private var isOrganizationsRefreshed = AtomicBoolean(false)
     private val organizationLookup = organizationsRepository.organizationLookup
@@ -141,7 +155,7 @@ class ExistingCaseViewModel @Inject constructor(
         @SuppressLint("SimpleDateFormat")
         get() {
             val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-            val fileName = "IMG_${timeStamp}.jpg"
+            val fileName = "CC_${timeStamp}.jpg"
             val contentValues = ContentValues().apply {
                 put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
                 put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
@@ -565,13 +579,41 @@ class ExistingCaseViewModel @Inject constructor(
     }
 
     fun onMediaSelected(uri: Uri) {
-        // TODO Wrap in loading and disable interaction
-        // TODO Check file exists at URI and has size
-        //      Uniqueness on worksite ID and URI
-        //      No need to delete. Just delete record
-        //      Support rotation
-        //      Tag
-        logger.logDebug("On image $addImageCategory $uri")
+        isSavingMedia.value = true
+        viewModelScope.launch(ioDispatcher) {
+
+            var documentId = ""
+
+            val projection = arrayOf(
+                MediaStore.MediaColumns.DISPLAY_NAME,
+            )
+            contentResolver.query(uri, projection, Bundle.EMPTY, null)?.let {
+                it.use { cursor ->
+                    if (cursor.moveToFirst()) {
+                        documentId = cursor.getString(0)
+                    }
+                }
+            }
+
+            if (documentId.isNotBlank()) {
+                try {
+                    localImageRepository.save(
+                        WorksiteLocalImage(
+                            0,
+                            editableWorksite.value.id,
+                            documentId = documentId,
+                            uri = uri.toString(),
+                            tag = addImageCategory.literal,
+                        )
+                    )
+                } catch (e: Exception) {
+                    // TODO Show error message
+                    logger.logException(e)
+                } finally {
+                    isSavingMedia.value = false
+                }
+            }
+        }
     }
 }
 

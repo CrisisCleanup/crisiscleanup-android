@@ -3,6 +3,7 @@ package com.crisiscleanup.core.database.dao
 import androidx.room.withTransaction
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
 import com.crisiscleanup.core.database.model.NetworkFileLocalImageEntity
+import com.crisiscleanup.core.database.model.WorksiteLocalImageEntity
 import com.crisiscleanup.core.model.data.PhotoChangeDataProvider
 import javax.inject.Inject
 
@@ -20,6 +21,15 @@ class LocalImageDaoPlus @Inject constructor(
         with(db.localImageDao()) {
             insertIgnore(NetworkFileLocalImageEntity(id))
             updateNetworkImageRotation(id, rotationDegrees)
+        }
+    }
+
+    suspend fun upsertLocalImage(image: WorksiteLocalImageEntity) = db.withTransaction {
+        with(db.localImageDao()) {
+            val insertId = insertIgnore(image)
+            if (insertId <= 0) {
+                update(image.worksiteId, image.documentId, image.tag)
+            }
         }
     }
 

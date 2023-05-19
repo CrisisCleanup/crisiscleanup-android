@@ -29,6 +29,7 @@ import com.crisiscleanup.core.database.model.WorksiteChangeEntity
 import com.crisiscleanup.core.database.model.WorksiteEntity
 import com.crisiscleanup.core.database.model.WorksiteFlagEntity
 import com.crisiscleanup.core.database.model.WorksiteFormDataEntity
+import com.crisiscleanup.core.database.model.WorksiteLocalImageEntity
 import com.crisiscleanup.core.database.model.WorksiteNetworkFileCrossRef
 import com.crisiscleanup.core.database.model.WorksiteNoteEntity
 import com.crisiscleanup.core.database.model.WorksiteRootEntity
@@ -64,6 +65,7 @@ import kotlinx.datetime.Instant
         NetworkFileEntity::class,
         WorksiteNetworkFileCrossRef::class,
         NetworkFileLocalImageEntity::class,
+        WorksiteLocalImageEntity::class,
     ],
     version = 1,
 )

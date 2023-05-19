@@ -133,7 +133,7 @@ class ViewImageViewModel @Inject constructor(
 
     init {
         viewModelScope.launch(ioDispatcher) {
-            val rotation = localImageRepository.getLocalImageRotation(imageId, isNetworkImage)
+            val rotation = localImageRepository.getImageRotation(imageId, isNetworkImage)
             savedImageRotation = AtomicReference(rotation)
             withContext(Dispatchers.Main) {
                 if (rotation != imageRotation.value) {

@@ -114,7 +114,7 @@ internal fun EditExistingCaseRoute(
     }
 
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
-    val isSaving by viewModel.isSavingWorksite.collectAsStateWithLifecycle()
+    val isSaving by viewModel.isSaving.collectAsStateWithLifecycle()
     val isBusy = isLoading || isSaving
     val isEditable = !(isBusy || isPendingTransfer)
 

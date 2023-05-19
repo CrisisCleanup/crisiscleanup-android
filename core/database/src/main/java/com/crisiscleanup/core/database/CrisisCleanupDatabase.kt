@@ -49,6 +49,7 @@ import com.crisiscleanup.core.database.model.WorksiteChangeEntity
 import com.crisiscleanup.core.database.model.WorksiteEntity
 import com.crisiscleanup.core.database.model.WorksiteFlagEntity
 import com.crisiscleanup.core.database.model.WorksiteFormDataEntity
+import com.crisiscleanup.core.database.model.WorksiteLocalImageEntity
 import com.crisiscleanup.core.database.model.WorksiteNetworkFileCrossRef
 import com.crisiscleanup.core.database.model.WorksiteNoteEntity
 import com.crisiscleanup.core.database.model.WorksiteRootEntity
@@ -83,8 +84,9 @@ import com.crisiscleanup.core.database.util.InstantConverter
         NetworkFileEntity::class,
         WorksiteNetworkFileCrossRef::class,
         NetworkFileLocalImageEntity::class,
+        WorksiteLocalImageEntity::class,
     ],
-    version = 22,
+    version = 23,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
@@ -107,6 +109,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         AutoMigration(from = 19, to = 20),
         AutoMigration(from = 20, to = 21),
         AutoMigration(from = 21, to = 22),
+        AutoMigration(from = 22, to = 23),
     ],
     exportSchema = true,
 )
