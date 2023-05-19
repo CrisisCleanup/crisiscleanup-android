@@ -7,6 +7,7 @@ import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.sync.SyncLogger
+import com.crisiscleanup.core.database.dao.LocalImageDaoPlus
 import com.crisiscleanup.core.database.dao.WorkTypeDao
 import com.crisiscleanup.core.database.dao.WorksiteChangeDao
 import com.crisiscleanup.core.database.dao.WorksiteChangeDaoPlus
@@ -25,6 +26,7 @@ import com.crisiscleanup.core.network.model.ExpiredTokenException
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import com.crisiscleanup.core.network.worksitechange.NoInternetConnectionException
 import com.crisiscleanup.core.network.worksitechange.WorksiteChangeSyncer
+import com.crisiscleanup.core.network.worksitechange.WorksitePhotoChangeSyncer
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
@@ -79,7 +81,9 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
     private val worksiteFlagDao: WorksiteFlagDao,
     private val worksiteNoteDao: WorksiteNoteDao,
     private val workTypeDao: WorkTypeDao,
+    private val localImageDaoPlus: LocalImageDaoPlus,
     private val worksiteChangeSyncer: WorksiteChangeSyncer,
+    private val worksitePhotoChangeSyncer: WorksitePhotoChangeSyncer,
     private val accountDataRepository: AccountDataRepository,
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val worksitesRepository: WorksitesRepository,
@@ -144,8 +148,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
     }
 
     override suspend fun saveDeletePhoto(fileId: Long): Long {
-        val orgId = accountDataRepository.accountData.first().org.id
-        return worksiteChangeDaoPlus.saveDeletePhoto(fileId, orgId)
+        return worksiteChangeDaoPlus.saveDeletePhoto(fileId)
     }
 
     override suspend fun syncWorksites(syncWorksiteCount: Int): Boolean = coroutineScope {
@@ -280,6 +283,8 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
             syncLogger.log("Sync changes over.")
         }
 
+        syncPhotoChanges(worksiteId)
+
         // TODO There is a possibility all changes have been synced but there is still unsynced accessory data.
         //      Try to sync in isolation, create a new change, or create notice with options to take action.
 
@@ -395,6 +400,19 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
                 //      How to handle gracefully?
                 //      Wait for user modification, intervention, or prompt?
             }
+        }
+    }
+
+    private suspend fun syncPhotoChanges(worksiteId: Long) {
+        try {
+            val (networkWorksiteId, deleteFileIds) =
+                localImageDaoPlus.getDeletedPhotoNetworkFileIds(worksiteId)
+            if (deleteFileIds.isNotEmpty()) {
+                worksitePhotoChangeSyncer.deletePhotoFiles(networkWorksiteId, deleteFileIds)
+                syncLogger.log("Deleted photos", deleteFileIds.joinToString(", "))
+            }
+        } catch (e: Exception) {
+            syncLogger.log("Delete photo error", e.message ?: "")
         }
     }
 }

@@ -330,7 +330,7 @@ class WorksiteChangeDaoTest {
         val actualWorkTypes = db.testWorkTypeDao().getEntities(worksiteId)
         assertEquals(expectedWorkTypes, actualWorkTypes)
 
-        verify(exactly = 0) { changeSerializer.serialize(any(), allAny()) }
+        verify(exactly = 0) { changeSerializer.serialize(any(), any(), allAny()) }
         verify(exactly = 0) { appLogger.logException(any()) }
     }
 
@@ -358,6 +358,7 @@ class WorksiteChangeDaoTest {
 
         every {
             changeSerializer.serialize(
+                true,
                 EmptyWorksite,
                 newWorksite.copy(
                     id = 1,
@@ -627,6 +628,7 @@ class WorksiteChangeDaoTest {
 
         every {
             changeSerializer.serialize(
+                true,
                 worksiteSynced,
                 worksiteModified.copy(
                     flags = worksiteModified.flags!!.map {
@@ -896,6 +898,7 @@ class WorksiteChangeDaoTest {
 
         every {
             changeSerializer.serialize(
+                true,
                 worksiteSynced,
                 worksiteModified,
                 mapOf(

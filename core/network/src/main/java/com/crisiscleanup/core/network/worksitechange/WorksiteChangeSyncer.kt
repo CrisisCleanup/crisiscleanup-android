@@ -4,7 +4,6 @@ import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.model.data.AccountData
-import com.crisiscleanup.core.model.data.PhotoChangeDataProvider
 import com.crisiscleanup.core.model.data.SavedWorksiteChange
 import com.crisiscleanup.core.model.data.WorksiteSyncResult
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
@@ -37,7 +36,6 @@ class NetworkWorksiteChangeSyncer @Inject constructor(
     private val changeSetOperator: WorksiteChangeSetOperator,
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val writeApiClient: CrisisCleanupWriteApi,
-    private val photoChangeDataProvider: PhotoChangeDataProvider,
     private val networkMonitor: NetworkMonitor,
     private val appEnv: AppEnv,
 ) : WorksiteChangeSyncer {
@@ -49,7 +47,7 @@ class NetworkWorksiteChangeSyncer @Inject constructor(
 
     private fun deserializeChanges(savedChange: SavedWorksiteChange): SyncWorksiteChange {
         val worksiteChange: WorksiteChange = when (val version = savedChange.dataVersion) {
-            1, 2, 3 -> json.decodeFromString(savedChange.serializedData)
+            1, 2, 3, 4 -> json.decodeFromString(savedChange.serializedData)
             else -> error("Worksite change version $version not implemented")
         }
         return SyncWorksiteChange(
@@ -73,11 +71,11 @@ class NetworkWorksiteChangeSyncer @Inject constructor(
         affiliateOrganizations: Set<Long>,
         syncLogger: SyncLogger,
     ): WorksiteSyncResult {
+        val changes = sortedChanges.map { deserializeChanges(it) }
         val syncManager = WorksiteChangeProcessor(
             changeSetOperator,
             networkDataSource,
             writeApiClient,
-            photoChangeDataProvider,
             accountData,
             networkMonitor,
             appEnv,
@@ -89,7 +87,6 @@ class NetworkWorksiteChangeSyncer @Inject constructor(
             workTypeIdLookup,
             affiliateOrganizations,
         )
-        val changes = sortedChanges.map { deserializeChanges(it) }
         syncManager.process(
             deserializeChanges(startingReferenceChange),
             changes,

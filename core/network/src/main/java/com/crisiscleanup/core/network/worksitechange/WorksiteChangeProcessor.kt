@@ -4,7 +4,6 @@ import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.model.data.AccountData
-import com.crisiscleanup.core.model.data.PhotoChangeDataProvider
 import com.crisiscleanup.core.model.data.WorksiteSyncResult
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.CrisisCleanupWriteApi
@@ -23,7 +22,6 @@ class WorksiteChangeProcessor(
     private val changeSetOperator: WorksiteChangeSetOperator,
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val writeApiClient: CrisisCleanupWriteApi,
-    private val photoChangeDataProvider: PhotoChangeDataProvider,
     private val accountData: AccountData,
     private val networkMonitor: NetworkMonitor,
     private val appEnv: AppEnv,
@@ -125,7 +123,10 @@ class WorksiteChangeProcessor(
                 return@forEachIndexed
             }
 
-            if (syncResult.isPartiallySynced && index < lastLoopIndex) {
+            if ((syncResult.isFullySynced || syncResult.isPartiallySynced) &&
+                syncResult.worksite == null &&
+                index < lastLoopIndex
+            ) {
                 getNetworkWorksite(true)
             }
         }
@@ -134,14 +135,12 @@ class WorksiteChangeProcessor(
     private suspend fun syncChangeDelta(
         syncChange: SyncWorksiteChange,
         deltaChange: WorksiteChange,
-    ) = if (deltaChange.isWorkTypeTransfer) {
+    ) = if (deltaChange.isWorkTypeTransferChange) {
         syncWorkTypeTransfer(
             syncChange,
             deltaChange,
         )
-    } else if (deltaChange.isPhotoChange == true) {
-        syncPhotoChanges(deltaChange.change.core.id)
-    } else {
+    } else if (deltaChange.isWorksiteDataChange == true) {
         val isNewChange = deltaChange.start == null || networkWorksiteId <= 0
         val changeSet = if (isNewChange) {
             changeSetOperator.getNewSet(deltaChange.change)
@@ -163,6 +162,13 @@ class WorksiteChangeProcessor(
             syncChange.syncUuid,
             isPartiallySynced,
             changeSet,
+        )
+    } else {
+        syncLogger.log("Skipping unsupported change", "Is photo? ${deltaChange.isPhotoChange}.")
+        SyncChangeSetResult(
+            isPartiallySynced = false,
+            isFullySynced = false,
+            exception = Exception("Unsupported sync change"),
         )
     }
 
@@ -188,31 +194,6 @@ class WorksiteChangeProcessor(
         }
 
         return result.copy(isFullySynced = true)
-    }
-
-    private suspend fun syncPhotoChanges(
-        worksiteId: Long,
-    ): SyncChangeSetResult {
-        val (networkWorksiteId, deletedFileIds) = photoChangeDataProvider.getDeletedPhotoNetworkFileIds(
-            worksiteId
-        )
-        val deletePhotoExceptions = mutableMapOf<Long, Exception>()
-        deletedFileIds.filter { it > 0 }
-            .forEach { fileId ->
-                try {
-                    writeApiClient.deleteFile(networkWorksiteId, fileId)
-                    syncLogger.log("Synced (photo) file $fileId.")
-                } catch (e: Exception) {
-                    ensureSyncConditions()
-                    deletePhotoExceptions[fileId] = e
-                }
-            }
-
-        return SyncChangeSetResult(
-            false,
-            isFullySynced = true,
-            deletePhotoExceptions = deletePhotoExceptions,
-        )
     }
 
     private suspend fun syncChangeSet(
@@ -557,7 +538,6 @@ internal data class SyncChangeSetResult(
     val workTypeUnclaimException: Exception? = null,
     val workTypeRequestException: Exception? = null,
     val workTypeReleaseException: Exception? = null,
-    val deletePhotoExceptions: Map<Long, Exception> = emptyMap(),
 ) {
     private val dataException: Exception?
         get() {
@@ -611,7 +591,6 @@ internal data class SyncChangeSetResult(
             workTypeUnclaimException?.let { "Unclaim work types: ${it.errorMessage}" },
             workTypeRequestException?.let { "Request work types: ${it.errorMessage}" },
             workTypeReleaseException?.let { "Release work types: ${it.errorMessage}" },
-            summarizeExceptions("Delete photos", deletePhotoExceptions),
         )
             .filter { it?.isNotBlank() == true }
             .joinToString("\n")

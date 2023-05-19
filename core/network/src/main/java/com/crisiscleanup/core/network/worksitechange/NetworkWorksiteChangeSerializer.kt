@@ -13,6 +13,7 @@ import javax.inject.Inject
 
 class NetworkWorksiteChangeSerializer @Inject constructor() : WorksiteChangeSerializer {
     override fun serialize(
+        isDataChange: Boolean,
         worksiteStart: Worksite,
         worksiteChange: Worksite,
         flagIdLookup: Map<Long, Long>,
@@ -22,18 +23,17 @@ class NetworkWorksiteChangeSerializer @Inject constructor() : WorksiteChangeSeri
         requestWorkTypes: List<String>,
         releaseReason: String,
         releaseWorkTypes: List<String>,
-        isPhotoChange: Boolean,
     ): Pair<Int, String> {
         val snapshotStart = if (worksiteStart.isNew) null
         else worksiteStart.asSnapshotModel(flagIdLookup, noteIdLookup, workTypeIdLookup)
         val snapshotChange =
             worksiteChange.asSnapshotModel(flagIdLookup, noteIdLookup, workTypeIdLookup)
         val change = WorksiteChange(
+            isDataChange,
             snapshotStart,
             snapshotChange,
             WorkTypeTransfer(requestReason, requestWorkTypes),
             WorkTypeTransfer(releaseReason, releaseWorkTypes),
-            isPhotoChange = isPhotoChange,
         )
         val serializedChange = Json.encodeToString(change)
         return Pair(WorksiteChangeModelVersion, serializedChange)

@@ -7,6 +7,7 @@ interface WorksiteChangeSerializer {
      * Lookups map local ID to network ID where network IDs are specified.
      */
     fun serialize(
+        isDataChange: Boolean,
         worksiteStart: Worksite,
         worksiteChange: Worksite,
         flagIdLookup: Map<Long, Long> = emptyMap(),
@@ -16,6 +17,5 @@ interface WorksiteChangeSerializer {
         requestWorkTypes: List<String> = emptyList(),
         releaseReason: String = "",
         releaseWorkTypes: List<String> = emptyList(),
-        isPhotoChange: Boolean = false,
     ): Pair<Int, String>
 }

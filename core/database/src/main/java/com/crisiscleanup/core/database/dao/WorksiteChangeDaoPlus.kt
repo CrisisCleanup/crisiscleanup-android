@@ -230,6 +230,33 @@ class WorksiteChangeDaoPlus @Inject constructor(
         return worksiteId
     }
 
+    private fun saveWorksiteChange(
+        worksiteStart: Worksite,
+        worksiteChange: Worksite,
+        idMapping: IdNetworkIdMaps,
+        appVersion: Long,
+        organizationId: Long,
+    ) {
+        val (changeVersion, serializedChange) = changeSerializer.serialize(
+            true,
+            worksiteStart,
+            worksiteChange,
+            flagIdLookup = idMapping.flag,
+            noteIdLookup = idMapping.note,
+            workTypeIdLookup = idMapping.workType,
+        )
+        val changeEntity = WorksiteChangeEntity(
+            0,
+            appVersion,
+            organizationId,
+            worksiteChange.id,
+            uuidGenerator.uuid(),
+            changeVersion,
+            serializedChange,
+        )
+        db.worksiteChangeDao().insert(changeEntity)
+    }
+
     private suspend fun saveWorkTypeTransfer(
         worksite: Worksite,
         transferType: String,
@@ -262,6 +289,7 @@ class WorksiteChangeDaoPlus @Inject constructor(
     ) {
         val (flagIdMap, noteIdMap, workTypeIdMap) = getLocalNetworkIdMap(worksite)
         val (changeVersion, serializedChange) = changeSerializer.serialize(
+            false,
             EmptyWorksite,
             worksite,
             flagIdMap,
@@ -427,56 +455,14 @@ class WorksiteChangeDaoPlus @Inject constructor(
         }
     }
 
-    suspend fun saveDeletePhoto(fileId: Long, organizationId: Long) = db.withTransaction {
+    suspend fun saveDeletePhoto(fileId: Long) = db.withTransaction {
         db.networkFileDao().getWorksiteFromFile(fileId)?.let { (worksiteId) ->
             val localImageDaoPlus = LocalImageDaoPlus(db)
             localImageDaoPlus.deleteNetworkImage(fileId)
-
-            val (changeVersion, serializedChange) = changeSerializer.serialize(
-                EmptyWorksite,
-                EmptyWorksite.copy(id = worksiteId),
-                isPhotoChange = true,
-            )
-            val changeEntity = WorksiteChangeEntity(
-                0,
-                appVersionProvider.versionCode,
-                organizationId,
-                worksiteId,
-                "",
-                changeVersion,
-                serializedChange,
-            )
-            db.worksiteChangeDao().insert(changeEntity)
             return@withTransaction worksiteId
         }
 
         return@withTransaction -1
-    }
-
-    private fun saveWorksiteChange(
-        worksiteStart: Worksite,
-        worksiteChange: Worksite,
-        idMapping: IdNetworkIdMaps,
-        appVersion: Long,
-        organizationId: Long,
-    ) {
-        val (changeVersion, serializedChange) = changeSerializer.serialize(
-            worksiteStart,
-            worksiteChange,
-            flagIdLookup = idMapping.flag,
-            noteIdLookup = idMapping.note,
-            workTypeIdLookup = idMapping.workType,
-        )
-        val changeEntity = WorksiteChangeEntity(
-            0,
-            appVersion,
-            organizationId,
-            worksiteChange.id,
-            uuidGenerator.uuid(),
-            changeVersion,
-            serializedChange,
-        )
-        db.worksiteChangeDao().insert(changeEntity)
     }
 
     suspend fun updateSyncIds(

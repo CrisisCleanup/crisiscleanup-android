@@ -64,7 +64,18 @@ interface WorksiteChangeDao {
     )
     fun streamWorksitesPendingSync(): Flow<List<PopulatedWorksite>>
 
+    // TODO Write tests, add matching index
     @Transaction
-    @Query("SELECT DISTINCT worksite_id FROM worksite_changes LIMIT :limit")
+    @Query(
+        """
+        SELECT worksite_id FROM (
+            SELECT DISTINCT worksite_id, MIN(save_attempt_at) AS min_attempt_at, MAX(created_at) AS max_created_at
+            FROM worksite_changes
+            GROUP BY worksite_id
+            ORDER BY min_attempt_at ASC, max_created_at ASC
+        )
+        LIMIT :limit
+        """
+    )
     fun getWorksitesPendingSync(limit: Int): List<Long>
 }

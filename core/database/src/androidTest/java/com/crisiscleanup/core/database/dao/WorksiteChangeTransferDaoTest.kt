@@ -239,7 +239,7 @@ class WorksiteChangeTransferDaoTest {
         assertEquals(0, requestCount)
 
         verify(exactly = 4) { appLogger.logDebug("Not saving work type requests. Invalid data.") }
-        verify(exactly = 0) { changeSerializer.serialize(any(), allAny()) }
+        verify(exactly = 0) { changeSerializer.serialize(any(), any(), allAny()) }
         verify(exactly = 0) { appLogger.logException(any()) }
     }
 
@@ -247,6 +247,7 @@ class WorksiteChangeTransferDaoTest {
     fun requestClaimedUnclaimed() = runTest {
         every {
             changeSerializer.serialize(
+                false,
                 EmptyWorksite,
                 testWorksite,
                 mapOf(5L to 55),
@@ -321,7 +322,7 @@ class WorksiteChangeTransferDaoTest {
         assertEquals(0, requestCount)
 
         verify(exactly = 4) { appLogger.logDebug("Not saving work type releases. Invalid data.") }
-        verify(exactly = 0) { changeSerializer.serialize(any(), allAny()) }
+        verify(exactly = 0) { changeSerializer.serialize(any(), any(), allAny()) }
         verify(exactly = 0) { appLogger.logException(any()) }
     }
 
@@ -351,6 +352,7 @@ class WorksiteChangeTransferDaoTest {
         )
         every {
             changeSerializer.serialize(
+                false,
                 EmptyWorksite,
                 worksiteChangeSerialize,
                 mapOf(5L to 55),

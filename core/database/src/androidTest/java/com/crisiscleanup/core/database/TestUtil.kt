@@ -27,6 +27,7 @@ object TestUtil {
     fun testChangeSerializer(): WorksiteChangeSerializer =
         spyk(object : WorksiteChangeSerializer {
             override fun serialize(
+                isDataChange: Boolean,
                 worksiteStart: Worksite,
                 worksiteChange: Worksite,
                 flagIdLookup: Map<Long, Long>,
@@ -36,7 +37,6 @@ object TestUtil {
                 requestWorkTypes: List<String>,
                 releaseReason: String,
                 releaseWorkTypes: List<String>,
-                isPhotoChange: Boolean,
             ) = Pair(1, "test-worksite-change")
         })
 

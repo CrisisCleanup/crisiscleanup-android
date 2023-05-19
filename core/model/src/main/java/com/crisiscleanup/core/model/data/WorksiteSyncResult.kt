@@ -22,8 +22,8 @@ data class WorksiteSyncResult(
         val workTypeRequestIdMap: Map<String, Long>,
     )
 
-    private fun <T, R> summarizeChanges(changeMap: Map<T, R>, postText: String): String? =
-        if (changeMap.isEmpty()) null
+    private fun <T, R> summarizeChanges(changeMap: Map<T, R>, postText: String): String =
+        if (changeMap.isEmpty()) ""
         else "${changeMap.size} $postText"
 
     fun getSummary(totalChangeCount: Int): String {
@@ -58,7 +58,7 @@ data class WorksiteSyncResult(
                 summarizeChanges(workTypeKeyMap, "work type keys"),
                 summarizeChanges(workTypeRequestIdMap, "work type requests"),
             )
-                .filter { it?.isNotBlank() == true }
+                .filter { it.isNotBlank() }
                 .joinToString("\n")
         }
 
