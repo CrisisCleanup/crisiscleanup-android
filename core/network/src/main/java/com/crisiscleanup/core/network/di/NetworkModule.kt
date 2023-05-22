@@ -8,8 +8,10 @@ import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.network.BuildConfig
 import com.crisiscleanup.core.network.RetrofitInterceptorProvider
 import com.crisiscleanup.core.network.fake.FakeAssetManager
-import com.crisiscleanup.core.network.retrofit.CrisisCleanupRetrofit
 import com.crisiscleanup.core.network.retrofit.RequestHeaderKeysLookup
+import com.crisiscleanup.core.network.retrofit.RetrofitConfiguration
+import com.crisiscleanup.core.network.retrofit.RetrofitConfigurations
+import com.crisiscleanup.core.network.retrofit.getApiBuilder
 import com.crisiscleanup.core.network.retrofit.getCrisisCleanupApiBuilder
 import dagger.Module
 import dagger.Provides
@@ -20,6 +22,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
 import javax.inject.Singleton
 
 @Module
@@ -44,7 +47,7 @@ object NetworkModule {
     @Singleton
     fun providesRequestHeaderKeysLookup() = RequestHeaderKeysLookup()
 
-    @CrisisCleanupRetrofit
+    @RetrofitConfiguration(RetrofitConfigurations.CrisisCleanup)
     @Provides
     @Singleton
     fun providesCrisisCleanupRetrofit(
@@ -53,6 +56,15 @@ object NetworkModule {
         json: Json,
         appEnv: AppEnv,
     ) = getCrisisCleanupApiBuilder(interceptorProvider, headerKeysLookup, json, appEnv)
+
+    @RetrofitConfiguration(RetrofitConfigurations.Basic)
+    @Provides
+    @Singleton
+    fun providesFormFieldTypeRetrofit(
+        appEnv: AppEnv,
+    ): Retrofit {
+        return getApiBuilder(appEnv)
+    }
 
     /**
      * Since we're displaying SVGs in the app, Coil needs an ImageLoader which supports this

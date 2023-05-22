@@ -1,0 +1,26 @@
+{
+  "id": 19,
+  "filename": "Screenshot 2023-05-22 at 9.08.00 AM-e409ec23517242eaad9eb58017e52702.png",
+  "title": null,
+  "notes": null,
+  "attr": null,
+  "url": "some-url",
+  "full_url": null,
+  "blog_url": null,
+  "csv_url": "url-2",
+  "filename_original": "Screenshot 2023-05-22 at 9.08.00 AM.png",
+  "large_thumbnail_url": null,
+  "small_thumbnail_url": null,
+  "type_t": "fileTypes.other_file",
+  "presigned_post_url": {
+    "url": "https://crisiscleanup-user-files.s3.amazonaws.com/",
+    "fields": {
+      "key": "Screenshot 2023-05-22 at 9.08.00 AM-e409ec23517242eaad9eb58017e52702.png",
+      "x-amz-algorithm": "alg",
+      "x-amz-credential": "cred",
+      "x-amz-date": "date",
+      "policy": "policy",
+      "x-amz-signature": "sig"
+    }
+  }
+}

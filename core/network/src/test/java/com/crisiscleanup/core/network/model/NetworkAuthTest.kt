@@ -54,7 +54,7 @@ class NetworkAuthTest {
         assertNull(result.organizations)
 
         assertEquals(1, result.errors?.size)
-        val firstError = result.errors?.get(0)!!
+        val firstError = result.errors!!.first()
         assertEquals(
             NetworkCrisisCleanupApiError(
                 "non_field_errors",

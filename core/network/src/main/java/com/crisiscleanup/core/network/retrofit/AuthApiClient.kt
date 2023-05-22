@@ -20,7 +20,7 @@ private interface AuthApi {
 
 @Singleton
 class AuthApiClient @Inject constructor(
-    @CrisisCleanupRetrofit retrofit: Retrofit
+    @RetrofitConfiguration(RetrofitConfigurations.CrisisCleanup) retrofit: Retrofit,
 ) : CrisisCleanupAuthApi {
     private val networkApi = retrofit.create(AuthApi::class.java)
 

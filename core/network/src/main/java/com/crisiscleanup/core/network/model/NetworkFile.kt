@@ -3,6 +3,9 @@ package com.crisiscleanup.core.network.model
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.File
 
 @Serializable
 data class NetworkFile(
@@ -30,10 +33,61 @@ data class NetworkFile(
     val tag: String? = null,
     val title: String? = null,
     val url: String,
-)
+) {
+    val isProfilePicture = fileTypeT == "fileTypes.user_profile_picture"
+}
 
 @Serializable
 data class NetworkFileId(
     @SerialName("file")
     val file: Long,
 )
+
+@Serializable
+data class NetworkFileDescription(
+    @SerialName("filename")
+    val fileName: String,
+    @SerialName("content_type")
+    val contentType: String,
+)
+
+@Serializable
+data class NetworkFileUpload(
+    val id: Long,
+    @SerialName("presigned_post_url")
+    val uploadProperties: FileUploadProperties,
+)
+
+@Serializable
+data class FileUploadProperties(
+    val url: String,
+    val fields: FileUploadFields,
+)
+
+@Serializable
+data class FileUploadFields(
+    val key: String,
+    @SerialName("x-amz-algorithm")
+    val algorithm: String,
+    @SerialName("x-amz-credential")
+    val credential: String,
+    @SerialName("x-amz-date")
+    val date: String,
+    val policy: String,
+    @SerialName("x-amz-signature")
+    val signature: String,
+)
+
+internal fun FileUploadFields.asPartMap(file: File) = mapOf(
+    "key" to key,
+    "x-amz-algorithm" to algorithm,
+    "x-amz-credential" to credential,
+    "x-amz-date" to date,
+    "policy" to policy,
+    "x-amz-signature" to signature,
+)
+    .mapValues { it.value.toRequestBody() }
+    .toMutableMap()
+    .also {
+        it["file"] = file.asRequestBody()
+    }

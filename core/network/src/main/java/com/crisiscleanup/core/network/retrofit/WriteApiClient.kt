@@ -3,6 +3,8 @@ package com.crisiscleanup.core.network.retrofit
 import com.crisiscleanup.core.network.CrisisCleanupWriteApi
 import com.crisiscleanup.core.network.model.*
 import kotlinx.datetime.Instant
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.http.*
@@ -13,8 +15,8 @@ private interface DataChangeApi {
     @ThrowClientErrorHeader
     @POST("worksites")
     suspend fun newWorksite(
-        @Header("cc-created-at") createdAt: Instant,
-        @Header("cc-sync-uuid") syncUuid: String,
+        @Header("ccu-created-at") createdAt: Instant,
+        @Header("ccu-sync-uuid") syncUuid: String,
         @Body worksite: NetworkWorksitePush,
     ): NetworkWorksiteFull
 
@@ -22,114 +24,126 @@ private interface DataChangeApi {
     @ThrowClientErrorHeader
     @PUT("worksites/{worksiteId}")
     suspend fun updateWorksite(
-        @Header("cc-modified-at") modifiedAt: Instant,
-        @Header("cc-sync-uuid") syncUuid: String,
-        @Path("worksiteId")
-        worksiteId: Long,
+        @Header("ccu-modified-at") modifiedAt: Instant,
+        @Header("ccu-sync-uuid") syncUuid: String,
+        @Path("worksiteId") worksiteId: Long,
         @Body worksite: NetworkWorksitePush,
     ): NetworkWorksiteFull
 
     @TokenAuthenticationHeader
     @POST("worksites/{worksiteId}/favorite")
     suspend fun favorite(
-        @Header("cc-created-at") createdAt: Instant,
-        @Path("worksiteId")
-        worksiteId: Long,
+        @Header("ccu-created-at") createdAt: Instant,
+        @Path("worksiteId") worksiteId: Long,
         @Body favorite: NetworkType,
     ): NetworkType
 
     @TokenAuthenticationHeader
     @HTTP(method = "DELETE", path = "worksites/{worksiteId}/favorite", hasBody = true)
     suspend fun unfavorite(
-        @Header("cc-created-at") createdAt: Instant,
-        @Path("worksiteId")
-        worksiteId: Long,
+        @Header("ccu-created-at") createdAt: Instant,
+        @Path("worksiteId") worksiteId: Long,
         @Body favoriteId: NetworkFavoriteId,
     ): Response<Unit>
 
     @TokenAuthenticationHeader
     @POST("worksites/{worksiteId}/flags")
     suspend fun addFlag(
-        @Header("cc-created-at") createdAt: Instant,
-        @Path("worksiteId")
-        worksiteId: Long,
+        @Header("ccu-created-at") createdAt: Instant,
+        @Path("worksiteId") worksiteId: Long,
         @Body flag: NetworkFlag,
     ): NetworkFlag
 
     @TokenAuthenticationHeader
     @HTTP(method = "DELETE", path = "worksites/{worksiteId}/flags", hasBody = true)
     suspend fun deleteFlag(
-        @Header("cc-created-at") createdAt: Instant,
-        @Path("worksiteId")
-        worksiteId: Long,
+        @Header("ccu-created-at") createdAt: Instant,
+        @Path("worksiteId") worksiteId: Long,
         @Body flagId: NetworkFlagId,
     ): Response<Unit>
 
     @TokenAuthenticationHeader
     @POST("worksites/{worksiteId}/notes")
     suspend fun addNote(
-        @Header("cc-created-at") createdAt: Instant,
-        @Path("worksiteId")
-        worksiteId: Long,
+        @Header("ccu-created-at") createdAt: Instant,
+        @Path("worksiteId") worksiteId: Long,
         @Body note: NetworkNoteNote,
     ): NetworkNote
 
     @TokenAuthenticationHeader
     @PATCH("worksite_work_types/{workTypeId}")
     suspend fun updateWorkTypeStatus(
-        @Header("cc-created-at") createdAt: Instant,
-        @Path("workTypeId")
-        workTypeId: Long,
+        @Header("ccu-created-at") createdAt: Instant,
+        @Path("workTypeId") workTypeId: Long,
         @Body status: NetworkWorkTypeStatus,
     ): NetworkWorkType
 
     @TokenAuthenticationHeader
     @POST("worksites/{worksiteId}/claim")
     suspend fun claimWorkTypes(
-        @Header("cc-created-at") createdAt: Instant,
-        @Path("worksiteId")
-        worksiteId: Long,
+        @Header("ccu-created-at") createdAt: Instant,
+        @Path("worksiteId") worksiteId: Long,
         @Body workTypes: NetworkWorkTypeTypes,
     )
 
     @TokenAuthenticationHeader
     @POST("worksites/{worksiteId}/unclaim")
     suspend fun unclaimWorkTypes(
-        @Header("cc-created-at") createdAt: Instant,
-        @Path("worksiteId")
-        worksiteId: Long,
+        @Header("ccu-created-at") createdAt: Instant,
+        @Path("worksiteId") worksiteId: Long,
         @Body workTypes: NetworkWorkTypeTypes,
     )
 
     @TokenAuthenticationHeader
     @POST("worksites/{worksiteId}/request_take")
     suspend fun requestWorkTypes(
-        @Header("cc-created-at") createdAt: Instant,
-        @Path("worksiteId")
-        worksiteId: Long,
+        @Header("ccu-created-at") createdAt: Instant,
+        @Path("worksiteId") worksiteId: Long,
         @Body request: NetworkWorkTypeChangeRequest,
     )
 
     @TokenAuthenticationHeader
     @POST("worksites/{worksiteId}/release")
     suspend fun releaseWorkTypes(
-        @Header("cc-created-at") createdAt: Instant,
-        @Path("worksiteId")
-        worksiteId: Long,
+        @Header("ccu-created-at") createdAt: Instant,
+        @Path("worksiteId") worksiteId: Long,
         @Body release: NetworkWorkTypeChangeRelease,
     )
 
     @TokenAuthenticationHeader
     @HTTP(method = "DELETE", path = "worksites/{worksiteId}/files", hasBody = true)
     suspend fun deleteFile(
-        @Path("worksiteId")
-        worksiteId: Long,
+        @Path("worksiteId") worksiteId: Long,
         @Body file: NetworkFileId,
     ): Response<Unit>
+
+    @TokenAuthenticationHeader
+    @POST("files")
+    suspend fun startFileUpload(
+        @Body file: NetworkFileDescription
+    ): NetworkFileUpload
+
+    @Multipart
+    @FormUrlEncoded
+    @Headers("Content-Type:application/x-www-form-urlencoded")
+    @POST
+    suspend fun uploadFile(
+        @Url url: String,
+        @PartMap parts: Map<String, RequestBody>,
+        @Part file: MultipartBody.Part,
+    )
+
+    @TokenAuthenticationHeader
+    @POST("worksites/{worksiteId}/files")
+    suspend fun addUploadedFile(
+        @Path("worksiteId") worksiteId: Long,
+        @Body file: NetworkFileId,
+    ): NetworkFile
 }
 
 class WriteApiClient @Inject constructor(
-    @CrisisCleanupRetrofit retrofit: Retrofit,
+    @RetrofitConfiguration(RetrofitConfigurations.CrisisCleanup) retrofit: Retrofit,
+    @RetrofitConfiguration(RetrofitConfigurations.Basic) basicRetrofit: Retrofit,
 ) : CrisisCleanupWriteApi {
     private val changeWorksiteApi = retrofit.create(DataChangeApi::class.java)
 

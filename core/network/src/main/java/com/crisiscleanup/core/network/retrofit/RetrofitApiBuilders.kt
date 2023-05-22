@@ -17,7 +17,28 @@ private const val CrisisCleanupApiBaseUrl = BuildConfig.API_BASE_URL
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.VALUE_PARAMETER)
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
-internal annotation class CrisisCleanupRetrofit
+internal annotation class RetrofitConfiguration(val retrofit: RetrofitConfigurations)
+
+internal enum class RetrofitConfigurations {
+    Basic,
+    CrisisCleanup,
+}
+
+private fun getClientBuilder(isDebuggable: Boolean = false): OkHttpClient.Builder {
+    val clientBuilder = OkHttpClient.Builder()
+        // TODO Allow user configuration? Or adjust dynamically according to device and network conditions?
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
+
+    if (isDebuggable) {
+        clientBuilder.addInterceptor(HttpLoggingInterceptor().apply {
+            setLevel(HttpLoggingInterceptor.Level.HEADERS)
+        })
+    }
+
+    return clientBuilder
+}
 
 internal fun getCrisisCleanupApiBuilder(
     interceptorProvider: RetrofitInterceptorProvider,
@@ -25,17 +46,7 @@ internal fun getCrisisCleanupApiBuilder(
     networkApiJson: Json,
     appEnv: AppEnv,
 ): Retrofit {
-    val clientBuilder = OkHttpClient.Builder()
-        // TODO Allow user configuration? Or adjust dynamically according to device and network conditions?
-        .connectTimeout(60, TimeUnit.SECONDS)
-        .readTimeout(60, TimeUnit.SECONDS)
-        .writeTimeout(60, TimeUnit.SECONDS)
-
-    if (appEnv.isDebuggable) {
-        clientBuilder.addInterceptor(HttpLoggingInterceptor().apply {
-            setLevel(HttpLoggingInterceptor.Level.HEADERS)
-        })
-    }
+    val clientBuilder = getClientBuilder(appEnv.isDebuggable)
 
     interceptorProvider.interceptors?.forEach {
         clientBuilder.addInterceptor(it)
@@ -48,5 +59,16 @@ internal fun getCrisisCleanupApiBuilder(
         .addConverterFactory(
             networkApiJson.asConverterFactory("application/json".toMediaType())
         )
+        .build()
+}
+
+internal fun getApiBuilder(
+    appEnv: AppEnv,
+): Retrofit {
+    val clientBuilder = getClientBuilder(appEnv.isDebuggable)
+
+    return Retrofit.Builder()
+        .baseUrl(CrisisCleanupApiBaseUrl)
+        .client(clientBuilder.build())
         .build()
 }

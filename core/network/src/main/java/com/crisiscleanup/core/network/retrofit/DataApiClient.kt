@@ -157,7 +157,7 @@ private interface DataSourceApi {
 }
 
 class DataApiClient @Inject constructor(
-    @CrisisCleanupRetrofit retrofit: Retrofit,
+    @RetrofitConfiguration(RetrofitConfigurations.CrisisCleanup) retrofit: Retrofit,
     private val authEventManager: AuthEventManager,
 ) : CrisisCleanupNetworkDataSource {
     private val networkApi = retrofit.create(DataSourceApi::class.java)

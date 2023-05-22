@@ -18,6 +18,7 @@ import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.model.data.OrgData
 import com.crisiscleanup.core.model.data.emptyOrgData
 import com.crisiscleanup.core.network.CrisisCleanupAuthApi
+import com.crisiscleanup.core.network.model.NetworkFile
 import com.crisiscleanup.core.network.model.condenseMessages
 import com.crisiscleanup.feature.authentication.model.AuthenticationState
 import com.crisiscleanup.feature.authentication.model.LoginInputData
@@ -45,7 +46,7 @@ class AuthenticationViewModel @Inject constructor(
     @Logger(CrisisCleanupLoggers.Auth) private val logger: AppLogger,
 ) : ViewModel(), CredentialsResultListener {
     private var isAuthenticating = MutableStateFlow(false)
-    val isNotAuthenticating = isAuthenticating.map { !it }
+    val isNotAuthenticating = isAuthenticating.map(Boolean::not)
         .stateIn(
             scope = viewModelScope,
             initialValue = true,
@@ -174,9 +175,9 @@ class AuthenticationViewModel @Inject constructor(
                         accessTokenDecoder.decode(accessToken).expiresAt.epochSeconds
 
                     val claims = result.claims!!
-                    val profilePicUri: String = claims.files?.firstOrNull {
-                        it.fileTypeT == "fileTypes.user_profile_picture"
-                    }?.largeThumbnailUrl ?: ""
+                    val profilePicUri =
+                        claims.files?.firstOrNull(NetworkFile::isProfilePicture)?.largeThumbnailUrl
+                            ?: ""
 
                     // TODO Test coverage
                     val organization = result.organizations
