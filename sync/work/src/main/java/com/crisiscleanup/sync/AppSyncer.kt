@@ -1,6 +1,6 @@
 package com.crisiscleanup.sync
 
-import com.crisiscleanup.core.common.AppVersionProvider
+import android.content.Context
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.event.AuthEventManager
@@ -10,21 +10,29 @@ import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.common.sync.SyncResult
-import com.crisiscleanup.core.data.repository.*
+import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.IncidentsRepository
+import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
+import com.crisiscleanup.core.data.repository.WorkTypeStatusRepository
+import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
+import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.sync.SyncPull.determineSyncSteps
 import com.crisiscleanup.sync.SyncPull.executePlan
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.crisiscleanup.sync.initializers.scheduleSyncMedia
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * Sync service to pull data while the app is in the foreground
- */
 @Singleton
 class AppSyncer @Inject constructor(
     private val accountDataRepository: AccountDataRepository,
@@ -37,7 +45,7 @@ class AppSyncer @Inject constructor(
     private val syncLogger: SyncLogger,
     private val authEventManager: AuthEventManager,
     private val networkMonitor: NetworkMonitor,
-    private val appVersionProvider: AppVersionProvider,
+    @ApplicationContext private val context: Context,
     @ApplicationScope private val applicationScope: CoroutineScope,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : SyncPuller, SyncPusher {
@@ -223,22 +231,20 @@ class AppSyncer @Inject constructor(
 
     override fun appPullLanguage() {
         applicationScope.launch(ioDispatcher) {
-            syncPullLanguageAsync().await()
+            syncPullLanguage()
         }
     }
 
-    override suspend fun syncPullLanguageAsync(): Deferred<SyncResult> {
-        return applicationScope.async {
-            if (isNotOnline()) {
-                return@async SyncResult.NotAttempted("not-online")
-            }
+    override suspend fun syncPullLanguage(): SyncResult {
+        if (isNotOnline()) {
+            return SyncResult.NotAttempted("not-online")
+        }
 
-            try {
-                languagePull()
-                SyncResult.Success("Language pulled")
-            } catch (e: Exception) {
-                SyncResult.Error(e.message ?: "Language pull fail")
-            }
+        return try {
+            languagePull()
+            SyncResult.Success("Language pulled")
+        } catch (e: Exception) {
+            SyncResult.Error(e.message ?: "Language pull fail")
         }
     }
 
@@ -248,22 +254,18 @@ class AppSyncer @Inject constructor(
         }
     }
 
-    override suspend fun syncPullStatusesAsync(): Deferred<SyncResult> {
-        return applicationScope.async {
-            if (isNotOnline()) {
-                return@async SyncResult.NotAttempted("not-online")
-            }
+    override suspend fun syncPullStatuses(): SyncResult {
+        if (isNotOnline()) {
+            return SyncResult.NotAttempted("not-online")
+        }
 
-            try {
-                statusRepository.loadStatuses()
-                SyncResult.Success("Statuses pulled")
-            } catch (e: Exception) {
-                SyncResult.Error(e.message ?: "Statuses pull fail")
-            }
+        return try {
+            statusRepository.loadStatuses()
+            SyncResult.Success("Statuses pulled")
+        } catch (e: Exception) {
+            SyncResult.Error(e.message ?: "Statuses pull fail")
         }
     }
-
-    override val isSyncPushing = MutableStateFlow(false)
 
     private var pushJob: Job? = null
 
@@ -287,16 +289,29 @@ class AppSyncer @Inject constructor(
                 return@async SyncResult.PreconditionsNotMet
             }
 
-            isSyncPushing.value = true
-            try {
-                val isSyncAttempted = worksiteChangeRepository.syncWorksites()
-                return@async if (isSyncAttempted) SyncResult.Success("")
-                else SyncResult.NotAttempted("Sync not attempted")
-            } finally {
-                isSyncPushing.value = false
-            }
+            val isSyncAttempted = worksiteChangeRepository.syncWorksites()
+            return@async if (isSyncAttempted) SyncResult.Success("")
+            else SyncResult.NotAttempted("Sync not attempted")
         }
         pushJob = deferred
         return deferred
+    }
+
+    override suspend fun syncPushMedia(): SyncResult {
+        onSyncPreconditions()?.let {
+            return SyncResult.PreconditionsNotMet
+        }
+
+        return try {
+            val isSyncAll = worksiteChangeRepository.syncWorksiteMedia()
+            return if (isSyncAll) SyncResult.Success("")
+            else SyncResult.Partial("Sync partial worksite media")
+        } catch (e: Exception) {
+            SyncResult.Error(e.message ?: "Sync media fail")
+        }
+    }
+
+    override fun scheduleSyncMedia() {
+        scheduleSyncMedia(context)
     }
 }

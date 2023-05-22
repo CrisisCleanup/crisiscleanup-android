@@ -10,6 +10,7 @@ import com.crisiscleanup.core.network.model.CrisisCleanupNetworkException
 import com.crisiscleanup.core.network.model.ExpiredTokenException
 import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError
 import com.crisiscleanup.core.network.model.NetworkErrors
+import com.crisiscleanup.core.network.model.ServerErrorException
 import com.crisiscleanup.core.network.retrofit.RequestHeaderKey
 import com.crisiscleanup.core.network.retrofit.RequestHeaderKeysLookup
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -129,11 +130,23 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
         }
     }
 
+    override val serverErrorInterceptor by lazy {
+        Interceptor { chain ->
+            val request = chain.request()
+            val response = chain.proceed(request)
+            if (response.code in 500..599) {
+                throw ServerErrorException(response)
+            }
+            response
+        }
+    }
+
     override val interceptors: List<Interceptor> = listOf(
         headerInterceptor,
         wrapResponseInterceptor,
         expiredTokenInterceptor,
         clientErrorInterceptor,
+        serverErrorInterceptor,
     )
 
     private fun addAuthorizationHeader(request: Request): Request {

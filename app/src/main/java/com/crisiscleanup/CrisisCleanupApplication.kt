@@ -8,9 +8,6 @@ import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 import javax.inject.Provider
 
-/**
- * [Application] class for Crisis Cleanup
- */
 @HiltAndroidApp
 class CrisisCleanupApplication : Application(), ImageLoaderFactory {
     @Inject
@@ -19,8 +16,7 @@ class CrisisCleanupApplication : Application(), ImageLoaderFactory {
     override fun onCreate() {
         super.onCreate()
 
-        // Initialize Sync; the system responsible for keeping data in the app up to date.
-        Sync.initialize(context = this)
+        Sync.initialize(this)
     }
 
     override fun newImageLoader(): ImageLoader = imageLoader.get()

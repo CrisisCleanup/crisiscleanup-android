@@ -3,11 +3,14 @@ package com.crisiscleanup.core.network.retrofit
 import com.crisiscleanup.core.network.CrisisCleanupWriteApi
 import com.crisiscleanup.core.network.model.*
 import kotlinx.datetime.Instant
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.http.*
+import java.io.File
 import javax.inject.Inject
 
 private interface DataChangeApi {
@@ -117,21 +120,13 @@ private interface DataChangeApi {
         @Body file: NetworkFileId,
     ): Response<Unit>
 
+    @FormUrlEncoded
     @TokenAuthenticationHeader
     @POST("files")
     suspend fun startFileUpload(
-        @Body file: NetworkFileDescription
+        @Field("filename") fileName: String,
+        @Field("content_type") contentType: String,
     ): NetworkFileUpload
-
-    @Multipart
-    @FormUrlEncoded
-    @Headers("Content-Type:application/x-www-form-urlencoded")
-    @POST
-    suspend fun uploadFile(
-        @Url url: String,
-        @PartMap parts: Map<String, RequestBody>,
-        @Part file: MultipartBody.Part,
-    )
 
     @TokenAuthenticationHeader
     @POST("worksites/{worksiteId}/files")
@@ -141,11 +136,22 @@ private interface DataChangeApi {
     ): NetworkFile
 }
 
+interface FileUploadApi {
+    @Multipart
+    @POST
+    suspend fun uploadFile(
+        @Url url: String,
+        @PartMap parts: Map<String, @JvmSuppressWildcards RequestBody>,
+        @Part file: MultipartBody.Part,
+    ): Response<Unit>
+}
+
 class WriteApiClient @Inject constructor(
     @RetrofitConfiguration(RetrofitConfigurations.CrisisCleanup) retrofit: Retrofit,
     @RetrofitConfiguration(RetrofitConfigurations.Basic) basicRetrofit: Retrofit,
 ) : CrisisCleanupWriteApi {
     private val changeWorksiteApi = retrofit.create(DataChangeApi::class.java)
+    private val fileUploadApi = basicRetrofit.create(FileUploadApi::class.java)
 
     override suspend fun saveWorksite(
         modifiedAt: Instant,
@@ -227,4 +233,23 @@ class WriteApiClient @Inject constructor(
     override suspend fun deleteFile(worksiteId: Long, file: Long) {
         changeWorksiteApi.deleteFile(worksiteId, NetworkFileId(file))
     }
+
+    override suspend fun startFileUpload(fileName: String, contentType: String) =
+        changeWorksiteApi.startFileUpload(fileName, contentType)
+
+    override suspend fun uploadFile(
+        url: String,
+        fields: FileUploadFields,
+        file: File,
+        mimeType: String,
+    ) {
+        val mediaType = mimeType.toMediaTypeOrNull()
+        val requestFile = file.asRequestBody(mediaType)
+        val partFile = MultipartBody.Part.createFormData("file", file.name, requestFile)
+        val parts = fields.asPartMap()
+        fileUploadApi.uploadFile(url, parts, partFile)
+    }
+
+    override suspend fun addFileToWorksite(worksiteId: Long, file: Long) =
+        changeWorksiteApi.addUploadedFile(worksiteId, NetworkFileId(file))
 }

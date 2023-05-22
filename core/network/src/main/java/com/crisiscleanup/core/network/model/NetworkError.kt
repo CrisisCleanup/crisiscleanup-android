@@ -7,6 +7,9 @@ import okio.IOException
 
 // IO or Retrofit will crash the app
 class ExpiredTokenException : IOException("Auth token is expired")
+class ServerErrorException(response: okhttp3.Response) :
+    IOException("${response.code} ${response.message}")
+
 class CrisisCleanupNetworkException(
     val url: String,
     val statusCode: Int,

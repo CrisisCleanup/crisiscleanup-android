@@ -1,5 +1,8 @@
 package com.crisiscleanup.core.network
 
+import com.crisiscleanup.core.network.model.FileUploadFields
+import com.crisiscleanup.core.network.model.NetworkFile
+import com.crisiscleanup.core.network.model.NetworkFileUpload
 import com.crisiscleanup.core.network.model.NetworkFlag
 import com.crisiscleanup.core.network.model.NetworkNote
 import com.crisiscleanup.core.network.model.NetworkType
@@ -7,6 +10,7 @@ import com.crisiscleanup.core.network.model.NetworkWorkType
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import com.crisiscleanup.core.network.model.NetworkWorksitePush
 import kotlinx.datetime.Instant
+import java.io.File
 
 interface CrisisCleanupWriteApi {
     suspend fun saveWorksite(
@@ -48,4 +52,18 @@ interface CrisisCleanupWriteApi {
     )
 
     suspend fun deleteFile(worksiteId: Long, file: Long)
+
+    suspend fun startFileUpload(
+        fileName: String,
+        contentType: String,
+    ): NetworkFileUpload
+
+    suspend fun uploadFile(
+        url: String,
+        fields: FileUploadFields,
+        file: File,
+        mimeType: String,
+    )
+
+    suspend fun addFileToWorksite(worksiteId: Long, file: Long): NetworkFile
 }

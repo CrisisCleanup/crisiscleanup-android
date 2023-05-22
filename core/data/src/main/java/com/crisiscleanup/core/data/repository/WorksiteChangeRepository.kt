@@ -7,6 +7,7 @@ import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.sync.SyncLogger
+import com.crisiscleanup.core.database.dao.LocalImageDao
 import com.crisiscleanup.core.database.dao.LocalImageDaoPlus
 import com.crisiscleanup.core.database.dao.WorkTypeDao
 import com.crisiscleanup.core.database.dao.WorksiteChangeDao
@@ -68,6 +69,8 @@ interface WorksiteChangeRepository {
     suspend fun saveDeletePhoto(fileId: Long): Long
 
     suspend fun trySyncWorksite(worksiteId: Long): Boolean
+
+    suspend fun syncWorksiteMedia(): Boolean
 }
 
 private const val MaxSyncTries = 3
@@ -81,6 +84,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
     private val worksiteFlagDao: WorksiteFlagDao,
     private val worksiteNoteDao: WorksiteNoteDao,
     private val workTypeDao: WorkTypeDao,
+    private val localImageDao: LocalImageDao,
     private val localImageDaoPlus: LocalImageDaoPlus,
     private val worksiteChangeSyncer: WorksiteChangeSyncer,
     private val worksitePhotoChangeSyncer: WorksitePhotoChangeSyncer,
@@ -88,6 +92,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val worksitesRepository: WorksitesRepository,
     private val organizationsRepository: OrganizationsRepository,
+    private val localImageRepository: LocalImageRepository,
     private val authEventManager: AuthEventManager,
     private val networkMonitor: NetworkMonitor,
     private val appEnv: AppEnv,
@@ -414,5 +419,20 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
         } catch (e: Exception) {
             syncLogger.log("Delete photo error", e.message ?: "")
         }
+    }
+
+    override suspend fun syncWorksiteMedia(): Boolean {
+        val worksitesWithImages = localImageDao.getUploadImageWorksiteIds()
+        var isSyncedAll = true
+        for (worksiteImageUpload in worksitesWithImages) {
+            val worksiteId = worksiteImageUpload.id
+            val syncCount = localImageRepository.syncWorksiteMedia(worksiteId)
+            if (syncCount > 0) {
+                syncWorksite(worksiteId)
+            }
+            val unsyncedCount = worksiteImageUpload.count - syncCount
+            isSyncedAll = isSyncedAll && unsyncedCount == 0
+        }
+        return isSyncedAll
     }
 }

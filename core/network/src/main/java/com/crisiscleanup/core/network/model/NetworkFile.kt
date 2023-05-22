@@ -3,9 +3,7 @@ package com.crisiscleanup.core.network.model
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.io.File
 
 @Serializable
 data class NetworkFile(
@@ -44,14 +42,6 @@ data class NetworkFileId(
 )
 
 @Serializable
-data class NetworkFileDescription(
-    @SerialName("filename")
-    val fileName: String,
-    @SerialName("content_type")
-    val contentType: String,
-)
-
-@Serializable
 data class NetworkFileUpload(
     val id: Long,
     @SerialName("presigned_post_url")
@@ -78,7 +68,7 @@ data class FileUploadFields(
     val signature: String,
 )
 
-internal fun FileUploadFields.asPartMap(file: File) = mapOf(
+internal fun FileUploadFields.asPartMap() = mapOf(
     "key" to key,
     "x-amz-algorithm" to algorithm,
     "x-amz-credential" to credential,
@@ -87,7 +77,3 @@ internal fun FileUploadFields.asPartMap(file: File) = mapOf(
     "x-amz-signature" to signature,
 )
     .mapValues { it.value.toRequestBody() }
-    .toMutableMap()
-    .also {
-        it["file"] = file.asRequestBody()
-    }

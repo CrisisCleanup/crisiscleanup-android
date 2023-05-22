@@ -2,8 +2,11 @@ package com.crisiscleanup.core.database.dao
 
 import androidx.room.withTransaction
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
+import com.crisiscleanup.core.database.model.NetworkFileEntity
 import com.crisiscleanup.core.database.model.NetworkFileLocalImageEntity
+import com.crisiscleanup.core.database.model.PopulatedLocalImageDescription
 import com.crisiscleanup.core.database.model.WorksiteLocalImageEntity
+import com.crisiscleanup.core.database.model.WorksiteNetworkFileCrossRef
 import com.crisiscleanup.core.model.data.PhotoChangeDataProvider
 import javax.inject.Inject
 
@@ -37,6 +40,18 @@ class LocalImageDaoPlus @Inject constructor(
                 update(image.worksiteId, image.documentId, image.tag)
             }
         }
+    }
+
+    suspend fun saveUploadedFile(
+        worksiteId: Long,
+        localImage: PopulatedLocalImageDescription,
+        networkFile: NetworkFileEntity,
+    ) = db.withTransaction {
+        with(db.networkFileDao()) {
+            upsert(networkFile)
+            insertIgnoreCrossReference(WorksiteNetworkFileCrossRef(worksiteId, networkFile.id))
+        }
+        db.localImageDao().deleteLocalImage(localImage.id)
     }
 
     // PhotoChangeDataProvider

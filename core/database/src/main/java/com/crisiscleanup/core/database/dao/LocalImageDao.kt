@@ -6,6 +6,8 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import com.crisiscleanup.core.database.model.NetworkFileLocalImageEntity
+import com.crisiscleanup.core.database.model.PopulatedLocalImageDescription
+import com.crisiscleanup.core.database.model.PopulatedWorksiteImageCount
 import com.crisiscleanup.core.database.model.WorksiteLocalImageEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -58,4 +60,29 @@ interface LocalImageDao {
     @Transaction
     @Query("DELETE FROM worksite_local_images WHERE id=:id")
     fun deleteLocalImage(id: Long)
+
+    @Transaction
+    @Query(
+        """
+        SELECT id, uri, tag
+        FROM worksite_local_images
+        WHERE worksite_id=:worksiteId
+        ORDER BY id ASC
+        """
+    )
+    fun getWorksiteLocalImages(worksiteId: Long): List<PopulatedLocalImageDescription>
+
+    @Transaction
+    @Query(
+        """
+        SELECT worksite_id, count
+        FROM (
+            SELECT DISTINCT worksite_id, COUNT(id) AS count, MIN(id) AS min_id
+            FROM worksite_local_images
+            GROUP BY worksite_id
+            ORDER BY min_id ASC
+        )
+        """
+    )
+    fun getUploadImageWorksiteIds(): List<PopulatedWorksiteImageCount>
 }

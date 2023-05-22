@@ -15,6 +15,9 @@ interface NetworkFileDao {
     @Upsert
     fun upsert(files: List<NetworkFileEntity>)
 
+    @Upsert
+    fun upsert(files: NetworkFileEntity)
+
     @Transaction
     @Query(
         """
@@ -38,6 +41,9 @@ interface NetworkFileDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertIgnoreCrossReferences(crossReferences: Collection<WorksiteNetworkFileCrossRef>)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insertIgnoreCrossReference(crossReferences: WorksiteNetworkFileCrossRef)
 
     @Transaction
     @Query("SELECT full_url FROM network_files WHERE id=:id")

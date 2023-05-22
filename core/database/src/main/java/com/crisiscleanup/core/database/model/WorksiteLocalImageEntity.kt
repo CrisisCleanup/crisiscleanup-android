@@ -42,3 +42,9 @@ fun WorksiteLocalImageEntity.asExternalModel() = WorksiteLocalImage(
     tag = tag,
     rotateDegrees = rotateDegrees,
 )
+
+data class PopulatedWorksiteImageCount(
+    @ColumnInfo("worksite_id")
+    val id: Long,
+    val count: Int,
+)

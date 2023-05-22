@@ -5,18 +5,15 @@ import androidx.hilt.work.HiltWorker
 import androidx.tracing.traceAsync
 import androidx.work.CoroutineWorker
 import androidx.work.Data
-import androidx.work.ForegroundInfo
 import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkerParameters
-import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
+import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncLogger
-import com.crisiscleanup.core.common.sync.SyncPuller
+import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.common.sync.SyncResult
-import com.crisiscleanup.sync.initializers.SyncConstraints
-import com.crisiscleanup.sync.initializers.syncForegroundInfo
+import com.crisiscleanup.sync.initializers.SyncMediaConstraints
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -25,43 +22,27 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 
 @HiltWorker
-class SyncWorker @AssistedInject constructor(
+class SyncMediaWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted workerParams: WorkerParameters,
-    private val syncPuller: SyncPuller,
+    private val syncPusher: SyncPusher,
     private val syncLogger: SyncLogger,
-    @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
+    @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
 ) : CoroutineWorker(appContext, workerParams) {
-
-    override suspend fun getForegroundInfo(): ForegroundInfo =
-        appContext.syncForegroundInfo()
-
     override suspend fun doWork() = withContext(ioDispatcher) {
-        traceAsync("Sync", 0) {
-            syncLogger.type = "background-sync"
-            syncLogger.log("Sync start")
+        traceAsync("MediaSync", 0) {
+            syncLogger.type = "background-sync-media"
+            syncLogger.log("Media sync start")
 
             val isSyncSuccess = awaitAll(
                 async {
-                    // TODO Observe progress and update notification
-                    // text -> setForeground(appContext.syncForegroundInfo(text)) }
-                    syncPuller.syncPullAsync().await() !is SyncResult.Error
-                },
-                async {
-                    syncPuller.syncPullLanguage() !is SyncResult.Error
-                },
-                async {
-                    syncPuller.syncPullStatuses() !is SyncResult.Error
+                    syncPusher.syncPushMedia() !is SyncResult.Error
                 },
             ).all { it }
 
             syncLogger
                 .log("Sync end. success=$isSyncSuccess")
                 .flush()
-
-            // TODO Notification seems to hang around.
-            //      Research if needs to manually clear.
-            //      Nia doesn't need to clear notification...
 
             if (isSyncSuccess) Result.success()
             else Result.retry()
@@ -71,12 +52,11 @@ class SyncWorker @AssistedInject constructor(
     companion object {
         fun oneTimeSyncWork(): OneTimeWorkRequest {
             val data = Data.Builder()
-                .putAll(SyncWorker::class.delegatedData())
+                .putAll(SyncMediaWorker::class.delegatedData())
                 .build()
 
             return OneTimeWorkRequestBuilder<DelegatingWorker>()
-                .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-                .setConstraints(SyncConstraints)
+                .setConstraints(SyncMediaConstraints)
                 .setInputData(data)
                 .build()
         }

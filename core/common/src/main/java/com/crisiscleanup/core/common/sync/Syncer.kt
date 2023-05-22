@@ -1,7 +1,6 @@
 package com.crisiscleanup.core.common.sync
 
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.flow.Flow
 
 interface SyncPuller {
     fun appPull(force: Boolean, cancelOngoing: Boolean)
@@ -13,37 +12,25 @@ interface SyncPuller {
     fun stopPullIncident()
 
     fun appPullLanguage()
-    suspend fun syncPullLanguageAsync(): Deferred<SyncResult>
+    suspend fun syncPullLanguage(): SyncResult
 
     fun appPullStatuses()
-    suspend fun syncPullStatusesAsync(): Deferred<SyncResult>
+    suspend fun syncPullStatuses(): SyncResult
 }
 
 interface SyncPusher {
-    val isSyncPushing: Flow<Boolean>
-
     fun appPushWorksite(worksiteId: Long)
     suspend fun syncPushWorksitesAsync(): Deferred<SyncResult>
     fun stopPushWorksites()
+    suspend fun syncPushMedia(): SyncResult
+
+    fun scheduleSyncMedia()
 }
 
 sealed interface SyncResult {
     data class NotAttempted(val reason: String) : SyncResult
     data class Success(val notes: String) : SyncResult
+    data class Partial(val notes: String) : SyncResult
     data class Error(val message: String) : SyncResult
     object PreconditionsNotMet : SyncResult
-}
-
-interface SyncEventManager {
-    fun registerObserver(observer: SyncObserver): Int
-    fun unregisterObserver(observerId: Int)
-}
-
-data class SyncStats(
-    val isSyncing: Boolean,
-    val progress: Float,
-)
-
-interface SyncObserver {
-    fun onSyncUpdate(stats: SyncStats)
 }

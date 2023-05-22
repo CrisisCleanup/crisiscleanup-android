@@ -5,6 +5,7 @@ import com.crisiscleanup.core.network.BuildConfig
 import com.crisiscleanup.core.network.RetrofitInterceptorProvider
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.json.Json
+import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -63,9 +64,14 @@ internal fun getCrisisCleanupApiBuilder(
 }
 
 internal fun getApiBuilder(
+    interceptors: List<Interceptor>,
     appEnv: AppEnv,
 ): Retrofit {
     val clientBuilder = getClientBuilder(appEnv.isDebuggable)
+
+    interceptors.forEach {
+        clientBuilder.addInterceptor(it)
+    }
 
     return Retrofit.Builder()
         .baseUrl(CrisisCleanupApiBaseUrl)

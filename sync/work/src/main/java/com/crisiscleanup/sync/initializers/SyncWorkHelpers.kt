@@ -11,14 +11,16 @@ import androidx.work.ForegroundInfo
 import androidx.work.NetworkType
 import androidx.work.WorkManager
 import com.crisiscleanup.sync.R
+import com.crisiscleanup.sync.workers.SyncMediaWorker
 import com.crisiscleanup.sync.workers.SyncWorker
 import com.crisiscleanup.core.common.R as commonR
 
 internal const val SyncNotificationId = 0
 private const val SyncNotificationChannelID = "SyncNotificationChannel"
 
-// This name should not be changed otherwise the app may have concurrent sync requests running
+// These names should not be changed otherwise the app may have concurrent sync requests running
 internal const val SyncWorkName = "SyncWorkName"
+internal const val SyncMediaWorkName = "SyncMediaWorkName"
 
 fun scheduleSync(context: Context) {
     WorkManager.getInstance(context).apply {
@@ -31,10 +33,25 @@ fun scheduleSync(context: Context) {
     }
 }
 
-// All sync work needs an internet connection
+fun scheduleSyncMedia(context: Context) {
+    WorkManager.getInstance(context).apply {
+        enqueueUniqueWork(
+            SyncMediaWorkName,
+            ExistingWorkPolicy.KEEP,
+            SyncMediaWorker.oneTimeSyncWork()
+        )
+    }
+}
+
 val SyncConstraints
     get() = Constraints.Builder()
         .setRequiredNetworkType(NetworkType.CONNECTED)
+        .build()
+
+val SyncMediaConstraints
+    get() = Constraints.Builder()
+        .setRequiredNetworkType(NetworkType.UNMETERED)
+        .setRequiresBatteryNotLow(true)
         .build()
 
 /**

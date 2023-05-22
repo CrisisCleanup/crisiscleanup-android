@@ -597,30 +597,35 @@ class ExistingCaseViewModel @Inject constructor(
     fun onMediaSelected(uri: Uri) {
         isSavingMedia.value = true
         viewModelScope.launch(ioDispatcher) {
-            var documentId = ""
+            var displayName = ""
 
+            val displayNameColumn = MediaStore.MediaColumns.DISPLAY_NAME
             val projection = arrayOf(
-                MediaStore.MediaColumns.DISPLAY_NAME,
+                displayNameColumn,
             )
             contentResolver.query(uri, projection, Bundle.EMPTY, null)?.let {
                 it.use { cursor ->
-                    if (cursor.moveToFirst()) {
-                        documentId = cursor.getString(0)
+                    with(cursor) {
+                        if (moveToFirst()) {
+                            displayName = getString(getColumnIndexOrThrow(displayNameColumn))
+                        }
                     }
                 }
             }
 
-            if (documentId.isNotBlank()) {
+            if (displayName.isNotBlank()) {
                 try {
                     localImageRepository.save(
                         WorksiteLocalImage(
                             0,
                             editableWorksite.value.id,
-                            documentId = documentId,
+                            documentId = displayName,
                             uri = uri.toString(),
                             tag = addImageCategory.literal,
                         )
                     )
+
+                    syncPusher.scheduleSyncMedia()
                 } catch (e: Exception) {
                     // TODO Show error message
                     logger.logException(e)

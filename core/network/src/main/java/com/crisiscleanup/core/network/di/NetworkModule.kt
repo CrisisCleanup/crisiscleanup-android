@@ -60,10 +60,12 @@ object NetworkModule {
     @RetrofitConfiguration(RetrofitConfigurations.Basic)
     @Provides
     @Singleton
-    fun providesFormFieldTypeRetrofit(
+    fun providesBasicRetrofit(
+        interceptorProvider: RetrofitInterceptorProvider,
         appEnv: AppEnv,
     ): Retrofit {
-        return getApiBuilder(appEnv)
+        val interceptors = listOf(interceptorProvider.serverErrorInterceptor)
+        return getApiBuilder(interceptors, appEnv)
     }
 
     /**
