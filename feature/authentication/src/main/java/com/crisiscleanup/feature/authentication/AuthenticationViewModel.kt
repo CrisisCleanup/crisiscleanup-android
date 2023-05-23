@@ -18,6 +18,7 @@ import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.model.data.OrgData
 import com.crisiscleanup.core.model.data.emptyOrgData
 import com.crisiscleanup.core.network.CrisisCleanupAuthApi
+import com.crisiscleanup.core.network.model.CrisisCleanupNetworkException
 import com.crisiscleanup.core.network.model.NetworkFile
 import com.crisiscleanup.core.network.model.condenseMessages
 import com.crisiscleanup.feature.authentication.model.AuthenticationState
@@ -30,7 +31,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -210,8 +210,8 @@ class AuthenticationViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 var isInvalidCredentials = false
-                if (e is HttpException) {
-                    isInvalidCredentials = e.code() == 400
+                if (e is CrisisCleanupNetworkException) {
+                    isInvalidCredentials = e.statusCode == 400
                 }
 
                 if (isInvalidCredentials) {

@@ -10,6 +10,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 private interface AuthApi {
+    @ThrowClientErrorHeader
     @POST("api-token-auth")
     suspend fun login(@Body body: NetworkAuthPayload): NetworkAuthResult
 
