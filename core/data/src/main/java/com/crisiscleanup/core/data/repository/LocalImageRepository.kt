@@ -28,7 +28,7 @@ import java.nio.file.StandardCopyOption
 import javax.inject.Inject
 
 interface LocalImageRepository {
-    val syncingWorksiteImage: Flow<Pair<Long, Long>>
+    val syncingWorksiteImage: Flow<Long>
 
     fun streamNetworkImageUrl(id: Long): Flow<String>
     fun streamLocalImageUri(id: Long): Flow<String>
@@ -57,7 +57,7 @@ class CrisisCleanupLocalImageRepository @Inject constructor(
 ) : LocalImageRepository {
     private val fileUploadMutex = Mutex()
 
-    private val _syncingWorksiteImage = MutableStateFlow(Pair(0L, 0L))
+    private val _syncingWorksiteImage = MutableStateFlow(0L)
     override val syncingWorksiteImage = _syncingWorksiteImage
 
     override fun streamNetworkImageUrl(id: Long) = networkFileDao.streamNetworkImageUrl(id)
@@ -169,7 +169,7 @@ class CrisisCleanupLocalImageRepository @Inject constructor(
                         if (fileName.isBlank() || mimeType.isBlank()) {
                             deleteLogMessage = "File not found from ${localImage.uri}"
                         } else {
-                            _syncingWorksiteImage.value = Pair(worksiteId, localImage.id)
+                            _syncingWorksiteImage.value = localImage.id
 
                             try {
                                 val imageFile = copyImageToFile(uri, fileName)
@@ -210,7 +210,7 @@ class CrisisCleanupLocalImageRepository @Inject constructor(
                 }
             } finally {
                 fileUploadMutex.unlock()
-                _syncingWorksiteImage.value = Pair(0L, 0L)
+                _syncingWorksiteImage.value = 0
             }
         }
 

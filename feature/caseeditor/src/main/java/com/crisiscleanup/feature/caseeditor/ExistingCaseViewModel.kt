@@ -133,6 +133,13 @@ class ExistingCaseViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
+    val syncingWorksiteImage = localImageRepository.syncingWorksiteImage
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = 0L,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
     private var isOrganizationsRefreshed = AtomicBoolean(false)
     private val organizationLookup = organizationsRepository.organizationLookup
         .stateIn(

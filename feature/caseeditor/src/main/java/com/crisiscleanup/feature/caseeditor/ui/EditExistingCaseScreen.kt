@@ -647,6 +647,7 @@ internal fun EditExistingCasePhotosView(
     onPhotoSelect: (ViewImageArgs) -> Unit = { _ -> },
 ) {
     val photos by viewModel.beforeAfterPhotos.collectAsStateWithLifecycle()
+    val syncingWorksiteImage by viewModel.syncingWorksiteImage.collectAsStateWithLifecycle()
 
     var showCameraMediaSelect by remember { mutableStateOf(false) }
 
@@ -689,6 +690,7 @@ internal fun EditExistingCasePhotosView(
                             onPhotoSelect(viewImageArgs)
                         }
                     },
+                    syncingWorksiteImage = syncingWorksiteImage,
                 )
             }
         }

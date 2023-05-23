@@ -34,6 +34,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
@@ -155,8 +156,23 @@ class ViewImageViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val isImageDeletable = uiState.map {
-        it is ViewImageUiState.Image && imageId > 0
+    private val isSyncing = localImageRepository.syncingWorksiteImage.mapLatest {
+        it == imageId
+    }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    val isImageDeletable = combine(
+        uiState,
+        isSyncing,
+        ::Pair,
+    ).map { (state, isSyncingImage) ->
+        state is ViewImageUiState.Image &&
+                imageId > 0 &&
+                !isSyncingImage
     }
         .stateIn(
             scope = viewModelScope,

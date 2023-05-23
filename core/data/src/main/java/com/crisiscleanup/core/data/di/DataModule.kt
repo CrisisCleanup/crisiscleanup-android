@@ -92,6 +92,7 @@ interface DataModule {
     ): OrganizationsRepository
 
     @Binds
+    @Singleton
     fun bindsLocalImageRepository(
         repository: CrisisCleanupLocalImageRepository
     ): LocalImageRepository

@@ -7,13 +7,16 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -32,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
@@ -45,7 +49,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
-import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.designsystem.theme.primaryBlueOneTenthColor
@@ -119,6 +122,7 @@ internal fun PhotosSection(
     photoRowModifier: Modifier = Modifier,
     photoRowGridCells: StaggeredGridCells = StaggeredGridCells.Fixed(1),
     photos: List<CaseImage> = emptyList(),
+    syncingWorksiteImage: Long = 0L,
     onAddPhoto: () -> Unit = {},
     onPhotoSelect: (CaseImage) -> Unit = {},
     setEnableParentScroll: (Boolean) -> Unit = {},
@@ -166,15 +170,34 @@ internal fun PhotosSection(
             } else {
                 val photoIndex = index - 1
                 val photo = photos[photoIndex]
-                AsyncImage(
-                    model = photo.thumbnailUri.ifBlank { photo.imageUri },
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(mediaCornerRadius))
-                        .clickable { onPhotoSelect(photo) },
-                    placeholder = painterResource(R.drawable.cc_grayscale_pin),
-                    contentDescription = photo.title,
-                    contentScale = ContentScale.Crop,
-                )
+                Box {
+                    AsyncImage(
+                        model = photo.thumbnailUri.ifBlank { photo.imageUri },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(mediaCornerRadius))
+                            .clickable { onPhotoSelect(photo) },
+                        placeholder = painterResource(R.drawable.cc_grayscale_pin),
+                        contentDescription = photo.title,
+                        contentScale = ContentScale.Crop,
+                    )
+                    if (syncingWorksiteImage == photo.id) {
+                        Surface(
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .clip(CircleShape),
+                            color = (Color.White.copy(alpha = 0.8f)),
+                        ) {
+                            Icon(
+                                modifier = Modifier
+                                    .size(64.dp)
+                                    .padding(16.dp),
+                                imageVector = CrisisCleanupIcons.CloudSync,
+                                contentDescription = stringResource(R.string.is_syncing),
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -237,7 +260,7 @@ internal fun TakePhotoSelectImage(
                     )
                 },
             )
-            Spacer(listItemModifier.listItemHeight())
+            Spacer(listItemModifier.padding(top = edgeSpacing))
         }
     }
 
