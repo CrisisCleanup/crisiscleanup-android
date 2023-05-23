@@ -2,11 +2,30 @@ package com.crisiscleanup.feature.caseeditor.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,10 +39,22 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.window.PopupProperties
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupFilterChip
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
-import com.crisiscleanup.core.designsystem.theme.*
+import com.crisiscleanup.core.designsystem.theme.centerAlignTextFieldLabelOffset
+import com.crisiscleanup.core.designsystem.theme.disabledAlpha
+import com.crisiscleanup.core.designsystem.theme.listCheckboxAlignStartOffset
+import com.crisiscleanup.core.designsystem.theme.listItemBottomPadding
+import com.crisiscleanup.core.designsystem.theme.listItemDropdownMenuOffset
+import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
+import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
+import com.crisiscleanup.core.designsystem.theme.listRowItemStartPadding
+import com.crisiscleanup.core.designsystem.theme.optionItemHeight
+import com.crisiscleanup.core.designsystem.theme.textBoxHeight
 import com.crisiscleanup.core.model.data.WorkTypeStatus
 import com.crisiscleanup.core.network.model.DynamicValue
 import com.crisiscleanup.feature.caseeditor.R
@@ -65,6 +96,7 @@ internal fun DynamicFormListItem(
                 enabled,
             )
         }
+
         "text" -> {
             SingleLineTextItem(
                 field,
@@ -78,6 +110,7 @@ internal fun DynamicFormListItem(
                 enabled,
             )
         }
+
         "textarea" -> {
             MultiLineTextItem(
                 field,
@@ -89,6 +122,7 @@ internal fun DynamicFormListItem(
                 enabled,
             )
         }
+
         "select" -> {
             SelectItem(
                 field,
@@ -100,6 +134,7 @@ internal fun DynamicFormListItem(
                 enabled,
             )
         }
+
         "h5",
         "h4" -> {
             if (field.childrenCount == 0 && field.field.isReadOnly) {
@@ -133,6 +168,19 @@ internal fun DynamicFormListItem(
                 )
             }
         }
+
+        "multiselect" -> {
+            MultiSelect(
+                field,
+                modifier,
+                label,
+                { updateString(it) },
+                helpHint,
+                showHelp,
+                enabled,
+            )
+        }
+
         else -> {
             Text("$label ${field.key} ${field.field.htmlType}")
         }
@@ -231,18 +279,15 @@ private fun SingleLineTextItem(
         )
 
         if (isGlass) {
-            IconButton(
+            CrisisCleanupIconButton(
                 modifier = Modifier
                     .listRowItemStartPadding()
                     .centerAlignTextFieldLabelOffset(),
+                imageVector = CrisisCleanupIcons.Edit,
+                contentDescription = breakGlassHint,
                 onClick = onBreakGlass,
                 enabled = enabled,
-            ) {
-                Icon(
-                    imageVector = CrisisCleanupIcons.Edit,
-                    contentDescription = breakGlassHint,
-                )
-            }
+            )
         }
 
         if (hasHelp) {
@@ -402,6 +447,54 @@ private fun DropdownItems(
                 text = { Text(option.value) },
                 onClick = { onSelect(option.key) },
             )
+        }
+    }
+}
+
+@OptIn(
+    ExperimentalLayoutApi::class,
+    ExperimentalMaterial3Api::class,
+)
+@Composable
+private fun MultiSelect(
+    itemData: FieldDynamicValue,
+    modifier: Modifier = Modifier,
+    label: String = "",
+    onChange: (String) -> Unit = {},
+    helpHint: String,
+    showHelp: () -> Unit = {},
+    enabled: Boolean = true,
+) {
+    val selected = itemData.dynamicValue.valueString.split(",").toSet()
+    Column(modifier) {
+        Row(
+            Modifier.listItemVerticalPadding(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(label)
+            if (itemData.field.help.isNotBlank()) {
+                HelpAction(helpHint, showHelp)
+            }
+        }
+        FlowRow(
+            horizontalArrangement = listItemSpacedBy,
+        ) {
+            itemData.selectOptions.forEach { (key, option) ->
+                val isSelected = selected.contains(key)
+                CrisisCleanupFilterChip(
+                    selected = isSelected,
+                    onClick = {
+                        val selectedOptions = if (isSelected) {
+                            selected.filter { it != key }
+                        } else {
+                            listOf(itemData.dynamicValue.valueString, key)
+                        }
+                        onChange(selectedOptions.joinToString(","))
+                    },
+                    label = { Text(option) },
+                    enabled = enabled,
+                )
+            }
         }
     }
 }

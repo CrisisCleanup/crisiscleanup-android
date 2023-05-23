@@ -322,17 +322,18 @@ class ExistingCaseViewModel @Inject constructor(
 
             val summaries = worksiteWorkTypes.map { workType ->
                 val workTypeLiteral = workType.workTypeLiteral
+                var name = translate(workTypeLiteral)
+                if (name == workTypeLiteral) {
+                    name = translate("workType.$workTypeLiteral")
+                }
                 val workTypeLookup = stateData.incident.workTypeLookup
                 val summaryJobTypes = worksite.formData
                     ?.filter { formValue -> workTypeLookup[formValue.key] == workTypeLiteral }
                     ?.filter { formValue -> formValue.value.isBooleanTrue }
                     ?.map { formValue -> translate(formValue.key) }
+                    ?.filter { jobName -> jobName != name }
                     ?.filter(String::isNotBlank)
                     ?: emptyList()
-                var name = translate(workTypeLiteral)
-                if (name == workTypeLiteral) {
-                    name = translate("workType.$workTypeLiteral")
-                }
                 WorkTypeSummary(
                     workType,
                     name,

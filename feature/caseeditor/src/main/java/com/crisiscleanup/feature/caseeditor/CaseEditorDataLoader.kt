@@ -227,10 +227,9 @@ internal class CaseEditorDataLoader(
                         val groupFieldMap = node.children.associate { child ->
                             child.fieldKey to child.formField.getFieldLabel(localTranslate)
                         }
-                        val groupOptionsMap =
-                            node.children.map(FormFieldNode::options)
-                                .flatMap { it.entries }
-                                .associate { it.key to it.value }
+                        val groupOptionsMap = node.children.map(FormFieldNode::options)
+                            .flatMap { it.entries }
+                            .associate { it.key to it.value }
                         node.fieldKey to GroupSummaryFieldLookup(
                             groupFieldMap,
                             groupOptionsMap,
