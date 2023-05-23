@@ -125,7 +125,6 @@ private fun ColumnScope.IncidentSelectContent(
 
     Box(Modifier.weight(weight = 1f, fill = false)) {
         val listState = rememberLazyListState()
-        var selectedIndex = 0
         LazyColumn(
             state = listState,
             modifier = modifier
@@ -150,13 +149,13 @@ private fun ColumnScope.IncidentSelectContent(
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = fontWeight,
                 )
-                if (isSelected) {
-                    selectedIndex = it
-                }
             }
         }
         LaunchedEffect(Unit) {
-            listState.animateScrollToItem(selectedIndex)
+            val selectedIndex = incidents.indexOfFirst { it.id == selectedIncidentId }
+            if (selectedIndex > 0) {
+                listState.animateScrollToItem(selectedIndex)
+            }
         }
     }
     Box(modifier.align(Alignment.End)) {
