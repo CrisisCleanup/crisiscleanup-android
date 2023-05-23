@@ -574,6 +574,7 @@ private fun LazyListScope.workItems(
     workTypeProfile?.let { profile ->
         itemInfoSectionHeader(2, translate("caseForm.work")) {
             Column(
+                Modifier.padding(start = edgeSpacing),
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.spacedBy(edgeSpacingHalf),
             ) {

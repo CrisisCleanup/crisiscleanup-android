@@ -26,7 +26,7 @@
 
     <string name="existing_worksites">Existing worksite</string>
     <string name="geocoded_addresses">Addresses</string>
-    <string name="location_query_hint">Search for a worksite address or any address in general</string>
+    <string name="location_query_hint">Search for an existing worksite or an address in general.\nSelecting the worksite opens it for editing.</string>
     <string name="no_location_results">No worksites or addresses match \'%s\'</string>
 
     <string name="wrong_location">Manual address override</string>

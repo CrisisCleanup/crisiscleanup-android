@@ -9,6 +9,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalConfiguration
 
 @VisibleForTesting
 val SingleColors = lightColorScheme(
@@ -142,9 +143,13 @@ internal fun CrisisCleanupTheme(
     val defaultBackgroundTheme = BackgroundTheme(
         color = colorScheme.background,
     )
-    // Composition locals
+
+    val configuration = LocalConfiguration.current
+    val dimensions = if (configuration.screenWidthDp <= 360) w360Dimensions else Dimensions()
+
     CompositionLocalProvider(
-        LocalBackgroundTheme provides defaultBackgroundTheme
+        LocalBackgroundTheme provides defaultBackgroundTheme,
+        LocalDimensions provides dimensions,
     ) {
         MaterialTheme(
             colorScheme = colorScheme,

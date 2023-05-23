@@ -58,6 +58,7 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.TopAppBarSingleAction
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContainerColor
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContentColor
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
@@ -785,11 +786,15 @@ private fun SaveActionBar(
     saveClaimText: String = "",
     cancelText: String = "",
 ) {
+    val dimensions = LocalDimensions.current
+    val isSharpCorners = dimensions.isThinScreenWidth
     Row(
         modifier = Modifier
-            // TODO Common dimensions
-            .padding(16.dp),
-        horizontalArrangement = listItemSpacedBy,
+            .padding(
+                horizontal = dimensions.edgePaddingFlexible,
+                vertical = dimensions.edgePadding,
+            ),
+        horizontalArrangement = dimensions.itemInnerSpacingHorizontalFlexible,
     ) {
         BusyButton(
             Modifier.weight(1f),
@@ -797,6 +802,7 @@ private fun SaveActionBar(
             enabled = enable,
             onClick = onCancel,
             colors = cancelButtonColors(),
+            isSharpCorners = isSharpCorners,
         )
         BusyButton(
             Modifier.weight(1.5f),
@@ -804,6 +810,7 @@ private fun SaveActionBar(
             enabled = enable,
             indicateBusy = !enable,
             onClick = onClaimAndSave,
+            isSharpCorners = isSharpCorners,
         )
         BusyButton(
             Modifier.weight(1.1f),
@@ -811,6 +818,7 @@ private fun SaveActionBar(
             enabled = enable,
             indicateBusy = !enable,
             onClick = onSave,
+            isSharpCorners = isSharpCorners,
         )
     }
 }

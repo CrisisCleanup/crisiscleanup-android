@@ -19,6 +19,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -96,12 +97,14 @@ fun BusyButton(
     text: String = "",
     indicateBusy: Boolean = false,
     colors: ButtonColors = primaryButtonColors(),
+    isSharpCorners: Boolean = false,
 ) {
+    val shape = if (isSharpCorners) RectangleShape else roundedRectangleButtonShape()
     Button(
         modifier = modifier.actionHeight(),
         onClick = onClick,
         enabled = enabled,
-        shape = roundedRectangleButtonShape(),
+        shape = shape,
         colors = colors,
         elevation = if (indicateBusy) null else ButtonDefaults.elevatedButtonElevation(),
     ) {
