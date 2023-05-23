@@ -37,6 +37,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
@@ -124,6 +125,7 @@ class ViewImageViewModel @Inject constructor(
         }
 
     private val streamLocalImageState = localImageRepository.streamLocalImageUri(imageId)
+        .filter { it.isNotEmpty() }
         .mapLatest { uriString ->
             val uri = Uri.parse(uriString)
             if (uri != null) {
