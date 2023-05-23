@@ -42,6 +42,6 @@ enum class TopLevelDestination(
         selectedIcon = ImageVectorIcon(CrisisCleanupIcons.Menu),
         unselectedIcon = ImageVectorIcon(CrisisCleanupIcons.Menu),
         iconTextId = menuR.string.menu,
-        titleTextId = menuR.string.menu,
+        titleTextId = 0,
     )
 }
