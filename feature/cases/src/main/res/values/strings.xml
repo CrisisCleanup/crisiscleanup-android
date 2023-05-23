@@ -20,6 +20,13 @@
     <string name="worksite_markers_hidden">%1$d worksites not shown</string>
     <string name="recently_viewed">Recently viewed</string>
 
-    <string name="visible_total_case_count">%d Cases\nof %d</string>
-    <string name="total_case_count">%d Cases</string>
+    <plurals name="visible_total_case_count">
+        <item quantity="one">%d Case\nof %d</item>
+        <item quantity="other">%d Cases\nof %d</item>
+    </plurals>
+    <plurals name="total_case_count">
+        <item quantity="zero">Zero Cases</item>
+        <item quantity="one">One Case</item>
+        <item quantity="other">%d Cases</item>
+    </plurals>
 </resources>

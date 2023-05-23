@@ -1,14 +1,20 @@
 package com.crisiscleanup.feature.cases.ui
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -118,28 +124,39 @@ private fun ColumnScope.IncidentSelectContent(
     val selectedIncidentId by selectIncidentViewModel.incidentSelector.incidentId.collectAsStateWithLifecycle()
 
     Box(Modifier.weight(weight = 1f, fill = false)) {
+        val listState = rememberLazyListState()
+        var selectedIndex = 0
         LazyColumn(
+            state = listState,
             modifier = modifier
                 .testTag("cases:incidents"),
         ) {
-            incidents.forEach { incident ->
+            items(
+                incidents.size,
+                key = { incidents[it].id },
+            ) {
+                val incident = incidents[it]
                 val id = incident.id
                 val isSelected = id == selectedIncidentId
                 val fontWeight = if (isSelected) FontWeight.Bold else null
-                item(key = id) {
-                    Text(
-                        modifier = modifier
-                            .fillParentMaxWidth()
-                            .clickable(enabled = enableInput) {
-                                onSelectIncident(incident)
-                            }
-                            .padding(padding),
-                        text = incident.name,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = fontWeight,
-                    )
+                Text(
+                    modifier = modifier
+                        .fillParentMaxWidth()
+                        .clickable(enabled = enableInput) {
+                            onSelectIncident(incident)
+                        }
+                        .padding(padding),
+                    text = incident.name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = fontWeight,
+                )
+                if (isSelected) {
+                    selectedIndex = it
                 }
             }
+        }
+        LaunchedEffect(Unit) {
+            listState.animateScrollToItem(selectedIndex)
         }
     }
     Box(modifier.align(Alignment.End)) {
