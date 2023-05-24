@@ -750,7 +750,7 @@ internal fun EditExistingCaseNotesView(
             shape = CircleShape,
         ) {
             Icon(
-                imageVector = CrisisCleanupIcons.AddNote,
+                painter = painterResource(R.drawable.ic_note),
                 contentDescription = viewModel.translate("caseView.add_note_alt"),
             )
         }
