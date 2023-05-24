@@ -146,12 +146,14 @@ fun CrisisCleanupTextButton(
     @StringRes textResId: Int = 0,
     text: String = "",
     colors: ButtonColors = ButtonDefaults.textButtonColors(),
+    elevation: ButtonElevation? = null,
 ) = TextButton(
     modifier = modifier.actionHeight(),
     onClick = onClick,
     enabled = enabled,
     colors = colors,
     shape = roundedRectangleButtonShape(),
+    elevation = elevation,
 ) {
     Text(textResId, text)
 }

@@ -20,6 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.R
+import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 
 @Composable
 fun CrisisCleanupElevatedIconButton(
@@ -81,18 +82,19 @@ fun CrisisCleanupIconButton(
     ) {
         val cd = if (contentDescriptionResId == 0) contentDescription
         else stringResource(contentDescriptionResId)
+        val iconTint = if(enabled) tint else tint.disabledAlpha()
         if (iconResId != 0) {
             Icon(
                 painter = painterResource(iconResId),
                 contentDescription = cd,
-                tint = tint,
+                tint = iconTint,
             )
         } else {
             imageVector?.let {
                 Icon(
                     imageVector = it,
                     contentDescription = cd,
-                    tint = tint,
+                    tint = iconTint,
                 )
             }
         }

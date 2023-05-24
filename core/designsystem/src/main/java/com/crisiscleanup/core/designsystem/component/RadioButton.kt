@@ -4,9 +4,8 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.RadioButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -14,13 +13,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 
 @Composable
-fun CrisisCleanupTextCheckbox(
+fun CrisisCleanupTextRadioButton(
     modifier: Modifier = Modifier,
-    checked: Boolean = false,
+    selected: Boolean = false,
     @StringRes textResId: Int = 0,
     text: String = "",
-    onToggle: () -> Unit = {},
-    onCheckChange: (Boolean) -> Unit = {},
+    onSelect: () -> Unit = {},
     textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
     enabled: Boolean = true,
     enableToggle: Boolean = true,
@@ -31,19 +29,19 @@ fun CrisisCleanupTextCheckbox(
         Modifier
             .clickable(
                 enabled = enabled && enableToggle,
-                onClick = onToggle
+                onClick = onSelect,
             )
             .then(modifier),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Checkbox(
-            checked = checked,
-            onCheckedChange = onCheckChange,
+        RadioButton(
+            selected = selected,
+            onClick = onSelect,
             enabled = enabled,
         )
         val textValue = if (textResId == 0) text else stringResource(textResId)
         if (textValue.isNotBlank()) {
-            Text(
+            androidx.compose.material3.Text(
                 textValue,
                 style = textStyle,
             )

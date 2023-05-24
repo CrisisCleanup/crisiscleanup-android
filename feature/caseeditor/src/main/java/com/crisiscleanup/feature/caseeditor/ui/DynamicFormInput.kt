@@ -14,7 +14,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -60,6 +59,8 @@ import com.crisiscleanup.core.network.model.DynamicValue
 import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.model.FieldDynamicValue
 
+private const val FallbackRrule = "RRULE:FREQ=WEEKLY;BYDAY=MO;INTERVAL=1;BYHOUR=11"
+
 @Composable
 internal fun DynamicFormListItem(
     field: FieldDynamicValue,
@@ -73,22 +74,33 @@ internal fun DynamicFormListItem(
     translate: (String) -> String = { s -> s },
     updateValue: (FieldDynamicValue) -> Unit = {},
 ) {
-    val updateString = if (field.dynamicValue.isBoolean) {
-        {}
-    } else { s: String ->
-        val valueState = field.copy(dynamicValue = DynamicValue(s))
-        updateValue(valueState)
+    val updateBoolean = remember(field) {
+        { b: Boolean ->
+            val dynamicValue = DynamicValue("", true, b)
+            val valueState = field.copy(dynamicValue = dynamicValue)
+            updateValue(valueState)
+        }
     }
-    val breakGlass = {
-        val breakGlass = field.breakGlass.copy(isGlassBroken = true)
-        val valueState = field.copy(breakGlass = breakGlass)
-        updateValue(valueState)
+    val updateString = remember(field) {
+        { s: String ->
+            val valueState = field.copy(dynamicValue = DynamicValue(s))
+            updateValue(valueState)
+        }
+    }
+    val breakGlass = remember(field) {
+        {
+            if (field.breakGlass.isGlass) {
+                val breakGlass = field.breakGlass.copy(isGlassBroken = true)
+                val valueState = field.copy(breakGlass = breakGlass)
+                updateValue(valueState)
+            }
+        }
     }
     when (field.field.htmlType) {
         "checkbox" -> {
             CheckboxItem(
                 field,
-                updateValue,
+                updateBoolean,
                 modifier,
                 label,
                 helpHint,
@@ -102,7 +114,7 @@ internal fun DynamicFormListItem(
                 field,
                 modifier,
                 label,
-                { updateString(it) },
+                updateString,
                 breakGlassHint,
                 breakGlass,
                 helpHint,
@@ -116,7 +128,7 @@ internal fun DynamicFormListItem(
                 field,
                 modifier,
                 label,
-                { updateString(it) },
+                updateString,
                 helpHint,
                 showHelp,
                 enabled,
@@ -128,7 +140,7 @@ internal fun DynamicFormListItem(
                 field,
                 modifier,
                 label,
-                { updateString(it) },
+                updateString,
                 helpHint,
                 showHelp,
                 enabled,
@@ -144,15 +156,20 @@ internal fun DynamicFormListItem(
                     style = MaterialTheme.typography.bodyLarge,
                 )
             } else {
-                val updateGroupExpandValue = { value: FieldDynamicValue ->
-                    groupExpandState[field.key] = value.dynamicValue.isBooleanTrue
-                    updateValue(value)
+                val updateGroupExpandValue = remember(field) {
+                    { b: Boolean ->
+                        groupExpandState[field.key] = b
+                        updateBoolean(b)
+                    }
                 }
-                val isActiveWorkType = field.dynamicValue.isBooleanTrue && field.isWorkTypeGroup
-                val updateWorkTypeStatus = { status: WorkTypeStatus ->
-                    if (isActiveWorkType) {
-                        val valueState = field.copy(workTypeStatus = status)
-                        updateValue(valueState)
+                val updateWorkTypeStatus = remember(field) {
+                    { status: WorkTypeStatus ->
+                        val isActiveWorkType =
+                            field.dynamicValue.isBooleanTrue && field.isWorkTypeGroup
+                        if (isActiveWorkType) {
+                            val valueState = field.copy(workTypeStatus = status)
+                            updateValue(valueState)
+                        }
                     }
                 }
                 CheckboxItem(
@@ -174,7 +191,25 @@ internal fun DynamicFormListItem(
                 field,
                 modifier,
                 label,
-                { updateString(it) },
+                updateString,
+                helpHint,
+                showHelp,
+                enabled,
+            )
+        }
+
+        "cronselect" -> {
+            val updateGroupExpandValue = remember(field) {
+                { b: Boolean -> groupExpandState[field.key] = b }
+            }
+            CronSelect(
+                field,
+                groupExpandState[field.key] ?: false,
+                updateGroupExpandValue,
+                translate,
+                modifier,
+                label,
+                updateString,
                 helpHint,
                 showHelp,
                 enabled,
@@ -190,7 +225,7 @@ internal fun DynamicFormListItem(
 @Composable
 private fun CheckboxItem(
     itemData: FieldDynamicValue,
-    updateValue: (FieldDynamicValue) -> Unit,
+    updateBoolean: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     text: String = "",
     helpHint: String,
@@ -199,13 +234,6 @@ private fun CheckboxItem(
     translate: (String) -> String = { s -> s },
     updateWorkTypeStatus: (WorkTypeStatus) -> Unit = {},
 ) {
-    val updateBoolean = { b: Boolean ->
-        val valueState = itemData.copy(
-            dynamicValue = DynamicValue("", true, b)
-        )
-        updateValue(valueState)
-    }
-
     val isChecked = itemData.dynamicValue.valueBoolean
     val isActiveWorkType = isChecked && itemData.isWorkTypeGroup
 
@@ -230,11 +258,11 @@ private fun CheckboxItem(
         0,
         text,
         { updateBoolean(!itemData.dynamicValue.valueBoolean) },
-        { updateBoolean(it) },
-        trailingContent = trailingContent,
+        updateBoolean,
         enabled = enabled,
         enableToggle = !isActiveWorkType,
         spaceTrailingContent = itemData.isWorkTypeGroup,
+        trailingContent = trailingContent,
     )
 }
 
@@ -262,7 +290,7 @@ private fun SingleLineTextItem(
         val textFieldModifier = if (hasMultipleRowItems) Modifier.weight(1f)
         else modifier
 
-        val hasFocus = if (glassState.isGlassBroken) glassState.takeBrokenGlassFocus() else false
+        val hasFocus = glassState.isGlassBroken && glassState.takeBrokenGlassFocus()
 
         OutlinedClearableTextField(
             modifier = textFieldModifier,
@@ -296,7 +324,6 @@ private fun SingleLineTextItem(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MultiLineTextItem(
     itemData: FieldDynamicValue,
@@ -316,7 +343,7 @@ private fun MultiLineTextItem(
             }
         }
 
-        // TODO Next or done (if last in list). Callback to next/done action as well
+        // TODO Done (and onDone) if last in list.
         val keyboardOptions = KeyboardOptions(
             imeAction = ImeAction.Next,
             keyboardType = KeyboardType.Password,
@@ -419,9 +446,9 @@ private fun SelectItem(
             ) {
                 DropdownItems(
                     itemData.selectOptions,
-                    { onSelect(it) },
-                    true,
-                )
+                ) {
+                    onSelect(it)
+                }
             }
         }
     }
@@ -431,15 +458,12 @@ private fun SelectItem(
 private fun DropdownItems(
     options: Map<String, String>,
     onSelect: (String) -> Unit,
-    addEmptyOption: Boolean = false,
 ) {
-    if (addEmptyOption) {
-        DropdownMenuItem(
-            modifier = Modifier.optionItemHeight(),
-            text = { Text("") },
-            onClick = { onSelect("") },
-        )
-    }
+    DropdownMenuItem(
+        modifier = Modifier.optionItemHeight(),
+        text = { Text("") },
+        onClick = { onSelect("") },
+    )
     for (option in options) {
         key(option.key) {
             DropdownMenuItem(
@@ -451,10 +475,7 @@ private fun DropdownItems(
     }
 }
 
-@OptIn(
-    ExperimentalLayoutApi::class,
-    ExperimentalMaterial3Api::class,
-)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun MultiSelect(
     itemData: FieldDynamicValue,
@@ -496,5 +517,50 @@ private fun MultiSelect(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun CronSelect(
+    itemData: FieldDynamicValue,
+    isInputExpanded: Boolean,
+    expandFrequencyInput: (Boolean) -> Unit,
+    translate: (String) -> String,
+    modifier: Modifier = Modifier,
+    label: String = "",
+    updateFrequency: (String) -> Unit = {},
+    helpHint: String,
+    showHelp: () -> Unit = {},
+    enabled: Boolean = true,
+) {
+    val trailingContent: (@Composable () -> Unit)? =
+        if (itemData.field.help.isNotBlank()) {
+            {
+                HelpAction(helpHint, showHelp)
+            }
+        } else null
+    val defaultRrule = itemData.field.recurDefault.ifBlank { FallbackRrule }
+    val rRuleIn = itemData.dynamicValue.valueString
+    val showFrequencyInput = isInputExpanded || (rRuleIn.isNotBlank() && defaultRrule != rRuleIn)
+    CrisisCleanupTextCheckbox(
+        modifier.listCheckboxAlignStartOffset(),
+        showFrequencyInput,
+        0,
+        label,
+        { expandFrequencyInput(!itemData.dynamicValue.valueBoolean) },
+        expandFrequencyInput,
+        enabled = enabled && !showFrequencyInput,
+        trailingContent = trailingContent,
+    )
+
+    if (showFrequencyInput) {
+        FrequencyDailyWeeklyViews(
+            modifier,
+            rRuleIn,
+            defaultRrule,
+            enabled,
+            translate,
+            updateFrequency,
+        )
     }
 }

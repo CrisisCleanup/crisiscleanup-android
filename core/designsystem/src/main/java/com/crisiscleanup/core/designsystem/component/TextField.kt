@@ -3,7 +3,11 @@ package com.crisiscleanup.core.designsystem.component
 import androidx.annotation.StringRes
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -20,9 +24,6 @@ import com.crisiscleanup.core.designsystem.R
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 
-@OptIn(
-    ExperimentalMaterial3Api::class,
-)
 @Composable
 fun OutlinedSingleLineTextField(
     modifier: Modifier = Modifier,

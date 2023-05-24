@@ -55,6 +55,7 @@ ksp = "1.8.21-1.0.11"
 lint = "31.0.1"
 mockk = "1.13.5"
 okhttp = "4.11.0"
+philJayRrule = "1.0.3"
 playServicesLocation = "21.0.1"
 playServicesMaps = "18.1.0"
 protobuf = "3.21.12"
@@ -151,6 +152,7 @@ mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockk" }
 mockk-agent = { group = "io.mockk", name = "mockk-agent", version.ref = "mockk" }
 okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
+philjay-rrule = { group = "com.github.PhilJay", name = "RRule", version.ref = "philJayRrule" }
 playservices-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 playservices-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
 protobuf-kotlin-lite = { group = "com.google.protobuf", name = "protobuf-kotlin-lite", version.ref = "protobuf" }

@@ -51,7 +51,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.commonassets.getDisasterIcon
-import com.crisiscleanup.core.designsystem.component.AnimatedBusyIndicator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
@@ -147,8 +146,12 @@ internal fun ColumnScope.CaseEditorScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     when (uiState) {
         is CaseEditorUiState.Loading -> {
-            Box(modifier.fillMaxSize()) {
-                AnimatedBusyIndicator(true)
+            Box(
+                modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
+                BusyIndicatorFloatingTopCenter(true)
             }
         }
 
@@ -165,11 +168,11 @@ internal fun ColumnScope.CaseEditorScreen(
             val errorData = uiState as CaseEditorUiState.Error
             val errorMessage = if (errorData.errorResId != 0) stringResource(errorData.errorResId)
             else errorData.errorMessage.ifEmpty { stringResource(commonR.string.unexpected_error) }
-            Box(modifier) {
+            Box(modifier.weight(1f)) {
                 Text(
                     text = errorMessage,
                     modifier = Modifier.padding(8.dp),
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = MaterialTheme.typography.bodyLarge,
                 )
             }
         }

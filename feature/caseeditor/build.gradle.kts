@@ -30,6 +30,7 @@ dependencies {
     implementation(libs.coil.kt.compose)
     implementation(libs.google.maps.compose)
     implementation(libs.kotlinx.datetime)
+    implementation(libs.philjay.rrule)
     implementation(libs.playservices.maps)
 
     testImplementation(project(":core:testing"))

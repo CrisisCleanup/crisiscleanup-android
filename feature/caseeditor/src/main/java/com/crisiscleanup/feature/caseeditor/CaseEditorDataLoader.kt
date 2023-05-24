@@ -1,5 +1,6 @@
 package com.crisiscleanup.feature.caseeditor
 
+import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.TagLogger
@@ -10,12 +11,10 @@ import com.crisiscleanup.core.data.repository.LocationsRepository
 import com.crisiscleanup.core.data.repository.WorkTypeStatusRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
-import com.crisiscleanup.core.mapmarker.model.IncidentBounds
 import com.crisiscleanup.core.mapmarker.util.toBounds
 import com.crisiscleanup.core.mapmarker.util.toLatLng
 import com.crisiscleanup.core.model.data.AutoContactFrequency
 import com.crisiscleanup.core.model.data.EmptyWorksite
-import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.IncidentFormField
 import com.crisiscleanup.core.model.data.IncidentLocation
 import com.crisiscleanup.core.model.data.WorksiteFormValue
@@ -54,6 +53,7 @@ internal class CaseEditorDataLoader(
     workTypeStatusRepository: WorkTypeStatusRepository,
     translate: (String) -> String,
     private val editableWorksiteProvider: EditableWorksiteProvider,
+    resourceProvider: AndroidResourceProvider,
     coroutineScope: CoroutineScope,
     coroutineDispatcher: CoroutineDispatcher,
     appEnv: AppEnv,
@@ -93,14 +93,13 @@ internal class CaseEditorDataLoader(
 
     private val incidentDataStream = incidentsRepository.streamIncident(incidentIdIn)
         .mapLatest { incident ->
-            var data: Pair<Incident, IncidentBounds>? = null
             incident?.locations?.map(IncidentLocation::location)?.let { locationIds ->
                 val locations = locationsRepository.getLocations(locationIds).toLatLng()
-                if (locations.isNotEmpty()) {
-                    data = Pair(incident, locations.toBounds())
-                }
+                val bounds = if (locations.isEmpty()) null
+                else locations.toBounds()
+                return@mapLatest Pair(incident, bounds)
             }
-            data
+            null
         }
         .flowOn(coroutineDispatcher)
         .distinctUntilChanged()
@@ -175,11 +174,13 @@ internal class CaseEditorDataLoader(
                 return@mapLatest CaseEditorUiState.Error(R.string.incident_issue_try_again)
             }
 
-            bounds.let {
-                if (it.locations.isEmpty()) {
-                    logger.logException(Exception("Incident $incidentIdIn is lacking locations."))
-                    return@mapLatest CaseEditorUiState.Error(R.string.incident_issue_try_again)
-                }
+            if (bounds?.locations?.isNotEmpty() != true) {
+                logger.logException(Exception("Incident ${incident.id} ${incident.name} is lacking locations."))
+                val errorMessage = resourceProvider.getString(
+                    R.string.incident_is_in_progress,
+                    incident.name,
+                )
+                return@mapLatest CaseEditorUiState.Error(errorMessage = errorMessage)
             }
 
             val (localWorksite, isPulled) = third

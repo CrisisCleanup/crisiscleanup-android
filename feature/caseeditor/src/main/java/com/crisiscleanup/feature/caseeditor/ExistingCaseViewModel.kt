@@ -203,6 +203,7 @@ class ExistingCaseViewModel @Inject constructor(
             workTypeStatusRepository,
             { key -> translate(key) },
             editableWorksiteProvider,
+            resourceProvider,
             viewModelScope,
             ioDispatcher,
             appEnv,

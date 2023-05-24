@@ -4,6 +4,7 @@
     <string name="case_case_number">Case %1$s</string>
     <string name="view_case_number">View %1$s</string>
     <string name="organization_issue_try_re_authenticating">There seems to be an issue with your organization. Try logging out and logging in again.</string>
+    <string name="incident_is_in_progress">%s is in the process of starting up. It\'ll be active shortly.</string>
     <string name="incident_issue_try_again">There seems to be an issue with the current incident. Please try again. Connect to the internet if possible.</string>
 
     <string name="edit_case">Edit Case</string>
@@ -90,4 +91,6 @@
     <string name="allow_camera_permission">Allow access to camera</string>
     <string name="camera_permission_explanation">Grant access to camera in the App info/settings > Permissions.</string>
 
+    <string name="remove_until_recurring_date">Remove until</string>
+    <string name="specify_interval">Specify an interval</string>
 </resources>
