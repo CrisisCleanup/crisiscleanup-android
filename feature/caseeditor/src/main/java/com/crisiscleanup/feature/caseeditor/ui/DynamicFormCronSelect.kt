@@ -95,6 +95,7 @@ private fun RowScope.FrequencyOption(
     isSelected: Boolean,
     onSelected: () -> Unit,
     label: String,
+    enabled: Boolean,
 ) {
     CrisisCleanupFilterChip(
         isSelected,
@@ -114,6 +115,7 @@ private fun RowScope.FrequencyOption(
             )
         },
         textStyle = MaterialTheme.typography.bodyLarge,
+        enabled = enabled,
     )
 }
 
@@ -187,6 +189,7 @@ internal fun FrequencyDailyWeeklyViews(
                 updateRrule()
             },
             translate("dashboard.daily"),
+            enabled,
         )
         FrequencyOption(
             !isDaily,
@@ -198,6 +201,7 @@ internal fun FrequencyDailyWeeklyViews(
                 updateRrule()
             },
             translate("dashboard.weekly"),
+            enabled,
         )
     }
     if (isDaily) {
@@ -456,6 +460,7 @@ private fun FrequencyDatePicker(
                     rRule.until = null
                     updateRrule()
                 },
+                enabled = enabled,
             )
         }
     }
