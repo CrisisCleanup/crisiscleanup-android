@@ -65,5 +65,5 @@ interface CrisisCleanupWriteApi {
         mimeType: String,
     )
 
-    suspend fun addFileToWorksite(worksiteId: Long, file: Long): NetworkFile
+    suspend fun addFileToWorksite(worksiteId: Long, file: Long, tag: String): NetworkFile
 }

@@ -117,7 +117,7 @@ private interface DataChangeApi {
     @HTTP(method = "DELETE", path = "worksites/{worksiteId}/files", hasBody = true)
     suspend fun deleteFile(
         @Path("worksiteId") worksiteId: Long,
-        @Body file: NetworkFileId,
+        @Body file: NetworkFilePush,
     ): Response<Unit>
 
     @FormUrlEncoded
@@ -132,7 +132,7 @@ private interface DataChangeApi {
     @POST("worksites/{worksiteId}/files")
     suspend fun addUploadedFile(
         @Path("worksiteId") worksiteId: Long,
-        @Body file: NetworkFileId,
+        @Body file: NetworkFilePush,
     ): NetworkFile
 }
 
@@ -231,7 +231,7 @@ class WriteApiClient @Inject constructor(
     }
 
     override suspend fun deleteFile(worksiteId: Long, file: Long) {
-        changeWorksiteApi.deleteFile(worksiteId, NetworkFileId(file))
+        changeWorksiteApi.deleteFile(worksiteId, NetworkFilePush(file))
     }
 
     override suspend fun startFileUpload(fileName: String, contentType: String) =
@@ -250,6 +250,6 @@ class WriteApiClient @Inject constructor(
         fileUploadApi.uploadFile(url, parts, partFile)
     }
 
-    override suspend fun addFileToWorksite(worksiteId: Long, file: Long) =
-        changeWorksiteApi.addUploadedFile(worksiteId, NetworkFileId(file))
+    override suspend fun addFileToWorksite(worksiteId: Long, file: Long, tag: String) =
+        changeWorksiteApi.addUploadedFile(worksiteId, NetworkFilePush(file, tag))
 }

@@ -135,9 +135,7 @@ class CrisisCleanupLocalImageRepository @Inject constructor(
                 mimeType,
             )
         }
-        val networkFile = writeApi.addFileToWorksite(networkWorksiteId, fileUpload.id)
-        // TODO Set tag on file
-        return networkFile
+        return writeApi.addFileToWorksite(networkWorksiteId, fileUpload.id, imageTag)
     }
 
     override suspend fun syncWorksiteMedia(worksiteId: Long): Int {

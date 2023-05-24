@@ -36,9 +36,11 @@ data class NetworkFile(
 }
 
 @Serializable
-data class NetworkFileId(
+data class NetworkFilePush(
     @SerialName("file")
     val file: Long,
+    @SerialName("tag")
+    val tag: String? = null,
 )
 
 @Serializable
