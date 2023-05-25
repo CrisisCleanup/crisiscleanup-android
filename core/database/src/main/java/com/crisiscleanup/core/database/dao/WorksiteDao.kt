@@ -364,6 +364,25 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
+        UPDATE OR IGNORE worksites
+        SET
+        key_work_type_type=:keyWorkTypeType,
+        key_work_type_org=:keyWorkTypeOrgClaim,
+        key_work_type_status=:keyWorkTypeStatus
+        WHERE incident_id=:incidentId AND network_id=:networkId
+        """
+    )
+    fun syncUpdateKeyWorkType(
+        incidentId: Long,
+        networkId: Long,
+        keyWorkTypeType: String,
+        keyWorkTypeOrgClaim: Long?,
+        keyWorkTypeStatus: String,
+    )
+
+    @Transaction
+    @Query(
+        """
         SELECT id
         FROM worksites_root
         WHERE is_local_modified<>0

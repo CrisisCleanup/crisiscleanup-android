@@ -58,6 +58,7 @@ interface CrisisCleanupNetworkDataSource {
     ): NetworkWorksitesFullResult
 
     suspend fun getWorksite(id: Long): NetworkWorksiteFull?
+    suspend fun getWorksiteShort(id: Long): NetworkWorksiteShort?
 
     suspend fun getWorksitesCount(
         incidentId: Long,

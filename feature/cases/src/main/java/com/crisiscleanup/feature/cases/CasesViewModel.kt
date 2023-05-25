@@ -131,6 +131,7 @@ class CasesViewModel @Inject constructor(
     private val mapBoundsManager = CasesMapBoundsManager(
         viewModelScope,
         incidentSelector,
+        incidentsRepository,
         locationsRepository,
         ioDispatcher,
         logger,
@@ -168,8 +169,6 @@ class CasesViewModel @Inject constructor(
             val skipMarkers = isTableView.value ||
                     id == EmptyIncident.id ||
                     mapTileRenderer.rendersAt(wqs.zoom)
-
-            logger.logDebug("Query state change", wqs)
 
             if (skipMarkers) {
                 flowOf(emptyList())
@@ -270,6 +269,10 @@ class CasesViewModel @Inject constructor(
             val offset = if (index < markOffsets.size) markOffsets[index] else zeroOffset
             mark.asWorksiteGoogleMapMark(mapCaseIconProvider, offset)
         }
+    }
+
+    fun onMapLoadStart() {
+        mapBoundsManager.onNewMap()
     }
 
     fun onMapLoaded() {

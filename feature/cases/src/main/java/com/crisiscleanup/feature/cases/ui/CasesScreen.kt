@@ -138,9 +138,8 @@ internal fun CasesRoute(
         val casesDotTileProvider = remember(casesViewModel) {
             { casesViewModel.overviewMapTileProvider() }
         }
-        val onMapLoaded = remember(casesViewModel) {
-            { casesViewModel.onMapLoaded() }
-        }
+        val onMapLoadStart = remember(casesViewModel) { { casesViewModel.onMapLoadStart() } }
+        val onMapLoaded = remember(casesViewModel) { { casesViewModel.onMapLoaded() } }
         val onMapCameraChange = remember(casesViewModel) {
             { position: CameraPosition, projection: Projection?, activeChange: Boolean ->
                 casesViewModel.onMapCameraChange(position, projection, activeChange)
@@ -169,6 +168,7 @@ internal fun CasesRoute(
             tileOverlayState = tileOverlayState,
             clearTileLayer = clearTileLayer,
             casesDotTileProvider = casesDotTileProvider,
+            onMapLoadStart = onMapLoadStart,
             onMapLoaded = onMapLoaded,
             onMapCameraChange = onMapCameraChange,
             onMarkerSelect = onMapMarkerSelect,
@@ -237,6 +237,7 @@ internal fun CasesScreen(
     clearTileLayer: () -> Boolean = { false },
     tileOverlayState: TileOverlayState = rememberTileOverlayState(),
     casesDotTileProvider: () -> TileProvider? = { null },
+    onMapLoadStart: () -> Unit = {},
     onMapLoaded: () -> Unit = {},
     onMapCameraChange: (CameraPosition, Projection?, Boolean) -> Unit = { _, _, _ -> },
     onMarkerSelect: (WorksiteMapMark) -> Boolean = { false },
@@ -255,6 +256,7 @@ internal fun CasesScreen(
                 clearTileLayer,
                 tileOverlayState,
                 casesDotTileProvider,
+                onMapLoadStart,
                 onMapLoaded,
                 onMapCameraChange,
                 onMarkerSelect,
@@ -296,6 +298,7 @@ internal fun BoxScope.CasesMapView(
     clearTileLayer: () -> Boolean = { false },
     tileOverlayState: TileOverlayState = rememberTileOverlayState(),
     casesDotTileProvider: () -> TileProvider? = { null },
+    onMapLoadStart: () -> Unit = {},
     onMapLoaded: () -> Unit = {},
     onMapCameraChange: (CameraPosition, Projection?, Boolean) -> Unit = { _, _, _ -> },
     onMarkerSelect: (WorksiteMapMark) -> Boolean = { false },
@@ -303,6 +306,10 @@ internal fun BoxScope.CasesMapView(
     onEditLocationZoom: Float = 12f,
 ) {
     // TODO Profile and optimize recompositions when map is changed (by user) if possible.
+
+    LaunchedEffect(Unit) {
+        onMapLoadStart()
+    }
 
     val uiSettings by rememberMapUiSettings()
     val cameraPositionState = rememberCameraPositionState {

@@ -118,6 +118,13 @@ private interface DataSourceApi {
     ): NetworkWorksitesShortResult
 
     @TokenAuthenticationHeader
+    @GET("worksites_all")
+    suspend fun getWorksitesShort(
+        @Query("id__in")
+        id: Long,
+    ): NetworkWorksitesShortResult
+
+    @TokenAuthenticationHeader
     @GET("worksites_page")
     suspend fun getWorksitesPage(
         @Query("incident")
@@ -210,6 +217,9 @@ class DataApiClient @Inject constructor(
             authEventManager.tryThrowException(it.errors)
             it.results?.firstOrNull()
         }
+
+    override suspend fun getWorksiteShort(id: Long) =
+        networkApi.getWorksitesShort(id).results?.get(0)
 
     override suspend fun getWorksitesCount(incidentId: Long, updatedAtAfter: Instant?) =
         networkApi.getWorksitesCount(incidentId, updatedAtAfter)

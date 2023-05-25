@@ -4,6 +4,7 @@ import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.IncidentSelector
+import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocationsRepository
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraBounds
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraBoundsDefault
@@ -17,11 +18,23 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 
-internal class CasesMapBoundsManager constructor(
+internal class CasesMapBoundsManager(
     coroutineScope: CoroutineScope,
     private val incidentSelector: IncidentSelector,
+    incidentsRepository: IncidentsRepository,
     private val locationsRepository: LocationsRepository,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
     private val logger: AppLogger,
@@ -46,21 +59,36 @@ internal class CasesMapBoundsManager constructor(
         isMapping || isUpdating
     }
 
-    private val incidentLatLngBoundary: StateFlow<Pair<Long, List<LatLng>>> =
-        incidentSelector.incident.flatMapLatest { incident ->
+    private val selectedIncident = incidentSelector.incidentId.flatMapLatest {
+        incidentsRepository.streamIncident(it)
+    }
+
+    private val incidentLocationIds = incidentSelector.incident.mapLatest {
+        it.locations.map(IncidentLocation::location)
+    }
+
+    private val incidentLatLngBoundary = combine(
+        selectedIncident,
+        incidentLocationIds,
+        ::Pair
+    )
+        .filter { (incident, locationIds) ->
+            incident != null && incident.id != EmptyIncident.id && locationIds.isNotEmpty()
+        }
+        .flatMapLatest { (incident, locationIds) ->
             isMappingLocationBounds.value = true
             try {
-                val locationIds = incident.locations.map(IncidentLocation::location)
                 locationsRepository.streamLocations(locationIds)
                     .map { locations ->
                         val latLngs = locations.toLatLng().flattenLatLng()
-                        Pair(incident.id, latLngs)
+                        Pair(incident!!.id, latLngs)
                     }
-                    .flowOn(ioDispatcher)
             } finally {
                 isMappingLocationBounds.value = false
             }
-        }.stateIn(
+        }
+        .flowOn(ioDispatcher)
+        .stateIn(
             scope = coroutineScope,
             initialValue = Pair(EmptyIncident.id, emptyList()),
             started = SharingStarted.WhileSubscribed(),
@@ -95,8 +123,6 @@ internal class CasesMapBoundsManager constructor(
         mapBoundsCache = bounds
     }
 
-    // TODO Call when it becomes possible to determine newly created maps
-    //      There doesn't seem to be an API for such with Compose maps
     fun onNewMap() {
         isMapLoaded = false
     }
