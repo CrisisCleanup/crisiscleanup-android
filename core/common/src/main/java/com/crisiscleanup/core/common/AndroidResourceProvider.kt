@@ -10,6 +10,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 interface AndroidResourceProvider {
+    val resources: Resources
+
     val displayDensity: Float
 
     fun getString(@StringRes resId: Int): String
@@ -24,15 +26,15 @@ interface AndroidResourceProvider {
 class ApplicationResourceProvider @Inject constructor(
     @ApplicationContext private val context: Context
 ) : AndroidResourceProvider {
-    val resources: Resources = context.resources
+    override val resources: Resources = context.resources
 
     override val displayDensity: Float = resources.displayMetrics.density
 
-    override fun getString(@StringRes resId: Int): String = context.getString(resId)
-    override fun getString(@StringRes resId: Int, vararg formatArgs: Any): String =
+    override fun getString(@StringRes resId: Int) = context.getString(resId)
+    override fun getString(@StringRes resId: Int, vararg formatArgs: Any) =
         resources.getString(resId, *formatArgs)
 
-    override fun dpToPx(dp: Float): Float = displayDensity * dp
+    override fun dpToPx(dp: Float) = displayDensity * dp
 
     override fun getDrawable(drawableId: Int, theme: Resources.Theme?): Drawable =
         resources.getDrawable(drawableId, theme)

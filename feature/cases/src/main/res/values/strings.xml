@@ -25,6 +25,7 @@
         <item quantity="other">%d Cases\nof %d</item>
     </plurals>
     <plurals name="total_case_count">
+        <!-- zero quantity is not used in certain languages -->
         <item quantity="zero">Zero Cases</item>
         <item quantity="one">One Case</item>
         <item quantity="other">%d Cases</item>

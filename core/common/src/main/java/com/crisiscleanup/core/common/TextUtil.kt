@@ -9,7 +9,7 @@ fun Collection<String?>.filterNotBlankTrim(): List<String> {
     return notBlank.map(String::trim)
 }
 
-fun Collection<String>.combineTrimText(separator: String = ", ") =
+fun Collection<String?>.combineTrimText(separator: String = ", ") =
     filterNotBlankTrim().joinToString(separator)
 
 fun String.urlEncode(): String = URLEncoder.encode(this, StandardCharsets.UTF_8.toString())

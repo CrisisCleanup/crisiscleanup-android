@@ -49,6 +49,7 @@ import com.crisiscleanup.core.designsystem.theme.listItemNestedPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.feature.caseeditor.R
+import com.crisiscleanup.feature.caseeditor.weekdayOrderLookup
 import com.philjay.Frequency
 import com.philjay.RRule
 import com.philjay.Weekday
@@ -79,15 +80,6 @@ private val weekdayTranslationLookup = mapOf(
     Weekday.Thursday to "recurringSchedule.thu",
     Weekday.Friday to "recurringSchedule.fri",
     Weekday.Saturday to "recurringSchedule.sat",
-)
-private val weekdayOrderLookup = mapOf(
-    Weekday.Sunday to 0,
-    Weekday.Monday to 1,
-    Weekday.Tuesday to 2,
-    Weekday.Wednesday to 3,
-    Weekday.Thursday to 4,
-    Weekday.Friday to 5,
-    Weekday.Saturday to 6,
 )
 
 @Composable

@@ -6,9 +6,20 @@ plugins {
 }
 
 android {
+    defaultConfig {
+        testInstrumentationRunner = "com.crisiscleanup.core.testing.CrisisCleanupTestRunner"
+    }
+
     buildFeatures {
         buildConfig = true
     }
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
+
     namespace = "com.crisiscleanup.feature.caseeditor"
 }
 
@@ -32,6 +43,8 @@ dependencies {
     implementation(libs.kotlinx.datetime)
     implementation(libs.philjay.rrule)
     implementation(libs.playservices.maps)
+
+    androidTestImplementation(kotlin("test"))
 
     testImplementation(project(":core:testing"))
     testImplementation(libs.mockk.android)

@@ -93,4 +93,33 @@
 
     <string name="remove_until_recurring_date">Remove until</string>
     <string name="specify_interval">Specify an interval</string>
+
+    <plurals name="n_days">
+        <item quantity="one">day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    <plurals name="n_weeks">
+        <item quantity="one">week</item>
+        <item quantity="other">%d weeks</item>
+    </plurals>
+    <string name="every">Every</string>
+    <string name="every_day">every day</string>
+    <string name="on_weekdays">on weekdays (M-F)</string>
+    <string name="weekday_mtof">weekday (M-F)</string>
+    <string-array name="days_sunday_through_saturday">
+        <item>Sunday</item>
+        <item>Monday</item>
+        <item>Tuesday</item>
+        <item>Wednesday</item>
+        <item>Thursday</item>
+        <item>Friday</item>
+        <item>Saturday</item>
+    </string-array>
+    <string name="on_days">on %s</string>
+    <plurals name="on_and_days">
+        <item quantity="one">on %s and %s</item>
+        <item quantity="other">on %s, and %s</item>
+    </plurals>
+    <string name="until_date">until %s</string>
+    <string name="next_recur">Next: %s</string>
 </resources>

@@ -47,6 +47,7 @@ import com.crisiscleanup.feature.caseeditor.model.ImageCategory
 import com.crisiscleanup.feature.caseeditor.model.asCaseImage
 import com.crisiscleanup.feature.caseeditor.navigation.ExistingCaseArgs
 import com.google.android.gms.maps.model.BitmapDescriptor
+import com.philjay.RRule
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -63,7 +64,10 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
+import kotlinx.datetime.toJavaInstant
 import java.text.SimpleDateFormat
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
@@ -103,6 +107,10 @@ class ExistingCaseViewModel @Inject constructor(
     val worksiteIdArg = caseEditorArgs.worksiteId
 
     val headerTitle = MutableStateFlow("")
+
+    private val nextRecurDateFormat = DateTimeFormatter
+        .ofPattern("EEE MMMM d yyyy ['at'] h:mm a")
+        .withZone(ZoneId.systemDefault())
 
     private val dataLoader: CaseEditorDataLoader
 
@@ -335,10 +343,31 @@ class ExistingCaseViewModel @Inject constructor(
                     ?.filter { jobName -> jobName != name }
                     ?.filter(String::isNotBlank)
                     ?: emptyList()
+                val summary = listOf(
+                    summaryJobTypes.combineTrimText(),
+                    workType.recur?.let { rRuleString ->
+                        try {
+                            return@let RRule(rRuleString).toHumanReadableText(resourceProvider)
+                        } catch (e: Exception) {
+                            logger.logException(e)
+                        }
+                        null
+                    },
+                    workType.nextRecurAt?.let { nextRecurAt ->
+                        try {
+                            val nextDate = nextRecurDateFormat.format(nextRecurAt.toJavaInstant())
+                            return@let resourceProvider.getString(R.string.next_recur, nextDate)
+                        } catch (e: Exception) {
+                            logger.logException(e)
+                        }
+                        null
+                    },
+                )
+                    .combineTrimText("\n")
                 WorkTypeSummary(
                     workType,
                     name,
-                    summaryJobTypes.combineTrimText(),
+                    summary,
                     requestedTypes.contains(workType.workTypeLiteral),
                     isTurnOnRelease && workType.isReleaseEligible,
                     myOrgId,
