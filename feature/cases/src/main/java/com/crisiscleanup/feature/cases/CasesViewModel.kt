@@ -138,7 +138,7 @@ class CasesViewModel @Inject constructor(
 
     var incidentLocationBounds = mapBoundsManager.mapCameraBounds
 
-    val isSyncingIncidents = incidentsRepository.isLoading
+    val isIncidentLoading = incidentsRepository.isLoading
     private val isGeneratingWorksiteMarkers = MutableStateFlow(false)
     val isMapBusy = combine(
         mapBoundsManager.isDeterminingBounds,
@@ -215,7 +215,7 @@ class CasesViewModel @Inject constructor(
     )
 
     val casesCount = combine(
-        isSyncingIncidents,
+        isIncidentLoading,
         worksitesMapMarkers,
         incidentWorksitesCount,
     ) { isSyncing, markers, worksitesCount ->

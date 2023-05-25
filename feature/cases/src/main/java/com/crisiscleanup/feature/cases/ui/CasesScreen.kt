@@ -17,9 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -54,6 +51,7 @@ import com.crisiscleanup.core.designsystem.component.actionEdgeSpace
 import com.crisiscleanup.core.designsystem.component.actionInnerSpace
 import com.crisiscleanup.core.designsystem.component.actionRoundCornerShape
 import com.crisiscleanup.core.designsystem.component.actionSize
+import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContainerColor
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContentColor
 import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
@@ -66,6 +64,7 @@ import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
 import com.crisiscleanup.core.mapmarker.ui.rememberMapUiSettings
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.WorksiteMapMark
+import com.crisiscleanup.core.ui.LocalAppLayout
 import com.crisiscleanup.feature.cases.CasesViewModel
 import com.crisiscleanup.feature.cases.R
 import com.crisiscleanup.feature.cases.model.WorksiteGoogleMapMark
@@ -92,6 +91,7 @@ internal fun CasesRoute(
     viewCase: (Long, Long) -> Boolean = { _, _ -> false },
 ) {
     val incidentsData by casesViewModel.incidentsData.collectAsStateWithLifecycle(IncidentsData.Loading)
+    val isIncidentLoading by casesViewModel.isIncidentLoading.collectAsState(true)
     if (incidentsData is IncidentsData.Incidents) {
         val isTableView by casesViewModel.isTableView.collectAsStateWithLifecycle()
         BackHandler(enabled = isTableView) {
@@ -160,7 +160,7 @@ internal fun CasesRoute(
             onCasesAction = rememberOnCasesAction,
             isTableView = isTableView,
             isLayerView = isLayerView,
-            isMapBusy = isMapBusy,
+            isMapBusy = isIncidentLoading || isMapBusy,
             casesCount = casesCount,
             worksitesOnMap = worksitesOnMap,
             mapCameraBounds = mapCameraBounds,
@@ -180,8 +180,7 @@ internal fun CasesRoute(
             SelectIncidentRoute(closeDialog)
         }
     } else {
-        val isSyncingIncidents by casesViewModel.isSyncingIncidents.collectAsState(true)
-        val isLoading = incidentsData is IncidentsData.Loading || isSyncingIncidents
+        val isLoading = incidentsData is IncidentsData.Loading || isIncidentLoading
         val reloadIncidents = remember(casesViewModel) { { casesViewModel.refreshIncidentsData() } }
         NoCasesScreen(
             isLoading = isLoading,
@@ -198,7 +197,7 @@ internal fun NoCasesScreen(
 ) {
     Box(modifier.fillMaxSize()) {
         if (isLoading) {
-            CircularProgressIndicator(Modifier.align(Alignment.Center))
+            BusyIndicatorFloatingTopCenter(true)
         } else {
             // TODO Use constant for width
             Column(
@@ -478,19 +477,23 @@ internal fun CasesOverlayActions(
             shape = actionRoundCornerShape,
         ) {
             Icon(
-                imageVector = Icons.Default.Add,
+                imageVector = CrisisCleanupIcons.Add,
                 contentDescription = stringResource(R.string.create_case),
             )
         }
-
+        val appLayout = LocalAppLayout.current
+        val additionalBottomPadding by remember(appLayout.isBottomSnackbarVisible) {
+            derivedStateOf { appLayout.bottomSnackbarPadding }
+        }
         val tableMapAction = if (isTableView) CasesAction.MapView else CasesAction.TableView
         val toggleMapTableView = remember(tableMapAction) { { onCasesAction(tableMapAction) } }
+        val bottomPadding = actionInnerSpace.plus(additionalBottomPadding)
         FloatingActionButton(
             modifier = modifier
                 .actionSize()
                 .constrainAs(toggleTableMap) {
                     end.linkTo(parent.end, margin = actionEdgeSpace)
-                    bottom.linkTo(parent.bottom, margin = actionInnerSpace)
+                    bottom.linkTo(parent.bottom, margin = bottomPadding)
                 },
             onClick = toggleMapTableView,
             shape = actionRoundCornerShape,

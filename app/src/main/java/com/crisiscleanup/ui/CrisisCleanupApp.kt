@@ -38,6 +38,7 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -75,6 +76,8 @@ import com.crisiscleanup.core.designsystem.component.TruncatedAppBarText
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.icon.Icon.DrawableResourceIcon
 import com.crisiscleanup.core.designsystem.icon.Icon.ImageVectorIcon
+import com.crisiscleanup.core.ui.AppLayoutArea
+import com.crisiscleanup.core.ui.LocalAppLayout
 import com.crisiscleanup.feature.authentication.AuthenticateScreen
 import com.crisiscleanup.feature.cases.navigation.navigateToSelectIncident
 import com.crisiscleanup.navigation.CrisisCleanupNavHost
@@ -165,10 +168,7 @@ private fun LoadedContent(
         )
 
         if (isAccountExpired) {
-            ExpiredTokenAlert(
-                snackbarHostState,
-                { openAuthentication = true },
-            )
+            ExpiredTokenAlert(snackbarHostState) { openAuthentication = true }
         }
     }
 }
@@ -309,11 +309,15 @@ private fun NavigableContent(
                     if (!showNavigation && snackbarHostState.currentSnackbarData != null) 64.dp else 0.dp
 
                 // TODO CompositionLocal providing snackbar visibility for nested views to arrange around
-                CrisisCleanupNavHost(
-                    navController = appState.navController,
-                    onBack = appState::onBack,
-                    modifier = Modifier.weight(1f),
-                )
+                CompositionLocalProvider(
+                    LocalAppLayout provides AppLayoutArea(snackbarHostState)
+                ) {
+                    CrisisCleanupNavHost(
+                        navController = appState.navController,
+                        onBack = appState::onBack,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
 
                 Spacer(
                     Modifier
