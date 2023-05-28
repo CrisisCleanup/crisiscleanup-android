@@ -1,6 +1,5 @@
 package com.crisiscleanup.core.network.model
 
-import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.network.model.util.IterableStringSerializer
 import kotlinx.serialization.Serializable
 import okio.IOException
@@ -34,16 +33,12 @@ data class NetworkCrisisCleanupApiError(
     val isExpiredToken = message?.size == 1 && message[0] == "Token has expired."
 }
 
-internal fun AuthEventManager.tryThrowException(
-    errors: Collection<NetworkCrisisCleanupApiError>?,
-) {
-    errors?.let {
-        if (errors.isNotEmpty()) {
-            val exception =
-                if (errors.any(NetworkCrisisCleanupApiError::isExpiredToken)) ExpiredTokenException()
-                else Exception(errors.condenseMessages)
-            throw exception
-        }
+fun Collection<NetworkCrisisCleanupApiError>.tryThrowException() {
+    if (isNotEmpty()) {
+        val exception =
+            if (any(NetworkCrisisCleanupApiError::isExpiredToken)) ExpiredTokenException()
+            else Exception(condenseMessages)
+        throw exception
     }
 }
 

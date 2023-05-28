@@ -27,8 +27,7 @@ class LoginInputData(emailAddress: String = "", password: String = "") {
 
 data class AuthenticationState(
     val accountData: AccountData = emptyAccountData,
-    val hasAccessToken: Boolean = false,
 ) {
-    val isTokenInvalid: Boolean
-        get() = accountData.isTokenInvalid
+    val hasAccessToken = accountData.accessToken.isNotEmpty()
+    val isTokenInvalid = accountData.isTokenInvalid
 }

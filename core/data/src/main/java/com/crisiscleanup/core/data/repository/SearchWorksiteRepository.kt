@@ -1,7 +1,6 @@
 package com.crisiscleanup.core.data.repository
 
 import android.util.LruCache
-import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -28,7 +27,6 @@ interface SearchWorksitesRepository {
 
 class MemoryCacheSearchWorksitesRepository @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,
-    private val authEventManager: AuthEventManager,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
 ) : SearchWorksitesRepository {
     // TODO Make size configurable and consider different size determination

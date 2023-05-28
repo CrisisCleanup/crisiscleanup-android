@@ -3,7 +3,7 @@ package com.crisiscleanup.sync
 import android.content.Context
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.di.ApplicationScope
-import com.crisiscleanup.core.common.event.AuthEventManager
+import com.crisiscleanup.core.common.event.AuthEventBus
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncLogger
@@ -43,7 +43,7 @@ class AppSyncer @Inject constructor(
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val appPreferences: LocalAppPreferencesDataSource,
     private val syncLogger: SyncLogger,
-    private val authEventManager: AuthEventManager,
+    private val authEventBus: AuthEventBus,
     private val networkMonitor: NetworkMonitor,
     @ApplicationContext private val context: Context,
     @ApplicationScope private val applicationScope: CoroutineScope,
@@ -61,7 +61,7 @@ class AppSyncer @Inject constructor(
     private suspend fun isInvalidAccountToken(): Boolean {
         val accountData = accountDataRepository.accountData.first()
         if (accountData.isTokenInvalid) {
-            authEventManager.onExpiredToken()
+            authEventBus.onExpiredToken()
             return true
         }
         return false

@@ -2,7 +2,7 @@ package com.crisiscleanup.feature.authentication
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import com.crisiscleanup.core.common.event.AuthEventManager
+import com.crisiscleanup.core.common.event.AuthEventBus
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
@@ -18,7 +18,7 @@ internal class SaveCredentialsManager(
     private val coroutineScope: CoroutineScope,
     private val appPreferences: LocalAppPreferencesRepository,
     private val accountDataRepository: AccountDataRepository,
-    private val authEventManager: AuthEventManager,
+    private val authEventBus: AuthEventBus,
     private val logger: AppLogger,
 ) {
     private var isCredentialsRequested = false
@@ -50,9 +50,7 @@ internal class SaveCredentialsManager(
             return
         }
         isCredentialsRequested = true
-        coroutineScope.launch {
-            authEventManager.onPasswordRequest()
-        }
+        authEventBus.onPasswordRequest()
     }
 
     fun setSavedCredentials(credentials: LoginInputData) {
@@ -76,7 +74,7 @@ internal class SaveCredentialsManager(
         if (credentials.emailAddress.isNotEmpty() &&
             credentials.password.isNotEmpty()
         ) {
-            authEventManager.onSaveCredentials(credentials.emailAddress, credentials.password)
+            authEventBus.onSaveCredentials(credentials.emailAddress, credentials.password)
         }
     }
 

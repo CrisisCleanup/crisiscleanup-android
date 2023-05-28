@@ -1,6 +1,5 @@
 package com.crisiscleanup.core.network.retrofit
 
-import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.*
 import kotlinx.datetime.Instant
@@ -165,7 +164,6 @@ private interface DataSourceApi {
 
 class DataApiClient @Inject constructor(
     @RetrofitConfiguration(RetrofitConfigurations.CrisisCleanup) retrofit: Retrofit,
-    private val authEventManager: AuthEventManager,
 ) : CrisisCleanupNetworkDataSource {
     private val networkApi = retrofit.create(DataSourceApi::class.java)
 
@@ -178,7 +176,7 @@ class DataApiClient @Inject constructor(
         after: Instant?
     ) = networkApi.getIncidents(fields.joinToString(","), limit, ordering, after)
         .let {
-            authEventManager.tryThrowException(it.errors)
+            it.errors?.tryThrowException()
             it.results ?: emptyList()
         }
 
@@ -186,14 +184,14 @@ class DataApiClient @Inject constructor(
     override suspend fun getIncidentLocations(locationIds: List<Long>) =
         networkApi.getLocations(locationIds.joinToString(","), locationIds.size)
             .let {
-                authEventManager.tryThrowException(it.errors)
+                it.errors?.tryThrowException()
                 it.results ?: emptyList()
             }
 
     override suspend fun getIncident(id: Long, fields: List<String>) =
         networkApi.getIncident(id, fields.joinToString(","))
             .let {
-                authEventManager.tryThrowException(it.errors)
+                it.errors?.tryThrowException()
                 it.incident
             }
 
@@ -202,19 +200,19 @@ class DataApiClient @Inject constructor(
         limit: Int,
         offset: Int,
     ) = networkApi.getIncidentOrganizations(incidentId, limit, offset)
-        .apply { authEventManager.tryThrowException(errors) }
+        .apply { errors?.tryThrowException() }
 
     override suspend fun getWorksites(incidentId: Long, limit: Int, offset: Int) =
         networkApi.getWorksites(incidentId, limit, offset)
-            .apply { authEventManager.tryThrowException(errors) }
+            .apply { errors?.tryThrowException() }
 
     override suspend fun getWorksites(worksiteIds: Collection<Long>) =
         networkApi.getWorksites(worksiteIds.joinToString(","))
-            .apply { authEventManager.tryThrowException(errors) }
+            .apply { errors?.tryThrowException() }
 
     override suspend fun getWorksite(id: Long) = getWorksites(listOf(id))
         .let {
-            authEventManager.tryThrowException(it.errors)
+            it.errors?.tryThrowException()
             it.results?.firstOrNull()
         }
 
@@ -224,7 +222,7 @@ class DataApiClient @Inject constructor(
     override suspend fun getWorksitesCount(incidentId: Long, updatedAtAfter: Instant?) =
         networkApi.getWorksitesCount(incidentId, updatedAtAfter)
             .let {
-                authEventManager.tryThrowException(it.errors)
+                it.errors?.tryThrowException()
                 it.count ?: 0
             }
 
@@ -233,7 +231,7 @@ class DataApiClient @Inject constructor(
         updatedAtAfter: Instant?,
         updatedAtBefore: Instant?
     ) = networkApi.getWorksitesAll(incidentId, updatedAtAfter, updatedAtBefore)
-        .apply { authEventManager.tryThrowException(errors) }
+        .apply { errors?.tryThrowException() }
 
     override suspend fun getWorksitesPage(
         incidentId: Long,
@@ -252,7 +250,7 @@ class DataApiClient @Inject constructor(
             centerCoordinates,
             updatedAtAfter,
         )
-        authEventManager.tryThrowException(result.errors)
+        result.errors?.tryThrowException()
         return result.results ?: emptyList()
     }
 
@@ -280,7 +278,7 @@ class DataApiClient @Inject constructor(
         limit
     )
         .let {
-            authEventManager.tryThrowException(it.errors)
+            it.errors?.tryThrowException()
             it.results ?: emptyList()
         }
 
@@ -289,7 +287,7 @@ class DataApiClient @Inject constructor(
         q: String,
     ) = networkApi.getWorksitesSearch(incidentId, q)
         .let {
-            authEventManager.tryThrowException(it.errors)
+            it.errors?.tryThrowException()
             it.results ?: emptyList()
         }
 
@@ -304,7 +302,7 @@ class DataApiClient @Inject constructor(
     override suspend fun getWorkTypeRequests(id: Long) =
         networkApi.getWorkTypeRequests(id)
             .let {
-                authEventManager.tryThrowException(it.errors)
+                it.errors?.tryThrowException()
                 it.results ?: emptyList()
             }
 }

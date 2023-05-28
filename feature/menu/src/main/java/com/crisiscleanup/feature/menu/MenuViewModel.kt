@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.DatabaseVersionProvider
-import com.crisiscleanup.core.common.event.AuthEventManager
+import com.crisiscleanup.core.common.event.AuthEventBus
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.repository.SyncLogRepository
@@ -18,7 +18,7 @@ import javax.inject.Inject
 class MenuViewModel @Inject constructor(
     syncLogRepository: SyncLogRepository,
     private val appVersionProvider: AppVersionProvider,
-    private val authEventManager: AuthEventManager,
+    private val authEventBus: AuthEventBus,
     appEnv: AppEnv,
     private val databaseVersionProvider: DatabaseVersionProvider,
     @Dispatcher(IO) ioDispatcher: CoroutineDispatcher,
@@ -43,7 +43,7 @@ class MenuViewModel @Inject constructor(
 
     fun simulateTokenExpired() {
         if (isDebuggable) {
-            authEventManager.onExpiredToken()
+            authEventBus.onExpiredToken()
         }
     }
 }

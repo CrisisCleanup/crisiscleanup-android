@@ -1,7 +1,7 @@
 package com.crisiscleanup.feature.authentication.di
 
-import com.crisiscleanup.core.common.event.AuthEventManager
-import com.crisiscleanup.core.common.event.CrisisCleanupAuthEventManager
+import com.crisiscleanup.core.common.event.AuthEventBus
+import com.crisiscleanup.core.common.event.CrisisCleanupAuthEventBus
 import com.crisiscleanup.feature.authentication.AccessTokenDecoder
 import com.crisiscleanup.feature.authentication.JwtDecoder
 import dagger.Binds
@@ -16,7 +16,5 @@ interface AuthenticationModule {
     fun bindsAccessTokenDecoder(tokenDecoder: JwtDecoder): AccessTokenDecoder
 
     @Binds
-    fun bindsAuthEventManager(
-        eventManager: CrisisCleanupAuthEventManager
-    ): AuthEventManager
+    fun bindsAuthEventBus(eventBus: CrisisCleanupAuthEventBus): AuthEventBus
 }

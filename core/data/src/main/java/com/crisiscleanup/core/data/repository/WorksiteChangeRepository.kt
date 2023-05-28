@@ -2,7 +2,7 @@ package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.NetworkMonitor
-import com.crisiscleanup.core.common.event.AuthEventManager
+import com.crisiscleanup.core.common.event.AuthEventBus
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -93,7 +93,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
     private val worksitesRepository: WorksitesRepository,
     private val organizationsRepository: OrganizationsRepository,
     private val localImageRepository: LocalImageRepository,
-    private val authEventManager: AuthEventManager,
+    private val authEventBus: AuthEventBus,
     private val networkMonitor: NetworkMonitor,
     private val appEnv: AppEnv,
     private val syncLogger: SyncLogger,
@@ -229,7 +229,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
                 is NoInternetConnectionException -> {}
 
                 is ExpiredTokenException -> {
-                    authEventManager.onExpiredToken()
+                    authEventBus.onExpiredToken()
                 }
 
                 else -> {

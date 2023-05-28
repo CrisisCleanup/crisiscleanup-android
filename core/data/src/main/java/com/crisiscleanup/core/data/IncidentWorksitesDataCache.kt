@@ -1,7 +1,6 @@
 package com.crisiscleanup.core.data
 
 import android.content.Context
-import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -42,7 +41,6 @@ interface WorksitesNetworkDataCache {
 
 class WorksitesNetworkDataFileCache @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,
-    private val authEventManager: AuthEventManager,
     @ApplicationContext private val context: Context,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
 ) : WorksitesNetworkDataCache {

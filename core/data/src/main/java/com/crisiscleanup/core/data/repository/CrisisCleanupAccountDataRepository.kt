@@ -1,9 +1,7 @@
 package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.common.di.ApplicationScope
-import com.crisiscleanup.core.common.event.AuthEventManager
-import com.crisiscleanup.core.common.event.ExpiredTokenListener
-import com.crisiscleanup.core.common.event.LogoutListener
+import com.crisiscleanup.core.common.event.AuthEventBus
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.datastore.AccountInfoDataSource
@@ -11,19 +9,21 @@ import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.model.data.OrgData
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import org.jetbrains.annotations.VisibleForTesting
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class CrisisCleanupAccountDataRepository @Inject constructor(
     private val dataSource: AccountInfoDataSource,
-    authEventManager: AuthEventManager,
+    authEventBus: AuthEventBus,
     @ApplicationScope private val externalScope: CoroutineScope,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
-) : AccountDataRepository, LogoutListener, ExpiredTokenListener {
+) : AccountDataRepository {
     /* UPDATE [CrisisCleanupAccountDataRepositoryTest] when changing below */
 
     override var accessTokenCached: String = ""
@@ -38,9 +38,17 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
         it.accessToken.isNotEmpty()
     }
 
+    @VisibleForTesting
+    internal val observeJobs: List<Job>
+
     init {
-        authEventManager.addLogoutListener(this)
-        authEventManager.addExpiredTokenListener(this)
+        val logoutsJob = externalScope.launch(ioDispatcher) {
+            authEventBus.logouts.collect { onLogout() }
+        }
+        val expiredTokensJob = externalScope.launch(ioDispatcher) {
+            authEventBus.expiredTokens.collect { onExpiredToken() }
+        }
+        observeJobs = listOf(logoutsJob, expiredTokensJob)
     }
 
     override suspend fun setAccount(
@@ -71,16 +79,12 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
         dataSource.clearAccount()
     }
 
-    // LogoutListener
+    private suspend fun onLogout() {
+        clearAccount()
+    }
 
-    override suspend fun onLogout() = clearAccount()
-
-    // ExpiredTokenListener
-
-    override fun onExpiredToken() {
+    private suspend fun onExpiredToken() {
         accessTokenCached = ""
-        externalScope.launch(ioDispatcher) {
-            dataSource.expireToken()
-        }
+        dataSource.expireToken()
     }
 }

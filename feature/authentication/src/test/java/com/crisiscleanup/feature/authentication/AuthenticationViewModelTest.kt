@@ -2,7 +2,8 @@ package com.crisiscleanup.feature.authentication
 
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.InputValidator
-import com.crisiscleanup.core.common.event.AuthEventManager
+import com.crisiscleanup.core.common.event.AuthEventBus
+import com.crisiscleanup.core.common.event.PasswordCredentials
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
@@ -27,13 +28,13 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -61,7 +62,7 @@ class AuthenticationViewModelTest {
     lateinit var accessTokenDecoder: AccessTokenDecoder
 
     @MockK
-    lateinit var authEventManager: AuthEventManager
+    lateinit var authEventBus: AuthEventBus
 
     @MockK
     lateinit var appPreferences: LocalAppPreferencesRepository
@@ -73,6 +74,8 @@ class AuthenticationViewModelTest {
     lateinit var resProvider: AndroidResourceProvider
 
     private lateinit var viewModel: AuthenticationViewModel
+
+    private val passwordCredentialsStream = MutableSharedFlow<PasswordCredentials>(0)
 
     @Before
     fun setUp() {
@@ -111,12 +114,12 @@ class AuthenticationViewModelTest {
         } returns Unit
 
         every {
-            authEventManager.addPasswordResultListener(any())
-        } returns 1
+            authEventBus.passwordCredentialResults
+        } returns passwordCredentialsStream
 
         every {
             accessTokenDecoder.decode("access-token")
-        } returns TestDecodedAccessToken(Clock.System.now().plus(864000L.seconds))
+        } returns DecodedAccessToken(Clock.System.now().plus(864000L.seconds))
 
         every {
             resProvider.getString(any())
@@ -140,7 +143,7 @@ class AuthenticationViewModelTest {
         authApiClient,
         inputValidator,
         accessTokenDecoder,
-        authEventManager,
+        authEventBus,
         appPreferences,
         resProvider,
         UnconfinedTestDispatcher(),
@@ -180,7 +183,6 @@ class AuthenticationViewModelTest {
         assertEquals(
             AuthenticationState(
                 accountData = emptyAccountData,
-                hasAccessToken = false,
             ), (viewModel.uiState.first() as Ready).authenticationState
         )
         assertEquals(emptyLoginData, viewModel.loginInputData)
@@ -246,7 +248,7 @@ class AuthenticationViewModelTest {
 
         every { inputValidator.validateEmailAddress(any()) } returns true
 
-        coEvery { authEventManager.onLogout() } returns Unit
+        coEvery { authEventBus.onLogout() } returns Unit
 
         coEvery { authApiClient.logout() } returns Unit
 
@@ -256,7 +258,6 @@ class AuthenticationViewModelTest {
         assertEquals(
             AuthenticationState(
                 accountData = nonEmptyAccountData,
-                hasAccessToken = true,
             ), (viewModel.uiState.first() as Ready).authenticationState
         )
 
@@ -267,8 +268,7 @@ class AuthenticationViewModelTest {
         // TODO How to test state during authentication?
         viewModel.logout()
 
-        coVerify(exactly = 1) { authApiClient.logout() }
-        coVerify(exactly = 1) { authEventManager.onLogout() }
+        coVerify(exactly = 1) { authEventBus.onLogout() }
 
         assertEquals(LoginInputData(), viewModel.loginInputData)
 
@@ -281,5 +281,3 @@ class AuthenticationViewModelTest {
 
     // TODO Save credentials prompts
 }
-
-class TestDecodedAccessToken(override val expiresAt: Instant) : DecodedAccessToken

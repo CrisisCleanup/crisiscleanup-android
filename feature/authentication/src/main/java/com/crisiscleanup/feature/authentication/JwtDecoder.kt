@@ -7,10 +7,7 @@ import javax.inject.Inject
 class JwtDecoder @Inject constructor() : AccessTokenDecoder {
     override fun decode(accessToken: String): DecodedAccessToken {
         val jwt = JWT(accessToken)
-        return DecodedJwt(jwt)
+        val expiresAt = Instant.fromEpochMilliseconds(jwt.expiresAt!!.time)
+        return DecodedAccessToken(expiresAt)
     }
-}
-
-class DecodedJwt(jwt: JWT) : DecodedAccessToken {
-    override val expiresAt: Instant = Instant.fromEpochMilliseconds(jwt.expiresAt!!.time)
 }

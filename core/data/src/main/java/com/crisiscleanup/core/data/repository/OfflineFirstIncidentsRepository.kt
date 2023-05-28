@@ -1,6 +1,5 @@
 package com.crisiscleanup.core.data.repository
 
-import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -44,7 +43,6 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     private val incidentOrganizationDao: IncidentOrganizationDao,
     private val incidentOrganizationsSyncer: IncidentOrganizationsSyncer,
     private val appPreferences: LocalAppPreferencesDataSource,
-    private val authEventManager: AuthEventManager,
     @Logger(CrisisCleanupLoggers.Incidents) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : IncidentsRepository {

@@ -2,7 +2,6 @@ package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.di.ApplicationScope
-import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -57,7 +56,6 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
     private val dataSource: CrisisCleanupNetworkDataSource,
     private val languageDao: LanguageDao,
     private val languageDaoPlus: LanguageDaoPlus,
-    private val authEventManager: AuthEventManager,
     private val statusRepository: WorkTypeStatusRepository,
     @Logger(CrisisCleanupLoggers.Language) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,

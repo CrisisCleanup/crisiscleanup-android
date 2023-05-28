@@ -2,7 +2,6 @@ package com.crisiscleanup.core.data
 
 import com.crisiscleanup.core.common.AppMemoryStats
 import com.crisiscleanup.core.common.AppVersionProvider
-import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -42,7 +41,6 @@ class IncidentWorksitesSyncer @Inject constructor(
     private val networkDataCache: WorksitesNetworkDataCache,
     private val worksiteDaoPlus: WorksiteDaoPlus,
     private val worksiteSyncStatDao: WorksiteSyncStatDao,
-    private val authEventManager: AuthEventManager,
     memoryStats: AppMemoryStats,
     private val appVersionProvider: AppVersionProvider,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,

@@ -17,7 +17,8 @@ import androidx.credentials.exceptions.CreateCustomCredentialException
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.NoCredentialException
 import androidx.credentials.exceptions.publickeycredential.CreatePublicKeyCredentialDomException
-import com.crisiscleanup.core.common.event.AuthEventManager
+import com.crisiscleanup.core.common.event.AuthEventBus
+import com.crisiscleanup.core.common.event.PasswordCredentials
 import com.crisiscleanup.core.common.event.PasswordRequestCode
 import com.crisiscleanup.core.common.log.AppLogger
 import kotlinx.coroutines.CoroutineScope
@@ -30,7 +31,7 @@ internal class CredentialSaveRetrieveManager(
 ) {
     fun passkeySignIn(
         activity: Activity,
-        authEventManager: AuthEventManager,
+        authEventBus: AuthEventBus,
     ) {
         val getPasswordOption = GetPasswordOption()
 
@@ -44,7 +45,7 @@ internal class CredentialSaveRetrieveManager(
                     request = getCredRequest,
                     activity = activity,
                 )
-                handleSignIn(result, authEventManager)
+                handleSignIn(result, authEventBus)
             } catch (e: GetCredentialException) {
                 if (e !is NoCredentialException) {
                     logger.logException(e)
@@ -55,22 +56,22 @@ internal class CredentialSaveRetrieveManager(
 
     private fun handleSignIn(
         result: GetCredentialResponse,
-        authEventManager: AuthEventManager,
+        authEventBus: AuthEventBus,
     ) {
         // Handle the successfully returned credential.
         when (val credential = result.credential) {
             is PasswordCredential -> {
                 val username = credential.id
                 val password = credential.password
-                authEventManager.onPasswordCredentialsResult(
-                    username, password, PasswordRequestCode.Success
+                authEventBus.onPasswordCredentialsResult(
+                    PasswordCredentials(username, password, PasswordRequestCode.Success)
                 )
             }
 
             else -> {
                 // TODO Report unhandled response if significant
-                authEventManager.onPasswordCredentialsResult(
-                    "", "", PasswordRequestCode.Fail
+                authEventBus.onPasswordCredentialsResult(
+                    PasswordCredentials("", "", PasswordRequestCode.Fail)
                 )
             }
         }

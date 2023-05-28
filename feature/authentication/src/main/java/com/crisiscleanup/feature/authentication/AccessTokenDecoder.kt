@@ -6,6 +6,6 @@ interface AccessTokenDecoder {
     fun decode(accessToken: String): DecodedAccessToken
 }
 
-interface DecodedAccessToken {
+data class DecodedAccessToken(
     val expiresAt: Instant
-}
+)

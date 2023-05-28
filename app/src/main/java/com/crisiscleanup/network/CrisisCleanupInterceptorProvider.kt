@@ -1,6 +1,6 @@
 package com.crisiscleanup.network
 
-import com.crisiscleanup.core.common.event.AuthEventManager
+import com.crisiscleanup.core.common.event.AuthEventBus
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -28,7 +28,7 @@ import javax.inject.Singleton
 class CrisisCleanupInterceptorProvider @Inject constructor(
     private val accountDataRepository: AccountDataRepository,
     private val headerKeysLookup: RequestHeaderKeysLookup,
-    private val authEventManager: AuthEventManager,
+    private val authEventBus: AuthEventBus,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : RetrofitInterceptorProvider {
     @OptIn(ExperimentalSerializationApi::class)
@@ -94,13 +94,13 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
             val response = chain.proceed(request)
             if (response.code in 400..499) {
                 if (response.code == 401) {
-                    authEventManager.onExpiredToken()
+                    authEventBus.onExpiredToken()
                     throw ExpiredTokenException()
                 }
                 response.body?.let { responseBody ->
                     val errors = parseNetworkErrors(responseBody)
                     if (errors.any(NetworkCrisisCleanupApiError::isExpiredToken)) {
-                        authEventManager.onExpiredToken()
+                        authEventBus.onExpiredToken()
                         throw ExpiredTokenException()
                     }
                 }

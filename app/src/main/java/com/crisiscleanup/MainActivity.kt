@@ -7,18 +7,27 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.credentials.CredentialManager
-import androidx.lifecycle.*
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.metrics.performance.JankStats
 import com.crisiscleanup.MainActivityUiState.Loading
 import com.crisiscleanup.MainActivityUiState.Success
 import com.crisiscleanup.core.common.NavigationObserver
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.PermissionManager
-import com.crisiscleanup.core.common.event.*
+import com.crisiscleanup.core.common.event.AuthEventBus
+import com.crisiscleanup.core.common.event.TrimMemoryEventManager
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -32,16 +41,12 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.MapsInitializer.Renderer
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @AndroidEntryPoint
-class MainActivity : ComponentActivity(),
-    CredentialsRequestListener,
-    SaveCredentialsListener {
+class MainActivity : ComponentActivity() {
 
     /**
      * Lazily inject [JankStats], which is used to track jank throughout the app.
@@ -61,7 +66,7 @@ class MainActivity : ComponentActivity(),
     private val viewModel: MainActivityViewModel by viewModels()
 
     @Inject
-    internal lateinit var authEventManager: AuthEventManager
+    internal lateinit var authEventBus: AuthEventBus
 
     @Inject
     @Logger(CrisisCleanupLoggers.Auth)
@@ -79,18 +84,12 @@ class MainActivity : ComponentActivity(),
 
     private lateinit var credentialSaveRetrieveManager: CredentialSaveRetrieveManager
 
-    private var requestCredentialsListenerId = -1
-    private var saveCredentialsListenerId = -1
-
     private val lifecycleObservers = mutableListOf<LifecycleObserver>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         MapsInitializer.initialize(this, Renderer.LATEST) {}
-
-        requestCredentialsListenerId = authEventManager.addCredentialsRequestListener(this)
-        saveCredentialsListenerId = authEventManager.addSaveCredentialsListener(this)
 
         (permissionManager as? DefaultLifecycleObserver)?.let { lifecycleObservers.add(it) }
 
@@ -106,20 +105,6 @@ class MainActivity : ComponentActivity(),
 
         var uiState: MainActivityUiState by mutableStateOf(Loading)
         var authState: AuthState by mutableStateOf(AuthState.Loading)
-
-        // Update the uiState
-        lifecycleScope.launch {
-            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.onEach { uiState = it }.collect()
-            }
-        }
-
-        // Update auth state
-        lifecycleScope.launch {
-            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.authState.onEach { authState = it }.collect()
-            }
-        }
 
         // TODO Splash screen is blank on emulator 32
         // Keep the splash screen on-screen until the UI state is loaded. This condition is
@@ -153,6 +138,34 @@ class MainActivity : ComponentActivity(),
                 )
             }
         }
+
+        // Update the uiState
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { uiState = it }
+            }
+        }
+
+        // Update auth state
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.authState.collect { authState = it }
+            }
+        }
+
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                authEventBus.credentialRequests
+                    .collect { onCredentialsRequest() }
+            }
+        }
+
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                authEventBus.saveCredentialRequests
+                    .collect { onSaveCredentials(it.first, it.second) }
+            }
+        }
     }
 
     override fun onResume() {
@@ -168,9 +181,6 @@ class MainActivity : ComponentActivity(),
     override fun onDestroy() {
         super.onDestroy()
 
-        authEventManager.removeCredentialsRequestListener(requestCredentialsListenerId)
-        authEventManager.removeSaveCredentialsListener(saveCredentialsListenerId)
-
         lifecycleObservers.forEach { lifecycle.removeObserver(it) }
     }
 
@@ -179,15 +189,11 @@ class MainActivity : ComponentActivity(),
         super.onTrimMemory(level)
     }
 
-    // PasswordRequestListener
-
-    override fun onCredentialsRequest() {
-        credentialSaveRetrieveManager.passkeySignIn(this, authEventManager)
+    private fun onCredentialsRequest() {
+        credentialSaveRetrieveManager.passkeySignIn(this, authEventBus)
     }
 
-    // SaveCredentialsListener
-
-    override fun onSaveCredentials(emailAddress: String, password: String) {
+    private fun onSaveCredentials(emailAddress: String, password: String) {
         credentialSaveRetrieveManager.saveAccountPassword(this, emailAddress, password)
     }
 }

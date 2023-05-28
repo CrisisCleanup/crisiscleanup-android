@@ -1,7 +1,6 @@
 package com.crisiscleanup.core.data
 
 import com.crisiscleanup.core.common.AppVersionProvider
-import com.crisiscleanup.core.common.event.AuthEventManager
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -35,7 +34,6 @@ class IncidentOrganizationsSyncer @Inject constructor(
     private val incidentOrganizationDao: IncidentOrganizationDao,
     private val incidentOrganizationDaoPlus: IncidentOrganizationDaoPlus,
     private val personContactDao: PersonContactDao,
-    private val authEventManager: AuthEventManager,
     private val appVersionProvider: AppVersionProvider,
     @Logger(CrisisCleanupLoggers.Incidents) private val logger: AppLogger,
 ) : OrganizationsSyncer {

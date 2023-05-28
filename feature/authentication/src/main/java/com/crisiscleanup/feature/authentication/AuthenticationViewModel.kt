@@ -5,8 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.InputValidator
-import com.crisiscleanup.core.common.event.AuthEventManager
-import com.crisiscleanup.core.common.event.CredentialsResultListener
+import com.crisiscleanup.core.common.event.AuthEventBus
 import com.crisiscleanup.core.common.event.PasswordRequestCode
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
@@ -39,12 +38,12 @@ class AuthenticationViewModel @Inject constructor(
     private val authApiClient: CrisisCleanupAuthApi,
     private val inputValidator: InputValidator,
     private val accessTokenDecoder: AccessTokenDecoder,
-    private val authEventManager: AuthEventManager,
+    private val authEventBus: AuthEventBus,
     appPreferences: LocalAppPreferencesRepository,
     private val resProvider: AndroidResourceProvider,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.Auth) private val logger: AppLogger,
-) : ViewModel(), CredentialsResultListener {
+) : ViewModel() {
     private var isAuthenticating = MutableStateFlow(false)
     val isNotAuthenticating = isAuthenticating.map(Boolean::not)
         .stateIn(
@@ -57,7 +56,7 @@ class AuthenticationViewModel @Inject constructor(
         viewModelScope,
         appPreferences,
         accountDataRepository,
-        authEventManager,
+        authEventBus,
         logger,
     )
 
@@ -78,10 +77,7 @@ class AuthenticationViewModel @Inject constructor(
             }
 
             AuthenticateScreenUiState.Ready(
-                authenticationState = AuthenticationState(
-                    accountData = it,
-                    hasAccessToken = it.accessToken.isNotEmpty(),
-                ),
+                authenticationState = AuthenticationState(accountData = it),
             )
         }.stateIn(
             scope = viewModelScope,
@@ -102,14 +98,14 @@ class AuthenticationViewModel @Inject constructor(
     var isInvalidPassword = mutableStateOf(false)
         private set
 
-    private var passwordResultListenerId = -1
-
     init {
-        passwordResultListenerId = authEventManager.addPasswordResultListener(this)
-    }
-
-    override fun onCleared() {
-        authEventManager.removePasswordResultListener(passwordResultListenerId)
+        viewModelScope.launch {
+            authEventBus.passwordCredentialResults.collect {
+                it.apply {
+                    onPasswordCredentialsResult(emailAddress, password, resultCode)
+                }
+            }
+        }
     }
 
     // TODO Test (if not included in other tests)
@@ -171,7 +167,7 @@ class AuthenticationViewModel @Inject constructor(
                 } else {
                     val accessToken = result.accessToken!!
 
-                    val expirySeconds: Long =
+                    val expirySeconds =
                         accessTokenDecoder.decode(accessToken).expiresAt.epochSeconds
 
                     val claims = result.claims!!
@@ -234,23 +230,11 @@ class AuthenticationViewModel @Inject constructor(
 
         clearErrorVisuals()
 
-        isAuthenticating.value = true
-        viewModelScope.launch(ioDispatcher) {
-            try {
-                authApiClient.logout()
-
-                loginInputData.apply {
-                    emailAddress = ""
-                    password = ""
-                }
-                authEventManager.onLogout()
-            } catch (e: Exception) {
-                errorMessage.value = resProvider.getString(R.string.error_during_authentication)
-                logger.logException(e)
-            } finally {
-                isAuthenticating.value = false
-            }
+        loginInputData.apply {
+            emailAddress = ""
+            password = ""
         }
+        authEventBus.onLogout()
     }
 
     // TODO Test save credentials related below
@@ -265,9 +249,7 @@ class AuthenticationViewModel @Inject constructor(
     fun setDisableSaveCredentials(disable: Boolean) =
         saveCredentialsManager.setDisableSaveCredentials(disable)
 
-    // OnPasswordResultListener
-
-    override fun onPasswordCredentialsResult(
+    private fun onPasswordCredentialsResult(
         emailAddress: String,
         password: String,
         resultCode: PasswordRequestCode

@@ -5,8 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.common.AppEnv
-import com.crisiscleanup.core.common.event.AuthEventManager
-import com.crisiscleanup.core.common.event.ExpiredTokenListener
+import com.crisiscleanup.core.common.event.AuthEventBus
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPuller
@@ -30,6 +29,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -38,13 +38,13 @@ class MainActivityViewModel @Inject constructor(
     accountDataRepository: AccountDataRepository,
     incidentSelector: IncidentSelector,
     val appHeaderUiState: AppHeaderUiState,
-    private val authEventManager: AuthEventManager,
+    authEventBus: AuthEventBus,
     incidentsRepository: IncidentsRepository,
     worksitesRepository: WorksitesRepository,
     private val syncPuller: SyncPuller,
     appEnv: AppEnv,
     @Dispatcher(IO) ioDispatcher: CoroutineDispatcher,
-) : ViewModel(), ExpiredTokenListener {
+) : ViewModel() {
     val isDebuggable = appEnv.isDebuggable
 
     val uiState: StateFlow<MainActivityUiState> = localAppPreferencesRepository.userData.map {
@@ -82,10 +82,10 @@ class MainActivityViewModel @Inject constructor(
                 worksitesLoading
     }
 
-    private var expiredTokenListenerId = -1
-
     init {
-        expiredTokenListenerId = authEventManager.addExpiredTokenListener(this)
+        viewModelScope.launch {
+            authEventBus.expiredTokens.collect { onExpiredToken() }
+        }
 
         accountDataRepository.accountData
             .filter { !it.isTokenInvalid }
@@ -109,17 +109,11 @@ class MainActivityViewModel @Inject constructor(
         syncPuller.appPullStatuses()
     }
 
-    override fun onCleared() {
-        authEventManager.removeExpiredTokenListener(expiredTokenListenerId)
-    }
-
     private fun sync(cancelOngoing: Boolean) {
         syncPuller.appPull(false, cancelOngoing)
     }
 
-    // ExpiredTokenListener
-
-    override fun onExpiredToken() {
+    private fun onExpiredToken() {
         isAccessTokenExpired.value = true
     }
 }
