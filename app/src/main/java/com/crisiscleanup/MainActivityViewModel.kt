@@ -71,16 +71,15 @@ class MainActivityViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed()
     )
 
+    private val isSyncingWorksitesFull = combine(
+        incidentSelector.incidentId,
+        worksitesRepository.syncWorksitesFullIncidentId,
+    ) { incidentId, syncingIncidentId -> incidentId == syncingIncidentId }
     val showHeaderLoading = combine(
         incidentsRepository.isLoading,
         worksitesRepository.isLoading,
-    ) {
-            incidentsLoading,
-            worksitesLoading,
-        ->
-        incidentsLoading ||
-                worksitesLoading
-    }
+        isSyncingWorksitesFull,
+    ) { b0, b1, b2 -> b0 || b1 || b2 }
 
     init {
         viewModelScope.launch {
@@ -98,8 +97,7 @@ class MainActivityViewModel @Inject constructor(
         incidentSelector.incidentId
             .filter { it != EmptyIncident.id }
             .onEach {
-                val worksitesCount = worksitesRepository.getWorksitesCount(it)
-                sync(worksitesCount == 0)
+                sync(true)
                 syncPuller.appPullIncident(it)
             }
             .flowOn(ioDispatcher)

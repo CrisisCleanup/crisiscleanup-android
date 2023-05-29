@@ -5,7 +5,6 @@ import androidx.hilt.work.HiltWorker
 import androidx.tracing.traceAsync
 import androidx.work.CoroutineWorker
 import androidx.work.Data
-import androidx.work.ForegroundInfo
 import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
@@ -32,8 +31,7 @@ class SyncWorker @AssistedInject constructor(
     private val syncLogger: SyncLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : CoroutineWorker(appContext, workerParams) {
-
-    override suspend fun getForegroundInfo(): ForegroundInfo =
+    override suspend fun getForegroundInfo() =
         appContext.syncForegroundInfo()
 
     override suspend fun doWork() = withContext(ioDispatcher) {

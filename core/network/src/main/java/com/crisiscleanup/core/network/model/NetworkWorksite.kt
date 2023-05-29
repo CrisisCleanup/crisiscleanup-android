@@ -14,6 +14,7 @@ data class NetworkWorksitesFullResult(
 )
 
 // Start from worksites/api/WorksiteSerializer
+// Update [NetworkWorksiteCoreData] below with similar changes
 @Serializable
 data class NetworkWorksiteFull(
     val id: Long,
@@ -167,6 +168,7 @@ data class NetworkWorksiteShort(
     @SerialName("favorite_id")
     val favoriteId: Long? = null,
     val flags: List<NetworkWorksiteFull.FlagShort>,
+    val incident: Long,
     @SerialName("key_work_type")
     private val keyWorkType: NetworkWorksiteFull.KeyWorkTypeShort?,
     val location: NetworkWorksiteFull.Location,
@@ -215,6 +217,75 @@ data class NetworkWorksiteShort(
                     )
                 }
             }
+        }
+    }
+}
+
+@Serializable
+data class NetworkWorksitesCoreDataResult(
+    val errors: List<NetworkCrisisCleanupApiError>? = null,
+    val count: Int? = null,
+    val results: List<NetworkWorksiteCoreData>? = null,
+)
+
+// Copy similar changes from [NetworkWorksiteFull] above
+@Serializable
+data class NetworkWorksiteCoreData(
+    val id: Long,
+    val address: String,
+    @SerialName("auto_contact_frequency_t")
+    val autoContactFrequencyT: String,
+    @SerialName("case_number")
+    val caseNumber: String,
+    val city: String,
+    val county: String,
+    val email: String? = null,
+    val favorite: NetworkType?,
+    val flags: List<NetworkFlag>,
+    @SerialName("form_data")
+    val formData: List<KeyDynamicValuePair>,
+    val incident: Long,
+    val location: NetworkWorksiteFull.Location,
+    val name: String,
+    val notes: List<NetworkNote>,
+    val phone1: String,
+    val phone2: String?,
+    @SerialName("pluscode")
+    val plusCode: String? = null,
+    @SerialName("postal_code")
+    val postalCode: String?,
+    @SerialName("reported_by")
+    val reportedBy: Long?,
+    val state: String,
+    val svi: Float?,
+    @Serializable(InstantSerializer::class)
+    @SerialName("updated_at")
+    val updatedAt: Instant,
+    @SerialName("what3words")
+    val what3words: String? = null,
+    @SerialName("work_types")
+    private val workTypes: List<NetworkWorkType>,
+) {
+    @Transient
+    var newestWorkTypes: List<NetworkWorkType> = emptyList()
+        private set
+
+    init {
+        val newMap = mutableMapOf<String, Pair<Int, NetworkWorkType>>()
+        workTypes.forEachIndexed { index, workType ->
+            val literal = workType.workType
+            val similar = newMap[literal]
+            if (similar == null || workType.id!! > similar.second.id!!) {
+                newMap[literal] = Pair(index, workType)
+            }
+        }
+
+        newestWorkTypes = if (newMap.size == workTypes.size) {
+            workTypes
+        } else {
+            newMap.values
+                .sortedBy { it.first }
+                .map { it.second }
         }
     }
 }

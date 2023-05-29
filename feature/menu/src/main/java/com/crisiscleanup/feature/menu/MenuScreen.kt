@@ -4,14 +4,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
+import com.crisiscleanup.core.designsystem.theme.listItemModifier
 
 @Composable
 internal fun MenuRoute(
@@ -24,39 +22,18 @@ internal fun MenuRoute(
 
 @Composable
 internal fun MenuScreen(
-    modifier: Modifier = Modifier,
     viewModel: MenuViewModel = hiltViewModel(),
     openSyncLogs: () -> Unit = {},
 ) {
-    val databaseText = viewModel.databaseVersionText
-
-    val expireTokenAction = if (viewModel.isDebuggable) {
-        remember(viewModel) { { viewModel.simulateTokenExpired() } }
-    } else null
-
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxWidth()) {
             Text(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+                modifier = listItemModifier,
                 text = viewModel.versionText,
             )
 
-            if (databaseText.isNotEmpty()) {
-                Text(
-                    modifier = modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    text = databaseText,
-                )
-            }
-
-            expireTokenAction?.let {
-                CrisisCleanupTextButton(
-                    onClick = it,
-                    text = "Expire token",
-                )
+            if (viewModel.isDebuggable) {
+                MenuScreenDebug()
             }
 
             if (viewModel.isNotProduction) {
@@ -67,4 +44,25 @@ internal fun MenuScreen(
             }
         }
     }
+}
+
+@Composable
+internal fun MenuScreenDebug(
+    viewModel: MenuViewModel = hiltViewModel(),
+) {
+    val databaseText = viewModel.databaseVersionText
+    Text(
+        modifier = listItemModifier,
+        text = databaseText,
+    )
+
+    CrisisCleanupTextButton(
+        onClick = { viewModel.simulateTokenExpired() },
+        text = "Expire token",
+    )
+
+    CrisisCleanupTextButton(
+        onClick = { viewModel.syncWorksitesFull() },
+        text = "Sync full",
+    )
 }

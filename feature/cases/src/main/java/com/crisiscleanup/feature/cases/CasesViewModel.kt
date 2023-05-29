@@ -51,12 +51,12 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
@@ -174,16 +174,15 @@ class CasesViewModel @Inject constructor(
                 flowOf(emptyList())
             } else {
                 isGeneratingWorksiteMarkers.value = true
-                withContext(ioDispatcher) {
-                    try {
-                        val markers = generateWorksiteMarkers(wqs)
-                        flowOf(markers)
-                    } finally {
-                        isGeneratingWorksiteMarkers.value = false
-                    }
+                try {
+                    val markers = generateWorksiteMarkers(wqs)
+                    flowOf(markers)
+                } finally {
+                    isGeneratingWorksiteMarkers.value = false
                 }
             }
         }
+        .flowOn(ioDispatcher)
         .stateIn(
             scope = viewModelScope,
             initialValue = emptyList(),
@@ -319,7 +318,7 @@ class CasesViewModel @Inject constructor(
         mapBoundsManager.restoreIncidentBounds()
     }
 
-    fun zoomToInteractive() = adjustMapZoom(mapTileRenderer.zoomThreshold + 1f)
+    fun zoomToInteractive() = adjustMapZoom(mapTileRenderer.zoomThreshold + 1.1f)
 
     private suspend fun refreshTiles(
         idCount: IncidentIdWorksiteCount,

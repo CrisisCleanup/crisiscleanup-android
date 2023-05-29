@@ -58,14 +58,16 @@ private interface DataSourceApi {
 
     @TokenAuthenticationHeader
     @GET("worksites")
-    suspend fun getWorksites(
+    suspend fun getWorksitesCoreData(
         @Query("incident")
         incidentId: Long,
         @Query("limit")
         limit: Int,
         @Query("offset")
         offset: Int,
-    ): NetworkWorksitesFullResult
+        @Query("fields")
+        fields: String?,
+    ): NetworkWorksitesCoreDataResult
 
     @TokenAuthenticationHeader
     @GET("worksites_all")
@@ -162,6 +164,34 @@ private interface DataSourceApi {
     ): NetworkWorkTypeRequestResult
 }
 
+private val worksiteCoreDataFields = listOf(
+    "id",
+    "incident",
+    "name",
+    "case_number",
+    "location",
+    "address",
+    "postal_code",
+    "city",
+    "county",
+    "state",
+    "phone1",
+    "phone2",
+    "email",
+    "form_data",
+    "flags",
+    "notes",
+    "work_types",
+    "favorite",
+    "what3words",
+    "pluscode",
+    "svi",
+    "auto_contact_frequency_t",
+    "reported_by",
+    "updated_at",
+)
+private val worksiteCoreDataFieldsQ = worksiteCoreDataFields.joinToString(",")
+
 class DataApiClient @Inject constructor(
     @RetrofitConfiguration(RetrofitConfigurations.CrisisCleanup) retrofit: Retrofit,
 ) : CrisisCleanupNetworkDataSource {
@@ -202,20 +232,17 @@ class DataApiClient @Inject constructor(
     ) = networkApi.getIncidentOrganizations(incidentId, limit, offset)
         .apply { errors?.tryThrowException() }
 
-    override suspend fun getWorksites(incidentId: Long, limit: Int, offset: Int) =
-        networkApi.getWorksites(incidentId, limit, offset)
+    override suspend fun getWorksitesCoreData(incidentId: Long, limit: Int, offset: Int) =
+        networkApi.getWorksitesCoreData(incidentId, limit, offset, worksiteCoreDataFieldsQ)
             .apply { errors?.tryThrowException() }
+            .results
 
     override suspend fun getWorksites(worksiteIds: Collection<Long>) =
         networkApi.getWorksites(worksiteIds.joinToString(","))
             .apply { errors?.tryThrowException() }
+            .results
 
-    override suspend fun getWorksite(id: Long) = getWorksites(listOf(id))
-        .let {
-            it.errors?.tryThrowException()
-            it.results?.firstOrNull()
-        }
-
+    override suspend fun getWorksite(id: Long) = getWorksites(listOf(id))?.firstOrNull()
     override suspend fun getWorksiteShort(id: Long) =
         networkApi.getWorksitesShort(id).results?.get(0)
 

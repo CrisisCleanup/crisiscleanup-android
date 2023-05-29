@@ -1,6 +1,5 @@
 package com.crisiscleanup.core.data.repository
 
-import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
@@ -54,12 +53,12 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private val dataSource: CrisisCleanupNetworkDataSource,
     private val workTypeTransferRequestDaoPlus: WorkTypeTransferRequestDaoPlus,
     private val appVersionProvider: AppVersionProvider,
-    private val appEnv: AppEnv,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : WorksitesRepository, IncidentDataPullReporter {
-    override var isLoading = MutableStateFlow(false)
-        private set
+    override val isLoading = MutableStateFlow(false)
+
+    override val syncWorksitesFullIncidentId = MutableStateFlow(EmptyIncident.id)
 
     override val incidentDataPullStats = worksitesSyncer.dataPullStats
 
@@ -95,7 +94,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             longitudeLeft,
             longitudeRight,
             limit,
-            offset
+            offset,
         )
             .map { it.map(PopulatedWorksiteMapVisual::asExternalModel) }
     }
@@ -126,7 +125,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         longitudeWest,
         longitudeEast,
         limit,
-        offset
+        offset,
     )
         .map(PopulatedWorksiteMapVisual::asExternalModel)
 
@@ -150,7 +149,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         worksiteDao.getWorksiteId(incidentId, networkWorksiteId)
 
     override fun getWorksiteSyncStats(incidentId: Long) =
-        worksiteSyncStatDao.getSyncStats(incidentId).firstOrNull()?.asExternalModel()
+        worksiteSyncStatDao.getSyncStats(incidentId)?.asExternalModel()
 
     private suspend fun queryUpdatedSyncStats(
         incidentId: Long,
@@ -158,7 +157,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     ): IncidentDataSyncStats {
         if (!reset) {
             val syncStatsQuery = worksiteSyncStatDao.getSyncStats(incidentId)
-            syncStatsQuery.firstOrNull()?.let {
+            syncStatsQuery?.let {
                 val syncStats = it.asExternalModel()
                 if (!syncStats.isDataVersionOutdated) {
                     return syncStats
@@ -203,7 +202,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
                 savedWorksitesCount < syncStats.dataCount ||
                 forceQueryDeltas
             ) {
-                worksitesSyncer.sync(incidentId, syncStats)
+                worksitesSyncer.syncShort(incidentId, syncStats)
             }
         } catch (e: Exception) {
             if (e is CancellationException) {
@@ -211,14 +210,32 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             } else {
                 // Updating sync stats here (or in finally) could overwrite "concurrent" sync that previously started. Think it through before updating sync attempt.
 
-                // TODO User feedback?
-                if (appEnv.isNotProduction) {
-                    logger.logException(e)
-                }
+                logger.logException(e)
             }
         } finally {
             isLoading.value = false
         }
+    }
+
+    override suspend fun syncWorksitesFull(incidentId: Long): Boolean = coroutineScope {
+        if (incidentId == EmptyIncident.id) {
+            return@coroutineScope true
+        }
+
+        syncWorksitesFullIncidentId.value = incidentId
+        try {
+            worksitesSyncer.syncFull(incidentId)
+            return@coroutineScope true
+        } catch (e: Exception) {
+            if (e is CancellationException) {
+                throw (e)
+            } else {
+                logger.logException(e)
+            }
+        } finally {
+            syncWorksitesFullIncidentId.value = EmptyIncident.id
+        }
+        return@coroutineScope false
     }
 
     override suspend fun syncNetworkWorksite(
@@ -226,13 +243,8 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         worksite: NetworkWorksiteFull,
         syncedAt: Instant,
     ): Boolean {
-        val entities = worksite.asEntities(incidentId)
-        val (isSynced, _) = worksiteDaoPlus.syncWorksite(incidentId, entities, syncedAt)
-        if (!isSynced) {
-            // TODO Log analytics worksite was filled due to local changes being present
-            worksiteDaoPlus.syncFillWorksite(incidentId, entities)
-        }
-        return isSynced
+        val entities = worksite.asEntities()
+        return worksiteDaoPlus.syncNetworkWorksite(incidentId, entities, syncedAt)
     }
 
     override suspend fun pullWorkTypeRequests(incidentId: Long, networkWorksiteId: Long) {

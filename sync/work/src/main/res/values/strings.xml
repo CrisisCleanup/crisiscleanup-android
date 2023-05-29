@@ -4,5 +4,7 @@
     <string name="sync_notification_channel_name">Sync</string>
     <string name="sync_notification_channel_description">Background tasks for Crisis Cleanup</string>
     <string name="sync_notification_text">Syncing data</string>
+    <string name="sync_media_notification_text">Syncing photos and images</string>
+    <string name="sync_worksites_full_notification_text">Syncing incident cases</string>
     <string name="syncing_incident_text">Syncing %s</string>
 </resources>

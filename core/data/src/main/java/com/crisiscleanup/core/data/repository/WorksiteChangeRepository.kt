@@ -317,21 +317,6 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
 
         if (syncNetworkWorksite != null && incidentId > 0) {
             worksitesRepository.syncNetworkWorksite(incidentId, syncNetworkWorksite)
-
-            try {
-                val worksite = networkDataSource.getWorksiteShort(networkWorksiteId)
-                worksite?.newestKeyWorkType?.let { keyWorkType ->
-                    worksiteDao.syncUpdateKeyWorkType(
-                        incidentId,
-                        networkWorksiteId,
-                        keyWorkType.workType,
-                        keyWorkType.orgClaim,
-                        keyWorkType.status,
-                    )
-                }
-            } catch (e: Exception) {
-                appLogger.logException(e)
-            }
         }
 
         syncException?.let { throw it }

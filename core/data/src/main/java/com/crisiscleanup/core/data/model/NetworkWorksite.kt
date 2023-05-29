@@ -10,13 +10,15 @@ import com.crisiscleanup.core.network.model.NetworkFile
 import com.crisiscleanup.core.network.model.NetworkFlag
 import com.crisiscleanup.core.network.model.NetworkNote
 import com.crisiscleanup.core.network.model.NetworkWorkType
+import com.crisiscleanup.core.network.model.NetworkWorksiteCoreData
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import com.crisiscleanup.core.network.model.NetworkWorksiteShort
 
-fun NetworkWorksiteFull.asEntity(incidentId: Long) = WorksiteEntity(
+// Update [NetworkWorksiteCoreData.asEntity] below with similar changes
+fun NetworkWorksiteFull.asEntity() = WorksiteEntity(
     id = 0,
     networkId = id,
-    incidentId = incidentId,
+    incidentId = incident,
     address = address,
     autoContactFrequencyT = autoContactFrequencyT,
     caseNumber = caseNumber,
@@ -41,10 +43,39 @@ fun NetworkWorksiteFull.asEntity(incidentId: Long) = WorksiteEntity(
     updatedAt = updatedAt,
 )
 
-fun NetworkWorksiteShort.asEntity(incidentId: Long) = WorksiteEntity(
+// Copy similar changes from [NetworkWorksiteFull.asEntity] above
+fun NetworkWorksiteCoreData.asEntity() = WorksiteEntity(
     id = 0,
     networkId = id,
-    incidentId = incidentId,
+    incidentId = incident,
+    address = address,
+    autoContactFrequencyT = autoContactFrequencyT,
+    caseNumber = caseNumber,
+    city = city,
+    county = county,
+    email = email,
+    favoriteId = favorite?.id,
+    keyWorkTypeType = "",
+    keyWorkTypeOrgClaim = null,
+    keyWorkTypeStatus = "",
+    latitude = location.coordinates[1],
+    longitude = location.coordinates[0],
+    name = name,
+    phone1 = phone1,
+    phone2 = phone2,
+    plusCode = plusCode,
+    postalCode = postalCode ?: "",
+    reportedBy = reportedBy,
+    state = state,
+    svi = svi,
+    what3Words = what3words,
+    updatedAt = updatedAt,
+)
+
+fun NetworkWorksiteShort.asEntity() = WorksiteEntity(
+    id = 0,
+    networkId = id,
+    incidentId = incident,
     address = address,
     caseNumber = caseNumber,
     city = city,
@@ -103,8 +134,8 @@ fun NetworkNote.asEntity() = WorksiteNoteEntity(
     note = note ?: "",
 )
 
-fun NetworkWorksiteFull.asEntities(incidentId: Long): WorksiteEntities {
-    val core = asEntity(incidentId)
+fun NetworkWorksiteFull.asEntities(): WorksiteEntities {
+    val core = asEntity()
     val workTypes = newestWorkTypes.map(NetworkWorkType::asEntity)
     val formData = formData.map(KeyDynamicValuePair::asWorksiteEntity)
     val flags = flags.map(NetworkFlag::asEntity)
@@ -117,5 +148,21 @@ fun NetworkWorksiteFull.asEntities(incidentId: Long): WorksiteEntities {
         notes,
         workTypes,
         files,
+    )
+}
+
+fun NetworkWorksiteCoreData.asEntities(): WorksiteEntities {
+    val core = asEntity()
+    val workTypes = newestWorkTypes.map(NetworkWorkType::asEntity)
+    val formData = formData.map(KeyDynamicValuePair::asWorksiteEntity)
+    val flags = flags.map(NetworkFlag::asEntity)
+    val notes = notes.map(NetworkNote::asEntity)
+    return WorksiteEntities(
+        core,
+        flags,
+        formData,
+        notes,
+        workTypes,
+        emptyList(),
     )
 }

@@ -16,6 +16,8 @@ interface WorksitesRepository {
      */
     val isLoading: Flow<Boolean>
 
+    val syncWorksitesFullIncidentId: Flow<Long>
+
     /**
      * Stream of worksite data for map rendering
      */
@@ -67,6 +69,8 @@ interface WorksitesRepository {
         forceQueryDeltas: Boolean = false,
         forceRefreshAll: Boolean = false,
     )
+
+    suspend fun syncWorksitesFull(incidentId: Long): Boolean
 
     fun getWorksiteSyncStats(incidentId: Long): IncidentDataSyncStats?
 

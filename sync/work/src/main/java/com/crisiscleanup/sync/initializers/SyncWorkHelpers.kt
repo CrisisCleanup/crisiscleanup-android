@@ -13,14 +13,18 @@ import androidx.work.WorkManager
 import com.crisiscleanup.sync.R
 import com.crisiscleanup.sync.workers.SyncMediaWorker
 import com.crisiscleanup.sync.workers.SyncWorker
+import com.crisiscleanup.sync.workers.SyncWorksitesFullWorker
 import com.crisiscleanup.core.common.R as commonR
 
 internal const val SyncNotificationId = 0
+internal const val SyncMediaNotificationId = 0
+internal const val SyncWorksitesFullNotificationId = 0
 private const val SyncNotificationChannelID = "SyncNotificationChannel"
 
 // These names should not be changed otherwise the app may have concurrent sync requests running
 internal const val SyncWorkName = "SyncWorkName"
 internal const val SyncMediaWorkName = "SyncMediaWorkName"
+internal const val SyncWorksitesFullWorkName = "SyncWorksitesFullWorkName"
 
 fun scheduleSync(context: Context) {
     WorkManager.getInstance(context).apply {
@@ -43,6 +47,16 @@ fun scheduleSyncMedia(context: Context) {
     }
 }
 
+fun scheduleSyncWorksitesFull(context: Context) {
+    WorkManager.getInstance(context).apply {
+        enqueueUniqueWork(
+            SyncWorksitesFullWorkName,
+            ExistingWorkPolicy.REPLACE,
+            SyncWorksitesFullWorker.oneTimeSyncWork()
+        )
+    }
+}
+
 val SyncConstraints
     get() = Constraints.Builder()
         .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -58,8 +72,8 @@ val SyncMediaConstraints
  * Foreground information for sync on lower API levels when sync workers are being
  * run with a foreground service
  */
-fun Context.syncForegroundInfo(text: String = "") = ForegroundInfo(
-    SyncNotificationId,
+fun Context.syncForegroundInfo(id: Int = SyncNotificationId, text: String = "") = ForegroundInfo(
+    id,
     syncWorkNotification(text)
 )
 

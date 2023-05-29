@@ -28,9 +28,9 @@ internal enum class RetrofitConfigurations {
 private fun getClientBuilder(isDebuggable: Boolean = false): OkHttpClient.Builder {
     val clientBuilder = OkHttpClient.Builder()
         // TODO Allow user configuration? Or adjust dynamically according to device and network conditions?
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .writeTimeout(30, TimeUnit.SECONDS)
+        .connectTimeout(60, TimeUnit.SECONDS)
+        .readTimeout(60, TimeUnit.SECONDS)
+        .writeTimeout(60, TimeUnit.SECONDS)
 
     if (isDebuggable) {
         clientBuilder.addInterceptor(HttpLoggingInterceptor().apply {

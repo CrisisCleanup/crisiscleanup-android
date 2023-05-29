@@ -21,6 +21,7 @@ import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.sync.SyncPull.determineSyncSteps
 import com.crisiscleanup.sync.SyncPull.executePlan
 import com.crisiscleanup.sync.initializers.scheduleSyncMedia
+import com.crisiscleanup.sync.initializers.scheduleSyncWorksitesFull
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -55,6 +56,9 @@ class AppSyncer @Inject constructor(
 
     private val incidentPullJobLock = Object()
     private var incidentPullJob: Job? = null
+
+    private val pullWorksitesFullJobLock = Object()
+    private var pullWorksitesFullJob: Job? = null
 
     private val languagePullMutex = Mutex()
 
@@ -105,6 +109,8 @@ class AppSyncer @Inject constructor(
                 worksitesRepository,
                 syncLogger,
             )
+
+            scheduleSyncWorksitesFull()
         } catch (e: Exception) {
             syncLogger.log("Sync pull fail. ${e.message}".trim())
             return SyncResult.Error(e.message ?: "Sync fail")
@@ -219,6 +225,36 @@ class AppSyncer @Inject constructor(
         }
     }
 
+    override suspend fun syncPullWorksitesFull(): Deferred<SyncResult> {
+        synchronized(pullWorksitesFullJobLock) {
+            stopSyncPullWorksitesFull()
+            val deferred = applicationScope.async {
+                onSyncPreconditions()?.let {
+                    return@async SyncResult.PreconditionsNotMet
+                }
+
+                val incidentId = appPreferences.userData.first().selectedIncidentId
+                return@async if (incidentId > 0) {
+                    val isSynced = worksitesRepository.syncWorksitesFull(incidentId)
+                    if (isSynced) SyncResult.Success("Sync incident $incidentId worksites full")
+                    else SyncResult.Partial("$incidentId full sync did not finish")
+                } else {
+                    SyncResult.NotAttempted("Incident not selected")
+                }
+            }
+            pullWorksitesFullJob = deferred
+            return deferred
+        }
+    }
+
+    override fun stopSyncPullWorksitesFull() {
+        synchronized(pullWorksitesFullJobLock) {
+            pullWorksitesFullJob?.cancel()
+        }
+    }
+
+    override fun scheduleSyncWorksitesFull() = scheduleSyncWorksitesFull(context)
+
     private suspend fun languagePull() {
         if (languagePullMutex.tryLock()) {
             try {
@@ -311,7 +347,5 @@ class AppSyncer @Inject constructor(
         }
     }
 
-    override fun scheduleSyncMedia() {
-        scheduleSyncMedia(context)
-    }
+    override fun scheduleSyncMedia() = scheduleSyncMedia(context)
 }

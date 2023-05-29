@@ -6,7 +6,6 @@ import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.sync.model.SyncPlan
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.first
@@ -47,7 +46,6 @@ internal object SyncPull {
         worksitesRepository: WorksitesRepository,
         syncLogger: SyncLogger,
         resourceProvider: AndroidResourceProvider? = null,
-        updateNotificationMessage: suspend CoroutineScope.(String) -> Unit = {},
     ): Boolean = coroutineScope {
         if (plan.pullIncidents) {
             incidentsRepository.pullIncidents()
@@ -62,7 +60,7 @@ internal object SyncPull {
                 resourceProvider?.let {
                     val syncMessage =
                         resourceProvider.getString(R.string.syncing_incident_text, incident.name)
-                    updateNotificationMessage(syncMessage)
+                    // TODO Publish message (through flow)
                 }
 
                 worksitesRepository.refreshWorksites(incidentId)

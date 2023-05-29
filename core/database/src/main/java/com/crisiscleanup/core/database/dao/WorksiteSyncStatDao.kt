@@ -1,6 +1,11 @@
 package com.crisiscleanup.core.database.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Query
+import androidx.room.Transaction
+import androidx.room.Upsert
+import com.crisiscleanup.core.database.model.IncidentWorksitesFullSyncStatsEntity
+import com.crisiscleanup.core.database.model.PopulatedIncidentSyncStats
 import com.crisiscleanup.core.database.model.WorksiteSyncStatsEntity
 import kotlinx.datetime.Instant
 
@@ -14,7 +19,7 @@ interface WorksiteSyncStatDao {
         WHERE incident_id==:incidentId
         """
     )
-    fun getSyncStats(incidentId: Long): List<WorksiteSyncStatsEntity>
+    fun getSyncStats(incidentId: Long): WorksiteSyncStatsEntity?
 
     @Upsert
     fun upsertStats(stats: WorksiteSyncStatsEntity)
@@ -54,5 +59,46 @@ interface WorksiteSyncStatDao {
         attemptedSync: Instant?,
         attemptedCounter: Int,
         appBuildVersionCode: Long,
+    )
+
+    @Transaction
+    @Query("SELECT * FROM worksite_sync_stats WHERE incident_id=:incidentId")
+    fun getIncidentSyncStats(incidentId: Long): PopulatedIncidentSyncStats?
+
+    @Upsert
+    fun upsert(stats: IncidentWorksitesFullSyncStatsEntity)
+
+    @Transaction
+    @Query("UPDATE incident_worksites_full_sync_stats SET synced_at=NULL WHERE incident_id=:incidentId")
+    fun resetFullSync(incidentId: Long)
+
+    @Transaction
+    @Query(
+        """
+        UPDATE incident_worksites_full_sync_stats
+        SET center_my_location  =:isMyLocation,
+            center_latitude     =:latitude,
+            center_longitude    =:longitude
+        WHERE incident_id=:incidentId
+        """
+    )
+    fun setFullSyncCenter(
+        incidentId: Long,
+        isMyLocation: Boolean,
+        latitude: Double,
+        longitude: Double,
+    )
+
+    @Transaction
+    @Query(
+        """
+        UPDATE incident_worksites_full_sync_stats
+        SET query_area_radius=:radius
+        WHERE incident_id=:incidentId
+        """
+    )
+    fun setFullSyncRadius(
+        incidentId: Long,
+        radius: Double,
     )
 }

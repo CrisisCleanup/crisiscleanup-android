@@ -103,8 +103,6 @@ fun CrisisCleanupApp(
 
             val isOffline by appState.isOffline.collectAsStateWithLifecycle()
 
-            // TODO Revisit and change the visual to be minimal since operation should be offline capable
-            // If user is not connected to the internet show a snack bar to inform them.
             val notConnectedMessage = stringResource(R.string.not_connected)
             LaunchedEffect(isOffline) {
                 if (isOffline) snackbarHostState.showSnackbar(
@@ -238,7 +236,6 @@ private fun NavigableContent(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            // TODO Profile recompose and optimize if necessary
             AnimatedVisibility(
                 visible = showAppBar,
                 enter = slideIn { IntOffset.Zero },
@@ -308,7 +305,6 @@ private fun NavigableContent(
                 val snackbarAreaHeight =
                     if (!showNavigation && snackbarHostState.currentSnackbarData != null) 64.dp else 0.dp
 
-                // TODO CompositionLocal providing snackbar visibility for nested views to arrange around
                 CompositionLocalProvider(
                     LocalAppLayout provides AppLayoutArea(snackbarHostState)
                 ) {

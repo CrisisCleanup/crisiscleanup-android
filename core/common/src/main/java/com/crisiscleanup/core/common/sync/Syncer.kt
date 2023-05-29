@@ -7,6 +7,10 @@ interface SyncPuller {
     suspend fun syncPullAsync(): Deferred<SyncResult>
     fun stopPull()
 
+    suspend fun syncPullWorksitesFull(): Deferred<SyncResult>
+    fun stopSyncPullWorksitesFull()
+    fun scheduleSyncWorksitesFull()
+
     fun appPullIncident(id: Long)
     suspend fun syncPullIncidentAsync(id: Long): Deferred<SyncResult>
     fun stopPullIncident()

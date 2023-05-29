@@ -9,10 +9,10 @@ import com.crisiscleanup.core.network.model.NetworkLanguageTranslation
 import com.crisiscleanup.core.network.model.NetworkLocation
 import com.crisiscleanup.core.network.model.NetworkWorkTypeRequest
 import com.crisiscleanup.core.network.model.NetworkWorkTypeStatusResult
+import com.crisiscleanup.core.network.model.NetworkWorksiteCoreData
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import com.crisiscleanup.core.network.model.NetworkWorksiteLocationSearch
 import com.crisiscleanup.core.network.model.NetworkWorksiteShort
-import com.crisiscleanup.core.network.model.NetworkWorksitesFullResult
 import com.crisiscleanup.core.network.model.NetworkWorksitesShortResult
 import kotlinx.datetime.Instant
 
@@ -47,15 +47,15 @@ interface CrisisCleanupNetworkDataSource {
         fields: List<String>,
     ): NetworkIncident?
 
-    suspend fun getWorksites(
+    suspend fun getWorksitesCoreData(
         incidentId: Long,
         limit: Int,
         offset: Int,
-    ): NetworkWorksitesFullResult
+    ): List<NetworkWorksiteCoreData>?
 
     suspend fun getWorksites(
         worksiteIds: Collection<Long>,
-    ): NetworkWorksitesFullResult
+    ): List<NetworkWorksiteFull>?
 
     suspend fun getWorksite(id: Long): NetworkWorksiteFull?
     suspend fun getWorksiteShort(id: Long): NetworkWorksiteShort?

@@ -70,7 +70,7 @@ internal class CasesMapMarkerManager(
     ): Pair<List<WorksiteMapMark>, Int> =
         coroutineScope {
             // TODO Make dynamic based on app performance as well
-            val maxMarkersOnMap = (5 * appMemoryStats.availableMemory).coerceAtLeast(100)
+            val maxMarkersOnMap = (2 * appMemoryStats.availableMemory).coerceAtLeast(64)
             val middle = getMiddleCoordinate(boundsSw, boundsNe)
             val q = getBoundQueryParams(
                 maxMarkersOnMap,

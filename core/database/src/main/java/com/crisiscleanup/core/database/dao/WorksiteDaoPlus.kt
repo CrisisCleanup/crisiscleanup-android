@@ -129,6 +129,8 @@ class WorksiteDaoPlus @Inject constructor(
         flags: List<WorksiteFlagEntity>? = null,
         notes: List<WorksiteNoteEntity>? = null,
         files: List<NetworkFileEntity>? = null,
+        // TODO Test coverage
+        keepKeyWorkType: Boolean = false,
     ): Boolean = db.withTransaction {
         val worksiteDao = db.worksiteDao()
 
@@ -157,34 +159,36 @@ class WorksiteDaoPlus @Inject constructor(
                 networkId = worksite.networkId,
                 incidentId = worksite.incidentId,
             )
-            worksiteDao.syncUpdateWorksite(
-                id = modifiedAt.id,
-                networkId = worksite.networkId,
-                incidentId = worksite.incidentId,
-                address = worksite.address,
-                autoContactFrequencyT = worksite.autoContactFrequencyT,
-                caseNumber = worksite.caseNumber,
-                city = worksite.city,
-                county = worksite.county,
-                createdAt = worksite.createdAt,
-                email = worksite.email,
-                favoriteId = worksite.favoriteId,
-                keyWorkTypeType = worksite.keyWorkTypeType,
-                keyWorkTypeOrgClaim = worksite.keyWorkTypeOrgClaim,
-                keyWorkTypeStatus = worksite.keyWorkTypeStatus,
-                latitude = worksite.latitude,
-                longitude = worksite.longitude,
-                name = worksite.name,
-                phone1 = worksite.phone1,
-                phone2 = worksite.phone2,
-                plusCode = worksite.plusCode,
-                postalCode = worksite.postalCode,
-                reportedBy = worksite.reportedBy,
-                state = worksite.state,
-                svi = worksite.svi,
-                what3Words = worksite.what3Words,
-                updatedAt = worksite.updatedAt,
-            )
+            with(worksite) {
+                worksiteDao.syncUpdateWorksite(
+                    id = modifiedAt.id,
+                    networkId = networkId,
+                    incidentId = worksite.incidentId,
+                    address = address,
+                    autoContactFrequencyT = autoContactFrequencyT,
+                    caseNumber = caseNumber,
+                    city = city,
+                    county = county,
+                    createdAt = createdAt,
+                    email = email,
+                    favoriteId = favoriteId,
+                    keyWorkTypeType = if (keepKeyWorkType) "" else keyWorkTypeType,
+                    keyWorkTypeOrgClaim = if (keepKeyWorkType) -1 else keyWorkTypeOrgClaim,
+                    keyWorkTypeStatus = if (keepKeyWorkType) "" else keyWorkTypeStatus,
+                    latitude = latitude,
+                    longitude = longitude,
+                    name = name,
+                    phone1 = phone1,
+                    phone2 = phone2,
+                    plusCode = plusCode,
+                    postalCode = postalCode,
+                    reportedBy = reportedBy,
+                    state = state,
+                    svi = svi,
+                    what3Words = what3Words,
+                    updatedAt = updatedAt,
+                )
+            }
 
             // Should return a valid ID if UPDATE OR ROLLBACK query succeeded
             val worksiteId = worksiteDao.getWorksiteId(incidentId, worksite.networkId)
@@ -290,6 +294,7 @@ class WorksiteDaoPlus @Inject constructor(
             entities.flags,
             entities.notes,
             entities.files,
+            true,
         )
 
         val worksiteId =
@@ -351,6 +356,28 @@ class WorksiteDaoPlus @Inject constructor(
             return@withTransaction true
         }
         return@withTransaction false
+    }
+
+    suspend fun syncNetworkWorksite(
+        incidentId: Long,
+        entities: WorksiteEntities,
+        syncedAt: Instant,
+    ): Boolean = db.withTransaction {
+        val (isSynced, _) = syncWorksite(incidentId, entities, syncedAt)
+        if (!isSynced) {
+            syncFillWorksite(incidentId, entities)
+        }
+        return@withTransaction isSynced
+    }
+
+    suspend fun syncWorksites(
+        incidentId: Long,
+        worksitesEntities: List<WorksiteEntities>,
+        syncedAt: Instant
+    ) = db.withTransaction {
+        worksitesEntities.forEach { entities ->
+            syncNetworkWorksite(incidentId, entities, syncedAt)
+        }
     }
 
     fun streamWorksitesMapVisual(

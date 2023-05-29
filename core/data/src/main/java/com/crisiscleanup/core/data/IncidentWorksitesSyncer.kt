@@ -2,14 +2,17 @@ package com.crisiscleanup.core.data
 
 import com.crisiscleanup.core.common.AppMemoryStats
 import com.crisiscleanup.core.common.AppVersionProvider
+import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
+import com.crisiscleanup.core.data.model.asEntities
 import com.crisiscleanup.core.data.model.asEntity
 import com.crisiscleanup.core.data.util.IncidentDataPullStats
 import com.crisiscleanup.core.data.util.IncidentDataPullStatsUpdater
 import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
 import com.crisiscleanup.core.database.dao.WorksiteSyncStatDao
+import com.crisiscleanup.core.database.model.IncidentWorksitesFullSyncStatsEntity
 import com.crisiscleanup.core.database.model.WorkTypeEntity
 import com.crisiscleanup.core.database.model.WorksiteEntity
 import com.crisiscleanup.core.database.model.WorksiteFlagEntity
@@ -19,8 +22,10 @@ import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
+import kotlin.math.abs
 
 interface WorksitesSyncer {
     suspend fun networkWorksitesCount(
@@ -28,13 +33,15 @@ interface WorksitesSyncer {
         updatedAfter: Instant? = null,
     ): Int
 
-    suspend fun sync(
+    suspend fun syncShort(
         incidentId: Long,
         syncStats: IncidentDataSyncStats,
     )
+
+    suspend fun syncFull(incidentId: Long)
 }
 
-// TODO Write tests
+// TODO Test coverage
 
 class IncidentWorksitesSyncer @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,
@@ -43,6 +50,7 @@ class IncidentWorksitesSyncer @Inject constructor(
     private val worksiteSyncStatDao: WorksiteSyncStatDao,
     memoryStats: AppMemoryStats,
     private val appVersionProvider: AppVersionProvider,
+    private val locationProvider: LocationProvider,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
 ) : WorksitesSyncer {
     val dataPullStats = MutableStateFlow(IncidentDataPullStats())
@@ -56,7 +64,7 @@ class IncidentWorksitesSyncer @Inject constructor(
     override suspend fun networkWorksitesCount(incidentId: Long, updatedAfter: Instant?) =
         networkDataSource.getWorksitesCount(incidentId, updatedAfter)
 
-    override suspend fun sync(
+    override suspend fun syncShort(
         incidentId: Long,
         syncStats: IncidentDataSyncStats,
     ) {
@@ -69,6 +77,22 @@ class IncidentWorksitesSyncer @Inject constructor(
             saveWorksitesData(incidentId, syncStats, statsUpdater)
         } finally {
             statsUpdater.endPull()
+        }
+    }
+
+    override suspend fun syncFull(incidentId: Long) {
+        worksiteSyncStatDao.getIncidentSyncStats(incidentId)?.let { syncStats ->
+            if (syncStats.isShortSynced()) {
+                val fullStats = syncStats.fullStats ?: IncidentWorksitesFullSyncStatsEntity(
+                    syncStats.entity.incidentId,
+                    syncedAt = null,
+                    isMyLocationCentered = false,
+                    latitude = 999.0,
+                    longitude = 999.0,
+                    radius = 0.0,
+                )
+                saveWorksitesFull(syncStats.entity.targetCount, fullStats)
+            }
         }
     }
 
@@ -143,7 +167,7 @@ class IncidentWorksitesSyncer @Inject constructor(
             val saveData = syncStats.pagedCount < dbSaveCount + pageCount || isDeltaPull
             if (saveData) {
                 with(cachedData.worksites) {
-                    val worksites = map { it.asEntity(incidentId) }
+                    val worksites = map { it.asEntity() }
                     val flags = map {
                         it.flags.filter { flag -> flag.invalidatedAt == null }
                             .map(NetworkWorksiteFull.FlagShort::asEntity)
@@ -240,5 +264,91 @@ class IncidentWorksitesSyncer @Inject constructor(
             ensureActive()
         }
         return@coroutineScope pagedCount
+    }
+
+    private val fullSyncPageCount = 40
+
+    private suspend fun saveWorksitesFull(
+        initialSyncCount: Int,
+        syncStats: IncidentWorksitesFullSyncStatsEntity
+    ) = coroutineScope {
+        val incidentId = syncStats.incidentId
+
+        var latitude = syncStats.latitude
+        var longitude = syncStats.longitude
+        if (syncStats.isMyLocationCentered) {
+            locationProvider.getLocation()?.let { location ->
+                latitude = location.first
+                longitude = location.second
+            }
+        }
+
+        val searchRadius = syncStats.radius
+        val locationChangeLength = searchRadius * 0.1
+        val hasLocation = abs(latitude) <= 90 && abs(longitude) <= 180 && searchRadius > 0
+        val hasLocationChange = hasLocation &&
+                abs(latitude - syncStats.latitude) * 111 > locationChangeLength &&
+                abs(longitude - syncStats.longitude) * 111 > locationChangeLength
+
+        var isSynced = false
+        var pullAll = syncStats.syncedAt == null
+        // TODO Adjust according to strength of network connection in real time
+        val syncPageCount = fullSyncPageCount * (if (isCapableDevice) 2 else 1)
+        val largeIncidentWorksitesCount = syncPageCount * 15
+        val worksiteCount = networkWorksitesCount(incidentId)
+        val syncStartedAt = Clock.System.now()
+
+        ensureActive()
+
+        // TODO Publish progress for visualization elsewhere
+
+        if (!pullAll) {
+            val approximateDeltaCount = worksiteCount - initialSyncCount
+            if (approximateDeltaCount < syncPageCount) {
+                // TODO Delta pull IDs then all. Single pull.
+            } else {
+                if (hasLocationChange) {
+                    pullAll = true
+                } else {
+                    // TODO Delta pull IDs by date ranges then all. Multi sync. Cancelable.
+                }
+            }
+        }
+
+        if (pullAll) {
+            if (worksiteCount < largeIncidentWorksitesCount) {
+                var pagedCount = 0
+                while (pagedCount < worksiteCount) {
+                    val worksites = networkDataSource.getWorksitesCoreData(
+                        incidentId,
+                        syncPageCount,
+                        pagedCount,
+                    )
+                    if (worksites?.isNotEmpty() == true) {
+                        val entities = worksites.map { it.asEntities() }
+                        worksiteDaoPlus.syncWorksites(incidentId, entities, syncStartedAt)
+                        pagedCount += worksites.size
+
+                        ensureActive()
+                    } else {
+                        break
+                    }
+                }
+                isSynced = pagedCount >= worksiteCount
+            } else {
+                if (hasLocation) {
+                    // TODO Query all worksite IDs in the location account for limit
+                    //      Greater than limit should page by boundaries
+                    //       Cancelable.
+
+                } else {
+                    // TODO Signal user to set worksite center and radius
+                }
+            }
+        }
+
+        if (isSynced) {
+            worksiteSyncStatDao.upsert(syncStats.copy(syncedAt = syncStartedAt))
+        }
     }
 }

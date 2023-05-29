@@ -11,6 +11,7 @@ import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
 import com.crisiscleanup.core.database.model.IncidentLocationEntity
 import com.crisiscleanup.core.database.model.IncidentOrganizationEntity
 import com.crisiscleanup.core.database.model.IncidentOrganizationSyncStatsEntity
+import com.crisiscleanup.core.database.model.IncidentWorksitesFullSyncStatsEntity
 import com.crisiscleanup.core.database.model.LanguageTranslationEntity
 import com.crisiscleanup.core.database.model.LocationEntity
 import com.crisiscleanup.core.database.model.NetworkFileEntity
@@ -66,6 +67,7 @@ import kotlinx.datetime.Instant
         WorksiteNetworkFileCrossRef::class,
         NetworkFileLocalImageEntity::class,
         WorksiteLocalImageEntity::class,
+        IncidentWorksitesFullSyncStatsEntity::class,
     ],
     version = 1,
 )

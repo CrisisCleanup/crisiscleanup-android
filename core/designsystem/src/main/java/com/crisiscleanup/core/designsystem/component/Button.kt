@@ -3,7 +3,6 @@ package com.crisiscleanup.core.designsystem.component
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -110,7 +109,7 @@ fun BusyButton(
     ) {
         if (indicateBusy) {
             // TODO Common dimensions
-            CircularProgressIndicator(Modifier.padding(vertical = 8.dp))
+            CircularProgressIndicator(Modifier.size(24.dp))
         } else {
             Text(textResId, text)
         }

@@ -246,6 +246,7 @@ internal fun testWorkTypeShort(
 
 internal fun testNetworkWorksiteShort(
     id: Long = 0,
+    incidentId: Long = 0,
     address: String = "address",
     caseNumber: String = "case-number",
     city: String = "city",
@@ -271,6 +272,7 @@ internal fun testNetworkWorksiteShort(
     county = county,
     createdAt = createdAt,
     flags = flags,
+    incident = incidentId,
     keyWorkType = keyWorkType,
     location = location,
     name = name,

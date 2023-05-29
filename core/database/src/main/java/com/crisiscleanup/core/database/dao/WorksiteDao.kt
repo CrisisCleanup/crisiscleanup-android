@@ -282,9 +282,9 @@ interface WorksiteDao {
         created_at      =COALESCE(:createdAt, created_at),
         email           =COALESCE(:email, email),
         favorite_id     =:favoriteId,
-        key_work_type_type=:keyWorkTypeType,
-        key_work_type_org=:keyWorkTypeOrgClaim,
-        key_work_type_status=:keyWorkTypeStatus,
+        key_work_type_type  =CASE WHEN :keyWorkTypeType=='' THEN key_work_type_type ELSE :keyWorkTypeType END,
+        key_work_type_org   =CASE WHEN :keyWorkTypeOrgClaim<0 THEN key_work_type_org ELSE :keyWorkTypeOrgClaim END,
+        key_work_type_status=CASE WHEN :keyWorkTypeStatus=='' THEN key_work_type_status ELSE :keyWorkTypeStatus END,
         latitude        =:latitude,
         longitude       =:longitude,
         name            =:name,
@@ -359,25 +359,6 @@ interface WorksiteDao {
         svi: Float?,
         reportedBy: Long?,
         what3Words: String?,
-    )
-
-    @Transaction
-    @Query(
-        """
-        UPDATE OR IGNORE worksites
-        SET
-        key_work_type_type=:keyWorkTypeType,
-        key_work_type_org=:keyWorkTypeOrgClaim,
-        key_work_type_status=:keyWorkTypeStatus
-        WHERE incident_id=:incidentId AND network_id=:networkId
-        """
-    )
-    fun syncUpdateKeyWorkType(
-        incidentId: Long,
-        networkId: Long,
-        keyWorkTypeType: String,
-        keyWorkTypeOrgClaim: Long?,
-        keyWorkTypeStatus: String,
     )
 
     @Transaction
