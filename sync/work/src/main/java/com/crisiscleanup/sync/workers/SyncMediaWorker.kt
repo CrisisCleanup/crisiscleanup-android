@@ -32,11 +32,10 @@ class SyncMediaWorker @AssistedInject constructor(
     private val syncLogger: SyncLogger,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
 ) : CoroutineWorker(appContext, workerParams) {
-    override suspend fun getForegroundInfo() =
-        appContext.syncForegroundInfo(
-            SyncMediaNotificationId,
-            appContext.getString(R.string.sync_media_notification_text),
-        )
+    override suspend fun getForegroundInfo() = appContext.syncForegroundInfo(
+        SyncMediaNotificationId,
+        text = appContext.getString(R.string.sync_media_notification_text),
+    )
 
     override suspend fun doWork() = withContext(ioDispatcher) {
         traceAsync("MediaSync", 0) {

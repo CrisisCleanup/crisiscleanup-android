@@ -1,6 +1,5 @@
 package com.crisiscleanup.sync.initializers
 
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -57,12 +56,12 @@ fun scheduleSyncWorksitesFull(context: Context) {
     }
 }
 
-val SyncConstraints
+internal val SyncConstraints
     get() = Constraints.Builder()
         .setRequiredNetworkType(NetworkType.CONNECTED)
         .build()
 
-val SyncMediaConstraints
+internal val SyncMediaConstraints
     get() = Constraints.Builder()
         .setRequiredNetworkType(NetworkType.UNMETERED)
         .setRequiresBatteryNotLow(true)
@@ -72,40 +71,46 @@ val SyncMediaConstraints
  * Foreground information for sync on lower API levels when sync workers are being
  * run with a foreground service
  */
-fun Context.syncForegroundInfo(id: Int = SyncNotificationId, text: String = "") = ForegroundInfo(
-    id,
-    syncWorkNotification(text)
-)
+internal fun Context.syncForegroundInfo(
+    id: Int = SyncNotificationId,
+    title: String = "",
+    text: String = "",
+): ForegroundInfo {
+    channelNotificationManager()
 
-/**
- * Notification displayed on lower API levels when sync workers are being
- * run with a foreground service
- */
-internal fun Context.syncWorkNotification(contextText: String = ""): Notification {
-    val channel = NotificationChannel(
+    val notification = notificationBuilder(title, text).build()
+    return ForegroundInfo(id, notification)
+}
+
+internal fun Context.channelNotificationManager(): NotificationManager? {
+    val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+    notificationManager?.createNotificationChannel(syncNotificationChannel)
+    return notificationManager
+}
+
+private val Context.syncNotificationChannel: NotificationChannel
+    get() = NotificationChannel(
         SyncNotificationChannelID,
         getString(R.string.sync_notification_channel_name),
-        NotificationManager.IMPORTANCE_DEFAULT
+        NotificationManager.IMPORTANCE_DEFAULT,
     ).apply {
         description = getString(R.string.sync_notification_channel_description)
     }
-    // Register the channel with the system
-    val notificationManager: NotificationManager? =
-        getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
-    notificationManager?.createNotificationChannel(channel)
 
-    val notificationText = contextText.ifEmpty { getString(R.string.sync_notification_text) }
-
-    return NotificationCompat.Builder(
-        this,
-        SyncNotificationChannelID
-    )
-        .setSmallIcon(
-            commonR.drawable.ic_app_notification
-        )
-        .setContentTitle(getString(R.string.sync_notification_title))
-        .setContentText(notificationText)
+internal fun Context.notificationBuilder(
+    title: String = "",
+    text: String = "",
+): NotificationCompat.Builder {
+    val contentTitle = title.ifBlank { getString(R.string.sync_notification_title) }
+    val contentText = text.ifBlank { getString(R.string.sync_notification_text) }
+    return NotificationCompat.Builder(this, SyncNotificationChannelID)
+        .setSmallIcon(commonR.drawable.ic_app_notification)
+        .setContentTitle(contentTitle)
+        .setContentText(contentText)
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-        // TODO Color? Is it possible from here? To use MaterialTheme? Or inject?
-        .build()
+}
+
+internal fun NotificationCompat.Builder.progress(progress: Float): NotificationCompat.Builder {
+    val iProgress = (progress * 1000).toInt().coerceIn(0, 1000)
+    return setProgress(1000, iProgress, false)
 }

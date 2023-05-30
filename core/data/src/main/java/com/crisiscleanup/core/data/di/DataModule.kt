@@ -110,6 +110,9 @@ interface DataInternalModule {
     fun providesWorksitesSyncer(syncer: IncidentWorksitesSyncer): WorksitesSyncer
 
     @Binds
+    fun providesWorksitesFullSyncer(syncer: IncidentWorksitesFullSyncer): WorksitesFullSyncer
+
+    @Binds
     fun providesIncidentOrganizationsNetworkDataCache(
         cache: IncidentOrganizationsDataFileCache
     ): IncidentOrganizationsDataCache

@@ -99,6 +99,7 @@ class MainActivityViewModel @Inject constructor(
             .onEach {
                 sync(true)
                 syncPuller.appPullIncident(it)
+                syncPuller.stopSyncPullWorksitesFull()
             }
             .flowOn(ioDispatcher)
             .launchIn(viewModelScope)

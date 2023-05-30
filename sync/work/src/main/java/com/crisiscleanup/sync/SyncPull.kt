@@ -1,6 +1,5 @@
 package com.crisiscleanup.sync
 
-import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
@@ -45,7 +44,6 @@ internal object SyncPull {
         incidentsRepository: IncidentsRepository,
         worksitesRepository: WorksitesRepository,
         syncLogger: SyncLogger,
-        resourceProvider: AndroidResourceProvider? = null,
     ): Boolean = coroutineScope {
         if (plan.pullIncidents) {
             incidentsRepository.pullIncidents()
@@ -56,13 +54,7 @@ internal object SyncPull {
         ensureActive()
 
         plan.pullIncidentIdWorksites?.let { incidentId ->
-            incidentsRepository.getIncident(incidentId)?.let { incident ->
-                resourceProvider?.let {
-                    val syncMessage =
-                        resourceProvider.getString(R.string.syncing_incident_text, incident.name)
-                    // TODO Publish message (through flow)
-                }
-
+            incidentsRepository.getIncident(incidentId)?.let {
                 worksitesRepository.refreshWorksites(incidentId)
 
                 syncLogger.log("Incident $incidentId worksites pulled")

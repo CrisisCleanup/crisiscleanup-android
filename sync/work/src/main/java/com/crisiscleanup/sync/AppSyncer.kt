@@ -253,7 +253,10 @@ class AppSyncer @Inject constructor(
         }
     }
 
-    override fun scheduleSyncWorksitesFull() = scheduleSyncWorksitesFull(context)
+    override fun scheduleSyncWorksitesFull() {
+        stopSyncPullWorksitesFull()
+        scheduleSyncWorksitesFull(context)
+    }
 
     private suspend fun languagePull() {
         if (languagePullMutex.tryLock()) {

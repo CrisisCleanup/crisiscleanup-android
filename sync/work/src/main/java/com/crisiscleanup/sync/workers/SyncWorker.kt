@@ -31,8 +31,7 @@ class SyncWorker @AssistedInject constructor(
     private val syncLogger: SyncLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : CoroutineWorker(appContext, workerParams) {
-    override suspend fun getForegroundInfo() =
-        appContext.syncForegroundInfo()
+    override suspend fun getForegroundInfo() = appContext.syncForegroundInfo()
 
     override suspend fun doWork() = withContext(ioDispatcher) {
         traceAsync("Sync", 0) {
@@ -42,7 +41,6 @@ class SyncWorker @AssistedInject constructor(
             val isSyncSuccess = awaitAll(
                 async {
                     // TODO Observe progress and update notification
-                    // text -> setForeground(appContext.syncForegroundInfo(text)) }
                     syncPuller.syncPullAsync().await() !is SyncResult.Error
                 },
                 async {
@@ -56,10 +54,6 @@ class SyncWorker @AssistedInject constructor(
             syncLogger
                 .log("Sync end. success=$isSyncSuccess")
                 .flush()
-
-            // TODO Notification seems to hang around.
-            //      Research if needs to manually clear.
-            //      Nia doesn't need to clear notification...
 
             if (isSyncSuccess) Result.success()
             else Result.retry()

@@ -6,7 +6,8 @@ import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
-import com.crisiscleanup.core.data.IncidentWorksitesSyncer
+import com.crisiscleanup.core.data.WorksitesFullSyncer
+import com.crisiscleanup.core.data.WorksitesSyncer
 import com.crisiscleanup.core.data.model.asEntities
 import com.crisiscleanup.core.data.model.asEntity
 import com.crisiscleanup.core.data.util.IncidentDataPullReporter
@@ -43,7 +44,8 @@ import javax.inject.Singleton
 
 @Singleton
 class OfflineFirstWorksitesRepository @Inject constructor(
-    private val worksitesSyncer: IncidentWorksitesSyncer,
+    private val worksitesSyncer: WorksitesSyncer,
+    private val worksitesFullSyncer: WorksitesFullSyncer,
     private val worksiteSyncStatDao: WorksiteSyncStatDao,
     private val worksiteDao: WorksiteDao,
     private val worksiteDaoPlus: WorksiteDaoPlus,
@@ -202,7 +204,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
                 savedWorksitesCount < syncStats.dataCount ||
                 forceQueryDeltas
             ) {
-                worksitesSyncer.syncShort(incidentId, syncStats)
+                worksitesSyncer.sync(incidentId, syncStats)
             }
         } catch (e: Exception) {
             if (e is CancellationException) {
@@ -224,7 +226,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
 
         syncWorksitesFullIncidentId.value = incidentId
         try {
-            worksitesSyncer.syncFull(incidentId)
+            worksitesFullSyncer.sync(incidentId)
             return@coroutineScope true
         } catch (e: Exception) {
             if (e is CancellationException) {
