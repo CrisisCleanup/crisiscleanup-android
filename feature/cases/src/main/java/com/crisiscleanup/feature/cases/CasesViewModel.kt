@@ -161,12 +161,17 @@ class CasesViewModel @Inject constructor(
         logger,
     )
 
-    val worksitesMapMarkers = qsm.worksiteQueryState
-        // TODO Make debounce a parameter
+    val worksitesMapMarkers = combine(
+        qsm.worksiteQueryState,
+        mapBoundsManager.isMapLoaded,
+        ::Pair
+    )
+        // TODO Make delay a parameter
         .debounce(250)
-        .flatMapLatest { wqs ->
+        .flatMapLatest { (wqs, isMapLoaded) ->
             val id = wqs.incidentId
-            val skipMarkers = isTableView.value ||
+            val skipMarkers = !isMapLoaded ||
+                    isTableView.value ||
                     id == EmptyIncident.id ||
                     mapTileRenderer.rendersAt(wqs.zoom)
 
@@ -287,7 +292,7 @@ class CasesViewModel @Inject constructor(
     ) {
         qsm.mapZoom.value = cameraPosition.zoom
 
-        if (mapBoundsManager.isMapLoaded) {
+        if (mapBoundsManager.isMapLoaded.value) {
             projection?.let {
                 val visibleBounds = it.visibleRegion.latLngBounds
                 qsm.mapBounds.value = CoordinateBounds(

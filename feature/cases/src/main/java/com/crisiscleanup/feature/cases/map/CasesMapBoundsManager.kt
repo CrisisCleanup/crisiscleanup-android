@@ -39,8 +39,7 @@ internal class CasesMapBoundsManager(
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
     private val logger: AppLogger,
 ) {
-    var isMapLoaded = false
-        private set
+    var isMapLoaded = MutableStateFlow(false)
 
     val centerCache: LatLng
         get() = mapBoundsCache.center
@@ -104,7 +103,7 @@ internal class CasesMapBoundsManager(
                     if (latLngs.isNotEmpty()) {
                         val bounds = latLngs.toBounds()
                         incidentBoundsCache[incidentId] = bounds
-                        if (isMapLoaded) {
+                        if (isMapLoaded.value) {
                             _mapCameraBounds.value = MapViewCameraBounds(bounds)
                         }
                         cacheBounds(bounds)
@@ -124,17 +123,17 @@ internal class CasesMapBoundsManager(
     }
 
     fun onNewMap() {
-        isMapLoaded = false
+        isMapLoaded.value = false
     }
 
     /**
      * @return true if state is changing from not loaded->loaded or false if loaded signal was already received
      */
     fun onMapLoaded(): Boolean {
-        if (isMapLoaded) {
+        if (isMapLoaded.value) {
             return false
         }
-        isMapLoaded = true
+        isMapLoaded.value = true
 
         return true
     }

@@ -139,7 +139,7 @@ class IncidentWorksitesSyncer @Inject constructor(
                 startSyncRequestTime = cachedData.requestTime
             }
 
-            // TODO Deltas must account for deleted/reassigned as well
+            // TODO Deltas must account for deleted and/or reassigned if not inherently accounted for
 
             val saveData = syncStats.pagedCount < dbSaveCount + pageCount || isDeltaPull
             if (saveData) {
