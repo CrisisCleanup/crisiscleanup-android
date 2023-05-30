@@ -99,6 +99,7 @@ class AppSyncer @Inject constructor(
         else unforcedPlan
         if (!plan.requiresSync) {
             syncLogger.log("Skipping unforced sync")
+            scheduleSyncWorksitesFull()
             return SyncResult.NotAttempted("Unforced sync not necessary")
         }
 

@@ -125,6 +125,7 @@ class SyncWorksitesFullWorker @AssistedInject constructor(
             } finally {
                 isSyncing.set(false)
                 appContext.unregisterReceiver(stopSyncingReceiver)
+                appContext.channelNotificationManager()?.cancel(SyncWorksitesFullNotificationId)
             }
         }
     }

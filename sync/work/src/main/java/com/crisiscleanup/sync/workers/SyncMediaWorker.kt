@@ -16,6 +16,7 @@ import com.crisiscleanup.core.common.sync.SyncResult
 import com.crisiscleanup.sync.R
 import com.crisiscleanup.sync.initializers.SyncMediaConstraints
 import com.crisiscleanup.sync.initializers.SyncMediaNotificationId
+import com.crisiscleanup.sync.initializers.channelNotificationManager
 import com.crisiscleanup.sync.initializers.syncForegroundInfo
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -51,6 +52,8 @@ class SyncMediaWorker @AssistedInject constructor(
             syncLogger
                 .log("Sync end. success=$isSyncSuccess")
                 .flush()
+
+            appContext.channelNotificationManager()?.cancel(SyncMediaNotificationId)
 
             if (isSyncSuccess) Result.success()
             else Result.retry()
