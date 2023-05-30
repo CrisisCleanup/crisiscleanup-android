@@ -23,6 +23,7 @@ import com.crisiscleanup.sync.SyncPull.executePlan
 import com.crisiscleanup.sync.initializers.scheduleSyncMedia
 import com.crisiscleanup.sync.initializers.scheduleSyncWorksitesFull
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -236,8 +237,12 @@ class AppSyncer @Inject constructor(
 
                 val incidentId = appPreferences.userData.first().selectedIncidentId
                 return@async if (incidentId > 0) {
-                    val isSynced = worksitesRepository.syncWorksitesFull(incidentId)
-                    if (isSynced) SyncResult.Success("Sync incident $incidentId worksites full")
+                    val isSynced = try {
+                        worksitesRepository.syncWorksitesFull(incidentId)
+                    } catch (e: CancellationException) {
+                        true
+                    }
+                    if (isSynced) SyncResult.Success("Incident $incidentId worksites full")
                     else SyncResult.Partial("$incidentId full sync did not finish")
                 } else {
                     SyncResult.NotAttempted("Incident not selected")

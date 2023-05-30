@@ -21,7 +21,6 @@ import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.common.sync.SyncResult
 import com.crisiscleanup.core.data.WorksitesFullSyncer
-import com.crisiscleanup.sync.AppSyncer
 import com.crisiscleanup.sync.R
 import com.crisiscleanup.sync.initializers.SyncConstraints
 import com.crisiscleanup.sync.initializers.SyncWorksitesFullNotificationId
@@ -48,7 +47,6 @@ class SyncWorksitesFullWorker @AssistedInject constructor(
     @Assisted workerParams: WorkerParameters,
     worksitesFullSyncer: WorksitesFullSyncer,
     private val syncPuller: SyncPuller,
-    private val appSyncer: AppSyncer,
     private val syncLogger: SyncLogger,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     @ApplicationScope coroutineScope: CoroutineScope,
@@ -57,7 +55,7 @@ class SyncWorksitesFullWorker @AssistedInject constructor(
 
     private val stopSyncingReceiver = object : BroadcastReceiver() {
         override fun onReceive(p0: Context?, p1: Intent?) {
-            appSyncer.stopSyncPullWorksitesFull()
+            syncPuller.stopSyncPullWorksitesFull()
         }
     }
 
@@ -117,7 +115,8 @@ class SyncWorksitesFullWorker @AssistedInject constructor(
 
                 val isSyncSuccess = awaitAll(
                     async {
-                        syncPuller.syncPullWorksitesFull().await() !is SyncResult.Error
+                        val result = syncPuller.syncPullWorksitesFull().await()
+                        result is SyncResult.Success || result is SyncResult.NotAttempted
                     },
                 ).all { it }
 
