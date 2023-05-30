@@ -50,7 +50,7 @@ class SyncMediaWorker @AssistedInject constructor(
             ).all { it }
 
             syncLogger
-                .log("Sync end. success=$isSyncSuccess")
+                .log("Media sync end. success=$isSyncSuccess")
                 .flush()
 
             appContext.channelNotificationManager()?.cancel(SyncMediaNotificationId)

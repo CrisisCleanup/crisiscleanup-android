@@ -64,7 +64,12 @@ class SyncWorksitesFullWorker @AssistedInject constructor(
     init {
         worksitesFullSyncer.fullPullStats
             .onEach {
-                if (isSyncing.get() && it.totalCount > 0) {
+                if (isSyncing.get() &&
+                    it.totalCount > 0 &&
+                    // Skip the final update or deal with the race condition from updating and
+                    // canceling the notification in different scopes
+                    it.pullCount < it.totalCount
+                ) {
                     val title = appContext.getString(R.string.syncing_text, it.incidentName)
                     val text = appContext.getString(
                         R.string.saved_cases_out_of,
@@ -117,7 +122,7 @@ class SyncWorksitesFullWorker @AssistedInject constructor(
                 ).all { it }
 
                 syncLogger
-                    .log("Sync end. success=$isSyncSuccess")
+                    .log("Worksites full sync end. success=$isSyncSuccess")
                     .flush()
 
                 if (isSyncSuccess) Result.success()

@@ -131,6 +131,7 @@ class IncidentWorksitesFullSyncer @Inject constructor(
                         pagedCount,
                     )
                     if (worksites?.isNotEmpty() == true) {
+                        updateProgress(pagedCount + (worksites.size * 0.5f).toInt())
                         val entities = worksites.map { it.asEntities() }
                         worksiteDaoPlus.syncWorksites(incidentId, entities, syncStartedAt)
                         pagedCount += worksites.size
