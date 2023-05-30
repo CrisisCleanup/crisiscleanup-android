@@ -20,7 +20,7 @@ class CrisisCleanupAppHeaderUiState @Inject constructor(
 
     init {
         incidentSelectManager.incident.onEach {
-            setTitle(it.name)
+            setTitle(it.shortName)
         }
             .launchIn(scope)
     }

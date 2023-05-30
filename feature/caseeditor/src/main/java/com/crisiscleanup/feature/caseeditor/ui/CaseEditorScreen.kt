@@ -57,6 +57,7 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.TopAppBarSingleAction
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContainerColor
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContentColor
@@ -661,7 +662,7 @@ internal fun CaseIncident(
     isPendingSync: Boolean = false,
     isSyncing: Boolean = false,
 ) {
-    val incidentName = incident.name
+    val incidentName = incident.shortName
     val disasterResId = getDisasterIcon(incident.disaster)
     Row(
         modifier = modifier.listItemPadding(),
@@ -682,7 +683,7 @@ internal fun CaseIncident(
         Text(
             incidentName,
             Modifier.weight(1f),
-            style = MaterialTheme.typography.headlineMedium,
+            style = MaterialTheme.typography.headlineSmall,
         )
 
         if (isSyncing) {
@@ -829,22 +830,27 @@ private fun SaveActionBar(
 @Preview
 @Composable
 private fun CaseIncidentPreview() {
-    Column {
-        CaseIncident(
-            incident = EmptyIncident.copy(
-                name = "Big sweeping hurricane across the gulf",
-            ),
-            isPendingSync = true,
-        )
+    CrisisCleanupTheme {
+        Surface {
+            CaseIncident(
+                incident = EmptyIncident.copy(
+                    name = "Big sweeping hurricane across the gulf",
+                    shortName = "Big hurricane"
+                ),
+                isPendingSync = true,
+            )
+        }
     }
 }
 
 @Preview
 @Composable
 private fun SaveActionBarPreview() {
-    SaveActionBar(
-        saveText = "save",
-        saveClaimText = "+ claim",
-        cancelText = "cancel",
-    )
+    CrisisCleanupTheme {
+        SaveActionBar(
+            saveText = "save",
+            saveClaimText = "+ claim",
+            cancelText = "cancel",
+        )
+    }
 }
