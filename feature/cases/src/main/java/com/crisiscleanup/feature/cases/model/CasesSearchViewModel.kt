@@ -2,6 +2,7 @@ package com.crisiscleanup.feature.cases.model
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -17,7 +18,18 @@ import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.WorkType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -27,6 +39,7 @@ class CasesSearchViewModel @Inject constructor(
     private val worksitesRepository: WorksitesRepository,
     private val searchWorksitesRepository: SearchWorksitesRepository,
     private val mapCaseIconProvider: MapCaseIconProvider,
+    private val translator: KeyTranslator,
     @Logger(CrisisCleanupLoggers.Cases) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
@@ -141,4 +154,6 @@ class CasesSearchViewModel @Inject constructor(
             }
         }
     }
+
+    fun translate(key: String) = translator.translate(key) ?: key
 }

@@ -89,7 +89,7 @@ private fun AddMediaView(
             .drawBehind {
                 drawRoundRect(
                     color = contentColor,
-                    cornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                    cornerRadius = CornerRadius(cornerRadius),
                     style = borderStroke,
                 )
             },

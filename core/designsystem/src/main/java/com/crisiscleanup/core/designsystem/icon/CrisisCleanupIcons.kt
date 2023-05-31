@@ -3,6 +3,7 @@ package com.crisiscleanup.core.designsystem.icon
 import androidx.annotation.DrawableRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Clear
@@ -40,7 +41,7 @@ private val icons = Icons.Default
 object CrisisCleanupIcons {
     val Account = icons.PersonOutline
     val Add = icons.Add
-    val AddNote = icons.NoteAdd
+    val ArrowBack = icons.ArrowBackIosNew
     val ArrowDropDown = icons.ArrowDropDown
     val Calendar = icons.CalendarMonth
     val Cases = R.drawable.ic_cases
