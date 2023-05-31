@@ -62,36 +62,44 @@ class SyncWorksitesFullWorker @AssistedInject constructor(
     init {
         worksitesFullSyncer.fullPullStats
             .onEach {
-                if (isSyncing.get() &&
-                    it.totalCount > 0 &&
-                    // Skip the final update or deal with the race condition from updating and
-                    // canceling the notification in different scopes
-                    it.pullCount < it.totalCount
-                ) {
-                    val title = appContext.getString(R.string.syncing_text, it.incidentName)
-                    val text = appContext.getString(
-                        R.string.saved_cases_out_of,
-                        it.pullCount,
-                        it.totalCount,
-                    )
-                    val progress = it.pullCount / it.totalCount.toFloat()
-                    val stopSyncIntent = PendingIntent.getBroadcast(
-                        appContext,
-                        0,
-                        Intent(StopSyncingAction),
-                        PendingIntent.FLAG_IMMUTABLE,
-                    )
-                    appContext.channelNotificationManager()?.notify(
-                        SyncWorksitesFullNotificationId,
-                        appContext.notificationBuilder(title, text)
-                            .progress(progress)
-                            .addAction(
-                                R.drawable.close,
-                                appContext.getString(R.string.stop_syncing),
-                                stopSyncIntent,
+                with(it) {
+                    if (isSyncing.get() &&
+                        totalCount > 0 &&
+                        // Skip the final update or deal with the race condition from updating and
+                        // canceling the notification in different scopes
+                        pullCount < totalCount
+                    ) {
+                        val title = appContext.getString(R.string.syncing_text, it.incidentName)
+                        val text = if (isApproximateTotal)
+                            appContext.getString(
+                                R.string.saved_cases_approximate_out_of,
+                                pullCount,
+                                totalCount,
                             )
-                            .build()
-                    )
+                        else appContext.getString(
+                            R.string.saved_cases_out_of,
+                            pullCount,
+                            totalCount,
+                        )
+                        val progress = pullCount / totalCount.toFloat()
+                        val stopSyncIntent = PendingIntent.getBroadcast(
+                            appContext,
+                            0,
+                            Intent(StopSyncingAction),
+                            PendingIntent.FLAG_IMMUTABLE,
+                        )
+                        appContext.channelNotificationManager()?.notify(
+                            SyncWorksitesFullNotificationId,
+                            appContext.notificationBuilder(title, text)
+                                .progress(progress)
+                                .addAction(
+                                    R.drawable.close,
+                                    appContext.getString(R.string.stop_syncing),
+                                    stopSyncIntent,
+                                )
+                                .build()
+                        )
+                    }
                 }
             }
             .launchIn(coroutineScope)

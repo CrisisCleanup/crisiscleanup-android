@@ -31,9 +31,9 @@ class AndroidLocationProvider @Inject constructor(
         if (locationPermission == PackageManager.PERMISSION_GRANTED) {
             try {
                 var location = locationClient.lastLocation.await()
-                location?.let {
-                    if (Clock.System.now() - Instant.fromEpochMilliseconds(location.time) < 5.minutes) {
-                        return Pair(it.latitude, it.longitude)
+                location?.apply {
+                    if (Clock.System.now() - Instant.fromEpochMilliseconds(time) < 5.minutes) {
+                        return Pair(latitude, longitude)
                     }
                 }
                 // TODO Manage this token as necessary

@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import com.crisiscleanup.core.database.model.BoundedSyncedWorksiteIds
 import com.crisiscleanup.core.database.model.PopulatedLocalWorksite
 import com.crisiscleanup.core.database.model.PopulatedWorksite
 import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
@@ -399,4 +400,40 @@ interface WorksiteDao {
         """
     )
     fun setRootUnmodified(worksiteId: Long, syncedAt: Instant)
+
+    @Transaction
+    @Query(
+        """
+        SELECT COUNT(id)
+        FROM worksites
+        WHERE incident_id=:incidentId AND
+              (longitude BETWEEN :longitudeWest AND :longitudeEast) AND
+              (latitude BETWEEN :latitudeSouth AND :latitudeNorth)
+        """
+    )
+    fun getBoundedWorksiteCount(
+        incidentId: Long,
+        latitudeSouth: Double,
+        latitudeNorth: Double,
+        longitudeWest: Double,
+        longitudeEast: Double,
+    ): Int
+
+    @Transaction
+    @Query(
+        """
+        SELECT w.id, w.network_id, r.synced_at, phone1
+        FROM worksites w INNER JOIN worksites_root r ON w.id=r.id
+        WHERE w.incident_id=:incidentId AND
+              (longitude BETWEEN :longitudeWest AND :longitudeEast) AND
+              (latitude BETWEEN :latitudeSouth AND :latitudeNorth)
+        """
+    )
+    fun getBoundedSyncedWorksiteIds(
+        incidentId: Long,
+        latitudeSouth: Double,
+        latitudeNorth: Double,
+        longitudeWest: Double,
+        longitudeEast: Double,
+    ): List<BoundedSyncedWorksiteIds>
 }

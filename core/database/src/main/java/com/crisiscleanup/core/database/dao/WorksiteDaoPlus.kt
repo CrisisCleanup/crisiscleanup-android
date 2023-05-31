@@ -3,8 +3,10 @@ package com.crisiscleanup.core.database.dao
 import androidx.room.withTransaction
 import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
+import com.crisiscleanup.core.database.model.BoundedSyncedWorksiteIds
 import com.crisiscleanup.core.database.model.NetworkFileEntity
 import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
+import com.crisiscleanup.core.database.model.SwNeBounds
 import com.crisiscleanup.core.database.model.WorkTypeEntity
 import com.crisiscleanup.core.database.model.WorksiteEntities
 import com.crisiscleanup.core.database.model.WorksiteEntity
@@ -460,4 +462,31 @@ class WorksiteDaoPlus @Inject constructor(
         db.workTypeDao().getUnsyncedCount(worksiteId),
         db.worksiteChangeDao().getChangeCount(worksiteId),
     )
+
+    suspend fun loadBoundedSyncedWorksiteIds(
+        incidentId: Long,
+        loadedIds: MutableList<BoundedSyncedWorksiteIds>,
+        minLoadCount: Int,
+        remainingBounds: List<SwNeBounds>,
+        filter: (BoundedSyncedWorksiteIds) -> Boolean,
+    ) = db.withTransaction {
+        val worksiteDao = db.worksiteDao()
+
+        var boundsIndex = 0
+        while (loadedIds.size < minLoadCount && boundsIndex < remainingBounds.size) {
+            with(remainingBounds[boundsIndex++]) {
+                val worksiteIds = worksiteDao.getBoundedSyncedWorksiteIds(
+                    incidentId,
+                    south,
+                    north,
+                    west,
+                    east,
+                )
+                loadedIds.addAll(worksiteIds.filter(filter))
+            }
+        }
+
+        if (boundsIndex >= remainingBounds.size) emptyList()
+        else remainingBounds.subList(boundsIndex, remainingBounds.size)
+    }
 }
