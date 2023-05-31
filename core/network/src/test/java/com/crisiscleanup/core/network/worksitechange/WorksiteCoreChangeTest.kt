@@ -1,6 +1,13 @@
 package com.crisiscleanup.core.network.worksitechange
 
-import com.crisiscleanup.core.network.model.*
+import com.crisiscleanup.core.network.model.DynamicValue
+import com.crisiscleanup.core.network.model.KeyDynamicValuePair
+import com.crisiscleanup.core.network.model.NetworkFlag
+import com.crisiscleanup.core.network.model.NetworkNote
+import com.crisiscleanup.core.network.model.NetworkType
+import com.crisiscleanup.core.network.model.NetworkWorkType
+import com.crisiscleanup.core.network.model.NetworkWorksiteFull
+import com.crisiscleanup.core.network.model.NetworkWorksitePush
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -36,7 +43,7 @@ class WorksiteCoreChangeTest {
         reportedBy = null,
         state = "state-min",
         svi = null,
-        times = emptyList(),
+        // times = emptyList(),
         updatedAt = updatedAtA,
         what3words = null,
         workTypes = listOf(
@@ -95,7 +102,7 @@ class WorksiteCoreChangeTest {
         reportedBy = 683,
         state = "state",
         svi = 0.5f,
-        times = emptyList(),
+        // times = emptyList(),
         updatedAt = updatedAtA,
         what3words = "what-three-words",
         workTypes = listOf(
@@ -187,7 +194,7 @@ class WorksiteCoreChangeTest {
             reportedBy = fullyDefinedWorksite.reportedBy,
             state = fullyDefinedWorksite.state,
             svi = fullyDefinedWorksite.svi,
-            updatedAt = fullyDefinedWorksite.updatedAt!!,
+            updatedAt = fullyDefinedWorksite.updatedAt,
             what3words = fullyDefinedWorksite.what3words,
             workTypes = emptyList(),
 

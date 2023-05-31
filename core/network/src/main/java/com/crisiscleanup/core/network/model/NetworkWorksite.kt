@@ -48,8 +48,8 @@ data class NetworkWorksiteFull(
     val reportedBy: Long?,
     val state: String,
     val svi: Float?,
-    @SerialName("time")
-    val times: List<Time>,
+//    @SerialName("time")
+//    val times: List<Time>,
     @Serializable(InstantSerializer::class)
     @SerialName("updated_at")
     val updatedAt: Instant,

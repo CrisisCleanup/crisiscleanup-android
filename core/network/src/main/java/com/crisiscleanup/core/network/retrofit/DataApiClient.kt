@@ -203,7 +203,7 @@ class DataApiClient @Inject constructor(
         fields: List<String>,
         limit: Int,
         ordering: String,
-        after: Instant?
+        after: Instant?,
     ) = networkApi.getIncidents(fields.joinToString(","), limit, ordering, after)
         .let {
             it.errors?.tryThrowException()
@@ -256,17 +256,17 @@ class DataApiClient @Inject constructor(
     override suspend fun getWorksitesAll(
         incidentId: Long,
         updatedAtAfter: Instant?,
-        updatedAtBefore: Instant?
+        updatedAtBefore: Instant?,
     ) = networkApi.getWorksitesAll(incidentId, updatedAtAfter, updatedAtBefore)
         .apply { errors?.tryThrowException() }
 
     override suspend fun getWorksitesPage(
         incidentId: Long,
-        updatedAtAfter: Instant?,
         pageCount: Int,
         pageOffset: Int?,
         latitude: Double?,
-        longitude: Double?
+        longitude: Double?,
+        updatedAtAfter: Instant?,
     ): List<NetworkWorksiteShort> {
         val centerCoordinates: List<Double>? = if (latitude == null && longitude == null) null else
             listOf(latitude!!, longitude!!)
@@ -297,7 +297,7 @@ class DataApiClient @Inject constructor(
     override suspend fun getLocationSearchWorksites(
         incidentId: Long,
         q: String,
-        limit: Int
+        limit: Int,
     ) = networkApi.getWorksitesLocationSearch(
         incidentId,
         locationSearchFields,

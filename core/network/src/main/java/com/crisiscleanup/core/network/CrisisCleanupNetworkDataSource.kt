@@ -73,11 +73,11 @@ interface CrisisCleanupNetworkDataSource {
 
     suspend fun getWorksitesPage(
         incidentId: Long,
-        updatedAtAfter: Instant?,
         pageCount: Int,
         pageOffset: Int? = null,
         latitude: Double? = null,
         longitude: Double? = null,
+        updatedAtAfter: Instant? = null,
     ): List<NetworkWorksiteShort>
 
     suspend fun getLocationSearchWorksites(

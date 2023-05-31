@@ -92,9 +92,9 @@ class WorksitesNetworkDataFileCache @Inject constructor(
         val requestTime = Clock.System.now()
         val worksites = networkDataSource.getWorksitesPage(
             incidentId,
-            updatedAfter,
             pageCount,
             pageIndex + 1,
+            updatedAtAfter = updatedAfter,
         )
 
         val dataCache = IncidentWorksitesPageRequest(

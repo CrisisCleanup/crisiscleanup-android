@@ -49,7 +49,7 @@ internal fun testNetworkWorksite(
     reportedBy = null,
     state = "",
     svi = null,
-    times = emptyList(),
+//    times = emptyList(),
     updatedAt = updatedAtA,
     what3words = null,
     workTypes = workTypes,
