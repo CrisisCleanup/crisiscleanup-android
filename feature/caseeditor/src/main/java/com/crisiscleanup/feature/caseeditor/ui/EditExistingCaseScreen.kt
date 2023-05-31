@@ -272,7 +272,10 @@ private fun ColumnScope.ExistingCaseContent(
     isLoading: Boolean = false,
     openPhoto: (ViewImageArgs) -> Unit = { _ -> },
 ) {
-    val pagerState = rememberPagerState()
+    val pagerState = rememberPagerState(
+        initialPage = 0,
+        initialPageOffsetFraction = 0f
+    ) { tabTitles.size }
     val selectedTabIndex = pagerState.currentPage
     val coroutine = rememberCoroutineScope()
     TabRow(
@@ -304,7 +307,6 @@ private fun ColumnScope.ExistingCaseContent(
 
     Box(Modifier.weight(1f)) {
         HorizontalPager(
-            pageCount = tabTitles.size,
             state = pagerState,
             userScrollEnabled = enablePagerScroll,
         ) { pagerIndex ->
