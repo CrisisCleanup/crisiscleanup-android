@@ -270,7 +270,7 @@ class ExistingCaseViewModel @Inject constructor(
 
     val statusOptions = uiState
         .mapLatest {
-            (it as? CaseEditorUiState.WorksiteData)?.statusOptions ?: emptyList()
+            it.asCaseData()?.statusOptions ?: emptyList()
         }
         .stateIn(
             scope = viewModelScope,
@@ -278,7 +278,7 @@ class ExistingCaseViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val worksiteData = uiState.map { it as? CaseEditorUiState.WorksiteData }
+    val caseData = uiState.map { it.asCaseData() }
         .stateIn(
             scope = viewModelScope,
             initialValue = null,
@@ -304,20 +304,20 @@ class ExistingCaseViewModel @Inject constructor(
         ::Triple,
     )
         .filter {
-            it.first is CaseEditorUiState.WorksiteData &&
+            it.first is CaseEditorUiState.CaseData &&
                     !it.second.isNew &&
                     it.third.isNotEmpty()
         }
         .filter {
             val (viewModelState, _, orgLookup) = it
-            val stateData = viewModelState as CaseEditorUiState.WorksiteData
+            val stateData = viewModelState as CaseEditorUiState.CaseData
             val myOrg = orgLookup[stateData.orgId]
             myOrg != null
         }
         .mapLatest {
             val (viewModelState, worksite, orgLookup) = it
 
-            val stateData = viewModelState as CaseEditorUiState.WorksiteData
+            val stateData = viewModelState as CaseEditorUiState.CaseData
 
             val isTurnOnRelease = stateData.incident.turnOnRelease
             val myOrgId = stateData.orgId
@@ -428,9 +428,9 @@ class ExistingCaseViewModel @Inject constructor(
         uiState,
         ::Pair,
     )
-        .filter { (_, state) -> state is CaseEditorUiState.WorksiteData }
+        .filter { (_, state) -> state is CaseEditorUiState.CaseData }
         .mapLatest { (worksite, state) ->
-            val localImages = (state as CaseEditorUiState.WorksiteData).localWorksite
+            val localImages = (state as CaseEditorUiState.CaseData).localWorksite
                 ?.localImages
                 ?.map(WorksiteLocalImage::asCaseImage)
                 ?: emptyList()
@@ -469,10 +469,10 @@ class ExistingCaseViewModel @Inject constructor(
     // TODO Queue and debounce saves. Save off view model thread in case is long running.
     //      How to keep worksite state synced?
 
-    private val uiStateWorksiteData: CaseEditorUiState.WorksiteData?
-        get() = uiState.value as? CaseEditorUiState.WorksiteData
+    private val uiStateCaseData: CaseEditorUiState.CaseData?
+        get() = uiState.value.asCaseData()
     private val organizationId: Long?
-        get() = uiStateWorksiteData?.orgId
+        get() = uiStateCaseData?.orgId
 
     private fun saveWorksiteChange(
         startingWorksite: Worksite,

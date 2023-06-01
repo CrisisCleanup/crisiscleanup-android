@@ -156,9 +156,9 @@ internal fun ColumnScope.CaseEditorScreen(
             }
         }
 
-        is CaseEditorUiState.WorksiteData -> {
+        is CaseEditorUiState.CaseData -> {
             FullEditView(
-                uiState as CaseEditorUiState.WorksiteData,
+                uiState as CaseEditorUiState.CaseData,
                 onCancel = onNavigateCancel,
                 onSearchAddress = onEditSearchAddress,
                 onMoveLocation = onEditMoveLocationOnMap,
@@ -248,7 +248,7 @@ private fun OnContentScrollRest(
 
 @Composable
 private fun ColumnScope.FullEditView(
-    worksiteData: CaseEditorUiState.WorksiteData,
+    caseData: CaseEditorUiState.CaseData,
     modifier: Modifier = Modifier,
     viewModel: CaseEditorViewModel = hiltViewModel(),
     onCancel: () -> Unit = {},
@@ -365,7 +365,7 @@ private fun ColumnScope.FullEditView(
     val areEditorsReady by viewModel.areEditorsReady.collectAsStateWithLifecycle()
     val isSavingData by viewModel.isSavingWorksite.collectAsStateWithLifecycle()
     val isEditable = areEditorsReady &&
-            worksiteData.isNetworkLoadFinished &&
+            caseData.isNetworkLoadFinished &&
             !isSavingData
 
     val isSectionCollapsed =
@@ -382,7 +382,7 @@ private fun ColumnScope.FullEditView(
     Box(Modifier.weight(1f)) {
         val closeKeyboard = rememberCloseKeyboard(viewModel)
 
-        val caseEditor = CaseEditor(isEditable, worksiteData.statusOptions)
+        val caseEditor = CaseEditor(isEditable, caseData.statusOptions)
         CompositionLocalProvider(LocalCaseEditor provides caseEditor) {
             LazyColumn(
                 modifier
@@ -391,7 +391,7 @@ private fun ColumnScope.FullEditView(
                 state = contentListState,
             ) {
                 fullEditContent(
-                    worksiteData,
+                    caseData,
                     viewModel,
                     modifier,
                     editSections,
@@ -497,7 +497,7 @@ private fun SectionPager(
 }
 
 private fun LazyListScope.fullEditContent(
-    worksiteData: CaseEditorUiState.WorksiteData,
+    caseData: CaseEditorUiState.CaseData,
     viewModel: CaseEditorViewModel,
     modifier: Modifier = Modifier,
     sectionTitles: List<String> = emptyList(),
@@ -513,8 +513,8 @@ private fun LazyListScope.fullEditContent(
         val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
         CaseIncident(
             modifier,
-            worksiteData.incident,
-            worksiteData.isPendingSync,
+            caseData.incident,
+            caseData.isPendingSync,
             isSyncing = isSyncing,
         )
     }

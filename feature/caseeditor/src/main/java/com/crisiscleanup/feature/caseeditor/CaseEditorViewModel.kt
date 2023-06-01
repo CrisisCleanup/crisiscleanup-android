@@ -204,7 +204,7 @@ class CaseEditorViewModel @Inject constructor(
 
         caseEditors = dataLoader.uiState
             .filter {
-                (it as? CaseEditorUiState.WorksiteData)?.isNetworkLoadFinished == true &&
+                it.asCaseData()?.isNetworkLoadFinished == true &&
                         editorSetInstant?.let { setInstant ->
                             Clock.System.now().minus(setInstant) < editorSetWindow
                         } ?: true
@@ -378,6 +378,8 @@ class CaseEditorViewModel @Inject constructor(
         return InvalidWorksiteInfo()
     }
 
+    private fun tryGetEditorState() = uiState.value.asCaseData()
+
     fun saveChanges(
         claimUnclaimed: Boolean,
         backOnSuccess: Boolean = true
@@ -394,7 +396,7 @@ class CaseEditorViewModel @Inject constructor(
         }
         viewModelScope.launch(ioDispatcher) {
             try {
-                val editorStateData = uiState.value as? CaseEditorUiState.WorksiteData
+                val editorStateData = tryGetEditorState()
                 val initialWorksite = editorStateData?.worksite
                     ?: return@launch
 
@@ -467,13 +469,17 @@ class CaseEditorViewModel @Inject constructor(
     }
 
     fun abandonChanges() {
+        tryGetEditorState()?.let {
+            worksiteProvider.editableWorksite.value = it.worksite
+        }
+
         navigateBack.value = true
     }
 
     private fun transferChanges(indicateInvalidSection: Boolean = false): Boolean {
-        (uiState.value as? CaseEditorUiState.WorksiteData)?.let {
+        tryGetEditorState()?.let { editorState ->
             (workEditor as? EditableWorkDataEditor)?.let { workDataEditor ->
-                val initialWorksite = it.worksite
+                val initialWorksite = editorState.worksite
                 var worksite: Worksite? = initialWorksite
                 caseDataWriters.forEachIndexed { index, dataWriter ->
                     worksite = dataWriter.updateCase(worksite!!)
@@ -501,7 +507,7 @@ class CaseEditorViewModel @Inject constructor(
                     }
                 }
 
-                val workTypeLookup = it.incident.workTypeLookup
+                val workTypeLookup = editorState.incident.workTypeLookup
                 worksite = workDataEditor.transferWorkTypes(workTypeLookup, worksite!!)
 
                 worksiteProvider.editableWorksite.value = worksite!!
@@ -520,7 +526,7 @@ class CaseEditorViewModel @Inject constructor(
             return true
         }
 
-        (uiState.value as? CaseEditorUiState.WorksiteData)?.let {
+        tryGetEditorState()?.let {
             if (it.worksite != worksiteProvider.editableWorksite.value) {
                 promptUnsavedChanges.value = true
                 return true
@@ -548,7 +554,7 @@ class CaseEditorViewModel @Inject constructor(
 sealed interface CaseEditorUiState {
     object Loading : CaseEditorUiState
 
-    data class WorksiteData(
+    data class CaseData(
         val orgId: Long,
         val isEditCapable: Boolean,
         val statusOptions: List<WorkTypeStatus>,
@@ -568,6 +574,8 @@ sealed interface CaseEditorUiState {
         val errorMessage: String = "",
     ) : CaseEditorUiState
 }
+
+fun CaseEditorUiState.asCaseData() = this as? CaseEditorUiState.CaseData
 
 data class GroupSummaryFieldLookup(
     val fieldMap: Map<String, String>,

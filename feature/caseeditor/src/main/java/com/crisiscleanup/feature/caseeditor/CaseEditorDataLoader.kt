@@ -287,7 +287,7 @@ internal class CaseEditorDataLoader(
                     (isCreateWorksite || worksiteState.phone1.isNotBlank())
             val isTranslationUpdated =
                 editableWorksiteProvider.formFieldTranslationLookup.isNotEmpty()
-            CaseEditorUiState.WorksiteData(
+            CaseEditorUiState.CaseData(
                 organization.id,
                 isReadyForEditing,
                 workTypeStatuses,

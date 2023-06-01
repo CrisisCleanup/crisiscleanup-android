@@ -446,13 +446,13 @@ internal fun EditExistingCaseInfoView(
 
     LazyColumn {
         item(key = "incident-info") {
-            val worksiteData by viewModel.worksiteData.collectAsStateWithLifecycle()
-            worksiteData?.let { uiData ->
+            val caseData by viewModel.caseData.collectAsStateWithLifecycle()
+            caseData?.let { caseState ->
                 val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
                 CaseIncident(
                     Modifier,
-                    uiData.incident,
-                    uiData.isPendingSync,
+                    caseState.incident,
+                    caseState.isPendingSync,
                     isSyncing = isSyncing,
                 )
             }
