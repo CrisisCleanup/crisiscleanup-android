@@ -640,7 +640,6 @@ private fun LazyListScope.volunteerReportItems(
     // itemInfoSectionHeader(4, translate("caseView.report"))
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun EditExistingCasePhotosView(
     viewModel: ExistingCaseViewModel = hiltViewModel(),

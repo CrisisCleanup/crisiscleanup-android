@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
@@ -149,52 +150,68 @@ internal fun PhotosSection(
         horizontalItemSpacing = itemSpacing,
         verticalArrangement = Arrangement.spacedBy(itemSpacing),
     ) {
+        val totalCount = 1 + photos.size + 1
+        val endSpaceIndex = totalCount - 1
         items(
-            1 + photos.size,
+            totalCount,
             key = {
-                if (it == 0) "add-media"
-                else photos[it - 1].imageUri
+                when (it) {
+                    0 -> "add-media"
+                    endSpaceIndex -> "end-spacer"
+                    else -> photos[it - 1].imageUri
+                }
             },
             contentType = {
-                if (it == 0) "add-media"
-                else "photo"
+                when (it) {
+                    0 -> "add-media"
+                    endSpaceIndex -> "end-spacer"
+                    else -> "photo-image"
+                }
             }
         ) { index ->
-            if (index == 0) {
-                AddMediaView(
-                    Modifier
-                        .padding(addMediaActionPadding)
-                        .clickable { onAddPhoto() }
-                        .size(addActionSize),
-                )
-            } else {
-                val photoIndex = index - 1
-                val photo = photos[photoIndex]
-                Box {
-                    AsyncImage(
-                        model = photo.thumbnailUri.ifBlank { photo.imageUri },
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(RoundedCornerShape(mediaCornerRadius))
-                            .clickable { onPhotoSelect(photo) },
-                        placeholder = painterResource(R.drawable.cc_grayscale_pin),
-                        contentDescription = photo.title,
-                        contentScale = ContentScale.Crop,
+            when (index) {
+                0 -> {
+                    AddMediaView(
+                        Modifier
+                            .padding(addMediaActionPadding)
+                            .clickable { onAddPhoto() }
+                            .size(addActionSize),
                     )
-                    if (syncingWorksiteImage == photo.id) {
-                        Surface(
+                }
+
+                endSpaceIndex -> {
+                    Spacer(modifier = Modifier.width(0.1.dp))
+                }
+
+                else -> {
+                    val photoIndex = index - 1
+                    val photo = photos[photoIndex]
+                    Box {
+                        AsyncImage(
+                            model = photo.thumbnailUri.ifBlank { photo.imageUri },
                             modifier = Modifier
-                                .align(Alignment.Center)
-                                .clip(CircleShape),
-                            color = (Color.White.copy(alpha = 0.8f)),
-                        ) {
-                            Icon(
+                                .fillMaxSize()
+                                .clip(RoundedCornerShape(mediaCornerRadius))
+                                .clickable { onPhotoSelect(photo) },
+                            placeholder = painterResource(R.drawable.cc_grayscale_pin),
+                            contentDescription = photo.title,
+                            contentScale = ContentScale.Crop,
+                        )
+                        if (syncingWorksiteImage == photo.id) {
+                            Surface(
                                 modifier = Modifier
-                                    .size(64.dp)
-                                    .padding(16.dp),
-                                imageVector = CrisisCleanupIcons.CloudSync,
-                                contentDescription = stringResource(R.string.is_syncing),
-                            )
+                                    .align(Alignment.Center)
+                                    .clip(CircleShape),
+                                color = (Color.White.copy(alpha = 0.8f)),
+                            ) {
+                                Icon(
+                                    modifier = Modifier
+                                        .size(64.dp)
+                                        .padding(16.dp),
+                                    imageVector = CrisisCleanupIcons.CloudSync,
+                                    contentDescription = stringResource(R.string.is_syncing),
+                                )
+                            }
                         }
                     }
                 }
