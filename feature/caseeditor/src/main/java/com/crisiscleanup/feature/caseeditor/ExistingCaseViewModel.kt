@@ -36,6 +36,7 @@ import com.crisiscleanup.core.data.repository.WorkTypeStatusRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
+import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.NetworkImage
 import com.crisiscleanup.core.model.data.WorkType
@@ -82,6 +83,7 @@ class ExistingCaseViewModel @Inject constructor(
     organizationsRepository: OrganizationsRepository,
     incidentRefresher: IncidentRefresher,
     locationsRepository: LocationsRepository,
+    incidentBoundsProvider: IncidentBoundsProvider,
     worksitesRepository: WorksitesRepository,
     languageRepository: LanguageTranslationsRepository,
     languageRefresher: LanguageRefresher,
@@ -193,7 +195,7 @@ class ExistingCaseViewModel @Inject constructor(
             accountDataRepository,
             incidentsRepository,
             incidentRefresher,
-            locationsRepository,
+            incidentBoundsProvider,
             worksitesRepository,
             worksiteChangeRepository,
             languageRepository,

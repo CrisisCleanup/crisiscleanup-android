@@ -7,16 +7,13 @@ import com.crisiscleanup.core.common.log.TagLogger
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
-import com.crisiscleanup.core.data.repository.LocationsRepository
 import com.crisiscleanup.core.data.repository.WorkTypeStatusRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
-import com.crisiscleanup.core.mapmarker.util.toBounds
-import com.crisiscleanup.core.mapmarker.util.toLatLng
+import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
 import com.crisiscleanup.core.model.data.AutoContactFrequency
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.IncidentFormField
-import com.crisiscleanup.core.model.data.IncidentLocation
 import com.crisiscleanup.core.model.data.WorksiteFormValue
 import com.crisiscleanup.feature.caseeditor.model.FormFieldNode
 import com.crisiscleanup.feature.caseeditor.model.flatten
@@ -45,7 +42,7 @@ internal class CaseEditorDataLoader(
     accountDataRepository: AccountDataRepository,
     incidentsRepository: IncidentsRepository,
     private val incidentRefresher: IncidentRefresher,
-    locationsRepository: LocationsRepository,
+    incidentBoundsProvider: IncidentBoundsProvider,
     private val worksitesRepository: WorksitesRepository,
     private val worksiteChangeRepository: WorksiteChangeRepository,
     languageRepository: LanguageTranslationsRepository,
@@ -92,14 +89,14 @@ internal class CaseEditorDataLoader(
         )
 
     private val incidentDataStream = incidentsRepository.streamIncident(incidentIdIn)
-        .mapLatest { incident ->
-            incident?.locations?.map(IncidentLocation::location)?.let { locationIds ->
-                val locations = locationsRepository.getLocations(locationIds).toLatLng()
-                val bounds = if (locations.isEmpty()) null
-                else locations.toBounds()
-                return@mapLatest Pair(incident, bounds)
+        .flatMapLatest { incident ->
+            incident?.let {
+                return@flatMapLatest incidentBoundsProvider.mapIncidentBounds(it)
+                    .mapLatest { bounds ->
+                        Pair(incident, bounds)
+                    }
             }
-            null
+            flowOf(null)
         }
         .flowOn(coroutineDispatcher)
         .distinctUntilChanged()
@@ -174,7 +171,7 @@ internal class CaseEditorDataLoader(
                 return@mapLatest CaseEditorUiState.Error(R.string.incident_issue_try_again)
             }
 
-            if (bounds?.locations?.isNotEmpty() != true) {
+            if (bounds.locations.isEmpty()) {
                 logger.logException(Exception("Incident ${incident.id} ${incident.name} is lacking locations."))
                 val errorMessage = resourceProvider.getString(
                     R.string.incident_is_in_progress,

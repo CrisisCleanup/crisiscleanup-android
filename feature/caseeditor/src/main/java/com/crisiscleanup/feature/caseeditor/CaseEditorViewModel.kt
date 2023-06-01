@@ -21,12 +21,12 @@ import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
-import com.crisiscleanup.core.data.repository.LocationsRepository
 import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
 import com.crisiscleanup.core.data.repository.WorkTypeStatusRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
+import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.LocalWorksite
@@ -71,7 +71,7 @@ class CaseEditorViewModel @Inject constructor(
     accountDataRepository: AccountDataRepository,
     incidentsRepository: IncidentsRepository,
     incidentRefresher: IncidentRefresher,
-    locationsRepository: LocationsRepository,
+    incidentBoundsProvider: IncidentBoundsProvider,
     worksitesRepository: WorksitesRepository,
     languageRepository: LanguageTranslationsRepository,
     languageRefresher: LanguageRefresher,
@@ -166,7 +166,7 @@ class CaseEditorViewModel @Inject constructor(
             accountDataRepository,
             incidentsRepository,
             incidentRefresher,
-            locationsRepository,
+            incidentBoundsProvider,
             worksitesRepository,
             worksiteChangeRepository,
             languageRepository,

@@ -11,9 +11,9 @@ import javax.inject.Singleton
 class OfflineFirstLocationsRepository @Inject constructor(
     private val locationDao: LocationDao,
 ) : LocationsRepository {
-    override fun streamLocations(ids: List<Long>) =
+    override fun streamLocations(ids: Collection<Long>) =
         locationDao.streamLocations(ids).map { it.map(PopulatedLocation::asExternalModel) }
 
-    override fun getLocations(ids: List<Long>) =
+    override fun getLocations(ids: Collection<Long>) =
         locationDao.getLocations(ids).map(PopulatedLocation::asExternalModel)
 }

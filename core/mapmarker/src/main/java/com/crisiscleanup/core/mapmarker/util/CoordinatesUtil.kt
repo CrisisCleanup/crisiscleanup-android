@@ -19,7 +19,7 @@ fun LatLng.smallOffset(offsetScale: Double = 1e-15) = LatLng(
     longitude + Math.random() * offsetScale,
 )
 
-fun Collection<Location>.toLatLng(): Collection<LocationLatLng> {
+internal fun Collection<Location>.toLatLng(): Collection<LocationLatLng> {
     return filter {
         !(it.multiCoordinates == null && it.coordinates == null)
     }
@@ -40,9 +40,7 @@ fun Collection<Location>.toLatLng(): Collection<LocationLatLng> {
         }
 }
 
-fun Collection<LocationLatLng>.flattenLatLng() = map { it.multiCoordinates.flatten() }.flatten()
-
-fun Collection<LocationLatLng>.toBounds(): IncidentBounds {
+internal fun Collection<LocationLatLng>.toBounds(): IncidentBounds {
     val locations = map {
         val multiBounds = it.multiCoordinates.map { latLngs ->
             if (latLngs.size < 3) null
@@ -132,7 +130,7 @@ fun Collection<LocationLatLng>.toBounds(): IncidentBounds {
     )
 }
 
-fun Collection<LatLng>.toBounds(
+private fun Collection<LatLng>.toBounds(
     startingBounds: LatLngBounds,
     minLatSpan: Double = 0.0001,
     minLngSpan: Double = 0.0002,
@@ -167,7 +165,7 @@ fun Collection<LatLng>.toBounds(
     return locationBounds.build()
 }
 
-fun Collection<LatLng>.toBounds(): LatLngBounds {
+private fun Collection<LatLng>.toBounds(): LatLngBounds {
     val coordinates = if (isEmpty()) DefaultCoordinates else first()
     return toBounds(LatLngBounds(coordinates, coordinates))
 }

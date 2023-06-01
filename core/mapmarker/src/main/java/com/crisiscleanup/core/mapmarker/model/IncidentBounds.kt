@@ -38,3 +38,5 @@ data class IncidentBounds(
     fun containsLocation(location: LatLng) =
         bounds.contains(location) && locations.any { it.containsLocation(location) }
 }
+
+val DefaultIncidentBounds = IncidentBounds(emptyList(), MapViewCameraBoundsDefault.bounds)

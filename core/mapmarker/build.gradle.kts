@@ -11,9 +11,12 @@ android {
 
 dependencies {
     implementation(project(":core:common"))
+    implementation(project(":core:data"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:model"))
     implementation(project(":core:renderscript-toolkit"))
+
+    implementation(libs.kotlinx.datetime)
 
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.ui)

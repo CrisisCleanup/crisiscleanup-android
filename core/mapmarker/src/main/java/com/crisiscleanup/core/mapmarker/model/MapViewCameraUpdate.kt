@@ -18,8 +18,14 @@ data class MapViewCameraBounds(
 }
 
 val DefaultCoordinates = LatLng(40.272621, -96.012327)
-private val swDefault = DefaultCoordinates
-private val neDefault = DefaultCoordinates
+
+// TODO Replace with actual location bounds from incident_id = 41762
+val DefaultBounds = LatLngBounds(
+    LatLng(28.598360630332458, -122.5307175747425),
+    LatLng(47.27322983958189, -68.49771985492872),
+)
+private val swDefault = DefaultBounds.southwest
+private val neDefault = DefaultBounds.northeast
 val MapViewCameraBoundsDefault = MapViewCameraBounds(
     LatLngBounds(swDefault, neDefault),
     0,

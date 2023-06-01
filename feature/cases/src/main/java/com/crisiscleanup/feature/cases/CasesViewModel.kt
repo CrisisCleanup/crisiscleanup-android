@@ -18,11 +18,11 @@ import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.commonassets.getDisasterIcon
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.IncidentsRepository
-import com.crisiscleanup.core.data.repository.LocationsRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.data.util.IncidentDataPullReporter
 import com.crisiscleanup.core.data.util.IncidentDataPullStats
 import com.crisiscleanup.core.domain.LoadIncidentDataUseCase
+import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
@@ -70,7 +70,7 @@ import com.crisiscleanup.core.commonassets.R as commonAssetsR
 @HiltViewModel
 class CasesViewModel @Inject constructor(
     incidentsRepository: IncidentsRepository,
-    locationsRepository: LocationsRepository,
+    incidentBoundsProvider: IncidentBoundsProvider,
     private val worksitesRepository: WorksitesRepository,
     private val incidentSelector: IncidentSelector,
     loadIncidentDataUseCase: LoadIncidentDataUseCase,
@@ -131,8 +131,7 @@ class CasesViewModel @Inject constructor(
     private val mapBoundsManager = CasesMapBoundsManager(
         viewModelScope,
         incidentSelector,
-        incidentsRepository,
-        locationsRepository,
+        incidentBoundsProvider,
         ioDispatcher,
         logger,
     )
@@ -145,14 +144,8 @@ class CasesViewModel @Inject constructor(
         mapBoundsManager.isDeterminingBounds,
         mapTileRenderer.isBusy,
         isGeneratingWorksiteMarkers,
-    ) {
-            isMapBounding,
-            rendererBusy,
-            isGeneratingMarkers,
-        ->
-        isMapBounding ||
-                rendererBusy ||
-                isGeneratingMarkers
+    ) { b0, b1, b2 ->
+        b0 || b1 || b2
     }
 
     private val mapMarkerManager = CasesMapMarkerManager(

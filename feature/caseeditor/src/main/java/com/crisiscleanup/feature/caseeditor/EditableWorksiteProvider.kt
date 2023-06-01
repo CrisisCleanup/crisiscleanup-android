@@ -1,8 +1,8 @@
 package com.crisiscleanup.feature.caseeditor
 
 import com.crisiscleanup.core.common.WorksiteLocationEditor
+import com.crisiscleanup.core.mapmarker.model.DefaultIncidentBounds
 import com.crisiscleanup.core.mapmarker.model.IncidentBounds
-import com.crisiscleanup.core.mapmarker.model.MapViewCameraBoundsDefault
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.Incident
@@ -107,8 +107,6 @@ class SingleEditableWorksiteProvider @Inject constructor() : EditableWorksitePro
     override fun translate(key: String) =
         formFieldTranslationLookup[key] ?: workTypeTranslationLookup[key]
 }
-
-internal val DefaultIncidentBounds = IncidentBounds(emptyList(), MapViewCameraBoundsDefault.bounds)
 
 @Module
 @InstallIn(SingletonComponent::class)

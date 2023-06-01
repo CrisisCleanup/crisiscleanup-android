@@ -23,4 +23,9 @@ interface MapMarkerModule {
     fun bindsBitmapIconProvider(
         provider: CrisisCleanupDrawableResourceBitmapProvider
     ): DrawableResourceBitmapProvider
+
+    @Binds
+    fun bindsIncidentBoundsProvider(
+        calculator: MapsIncidentBoundsProvider
+    ): IncidentBoundsProvider
 }
