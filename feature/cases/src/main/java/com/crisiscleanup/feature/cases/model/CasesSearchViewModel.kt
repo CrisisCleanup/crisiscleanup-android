@@ -23,7 +23,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
@@ -88,39 +87,42 @@ class CasesSearchViewModel @Inject constructor(
         )
 
     val searchQuery = MutableStateFlow("")
-
     val searchResults = combine(
         incidentSelector.incidentId,
         searchQuery
             .debounce(200)
             .map(String::trim)
-            .distinctUntilChanged()
-            .filter { it.length > 2 },
+            .distinctUntilChanged(),
         ::Pair
     )
         .map { (incidentId, q) ->
             if (incidentId != EmptyIncident.id) {
+                if (q.length < 3) {
+                    return@map CasesSearchResults(q)
+                }
+
                 isSearching.value = true
                 try {
                     val results = searchWorksitesRepository.searchWorksites(incidentId, q)
-                    return@map results.map { summary ->
+                    val options = results.map { summary ->
                         CaseSummaryResult(
                             summary,
                             getIcon(summary.workType),
                         )
                     }
+                    return@map CasesSearchResults(q, false, options)
                 } catch (e: Exception) {
                     logger.logException(e)
                 } finally {
                     isSearching.value = false
                 }
             }
-            emptyList()
+            CasesSearchResults(q, false)
         }
         .flowOn(ioDispatcher)
         .stateIn(
             scope = viewModelScope,
-            initialValue = emptyList(),
+            initialValue = CasesSearchResults(),
             started = SharingStarted.WhileSubscribed(),
         )
 
@@ -139,6 +141,9 @@ class CasesSearchViewModel @Inject constructor(
 
     fun onSelectWorksite(result: CaseSummaryResult) {
         viewModelScope.launch(ioDispatcher) {
+            if (isSelectingResult.value) {
+                return@launch
+            }
             isSelectingResult.value = true
             try {
                 val incidentId = incidentSelector.incidentId.value
@@ -157,3 +162,9 @@ class CasesSearchViewModel @Inject constructor(
 
     fun translate(key: String) = translator.translate(key) ?: key
 }
+
+data class CasesSearchResults(
+    val q: String = "",
+    val isShortQ: Boolean = true,
+    val options: List<CaseSummaryResult> = emptyList(),
+)

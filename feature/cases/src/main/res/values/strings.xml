@@ -30,4 +30,7 @@
         <item quantity="one">One Case</item>
         <item quantity="other">%d Cases</item>
     </plurals>
+
+    <string name="search_query_is_short">Search for more…</string>
+    <string name="no_search_results_for">No cases found matching \'%s\'.</string>
 </resources>

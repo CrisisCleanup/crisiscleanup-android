@@ -32,6 +32,7 @@ import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCen
 import com.crisiscleanup.core.designsystem.component.ClearableTextField
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
 import com.crisiscleanup.core.model.data.EmptyWorksite
@@ -62,19 +63,11 @@ internal fun CasesSearchRoute(
             }
         }
 
-        val onCaseSelect = if (isLoading) {
-            {}
-        } else remember(viewModel) {
-            { result: CaseSummaryResult -> viewModel.onSelectWorksite(result) }
-        }
-
         val q by viewModel.searchQuery.collectAsStateWithLifecycle()
+
         val updateQuery =
             remember(viewModel) { { text: String -> viewModel.searchQuery.value = text } }
 
-        val searchResults by viewModel.searchResults.collectAsStateWithLifecycle()
-
-        val recentCases by viewModel.recentWorksites.collectAsStateWithLifecycle()
 
         val closeKeyboard = rememberCloseKeyboard(viewModel)
 
@@ -119,22 +112,52 @@ internal fun CasesSearchRoute(
                     )
                 }
 
-                val lazyListState = rememberLazyListState()
-                LazyColumn(
-                    Modifier
-                        .fillMaxWidth()
-                        .scrollFlingListener(closeKeyboard),
-                    state = lazyListState,
-                ) {
-                    if (q.isNotEmpty()) {
-                        listCaseResults(searchResults, onCaseSelect)
-                    } else {
-                        recentCases(recentCases, onCaseSelect)
-                    }
-                }
+                ListCases(
+                    q.isEmpty(),
+                    closeKeyboard = closeKeyboard,
+                )
             }
 
             BusyIndicatorFloatingTopCenter(isLoading)
+        }
+    }
+}
+
+@Composable
+private fun ListCases(
+    showRecents: Boolean,
+    viewModel: CasesSearchViewModel = hiltViewModel(),
+    closeKeyboard: () -> Unit = {},
+) {
+    val searchResults by viewModel.searchResults.collectAsStateWithLifecycle()
+
+    val onCaseSelect = remember(viewModel) {
+        { result: CaseSummaryResult -> viewModel.onSelectWorksite(result) }
+    }
+    val recentCases by viewModel.recentWorksites.collectAsStateWithLifecycle()
+
+    val lazyListState = rememberLazyListState()
+    LazyColumn(
+        Modifier
+            .fillMaxWidth()
+            .scrollFlingListener(closeKeyboard),
+        state = lazyListState,
+    ) {
+        if (showRecents) {
+            recentCases(recentCases, onCaseSelect)
+        } else {
+            with(searchResults) {
+                if (options.isNotEmpty()) {
+                    listCaseResults(options, onCaseSelect)
+                } else {
+                    item {
+                        val message =
+                            if (isShortQ) stringResource(R.string.search_query_is_short)
+                            else stringResource(R.string.no_search_results_for, q)
+                        Text(message, listItemModifier)
+                    }
+                }
+            }
         }
     }
 }

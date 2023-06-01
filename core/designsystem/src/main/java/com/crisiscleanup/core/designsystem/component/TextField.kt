@@ -322,5 +322,6 @@ fun OutlinedObfuscatingTextField(
         onEnter = onEnter,
         trailingIcon = trailingIcon,
         imeAction = imeAction,
+        drawOutline = true,
     )
 }
