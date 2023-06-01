@@ -36,6 +36,7 @@ import com.crisiscleanup.core.data.repository.WorkTypeStatusRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
+import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.NetworkImage
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.WorkTypeRequest
@@ -71,7 +72,6 @@ import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 
 @HiltViewModel
@@ -158,9 +158,6 @@ class ExistingCaseViewModel @Inject constructor(
 
     val editableWorksite = editableWorksiteProvider.editableWorksite
 
-    // The first worksite loaded in the session
-    private val worksiteIn = AtomicReference<Worksite>()
-
     private val previousNoteCount = AtomicInteger(0)
 
     var addImageCategory by mutableStateOf(ImageCategory.Before)
@@ -188,13 +185,6 @@ class ExistingCaseViewModel @Inject constructor(
         updateHeaderTitle()
 
         editableWorksiteProvider.reset(incidentIdArg)
-
-        editableWorksite.onEach {
-            if (!it.isNew) {
-                worksiteIn.compareAndSet(null, it)
-            }
-        }
-            .launchIn(viewModelScope)
 
         dataLoader = CaseEditorDataLoader(
             false,
@@ -253,6 +243,9 @@ class ExistingCaseViewModel @Inject constructor(
     val isLoading = dataLoader.isLoading
 
     private val uiState = dataLoader.uiState
+
+    private val referenceWorksite: Worksite
+        get() = uiState.value.asCaseData()?.worksite ?: EmptyWorksite
 
     val tabTitles = uiState.mapLatest {
         listOf(
@@ -510,25 +503,25 @@ class ExistingCaseViewModel @Inject constructor(
     }
 
     fun takeNoteAdded(): Boolean {
-        val noteCount = editableWorksite.value.notes.size
+        val noteCount = referenceWorksite.notes.size
         return previousNoteCount.getAndSet(noteCount) + 1 == noteCount
     }
 
     fun toggleFavorite() {
-        val startingWorksite = editableWorksite.value
+        val startingWorksite = referenceWorksite
         val changedWorksite =
             startingWorksite.copy(isAssignedToOrgMember = !startingWorksite.isLocalFavorite)
         saveWorksiteChange(startingWorksite, changedWorksite)
     }
 
     fun toggleHighPriority() {
-        val startingWorksite = editableWorksite.value
+        val startingWorksite = referenceWorksite
         val changedWorksite = startingWorksite.toggleHighPriorityFlag()
         saveWorksiteChange(startingWorksite, changedWorksite)
     }
 
     fun updateWorkType(workType: WorkType) {
-        val startingWorksite = editableWorksite.value
+        val startingWorksite = referenceWorksite
         val updatedWorkTypes =
             startingWorksite.workTypes
                 .filter { it.workType != workType.workType }
@@ -568,7 +561,7 @@ class ExistingCaseViewModel @Inject constructor(
 
     fun claimAll() {
         organizationId?.let { orgId ->
-            val startingWorksite = editableWorksite.value
+            val startingWorksite = referenceWorksite
             val updatedWorkTypes =
                 startingWorksite.workTypes
                     .map {
@@ -607,7 +600,7 @@ class ExistingCaseViewModel @Inject constructor(
             return
         }
 
-        val startingWorksite = editableWorksite.value
+        val startingWorksite = referenceWorksite
         val notes = mutableListOf(note).apply { addAll(startingWorksite.notes) }
         val changedWorksite = startingWorksite.copy(notes = notes)
         saveWorksiteChange(startingWorksite, changedWorksite)
