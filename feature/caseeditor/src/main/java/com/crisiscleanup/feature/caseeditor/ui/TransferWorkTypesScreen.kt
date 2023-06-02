@@ -27,7 +27,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
-import com.crisiscleanup.core.designsystem.component.TopAppBarSingleAction
+import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
 import com.crisiscleanup.core.designsystem.theme.listCheckboxAlignStartOffset
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
@@ -73,7 +73,7 @@ internal fun TransferWorkTypesRoute(
             }
         }
         Column {
-            TopAppBarSingleAction(
+            TopAppBarBackAction(
                 title = viewModel.screenTitle,
                 onAction = conditionalBack,
             )

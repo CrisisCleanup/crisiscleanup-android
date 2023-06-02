@@ -54,7 +54,7 @@ import com.crisiscleanup.core.commonassets.getDisasterIcon
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
-import com.crisiscleanup.core.designsystem.component.TopAppBarSingleAction
+import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
@@ -122,7 +122,7 @@ internal fun CaseEditorRoute(
                 }
             }
             Column(Modifier.background(color = Color.White)) {
-                TopAppBarSingleAction(
+                TopAppBarBackAction(
                     title = headerTitle,
                     onAction = onNavigateBack,
                 )

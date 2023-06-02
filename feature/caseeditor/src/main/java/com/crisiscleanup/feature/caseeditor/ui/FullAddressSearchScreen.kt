@@ -16,7 +16,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
-import com.crisiscleanup.core.designsystem.component.TopAppBarSingleAction
+import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.textMessagePadding
 import com.crisiscleanup.feature.caseeditor.CaseLocationDataEditor
@@ -44,7 +44,7 @@ internal fun EditCaseAddressSearchRoute(
         val isEditable = !isCheckingOutOfBounds
 
         Column {
-            TopAppBarSingleAction(
+            TopAppBarBackAction(
                 title = stringResource(R.string.location_address_search),
                 onAction = onBack,
             )

@@ -3,7 +3,6 @@ package com.crisiscleanup.feature.caseeditor.ui
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -61,6 +60,7 @@ import com.crisiscleanup.core.common.urlEncode
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationDefaults
+import com.crisiscleanup.core.designsystem.component.TopBarBackAction
 import com.crisiscleanup.core.designsystem.component.actionEdgeSpace
 import com.crisiscleanup.core.designsystem.component.fabPlusSpaceHeight
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
@@ -218,11 +218,9 @@ private fun TopBar(
     }
 
     val navigationContent = @Composable {
-        Text(
-            backText,
-            Modifier
-                .clickable(onClick = onBack)
-                .padding(8.dp),
+        TopBarBackAction(
+            text = backText,
+            action = onBack,
         )
     }
     val actionsContent: (@Composable (RowScope.() -> Unit)) = if (isLoading) {
@@ -230,6 +228,17 @@ private fun TopBar(
     } else {
         @Composable {
             // TODO Translations if exist
+
+            val highPriorityResId = if (isHighPriority) R.string.not_high_priority
+            else R.string.high_priority
+            val highPriorityTint = getTopIconActionColor(isHighPriority, isEditable)
+            CrisisCleanupIconButton(
+                iconResId = R.drawable.ic_important_filled,
+                contentDescriptionResId = highPriorityResId,
+                onClick = toggleHighPriority,
+                enabled = isEditable,
+                tint = highPriorityTint,
+            )
 
             val iconResId = if (isFavorite) R.drawable.ic_heart_filled
             else R.drawable.ic_heart_outline
@@ -242,17 +251,6 @@ private fun TopBar(
                 onClick = toggleFavorite,
                 enabled = isEditable,
                 tint = favoriteTint,
-            )
-
-            val highPriorityResId = if (isHighPriority) R.string.not_high_priority
-            else R.string.high_priority
-            val highPriorityTint = getTopIconActionColor(isHighPriority, isEditable)
-            CrisisCleanupIconButton(
-                iconResId = R.drawable.ic_important_filled,
-                contentDescriptionResId = highPriorityResId,
-                onClick = toggleHighPriority,
-                enabled = isEditable,
-                tint = highPriorityTint,
             )
         }
     }

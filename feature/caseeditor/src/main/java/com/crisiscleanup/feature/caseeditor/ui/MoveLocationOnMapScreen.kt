@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.BusyButton
-import com.crisiscleanup.core.designsystem.component.TopAppBarSingleAction
+import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
@@ -73,7 +73,7 @@ private fun EditCaseMapMoveLocationScreen(
     isEditable: Boolean = false,
 ) {
     Column {
-        TopAppBarSingleAction(
+        TopAppBarBackAction(
             title = viewModel.translate("caseForm.select_on_map"),
             onAction = onBack,
         )

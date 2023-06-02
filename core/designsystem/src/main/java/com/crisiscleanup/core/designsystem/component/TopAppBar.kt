@@ -186,13 +186,53 @@ fun TopAppBarBackCancel(
     )
 }
 
+// TODO Localize with translation. Provide local translator.
+@Composable
+private fun TopBarNavAction(
+    modifier: Modifier = Modifier,
+    action: () -> Unit = {},
+    @StringRes textResId: Int = 0,
+    text: String = "",
+    image: ImageVector? = null,
+) {
+    // TODO Text style and match height of app bar
+    Row(
+        modifier
+            .clickable(onClick = action)
+            .padding(8.dp)
+    ) {
+        CompositionLocalProvider(LocalContentColor provides primaryBlueColor) {
+            val actionText = text.ifEmpty { if (textResId != 0) stringResource(textResId) else "" }
+            image?.let {
+                Icon(
+                    imageVector = image,
+                    contentDescription = actionText,
+                )
+            }
+            Text(
+                actionText,
+                style = MaterialTheme.typography.bodyLarge,
+            )
+        }
+    }
+}
+
+@Composable
+fun TopBarBackAction(
+    modifier: Modifier = Modifier,
+    action: () -> Unit = {},
+    text: String = "",
+) {
+    TopBarNavAction(modifier, action, R.string.back, text, CrisisCleanupIcons.ArrowBack)
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopAppBarSingleAction(
+fun TopAppBarBackAction(
     modifier: Modifier = Modifier,
     @StringRes titleResId: Int = 0,
     title: String = "",
-    @StringRes actionResId: Int = R.string.back,
+    actionText: String = "",
     onAction: () -> Unit = {},
     colors: TopAppBarColors = TopAppBarDefaults.centerAlignedTopAppBarColors(),
 ) {
@@ -201,24 +241,7 @@ fun TopAppBarSingleAction(
     }
     val navigationContent: (@Composable (() -> Unit)) =
         @Composable {
-            // TODO Text style and match height of app bar
-            Row(
-                modifier
-                    .clickable(onClick = onAction)
-                    .padding(8.dp)
-            ) {
-                CompositionLocalProvider(LocalContentColor provides primaryBlueColor) {
-                    val text = stringResource(actionResId)
-                    Icon(
-                        imageVector = CrisisCleanupIcons.ArrowBack,
-                        contentDescription = text,
-                    )
-                    Text(
-                        text,
-                        style = MaterialTheme.typography.bodyLarge,
-                    )
-                }
-            }
+            TopBarBackAction(modifier, onAction, actionText)
         }
     CenterAlignedTopAppBar(
         title = titleContent,
