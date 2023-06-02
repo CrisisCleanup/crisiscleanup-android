@@ -148,7 +148,7 @@ private fun ListCases(
         } else {
             with(searchResults) {
                 if (options.isNotEmpty()) {
-                    listCaseResults(options, onCaseSelect)
+                    listCaseResults(options, onCaseSelect, isEditable = true)
                 } else {
                     item {
                         val message =
@@ -175,5 +175,5 @@ private fun LazyListScope.recentCases(
         }
     }
 
-    listCaseResults(cases, onSelect)
+    listCaseResults(cases, onSelect, isEditable = true)
 }

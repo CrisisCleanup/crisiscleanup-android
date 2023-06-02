@@ -2,6 +2,7 @@ package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.model.data.Incident
 import kotlinx.coroutines.flow.Flow
+import kotlinx.datetime.Instant
 
 interface IncidentsRepository {
     /**
@@ -15,6 +16,7 @@ interface IncidentsRepository {
     val incidents: Flow<List<Incident>>
 
     suspend fun getIncident(id: Long, loadFormFields: Boolean = false): Incident?
+    suspend fun getIncidents(startAt: Instant): List<Incident>
 
     fun streamIncident(id: Long): Flow<Incident?>
 

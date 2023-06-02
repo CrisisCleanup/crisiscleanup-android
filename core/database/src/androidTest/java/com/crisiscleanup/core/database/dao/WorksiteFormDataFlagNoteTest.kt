@@ -94,7 +94,7 @@ class WorksiteFormDataFlagNoteTest {
             syncingNotes,
             emptyList(),
         )
-        val actual = worksiteDaoPlus.syncWorksite(1, entities, syncedAt)
+        val actual = worksiteDaoPlus.syncWorksite(entities, syncedAt)
 
         // Assert
 
@@ -247,7 +247,7 @@ class WorksiteFormDataFlagNoteTest {
             syncingNotes,
             emptyList(),
         )
-        val actual = worksiteDaoPlus.syncWorksite(1, entities, syncedAt)
+        val actual = worksiteDaoPlus.syncWorksite(entities, syncedAt)
 
         // Assert
 
@@ -340,7 +340,7 @@ class WorksiteFormDataFlagNoteTest {
             syncingNotes,
             emptyList(),
         )
-        val actualSyncWorksite = worksiteDaoPlus.syncWorksite(1, entities, syncedAt)
+        val actualSyncWorksite = worksiteDaoPlus.syncWorksite(entities, syncedAt)
 
         // Sync locally changed
         val syncingWorksiteB = testWorksiteEntity(2, 1, "sync-address", updatedAtB)
@@ -361,7 +361,7 @@ class WorksiteFormDataFlagNoteTest {
             syncingNotesB,
             emptyList(),
         )
-        val actualSyncChangeWorksite = worksiteDaoPlus.syncWorksite(1, entitiesB, syncedAt)
+        val actualSyncChangeWorksite = worksiteDaoPlus.syncWorksite(entitiesB, syncedAt)
 
         // Assert
 

@@ -74,15 +74,14 @@ interface WorksitesRepository {
 
     fun getWorksiteSyncStats(incidentId: Long): IncidentDataSyncStats?
 
-    fun getLocalId(incidentId: Long, networkWorksiteId: Long): Long
+    fun getLocalId(networkWorksiteId: Long): Long
 
     suspend fun syncNetworkWorksite(
-        incidentId: Long,
         worksite: NetworkWorksiteFull,
         syncedAt: Instant = Clock.System.now(),
     ): Boolean
 
-    suspend fun pullWorkTypeRequests(incidentId: Long, networkWorksiteId: Long)
+    suspend fun pullWorkTypeRequests(networkWorksiteId: Long)
 
     suspend fun setRecentWorksite(
         incidentId: Long,

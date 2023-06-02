@@ -25,11 +25,9 @@ class WorksiteDaoPlus @Inject constructor(
     private val syncLogger: SyncLogger,
 ) {
     private suspend fun getWorksiteLocalModifiedAt(
-        incidentId: Long,
         networkWorksiteIds: Set<Long>,
     ): Map<Long, WorksiteLocalModifiedAt> = db.withTransaction {
         val worksitesUpdatedAt = db.worksiteDao().getWorksitesLocalModifiedAt(
-            incidentId,
             networkWorksiteIds,
         )
         return@withTransaction worksitesUpdatedAt.associateBy { it.networkId }
@@ -122,7 +120,6 @@ class WorksiteDaoPlus @Inject constructor(
     }
 
     private suspend fun syncWorksite(
-        incidentId: Long,
         worksite: WorksiteEntity,
         modifiedAt: WorksiteLocalModifiedAt?,
         workTypes: List<WorkTypeEntity>,
@@ -193,7 +190,7 @@ class WorksiteDaoPlus @Inject constructor(
             }
 
             // Should return a valid ID if UPDATE OR ROLLBACK query succeeded
-            val worksiteId = worksiteDao.getWorksiteId(incidentId, worksite.networkId)
+            val worksiteId = worksiteDao.getWorksiteId(worksite.networkId)
 
             syncWorkTypes(worksiteId, workTypes)
             formData?.let { syncFormData(worksiteId, it) }
@@ -224,7 +221,6 @@ class WorksiteDaoPlus @Inject constructor(
      * @return Number of worksites inserted/updated
      */
     suspend fun syncWorksites(
-        incidentId: Long,
         worksites: List<WorksiteEntity>,
         worksitesWorkTypes: List<List<WorkTypeEntity>>,
         syncedAt: Instant,
@@ -233,13 +229,12 @@ class WorksiteDaoPlus @Inject constructor(
 
         val networkWorksiteIds = worksites.map(WorksiteEntity::networkId).toSet()
         db.withTransaction {
-            val modifiedAtLookup = getWorksiteLocalModifiedAt(incidentId, networkWorksiteIds)
+            val modifiedAtLookup = getWorksiteLocalModifiedAt(networkWorksiteIds)
 
             worksites.forEachIndexed { i, worksite ->
                 val workTypes = worksitesWorkTypes[i]
                 val modifiedAt = modifiedAtLookup[worksite.networkId]
                 syncWorksite(
-                    incidentId,
                     worksite,
                     modifiedAt,
                     workTypes,
@@ -251,7 +246,6 @@ class WorksiteDaoPlus @Inject constructor(
 
     // TODO Write tests
     suspend fun syncShortFlags(
-        incidentId: Long,
         worksites: List<WorksiteEntity>,
         worksitesFlags: List<List<WorksiteFlagEntity>>,
     ) {
@@ -259,7 +253,7 @@ class WorksiteDaoPlus @Inject constructor(
 
         val networkWorksiteIds = worksites.map(WorksiteEntity::networkId).toSet()
         db.withTransaction {
-            val modifiedAtLookup = getWorksiteLocalModifiedAt(incidentId, networkWorksiteIds)
+            val modifiedAtLookup = getWorksiteLocalModifiedAt(networkWorksiteIds)
 
             val worksiteDao = db.worksiteDao()
             val flagDao = db.worksiteFlagDao()
@@ -268,7 +262,7 @@ class WorksiteDaoPlus @Inject constructor(
                 val modifiedAt = modifiedAtLookup[networkWorksiteId]
                 val isLocallyModified = modifiedAt?.isLocallyModified ?: false
                 if (!isLocallyModified) {
-                    val worksiteId = worksiteDao.getWorksiteId(incidentId, networkWorksiteId)
+                    val worksiteId = worksiteDao.getWorksiteId(networkWorksiteId)
                     val flagReasons = flags.map(WorksiteFlagEntity::reasonT)
                     flagDao.syncDeleteUnspecified(worksiteId, flagReasons)
                     val updatedFlags = flags.map { it.copy(worksiteId = worksiteId) }
@@ -279,15 +273,13 @@ class WorksiteDaoPlus @Inject constructor(
     }
 
     suspend fun syncWorksite(
-        incidentId: Long,
         entities: WorksiteEntities,
         syncedAt: Instant,
     ): Pair<Boolean, Long> = db.withTransaction {
         val core = entities.core
-        val modifiedAtLookup = getWorksiteLocalModifiedAt(incidentId, setOf(core.networkId))
+        val modifiedAtLookup = getWorksiteLocalModifiedAt(setOf(core.networkId))
         val modifiedAt = modifiedAtLookup[core.networkId]
         val isUpdated = syncWorksite(
-            incidentId,
             core,
             modifiedAt,
             entities.workTypes,
@@ -300,18 +292,17 @@ class WorksiteDaoPlus @Inject constructor(
         )
 
         val worksiteId =
-            if (isUpdated) db.worksiteDao().getWorksiteId(incidentId, core.networkId)
+            if (isUpdated) db.worksiteDao().getWorksiteId(core.networkId)
             else -1
         return@withTransaction Pair(isUpdated, worksiteId)
     }
 
     suspend fun syncFillWorksite(
-        incidentId: Long,
         entities: WorksiteEntities,
     ): Boolean = db.withTransaction {
         val worksiteDao = db.worksiteDao()
         val (core, flags, formData, notes, workTypes, files) = entities
-        val worksiteId = worksiteDao.getWorksiteId(incidentId, core.networkId)
+        val worksiteId = worksiteDao.getWorksiteId(core.networkId)
         if (worksiteId > 0) {
             with(core) {
                 worksiteDao.syncFillWorksite(
@@ -361,24 +352,22 @@ class WorksiteDaoPlus @Inject constructor(
     }
 
     suspend fun syncNetworkWorksite(
-        incidentId: Long,
         entities: WorksiteEntities,
         syncedAt: Instant,
     ): Boolean = db.withTransaction {
-        val (isSynced, _) = syncWorksite(incidentId, entities, syncedAt)
+        val (isSynced, _) = syncWorksite(entities, syncedAt)
         if (!isSynced) {
-            syncFillWorksite(incidentId, entities)
+            syncFillWorksite(entities)
         }
         return@withTransaction isSynced
     }
 
     suspend fun syncWorksites(
-        incidentId: Long,
         worksitesEntities: List<WorksiteEntities>,
         syncedAt: Instant
     ) = db.withTransaction {
         worksitesEntities.forEach { entities ->
-            syncNetworkWorksite(incidentId, entities, syncedAt)
+            syncNetworkWorksite(entities, syncedAt)
         }
     }
 

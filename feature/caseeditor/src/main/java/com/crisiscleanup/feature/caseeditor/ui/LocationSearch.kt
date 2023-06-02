@@ -2,7 +2,11 @@ package com.crisiscleanup.feature.caseeditor.ui
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
@@ -35,6 +39,7 @@ internal fun ColumnScope.SearchContents(
     editor: CaseLocationDataEditor,
     query: String = "",
     onAddressSelect: () -> Unit = {},
+    isEditable: Boolean = false,
 ) {
     val isBusySearching by editor.isLocationSearching.collectAsStateWithLifecycle(false)
     Box(
@@ -62,8 +67,9 @@ internal fun ColumnScope.SearchContents(
             }
             val onAddress = remember(viewModel) {
                 { address: LocationAddress ->
-                    editor.onGeocodeAddressSelected(address)
-                    onAddressSelect()
+                    if (editor.onGeocodeAddressSelected(address)) {
+                        onAddressSelect()
+                    }
                 }
             }
             val closeKeyboard = rememberCloseKeyboard(viewModel)
@@ -72,6 +78,7 @@ internal fun ColumnScope.SearchContents(
                 onCaseSelect = onCaseSelect,
                 onAddressSelect = onAddress,
                 closeKeyboard = closeKeyboard,
+                isEditable = isEditable,
             )
         }
     }
@@ -110,6 +117,7 @@ private fun ListSearchResults(
     onCaseSelect: (CaseSummaryResult) -> Unit = {},
     onAddressSelect: (LocationAddress) -> Unit = {},
     closeKeyboard: () -> Unit = {},
+    isEditable: Boolean = false,
 ) {
     LazyColumn(modifier.scrollFlingListener(closeKeyboard)) {
         if (results.worksites.isNotEmpty()) {
@@ -121,6 +129,7 @@ private fun ListSearchResults(
             listCaseResults(
                 results.worksites,
                 onCaseSelect,
+                isEditable = isEditable,
             )
         }
 
@@ -138,7 +147,10 @@ private fun ListSearchResults(
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .clickable { onAddressSelect(keyAddress.address) }
+                        .clickable(
+                            enabled = isEditable,
+                            onClick = { onAddressSelect(keyAddress.address) },
+                        )
                         .listItemOptionPadding()
                 ) {
                     with(keyAddress.address) {

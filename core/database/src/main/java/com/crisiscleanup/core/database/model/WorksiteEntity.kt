@@ -25,9 +25,10 @@ import kotlinx.datetime.Instant
         ),
     ],
     indices = [
-        // Each worksite must be unique within an incident
-        // Locally created unsynced worksites will have a network_id=-1. The local/global UUID keeps these worksites unique within the table.
-        Index(value = ["incident_id", "network_id", "local_global_uuid"], unique = true),
+        // Locally created unsynced worksites will have a network_id=-1.
+        // The local/global UUID keeps these worksites unique within the table.
+        Index(value = ["network_id", "local_global_uuid"], unique = true),
+        Index(value = ["incident_id", "network_id"]),
         // Locally modified worksites for querying sync queue and showing pending syncs.
         Index(
             value = ["is_local_modified", "local_modified_at"],
@@ -305,7 +306,3 @@ fun WorksiteNoteEntity.asExternalModel() = WorksiteNote(
     isSurvivor = isSurvivor,
     note = note,
 )
-
-// TODO Events XR
-
-// TODO Worksites FTS

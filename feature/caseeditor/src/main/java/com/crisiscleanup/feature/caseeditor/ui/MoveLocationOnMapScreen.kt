@@ -1,8 +1,18 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -10,16 +20,24 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.TopAppBarSingleAction
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
-import com.crisiscleanup.core.designsystem.theme.*
+import com.crisiscleanup.core.designsystem.theme.listItemHeight
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
 import com.crisiscleanup.core.mapmarker.ui.rememberMapUiSettings
 import com.crisiscleanup.core.ui.MapOverlayMessage
-import com.crisiscleanup.feature.caseeditor.*
+import com.crisiscleanup.feature.caseeditor.CaseLocationDataEditor
+import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
+import com.crisiscleanup.feature.caseeditor.EditCaseLocationViewModel
+import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
 import com.crisiscleanup.feature.caseeditor.R
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.CameraPosition
-import com.google.maps.android.compose.*
+import com.google.maps.android.compose.CameraMoveStartedReason
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.rememberMarkerState
 
 @Composable
 internal fun EditCaseMapMoveLocationRoute(
@@ -29,11 +47,20 @@ internal fun EditCaseMapMoveLocationRoute(
 ) {
     val editor = viewModel.editor
     val editDifferentWorksite by editor.editIncidentWorksite.collectAsStateWithLifecycle()
+    val isLocationCommitted by editor.isLocationCommitted.collectAsStateWithLifecycle()
     if (editDifferentWorksite.isDefined) {
         openExistingCase(editDifferentWorksite)
+    } else if (isLocationCommitted) {
+        onBack()
     } else {
         editor.setMoveLocationOnMap(true)
-        EditCaseMapMoveLocationScreen(viewModel, editor, onBack)
+
+        val isCheckingOutOfBounds by editor.isCheckingOutOfBounds.collectAsStateWithLifecycle()
+        val isEditable = !isCheckingOutOfBounds
+
+        EditCaseMapMoveLocationScreen(viewModel, editor, onBack, isEditable)
+
+        LocationOutOfBoundsDialog(viewModel, editor)
     }
 }
 
@@ -43,8 +70,8 @@ private fun EditCaseMapMoveLocationScreen(
     viewModel: EditCaseBaseViewModel,
     editor: CaseLocationDataEditor,
     onBack: () -> Unit = {},
+    isEditable: Boolean = false,
 ) {
-
     Column {
         TopAppBarSingleAction(
             title = viewModel.translate("caseForm.select_on_map"),
@@ -52,11 +79,11 @@ private fun EditCaseMapMoveLocationScreen(
         )
 
         val locationQuery by editor.locationInputData.locationQuery.collectAsStateWithLifecycle()
-        FullAddressSearchInput(viewModel, editor, locationQuery)
+        FullAddressSearchInput(viewModel, editor, locationQuery, isEditable = isEditable)
 
         if (locationQuery.isBlank()) {
             Box(Modifier.weight(1f)) {
-                MoveMapUnderLocation(viewModel, editor)
+                MoveMapUnderLocation(viewModel, editor, isEditable)
             }
 
             val useMyLocation = remember(viewModel) { { editor.useMyLocation() } }
@@ -67,13 +94,13 @@ private fun EditCaseMapMoveLocationScreen(
                 iconResId = R.drawable.ic_use_my_location,
                 label = viewModel.translate("caseForm.use_my_location"),
                 onClick = useMyLocation,
-                enabled = true,
+                enabled = isEditable,
             )
 
-            SaveActionBar(viewModel, editor, onBack)
+            SaveActionBar(viewModel, editor, onBack, isEditable)
         } else {
             editor.isMapLoaded = false
-            AddressSearchResults(viewModel, editor, locationQuery)
+            AddressSearchResults(viewModel, editor, locationQuery, isEditable = isEditable)
         }
     }
 }
@@ -82,6 +109,7 @@ private fun EditCaseMapMoveLocationScreen(
 private fun BoxScope.MoveMapUnderLocation(
     viewModel: EditCaseBaseViewModel,
     editor: CaseLocationDataEditor,
+    isEditable: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val onMapLoaded = remember(viewModel) { { editor.onMapLoaded() } }
@@ -101,7 +129,15 @@ private fun BoxScope.MoveMapUnderLocation(
 
     val mapMarkerIcon by editor.mapMarkerIcon.collectAsStateWithLifecycle()
 
-    val uiSettings by rememberMapUiSettings()
+    var uiSettings by rememberMapUiSettings()
+    if (uiSettings.scrollGesturesEnabled != isEditable) {
+        uiSettings = uiSettings.copy(
+            rotationGesturesEnabled = isEditable,
+            scrollGesturesEnabled = isEditable,
+            tiltGesturesEnabled = isEditable,
+            zoomGesturesEnabled = isEditable,
+        )
+    }
     val mapProperties by rememberMapProperties()
     val cameraPositionState = rememberCameraPositionState()
     GoogleMap(
@@ -151,11 +187,13 @@ private fun SaveActionBar(
     viewModel: EditCaseBaseViewModel,
     editor: CaseLocationDataEditor,
     onBack: () -> Unit = {},
+    isEditable: Boolean = false,
 ) {
     val onSave = remember(viewModel) {
         {
-            editor.commitChanges()
-            onBack()
+            if (editor.onSaveMoveLocationCoordinates()) {
+                onBack()
+            }
         }
     }
     Row(
@@ -167,14 +205,14 @@ private fun SaveActionBar(
         BusyButton(
             Modifier.weight(1f),
             text = viewModel.translate("actions.cancel"),
-            enabled = true,
+            enabled = isEditable,
             onClick = onBack,
             colors = cancelButtonColors(),
         )
         BusyButton(
             Modifier.weight(1f),
             text = viewModel.translate("actions.save"),
-            enabled = true,
+            enabled = isEditable,
             onClick = onSave,
         )
     }

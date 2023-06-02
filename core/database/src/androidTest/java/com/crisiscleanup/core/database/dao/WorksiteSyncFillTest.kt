@@ -233,20 +233,20 @@ class WorksiteSyncFillTest {
             networkId = coreD.networkId,
         )
 
-        val actualA = worksiteDaoPlus.syncFillWorksite(incidentId, entitiesA)
+        val actualA = worksiteDaoPlus.syncFillWorksite(entitiesA)
         assertTrue(actualA)
 
         val testWorksiteDao = db.testWorksiteDao()
         val actualCoreA = testWorksiteDao.getWorksiteEntity(rootA.id)!!
         assertEquals(coreA, actualCoreA)
 
-        val actualB = worksiteDaoPlus.syncFillWorksite(incidentId, entitiesB)
+        val actualB = worksiteDaoPlus.syncFillWorksite(entitiesB)
         assertTrue(actualB)
 
         val actualCoreB = testWorksiteDao.getWorksiteEntity(rootB.id)!!
         assertEquals(expectedCoreUpdate, actualCoreB)
 
-        val actualD = worksiteDaoPlus.syncFillWorksite(incidentId, entitiesD)
+        val actualD = worksiteDaoPlus.syncFillWorksite(entitiesD)
         assertTrue(actualD)
 
         val actualCoreD = testWorksiteDao.getWorksiteEntity(rootD.id)!!

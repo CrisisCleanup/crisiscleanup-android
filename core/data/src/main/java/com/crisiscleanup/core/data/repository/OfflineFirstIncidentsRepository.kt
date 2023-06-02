@@ -76,6 +76,11 @@ class OfflineFirstIncidentsRepository @Inject constructor(
             }
         }
 
+    override suspend fun getIncidents(startAt: Instant) = withContext(ioDispatcher) {
+        incidentDao.getIncidents(startAt.toEpochMilliseconds())
+            .map(PopulatedIncident::asExternalModel)
+    }
+
     override fun streamIncident(id: Long) =
         incidentDao.streamFormFieldsIncident(id).mapLatest { it?.asExternalModel() }
 

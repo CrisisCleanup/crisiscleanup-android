@@ -222,12 +222,13 @@ class CaseEditorViewModel @Inject constructor(
                     existingWorksiteSelector,
                     ioDispatcher,
                     logger,
-                    viewModelScope
+                    viewModelScope,
                 )
                 val locationEditor = EditableLocationDataEditor(
                     editableWorksiteProvider,
                     permissionManager,
                     locationProvider,
+                    incidentBoundsProvider,
                     searchWorksitesRepository,
                     addressSearchRepository,
                     caseIconProvider,

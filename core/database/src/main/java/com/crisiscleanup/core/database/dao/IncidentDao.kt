@@ -39,6 +39,10 @@ interface IncidentDao {
     fun getIncident(id: Long): PopulatedIncident?
 
     @Transaction
+    @Query("SELECT * FROM incidents WHERE start_at>:startAtMillis ORDER BY start_at DESC")
+    fun getIncidents(startAtMillis: Long): List<PopulatedIncident>
+
+    @Transaction
     @Query("SELECT * FROM incidents WHERE id=:id")
     fun getFormFieldsIncident(id: Long): PopulatedFormFieldsIncident?
 

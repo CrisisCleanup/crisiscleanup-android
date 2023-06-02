@@ -99,7 +99,7 @@ class WorksiteDaoTest {
         val syncingWorkTypes = syncingWorksites.map { emptyList<WorkTypeEntity>() }
         // Sync new and existing
         val syncedAt = previousSyncedAt.plus(487.seconds)
-        worksiteDaoPlus.syncWorksites(1, syncingWorksites, syncingWorkTypes, syncedAt)
+        worksiteDaoPlus.syncWorksites(syncingWorksites, syncingWorkTypes, syncedAt)
 
         // Assert
 
@@ -175,7 +175,7 @@ class WorksiteDaoTest {
         val syncingWorkTypes = syncingWorksites.map { emptyList<WorkTypeEntity>() }
         // Sync new and existing
         val syncedAt = previousSyncedAt.plus(487.seconds)
-        worksiteDaoPlus.syncWorksites(1, syncingWorksites, syncingWorkTypes, syncedAt)
+        worksiteDaoPlus.syncWorksites(syncingWorksites, syncingWorkTypes, syncedAt)
 
         // Assert
 
@@ -315,7 +315,7 @@ class WorksiteDaoTest {
         val syncingWorkTypes = syncingWorksites.map { emptyList<WorkTypeEntity>() }
         // Sync
         val syncedAt = previousSyncedAt.plus(487.seconds)
-        worksiteDaoPlus.syncWorksites(1, syncingWorksites, syncingWorkTypes, syncedAt)
+        worksiteDaoPlus.syncWorksites(syncingWorksites, syncingWorkTypes, syncedAt)
 
         // Assert
         val expected = listOf(

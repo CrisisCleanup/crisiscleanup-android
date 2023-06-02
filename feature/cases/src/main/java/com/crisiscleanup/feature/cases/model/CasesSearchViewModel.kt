@@ -149,7 +149,7 @@ class CasesSearchViewModel @Inject constructor(
                 val incidentId = incidentSelector.incidentId.value
                 val worksiteId = with(result) {
                     if (summary.id > 0) summary.id
-                    else worksitesRepository.getLocalId(incidentId, networkWorksiteId)
+                    else worksitesRepository.getLocalId(networkWorksiteId)
                 }
                 selectedWorksite.value = Pair(incidentId, worksiteId)
             } catch (e: Exception) {

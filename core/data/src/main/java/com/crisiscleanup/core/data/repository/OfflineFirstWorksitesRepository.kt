@@ -147,8 +147,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         longitudeRight
     )
 
-    override fun getLocalId(incidentId: Long, networkWorksiteId: Long) =
-        worksiteDao.getWorksiteId(incidentId, networkWorksiteId)
+    override fun getLocalId(networkWorksiteId: Long) = worksiteDao.getWorksiteId(networkWorksiteId)
 
     override fun getWorksiteSyncStats(incidentId: Long) =
         worksiteSyncStatDao.getSyncStats(incidentId)?.asExternalModel()
@@ -241,19 +240,18 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     }
 
     override suspend fun syncNetworkWorksite(
-        incidentId: Long,
         worksite: NetworkWorksiteFull,
         syncedAt: Instant,
     ): Boolean {
         val entities = worksite.asEntities()
-        return worksiteDaoPlus.syncNetworkWorksite(incidentId, entities, syncedAt)
+        return worksiteDaoPlus.syncNetworkWorksite(entities, syncedAt)
     }
 
-    override suspend fun pullWorkTypeRequests(incidentId: Long, networkWorksiteId: Long) {
+    override suspend fun pullWorkTypeRequests(networkWorksiteId: Long) {
         try {
             val workTypeRequests = dataSource.getWorkTypeRequests(networkWorksiteId)
             if (workTypeRequests.isNotEmpty()) {
-                val worksiteId = worksiteDao.getWorksiteId(incidentId, networkWorksiteId)
+                val worksiteId = worksiteDao.getWorksiteId(networkWorksiteId)
                 val entities = workTypeRequests.map { it.asEntity(worksiteId) }
                 workTypeTransferRequestDaoPlus.syncUpsert(entities)
             }

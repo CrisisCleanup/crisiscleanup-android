@@ -65,12 +65,7 @@ class WorksiteWorkTypeTest {
         val syncingWorksites = listOf(
             testWorksiteShortEntity(111, 1, createdAtA),
         )
-        worksiteDaoPlus.syncWorksites(
-            1,
-            syncingWorksites,
-            emptyList(),
-            syncedAt,
-        )
+        worksiteDaoPlus.syncWorksites(syncingWorksites, emptyList(), syncedAt)
     }
 
     /**
@@ -134,7 +129,7 @@ class WorksiteWorkTypeTest {
         )
         // Sync new and existing
         val syncedAt = previousSyncedAt.plus(499_999.seconds)
-        worksiteDaoPlus.syncWorksites(1, syncingWorksites, syncingWorkTypes, syncedAt)
+        worksiteDaoPlus.syncWorksites(syncingWorksites, syncingWorkTypes, syncedAt)
 
         // Assert
 
@@ -287,7 +282,7 @@ class WorksiteWorkTypeTest {
         )
         // Sync new and existing
         val syncedAt = previousSyncedAt.plus(499_999.seconds)
-        worksiteDaoPlus.syncWorksites(1, syncingWorksites, syncingWorkTypes, syncedAt)
+        worksiteDaoPlus.syncWorksites(syncingWorksites, syncingWorkTypes, syncedAt)
 
         // Assert
 

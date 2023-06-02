@@ -23,8 +23,8 @@ private const val selectFromMapVisualClause = """
 @Dao
 interface WorksiteDao {
     @Transaction
-    @Query("SELECT id FROM worksites_root WHERE incident_id=:incidentId AND network_id=:networkId AND local_global_uuid=''")
-    fun getWorksiteId(incidentId: Long, networkId: Long): Long
+    @Query("SELECT id FROM worksites_root WHERE network_id=:networkId AND local_global_uuid=''")
+    fun getWorksiteId(networkId: Long): Long
 
     @Transaction
     @Query("SELECT network_id FROM worksites_root WHERE id=:id")
@@ -110,11 +110,10 @@ interface WorksiteDao {
         """
         SELECT id, network_id, local_modified_at, is_local_modified
         FROM worksites_root
-        WHERE incident_id=:incidentId AND network_id IN (:worksiteIds)
+        WHERE network_id IN (:worksiteIds)
         """
     )
     fun getWorksitesLocalModifiedAt(
-        incidentId: Long,
         worksiteIds: Collection<Long>,
     ): List<WorksiteLocalModifiedAt>
 

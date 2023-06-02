@@ -316,7 +316,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
         }
 
         if (syncNetworkWorksite != null && incidentId > 0) {
-            worksitesRepository.syncNetworkWorksite(incidentId, syncNetworkWorksite)
+            worksitesRepository.syncNetworkWorksite(syncNetworkWorksite)
         }
 
         syncException?.let { throw it }

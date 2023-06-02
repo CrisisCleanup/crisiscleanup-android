@@ -5,7 +5,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.addresssearch.AddressSearchRepository
 import com.crisiscleanup.core.addresssearch.model.toLatLng
-import com.crisiscleanup.core.common.*
+import com.crisiscleanup.core.common.AndroidResourceProvider
+import com.crisiscleanup.core.common.KeyTranslator
+import com.crisiscleanup.core.common.LocationProvider
+import com.crisiscleanup.core.common.PermissionManager
+import com.crisiscleanup.core.common.PermissionStatus
+import com.crisiscleanup.core.common.locationPermissionGranted
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -15,6 +20,7 @@ import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
+import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.mapmarker.model.DefaultCoordinates
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
@@ -22,9 +28,11 @@ import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
 import com.crisiscleanup.core.mapmarker.util.smallOffset
 import com.crisiscleanup.core.mapmarker.util.toLatLng
 import com.crisiscleanup.core.model.data.EmptyWorksite
+import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.LocationAddress
 import com.crisiscleanup.core.model.data.Worksite
-import com.crisiscleanup.feature.caseeditor.model.*
+import com.crisiscleanup.feature.caseeditor.model.LocationInputData
+import com.crisiscleanup.feature.caseeditor.model.coordinates
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.CameraPosition
@@ -33,7 +41,16 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
@@ -46,6 +63,7 @@ interface CaseLocationDataEditor {
     val searchResults: StateFlow<LocationSearchResults>
 
     val editIncidentWorksite: StateFlow<ExistingWorksiteIdentifier>
+    val isLocationCommitted: StateFlow<Boolean>
 
     val takeClearSearchInputFocus: Boolean
 
@@ -63,6 +81,8 @@ interface CaseLocationDataEditor {
 
     val mapMarkerIcon: StateFlow<BitmapDescriptor?>
 
+    val isCheckingOutOfBounds: StateFlow<Boolean>
+    val locationOutOfBounds: StateFlow<LocationOutOfBounds?>
     val locationOutOfBoundsMessage: StateFlow<String>
 
     var isMapLoaded: Boolean
@@ -81,12 +101,17 @@ interface CaseLocationDataEditor {
 
     fun toggleMoveLocationOnMap()
     fun setMoveLocationOnMap(moveOnMap: Boolean)
+    fun onSaveMoveLocationCoordinates(): Boolean
 
     fun centerOnLocation()
 
     fun onExistingWorksiteSelected(result: CaseSummaryResult)
 
-    fun onGeocodeAddressSelected(locationAddress: LocationAddress)
+    fun onGeocodeAddressSelected(locationAddress: LocationAddress): Boolean
+
+    fun cancelOutOfBounds()
+    fun changeIncidentOutOfBounds(locationOutOfBounds: LocationOutOfBounds)
+    fun acceptOutOfBounds(locationOutOfBounds: LocationOutOfBounds)
 
     fun onBackValidateSaveWorksite(): Boolean
 
@@ -97,6 +122,7 @@ internal class EditableLocationDataEditor(
     private val worksiteProvider: EditableWorksiteProvider,
     private val permissionManager: PermissionManager,
     private val locationProvider: LocationProvider,
+    boundsProvider: IncidentBoundsProvider,
     searchWorksitesRepository: SearchWorksitesRepository,
     addressSearchRepository: AddressSearchRepository,
     caseIconProvider: MapCaseIconProvider,
@@ -110,6 +136,7 @@ internal class EditableLocationDataEditor(
 ) : CaseLocationDataEditor {
     // Worksite before lat,lng may have been auto updated
     private val worksiteIn: Worksite
+    private val incidentId: Long
 
     override val locationInputData: LocationInputData
 
@@ -117,7 +144,17 @@ internal class EditableLocationDataEditor(
     override val searchResults: StateFlow<LocationSearchResults>
     private val isSearchResultSelected = AtomicBoolean(false)
 
+    private val outOfBoundsManager = LocationOutOfBoundsManager(
+        worksiteProvider,
+        boundsProvider,
+        coroutineDispatcher,
+        coroutineScope,
+    )
+    override val isCheckingOutOfBounds = outOfBoundsManager.isCheckingOutOfBounds
+    override val locationOutOfBounds = outOfBoundsManager.locationOutOfBounds
+
     override val editIncidentWorksite = existingWorksiteSelector.selected
+    override val isLocationCommitted = MutableStateFlow(false)
 
     private val clearSearchInputFocus = AtomicBoolean(false)
     override val takeClearSearchInputFocus: Boolean
@@ -147,6 +184,7 @@ internal class EditableLocationDataEditor(
     init {
         var worksite = worksiteProvider.editableWorksite.value
         worksiteIn = worksite
+        incidentId = worksiteIn.incidentId
 
         if (worksite.isNew &&
             (worksite.coordinates() == EmptyWorksite.coordinates() ||
@@ -170,18 +208,9 @@ internal class EditableLocationDataEditor(
             worksite,
             resourceProvider,
         )
-        locationInputData.coordinates
-            .debounce(100)
-            .onEach {
-                if (!worksiteProvider.incidentBounds.containsLocation(it)) {
-                    // TODO Prompt depending if in another recent incident's bounds or not
-                }
-            }
-            .flowOn(ioDispatcher)
-            .launchIn(coroutineScope)
 
         locationSearchManager = LocationSearchManager(
-            worksite.incidentId,
+            incidentId,
             worksiteProvider,
             locationInputData,
             searchWorksitesRepository,
@@ -295,12 +324,15 @@ internal class EditableLocationDataEditor(
             PermissionStatus.Granted -> {
                 setMyLocationCoordinates()
             }
+
             PermissionStatus.ShowRationale -> {
                 showExplainPermissionLocation.value = true
             }
+
             PermissionStatus.Requesting -> {
                 isMapMoved.set(false)
             }
+
             PermissionStatus.Denied,
             PermissionStatus.Undefined -> {
                 // Ignore these statuses as they're not important
@@ -370,6 +402,26 @@ internal class EditableLocationDataEditor(
         toggleMoveLocationOnMap()
     }
 
+    private fun commitLocationCoordinates(coordinates: LatLng) {
+        locationInputData.coordinates.value = coordinates
+        commitChanges()
+    }
+
+    private fun isCoordinatesInBounds(coordinates: LatLng) =
+        worksiteProvider.incidentBounds.containsLocation(coordinates)
+
+    override fun onSaveMoveLocationCoordinates(): Boolean {
+        val coordinates = locationInputData.coordinates.value
+
+        if (isCoordinatesInBounds(coordinates)) {
+            commitLocationCoordinates(coordinates)
+            return true
+        }
+
+        outOfBoundsManager.onLocationOutOfBounds(coordinates)
+        return false
+    }
+
     override fun centerOnLocation() {
         val coordinates = locationInputData.coordinates.value.smallOffset()
         _mapCameraZoom.value = MapViewCameraZoom(coordinates, zoomCache)
@@ -403,10 +455,10 @@ internal class EditableLocationDataEditor(
         }
     }
 
-    override fun onGeocodeAddressSelected(locationAddress: LocationAddress) {
+    private fun setLocationAddress(locationAddress: LocationAddress) {
         with(locationAddress) {
             onSearchResultSelect(
-                toLatLng(),
+                locationAddress.toLatLng(),
                 address,
                 zipCode,
                 county,
@@ -414,6 +466,49 @@ internal class EditableLocationDataEditor(
                 state,
             )
         }
+    }
+
+    override fun onGeocodeAddressSelected(locationAddress: LocationAddress): Boolean {
+        val coordinates = locationAddress.toLatLng()
+        with(outOfBoundsManager) {
+            if (isPendingOutOfBounds) {
+                return false
+            }
+
+            if (!isCoordinatesInBounds(coordinates)) {
+                onLocationOutOfBounds(coordinates, locationAddress)
+                return false
+            }
+        }
+
+        setLocationAddress(locationAddress)
+        return true
+    }
+
+    override fun cancelOutOfBounds() {
+        outOfBoundsManager.clearOutOfBounds()
+    }
+
+    override fun changeIncidentOutOfBounds(locationOutOfBounds: LocationOutOfBounds) {
+        with(locationOutOfBounds) {
+            recentIncident?.let {
+                // TODO
+            }
+        }
+        outOfBoundsManager.clearOutOfBounds()
+    }
+
+    override fun acceptOutOfBounds(locationOutOfBounds: LocationOutOfBounds) {
+        with(locationOutOfBounds) {
+            if (address != null) {
+                setLocationAddress(address)
+                commitChanges()
+            } else {
+                commitLocationCoordinates(coordinates)
+            }
+        }
+        outOfBoundsManager.clearOutOfBounds()
+        isLocationCommitted.value = true
     }
 
     override fun onBackValidateSaveWorksite(): Boolean {
@@ -443,6 +538,7 @@ class EditCaseLocationViewModel @Inject constructor(
     worksiteProvider: EditableWorksiteProvider,
     permissionManager: PermissionManager,
     locationProvider: LocationProvider,
+    boundsProvider: IncidentBoundsProvider,
     searchWorksitesRepository: SearchWorksitesRepository,
     addressSearchRepository: AddressSearchRepository,
     caseIconProvider: MapCaseIconProvider,
@@ -458,6 +554,7 @@ class EditCaseLocationViewModel @Inject constructor(
         worksiteProvider,
         permissionManager,
         locationProvider,
+        boundsProvider,
         searchWorksitesRepository,
         addressSearchRepository,
         caseIconProvider,
@@ -476,3 +573,50 @@ class EditCaseLocationViewModel @Inject constructor(
 
     override fun onNavigateBack() = onBackValidateSaveWorksite()
 }
+
+internal class LocationOutOfBoundsManager(
+    private val worksiteProvider: EditableWorksiteProvider,
+    private val boundsProvider: IncidentBoundsProvider,
+    private val coroutineDispatcher: CoroutineDispatcher,
+    private val coroutineScope: CoroutineScope,
+) {
+    val locationOutOfBounds = MutableStateFlow<LocationOutOfBounds?>(null)
+
+    val isCheckingOutOfBounds = MutableStateFlow(false)
+
+    val isPendingOutOfBounds: Boolean
+        get() = isCheckingOutOfBounds.value || locationOutOfBounds.value != null
+
+    fun clearOutOfBounds() {
+        locationOutOfBounds.value = null
+    }
+
+    fun onLocationOutOfBounds(
+        coordinates: LatLng,
+        selectedAddress: LocationAddress? = null,
+    ) {
+        coroutineScope.launch(coroutineDispatcher) {
+            val outOfBoundsData = LocationOutOfBounds(
+                worksiteProvider.incident,
+                coordinates,
+                selectedAddress,
+            )
+
+            isCheckingOutOfBounds.value = true
+            try {
+                val recentIncident = boundsProvider.isInRecentIncidentBounds(coordinates)
+                locationOutOfBounds.value = if (recentIncident == null) outOfBoundsData
+                else outOfBoundsData.copy(recentIncident = recentIncident)
+            } finally {
+                isCheckingOutOfBounds.value = false
+            }
+        }
+    }
+}
+
+data class LocationOutOfBounds(
+    val incident: Incident,
+    val coordinates: LatLng,
+    val address: LocationAddress? = null,
+    val recentIncident: Incident? = null,
+)

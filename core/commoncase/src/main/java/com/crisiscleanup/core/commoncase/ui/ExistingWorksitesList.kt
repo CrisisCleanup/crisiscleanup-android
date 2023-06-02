@@ -53,6 +53,7 @@ fun LazyListScope.listCaseResults(
     worksites: List<CaseSummaryResult>,
     onCaseSelect: (CaseSummaryResult) -> Unit = {},
     itemKey: (CaseSummaryResult) -> Any = { it.listItemKey },
+    isEditable: Boolean = false,
 ) {
     items(
         worksites,
@@ -62,7 +63,10 @@ fun LazyListScope.listCaseResults(
         CaseView(
             it,
             Modifier
-                .clickable { onCaseSelect(it) }
+                .clickable(
+                    enabled = isEditable,
+                    onClick = { onCaseSelect(it) }
+                )
                 .listItemOptionPadding()
         )
     }

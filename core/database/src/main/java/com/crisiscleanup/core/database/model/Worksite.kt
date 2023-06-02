@@ -11,8 +11,7 @@ fun Worksite.asEntities(
     flagIdLookup: Map<Long, Long>,
     noteIdLookup: Map<Long, Long>,
     workTypeIdLookup: Map<Long, Long>,
-
-    ): EditWorksiteEntities {
+): EditWorksiteEntities {
     val modifiedAt = updatedAt ?: Clock.System.now()
 
     val coreEntity = WorksiteEntity(

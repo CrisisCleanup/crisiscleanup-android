@@ -153,7 +153,6 @@ class IncidentWorksitesSyncer @Inject constructor(
                         it.newestWorkTypes.map(NetworkWorksiteFull.WorkTypeShort::asEntity)
                     }
                     saveToDb(
-                        incidentId,
                         worksites,
                         flags,
                         workTypes,
@@ -202,7 +201,6 @@ class IncidentWorksitesSyncer @Inject constructor(
     }
 
     private suspend fun saveToDb(
-        incidentId: Long,
         worksites: List<WorksiteEntity>,
         flags: List<List<WorksiteFlagEntity>>,
         workTypes: List<List<WorkTypeEntity>>,
@@ -219,7 +217,6 @@ class IncidentWorksitesSyncer @Inject constructor(
             val worksiteSubset = worksites.slice(offset until offsetEnd)
             val workTypeSubset = workTypes.slice(offset until offsetEnd)
             worksiteDaoPlus.syncWorksites(
-                incidentId,
                 worksiteSubset,
                 workTypeSubset,
                 syncStart,
@@ -227,7 +224,6 @@ class IncidentWorksitesSyncer @Inject constructor(
 
             val flagSubset = flags.slice(offset until offsetEnd)
             worksiteDaoPlus.syncShortFlags(
-                incidentId,
                 worksiteSubset,
                 flagSubset,
             )

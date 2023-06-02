@@ -2,6 +2,7 @@ package com.crisiscleanup.core.network.worksitechange
 
 import com.crisiscleanup.core.network.model.DynamicValue
 import com.crisiscleanup.core.network.model.KeyDynamicValuePair
+import com.crisiscleanup.core.network.model.NetworkEvent
 import com.crisiscleanup.core.network.model.NetworkFlag
 import com.crisiscleanup.core.network.model.NetworkNote
 import com.crisiscleanup.core.network.model.NetworkType

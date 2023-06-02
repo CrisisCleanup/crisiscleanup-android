@@ -350,10 +350,7 @@ internal class CaseEditorDataLoader(
                             if (worksiteChangeRepository.trySyncWorksite(worksite.id) &&
                                 networkId > 0
                             ) {
-                                worksitesRepository.pullWorkTypeRequests(
-                                    worksite.incidentId,
-                                    networkId,
-                                )
+                                worksitesRepository.pullWorkTypeRequests(networkId)
                             }
                         }
                     } finally {

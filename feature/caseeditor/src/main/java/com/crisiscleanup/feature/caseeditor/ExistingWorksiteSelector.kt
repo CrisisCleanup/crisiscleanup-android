@@ -31,7 +31,7 @@ class ExistingWorksiteSelector @Inject constructor(
     suspend fun onNetworkWorksiteSelected(networkWorksiteId: Long) {
         val incidentId = worksiteProvider.editableWorksite.value.incidentId
         incidentsRepository.getIncident(incidentId, false)?.let {
-            val worksiteId = worksitesRepository.getLocalId(incidentId, networkWorksiteId)
+            val worksiteId = worksitesRepository.getLocalId(networkWorksiteId)
             if (worksiteId > 0) {
                 selected.value = ExistingWorksiteIdentifier(incidentId, worksiteId)
             }

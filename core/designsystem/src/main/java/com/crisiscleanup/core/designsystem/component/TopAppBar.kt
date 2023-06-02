@@ -8,8 +8,20 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.*
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -22,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.crisiscleanup.core.designsystem.R
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 
 @Composable
 fun TruncatedAppBarText(
@@ -188,13 +201,23 @@ fun TopAppBarSingleAction(
     }
     val navigationContent: (@Composable (() -> Unit)) =
         @Composable {
-            // TODO Style, icon, height of app bar
+            // TODO Text style and match height of app bar
             Row(
                 modifier
                     .clickable(onClick = onAction)
                     .padding(8.dp)
             ) {
-                Text(stringResource(actionResId))
+                CompositionLocalProvider(LocalContentColor provides primaryBlueColor) {
+                    val text = stringResource(actionResId)
+                    Icon(
+                        imageVector = CrisisCleanupIcons.ArrowBack,
+                        contentDescription = text,
+                    )
+                    Text(
+                        text,
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                }
             }
         }
     CenterAlignedTopAppBar(

@@ -19,7 +19,11 @@ import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.TopAppBarSingleAction
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.textMessagePadding
-import com.crisiscleanup.feature.caseeditor.*
+import com.crisiscleanup.feature.caseeditor.CaseLocationDataEditor
+import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
+import com.crisiscleanup.feature.caseeditor.EditCaseLocationViewModel
+import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
+import com.crisiscleanup.feature.caseeditor.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,24 +34,32 @@ internal fun EditCaseAddressSearchRoute(
 ) {
     val editor = viewModel.editor
     val editDifferentWorksite by editor.editIncidentWorksite.collectAsStateWithLifecycle()
+    val isLocationCommitted by editor.isLocationCommitted.collectAsStateWithLifecycle()
     if (editDifferentWorksite.isDefined) {
         openExistingCase(editDifferentWorksite)
+    } else if (isLocationCommitted) {
+        onBack()
     } else {
+        val isCheckingOutOfBounds by editor.isCheckingOutOfBounds.collectAsStateWithLifecycle()
+        val isEditable = !isCheckingOutOfBounds
+
         Column {
             TopAppBarSingleAction(
                 title = stringResource(R.string.location_address_search),
                 onAction = onBack,
             )
             val locationQuery by editor.locationInputData.locationQuery.collectAsStateWithLifecycle()
-            FullAddressSearchInput(viewModel, editor, locationQuery, true)
+            FullAddressSearchInput(viewModel, editor, locationQuery, true, isEditable)
             val onAddressSelect = remember(viewModel) {
                 {
                     editor.commitChanges()
                     onBack()
                 }
             }
-            AddressSearchResults(viewModel, editor, locationQuery, onAddressSelect)
+            AddressSearchResults(viewModel, editor, locationQuery, onAddressSelect, isEditable)
         }
+
+        LocationOutOfBoundsDialog(viewModel, editor)
     }
 }
 
@@ -57,6 +69,7 @@ internal fun FullAddressSearchInput(
     editor: CaseLocationDataEditor,
     locationQuery: String,
     hasFocus: Boolean = false,
+    isEditable: Boolean = false,
 ) {
     val updateQuery = remember(viewModel) { { s: String -> editor.onQueryChange(s) } }
     val fullAddressLabel = viewModel.translate("caseView.full_address")
@@ -71,7 +84,7 @@ internal fun FullAddressSearchInput(
         keyboardType = KeyboardType.Password,
         isError = false,
         hasFocus = hasFocus,
-        enabled = true,
+        enabled = isEditable,
     )
 
     if (editor.takeClearSearchInputFocus) {
@@ -85,6 +98,7 @@ internal fun ColumnScope.AddressSearchResults(
     editor: CaseLocationDataEditor,
     locationQuery: String,
     onAddressSelect: () -> Unit = {},
+    isEditable: Boolean = false,
 ) {
     val isShortQuery by editor.isShortQuery.collectAsStateWithLifecycle()
     if (isShortQuery) {
@@ -100,6 +114,7 @@ internal fun ColumnScope.AddressSearchResults(
             editor,
             query,
             onAddressSelect,
+            isEditable,
         )
     }
 }

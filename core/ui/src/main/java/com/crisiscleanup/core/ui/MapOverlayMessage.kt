@@ -20,7 +20,7 @@ fun BoxScope.MapOverlayMessage(
 ) {
     AnimatedVisibility(
         modifier = Modifier.align(Alignment.BottomStart),
-        visible = message.isNotEmpty(),
+        visible = message.isNotBlank(),
         enter = fadeIn(),
         exit = fadeOut(),
     ) {
