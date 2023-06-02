@@ -7,12 +7,20 @@ import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.mapmarker.model.DefaultCoordinates
+import com.crisiscleanup.core.model.data.LocationAddress
 import com.crisiscleanup.feature.caseeditor.model.LocationInputData
 import com.crisiscleanup.feature.caseeditor.model.asCaseLocation
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import java.util.concurrent.atomic.AtomicReference
 
 internal class LocationSearchManager(
@@ -21,7 +29,7 @@ internal class LocationSearchManager(
     locationInputData: LocationInputData,
     searchWorksitesRepository: SearchWorksitesRepository,
     locationProvider: LocationProvider,
-    addressSearchRepository: AddressSearchRepository,
+    private val addressSearchRepository: AddressSearchRepository,
     iconProvider: MapCaseIconProvider,
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
     val querySearchThresholdLength: Int = 3,
@@ -30,10 +38,12 @@ internal class LocationSearchManager(
 
     private val isSearchingWorksites = MutableStateFlow(false)
     private val isSearchingAddresses = MutableStateFlow(false)
+    private val isSearchingCoordinateAddress = MutableStateFlow(false)
     val isSearching = combine(
         isSearchingWorksites,
         isSearchingAddresses,
-    ) { b1, b2 -> b1 || b2 }
+        isSearchingCoordinateAddress,
+    ) { b0, b1, b2 -> b0 || b1 || b2 }
 
     private val searchQuery = locationInputData.locationQuery
         .debounce(100)
@@ -124,6 +134,15 @@ internal class LocationSearchManager(
             if (worksiteResults.first == q) worksiteResults.second
             else emptyList()
         LocationSearchResults(q, addresses, worksites)
+    }
+
+    suspend fun queryAddress(coordinates: LatLng): LocationAddress? {
+        isSearchingCoordinateAddress.value = true
+        try {
+            return addressSearchRepository.getAddress(coordinates)
+        } finally {
+            isSearchingCoordinateAddress.value = false
+        }
     }
 }
 

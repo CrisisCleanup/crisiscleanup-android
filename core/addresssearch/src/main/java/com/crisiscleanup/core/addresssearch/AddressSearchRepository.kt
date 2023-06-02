@@ -1,10 +1,13 @@
 package com.crisiscleanup.core.addresssearch
 
 import com.crisiscleanup.core.addresssearch.model.KeyLocationAddress
+import com.crisiscleanup.core.model.data.LocationAddress
 import com.google.android.gms.maps.model.LatLng
 
 interface AddressSearchRepository {
     fun clearCache()
+
+    suspend fun getAddress(coordinates: LatLng): LocationAddress?
 
     suspend fun searchAddresses(
         query: String,

@@ -4,8 +4,8 @@ import android.content.Context
 import android.location.Geocoder
 import android.util.LruCache
 import com.crisiscleanup.core.addresssearch.model.KeyLocationAddress
+import com.crisiscleanup.core.addresssearch.model.asKeyLocationAddress
 import com.crisiscleanup.core.addresssearch.model.filterLatLng
-import com.crisiscleanup.core.addresssearch.model.toKeyLocationAddress
 import com.crisiscleanup.core.addresssearch.util.sort
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
@@ -37,7 +37,16 @@ class GooglePlaceAddressSearchRepository @Inject constructor(
     private val geocoder = Geocoder(context)
 
     private val placesClientMutex = Mutex()
-    private var placesClient: PlacesClient? = null
+    private var _placesClient: PlacesClient? = null
+    private suspend fun placesClient(): PlacesClient {
+        placesClientMutex.withLock {
+            if (_placesClient == null) {
+                Places.initialize(context, BuildConfig.MAPS_API_KEY)
+                _placesClient = Places.createClient(context)
+            }
+        }
+        return _placesClient!!
+    }
 
     private val staleResultDuration = 1.hours
 
@@ -60,9 +69,13 @@ class GooglePlaceAddressSearchRepository @Inject constructor(
 
                 ensureActive()
 
-                addresses?.filterLatLng()?.firstOrNull()?.toKeyLocationAddress(prediction.placeId)
+                addresses?.filterLatLng()
+                    ?.firstOrNull()
+                    ?.asKeyLocationAddress(prediction.placeId)
             }
         }
+
+    override suspend fun getAddress(coordinates: LatLng) = geocoder.getAddress(coordinates)
 
     override suspend fun searchAddresses(
         query: String,
@@ -101,13 +114,7 @@ class GooglePlaceAddressSearchRepository @Inject constructor(
             .setQuery(query)
             .build()
         try {
-            placesClientMutex.withLock {
-                if (placesClient == null) {
-                    Places.initialize(context, BuildConfig.MAPS_API_KEY)
-                    placesClient = Places.createClient(context)
-                }
-            }
-            val response = placesClient!!.findAutocompletePredictions(request).await()
+            val response = placesClient().findAutocompletePredictions(request).await()
             val predictions = response.autocompletePredictions
             placeAutocompleteResultCache.put(query, Pair(now, predictions))
 

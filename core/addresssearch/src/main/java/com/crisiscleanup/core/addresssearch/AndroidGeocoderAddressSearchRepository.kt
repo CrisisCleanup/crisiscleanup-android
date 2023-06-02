@@ -4,12 +4,14 @@ import android.content.Context
 import android.location.Geocoder
 import android.util.LruCache
 import com.crisiscleanup.core.addresssearch.model.KeyLocationAddress
+import com.crisiscleanup.core.addresssearch.model.asKeyLocationAddress
+import com.crisiscleanup.core.addresssearch.model.asLocationAddress
 import com.crisiscleanup.core.addresssearch.model.filterLatLng
-import com.crisiscleanup.core.addresssearch.model.toKeyLocationAddress
 import com.crisiscleanup.core.addresssearch.util.sort
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
+import com.crisiscleanup.core.model.data.LocationAddress
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -37,6 +39,8 @@ class AndroidGeocoderAddressSearchRepository @Inject constructor(
     override fun clearCache() {
         addressResultCache.evictAll()
     }
+
+    override suspend fun getAddress(coordinates: LatLng) = geocoder.getAddress(coordinates)
 
     override suspend fun searchAddresses(
         query: String,
@@ -72,7 +76,7 @@ class AndroidGeocoderAddressSearchRepository @Inject constructor(
                     ?.mapIndexed { index, address ->
                         // TODO Rely on unique key
                         val key = address.url ?: (address.getAddressLine(0) ?: "$query-$index")
-                        address.toKeyLocationAddress(key)
+                        address.asKeyLocationAddress(key)
                     }
                     ?.sort(center)
                     ?.also {
@@ -88,4 +92,12 @@ class AndroidGeocoderAddressSearchRepository @Inject constructor(
 
         return@coroutineScope emptyList()
     }
+}
+
+internal fun Geocoder.getAddress(coordinates: LatLng): LocationAddress? {
+    val results = getFromLocation(coordinates.latitude, coordinates.longitude, 1)
+    return results?.firstOrNull()?.asLocationAddress()?.copy(
+        latitude = coordinates.latitude,
+        longitude = coordinates.longitude,
+    )
 }

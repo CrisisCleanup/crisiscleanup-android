@@ -129,7 +129,7 @@ internal class EditableLocationDataEditor(
     resourceProvider: AndroidResourceProvider,
     drawableResourceBitmapProvider: DrawableResourceBitmapProvider,
     private val existingWorksiteSelector: ExistingWorksiteSelector,
-    logger: AppLogger,
+    private val logger: AppLogger,
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val coroutineScope: CoroutineScope,
@@ -309,12 +309,17 @@ internal class EditableLocationDataEditor(
         return false
     }
 
-    private fun setMyLocationCoordinates() {
+    private fun setMyLocationCoordinates(isUserAction: Boolean = false) {
         coroutineScope.launch(coroutineDispatcher) {
             locationProvider.getLocation()?.let {
                 val coordinates = it.toLatLng().smallOffset()
                 locationInputData.coordinates.value = coordinates
                 _mapCameraZoom.value = MapViewCameraZoom(coordinates, defaultMapZoom)
+                if (isUserAction) {
+                    locationSearchManager.queryAddress(coordinates)?.let { address ->
+                        setSearchedLocationAddress(address)
+                    }
+                }
             }
         }
     }
@@ -322,7 +327,7 @@ internal class EditableLocationDataEditor(
     override fun useMyLocation() {
         when (permissionManager.requestLocationPermission()) {
             PermissionStatus.Granted -> {
-                setMyLocationCoordinates()
+                setMyLocationCoordinates(true)
             }
 
             PermissionStatus.ShowRationale -> {
@@ -455,7 +460,7 @@ internal class EditableLocationDataEditor(
         }
     }
 
-    private fun setLocationAddress(locationAddress: LocationAddress) {
+    private fun setSearchedLocationAddress(locationAddress: LocationAddress) {
         with(locationAddress) {
             onSearchResultSelect(
                 locationAddress.toLatLng(),
@@ -481,7 +486,7 @@ internal class EditableLocationDataEditor(
             }
         }
 
-        setLocationAddress(locationAddress)
+        setSearchedLocationAddress(locationAddress)
         return true
     }
 
@@ -501,7 +506,7 @@ internal class EditableLocationDataEditor(
     override fun acceptOutOfBounds(locationOutOfBounds: LocationOutOfBounds) {
         with(locationOutOfBounds) {
             if (address != null) {
-                setLocationAddress(address)
+                setSearchedLocationAddress(address)
                 commitChanges()
             } else {
                 commitLocationCoordinates(coordinates)
