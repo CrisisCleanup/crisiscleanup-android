@@ -1,6 +1,10 @@
 package com.crisiscleanup.feature.caseeditor.model
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteNote
@@ -26,7 +30,7 @@ class NotesFlagsInputData(
 
     override fun updateCase() = updateCase(worksiteIn)
 
-    override fun updateCase(worksite: Worksite): Worksite? {
+    override fun updateCase(worksite: Worksite): Worksite {
         val notes = notes.toList()
         if (!isChanged(notes, worksite)) {
             return worksite
@@ -43,4 +47,6 @@ class NotesFlagsInputData(
             isAssignedToOrgMember = isAssignedToOrgMember,
         )
     }
+
+    override fun copyCase(worksite: Worksite) = updateCase(worksite)
 }

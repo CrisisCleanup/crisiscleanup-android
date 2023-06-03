@@ -6,7 +6,7 @@ import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 
-abstract class EditCaseBaseViewModel constructor(
+abstract class EditCaseBaseViewModel(
     protected val worksiteProvider: EditableWorksiteProvider,
     private val translator: KeyTranslator,
     @Logger(CrisisCleanupLoggers.Worksites) protected val logger: AppLogger,

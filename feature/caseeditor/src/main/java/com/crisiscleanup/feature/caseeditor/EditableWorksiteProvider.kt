@@ -14,6 +14,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -39,6 +40,15 @@ interface EditableWorksiteProvider {
     fun setAddressChanged(worksite: Worksite)
     fun takeAddressChanged(): Boolean
 
+    val incidentIdChange: Flow<Long>
+    val isIncidentChanged: Boolean
+    val incidentChangeIncident: Incident?
+    val incidentChangeWorksite: Worksite?
+    fun resetIncidentChange()
+    fun setIncidentAddressChanged(incident: Incident, worksite: Worksite)
+    fun updateIncidentChangeWorksite(worksite: Worksite)
+    fun takeIncidentChanged(): IncidentChangeData?
+
     fun translate(key: String): String?
 }
 
@@ -57,6 +67,8 @@ fun EditableWorksiteProvider.reset(incidentId: Long = EmptyIncident.id) = run {
 
     takeStale()
     clearEditedLocation()
+    takeAddressChanged()
+    resetIncidentChange()
 }
 
 @Singleton
@@ -104,9 +116,49 @@ class SingleEditableWorksiteProvider @Inject constructor() : EditableWorksitePro
 
     override fun takeAddressChanged() = _isAddressChanged.getAndSet(false)
 
+    override val incidentIdChange = MutableStateFlow(EmptyIncident.id)
+    private val incidentChangeData = AtomicReference<IncidentChangeData?>()
+    override val incidentChangeIncident: Incident?
+        get() = incidentChangeData.get()?.incident
+    override val incidentChangeWorksite: Worksite?
+        get() = incidentChangeData.get()?.worksite
+
+    override val isIncidentChanged: Boolean
+        get() = incidentChangeData.get() != null
+
+    override fun resetIncidentChange() {
+        incidentIdChange.value = EmptyIncident.id
+        incidentChangeData.set(null)
+    }
+
+    override fun setIncidentAddressChanged(incident: Incident, worksite: Worksite) {
+        val worksiteChange = worksite.copy(incidentId = incident.id)
+        incidentChangeData.set(IncidentChangeData(incident, worksiteChange))
+        incidentIdChange.value = incident.id
+    }
+
+    override fun updateIncidentChangeWorksite(worksite: Worksite) {
+        incidentChangeData.get()?.let {
+            val incident = it.incident
+            incidentChangeData.set(
+                IncidentChangeData(
+                    incident,
+                    worksite.copy(incidentId = incident.id),
+                )
+            )
+        }
+    }
+
+    override fun takeIncidentChanged() = incidentChangeData.getAndSet(null)
+
     override fun translate(key: String) =
         formFieldTranslationLookup[key] ?: workTypeTranslationLookup[key]
 }
+
+data class IncidentChangeData(
+    val incident: Incident,
+    val worksite: Worksite,
+)
 
 @Module
 @InstallIn(SingletonComponent::class)

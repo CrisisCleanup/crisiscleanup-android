@@ -497,10 +497,17 @@ internal class EditableLocationDataEditor(
     override fun changeIncidentOutOfBounds(locationOutOfBounds: LocationOutOfBounds) {
         with(locationOutOfBounds) {
             recentIncident?.let {
-                // TODO
+                if (address == null) {
+                    locationInputData.coordinates.value = coordinates
+                } else {
+                    setSearchedLocationAddress(address)
+                }
+                val worksiteChange = locationInputData.addressChangeWorksite
+                worksiteProvider.setIncidentAddressChanged(recentIncident, worksiteChange)
             }
         }
         outOfBoundsManager.clearOutOfBounds()
+        isLocationCommitted.value = true
     }
 
     override fun acceptOutOfBounds(locationOutOfBounds: LocationOutOfBounds) {

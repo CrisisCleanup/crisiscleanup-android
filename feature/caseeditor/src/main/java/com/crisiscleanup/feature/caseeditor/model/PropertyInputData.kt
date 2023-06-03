@@ -71,12 +71,12 @@ class PropertyInputData(
 
     override fun updateCase() = updateCase(worksiteIn)
 
-    override fun updateCase(worksite: Worksite): Worksite? {
+    private fun updateCase(worksite: Worksite, validate: Boolean): Worksite? {
         if (!isChanged(worksite)) {
             return worksite
         }
 
-        if (!validate()) {
+        if (validate && !validate()) {
             return null
         }
 
@@ -88,4 +88,8 @@ class PropertyInputData(
             autoContactFrequencyT = autoContactFrequency.literal,
         )
     }
+
+    override fun updateCase(worksite: Worksite) = updateCase(worksite, true)
+
+    override fun copyCase(worksite: Worksite) = updateCase(worksite, false)!!
 }

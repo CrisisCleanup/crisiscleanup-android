@@ -110,17 +110,19 @@ open class FormFieldsInputData(
 
     override fun updateCase() = updateCase(worksiteIn)
 
-    override fun updateCase(worksite: Worksite): Worksite? {
+    private fun updateCase(worksite: Worksite, validate: Boolean): Worksite? {
         var snapshotFieldData = mutableFormFieldData.associate {
             it.value.key to it.value.dynamicValue
         }
 
-        // TODO Test coverage
-        requiredFormFields.forEach {
-            if (it.htmlType != "checkbox" &&
-                snapshotFieldData[it.fieldKey]?.valueString?.isNotBlank() != true
-            ) {
-                return null
+        if (validate) {
+            // TODO Test coverage
+            requiredFormFields.forEach {
+                if (it.htmlType != "checkbox" &&
+                    snapshotFieldData[it.fieldKey]?.valueString?.isNotBlank() != true
+                ) {
+                    return null
+                }
             }
         }
 
@@ -139,4 +141,8 @@ open class FormFieldsInputData(
             formData = formData,
         )
     }
+
+    override fun updateCase(worksite: Worksite) = updateCase(worksite, true)
+
+    override fun copyCase(worksite: Worksite) = updateCase(worksite, false)!!
 }

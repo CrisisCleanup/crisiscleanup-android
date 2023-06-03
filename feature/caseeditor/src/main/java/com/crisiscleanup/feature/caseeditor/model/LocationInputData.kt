@@ -112,7 +112,7 @@ class LocationInputData(
 
     override fun updateCase() = updateCase(referenceWorksite)
 
-    override fun updateCase(worksite: Worksite): Worksite? {
+    private fun updateCase(worksite: Worksite, validate: Boolean): Worksite? {
         if (!isChanged(worksite)) {
             return worksite
         } else if (worksite.isNew && streetAddress.isBlank()) {
@@ -126,7 +126,7 @@ class LocationInputData(
             }
         }
 
-        if (!validate()) {
+        if (validate && !validate()) {
             if (hasAddressError) {
                 hasWrongLocation = true
             }
@@ -157,6 +157,10 @@ class LocationInputData(
             formData = if (formData?.isNotEmpty() == true) formData else null,
         )
     }
+
+    override fun updateCase(worksite: Worksite): Worksite? = updateCase(worksite, true)
+
+    override fun copyCase(worksite: Worksite) = updateCase(worksite, false)!!
 
     fun assumeLocationAddressChanges(worksite: Worksite, updateAddressProblem: Boolean = false) {
         referenceWorksite = referenceWorksite.copy(

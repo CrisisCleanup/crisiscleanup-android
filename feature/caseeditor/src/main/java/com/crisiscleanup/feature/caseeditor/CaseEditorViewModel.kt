@@ -18,6 +18,7 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.Default
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPusher
+import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
@@ -28,6 +29,8 @@ import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
 import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
+import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.LocalWorksite
 import com.crisiscleanup.core.model.data.WorkTypeStatus
@@ -77,6 +80,7 @@ class CaseEditorViewModel @Inject constructor(
     languageRefresher: LanguageRefresher,
     workTypeStatusRepository: WorkTypeStatusRepository,
     editableWorksiteProvider: EditableWorksiteProvider,
+    incidentSelector: IncidentSelector,
     translator: KeyTranslator,
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val syncPusher: SyncPusher,
@@ -138,7 +142,7 @@ class CaseEditorViewModel @Inject constructor(
     /**
      * A sufficient amount of time for local storage to commit and publish network data
      */
-    private val editorSetWindow = 10.seconds
+    private val editorSetWindow = 3.seconds
     private val caseEditors: StateFlow<CaseEditors?>
 
     val propertyEditor: CasePropertyDataEditor?
@@ -154,8 +158,14 @@ class CaseEditorViewModel @Inject constructor(
     private val caseDataWriters: List<CaseDataWriter>
         get() = caseEditors.value?.dataWriters ?: emptyList()
 
+    val changeWorksiteIncidentId = MutableStateFlow(EmptyIncident.id)
+    private val changingIncidentWorksite: Worksite
+
     init {
         updateHeaderTitle()
+
+        val incidentChangeData = editableWorksiteProvider.takeIncidentChanged()
+        changingIncidentWorksite = incidentChangeData?.worksite ?: EmptyWorksite
 
         editableWorksiteProvider.reset(incidentIdArg)
 
@@ -204,6 +214,9 @@ class CaseEditorViewModel @Inject constructor(
 
         caseEditors = dataLoader.uiState
             .filter {
+                // TODO Rewrite this to load once after local and network load has finished.
+                //      Lingering changes should not exist.
+                //      If changes are detected after loading has finished present an action to refresh.
                 it.asCaseData()?.isNetworkLoadFinished == true &&
                         editorSetInstant?.let { setInstant ->
                             Clock.System.now().minus(setInstant) < editorSetWindow
@@ -211,6 +224,10 @@ class CaseEditorViewModel @Inject constructor(
             }
             .mapLatest {
                 editorSetInstant = Clock.System.now()
+
+                if (changingIncidentWorksite != EmptyWorksite) {
+                    editableWorksiteProvider.editableWorksite.value = changingIncidentWorksite
+                }
 
                 val propertyEditor = EditablePropertyDataEditor(
                     editableWorksiteProvider,
@@ -281,14 +298,40 @@ class CaseEditorViewModel @Inject constructor(
         combine(
             caseEditors,
             editingWorksite,
-            ::Pair,
+            editableWorksiteProvider.incidentIdChange,
+            ::Triple,
         )
-            .onEach { (editors, worksite) ->
+            .onEach { (editors, worksite, incidentIdChange) ->
                 editors?.property?.setSteadyStateSearchName()
 
                 editors?.location?.locationInputData?.let { inputData ->
-                    if (editableWorksiteProvider.takeAddressChanged()) {
-                        inputData.assumeLocationAddressChanges(worksite, true)
+                    with(editableWorksiteProvider) {
+                        if (takeAddressChanged()) {
+                            inputData.assumeLocationAddressChanges(worksite, true)
+                        }
+
+                        if (isIncidentChanged &&
+                            incidentIdChange != incidentIdArg &&
+                            incidentIdChange > 0
+                        ) {
+                            // Assume any address changes first before copying
+                            incidentChangeWorksite?.let { addressChangeWorksite ->
+                                inputData.assumeLocationAddressChanges(addressChangeWorksite, true)
+                            }
+
+                            val copiedWorksite = copyChanges()
+                            if (copiedWorksite != EmptyWorksite) {
+                                editableWorksiteProvider.updateIncidentChangeWorksite(copiedWorksite)
+                                if (copiedWorksite.isNew) {
+                                    changeWorksiteIncidentId.value = incidentIdChange
+                                    incidentChangeIncident?.let { changeIncident ->
+                                        incidentSelector.setIncident(changeIncident)
+                                    }
+                                } else {
+                                    // TODO Save incident ID change locally and queue up sync
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -516,6 +559,21 @@ class CaseEditorViewModel @Inject constructor(
         }
 
         return true
+    }
+
+    private fun copyChanges(): Worksite {
+        tryGetEditorState()?.let { editorState ->
+            var worksite = caseDataWriters.fold(editorState.worksite) { acc, dataWriter ->
+                dataWriter.copyCase(acc)
+            }
+            (workEditor as? EditableWorkDataEditor)?.let { workDataEditor ->
+                val workTypeLookup = editorState.incident.workTypeLookup
+                worksite = workDataEditor.transferWorkTypes(workTypeLookup, worksite)
+            }
+            return worksite
+        }
+
+        return EmptyWorksite
     }
 
     /**

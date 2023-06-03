@@ -8,4 +8,6 @@ interface CaseDataWriter {
      */
     fun updateCase(): Worksite?
     fun updateCase(worksite: Worksite): Worksite?
+
+    fun copyCase(worksite: Worksite): Worksite
 }
