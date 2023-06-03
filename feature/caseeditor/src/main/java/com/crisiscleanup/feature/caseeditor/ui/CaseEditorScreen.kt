@@ -394,19 +394,21 @@ private fun ColumnScope.FullEditView(
                     .fillMaxSize(),
                 state = contentListState,
             ) {
-                fullEditContent(
-                    caseData,
-                    viewModel,
-                    modifier,
-                    editSections,
-                    onMoveLocation = onMoveLocation,
-                    onSearchAddress = onSearchAddress,
-                    isPropertySectionCollapsed = sectionCollapseStates[0],
-                    togglePropertySection = togglePropertySection,
-                    isSectionCollapsed = isSectionCollapsed,
-                    toggleSection = toggleSectionCollapse,
-                    translate = translate,
-                )
+                if (editSections.isNotEmpty()) {
+                    fullEditContent(
+                        caseData,
+                        viewModel,
+                        modifier,
+                        editSections,
+                        onMoveLocation = onMoveLocation,
+                        onSearchAddress = onSearchAddress,
+                        isPropertySectionCollapsed = sectionCollapseStates[0],
+                        togglePropertySection = togglePropertySection,
+                        isSectionCollapsed = isSectionCollapsed,
+                        toggleSection = toggleSectionCollapse,
+                        translate = translate,
+                    )
+                }
             }
         }
 

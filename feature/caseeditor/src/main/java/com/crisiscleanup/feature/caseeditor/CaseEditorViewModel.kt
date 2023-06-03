@@ -142,7 +142,7 @@ class CaseEditorViewModel @Inject constructor(
     /**
      * A sufficient amount of time for local storage to commit and publish network data
      */
-    private val editorSetWindow = 3.seconds
+    private val editorSetWindow = 10.seconds
     private val caseEditors: StateFlow<CaseEditors?>
 
     val propertyEditor: CasePropertyDataEditor?
