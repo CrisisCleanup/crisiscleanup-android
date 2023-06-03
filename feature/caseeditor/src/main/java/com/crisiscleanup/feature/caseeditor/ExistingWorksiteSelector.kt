@@ -16,7 +16,7 @@ data class ExistingWorksiteIdentifier(
             worksiteId != EmptyWorksite.id
 }
 
-val existingWorksiteIdentifierNone = ExistingWorksiteIdentifier(
+val ExistingWorksiteIdentifierNone = ExistingWorksiteIdentifier(
     EmptyIncident.id,
     EmptyWorksite.id,
 )
@@ -26,7 +26,7 @@ class ExistingWorksiteSelector @Inject constructor(
     private val incidentsRepository: IncidentsRepository,
     private val worksitesRepository: WorksitesRepository,
 ) {
-    val selected = MutableStateFlow(existingWorksiteIdentifierNone)
+    val selected = MutableStateFlow(ExistingWorksiteIdentifierNone)
 
     suspend fun onNetworkWorksiteSelected(networkWorksiteId: Long) {
         val incidentId = worksiteProvider.editableWorksite.value.incidentId

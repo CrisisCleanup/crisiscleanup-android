@@ -142,7 +142,9 @@ fun PopulatedLocalWorksite.asExternalModel(
             ),
             localImages.map(WorksiteLocalImageEntity::asExternalModel),
             LocalChange(
-                isLocalModified = root.isLocalModified || hasImagesPendingDelete,
+                isLocalModified = root.isLocalModified ||
+                        hasImagesPendingDelete ||
+                        localImages.isNotEmpty(),
                 localModifiedAt = root.localModifiedAt,
                 syncedAt = root.syncedAt,
             ),

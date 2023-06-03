@@ -229,7 +229,8 @@ interface WorksiteDao {
     @Query(
         """
         UPDATE worksites_root
-        SET sync_uuid           =:syncUuid,
+        SET incident_id         =:incidentId,
+            sync_uuid           =:syncUuid,
             local_modified_at   =:localModifiedAt,
             is_local_modified   =1
         WHERE id=:id
@@ -237,6 +238,7 @@ interface WorksiteDao {
     )
     fun updateRoot(
         id: Long,
+        incidentId: Long,
         syncUuid: String,
         localModifiedAt: Instant,
     )

@@ -73,6 +73,9 @@ fun NavGraphBuilder.caseEditorScreen(
         val navToNewCase = remember(navController) {
             { incidentId: Long -> navController.rerouteToNewCase(incidentId) }
         }
+        val navToChangedIncident = remember(navController) {
+            { ids: ExistingWorksiteIdentifier -> navController.rerouteToCaseChange(ids) }
+        }
         val navToEditCase = remember(navController) {
             { ids: ExistingWorksiteIdentifier -> navController.rerouteToCaseEdit(ids) }
         }
@@ -83,6 +86,7 @@ fun NavGraphBuilder.caseEditorScreen(
         CaseEditorRoute(
             onBack = onBackClick,
             changeNewIncidentCase = navToNewCase,
+            changeExistingIncidentCase = navToChangedIncident,
             onOpenExistingCase = navToEditCase,
             onEditSearchAddress = onEditSearchAddress,
             onEditMoveLocationOnMap = onEditMoveLocationOnMap,
@@ -140,10 +144,8 @@ fun NavController.navigateToExistingCaseTransferWorkType() =
 
 internal fun NavController.popRouteStartingWith(route: String) {
     popBackStack()
-    currentBackStackEntry?.let {
-        if (it.destination.route?.startsWith(route) == true) {
-            popBackStack()
-        }
+    while (currentBackStackEntry?.destination?.route?.startsWith(route) == true) {
+        popBackStack()
     }
 }
 
@@ -154,6 +156,18 @@ fun NavController.rerouteToNewCase(incidentId: Long) {
 
 fun NavController.rerouteToCaseEdit(ids: ExistingWorksiteIdentifier) {
     popRouteStartingWith(caseEditorRoute)
+    navigateToCaseEditor(ids.incidentId, ids.worksiteId)
+}
+
+fun NavController.rerouteToCaseChange(ids: ExistingWorksiteIdentifier) {
+    popBackStack()
+    while (currentBackStackEntry?.destination?.route?.let {
+            it.startsWith(caseEditorRoute) ||
+                    it.startsWith(viewCaseRoute)
+        } == true) {
+        popBackStack()
+    }
+
     navigateToCaseEditor(ids.incidentId, ids.worksiteId)
 }
 

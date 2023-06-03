@@ -87,6 +87,7 @@ private const val SectionSeparatorContentType = "section-header-content-type"
 @Composable
 internal fun CaseEditorRoute(
     changeNewIncidentCase: (Long) -> Unit = {},
+    changeExistingIncidentCase: (ExistingWorksiteIdentifier) -> Unit = {},
     onOpenExistingCase: (ExistingWorksiteIdentifier) -> Unit = {},
     onEditSearchAddress: () -> Unit = {},
     onEditMoveLocationOnMap: () -> Unit = {},
@@ -94,11 +95,14 @@ internal fun CaseEditorRoute(
     viewModel: CaseEditorViewModel = hiltViewModel(),
 ) {
     val changeWorksiteIncidentId by viewModel.changeWorksiteIncidentId.collectAsStateWithLifecycle()
+    val changeExistingWorksite by viewModel.changeExistingWorksite.collectAsStateWithLifecycle()
     val editDifferentWorksite by viewModel.editIncidentWorksite.collectAsStateWithLifecycle()
     if (editDifferentWorksite.isDefined) {
         onOpenExistingCase(editDifferentWorksite)
     } else if (changeWorksiteIncidentId != EmptyIncident.id) {
         changeNewIncidentCase(changeWorksiteIncidentId)
+    } else if (changeExistingWorksite.isDefined) {
+        changeExistingIncidentCase(changeExistingWorksite)
     } else {
         val navigateBack by remember { viewModel.navigateBack }
         if (navigateBack) {

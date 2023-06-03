@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 internal class CaseEditorDataLoader(
     private val isCreateWorksite: Boolean,
-    private val incidentIdIn: Long,
+    incidentIdIn: Long,
     worksiteIdIn: Long?,
     accountDataRepository: AccountDataRepository,
     incidentsRepository: IncidentsRepository,
@@ -280,6 +280,9 @@ internal class CaseEditorDataLoader(
                     workTypeStatuses.isNotEmpty() &&
                     (isCreateWorksite || localWorksite != null)
             val isNetworkLoadFinished = isReadyForEditing && (isCreateWorksite || isPulled)
+            // TODO Revisit after worksite caching is complete
+            //      Data should not be editable until this is finished
+            //      Once this is finished new changes should be ignored until changes are committed
             val isLocalLoadFinished = isNetworkLoadFinished &&
                     (isCreateWorksite || worksiteState.phone1.isNotBlank())
             val isTranslationUpdated =

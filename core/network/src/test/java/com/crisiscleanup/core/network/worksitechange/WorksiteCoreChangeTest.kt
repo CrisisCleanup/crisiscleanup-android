@@ -243,7 +243,7 @@ class WorksiteCoreChangeTest {
             email = changeSnapshot.email,
             favorite = fullyDefinedWorksite.favorite,
             formData = emptyList(),
-            incident = fullyDefinedWorksite.incident,
+            incident = changeSnapshot.incidentId,
             keyWorkType = null,
             location = NetworkWorksiteFull.Location(
                 "Point",
@@ -279,7 +279,7 @@ class WorksiteCoreChangeTest {
             email = "email-change",
             favoriteId = 523,
             formData = mapOf("a" to DynamicValue("a-value")),
-            incidentId = 64,
+            incidentId = 75,
             keyWorkTypeId = 835,
             latitude = 64.84,
             longitude = 56.458,

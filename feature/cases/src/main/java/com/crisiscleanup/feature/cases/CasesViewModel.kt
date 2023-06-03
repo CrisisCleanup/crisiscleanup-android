@@ -269,7 +269,8 @@ class CasesViewModel @Inject constructor(
     }
 
     fun onMapLoadStart() {
-        mapBoundsManager.onNewMap()
+        // Do not try to optimize delaying marker loading until the map is loaded.
+        // A lot of state is changing. Refactor or keep simple.
     }
 
     fun onMapLoaded() {

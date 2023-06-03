@@ -41,9 +41,7 @@ interface EditableWorksiteProvider {
     fun takeAddressChanged(): Boolean
 
     val incidentIdChange: Flow<Long>
-    val isIncidentChanged: Boolean
-    val incidentChangeIncident: Incident?
-    val incidentChangeWorksite: Worksite?
+    val peekIncidentChange: IncidentChangeData?
     fun resetIncidentChange()
     fun setIncidentAddressChanged(incident: Incident, worksite: Worksite)
     fun updateIncidentChangeWorksite(worksite: Worksite)
@@ -118,13 +116,8 @@ class SingleEditableWorksiteProvider @Inject constructor() : EditableWorksitePro
 
     override val incidentIdChange = MutableStateFlow(EmptyIncident.id)
     private val incidentChangeData = AtomicReference<IncidentChangeData?>()
-    override val incidentChangeIncident: Incident?
-        get() = incidentChangeData.get()?.incident
-    override val incidentChangeWorksite: Worksite?
-        get() = incidentChangeData.get()?.worksite
-
-    override val isIncidentChanged: Boolean
-        get() = incidentChangeData.get() != null
+    override val peekIncidentChange: IncidentChangeData?
+        get() = incidentChangeData.get()
 
     override fun resetIncidentChange() {
         incidentIdChange.value = EmptyIncident.id

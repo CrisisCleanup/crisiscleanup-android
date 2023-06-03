@@ -120,8 +120,10 @@ class WorksiteChangeDaoPlus @Inject constructor(
                     workTypes = workTypes.map { it.copy(worksiteId = worksiteId) }
                 } else {
                     val core = changeEntities.core
+                    // TODO Test coverage on incident ID change/update
                     worksiteDao.updateRoot(
                         core.id,
+                        core.incidentId,
                         uuidGenerator.uuid(),
                         localModifiedAt,
                     )

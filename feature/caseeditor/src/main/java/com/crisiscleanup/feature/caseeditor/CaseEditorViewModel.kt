@@ -80,7 +80,7 @@ class CaseEditorViewModel @Inject constructor(
     languageRefresher: LanguageRefresher,
     workTypeStatusRepository: WorkTypeStatusRepository,
     editableWorksiteProvider: EditableWorksiteProvider,
-    incidentSelector: IncidentSelector,
+    private val incidentSelector: IncidentSelector,
     translator: KeyTranslator,
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val syncPusher: SyncPusher,
@@ -101,7 +101,6 @@ class CaseEditorViewModel @Inject constructor(
     @Dispatcher(Default) coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : EditCaseBaseViewModel(editableWorksiteProvider, translator, logger) {
     private val caseEditorArgs = CaseEditorArgs(savedStateHandle)
-    private val incidentIdArg = caseEditorArgs.incidentId
     private var worksiteIdArg = caseEditorArgs.worksiteId
     private val isCreateWorksite: Boolean
         get() = worksiteIdArg == null
@@ -123,7 +122,7 @@ class CaseEditorViewModel @Inject constructor(
     val promptCancelChanges = mutableStateOf(false)
     val isSavingWorksite = MutableStateFlow(false)
 
-    val editIncidentWorksite = MutableStateFlow(existingWorksiteIdentifierNone)
+    val editIncidentWorksite = MutableStateFlow(ExistingWorksiteIdentifierNone)
     private var editIncidentWorksiteJob: Job? = null
 
     private val dataLoader: CaseEditorDataLoader
@@ -140,7 +139,7 @@ class CaseEditorViewModel @Inject constructor(
     private var editorSetInstant: Instant? = null
 
     /**
-     * A sufficient amount of time for local storage to commit and publish network data
+     * A sufficient amount of time for local load to finish after network load has finished.
      */
     private val editorSetWindow = 10.seconds
     private val caseEditors: StateFlow<CaseEditors?>
@@ -159,19 +158,23 @@ class CaseEditorViewModel @Inject constructor(
         get() = caseEditors.value?.dataWriters ?: emptyList()
 
     val changeWorksiteIncidentId = MutableStateFlow(EmptyIncident.id)
+    val changeExistingWorksite = MutableStateFlow(ExistingWorksiteIdentifierNone)
+    private var saveChangeIncident = EmptyIncident
     private val changingIncidentWorksite: Worksite
 
     init {
         updateHeaderTitle()
 
+        val incidentIdIn = caseEditorArgs.incidentId
+
         val incidentChangeData = editableWorksiteProvider.takeIncidentChanged()
         changingIncidentWorksite = incidentChangeData?.worksite ?: EmptyWorksite
 
-        editableWorksiteProvider.reset(incidentIdArg)
+        editableWorksiteProvider.reset(incidentIdIn)
 
         dataLoader = CaseEditorDataLoader(
             isCreateWorksite,
-            incidentIdArg,
+            incidentIdIn,
             worksiteIdArg,
             accountDataRepository,
             incidentsRepository,
@@ -198,7 +201,7 @@ class CaseEditorViewModel @Inject constructor(
             .onEach {
                 it?.let { cachedWorksite ->
                     worksitesRepository.setRecentWorksite(
-                        incidentIdArg,
+                        incidentIdIn,
                         cachedWorksite.worksite.id,
                         editOpenedAt,
                     )
@@ -214,9 +217,11 @@ class CaseEditorViewModel @Inject constructor(
 
         caseEditors = dataLoader.uiState
             .filter {
-                // TODO Rewrite this to load once after local and network load has finished.
-                //      Lingering changes should not exist.
-                //      If changes are detected after loading has finished present an action to refresh.
+                // TODO Redesign after worksite caching is complete.
+                //      Network load finish should populate data in readonly mode.
+                //      Local load finish (needs to be more reliable) enables editable.
+                //      Local load must include propagation of database changes and not just local state propagation which is why a delay is necessary.
+                //      See data loader state, logic here, and screen's isEditable flag.
                 it.asCaseData()?.isNetworkLoadFinished == true &&
                         editorSetInstant?.let { setInstant ->
                             Clock.System.now().minus(setInstant) < editorSetWindow
@@ -301,36 +306,24 @@ class CaseEditorViewModel @Inject constructor(
             editableWorksiteProvider.incidentIdChange,
             ::Triple,
         )
-            .onEach { (editors, worksite, incidentIdChange) ->
+            .onEach { (editors, worksite, _) ->
                 editors?.property?.setSteadyStateSearchName()
 
                 editors?.location?.locationInputData?.let { inputData ->
-                    with(editableWorksiteProvider) {
-                        if (takeAddressChanged()) {
-                            inputData.assumeLocationAddressChanges(worksite, true)
-                        }
+                    if (editableWorksiteProvider.takeAddressChanged()) {
+                        inputData.assumeLocationAddressChanges(worksite, true)
+                    }
 
-                        if (isIncidentChanged &&
-                            incidentIdChange != incidentIdArg &&
-                            incidentIdChange > 0
+                    editableWorksiteProvider.peekIncidentChange?.let { changeData ->
+                        val incidentChangeId = changeData.incident.id
+                        if (incidentChangeId != EmptyIncident.id &&
+                            incidentChangeId != incidentIdIn
                         ) {
-                            // Assume any address changes first before copying
-                            incidentChangeWorksite?.let { addressChangeWorksite ->
-                                inputData.assumeLocationAddressChanges(addressChangeWorksite, true)
-                            }
-
-                            val copiedWorksite = copyChanges()
-                            if (copiedWorksite != EmptyWorksite) {
-                                editableWorksiteProvider.updateIncidentChangeWorksite(copiedWorksite)
-                                if (copiedWorksite.isNew) {
-                                    changeWorksiteIncidentId.value = incidentIdChange
-                                    incidentChangeIncident?.let { changeIncident ->
-                                        incidentSelector.setIncident(changeIncident)
-                                    }
-                                } else {
-                                    // TODO Save incident ID change locally and queue up sync
-                                }
-                            }
+                            onIncidentChange(
+                                inputData,
+                                changeData.incident,
+                                changeData.worksite,
+                            )
                         }
                     }
                 }
@@ -424,9 +417,32 @@ class CaseEditorViewModel @Inject constructor(
 
     private fun tryGetEditorState() = uiState.value.asCaseData()
 
+    private suspend fun onIncidentChange(
+        inputData: LocationInputData,
+        changeIncident: Incident,
+        addressChangeWorksite: Worksite,
+    ) = with(worksiteProvider) {
+        // Assume any address changes first before copying
+        inputData.assumeLocationAddressChanges(addressChangeWorksite, true)
+
+        val copiedWorksite = copyChanges()
+        if (copiedWorksite != EmptyWorksite) {
+            if (copiedWorksite.isNew) {
+                worksiteProvider.updateIncidentChangeWorksite(copiedWorksite)
+                changeWorksiteIncidentId.value = changeIncident.id
+                incidentSelector.setIncident(changeIncident)
+            } else {
+                takeIncidentChanged()
+
+                saveChangeIncident = changeIncident
+                saveChanges(false, backOnSuccess = false)
+            }
+        }
+    }
+
     fun saveChanges(
         claimUnclaimed: Boolean,
-        backOnSuccess: Boolean = true
+        backOnSuccess: Boolean = true,
     ) {
         if (!transferChanges(true)) {
             return
@@ -446,7 +462,10 @@ class CaseEditorViewModel @Inject constructor(
 
                 val worksite = worksiteProvider.editableWorksite.value
                     .updateKeyWorkType(initialWorksite)
-                if (worksite == initialWorksite) {
+                val saveIncidentId = saveChangeIncident.id
+                val isIncidentChange = saveIncidentId != EmptyIncident.id &&
+                        saveIncidentId != worksite.incidentId
+                if (worksite == initialWorksite && !isIncidentChange) {
                     if (backOnSuccess) {
                         navigateBack.value = true
                     }
@@ -469,6 +488,8 @@ class CaseEditorViewModel @Inject constructor(
                         }
                 }
 
+                val updatedIncidentId =
+                    if (isIncidentChange) saveIncidentId else worksite.incidentId
                 val updatedReportedBy =
                     if (worksite.isNew) editorStateData.orgId else worksite.reportedBy
                 val clearWhat3Words = worksite.what3Words?.isNotBlank() == true &&
@@ -477,6 +498,7 @@ class CaseEditorViewModel @Inject constructor(
                 val updatedWhat3Words = if (clearWhat3Words) "" else worksite.what3Words
 
                 val updatedWorksite = worksite.copy(
+                    incidentId = updatedIncidentId,
                     workTypes = workTypes,
                     reportedBy = updatedReportedBy,
                     updatedAt = Clock.System.now(),
@@ -491,13 +513,20 @@ class CaseEditorViewModel @Inject constructor(
                 )
                 val worksiteId = worksiteIdArg!!
 
-                editorSetInstant = null
-                dataLoader.reloadData(worksiteId)
                 worksiteProvider.setEditedLocation(worksite.coordinates())
+                if (isIncidentChange) {
+                    incidentSelector.setIncident(saveChangeIncident)
+                } else {
+                    editorSetInstant = null
+                    dataLoader.reloadData(worksiteId)
+                }
 
                 syncPusher.appPushWorksite(worksiteId)
 
-                if (backOnSuccess) {
+                if (isIncidentChange) {
+                    changeExistingWorksite.value =
+                        ExistingWorksiteIdentifier(saveIncidentId, worksiteId)
+                } else if (backOnSuccess) {
                     navigateBack.value = true
                 }
             } catch (e: Exception) {

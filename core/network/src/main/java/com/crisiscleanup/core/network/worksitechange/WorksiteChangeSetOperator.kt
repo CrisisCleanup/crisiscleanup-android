@@ -154,7 +154,7 @@ internal fun NetworkWorksiteFull.getCoreChange(
         // Member of my org/favorite change is performed in a followup call
         favorite = favorite,
         formData = formDataPush,
-        incident = incident,
+        incident = if (coreB.incidentId == coreA.incidentId) incident else coreB.incidentId,
         keyWorkType = keyWorkTypePush,
         location = locationPush,
         name = name.change(coreA.name, coreB.name),

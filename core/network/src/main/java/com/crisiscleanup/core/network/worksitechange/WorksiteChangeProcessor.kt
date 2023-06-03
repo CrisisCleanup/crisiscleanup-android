@@ -87,7 +87,7 @@ class WorksiteChangeProcessor(
         startingReferenceChange: SyncWorksiteChange,
         sortedChanges: List<SyncWorksiteChange>,
     ) {
-        var start: WorksiteSnapshot? = startingReferenceChange.worksiteChange.start
+        var start = startingReferenceChange.worksiteChange.start
 
         val lastLoopIndex = sortedChanges.size - 1
         sortedChanges.forEachIndexed { index, syncChange ->
