@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.common.AppEnv
+import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.event.AuthEventBus
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
@@ -41,19 +42,21 @@ class MainActivityViewModel @Inject constructor(
     authEventBus: AuthEventBus,
     incidentsRepository: IncidentsRepository,
     worksitesRepository: WorksitesRepository,
+    val translator: KeyResourceTranslator,
     private val syncPuller: SyncPuller,
     appEnv: AppEnv,
     @Dispatcher(IO) ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     val isDebuggable = appEnv.isDebuggable
 
-    val uiState: StateFlow<MainActivityUiState> = localAppPreferencesRepository.userData.map {
-        MainActivityUiState.Success(it)
-    }.stateIn(
-        scope = viewModelScope,
-        initialValue = MainActivityUiState.Loading,
-        started = SharingStarted.WhileSubscribed(5_000)
-    )
+    val uiState: StateFlow<MainActivityUiState> =
+        localAppPreferencesRepository.userPreferences.map {
+            MainActivityUiState.Success(it)
+        }.stateIn(
+            scope = viewModelScope,
+            initialValue = MainActivityUiState.Loading,
+            started = SharingStarted.WhileSubscribed(5_000)
+        )
 
     var isAccessTokenExpired = mutableStateOf(false)
         private set
@@ -70,6 +73,8 @@ class MainActivityViewModel @Inject constructor(
         initialValue = AuthState.Loading,
         started = SharingStarted.WhileSubscribed()
     )
+
+    val translationCount = translator.translationCount
 
     private val isSyncingWorksitesFull = combine(
         incidentSelector.incidentId,

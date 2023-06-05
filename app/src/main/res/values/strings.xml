@@ -4,7 +4,7 @@
 
     <string name="account">Account</string>
 
-    <string name="not_connected">⚠️ You aren’t connected to the internet</string>
-    <string name="expired_token_message">Login again to access latest data.</string>
+    <string name="not_connected_to_internet">~~⚠️ No internet connection.</string>
+    <string name="login_reminder">~~Login again to access latest data.</string>
     <string name="login">Login</string>
 </resources>

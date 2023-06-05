@@ -24,7 +24,7 @@ class OfflineFirstLocalAppPreferencesRepository @Inject constructor(
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
 ) : LocalAppPreferencesRepository {
 
-    override val userData: Flow<UserData> = preferencesDataSource.userData
+    override val userPreferences: Flow<UserData> = preferencesDataSource.userData
 
     @VisibleForTesting
     internal val observeJobs: List<Job>

@@ -5,11 +5,7 @@ import com.crisiscleanup.core.model.data.UserData
 import kotlinx.coroutines.flow.Flow
 
 interface LocalAppPreferencesRepository {
-
-    /**
-     * Stream of [UserData]
-     */
-    val userData: Flow<UserData>
+    val userPreferences: Flow<UserData>
 
     /**
      * Sets the desired dark theme config.

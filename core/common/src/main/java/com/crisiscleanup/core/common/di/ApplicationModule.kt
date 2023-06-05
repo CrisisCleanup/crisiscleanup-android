@@ -36,4 +36,9 @@ interface ApplicationModule {
     fun bindsAppVersionProvider(
         versionProvider: AndroidAppVersionProvider
     ): AppVersionProvider
+
+    @Binds
+    fun bindsTranslator(
+        translator: AndroidResourceTranslator
+    ): KeyResourceTranslator
 }

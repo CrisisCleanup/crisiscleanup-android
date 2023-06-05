@@ -24,7 +24,7 @@ class TestLocalAppPreferencesRepository : LocalAppPreferencesRepository {
 
     private val currentUserData get() = _userData.replayCache.firstOrNull() ?: emptyUserData
 
-    override val userData: Flow<UserData> = _userData.filterNotNull()
+    override val userPreferences: Flow<UserData> = _userData.filterNotNull()
 
     override suspend fun setDarkThemeConfig(darkThemeConfig: DarkThemeConfig) {
         currentUserData.let { current ->

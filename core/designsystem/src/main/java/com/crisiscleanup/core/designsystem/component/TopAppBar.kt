@@ -6,8 +6,11 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -256,15 +259,12 @@ fun TopAppBarBackAction(
 @Composable
 private fun AttentionBadge(
     addBadge: Boolean,
-    padding: Dp = 0.dp,
     content: @Composable () -> Unit
 ) {
     if (addBadge) {
         BadgedBox(
-            // TODO Padding around the badge not the content
-            modifier = Modifier.padding(padding),
             badge = {
-                Badge {
+                Badge(Modifier.offset((-16).dp, 16.dp)) {
                     Text("!")
                 }
             },
@@ -285,8 +285,8 @@ fun TopAppBarDefault(
     navIcon: ImageVector? = null,
     navContentDescription: String? = null,
     navIconPadding: Dp = 16.dp,
-    actionIcon: ImageVector,
-    @StringRes actionResId: Int,
+    actionIcon: ImageVector = Icons.Default.QuestionMark,
+    actionText: String = "",
     isActionAttention: Boolean = false,
     colors: TopAppBarColors = TopAppBarDefaults.centerAlignedTopAppBarColors(),
     profilePictureUri: String = "",
@@ -309,21 +309,19 @@ fun TopAppBarDefault(
             }
         }
     val actionsContent: (@Composable (RowScope.() -> Unit)) = @Composable {
-        IconButton(onClick = onActionClick) {
-            if (profilePictureUri.isEmpty()) {
-                AttentionBadge(isActionAttention) {
+        AttentionBadge(isActionAttention) {
+            IconButton(onClick = onActionClick) {
+                if (profilePictureUri.isEmpty()) {
                     Icon(
                         imageVector = actionIcon,
-                        contentDescription = stringResource(actionResId),
+                        contentDescription = actionText,
                         tint = MaterialTheme.colorScheme.primary,
                     )
-                }
-            } else {
-                AttentionBadge(isActionAttention, 8.dp) {
+                } else {
                     val fallbackPainter = rememberVectorPainter(actionIcon)
                     AsyncImage(
                         model = profilePictureUri,
-                        contentDescription = stringResource(actionResId),
+                        contentDescription = actionText,
                         fallback = fallbackPainter,
                     )
                 }
@@ -373,7 +371,7 @@ private fun CrisisCleanupTopAppBarEndPreview() {
     TopAppBarDefault(
         titleResId = android.R.string.untitled,
         actionIcon = CrisisCleanupIcons.MoreVert,
-        actionResId = android.R.string.search_go,
+        actionText = "action",
         profilePictureUri = "",
         isActionAttention = true,
     )
@@ -387,7 +385,7 @@ private fun CrisisCleanupTopAppBarImagePreview() {
         title = "with icon",
         navIcon = CrisisCleanupIcons.Search,
         actionIcon = CrisisCleanupIcons.MoreVert,
-        actionResId = android.R.string.search_go,
+        actionText = "action",
         profilePictureUri = "https://avatars.dicebear.com/api/bottts/Demo User.svg",
         isActionAttention = true,
     )

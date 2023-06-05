@@ -30,7 +30,7 @@ internal class SaveCredentialsManager(
     private var _showSaveCredentialsAction = mutableStateOf(false)
     val showSaveCredentialsAction: State<Boolean> = _showSaveCredentialsAction
 
-    val showDisableSaveCredentials = appPreferences.userData.map {
+    val showDisableSaveCredentials = appPreferences.userPreferences.map {
         it.saveCredentialsPromptCount > 2
     }
         .stateIn(
@@ -64,7 +64,8 @@ internal class SaveCredentialsManager(
             coroutineScope.launch {
                 appPreferences.incrementSaveCredentialsPrompt()
                 val isAuthenticated = accountDataRepository.isAuthenticated.first()
-                val isDisablePrompt = appPreferences.userData.first().disableSaveCredentialsPrompt
+                val isDisablePrompt =
+                    appPreferences.userPreferences.first().disableSaveCredentialsPrompt
                 _showSaveCredentialsAction.value = isAuthenticated && !isDisablePrompt
             }
         }

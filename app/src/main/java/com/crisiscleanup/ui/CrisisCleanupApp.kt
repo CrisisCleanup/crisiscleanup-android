@@ -103,7 +103,16 @@ fun CrisisCleanupApp(
 
             val isOffline by appState.isOffline.collectAsStateWithLifecycle()
 
-            val notConnectedMessage = stringResource(R.string.not_connected)
+            val translationCount by viewModel.translationCount.collectAsStateWithLifecycle()
+            val appTranslator = remember(viewModel) {
+                AppTranslator(translator = viewModel.translator)
+            }
+            val notConnectedMessage = remember(translationCount) {
+                appTranslator.translator(
+                    "info.not_connected_to_internet",
+                    R.string.not_connected_to_internet,
+                )
+            }
             LaunchedEffect(isOffline) {
                 if (isOffline) snackbarHostState.showSnackbar(
                     message = notConnectedMessage,
@@ -116,7 +125,9 @@ fun CrisisCleanupApp(
             if (authState is AuthState.Loading) {
                 // Splash screen should be showing
             } else {
-                LoadedContent(snackbarHostState, appState, viewModel, authState)
+                CompositionLocalProvider(LocalAppTranslator provides appTranslator) {
+                    LoadedContent(snackbarHostState, appState, viewModel, authState)
+                }
             }
         }
     }
@@ -330,8 +341,9 @@ private fun ExpiredTokenAlert(
     snackbarHostState: SnackbarHostState,
     openAuthentication: () -> Unit,
 ) {
-    val message = stringResource(R.string.expired_token_message)
-    val loginText = stringResource(R.string.login)
+    val translator = LocalAppTranslator.current.translator
+    val message = translator("account.login_reminder", R.string.login_reminder)
+    val loginText = translator("actions.login", R.string.login)
     LaunchedEffect(Unit) {
         val result = snackbarHostState.showSnackbar(
             message,
@@ -360,13 +372,14 @@ private fun AppHeader(
     openAuthentication: () -> Unit = {},
     onOpenIncidents: (() -> Unit)? = null,
 ) {
+    val actionText = LocalAppTranslator.current.translator("actions.account", R.string.account)
     TopAppBarDefault(
         modifier = modifier,
         titleResId = titleRes,
         title = title,
         profilePictureUri = profilePictureUri,
         actionIcon = CrisisCleanupIcons.Account,
-        actionResId = R.string.account,
+        actionText = actionText,
         isActionAttention = isAccountExpired,
         onActionClick = openAuthentication,
         onNavigationClick = null,

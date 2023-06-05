@@ -62,7 +62,7 @@ class OfflineFirstLocalAppPreferencesRepositoryTest {
                 disableSaveCredentialsPrompt = false,
                 languageKey = "",
             ),
-            repository.userData.first()
+            repository.userPreferences.first()
         )
 
         repository.observeJobs.forEach(Job::cancel)
@@ -76,7 +76,7 @@ class OfflineFirstLocalAppPreferencesRepositoryTest {
 
         assertEquals(
             DarkThemeConfig.DARK,
-            repository.userData
+            repository.userPreferences
                 .map { it.darkThemeConfig }
                 .first()
         )

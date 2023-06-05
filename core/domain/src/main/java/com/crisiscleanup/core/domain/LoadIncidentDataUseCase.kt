@@ -28,7 +28,7 @@ class LoadIncidentDataUseCase @Inject constructor(
     private val data = incidentsRepository.incidents.map { incidents ->
         var selectedId = incidentSelector.incidentId.first()
         if (selectedId == EmptyIncident.id) {
-            selectedId = appPreferencesRepository.userData.first().selectedIncidentId
+            selectedId = appPreferencesRepository.userPreferences.first().selectedIncidentId
         }
 
         // Update incident data or select first if current incident (ID) not found

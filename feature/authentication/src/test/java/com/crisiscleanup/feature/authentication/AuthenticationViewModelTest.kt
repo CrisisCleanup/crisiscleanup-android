@@ -96,7 +96,7 @@ class AuthenticationViewModelTest {
 
         // TODO How to mock SaveCredentialsManager with coroutineScope=viewModelScope
         coEvery {
-            appPreferences.userData
+            appPreferences.userPreferences
         } returns flowOf(
             UserData(
                 darkThemeConfig = DarkThemeConfig.FOLLOW_SYSTEM,
