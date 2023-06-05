@@ -24,6 +24,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 internal fun PropertyLocationView(
     viewModel: EditCaseBaseViewModel,
     editor: CaseLocationDataEditor,
+    isOnline: Boolean,
     openExistingCase: (ExistingWorksiteIdentifier) -> Unit = {},
     onMoveLocationOnMap: () -> Unit = {},
     openAddressSearch: () -> Unit = {},
@@ -54,24 +55,26 @@ internal fun PropertyLocationView(
             )
         }
 
-        val fullAddressLabel = translator("caseView.full_address")
-        OutlinedSingleLineTextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .listItemPadding()
-                .clickable(
-                    onClick = openAddressSearch,
-                    enabled = isEditable,
-                ),
-            labelResId = 0,
-            label = "$fullAddressLabel *",
-            value = "",
-            onValueChange = {},
-            enabled = false,
-            isError = false,
-            hasFocus = false,
-            readOnly = true,
-        )
+        if (isOnline) {
+            val fullAddressLabel = translator("caseView.full_address")
+            OutlinedSingleLineTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .listItemPadding()
+                    .clickable(
+                        onClick = openAddressSearch,
+                        enabled = isEditable,
+                    ),
+                labelResId = 0,
+                label = "$fullAddressLabel *",
+                value = "",
+                onValueChange = {},
+                enabled = false,
+                isError = false,
+                hasFocus = false,
+                readOnly = true,
+            )
+        }
 
         val (_, mapModifier) = getLayoutParameters(false)
         val cameraPositionState = rememberCameraPositionState()

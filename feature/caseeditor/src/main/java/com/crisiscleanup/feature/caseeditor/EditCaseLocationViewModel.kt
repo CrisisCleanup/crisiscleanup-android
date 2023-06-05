@@ -8,6 +8,7 @@ import com.crisiscleanup.core.addresssearch.model.toLatLng
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.LocationProvider
+import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.PermissionStatus
 import com.crisiscleanup.core.common.locationPermissionGranted
@@ -559,6 +560,7 @@ class EditCaseLocationViewModel @Inject constructor(
     resourceProvider: AndroidResourceProvider,
     drawableResourceBitmapProvider: DrawableResourceBitmapProvider,
     existingWorksiteSelector: ExistingWorksiteSelector,
+    networkMonitor: NetworkMonitor,
     translator: KeyResourceTranslator,
     @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
     @Dispatcher(Default) coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
@@ -581,6 +583,13 @@ class EditCaseLocationViewModel @Inject constructor(
         ioDispatcher,
         viewModelScope,
     )
+
+    val isOnline = networkMonitor.isOnline
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = true,
+            started = SharingStarted.WhileSubscribed(),
+        )
 
     private fun onBackValidateSaveWorksite() = editor.onBackValidateSaveWorksite()
 

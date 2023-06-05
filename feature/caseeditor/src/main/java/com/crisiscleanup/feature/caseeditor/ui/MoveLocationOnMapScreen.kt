@@ -59,7 +59,8 @@ internal fun EditCaseMapMoveLocationRoute(
         val isCheckingOutOfBounds by editor.isCheckingOutOfBounds.collectAsStateWithLifecycle()
         val isEditable = !isCheckingOutOfBounds
 
-        EditCaseMapMoveLocationScreen(viewModel, editor, onBack, isEditable)
+        val isOnline by viewModel.isOnline.collectAsStateWithLifecycle()
+        EditCaseMapMoveLocationScreen(viewModel, editor, isOnline, onBack, isEditable)
 
         LocationOutOfBoundsDialog(editor)
     }
@@ -70,6 +71,7 @@ internal fun EditCaseMapMoveLocationRoute(
 private fun EditCaseMapMoveLocationScreen(
     viewModel: EditCaseBaseViewModel,
     editor: CaseLocationDataEditor,
+    isOnline: Boolean,
     onBack: () -> Unit = {},
     isEditable: Boolean = false,
 ) {
@@ -81,7 +83,9 @@ private fun EditCaseMapMoveLocationScreen(
         )
 
         val locationQuery by editor.locationInputData.locationQuery.collectAsStateWithLifecycle()
-        FullAddressSearchInput(viewModel, editor, locationQuery, isEditable = isEditable)
+        if (isOnline) {
+            FullAddressSearchInput(viewModel, editor, locationQuery, isEditable = isEditable)
+        }
 
         if (locationQuery.isBlank()) {
             Box(Modifier.weight(1f)) {

@@ -9,6 +9,7 @@ import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.InputValidator
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.LocationProvider
+import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
@@ -83,6 +84,7 @@ class CaseEditorViewModel @Inject constructor(
     private val translator: KeyResourceTranslator,
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val syncPusher: SyncPusher,
+    networkMonitor: NetworkMonitor,
     private val resourceProvider: AndroidResourceProvider,
     appEnv: AppEnv,
     @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
@@ -107,6 +109,13 @@ class CaseEditorViewModel @Inject constructor(
     val headerTitle = MutableStateFlow("")
 
     val visibleNoteCount: Int = 3
+
+    val isOnline = networkMonitor.isOnline
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = true,
+            started = SharingStarted.WhileSubscribed(),
+        )
 
     private val incidentFieldLookup: StateFlow<Map<String, GroupSummaryFieldLookup>>
     private val workTypeGroupChildrenLookup: StateFlow<Map<String, Collection<String>>>

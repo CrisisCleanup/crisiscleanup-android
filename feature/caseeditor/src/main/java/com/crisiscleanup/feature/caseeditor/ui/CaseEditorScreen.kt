@@ -612,9 +612,11 @@ private fun LazyListScope.propertyLocationSection(
 
         viewModel.locationEditor?.let { locationEditor ->
             item(key = "section-location") {
+                val isOnline by viewModel.isOnline.collectAsStateWithLifecycle()
                 PropertyLocationView(
                     viewModel,
                     locationEditor,
+                    isOnline,
                     onMoveLocationOnMap = onMoveLocation,
                     openAddressSearch = onSearchAddress,
                 )
