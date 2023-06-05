@@ -66,6 +66,8 @@ import com.crisiscleanup.MainActivityViewModel
 import com.crisiscleanup.R
 import com.crisiscleanup.core.common.NavigationObserver
 import com.crisiscleanup.core.common.NetworkMonitor
+import com.crisiscleanup.core.designsystem.AppTranslator
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupBackground
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationBar
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationBarItem

@@ -2,9 +2,9 @@
     <string name="app_name">Crisis Cleanup</string>
     <string name="app_name_short">Cleanup</string>
 
-    <string name="account">Account</string>
+    <string name="account">~~Account</string>
 
     <string name="not_connected_to_internet">~~⚠️ No internet connection.</string>
     <string name="login_reminder">~~Login again to access latest data.</string>
-    <string name="login">Login</string>
+    <string name="login">~~Login</string>
 </resources>

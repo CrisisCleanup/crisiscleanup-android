@@ -8,7 +8,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
@@ -17,7 +16,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -38,7 +36,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -47,15 +44,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
+import com.crisiscleanup.core.designsystem.component.TopBarBackAction
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
-import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.feature.mediamanage.ViewImageUiState
 import com.crisiscleanup.feature.mediamanage.ViewImageViewModel
 import kotlin.math.max
 import kotlin.math.min
-import com.crisiscleanup.core.designsystem.R as designSystemR
 
 // From TopAppBarSmallTokens.kt
 private val topBarHeight = 64.dp
@@ -175,20 +171,7 @@ private fun TopBar(
 ) {
     val deleteImage = remember(viewModel) { { viewModel.deleteImage() } }
 
-    val navigationContent: (@Composable (() -> Unit)) =
-        @Composable {
-            // TODO Style and heights
-            Row(
-                Modifier
-                    .clickable(onClick = onBack)
-                    .padding(8.dp)
-            ) {
-                Text(
-                    stringResource(designSystemR.string.back),
-                    color = primaryBlueColor,
-                )
-            }
-        }
+    val navigationContent = @Composable { TopBarBackAction(action = onBack) }
     val isDeletable by viewModel.isImageDeletable.collectAsStateWithLifecycle()
     val actionsContent: (@Composable (RowScope.() -> Unit)) = if (isDeletable) {
         {

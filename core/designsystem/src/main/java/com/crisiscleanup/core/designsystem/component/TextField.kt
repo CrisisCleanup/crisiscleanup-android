@@ -23,7 +23,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import com.crisiscleanup.core.designsystem.R
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 
@@ -47,14 +47,13 @@ fun OutlinedSingleLineTextField(
     imeAction: ImeAction = ImeAction.Next,
     nextDirection: FocusDirection = FocusDirection.Down,
     readOnly: Boolean = false,
-    drawOutline: Boolean = true,
 ) = SingleLineTextField(
     modifier,
-    labelResId,
     value,
     onValueChange,
     enabled,
     isError,
+    labelResId,
     label,
     hasFocus,
     keyboardType,
@@ -72,12 +71,11 @@ fun OutlinedSingleLineTextField(
 @Composable
 fun SingleLineTextField(
     modifier: Modifier = Modifier,
-    @StringRes
-    labelResId: Int,
     value: String,
     onValueChange: (String) -> Unit,
     enabled: Boolean,
     isError: Boolean,
+    @StringRes labelResId: Int = 0,
     label: String = "",
     hasFocus: Boolean = false,
     keyboardType: KeyboardType = KeyboardType.Text,
@@ -183,12 +181,11 @@ fun SingleLineTextField(
 @Composable
 fun OutlinedClearableTextField(
     modifier: Modifier = Modifier,
-    @StringRes
-    labelResId: Int,
     value: String,
     onValueChange: (String) -> Unit,
     enabled: Boolean,
     isError: Boolean,
+    @StringRes labelResId: Int = 0,
     label: String = "",
     hasFocus: Boolean = false,
     keyboardType: KeyboardType = KeyboardType.Text,
@@ -243,7 +240,7 @@ fun ClearableTextField(
         ) {
             Icon(
                 CrisisCleanupIcons.Clear,
-                contentDescription = stringResource(R.string.clear),
+                contentDescription = LocalAppTranslator.current.translator("actions.clear"),
                 tint = tint,
             )
         }
@@ -272,12 +269,12 @@ fun ClearableTextField(
 @Composable
 fun OutlinedObfuscatingTextField(
     modifier: Modifier = Modifier,
-    @StringRes
-    labelResId: Int,
     value: String,
     onValueChange: (String) -> Unit,
     enabled: Boolean,
     isError: Boolean,
+    @StringRes labelResId: Int = 0,
+    label: String = "",
     hasFocus: Boolean = false,
     isObfuscating: Boolean = false,
     onObfuscate: (() -> Unit)? = null,
@@ -297,11 +294,12 @@ fun OutlinedObfuscatingTextField(
             ) {
                 val icon = if (isObfuscating) CrisisCleanupIcons.Visibility
                 else CrisisCleanupIcons.VisibilityOff
-                val textResId = if (isObfuscating) R.string.show
-                else R.string.hide
+                val translateKey = if (isObfuscating) "actions.show"
+                else "actions.hide"
+                val translator = LocalAppTranslator.current.translator
                 Icon(
                     icon,
-                    contentDescription = stringResource(textResId),
+                    contentDescription = translator(translateKey),
                     tint = MaterialTheme.colorScheme.primary,
                 )
             }
@@ -311,6 +309,7 @@ fun OutlinedObfuscatingTextField(
     SingleLineTextField(
         modifier = modifier,
         labelResId = labelResId,
+        label = label,
         value = value,
         onValueChange = onValueChange,
         enabled = enabled,

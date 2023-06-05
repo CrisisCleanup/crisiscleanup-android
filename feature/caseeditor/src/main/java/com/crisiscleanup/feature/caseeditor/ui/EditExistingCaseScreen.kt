@@ -137,7 +137,6 @@ internal fun EditExistingCaseRoute(
             toggleFavorite,
             toggleHighPriority,
             isEditable,
-            viewModel.translate("actions.back"),
         )
 
         val tabTitles by viewModel.tabTitles.collectAsStateWithLifecycle()
@@ -200,7 +199,6 @@ private fun TopBar(
     toggleFavorite: () -> Unit = {},
     toggleHighPriority: () -> Unit = {},
     isEditable: Boolean = false,
-    backText: String,
 ) {
     // TODO Style components as necessary
 
@@ -218,10 +216,7 @@ private fun TopBar(
     }
 
     val navigationContent = @Composable {
-        TopBarBackAction(
-            text = backText,
-            action = onBack,
-        )
+        TopBarBackAction(action = onBack)
     }
     val actionsContent: (@Composable (RowScope.() -> Unit)) = if (isLoading) {
         @Composable {}

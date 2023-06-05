@@ -36,6 +36,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
@@ -124,7 +125,7 @@ private fun CrisisCleanupLogoRow() {
                 // TODO Adjust image size to screen size
                 .sizeIn(maxWidth = 160.dp),
             painter = painterResource(commonR.drawable.crisis_cleanup_logo),
-            contentDescription = stringResource(R.string.crisis_cleanup_logo),
+            contentDescription = stringResource(com.crisiscleanup.core.common.R.string.crisis_cleanup),
         )
     }
 }
@@ -149,6 +150,7 @@ private fun LoginScreen(
     viewModel: AuthenticationViewModel = hiltViewModel(),
     isDebug: Boolean = false,
 ) {
+    val translator = LocalAppTranslator.current.translator
     AuthenticateScreenContainer(
         Modifier
             .fillMaxSize()
@@ -166,7 +168,7 @@ private fun LoginScreen(
 
         Text(
             modifier = fillWidthPadded,
-            text = stringResource(R.string.login),
+            text = translator("actions.login"),
             style = MaterialTheme.typography.headlineMedium
         )
 
@@ -184,7 +186,7 @@ private fun LoginScreen(
             // TODO Listening onFocusChanged forces an input to recompose on any input change.
             //      Research if possible to decouple focus change when not in focus.
             modifier = fillWidthPadded.onFocusChanged(onInputFocus),
-            labelResId = R.string.email,
+            label = translator("loginForm.email_placeholder"),
             value = viewModel.loginInputData.emailAddress,
             onValueChange = updateEmailInput,
             keyboardType = KeyboardType.Email,
@@ -207,7 +209,7 @@ private fun LoginScreen(
         }
         OutlinedObfuscatingTextField(
             modifier = fillWidthPadded.onFocusChanged(onInputFocus),
-            labelResId = R.string.password,
+            label = translator("loginForm.password_placeholder"),
             value = viewModel.loginInputData.password,
             onValueChange = updatePasswordInput,
             isObfuscating = isObfuscatingPassword,
@@ -242,7 +244,7 @@ private fun LoginScreen(
             modifier = fillWidthPadded,
             onClick = viewModel::authenticateEmailPassword,
             enabled = isNotBusy,
-            textResId = R.string.login,
+            text = translator("actions.login"),
             indicateBusy = !isNotBusy,
         )
 
@@ -251,8 +253,7 @@ private fun LoginScreen(
                 modifier = fillWidthPadded,
                 onClick = closeAuthentication,
                 enabled = isNotBusy,
-                // TODO viewModel.translate("actions.cancel")
-                textResId = R.string.cancel,
+                text = translator("actions.cancel"),
             )
         }
     }
@@ -265,6 +266,7 @@ private fun AuthenticatedScreen(
     closeAuthentication: () -> Unit = {},
     viewModel: AuthenticationViewModel = hiltViewModel(),
 ) {
+    val translator = LocalAppTranslator.current.translator
     AuthenticateScreenContainer(
         Modifier
             .fillMaxSize()
@@ -296,7 +298,7 @@ private fun AuthenticatedScreen(
             modifier = fillWidthPadded,
             onClick = viewModel::logout,
             enabled = isNotBusy,
-            textResId = R.string.logout,
+            text = translator("actions.logout"),
             indicateBusy = !isNotBusy,
         )
 
@@ -329,7 +331,7 @@ private fun SaveCredentialsPrompt(
                 closeAuthentication()
             },
             enabled = isNotBusy,
-            textResId = R.string.save,
+            text= LocalAppTranslator.current.translator("actions.save"),
             indicateBusy = !isNotBusy,
         )
 

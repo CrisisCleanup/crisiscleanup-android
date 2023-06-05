@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.crisiscleanup.core.designsystem.component
 
 import androidx.annotation.StringRes
@@ -35,7 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.crisiscleanup.core.designsystem.R
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 
@@ -154,26 +152,13 @@ fun TopAppBarBackCancel(
     onBack: () -> Unit = {},
     onCancel: () -> Unit = {},
     colors: TopAppBarColors = TopAppBarDefaults.centerAlignedTopAppBarColors(),
-    cancelText: String = "",
 ) {
-    val titleContent = @Composable {
-        TruncatedAppBarText(modifier, titleResId, title)
-    }
-    val navigationContent: (@Composable (() -> Unit)) =
-        @Composable {
-            // TODO Style, icon, height of app bar
-            Row(
-                modifier
-                    .clickable(onClick = onBack)
-                    .padding(8.dp)
-            ) {
-                Text(stringResource(R.string.back))
-            }
-        }
+    val titleContent = @Composable { TruncatedAppBarText(modifier, titleResId, title) }
+    val navigationContent = @Composable { TopBarBackAction(action = onBack) }
     val actionsContent: (@Composable (RowScope.() -> Unit)) =
         @Composable {
             Text(
-                cancelText,
+                LocalAppTranslator.current.translator("actions.cancel"),
                 // TODO Style, height of app bar
                 modifier
                     .clickable(onClick = onCancel)
@@ -189,7 +174,6 @@ fun TopAppBarBackCancel(
     )
 }
 
-// TODO Localize with translation. Provide local translator.
 @Composable
 private fun TopBarNavAction(
     modifier: Modifier = Modifier,
@@ -224,9 +208,13 @@ private fun TopBarNavAction(
 fun TopBarBackAction(
     modifier: Modifier = Modifier,
     action: () -> Unit = {},
-    text: String = "",
 ) {
-    TopBarNavAction(modifier, action, R.string.back, text, CrisisCleanupIcons.ArrowBack)
+    TopBarNavAction(
+        modifier,
+        action,
+        text = LocalAppTranslator.current.translator("actions.back"),
+        image = CrisisCleanupIcons.ArrowBack,
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -235,7 +223,6 @@ fun TopAppBarBackAction(
     modifier: Modifier = Modifier,
     @StringRes titleResId: Int = 0,
     title: String = "",
-    actionText: String = "",
     onAction: () -> Unit = {},
     colors: TopAppBarColors = TopAppBarDefaults.centerAlignedTopAppBarColors(),
 ) {
@@ -244,7 +231,7 @@ fun TopAppBarBackAction(
     }
     val navigationContent: (@Composable (() -> Unit)) =
         @Composable {
-            TopBarBackAction(modifier, onAction, actionText)
+            TopBarBackAction(modifier, onAction)
         }
     CenterAlignedTopAppBar(
         title = titleContent,
@@ -361,6 +348,15 @@ private fun CrisisCleanupTopAppBarPreview() {
         titleResId = android.R.string.untitled,
         actionIcon = CrisisCleanupIcons.MoreVert,
         actionIconContentDescription = "Action"
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview("action-bar-back")
+@Composable
+private fun TopAppBarBackActionPreview() {
+    TopAppBarBackAction(
+        title = "Top bar",
     )
 }
 

@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.InputValidator
+import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.event.AuthEventBus
 import com.crisiscleanup.core.common.event.PasswordRequestCode
 import com.crisiscleanup.core.common.log.AppLogger
@@ -40,6 +41,7 @@ class AuthenticationViewModel @Inject constructor(
     private val accessTokenDecoder: AccessTokenDecoder,
     private val authEventBus: AuthEventBus,
     appPreferences: LocalAppPreferencesRepository,
+    private val translator: KeyResourceTranslator,
     private val resProvider: AndroidResourceProvider,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.Auth) private val logger: AppLogger,
@@ -124,14 +126,21 @@ class AuthenticationViewModel @Inject constructor(
     }
 
     private fun validateAuthInput(emailAddress: String, password: String): Boolean {
+        if (emailAddress.isBlank()) {
+            errorMessage.value = translator("invitationSignup.email_error")
+            isInvalidEmail.value = true
+            return false
+        }
+
         if (!inputValidator.validateEmailAddress(emailAddress)) {
-            errorMessage.value = resProvider.getString(R.string.enter_valid_email)
+            errorMessage.value =
+                translator("invitationSignup.invalid_email_error", R.string.enter_valid_email)
             isInvalidEmail.value = true
             return false
         }
 
         if (password.isEmpty()) {
-            errorMessage.value = resProvider.getString(R.string.enter_valid_password)
+            errorMessage.value = translator("invitationSignup.password_length_error")
             isInvalidPassword.value = true
             return false
         }
@@ -160,7 +169,7 @@ class AuthenticationViewModel @Inject constructor(
                 val result = authApiClient.login(emailAddress, password)
                 val hasError = result.errors?.isNotEmpty() == true
                 if (hasError) {
-                    errorMessage.value = resProvider.getString(R.string.error_during_authentication)
+                    errorMessage.value = translator("info.unknown_error")
 
                     val logErrorMessage = result.errors?.condenseMessages ?: "Server error"
                     logger.logException(Exception(logErrorMessage))
@@ -211,9 +220,9 @@ class AuthenticationViewModel @Inject constructor(
                 }
 
                 if (isInvalidCredentials) {
-                    errorMessage.value = resProvider.getString(R.string.invalid_credentials_retry)
+                    errorMessage.value = translator("loginForm.invalid_credentials_msg")
                 } else {
-                    errorMessage.value = resProvider.getString(R.string.error_during_authentication)
+                    errorMessage.value = translator("info.unknown_error")
                     logger.logException(e)
                 }
             } finally {

@@ -1,4 +1,4 @@
-package com.crisiscleanup.ui
+package com.crisiscleanup.core.designsystem
 
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.crisiscleanup.core.common.KeyResourceTranslator
