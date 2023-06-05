@@ -7,7 +7,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class NetworkEvent(
     val id: Long,
-    @SerialName("attr")
     val attr: Map<String, String?>,
     @SerialName("created_at")
     val createdAt: Instant,
@@ -19,7 +18,6 @@ data class NetworkEvent(
     val patientId: Long?,
     @SerialName("patient_model")
     val patientModel: String?,
-    @SerialName("event")
     val event: Description,
 ) {
     @Serializable

@@ -71,7 +71,6 @@ data class NetworkIncidentFormField(
     val validation: String? = null,
     @SerialName("recur_default")
     val recurDefault: String? = null,
-    @SerialName("values")
     val values: List<FormFieldValue>? = null,
     @SerialName("is_required")
     val isRequired: Boolean? = null,
