@@ -2,7 +2,14 @@ package com.crisiscleanup.core.designsystem.component
 
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.NavigationRailItemDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -149,10 +156,9 @@ fun CrisisCleanupNavigationRail(
  * Navigation default colors.
  */
 object CrisisCleanupNavigationDefaults {
-    private val navigationSurfaceColor = Color(0xFF2D2D2D)
-
+    private val containerColor = com.crisiscleanup.core.designsystem.theme.navigationContainerColor
     @Composable
-    fun navigationContainerColor() = navigationSurfaceColor
+    fun navigationContainerColor() = containerColor
 
     @Composable
     fun navigationContentColor() = Color(0xFFB8B8B8)
@@ -161,7 +167,7 @@ object CrisisCleanupNavigationDefaults {
     fun navigationSelectedItemColor() = Color(0xFFF6F8F9)
 
     @Composable
-    fun navigationIndicatorColor() = navigationSurfaceColor
+    fun navigationIndicatorColor() = containerColor
 }
 
 @Preview

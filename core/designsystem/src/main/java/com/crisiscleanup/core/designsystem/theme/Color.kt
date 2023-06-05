@@ -45,6 +45,7 @@ val actionLinkColor = primaryBlueColor
 val separatorColor = Color(0xFFF6F8F9)
 val selectedOptionContainerColor = Color(0xFFF6F8F9)
 val neutralIconColor = Color(0xFF848F99)
+val navigationContainerColor = Color(0xFF2D2D2D)
 
 // Mirror FilledButtonTokens.class
 private const val disabledAlpha = 0.38f

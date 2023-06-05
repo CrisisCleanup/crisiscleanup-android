@@ -32,6 +32,7 @@ import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
+import com.crisiscleanup.core.designsystem.theme.navigationContainerColor
 import com.crisiscleanup.core.model.data.DarkThemeConfig
 import com.crisiscleanup.core.testerfeedbackapi.FeedbackTriggerProvider
 import com.crisiscleanup.core.testerfeedbackapi.di.FeedbackTriggerProviderKey
@@ -125,6 +126,7 @@ class MainActivity : ComponentActivity() {
             // Update the dark content of the system bars to match the theme
             DisposableEffect(systemUiController, darkTheme) {
                 systemUiController.systemBarsDarkContentEnabled = !darkTheme
+                systemUiController.setSystemBarsColor(navigationContainerColor)
                 onDispose {}
             }
 
