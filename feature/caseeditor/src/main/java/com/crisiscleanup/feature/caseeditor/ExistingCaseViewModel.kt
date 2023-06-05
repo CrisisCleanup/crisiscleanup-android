@@ -249,11 +249,19 @@ class ExistingCaseViewModel @Inject constructor(
     private val referenceWorksite: Worksite
         get() = uiState.value.asCaseData()?.worksite ?: EmptyWorksite
 
-    val tabTitles = uiState.mapLatest {
+    val tabTitles = editableWorksite.mapLatest { worksite ->
+        val files = worksite.files
+        val photosTitle = translate("caseForm.photos").let {
+            if (files.isNotEmpty()) "$it (${files.size})" else it
+        }
+        val notes = worksite.notes
+        val notesTitle = translate("phoneDashboard.notes").let {
+            if (notes.isNotEmpty()) "$it (${notes.size})" else it
+        }
         listOf(
             resourceProvider.getString(R.string.info),
-            translate("caseForm.photos"),
-            translate("phoneDashboard.notes"),
+            photosTitle,
+            notesTitle,
         )
     }
         .stateIn(
