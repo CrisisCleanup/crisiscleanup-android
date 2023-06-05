@@ -254,8 +254,13 @@ private fun NavigableContent(
                 enter = slideIn { IntOffset.Zero },
                 exit = slideOut { IntOffset.Zero },
             ) {
-                val titleResId = appState.currentTopLevelDestination?.titleTextId ?: 0
-                val title = if (titleResId != 0) stringResource(titleResId) else headerTitle
+                val navTitle = appState.currentTopLevelDestination?.let { destination ->
+                    LocalAppTranslator.current.translator(
+                        destination.titleTranslateKey,
+                        destination.titleResId,
+                    )
+                }
+                val title = navTitle ?: headerTitle
                 val onOpenIncidents = if (appState.isMenuRoute) openIncidentsSelect else null
                 AppHeader(
                     modifier = Modifier.testTag("CrisisCleanupAppHeader"),
@@ -418,37 +423,39 @@ private fun AppHeader(
 }
 
 @Composable
+private fun TopLevelDestination.Icon(isSelected: Boolean, description: String) {
+    val icon = if (isSelected) selectedIcon
+    else unselectedIcon
+    when (icon) {
+        is ImageVectorIcon -> Icon(
+            imageVector = icon.imageVector,
+            contentDescription = description,
+        )
+
+        is DrawableResourceIcon -> Icon(
+            painter = painterResource(id = icon.id),
+            contentDescription = description,
+        )
+    }
+}
+
+@Composable
 private fun CrisisCleanupNavRail(
     destinations: List<TopLevelDestination>,
     onNavigateToDestination: (TopLevelDestination) -> Unit,
     currentDestination: NavDestination?,
     modifier: Modifier = Modifier,
 ) {
+    val translator = LocalAppTranslator.current.translator
     CrisisCleanupNavigationRail(modifier = modifier) {
         destinations.forEach { destination ->
+            val title = translator(destination.titleTranslateKey, destination.titleResId)
             val selected = currentDestination.isTopLevelDestinationInHierarchy(destination)
             CrisisCleanupNavigationRailItem(
                 selected = selected,
                 onClick = { onNavigateToDestination(destination) },
-                icon = {
-                    val icon = if (selected) {
-                        destination.selectedIcon
-                    } else {
-                        destination.unselectedIcon
-                    }
-                    when (icon) {
-                        is ImageVectorIcon -> Icon(
-                            imageVector = icon.imageVector,
-                            contentDescription = null
-                        )
-
-                        is DrawableResourceIcon -> Icon(
-                            painter = painterResource(id = icon.id),
-                            contentDescription = null
-                        )
-                    }
-                },
-                label = { Text(stringResource(destination.iconTextId)) }
+                icon = { destination.Icon(selected, title) },
+                label = { Text(title) }
             )
         }
     }
@@ -461,31 +468,16 @@ private fun CrisisCleanupBottomBar(
     currentDestination: NavDestination?,
     modifier: Modifier = Modifier
 ) {
-    CrisisCleanupNavigationBar(
-        modifier = modifier
-    ) {
+    val translator = LocalAppTranslator.current.translator
+    CrisisCleanupNavigationBar(modifier = modifier) {
         destinations.forEach { destination ->
+            val title = translator(destination.titleTranslateKey, destination.titleResId)
             val selected = currentDestination.isTopLevelDestinationInHierarchy(destination)
             CrisisCleanupNavigationBarItem(
                 selected = selected,
                 onClick = { onNavigateToDestination(destination) },
-                icon = {
-                    val icon = if (selected) destination.selectedIcon
-                    else destination.unselectedIcon
-                    val description = stringResource(destination.iconTextId)
-                    when (icon) {
-                        is ImageVectorIcon -> Icon(
-                            imageVector = icon.imageVector,
-                            contentDescription = description,
-                        )
-
-                        is DrawableResourceIcon -> Icon(
-                            painter = painterResource(id = icon.id),
-                            contentDescription = description,
-                        )
-                    }
-                },
-                label = { Text(stringResource(destination.iconTextId)) }
+                icon = { destination.Icon(selected, title) },
+                label = { Text(title) }
             )
         }
     }
