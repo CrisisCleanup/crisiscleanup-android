@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -20,10 +19,8 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -42,7 +39,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -50,7 +46,6 @@ import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.crisiscleanup.core.commonassets.getDisasterIcon
 import com.crisiscleanup.core.designsystem.AppTranslator
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
@@ -58,18 +53,13 @@ import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCen
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
-import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.LocalDimensions
-import com.crisiscleanup.core.designsystem.theme.incidentDisasterContainerColor
-import com.crisiscleanup.core.designsystem.theme.incidentDisasterContentColor
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
-import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.separatorColor
 import com.crisiscleanup.core.model.data.EmptyIncident
-import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseEditorUiState
@@ -526,11 +516,13 @@ private fun LazyListScope.fullEditContent(
 ) {
     item(key = "incident-info") {
         val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
-        CaseIncident(
+        val scheduleSync = remember(viewModel) { { viewModel.scheduleSync() } }
+        CaseIncidentView(
             modifier,
             caseData.incident,
             caseData.isPendingSync,
             isSyncing = isSyncing,
+            scheduleSync = scheduleSync,
         )
     }
 
@@ -668,51 +660,6 @@ private fun LazyListScope.formDataSection(
 }
 
 @Composable
-internal fun CaseIncident(
-    modifier: Modifier = Modifier,
-    incident: Incident = EmptyIncident,
-    isPendingSync: Boolean = false,
-    isSyncing: Boolean = false,
-) {
-    val incidentName = incident.shortName
-    val disasterResId = getDisasterIcon(incident.disaster)
-    Row(
-        modifier = modifier.listItemPadding(),
-        verticalAlignment = Alignment.CenterVertically,
-        // TODO Common dimensions
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Surface(
-            shape = CircleShape,
-            color = incidentDisasterContainerColor,
-            contentColor = incidentDisasterContentColor,
-        ) {
-            Icon(
-                painter = painterResource(disasterResId),
-                contentDescription = incidentName,
-            )
-        }
-        Text(
-            incidentName,
-            Modifier.weight(1f),
-            style = MaterialTheme.typography.headlineSmall,
-        )
-
-        if (isSyncing) {
-            Icon(
-                imageVector = CrisisCleanupIcons.CloudSync,
-                contentDescription = stringResource(R.string.is_syncing),
-            )
-        } else if (isPendingSync) {
-            Icon(
-                imageVector = CrisisCleanupIcons.CloudOff,
-                contentDescription = stringResource(R.string.is_pending_sync),
-            )
-        }
-    }
-}
-
-@Composable
 private fun PromptChangesDialog(
     onStay: () -> Unit = {},
     onAbort: () -> Unit = {},
@@ -842,22 +789,6 @@ private fun SaveActionBar(
             onClick = onSave,
             isSharpCorners = isSharpCorners,
         )
-    }
-}
-
-@Preview
-@Composable
-private fun CaseIncidentPreview() {
-    CrisisCleanupTheme {
-        Surface {
-            CaseIncident(
-                incident = EmptyIncident.copy(
-                    name = "Big sweeping hurricane across the gulf",
-                    shortName = "Big hurricane"
-                ),
-                isPendingSync = true,
-            )
-        }
     }
 }
 

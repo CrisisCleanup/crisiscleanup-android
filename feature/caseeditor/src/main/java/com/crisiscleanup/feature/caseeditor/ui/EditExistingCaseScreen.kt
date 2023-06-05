@@ -444,11 +444,13 @@ internal fun EditExistingCaseInfoView(
             val caseData by viewModel.caseData.collectAsStateWithLifecycle()
             caseData?.let { caseState ->
                 val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
-                CaseIncident(
+                val scheduleSync = remember(viewModel) { { viewModel.scheduleSync() } }
+                CaseIncidentView(
                     Modifier,
                     caseState.incident,
                     caseState.isPendingSync,
                     isSyncing = isSyncing,
+                    scheduleSync = scheduleSync,
                 )
             }
         }

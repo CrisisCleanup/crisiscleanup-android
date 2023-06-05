@@ -363,6 +363,13 @@ class CaseEditorViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
+    fun scheduleSync() {
+        val worksite = editingWorksite.value
+        if (!(worksite.isNew || isSyncing.value)) {
+            syncPusher.appPushWorksite(worksite.id)
+        }
+    }
+
     private fun updateHeaderTitle(caseNumber: String = "") {
         headerTitle.value = if (caseNumber.isEmpty()) {
             if (isCreateWorksite) translate("casesVue.new_case")

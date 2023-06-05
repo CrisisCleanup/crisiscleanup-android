@@ -30,7 +30,6 @@ import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
 import com.crisiscleanup.core.data.repository.LocalImageRepository
-import com.crisiscleanup.core.data.repository.LocationsRepository
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.WorkTypeStatusRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
@@ -82,7 +81,6 @@ class ExistingCaseViewModel @Inject constructor(
     private val incidentsRepository: IncidentsRepository,
     organizationsRepository: OrganizationsRepository,
     incidentRefresher: IncidentRefresher,
-    locationsRepository: LocationsRepository,
     incidentBoundsProvider: IncidentBoundsProvider,
     worksitesRepository: WorksitesRepository,
     languageRepository: LanguageTranslationsRepository,
@@ -671,6 +669,12 @@ class ExistingCaseViewModel @Inject constructor(
                     isSavingMedia.value = false
                 }
             }
+        }
+    }
+
+    fun scheduleSync() {
+        if (!isSyncing.value) {
+            syncPusher.appPushWorksite(worksiteIdArg)
         }
     }
 
