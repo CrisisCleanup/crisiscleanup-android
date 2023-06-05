@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.actionEdgeSpace
@@ -211,7 +212,7 @@ internal fun NoCasesScreen(
                 CrisisCleanupButton(
                     modifier = modifier.align(Alignment.End),
                     onClick = onRetryLoad,
-                    textResId = R.string.retry_load_incidents,
+                    text = LocalAppTranslator.current.translator("actions.retry"),
                 )
             }
         }
@@ -417,6 +418,7 @@ internal fun CasesOverlayActions(
     isTableView: Boolean = false,
     casesCount: Pair<Int, Int> = Pair(0, 0),
 ) {
+    val translator = LocalAppTranslator.current.translator
     ConstraintLayout(Modifier.fillMaxSize()) {
         val (
             disasterAction,
@@ -485,7 +487,7 @@ internal fun CasesOverlayActions(
         ) {
             Icon(
                 imageVector = CrisisCleanupIcons.Add,
-                contentDescription = stringResource(R.string.create_case),
+                contentDescription = translator("nav.new_case"),
             )
         }
         val appLayout = LocalAppLayout.current
@@ -507,7 +509,7 @@ internal fun CasesOverlayActions(
         ) {
             Icon(
                 painter = painterResource(tableMapAction.iconResId),
-                contentDescription = stringResource(tableMapAction.contentDescriptionResId),
+                contentDescription = translator(tableMapAction.descriptionTranslateKey),
             )
         }
     }

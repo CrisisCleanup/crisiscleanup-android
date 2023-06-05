@@ -28,6 +28,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.commoncase.ui.listCaseResults
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.ClearableTextField
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
@@ -70,6 +71,7 @@ internal fun CasesSearchRoute(
 
 
         val closeKeyboard = rememberCloseKeyboard(viewModel)
+        val translator = LocalAppTranslator.current.translator
 
         Box(Modifier.fillMaxSize()) {
             Column {
@@ -90,13 +92,13 @@ internal fun CasesSearchRoute(
                     CrisisCleanupIconButton(
                         imageVector = CrisisCleanupIcons.ArrowBack,
                         onClick = onBackClick,
-                        contentDescription = viewModel.translate("actions.back"),
+                        contentDescription = translator("actions.back"),
                     )
                     ClearableTextField(
                         modifier = Modifier.weight(1f),
                         labelResId = 0,
                         label = "",
-                        placeholder = viewModel.translate("actions.search"),
+                        placeholder = translator("actions.search"),
                         value = q,
                         onValueChange = updateQuery,
                         keyboardType = KeyboardType.Password,
@@ -108,7 +110,7 @@ internal fun CasesSearchRoute(
                     CrisisCleanupIconButton(
                         iconResId = R.drawable.ic_dials,
                         onClick = openFilter,
-                        contentDescription = viewModel.translate("events.object_filter"),
+                        contentDescription = translator("events.object_filter"),
                     )
                 }
 

@@ -1,36 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="cases">Cases</string>
-    <string name="select_incident">Select Incident</string>
-    <string name="change_incident">Change incident</string>
-    <string name="search">Search</string>
-    <string name="table_view">Table view</string>
-    <string name="map_view">Map view</string>
-    <string name="filters">Filters</string>
-    <string name="layers">Layers</string>
-    <string name="zoom_to_incident">Zoom to incident</string>
-    <string name="zoom_to_interactive">Zoom to make icons interactive</string>
-    <string name="zoom_in">Zoom in</string>
-    <string name="zoom_out">Zoom out</string>
-    <string name="create_case">New case</string>
+    <string name="change_incident">~~Change incident</string>
+
     <string name="issues_loading_incidents">Unable to load incidents. We could be experiencing server issues or you may not have a reliable internet connection.</string>
-    <string name="retry_load_incidents">Retry</string>
     <string name="no_incidents_to_select">Incidents have gone.</string>
-    <string name="close">Close</string>
-    <string name="worksite_markers_hidden">%1$d worksites not shown</string>
-    <string name="recently_viewed">Recently viewed</string>
+
+    <string name="worksite_markers_hidden">~~%1$d worksites not shown</string>
+    <string name="recently_viewed">~~Recently viewed</string>
 
     <plurals name="visible_total_case_count">
-        <item quantity="one">%d Case\nof %d</item>
-        <item quantity="other">%d Cases\nof %d</item>
+        <item quantity="one">~~%d Case\nof %d</item>
+        <item quantity="other">~~%d Cases\nof %d</item>
     </plurals>
     <plurals name="total_case_count">
         <!-- zero quantity is not used in certain languages -->
         <item quantity="zero">Zero Cases</item>
-        <item quantity="one">One Case</item>
-        <item quantity="other">%d Cases</item>
+        <item quantity="one">~~One Case</item>
+        <item quantity="other">~~%d Cases</item>
     </plurals>
 
-    <string name="search_query_is_short">Search for more…</string>
-    <string name="no_search_results_for">No cases found matching \'%s\'.</string>
+    <string name="search_query_is_short">~~Search for more…</string>
+    <string name="no_search_results_for">~~No cases found matching \'%s\'.</string>
 </resources>

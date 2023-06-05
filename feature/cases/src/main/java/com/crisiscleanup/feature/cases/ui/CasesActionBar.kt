@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.Preview
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupElevatedIconButton
 import com.crisiscleanup.core.designsystem.component.actionBottomRoundCornerShape
 import com.crisiscleanup.core.designsystem.component.actionEndRoundCornerShape
@@ -21,18 +22,18 @@ import com.crisiscleanup.feature.cases.R
 
 enum class CasesAction(
     val iconResId: Int,
-    val contentDescriptionResId: Int,
+    val descriptionTranslateKey: String,
 ) {
-    CreateNew(android.R.drawable.btn_plus, R.string.create_case),
-    Search(R.drawable.ic_search, R.string.search),
-    TableView(R.drawable.ic_table, R.string.table_view),
-    Filters(R.drawable.ic_dials, R.string.filters),
-    Layers(R.drawable.ic_layers, R.string.layers),
-    MapView(R.drawable.ic_map, R.string.map_view),
-    ZoomToInteractive(R.drawable.ic_zoom_interactive, R.string.zoom_to_interactive),
-    ZoomToIncident(R.drawable.ic_zoom_incident, R.string.zoom_to_incident),
-    ZoomIn(R.drawable.ic_plus, R.string.zoom_in),
-    ZoomOut(R.drawable.ic_minus, R.string.zoom_out),
+    CreateNew(android.R.drawable.btn_plus, "nav.new_case"),
+    Search(R.drawable.ic_search, "actions.search"),
+    TableView(R.drawable.ic_table, "actions.table_view_alt"),
+    Filters(R.drawable.ic_dials, "casesVue.filters"),
+    Layers(R.drawable.ic_layers, "casesVue.layers"),
+    MapView(R.drawable.ic_map, "casesVue.map_view"),
+    ZoomToInteractive(R.drawable.ic_zoom_interactive, "worksiteMap.zoom_to_interactive"),
+    ZoomToIncident(R.drawable.ic_zoom_incident, "worksiteMap.zoom_to_incident"),
+    ZoomIn(R.drawable.ic_plus, "actions.zoom_in"),
+    ZoomOut(R.drawable.ic_minus, "actions.zoom_out"),
 }
 
 @Composable
@@ -45,7 +46,7 @@ private fun CasesActionButton(
     CrisisCleanupElevatedIconButton(
         modifier = modifier.actionSmallSize(),
         iconResId = action.iconResId,
-        contentDescriptionResId = action.contentDescriptionResId,
+        contentDescription = LocalAppTranslator.current.translator(action.descriptionTranslateKey),
         onClick = { onCasesAction(action) },
         shape = shape,
     )

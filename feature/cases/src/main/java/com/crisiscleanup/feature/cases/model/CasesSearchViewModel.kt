@@ -38,7 +38,6 @@ class CasesSearchViewModel @Inject constructor(
     private val worksitesRepository: WorksitesRepository,
     private val searchWorksitesRepository: SearchWorksitesRepository,
     private val mapCaseIconProvider: MapCaseIconProvider,
-    private val translator: KeyTranslator,
     @Logger(CrisisCleanupLoggers.Cases) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
@@ -159,8 +158,6 @@ class CasesSearchViewModel @Inject constructor(
             }
         }
     }
-
-    fun translate(key: String) = translator.translate(key) ?: key
 }
 
 data class CasesSearchResults(

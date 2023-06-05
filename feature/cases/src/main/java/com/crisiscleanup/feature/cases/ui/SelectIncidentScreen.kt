@@ -31,6 +31,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.domain.IncidentsData
 import com.crisiscleanup.core.model.data.Incident
@@ -164,7 +165,7 @@ private fun ColumnScope.IncidentSelectContent(
                 .padding(padding),
             onClick = onBackClick,
             enabled = enableInput,
-            textResId = R.string.close,
+            text = LocalAppTranslator.current.translator("actions.close"),
         )
     }
 }
@@ -187,7 +188,7 @@ private fun NoIncidentsContent(
                 .padding(padding)
                 .align(Alignment.End),
             onClick = onBackClick,
-            textResId = R.string.close,
+            text = LocalAppTranslator.current.translator("actions.close"),
         )
     }
 }
