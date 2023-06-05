@@ -38,6 +38,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.window.PopupProperties
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupFilterChip
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
@@ -71,7 +72,6 @@ internal fun DynamicFormListItem(
     helpHint: String = "",
     showHelp: () -> Unit = {},
     enabled: Boolean = true,
-    translate: (String) -> String = { s -> s },
     updateValue: (FieldDynamicValue) -> Unit = {},
 ) {
     val updateBoolean = remember(field) {
@@ -180,7 +180,6 @@ internal fun DynamicFormListItem(
                     helpHint,
                     showHelp,
                     enabled,
-                    translate = translate,
                     updateWorkTypeStatus = updateWorkTypeStatus,
                 )
             }
@@ -206,7 +205,6 @@ internal fun DynamicFormListItem(
                 field,
                 groupExpandState[field.key] ?: false,
                 updateGroupExpandValue,
-                translate,
                 modifier,
                 label,
                 updateString,
@@ -231,7 +229,6 @@ private fun CheckboxItem(
     helpHint: String,
     showHelp: () -> Unit = {},
     enabled: Boolean = true,
-    translate: (String) -> String = { s -> s },
     updateWorkTypeStatus: (WorkTypeStatus) -> Unit = {},
 ) {
     val isChecked = itemData.dynamicValue.valueBoolean
@@ -242,7 +239,6 @@ private fun CheckboxItem(
             WorkTypeStatusDropdown(
                 itemData.workTypeStatus,
                 updateWorkTypeStatus,
-                translate,
                 true,
             )
         }
@@ -413,9 +409,15 @@ private fun SelectItem(
                 if (!enabled) {
                     tint = tint.disabledAlpha()
                 }
+                var description = LocalAppTranslator.current.translator("info.select_option_for")
+                description = if (description == "info.select_option_for") {
+                    stringResource(R.string.select_option_for_field, label)
+                } else {
+                    description.replace("{field}", label)
+                }
                 Icon(
                     imageVector = CrisisCleanupIcons.UnfoldMore,
-                    contentDescription = stringResource(R.string.select_option_for_field, label),
+                    contentDescription = description,
                     tint = tint,
                 )
             }
@@ -525,7 +527,6 @@ private fun CronSelect(
     itemData: FieldDynamicValue,
     isInputExpanded: Boolean,
     expandFrequencyInput: (Boolean) -> Unit,
-    translate: (String) -> String,
     modifier: Modifier = Modifier,
     label: String = "",
     updateFrequency: (String) -> Unit = {},
@@ -559,7 +560,6 @@ private fun CronSelect(
             rRuleIn,
             defaultRrule,
             enabled,
-            translate,
             updateFrequency,
         )
     }

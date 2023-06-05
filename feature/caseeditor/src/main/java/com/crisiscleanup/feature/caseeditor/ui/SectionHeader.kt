@@ -17,6 +17,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.attentionBackgroundColor
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
@@ -78,16 +79,25 @@ internal fun SectionHeaderCollapsible(
         )
         val iconVector =
             if (isCollapsed) CrisisCleanupIcons.ExpandLess else CrisisCleanupIcons.ExpandMore
-        val descriptionResId =
-            if (isCollapsed) R.string.collapse_section else R.string.expand_section
-        val description = stringResource(descriptionResId, sectionTitle)
         if (help.isNotBlank()) {
-            val okText = viewModel.translate("actions.ok")
+            val okText = LocalAppTranslator.current.translator("actions.ok")
             WithHelpDialog(viewModel, sectionTitle, help, true, okText) { showHelp ->
                 HelpAction(viewModel.helpHint, showHelp)
             }
         }
         Spacer(Modifier.weight(1f))
+
+        val translator = LocalAppTranslator.current.translator
+        val translateKey = if (isCollapsed) "actions.collapse_section"
+        else "actions.expand_section"
+        var description = translator(translateKey)
+        description = if (description == translateKey) {
+            val descriptionResId =
+                if (isCollapsed) R.string.collapse_section else R.string.expand_section
+            stringResource(descriptionResId, sectionTitle)
+        } else {
+            description.replace("{section}", sectionTitle)
+        }
         Icon(
             imageVector = iconVector,
             contentDescription = description,

@@ -11,6 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.OutlinedSingleLineTextField
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.feature.caseeditor.CaseLocationDataEditor
@@ -26,8 +27,8 @@ internal fun PropertyLocationView(
     openExistingCase: (ExistingWorksiteIdentifier) -> Unit = {},
     onMoveLocationOnMap: () -> Unit = {},
     openAddressSearch: () -> Unit = {},
-    translate: (String) -> String = { s -> s },
 ) {
+    val translator = LocalAppTranslator.current.translator
     val isEditable = LocalCaseEditor.current.isEditable
 
     val editDifferentWorksite by editor.editIncidentWorksite.collectAsStateWithLifecycle()
@@ -36,13 +37,13 @@ internal fun PropertyLocationView(
     } else {
         editor.setMoveLocationOnMap(false)
 
-        val locationText = translate("formLabels.location")
+        val locationText = translator("formLabels.location")
         WithHelpDialog(
             viewModel,
             helpTitle = locationText,
-            helpText = translate("caseForm.location_instructions"),
+            helpText = translator("caseForm.location_instructions"),
             hasHtml = true,
-            translate("actions.ok"),
+            translator("actions.ok"),
         ) { showHelp ->
             HelpRow(
                 locationText,
@@ -53,7 +54,7 @@ internal fun PropertyLocationView(
             )
         }
 
-        val fullAddressLabel = translate("caseView.full_address")
+        val fullAddressLabel = translator("caseView.full_address")
         OutlinedSingleLineTextField(
             modifier = Modifier
                 .fillMaxWidth()
@@ -89,10 +90,9 @@ internal fun PropertyLocationView(
             isEditable,
             moveLocationOnMap = onMoveLocationOnMap,
             useMyLocation = useMyLocation,
-            translate = translate,
         )
 
-        LocationFormView(editor, translate)
+        LocationFormView(editor)
 
         // TODO Handle out of bounds properly
 
@@ -102,7 +102,7 @@ internal fun PropertyLocationView(
         ExplainLocationPermissionDialog(
             showDialog = explainPermission,
             closeDialog = closePermissionDialog,
-            closeText = translate("actions.close"),
+            closeText = translator("actions.close"),
         )
     }
 }
@@ -112,20 +112,20 @@ private fun LocationMapActionBar(
     isEditable: Boolean = false,
     moveLocationOnMap: () -> Unit = {},
     useMyLocation: () -> Unit = {},
-    translate: (String) -> String = { s -> s },
 ) {
+    val translator = LocalAppTranslator.current.translator
     Row(modifier = Modifier.listItemPadding()) {
         CrisisCleanupIconTextButton(
             modifier = Modifier.weight(1f),
             iconResId = R.drawable.ic_select_on_map,
-            label = translate("caseForm.select_on_map"),
+            label = translator("caseForm.select_on_map"),
             onClick = moveLocationOnMap,
             enabled = isEditable,
         )
         CrisisCleanupIconTextButton(
             modifier = Modifier.weight(1f),
             iconResId = R.drawable.ic_use_my_location,
-            label = translate("caseForm.use_my_location"),
+            label = translator("caseForm.use_my_location"),
             onClick = useMyLocation,
             enabled = isEditable,
         )

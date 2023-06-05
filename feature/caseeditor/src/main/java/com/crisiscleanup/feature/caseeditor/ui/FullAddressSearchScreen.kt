@@ -11,10 +11,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
@@ -45,7 +45,10 @@ internal fun EditCaseAddressSearchRoute(
 
         Column {
             TopAppBarBackAction(
-                title = stringResource(R.string.location_address_search),
+                title = LocalAppTranslator.current.translator(
+                    "info.location_address_search",
+                    R.string.location_address_search,
+                ),
                 onAction = onBack,
             )
             val locationQuery by editor.locationInputData.locationQuery.collectAsStateWithLifecycle()
@@ -59,7 +62,7 @@ internal fun EditCaseAddressSearchRoute(
             AddressSearchResults(viewModel, editor, locationQuery, onAddressSelect, isEditable)
         }
 
-        LocationOutOfBoundsDialog(viewModel, editor)
+        LocationOutOfBoundsDialog(editor)
     }
 }
 
@@ -72,7 +75,7 @@ internal fun FullAddressSearchInput(
     isEditable: Boolean = false,
 ) {
     val updateQuery = remember(viewModel) { { s: String -> editor.onQueryChange(s) } }
-    val fullAddressLabel = viewModel.translate("caseView.full_address")
+    val fullAddressLabel = LocalAppTranslator.current.translator("caseView.full_address")
     OutlinedClearableTextField(
         modifier = Modifier
             .fillMaxWidth()
@@ -103,7 +106,10 @@ internal fun ColumnScope.AddressSearchResults(
     val isShortQuery by editor.isShortQuery.collectAsStateWithLifecycle()
     if (isShortQuery) {
         Text(
-            stringResource(R.string.location_query_hint),
+            LocalAppTranslator.current.translator(
+                "info.search_cases_addresses_hint",
+                R.string.location_query_hint
+            ),
             modifier = Modifier.textMessagePadding(),
             style = MaterialTheme.typography.bodyLarge,
         )

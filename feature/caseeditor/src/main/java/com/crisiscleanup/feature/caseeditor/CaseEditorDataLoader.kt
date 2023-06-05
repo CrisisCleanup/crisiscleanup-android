@@ -223,7 +223,7 @@ internal class CaseEditorDataLoader(
                     val localTranslate = { s: String -> translate(s) }
                     incidentFieldLookup.value = formFields.associate { node ->
                         val groupFieldMap = node.children.associate { child ->
-                            child.fieldKey to child.formField.getFieldLabel(localTranslate)
+                            child.fieldKey to child.formField.label.ifEmpty { localTranslate(child.fieldKey) }
                         }
                         val groupOptionsMap = node.children.map(FormFieldNode::options)
                             .flatMap { it.entries }

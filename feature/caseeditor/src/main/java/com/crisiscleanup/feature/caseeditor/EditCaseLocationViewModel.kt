@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.addresssearch.AddressSearchRepository
 import com.crisiscleanup.core.addresssearch.model.toLatLng
 import com.crisiscleanup.core.common.AndroidResourceProvider
-import com.crisiscleanup.core.common.KeyTranslator
+import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.PermissionStatus
@@ -129,6 +129,7 @@ internal class EditableLocationDataEditor(
     resourceProvider: AndroidResourceProvider,
     drawableResourceBitmapProvider: DrawableResourceBitmapProvider,
     private val existingWorksiteSelector: ExistingWorksiteSelector,
+    translator: KeyResourceTranslator,
     private val logger: AppLogger,
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
@@ -205,6 +206,7 @@ internal class EditableLocationDataEditor(
         }
 
         locationInputData = LocationInputData(
+            translator,
             worksite,
             resourceProvider,
         )
@@ -557,7 +559,7 @@ class EditCaseLocationViewModel @Inject constructor(
     resourceProvider: AndroidResourceProvider,
     drawableResourceBitmapProvider: DrawableResourceBitmapProvider,
     existingWorksiteSelector: ExistingWorksiteSelector,
-    translator: KeyTranslator,
+    translator: KeyResourceTranslator,
     @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
     @Dispatcher(Default) coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
     @Dispatcher(IO) ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
@@ -573,6 +575,7 @@ class EditCaseLocationViewModel @Inject constructor(
         resourceProvider,
         drawableResourceBitmapProvider,
         existingWorksiteSelector,
+        translator,
         logger,
         coroutineDispatcher,
         ioDispatcher,

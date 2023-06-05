@@ -2,30 +2,33 @@ package com.crisiscleanup.feature.caseeditor.ui
 
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.theme.textBoxHeight
 import com.crisiscleanup.core.model.data.WorksiteNote
-import com.crisiscleanup.feature.caseeditor.R
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditNoteDialog(
     note: WorksiteNote,
     dialogTitle: String,
     onSave: (WorksiteNote) -> Unit = {},
     onCancel: () -> Unit = {},
-    saveText: String = "",
-    cancelText: String = "",
 ) {
+    val translator = LocalAppTranslator.current.translator
     var isSaving by rememberSaveable { mutableStateOf(false) }
     var noteContent by rememberSaveable { mutableStateOf(note.note.trim()) }
     val saveNote = {
@@ -51,7 +54,7 @@ fun EditNoteDialog(
                 modifier = Modifier
                     .textBoxHeight()
                     .focusRequester(focusRequester),
-                label = { Text(stringResource(R.string.note)) },
+                label = { Text(translator("caseView.note")) },
                 keyboardOptions = keyboardOptions,
                 keyboardActions = keyboardActions,
             )
@@ -62,13 +65,13 @@ fun EditNoteDialog(
         onDismissRequest = onCancel,
         dismissButton = {
             CrisisCleanupTextButton(
-                text = cancelText,
+                text = translator("actions.cancel"),
                 onClick = onCancel
             )
         },
         confirmButton = {
             CrisisCleanupTextButton(
-                text = saveText,
+                text = translator("actions.add"),
                 onClick = saveNote,
                 enabled = !isSaving,
             )

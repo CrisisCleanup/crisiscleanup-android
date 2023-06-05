@@ -51,6 +51,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.commonassets.getDisasterIcon
+import com.crisiscleanup.core.designsystem.AppTranslator
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
@@ -134,11 +136,17 @@ internal fun CaseEditorRoute(
                     title = headerTitle,
                     onAction = onNavigateBack,
                 )
-                CaseEditorScreen(
-                    onNavigateCancel = onNavigateCancel,
-                    onEditSearchAddress = onEditSearchAddress,
-                    onEditMoveLocationOnMap = onEditMoveLocationOnMap,
-                )
+
+                val appTranslator = remember(viewModel) {
+                    AppTranslator(translator = viewModel)
+                }
+                CompositionLocalProvider(LocalAppTranslator provides appTranslator) {
+                    CaseEditorScreen(
+                        onNavigateCancel = onNavigateCancel,
+                        onEditSearchAddress = onEditSearchAddress,
+                        onEditMoveLocationOnMap = onEditMoveLocationOnMap,
+                    )
+                }
             }
         }
     }
@@ -385,8 +393,6 @@ private fun ColumnScope.FullEditView(
     }
     val togglePropertySection = remember(viewModel) { { toggleSectionCollapse(0) } }
 
-    val translate = remember(viewModel) { { s: String -> viewModel.translate(s) } }
-
     Box(Modifier.weight(1f)) {
         val closeKeyboard = rememberCloseKeyboard(viewModel)
 
@@ -410,7 +416,6 @@ private fun ColumnScope.FullEditView(
                         togglePropertySection = togglePropertySection,
                         isSectionCollapsed = isSectionCollapsed,
                         toggleSection = toggleSectionCollapse,
-                        translate = translate,
                     )
                 }
             }
@@ -422,14 +427,15 @@ private fun ColumnScope.FullEditView(
 
     val claimAndSaveChanges = remember(viewModel) { { viewModel.saveChanges(true) } }
     val saveChanges = remember(viewModel) { { viewModel.saveChanges(false) } }
+    val translator = LocalAppTranslator.current.translator
     SaveActionBar(
         !isSavingData,
         onCancel,
         claimAndSaveChanges,
         saveChanges,
-        saveText = viewModel.translate("actions.save"),
-        saveClaimText = viewModel.translate("actions.save_claim"),
-        cancelText = viewModel.translate("actions.cancel"),
+        saveText = translator("actions.save"),
+        saveClaimText = translator("actions.save_claim"),
+        cancelText = translator("actions.cancel"),
     )
 
     val showBackChangesDialog by viewModel.promptUnsavedChanges
@@ -517,7 +523,6 @@ private fun LazyListScope.fullEditContent(
     togglePropertySection: () -> Unit = {},
     isSectionCollapsed: (Int) -> Boolean = { false },
     toggleSection: (Int) -> Unit = {},
-    translate: (String) -> String = { s -> s },
 ) {
     item(key = "incident-info") {
         val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
@@ -539,7 +544,6 @@ private fun LazyListScope.fullEditContent(
                 onSearchAddress,
                 isSectionCollapsed = isPropertySectionCollapsed,
                 togglePropertySection = togglePropertySection,
-                translate = translate,
             )
         }
 
@@ -585,7 +589,6 @@ private fun LazyListScope.propertyLocationSection(
     onSearchAddress: () -> Unit = {},
     isSectionCollapsed: Boolean = false,
     togglePropertySection: () -> Unit = {},
-    translate: (String) -> String = { s -> s },
 ) {
     item(
         key = "section-header-0",
@@ -604,7 +607,6 @@ private fun LazyListScope.propertyLocationSection(
             PropertyFormView(
                 viewModel,
                 propertyEditor,
-                translate = translate,
             )
         }
 
@@ -615,7 +617,6 @@ private fun LazyListScope.propertyLocationSection(
                     locationEditor,
                     onMoveLocationOnMap = onMoveLocation,
                     openAddressSearch = onSearchAddress,
-                    translate = translate,
                 )
             }
         }
@@ -626,7 +627,6 @@ private fun LazyListScope.propertyLocationSection(
                     viewModel,
                     notesFlagsEditor,
                     viewModel.visibleNoteCount,
-                    translate = translate,
                 )
             }
         }
@@ -715,19 +715,20 @@ private fun PromptChangesDialog(
     onStay: () -> Unit = {},
     onAbort: () -> Unit = {},
 ) {
+    val translator = LocalAppTranslator.current.translator
     AlertDialog(
-        title = { Text(stringResource(R.string.changes)) },
-        text = { Text(stringResource(R.string.changes_choice)) },
+        title = { Text(translator("info.changes", R.string.changes)) },
+        text = { Text(translator("info.continue_or_lose_changes", R.string.changes_choice)) },
         onDismissRequest = onStay,
         dismissButton = {
             CrisisCleanupTextButton(
-                textResId = R.string.no,
+                text = translator("caseForm.no"),
                 onClick = onAbort
             )
         },
         confirmButton = {
             CrisisCleanupTextButton(
-                textResId = R.string.yes,
+                text = translator("caseForm.yes"),
                 onClick = onStay,
             )
         },
@@ -745,27 +746,32 @@ private fun InvalidSaveDialog(
     if (promptInvalidSave) {
         val invalidWorksiteInfo = viewModel.invalidWorksiteInfo.value
         if (invalidWorksiteInfo.invalidSection != WorksiteSection.None) {
+            val translator = LocalAppTranslator.current.translator
             val message = invalidWorksiteInfo.message.ifBlank {
-                val messageResId =
-                    if (invalidWorksiteInfo.messageResId == 0) R.string.incomplete_required_data
-                    else invalidWorksiteInfo.messageResId
-                stringResource(messageResId)
+                translator("info.missing_required_fields", R.string.incomplete_required_data)
             }
             val onDismiss =
                 remember(viewModel) { { viewModel.showInvalidWorksiteSave.value = false } }
             AlertDialog(
-                title = { Text(stringResource(R.string.incomplete_worksite)) },
+                title = {
+                    Text(
+                        translator(
+                            "info.incomplete_case_info",
+                            R.string.incomplete_information
+                        )
+                    )
+                },
                 text = { Text(message) },
                 onDismissRequest = onDismiss,
                 dismissButton = {
                     CrisisCleanupTextButton(
-                        text = viewModel.translate("actions.cancel"),
+                        text = translator("actions.cancel"),
                         onClick = onDismiss
                     )
                 },
                 confirmButton = {
                     CrisisCleanupTextButton(
-                        textResId = R.string.fix,
+                        text = translator("actions.fix", R.string.fix),
                         onClick = {
                             when (val section = invalidWorksiteInfo.invalidSection) {
                                 WorksiteSection.Location -> onEditLocation()

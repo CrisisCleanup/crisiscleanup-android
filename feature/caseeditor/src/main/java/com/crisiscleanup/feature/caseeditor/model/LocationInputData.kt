@@ -4,16 +4,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.crisiscleanup.core.common.AndroidResourceProvider
+import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.model.data.CROSS_STREET_FIELD_KEY
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteFormValue
-import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.util.summarizeAddress
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class LocationInputData(
+    private val translator: KeyResourceTranslator,
     worksite: Worksite,
     private val resourceProvider: AndroidResourceProvider,
 ) : CaseDataWriter {
@@ -83,27 +84,27 @@ class LocationInputData(
         resetValidity()
 
         if (streetAddress.isBlank()) {
-            streetAddressError = resourceProvider.getString(R.string.address_is_required)
+            streetAddressError = translator("caseForm.address_required")
             return false
         }
 
         if (zipCode.isBlank()) {
-            zipCodeError = resourceProvider.getString(R.string.zipcode_is_required)
+            zipCodeError = translator("caseForm.postal_code_required")
             return false
         }
 
         if (county.isBlank()) {
-            countyError = resourceProvider.getString(R.string.county_is_required)
+            countyError = translator("caseForm.county_required")
             return false
         }
 
         if (city.isBlank()) {
-            cityError = resourceProvider.getString(R.string.city_is_required)
+            cityError = translator("caseForm.city_required")
             return false
         }
 
         if (state.isBlank()) {
-            stateError = resourceProvider.getString(R.string.state_is_required)
+            stateError = translator("caseForm.state_required")
             return false
         }
 

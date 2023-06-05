@@ -11,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemNestedPadding
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
@@ -30,7 +31,7 @@ private fun FormItems(
     val breakGlassHint = viewModel.breakGlassHint
     val helpHint = viewModel.helpHint
 
-    val translate = remember(viewModel) { { s: String -> viewModel.translate(s) } }
+    val translator = LocalAppTranslator.current.translator
 
     val groupExpandState = remember { inputData.groupExpandState }
 
@@ -45,7 +46,7 @@ private fun FormItems(
         }
 
         key(state.key) {
-            var label = state.field.getFieldLabel(translate)
+            var label = state.field.label.ifBlank { translator(state.key) }
             if (state.field.isRequired) {
                 label = "$label *"
             }
@@ -62,7 +63,6 @@ private fun FormItems(
                 helpHint,
                 fieldShowHelp,
                 isEditable,
-                translate,
             ) { value: FieldDynamicValue ->
                 state = state.copy(
                     dynamicValue = value.dynamicValue,
@@ -129,7 +129,7 @@ private fun HelpContent(
             title = helpTitle,
             text = helpText,
             onClose = { helpText = "" },
-            okText = viewModel.translate("actions.ok"),
+            okText = LocalAppTranslator.current.translator("actions.ok"),
         )
     }
 }

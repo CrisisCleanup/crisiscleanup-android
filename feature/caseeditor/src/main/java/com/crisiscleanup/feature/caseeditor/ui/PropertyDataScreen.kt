@@ -22,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -32,6 +31,7 @@ import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.commoncase.ui.ExistingCaseLocationsDropdownItems
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.theme.listItemDropdownMenuOffset
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
@@ -49,20 +49,20 @@ internal fun PropertyFormView(
     viewModel: EditCaseBaseViewModel,
     editor: CasePropertyDataEditor,
     focusOnOpen: Boolean = false,
-    translate: (String) -> String = { s -> s },
 ) {
+    val translator = LocalAppTranslator.current.translator
     val isEditable = LocalCaseEditor.current.isEditable
 
     val inputData = editor.propertyInputData
 
-    PropertyFormResidentNameView(editor, isEditable, focusOnOpen, translate)
+    PropertyFormResidentNameView(editor, isEditable, focusOnOpen)
 
     // TODO Apply mask with dashes if input is purely numbers (and dashes)
     val updatePhone = remember(inputData) { { s: String -> inputData.phoneNumber = s } }
     val clearPhoneError = remember(inputData) { { inputData.phoneNumberError = "" } }
     val isPhoneError = inputData.phoneNumberError.isNotEmpty()
     val focusPhone = isPhoneError
-    val phone1Label = translate("formLabels.phone1")
+    val phone1Label = translator("formLabels.phone1")
     ErrorText(inputData.phoneNumberError)
     OutlinedClearableTextField(
         modifier = listItemModifier,
@@ -83,7 +83,7 @@ internal fun PropertyFormView(
     OutlinedClearableTextField(
         modifier = listItemModifier,
         labelResId = 0,
-        label = translate("formLabels.phone2"),
+        label = translator("formLabels.phone2"),
         value = inputData.phoneNumberSecondary,
         onValueChange = updateAdditionalPhone,
         keyboardType = KeyboardType.Password,
@@ -100,7 +100,7 @@ internal fun PropertyFormView(
     OutlinedClearableTextField(
         modifier = listItemModifier,
         labelResId = 0,
-        label = translate("formLabels.email"),
+        label = translator("formLabels.email"),
         value = inputData.email,
         onValueChange = updateEmail,
         keyboardType = KeyboardType.Email,
@@ -112,12 +112,12 @@ internal fun PropertyFormView(
         onEnter = closeKeyboard
     )
 
-    val autoContactFrequencyLabel = translate("casesVue.auto_contact_frequency")
+    val autoContactFrequencyLabel = translator("casesVue.auto_contact_frequency")
     WithHelpDialog(
         viewModel,
         helpTitle = autoContactFrequencyLabel,
-        helpText = translate("casesVue.auto_contact_frequency_help"),
-        okText = translate("actions.ok"),
+        helpText = translator("casesVue.auto_contact_frequency_help"),
+        okText = translator("actions.ok"),
     ) { showHelp ->
         HelpRow(autoContactFrequencyLabel, viewModel.helpHint, showHelp = showHelp)
     }
@@ -125,7 +125,6 @@ internal fun PropertyFormView(
         { it: AutoContactFrequency -> inputData.autoContactFrequency = it }
     }
     val contactFrequencyOptions by editor.contactFrequencyOptions.collectAsStateWithLifecycle()
-    ErrorText(inputData.frequencyError)
     Column(modifier = Modifier.selectableGroup()) {
         contactFrequencyOptions.forEach {
             val isSelected = inputData.autoContactFrequency == it.first
@@ -161,8 +160,8 @@ private fun PropertyFormResidentNameView(
     editor: CasePropertyDataEditor,
     isEditable: Boolean = true,
     focusOnOpen: Boolean = false,
-    translate: (String) -> String = { s -> s },
 ) {
+    val translator = LocalAppTranslator.current.translator
     val inputData = editor.propertyInputData
 
     val residentName by inputData.residentName.collectAsStateWithLifecycle()
@@ -174,7 +173,7 @@ private fun PropertyFormResidentNameView(
     Box(Modifier.fillMaxWidth()) {
         var contentWidth by remember { mutableStateOf(Size.Zero) }
 
-        val nameLabel = translate("formLabels.name")
+        val nameLabel = translator("formLabels.name")
         OutlinedClearableTextField(
             modifier = listItemModifier.onGloballyPositioned {
                 contentWidth = it.size.toSize()
@@ -220,7 +219,10 @@ private fun PropertyFormResidentNameView(
                 DropdownMenuItem(
                     text = {
                         Text(
-                            stringResource(R.string.stop_suggesting_existing_cases),
+                            LocalAppTranslator.current.translator(
+                                "actions.stop_searching_cases",
+                                R.string.stop_suggesting_existing_cases,
+                            ),
                             modifier = Modifier.offset(x = 12.dp),
                         )
                     },

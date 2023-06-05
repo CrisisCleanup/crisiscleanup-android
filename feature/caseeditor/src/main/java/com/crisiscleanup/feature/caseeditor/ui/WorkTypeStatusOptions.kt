@@ -5,23 +5,38 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
-import com.crisiscleanup.core.designsystem.theme.*
+import com.crisiscleanup.core.designsystem.theme.disabledAlpha
+import com.crisiscleanup.core.designsystem.theme.listCheckboxAlignItemPaddingCounterOffset
+import com.crisiscleanup.core.designsystem.theme.listItemDropdownMenuOffset
+import com.crisiscleanup.core.designsystem.theme.listItemHeight
+import com.crisiscleanup.core.designsystem.theme.listItemPadding
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
+import com.crisiscleanup.core.designsystem.theme.optionItemHeight
+import com.crisiscleanup.core.designsystem.theme.statusUnknownColor
 import com.crisiscleanup.core.model.data.WorkTypeStatus
-import com.crisiscleanup.feature.caseeditor.R
 
 @Composable
 internal fun WorkTypeStatusDropdown(
     selectedStatus: WorkTypeStatus,
     onStatusChange: (WorkTypeStatus) -> Unit,
-    translate: (String) -> String = { s -> s },
     applySpacing: Boolean = false,
 ) {
     val (isEditable, statusOptions) = LocalCaseEditor.current
@@ -49,7 +64,6 @@ internal fun WorkTypeStatusDropdown(
         WorkTypeStatusOption(
             selectedStatus,
             restingModifier,
-            translate,
             true,
             enabled = enabled,
         )
@@ -71,7 +85,6 @@ internal fun WorkTypeStatusDropdown(
                     selectedStatus,
                     onSelect,
                     statusOptions,
-                    translate,
                 )
             }
         }
@@ -83,14 +96,13 @@ private fun WorkTypeStatusOptions(
     selectedStatus: WorkTypeStatus,
     onSelect: (WorkTypeStatus) -> Unit = {},
     statusOptions: List<WorkTypeStatus> = emptyList(),
-    translate: (String) -> String = { s -> s },
 ) {
     val modifier = Modifier.optionItemHeight()
     for (option in statusOptions) {
         DropdownMenuItem(
             // TODO Change color of selected option
             modifier = modifier,
-            text = { WorkTypeStatusOption(option, translate = translate) },
+            text = { WorkTypeStatusOption(option) },
             onClick = { onSelect(option) },
         )
     }
@@ -100,7 +112,6 @@ private fun WorkTypeStatusOptions(
 private fun WorkTypeStatusOption(
     status: WorkTypeStatus,
     modifier: Modifier = Modifier,
-    translate: (String) -> String = { s -> s },
     showOpenIcon: Boolean = false,
     enabled: Boolean = false,
 ) {
@@ -109,14 +120,14 @@ private fun WorkTypeStatusOption(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = listItemSpacedByHalf,
     ) {
-
+        val translator = LocalAppTranslator.current.translator
         Surface(
             Modifier.size(16.dp),
             shape = CircleShape,
             color = statusOptionColors[status] ?: statusUnknownColor,
         ) {}
         Text(
-            translate(status.literal),
+            translator(status.literal),
             style = MaterialTheme.typography.bodyMedium,
         )
         if (showOpenIcon) {
@@ -126,7 +137,7 @@ private fun WorkTypeStatusOption(
             }
             Icon(
                 imageVector = CrisisCleanupIcons.ArrowDropDown,
-                contentDescription = stringResource(R.string.change_status),
+                contentDescription = translator("actions.update_status"),
                 tint = tint,
             )
         }

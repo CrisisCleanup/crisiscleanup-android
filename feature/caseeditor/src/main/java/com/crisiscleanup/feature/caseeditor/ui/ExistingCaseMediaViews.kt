@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
@@ -68,7 +69,7 @@ private val addMediaStrokeGap = 6.dp
 private fun AddMediaView(
     modifier: Modifier = Modifier,
 ) {
-    val text = stringResource(R.string.add_media)
+    val text = LocalAppTranslator.current.translator("info.add_media", R.string.add_media)
     val contentColor = primaryBlueColor
     val backgroundColor = primaryBlueOneTenthColor
     val cornerRadius: Float
@@ -116,7 +117,6 @@ private fun AddMediaView(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun PhotosSection(
     title: String,
@@ -224,11 +224,10 @@ internal fun PhotosSection(
 @Composable
 internal fun TakePhotoSelectImage(
     viewModel: ExistingCaseViewModel = hiltViewModel(),
-    translate: (String) -> String = { s -> s },
     showOptions: Boolean = false,
     closeOptions: () -> Unit = {},
 ) {
-
+    val translator = LocalAppTranslator.current.translator
     var cameraPhotoUri by remember { mutableStateOf(Uri.parse("")) }
     val cameraPhotoLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
@@ -254,7 +253,7 @@ internal fun TakePhotoSelectImage(
             if (viewModel.hasCamera) {
                 CrisisCleanupTextButton(
                     listItemModifier,
-                    text = stringResource(R.string.take_photo),
+                    text = translator("actions.take_photo", R.string.take_photo),
                     onClick = {
                         if (viewModel.takePhoto()) {
                             val uri = viewModel.capturePhotoUri
@@ -270,7 +269,7 @@ internal fun TakePhotoSelectImage(
             }
             CrisisCleanupTextButton(
                 listItemModifier,
-                text = stringResource(R.string.select_image),
+                text = translator("fileUpload.select_file_upload"),
                 onClick = {
                     selectImageLauncher.launch(
                         PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
@@ -286,7 +285,7 @@ internal fun TakePhotoSelectImage(
     ExplainCameraPermissionDialog(
         showDialog = viewModel.showExplainPermissionCamera,
         closeDialog = closePermissionDialog,
-        closeText = translate("actions.close"),
+        closeText = translator("actions.close"),
     )
 }
 
@@ -297,9 +296,14 @@ private fun ExplainCameraPermissionDialog(
     closeText: String = "",
 ) {
     if (showDialog) {
+        val translator = LocalAppTranslator.current.translator
         OpenSettingsDialog(
-            R.string.allow_camera_permission,
-            R.string.camera_permission_explanation,
+            translator("info.allow_access_to_camera", R.string.allow_camera_permission),
+            translator(
+                "info.explain_allow_access_to_camera_android",
+                R.string.camera_permission_explanation
+            ),
+            confirmText = translator("info.app_settings", R.string.app_settings),
             dismissText = closeText,
             closeDialog = closeDialog,
         )

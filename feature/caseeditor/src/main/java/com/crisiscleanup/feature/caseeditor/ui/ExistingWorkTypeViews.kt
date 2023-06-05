@@ -22,8 +22,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupOutlinedButton
+import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
@@ -59,7 +61,6 @@ private fun ClaimingOrganization(
     name: String,
     isMyOrganization: Boolean,
     modifier: Modifier = Modifier,
-    translate: (String) -> String = { s -> s },
 ) {
     if (isMyOrganization) {
         Row(
@@ -68,7 +69,8 @@ private fun ClaimingOrganization(
             horizontalArrangement = Arrangement.spacedBy(edgeSpacingHalf),
         ) {
             Text(name)
-            val myOrganizationLabel = translate("profileUser.your_organization")
+            val myOrganizationLabel =
+                LocalAppTranslator.current.translator("profileUser.your_organization")
             Text(
                 "($myOrganizationLabel)",
                 style = MaterialTheme.typography.bodySmall,
@@ -83,13 +85,12 @@ private fun ClaimingOrganization(
 private fun WorkTypeOrgClaims(
     isMyOrgClaim: Boolean,
     myOrgName: String,
-    translate: (String) -> String,
     otherOrgClaims: List<String>,
-    rowItemModifier: Modifier = Modifier,
+    modifier: Modifier = Modifier,
 ) {
     Text(
-        translate("caseView.claimed_by"),
-        rowItemModifier,
+        LocalAppTranslator.current.translator("caseView.claimed_by"),
+        modifier,
         style = MaterialTheme.typography.bodySmall,
     )
     Column(
@@ -99,10 +100,10 @@ private fun WorkTypeOrgClaims(
         ),
     ) {
         if (isMyOrgClaim) {
-            ClaimingOrganization(myOrgName, true, rowItemModifier, translate)
+            ClaimingOrganization(myOrgName, true, modifier)
         }
         otherOrgClaims.forEach { otherOrganization ->
-            ClaimingOrganization(otherOrganization, false, rowItemModifier)
+            ClaimingOrganization(otherOrganization, false, modifier)
         }
     }
 }
@@ -111,7 +112,6 @@ private fun WorkTypeOrgClaims(
 private fun WorkTypeSummaryView(
     summary: WorkTypeSummary,
     rowItemModifier: Modifier = Modifier,
-    translate: (String) -> String = { s -> s },
     updateWorkType: (WorkType) -> Unit = {},
     requestWorkType: (WorkType) -> Unit = {},
     releaseWorkType: (WorkType) -> Unit = {},
@@ -140,23 +140,24 @@ private fun WorkTypeSummaryView(
                 modifier = rowItemModifier.listItemVerticalPadding(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                WorkTypeStatusDropdown(workType.status, updateWorkTypeStatus, translate)
+                WorkTypeStatusDropdown(workType.status, updateWorkTypeStatus)
                 Spacer(Modifier.weight(1f))
 
+                val translator = LocalAppTranslator.current.translator
                 if (workType.isClaimed) {
                     if (isClaimedByMyOrg) {
-                        WorkTypeAction(translate("actions.unclaim")) {
+                        WorkTypeAction(translator("actions.unclaim")) {
                             updateWorkType(workType.copy(orgClaim = null))
                         }
                     } else if (isReleasable) {
-                        WorkTypeAction(translate("actions.release")) { releaseWorkType(workType) }
+                        WorkTypeAction(translator("actions.release")) { releaseWorkType(workType) }
                     } else if (isRequested) {
-                        Text(translate("caseView.requested"))
+                        Text(translator("caseView.requested"))
                     } else {
-                        WorkTypeAction(translate("actions.request")) { requestWorkType(workType) }
+                        WorkTypeAction(translator("actions.request")) { requestWorkType(workType) }
                     }
                 } else {
-                    WorkTypePrimaryAction(translate("actions.claim")) {
+                    WorkTypePrimaryAction(translator("actions.claim")) {
                         updateWorkType(workType.copy(orgClaim = myOrgId))
                     }
                 }
@@ -196,7 +197,6 @@ internal fun LazyListScope.existingWorkTypeItems(
     sectionKey: String,
     summaries: List<WorkTypeSummary>,
     rowItemModifier: Modifier = Modifier,
-    translate: (String) -> String = { s -> s },
     updateWorkType: (WorkType) -> Unit = {},
     requestWorkType: (WorkType) -> Unit = {},
     releaseWorkType: (WorkType) -> Unit = {},
@@ -224,7 +224,6 @@ internal fun LazyListScope.existingWorkTypeItems(
             WorkTypeSummaryView(
                 workTypeSummary,
                 rowItemModifier,
-                translate,
                 updateWorkType,
                 requestWorkType,
                 releaseWorkType,
@@ -234,7 +233,7 @@ internal fun LazyListScope.existingWorkTypeItems(
 }
 
 internal fun LazyListScope.workTypeSectionTitle(
-    title: String,
+    titleTranslateKey: String,
     titleItemKey: String,
     modifier: Modifier = Modifier.listItemPadding(),
     isSmallTitle: Boolean = false,
@@ -245,7 +244,7 @@ internal fun LazyListScope.workTypeSectionTitle(
     val style = if (isSmallTitle) MaterialTheme.typography.bodySmall
     else MaterialTheme.typography.bodyLarge
     Text(
-        title,
+        LocalAppTranslator.current.translator(titleTranslateKey),
         modifier,
         style = style,
     )
@@ -254,19 +253,18 @@ internal fun LazyListScope.workTypeSectionTitle(
 internal fun LazyListScope.organizationWorkClaims(
     orgClaimWorkType: OrgClaimWorkType,
     rowItemModifier: Modifier = Modifier,
-    translate: (String) -> String = { s -> s },
     updateWorkType: (WorkType) -> Unit = {},
     requestWorkType: (WorkType) -> Unit = {},
     releaseWorkType: (WorkType) -> Unit = {},
 ) = with(orgClaimWorkType) {
     if (isMyOrg) {
         workTypeSectionTitle(
-            translate("caseView.claimed_by_my_org"),
+            "caseView.claimed_by_my_org",
             "claimed-by-$orgId",
         )
     } else {
         workTypeSectionTitle(
-            translate("caseView.claimed_by"),
+            "caseView.claimed_by",
             "claimed-by-$orgId-small",
             Modifier.listItemHorizontalPadding(),
             true,
@@ -281,7 +279,6 @@ internal fun LazyListScope.organizationWorkClaims(
         "org-$orgId",
         workTypes,
         rowItemModifier,
-        translate,
         updateWorkType,
         requestWorkType,
         releaseWorkType,
@@ -291,22 +288,20 @@ internal fun LazyListScope.organizationWorkClaims(
 @Preview
 @Composable
 private fun OrgClaimsPreview() {
-    val otherOrgClaims = listOf(
-        "Team green",
-        "True blue",
-        "Soarin Orange",
-    )
-    Column {
-        WorkTypeOrgClaims(
-            true,
-            "My organization",
-            { key ->
-                when (key) {
-                    "profileUser.your_organization" -> "My org"
-                    else -> "Claimed by"
-                }
-            },
-            otherOrgClaims,
-        )
+    CrisisCleanupTheme {
+        Surface {
+            val otherOrgClaims = listOf(
+                "Team green",
+                "True blue",
+                "Soarin Orange",
+            )
+            Column {
+                WorkTypeOrgClaims(
+                    true,
+                    "My organization",
+                    otherOrgClaims,
+                )
+            }
+        }
     }
 }

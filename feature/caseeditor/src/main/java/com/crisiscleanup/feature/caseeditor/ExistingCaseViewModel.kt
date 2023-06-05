@@ -15,7 +15,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.AppEnv
-import com.crisiscleanup.core.common.KeyTranslator
+import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.PermissionStatus
 import com.crisiscleanup.core.common.combineTrimText
@@ -92,7 +92,7 @@ class ExistingCaseViewModel @Inject constructor(
     private val editableWorksiteProvider: EditableWorksiteProvider,
     val transferWorkTypeProvider: TransferWorkTypeProvider,
     private val permissionManager: PermissionManager,
-    private val translator: KeyTranslator,
+    private val translator: KeyResourceTranslator,
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val syncPusher: SyncPusher,
     private val resourceProvider: AndroidResourceProvider,
@@ -103,7 +103,7 @@ class ExistingCaseViewModel @Inject constructor(
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
     @ApplicationScope private val externalScope: CoroutineScope,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-) : ViewModel() {
+) : ViewModel(), KeyResourceTranslator {
     private val caseEditorArgs = ExistingCaseArgs(savedStateHandle)
     private val incidentIdArg = caseEditorArgs.incidentId
     val worksiteIdArg = caseEditorArgs.worksiteId
@@ -251,7 +251,7 @@ class ExistingCaseViewModel @Inject constructor(
 
     val tabTitles = uiState.mapLatest {
         listOf(
-            translate(resourceProvider.getString(R.string.info)),
+            resourceProvider.getString(R.string.info),
             translate("caseForm.photos"),
             translate("phoneDashboard.notes"),
         )
@@ -444,9 +444,6 @@ class ExistingCaseViewModel @Inject constructor(
             initialValue = emptyMap(),
             started = SharingStarted.WhileSubscribed(),
         )
-
-    fun translate(key: String, fallback: String? = null) = translator.translate(key)
-        ?: (editableWorksiteProvider.translate(key) ?: (fallback ?: key))
 
     private fun updateHeaderTitle(caseNumber: String = "") {
         headerTitle.value = if (caseNumber.isEmpty()) translate("nav.work_view_case")
@@ -668,6 +665,18 @@ class ExistingCaseViewModel @Inject constructor(
             }
         }
     }
+
+    // KeyResourceTranslator
+
+    override val translationCount = translator.translationCount
+
+    override fun translate(phraseKey: String) = translate(phraseKey, 0)
+
+    override fun translate(phraseKey: String, fallbackResId: Int) =
+        editableWorksiteProvider.translate(phraseKey) ?: translator.translate(
+            phraseKey,
+            fallbackResId
+        )
 }
 
 data class WorkTypeSummary(

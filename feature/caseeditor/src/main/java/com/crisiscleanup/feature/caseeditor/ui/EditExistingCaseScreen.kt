@@ -57,6 +57,8 @@ import com.crisiscleanup.core.appnav.ViewImageArgs
 import com.crisiscleanup.core.common.combineTrimText
 import com.crisiscleanup.core.common.filterNotBlankTrim
 import com.crisiscleanup.core.common.urlEncode
+import com.crisiscleanup.core.designsystem.AppTranslator
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationDefaults
@@ -152,22 +154,24 @@ internal fun EditExistingCaseRoute(
                 }
             }
         } else if (tabTitles.isNotEmpty()) {
-            val translate = remember(viewModel) { { s: String -> viewModel.translate(s) } }
-
             val statusOptions by viewModel.statusOptions.collectAsStateWithLifecycle()
             val caseEditor = CaseEditor(isEditable, statusOptions)
-            CompositionLocalProvider(LocalCaseEditor provides caseEditor) {
+            val appTranslator = remember(viewModel) {
+                AppTranslator(translator = viewModel)
+            }
+            CompositionLocalProvider(
+                LocalCaseEditor provides caseEditor,
+                LocalAppTranslator provides appTranslator,
+            ) {
                 ExistingCaseContent(
                     tabTitles,
                     worksite,
-                    translate,
                     isBusy,
                     openPhoto,
                 )
 
                 BottomActions(
                     worksite,
-                    translate,
                     onFullEdit,
                 )
             }
@@ -222,14 +226,14 @@ private fun TopBar(
         @Composable {}
     } else {
         @Composable {
-            // TODO Translations if exist
-
-            val highPriorityResId = if (isHighPriority) R.string.not_high_priority
-            else R.string.high_priority
+            val translator = LocalAppTranslator.current.translator
+            val highPriorityTranslateKey =
+                if (isHighPriority) "actions.unmark_high_priority"
+                else "flag.flag_high_priority"
             val highPriorityTint = getTopIconActionColor(isHighPriority, isEditable)
             CrisisCleanupIconButton(
                 iconResId = R.drawable.ic_important_filled,
-                contentDescriptionResId = highPriorityResId,
+                contentDescription = translator(highPriorityTranslateKey),
                 onClick = toggleHighPriority,
                 enabled = isEditable,
                 tint = highPriorityTint,
@@ -237,12 +241,13 @@ private fun TopBar(
 
             val iconResId = if (isFavorite) R.drawable.ic_heart_filled
             else R.drawable.ic_heart_outline
-            val favoriteResId = if (isFavorite) R.string.not_favorite
-            else R.string.favorite
+            val favoriteDescription =
+                if (isFavorite) translator("actions.remove_favorite", R.string.remove_favorite)
+                else translator("actions.save_as_favorite", R.string.save_as_favorite)
             val favoriteTint = getTopIconActionColor(isFavorite, isEditable)
             CrisisCleanupIconButton(
                 iconResId = iconResId,
-                contentDescriptionResId = favoriteResId,
+                contentDescription = favoriteDescription,
                 onClick = toggleFavorite,
                 enabled = isEditable,
                 tint = favoriteTint,
@@ -261,7 +266,6 @@ private fun TopBar(
 private fun ColumnScope.ExistingCaseContent(
     tabTitles: List<String>,
     worksite: Worksite,
-    translate: (String) -> String = { s -> s },
     isLoading: Boolean = false,
     openPhoto: (ViewImageArgs) -> Unit = { _ -> },
 ) {
@@ -304,14 +308,13 @@ private fun ColumnScope.ExistingCaseContent(
             userScrollEnabled = enablePagerScroll,
         ) { pagerIndex ->
             when (pagerIndex) {
-                0 -> EditExistingCaseInfoView(worksite, translate = translate)
+                0 -> EditExistingCaseInfoView(worksite)
                 1 -> EditExistingCasePhotosView(
-                    translate = translate,
                     setEnablePagerScroll = setEnablePagerScroll,
                     onPhotoSelect = openPhoto,
                 )
 
-                2 -> EditExistingCaseNotesView(worksite, translate = translate)
+                2 -> EditExistingCaseNotesView(worksite)
             }
         }
         BusyIndicatorFloatingTopCenter(isLoading)
@@ -321,9 +324,9 @@ private fun ColumnScope.ExistingCaseContent(
 @Composable
 private fun BottomActions(
     worksite: Worksite,
-    translate: (String) -> String? = { null },
     onFullEdit: (ExistingWorksiteIdentifier) -> Unit = {},
 ) {
+    val translator = LocalAppTranslator.current.translator
     val isEditable = LocalCaseEditor.current.isEditable
     var contentColor = Color.Black
     if (!isEditable) {
@@ -335,10 +338,10 @@ private fun BottomActions(
         tonalElevation = 0.dp,
     ) {
         existingCaseActions.forEachIndexed { index, action ->
-            var label = action.text
+            var label = translator(action.translationKey)
             if (action.translationKey.isNotBlank()) {
-                translate(action.translationKey)?.let {
-                    label = it
+                if (label == action.translationKey && action.textResId != 0) {
+                    label = stringResource(action.textResId)
                 }
             }
             if (label.isBlank() && action.textResId != 0) {
@@ -422,7 +425,6 @@ private fun PropertyInfoRow(
 internal fun EditExistingCaseInfoView(
     worksite: Worksite,
     viewModel: ExistingCaseViewModel = hiltViewModel(),
-    translate: (String) -> String = { s -> s },
 ) {
     val mapMarkerIcon by viewModel.mapMarkerIcon.collectAsStateWithLifecycle()
     val workTypeProfile by viewModel.workTypeProfile.collectAsStateWithLifecycle()
@@ -451,9 +453,8 @@ internal fun EditExistingCaseInfoView(
             }
         }
 
-        propertyInfoItems(worksite, translate, mapMarkerIcon)
+        propertyInfoItems(worksite, mapMarkerIcon)
         workItems(
-            translate,
             workTypeProfile,
             claimAll = claimAll,
             requestAll = requestAll,
@@ -462,7 +463,7 @@ internal fun EditExistingCaseInfoView(
             requestWorkType = requestWorkType,
             releaseWorkType = releaseWorkType,
         )
-        volunteerReportItems(worksite, translate)
+        volunteerReportItems(worksite)
 
         item {
             Spacer(
@@ -476,7 +477,7 @@ internal fun EditExistingCaseInfoView(
 
 private fun LazyListScope.itemInfoSectionHeader(
     sectionIndex: Int,
-    title: String,
+    titleTranslateKey: String,
     trailingContent: (@Composable () -> Unit)? = null,
 ) = item(
     "section-header-$sectionIndex",
@@ -485,17 +486,16 @@ private fun LazyListScope.itemInfoSectionHeader(
     SectionHeader(
         Modifier.padding(top = if (sectionIndex > 0) edgeSpacing else 0.dp),
         sectionIndex,
-        title,
+        LocalAppTranslator.current.translator(titleTranslateKey),
         trailingContent,
     )
 }
 
 private fun LazyListScope.propertyInfoItems(
     worksite: Worksite,
-    translate: (String) -> String = { s -> s },
     mapMarkerIcon: BitmapDescriptor? = null,
 ) {
-    itemInfoSectionHeader(0, translate("caseForm.property_information"))
+    itemInfoSectionHeader(0, "caseForm.property_information")
 
     item(key = "section-content-property") {
         val rowItemModifier = Modifier.padding(horizontal = edgeSpacing)
@@ -557,7 +557,6 @@ private fun LazyListScope.propertyInfoItems(
 }
 
 private fun LazyListScope.workItems(
-    translate: (String) -> String = { s -> s },
     workTypeProfile: WorkTypeProfile? = null,
     claimAll: () -> Unit = {},
     releaseAll: () -> Unit = {},
@@ -567,19 +566,20 @@ private fun LazyListScope.workItems(
     releaseWorkType: (WorkType) -> Unit = {},
 ) {
     workTypeProfile?.let { profile ->
-        itemInfoSectionHeader(2, translate("caseForm.work")) {
+        itemInfoSectionHeader(2, "caseForm.work") {
             Column(
                 Modifier.padding(start = edgeSpacing),
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.spacedBy(edgeSpacingHalf),
             ) {
+                val translator = LocalAppTranslator.current.translator
                 if (profile.unclaimed.isNotEmpty()) {
-                    WorkTypePrimaryAction(translate("actions.claim_all_alt"), claimAll)
+                    WorkTypePrimaryAction(translator("actions.claim_all_alt"), claimAll)
                 }
                 if (profile.releasableCount > 0) {
-                    WorkTypeAction(translate("actions.release_all"), releaseAll)
+                    WorkTypeAction(translator("actions.release_all"), releaseAll)
                 } else if (profile.requestableCount > 0) {
-                    WorkTypeAction(translate("actions.request_all"), requestAll)
+                    WorkTypeAction(translator("actions.request_all"), requestAll)
                 }
             }
         }
@@ -591,7 +591,6 @@ private fun LazyListScope.workItems(
                 organizationWorkClaims(
                     otherOrgClaim,
                     rowItemModifier,
-                    translate,
                     updateWorkType,
                     requestWorkType,
                     releaseWorkType,
@@ -603,7 +602,6 @@ private fun LazyListScope.workItems(
             organizationWorkClaims(
                 profile.orgClaims,
                 rowItemModifier,
-                translate,
                 updateWorkType,
                 requestWorkType,
                 releaseWorkType,
@@ -611,13 +609,11 @@ private fun LazyListScope.workItems(
         }
 
         if (profile.unclaimed.isNotEmpty()) {
-            val unclaimedTitle = translate("caseView.unclaimed_work_types")
-            workTypeSectionTitle(unclaimedTitle, "unclaimed")
+            workTypeSectionTitle("caseView.unclaimed_work_types", "unclaimed")
             existingWorkTypeItems(
                 "unclaimed",
                 profile.unclaimed,
                 rowItemModifier,
-                translate,
                 updateWorkType,
                 requestWorkType,
                 releaseWorkType,
@@ -628,15 +624,13 @@ private fun LazyListScope.workItems(
 
 private fun LazyListScope.volunteerReportItems(
     worksite: Worksite,
-    translate: (String) -> String = { s -> s },
 ) {
-    // itemInfoSectionHeader(4, translate("caseView.report"))
+    // itemInfoSectionHeader(4, translator("caseView.report"))
 }
 
 @Composable
 internal fun EditExistingCasePhotosView(
     viewModel: ExistingCaseViewModel = hiltViewModel(),
-    translate: (String) -> String = { s -> s },
     setEnablePagerScroll: (Boolean) -> Unit = {},
     onPhotoSelect: (ViewImageArgs) -> Unit = { _ -> },
 ) {
@@ -645,9 +639,10 @@ internal fun EditExistingCasePhotosView(
 
     var showCameraMediaSelect by remember { mutableStateOf(false) }
 
+    val translator = LocalAppTranslator.current.translator
     val sectionTitleResIds = mapOf(
-        ImageCategory.Before to R.string.before_cleanup,
-        ImageCategory.After to R.string.after_cleanup,
+        ImageCategory.Before to translator("info.before_cleanup", R.string.before_cleanup),
+        ImageCategory.After to translator("info.after_cleanup", R.string.after_cleanup),
     )
     val photoTwoRowModifier = Modifier
         .height(256.dp)
@@ -660,11 +655,11 @@ internal fun EditExistingCasePhotosView(
     Column(
         modifier = Modifier.fillMaxHeight(),
     ) {
-        sectionTitleResIds.onEach { (imageCategory, titleResId) ->
+        sectionTitleResIds.onEach { (imageCategory, sectionTitle) ->
             photos[imageCategory]?.let { rowPhotos ->
                 val isOneRow = rowPhotos.size < 6
                 PhotosSection(
-                    stringResource(titleResId),
+                    sectionTitle,
                     if (isOneRow) photoOneRowModifier else photoTwoRowModifier,
                     if (isOneRow) photoOneRowGridCells else photoTwoRowGridCells,
                     photos = rowPhotos,
@@ -692,7 +687,6 @@ internal fun EditExistingCasePhotosView(
 
     val closeCameraMediaSelect = remember(viewModel) { { showCameraMediaSelect = false } }
     TakePhotoSelectImage(
-        translate = translate,
         showOptions = showCameraMediaSelect,
         closeOptions = closeCameraMediaSelect,
     )
@@ -702,7 +696,6 @@ internal fun EditExistingCasePhotosView(
 internal fun EditExistingCaseNotesView(
     worksite: Worksite,
     viewModel: ExistingCaseViewModel = hiltViewModel(),
-    translate: (String) -> String = { s -> s },
 ) {
     val isEditable = LocalCaseEditor.current.isEditable
 
@@ -745,7 +738,7 @@ internal fun EditExistingCaseNotesView(
         ) {
             Icon(
                 painter = painterResource(R.drawable.ic_note),
-                contentDescription = viewModel.translate("caseView.add_note_alt"),
+                contentDescription = LocalAppTranslator.current.translator("caseView.add_note_alt"),
             )
         }
 
@@ -761,7 +754,7 @@ internal fun EditExistingCaseNotesView(
         val saveNote = remember(viewModel) {
             { note: WorksiteNote -> viewModel.saveNote(note) }
         }
-        OnCreateNote(translate, saveNote, dismissNoteDialog)
+        OnCreateNote(saveNote, dismissNoteDialog)
     }
 }
 
@@ -769,7 +762,6 @@ data class IconTextAction(
     @DrawableRes val iconResId: Int = 0,
     val imageVector: ImageVector? = null,
     @StringRes val textResId: Int = 0,
-    val text: String = "",
     val translationKey: String = "",
 )
 
@@ -777,19 +769,21 @@ data class IconTextAction(
 private val existingCaseActions = listOf(
     IconTextAction(
         iconResId = R.drawable.ic_share_small,
-        textResId = R.string.share,
+        translationKey = "actions.share",
     ),
     IconTextAction(
         iconResId = R.drawable.ic_flag_small,
+        // TODO "actions.flag" is already taken and not "Flag"
+        translationKey = "events.object_flag",
         textResId = R.string.flag,
     ),
     IconTextAction(
         iconResId = R.drawable.ic_history_small,
-        textResId = R.string.history,
+        translationKey = "actions.history",
     ),
     IconTextAction(
         iconResId = R.drawable.ic_edit_underscore_small,
-        textResId = R.string.edit,
+        translationKey = "actions.edit",
     ),
 )
 

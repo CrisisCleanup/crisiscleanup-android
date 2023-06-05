@@ -1,6 +1,6 @@
 package com.crisiscleanup.feature.caseeditor
 
-import com.crisiscleanup.core.common.KeyTranslator
+import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -29,18 +29,15 @@ internal class EditableNotesFlagsDataEditor(
 
     override fun validateSaveWorksite(): Boolean {
         val updatedWorksite = notesFlagsInputData.updateCase()
-        if (updatedWorksite != null) {
-            worksiteProvider.editableWorksite.value = updatedWorksite
-            return true
-        }
-        return false
+        worksiteProvider.editableWorksite.value = updatedWorksite
+        return true
     }
 }
 
 @HiltViewModel
 class EditCaseNotesFlagsViewModel @Inject constructor(
     worksiteProvider: EditableWorksiteProvider,
-    translator: KeyTranslator,
+    translator: KeyResourceTranslator,
     @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
 ) : EditCaseBaseViewModel(worksiteProvider, translator, logger) {
     val editor: CaseNotesFlagsDataEditor = EditableNotesFlagsDataEditor(worksiteProvider)

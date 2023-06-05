@@ -34,7 +34,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.filterNotBlankTrim
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupFilterChip
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
@@ -142,9 +144,9 @@ internal fun FrequencyDailyWeeklyViews(
     rRuleIn: String,
     defaultRrule: String,
     enabled: Boolean,
-    translate: (String) -> String,
     updateFrequency: (String) -> Unit = {},
 ) {
+    val translator = LocalAppTranslator.current.translator
     val rRuleString = rRuleIn.ifEmpty { defaultRrule }
     // TODO Test invalid string. Possibly parse manually if invalid?
     val rRule = RRule(rRuleString)
@@ -180,7 +182,7 @@ internal fun FrequencyDailyWeeklyViews(
                 }
                 updateRrule()
             },
-            translate("dashboard.daily"),
+            translator("dashboard.daily"),
             enabled,
         )
         FrequencyOption(
@@ -192,7 +194,7 @@ internal fun FrequencyDailyWeeklyViews(
                 }
                 updateRrule()
             },
-            translate("dashboard.weekly"),
+            translator("dashboard.weekly"),
             enabled,
         )
     }
@@ -209,14 +211,14 @@ internal fun FrequencyDailyWeeklyViews(
                     updateRrule()
                 },
             ) {
-                Text(translate("recurringSchedule.every"))
+                Text(translator("recurringSchedule.every"))
                 FrequencyIntervalButton(
                     enabled && isEveryDay,
                     "${rRule.interval}",
                 ) {
                     intervalAmount = rRule.interval.coerceAtLeast(1)
                 }
-                Text(translate("recurringSchedule.day_s"))
+                Text(translator("recurringSchedule.day_s"))
             }
             FrequencyDailyOption(
                 modifier,
@@ -226,7 +228,7 @@ internal fun FrequencyDailyWeeklyViews(
                     setRruleWeekdays(rRuleWeekDaysNums)
                     updateRrule()
                 },
-                translate("recurringSchedule.every_weekday"),
+                translator("recurringSchedule.every_weekday"),
             )
         }
     } else {
@@ -235,14 +237,14 @@ internal fun FrequencyDailyWeeklyViews(
             modifier = nestedModifier,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(translate("recurringSchedule.recur_every"))
+            Text(translator("recurringSchedule.recur_every"))
             FrequencyIntervalButton(
                 enabled,
                 "${rRule.interval}",
             ) {
                 intervalAmount = rRule.interval.coerceAtLeast(1)
             }
-            Text(translate("recurringSchedule.weeks_on"))
+            Text(translator("recurringSchedule.weeks_on"))
         }
         FlowRow(
             modifier = nestedModifier,
@@ -275,7 +277,7 @@ internal fun FrequencyDailyWeeklyViews(
                             updateRrule()
                         }
                     },
-                    label = { Text(translate(translationKey)) },
+                    label = { Text(translator(translationKey)) },
                     enabled = enabled,
                 )
             }
@@ -292,12 +294,12 @@ internal fun FrequencyDailyWeeklyViews(
                 }
                 hideIntervalDialog()
             },
-            positiveActionText = translate("actions.save"),
-            negativeActionText = translate("actions.cancel"),
+            positiveActionText = translator("actions.save"),
+            negativeActionText = translator("actions.cancel"),
         )
     }
 
-    FrequencyDatePicker(enabled, translate, modifier, rRule, updateRrule)
+    FrequencyDatePicker(enabled, translator, modifier, rRule, updateRrule)
 }
 
 @Composable
@@ -411,7 +413,7 @@ private fun FrequencyIntervalDialog(
 @Composable
 private fun FrequencyDatePicker(
     enabled: Boolean,
-    translate: (String) -> String,
+    translator: KeyResourceTranslator,
     modifier: Modifier,
     rRule: RRule,
     updateRrule: () -> Unit = {},
@@ -430,7 +432,7 @@ private fun FrequencyDatePicker(
         horizontalArrangement = listItemSpacedBy,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        val selectedDateText = translate("recurringSchedule.select_end_date")
+        val selectedDateText = translator("recurringSchedule.select_end_date")
         Icon(
             imageVector = CrisisCleanupIcons.Calendar,
             contentDescription = selectedDateText,

@@ -21,6 +21,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.common.combineTrimText
 import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.commoncase.ui.listCaseResults
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemOptionPadding
@@ -52,7 +53,11 @@ internal fun ColumnScope.SearchContents(
         val locationSearchResults by editor.searchResults.collectAsStateWithLifecycle()
         if (locationSearchResults.isEmpty) {
             if (!isBusySearching && locationSearchResults.query == query) {
-                val text = stringResource(R.string.no_location_results, locationSearchResults.query)
+                val translator = LocalAppTranslator.current.translator
+                var text = translator("info.cases_search_no_results")
+                if (text == "info.cases_search_no_results") {
+                    text = stringResource(R.string.no_location_results, locationSearchResults.query)
+                }
                 Text(
                     text,
                     modifier = Modifier.textMessagePadding(),
@@ -119,11 +124,12 @@ private fun ListSearchResults(
     closeKeyboard: () -> Unit = {},
     isEditable: Boolean = false,
 ) {
+    val translator = LocalAppTranslator.current.translator
     LazyColumn(modifier.scrollFlingListener(closeKeyboard)) {
         if (results.worksites.isNotEmpty()) {
             listItemTitle(
                 itemKey = "title-worksites",
-                textResId = R.string.existing_worksites,
+                text = translator("worksiteSearchInput.existing_cases"),
             )
 
             listCaseResults(
@@ -136,7 +142,7 @@ private fun ListSearchResults(
         if (results.addresses.isNotEmpty()) {
             listItemTitle(
                 itemKey = "title-addresses",
-                textResId = R.string.geocoded_addresses,
+                text = translator("info.addresses", R.string.geocoded_addresses),
             )
 
             items(

@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
@@ -60,7 +61,7 @@ internal fun EditCaseMapMoveLocationRoute(
 
         EditCaseMapMoveLocationScreen(viewModel, editor, onBack, isEditable)
 
-        LocationOutOfBoundsDialog(viewModel, editor)
+        LocationOutOfBoundsDialog(editor)
     }
 }
 
@@ -72,9 +73,10 @@ private fun EditCaseMapMoveLocationScreen(
     onBack: () -> Unit = {},
     isEditable: Boolean = false,
 ) {
+    val translator = LocalAppTranslator.current.translator
     Column {
         TopAppBarBackAction(
-            title = viewModel.translate("caseForm.select_on_map"),
+            title = translator("caseForm.select_on_map"),
             onAction = onBack,
         )
 
@@ -92,7 +94,7 @@ private fun EditCaseMapMoveLocationScreen(
                     .listItemHeight()
                     .fillMaxWidth(),
                 iconResId = R.drawable.ic_use_my_location,
-                label = viewModel.translate("caseForm.use_my_location"),
+                label = translator("caseForm.use_my_location"),
                 onClick = useMyLocation,
                 enabled = isEditable,
             )
@@ -189,6 +191,7 @@ private fun SaveActionBar(
     onBack: () -> Unit = {},
     isEditable: Boolean = false,
 ) {
+    val translator = LocalAppTranslator.current.translator
     val onSave = remember(viewModel) {
         {
             if (editor.onSaveMoveLocationCoordinates()) {
@@ -204,14 +207,14 @@ private fun SaveActionBar(
     ) {
         BusyButton(
             Modifier.weight(1f),
-            text = viewModel.translate("actions.cancel"),
+            text = translator("actions.cancel"),
             enabled = isEditable,
             onClick = onBack,
             colors = cancelButtonColors(),
         )
         BusyButton(
             Modifier.weight(1f),
-            text = viewModel.translate("actions.save"),
+            text = translator("actions.save"),
             enabled = isEditable,
             onClick = onSave,
         )

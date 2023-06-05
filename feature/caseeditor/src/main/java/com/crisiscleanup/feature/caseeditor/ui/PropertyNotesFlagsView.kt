@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
@@ -36,18 +37,18 @@ internal fun PropertyNotesFlagsView(
     viewModel: EditCaseBaseViewModel,
     editor: CaseNotesFlagsDataEditor,
     collapsedNotesVisibleCount: Int = 3,
-    translate: (String) -> String = { s -> s },
 ) {
+    val translator = LocalAppTranslator.current.translator
     val isEditable = LocalCaseEditor.current.isEditable
 
     var isCreatingNote by remember { mutableStateOf(false) }
 
     val inputData = editor.notesFlagsInputData
 
-    HighPriorityFlagInput(inputData, isEditable, translate)
+    HighPriorityFlagInput(inputData, isEditable)
 
     if (inputData.isNewWorksite) {
-        MemberOfMyOrgFlagInput(inputData, isEditable, translate)
+        MemberOfMyOrgFlagInput(inputData, isEditable)
     }
 
     val notes by inputData.notesStream.collectAsStateWithLifecycle(emptyList())
@@ -64,13 +65,13 @@ internal fun PropertyNotesFlagsView(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = translate("formLabels.notes"),
+            text = translator("formLabels.notes"),
             Modifier.weight(1f),
         )
         if (isExpandable) {
             CrisisCleanupTextButton(
                 onClick = showAllNotes,
-                text = translate("actions.all_notes"),
+                text = translator("actions.all_notes"),
             )
         }
     }
@@ -89,7 +90,7 @@ internal fun PropertyNotesFlagsView(
             .listItemHeight()
             .fillMaxWidth(),
         iconResId = R.drawable.ic_note,
-        label = translate("caseView.add_note"),
+        label = translator("caseView.add_note"),
         onClick = onAddNote,
         enabled = isEditable,
     )
@@ -99,14 +100,14 @@ internal fun PropertyNotesFlagsView(
         val saveNote = remember(viewModel) {
             { note: WorksiteNote -> editor.notesFlagsInputData.notes.add(0, note) }
         }
-        OnCreateNote(translate, saveNote, dismissNoteDialog)
+        OnCreateNote(saveNote, dismissNoteDialog)
     }
 
     if (showAllNotesDialog) {
         val dismissDialog = { showAllNotesDialog = false }
         AllNotes(
             notes,
-            translate("actions.close"),
+            translator("actions.close"),
             dismissDialog,
         )
     }

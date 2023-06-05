@@ -147,9 +147,17 @@ class TransferWorkTypeViewModel @Inject constructor(
     fun commitTransfer(): Boolean {
         errorMessageReason.value = ""
         if (transferReason.isBlank()) {
-            val reasonResId = if (transferType == Release) R.string.release_reason_is_required
-            else R.string.request_reason_is_required
-            errorMessageReason.value = resourceProvider.getString(reasonResId)
+            val isRelease = transferType == Release
+            val reasonTranslateKey =
+                if (isRelease) "info.release_reason_is_required"
+                else "info.request_reason_is_required"
+            var reason = translate(reasonTranslateKey)
+            if (reason == reasonTranslateKey) {
+                val reasonResId = if (isRelease) R.string.release_reason_is_required
+                else R.string.request_reason_is_required
+                reason = resourceProvider.getString(reasonResId)
+            }
+            errorMessageReason.value = reason
         }
 
         errorMessageWorkType.value = ""

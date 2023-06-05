@@ -1,95 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="create_case">Create Case</string>
-    <string name="case_case_number">Case %1$s</string>
-    <string name="view_case_number">View %1$s</string>
+    <string name="view_case_number">~~View %1$s</string>
+
     <string name="organization_issue_try_re_authenticating">There seems to be an issue with your organization. Try logging out and logging in again.</string>
     <string name="incident_is_in_progress">%s is in the process of starting up. It\'ll be active shortly.</string>
     <string name="incident_issue_try_again">There seems to be an issue with the current incident. Please try again. Connect to the internet if possible.</string>
 
-    <string name="edit_case">Edit Case</string>
+    <string name="edit_section">~~Edit %s</string>
 
-    <string name="edit_section">Edit %s</string>
+    <string name="stop_suggesting_existing_cases">~~Stop searching existing cases</string>
+    <string name="invalid_email">~~Enter a valid email address</string>
 
-    <string name="stop_suggesting_existing_cases">Stop searching existing cases</string>
-    <string name="name_is_required">Enter a name for the resident</string>
-    <string name="phone_is_required">Enter a phone number</string>
-    <string name="invalid_email">Enter a valid email address</string>
-    <string name="invalid_auto_frequency">Select an auto contact frequency</string>
-
-    <string name="location_address_search">Location/address search</string>
-    <string name="center_on_location">Center on location</string>
+    <string name="location_address_search">~~Location/address search</string>
     <string name="location_out_of_incident_bounds">This location is outside of %s</string>
 
-    <string name="allow_location_permission">Allow location</string>
-    <string name="location_permission_explanation">My Location needs access to the device\'s location. Grant access in the App info/settings > Permissions.</string>
-    <string name="app_settings">App settings</string>
+    <string name="allow_location_permission">~~Allow location</string>
+    <string name="location_permission_explanation">~~My Location needs access to the device\'s location. Grant access in the App info/settings > Permissions.</string>
+    <string name="app_settings">~~App settings</string>
 
-    <string name="existing_worksites">Existing worksite</string>
-    <string name="geocoded_addresses">Addresses</string>
-    <string name="location_query_hint">Search for an existing worksite or an address in general.\nSelecting the worksite opens it for editing.</string>
-    <string name="no_location_results">No worksites or addresses match \'%s\'</string>
+    <string name="geocoded_addresses">~~Addresses</string>
+    <string name="location_query_hint">~~Search for an existing worksite or an address in general.\nSelecting the worksite opens it for editing.</string>
+    <string name="no_location_results">~~No cases or addresses match \'%s\'</string>
 
-    <string name="wrong_location">Manual address override</string>
-    <string name="address_is_required">Street address is required</string>
-    <string name="zipcode_is_required">Zip code is required</string>
-    <string name="city_is_required">City is required</string>
-    <string name="county_is_required">County or parish is required</string>
-    <string name="state_is_required">State is required</string>
+    <string name="select_option_for_field">~~Select option for %s</string>
 
-    <string name="high_priority">"High priority"</string>
-    <string name="not_high_priority">Not high priority</string>
-    <string name="notes_flags">Notes &amp; flags</string>
-    <string name="note">Note</string>
+    <string name="changes">~~Changes</string>
+    <string name="changes_choice">~~Changes have been made.\nWould you like to continue making changes?\nPressing No loses all changes.</string>
 
-    <string name="select_option_for_field">Select option for %s</string>
+    <string name="incomplete_information">~~Incomplete information</string>
+    <string name="incomplete_required_data">~~All required fields are not defined.</string>
+    <string name="fix">~~Fix</string>
 
-    <string name="changes">Changes</string>
-    <string name="changes_choice">Changes have been made to this case.\nWould you like to continue making changes?\nPressing No loses these changes.</string>
-    <string name="yes">Yes</string>
-    <string name="no">No</string>
-
-    <string name="incomplete_worksite">Incomplete information</string>
-    <string name="incomplete_property_info">A name and phone is required.</string>
-    <string name="incomplete_location_info">A location with address is required.</string>
-    <string name="incomplete_work_type_info">At least one work type must be specified.</string>
-    <string name="incomplete_required_data">All required fields are not defined.</string>
-    <string name="fix">Fix</string>
-
-    <string name="expand_section">Expand %s</string>
-    <string name="collapse_section">Collapse %s</string>
+    <string name="expand_section">~~Expand %s</string>
+    <string name="collapse_section">~~Collapse %s</string>
 
     <string name="change_status">Change status</string>
 
     <string name="is_pending_sync">Pending sync</string>
     <string name="is_syncing">Syncing</string>
 
-    <string name="favorite">Favorite</string>
-    <string name="not_favorite">Not favorite</string>
+    <string name="save_as_favorite">~~Save as favorite</string>
+    <string name="remove_favorite">~~Remove favorite</string>
 
     <string name="no_worksite_selected">A worksite was not selected. Therefore this should not have appeared.</string>
 
-    <string name="share">Share</string>
-    <string name="flag">Flag</string>
-    <string name="history">History</string>
-    <string name="edit">Edit</string>
+    <string name="flag">~~Flag</string>
+    <string name="info">~~Info</string>
 
-    <string name="info">Info</string>
-    <string name="photos">Photos</string>
-    <string name="notes">Notes</string>
-    <string name="release">Release</string>
+    <string name="release_reason_is_required">~~What is the reason for release?</string>
+    <string name="request_reason_is_required">~~What is the reason for request?</string>
+    <string name="transfer_work_type_is_required">~~Select at least one work type.</string>
 
-    <string name="release_reason_is_required">What is the reason for release?</string>
-    <string name="request_reason_is_required">What is the reason for request?</string>
-    <string name="transfer_work_type_is_required">Select at least one work type.</string>
-
-    <string name="before_cleanup">Before cleanup</string>
-    <string name="after_cleanup">After cleanup</string>
-    <string name="add_media">Add Media</string>
-    <string name="take_photo">Take photo</string>
-    <string name="select_image">Select image</string>
-    <string name="allow_camera_permission">Allow access to camera</string>
-    <string name="camera_permission_explanation">Grant access to camera in the App info/settings > Permissions.</string>
+    <string name="before_cleanup">~~Before cleanup</string>
+    <string name="after_cleanup">~~After cleanup</string>
+    <string name="add_media">~~Add Media</string>
+    <string name="take_photo">~~Take photo</string>
+    <string name="allow_camera_permission">~~Allow access to camera</string>
+    <string name="camera_permission_explanation">~~Grant access to camera in the App info/settings > Permissions.</string>
 
     <string name="remove_until_recurring_date">Remove until</string>
     <string name="specify_interval">Specify an interval</string>

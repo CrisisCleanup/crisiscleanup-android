@@ -3,32 +3,27 @@ package com.crisiscleanup.feature.caseeditor.ui
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
-import androidx.annotation.StringRes
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.feature.caseeditor.R
 
 @Composable
 fun OpenSettingsDialog(
-    @StringRes titleResId: Int,
-    @StringRes textResId: Int,
+    title: String,
+    text: String,
     dismissText: String = "",
-    @StringRes confirmResId: Int = R.string.app_settings,
+    confirmText: String = "",
     closeDialog: () -> Unit = {},
 ) {
     val context = LocalContext.current
     AlertDialog(
-        title = {
-            Text(text = stringResource(titleResId))
-        },
-        text = {
-            Text(text = stringResource(textResId))
-        },
+        title = { Text(title) },
+        text = { Text(text) },
         onDismissRequest = closeDialog,
         dismissButton = {
             CrisisCleanupTextButton(
@@ -38,7 +33,7 @@ fun OpenSettingsDialog(
         },
         confirmButton = {
             CrisisCleanupTextButton(
-                textResId = confirmResId,
+                text = confirmText,
                 onClick = {
                     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                         data = Uri.fromParts("package", context.packageName, null)
@@ -58,9 +53,14 @@ fun ExplainLocationPermissionDialog(
     closeText: String = "",
 ) {
     if (showDialog) {
+        val translator = LocalAppTranslator.current.translator
         OpenSettingsDialog(
-            R.string.allow_location_permission,
-            R.string.location_permission_explanation,
+            translator("info.allow_access_to_location", R.string.allow_location_permission),
+            translator(
+                "info.explain_access_to_location_android",
+                R.string.location_permission_explanation
+            ),
+            confirmText = translator("info.app_settings", R.string.app_settings),
             dismissText = closeText,
             closeDialog = closeDialog,
         )

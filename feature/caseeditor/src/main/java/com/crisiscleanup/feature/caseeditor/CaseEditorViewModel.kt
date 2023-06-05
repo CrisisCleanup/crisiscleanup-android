@@ -1,6 +1,5 @@
 package com.crisiscleanup.feature.caseeditor
 
-import androidx.annotation.StringRes
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -8,7 +7,7 @@ import com.crisiscleanup.core.addresssearch.AddressSearchRepository
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.InputValidator
-import com.crisiscleanup.core.common.KeyTranslator
+import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.log.AppLogger
@@ -81,7 +80,7 @@ class CaseEditorViewModel @Inject constructor(
     workTypeStatusRepository: WorkTypeStatusRepository,
     editableWorksiteProvider: EditableWorksiteProvider,
     private val incidentSelector: IncidentSelector,
-    translator: KeyTranslator,
+    private val translator: KeyResourceTranslator,
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val syncPusher: SyncPusher,
     private val resourceProvider: AndroidResourceProvider,
@@ -257,6 +256,7 @@ class CaseEditorViewModel @Inject constructor(
                     resourceProvider,
                     drawableResourceBitmapProvider,
                     existingWorksiteSelector,
+                    translator,
                     logger,
                     coroutineDispatcher,
                     ioDispatcher,
@@ -356,21 +356,36 @@ class CaseEditorViewModel @Inject constructor(
 
     private fun updateHeaderTitle(caseNumber: String = "") {
         headerTitle.value = if (caseNumber.isEmpty()) {
-            if (isCreateWorksite) resourceProvider.getString(R.string.create_case)
+            if (isCreateWorksite) translate("casesVue.new_case")
             else translate("nav.work_view_case")
         } else {
             resourceProvider.getString(R.string.view_case_number, caseNumber)
         }
     }
 
+    private fun List<String>.translateJoin() = joinToString("\n") { s -> translator(s) }
+
     private val incompletePropertyInfo = InvalidWorksiteInfo(
         WorksiteSection.Property,
-        R.string.incomplete_property_info,
+        // TODO Include messages only where applicable
+        message = listOf(
+            "caseForm.name_required",
+            "caseForm.phone_required"
+        ).translateJoin()
     )
 
     private val incompleteLocationInfo = InvalidWorksiteInfo(
         WorksiteSection.Location,
-        R.string.incomplete_location_info,
+        // TODO Include messages only where applicable
+        message = listOf(
+            // TODO Missing lat/lng shows the following error
+            // caseForm.no_lat_lon_error
+            "caseForm.address_required",
+            "caseForm.county_required",
+            "caseForm.city_required",
+            "caseForm.postal_code_required",
+            "caseForm.state_required",
+        ).translateJoin()
     )
 
     private fun incompleteFormDataInfo(writerIndex: Int) = InvalidWorksiteInfo(
@@ -381,7 +396,7 @@ class CaseEditorViewModel @Inject constructor(
             6 -> WorksiteSection.VolunteerReport
             else -> WorksiteSection.None
         },
-        R.string.incomplete_required_data,
+        message = translator("info.missing_required_fields", R.string.incomplete_required_data),
     )
 
     private fun validate(worksite: Worksite): InvalidWorksiteInfo = with(worksite) {
@@ -672,7 +687,6 @@ data class GroupSummaryFieldLookup(
 
 data class InvalidWorksiteInfo(
     val invalidSection: WorksiteSection = WorksiteSection.None,
-    @StringRes val messageResId: Int = 0,
     val message: String = "",
 )
 

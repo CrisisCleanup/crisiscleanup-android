@@ -64,6 +64,4 @@ data class IncidentFormField(
     private val htmlTypeLower = htmlType.lowercase()
     val isDivEnd = htmlTypeLower == "divend"
     val isHidden = htmlTypeLower == "hidden"
-
-    fun getFieldLabel(translate: (String) -> String) = label.ifBlank { translate(fieldKey) }
 }

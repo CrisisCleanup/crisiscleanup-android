@@ -25,6 +25,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
@@ -90,7 +91,6 @@ internal fun TransferWorkTypesRoute(
                 )
             }
             BottomActionBar(
-                viewModel,
                 onBack,
                 isEditable,
                 onTransfer,
@@ -107,20 +107,20 @@ internal fun TransferWorkTypesView(
     isEditable: Boolean = false,
     onTransfer: () -> Unit = {},
 ) {
-    val translate = remember(viewModel) { { s: String -> viewModel.translate(s) } }
+    val translator = LocalAppTranslator.current.translator
     val textStyle = MaterialTheme.typography.bodyMedium
 
     when (viewModel.transferType) {
         WorkTypeTransferType.Release -> {
             Text(
-                translate("caseView.please_justify_release"),
+                translator("caseView.please_justify_release"),
                 Modifier.listItemPadding(),
                 style = textStyle,
             )
 
             ReasonSection(viewModel, isEditable, onTransfer)
 
-            WorkTypeSection(viewModel, translate, isEditable)
+            WorkTypeSection(viewModel, isEditable)
         }
 
         WorkTypeTransferType.Request -> {
@@ -133,7 +133,7 @@ internal fun TransferWorkTypesView(
             )
 
             LinkifyHtmlText(
-                translate("workTypeRequestModal.please_add_respectful_note"),
+                translator("workTypeRequestModal.please_add_respectful_note"),
                 textModifier,
                 style = textStyle,
             )
@@ -145,7 +145,7 @@ internal fun TransferWorkTypesView(
             )
             requestExamples.forEachIndexed { index, s ->
                 Text(
-                    "\u2022 ${translate(s)}",
+                    "\u2022 ${translator(s)}",
                     if (index > 0) textModifier.listItemTopPadding() else textModifier,
                     style = textStyle,
                 )
@@ -154,7 +154,7 @@ internal fun TransferWorkTypesView(
             val contacts by viewModel.contactList.collectAsStateWithLifecycle()
             if (contacts.isNotEmpty()) {
                 Text(
-                    translate("workTypeRequestModal.contacts"),
+                    translator("workTypeRequestModal.contacts"),
                     // TODO Common dimensions
                     textModifier.padding(top = 16.dp),
                     style = MaterialTheme.typography.titleMedium,
@@ -168,7 +168,7 @@ internal fun TransferWorkTypesView(
                 }
             }
 
-            WorkTypeSection(viewModel, translate, isEditable)
+            WorkTypeSection(viewModel, isEditable)
 
             ReasonSection(viewModel, isEditable, onTransfer)
         }
@@ -224,9 +224,9 @@ private fun ReasonSection(
 @Composable
 private fun WorkTypeSection(
     viewModel: TransferWorkTypeViewModel,
-    translate: (String) -> String = { s -> s },
     isEditable: Boolean = false,
 ) {
+    val translator = LocalAppTranslator.current.translator
     val errorMessageWorkType by viewModel.errorMessageWorkType.collectAsStateWithLifecycle()
     ErrorText(errorMessageWorkType)
 
@@ -243,7 +243,7 @@ private fun WorkTypeSection(
         CrisisCleanupTextCheckbox(
             checkboxItemModifier,
             isChecked,
-            text = translate(workType.workTypeLiteral),
+            text = translator(workType.workTypeLiteral),
             onToggle = { updateRequests(!isChecked) },
             onCheckChange = updateRequests,
             enabled = isEditable && workTypeState.size > 1,
@@ -253,11 +253,11 @@ private fun WorkTypeSection(
 
 @Composable
 private fun BottomActionBar(
-    viewModel: TransferWorkTypeViewModel,
     onBack: () -> Unit = {},
     isEditable: Boolean = false,
     onTransfer: () -> Unit = {},
 ) {
+    val translator = LocalAppTranslator.current.translator
     Row(
         modifier = Modifier
             .padding(16.dp),
@@ -265,14 +265,14 @@ private fun BottomActionBar(
     ) {
         BusyButton(
             Modifier.weight(1f),
-            text = viewModel.translate("actions.cancel"),
+            text = translator("actions.cancel"),
             enabled = isEditable,
             onClick = onBack,
             colors = cancelButtonColors(),
         )
         BusyButton(
             Modifier.weight(1f),
-            text = viewModel.translate("actions.ok"),
+            text = translator("actions.ok"),
             enabled = isEditable,
             onClick = onTransfer,
         )
