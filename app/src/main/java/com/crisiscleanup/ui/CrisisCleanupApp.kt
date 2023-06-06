@@ -254,13 +254,15 @@ private fun NavigableContent(
                 enter = slideIn { IntOffset.Zero },
                 exit = slideOut { IntOffset.Zero },
             ) {
-                val navTitle = appState.currentTopLevelDestination?.let { destination ->
-                    LocalAppTranslator.current.translator(
-                        destination.titleTranslateKey,
-                        destination.titleResId,
-                    )
+
+                val title = headerTitle.ifBlank {
+                    appState.currentTopLevelDestination?.let { destination ->
+                        LocalAppTranslator.current.translator(
+                            destination.titleTranslateKey,
+                            destination.titleResId,
+                        )
+                    } ?: ""
                 }
-                val title = navTitle ?: headerTitle
                 val onOpenIncidents = if (appState.isMenuRoute) openIncidentsSelect else null
                 AppHeader(
                     modifier = Modifier.testTag("CrisisCleanupAppHeader"),
