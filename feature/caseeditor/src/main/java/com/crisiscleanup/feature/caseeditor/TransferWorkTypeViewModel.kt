@@ -7,7 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AndroidResourceProvider
-import com.crisiscleanup.core.common.KeyTranslator
+import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
@@ -41,13 +41,13 @@ class TransferWorkTypeViewModel @Inject constructor(
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val editableWorksiteProvider: EditableWorksiteProvider,
     private val transferWorkTypeProvider: TransferWorkTypeProvider,
-    private val translator: KeyTranslator,
+    private val translator: KeyResourceTranslator,
     private val resourceProvider: AndroidResourceProvider,
     private val syncPusher: SyncPusher,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     @ApplicationScope private val externalScope: CoroutineScope,
-) : ViewModel() {
+) : ViewModel(), KeyResourceTranslator {
     val transferType = transferWorkTypeProvider.transferType
 
     val isTransferable = transferType != None && transferWorkTypeProvider.workTypes.isNotEmpty()
@@ -141,9 +141,6 @@ class TransferWorkTypeViewModel @Inject constructor(
         }
     }
 
-    fun translate(key: String, fallback: String? = null) = translator.translate(key)
-        ?: (editableWorksiteProvider.translate(key) ?: (fallback ?: key))
-
     fun commitTransfer(): Boolean {
         errorMessageReason.value = ""
         if (transferReason.isBlank()) {
@@ -211,6 +208,18 @@ class TransferWorkTypeViewModel @Inject constructor(
             }
         }
     }
+
+    // KeyResourceTranslator
+
+    override val translationCount = translator.translationCount
+
+    override fun translate(phraseKey: String) = translate(phraseKey, 0)
+
+    override fun translate(phraseKey: String, fallbackResId: Int) =
+        editableWorksiteProvider.translate(phraseKey) ?: translator.translate(
+            phraseKey,
+            fallbackResId
+        )
 }
 
 data class RequestWorkTypeState(

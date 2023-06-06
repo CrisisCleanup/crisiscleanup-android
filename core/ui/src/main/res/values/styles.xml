@@ -4,5 +4,6 @@
     <style name="link_text_style">
         <item name="android:textSize">16sp</item>
         <item name="android:textColorLink">@color/primary_blue</item>
+        <item name="android:lineSpacingMultiplier">1.2</item>
     </style>
 </resources>

@@ -14,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -25,6 +26,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.designsystem.AppTranslator
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
@@ -33,6 +35,7 @@ import com.crisiscleanup.core.designsystem.component.cancelButtonColors
 import com.crisiscleanup.core.designsystem.theme.listCheckboxAlignStartOffset
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
+import com.crisiscleanup.core.designsystem.theme.listItemNestedPadding
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemTopPadding
@@ -85,10 +88,17 @@ internal fun TransferWorkTypesRoute(
                     .verticalScroll(scrollState)
                     .weight(1f)
             ) {
-                TransferWorkTypesView(
-                    isEditable = isEditable,
-                    onTransfer = onTransfer,
-                )
+                val appTranslator = remember(viewModel) {
+                    AppTranslator(translator = viewModel)
+                }
+                CompositionLocalProvider(
+                    LocalAppTranslator provides appTranslator,
+                ) {
+                    TransferWorkTypesView(
+                        isEditable = isEditable,
+                        onTransfer = onTransfer,
+                    )
+                }
             }
             BottomActionBar(
                 onBack,
@@ -108,7 +118,7 @@ internal fun TransferWorkTypesView(
     onTransfer: () -> Unit = {},
 ) {
     val translator = LocalAppTranslator.current.translator
-    val textStyle = MaterialTheme.typography.bodyMedium
+    val textStyle = MaterialTheme.typography.bodyLarge
 
     when (viewModel.transferType) {
         WorkTypeTransferType.Release -> {
@@ -131,30 +141,12 @@ internal fun TransferWorkTypesView(
                 textModifier.listItemTopPadding(),
             )
 
-            LinkifyHtmlText(
-                translator("workTypeRequestModal.please_add_respectful_note"),
-                textModifier,
-            )
-
-            val requestExamples = listOf(
-                "workTypeRequestModal.reason_member_of_faith_community",
-                "workTypeRequestModal.reason_working_next_door",
-                "workTypeRequestModal.reason_we_did_the_work",
-            )
-            requestExamples.forEachIndexed { index, s ->
-                Text(
-                    "\u2022 ${translator(s)}",
-                    if (index > 0) textModifier.listItemTopPadding() else textModifier,
-                    style = textStyle,
-                )
-            }
-
             val contacts by viewModel.contactList.collectAsStateWithLifecycle()
             if (contacts.isNotEmpty()) {
                 Text(
                     translator("workTypeRequestModal.contacts"),
                     // TODO Common dimensions
-                    textModifier.padding(top = 16.dp),
+                    textModifier,
                     style = MaterialTheme.typography.titleMedium,
                 )
                 for (s in contacts) {
@@ -167,6 +159,26 @@ internal fun TransferWorkTypesView(
 
             WorkTypeSection(viewModel, isEditable)
 
+            LinkifyHtmlText(
+                translator("workTypeRequestModal.please_add_respectful_note"),
+                textModifier,
+            )
+
+            val requestExamples = listOf(
+                "workTypeRequestModal.reason_member_of_faith_community",
+                "workTypeRequestModal.reason_working_next_door",
+                "workTypeRequestModal.reason_we_did_the_work",
+            ).map { translator(it) }
+            requestExamples.forEachIndexed { index, s ->
+                val listItemModifier =
+                    if (index > 0) textModifier.listItemTopPadding() else textModifier
+                Text(
+                    "\u2022 $s}",
+                    listItemModifier.listItemNestedPadding(),
+                    style = textStyle,
+                )
+            }
+
             ReasonSection(viewModel, isEditable, onTransfer)
         }
 
@@ -174,7 +186,6 @@ internal fun TransferWorkTypesView(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ReasonSection(
     viewModel: TransferWorkTypeViewModel,
