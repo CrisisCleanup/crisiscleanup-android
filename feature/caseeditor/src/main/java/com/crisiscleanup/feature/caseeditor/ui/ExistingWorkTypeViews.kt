@@ -39,16 +39,34 @@ internal val cardContainerColor = Color.White
 
 @Composable
 internal fun CardSurface(
+    containerColor: Color = cardContainerColor,
+    cornerRound: Dp = 4.dp,
+    elevation: Dp = 2.dp,
+    content: @Composable () -> Unit,
+) {
+    CardSurface(
+        Modifier
+            .listItemHorizontalPadding()
+            .fillMaxWidth(),
+        containerColor,
+        cornerRound,
+        elevation,
+        content,
+    )
+}
+
+@Composable
+internal fun CardSurface(
+    modifier: Modifier = Modifier,
+    containerColor: Color = cardContainerColor,
     cornerRound: Dp = 4.dp,
     elevation: Dp = 2.dp,
     content: @Composable () -> Unit,
 ) {
     Surface(
-        modifier = Modifier
-            .listItemHorizontalPadding()
-            .fillMaxWidth(),
+        modifier = modifier,
         shape = RoundedCornerShape(cornerRound),
-        color = cardContainerColor,
+        color = containerColor,
         tonalElevation = 0.dp,
         shadowElevation = elevation,
     ) {

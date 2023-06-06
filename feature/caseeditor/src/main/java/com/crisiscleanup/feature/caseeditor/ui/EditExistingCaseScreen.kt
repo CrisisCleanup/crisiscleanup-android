@@ -3,6 +3,7 @@ package com.crisiscleanup.feature.caseeditor.ui
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -124,58 +125,76 @@ internal fun EditExistingCaseRoute(
 
     val toggleFavorite = remember(viewModel) { { viewModel.toggleFavorite() } }
     val toggleHighPriority = remember(viewModel) { { viewModel.toggleHighPriority() } }
-    Column {
-        val title by viewModel.headerTitle.collectAsStateWithLifecycle()
-        val subTitle by viewModel.subTitle.collectAsStateWithLifecycle()
-        val worksite by viewModel.editableWorksite.collectAsStateWithLifecycle()
-        val isEmptyWorksite = worksite == EmptyWorksite
-        TopBar(
-            title,
-            subTitle,
-            isFavorite = worksite.isLocalFavorite,
-            isHighPriority = worksite.hasHighPriorityFlag,
-            onBack,
-            isEmptyWorksite,
-            toggleFavorite,
-            toggleHighPriority,
-            isEditable,
-        )
 
-        val tabTitles by viewModel.tabTitles.collectAsStateWithLifecycle()
-        if (isEmptyWorksite) {
-            if (viewModel.worksiteIdArg == EmptyWorksite.id) {
-                Text(
-                    stringResource(R.string.no_worksite_selected),
-                    Modifier.listItemPadding(),
-                )
-            } else {
-                Box(Modifier.fillMaxSize()) {
-                    BusyIndicatorFloatingTopCenter(true)
-                }
-            }
-        } else if (tabTitles.isNotEmpty()) {
-            val statusOptions by viewModel.statusOptions.collectAsStateWithLifecycle()
-            val caseEditor = CaseEditor(isEditable, statusOptions)
-            val appTranslator = remember(viewModel) {
-                AppTranslator(translator = viewModel)
-            }
-            CompositionLocalProvider(
-                LocalCaseEditor provides caseEditor,
-                LocalAppTranslator provides appTranslator,
-            ) {
-                ExistingCaseContent(
-                    tabTitles,
-                    worksite,
-                    isBusy,
-                    openPhoto,
-                )
-
-                BottomActions(
-                    worksite,
-                    onFullEdit,
-                )
+    var clipboardContents by remember { mutableStateOf("") }
+    val copyToClipboard = remember(viewModel) {
+        { copyValue: String? ->
+            if (copyValue?.isNotBlank() == true) {
+                clipboardContents = copyValue
             }
         }
+    }
+    val onCaseLongPress =
+        remember(viewModel) { { copyToClipboard(viewModel.editableWorksite.value.caseNumber) } }
+
+    Box(Modifier.fillMaxSize()) {
+        Column {
+            val title by viewModel.headerTitle.collectAsStateWithLifecycle()
+            val subTitle by viewModel.subTitle.collectAsStateWithLifecycle()
+            val worksite by viewModel.editableWorksite.collectAsStateWithLifecycle()
+            val isEmptyWorksite = worksite == EmptyWorksite
+            TopBar(
+                title,
+                subTitle,
+                isFavorite = worksite.isLocalFavorite,
+                isHighPriority = worksite.hasHighPriorityFlag,
+                onBack,
+                isEmptyWorksite,
+                toggleFavorite,
+                toggleHighPriority,
+                isEditable,
+                onCaseLongPress,
+            )
+
+            val tabTitles by viewModel.tabTitles.collectAsStateWithLifecycle()
+            if (isEmptyWorksite) {
+                if (viewModel.worksiteIdArg == EmptyWorksite.id) {
+                    Text(
+                        stringResource(R.string.no_worksite_selected),
+                        Modifier.listItemPadding(),
+                    )
+                } else {
+                    Box(Modifier.fillMaxSize()) {
+                        BusyIndicatorFloatingTopCenter(true)
+                    }
+                }
+            } else if (tabTitles.isNotEmpty()) {
+                val statusOptions by viewModel.statusOptions.collectAsStateWithLifecycle()
+                val caseEditor = CaseEditor(isEditable, statusOptions)
+                val appTranslator = remember(viewModel) {
+                    AppTranslator(translator = viewModel)
+                }
+                CompositionLocalProvider(
+                    LocalCaseEditor provides caseEditor,
+                    LocalAppTranslator provides appTranslator,
+                ) {
+                    ExistingCaseContent(
+                        tabTitles,
+                        worksite,
+                        isBusy,
+                        openPhoto,
+                        copyToClipboard,
+                    )
+
+                    BottomActions(
+                        worksite,
+                        onFullEdit,
+                    )
+                }
+            }
+        }
+
+        CopiedToClipboard(clipboardContents)
     }
 }
 
@@ -191,7 +210,10 @@ private fun getTopIconActionColor(
     return tint
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(
+    ExperimentalMaterial3Api::class,
+    ExperimentalFoundationApi::class,
+)
 @Composable
 private fun TopBar(
     title: String,
@@ -203,11 +225,18 @@ private fun TopBar(
     toggleFavorite: () -> Unit = {},
     toggleHighPriority: () -> Unit = {},
     isEditable: Boolean = false,
+    onCaseLongPress: () -> Unit = {},
 ) {
     // TODO Style components as necessary
 
     val titleContent = @Composable {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            modifier = Modifier.combinedClickable(
+                onClick = {},
+                onLongClick = onCaseLongPress,
+            ),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
             Text(title)
 
             if (subTitle.isNotBlank()) {
@@ -268,6 +297,7 @@ private fun ColumnScope.ExistingCaseContent(
     worksite: Worksite,
     isLoading: Boolean = false,
     openPhoto: (ViewImageArgs) -> Unit = { _ -> },
+    copyToClipboard: (String?) -> Unit = {},
 ) {
     val pagerState = rememberPagerState(
         initialPage = 0,
@@ -308,7 +338,11 @@ private fun ColumnScope.ExistingCaseContent(
             userScrollEnabled = enablePagerScroll,
         ) { pagerIndex ->
             when (pagerIndex) {
-                0 -> EditExistingCaseInfoView(worksite)
+                0 -> EditExistingCaseInfoView(
+                    worksite,
+                    copyToClipboard = copyToClipboard,
+                )
+
                 1 -> EditExistingCasePhotosView(
                     setEnablePagerScroll = setEnablePagerScroll,
                     onPhotoSelect = openPhoto,
@@ -425,6 +459,7 @@ private fun PropertyInfoRow(
 internal fun EditExistingCaseInfoView(
     worksite: Worksite,
     viewModel: ExistingCaseViewModel = hiltViewModel(),
+    copyToClipboard: (String?) -> Unit = {},
 ) {
     val mapMarkerIcon by viewModel.mapMarkerIcon.collectAsStateWithLifecycle()
     val workTypeProfile by viewModel.workTypeProfile.collectAsStateWithLifecycle()
@@ -455,7 +490,7 @@ internal fun EditExistingCaseInfoView(
             }
         }
 
-        propertyInfoItems(worksite, mapMarkerIcon)
+        propertyInfoItems(worksite, mapMarkerIcon, copyToClipboard)
         workItems(
             workTypeProfile,
             claimAll = claimAll,
@@ -493,28 +528,40 @@ private fun LazyListScope.itemInfoSectionHeader(
     )
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 private fun LazyListScope.propertyInfoItems(
     worksite: Worksite,
     mapMarkerIcon: BitmapDescriptor? = null,
+    copyToClipboard: (String?) -> Unit = {},
 ) {
     itemInfoSectionHeader(0, "caseForm.property_information")
 
     item(key = "section-content-property") {
-        val rowItemModifier = Modifier.padding(horizontal = edgeSpacing)
         CardSurface {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(edgeSpacing),
-            ) {
+            Column(Modifier.padding(top = edgeSpacingHalf)) {
                 PropertyInfoRow(
                     CrisisCleanupIcons.Person,
                     worksite.name,
-                    rowItemModifier.padding(top = edgeSpacing),
+                    Modifier
+                        .combinedClickable(
+                            onClick = {},
+                            onLongClick = { copyToClipboard(worksite.name) }
+                        )
+                        .fillMaxWidth()
+                        .padding(horizontal = edgeSpacing, vertical = edgeSpacingHalf),
                 )
+                val phoneNumbers = listOf(worksite.phone1, worksite.phone2).filterNotBlankTrim()
+                    .joinToString("; ")
                 PropertyInfoRow(
                     CrisisCleanupIcons.Phone,
-                    listOf(worksite.phone1, worksite.phone2).filterNotBlankTrim()
-                        .joinToString("; "),
-                    rowItemModifier,
+                    phoneNumbers,
+                    Modifier
+                        .combinedClickable(
+                            onClick = {},
+                            onLongClick = { copyToClipboard(phoneNumbers) }
+                        )
+                        .fillMaxWidth()
+                        .padding(horizontal = edgeSpacing, vertical = edgeSpacingHalf),
                     isPhone = true,
                 )
                 worksite.email?.let {
@@ -522,7 +569,13 @@ private fun LazyListScope.propertyInfoItems(
                         PropertyInfoRow(
                             CrisisCleanupIcons.Mail,
                             it,
-                            rowItemModifier,
+                            Modifier
+                                .combinedClickable(
+                                    onClick = {},
+                                    onLongClick = { copyToClipboard(worksite.email) }
+                                )
+                                .fillMaxWidth()
+                                .padding(horizontal = edgeSpacing, vertical = edgeSpacingHalf),
                             isEmail = true,
                         )
                     }
@@ -542,7 +595,13 @@ private fun LazyListScope.propertyInfoItems(
                 PropertyInfoRow(
                     CrisisCleanupIcons.Location,
                     fullAddress,
-                    rowItemModifier,
+                    Modifier
+                        .combinedClickable(
+                            onClick = {},
+                            onLongClick = { copyToClipboard(fullAddress) }
+                        )
+                        .fillMaxWidth()
+                        .padding(horizontal = edgeSpacing, vertical = edgeSpacingHalf),
                     isLocation = !worksite.hasWrongLocationFlag,
                     locationQuery = locationQuery,
                 )
@@ -550,7 +609,9 @@ private fun LazyListScope.propertyInfoItems(
                 PropertyInfoMapView(
                     worksite.coordinates(),
                     // TODO Common dimensions
-                    Modifier.height(192.dp),
+                    Modifier
+                        .height(192.dp)
+                        .padding(top = edgeSpacingHalf),
                     mapMarkerIcon = mapMarkerIcon,
                 )
             }

@@ -52,7 +52,7 @@ fun LinkifyPhoneText(
 ) = LinkifyText(text, modifier, style) { textView ->
     Linkify.addLinks(
         textView,
-        Linkify.PHONE_NUMBERS
+        Linkify.PHONE_NUMBERS,
     )
 }
 
@@ -64,7 +64,7 @@ fun LinkifyEmailText(
 ) = LinkifyText(text, modifier, style) { textView ->
     Linkify.addLinks(
         textView,
-        Linkify.EMAIL_ADDRESSES
+        Linkify.EMAIL_ADDRESSES,
     )
 }
 

@@ -58,6 +58,8 @@
     <string name="allow_camera_permission">~~Allow access to camera</string>
     <string name="camera_permission_explanation">~~Grant access to camera in the App info/settings > Permissions.</string>
 
+    <string name="copied_value">~~Copied %s</string>
+
     <string name="remove_until_recurring_date">Remove until</string>
     <string name="specify_interval">Specify an interval</string>
 
