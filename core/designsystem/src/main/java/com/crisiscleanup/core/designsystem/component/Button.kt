@@ -4,21 +4,31 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ripple.LocalRippleTheme
+import androidx.compose.material.ripple.RippleAlpha
+import androidx.compose.material.ripple.RippleTheme
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ButtonElevation
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.FloatingActionButtonElevation
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -26,6 +36,8 @@ import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.cancelButtonContainerColor
 import com.crisiscleanup.core.designsystem.theme.cancelButtonContentColor
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
+import com.crisiscleanup.core.designsystem.theme.disabledButtonContainerColor
+import com.crisiscleanup.core.designsystem.theme.disabledButtonContentColor
 
 private fun roundedRectangleButtonShape() = RoundedCornerShape(4.dp)
 
@@ -178,6 +190,47 @@ fun CrisisCleanupOutlinedButton(
         border = border,
     ) {
         Text(text.ifEmpty { if (textResId != 0) stringResource(textResId) else "" })
+    }
+}
+
+private val NoRippleTheme = object : RippleTheme {
+    @Composable
+    override fun defaultColor() = Color.Transparent
+
+    @Composable
+    override fun rippleAlpha() = RippleAlpha(0f, 0f, 0f, 0f)
+}
+
+@Composable
+fun CrisisCleanupFab(
+    onClick: () -> Unit,
+    enabled: Boolean,
+    modifier: Modifier = Modifier,
+    shape: Shape = CircleShape,
+    containerColor: Color = FloatingActionButtonDefaults.containerColor,
+    contentColor: Color = contentColorFor(containerColor),
+    elevation: FloatingActionButtonElevation = FloatingActionButtonDefaults.elevation(),
+    iconContent: @Composable () -> Unit = {},
+) {
+    CompositionLocalProvider(
+        LocalRippleTheme provides if (enabled) LocalRippleTheme.current else NoRippleTheme
+    ) {
+        FloatingActionButton(
+            modifier = modifier,
+            containerColor = if (enabled) containerColor else disabledButtonContainerColor,
+            contentColor = if (enabled) contentColor else disabledButtonContentColor,
+            elevation = if (enabled) elevation else FloatingActionButtonDefaults.elevation(
+                defaultElevation = 0.dp,
+            ),
+            shape = shape,
+            onClick = {
+                if (enabled) {
+                    onClick()
+                }
+            },
+        ) {
+            iconContent()
+        }
     }
 }
 

@@ -52,9 +52,11 @@ val selectedOptionContainerColor = Color(0xFFF6F8F9)
 val neutralIconColor = Color(0xFF848F99)
 val navigationContainerColor = Color(0xFF2D2D2D)
 
-// Mirror FilledButtonTokens.class
-private const val disabledAlpha = 0.38f
-fun Color.disabledAlpha() = copy(alpha = disabledAlpha)
+// Similar to FilledButtonTokens.class
+private const val disabledContainerOpacity = 0.12f
+private const val disabledOpacity = 0.38f
+fun Color.disabledAlpha() = copy(alpha = disabledOpacity)
+val disabledButtonContainerColor = md_theme_onSurface.copy(alpha = disabledContainerOpacity)
 val disabledButtonContentColor = md_theme_onSurface.disabledAlpha()
 
 const val statusUnknownColorCode = 0xFF000000

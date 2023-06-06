@@ -53,6 +53,7 @@ import com.crisiscleanup.core.designsystem.component.actionInnerSpace
 import com.crisiscleanup.core.designsystem.component.actionRoundCornerShape
 import com.crisiscleanup.core.designsystem.component.actionSize
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContainerColor
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContentColor
 import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
@@ -562,7 +563,9 @@ private fun CasesCountView(
 @Preview
 @Composable
 fun CasesOverlayActionsPreview() {
-    CasesOverlayActions()
+    CrisisCleanupTheme {
+        CasesOverlayActions()
+    }
 }
 
 @Preview
