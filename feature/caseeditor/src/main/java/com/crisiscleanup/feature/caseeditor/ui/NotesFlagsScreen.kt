@@ -17,7 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
@@ -26,6 +25,7 @@ import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.listCheckboxAlignStartOffset
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.survivorNoteColor
+import com.crisiscleanup.core.designsystem.theme.survivorNoteColorNoTransparency
 import com.crisiscleanup.core.model.data.WorksiteNote
 import com.crisiscleanup.core.model.data.hasSurvivorNote
 import com.crisiscleanup.feature.caseeditor.model.NotesFlagsInputData
@@ -56,7 +56,8 @@ internal fun NoteCardView(
     note: WorksiteNote,
     modifier: Modifier = Modifier,
 ) {
-    val containerColor = if (note.isSurvivor) survivorNoteColor else cardContainerColor
+    val containerColor =
+        if (note.isSurvivor) survivorNoteColorNoTransparency else cardContainerColor
     CardSurface(containerColor) {
         NoteView(note, modifier)
     }
@@ -109,18 +110,11 @@ internal fun SurvivorNoteLegend(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Spacer(Modifier.weight(1f))
-        val circleSize = 24.dp
         Box(
             Modifier
-                .size(circleSize)
-                .background(Color.White, CircleShape),
-        ) {
-            Box(
-                Modifier
-                    .size(circleSize)
-                    .background(survivorNoteColor, CircleShape),
-            )
-        }
+                .size(24.dp)
+                .background(survivorNoteColorNoTransparency, CircleShape),
+        )
         Text(translator("formLabels.survivor_notes"))
     }
 }
