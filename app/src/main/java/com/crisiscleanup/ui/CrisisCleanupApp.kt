@@ -350,7 +350,7 @@ private fun ExpiredTokenAlert(
 ) {
     val translator = LocalAppTranslator.current.translator
     val message = translator("account.login_reminder", R.string.login_reminder)
-    val loginText = translator("actions.login", R.string.login)
+    val loginText = translator("actions.login")
     LaunchedEffect(Unit) {
         val result = snackbarHostState.showSnackbar(
             message,
@@ -379,7 +379,7 @@ private fun AppHeader(
     openAuthentication: () -> Unit = {},
     onOpenIncidents: (() -> Unit)? = null,
 ) {
-    val actionText = LocalAppTranslator.current.translator("actions.account", R.string.account)
+    val actionText = LocalAppTranslator.current.translator("actions.account")
     TopAppBarDefault(
         modifier = modifier,
         titleResId = titleRes,
