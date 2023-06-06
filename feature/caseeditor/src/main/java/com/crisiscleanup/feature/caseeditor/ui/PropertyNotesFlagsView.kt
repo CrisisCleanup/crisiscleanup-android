@@ -1,5 +1,6 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,7 +28,9 @@ import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemNestedPadding
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
+import com.crisiscleanup.core.designsystem.theme.survivorNoteColor
 import com.crisiscleanup.core.model.data.WorksiteNote
+import com.crisiscleanup.core.model.data.hasSurvivorNote
 import com.crisiscleanup.feature.caseeditor.CaseNotesFlagsDataEditor
 import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
 import com.crisiscleanup.feature.caseeditor.R
@@ -76,12 +79,21 @@ internal fun PropertyNotesFlagsView(
         }
     }
 
+    if (notes.hasSurvivorNote) {
+        SurvivorNoteLegend(listItemModifier)
+    }
+
     val noteModifier = Modifier
+        .fillMaxWidth()
         .listItemPadding()
         .listItemNestedPadding()
+    val survivorNoteModifier = Modifier
+        .background(survivorNoteColor)
+        .then(noteModifier)
     for (i in 0 until notes.size.coerceAtMost(collapsedNotesVisibleCount)) {
         val note = notes[i]
-        NoteView(note, noteModifier)
+        val modifier = if (note.isSurvivor) survivorNoteModifier else noteModifier
+        NoteView(note, modifier)
     }
 
     val onAddNote = remember(viewModel) { { isCreatingNote = true } }

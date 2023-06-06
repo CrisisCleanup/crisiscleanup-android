@@ -1,17 +1,33 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
+import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.listCheckboxAlignStartOffset
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
+import com.crisiscleanup.core.designsystem.theme.survivorNoteColor
 import com.crisiscleanup.core.model.data.WorksiteNote
+import com.crisiscleanup.core.model.data.hasSurvivorNote
 import com.crisiscleanup.feature.caseeditor.model.NotesFlagsInputData
 import com.crisiscleanup.feature.caseeditor.model.getRelativeDate
 
@@ -26,6 +42,8 @@ internal fun NoteView(
         if (relativeDate.isNotEmpty()) {
             Text(
                 text = relativeDate,
+                // TODO Common dimensions
+                modifier = Modifier.padding(bottom = 8.dp),
                 style = MaterialTheme.typography.bodySmall,
             )
         }
@@ -33,12 +51,29 @@ internal fun NoteView(
     }
 }
 
+@Composable
+internal fun NoteCardView(
+    note: WorksiteNote,
+    modifier: Modifier = Modifier,
+) {
+    val containerColor = if (note.isSurvivor) survivorNoteColor else cardContainerColor
+    CardSurface(containerColor) {
+        NoteView(note, modifier)
+    }
+}
+
 internal fun LazyListScope.staticNoteItems(
     notes: List<WorksiteNote>,
     visibleCount: Int,
     modifier: Modifier,
+    isCardView: Boolean = false,
 ) {
-    // TODO Animate on expand/collapse
+    if (notes.hasSurvivorNote) {
+        item {
+            SurvivorNoteLegend(listItemModifier)
+        }
+    }
+
     val count = notes.size.coerceAtMost(visibleCount)
     items(
         count,
@@ -50,7 +85,43 @@ internal fun LazyListScope.staticNoteItems(
         contentType = { "item-note" },
     ) {
         val note = notes[it]
-        NoteView(note, modifier)
+        if (isCardView) {
+            NoteCardView(note, modifier)
+        } else {
+            val viewModifier =
+                if (note.isSurvivor) Modifier
+                    .background(survivorNoteColor)
+                    .then(modifier)
+                else modifier
+            NoteView(note, viewModifier)
+        }
+    }
+}
+
+@Composable
+internal fun SurvivorNoteLegend(
+    modifier: Modifier = Modifier,
+) {
+    val translator = LocalAppTranslator.current.translator
+    Row(
+        modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Spacer(Modifier.weight(1f))
+        val circleSize = 24.dp
+        Box(
+            Modifier
+                .size(circleSize)
+                .background(Color.White, CircleShape),
+        ) {
+            Box(
+                Modifier
+                    .size(circleSize)
+                    .background(survivorNoteColor, CircleShape),
+            )
+        }
+        Text(translator("formLabels.survivor_notes"))
     }
 }
 
@@ -111,4 +182,14 @@ internal fun MemberOfMyOrgFlagInput(
         onCheckChange = updateAssignTo,
         enabled = enabled,
     )
+}
+
+@Preview
+@Composable
+private fun SurvivorNoteLegendPreview() {
+    CrisisCleanupTheme {
+        Surface {
+            SurvivorNoteLegend(listItemModifier)
+        }
+    }
 }

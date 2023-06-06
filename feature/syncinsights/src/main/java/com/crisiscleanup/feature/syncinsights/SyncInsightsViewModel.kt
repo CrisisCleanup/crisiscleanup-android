@@ -69,7 +69,7 @@ class SyncInsightsViewModel @Inject constructor(
 
             val logItems = logs.mapIndexed { index, log ->
                 val isContinuingLogType = index > 0 && logs[index - 1].logType == log.logType
-                SyncLogItem(log, isContinuingLogType, log.logTime.relativeTime())
+                SyncLogItem(log, isContinuingLogType, log.logTime.relativeTime)
             }
             LogListQueryState(startIndex, totalCount, logItems)
         }

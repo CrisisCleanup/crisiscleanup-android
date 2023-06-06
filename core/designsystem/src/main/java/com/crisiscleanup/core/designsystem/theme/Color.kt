@@ -36,6 +36,8 @@ val primaryBlueColor = Color(0xFF009BFF)
 val primaryBlueOneTenthColor = primaryBlueColor.copy(alpha = 0.1f)
 val primaryRedColor = Color(0xFFED4747)
 val primaryOrangeColor = Color(0xFFF79820)
+internal val crisisCleanupYellow100 = Color(0x88FFDC68)
+val survivorNoteColor = crisisCleanupYellow100
 val incidentDisasterContainerColor = primaryBlueColor
 val incidentDisasterContentColor = Color(0xFFFFFFFF)
 val attentionBackgroundColor = md_theme_primaryContainer

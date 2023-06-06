@@ -175,3 +175,5 @@ data class WorksiteNote(
     }
 }
 
+val Collection<WorksiteNote>.hasSurvivorNote: Boolean
+    get() = any { it.isSurvivor }

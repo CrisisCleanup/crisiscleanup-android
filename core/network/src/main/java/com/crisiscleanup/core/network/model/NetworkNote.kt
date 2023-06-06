@@ -20,4 +20,7 @@ data class NetworkNote(
 @Serializable
 data class NetworkNoteNote(
     val note: String,
+    @Serializable(InstantSerializer::class)
+    @SerialName("created_at")
+    val createdAt: Instant,
 )

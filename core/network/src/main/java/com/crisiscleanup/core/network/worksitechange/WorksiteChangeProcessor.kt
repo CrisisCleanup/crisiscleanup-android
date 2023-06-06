@@ -327,7 +327,7 @@ class WorksiteChangeProcessor(
             note.note?.let { noteContent ->
                 try {
                     val syncedNote =
-                        writeApiClient.addNote(changeAt, networkWorksiteId, noteContent)
+                        writeApiClient.addNote(note.createdAt, networkWorksiteId, noteContent)
                     noteIdMap[localId] = syncedNote.id!!
                     syncLogger.log("Synced note $localId (${syncedNote.id}).")
                 } catch (e: Exception) {

@@ -65,6 +65,7 @@ retrofitKotlinxSerializationJson = "1.0.0"
 room = "2.5.1"
 secrets = "2.0.1"
 squareSeismic = "1.0.3"
+timeAgo = "4.0.3"
 turbine = "0.13.0"
 
 [libraries]
@@ -164,6 +165,7 @@ room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
 square-seismic = { group = "com.squareup", name = "seismic", version.ref = "squareSeismic" }
+timeago = { group = "com.github.marlonlom", name = "timeago", version.ref = "timeAgo" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 
 # Dependencies of the included build-logic

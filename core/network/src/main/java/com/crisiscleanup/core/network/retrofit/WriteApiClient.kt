@@ -182,7 +182,7 @@ class WriteApiClient @Inject constructor(
     }
 
     override suspend fun addNote(createdAt: Instant, worksiteId: Long, note: String) =
-        changeWorksiteApi.addNote(createdAt, worksiteId, NetworkNoteNote(note))
+        changeWorksiteApi.addNote(createdAt, worksiteId, NetworkNoteNote(note, createdAt))
 
     override suspend fun updateWorkTypeStatus(
         createdAt: Instant,

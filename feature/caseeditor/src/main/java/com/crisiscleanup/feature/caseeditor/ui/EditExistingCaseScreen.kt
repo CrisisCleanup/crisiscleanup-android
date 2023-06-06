@@ -68,7 +68,6 @@ import com.crisiscleanup.core.designsystem.component.actionEdgeSpace
 import com.crisiscleanup.core.designsystem.component.fabPlusSpaceHeight
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
-import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
@@ -776,11 +775,26 @@ internal fun EditExistingCaseNotesView(
         val (newNoteFab) = createRefs()
 
         val notes = worksite.notes
-        LazyColumn(state = listState) {
+        LazyColumn(
+            state = listState,
+            verticalArrangement = listItemSpacedBy,
+        ) {
+            item {
+                Spacer(
+                    Modifier
+                        .fillMaxWidth()
+                        // TODO Common dimensions
+                        .height(8.dp)
+                )
+            }
             staticNoteItems(
                 notes,
                 notes.size,
-                listItemModifier,
+                // TODO Common dimensions
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                true,
             )
             item {
                 Spacer(

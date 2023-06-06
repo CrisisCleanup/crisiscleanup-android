@@ -9,8 +9,9 @@ android {
 }
 
 dependencies {
-    implementation(libs.kotlinx.datetime)
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.datetime)
+    implementation(libs.timeago)
     testImplementation(project(":core:testing"))
 }
