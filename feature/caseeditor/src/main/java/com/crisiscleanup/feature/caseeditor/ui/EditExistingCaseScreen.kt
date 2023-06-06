@@ -442,11 +442,11 @@ private fun PropertyInfoRow(
 
         val style = MaterialTheme.typography.bodyLarge
         if (isPhone) {
-            LinkifyPhoneText(text, style = style)
+            LinkifyPhoneText(text)
         } else if (isEmail) {
-            LinkifyEmailText(text, style = style)
+            LinkifyEmailText(text)
         } else if (isLocation) {
-            LinkifyLocationText(text, locationQuery, style = style)
+            LinkifyLocationText(text, locationQuery)
         } else {
             Text(text, style = style)
         }

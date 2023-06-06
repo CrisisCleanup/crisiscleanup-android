@@ -129,13 +129,11 @@ internal fun TransferWorkTypesView(
             LinkifyHtmlText(
                 requestDescription,
                 textModifier.listItemTopPadding(),
-                style = textStyle,
             )
 
             LinkifyHtmlText(
                 translator("workTypeRequestModal.please_add_respectful_note"),
                 textModifier,
-                style = textStyle,
             )
 
             val requestExamples = listOf(
@@ -163,7 +161,6 @@ internal fun TransferWorkTypesView(
                     LinkifyPhoneEmailText(
                         s,
                         listItemModifier,
-                        textStyle,
                     )
                 }
             }

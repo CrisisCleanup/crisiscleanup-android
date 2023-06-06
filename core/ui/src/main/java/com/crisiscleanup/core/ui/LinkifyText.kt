@@ -3,12 +3,11 @@ package com.crisiscleanup.core.ui
 import android.text.method.LinkMovementMethod
 import android.text.util.Linkify
 import android.widget.TextView
-import androidx.compose.material3.LocalTextStyle
+import androidx.annotation.StyleRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.text.HtmlCompat
 import java.util.regex.Pattern
@@ -17,12 +16,13 @@ import java.util.regex.Pattern
 fun LinkifyText(
     text: CharSequence,
     modifier: Modifier = Modifier,
-    // TODO Apply style to legacy TextView (using style resource)
-    style: TextStyle = LocalTextStyle.current,
+    @StyleRes textStyleRes: Int = R.style.link_text_style,
     linkify: (TextView) -> Unit = {},
 ) {
     val context = LocalContext.current
-    val linkifyTextView = remember { TextView(context) }
+    val linkifyTextView = remember {
+        TextView(context, null, 0, textStyleRes)
+    }
     AndroidView(
         factory = { linkifyTextView },
         modifier = modifier,
@@ -38,18 +38,18 @@ fun LinkifyText(
 fun LinkifyHtmlText(
     text: String,
     modifier: Modifier = Modifier,
-    style: TextStyle = LocalTextStyle.current,
+    @StyleRes textStyleRes: Int = R.style.link_text_style,
 ) {
     val htmlText = HtmlCompat.fromHtml(text, HtmlCompat.FROM_HTML_MODE_COMPACT)
-    LinkifyText(htmlText, modifier, style)
+    LinkifyText(htmlText, modifier, textStyleRes)
 }
 
 @Composable
 fun LinkifyPhoneText(
     text: String,
     modifier: Modifier = Modifier,
-    style: TextStyle = LocalTextStyle.current,
-) = LinkifyText(text, modifier, style) { textView ->
+    @StyleRes textStyleRes: Int = R.style.link_text_style,
+) = LinkifyText(text, modifier, textStyleRes) { textView ->
     Linkify.addLinks(
         textView,
         Linkify.PHONE_NUMBERS,
@@ -60,8 +60,8 @@ fun LinkifyPhoneText(
 fun LinkifyEmailText(
     text: String,
     modifier: Modifier = Modifier,
-    style: TextStyle = LocalTextStyle.current,
-) = LinkifyText(text, modifier, style) { textView ->
+    @StyleRes textStyleRes: Int = R.style.link_text_style,
+) = LinkifyText(text, modifier, textStyleRes) { textView ->
     Linkify.addLinks(
         textView,
         Linkify.EMAIL_ADDRESSES,
@@ -75,8 +75,8 @@ fun LinkifyLocationText(
     text: String,
     locationQuery: String,
     modifier: Modifier = Modifier,
-    style: TextStyle = LocalTextStyle.current,
-) = LinkifyText(text, modifier, style) { textView ->
+    @StyleRes textStyleRes: Int = R.style.link_text_style,
+) = LinkifyText(text, modifier, textStyleRes) { textView ->
     Linkify.addLinks(
         textView,
         allPattern,
@@ -88,8 +88,8 @@ fun LinkifyLocationText(
 fun LinkifyPhoneEmailText(
     text: String,
     modifier: Modifier = Modifier,
-    style: TextStyle = LocalTextStyle.current,
-) = LinkifyText(text, modifier, style) { textView ->
+    @StyleRes textStyleRes: Int = R.style.link_text_style,
+) = LinkifyText(text, modifier, textStyleRes) { textView ->
     Linkify.addLinks(
         textView,
         Linkify.EMAIL_ADDRESSES or Linkify.PHONE_NUMBERS,
