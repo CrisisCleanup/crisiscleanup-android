@@ -1,6 +1,5 @@
 package com.crisiscleanup.feature.caseeditor
 
-import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.InputValidator
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.log.AppLogger
@@ -38,7 +37,6 @@ interface CasePropertyDataEditor {
 internal class EditablePropertyDataEditor(
     private val worksiteProvider: EditableWorksiteProvider,
     inputValidator: InputValidator,
-    resourceProvider: AndroidResourceProvider,
     searchWorksitesRepository: SearchWorksitesRepository,
     caseIconProvider: MapCaseIconProvider,
     translator: KeyResourceTranslator,
@@ -77,7 +75,6 @@ internal class EditablePropertyDataEditor(
             translator,
             inputValidator,
             worksite,
-            resourceProvider,
         )
 
         nameSearchManager = ResidentNameSearchManager(

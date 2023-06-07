@@ -9,10 +9,10 @@
     <string name="edit_section">~~Edit %s</string>
 
     <string name="stop_suggesting_existing_cases">~~Stop searching existing cases</string>
-    <string name="invalid_email">~~Enter a valid email address</string>
+    <string name="invalid_email">~~Enter a valid email address.</string>
 
     <string name="location_address_search">~~Location/address search</string>
-    <string name="location_out_of_incident_bounds">This location is outside of %s</string>
+    <string name="location_out_of_incident_bounds">This location is outside of %s.</string>
 
     <string name="allow_location_permission">~~Allow location</string>
     <string name="location_permission_explanation">~~My Location needs access to the device\'s location. Grant access in the App info/settings > Permissions.</string>
@@ -20,7 +20,7 @@
 
     <string name="geocoded_addresses">~~Addresses</string>
     <string name="location_query_hint">~~Search for an existing worksite or an address in general.\nSelecting the worksite opens it for editing.</string>
-    <string name="no_location_results">~~No cases or addresses match \'%s\'</string>
+    <string name="no_location_results">~~No cases or addresses match \'%s\'.</string>
 
     <string name="select_option_for_field">~~Select option for %s</string>
 
@@ -49,7 +49,7 @@
 
     <string name="release_reason_is_required">~~What is the reason for release?</string>
     <string name="request_reason_is_required">~~What is the reason for request?</string>
-    <string name="transfer_work_type_is_required">~~Select at least one work type.</string>
+    <string name="transfer_work_type_is_required">~~Select at least one work type..</string>
 
     <string name="before_cleanup">~~Before cleanup</string>
     <string name="after_cleanup">~~After cleanup</string>

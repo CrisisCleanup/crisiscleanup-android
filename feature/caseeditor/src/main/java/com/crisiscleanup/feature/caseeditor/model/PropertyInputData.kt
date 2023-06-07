@@ -3,7 +3,6 @@ package com.crisiscleanup.feature.caseeditor.model
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.InputValidator
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.model.data.AutoContactFrequency
@@ -15,7 +14,6 @@ class PropertyInputData(
     private val translator: KeyResourceTranslator,
     private val inputValidator: InputValidator,
     worksite: Worksite,
-    private val resourceProvider: AndroidResourceProvider,
     residentName: String = worksite.name,
     phoneNumber: String = worksite.phone1,
     phoneNumberSecondary: String = worksite.phone2,
@@ -45,6 +43,20 @@ class PropertyInputData(
         residentNameError = ""
         phoneNumberError = ""
         emailError = ""
+    }
+
+    fun getUserErrorMessage(): String {
+        val messages = mutableListOf<String>()
+        if (residentName.value.isBlank()) {
+            messages.add(translator("caseForm.name_required"))
+        }
+        if (phoneNumber.isBlank()) {
+            messages.add(translator("caseForm.phone_required"))
+        }
+        if (email.isNotBlank() && !inputValidator.validateEmailAddress(email)) {
+            messages.add(translator("invitationSignup.invalid_email_error", R.string.invalid_email))
+        }
+        return messages.joinToString("\n")
     }
 
     private fun validate(): Boolean {

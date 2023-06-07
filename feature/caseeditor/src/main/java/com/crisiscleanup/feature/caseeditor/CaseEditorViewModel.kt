@@ -245,7 +245,6 @@ class CaseEditorViewModel @Inject constructor(
                 val propertyEditor = EditablePropertyDataEditor(
                     editableWorksiteProvider,
                     inputValidator,
-                    resourceProvider,
                     searchWorksitesRepository,
                     caseIconProvider,
                     translator,
@@ -381,15 +380,6 @@ class CaseEditorViewModel @Inject constructor(
 
     private fun List<String>.translateJoin() = joinToString("\n") { s -> translator(s) }
 
-    private val incompletePropertyInfo = InvalidWorksiteInfo(
-        WorksiteSection.Property,
-        // TODO Include messages only where applicable
-        message = listOf(
-            "caseForm.name_required",
-            "caseForm.phone_required"
-        ).translateJoin()
-    )
-
     private val incompleteLocationInfo = InvalidWorksiteInfo(
         WorksiteSection.Location,
         // TODO Include messages only where applicable
@@ -416,10 +406,18 @@ class CaseEditorViewModel @Inject constructor(
     )
 
     private fun validate(worksite: Worksite): InvalidWorksiteInfo = with(worksite) {
-        if (name.isBlank() ||
-            phone1.isBlank()
-        ) {
-            return incompletePropertyInfo
+        if (name.isBlank()) {
+            return InvalidWorksiteInfo(
+                WorksiteSection.Property,
+                translate("caseForm.name_required"),
+            )
+
+        }
+        if (phone1.isBlank()) {
+            return InvalidWorksiteInfo(
+                WorksiteSection.Property,
+                translate("caseForm.phone_required"),
+            )
         }
 
         if (latitude == 0.0 ||
@@ -591,7 +589,10 @@ class CaseEditorViewModel @Inject constructor(
                         if (indicateInvalidSection) {
                             when (dataWriter) {
                                 is PropertyInputData -> {
-                                    invalidWorksiteInfo.value = incompletePropertyInfo
+                                    invalidWorksiteInfo.value = InvalidWorksiteInfo(
+                                        WorksiteSection.Property,
+                                        dataWriter.getUserErrorMessage(),
+                                    )
                                     showInvalidWorksiteSave.value = true
                                 }
 
