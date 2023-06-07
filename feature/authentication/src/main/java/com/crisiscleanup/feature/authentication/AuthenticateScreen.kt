@@ -168,7 +168,7 @@ private fun LoginScreen(
 
         Text(
             modifier = fillWidthPadded,
-            text = translator("actions.login"),
+            text = translator("actions.login", R.string.login),
             style = MaterialTheme.typography.headlineMedium
         )
 
@@ -186,7 +186,7 @@ private fun LoginScreen(
             // TODO Listening onFocusChanged forces an input to recompose on any input change.
             //      Research if possible to decouple focus change when not in focus.
             modifier = fillWidthPadded.onFocusChanged(onInputFocus),
-            label = translator("loginForm.email_placeholder"),
+            label = translator("loginForm.email_placeholder", R.string.email),
             value = viewModel.loginInputData.emailAddress,
             onValueChange = updateEmailInput,
             keyboardType = KeyboardType.Email,
@@ -209,7 +209,7 @@ private fun LoginScreen(
         }
         OutlinedObfuscatingTextField(
             modifier = fillWidthPadded.onFocusChanged(onInputFocus),
-            label = translator("loginForm.password_placeholder"),
+            label = translator("loginForm.password_placeholder", R.string.password),
             value = viewModel.loginInputData.password,
             onValueChange = updatePasswordInput,
             isObfuscating = isObfuscatingPassword,
@@ -244,7 +244,7 @@ private fun LoginScreen(
             modifier = fillWidthPadded,
             onClick = viewModel::authenticateEmailPassword,
             enabled = isNotBusy,
-            text = translator("actions.login"),
+            text = translator("actions.login", R.string.login),
             indicateBusy = !isNotBusy,
         )
 
@@ -253,7 +253,7 @@ private fun LoginScreen(
                 modifier = fillWidthPadded,
                 onClick = closeAuthentication,
                 enabled = isNotBusy,
-                text = translator("actions.cancel"),
+                text = translator("actions.cancel", R.string.cancel),
             )
         }
     }
@@ -331,7 +331,7 @@ private fun SaveCredentialsPrompt(
                 closeAuthentication()
             },
             enabled = isNotBusy,
-            text= LocalAppTranslator.current.translator("actions.save"),
+            text = LocalAppTranslator.current.translator("actions.save"),
             indicateBusy = !isNotBusy,
         )
 

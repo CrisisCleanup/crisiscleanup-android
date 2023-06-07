@@ -84,6 +84,7 @@ import com.crisiscleanup.feature.authentication.AuthenticateScreen
 import com.crisiscleanup.feature.cases.navigation.navigateToSelectIncident
 import com.crisiscleanup.navigation.CrisisCleanupNavHost
 import com.crisiscleanup.navigation.TopLevelDestination
+import com.crisiscleanup.feature.authentication.R as authenticationR
 import com.crisiscleanup.feature.cases.R as casesR
 
 @Composable
@@ -127,6 +128,8 @@ fun CrisisCleanupApp(
             if (authState is AuthState.Loading) {
                 // Splash screen should be showing
             } else {
+                // Render content even if translations are not fully downloaded in case internet connection is not available.
+                // Translations without fallbacks will show until translations are downloaded.
                 CompositionLocalProvider(LocalAppTranslator provides appTranslator) {
                     LoadedContent(snackbarHostState, appState, viewModel, authState)
                 }
@@ -352,7 +355,7 @@ private fun ExpiredTokenAlert(
 ) {
     val translator = LocalAppTranslator.current.translator
     val message = translator("account.login_reminder", R.string.login_reminder)
-    val loginText = translator("actions.login")
+    val loginText = translator("actions.login", authenticationR.string.login)
     LaunchedEffect(Unit) {
         val result = snackbarHostState.showSnackbar(
             message,
