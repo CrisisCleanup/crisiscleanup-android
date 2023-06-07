@@ -166,7 +166,12 @@ internal class EditableLocationDataEditor(
     private var hasEnteredMoveLocationMapMode = false
 
     override val defaultMapZoom: Float
-        get() = (if (isMoveLocationOnMapMode.value) 19 else 13) + (Math.random() * 1e-3).toFloat()
+        get() {
+            val zoom = if (worksiteProvider.editableWorksite.value.address.isBlank()) 7
+            else if (isMoveLocationOnMapMode.value) 19
+            else 13
+            return zoom + (Math.random() * 1e-3).toFloat()
+        }
     private var zoomCache = defaultMapZoom
     private var _mapCameraZoom = MutableStateFlow(MapViewCameraZoomDefault)
     override val mapCameraZoom = _mapCameraZoom.asStateFlow()
@@ -209,7 +214,6 @@ internal class EditableLocationDataEditor(
         locationInputData = LocationInputData(
             translator,
             worksite,
-            resourceProvider,
         )
 
         locationSearchManager = LocationSearchManager(

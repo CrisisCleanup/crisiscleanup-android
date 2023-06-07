@@ -3,7 +3,6 @@ package com.crisiscleanup.feature.caseeditor.model
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.model.data.CROSS_STREET_FIELD_KEY
 import com.crisiscleanup.core.model.data.Worksite
@@ -16,7 +15,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 class LocationInputData(
     private val translator: KeyResourceTranslator,
     worksite: Worksite,
-    private val resourceProvider: AndroidResourceProvider,
 ) : CaseDataWriter {
     private var referenceWorksite = worksite
 

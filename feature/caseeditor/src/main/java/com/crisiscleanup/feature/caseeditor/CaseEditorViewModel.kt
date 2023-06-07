@@ -195,6 +195,7 @@ class CaseEditorViewModel @Inject constructor(
             workTypeStatusRepository,
             { key -> translate(key) },
             editableWorksiteProvider,
+            networkMonitor,
             resourceProvider,
             viewModelScope,
             ioDispatcher,

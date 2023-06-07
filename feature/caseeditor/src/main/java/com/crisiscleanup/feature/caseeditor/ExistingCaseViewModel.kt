@@ -16,6 +16,7 @@ import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.KeyResourceTranslator
+import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.PermissionStatus
 import com.crisiscleanup.core.common.combineTrimText
@@ -93,6 +94,7 @@ class ExistingCaseViewModel @Inject constructor(
     private val translator: KeyResourceTranslator,
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val syncPusher: SyncPusher,
+    networkMonitor: NetworkMonitor,
     private val resourceProvider: AndroidResourceProvider,
     packageManager: PackageManager,
     private val contentResolver: ContentResolver,
@@ -201,6 +203,7 @@ class ExistingCaseViewModel @Inject constructor(
             workTypeStatusRepository,
             { key -> translate(key) },
             editableWorksiteProvider,
+            networkMonitor,
             resourceProvider,
             viewModelScope,
             ioDispatcher,

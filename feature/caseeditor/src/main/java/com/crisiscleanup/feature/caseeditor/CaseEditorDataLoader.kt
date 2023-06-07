@@ -2,6 +2,7 @@ package com.crisiscleanup.feature.caseeditor
 
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.AppEnv
+import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.TagLogger
 import com.crisiscleanup.core.data.repository.AccountDataRepository
@@ -14,6 +15,7 @@ import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
 import com.crisiscleanup.core.model.data.AutoContactFrequency
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.IncidentFormField
+import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteFormValue
 import com.crisiscleanup.feature.caseeditor.model.FormFieldNode
 import com.crisiscleanup.feature.caseeditor.model.flatten
@@ -50,6 +52,7 @@ internal class CaseEditorDataLoader(
     workTypeStatusRepository: WorkTypeStatusRepository,
     translate: (String) -> String,
     private val editableWorksiteProvider: EditableWorksiteProvider,
+    private val networkMonitor: NetworkMonitor,
     resourceProvider: AndroidResourceProvider,
     coroutineScope: CoroutineScope,
     coroutineDispatcher: CoroutineDispatcher,
@@ -186,6 +189,8 @@ internal class CaseEditorDataLoader(
             var worksiteState = loadedWorksite ?: EmptyWorksite.copy(
                 incidentId = incidentIdIn,
                 autoContactFrequencyT = AutoContactFrequency.Often.literal,
+                flags = if (networkMonitor.isOnline.first()) EmptyWorksite.flags
+                else listOf(WorksiteFlag.wrongLocation())
             )
 
             with(editableWorksiteProvider) {
@@ -233,7 +238,9 @@ internal class CaseEditorDataLoader(
                             groupOptionsMap,
                         )
                     }
+                }
 
+                if (editSections.value.isEmpty() && formFields.isNotEmpty()) {
                     editSections.value = mutableListOf<String>().apply {
                         add(translate("caseForm.property_information"))
                         val requiredGroups = setOf("workInfo")
