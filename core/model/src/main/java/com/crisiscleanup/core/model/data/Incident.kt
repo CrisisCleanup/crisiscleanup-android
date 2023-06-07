@@ -64,4 +64,5 @@ data class IncidentFormField(
     private val htmlTypeLower = htmlType.lowercase()
     val isDivEnd = htmlTypeLower == "divend"
     val isHidden = htmlTypeLower == "hidden"
+    val isFrequency = htmlTypeLower == "cronselect"
 }

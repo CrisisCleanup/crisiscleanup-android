@@ -14,6 +14,18 @@ fun updateWorkTypeStatuses(
     createdAt: Instant = Clock.System.now(),
 ): Worksite {
     val worksiteWorkTypes = worksite.workTypes.associateBy(WorkType::workTypeLiteral)
+    val workTypeFrequencyLookup = inputData.mutableFormFieldData
+        .filter {
+            with(it.value) {
+                field.isFrequency && dynamicValue.valueString.isNotBlank()
+            }
+        }
+        .associate {
+            with(it.value) {
+                field.parentKey to dynamicValue.valueString
+            }
+        }
+
     val newWorkTypes = mutableListOf<WorkType>()
     val keepWorkTypes = mutableMapOf<String, WorkType>()
     inputData.mutableFormFieldData
@@ -28,6 +40,7 @@ fun updateWorkTypeStatuses(
             with(it.value) {
                 val workTypeLiteral = workTypeLookup[key]!!
                 val existingWorkType = worksiteWorkTypes[workTypeLiteral]
+                val recur = workTypeFrequencyLookup[field.fieldKey]?.ifBlank { null }
                 if (existingWorkType == null) {
                     newWorkTypes.add(
                         WorkType(
@@ -36,14 +49,17 @@ fun updateWorkTypeStatuses(
                             orgClaim = null,
                             nextRecurAt = null,
                             phase = null,
-                            recur = null,
+                            recur = recur,
                             statusLiteral = workTypeStatus.literal,
                             workTypeLiteral = workTypeLiteral,
                         )
                     )
                 } else {
+                    val isRecurChanged = recur != existingWorkType.recur
                     keepWorkTypes[workTypeLiteral] = existingWorkType.copy(
                         statusLiteral = workTypeStatus.literal,
+                        nextRecurAt = if (isRecurChanged) null else existingWorkType.nextRecurAt,
+                        recur = recur,
                     )
                 }
             }
