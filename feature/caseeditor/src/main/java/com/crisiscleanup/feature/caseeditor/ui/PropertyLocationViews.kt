@@ -95,10 +95,6 @@ internal fun PropertyLocationView(
             useMyLocation = useMyLocation,
         )
 
-        LocationFormView(editor)
-
-        // TODO Handle out of bounds properly
-
         val closePermissionDialog =
             remember(viewModel) { { editor.showExplainPermissionLocation.value = false } }
         val explainPermission by editor.showExplainPermissionLocation

@@ -378,22 +378,6 @@ class CaseEditorViewModel @Inject constructor(
         }
     }
 
-    private fun List<String>.translateJoin() = joinToString("\n") { s -> translator(s) }
-
-    private val incompleteLocationInfo = InvalidWorksiteInfo(
-        WorksiteSection.Location,
-        // TODO Include messages only where applicable
-        message = listOf(
-            // TODO Missing lat/lng shows the following error
-            // caseForm.no_lat_lon_error
-            "caseForm.address_required",
-            "caseForm.county_required",
-            "caseForm.city_required",
-            "caseForm.postal_code_required",
-            "caseForm.state_required",
-        ).translateJoin()
-    )
-
     private fun incompleteFormDataInfo(writerIndex: Int) = InvalidWorksiteInfo(
         when (writerIndex) {
             3 -> WorksiteSection.Details
@@ -405,30 +389,48 @@ class CaseEditorViewModel @Inject constructor(
         message = translator("info.missing_required_fields", R.string.incomplete_required_data),
     )
 
+    private fun translateInvalidInfo(
+        translateKey: String,
+        section: WorksiteSection = WorksiteSection.LocationAddress,
+    ) = InvalidWorksiteInfo(
+        section,
+        translate(translateKey),
+    )
+
     private fun validate(worksite: Worksite): InvalidWorksiteInfo = with(worksite) {
         if (name.isBlank()) {
-            return InvalidWorksiteInfo(
+            return translateInvalidInfo(
+                "caseForm.name_required",
                 WorksiteSection.Property,
-                translate("caseForm.name_required"),
             )
-
         }
         if (phone1.isBlank()) {
-            return InvalidWorksiteInfo(
+            return translateInvalidInfo(
+                "caseForm.phone_required",
                 WorksiteSection.Property,
-                translate("caseForm.phone_required"),
             )
         }
 
-        if (latitude == 0.0 ||
-            longitude == 0.0 ||
-            address.isBlank() ||
-            postalCode.isBlank() ||
-            county.isBlank() ||
-            city.isBlank() ||
-            state.isBlank()
-        ) {
-            return incompleteLocationInfo
+        if (latitude == 0.0 || longitude == 0.0) {
+            return translateInvalidInfo(
+                "caseForm.no_lat_lon_error",
+                WorksiteSection.Location,
+            )
+        }
+        if (address.isBlank()) {
+            return translateInvalidInfo("caseForm.address_required")
+        }
+        if (postalCode.isBlank()) {
+            return translateInvalidInfo("caseForm.postal_code_required")
+        }
+        if (county.isBlank()) {
+            return translateInvalidInfo("caseForm.county_required")
+        }
+        if (city.isBlank()) {
+            return translateInvalidInfo("caseForm.city_required")
+        }
+        if (state.isBlank()) {
+            return translateInvalidInfo("caseForm.state_required")
         }
 
         if (workTypes.isEmpty() ||
@@ -578,6 +580,32 @@ class CaseEditorViewModel @Inject constructor(
         navigateBack.value = true
     }
 
+    private fun setInvalidSection(index: Int, dataWriter: CaseDataWriter) {
+        when (dataWriter) {
+            is PropertyInputData -> {
+                invalidWorksiteInfo.value = InvalidWorksiteInfo(
+                    WorksiteSection.Property,
+                    dataWriter.getUserErrorMessage(),
+                )
+                showInvalidWorksiteSave.value = true
+            }
+
+            is LocationInputData -> {
+                val (isAddressError, message) = dataWriter.getUserErrorMessage()
+                val section =
+                    if (isAddressError) WorksiteSection.LocationAddress
+                    else WorksiteSection.Location
+                invalidWorksiteInfo.value = InvalidWorksiteInfo(section, message)
+                showInvalidWorksiteSave.value = true
+            }
+
+            is FormFieldsInputData -> {
+                invalidWorksiteInfo.value = incompleteFormDataInfo(index)
+                showInvalidWorksiteSave.value = true
+            }
+        }
+    }
+
     private fun transferChanges(indicateInvalidSection: Boolean = false): Boolean {
         tryGetEditorState()?.let { editorState ->
             (workEditor as? EditableWorkDataEditor)?.let { workDataEditor ->
@@ -587,27 +615,8 @@ class CaseEditorViewModel @Inject constructor(
                     worksite = dataWriter.updateCase(worksite!!)
                     if (worksite == null) {
                         if (indicateInvalidSection) {
-                            when (dataWriter) {
-                                is PropertyInputData -> {
-                                    invalidWorksiteInfo.value = InvalidWorksiteInfo(
-                                        WorksiteSection.Property,
-                                        dataWriter.getUserErrorMessage(),
-                                    )
-                                    showInvalidWorksiteSave.value = true
-                                }
-
-                                is LocationInputData -> {
-                                    invalidWorksiteInfo.value = incompleteLocationInfo
-                                    showInvalidWorksiteSave.value = true
-                                }
-
-                                is FormFieldsInputData -> {
-                                    invalidWorksiteInfo.value = incompleteFormDataInfo(index)
-                                    showInvalidWorksiteSave.value = true
-                                }
-                            }
+                            setInvalidSection(index, dataWriter)
                         }
-
                         return false
                     }
                 }
@@ -711,6 +720,7 @@ enum class WorksiteSection {
     None,
     Property,
     Location,
+    LocationAddress,
     Details,
     Hazards,
     VolunteerReport,

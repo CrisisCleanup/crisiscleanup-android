@@ -80,6 +80,34 @@ class LocationInputData(
         stateError = ""
     }
 
+    fun getUserErrorMessage(): Pair<Boolean, String> {
+        val translationKeys = mutableListOf<String>()
+        var isAddressError = true
+
+        if (coordinates.value == LatLng(0.0, 0.0)) {
+            isAddressError = false
+            translationKeys.add("caseForm.no_lat_lon_error")
+        }
+        if (streetAddress.isBlank()) {
+            translationKeys.add("caseForm.address_required")
+        }
+        if (zipCode.isBlank()) {
+            translationKeys.add("caseForm.postal_code_required")
+        }
+        if (county.isBlank()) {
+            translationKeys.add("caseForm.county_required")
+        }
+        if (city.isBlank()) {
+            translationKeys.add("caseForm.city_required")
+        }
+        if (state.isBlank()) {
+            translationKeys.add("caseForm.state_required")
+        }
+
+        val message = translationKeys.joinToString("\n") { translator(it) }
+        return Pair(isAddressError, message)
+    }
+
     private fun validate(): Boolean {
         resetValidity()
 

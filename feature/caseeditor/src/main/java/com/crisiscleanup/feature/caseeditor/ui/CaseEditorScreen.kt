@@ -22,7 +22,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -275,13 +274,14 @@ private fun ColumnScope.FullEditView(
 
     val pagerState = rememberLazyListState()
 
+    // Content list sections to list item index. Trace fullEditContent.
     val indexLookups by rememberSectionContentIndexLookup(
         mapOf(
             0 to 1,
-            1 to 6,
-            2 to 9,
-            3 to 12,
-            4 to 15,
+            1 to 7,
+            2 to 10,
+            3 to 13,
+            4 to 16,
         )
     )
     val contentListState = rememberLazyListState()
@@ -447,10 +447,12 @@ private fun ColumnScope.FullEditView(
 
     val editPropertyData = remember(viewModel) { { sliderScrollToSectionItem(0, 2) } }
     val editLocation = remember(viewModel) { { sliderScrollToSectionItem(0, 3) } }
+    val editLocationAddress = remember(viewModel) { { sliderScrollToSectionItem(0, 4) } }
     val editFormData = remember(viewModel) { { index: Int -> sliderScrollToSection(index) } }
     InvalidSaveDialog(
-        onEditLocation = editLocation,
+        onEditLocationAddress = editLocationAddress,
         onEditPropertyData = editPropertyData,
+        onEditLocation = editLocation,
         onEditFormData = editFormData,
     )
 }
@@ -613,6 +615,10 @@ private fun LazyListScope.propertyLocationSection(
                     openAddressSearch = onSearchAddress,
                 )
             }
+
+            item(key = "section-location-address") {
+                LocationFormView(locationEditor)
+            }
         }
 
         viewModel.notesFlagsEditor?.let { notesFlagsEditor ->
@@ -688,6 +694,7 @@ private fun PromptChangesDialog(
 private fun InvalidSaveDialog(
     onEditPropertyData: () -> Unit = {},
     onEditLocation: () -> Unit = {},
+    onEditLocationAddress: () -> Unit = {},
     onEditFormData: (Int) -> Unit = {},
     viewModel: CaseEditorViewModel = hiltViewModel(),
 ) {
@@ -723,8 +730,9 @@ private fun InvalidSaveDialog(
                         text = translator("actions.fix", R.string.fix),
                         onClick = {
                             when (val section = invalidWorksiteInfo.invalidSection) {
-                                WorksiteSection.Location -> onEditLocation()
                                 WorksiteSection.Property -> onEditPropertyData()
+                                WorksiteSection.Location -> onEditLocation()
+                                WorksiteSection.LocationAddress -> onEditLocationAddress()
                                 WorksiteSection.Details -> onEditFormData(1)
                                 WorksiteSection.WorkType -> onEditFormData(2)
                                 WorksiteSection.Hazards -> onEditFormData(3)
