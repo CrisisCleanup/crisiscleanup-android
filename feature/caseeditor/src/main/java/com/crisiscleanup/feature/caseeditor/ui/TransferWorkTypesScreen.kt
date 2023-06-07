@@ -173,7 +173,7 @@ internal fun TransferWorkTypesView(
                 val listItemModifier =
                     if (index > 0) textModifier.listItemTopPadding() else textModifier
                 Text(
-                    "\u2022 $s}",
+                    "\u2022 $s",
                     listItemModifier.listItemNestedPadding(),
                     style = textStyle,
                 )
