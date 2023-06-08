@@ -183,6 +183,46 @@ data class NetworkWorksiteShort(
     @SerialName("work_types")
     private val workTypes: List<NetworkWorksiteFull.WorkTypeShort>,
 ) {
+    companion object {
+        internal fun distinctNewestWorkTypes(
+            workTypes: List<NetworkWorksiteFull.WorkTypeShort>,
+            keyWorkType: NetworkWorksiteFull.KeyWorkTypeShort?,
+        ): Pair<
+                List<NetworkWorksiteFull.WorkTypeShort>,
+                NetworkWorksiteFull.KeyWorkTypeShort?,
+                > {
+            val newMap = mutableMapOf<String, Pair<Int, NetworkWorksiteFull.WorkTypeShort>>()
+            workTypes.forEachIndexed { index, workType ->
+                val literal = workType.workType
+                val similar = newMap[literal]
+                if (similar == null || workType.id > similar.second.id) {
+                    newMap[literal] = Pair(index, workType)
+                }
+            }
+
+            val newestWorkTypes: List<NetworkWorksiteFull.WorkTypeShort>
+            val newestKeyWorkType: NetworkWorksiteFull.KeyWorkTypeShort?
+            if (newMap.size == workTypes.size) {
+                newestWorkTypes = workTypes
+                newestKeyWorkType = keyWorkType
+            } else {
+                newestWorkTypes = newMap.values
+                    .sortedBy { it.first }
+                    .map { it.second }
+                newestKeyWorkType = keyWorkType?.let {
+                    newMap[it.workType]?.second?.let { kwt ->
+                        NetworkWorksiteFull.KeyWorkTypeShort(
+                            kwt.workType,
+                            kwt.orgClaim,
+                            kwt.status,
+                        )
+                    }
+                }
+            }
+            return Pair(newestWorkTypes, newestKeyWorkType)
+        }
+    }
+
     @Transient
     var newestWorkTypes: List<NetworkWorksiteFull.WorkTypeShort> = emptyList()
         private set
@@ -192,32 +232,75 @@ data class NetworkWorksiteShort(
         private set
 
     init {
-        val newMap = mutableMapOf<String, Pair<Int, NetworkWorksiteFull.WorkTypeShort>>()
-        workTypes.forEachIndexed { index, workType ->
-            val literal = workType.workType
-            val similar = newMap[literal]
-            if (similar == null || workType.id > similar.second.id) {
-                newMap[literal] = Pair(index, workType)
-            }
-        }
+        val distinct = distinctNewestWorkTypes(workTypes, keyWorkType)
+        newestWorkTypes = distinct.first
+        newestKeyWorkType = distinct.second
+    }
+}
 
-        if (newMap.size == workTypes.size) {
-            newestWorkTypes = workTypes
-            newestKeyWorkType = keyWorkType
-        } else {
-            newestWorkTypes = newMap.values
-                .sortedBy { it.first }
-                .map { it.second }
-            newestKeyWorkType = keyWorkType?.let {
-                newMap[it.workType]?.second?.let { kwt ->
-                    NetworkWorksiteFull.KeyWorkTypeShort(
-                        kwt.workType,
-                        kwt.orgClaim,
-                        kwt.status,
-                    )
-                }
-            }
-        }
+
+@Serializable
+data class NetworkWorksitesPageResult(
+    val errors: List<NetworkCrisisCleanupApiError>? = null,
+    val count: Int? = null,
+    val results: List<NetworkWorksitePage>? = null,
+)
+
+// Copy similar changes from [NetworkWorksiteShort] above
+@Serializable
+data class NetworkWorksitePage(
+    val id: Long,
+    val address: String,
+    @SerialName("auto_contact_frequency_t")
+    val autoContactFrequencyT: String,
+    @SerialName("case_number")
+    val caseNumber: String,
+    val city: String,
+    val county: String,
+    // Full does not have this field. Updates should not overwrite
+    @Serializable(InstantSerializer::class)
+    @SerialName("created_at")
+    val createdAt: Instant,
+    val email: String? = null,
+    // Differs from full
+    @SerialName("favorite_id")
+    val favoriteId: Long? = null,
+    val flags: List<NetworkWorksiteFull.FlagShort>,
+    val incident: Long,
+    @SerialName("key_work_type")
+    private val keyWorkType: NetworkWorksiteFull.KeyWorkTypeShort?,
+    val location: NetworkWorksiteFull.Location,
+    val name: String,
+    val phone1: String,
+    val phone2: String?,
+    @SerialName("postal_code")
+    val postalCode: String?,
+    @SerialName("pluscode")
+    val plusCode: String? = null,
+    @SerialName("reported_by")
+    val reportedBy: Long?,
+    val state: String,
+    val svi: Float?,
+    @Serializable(InstantSerializer::class)
+    @SerialName("updated_at")
+    val updatedAt: Instant,
+    @SerialName("what3words")
+    val what3words: String? = null,
+    @SerialName("work_types")
+    private val workTypes: List<NetworkWorksiteFull.WorkTypeShort>,
+) {
+    @Transient
+    var newestWorkTypes: List<NetworkWorksiteFull.WorkTypeShort> = emptyList()
+        private set
+
+    @Transient
+    var newestKeyWorkType: NetworkWorksiteFull.KeyWorkTypeShort? = null
+        private set
+
+    init {
+        val distinct = NetworkWorksiteShort.distinctNewestWorkTypes(workTypes, keyWorkType)
+        newestWorkTypes = distinct.first
+        newestKeyWorkType = distinct.second
     }
 }
 
@@ -228,6 +311,8 @@ data class NetworkWorksitesCoreDataResult(
     val results: List<NetworkWorksiteCoreData>? = null,
 )
 
+// TODO This was created in an attempt to speed up paging from /worksites.
+//      Remove if no longer necessary after updates to paging endpoint.
 // Copy similar changes from [NetworkWorksiteFull] above
 @Serializable
 data class NetworkWorksiteCoreData(

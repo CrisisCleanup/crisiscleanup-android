@@ -21,9 +21,11 @@ class NewestWorkTypes {
         assertEquals(emptyList(), worksite.newestWorkTypes)
         assertNull(worksite.newestKeyWorkType)
 
-        val worksiteShort = testNetworkWorksiteShort()
-        assertEquals(emptyList(), worksiteShort.newestWorkTypes)
-        assertNull(worksiteShort.newestKeyWorkType)
+        val (newestWorkTypes, newestKeyWorkType) = NetworkWorksiteShort.distinctNewestWorkTypes(
+            emptyList(), null
+        )
+        assertEquals(emptyList(), newestWorkTypes)
+        assertNull(newestKeyWorkType)
     }
 
     @Test
@@ -49,26 +51,16 @@ class NewestWorkTypes {
 
     @Test
     fun noDuplicateWorkTypes_short() {
-        val worksiteShort = testNetworkWorksiteShort(
-            keyWorkType = NetworkWorksiteFull.KeyWorkTypeShort("work-type-2", null, "status"),
-            workTypes = listOf(
-                testWorkTypeShort(75),
-                testWorkTypeShort(1),
-                testWorkTypeShort(2),
-            )
+        val workTypes = listOf(
+            testWorkTypeShort(75),
+            testWorkTypeShort(1),
+            testWorkTypeShort(2),
         )
-        assertEquals(
-            listOf(
-                testWorkTypeShort(75),
-                testWorkTypeShort(1),
-                testWorkTypeShort(2),
-            ),
-            worksiteShort.newestWorkTypes,
-        )
-        assertEquals(
-            NetworkWorksiteFull.KeyWorkTypeShort("work-type-2", null, "status"),
-            worksiteShort.newestKeyWorkType,
-        )
+        val keyWorkType = NetworkWorksiteFull.KeyWorkTypeShort("work-type-2", null, "status")
+        val (newestWorkTypes, newestKeyWorkType) =
+            NetworkWorksiteShort.distinctNewestWorkTypes(workTypes, keyWorkType)
+        assertEquals(workTypes, newestWorkTypes)
+        assertEquals(keyWorkType, newestKeyWorkType)
     }
 
     @Test
@@ -120,27 +112,29 @@ class NewestWorkTypes {
 
     @Test
     fun duplicateWorkTypes_short() {
-        val worksiteShort = testNetworkWorksiteShort(
-            keyWorkType = NetworkWorksiteFull.KeyWorkTypeShort(
-                "work-type-m",
-                null,
-                "status",
-            ),
-            workTypes = listOf(
-                testWorkTypeShort(81, workType = "work-type-b"),
-                testWorkTypeShort(2, workType = "work-type-m"),
-                testWorkTypeShort(155, workType = "work-type-a"),
-                testWorkTypeShort(1, workType = "work-type-b"),
-                testWorkTypeShort(75, workType = "work-type-a"),
-                testWorkTypeShort(
-                    52,
-                    workType = "work-type-m",
-                    orgClaim = 158,
-                    status = "status-high",
-                ),
-                testWorkTypeShort(21, workType = "work-type-b"),
-            )
+        val keyWorkType = NetworkWorksiteFull.KeyWorkTypeShort(
+            "work-type-m",
+            null,
+            "status",
         )
+        val workTypes = listOf(
+            testWorkTypeShort(81, workType = "work-type-b"),
+            testWorkTypeShort(2, workType = "work-type-m"),
+            testWorkTypeShort(155, workType = "work-type-a"),
+            testWorkTypeShort(1, workType = "work-type-b"),
+            testWorkTypeShort(75, workType = "work-type-a"),
+            testWorkTypeShort(
+                52,
+                workType = "work-type-m",
+                orgClaim = 158,
+                status = "status-high",
+            ),
+            testWorkTypeShort(21, workType = "work-type-b"),
+        )
+
+        val (newestWorkTypes, newestKeyWorkType) =
+            NetworkWorksiteShort.distinctNewestWorkTypes(workTypes, keyWorkType)
+
         assertEquals(
             listOf(
                 testWorkTypeShort(81, workType = "work-type-b"),
@@ -152,7 +146,7 @@ class NewestWorkTypes {
                     status = "status-high",
                 ),
             ),
-            worksiteShort.newestWorkTypes,
+            newestWorkTypes,
         )
         assertEquals(
             NetworkWorksiteFull.KeyWorkTypeShort(
@@ -160,7 +154,7 @@ class NewestWorkTypes {
                 orgClaim = 158,
                 status = "status-high",
             ),
-            worksiteShort.newestKeyWorkType,
+            newestKeyWorkType,
         )
     }
 

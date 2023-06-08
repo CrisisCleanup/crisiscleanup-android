@@ -4,7 +4,7 @@ import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-class NetworkWorksitesPagedTest {
+class NetworkWorksitesFullTest {
     @Test
     fun getWorksitesCount() {
         val result =
