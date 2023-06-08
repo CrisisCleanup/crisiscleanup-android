@@ -75,26 +75,6 @@ private fun FormItems(
 }
 
 @Composable
-internal fun FormDataView(
-    viewModel: EditCaseBaseViewModel,
-    inputData: FormFieldsInputData,
-    isEditable: Boolean = true,
-) {
-    HelpContent(viewModel) { showHelp ->
-        val closeKeyboard = rememberCloseKeyboard(viewModel)
-        val scrollState = rememberScrollState()
-        Column(
-            Modifier
-                .scrollFlingListener(closeKeyboard)
-                .verticalScroll(scrollState)
-                .fillMaxSize()
-        ) {
-            FormItems(viewModel, inputData, isEditable, showHelp)
-        }
-    }
-}
-
-@Composable
 internal fun FormDataItems(
     viewModel: EditCaseBaseViewModel,
     inputData: FormFieldsInputData,

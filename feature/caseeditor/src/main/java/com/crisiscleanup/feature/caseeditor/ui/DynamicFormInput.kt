@@ -231,10 +231,11 @@ private fun CheckboxItem(
     enabled: Boolean = true,
     updateWorkTypeStatus: (WorkTypeStatus) -> Unit = {},
 ) {
+    val isNewCase = LocalCaseEditor.current.isNewCase
     val isChecked = itemData.dynamicValue.valueBoolean
     val isActiveWorkType = isChecked && itemData.isWorkTypeGroup
 
-    val trailingContent: (@Composable () -> Unit)? = if (isActiveWorkType) {
+    val trailingContent: (@Composable () -> Unit)? = if (!isNewCase && isActiveWorkType) {
         @Composable {
             WorkTypeStatusDropdown(
                 itemData.workTypeStatus,

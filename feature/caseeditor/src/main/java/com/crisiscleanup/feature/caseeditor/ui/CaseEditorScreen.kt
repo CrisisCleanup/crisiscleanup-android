@@ -386,7 +386,11 @@ private fun ColumnScope.FullEditView(
     Box(Modifier.weight(1f)) {
         val closeKeyboard = rememberCloseKeyboard(viewModel)
 
-        val caseEditor = CaseEditor(isEditable, caseData.statusOptions)
+        val caseEditor = CaseEditor(
+            isEditable,
+            caseData.statusOptions,
+            caseData.worksite.isNew,
+        )
         CompositionLocalProvider(LocalCaseEditor provides caseEditor) {
             LazyColumn(
                 modifier

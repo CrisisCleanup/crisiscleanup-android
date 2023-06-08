@@ -169,7 +169,11 @@ internal fun EditExistingCaseRoute(
                 }
             } else if (tabTitles.isNotEmpty()) {
                 val statusOptions by viewModel.statusOptions.collectAsStateWithLifecycle()
-                val caseEditor = CaseEditor(isEditable, statusOptions)
+                val caseEditor = CaseEditor(
+                    isEditable,
+                    statusOptions,
+                    false,
+                )
                 val appTranslator = remember(viewModel) {
                     AppTranslator(translator = viewModel)
                 }
