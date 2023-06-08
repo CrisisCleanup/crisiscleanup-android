@@ -21,6 +21,7 @@ import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.sync.SyncPull.determineSyncSteps
 import com.crisiscleanup.sync.SyncPull.executePlan
 import com.crisiscleanup.sync.initializers.scheduleSyncMedia
+import com.crisiscleanup.sync.initializers.scheduleSyncWorksitesFull
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
@@ -259,11 +260,8 @@ class AppSyncer @Inject constructor(
     }
 
     override fun scheduleSyncWorksitesFull() {
-        // TODO Re-enable if full downloads are needed after paging data proves insufficient.
-        //      It may be possible to change payload to download the full worksite payloads rather than a truncated subset.
-        //      Profile if there are noticeable speed gains and decide.
-//        stopSyncPullWorksitesFull()
-//        scheduleSyncWorksitesFull(context)
+        stopSyncPullWorksitesFull()
+        scheduleSyncWorksitesFull(context)
     }
 
     private suspend fun languagePull() {

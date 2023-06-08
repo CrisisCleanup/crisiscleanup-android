@@ -423,7 +423,7 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
-        SELECT w.id, w.network_id, r.synced_at, phone1
+        SELECT w.id, w.network_id, r.synced_at
         FROM worksites w INNER JOIN worksites_root r ON w.id=r.id
         WHERE w.incident_id=:incidentId AND
               (longitude BETWEEN :longitudeWest AND :longitudeEast) AND

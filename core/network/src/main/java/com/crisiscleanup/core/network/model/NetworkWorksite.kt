@@ -58,6 +58,38 @@ data class NetworkWorksiteFull(
     @SerialName("work_types")
     private val workTypes: List<NetworkWorkType>,
 ) {
+    companion object {
+        internal fun distinctNewestWorkTypes(
+            workTypes: List<NetworkWorkType>,
+            keyWorkType: NetworkWorkType?,
+        ): Pair<List<NetworkWorkType>, NetworkWorkType?> {
+            val newMap = mutableMapOf<String, Pair<Int, NetworkWorkType>>()
+            workTypes.forEachIndexed { index, workType ->
+                val literal = workType.workType
+                val similar = newMap[literal]
+                if (similar == null || workType.id!! > similar.second.id!!) {
+                    newMap[literal] = Pair(index, workType)
+                }
+            }
+
+            val newestWorkTypes: List<NetworkWorkType>
+            val newestKeyWorkType: NetworkWorkType?
+            if (newMap.size == workTypes.size) {
+                newestWorkTypes = workTypes
+                newestKeyWorkType = keyWorkType
+            } else {
+                newestWorkTypes = newMap.values
+                    .sortedBy { it.first }
+                    .map { it.second }
+                newestKeyWorkType = keyWorkType?.let {
+                    newMap[it.workType]?.second
+                }
+            }
+
+            return Pair(newestWorkTypes, newestKeyWorkType)
+        }
+    }
+
     @Transient
     var newestWorkTypes: List<NetworkWorkType> = emptyList()
         private set
@@ -67,26 +99,9 @@ data class NetworkWorksiteFull(
         private set
 
     init {
-        val newMap = mutableMapOf<String, Pair<Int, NetworkWorkType>>()
-        workTypes.forEachIndexed { index, workType ->
-            val literal = workType.workType
-            val similar = newMap[literal]
-            if (similar == null || workType.id!! > similar.second.id!!) {
-                newMap[literal] = Pair(index, workType)
-            }
-        }
-
-        if (newMap.size == workTypes.size) {
-            newestWorkTypes = workTypes
-            newestKeyWorkType = keyWorkType
-        } else {
-            newestWorkTypes = newMap.values
-                .sortedBy { it.first }
-                .map { it.second }
-            newestKeyWorkType = keyWorkType?.let {
-                newMap[it.workType]?.second
-            }
-        }
+        val distinct = distinctNewestWorkTypes(workTypes, keyWorkType)
+        newestWorkTypes = distinct.first
+        newestKeyWorkType = distinct.second
     }
 
     @Serializable
@@ -311,8 +326,6 @@ data class NetworkWorksitesCoreDataResult(
     val results: List<NetworkWorksiteCoreData>? = null,
 )
 
-// TODO This was created in an attempt to speed up paging from /worksites.
-//      Remove if no longer necessary after updates to paging endpoint.
 // Copy similar changes from [NetworkWorksiteFull] above
 @Serializable
 data class NetworkWorksiteCoreData(
@@ -356,21 +369,7 @@ data class NetworkWorksiteCoreData(
         private set
 
     init {
-        val newMap = mutableMapOf<String, Pair<Int, NetworkWorkType>>()
-        workTypes.forEachIndexed { index, workType ->
-            val literal = workType.workType
-            val similar = newMap[literal]
-            if (similar == null || workType.id!! > similar.second.id!!) {
-                newMap[literal] = Pair(index, workType)
-            }
-        }
-
-        newestWorkTypes = if (newMap.size == workTypes.size) {
-            workTypes
-        } else {
-            newMap.values
-                .sortedBy { it.first }
-                .map { it.second }
-        }
+        val distinct = NetworkWorksiteFull.distinctNewestWorkTypes(workTypes, null)
+        newestWorkTypes = distinct.first
     }
 }

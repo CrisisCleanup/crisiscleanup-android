@@ -59,7 +59,7 @@ class IncidentWorksitesFullSyncer @Inject constructor(
                 val fullStats = syncStats.fullStats ?: IncidentWorksitesFullSyncStatsEntity(
                     syncStats.entity.incidentId,
                     syncedAt = null,
-                    isMyLocationCentered = true,
+                    isMyLocationCentered = false,
                     latitude = 999.0,
                     longitude = 999.0,
                     radius = 0.0,
@@ -215,7 +215,7 @@ class IncidentWorksitesFullSyncer @Inject constructor(
                 queryBounds,
             ) {
                 val syncWorksite = now - it.syncedAt > recentSyncDuration ||
-                        it.phone1?.isNotEmpty() != true
+                        it.formData.isEmpty()
                 if (!syncWorksite) {
                     skipCount++
                 }
@@ -281,7 +281,7 @@ private suspend fun IncidentWorksitesFullSyncStatsEntity.asQueryParameters(
 
     var searchRadius = radius
     if (searchRadius < 5 && isMyLocationCentered) {
-        searchRadius = 50.0
+        searchRadius = 40.0
     }
     val locationChangeLength = searchRadius * 0.5
     val hasLocation = abs(latitude) <= 90 && abs(longitude) <= 180 && searchRadius > 0
