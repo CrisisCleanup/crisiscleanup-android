@@ -140,7 +140,7 @@ class CaseEditorViewModel @Inject constructor(
     /**
      * For preventing unwanted editor reloads
      *
-     * Editors should be set only "once" during an editing session.
+     * Initial editing data should be set only "once" during an editing session.
      * External data change signals should be ignored once editing begins or input data may be lost.
      * Managing state internally is much cleaner than weaving and managing related external state.
      */
@@ -149,7 +149,7 @@ class CaseEditorViewModel @Inject constructor(
     /**
      * A sufficient amount of time for local load to finish after network load has finished.
      */
-    private val editorSetWindow = 10.seconds
+    private val editorSetWindow = 1.seconds
     private val caseEditors: StateFlow<CaseEditors?>
 
     val propertyEditor: CasePropertyDataEditor?
@@ -226,11 +226,6 @@ class CaseEditorViewModel @Inject constructor(
 
         caseEditors = dataLoader.uiState
             .filter {
-                // TODO Redesign after worksite caching is complete.
-                //      Network load finish should populate data in readonly mode.
-                //      Local load finish (needs to be more reliable) enables editable.
-                //      Local load must include propagation of database changes and not just local state propagation which is why a delay is necessary.
-                //      See data loader state, logic here, and screen's isEditable flag.
                 it.asCaseData()?.isNetworkLoadFinished == true &&
                         editorSetInstant?.let { setInstant ->
                             Clock.System.now().minus(setInstant) < editorSetWindow
@@ -686,7 +681,7 @@ sealed interface CaseEditorUiState {
 
     data class CaseData(
         val orgId: Long,
-        val isEditCapable: Boolean,
+        val isEditingAllowed: Boolean,
         val statusOptions: List<WorkTypeStatus>,
         val worksite: Worksite,
         val incident: Incident,

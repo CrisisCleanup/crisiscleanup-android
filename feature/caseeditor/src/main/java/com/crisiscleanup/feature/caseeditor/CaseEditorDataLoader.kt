@@ -283,20 +283,27 @@ internal class CaseEditorDataLoader(
                 incidentBounds = bounds
             }
 
-            val isReadyForEditing = editSections.value.isNotEmpty() &&
-                    workTypeStatuses.isNotEmpty() &&
-                    (isCreateWorksite || localWorksite != null)
-            val isNetworkLoadFinished = isReadyForEditing && (isCreateWorksite || isPulled)
-            // TODO Revisit after worksite caching is complete
-            //      Data should not be editable until this is finished
-            //      Once this is finished new changes should be ignored until changes are committed
-            val isLocalLoadFinished = isNetworkLoadFinished &&
-                    (isCreateWorksite || worksiteState.phone1.isNotBlank())
+            var isEditingAllowed = editSections.value.isNotEmpty() &&
+                    workTypeStatuses.isNotEmpty()
+            var isNetworkLoadFinished = true
+            var isLocalLoadFinished = true
+            if (!isCreateWorksite) {
+                // Minimal state for editing to to begin
+                isEditingAllowed = isEditingAllowed &&
+                        localWorksite != null
+                isNetworkLoadFinished = isEditingAllowed &&
+                        isPulled
+                // Reliable state for editing to begin.
+                // There are edge cases where network changes are still committing/propagating locally while this is true.
+                // If internet connection is not available this may never turn true.
+                isLocalLoadFinished = isNetworkLoadFinished &&
+                        worksiteState.formData?.isNotEmpty() == true
+            }
             val isTranslationUpdated =
                 editableWorksiteProvider.formFieldTranslationLookup.isNotEmpty()
             CaseEditorUiState.CaseData(
                 organization.id,
-                isReadyForEditing,
+                isEditingAllowed,
                 workTypeStatuses,
                 worksiteState,
                 incident,
