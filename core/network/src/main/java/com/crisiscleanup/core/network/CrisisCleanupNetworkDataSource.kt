@@ -12,6 +12,7 @@ import com.crisiscleanup.core.network.model.NetworkWorkTypeStatusResult
 import com.crisiscleanup.core.network.model.NetworkWorksiteCoreData
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import com.crisiscleanup.core.network.model.NetworkWorksiteLocationSearch
+import com.crisiscleanup.core.network.model.NetworkWorksitePage
 import com.crisiscleanup.core.network.model.NetworkWorksiteShort
 import com.crisiscleanup.core.network.model.NetworkWorksitesShortResult
 import kotlinx.datetime.Instant
@@ -78,7 +79,7 @@ interface CrisisCleanupNetworkDataSource {
         latitude: Double? = null,
         longitude: Double? = null,
         updatedAtAfter: Instant? = null,
-    ): List<NetworkWorksiteShort>
+    ): List<NetworkWorksitePage>
 
     suspend fun getLocationSearchWorksites(
         incidentId: Long,

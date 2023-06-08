@@ -138,7 +138,7 @@ private interface DataSourceApi {
         centerCoordinates: List<Double>?,
         @Query("updated_at__gt")
         updatedAtAfter: Instant?,
-    ): NetworkWorksitesShortResult
+    ): NetworkWorksitesPageResult
 
     @GET("languages")
     suspend fun getLanguages(): NetworkLanguagesResult
@@ -267,7 +267,7 @@ class DataApiClient @Inject constructor(
         latitude: Double?,
         longitude: Double?,
         updatedAtAfter: Instant?,
-    ): List<NetworkWorksiteShort> {
+    ): List<NetworkWorksitePage> {
         val centerCoordinates: List<Double>? = if (latitude == null && longitude == null) null else
             listOf(latitude!!, longitude!!)
         val result = networkApi.getWorksitesPage(

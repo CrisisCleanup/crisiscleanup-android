@@ -12,6 +12,7 @@ import com.crisiscleanup.core.network.model.NetworkNote
 import com.crisiscleanup.core.network.model.NetworkWorkType
 import com.crisiscleanup.core.network.model.NetworkWorksiteCoreData
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
+import com.crisiscleanup.core.network.model.NetworkWorksitePage
 import com.crisiscleanup.core.network.model.NetworkWorksiteShort
 
 // Update [NetworkWorksiteCoreData.asEntity] below with similar changes
@@ -100,6 +101,36 @@ fun NetworkWorksiteShort.asEntity() = WorksiteEntity(
     plusCode = null,
     reportedBy = null,
     what3Words = null,
+)
+
+fun NetworkWorksitePage.asEntity() = WorksiteEntity(
+    id = 0,
+    networkId = id,
+    incidentId = incident,
+    address = address,
+    caseNumber = caseNumber,
+    city = city,
+    county = county,
+    createdAt = createdAt,
+    favoriteId = favoriteId,
+    keyWorkTypeType = newestKeyWorkType?.workType ?: "",
+    keyWorkTypeOrgClaim = newestKeyWorkType?.orgClaim,
+    keyWorkTypeStatus = newestKeyWorkType?.status ?: "",
+    latitude = location.coordinates[1],
+    longitude = location.coordinates[0],
+    name = name,
+    postalCode = postalCode ?: "",
+    state = state,
+    svi = svi,
+    updatedAt = updatedAt,
+
+    autoContactFrequencyT = autoContactFrequencyT,
+    email = email,
+    phone1 = phone1,
+    phone2 = phone2,
+    plusCode = plusCode,
+    reportedBy = reportedBy,
+    what3Words = what3words,
 )
 
 fun KeyDynamicValuePair.asWorksiteEntity() = WorksiteFormDataEntity(
