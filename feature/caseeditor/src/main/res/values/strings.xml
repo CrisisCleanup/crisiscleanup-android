@@ -34,10 +34,8 @@
     <string name="expand_section">~~Expand %s</string>
     <string name="collapse_section">~~Collapse %s</string>
 
-    <string name="change_status">Change status</string>
-
-    <string name="is_pending_sync">Pending sync</string>
-    <string name="is_syncing">Syncing</string>
+    <string name="is_pending_sync">~~Pending sync</string>
+    <string name="is_syncing">~~Syncing</string>
 
     <string name="save_as_favorite">~~Save as favorite</string>
     <string name="remove_favorite">~~Remove favorite</string>

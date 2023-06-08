@@ -1,7 +1,10 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -37,7 +40,10 @@ internal fun CaseIncidentView(
     val incidentName = incident.shortName
     val disasterResId = getDisasterIcon(incident.disaster)
     Row(
-        modifier = modifier.listItemPadding(),
+        modifier = modifier
+            .listItemPadding()
+            // Match icon frame size below
+            .heightIn(min = 48.dp),
         verticalAlignment = Alignment.CenterVertically,
         // TODO Common dimensions
         horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -59,10 +65,16 @@ internal fun CaseIncidentView(
         )
 
         if (isSyncing) {
-            Icon(
-                imageVector = CrisisCleanupIcons.CloudSync,
-                contentDescription = stringResource(R.string.is_syncing),
-            )
+            Box(
+                // minimumInteractiveComponentSize > IconButtonTokens.StateLayerSize
+                modifier = Modifier.size(48.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = CrisisCleanupIcons.CloudSync,
+                    contentDescription = stringResource(R.string.is_syncing),
+                )
+            }
         } else if (isPendingSync) {
             CrisisCleanupIconButton(
                 onClick = scheduleSync,
@@ -74,9 +86,25 @@ internal fun CaseIncidentView(
     }
 }
 
-@Preview
+@Preview("syncing")
 @Composable
-private fun CaseIncidentPreview() {
+private fun CaseIncidentSyncingPreview() {
+    CrisisCleanupTheme {
+        Surface {
+            CaseIncidentView(
+                incident = EmptyIncident.copy(
+                    name = "Big sweeping hurricane across the gulf",
+                    shortName = "Big hurricane"
+                ),
+                isSyncing = true,
+            )
+        }
+    }
+}
+
+@Preview("pending-sync")
+@Composable
+private fun CaseIncidentPendingSyncPreview() {
     CrisisCleanupTheme {
         Surface {
             CaseIncidentView(
