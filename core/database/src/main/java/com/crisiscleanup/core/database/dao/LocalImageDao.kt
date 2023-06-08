@@ -33,7 +33,7 @@ interface LocalImageDao {
 
     @Transaction
     @Query("SELECT uri FROM worksite_local_images WHERE id=:id")
-    fun streamLocalImageUri(id: Long): Flow<String>
+    fun streamLocalImageUri(id: Long): Flow<String?>
 
     @Transaction
     @Query("SELECT * FROM worksite_local_images WHERE id=:id")

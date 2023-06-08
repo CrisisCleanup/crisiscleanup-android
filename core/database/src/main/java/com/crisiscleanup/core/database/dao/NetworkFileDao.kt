@@ -47,7 +47,7 @@ interface NetworkFileDao {
 
     @Transaction
     @Query("SELECT full_url FROM network_files WHERE id=:id")
-    fun streamNetworkImageUrl(id: Long): Flow<String>
+    fun streamNetworkImageUrl(id: Long): Flow<String?>
 
     @Transaction
     @Query("SELECT * FROM worksite_to_network_file WHERE network_file_id=:fileId")

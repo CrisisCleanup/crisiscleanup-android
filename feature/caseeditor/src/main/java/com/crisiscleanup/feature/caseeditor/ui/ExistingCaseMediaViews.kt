@@ -232,7 +232,7 @@ internal fun TakePhotoSelectImage(
         contract = ActivityResultContracts.TakePicture()
     ) { isTaken ->
         if (isTaken) {
-            viewModel.onMediaSelected(cameraPhotoUri)
+            viewModel.onMediaSelected(cameraPhotoUri, false)
         }
         closeOptions()
     }
@@ -240,7 +240,7 @@ internal fun TakePhotoSelectImage(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri: Uri? ->
         uri?.let {
-            viewModel.onMediaSelected(uri)
+            viewModel.onMediaSelected(uri, true)
         }
         closeOptions()
     }
@@ -250,21 +250,31 @@ internal fun TakePhotoSelectImage(
             onDismissRequest = closeOptions,
         ) {
             if (viewModel.hasCamera) {
+                val continueTakePhoto = remember(viewModel) {
+                    {
+                        val uri = viewModel.capturePhotoUri
+                        if (uri == null) {
+                            // TODO Show error message
+                        } else {
+                            cameraPhotoUri = uri
+                            cameraPhotoLauncher.launch(cameraPhotoUri)
+                        }
+                    }
+                }
+
                 CrisisCleanupTextButton(
                     listItemModifier,
                     text = translator("actions.take_photo", R.string.take_photo),
                     onClick = {
                         if (viewModel.takePhoto()) {
-                            val uri = viewModel.capturePhotoUri
-                            if (uri == null) {
-                                // TODO Show error message
-                            } else {
-                                cameraPhotoUri = uri
-                                cameraPhotoLauncher.launch(cameraPhotoUri)
-                            }
+                            continueTakePhoto()
                         }
                     },
                 )
+
+                if (viewModel.isCameraPermissionGranted && viewModel.continueTakePhoto()) {
+                    continueTakePhoto()
+                }
             }
             CrisisCleanupTextButton(
                 listItemModifier,

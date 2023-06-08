@@ -19,6 +19,11 @@ val locationPermissionGranted = Pair(
     PermissionStatus.Granted,
 )
 
+val cameraPermissionGranted = Pair(
+    Manifest.permission.CAMERA,
+    PermissionStatus.Granted,
+)
+
 enum class PermissionStatus {
     Granted,
     Denied,

@@ -46,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -705,20 +706,29 @@ internal fun EditExistingCasePhotosView(
         ImageCategory.Before to translator("info.before_cleanup", R.string.before_cleanup),
         ImageCategory.After to translator("info.after_cleanup", R.string.after_cleanup),
     )
+    // TODO Determine spacing and sizing based on available height.
+    //      This viewport has
+    //      - Top bar
+    //      - Tab bar
+    //      - Two rows of headers and items
+    //      - Bottom bar
+    //      - Optional snackbar which may wrap resulting in additional height
+    val twoRowHeight = 256.dp
     val photoTwoRowModifier = Modifier
-        .height(256.dp)
+        .height(twoRowHeight)
         .listItemVerticalPadding()
     val photoOneRowModifier = Modifier
         .height(172.dp)
         .listItemVerticalPadding()
     val photoTwoRowGridCells = StaggeredGridCells.Adaptive(96.dp)
     val photoOneRowGridCells = StaggeredGridCells.Fixed(1)
+    val isShortScreen = LocalConfiguration.current.screenHeightDp.dp < twoRowHeight.times(3)
     Column(
         modifier = Modifier.fillMaxHeight(),
     ) {
         sectionTitleResIds.onEach { (imageCategory, sectionTitle) ->
             photos[imageCategory]?.let { rowPhotos ->
-                val isOneRow = rowPhotos.size < 6
+                val isOneRow = isShortScreen || rowPhotos.size < 6
                 PhotosSection(
                     sectionTitle,
                     if (isOneRow) photoOneRowModifier else photoTwoRowModifier,

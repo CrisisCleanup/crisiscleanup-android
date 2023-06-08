@@ -45,7 +45,11 @@ class SyncMediaWorker @AssistedInject constructor(
 
             val isSyncSuccess = awaitAll(
                 async {
-                    syncPusher.syncPushMedia() !is SyncResult.Error
+                    val result = syncPusher.syncPushMedia()
+                    if (result !is SyncResult.Success) {
+                        syncLogger.log("Result $result")
+                    }
+                    result !is SyncResult.Error
                 },
             ).all { it }
 

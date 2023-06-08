@@ -3,6 +3,7 @@ package com.crisiscleanup.feature.caseeditor
 import android.annotation.SuppressLint
 import android.content.ContentResolver
 import android.content.ContentValues
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
@@ -19,6 +20,7 @@ import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.PermissionStatus
+import com.crisiscleanup.core.common.cameraPermissionGranted
 import com.crisiscleanup.core.common.combineTrimText
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.log.AppLogger
@@ -122,9 +124,15 @@ class ExistingCaseViewModel @Inject constructor(
     private var inBoundsPinIcon: BitmapDescriptor? = null
     private var outOfBoundsPinIcon: BitmapDescriptor? = null
 
-    val isSyncing = worksiteChangeRepository.syncingWorksiteIds.mapLatest {
-        it.contains(worksiteIdArg)
-    }
+    val isSyncing = combine(
+        worksiteChangeRepository.syncingWorksiteIds,
+        localImageRepository.syncingWorksiteId,
+        ::Pair
+    )
+        .mapLatest { (syncingWorksiteIds, imageSyncingWorksiteId) ->
+            syncingWorksiteIds.contains(worksiteIdArg) ||
+                    imageSyncingWorksiteId == worksiteIdArg
+        }
         .stateIn(
             scope = viewModelScope,
             initialValue = false,
@@ -166,6 +174,8 @@ class ExistingCaseViewModel @Inject constructor(
 
     val hasCamera = packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)
     var showExplainPermissionCamera by mutableStateOf(false)
+    var isCameraPermissionGranted by mutableStateOf(false)
+    private val continueTakePhotoGate = AtomicBoolean(false)
 
     val capturePhotoUri: Uri?
         @SuppressLint("SimpleDateFormat")
@@ -241,6 +251,14 @@ class ExistingCaseViewModel @Inject constructor(
             )
             mapMarkerIcon.value = inBoundsPinIcon
         }
+
+        permissionManager.permissionChanges.map {
+            if (it == cameraPermissionGranted) {
+                continueTakePhotoGate.set(true)
+                isCameraPermissionGranted = true
+            }
+        }.launchIn(viewModelScope)
+
     }
 
     val isLoading = dataLoader.isLoading
@@ -250,12 +268,26 @@ class ExistingCaseViewModel @Inject constructor(
     private val referenceWorksite: Worksite
         get() = uiState.value.asCaseData()?.worksite ?: EmptyWorksite
 
-    val tabTitles = editableWorksite.mapLatest { worksite ->
-        val files = worksite.files
-        val photosTitle = translate("caseForm.photos").let {
-            if (files.isNotEmpty()) "$it (${files.size})" else it
+    private val filesNotes = combine(
+        editableWorksiteProvider.editableWorksite,
+        uiState,
+        ::Pair,
+    )
+        .filter { (_, state) -> state is CaseEditorUiState.CaseData }
+        .mapLatest { (worksite, state) ->
+            val fileImages = worksite.files.map(NetworkImage::asCaseImage)
+            val localImages = (state as CaseEditorUiState.CaseData).localWorksite
+                ?.localImages
+                ?.map(WorksiteLocalImage::asCaseImage)
+                ?: emptyList()
+            Triple(fileImages, localImages, worksite.notes)
         }
-        val notes = worksite.notes
+
+    val tabTitles = filesNotes.mapLatest { (fileImages, localImages, notes) ->
+        val fileCount = fileImages.size + localImages.size
+        val photosTitle = translate("caseForm.photos").let {
+            if (fileCount > 0) "$it (${fileCount})" else it
+        }
         val notesTitle = translate("phoneDashboard.notes").let {
             if (notes.isNotEmpty()) "$it (${notes.size})" else it
         }
@@ -270,7 +302,6 @@ class ExistingCaseViewModel @Inject constructor(
             initialValue = emptyList(),
             started = SharingStarted.WhileSubscribed(3_000)
         )
-
 
     val statusOptions = uiState
         .mapLatest {
@@ -427,22 +458,12 @@ class ExistingCaseViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val beforeAfterPhotos = combine(
-        editableWorksiteProvider.editableWorksite,
-        uiState,
-        ::Pair,
-    )
-        .filter { (_, state) -> state is CaseEditorUiState.CaseData }
-        .mapLatest { (worksite, state) ->
-            val localImages = (state as CaseEditorUiState.CaseData).localWorksite
-                ?.localImages
-                ?.map(WorksiteLocalImage::asCaseImage)
-                ?: emptyList()
-            val fileImages = worksite.files.map(NetworkImage::asCaseImage)
-            val beforeImages = localImages.filterNot(CaseImage::isAfter).toMutableList()
-                .apply { addAll(fileImages.filterNot(CaseImage::isAfter)) }
-            val afterImages = localImages.filter(CaseImage::isAfter).toMutableList()
-                .apply { addAll(fileImages.filter(CaseImage::isAfter)) }
+    val beforeAfterPhotos = filesNotes
+        .mapLatest { (files, localFiles) ->
+            val beforeImages = localFiles.filterNot(CaseImage::isAfter).toMutableList()
+                .apply { addAll(files.filterNot(CaseImage::isAfter)) }
+            val afterImages = localFiles.filter(CaseImage::isAfter).toMutableList()
+                .apply { addAll(files.filter(CaseImage::isAfter)) }
             mapOf(
                 ImageCategory.Before to beforeImages,
                 ImageCategory.After to afterImages,
@@ -633,7 +654,14 @@ class ExistingCaseViewModel @Inject constructor(
         return false
     }
 
-    fun onMediaSelected(uri: Uri) {
+    fun continueTakePhoto() = continueTakePhotoGate.getAndSet(false)
+
+    fun onMediaSelected(uri: Uri, isFileSelected: Boolean) {
+        if (isFileSelected) {
+            val flag = Intent.FLAG_GRANT_READ_URI_PERMISSION
+            contentResolver.takePersistableUriPermission(uri, flag)
+        }
+
         isSavingMedia.value = true
         viewModelScope.launch(ioDispatcher) {
             var displayName = ""
@@ -678,6 +706,7 @@ class ExistingCaseViewModel @Inject constructor(
     fun scheduleSync() {
         if (!isSyncing.value) {
             syncPusher.appPushWorksite(worksiteIdArg)
+            syncPusher.scheduleSyncMedia()
         }
     }
 

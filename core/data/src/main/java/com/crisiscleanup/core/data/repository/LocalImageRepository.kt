@@ -14,6 +14,7 @@ import com.crisiscleanup.core.database.dao.LocalImageDao
 import com.crisiscleanup.core.database.dao.LocalImageDaoPlus
 import com.crisiscleanup.core.database.dao.NetworkFileDao
 import com.crisiscleanup.core.database.dao.WorksiteDao
+import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.WorksiteLocalImage
 import com.crisiscleanup.core.network.CrisisCleanupWriteApi
 import com.crisiscleanup.core.network.model.NetworkFile
@@ -28,10 +29,11 @@ import java.nio.file.StandardCopyOption
 import javax.inject.Inject
 
 interface LocalImageRepository {
+    val syncingWorksiteId: Flow<Long>
     val syncingWorksiteImage: Flow<Long>
 
-    fun streamNetworkImageUrl(id: Long): Flow<String>
-    fun streamLocalImageUri(id: Long): Flow<String>
+    fun streamNetworkImageUrl(id: Long): Flow<String?>
+    fun streamLocalImageUri(id: Long): Flow<String?>
 
     fun getImageRotation(id: Long, isNetworkImage: Boolean): Int
 
@@ -56,6 +58,9 @@ class CrisisCleanupLocalImageRepository @Inject constructor(
     @Logger(CrisisCleanupLoggers.Media) private val appLogger: AppLogger,
 ) : LocalImageRepository {
     private val fileUploadMutex = Mutex()
+
+    private val _syncingWorksiteId = MutableStateFlow(EmptyWorksite.id)
+    override val syncingWorksiteId = _syncingWorksiteId
 
     private val _syncingWorksiteImage = MutableStateFlow(0L)
     override val syncingWorksiteImage = _syncingWorksiteImage
@@ -157,6 +162,7 @@ class CrisisCleanupLocalImageRepository @Inject constructor(
         var deleteLogMessage = ""
 
         if (fileUploadMutex.tryLock()) {
+            _syncingWorksiteId.value = worksiteId
             try {
                 for (localImage in imagesPendingUpload) {
                     val uri = Uri.parse(localImage.uri)
@@ -187,7 +193,7 @@ class CrisisCleanupLocalImageRepository @Inject constructor(
                                     )
                                     saveCount++
                                     syncLogger.log(
-                                        "Synced file ${localImage.id}",
+                                        "Synced ${localImage.id} (${networkFile.id} file ${networkFile.file})",
                                         "$saveCount/${imagesPendingUpload.size}",
                                     )
                                 }
@@ -208,6 +214,7 @@ class CrisisCleanupLocalImageRepository @Inject constructor(
                 }
             } finally {
                 fileUploadMutex.unlock()
+                _syncingWorksiteId.value = EmptyWorksite.id
                 _syncingWorksiteImage.value = 0
             }
         }

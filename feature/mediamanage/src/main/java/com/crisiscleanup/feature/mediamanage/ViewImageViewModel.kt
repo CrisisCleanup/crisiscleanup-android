@@ -85,7 +85,8 @@ class ViewImageViewModel @Inject constructor(
 
     private val streamNetworkImageState = localImageRepository.streamNetworkImageUrl(imageId)
         .flatMapLatest { url ->
-            val imageUrl = url.ifBlank { caseEditorArgs.imageUri }
+            val isNotBlankUrl = url?.isNotBlank() == true
+            val imageUrl = if (isNotBlankUrl) url!! else caseEditorArgs.imageUri
 
             if (imageUrl.isBlank()) {
                 // TODO String res
@@ -125,7 +126,7 @@ class ViewImageViewModel @Inject constructor(
         }
 
     private val streamLocalImageState = localImageRepository.streamLocalImageUri(imageId)
-        .filter { it.isNotEmpty() }
+        .filter { it?.isNotEmpty() == true }
         .mapLatest { uriString ->
             val uri = Uri.parse(uriString)
             if (uri != null) {
