@@ -28,11 +28,11 @@ interface WorkTypeTransferRequestDao {
     )
     fun deleteUnsynced(worksiteId: Long)
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insertIgnore(request: WorkTypeTransferRequestEntity): Long
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertReplace(requests: List<WorkTypeTransferRequestEntity>): List<Long>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insertIgnore(requests: List<WorkTypeTransferRequestEntity>): List<Long>
+    fun insertIgnore(request: WorkTypeTransferRequestEntity): Long
 
     @Transaction
     @Query(

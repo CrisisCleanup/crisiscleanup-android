@@ -9,4 +9,6 @@ data class WorkTypeRequest(
     val approvedAt: Instant?,
     val rejectedAt: Instant?,
     val approvedRejectedReason: String,
-)
+) {
+    val hasNoResponse = approvedAt == null && rejectedAt == null
+}

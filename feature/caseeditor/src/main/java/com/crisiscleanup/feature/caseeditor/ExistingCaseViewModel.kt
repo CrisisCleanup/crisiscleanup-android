@@ -361,6 +361,7 @@ class ExistingCaseViewModel @Inject constructor(
             val myOrg = orgLookup[myOrgId]!!
 
             val requestedTypes = stateData.worksite.workTypeRequests
+                .filter(WorkTypeRequest::hasNoResponse)
                 .map(WorkTypeRequest::workType)
                 .toSet()
 

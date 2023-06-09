@@ -160,7 +160,7 @@ class WorksiteChangeUpdateSyncTest {
         )
 
         val workTypeRequestsDao = db.workTypeTransferRequestDao()
-        workTypeRequestsDao.insertIgnore(
+        workTypeRequestsDao.insertReplace(
             listOf(
                 testWorkTypeRequestEntity(
                     -1,

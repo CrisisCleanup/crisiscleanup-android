@@ -352,7 +352,7 @@ class WorksiteChangeDaoPlus @Inject constructor(
             }
 
             if (requestEntities.isNotEmpty()) {
-                db.workTypeTransferRequestDao().insertIgnore(requestEntities)
+                db.workTypeTransferRequestDao().insertReplace(requestEntities)
                 val requestedWorkTypes =
                     requestEntities.map(WorkTypeTransferRequestEntity::workType)
 
