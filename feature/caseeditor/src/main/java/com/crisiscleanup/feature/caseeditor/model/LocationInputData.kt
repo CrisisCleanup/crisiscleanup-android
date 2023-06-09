@@ -30,12 +30,29 @@ class LocationInputData(
 
     val addressSummary: Collection<String>
         get() = summarizeAddress(streetAddress, zipCode, county, city, state)
+    var isEditingAddress by mutableStateOf(false)
 
     var streetAddressError by mutableStateOf("")
     var zipCodeError by mutableStateOf("")
     var cityError by mutableStateOf("")
     var countyError by mutableStateOf("")
     var stateError by mutableStateOf("")
+
+    private val isIncompleteAddress: Boolean
+        get() = streetAddress.isBlank() ||
+                zipCode.isBlank() ||
+                city.isBlank() ||
+                county.isBlank() ||
+                state.isBlank()
+
+    val isBlankAddress: Boolean
+        get() = streetAddress.isBlank() &&
+                zipCode.isBlank() &&
+                city.isBlank() &&
+                county.isBlank() &&
+                state.isBlank()
+
+    var wasGeocodeAddressSelected by mutableStateOf(false)
 
     val hasAddressError: Boolean
         get() = streetAddressError.isNotBlank() ||
@@ -189,7 +206,8 @@ class LocationInputData(
 
     override fun copyCase(worksite: Worksite) = updateCase(worksite, false)!!
 
-    fun assumeLocationAddressChanges(worksite: Worksite, updateAddressProblem: Boolean = false) {
+    fun assumeLocationAddressChanges(worksite: Worksite) {
+        wasGeocodeAddressSelected = true
         referenceWorksite = referenceWorksite.copy(
             latitude = worksite.latitude,
             longitude = worksite.longitude,
@@ -206,14 +224,8 @@ class LocationInputData(
         county = worksite.county
         state = worksite.state
 
-        if (updateAddressProblem) {
-            hasWrongLocation = listOf(
-                streetAddress,
-                zipCode,
-                county,
-                city,
-                state,
-            ).any(String::isBlank)
+        if (isIncompleteAddress) {
+            isEditingAddress = true
         }
     }
 }

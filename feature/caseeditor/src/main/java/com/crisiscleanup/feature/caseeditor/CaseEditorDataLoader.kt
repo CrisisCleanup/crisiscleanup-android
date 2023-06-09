@@ -190,7 +190,7 @@ internal class CaseEditorDataLoader(
                 incidentId = incidentIdIn,
                 autoContactFrequencyT = AutoContactFrequency.Often.literal,
                 flags = if (networkMonitor.isOnline.first()) EmptyWorksite.flags
-                else listOf(WorksiteFlag.wrongLocation())
+                else listOf(WorksiteFlag.wrongLocation()),
             )
 
             with(editableWorksiteProvider) {

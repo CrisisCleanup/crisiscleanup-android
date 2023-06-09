@@ -2,19 +2,33 @@ package com.crisiscleanup.feature.caseeditor.ui
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Dp
@@ -23,11 +37,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupElevatedIconButton
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.mapButtonSize
+import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.listCheckboxAlignStartOffset
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
+import com.crisiscleanup.core.designsystem.theme.unfocusedBorderColor
 import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
 import com.crisiscleanup.core.mapmarker.ui.rememberMapUiSettings
 import com.crisiscleanup.core.ui.MapOverlayMessage
@@ -48,17 +65,56 @@ import com.google.maps.android.compose.rememberMarkerState
 private fun AddressSummaryInColumn(
     lines: Collection<String>,
     modifier: Modifier = Modifier,
+    onClearAddress: () -> Unit = {},
+    onEditAddress: () -> Unit = {},
 ) {
-    lines.forEach {
-        // TODO Use common styles
-        Text(
-            it,
-            modifier = modifier,
-            style = MaterialTheme.typography.bodyLarge,
-        )
+    if (lines.isNotEmpty()) {
+        val strokeWidth: Float
+        val cornerRadius: Float
+        with(LocalDensity.current) {
+            // TODO Common dimensions
+            strokeWidth = 1.dp.toPx()
+            cornerRadius = 4.dp.toPx()
+        }
+        val borderStroke = Stroke(width = strokeWidth)
+        Surface(
+            modifier = modifier
+                .drawBehind {
+                    drawRoundRect(
+                        color = unfocusedBorderColor,
+                        cornerRadius = CornerRadius(cornerRadius),
+                        style = borderStroke,
+                    )
+                },
+            color = Color.Transparent,
+            shape = RoundedCornerShape(cornerRadius),
+        ) {
+            Box(Modifier.fillMaxWidth()) {
+                Text(
+                    lines.joinToString("\n"),
+                    modifier = Modifier
+                        .background(Color.Transparent)
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+                Row(listItemModifier.align(Alignment.BottomEnd)) {
+                    Spacer(Modifier.weight(1f))
+                    CrisisCleanupIconButton(
+                        imageVector = CrisisCleanupIcons.Delete,
+                        onClick = onClearAddress,
+                    )
+                    CrisisCleanupIconButton(
+                        imageVector = CrisisCleanupIcons.Edit,
+                        onClick = onEditAddress,
+                    )
+                }
+            }
+        }
     }
 }
 
+// TODO Use common dimensions/sizes for all static map views
 @Composable
 internal fun getLayoutParameters(isMoveLocationMode: Boolean): Pair<Boolean, Modifier> {
     val configuration = LocalConfiguration.current
@@ -75,7 +131,7 @@ internal fun getLayoutParameters(isMoveLocationMode: Boolean): Pair<Boolean, Mod
         mapHeight = screenHeight
     } else {
         mapWidth = minScreenDimension
-        mapHeight = minScreenDimension
+        mapHeight = minScreenDimension.times(0.6f)
     }
     val mapModifier = Modifier.sizeIn(maxWidth = mapWidth, maxHeight = mapHeight)
 
@@ -185,6 +241,35 @@ internal fun LocationFormView(
 
     val closeKeyboard = rememberCloseKeyboard(inputData)
 
+    inputData.run {
+        val showAddressForm by remember(
+            streetAddressError,
+            zipCodeError,
+            cityError,
+            countyError,
+            stateError,
+            hasWrongLocation,
+            isEditingAddress,
+        ) {
+            derivedStateOf { hasAddressError || hasWrongLocation || isEditingAddress }
+        }
+        if (showAddressForm) {
+            LocationAddressFormView(
+                editor,
+                closeKeyboard,
+                isEditable,
+            )
+        } else {
+            AddressSummaryInColumn(
+                addressSummary,
+                listItemModifier,
+                // TODO Profile method references does not recompose unnecessarily
+                editor::clearAddress,
+                editor::onEditAddress,
+            )
+        }
+    }
+
     val updateCrossStreet = remember(inputData) {
         { s: String ->
             inputData.crossStreetNearbyLandmark = s
@@ -201,31 +286,6 @@ internal fun LocationFormView(
         enabled = isEditable,
         imeAction = ImeAction.Next,
     )
-
-    inputData.run {
-        val showAddressForm by remember(
-            streetAddressError,
-            zipCodeError,
-            cityError,
-            countyError,
-            stateError,
-            hasWrongLocation,
-        ) {
-            derivedStateOf { hasAddressError || hasWrongLocation }
-        }
-        if (showAddressForm) {
-            LocationAddressFormView(
-                editor,
-                closeKeyboard,
-                isEditable,
-            )
-        } else {
-            AddressSummaryInColumn(
-                addressSummary,
-                listItemModifier,
-            )
-        }
-    }
 
     val updateWrongLocation = remember(inputData) {
         { b: Boolean ->

@@ -88,6 +88,8 @@ interface CaseLocationDataEditor {
 
     var isMapLoaded: Boolean
 
+    val isSearchSuggested: Boolean
+
     fun useMyLocation()
 
     fun onQueryChange(q: String)
@@ -109,6 +111,9 @@ interface CaseLocationDataEditor {
     fun onExistingWorksiteSelected(result: CaseSummaryResult)
 
     fun onGeocodeAddressSelected(locationAddress: LocationAddress): Boolean
+
+    fun clearAddress()
+    fun onEditAddress()
 
     fun cancelOutOfBounds()
     fun changeIncidentOutOfBounds(locationOutOfBounds: LocationOutOfBounds)
@@ -187,6 +192,11 @@ internal class EditableLocationDataEditor(
     override val showExplainPermissionLocation = mutableStateOf(false)
 
     override var isMapLoaded: Boolean = false
+
+    override val isSearchSuggested: Boolean
+        get() = with(locationInputData) {
+            !(wasGeocodeAddressSelected || isEditingAddress) || isBlankAddress
+        }
 
     init {
         var worksite = worksiteProvider.editableWorksite.value
@@ -528,6 +538,20 @@ internal class EditableLocationDataEditor(
         }
         outOfBoundsManager.clearOutOfBounds()
         isLocationCommitted.value = true
+    }
+
+    override fun clearAddress() {
+        with(locationInputData) {
+            streetAddress = ""
+            city = ""
+            zipCode = ""
+            county = ""
+            state = ""
+        }
+    }
+
+    override fun onEditAddress() {
+        locationInputData.isEditingAddress = true
     }
 
     override fun onBackValidateSaveWorksite(): Boolean {

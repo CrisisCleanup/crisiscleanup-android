@@ -315,7 +315,7 @@ class CaseEditorViewModel @Inject constructor(
 
                 editors?.location?.locationInputData?.let { inputData ->
                     if (editableWorksiteProvider.takeAddressChanged()) {
-                        inputData.assumeLocationAddressChanges(worksite, true)
+                        inputData.assumeLocationAddressChanges(worksite)
                     }
 
                     editableWorksiteProvider.peekIncidentChange?.let { changeData ->
@@ -450,7 +450,7 @@ class CaseEditorViewModel @Inject constructor(
         addressChangeWorksite: Worksite,
     ) = with(worksiteProvider) {
         // Assume any address changes first before copying
-        inputData.assumeLocationAddressChanges(addressChangeWorksite, true)
+        inputData.assumeLocationAddressChanges(addressChangeWorksite)
 
         val copiedWorksite = copyChanges()
         if (copiedWorksite != EmptyWorksite) {

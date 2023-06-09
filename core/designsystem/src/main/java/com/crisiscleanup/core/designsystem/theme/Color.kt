@@ -52,6 +52,9 @@ val selectedOptionContainerColor = Color(0xFFF6F8F9)
 val neutralIconColor = Color(0xFF848F99)
 val navigationContainerColor = Color(0xFF2D2D2D)
 
+// Color pick from screenshot
+val unfocusedBorderColor = Color(0xFFDADADA)
+
 // Similar to FilledButtonTokens.class
 private const val disabledContainerOpacity = 0.12f
 private const val disabledOpacity = 0.38f

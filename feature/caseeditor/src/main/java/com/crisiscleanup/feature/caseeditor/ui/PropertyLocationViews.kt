@@ -57,7 +57,7 @@ internal fun PropertyLocationView(
             )
         }
 
-        if (isOnline) {
+        if (isOnline && editor.isSearchSuggested) {
             val fullAddressLabel = translator("caseView.full_address")
             OutlinedSingleLineTextField(
                 modifier = Modifier
@@ -117,7 +117,9 @@ private fun LocationMapActionBar(
     val translator = LocalAppTranslator.current.translator
     Row {
         // TODO Common dimensions
-        val modifier = Modifier.padding(8.dp).weight(1f)
+        val modifier = Modifier
+            .padding(8.dp)
+            .weight(1f)
         CrisisCleanupIconTextButton(
             modifier = modifier,
             iconResId = R.drawable.ic_select_on_map,
