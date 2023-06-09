@@ -3,5 +3,5 @@
     <string name="app_name_short">Cleanup</string>
 
     <string name="not_connected_to_internet">~~⚠️ No internet connection.</string>
-    <string name="login_reminder">~~Login again to access latest data.</string>
+    <string name="login_reminder">~~Login to access latest data.</string>
 </resources>
