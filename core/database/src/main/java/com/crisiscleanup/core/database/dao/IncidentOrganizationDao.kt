@@ -1,6 +1,11 @@
 package com.crisiscleanup.core.database.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Transaction
+import androidx.room.Upsert
 import com.crisiscleanup.core.database.model.IncidentOrganizationEntity
 import com.crisiscleanup.core.database.model.IncidentOrganizationSyncStatsEntity
 import com.crisiscleanup.core.database.model.OrganizationAffiliateEntity
@@ -30,6 +35,10 @@ interface IncidentOrganizationDao {
     @Transaction
     @Query("SELECT * FROM incident_organizations")
     fun streamOrganizations(): Flow<List<PopulatedIncidentOrganization>>
+
+    @Transaction
+    @Query("SELECT * FROM incident_organizations WHERE id IN(:ids)")
+    fun getOrganizations(ids: Collection<Long>): List<PopulatedIncidentOrganization>
 
     @Transaction
     @Query(

@@ -42,12 +42,21 @@ fun AnimatedBusyIndicator(
         enter = fadeIn(),
         exit = fadeOut(),
     ) {
-        CircularProgressIndicator(
-            Modifier
-                .wrapContentSize()
-                .padding(padding)
-                .size(size),
-            color = color,
-        )
+        SmallBusyIndicator(padding, size, color)
     }
+}
+
+@Composable
+fun SmallBusyIndicator(
+    padding: Dp = 96.dp,
+    size: Dp = 24.dp,
+    color: Color = ProgressIndicatorDefaults.circularColor,
+) {
+    CircularProgressIndicator(
+        Modifier
+            .wrapContentSize()
+            .padding(padding)
+            .size(size),
+        color = color,
+    )
 }

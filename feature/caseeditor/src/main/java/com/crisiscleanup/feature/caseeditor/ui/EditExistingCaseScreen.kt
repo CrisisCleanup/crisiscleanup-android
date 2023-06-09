@@ -429,7 +429,7 @@ private fun BottomActions(
 }
 
 @Composable
-private fun PropertyInfoRow(
+internal fun PropertyInfoRow(
     image: ImageVector,
     text: String,
     modifier: Modifier = Modifier,

@@ -20,7 +20,7 @@ import com.crisiscleanup.core.appnav.navigateToViewImage
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
-import com.crisiscleanup.feature.caseeditor.ui.CaseEditAddFlagRoute
+import com.crisiscleanup.feature.caseeditor.ui.addflag.CaseEditAddFlagRoute
 import com.crisiscleanup.feature.caseeditor.ui.CaseEditorRoute
 import com.crisiscleanup.feature.caseeditor.ui.EditCaseAddressSearchRoute
 import com.crisiscleanup.feature.caseeditor.ui.EditCaseMapMoveLocationRoute

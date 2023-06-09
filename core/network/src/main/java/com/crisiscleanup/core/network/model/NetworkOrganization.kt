@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class NetworkIncidentOrganizationsResult(
+data class NetworkOrganizationsResult(
     val errors: List<NetworkCrisisCleanupApiError>? = null,
     val count: Int? = null,
     val results: List<NetworkIncidentOrganization>? = null,

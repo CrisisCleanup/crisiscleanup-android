@@ -54,7 +54,7 @@ private interface DataSourceApi {
         limit: Int,
         @Query("offset")
         offset: Int,
-    ): NetworkIncidentOrganizationsResult
+    ): NetworkOrganizationsResult
 
     @TokenAuthenticationHeader
     @GET("worksites")
@@ -162,6 +162,13 @@ private interface DataSourceApi {
         @Query("worksite_work_type__worksite")
         id: Long,
     ): NetworkWorkTypeRequestResult
+
+    @TokenAuthenticationHeader
+    @GET("/organizations")
+    suspend fun getNearbyClaimingOrganizations(
+        @Query("nearby_claimed")
+        nearbyClaimed: String,
+    ): NetworkOrganizationsResult
 }
 
 private val worksiteCoreDataFields = listOf(
@@ -332,4 +339,13 @@ class DataApiClient @Inject constructor(
                 it.errors?.tryThrowException()
                 it.results ?: emptyList()
             }
+
+    override suspend fun getNearbyOrganizations(
+        latitude: Double,
+        longitude: Double
+    ) = networkApi.getNearbyClaimingOrganizations("$longitude,$latitude")
+        .let {
+            it.errors?.tryThrowException()
+            it.results ?: emptyList()
+        }
 }

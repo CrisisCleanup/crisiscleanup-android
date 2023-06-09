@@ -3,10 +3,11 @@ package com.crisiscleanup.core.network
 import com.crisiscleanup.core.network.model.NetworkAuthResult
 import com.crisiscleanup.core.network.model.NetworkCountResult
 import com.crisiscleanup.core.network.model.NetworkIncident
-import com.crisiscleanup.core.network.model.NetworkIncidentOrganizationsResult
+import com.crisiscleanup.core.network.model.NetworkIncidentOrganization
 import com.crisiscleanup.core.network.model.NetworkLanguageDescription
 import com.crisiscleanup.core.network.model.NetworkLanguageTranslation
 import com.crisiscleanup.core.network.model.NetworkLocation
+import com.crisiscleanup.core.network.model.NetworkOrganizationsResult
 import com.crisiscleanup.core.network.model.NetworkWorkTypeRequest
 import com.crisiscleanup.core.network.model.NetworkWorkTypeStatusResult
 import com.crisiscleanup.core.network.model.NetworkWorksiteCoreData
@@ -41,7 +42,7 @@ interface CrisisCleanupNetworkDataSource {
         incidentId: Long,
         limit: Int,
         offset: Int,
-    ): NetworkIncidentOrganizationsResult
+    ): NetworkOrganizationsResult
 
     suspend fun getIncident(
         id: Long,
@@ -99,4 +100,9 @@ interface CrisisCleanupNetworkDataSource {
     suspend fun getLocalizationCount(after: Instant): NetworkCountResult
 
     suspend fun getWorkTypeRequests(id: Long): List<NetworkWorkTypeRequest>
+
+    suspend fun getNearbyOrganizations(
+        latitude: Double,
+        longitude: Double,
+    ): List<NetworkIncidentOrganization>
 }

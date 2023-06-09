@@ -4,9 +4,7 @@ import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
-import com.crisiscleanup.core.data.model.affiliateOrganizationCrossReferences
-import com.crisiscleanup.core.data.model.asEntity
-import com.crisiscleanup.core.data.model.primaryContactCrossReferences
+import com.crisiscleanup.core.data.model.asEntities
 import com.crisiscleanup.core.data.util.IncidentDataPullStats
 import com.crisiscleanup.core.data.util.IncidentDataPullStatsUpdater
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDao
@@ -14,8 +12,6 @@ import com.crisiscleanup.core.database.dao.IncidentOrganizationDaoPlus
 import com.crisiscleanup.core.database.dao.PersonContactDao
 import com.crisiscleanup.core.database.model.IncidentOrganizationSyncStatsEntity
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
-import com.crisiscleanup.core.network.model.NetworkIncidentOrganization
-import com.crisiscleanup.core.network.model.NetworkPersonContact
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -109,9 +105,10 @@ class IncidentOrganizationsSyncer @Inject constructor(
                 syncCount,
             ) ?: break
 
-            val organizations = cachedData.organizations.map { it.asEntity() }
-            val primaryContacts =
-                cachedData.organizations.flatMap { it.primaryContacts.map(NetworkPersonContact::asEntity) }
+            val (organizations, primaryContacts) = cachedData.organizations.asEntities(
+                getContacts = true,
+                getReferences = false,
+            )
             incidentOrganizationDaoPlus.saveOrganizations(
                 organizations,
                 primaryContacts,
@@ -129,11 +126,12 @@ class IncidentOrganizationsSyncer @Inject constructor(
                 syncCount,
             ) ?: break
 
-            val organizations = cachedData.organizations.map { it.asEntity() }
-            val organizationContactCrossRefs =
-                cachedData.organizations.flatMap(NetworkIncidentOrganization::primaryContactCrossReferences)
-            val organizationAffiliates =
-                cachedData.organizations.flatMap(NetworkIncidentOrganization::affiliateOrganizationCrossReferences)
+            val (
+                organizations,
+                _,
+                organizationContactCrossRefs,
+                organizationAffiliates,
+            ) = cachedData.organizations.asEntities(getContacts = false, getReferences = true)
             incidentOrganizationDaoPlus.saveOrganizationReferences(
                 organizations,
                 organizationContactCrossRefs,

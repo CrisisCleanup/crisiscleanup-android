@@ -9,7 +9,7 @@ class NetworkOrganizationTest {
     @Test
     fun getIncidentOrganizations() {
         val result =
-            TestUtil.decodeResource<NetworkIncidentOrganizationsResult>("/incidentOrganizations.json")
+            TestUtil.decodeResource<NetworkOrganizationsResult>("/incidentOrganizations.json")
 
         assertNull(result.errors)
 
