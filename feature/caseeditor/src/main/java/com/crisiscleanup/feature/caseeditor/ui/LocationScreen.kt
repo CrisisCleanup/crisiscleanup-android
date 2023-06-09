@@ -1,7 +1,5 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
-import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -9,7 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -26,7 +23,6 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.ImeAction
@@ -36,11 +32,9 @@ import androidx.compose.ui.unit.coerceAtMost
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupElevatedIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
-import com.crisiscleanup.core.designsystem.component.mapButtonSize
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.listCheckboxAlignStartOffset
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
@@ -136,24 +130,6 @@ internal fun getLayoutParameters(isMoveLocationMode: Boolean): Pair<Boolean, Mod
     val mapModifier = Modifier.sizeIn(maxWidth = mapWidth, maxHeight = mapHeight)
 
     return Pair(isRowOriented, mapModifier)
-}
-
-@Composable
-private fun MapButton(
-    imageVector: ImageVector? = null,
-    @DrawableRes iconResId: Int = 0,
-    @StringRes contentDescriptionResId: Int = 0,
-    contentDescription: String = "",
-    onClick: () -> Unit = {},
-) {
-    CrisisCleanupElevatedIconButton(
-        modifier = Modifier.size(mapButtonSize),
-        imageVector = imageVector,
-        iconResId = iconResId,
-        contentDescriptionResId = contentDescriptionResId,
-        contentDescription = contentDescription,
-        onClick = onClick,
-    )
 }
 
 @Composable

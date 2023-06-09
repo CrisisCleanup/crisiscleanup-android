@@ -9,6 +9,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.crisiscleanup.core.appnav.RouteConstant.caseAddFlagRoute
 import com.crisiscleanup.core.appnav.RouteConstant.caseEditMapMoveLocationRoute
 import com.crisiscleanup.core.appnav.RouteConstant.caseEditSearchAddressRoute
 import com.crisiscleanup.core.appnav.RouteConstant.caseEditorRoute
@@ -19,6 +20,7 @@ import com.crisiscleanup.core.appnav.navigateToViewImage
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
+import com.crisiscleanup.feature.caseeditor.ui.CaseEditAddFlagRoute
 import com.crisiscleanup.feature.caseeditor.ui.CaseEditorRoute
 import com.crisiscleanup.feature.caseeditor.ui.EditCaseAddressSearchRoute
 import com.crisiscleanup.feature.caseeditor.ui.EditCaseMapMoveLocationRoute
@@ -96,6 +98,7 @@ fun NavGraphBuilder.caseEditorScreen(
 
 fun NavController.navigateToCaseEditSearchAddress() = this.navigate(caseEditSearchAddressRoute)
 fun NavController.navigateToCaseEditLocationMapMove() = this.navigate(caseEditMapMoveLocationRoute)
+fun NavController.navigateToCaseAddFlag() = this.navigate(caseAddFlagRoute)
 
 fun NavGraphBuilder.existingCaseScreen(
     navController: NavHostController,
@@ -130,11 +133,13 @@ fun NavGraphBuilder.existingCaseScreen(
         val navToViewImage = remember(navController) {
             { args: ViewImageArgs -> navController.navigateToViewImage(args) }
         }
+        val navToCaseAddFlag = remember(navController) { { navController.navigateToCaseAddFlag() } }
         EditExistingCaseRoute(
             onBack = onBackClick,
             onFullEdit = navToEditCase,
             openTransferWorkType = navToTransferWorkType,
             openPhoto = navToViewImage,
+            openAddFlag = navToCaseAddFlag,
         )
     }
 }
@@ -199,5 +204,13 @@ fun NavGraphBuilder.existingCaseTransferWorkTypesScreen(
 ) {
     composable(route = viewCaseTransferWorkTypesRoute) {
         TransferWorkTypesRoute(onBack = onBack)
+    }
+}
+
+fun NavGraphBuilder.caseAddFlagScreen(
+    onBack: () -> Unit = {},
+) {
+    composable(route = caseAddFlagRoute) {
+        CaseEditAddFlagRoute(onBack = onBack)
     }
 }

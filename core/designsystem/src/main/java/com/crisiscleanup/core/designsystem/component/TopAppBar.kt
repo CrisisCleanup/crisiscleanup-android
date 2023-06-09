@@ -225,13 +225,52 @@ fun TopAppBarBackAction(
     title: String = "",
     onAction: () -> Unit = {},
     colors: TopAppBarColors = TopAppBarDefaults.centerAlignedTopAppBarColors(),
+) = TopAppBarBackCaretAction(
+    modifier,
+    titleResId = titleResId,
+    title = title,
+    onAction = onAction,
+    colors = colors,
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TopAppBarCancelAction(
+    modifier: Modifier = Modifier,
+    @StringRes titleResId: Int = 0,
+    title: String = "",
+    onAction: () -> Unit = {},
+    colors: TopAppBarColors = TopAppBarDefaults.centerAlignedTopAppBarColors(),
+) = TopAppBarBackCaretAction(
+    modifier,
+    "actions.cancel",
+    titleResId,
+    title,
+    onAction,
+    colors,
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TopAppBarBackCaretAction(
+    modifier: Modifier = Modifier,
+    navigationTranslateKey: String = "actions.back",
+    @StringRes titleResId: Int = 0,
+    title: String = "",
+    onAction: () -> Unit = {},
+    colors: TopAppBarColors = TopAppBarDefaults.centerAlignedTopAppBarColors(),
 ) {
     val titleContent = @Composable {
         TruncatedAppBarText(modifier, titleResId, title)
     }
     val navigationContent: (@Composable (() -> Unit)) =
         @Composable {
-            TopBarBackAction(modifier, onAction)
+            TopBarNavAction(
+                modifier,
+                onAction,
+                text = LocalAppTranslator.current.translator(navigationTranslateKey),
+                image = CrisisCleanupIcons.ArrowBack,
+            )
         }
     CenterAlignedTopAppBar(
         title = titleContent,
