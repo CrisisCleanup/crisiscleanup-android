@@ -29,6 +29,8 @@ data class IncidentDataSyncStats(
     val dataCount: Int,
     /**
      * Number of data (pages) pulled and saved locally during first sync
+     *
+     * This is the same units as [dataCount].
      */
     val pagedCount: Int = 0,
     /**
@@ -47,7 +49,11 @@ data class IncidentDataSyncStats(
      */
     val isDataVersionOutdated = appBuildVersionCode < stableModelVersion
 
-    val shouldSync = pagedCount < dataCount ||
+    private val isInitialPull = pagedCount < dataCount
+
+    val shouldSync = isInitialPull ||
             isDataVersionOutdated ||
-            syncAttempt.shouldSyncPassively()
+            syncAttempt.shouldSyncPassively(600)
+
+    val isDeltaPull = !isInitialPull
 }

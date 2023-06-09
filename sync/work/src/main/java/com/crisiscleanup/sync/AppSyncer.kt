@@ -128,6 +128,35 @@ class AppSyncer @Inject constructor(
         }
     }
 
+    private var incidentDeltaJob: Job? = null
+
+    override fun appPullIncidentWorksitesDelta() {
+        incidentDeltaJob?.cancel()
+        incidentDeltaJob = applicationScope.launch {
+            val incidentId = appPreferences.userData.first().selectedIncidentId
+            incidentsRepository.getIncident(incidentId)?.let {
+                worksitesRepository.getWorksiteSyncStats(incidentId)?.let { syncStats ->
+                    if (syncStats.isDeltaPull) {
+                        syncLogger.log("App pull $incidentId delta")
+                        try {
+                            worksitesRepository.refreshWorksites(
+                                incidentId,
+                                forceQueryDeltas = true,
+                            )
+                        } catch (e: Exception) {
+                            if (e !is CancellationException) {
+                                syncLogger.log("$incidentId delta fail ${e.message}")
+                            }
+                        } finally {
+                            syncLogger.log("App pull $incidentId delta end")
+                                .flush()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     override suspend fun syncPullAsync(): Deferred<SyncResult> {
         val deferred = applicationScope.async {
             onSyncPreconditions()?.let {

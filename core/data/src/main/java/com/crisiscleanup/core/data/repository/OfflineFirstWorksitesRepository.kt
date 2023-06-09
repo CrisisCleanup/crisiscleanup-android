@@ -205,14 +205,12 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             ) {
                 worksitesSyncer.sync(incidentId, syncStats)
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            if (e is CancellationException) {
-                throw (e)
-            } else {
-                // Updating sync stats here (or in finally) could overwrite "concurrent" sync that previously started. Think it through before updating sync attempt.
+            // Updating sync stats here (or in finally) could overwrite "concurrent" sync that previously started. Think it through before updating sync attempt.
 
-                logger.logException(e)
-            }
+            logger.logException(e)
         } finally {
             isLoading.value = false
         }
@@ -227,12 +225,10 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         try {
             worksitesFullSyncer.sync(incidentId)
             return@coroutineScope true
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            if (e is CancellationException) {
-                throw (e)
-            } else {
-                logger.logException(e)
-            }
+            logger.logException(e)
         } finally {
             syncWorksitesFullIncidentId.value = EmptyIncident.id
         }

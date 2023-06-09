@@ -78,7 +78,7 @@ class IncidentWorksitesSyncer @Inject constructor(
         syncStats: IncidentDataSyncStats,
         statsUpdater: IncidentDataPullStatsUpdater,
     ) = coroutineScope {
-        val isDeltaPull = syncStats.pagedCount >= syncStats.dataCount
+        val isDeltaPull = syncStats.isDeltaPull
         val updatedAfter: Instant?
         val syncCount: Int
         if (isDeltaPull) {

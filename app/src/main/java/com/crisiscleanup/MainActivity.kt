@@ -31,6 +31,7 @@ import com.crisiscleanup.core.common.event.TrimMemoryEventManager
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
+import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.navigationContainerColor
 import com.crisiscleanup.core.model.data.DarkThemeConfig
@@ -68,6 +69,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     internal lateinit var authEventBus: AuthEventBus
+
+    @Inject
+    internal lateinit var syncPuller: SyncPuller
 
     @Inject
     @Logger(CrisisCleanupLoggers.Auth)
@@ -173,6 +177,11 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         lazyStats.get().isTrackingEnabled = true
+    }
+
+    override fun onStart() {
+        super.onStart()
+        syncPuller.appPullIncidentWorksitesDelta()
     }
 
     override fun onPause() {

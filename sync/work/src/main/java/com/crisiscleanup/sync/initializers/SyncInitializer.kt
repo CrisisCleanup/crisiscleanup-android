@@ -21,7 +21,6 @@ object Sync {
  */
 class SyncInitializer : Initializer<Sync> {
     override fun create(context: Context): Sync {
-        // TODO Schedule periodic sync?
         scheduleSync(context)
 
         return Sync
