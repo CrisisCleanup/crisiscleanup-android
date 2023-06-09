@@ -6,8 +6,6 @@
     <string name="incident_is_in_progress">%s is in the process of starting up. It\'ll be active shortly.</string>
     <string name="incident_issue_try_again">There seems to be an issue with the current incident. Please try again. Connect to the internet if possible.</string>
 
-    <string name="edit_section">~~Edit %s</string>
-
     <string name="stop_suggesting_existing_cases">~~Stop searching existing cases</string>
     <string name="invalid_email">~~Enter a valid email address.</string>
 

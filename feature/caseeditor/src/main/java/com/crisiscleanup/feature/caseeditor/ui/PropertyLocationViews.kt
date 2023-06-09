@@ -9,10 +9,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.OutlinedSingleLineTextField
+import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.feature.caseeditor.CaseLocationDataEditor
 import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
@@ -113,20 +115,30 @@ private fun LocationMapActionBar(
     useMyLocation: () -> Unit = {},
 ) {
     val translator = LocalAppTranslator.current.translator
-    Row(modifier = Modifier.listItemPadding()) {
+    Row {
+        // TODO Common dimensions
+        val modifier = Modifier.padding(8.dp).weight(1f)
         CrisisCleanupIconTextButton(
-            modifier = Modifier.weight(1f),
+            modifier = modifier,
             iconResId = R.drawable.ic_select_on_map,
             label = translator("caseForm.select_on_map"),
             onClick = moveLocationOnMap,
             enabled = isEditable,
         )
         CrisisCleanupIconTextButton(
-            modifier = Modifier.weight(1f),
+            modifier = modifier,
             iconResId = R.drawable.ic_use_my_location,
             label = translator("caseForm.use_my_location"),
             onClick = useMyLocation,
             enabled = isEditable,
         )
+    }
+}
+
+@Preview
+@Composable
+private fun LocationMapActionBarPreview() {
+    CrisisCleanupTheme {
+        LocationMapActionBar(isEditable = true)
     }
 }
