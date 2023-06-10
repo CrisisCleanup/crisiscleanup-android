@@ -15,7 +15,6 @@ import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import com.crisiscleanup.core.network.model.NetworkWorksiteLocationSearch
 import com.crisiscleanup.core.network.model.NetworkWorksitePage
 import com.crisiscleanup.core.network.model.NetworkWorksiteShort
-import com.crisiscleanup.core.network.model.NetworkWorksitesShortResult
 import kotlinx.datetime.Instant
 
 interface CrisisCleanupAuthApi {
@@ -60,18 +59,11 @@ interface CrisisCleanupNetworkDataSource {
     ): List<NetworkWorksiteFull>?
 
     suspend fun getWorksite(id: Long): NetworkWorksiteFull?
-    suspend fun getWorksiteShort(id: Long): NetworkWorksiteShort?
 
     suspend fun getWorksitesCount(
         incidentId: Long,
         updatedAtAfter: Instant? = null,
     ): Int
-
-    suspend fun getWorksitesAll(
-        incidentId: Long,
-        updatedAtAfter: Instant?,
-        updatedAtBefore: Instant? = null,
-    ): NetworkWorksitesShortResult
 
     suspend fun getWorksitesPage(
         incidentId: Long,

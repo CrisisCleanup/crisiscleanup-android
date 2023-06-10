@@ -253,7 +253,6 @@ data class NetworkWorksiteShort(
     }
 }
 
-
 @Serializable
 data class NetworkWorksitesPageResult(
     val errors: List<NetworkCrisisCleanupApiError>? = null,

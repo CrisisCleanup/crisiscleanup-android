@@ -108,24 +108,6 @@ private interface DataSourceApi {
     ): NetworkCountResult
 
     @TokenAuthenticationHeader
-    @GET("worksites_all")
-    suspend fun getWorksitesAll(
-        @Query("incident")
-        incidentId: Long,
-        @Query("updated_at__gt")
-        updatedAtAfter: Instant?,
-        @Query("updated_at__lt")
-        updatedAtBefore: Instant? = null,
-    ): NetworkWorksitesShortResult
-
-    @TokenAuthenticationHeader
-    @GET("worksites_all")
-    suspend fun getWorksitesShort(
-        @Query("id__in")
-        id: Long,
-    ): NetworkWorksitesShortResult
-
-    @TokenAuthenticationHeader
     @GET("worksites_page")
     suspend fun getWorksitesPage(
         @Query("incident")
@@ -250,8 +232,6 @@ class DataApiClient @Inject constructor(
             .results
 
     override suspend fun getWorksite(id: Long) = getWorksites(listOf(id))?.firstOrNull()
-    override suspend fun getWorksiteShort(id: Long) =
-        networkApi.getWorksitesShort(id).results?.get(0)
 
     override suspend fun getWorksitesCount(incidentId: Long, updatedAtAfter: Instant?) =
         networkApi.getWorksitesCount(incidentId, updatedAtAfter)
@@ -259,13 +239,6 @@ class DataApiClient @Inject constructor(
                 it.errors?.tryThrowException()
                 it.count ?: 0
             }
-
-    override suspend fun getWorksitesAll(
-        incidentId: Long,
-        updatedAtAfter: Instant?,
-        updatedAtBefore: Instant?,
-    ) = networkApi.getWorksitesAll(incidentId, updatedAtAfter, updatedAtBefore)
-        .apply { errors?.tryThrowException() }
 
     override suspend fun getWorksitesPage(
         incidentId: Long,

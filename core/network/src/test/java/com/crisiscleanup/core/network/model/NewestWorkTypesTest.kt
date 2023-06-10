@@ -9,8 +9,7 @@ import kotlin.time.Duration.Companion.hours
 
 private val now = Clock.System.now()
 
-class NewestWorkTypes {
-
+class NewestWorkTypesTest {
     private val createdAtA = now.minus(16.hours)
 
     @Test
