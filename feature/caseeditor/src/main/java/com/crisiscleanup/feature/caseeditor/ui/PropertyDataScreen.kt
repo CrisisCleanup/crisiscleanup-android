@@ -2,27 +2,22 @@ package com.crisiscleanup.feature.caseeditor.ui
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -32,11 +27,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.commoncase.ui.ExistingCaseLocationsDropdownItems
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupRadioButton
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.theme.listItemDropdownMenuOffset
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
-import com.crisiscleanup.core.designsystem.theme.listItemNestedPadding
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.model.data.AutoContactFrequency
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
@@ -128,29 +123,16 @@ internal fun PropertyFormView(
     Column(modifier = Modifier.selectableGroup()) {
         contactFrequencyOptions.forEach {
             val isSelected = inputData.autoContactFrequency == it.first
-            Row(
+            CrisisCleanupRadioButton(
                 Modifier
                     .fillMaxWidth()
                     .listItemHeight()
-                    .selectable(
-                        selected = isSelected,
-                        onClick = { updateContactFrequency(it.first) },
-                        role = Role.RadioButton,
-                    )
                     .listItemPadding(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                RadioButton(
-                    selected = isSelected,
-                    modifier = Modifier.listItemNestedPadding(),
-                    onClick = null,
-                    enabled = isEditable,
-                )
-                Text(
-                    text = it.second,
-                    modifier = Modifier.listItemNestedPadding(),
-                )
-            }
+                isSelected,
+                text = it.second,
+                onSelect = { updateContactFrequency(it.first) },
+                enabled = isEditable,
+            )
         }
     }
 }

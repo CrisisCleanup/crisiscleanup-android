@@ -18,7 +18,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
@@ -28,13 +27,12 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
 import com.crisiscleanup.core.designsystem.component.SmallBusyIndicator
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.listCheckboxAlignStartOffset
-import com.crisiscleanup.core.designsystem.theme.listItemBottomPadding
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
-import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.model.data.PersonContact
+import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.feature.caseeditor.CaseAddFlagViewModel
 import com.crisiscleanup.feature.caseeditor.ui.PropertyInfoRow
 import com.crisiscleanup.feature.caseeditor.ui.edgeSpacingHalf
@@ -62,24 +60,22 @@ internal fun ColumnScope.HighPriorityView(
     var flagNotes by remember { mutableStateOf("") }
     var selectedContacts by remember { mutableStateOf(emptyList<PersonContact>()) }
 
+    val closeKeyboard = rememberCloseKeyboard(viewModel)
+
     LazyColumn(
         Modifier
             .weight(1f)
             .fillMaxWidth()
     ) {
-        item(contentType = "item-text") {
-            Text(
-                translator("flag.please_describe_why_high_priority"),
-                Modifier.listItemHorizontalPadding(),
-            )
-        }
+        labelTextItem(translator("flag.please_describe_why_high_priority"))
 
         item {
             TextArea(
                 flagNotes,
                 { text: String -> flagNotes = text },
                 listItemModifier,
-                isEditable = isEditable
+                isEditable = isEditable,
+                onDone = closeKeyboard,
             )
         }
 
@@ -93,28 +89,16 @@ internal fun ColumnScope.HighPriorityView(
                 }
             }
         } else {
-            item(contentType = "item-text") {
-                Row(
-                    Modifier
-                        .listItemHorizontalPadding()
-                        .listItemBottomPadding()
-                        // TODO Common dimensions
-                        .padding(top = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        translator("flag.nearby_organizations"),
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Bold,
-                    )
-                }
-            }
+            labelTextItem(
+                translator("flag.nearby_organizations"),
+                isBold = true,
+            )
 
-            textItem(
+            labelTextItem(
                 translator("caseHistory.do_not_share_contact_warning"),
                 isBold = true,
             )
-            textItem(translator("caseHistory.do_not_share_contact_explanation"))
+            listTextItem(translator("caseHistory.do_not_share_contact_explanation"))
 
             items(
                 organizations!!,

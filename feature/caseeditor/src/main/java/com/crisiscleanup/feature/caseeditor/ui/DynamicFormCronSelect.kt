@@ -38,8 +38,8 @@ import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupFilterChip
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupRadioButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextRadioButton
 import com.crisiscleanup.core.designsystem.component.OutlinedSingleLineTextField
 import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
@@ -121,7 +121,7 @@ private fun FrequencyDailyOption(
     text: String = "",
     trailingContent: (@Composable () -> Unit)? = null
 ) {
-    CrisisCleanupTextRadioButton(
+    CrisisCleanupRadioButton(
         modifier = Modifier
             .clickable(
                 enabled = enabled,

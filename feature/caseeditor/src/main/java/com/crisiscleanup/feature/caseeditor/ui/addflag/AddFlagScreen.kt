@@ -52,6 +52,7 @@ import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
+import com.crisiscleanup.core.designsystem.theme.listItemTopPadding
 import com.crisiscleanup.core.designsystem.theme.optionItemHeight
 import com.crisiscleanup.core.designsystem.theme.textBoxHeight
 import com.crisiscleanup.core.model.data.WorksiteFlagType
@@ -126,7 +127,10 @@ private fun CaseEditAddFlagScreen(
                     isEditable = isEditable,
                 )
 
-                WorksiteFlagType.UpsetClient -> UpsetClientView(translator = translator)
+                WorksiteFlagType.UpsetClient -> UpsetClientView(
+                    isEditable = isEditable,
+                )
+
                 WorksiteFlagType.MarkForDeletion -> MarkForDeletionView(translator = translator)
                 WorksiteFlagType.ReportAbuse -> ReportAbuseView(translator = translator)
                 WorksiteFlagType.Duplicate -> DuplicateView(translator = translator)
@@ -239,17 +243,47 @@ internal fun TextArea(
     }
 }
 
+@Composable
+internal fun TextRow(
+    text: String,
+    modifier: Modifier = Modifier,
+    isBold: Boolean = false,
+) {
+    Text(
+        text,
+        modifier,
+        fontWeight = if (isBold) FontWeight.Bold else null,
+    )
+}
+
 internal fun LazyListScope.textItem(
     text: String,
+    modifier: Modifier = Modifier,
     isBold: Boolean = false,
 ) {
     item(contentType = "item-text") {
-        Text(
-            text,
-            listItemModifier,
-            fontWeight = if (isBold) FontWeight.Bold else null,
-        )
+        TextRow(text, modifier, isBold)
     }
+}
+
+internal fun LazyListScope.listTextItem(
+    text: String,
+    isBold: Boolean = false,
+) {
+    textItem(text, listItemModifier, isBold)
+}
+
+internal fun LazyListScope.labelTextItem(
+    text: String,
+    isBold: Boolean = false,
+) {
+    textItem(
+        text,
+        Modifier
+            .listItemHorizontalPadding()
+            .listItemTopPadding(),
+        isBold,
+    )
 }
 
 @Composable
@@ -279,14 +313,6 @@ internal fun AddFlagSaveActionBar(
             onClick = onSave,
         )
     }
-}
-
-@Composable
-private fun UpsetClientView(
-    viewModel: CaseAddFlagViewModel = hiltViewModel(),
-    translator: KeyResourceTranslator,
-) {
-    Text("Calm em down")
 }
 
 @Composable

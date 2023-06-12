@@ -31,7 +31,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
-import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -313,7 +313,7 @@ private fun ColumnScope.ExistingCaseContent(
     TabRow(
         selectedTabIndex = selectedTabIndex,
         indicator = @Composable { tabPositions ->
-            TabRowDefaults.Indicator(
+            SecondaryIndicator(
                 Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
                 // TODO Common dimensions
                 height = 2.dp,

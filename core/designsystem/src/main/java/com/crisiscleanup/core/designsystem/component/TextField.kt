@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -39,6 +40,7 @@ fun OutlinedSingleLineTextField(
     label: String = "",
     hasFocus: Boolean = false,
     keyboardType: KeyboardType = KeyboardType.Text,
+    keyboardCapitalization: KeyboardCapitalization = KeyboardCapitalization.None,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     onNext: (() -> Unit)? = null,
     onEnter: (() -> Unit)? = null,
@@ -57,6 +59,7 @@ fun OutlinedSingleLineTextField(
     label,
     hasFocus,
     keyboardType,
+    keyboardCapitalization,
     visualTransformation,
     onNext,
     onEnter,
@@ -79,6 +82,7 @@ fun SingleLineTextField(
     label: String = "",
     hasFocus: Boolean = false,
     keyboardType: KeyboardType = KeyboardType.Text,
+    keyboardCapitalization: KeyboardCapitalization = KeyboardCapitalization.None,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     onNext: (() -> Unit)? = null,
     onEnter: (() -> Unit)? = null,
@@ -97,6 +101,7 @@ fun SingleLineTextField(
     val keyboardOptions = KeyboardOptions(
         imeAction = imeAction,
         keyboardType = keyboardType,
+        capitalization = keyboardCapitalization,
     )
     val focusManager = LocalFocusManager.current
     val keyboardActions = KeyboardActions(
@@ -189,6 +194,7 @@ fun OutlinedClearableTextField(
     label: String = "",
     hasFocus: Boolean = false,
     keyboardType: KeyboardType = KeyboardType.Text,
+    keyboardCapitalization: KeyboardCapitalization = KeyboardCapitalization.None,
     onNext: (() -> Unit)? = null,
     onEnter: (() -> Unit)? = null,
     onSearch: (() -> Unit)? = null,
@@ -203,6 +209,7 @@ fun OutlinedClearableTextField(
     label,
     hasFocus,
     keyboardType,
+    keyboardCapitalization,
     onNext,
     onEnter,
     onSearch,
@@ -222,6 +229,7 @@ fun ClearableTextField(
     label: String = "",
     hasFocus: Boolean = false,
     keyboardType: KeyboardType = KeyboardType.Text,
+    keyboardCapitalization: KeyboardCapitalization = KeyboardCapitalization.None,
     onNext: (() -> Unit)? = null,
     onEnter: (() -> Unit)? = null,
     onSearch: (() -> Unit)? = null,
@@ -256,6 +264,7 @@ fun ClearableTextField(
         isError = isError,
         hasFocus = hasFocus,
         keyboardType = keyboardType,
+        keyboardCapitalization = keyboardCapitalization,
         onNext = onNext,
         onEnter = onEnter,
         onSearch = onSearch,

@@ -178,7 +178,7 @@ class CaseAddFlagViewModel @Inject constructor(
         commitFlag(highPriorityFlag)
     }
 
-    fun onUpsetClient() {
+    fun onUpsetClient(notes: String) {
 
     }
 
