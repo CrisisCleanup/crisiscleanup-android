@@ -1,7 +1,7 @@
 package com.crisiscleanup.core.data.model
 
 import com.crisiscleanup.core.database.model.WorksiteFlagEntity
-import com.crisiscleanup.core.model.data.HIGH_PRIORITY_FLAG
+import com.crisiscleanup.core.model.data.WorksiteFlagType
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import kotlinx.datetime.Clock
 
@@ -11,7 +11,7 @@ fun NetworkWorksiteFull.FlagShort.asEntity() = WorksiteFlagEntity(
     worksiteId = 0,
     action = null,
     createdAt = Clock.System.now(),
-    isHighPriority = isHighPriority == true || reasonT == HIGH_PRIORITY_FLAG,
+    isHighPriority = reasonT == WorksiteFlagType.HighPriority.literal,
     notes = null,
     reasonT = reasonT ?: "",
     requestedAction = null,

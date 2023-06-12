@@ -70,17 +70,18 @@ data class Worksite(
     val crossStreetNearbyLandmark: String
         get() = formData?.get(CROSS_STREET_FIELD_KEY)?.valueString ?: ""
 
-    private fun toggleFlag(flagReason: String): Worksite {
+    private fun toggleFlag(flag: WorksiteFlagType): Worksite {
+        val flagReason = flag.literal
         val toggledFlags = if (flags?.any { it.reasonT == flagReason } == true) {
-            flags.filterNot(WorksiteFlag::isHighPriorityFlag)
+            flags.filterNot { it.reasonT == flagReason }
         } else {
-            val highPriorityFlag = WorksiteFlag.highPriority()
-            flags?.toMutableList()?.apply { add(highPriorityFlag) } ?: listOf(highPriorityFlag)
+            val addFlag = WorksiteFlag.flag(flagReason)
+            flags?.toMutableList()?.apply { add(addFlag) } ?: listOf(addFlag)
         }
         return copy(flags = toggledFlags)
     }
 
-    fun toggleHighPriorityFlag() = toggleFlag(HIGH_PRIORITY_FLAG)
+    fun toggleHighPriorityFlag() = toggleFlag(WorksiteFlagType.HighPriority)
 }
 
 val EmptyWorksite = Worksite(
@@ -123,8 +124,17 @@ data class WorksiteFormValue(
     val hasValue = isBooleanTrue || (!isBoolean && valueString.isNotBlank())
 }
 
-const val HIGH_PRIORITY_FLAG = "flag.worksite_high_priority"
-internal const val WRONG_LOCATION_FLAG = "flag.worksite_wrong_location"
+enum class WorksiteFlagType(val literal: String) {
+    HighPriority("flag.worksite_high_priority"),
+    UpsetClient("flag.worksite_upset_client"),
+    MarkForDeletion("flag.worksite_mark_for_deletion"),
+    ReportAbuse("flag.worksite_abuse"),
+    Duplicate("flag.duplicate"),
+    WrongLocation("flag.worksite_wrong_location"),
+    WrongIncident("flag.worksite_wrong_incident"),
+}
+
+private val flagLiteralLookup = WorksiteFlagType.values().associateBy(WorksiteFlagType::literal)
 
 data class WorksiteFlag(
     val id: Long,
@@ -137,26 +147,41 @@ data class WorksiteFlag(
     val requestedAction: String,
 ) {
     companion object {
-        private fun worksiteFlag(
+        internal fun flag(
             reasonT: String,
             reason: String = "",
+            notes: String = "",
+            isHighPriorityBool: Boolean = false,
         ) = WorksiteFlag(
             id = 0,
             action = "",
             createdAt = Clock.System.now(),
-            isHighPriority = reasonT == HIGH_PRIORITY_FLAG,
-            notes = "",
+            isHighPriority = isHighPriorityBool,
+            notes = notes,
             reasonT = reasonT,
             reason = reason,
             requestedAction = "",
         )
 
-        fun highPriority() = worksiteFlag(HIGH_PRIORITY_FLAG)
-        fun wrongLocation() = worksiteFlag(WRONG_LOCATION_FLAG)
+        fun flag(
+            flag: WorksiteFlagType,
+            notes: String = "",
+            isHighPriorityBool: Boolean = false,
+        ) = flag(
+            flag.literal,
+            notes = notes,
+            isHighPriorityBool = isHighPriorityBool,
+        )
+
+        fun highPriority() = flag(WorksiteFlagType.HighPriority)
+        fun wrongLocation() = flag(WorksiteFlagType.WrongLocation)
     }
 
-    val isHighPriorityFlag = isHighPriority && reasonT == HIGH_PRIORITY_FLAG
-    val isWrongLocationFlag = reasonT == WRONG_LOCATION_FLAG
+    val isHighPriorityFlag = reasonT == WorksiteFlagType.HighPriority.literal
+    val isWrongLocationFlag = reasonT == WorksiteFlagType.WrongLocation.literal
+
+    val flagType: WorksiteFlagType?
+        get() = flagLiteralLookup[reasonT]
 }
 
 data class WorksiteNote(

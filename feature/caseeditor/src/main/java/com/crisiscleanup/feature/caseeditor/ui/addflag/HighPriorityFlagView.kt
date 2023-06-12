@@ -59,7 +59,7 @@ internal fun ColumnScope.HighPriorityView(
     )
 
     val organizations by viewModel.nearbyOrganizations.collectAsStateWithLifecycle()
-    var reasonText by remember { mutableStateOf("") }
+    var flagNotes by remember { mutableStateOf("") }
     var selectedContacts by remember { mutableStateOf(emptyList<PersonContact>()) }
 
     LazyColumn(
@@ -76,8 +76,8 @@ internal fun ColumnScope.HighPriorityView(
 
         item {
             TextArea(
-                reasonText,
-                { text: String -> reasonText = text },
+                flagNotes,
+                { text: String -> flagNotes = text },
                 listItemModifier,
                 isEditable = isEditable
             )
@@ -138,7 +138,7 @@ internal fun ColumnScope.HighPriorityView(
     }
 
     AddFlagSaveActionBar(
-        onSave = { viewModel.onHighPriority(reasonText) },
+        onSave = { viewModel.onHighPriority(isHighPriority, flagNotes) },
         onCancel = onBack,
         isEditable = isEditable,
     )

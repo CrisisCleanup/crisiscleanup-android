@@ -54,13 +54,26 @@ import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.optionItemHeight
 import com.crisiscleanup.core.designsystem.theme.textBoxHeight
+import com.crisiscleanup.core.model.data.WorksiteFlagType
 import com.crisiscleanup.feature.caseeditor.CaseAddFlagViewModel
-import com.crisiscleanup.feature.caseeditor.CaseFlagFlow
 import com.crisiscleanup.feature.caseeditor.R
+
+@Composable
+internal fun CaseEditAddFlagRoute(
+    onBack: () -> Unit = {},
+    viewModel: CaseAddFlagViewModel = hiltViewModel(),
+) {
+    val isSaved by viewModel.isSaved.collectAsStateWithLifecycle()
+    if (isSaved) {
+        onBack()
+    } else {
+        CaseEditAddFlagScreen(onBack)
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun CaseEditAddFlagRoute(
+private fun CaseEditAddFlagScreen(
     onBack: () -> Unit = {},
     viewModel: CaseAddFlagViewModel = hiltViewModel(),
 ) {
@@ -69,8 +82,9 @@ internal fun CaseEditAddFlagRoute(
         AppTranslator(translator = translator)
     }
 
-    var flagFlow by remember { mutableStateOf(CaseFlagFlow.None) }
-    val updateFlagFlow = remember(viewModel) { { selected: CaseFlagFlow -> flagFlow = selected } }
+    var flagFlow by remember { mutableStateOf<WorksiteFlagType?>(null) }
+    val updateFlagFlow =
+        remember(viewModel) { { selected: WorksiteFlagType -> flagFlow = selected } }
     val flagFlowOptions by viewModel.flagFlows.collectAsStateWithLifecycle()
 
     val isSaving by viewModel.isSaving.collectAsStateWithLifecycle()
@@ -107,17 +121,17 @@ internal fun CaseEditAddFlagRoute(
             }
 
             when (flagFlow) {
-                CaseFlagFlow.HighPriority -> HighPriorityView(
+                WorksiteFlagType.HighPriority -> HighPriorityView(
                     onBack = onBack,
                     isEditable = isEditable,
                 )
 
-                CaseFlagFlow.UpsetClient -> UpsetClientView(translator = translator)
-                CaseFlagFlow.MarkForDeletion -> MarkForDeletionView(translator = translator)
-                CaseFlagFlow.ReportAbuse -> ReportAbuseView(translator = translator)
-                CaseFlagFlow.Duplicate -> DuplicateView(translator = translator)
-                CaseFlagFlow.WrongLocation -> WrongLocationView(translator = translator)
-                CaseFlagFlow.WrongIncident -> WrongIncidentView(translator = translator)
+                WorksiteFlagType.UpsetClient -> UpsetClientView(translator = translator)
+                WorksiteFlagType.MarkForDeletion -> MarkForDeletionView(translator = translator)
+                WorksiteFlagType.ReportAbuse -> ReportAbuseView(translator = translator)
+                WorksiteFlagType.Duplicate -> DuplicateView(translator = translator)
+                WorksiteFlagType.WrongLocation -> WrongLocationView(translator = translator)
+                WorksiteFlagType.WrongIncident -> WrongIncidentView(translator = translator)
                 else -> {}
             }
         }
@@ -126,10 +140,10 @@ internal fun CaseEditAddFlagRoute(
 
 @Composable
 private fun FlagsDropdown(
-    selectedFlagFlow: CaseFlagFlow,
-    options: Collection<CaseFlagFlow>,
+    selectedFlagFlow: WorksiteFlagType?,
+    options: Collection<WorksiteFlagType>,
     modifier: Modifier = Modifier,
-    onSelectedFlagFlow: (CaseFlagFlow) -> Unit = {},
+    onSelectedFlagFlow: (WorksiteFlagType) -> Unit = {},
     isEditable: Boolean = false,
     isLoading: Boolean = false,
 ) {
@@ -137,7 +151,7 @@ private fun FlagsDropdown(
 
     var contentWidth by remember { mutableStateOf(Size.Zero) }
 
-    val selectedText = translator(selectedFlagFlow.translateKey)
+    val selectedText = translator(selectedFlagFlow?.literal ?: "flag.choose_problem")
     Box(modifier) {
         var showDropdown by remember { mutableStateOf(false) }
         Row(
@@ -172,10 +186,10 @@ private fun FlagsDropdown(
             onDismissRequest = { showDropdown = false },
         ) {
             for (option in options) {
-                key(option.translateKey) {
+                key(option.literal) {
                     DropdownMenuItem(
                         modifier = Modifier.optionItemHeight(),
-                        text = { Text(translator(option.translateKey)) },
+                        text = { Text(translator(option.literal)) },
                         onClick = {
                             onSelectedFlagFlow(option)
                             showDropdown = false
