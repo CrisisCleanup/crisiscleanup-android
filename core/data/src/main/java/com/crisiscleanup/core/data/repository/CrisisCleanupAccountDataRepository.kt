@@ -11,7 +11,9 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import org.jetbrains.annotations.VisibleForTesting
 import javax.inject.Inject
@@ -29,10 +31,16 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
     override var accessTokenCached: String = ""
         private set
 
-    override val accountData: Flow<AccountData> = dataSource.accountData.map {
-        accessTokenCached = it.accessToken
-        it
-    }
+    override val accountData: Flow<AccountData> = dataSource.accountData
+        .map {
+            accessTokenCached = it.accessToken
+            it
+        }
+        .shareIn(
+            scope = externalScope,
+            SharingStarted.WhileSubscribed(),
+            replay = 1,
+        )
 
     override val isAuthenticated: Flow<Boolean> = accountData.map {
         it.accessToken.isNotEmpty()
