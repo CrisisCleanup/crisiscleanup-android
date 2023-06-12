@@ -1,7 +1,6 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
 import androidx.compose.foundation.layout.Row
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -10,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
@@ -52,9 +52,9 @@ internal fun HelpDialog(
     hasHtml: Boolean = false,
     okText: String = "",
 ) {
-    AlertDialog(
-        title = { Text(title) },
-        text = {
+    CrisisCleanupAlertDialog(
+        title = title,
+        textContent = {
             if (hasHtml) {
                 LinkifyHtmlText(text)
             } else {

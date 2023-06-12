@@ -2,7 +2,6 @@ package com.crisiscleanup.feature.caseeditor.ui
 
 import android.util.Log
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -10,9 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.filterNotBlankTrim
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupFilterChip
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
@@ -46,12 +44,11 @@ import com.crisiscleanup.core.designsystem.component.OutlinedSingleLineTextField
 import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
-import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
-import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemNestedPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
+import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
 import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.weekdayOrderLookup
 import com.philjay.Frequency
@@ -336,78 +333,66 @@ private fun FrequencyIntervalDialog(
     var intervalText by remember { mutableStateOf("$interval") }
     val dismissDialog = { closeDialog(null) }
     val submitInterval = { closeDialog(interval) }
-    AlertDialog(
+
+    CrisisCleanupAlertDialog(
+        title = stringResource(R.string.specify_interval),
         onDismissRequest = dismissDialog,
+        dismissButton = {
+            CrisisCleanupTextButton(
+                text = negativeActionText,
+                onClick = dismissDialog,
+            )
+        },
+        confirmButton = {
+            CrisisCleanupTextButton(
+                text = positiveActionText,
+                onClick = submitInterval,
+            )
+        }
     ) {
-        CardSurface {
-            Column {
-                Box(
-                    modifier = listItemModifier.listItemHeight(),
-                    contentAlignment = Alignment.CenterStart,
-                ) {
-                    Text(stringResource(R.string.specify_interval))
-                }
-                Row(
-                    listItemModifier,
-                    horizontalArrangement = listItemSpacedByHalf,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Spacer(Modifier.weight(1f))
-                    CrisisCleanupIconButton(
-                        imageVector = CrisisCleanupIcons.Minus,
-                        onClick = {
-                            interval = (interval - 1).coerceAtLeast(1)
+        Row(
+            Modifier.listItemVerticalPadding(),
+            horizontalArrangement = listItemSpacedByHalf,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            CrisisCleanupIconButton(
+                imageVector = CrisisCleanupIcons.Minus,
+                onClick = {
+                    interval = (interval - 1).coerceAtLeast(1)
+                    intervalText = "$interval"
+                },
+                enabled = interval > 1,
+            )
+            OutlinedSingleLineTextField(
+                modifier = Modifier.sizeIn(minWidth = 36.dp, maxWidth = 64.dp),
+                value = intervalText,
+                onValueChange = { text: String ->
+                    if (text.isBlank()) {
+                        interval = 1
+                        intervalText = ""
+                    } else {
+                        try {
+                            interval = text.toInt().coerceAtLeast(1)
                             intervalText = "$interval"
-                        },
-                        enabled = interval > 1,
-                    )
-                    OutlinedSingleLineTextField(
-                        modifier = Modifier.sizeIn(minWidth = 36.dp, maxWidth = 64.dp),
-                        value = intervalText,
-                        onValueChange = { text: String ->
-                            if (text.isBlank()) {
-                                interval = 1
-                                intervalText = ""
-                            } else {
-                                try {
-                                    interval = text.toInt().coerceAtLeast(1)
-                                    intervalText = "$interval"
-                                } catch (e: Exception) {
-                                    Log.e("form-data-frequency-input", e.message, e)
-                                }
-                            }
-                        },
-                        keyboardType = KeyboardType.Number,
-                        imeAction = ImeAction.Done,
-                        onEnter = submitInterval,
-                        enabled = true,
-                        isError = false,
-                        labelResId = 0,
-                    )
-                    CrisisCleanupIconButton(
-                        imageVector = CrisisCleanupIcons.Add,
-                        onClick = {
-                            interval++
-                            intervalText = "$interval"
-                        },
-                    )
-                    Spacer(Modifier.weight(1f))
-                }
-                Row(
-                    listItemModifier.padding(top = 16.dp),
-                    horizontalArrangement = listItemSpacedBy,
-                ) {
-                    Spacer(Modifier.weight(1f))
-                    CrisisCleanupTextButton(
-                        text = negativeActionText,
-                        onClick = dismissDialog,
-                    )
-                    CrisisCleanupTextButton(
-                        text = positiveActionText,
-                        onClick = submitInterval,
-                    )
-                }
-            }
+                        } catch (e: Exception) {
+                            Log.e("form-data-frequency-input", e.message, e)
+                        }
+                    }
+                },
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Done,
+                onEnter = submitInterval,
+                enabled = true,
+                isError = false,
+                labelResId = 0,
+            )
+            CrisisCleanupIconButton(
+                imageVector = CrisisCleanupIcons.Add,
+                onClick = {
+                    interval++
+                    intervalText = "$interval"
+                },
+            )
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,7 +36,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.toSize
-import androidx.compose.ui.window.PopupProperties
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupFilterChip
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
@@ -380,13 +378,10 @@ private fun SelectItem(
     Box(Modifier.fillMaxWidth()) {
         var contentWidth by remember { mutableStateOf(Size.Zero) }
         var showDropdown by remember { mutableStateOf(false) }
-        BackHandler(showDropdown) {
-            showDropdown = false
-        }
         Column(
             Modifier
                 .clickable(
-                    onClick = { showDropdown = true },
+                    onClick = { showDropdown = !showDropdown },
                     enabled = enabled,
                 )
                 .fillMaxWidth()
@@ -445,7 +440,6 @@ private fun SelectItem(
                 expanded = true,
                 onDismissRequest = { showDropdown = false },
                 offset = listItemDropdownMenuOffset,
-                properties = PopupProperties(focusable = false)
             ) {
                 DropdownItems(
                     itemData.selectOptions,

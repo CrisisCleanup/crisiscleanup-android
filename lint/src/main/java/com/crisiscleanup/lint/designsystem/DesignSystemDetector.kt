@@ -63,6 +63,7 @@ class DesignSystemDetector : Detector(), Detector.UastScanner {
         // instead of hardcoded names.
         val METHOD_NAMES = mapOf(
             "MaterialTheme" to "CrisisCleanupTheme",
+            "AlertDialog" to "CrisisCleanupAlertDialog",
             "Button" to "CrisisCleanupButton",
             "OutlinedButton" to "CrisisCleanupOutlinedButton",
             "TextButton" to "CrisisCleanupTextButton",

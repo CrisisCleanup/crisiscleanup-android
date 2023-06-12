@@ -1,10 +1,15 @@
 package com.crisiscleanup.core.designsystem.component
 
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -12,22 +17,35 @@ import androidx.compose.ui.unit.dp
 fun CrisisCleanupAlertDialog(
     tonalElevation: Dp = 0.dp,
     textContentColor: Color = LocalContentColor.current,
+    // TODO Common dimensions
+    shape: Shape = RoundedCornerShape(8.dp),
     onDismissRequest: () -> Unit = {},
     title: String = "",
     titleContent: @Composable () -> Unit = {},
     confirmButton: @Composable () -> Unit = { },
     dismissButton: (@Composable () -> Unit)? = null,
+    text: String = "",
     textContent: @Composable () -> Unit = {},
 ) {
-    val title: @Composable () -> Unit = if (title.isBlank()) titleContent else {
+    val titleComposable: @Composable () -> Unit = if (title.isBlank()) titleContent else {
         @Composable { Text(title) }
     }
+    val textComposable: @Composable () -> Unit = {
+        CompositionLocalProvider(
+            LocalTextStyle provides MaterialTheme.typography.bodyLarge
+        ) {
+            if (text.isBlank()) textContent()
+            else Text(text)
+        }
+    }
+
     AlertDialog(
         tonalElevation = tonalElevation,
         textContentColor = textContentColor,
+        shape = shape,
         onDismissRequest = onDismissRequest,
-        title = title,
-        text = textContent,
+        title = titleComposable,
+        text = textComposable,
         confirmButton = confirmButton,
         dismissButton = dismissButton,
     )

@@ -19,7 +19,6 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -49,6 +48,7 @@ import com.crisiscleanup.core.designsystem.AppTranslator
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
@@ -676,9 +676,9 @@ private fun PromptChangesDialog(
     onAbort: () -> Unit = {},
 ) {
     val translator = LocalAppTranslator.current.translator
-    AlertDialog(
-        title = { Text(translator("info.changes", R.string.changes)) },
-        text = { Text(translator("info.continue_or_lose_changes", R.string.changes_choice)) },
+    CrisisCleanupAlertDialog(
+        title = translator("info.changes", R.string.changes),
+        text = translator("info.continue_or_lose_changes", R.string.changes_choice),
         onDismissRequest = onStay,
         dismissButton = {
             CrisisCleanupTextButton(
@@ -713,16 +713,9 @@ private fun InvalidSaveDialog(
             }
             val onDismiss =
                 remember(viewModel) { { viewModel.showInvalidWorksiteSave.value = false } }
-            AlertDialog(
-                title = {
-                    Text(
-                        translator(
-                            "info.incomplete_case_info",
-                            R.string.incomplete_information
-                        )
-                    )
-                },
-                text = { Text(message) },
+            CrisisCleanupAlertDialog(
+                title = translator("info.incomplete_case_info", R.string.incomplete_information),
+                text = message,
                 onDismissRequest = onDismiss,
                 dismissButton = {
                     CrisisCleanupTextButton(

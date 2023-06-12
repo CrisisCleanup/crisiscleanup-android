@@ -2,7 +2,6 @@ package com.crisiscleanup.feature.caseeditor.ui
 
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,6 +17,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.theme.textBoxHeight
 import com.crisiscleanup.core.model.data.WorksiteNote
@@ -37,9 +37,9 @@ fun EditNoteDialog(
         val noteState = note.copy(note = noteContent.trim())
         onSave(noteState)
     }
-    AlertDialog(
-        title = { Text(dialogTitle) },
-        text = {
+    CrisisCleanupAlertDialog(
+        title = dialogTitle,
+        textContent = {
             val focusRequester = FocusRequester()
 
             val keyboardOptions = KeyboardOptions(

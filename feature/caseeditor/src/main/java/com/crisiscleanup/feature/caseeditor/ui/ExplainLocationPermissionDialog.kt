@@ -3,12 +3,11 @@ package com.crisiscleanup.feature.caseeditor.ui
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.feature.caseeditor.R
 
@@ -21,9 +20,9 @@ fun OpenSettingsDialog(
     closeDialog: () -> Unit = {},
 ) {
     val context = LocalContext.current
-    AlertDialog(
-        title = { Text(title) },
-        text = { Text(text) },
+    CrisisCleanupAlertDialog(
+        title = title,
+        text = text,
         onDismissRequest = closeDialog,
         dismissButton = {
             CrisisCleanupTextButton(

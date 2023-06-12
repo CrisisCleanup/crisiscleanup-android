@@ -1,14 +1,12 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.feature.caseeditor.CaseLocationDataEditor
-import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
 
 @Composable
 internal fun LocationOutOfBoundsDialog(
@@ -54,9 +52,9 @@ internal fun LocationOutOfBoundsDialog(
                 )
             }
         }
-        AlertDialog(
-            title = { Text(title) },
-            text = { Text(message) },
+        CrisisCleanupAlertDialog(
+            title = title,
+            text = message,
             onDismissRequest = {
                 // TODO Visually indicate dialog is modal and an action must be selected
             },

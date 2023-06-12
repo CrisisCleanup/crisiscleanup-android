@@ -20,7 +20,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.PopupProperties
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
@@ -43,14 +42,14 @@ internal fun WorkTypeStatusDropdown(
     val enabled = isEditable && statusOptions.isNotEmpty()
 
     var showOptions by remember { mutableStateOf(false) }
-    val onShowOptions = { showOptions = true }
+    val toggleShowOptions = { showOptions = !showOptions }
     Box {
         val restingModifier = if (applySpacing)
             Modifier
                 .listCheckboxAlignItemPaddingCounterOffset()
                 .clickable(
                     enabled = enabled,
-                    onClick = onShowOptions,
+                    onClick = toggleShowOptions,
                 )
                 .listItemHeight()
                 .listItemPadding()
@@ -58,7 +57,7 @@ internal fun WorkTypeStatusDropdown(
             Modifier
                 .clickable(
                     enabled = enabled,
-                    onClick = onShowOptions,
+                    onClick = toggleShowOptions,
                 )
                 .listItemHeight()
         WorkTypeStatusOption(
@@ -79,7 +78,6 @@ internal fun WorkTypeStatusDropdown(
                 expanded = true,
                 onDismissRequest = { showOptions = false },
                 offset = listItemDropdownMenuOffset,
-                properties = PopupProperties(focusable = false),
             ) {
                 WorkTypeStatusOptions(
                     selectedStatus,
