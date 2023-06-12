@@ -1,6 +1,5 @@
 package com.crisiscleanup.feature.caseeditor.ui.addflag
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,7 +38,6 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
-import androidx.compose.ui.window.PopupProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.common.KeyResourceTranslator
@@ -142,13 +140,10 @@ private fun FlagsDropdown(
     val selectedText = translator(selectedFlagFlow.translateKey)
     Box(modifier) {
         var showDropdown by remember { mutableStateOf(false) }
-        BackHandler(showDropdown) {
-            showDropdown = false
-        }
         Row(
             Modifier
                 .clickable(
-                    onClick = { showDropdown = true },
+                    onClick = { showDropdown = !showDropdown },
                     enabled = isEditable,
                 )
                 .onGloballyPositioned {
@@ -175,7 +170,6 @@ private fun FlagsDropdown(
                 .width(with(LocalDensity.current) { contentWidth.width.toDp() }),
             expanded = showDropdown && isEditable,
             onDismissRequest = { showDropdown = false },
-            properties = PopupProperties(focusable = false)
         ) {
             for (option in options) {
                 key(option.translateKey) {

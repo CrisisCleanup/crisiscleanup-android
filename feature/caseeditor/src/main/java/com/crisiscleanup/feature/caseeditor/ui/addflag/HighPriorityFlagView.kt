@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,12 +17,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
 import com.crisiscleanup.core.designsystem.component.SmallBusyIndicator
@@ -157,48 +156,8 @@ private fun ContactsDialog(
     onCloseDialog: () -> Unit,
 ) {
     val translator = LocalAppTranslator.current.translator
-    val spacingModifier = Modifier
-        .padding(vertical = edgeSpacingHalf)
-        .padding(bottom = edgeSpacingHalf)
-    AlertDialog(
-        tonalElevation = 0.dp,
-        textContentColor = Color.Black,
-        title = { Text(translator("flag.primary_contacts")) },
-        text = {
-            // TODO Common color
-            LazyColumn(verticalArrangement = listItemSpacedBy) {
-                items(
-                    contacts,
-                    key = { it.id },
-                    contentType = { "item-contact" },
-                ) {
-                    with(it) {
-                        Text(
-                            "$firstName $lastName",
-                            spacingModifier,
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        if (email.isNotBlank()) {
-                            PropertyInfoRow(
-                                CrisisCleanupIcons.Mail,
-                                email,
-                                spacingModifier,
-                                isEmail = true,
-                            )
-                        }
-                        if (mobile.isNotBlank()) {
-                            PropertyInfoRow(
-                                CrisisCleanupIcons.Phone,
-                                mobile,
-                                spacingModifier,
-                                isPhone = true,
-                            )
-                        }
-                    }
-                }
-            }
-        },
+    CrisisCleanupAlertDialog(
+        title = translator("flag.primary_contacts"),
         onDismissRequest = onCloseDialog,
         confirmButton = {
             CrisisCleanupTextButton(
@@ -206,5 +165,42 @@ private fun ContactsDialog(
                 onClick = onCloseDialog,
             )
         },
-    )
+    ) {
+        val spacingModifier = Modifier
+            .padding(vertical = edgeSpacingHalf)
+            .padding(bottom = edgeSpacingHalf)
+        // TODO Common color
+        LazyColumn(verticalArrangement = listItemSpacedBy) {
+            items(
+                contacts,
+                key = { it.id },
+                contentType = { "item-contact" },
+            ) {
+                with(it) {
+                    Text(
+                        "$firstName $lastName",
+                        spacingModifier,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    if (email.isNotBlank()) {
+                        PropertyInfoRow(
+                            CrisisCleanupIcons.Mail,
+                            email,
+                            spacingModifier,
+                            isEmail = true,
+                        )
+                    }
+                    if (mobile.isNotBlank()) {
+                        PropertyInfoRow(
+                            CrisisCleanupIcons.Phone,
+                            mobile,
+                            spacingModifier,
+                            isPhone = true,
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
