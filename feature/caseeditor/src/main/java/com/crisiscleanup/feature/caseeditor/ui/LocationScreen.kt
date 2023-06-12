@@ -92,15 +92,18 @@ private fun AddressSummaryInColumn(
                         .padding(16.dp),
                     style = MaterialTheme.typography.bodyLarge,
                 )
+                val isEditable = LocalCaseEditor.current.isEditable
                 Row(listItemModifier.align(Alignment.BottomEnd)) {
                     Spacer(Modifier.weight(1f))
                     CrisisCleanupIconButton(
                         imageVector = CrisisCleanupIcons.Delete,
                         onClick = onClearAddress,
+                        enabled = isEditable,
                     )
                     CrisisCleanupIconButton(
                         imageVector = CrisisCleanupIcons.Edit,
                         onClick = onEditAddress,
+                        enabled = isEditable,
                     )
                 }
             }

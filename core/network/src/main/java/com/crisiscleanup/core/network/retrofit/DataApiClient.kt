@@ -199,7 +199,6 @@ class DataApiClient @Inject constructor(
             it.results ?: emptyList()
         }
 
-
     override suspend fun getIncidentLocations(locationIds: List<Long>) =
         networkApi.getLocations(locationIds.joinToString(","), locationIds.size)
             .let {
