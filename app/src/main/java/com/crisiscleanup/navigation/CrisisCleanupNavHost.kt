@@ -20,7 +20,6 @@ import com.crisiscleanup.feature.caseeditor.navigation.navigateToExistingCase
 import com.crisiscleanup.feature.cases.navigation.casesGraph
 import com.crisiscleanup.feature.cases.navigation.casesSearchScreen
 import com.crisiscleanup.feature.cases.navigation.navigateToCasesSearch
-import com.crisiscleanup.feature.cases.navigation.selectIncidentScreen
 import com.crisiscleanup.feature.cases.ui.CasesAction
 import com.crisiscleanup.feature.dashboard.navigation.dashboardScreen
 import com.crisiscleanup.feature.mediamanage.navigation.viewImageScreen
@@ -88,7 +87,6 @@ fun CrisisCleanupNavHost(
     ) {
         casesGraph(
             nestedGraphs = {
-                selectIncidentScreen(onBack)
                 casesSearchScreen(onBack, replaceRouteOpenCase)
                 caseEditorScreen(navController, onBack)
                 caseEditSearchAddressScreen(navController, onBack)

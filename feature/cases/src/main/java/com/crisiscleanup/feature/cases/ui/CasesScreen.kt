@@ -179,7 +179,7 @@ internal fun CasesRoute(
 
         if (showChangeIncident) {
             val closeDialog = remember(casesViewModel) { { showChangeIncident = false } }
-            SelectIncidentRoute(closeDialog)
+            SelectIncidentDialog(closeDialog)
         }
     } else {
         val isLoading = incidentsData is IncidentsData.Loading || isIncidentLoading

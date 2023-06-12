@@ -83,7 +83,7 @@ import com.crisiscleanup.core.ui.LocalAppLayout
 import com.crisiscleanup.core.ui.ScreenKeyboardVisibility
 import com.crisiscleanup.core.ui.screenKeyboardVisibility
 import com.crisiscleanup.feature.authentication.AuthenticateScreen
-import com.crisiscleanup.feature.cases.navigation.navigateToSelectIncident
+import com.crisiscleanup.feature.cases.ui.SelectIncidentDialog
 import com.crisiscleanup.navigation.CrisisCleanupNavHost
 import com.crisiscleanup.navigation.TopLevelDestination
 import com.crisiscleanup.feature.authentication.R as authenticationR
@@ -168,8 +168,9 @@ private fun LoadedContent(
         val appHeaderTitle by appHeaderBar.title.collectAsStateWithLifecycle()
         val isHeaderLoading by viewModel.showHeaderLoading.collectAsState(false)
 
+        var showIncidentPicker by remember { mutableStateOf(false) }
         val openIncidentsSelect = remember(viewModel) {
-            { appState.navController.navigateToSelectIncident() }
+            { showIncidentPicker = true }
         }
 
         NavigableContent(
@@ -185,6 +186,11 @@ private fun LoadedContent(
 
         if (isAccountExpired) {
             ExpiredTokenAlert(snackbarHostState) { openAuthentication = true }
+        }
+
+        if (showIncidentPicker) {
+            val closeDialog = { showIncidentPicker = false }
+            SelectIncidentDialog(closeDialog)
         }
     }
 }
@@ -259,7 +265,6 @@ private fun NavigableContent(
                 enter = slideIn { IntOffset.Zero },
                 exit = slideOut { IntOffset.Zero },
             ) {
-
                 val title = headerTitle.ifBlank {
                     appState.currentTopLevelDestination?.let { destination ->
                         LocalAppTranslator.current.translator(

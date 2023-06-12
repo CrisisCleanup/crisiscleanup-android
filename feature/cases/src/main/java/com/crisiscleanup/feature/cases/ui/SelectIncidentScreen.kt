@@ -41,7 +41,8 @@ import com.crisiscleanup.feature.cases.SelectIncidentViewModel
 @Composable
 private fun WrapInDialog(
     onBackClick: () -> Unit,
-    cornerRound: Dp = 4.dp,
+    // TODO Common dimensions
+    cornerRound: Dp = 8.dp,
     content: @Composable () -> Unit,
 ) = Dialog(
     onDismissRequest = onBackClick,
@@ -58,7 +59,7 @@ private fun WrapInDialog(
 }
 
 @Composable
-internal fun SelectIncidentRoute(
+fun SelectIncidentDialog(
     onBackClick: () -> Unit,
     selectIncidentViewModel: SelectIncidentViewModel = hiltViewModel(),
     padding: Dp = 16.dp,
