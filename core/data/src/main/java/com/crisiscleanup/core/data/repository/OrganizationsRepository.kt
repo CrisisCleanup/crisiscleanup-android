@@ -1,5 +1,8 @@
 package com.crisiscleanup.core.data.repository
 
+import com.crisiscleanup.core.common.log.AppLogger
+import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
+import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.data.model.asEntities
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDao
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDaoPlus
@@ -30,6 +33,7 @@ class OfflineFirstOrganizationsRepository @Inject constructor(
     private val incidentOrganizationDao: IncidentOrganizationDao,
     private val incidentOrganizationDaoPlus: IncidentOrganizationDaoPlus,
     private val networkDataSource: CrisisCleanupNetworkDataSource,
+    @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : OrganizationsRepository {
     override val organizationNameLookup =
         incidentOrganizationDao.streamOrganizationNames().mapLatest { it.asLookup() }
@@ -48,25 +52,32 @@ class OfflineFirstOrganizationsRepository @Inject constructor(
         latitude: Double,
         longitude: Double,
     ): List<IncidentOrganization> {
-        val networkOrganizations = networkDataSource.getNearbyOrganizations(latitude, longitude)
-        val (
-            organizations,
-            primaryContacts,
-            organizationContactCrossRefs,
-            organizationAffiliates,
-        ) = networkOrganizations.asEntities(getContacts = true, getReferences = true)
-        incidentOrganizationDaoPlus.saveOrganizations(
-            organizations,
-            primaryContacts,
-        )
-        incidentOrganizationDaoPlus.saveOrganizationReferences(
-            organizations,
-            organizationContactCrossRefs,
-            organizationAffiliates,
-        )
+        try {
+            val networkOrganizations = networkDataSource.getNearbyOrganizations(latitude, longitude)
+            val (
+                organizations,
+                primaryContacts,
+                organizationContactCrossRefs,
+                organizationAffiliates,
+            ) = networkOrganizations.asEntities(getContacts = true, getReferences = true)
+            incidentOrganizationDaoPlus.saveOrganizations(
+                organizations,
+                primaryContacts,
+            )
+            incidentOrganizationDaoPlus.saveOrganizationReferences(
+                organizations,
+                organizationContactCrossRefs,
+                organizationAffiliates,
+            )
 
-        val organizationIds = organizations.map(IncidentOrganizationEntity::id)
-        return incidentOrganizationDao.getOrganizations(organizationIds)
-            .map(PopulatedIncidentOrganization::asExternalModel)
+            val organizationIds = organizations.map(IncidentOrganizationEntity::id)
+            return incidentOrganizationDao.getOrganizations(organizationIds)
+                .map(PopulatedIncidentOrganization::asExternalModel)
+        } catch (e: Exception) {
+            if (e !is InterruptedException) {
+                logger.logException(e)
+            }
+        }
+        return emptyList()
     }
 }
