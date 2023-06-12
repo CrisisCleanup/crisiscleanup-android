@@ -423,10 +423,11 @@ private fun ColumnScope.FullEditView(
     val saveChanges = remember(viewModel) { { viewModel.saveChanges(false) } }
     val translator = LocalAppTranslator.current.translator
     SaveActionBar(
-        !isSavingData,
-        onCancel,
-        claimAndSaveChanges,
-        saveChanges,
+        enable = isEditable,
+        isSaving = isSavingData,
+        onCancel = onCancel,
+        onClaimAndSave = claimAndSaveChanges,
+        onSave = saveChanges,
         saveText = translator("actions.save"),
         saveClaimText = translator("actions.save_claim"),
         cancelText = translator("actions.cancel"),
@@ -759,7 +760,8 @@ private fun InvalidSaveDialog(
 
 @Composable
 private fun SaveActionBar(
-    enable: Boolean = true,
+    enable: Boolean = false,
+    isSaving: Boolean = false,
     onCancel: () -> Unit = {},
     onClaimAndSave: () -> Unit = {},
     onSave: () -> Unit = {},
@@ -789,7 +791,7 @@ private fun SaveActionBar(
             Modifier.weight(1.5f),
             text = saveClaimText,
             enabled = enable,
-            indicateBusy = !enable,
+            indicateBusy = isSaving,
             onClick = onClaimAndSave,
             isSharpCorners = isSharpCorners,
         )
@@ -797,7 +799,7 @@ private fun SaveActionBar(
             Modifier.weight(1.1f),
             text = saveText,
             enabled = enable,
-            indicateBusy = !enable,
+            indicateBusy = isSaving,
             onClick = onSave,
             isSharpCorners = isSharpCorners,
         )

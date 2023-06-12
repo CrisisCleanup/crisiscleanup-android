@@ -17,6 +17,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
@@ -44,6 +45,7 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextRadioButto
 import com.crisiscleanup.core.designsystem.component.OutlinedSingleLineTextField
 import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
@@ -418,7 +420,6 @@ private fun FrequencyDatePicker(
     rRule: RRule,
     updateRrule: () -> Unit = {},
 ) {
-
     var showDatePicker by remember { mutableStateOf(false) }
     Row(
         Modifier
@@ -433,9 +434,14 @@ private fun FrequencyDatePicker(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         val selectedDateText = translator("recurringSchedule.select_end_date")
+        var tint = LocalContentColor.current
+        if (!enabled) {
+            tint = tint.disabledAlpha()
+        }
         Icon(
             imageVector = CrisisCleanupIcons.Calendar,
             contentDescription = selectedDateText,
+            tint = tint,
         )
         val dateText = rRule.until?.let {
             "$selectedDateText (${recurringDateFormat.format(it)})"
