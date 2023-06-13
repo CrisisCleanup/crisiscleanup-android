@@ -6,6 +6,7 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.data.model.asEntities
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDao
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDaoPlus
+import com.crisiscleanup.core.database.dao.fts.getMatchingOrganizations
 import com.crisiscleanup.core.database.model.IncidentOrganizationEntity
 import com.crisiscleanup.core.database.model.PopulatedIncidentOrganization
 import com.crisiscleanup.core.database.model.asExternalModel
@@ -85,5 +86,5 @@ class OfflineFirstOrganizationsRepository @Inject constructor(
     }
 
     override suspend fun getMatchingOrganizations(q: String) =
-        incidentOrganizationDaoPlus.getOrganizations(q)
+        incidentOrganizationDaoPlus.getMatchingOrganizations(q)
 }

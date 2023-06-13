@@ -6,12 +6,12 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
+import com.crisiscleanup.core.database.dao.fts.PopulatedOrganizationIdNameMatchInfo
 import com.crisiscleanup.core.database.model.IncidentOrganizationEntity
 import com.crisiscleanup.core.database.model.IncidentOrganizationSyncStatsEntity
 import com.crisiscleanup.core.database.model.OrganizationAffiliateEntity
 import com.crisiscleanup.core.database.model.OrganizationPrimaryContactCrossRef
 import com.crisiscleanup.core.database.model.PopulatedIncidentOrganization
-import com.crisiscleanup.core.database.model.PopulatedOrganizationIdNameMatchInfo
 import com.crisiscleanup.core.model.data.OrganizationIdName
 import kotlinx.coroutines.flow.Flow
 
@@ -70,18 +70,18 @@ interface IncidentOrganizationDao {
     fun getRandomOrganizationName(): String?
 
     @Transaction
+    @Query("INSERT INTO incident_organization_fts(incident_organization_fts) VALUES ('rebuild')")
+    fun rebuildOrganizationFts()
+
+    @Transaction
     @Query(
         """
-            SELECT io.id, f.name,
-            matchinfo(incident_organization_fts, 'pcnalx') as match_info
-            FROM incident_organization_fts f
-            INNER JOIN incident_organizations io ON f.name=io.name
-            WHERE incident_organization_fts MATCH :query
+        SELECT io.id, f.name,
+        matchinfo(incident_organization_fts, 'pcnalx') as match_info
+        FROM incident_organization_fts f
+        INNER JOIN incident_organizations io ON f.name=io.name
+        WHERE incident_organization_fts MATCH :query
         """
     )
     fun matchOrganizationName(query: String): List<PopulatedOrganizationIdNameMatchInfo>
-
-    @Transaction
-    @Query("INSERT INTO incident_organization_fts(incident_organization_fts) VALUES ('rebuild')")
-    fun rebuildOrganizationFts()
 }

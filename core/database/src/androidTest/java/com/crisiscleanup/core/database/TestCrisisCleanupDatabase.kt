@@ -5,12 +5,13 @@ import androidx.room.Database
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.TypeConverters
+import com.crisiscleanup.core.database.dao.fts.IncidentFtsEntity
+import com.crisiscleanup.core.database.dao.fts.IncidentOrganizationFtsEntity
 import com.crisiscleanup.core.database.model.IncidentEntity
 import com.crisiscleanup.core.database.model.IncidentFormFieldEntity
 import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
 import com.crisiscleanup.core.database.model.IncidentLocationEntity
 import com.crisiscleanup.core.database.model.IncidentOrganizationEntity
-import com.crisiscleanup.core.database.model.IncidentOrganizationFtsEntity
 import com.crisiscleanup.core.database.model.IncidentOrganizationSyncStatsEntity
 import com.crisiscleanup.core.database.model.IncidentWorksitesFullSyncStatsEntity
 import com.crisiscleanup.core.database.model.LanguageTranslationEntity
@@ -69,6 +70,7 @@ import kotlinx.datetime.Instant
         NetworkFileLocalImageEntity::class,
         WorksiteLocalImageEntity::class,
         IncidentWorksitesFullSyncStatsEntity::class,
+        IncidentFtsEntity::class,
         IncidentOrganizationFtsEntity::class,
     ],
     version = 1,

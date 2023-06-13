@@ -27,12 +27,13 @@ import com.crisiscleanup.core.database.dao.WorksiteFlagDao
 import com.crisiscleanup.core.database.dao.WorksiteFormDataDao
 import com.crisiscleanup.core.database.dao.WorksiteNoteDao
 import com.crisiscleanup.core.database.dao.WorksiteSyncStatDao
+import com.crisiscleanup.core.database.dao.fts.IncidentFtsEntity
+import com.crisiscleanup.core.database.dao.fts.IncidentOrganizationFtsEntity
 import com.crisiscleanup.core.database.model.IncidentEntity
 import com.crisiscleanup.core.database.model.IncidentFormFieldEntity
 import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
 import com.crisiscleanup.core.database.model.IncidentLocationEntity
 import com.crisiscleanup.core.database.model.IncidentOrganizationEntity
-import com.crisiscleanup.core.database.model.IncidentOrganizationFtsEntity
 import com.crisiscleanup.core.database.model.IncidentOrganizationSyncStatsEntity
 import com.crisiscleanup.core.database.model.IncidentWorksitesFullSyncStatsEntity
 import com.crisiscleanup.core.database.model.LanguageTranslationEntity
@@ -88,9 +89,10 @@ import com.crisiscleanup.core.database.util.InstantConverter
         NetworkFileLocalImageEntity::class,
         WorksiteLocalImageEntity::class,
         IncidentWorksitesFullSyncStatsEntity::class,
+        IncidentFtsEntity::class,
         IncidentOrganizationFtsEntity::class,
     ],
-    version = 26,
+    version = 27,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
@@ -117,6 +119,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         AutoMigration(from = 23, to = 24),
         AutoMigration(from = 24, to = 25),
         AutoMigration(from = 25, to = 26),
+        AutoMigration(from = 26, to = 27),
     ],
     exportSchema = true,
 )

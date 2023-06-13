@@ -34,7 +34,7 @@ import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.theme.listItemDropdownMenuOffset
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.optionItemPadding
-import com.crisiscleanup.core.model.data.IncidentIdName
+import com.crisiscleanup.core.model.data.IncidentIdNameType
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseAddFlagViewModel
@@ -53,7 +53,7 @@ internal fun ColumnScope.WrongIncidentFlagView(
     val onIncidentQueryChange = remember(viewModel) {
         { q: String -> viewModel.onIncidentQueryChange(q) }
     }
-    var selectedIncident by remember { mutableStateOf<IncidentIdName?>(null) }
+    var selectedIncident by remember { mutableStateOf<IncidentIdNameType?>(null) }
     val incidentSuggestions by viewModel.incidentResults.collectAsStateWithLifecycle()
 
     var isCorrectIncidentListed by remember { mutableStateOf(true) }

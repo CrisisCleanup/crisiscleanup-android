@@ -1,9 +1,11 @@
 package com.crisiscleanup.core.database.model
 
+import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Junction
 import androidx.room.Relation
 import com.crisiscleanup.core.model.data.Incident
+import com.crisiscleanup.core.model.data.IncidentIdNameType
 
 data class PopulatedIncident(
     @Embedded
@@ -48,4 +50,20 @@ data class PopulatedFormFieldsIncident(
 fun PopulatedFormFieldsIncident.asExternalModel() = entity.asExternalModel().copy(
     formFields = formFields.map(IncidentFormFieldEntity::asExternalModel)
         .filter { !(it.isInvalidated || it.isDivEnd) }
+)
+
+data class PopulatedIncidentMatch(
+    val id: Long,
+    val name: String,
+    @ColumnInfo("short_name")
+    val shortName: String,
+    @ColumnInfo("incident_type")
+    val type: String,
+)
+
+fun PopulatedIncidentMatch.asExternalModel() = IncidentIdNameType(
+    id = id,
+    name = name,
+    shortName = shortName,
+    disasterLiteral = type,
 )

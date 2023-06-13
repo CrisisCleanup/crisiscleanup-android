@@ -16,7 +16,7 @@ import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.DatabaseManagementRepository
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
-import com.crisiscleanup.core.model.data.IncidentIdName
+import com.crisiscleanup.core.model.data.IncidentIdNameType
 import com.crisiscleanup.core.model.data.LocationAddress
 import com.crisiscleanup.core.model.data.OrganizationIdName
 import com.crisiscleanup.core.model.data.Worksite
@@ -199,7 +199,7 @@ class CaseAddFlagViewModel @Inject constructor(
                 emptyList()
             } else {
 //                organizationsRepository.getMatchingOrganizations(it.trim())
-                emptyList<IncidentIdName>()
+                emptyList<IncidentIdNameType>()
             }
         }
         .stateIn(
@@ -386,7 +386,7 @@ class CaseAddFlagViewModel @Inject constructor(
 
     fun onWrongIncident(
         isIncidentSelected: Boolean,
-        incident: IncidentIdName?,
+        incident: IncidentIdNameType?,
     ) {
 
     }

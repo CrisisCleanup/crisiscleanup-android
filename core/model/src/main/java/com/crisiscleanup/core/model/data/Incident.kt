@@ -67,7 +67,9 @@ data class IncidentFormField(
     val isFrequency = htmlTypeLower == "cronselect"
 }
 
-data class IncidentIdName(
+data class IncidentIdNameType(
     val id: Long,
     val name: String,
+    val shortName: String,
+    val disasterLiteral: String,
 )

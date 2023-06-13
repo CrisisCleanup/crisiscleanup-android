@@ -14,6 +14,7 @@ import com.crisiscleanup.core.database.dao.IncidentDaoPlus
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDao
 import com.crisiscleanup.core.database.dao.LocationDaoPlus
 import com.crisiscleanup.core.database.dao.LocationEntitySource
+import com.crisiscleanup.core.database.dao.fts.getMatchingIncidents
 import com.crisiscleanup.core.database.model.PopulatedIncident
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
@@ -203,4 +204,8 @@ class OfflineFirstIncidentsRepository @Inject constructor(
 
         incidentOrganizationsSyncer.sync(incidentId)
     }
+
+    override suspend fun getIncidentsForDisplay() = incidentDaoPlus.getIncidentsForDisplay()
+
+    override suspend fun getMatchingIncidents(q: String) = incidentDaoPlus.getMatchingIncidents(q)
 }

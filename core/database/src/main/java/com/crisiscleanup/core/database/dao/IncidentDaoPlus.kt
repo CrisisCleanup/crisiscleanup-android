@@ -6,10 +6,12 @@ import com.crisiscleanup.core.database.model.IncidentEntity
 import com.crisiscleanup.core.database.model.IncidentFormFieldEntity
 import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
 import com.crisiscleanup.core.database.model.IncidentLocationEntity
+import com.crisiscleanup.core.database.model.PopulatedIncidentMatch
+import com.crisiscleanup.core.database.model.asExternalModel
 import javax.inject.Inject
 
 class IncidentDaoPlus @Inject constructor(
-    private val db: CrisisCleanupDatabase,
+    internal val db: CrisisCleanupDatabase,
 ) {
     // Tested in IncidentDaoTest
     suspend fun saveIncidents(
@@ -45,5 +47,9 @@ class IncidentDaoPlus @Inject constructor(
         db.withTransaction {
             incidents.forEach { updateFormFields(it.first, it.second) }
         }
+    }
+
+    suspend fun getIncidentsForDisplay() = db.withTransaction {
+        db.incidentDao().getIncidentsForDisplay().map(PopulatedIncidentMatch::asExternalModel)
     }
 }

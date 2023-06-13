@@ -1,10 +1,13 @@
 package com.crisiscleanup.core.database.model
 
-import androidx.room.*
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
+import androidx.room.PrimaryKey
 import com.crisiscleanup.core.model.data.IncidentFormField
 import com.crisiscleanup.core.model.data.IncidentLocation
 import kotlinx.datetime.Instant
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 @Entity(
