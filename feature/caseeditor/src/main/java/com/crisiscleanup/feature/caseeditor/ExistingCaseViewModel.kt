@@ -44,6 +44,7 @@ import com.crisiscleanup.core.model.data.NetworkImage
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.WorkTypeRequest
 import com.crisiscleanup.core.model.data.Worksite
+import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteLocalImage
 import com.crisiscleanup.core.model.data.WorksiteNote
 import com.crisiscleanup.feature.caseeditor.model.CaseImage
@@ -485,6 +486,17 @@ class ExistingCaseViewModel @Inject constructor(
         if (!isOrganizationsRefreshed.getAndSet(true)) {
             viewModelScope.launch(ioDispatcher) {
                 incidentsRepository.pullIncidentOrganizations(incidentIdArg, true)
+            }
+        }
+    }
+
+    fun removeFlag(flag: WorksiteFlag) {
+        val startingWorksite = referenceWorksite
+        startingWorksite.flags?.let { worksiteFlags ->
+            val flagsDeleted = worksiteFlags.filterNot { it.id == flag.id }
+            if (flagsDeleted.size < worksiteFlags.size) {
+                val changedWorksite = startingWorksite.copy(flags = flagsDeleted)
+                saveWorksiteChange(startingWorksite, changedWorksite)
             }
         }
     }

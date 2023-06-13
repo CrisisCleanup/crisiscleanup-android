@@ -51,7 +51,7 @@ class CaseAddFlagViewModel @Inject constructor(
     private val flagsIn =
         worksiteIn.flags?.mapNotNull(WorksiteFlag::flagType)?.toSet() ?: emptySet()
 
-    private val allFlag = listOf(
+    private val allFlags = listOf(
         WorksiteFlagType.HighPriority,
         WorksiteFlagType.UpsetClient,
         WorksiteFlagType.MarkForDeletion,
@@ -60,19 +60,14 @@ class CaseAddFlagViewModel @Inject constructor(
         WorksiteFlagType.WrongLocation,
         WorksiteFlagType.WrongIncident,
     )
-    private val singleExistingFlags = setOf(
-        WorksiteFlagType.HighPriority,
-        WorksiteFlagType.MarkForDeletion,
-        WorksiteFlagType.Duplicate,
-    )
-        .toSet()
+    private val singleExistingFlags = allFlags.toSet()
 
     val flagFlows = flowOf(flagsIn).mapLatest { existingFlags ->
         val existingSingularFlags = existingFlags
             .filter { singleExistingFlags.contains(it) }
             .toSet()
 
-        allFlag.filter { !existingSingularFlags.contains(it) }
+        allFlags.filter { !existingSingularFlags.contains(it) }
     }
         .stateIn(
             scope = viewModelScope,
@@ -224,8 +219,16 @@ class CaseAddFlagViewModel @Inject constructor(
         commitFlag(upsetClientFlag)
     }
 
-    fun onMarkForDelete() {
-
+    fun onAddFlag(
+        flagType: WorksiteFlagType,
+        notes: String = "",
+        overwrite: Boolean = false,
+    ) {
+        val worksiteFlag = WorksiteFlag.flag(
+            flagType,
+            notes,
+        )
+        commitFlag(worksiteFlag, overwrite)
     }
 
     fun onReportAbuse(
@@ -240,10 +243,6 @@ class CaseAddFlagViewModel @Inject constructor(
             requestedAction = action,
         )
         commitFlag(reportAbuseFlag)
-    }
-
-    fun onDuplicate() {
-
     }
 
     fun onWrongLocation() {

@@ -3,7 +3,9 @@ package com.crisiscleanup.feature.caseeditor.ui.addflag
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -112,23 +114,31 @@ private fun CaseEditAddFlagScreen(
             }
 
             when (flagFlow) {
-                WorksiteFlagType.HighPriority -> HighPriorityView(
+                WorksiteFlagType.HighPriority -> HighPriorityFlagView(
                     onBack = onBack,
                     isEditable = isEditable,
                 )
 
-                WorksiteFlagType.UpsetClient -> UpsetClientView(
+                WorksiteFlagType.UpsetClient -> UpsetClientFlagView(
                     onBack = onBack,
                     isEditable = isEditable,
                 )
 
-                WorksiteFlagType.MarkForDeletion -> MarkForDeletionView(translator = translator)
-                WorksiteFlagType.ReportAbuse -> ReportAbuseView(
+                WorksiteFlagType.MarkForDeletion -> GeneralFlagView(
+                    WorksiteFlagType.MarkForDeletion,
+                    onBack = onBack,
+                )
+
+                WorksiteFlagType.ReportAbuse -> ReportAbuseFlagView(
                     onBack = onBack,
                     isEditable = isEditable,
                 )
 
-                WorksiteFlagType.Duplicate -> DuplicateView(translator = translator)
+                WorksiteFlagType.Duplicate -> GeneralFlagView(
+                    WorksiteFlagType.Duplicate,
+                    onBack = onBack,
+                )
+
                 WorksiteFlagType.WrongLocation -> WrongLocationView(translator = translator)
                 WorksiteFlagType.WrongIncident -> WrongIncidentView(translator = translator)
                 else -> {}
@@ -273,19 +283,19 @@ internal fun AddFlagSaveActionBar(
 }
 
 @Composable
-private fun MarkForDeletionView(
+private fun ColumnScope.GeneralFlagView(
+    flagType: WorksiteFlagType,
     viewModel: CaseAddFlagViewModel = hiltViewModel(),
-    translator: KeyResourceTranslator,
+    onBack: () -> Unit = {},
 ) {
-    Text("Are you sure?")
-}
 
-@Composable
-private fun DuplicateView(
-    viewModel: CaseAddFlagViewModel = hiltViewModel(),
-    translator: KeyResourceTranslator,
-) {
-    Text("Another one?")
+    Spacer(Modifier.weight(1f))
+
+    AddFlagSaveActionBar(
+        onSave = { viewModel.onAddFlag(flagType) },
+        onCancel = onBack,
+        isEditable = true,
+    )
 }
 
 @Composable

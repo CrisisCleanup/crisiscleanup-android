@@ -40,7 +40,7 @@ import com.crisiscleanup.feature.caseeditor.ui.PropertyInfoRow
 import com.crisiscleanup.feature.caseeditor.ui.edgeSpacingHalf
 
 @Composable
-internal fun ColumnScope.HighPriorityView(
+internal fun ColumnScope.HighPriorityFlagView(
     viewModel: CaseAddFlagViewModel = hiltViewModel(),
     onBack: () -> Unit = {},
     isEditable: Boolean = false,

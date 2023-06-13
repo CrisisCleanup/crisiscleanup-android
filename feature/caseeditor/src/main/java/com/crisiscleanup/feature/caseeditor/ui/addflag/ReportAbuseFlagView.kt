@@ -22,7 +22,7 @@ import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseAddFlagViewModel
 
 @Composable
-internal fun ColumnScope.ReportAbuseView(
+internal fun ColumnScope.ReportAbuseFlagView(
     viewModel: CaseAddFlagViewModel = hiltViewModel(),
     onBack: () -> Unit = {},
     isEditable: Boolean = false,

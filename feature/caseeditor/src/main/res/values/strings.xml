@@ -43,6 +43,7 @@
     <string name="flag">~~Flag</string>
     <string name="info">~~Info</string>
     <string name="add_flag">~~Add Flag</string>
+    <string name="remove_type_flag">Remove %s flag</string>
 
     <string name="release_reason_is_required">~~What is the reason for release?</string>
     <string name="request_reason_is_required">~~What is the reason for request?</string>

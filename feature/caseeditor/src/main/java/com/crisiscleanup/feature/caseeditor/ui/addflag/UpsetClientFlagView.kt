@@ -43,7 +43,7 @@ import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseAddFlagViewModel
 
 @Composable
-internal fun ColumnScope.UpsetClientView(
+internal fun ColumnScope.UpsetClientFlagView(
     viewModel: CaseAddFlagViewModel = hiltViewModel(),
     onBack: () -> Unit = {},
     isEditable: Boolean = false,
