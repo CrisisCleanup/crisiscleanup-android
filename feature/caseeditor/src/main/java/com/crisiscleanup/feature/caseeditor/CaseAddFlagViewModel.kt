@@ -16,6 +16,7 @@ import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.DatabaseManagementRepository
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
+import com.crisiscleanup.core.model.data.IncidentIdName
 import com.crisiscleanup.core.model.data.LocationAddress
 import com.crisiscleanup.core.model.data.OrganizationIdName
 import com.crisiscleanup.core.model.data.Worksite
@@ -187,6 +188,23 @@ class CaseAddFlagViewModel @Inject constructor(
         .stateIn(
             viewModelScope,
             initialValue = null,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    var incidentQ = MutableStateFlow("")
+    val incidentResults = incidentQ
+        .throttleLatest(150)
+        .mapLatest {
+            if (it.isBlank() || it.trim().length < 2) {
+                emptyList()
+            } else {
+//                organizationsRepository.getMatchingOrganizations(it.trim())
+                emptyList<IncidentIdName>()
+            }
+        }
+        .stateIn(
+            viewModelScope,
+            initialValue = emptyList(),
             started = SharingStarted.WhileSubscribed(),
         )
 
@@ -362,7 +380,14 @@ class CaseAddFlagViewModel @Inject constructor(
         }
     }
 
-    fun onWrongIncident() {
+    fun onIncidentQueryChange(query: String) {
+        incidentQ.value = query
+    }
+
+    fun onWrongIncident(
+        isIncidentSelected: Boolean,
+        incident: IncidentIdName?,
+    ) {
 
     }
 }

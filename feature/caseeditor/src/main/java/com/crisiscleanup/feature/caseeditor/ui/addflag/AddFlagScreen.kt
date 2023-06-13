@@ -33,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.designsystem.AppTranslator
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.AnimatedBusyIndicator
@@ -149,7 +148,11 @@ private fun CaseEditAddFlagScreen(
                     setWrongLocationFlag = setWrongLocationFlag,
                 )
 
-                WorksiteFlagType.WrongIncident -> WrongIncidentView(translator = translator)
+                WorksiteFlagType.WrongIncident -> WrongIncidentFlagView(
+                    onBack = onBack,
+                    isEditable = isEditable,
+                )
+
                 else -> {}
             }
         }
@@ -309,20 +312,4 @@ private fun ColumnScope.GeneralFlagView(
         onCancel = onBack,
         enabled = isEditable,
     )
-}
-
-@Composable
-private fun WrongLocationView(
-    viewModel: CaseAddFlagViewModel = hiltViewModel(),
-    translator: KeyResourceTranslator,
-) {
-    Text("Misplaced!")
-}
-
-@Composable
-private fun WrongIncidentView(
-    viewModel: CaseAddFlagViewModel = hiltViewModel(),
-    translator: KeyResourceTranslator,
-) {
-    Text("Move it")
 }

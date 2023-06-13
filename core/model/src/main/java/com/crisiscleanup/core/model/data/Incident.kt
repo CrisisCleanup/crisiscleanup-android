@@ -66,3 +66,8 @@ data class IncidentFormField(
     val isHidden = htmlTypeLower == "hidden"
     val isFrequency = htmlTypeLower == "cronselect"
 }
+
+data class IncidentIdName(
+    val id: Long,
+    val name: String,
+)
