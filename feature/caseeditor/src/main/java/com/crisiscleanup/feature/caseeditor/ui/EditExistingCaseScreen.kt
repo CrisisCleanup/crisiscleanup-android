@@ -254,8 +254,6 @@ private fun TopBar(
     isEditable: Boolean = false,
     onCaseLongPress: () -> Unit = {},
 ) {
-    // TODO Style components as necessary
-
     val titleContent = @Composable {
         Column(
             modifier = Modifier.combinedClickable(
@@ -531,7 +529,6 @@ internal fun EditExistingCaseInfoView(
             requestWorkType = requestWorkType,
             releaseWorkType = releaseWorkType,
         )
-        volunteerReportItems(worksite)
 
         item {
             Spacer(
@@ -692,8 +689,6 @@ private fun LazyListScope.propertyInfoItems(
                         )
                     }
                 }
-                // TODO Predetermine if address and coordinates are mismatching and change query if so
-                //      Or can alert if mismatch
                 val hasWrongLocation = worksite.hasWrongLocationFlag
                 val fullAddress = listOf(
                     worksite.address,
@@ -795,12 +790,6 @@ private fun LazyListScope.workItems(
             )
         }
     }
-}
-
-private fun LazyListScope.volunteerReportItems(
-    worksite: Worksite,
-) {
-    // itemInfoSectionHeader(4, translator("caseView.report"))
 }
 
 @Composable
@@ -964,7 +953,6 @@ data class IconTextAction(
     val translationKey: String = "",
 )
 
-// TODO Use translations where available
 private val existingCaseActions = listOf(
     IconTextAction(
         iconResId = R.drawable.ic_share_small,
