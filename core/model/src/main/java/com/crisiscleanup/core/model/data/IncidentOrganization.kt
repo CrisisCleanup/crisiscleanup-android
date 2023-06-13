@@ -6,3 +6,8 @@ data class IncidentOrganization(
     val primaryContacts: List<PersonContact>,
     val affiliateIds: Set<Long>,
 )
+
+data class OrganizationIdName(
+    val id: Long,
+    val name: String,
+)

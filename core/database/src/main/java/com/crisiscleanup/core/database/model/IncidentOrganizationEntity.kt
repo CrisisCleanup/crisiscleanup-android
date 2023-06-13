@@ -1,6 +1,11 @@
 package com.crisiscleanup.core.database.model
 
-import androidx.room.*
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Fts4
+import androidx.room.Index
+import androidx.room.PrimaryKey
 
 // Changes below should update IncidentOrganizationsStableModelBuildVersion in core.network
 
@@ -63,4 +68,12 @@ data class OrganizationAffiliateEntity(
     val id: Long,
     @ColumnInfo("affiliate_id")
     val affiliateId: Long
+)
+
+@Entity(
+    "incident_organization_fts",
+)
+@Fts4(contentEntity = IncidentOrganizationEntity::class)
+data class IncidentOrganizationFtsEntity(
+    val name: String,
 )

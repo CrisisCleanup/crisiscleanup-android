@@ -10,6 +10,7 @@ import com.crisiscleanup.core.database.model.IncidentFormFieldEntity
 import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
 import com.crisiscleanup.core.database.model.IncidentLocationEntity
 import com.crisiscleanup.core.database.model.IncidentOrganizationEntity
+import com.crisiscleanup.core.database.model.IncidentOrganizationFtsEntity
 import com.crisiscleanup.core.database.model.IncidentOrganizationSyncStatsEntity
 import com.crisiscleanup.core.database.model.IncidentWorksitesFullSyncStatsEntity
 import com.crisiscleanup.core.database.model.LanguageTranslationEntity
@@ -68,6 +69,7 @@ import kotlinx.datetime.Instant
         NetworkFileLocalImageEntity::class,
         WorksiteLocalImageEntity::class,
         IncidentWorksitesFullSyncStatsEntity::class,
+        IncidentOrganizationFtsEntity::class,
     ],
     version = 1,
 )

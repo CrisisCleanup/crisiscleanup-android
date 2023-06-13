@@ -11,6 +11,7 @@ import com.crisiscleanup.core.database.model.PopulatedIncidentOrganization
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.database.model.asLookup
 import com.crisiscleanup.core.model.data.IncidentOrganization
+import com.crisiscleanup.core.model.data.OrganizationIdName
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapLatest
@@ -27,6 +28,9 @@ interface OrganizationsRepository {
         latitude: Double,
         longitude: Double
     ): List<IncidentOrganization>
+
+    suspend fun rebuildOrganizationFts()
+    suspend fun getMatchingOrganizations(q: String): List<OrganizationIdName>
 }
 
 class OfflineFirstOrganizationsRepository @Inject constructor(
@@ -80,4 +84,11 @@ class OfflineFirstOrganizationsRepository @Inject constructor(
         }
         return emptyList()
     }
+
+    override suspend fun rebuildOrganizationFts() {
+        incidentOrganizationDao.rebuildOrganizationFts()
+    }
+
+    override suspend fun getMatchingOrganizations(q: String) =
+        incidentOrganizationDaoPlus.getOrganizations(q)
 }

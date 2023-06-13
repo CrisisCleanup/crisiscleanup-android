@@ -6,6 +6,11 @@ import com.crisiscleanup.core.database.model.IncidentOrganizationEntity
 import com.crisiscleanup.core.database.model.OrganizationAffiliateEntity
 import com.crisiscleanup.core.database.model.OrganizationPrimaryContactCrossRef
 import com.crisiscleanup.core.database.model.PersonContactEntity
+import com.crisiscleanup.core.database.model.PopulatedOrganizationIdNameMatchInfo
+import com.crisiscleanup.core.database.util.sanitizeFtsSingleToken
+import com.crisiscleanup.core.model.data.OrganizationIdName
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.ensureActive
 import javax.inject.Inject
 
 class IncidentOrganizationDaoPlus @Inject constructor(
@@ -31,5 +36,19 @@ class IncidentOrganizationDaoPlus @Inject constructor(
         organizationDao.insertIgnorePrimaryContactCrossRefs(organizationContactCrossRefs)
         organizationDao.deleteOrganizationAffiliates(organizationIds)
         organizationDao.insertIgnoreAffiliateOrganization(organizationAffiliates)
+    }
+
+    suspend fun getOrganizations(matching: String): List<OrganizationIdName> = coroutineScope {
+        db.withTransaction {
+            val results = db.incidentOrganizationDao()
+                .matchOrganizationName(matching.sanitizeFtsSingleToken)
+
+            ensureActive()
+
+            // TODO ensureActive() between (strides of) score computations
+            results
+                .sortedByDescending { it.sortScore }
+                .map(PopulatedOrganizationIdNameMatchInfo::idName)
+        }
     }
 }

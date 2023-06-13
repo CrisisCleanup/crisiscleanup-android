@@ -10,9 +10,11 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPusher
+import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
+import com.crisiscleanup.core.model.data.OrganizationIdName
 import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteFlagType
 import com.crisiscleanup.feature.caseeditor.model.coordinates
@@ -104,6 +106,29 @@ class CaseAddFlagViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
+    var otherOrgQ = MutableStateFlow("")
+    val otherOrgResults = otherOrgQ
+        .throttleLatest(150)
+        .mapLatest {
+            if (it.isBlank() || it.trim().length < 2) {
+                emptyList()
+            } else {
+                organizationsRepository.getMatchingOrganizations(it.trim())
+            }
+        }
+        .stateIn(
+            viewModelScope,
+            initialValue = emptyList(),
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    init {
+        // TODO Move this into main, run in background, and keep track of version/date ran
+        viewModelScope.launch(ioDispatcher) {
+            organizationsRepository.rebuildOrganizationFts()
+        }
+    }
+
     private fun commitFlag(
         flag: WorksiteFlag,
         overwrite: Boolean = false,
@@ -178,8 +203,18 @@ class CaseAddFlagViewModel @Inject constructor(
         commitFlag(highPriorityFlag)
     }
 
-    fun onUpsetClient(notes: String) {
+    fun onOrgQueryChange(query: String) {
+        otherOrgQ.value = query
+    }
 
+    fun onUpsetClient(
+        notes: String,
+        isMyOrgInvolved: Boolean?,
+        otherOrgQuery: String,
+        otherOrganizationsInvolved: List<OrganizationIdName>,
+    ) {
+        // TODO Query may be different from what is involved
+        logger.logDebug("Upset client $notes $isMyOrgInvolved $otherOrgQuery $otherOrganizationsInvolved")
     }
 
     fun onMarkForDelete() {
