@@ -199,7 +199,7 @@ class CaseAddFlagViewModel @Inject constructor(
         val highPriorityFlag = WorksiteFlag.flag(
             WorksiteFlagType.HighPriority,
             notes,
-            isHighPriority,
+            isHighPriorityBool = isHighPriority,
         )
         commitFlag(highPriorityFlag)
     }
@@ -228,8 +228,18 @@ class CaseAddFlagViewModel @Inject constructor(
 
     }
 
-    fun onReportAbuse() {
-
+    fun onReportAbuse(
+        isContacted: Boolean?,
+        contactOutcome: String,
+        notes: String,
+        action: String,
+    ) {
+        val reportAbuseFlag = WorksiteFlag.flag(
+            WorksiteFlagType.ReportAbuse,
+            notes,
+            requestedAction = action,
+        )
+        commitFlag(reportAbuseFlag)
     }
 
     fun onDuplicate() {

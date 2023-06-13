@@ -9,14 +9,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,11 +24,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -39,6 +34,7 @@ import androidx.compose.ui.unit.toSize
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupFilterChip
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextArea
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
@@ -52,7 +48,6 @@ import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
 import com.crisiscleanup.core.designsystem.theme.listRowItemStartPadding
 import com.crisiscleanup.core.designsystem.theme.optionItemHeight
-import com.crisiscleanup.core.designsystem.theme.textBoxHeight
 import com.crisiscleanup.core.model.data.WorkTypeStatus
 import com.crisiscleanup.core.network.model.DynamicValue
 import com.crisiscleanup.feature.caseeditor.R
@@ -339,27 +334,12 @@ private fun MultiLineTextItem(
         }
 
         // TODO Done (and onDone) if last in list.
-        val keyboardOptions = KeyboardOptions(
-            imeAction = ImeAction.Next,
-            keyboardType = KeyboardType.Password,
-        )
-        val focusManager = LocalFocusManager.current
-        val keyboardActions = KeyboardActions(
-            onNext = {
-                focusManager.moveFocus(FocusDirection.Down)
-            },
-            onDone = {
-            },
-        )
-        OutlinedTextField(
-            itemData.dynamicValue.valueString,
-            onValueChange = onChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .textBoxHeight(),
+        CrisisCleanupTextArea(
+            text = itemData.dynamicValue.valueString,
+            onTextChange = onChange,
+            modifier = Modifier.fillMaxWidth(),
             label = { Text(label) },
-            keyboardOptions = keyboardOptions,
-            keyboardActions = keyboardActions,
+            imeAction = ImeAction.Next,
             enabled = enabled,
         )
     }

@@ -22,6 +22,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextArea
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
 import com.crisiscleanup.core.designsystem.component.SmallBusyIndicator
@@ -33,6 +34,7 @@ import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.model.data.PersonContact
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
+import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseAddFlagViewModel
 import com.crisiscleanup.feature.caseeditor.ui.PropertyInfoRow
 import com.crisiscleanup.feature.caseeditor.ui.edgeSpacingHalf
@@ -64,17 +66,18 @@ internal fun ColumnScope.HighPriorityView(
 
     LazyColumn(
         Modifier
+            .scrollFlingListener(closeKeyboard)
             .weight(1f)
             .fillMaxWidth()
     ) {
         labelTextItem(translator("flag.please_describe_why_high_priority"))
 
         item {
-            TextArea(
+            CrisisCleanupTextArea(
                 flagNotes,
                 { text: String -> flagNotes = text },
                 listItemModifier,
-                isEditable = isEditable,
+                enabled = isEditable,
                 onDone = closeKeyboard,
             )
         }
@@ -88,7 +91,7 @@ internal fun ColumnScope.HighPriorityView(
                     SmallBusyIndicator()
                 }
             }
-        } else {
+        } else if (organizations?.isNotEmpty() == true) {
             labelTextItem(
                 translator("flag.nearby_organizations"),
                 isBold = true,

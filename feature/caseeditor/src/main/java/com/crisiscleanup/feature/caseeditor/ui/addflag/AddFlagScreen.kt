@@ -8,18 +8,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -27,15 +23,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -54,7 +45,6 @@ import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemTopPadding
 import com.crisiscleanup.core.designsystem.theme.optionItemHeight
-import com.crisiscleanup.core.designsystem.theme.textBoxHeight
 import com.crisiscleanup.core.model.data.WorksiteFlagType
 import com.crisiscleanup.feature.caseeditor.CaseAddFlagViewModel
 import com.crisiscleanup.feature.caseeditor.R
@@ -133,7 +123,11 @@ private fun CaseEditAddFlagScreen(
                 )
 
                 WorksiteFlagType.MarkForDeletion -> MarkForDeletionView(translator = translator)
-                WorksiteFlagType.ReportAbuse -> ReportAbuseView(translator = translator)
+                WorksiteFlagType.ReportAbuse -> ReportAbuseView(
+                    onBack = onBack,
+                    isEditable = isEditable,
+                )
+
                 WorksiteFlagType.Duplicate -> DuplicateView(translator = translator)
                 WorksiteFlagType.WrongLocation -> WrongLocationView(translator = translator)
                 WorksiteFlagType.WrongIncident -> WrongIncidentView(translator = translator)
@@ -202,44 +196,6 @@ private fun FlagsDropdown(
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-internal fun TextArea(
-    text: String,
-    onTextChange: (String) -> Unit,
-    modifier: Modifier = Modifier,
-    label: @Composable () -> Unit = {},
-    onDone: () -> Unit = {},
-    hasFocus: Boolean = false,
-    isEditable: Boolean = false,
-) {
-    val focusRequester = FocusRequester()
-
-    val keyboardOptions = KeyboardOptions(
-        imeAction = ImeAction.Done,
-        keyboardType = KeyboardType.Text,
-        capitalization = KeyboardCapitalization.Sentences,
-    )
-    val keyboardActions = KeyboardActions(
-        onDone = { onDone() },
-    )
-    OutlinedTextField(
-        text,
-        { value: String -> onTextChange(value) },
-        modifier = modifier
-            .textBoxHeight()
-            .focusRequester(focusRequester),
-        label = label,
-        keyboardOptions = keyboardOptions,
-        keyboardActions = keyboardActions,
-        enabled = isEditable,
-    )
-    if (hasFocus) {
-        LaunchedEffect(Unit) {
-            focusRequester.requestFocus()
         }
     }
 }
@@ -322,14 +278,6 @@ private fun MarkForDeletionView(
     translator: KeyResourceTranslator,
 ) {
     Text("Are you sure?")
-}
-
-@Composable
-private fun ReportAbuseView(
-    viewModel: CaseAddFlagViewModel = hiltViewModel(),
-    translator: KeyResourceTranslator,
-) {
-    Text("Fill out this form")
 }
 
 @Composable

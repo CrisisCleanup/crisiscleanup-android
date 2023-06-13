@@ -6,30 +6,22 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.AppTranslator
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextArea
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
@@ -40,7 +32,6 @@ import com.crisiscleanup.core.designsystem.theme.listItemNestedPadding
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemTopPadding
-import com.crisiscleanup.core.designsystem.theme.textBoxHeight
 import com.crisiscleanup.core.ui.LinkifyHtmlText
 import com.crisiscleanup.core.ui.LinkifyPhoneEmailText
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
@@ -193,42 +184,24 @@ private fun ReasonSection(
     isEditable: Boolean = false,
     onTransfer: () -> Unit = {},
 ) {
-
     val errorMessageReason by viewModel.errorMessageReason.collectAsStateWithLifecycle()
     ErrorText(errorMessageReason)
 
     val hasFocus = errorMessageReason.isNotEmpty()
 
-    val keyboardOptions = KeyboardOptions(
-        imeAction = ImeAction.Done,
-        keyboardType = KeyboardType.Text,
-        capitalization = KeyboardCapitalization.Sentences,
-    )
-    val keyboardActions = KeyboardActions(
-        onDone = { onTransfer() },
-    )
-    val focusRequester = FocusRequester()
-    OutlinedTextField(
-        viewModel.transferReason,
-        onValueChange = { viewModel.transferReason = it },
-        modifier = Modifier
-            .listItemPadding()
-            .fillMaxWidth()
-            .textBoxHeight()
-            .focusRequester(focusRequester),
-        keyboardOptions = keyboardOptions,
-        keyboardActions = keyboardActions,
-        enabled = isEditable,
+    CrisisCleanupTextArea(
+        text = viewModel.transferReason,
+        onTextChange = { viewModel.transferReason = it },
         placeholder = viewModel.reasonHint?.let { reasonHint ->
             { Text(reasonHint) }
         },
+        modifier = Modifier
+            .listItemPadding()
+            .fillMaxWidth(),
+        onDone = { onTransfer() },
+        enabled = isEditable,
+        hasFocus = hasFocus,
     )
-
-    if (hasFocus) {
-        LaunchedEffect(Unit) {
-            focusRequester.requestFocus()
-        }
-    }
 }
 
 @Composable

@@ -30,6 +30,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupRadioButton
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextArea
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.theme.listItemDropdownMenuOffset
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
@@ -38,6 +39,7 @@ import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.optionItemPadding
 import com.crisiscleanup.core.model.data.OrganizationIdName
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
+import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseAddFlagViewModel
 
 @Composable
@@ -63,18 +65,19 @@ internal fun ColumnScope.UpsetClientView(
 
     LazyColumn(
         Modifier
+            .scrollFlingListener(closeKeyboard)
             .weight(1f)
             .fillMaxWidth()
     ) {
         labelTextItem(translator("flag.explain_why_client_upset"))
 
         item {
-            TextArea(
+            CrisisCleanupTextArea(
                 flagNotes,
                 { text: String -> flagNotes = text },
                 listItemModifier,
-                isEditable = isEditable,
-                onDone = closeKeyboard,
+                enabled = isEditable,
+                imeAction = ImeAction.Next,
             )
         }
 

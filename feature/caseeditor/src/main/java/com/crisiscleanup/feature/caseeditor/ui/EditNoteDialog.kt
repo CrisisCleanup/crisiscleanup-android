@@ -1,25 +1,15 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextArea
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
-import com.crisiscleanup.core.designsystem.theme.textBoxHeight
 import com.crisiscleanup.core.model.data.WorksiteNote
 
 @Composable
@@ -40,29 +30,14 @@ fun EditNoteDialog(
     CrisisCleanupAlertDialog(
         title = dialogTitle,
         textContent = {
-            val focusRequester = FocusRequester()
-
-            val keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Done,
-                keyboardType = KeyboardType.Text,
-                capitalization = KeyboardCapitalization.Sentences,
-            )
-            val keyboardActions = KeyboardActions(
-                onDone = { saveNote() },
-            )
-            OutlinedTextField(
-                noteContent,
-                { value: String -> noteContent = value },
-                modifier = Modifier
-                    .textBoxHeight()
-                    .focusRequester(focusRequester),
+            CrisisCleanupTextArea(
+                text = noteContent,
+                onTextChange = { value: String -> noteContent = value },
                 label = { Text(translator("caseView.note")) },
-                keyboardOptions = keyboardOptions,
-                keyboardActions = keyboardActions,
+                onDone = { saveNote() },
+                hasFocus = true,
+                enabled = true,
             )
-            LaunchedEffect(Unit) {
-                focusRequester.requestFocus()
-            }
         },
         onDismissRequest = onCancel,
         dismissButton = {

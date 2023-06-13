@@ -151,6 +151,7 @@ data class WorksiteFlag(
             reasonT: String,
             reason: String = "",
             notes: String = "",
+            requestedAction: String = "",
             isHighPriorityBool: Boolean = false,
         ) = WorksiteFlag(
             id = 0,
@@ -160,16 +161,18 @@ data class WorksiteFlag(
             notes = notes,
             reasonT = reasonT,
             reason = reason,
-            requestedAction = "",
+            requestedAction = requestedAction,
         )
 
         fun flag(
             flag: WorksiteFlagType,
             notes: String = "",
+            requestedAction: String = "",
             isHighPriorityBool: Boolean = false,
         ) = flag(
             flag.literal,
             notes = notes,
+            requestedAction = requestedAction,
             isHighPriorityBool = isHighPriorityBool,
         )
 

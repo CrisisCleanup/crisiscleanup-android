@@ -109,12 +109,8 @@ fun SingleLineTextField(
             focusManager.moveFocus(nextDirection)
             onNext?.invoke()
         },
-        onSearch = {
-            onSearch?.invoke()
-        },
-        onDone = {
-            onEnter?.invoke()
-        },
+        onSearch = onSearch?.let { { onSearch() } },
+        onDone = onEnter?.let { { onEnter() } },
     )
     val labelText = if (labelResId == 0) label else stringResource(labelResId)
     val labelContent: (@Composable (() -> Unit)?) = if (labelText.isBlank()) null
