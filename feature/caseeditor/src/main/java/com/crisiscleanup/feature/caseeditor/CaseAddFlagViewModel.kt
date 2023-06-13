@@ -2,6 +2,7 @@ package com.crisiscleanup.feature.caseeditor
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.crisiscleanup.core.addresssearch.AddressSearchRepository
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.log.AppLogger
@@ -15,10 +16,13 @@ import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.DatabaseManagementRepository
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
+import com.crisiscleanup.core.model.data.LocationAddress
 import com.crisiscleanup.core.model.data.OrganizationIdName
+import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteFlagType
 import com.crisiscleanup.feature.caseeditor.model.coordinates
+import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -33,6 +37,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.math.abs
 
 @HiltViewModel
 class CaseAddFlagViewModel @Inject constructor(
@@ -40,6 +45,7 @@ class CaseAddFlagViewModel @Inject constructor(
     organizationsRepository: OrganizationsRepository,
     databaseManagementRepository: DatabaseManagementRepository,
     private val accountDataRepository: AccountDataRepository,
+    addressSearchRepository: AddressSearchRepository,
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val syncPusher: SyncPusher,
     val translator: KeyResourceTranslator,
@@ -60,7 +66,13 @@ class CaseAddFlagViewModel @Inject constructor(
         WorksiteFlagType.WrongLocation,
         WorksiteFlagType.WrongIncident,
     )
-    private val singleExistingFlags = allFlags.toSet()
+    private val singleExistingFlags = setOf(
+        WorksiteFlagType.HighPriority,
+        WorksiteFlagType.UpsetClient,
+        WorksiteFlagType.MarkForDeletion,
+        WorksiteFlagType.ReportAbuse,
+        WorksiteFlagType.Duplicate,
+    )
 
     val flagFlows = flowOf(flagsIn).mapLatest { existingFlags ->
         val existingSingularFlags = existingFlags
@@ -76,13 +88,13 @@ class CaseAddFlagViewModel @Inject constructor(
         )
 
     val isSaving = MutableStateFlow(false)
+    private val isSavingWorksite = MutableStateFlow(false)
     val isSaved = MutableStateFlow(false)
     val isEditable = combine(
         isSaving,
+        isSavingWorksite,
         isSaved,
-        ::Pair,
-    )
-        .mapLatest { (b0, b1) -> !(b0 || b1) }
+    ) { b0, b1, b2 -> !(b0 || b1 || b2) }
         .stateIn(
             scope = viewModelScope,
             initialValue = false,
@@ -119,6 +131,65 @@ class CaseAddFlagViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
+    private val isParsingCoordinates = MutableStateFlow(false)
+    private val isVerifyingCoordinates = MutableStateFlow(false)
+    val isProcessingLocation = combine(
+        isParsingCoordinates,
+        isVerifyingCoordinates
+    ) { b0, b1 -> b0 || b1 }
+        .stateIn(
+            viewModelScope,
+            initialValue = false,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    private val coordinatesRegex = """(-?\d{1,2}(?:\.\d+)?),\s*(-?\d{1,3}(?:\.\d+)?)\b""".toRegex()
+    var wrongLocationText = MutableStateFlow("")
+    private val wrongLocationCoordinatesParse = wrongLocationText
+        .throttleLatest(150)
+        .mapLatest { s ->
+            isParsingCoordinates.value = true
+            try {
+                coordinatesRegex.find(s)?.let { match ->
+                    val (latitudeS, longitudeS) = match.destructured
+                    val latitude = latitudeS.toDoubleOrNull()
+                    val longitude = longitudeS.toDoubleOrNull()
+                    if (latitude != null && abs(latitude) <= 90.0 &&
+                        longitude != null && abs(longitude) < 180.0
+                    ) {
+                        return@mapLatest LatLng(latitude, longitude)
+                    }
+                }
+            } finally {
+                isParsingCoordinates.value = false
+            }
+            null
+        }
+        .stateIn(
+            viewModelScope,
+            initialValue = null,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    val validCoordinates = wrongLocationCoordinatesParse.mapLatest {
+        it?.let { latLng ->
+            isVerifyingCoordinates.value = true
+            try {
+                val results = addressSearchRepository.getAddress(latLng)
+                results?.let { address ->
+                    return@mapLatest address
+                }
+            } finally {
+                isVerifyingCoordinates.value = false
+            }
+        }
+    }
+        .stateIn(
+            viewModelScope,
+            initialValue = null,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
     init {
         viewModelScope.launch(ioDispatcher) {
             databaseManagementRepository.rebuildFts()
@@ -151,25 +222,49 @@ class CaseAddFlagViewModel @Inject constructor(
         }
     }
 
+    private suspend fun saveWorksiteChange(
+        startingWorksite: Worksite,
+        changedWorksite: Worksite,
+        schedulePush: Boolean = false,
+    ) {
+        if (startingWorksite == changedWorksite) {
+            return
+        }
+
+        isSavingWorksite.value = true
+        try {
+            val organizationId = accountDataRepository.accountData.first().org.id
+            val primaryWorkType = startingWorksite.keyWorkType ?: startingWorksite.workTypes.first()
+            worksiteChangeRepository.saveWorksiteChange(
+                startingWorksite,
+                changedWorksite,
+                primaryWorkType,
+                organizationId,
+            )
+
+            if (schedulePush) {
+                externalScope.launch {
+                    syncPusher.appPushWorksite(worksiteIn.id)
+                }
+            }
+        } finally {
+            isSavingWorksite.value = false
+        }
+    }
+
     // TODO Test coverage. Especially overwriting
     private suspend fun saveFlag(
         flag: WorksiteFlag,
         flagType: WorksiteFlagType,
     ) {
-        val organizationId = accountDataRepository.accountData.first().org.id
-
         var currentFlags = worksiteIn.flags ?: emptyList()
-
-        val primaryWorkType = worksiteIn.keyWorkType ?: worksiteIn.workTypes.first()
 
         if (flagsIn.contains(flagType)) {
             val flagsDeleted = currentFlags.filter { it.reasonT == flagType.literal }
             if (flagsDeleted.size < currentFlags.size) {
-                worksiteChangeRepository.saveWorksiteChange(
+                saveWorksiteChange(
                     worksiteIn,
                     worksiteIn.copy(flags = flagsDeleted),
-                    primaryWorkType,
-                    organizationId,
                 )
                 currentFlags = flagsDeleted
             }
@@ -178,16 +273,11 @@ class CaseAddFlagViewModel @Inject constructor(
         val flagAdded = currentFlags.toMutableList().apply {
             add(flag)
         }
-        worksiteChangeRepository.saveWorksiteChange(
+        saveWorksiteChange(
             worksiteIn,
             worksiteIn.copy(flags = flagAdded),
-            primaryWorkType,
-            organizationId,
+            true,
         )
-
-        externalScope.launch {
-            syncPusher.appPushWorksite(worksiteIn.id)
-        }
     }
 
     fun onHighPriority(isHighPriority: Boolean, notes: String) {
@@ -245,8 +335,31 @@ class CaseAddFlagViewModel @Inject constructor(
         commitFlag(reportAbuseFlag)
     }
 
-    fun onWrongLocation() {
+    fun onWrongLocationTextChange(text: String) {
+        wrongLocationText.value = text
+    }
 
+    fun updateLocation(location: LocationAddress?) {
+        location?.let {
+            val startingWorksite = worksiteIn
+            val changedWorksite = worksiteIn.copy(
+                latitude = location.latitude,
+                longitude = location.longitude,
+            )
+            viewModelScope.launch(ioDispatcher) {
+                try {
+                    saveWorksiteChange(
+                        startingWorksite,
+                        changedWorksite,
+                        true,
+                    )
+                    isSaved.value = true
+                } catch (e: Exception) {
+                    // TODO Show error
+                    logger.logException(e)
+                }
+            }
+        }
     }
 
     fun onWrongIncident() {

@@ -604,16 +604,10 @@ private fun FlagChip(
         }
 
         AssistChip(
-            label = {
-                Text(
-                    text,
-                    Modifier.padding(end = 4.dp),
-                )
-            },
             leadingIcon = {
                 Box(
                     modifier = Modifier
-                        .sizeIn(minWidth = 32.dp, minHeight = 48.dp)
+                        .sizeIn(minWidth = 28.dp, minHeight = 40.dp)
                         .clip(CircleShape)
                         .clickable(
                             enabled = isEditable,
@@ -628,6 +622,12 @@ private fun FlagChip(
                         tint = contentColor,
                     )
                 }
+            },
+            label = {
+                Text(
+                    text,
+                    Modifier.padding(end = 2.dp),
+                )
             },
             shape = CircleShape,
             border = null,

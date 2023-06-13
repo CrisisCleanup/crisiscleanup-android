@@ -107,16 +107,19 @@ internal fun ColumnScope.ReportAbuseFlagView(
         listTextItem(translator("flag.warning_ccu_cannot_do_much"))
     }
 
-    AddFlagSaveActionBar(
-        onSave = {
+    val onSave = remember(viewModel) {
+        {
             viewModel.onReportAbuse(
                 organizationContacted,
                 outcome,
                 flagNotes,
                 flagAction
             )
-        },
+        }
+    }
+    AddFlagSaveActionBar(
+        onSave = onSave,
         onCancel = onBack,
-        isEditable = isEditable,
+        enabled = isEditable,
     )
 }

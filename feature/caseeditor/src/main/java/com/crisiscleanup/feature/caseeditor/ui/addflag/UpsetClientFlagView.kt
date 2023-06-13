@@ -180,16 +180,19 @@ internal fun ColumnScope.UpsetClientFlagView(
         }
     }
 
-    AddFlagSaveActionBar(
-        onSave = {
+    val onSave = remember(viewModel) {
+        {
             viewModel.onUpsetClient(
                 flagNotes,
                 organizationInvolvement,
                 otherOrgQuery,
                 otherOrganizations,
             )
-        },
+        }
+    }
+    AddFlagSaveActionBar(
+        onSave = onSave,
         onCancel = onBack,
-        isEditable = isEditable,
+        enabled = isEditable,
     )
 }

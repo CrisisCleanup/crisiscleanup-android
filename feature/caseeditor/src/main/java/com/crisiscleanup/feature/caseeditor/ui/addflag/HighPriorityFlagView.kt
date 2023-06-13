@@ -124,10 +124,11 @@ internal fun ColumnScope.HighPriorityFlagView(
         }
     }
 
+    val onSave = remember(viewModel) { { viewModel.onHighPriority(isHighPriority, flagNotes) } }
     AddFlagSaveActionBar(
-        onSave = { viewModel.onHighPriority(isHighPriority, flagNotes) },
+        onSave = onSave,
         onCancel = onBack,
-        isEditable = isEditable,
+        enabled = isEditable,
     )
 
     if (selectedContacts.isNotEmpty()) {

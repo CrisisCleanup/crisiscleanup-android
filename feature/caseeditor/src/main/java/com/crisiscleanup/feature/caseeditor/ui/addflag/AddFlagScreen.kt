@@ -80,6 +80,9 @@ private fun CaseEditAddFlagScreen(
         remember(viewModel) { { selected: WorksiteFlagType -> flagFlow = selected } }
     val flagFlowOptions by viewModel.flagFlows.collectAsStateWithLifecycle()
 
+    val setWrongLocationFlag =
+        remember(viewModel) { { viewModel.onAddFlag(WorksiteFlagType.WrongLocation) } }
+
     val isSaving by viewModel.isSaving.collectAsStateWithLifecycle()
     val isEditable by viewModel.isEditable.collectAsStateWithLifecycle()
 
@@ -137,9 +140,15 @@ private fun CaseEditAddFlagScreen(
                 WorksiteFlagType.Duplicate -> GeneralFlagView(
                     WorksiteFlagType.Duplicate,
                     onBack = onBack,
+                    isEditable = isEditable,
                 )
 
-                WorksiteFlagType.WrongLocation -> WrongLocationView(translator = translator)
+                WorksiteFlagType.WrongLocation -> WrongLocationFlagView(
+                    onBack = onBack,
+                    isEditable = isEditable,
+                    setWrongLocationFlag = setWrongLocationFlag,
+                )
+
                 WorksiteFlagType.WrongIncident -> WrongIncidentView(translator = translator)
                 else -> {}
             }
@@ -257,7 +266,9 @@ internal fun LazyListScope.labelTextItem(
 internal fun AddFlagSaveActionBar(
     onSave: () -> Unit = {},
     onCancel: () -> Unit = {},
-    isEditable: Boolean = false,
+    enabled: Boolean = false,
+    enableSave: Boolean = true,
+    isBusy: Boolean = false,
 ) {
     val translator = LocalAppTranslator.current.translator
     Row(
@@ -269,15 +280,16 @@ internal fun AddFlagSaveActionBar(
         BusyButton(
             Modifier.weight(1f),
             text = translator("actions.cancel"),
-            enabled = isEditable,
+            enabled = enabled,
             onClick = onCancel,
             colors = cancelButtonColors(),
         )
         BusyButton(
             Modifier.weight(1f),
             text = translator("actions.save"),
-            enabled = isEditable,
+            enabled = enabled && enableSave,
             onClick = onSave,
+            indicateBusy = isBusy,
         )
     }
 }
@@ -287,6 +299,7 @@ private fun ColumnScope.GeneralFlagView(
     flagType: WorksiteFlagType,
     viewModel: CaseAddFlagViewModel = hiltViewModel(),
     onBack: () -> Unit = {},
+    isEditable: Boolean = false,
 ) {
 
     Spacer(Modifier.weight(1f))
@@ -294,7 +307,7 @@ private fun ColumnScope.GeneralFlagView(
     AddFlagSaveActionBar(
         onSave = { viewModel.onAddFlag(flagType) },
         onCancel = onBack,
-        isEditable = true,
+        enabled = isEditable,
     )
 }
 
