@@ -128,6 +128,7 @@ private fun CaseEditAddFlagScreen(
                 )
 
                 WorksiteFlagType.UpsetClient -> UpsetClientView(
+                    onBack = onBack,
                     isEditable = isEditable,
                 )
 

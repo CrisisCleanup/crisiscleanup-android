@@ -214,8 +214,14 @@ class CaseAddFlagViewModel @Inject constructor(
         otherOrgQuery: String,
         otherOrganizationsInvolved: List<OrganizationIdName>,
     ) {
-        // TODO Query may be different from what is involved
-        logger.logDebug("Upset client $notes $isMyOrgInvolved $otherOrgQuery $otherOrganizationsInvolved")
+        val isQueryMatchingOrg = otherOrganizationsInvolved.isNotEmpty() &&
+                otherOrgQuery.trim() == otherOrganizationsInvolved.first().name.trim()
+
+        val upsetClientFlag = WorksiteFlag.flag(
+            WorksiteFlagType.UpsetClient,
+            notes,
+        )
+        commitFlag(upsetClientFlag)
     }
 
     fun onMarkForDelete() {
