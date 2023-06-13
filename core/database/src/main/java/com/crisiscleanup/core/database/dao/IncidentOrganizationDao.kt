@@ -66,6 +66,10 @@ interface IncidentOrganizationDao {
     fun getAffiliateOrganizationIds(orgId: Long): List<Long>
 
     @Transaction
+    @Query("SELECT name FROM incident_organizations ORDER BY RANDOM() LIMIT 1")
+    fun getRandomOrganizationName(): String?
+
+    @Transaction
     @Query(
         """
             SELECT io.id, f.name,

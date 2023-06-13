@@ -7,7 +7,9 @@ import com.crisiscleanup.core.database.model.OrganizationAffiliateEntity
 import com.crisiscleanup.core.database.model.OrganizationPrimaryContactCrossRef
 import com.crisiscleanup.core.database.model.PersonContactEntity
 import com.crisiscleanup.core.database.model.PopulatedOrganizationIdNameMatchInfo
-import com.crisiscleanup.core.database.util.sanitizeFtsSingleToken
+import com.crisiscleanup.core.database.util.ftsGlobEnds
+import com.crisiscleanup.core.database.util.ftsSanitize
+import com.crisiscleanup.core.database.util.ftsSanitizeAsToken
 import com.crisiscleanup.core.model.data.OrganizationIdName
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
@@ -41,7 +43,7 @@ class IncidentOrganizationDaoPlus @Inject constructor(
     suspend fun getOrganizations(matching: String): List<OrganizationIdName> = coroutineScope {
         db.withTransaction {
             val results = db.incidentOrganizationDao()
-                .matchOrganizationName(matching.sanitizeFtsSingleToken)
+                .matchOrganizationName(matching.ftsSanitize.ftsGlobEnds)
 
             ensureActive()
 
@@ -49,6 +51,21 @@ class IncidentOrganizationDaoPlus @Inject constructor(
             results
                 .sortedByDescending { it.sortScore }
                 .map(PopulatedOrganizationIdNameMatchInfo::idName)
+        }
+    }
+
+    suspend fun rebuildOrganizationFts(force: Boolean = false) = db.withTransaction {
+        with(db.incidentOrganizationDao()) {
+            var rebuild = force
+            if (!force) {
+                getRandomOrganizationName()?.let { orgName ->
+                    val ftsMatch = matchOrganizationName(orgName.ftsSanitizeAsToken)
+                    rebuild = ftsMatch.isEmpty()
+                }
+            }
+            if (rebuild) {
+                rebuildOrganizationFts()
+            }
         }
     }
 }

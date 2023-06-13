@@ -12,6 +12,7 @@ import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.DatabaseManagementRepository
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.model.data.OrganizationIdName
@@ -37,6 +38,7 @@ import javax.inject.Inject
 class CaseAddFlagViewModel @Inject constructor(
     editableWorksiteProvider: EditableWorksiteProvider,
     organizationsRepository: OrganizationsRepository,
+    databaseManagementRepository: DatabaseManagementRepository,
     private val accountDataRepository: AccountDataRepository,
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val syncPusher: SyncPusher,
@@ -123,9 +125,8 @@ class CaseAddFlagViewModel @Inject constructor(
         )
 
     init {
-        // TODO Move this into main, run in background, and keep track of version/date ran
         viewModelScope.launch(ioDispatcher) {
-            organizationsRepository.rebuildOrganizationFts()
+            databaseManagementRepository.rebuildFts()
         }
     }
 

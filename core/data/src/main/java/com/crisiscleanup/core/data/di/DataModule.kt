@@ -96,6 +96,11 @@ interface DataModule {
     fun bindsLocalImageRepository(
         repository: CrisisCleanupLocalImageRepository
     ): LocalImageRepository
+
+    @Binds
+    fun bindsDatabaseManagementRepository(
+        repository: CrisisCleanupDatabaseManagementRepository
+    ): DatabaseManagementRepository
 }
 
 @Module

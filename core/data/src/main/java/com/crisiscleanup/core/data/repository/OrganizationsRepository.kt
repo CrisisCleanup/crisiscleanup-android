@@ -29,7 +29,6 @@ interface OrganizationsRepository {
         longitude: Double
     ): List<IncidentOrganization>
 
-    suspend fun rebuildOrganizationFts()
     suspend fun getMatchingOrganizations(q: String): List<OrganizationIdName>
 }
 
@@ -83,10 +82,6 @@ class OfflineFirstOrganizationsRepository @Inject constructor(
             }
         }
         return emptyList()
-    }
-
-    override suspend fun rebuildOrganizationFts() {
-        incidentOrganizationDao.rebuildOrganizationFts()
     }
 
     override suspend fun getMatchingOrganizations(q: String) =

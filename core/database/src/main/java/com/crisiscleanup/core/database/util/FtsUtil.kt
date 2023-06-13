@@ -9,11 +9,20 @@ import kotlin.math.log
  * 2. Escapes double quotes
  * 3. Surrounds with `*`
  */
-val String.sanitizeFtsSingleToken: String
+val String.ftsSanitize: String
     get() {
-        val sanitized = replace(Regex.fromLiteral("'"), "")
+        return replace(Regex.fromLiteral("'"), "")
             .replace(Regex.fromLiteral("\""), "\"\"")
-        return "*${sanitized}*"
+    }
+
+val String.ftsGlobEnds: String
+    get() {
+        return "*${this}*"
+    }
+
+val String.ftsSanitizeAsToken: String
+    get() {
+        return "\"$ftsSanitize\""
     }
 
 // https://medium.com/android-news/offline-full-text-search-in-android-ios-b4dd5bed3acd
