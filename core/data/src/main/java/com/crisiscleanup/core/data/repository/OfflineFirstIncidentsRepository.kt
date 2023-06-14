@@ -205,7 +205,5 @@ class OfflineFirstIncidentsRepository @Inject constructor(
         incidentOrganizationsSyncer.sync(incidentId)
     }
 
-    override suspend fun getIncidentsForDisplay() = incidentDaoPlus.getIncidentsForDisplay()
-
     override suspend fun getMatchingIncidents(q: String) = incidentDaoPlus.getMatchingIncidents(q)
 }

@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import com.crisiscleanup.core.appnav.RouteConstant.casesGraphRoutePattern
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
+import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
 import com.crisiscleanup.feature.caseeditor.navigation.caseAddFlagScreen
 import com.crisiscleanup.feature.caseeditor.navigation.caseEditMoveLocationOnMapScreen
 import com.crisiscleanup.feature.caseeditor.navigation.caseEditSearchAddressScreen
@@ -17,6 +18,7 @@ import com.crisiscleanup.feature.caseeditor.navigation.existingCaseScreen
 import com.crisiscleanup.feature.caseeditor.navigation.existingCaseTransferWorkTypesScreen
 import com.crisiscleanup.feature.caseeditor.navigation.navigateToCaseEditor
 import com.crisiscleanup.feature.caseeditor.navigation.navigateToExistingCase
+import com.crisiscleanup.feature.caseeditor.navigation.rerouteToCaseChange
 import com.crisiscleanup.feature.cases.navigation.casesGraph
 import com.crisiscleanup.feature.cases.navigation.casesSearchScreen
 import com.crisiscleanup.feature.cases.navigation.navigateToCasesSearch
@@ -74,6 +76,10 @@ fun CrisisCleanupNavHost(
         }
     }
 
+    val replaceRouteViewCase = remember(navController) {
+        { ids: ExistingWorksiteIdentifier -> navController.rerouteToCaseChange(ids) }
+    }
+
     val openSyncLogs = remember(navController) {
         {
             navController.navigateToSyncInsights()
@@ -93,7 +99,7 @@ fun CrisisCleanupNavHost(
                 caseEditMoveLocationOnMapScreen(onBack)
                 existingCaseScreen(navController, onBack)
                 existingCaseTransferWorkTypesScreen(onBack)
-                caseAddFlagScreen(onBack)
+                caseAddFlagScreen(onBack, replaceRouteViewCase)
             },
             onCasesAction = onCasesAction,
             createCase = createNewCase,

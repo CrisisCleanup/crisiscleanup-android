@@ -48,16 +48,22 @@ import com.crisiscleanup.core.designsystem.theme.listItemTopPadding
 import com.crisiscleanup.core.designsystem.theme.optionItemHeight
 import com.crisiscleanup.core.model.data.WorksiteFlagType
 import com.crisiscleanup.feature.caseeditor.CaseAddFlagViewModel
+import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
+import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifierNone
 import com.crisiscleanup.feature.caseeditor.R
 
 @Composable
 internal fun CaseEditAddFlagRoute(
     onBack: () -> Unit = {},
     viewModel: CaseAddFlagViewModel = hiltViewModel(),
+    rerouteIncidentChange: (ExistingWorksiteIdentifier) -> Unit = {},
 ) {
     val isSaved by viewModel.isSaved.collectAsStateWithLifecycle()
+    val incidentWorksiteChange by viewModel.incidentWorksiteChange.collectAsStateWithLifecycle()
     if (isSaved) {
         onBack()
+    } else if (incidentWorksiteChange != ExistingWorksiteIdentifierNone) {
+        rerouteIncidentChange(incidentWorksiteChange)
     } else {
         CaseEditAddFlagScreen(onBack)
     }
@@ -223,7 +229,7 @@ private fun FlagsDropdown(
 }
 
 @Composable
-internal fun TextRow(
+internal fun FlagStaticText(
     text: String,
     modifier: Modifier = Modifier,
     isBold: Boolean = false,
@@ -241,7 +247,7 @@ internal fun LazyListScope.textItem(
     isBold: Boolean = false,
 ) {
     item(contentType = "item-text") {
-        TextRow(text, modifier, isBold)
+        FlagStaticText(text, modifier, isBold)
     }
 }
 

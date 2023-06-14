@@ -3,6 +3,7 @@ package com.crisiscleanup.feature.caseeditor.ui.addflag
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
@@ -16,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -29,10 +31,12 @@ import androidx.compose.ui.window.PopupProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
+import com.crisiscleanup.core.designsystem.component.AnimatedBusyIndicator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.theme.listItemDropdownMenuOffset
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.optionItemPadding
 import com.crisiscleanup.core.model.data.IncidentIdNameType
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
@@ -49,14 +53,18 @@ internal fun ColumnScope.WrongIncidentFlagView(
 
     val closeKeyboard = rememberCloseKeyboard(viewModel)
 
+    val isLoadingIncidents by viewModel.isLoadingIncidents.collectAsStateWithLifecycle(true)
+
     val incidentQuery by viewModel.incidentQ.collectAsStateWithLifecycle()
     val onIncidentQueryChange = remember(viewModel) {
         { q: String -> viewModel.onIncidentQueryChange(q) }
     }
     var selectedIncident by remember { mutableStateOf<IncidentIdNameType?>(null) }
-    val incidentSuggestions by viewModel.incidentResults.collectAsStateWithLifecycle()
+    val suggestions by viewModel.incidentResults.collectAsStateWithLifecycle()
+    val (qSuggestions, incidentSuggestions) = suggestions
+    val isQueryIdentical = incidentQuery == qSuggestions
 
-    var isCorrectIncidentListed by remember { mutableStateOf(true) }
+    var isIncidentListed by remember { mutableStateOf(true) }
 
     LazyColumn(
         Modifier
@@ -64,13 +72,25 @@ internal fun ColumnScope.WrongIncidentFlagView(
             .weight(1f)
             .fillMaxWidth()
     ) {
-        labelTextItem(translator("flag.choose_correct_incident"))
+        item {
+            Row(
+                listItemModifier,
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = listItemSpacedBy,
+            ) {
+                FlagStaticText(translator("flag.choose_correct_incident"))
+                AnimatedBusyIndicator(
+                    isBusy = isLoadingIncidents,
+                    padding = 0.dp,
+                )
+            }
+        }
 
         item {
             Box(Modifier.fillMaxWidth()) {
                 var contentWidth by remember { mutableStateOf(Size.Zero) }
 
-                var dismissSuggestionsQuery by remember { mutableStateOf("") }
+                var dismissSuggestionsQuery by remember { mutableStateOf("dismissed") }
                 OutlinedClearableTextField(
                     modifier = listItemModifier.onGloballyPositioned {
                         contentWidth = it.size.toSize()
@@ -86,12 +106,12 @@ internal fun ColumnScope.WrongIncidentFlagView(
                     keyboardCapitalization = KeyboardCapitalization.Words,
                     imeAction = ImeAction.Done,
                     isError = false,
-                    hasFocus = true,
+                    hasFocus = false,
                     onEnter = closeKeyboard,
-                    enabled = isEditable && isCorrectIncidentListed,
+                    enabled = isEditable && isIncidentListed,
                 )
 
-                var selectedOptionQuery by remember { mutableStateOf("") }
+                var selectedOptionQuery by remember { mutableStateOf("selected") }
                 val dismissDropdown =
                     remember(viewModel) { { dismissSuggestionsQuery = incidentQuery } }
                 val showDropdown by remember(
@@ -99,13 +119,15 @@ internal fun ColumnScope.WrongIncidentFlagView(
                     dismissSuggestionsQuery,
                     selectedOptionQuery,
                     incidentQuery,
-                    isCorrectIncidentListed,
+                    isQueryIdentical,
+                    isIncidentListed,
                 ) {
                     derivedStateOf {
                         incidentSuggestions.isNotEmpty() &&
                                 dismissSuggestionsQuery != incidentQuery &&
                                 selectedOptionQuery != incidentQuery &&
-                                isCorrectIncidentListed
+                                isQueryIdentical &&
+                                isIncidentListed
                     }
                 }
                 DropdownMenu(
@@ -143,15 +165,15 @@ internal fun ColumnScope.WrongIncidentFlagView(
         item {
             val updateIncidentQuery = remember(viewModel) {
                 { b: Boolean ->
-                    isCorrectIncidentListed = b
-                    if (!isCorrectIncidentListed) {
+                    isIncidentListed = b
+                    if (!isIncidentListed) {
                         onIncidentQueryChange("")
                     }
                 }
             }
             CrisisCleanupTextCheckbox(
-                checked = !isCorrectIncidentListed,
-                onToggle = { updateIncidentQuery(!isCorrectIncidentListed) },
+                checked = !isIncidentListed,
+                onToggle = { updateIncidentQuery(!isIncidentListed) },
                 onCheckChange = { updateIncidentQuery(it) },
                 text = translator("flag.incident_not_listed"),
             )
@@ -160,7 +182,7 @@ internal fun ColumnScope.WrongIncidentFlagView(
 
     val onSave = remember(viewModel) {
         {
-            viewModel.onWrongIncident(isCorrectIncidentListed, selectedIncident)
+            viewModel.onWrongIncident(isIncidentListed, incidentQuery, selectedIncident)
         }
     }
     AddFlagSaveActionBar(

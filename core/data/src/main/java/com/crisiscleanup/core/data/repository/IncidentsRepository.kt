@@ -27,7 +27,5 @@ interface IncidentsRepository {
 
     suspend fun pullIncidentOrganizations(incidentId: Long, force: Boolean = false)
 
-    suspend fun getIncidentsForDisplay(): List<IncidentIdNameType>
-
     suspend fun getMatchingIncidents(q: String): List<IncidentIdNameType>
 }

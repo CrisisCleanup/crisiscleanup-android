@@ -12,6 +12,7 @@ import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.database.util.ftsGlobEnds
 import com.crisiscleanup.core.database.util.ftsSanitize
 import com.crisiscleanup.core.database.util.ftsSanitizeAsToken
+import com.crisiscleanup.core.database.util.intArray
 import com.crisiscleanup.core.database.util.okapiBm25Score
 import com.crisiscleanup.core.model.data.IncidentIdNameType
 import kotlinx.coroutines.coroutineScope
@@ -35,9 +36,14 @@ data class PopulatedIncidentIdNameMatchInfo(
     @ColumnInfo("match_info")
     val matchInfo: ByteArray,
 ) {
+    private val matchInfoInts by lazy {
+        matchInfo.intArray
+    }
+
     val sortScore by lazy {
-        // TODO Match short name and type as well (to a lesser degree)
-        matchInfo.okapiBm25Score(0)
+        matchInfoInts.okapiBm25Score(0) * 3 +
+                matchInfoInts.okapiBm25Score(1) * 2 +
+                matchInfoInts.okapiBm25Score(2)
     }
 
     override fun equals(other: Any?): Boolean {

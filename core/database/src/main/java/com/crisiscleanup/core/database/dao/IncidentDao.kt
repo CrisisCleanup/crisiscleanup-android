@@ -4,7 +4,6 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Transaction
 import androidx.room.Upsert
 import com.crisiscleanup.core.database.dao.fts.PopulatedIncidentIdNameMatchInfo
@@ -14,7 +13,6 @@ import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
 import com.crisiscleanup.core.database.model.IncidentLocationEntity
 import com.crisiscleanup.core.database.model.PopulatedFormFieldsIncident
 import com.crisiscleanup.core.database.model.PopulatedIncident
-import com.crisiscleanup.core.database.model.PopulatedIncidentMatch
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -105,9 +103,4 @@ interface IncidentDao {
         """
     )
     fun matchIncidentTokens(query: String): List<PopulatedIncidentIdNameMatchInfo>
-
-    @Transaction
-    @Query("SELECT * FROM incidents")
-    @RewriteQueriesToDropUnusedColumns
-    fun getIncidentsForDisplay(): List<PopulatedIncidentMatch>
 }

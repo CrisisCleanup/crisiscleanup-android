@@ -12,8 +12,10 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.common.throttleLatest
+import com.crisiscleanup.core.data.IncidentSelectManager
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.DatabaseManagementRepository
+import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.model.data.IncidentIdNameType
@@ -23,7 +25,6 @@ import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteFlagType
 import com.crisiscleanup.feature.caseeditor.model.coordinates
-import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -38,16 +39,17 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.math.abs
 
 @HiltViewModel
 class CaseAddFlagViewModel @Inject constructor(
     editableWorksiteProvider: EditableWorksiteProvider,
     organizationsRepository: OrganizationsRepository,
+    incidentsRepository: IncidentsRepository,
     databaseManagementRepository: DatabaseManagementRepository,
     private val accountDataRepository: AccountDataRepository,
     addressSearchRepository: AddressSearchRepository,
     private val worksiteChangeRepository: WorksiteChangeRepository,
+    private val incidentSelectManager: IncidentSelectManager,
     private val syncPusher: SyncPusher,
     val translator: KeyResourceTranslator,
     @Logger(CrisisCleanupLoggers.Cases) private val logger: AppLogger,
@@ -57,6 +59,8 @@ class CaseAddFlagViewModel @Inject constructor(
     private val worksiteIn = editableWorksiteProvider.editableWorksite.value
     private val flagsIn =
         worksiteIn.flags?.mapNotNull(WorksiteFlag::flagType)?.toSet() ?: emptySet()
+
+    val incidentWorksiteChange = MutableStateFlow(ExistingWorksiteIdentifierNone)
 
     private val allFlags = listOf(
         WorksiteFlagType.HighPriority,
@@ -132,81 +136,20 @@ class CaseAddFlagViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    private val isParsingCoordinates = MutableStateFlow(false)
-    private val isVerifyingCoordinates = MutableStateFlow(false)
-    val isProcessingLocation = combine(
-        isParsingCoordinates,
-        isVerifyingCoordinates
-    ) { b0, b1 -> b0 || b1 }
-        .stateIn(
-            viewModelScope,
-            initialValue = false,
-            started = SharingStarted.WhileSubscribed(),
-        )
+    private val wrongLocationManager =
+        WrongLocationFlagManager(addressSearchRepository, viewModelScope)
+    val isProcessingLocation = wrongLocationManager.isProcessingLocation
+    val wrongLocationText = wrongLocationManager.wrongLocationText
+    val validCoordinates = wrongLocationManager.validCoordinates
 
-    private val coordinatesRegex = """(-?\d{1,2}(?:\.\d+)?),\s*(-?\d{1,3}(?:\.\d+)?)\b""".toRegex()
-    var wrongLocationText = MutableStateFlow("")
-    private val wrongLocationCoordinatesParse = wrongLocationText
-        .throttleLatest(150)
-        .mapLatest { s ->
-            isParsingCoordinates.value = true
-            try {
-                coordinatesRegex.find(s)?.let { match ->
-                    val (latitudeS, longitudeS) = match.destructured
-                    val latitude = latitudeS.toDoubleOrNull()
-                    val longitude = longitudeS.toDoubleOrNull()
-                    if (latitude != null && abs(latitude) <= 90.0 &&
-                        longitude != null && abs(longitude) < 180.0
-                    ) {
-                        return@mapLatest LatLng(latitude, longitude)
-                    }
-                }
-            } finally {
-                isParsingCoordinates.value = false
-            }
-            null
-        }
-        .stateIn(
-            viewModelScope,
-            initialValue = null,
-            started = SharingStarted.WhileSubscribed(),
-        )
-
-    val validCoordinates = wrongLocationCoordinatesParse.mapLatest {
-        it?.let { latLng ->
-            isVerifyingCoordinates.value = true
-            try {
-                val results = addressSearchRepository.getAddress(latLng)
-                results?.let { address ->
-                    return@mapLatest address
-                }
-            } finally {
-                isVerifyingCoordinates.value = false
-            }
-        }
-    }
-        .stateIn(
-            viewModelScope,
-            initialValue = null,
-            started = SharingStarted.WhileSubscribed(),
-        )
-
-    var incidentQ = MutableStateFlow("")
-    val incidentResults = incidentQ
-        .throttleLatest(150)
-        .mapLatest {
-            if (it.isBlank() || it.trim().length < 2) {
-                emptyList()
-            } else {
-//                organizationsRepository.getMatchingOrganizations(it.trim())
-                emptyList<IncidentIdNameType>()
-            }
-        }
-        .stateIn(
-            viewModelScope,
-            initialValue = emptyList(),
-            started = SharingStarted.WhileSubscribed(),
-        )
+    private val queryIncidentsManager = QueryIncidentsManager(
+        incidentsRepository,
+        viewModelScope,
+        ioDispatcher,
+    )
+    val incidentQ = queryIncidentsManager.incidentQ
+    val isLoadingIncidents = queryIncidentsManager.isLoading
+    val incidentResults = queryIncidentsManager.incidentResults
 
     init {
         viewModelScope.launch(ioDispatcher) {
@@ -363,6 +306,7 @@ class CaseAddFlagViewModel @Inject constructor(
             val changedWorksite = worksiteIn.copy(
                 latitude = location.latitude,
                 longitude = location.longitude,
+                what3Words = "",
             )
             viewModelScope.launch(ioDispatcher) {
                 try {
@@ -385,9 +329,43 @@ class CaseAddFlagViewModel @Inject constructor(
     }
 
     fun onWrongIncident(
-        isIncidentSelected: Boolean,
-        incident: IncidentIdNameType?,
+        isIncidentListed: Boolean,
+        incidentQuery: String,
+        selectedIncident: IncidentIdNameType?,
     ) {
+        var selectedIncidentId = -1L
 
+        if (isIncidentListed &&
+            selectedIncident != null &&
+            selectedIncident.name.trim().startsWith(incidentQuery.trim())
+        ) {
+            selectedIncidentId = selectedIncident.id
+        }
+
+        if (selectedIncidentId > 0) {
+            queryIncidentsManager.incidentLookup[selectedIncidentId]?.let { incidentChange ->
+                viewModelScope.launch(ioDispatcher) {
+                    val startingWorksite = worksiteIn
+                    val changedWorksite = worksiteIn.copy(incidentId = selectedIncidentId)
+                    try {
+                        saveWorksiteChange(
+                            startingWorksite,
+                            changedWorksite,
+                            true,
+                        )
+
+                        incidentSelectManager.incident.value = incidentChange
+                        incidentWorksiteChange.value =
+                            ExistingWorksiteIdentifier(selectedIncidentId, startingWorksite.id)
+                    } catch (e: Exception) {
+                        // TODO Show error
+                        logger.logException(e)
+                    }
+                }
+            }
+        } else {
+            val wrongIncidentFlag = WorksiteFlag.flag(WorksiteFlagType.WrongIncident)
+            commitFlag(wrongIncidentFlag)
+        }
     }
 }

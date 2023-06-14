@@ -1,5 +1,7 @@
 package com.crisiscleanup.core.database.util
 
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import kotlin.math.log
 
 /**
@@ -27,7 +29,21 @@ val String.ftsSanitizeAsToken: String
 
 // https://medium.com/android-news/offline-full-text-search-in-android-ios-b4dd5bed3acd
 // https://github.com/pallocchi/movies/blob/fts4/android/app/src/main/java/com/github/movies/OkapiBM25.kt
-internal fun ByteArray.okapiBm25Score(
+
+/**
+ * Convert byte array to int array (little endian).
+ */
+val ByteArray.intArray: Array<Int>
+    get() {
+        val intBuf = ByteBuffer.wrap(this)
+            .order(ByteOrder.LITTLE_ENDIAN)
+            .asIntBuffer()
+        val array = IntArray(intBuf.remaining())
+        intBuf.get(array)
+        return array.toTypedArray()
+    }
+
+internal fun Array<Int>.okapiBm25Score(
     column: Int,
     b: Double = 0.75,
     k1: Double = 1.2,
