@@ -42,6 +42,7 @@ import com.crisiscleanup.core.model.data.IncidentIdNameType
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseAddFlagViewModel
+import com.crisiscleanup.feature.caseeditor.util.CaseStaticText
 
 @Composable
 internal fun ColumnScope.WrongIncidentFlagView(
@@ -78,7 +79,7 @@ internal fun ColumnScope.WrongIncidentFlagView(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = listItemSpacedBy,
             ) {
-                FlagStaticText(translator("flag.choose_correct_incident"))
+                CaseStaticText(translator("flag.choose_correct_incident"))
                 AnimatedBusyIndicator(
                     isBusy = isLoadingIncidents,
                     padding = 0.dp,

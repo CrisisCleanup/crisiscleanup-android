@@ -38,6 +38,8 @@ import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseAddFlagViewModel
 import com.crisiscleanup.feature.caseeditor.ui.PropertyInfoRow
 import com.crisiscleanup.feature.caseeditor.ui.edgeSpacingHalf
+import com.crisiscleanup.feature.caseeditor.util.labelTextItem
+import com.crisiscleanup.feature.caseeditor.util.listTextItem
 
 @Composable
 internal fun ColumnScope.HighPriorityFlagView(

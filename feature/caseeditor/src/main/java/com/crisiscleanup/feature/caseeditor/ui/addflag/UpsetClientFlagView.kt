@@ -41,6 +41,7 @@ import com.crisiscleanup.core.model.data.OrganizationIdName
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseAddFlagViewModel
+import com.crisiscleanup.feature.caseeditor.util.labelTextItem
 
 @Composable
 internal fun ColumnScope.UpsetClientFlagView(

@@ -21,6 +21,8 @@ import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseAddFlagViewModel
+import com.crisiscleanup.feature.caseeditor.util.labelTextItem
+import com.crisiscleanup.feature.caseeditor.util.listTextItem
 
 @Composable
 internal fun ColumnScope.WrongLocationFlagView(

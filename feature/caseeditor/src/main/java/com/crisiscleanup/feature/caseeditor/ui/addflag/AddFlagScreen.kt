@@ -7,9 +7,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -36,21 +33,18 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.AppTranslator
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.AnimatedBusyIndicator
-import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.TopAppBarCancelAction
-import com.crisiscleanup.core.designsystem.component.cancelButtonColors
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
-import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
-import com.crisiscleanup.core.designsystem.theme.listItemTopPadding
 import com.crisiscleanup.core.designsystem.theme.optionItemHeight
 import com.crisiscleanup.core.model.data.WorksiteFlagType
 import com.crisiscleanup.feature.caseeditor.CaseAddFlagViewModel
 import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
 import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifierNone
 import com.crisiscleanup.feature.caseeditor.R
+import com.crisiscleanup.feature.caseeditor.util.TwoActionBar
 
 @Composable
 internal fun CaseEditAddFlagRoute(
@@ -229,79 +223,19 @@ private fun FlagsDropdown(
 }
 
 @Composable
-internal fun FlagStaticText(
-    text: String,
-    modifier: Modifier = Modifier,
-    isBold: Boolean = false,
-) {
-    Text(
-        text,
-        modifier,
-        fontWeight = if (isBold) FontWeight.Bold else null,
-    )
-}
-
-internal fun LazyListScope.textItem(
-    text: String,
-    modifier: Modifier = Modifier,
-    isBold: Boolean = false,
-) {
-    item(contentType = "item-text") {
-        FlagStaticText(text, modifier, isBold)
-    }
-}
-
-internal fun LazyListScope.listTextItem(
-    text: String,
-    isBold: Boolean = false,
-) {
-    textItem(text, listItemModifier, isBold)
-}
-
-internal fun LazyListScope.labelTextItem(
-    text: String,
-    isBold: Boolean = false,
-) {
-    textItem(
-        text,
-        Modifier
-            .listItemHorizontalPadding()
-            .listItemTopPadding(),
-        isBold,
-    )
-}
-
-@Composable
 internal fun AddFlagSaveActionBar(
     onSave: () -> Unit = {},
     onCancel: () -> Unit = {},
     enabled: Boolean = false,
     enableSave: Boolean = true,
     isBusy: Boolean = false,
-) {
-    val translator = LocalAppTranslator.current.translator
-    Row(
-        modifier = Modifier
-            // TODO Common dimensions
-            .padding(16.dp),
-        horizontalArrangement = listItemSpacedBy,
-    ) {
-        BusyButton(
-            Modifier.weight(1f),
-            text = translator("actions.cancel"),
-            enabled = enabled,
-            onClick = onCancel,
-            colors = cancelButtonColors(),
-        )
-        BusyButton(
-            Modifier.weight(1f),
-            text = translator("actions.save"),
-            enabled = enabled && enableSave,
-            onClick = onSave,
-            indicateBusy = isBusy,
-        )
-    }
-}
+) = TwoActionBar(
+    onPositiveAction = onSave,
+    onCancel = onCancel,
+    enabled = enabled,
+    enablePositive = enableSave,
+    isBusy = isBusy,
+)
 
 @Composable
 private fun ColumnScope.GeneralFlagView(
@@ -310,7 +244,6 @@ private fun ColumnScope.GeneralFlagView(
     onBack: () -> Unit = {},
     isEditable: Boolean = false,
 ) {
-
     Spacer(Modifier.weight(1f))
 
     AddFlagSaveActionBar(
