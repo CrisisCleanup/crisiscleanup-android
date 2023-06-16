@@ -14,6 +14,7 @@ import com.crisiscleanup.feature.caseeditor.navigation.caseAddFlagScreen
 import com.crisiscleanup.feature.caseeditor.navigation.caseEditMoveLocationOnMapScreen
 import com.crisiscleanup.feature.caseeditor.navigation.caseEditSearchAddressScreen
 import com.crisiscleanup.feature.caseeditor.navigation.caseEditorScreen
+import com.crisiscleanup.feature.caseeditor.navigation.caseShareRoute
 import com.crisiscleanup.feature.caseeditor.navigation.existingCaseScreen
 import com.crisiscleanup.feature.caseeditor.navigation.existingCaseTransferWorkTypesScreen
 import com.crisiscleanup.feature.caseeditor.navigation.navigateToCaseEditor
@@ -100,6 +101,7 @@ fun CrisisCleanupNavHost(
                 existingCaseScreen(navController, onBack)
                 existingCaseTransferWorkTypesScreen(onBack)
                 caseAddFlagScreen(onBack, replaceRouteViewCase)
+                caseShareRoute(onBack)
             },
             onCasesAction = onCasesAction,
             createCase = createNewCase,

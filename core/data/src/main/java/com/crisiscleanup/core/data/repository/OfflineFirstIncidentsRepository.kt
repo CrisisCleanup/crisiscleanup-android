@@ -139,7 +139,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
             }
             val queryFields: List<String>
             val pullAfter: Instant?
-            val recentTimestamp = Clock.System.now() - 180.days
+            val recentTimestamp = Clock.System.now() - 120.days
             if (pullAll) {
                 queryFields = incidentsQueryFields
                 pullAfter = null
@@ -147,17 +147,17 @@ class OfflineFirstIncidentsRepository @Inject constructor(
                 queryFields = fullIncidentQueryFields
                 pullAfter = recentTimestamp
             }
-            val incidents = networkDataSource.getIncidents(queryFields, after = pullAfter)
-            if (incidents.isNotEmpty()) {
-                saveIncidentsPrimaryData(incidents)
+            val networkIncidents = networkDataSource.getIncidents(queryFields, after = pullAfter)
+            if (networkIncidents.isNotEmpty()) {
+                saveIncidentsPrimaryData(networkIncidents)
 
                 // TODO Use configurable threshold
-                val recentIncidents = incidents.filter { it.startAt > recentTimestamp }
+                val recentIncidents = networkIncidents.filter { it.startAt > recentTimestamp }
                 saveIncidentsSecondaryData(recentIncidents)
 
-                if (incidents.mapNotNull(NetworkIncident::fields).isEmpty()) {
+                if (networkIncidents.mapNotNull(NetworkIncident::fields).isEmpty()) {
                     val ordered =
-                        incidents.sortedWith { a, b -> if (a.startAt > b.startAt) -1 else 1 }
+                        networkIncidents.sortedWith { a, b -> if (a.startAt > b.startAt) -1 else 1 }
                     ordered.subList(0, ordered.size.coerceAtMost(3))
                         .forEach { incident ->
                             networkDataSource.getIncident(incident.id, fullIncidentQueryFields)
