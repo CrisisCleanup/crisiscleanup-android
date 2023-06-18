@@ -66,4 +66,12 @@ interface CrisisCleanupWriteApi {
     )
 
     suspend fun addFileToWorksite(worksiteId: Long, file: Long, tag: String): NetworkFile
+
+    suspend fun shareWorksite(
+        worksiteId: Long,
+        emails: List<String>,
+        phoneNumbers: List<String>,
+        shareMessage: String,
+        noClaimReason: String?
+    )
 }

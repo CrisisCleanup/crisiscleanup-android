@@ -7,7 +7,7 @@ val IncidentOrganization.contactList: List<String>
     get() = primaryContacts.map {
         with(it) {
             listOf(
-                "$firstName $lastName",
+                fullName,
                 "($name)",
                 "$email $mobile",
             ).combineTrimText(" ")

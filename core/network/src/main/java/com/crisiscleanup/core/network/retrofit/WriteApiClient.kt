@@ -134,6 +134,13 @@ private interface DataChangeApi {
         @Path("worksiteId") worksiteId: Long,
         @Body file: NetworkFilePush,
     ): NetworkFile
+
+    @TokenAuthenticationHeader
+    @POST("worksites/{worksiteId}/share")
+    suspend fun shareWorksite(
+        @Path("worksiteId") worksiteId: Long,
+        @Body shareDetails: NetworkShareDetails,
+    ): Response<Unit>
 }
 
 interface FileUploadApi {
@@ -252,4 +259,17 @@ class WriteApiClient @Inject constructor(
 
     override suspend fun addFileToWorksite(worksiteId: Long, file: Long, tag: String) =
         changeWorksiteApi.addUploadedFile(worksiteId, NetworkFilePush(file, tag))
+
+    override suspend fun shareWorksite(
+        worksiteId: Long,
+        emails: List<String>,
+        phoneNumbers: List<String>,
+        shareMessage: String,
+        noClaimReason: String?
+    ) {
+        changeWorksiteApi.shareWorksite(
+            worksiteId,
+            NetworkShareDetails(emails, phoneNumbers, shareMessage, noClaimReason),
+        )
+    }
 }

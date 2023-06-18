@@ -101,6 +101,11 @@ interface DataModule {
     fun bindsDatabaseManagementRepository(
         repository: CrisisCleanupDatabaseManagementRepository
     ): DatabaseManagementRepository
+
+    @Binds
+    fun bindsUsersRepository(
+        repository: OfflineFirstUsersRepository
+    ): UsersRepository
 }
 
 @Module

@@ -90,4 +90,12 @@ interface WorksitesRepository {
     )
 
     fun getUnsyncedCounts(worksiteId: Long): List<Int>
+
+    suspend fun shareWorksite(
+        worksiteId: Long,
+        emails: List<String>,
+        phoneNumbers: List<String>,
+        shareMessage: String,
+        noClaimReason: String?,
+    ): Boolean
 }

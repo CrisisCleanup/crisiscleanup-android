@@ -151,6 +151,17 @@ private interface DataSourceApi {
         @Query("nearby_claimed")
         nearbyClaimed: String,
     ): NetworkOrganizationsResult
+
+    @TokenAuthenticationHeader
+    @GET("/users")
+    suspend fun searchUsers(
+        @Query("search")
+        q: String,
+        @Query("organization")
+        organization: Long,
+        @Query("limit")
+        limit: Int,
+    ): NetworkUsersResult
 }
 
 private val worksiteCoreDataFields = listOf(
@@ -320,4 +331,11 @@ class DataApiClient @Inject constructor(
             it.errors?.tryThrowException()
             it.results ?: emptyList()
         }
+
+    override suspend fun searchUsers(q: String, organization: Long, limit: Int) =
+        networkApi.searchUsers(q, organization, limit)
+            .let {
+                it.errors?.tryThrowException()
+                it.results ?: emptyList()
+            }
 }

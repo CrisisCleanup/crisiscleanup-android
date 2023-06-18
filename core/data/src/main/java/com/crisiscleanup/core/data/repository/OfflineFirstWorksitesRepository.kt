@@ -27,6 +27,7 @@ import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.IncidentDataSyncStats
 import com.crisiscleanup.core.model.data.SyncAttempt
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
+import com.crisiscleanup.core.network.CrisisCleanupWriteApi
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
@@ -53,6 +54,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private val languageTranslationsRepository: LanguageTranslationsRepository,
     private val recentWorksiteDao: RecentWorksiteDao,
     private val dataSource: CrisisCleanupNetworkDataSource,
+    private val writeApi: CrisisCleanupWriteApi,
     private val workTypeTransferRequestDaoPlus: WorkTypeTransferRequestDaoPlus,
     private val appVersionProvider: AppVersionProvider,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
@@ -276,4 +278,28 @@ class OfflineFirstWorksitesRepository @Inject constructor(
 
     override fun getUnsyncedCounts(worksiteId: Long) =
         worksiteDaoPlus.getUnsyncedChangeCount(worksiteId)
+
+    override suspend fun shareWorksite(
+        worksiteId: Long,
+        emails: List<String>,
+        phoneNumbers: List<String>,
+        shareMessage: String,
+        noClaimReason: String?
+    ): Boolean {
+        try {
+            writeApi.shareWorksite(
+                worksiteId,
+                emails,
+                phoneNumbers,
+                shareMessage,
+                noClaimReason,
+            )
+
+            return true
+        } catch (e: Exception) {
+            // TODO Show dialog
+            logger.logException(e)
+        }
+        return false
+    }
 }

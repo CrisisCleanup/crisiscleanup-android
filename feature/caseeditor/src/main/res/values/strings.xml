@@ -8,6 +8,7 @@
 
     <string name="stop_suggesting_existing_cases">~~Stop searching existing cases</string>
     <string name="invalid_email">~~Enter a valid email address.</string>
+    <string name="invalid_phone">~~Enter a valid phone number.</string>
 
     <string name="location_address_search">~~Location/address search</string>
     <string name="location_out_of_incident_bounds">This location is outside of %s.</string>
@@ -45,8 +46,11 @@
     <string name="add_flag">~~Add Flag</string>
     <string name="remove_type_flag">Remove %s flag</string>
 
+    <string name="share_requires_internet">~~Connect to the internet to share</string>
+    <string name="share_requires_login">~~Login to share</string>
     <string name="share_case_method">~~How would you like to share this case?</string>
     <string name="sms_text_message">~~SMS text message</string>
+    <string name="remove_share_user">~~Remove %s from shared</string>
 
     <string name="release_reason_is_required">~~What is the reason for release?</string>
     <string name="request_reason_is_required">~~What is the reason for request?</string>

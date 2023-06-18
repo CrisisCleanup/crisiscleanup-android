@@ -2,8 +2,10 @@ package com.crisiscleanup.core.model.data
 
 data class PersonContact(
     val id: Long,
-    val firstName: String,
-    val lastName: String,
+    private val firstName: String,
+    private val lastName: String,
     val email: String,
     val mobile: String,
-)
+) {
+    val fullName = "$firstName $lastName".trim()
+}

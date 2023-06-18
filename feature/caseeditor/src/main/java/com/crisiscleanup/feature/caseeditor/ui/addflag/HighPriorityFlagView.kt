@@ -168,7 +168,7 @@ private fun ContactsDialog(
             ) {
                 with(it) {
                     Text(
-                        "$firstName $lastName",
+                        fullName,
                         spacingModifier,
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Bold,

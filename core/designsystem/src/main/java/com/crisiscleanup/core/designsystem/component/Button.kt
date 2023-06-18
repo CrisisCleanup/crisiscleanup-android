@@ -47,8 +47,6 @@ fun cancelButtonColors() = ButtonDefaults.buttonColors(
     contentColor = cancelButtonContentColor,
 )
 
-val mapButtonSize = 48.dp
-val mapButtonEdgeSpace = 8.dp
 val adjacentButtonSpace = 1.dp
 
 val actionInnerSpace = 16.dp
@@ -135,13 +133,14 @@ fun CrisisCleanupButton(
     enabled: Boolean = true,
     @StringRes textResId: Int = 0,
     text: String = "",
+    colors: ButtonColors = primaryButtonColors(),
     elevation: ButtonElevation? = ButtonDefaults.buttonElevation(),
 ) {
     Button(
         modifier = modifier.actionHeight(),
         onClick = onClick,
         enabled = enabled,
-        colors = primaryButtonColors(),
+        colors = colors,
         shape = roundedRectangleButtonShape(),
         elevation = elevation,
     ) {

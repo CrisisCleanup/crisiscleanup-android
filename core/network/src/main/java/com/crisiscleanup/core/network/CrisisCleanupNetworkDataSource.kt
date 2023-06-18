@@ -8,6 +8,7 @@ import com.crisiscleanup.core.network.model.NetworkLanguageDescription
 import com.crisiscleanup.core.network.model.NetworkLanguageTranslation
 import com.crisiscleanup.core.network.model.NetworkLocation
 import com.crisiscleanup.core.network.model.NetworkOrganizationsResult
+import com.crisiscleanup.core.network.model.NetworkPersonContact
 import com.crisiscleanup.core.network.model.NetworkWorkTypeRequest
 import com.crisiscleanup.core.network.model.NetworkWorkTypeStatusResult
 import com.crisiscleanup.core.network.model.NetworkWorksiteCoreData
@@ -97,4 +98,10 @@ interface CrisisCleanupNetworkDataSource {
         latitude: Double,
         longitude: Double,
     ): List<NetworkIncidentOrganization>
+
+    suspend fun searchUsers(
+        q: String,
+        organization: Long,
+        limit: Int = 10,
+    ): List<NetworkPersonContact>
 }

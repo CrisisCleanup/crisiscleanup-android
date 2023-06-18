@@ -77,9 +77,9 @@ interface IncidentOrganizationDao {
     @Query(
         """
         SELECT io.id, f.name,
-        matchinfo(incident_organization_fts, 'pcnalx') as match_info
+        matchinfo(incident_organization_fts, 'pcnalx') AS match_info
         FROM incident_organization_fts f
-        INNER JOIN incident_organizations io ON f.name=io.name
+        INNER JOIN incident_organizations io ON f.docid=io.id
         WHERE incident_organization_fts MATCH :query
         """
     )

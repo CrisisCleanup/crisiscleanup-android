@@ -4,6 +4,13 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class NetworkUsersResult(
+    val errors: List<NetworkCrisisCleanupApiError>? = null,
+    val count: Int? = null,
+    val results: List<NetworkPersonContact>? = null,
+)
+
+@Serializable
 data class NetworkPersonContact(
     val id: Long,
     @SerialName("first_name")
