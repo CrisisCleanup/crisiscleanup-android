@@ -63,10 +63,14 @@ class AppSyncer @Inject constructor(
 
     private val languagePullMutex = Mutex()
 
-    private suspend fun isInvalidAccountToken(): Boolean {
+    private suspend fun isInvalidAccountToken(isInBackground: Boolean): Boolean {
         val accountData = accountDataRepository.accountData.first()
         if (accountData.isTokenInvalid) {
-            authEventBus.onExpiredToken()
+            if (isInBackground) {
+                // TODO Query and confirm token is truly expired. If so show notification to authenticate. If not expired fix syncing logic to query and cache true token before making network calls.
+            } else {
+                authEventBus.onExpiredToken()
+            }
             return true
         }
         return false
@@ -74,8 +78,8 @@ class AppSyncer @Inject constructor(
 
     private suspend fun isNotOnline() = networkMonitor.isNotOnline.first()
 
-    private suspend fun onSyncPreconditions(): SyncResult? {
-        if (isInvalidAccountToken()) {
+    private suspend fun onSyncPreconditions(isInBackground: Boolean): SyncResult? {
+        if (isInvalidAccountToken(isInBackground)) {
             return SyncResult.NotAttempted("Invalid account token")
         }
 
@@ -159,7 +163,7 @@ class AppSyncer @Inject constructor(
 
     override suspend fun syncPullAsync(): Deferred<SyncResult> {
         val deferred = applicationScope.async {
-            onSyncPreconditions()?.let {
+            onSyncPreconditions(true)?.let {
                 return@async SyncResult.PreconditionsNotMet
             }
 
@@ -185,7 +189,7 @@ class AppSyncer @Inject constructor(
         }
 
         applicationScope.launch {
-            onSyncPreconditions()?.let { return@launch }
+            onSyncPreconditions(false)?.let { return@launch }
 
             synchronized(pullJobLock) {
                 stopPull()
@@ -219,7 +223,7 @@ class AppSyncer @Inject constructor(
                 return@async SyncResult.NotAttempted("Empty incident")
             }
 
-            onSyncPreconditions()?.let {
+            onSyncPreconditions(true)?.let {
                 return@async SyncResult.PreconditionsNotMet
             }
 
@@ -241,7 +245,7 @@ class AppSyncer @Inject constructor(
         synchronized(incidentPullJobLock) {
             stopPullIncident()
             incidentPullJob = applicationScope.launch(ioDispatcher) {
-                onSyncPreconditions()?.let { return@launch }
+                onSyncPreconditions(false)?.let { return@launch }
 
                 try {
                     incidentPull(id)
@@ -260,7 +264,7 @@ class AppSyncer @Inject constructor(
         synchronized(pullWorksitesFullJobLock) {
             stopSyncPullWorksitesFull()
             val deferred = applicationScope.async {
-                onSyncPreconditions()?.let {
+                onSyncPreconditions(true)?.let {
                     return@async SyncResult.PreconditionsNotMet
                 }
 
@@ -349,7 +353,7 @@ class AppSyncer @Inject constructor(
 
     override fun appPushWorksite(worksiteId: Long) {
         applicationScope.launch(ioDispatcher) {
-            onSyncPreconditions()?.let {
+            onSyncPreconditions(false)?.let {
                 return@launch
             }
 
@@ -359,7 +363,7 @@ class AppSyncer @Inject constructor(
 
     override suspend fun syncPushWorksitesAsync(): Deferred<SyncResult> {
         val deferred = applicationScope.async {
-            onSyncPreconditions()?.let {
+            onSyncPreconditions(true)?.let {
                 return@async SyncResult.PreconditionsNotMet
             }
 
@@ -372,7 +376,7 @@ class AppSyncer @Inject constructor(
     }
 
     override suspend fun syncPushMedia(): SyncResult {
-        onSyncPreconditions()?.let {
+        onSyncPreconditions(true)?.let {
             return SyncResult.PreconditionsNotMet
         }
 
