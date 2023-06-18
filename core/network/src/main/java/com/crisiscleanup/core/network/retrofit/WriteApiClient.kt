@@ -269,7 +269,12 @@ class WriteApiClient @Inject constructor(
     ) {
         changeWorksiteApi.shareWorksite(
             worksiteId,
-            NetworkShareDetails(emails, phoneNumbers, shareMessage, noClaimReason),
+            NetworkShareDetails(
+                emails,
+                phoneNumbers,
+                shareMessage,
+                if (noClaimReason?.isNotBlank() == true) noClaimReason else null,
+            ),
         )
     }
 }
