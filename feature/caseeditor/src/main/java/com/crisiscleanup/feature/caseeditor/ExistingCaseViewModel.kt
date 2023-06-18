@@ -391,11 +391,14 @@ class ExistingCaseViewModel @Inject constructor(
                         null
                     },
                     workType.nextRecurAt?.let { nextRecurAt ->
-                        try {
-                            val nextDate = nextRecurDateFormat.format(nextRecurAt.toJavaInstant())
-                            return@let resourceProvider.getString(R.string.next_recur, nextDate)
-                        } catch (e: Exception) {
-                            logger.logException(e)
+                        if (nextRecurAt > Clock.System.now()) {
+                            try {
+                                val nextDate =
+                                    nextRecurDateFormat.format(nextRecurAt.toJavaInstant())
+                                return@let resourceProvider.getString(R.string.next_recur, nextDate)
+                            } catch (e: Exception) {
+                                logger.logException(e)
+                            }
                         }
                         null
                     },
@@ -501,9 +504,6 @@ class ExistingCaseViewModel @Inject constructor(
         }
     }
 
-    // TODO Queue and debounce saves. Save off view model thread in case is long running.
-    //      How to keep worksite state synced?
-
     private val uiStateCaseData: CaseEditorUiState.CaseData?
         get() = uiState.value.asCaseData()
     private val organizationId: Long?
@@ -530,6 +530,7 @@ class ExistingCaseViewModel @Inject constructor(
                         orgId,
                     )
 
+                    // TODO Debounce (and throttle) saves in case of successive changes.
                     externalScope.launch {
                         syncPusher.appPushWorksite(worksiteIdArg)
                     }
