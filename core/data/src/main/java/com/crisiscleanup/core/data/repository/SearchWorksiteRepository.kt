@@ -9,7 +9,6 @@ import com.crisiscleanup.core.model.data.WorksiteSummary
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import java.util.concurrent.CancellationException
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.minutes
 
@@ -96,9 +95,7 @@ class MemoryCacheSearchWorksitesRepository @Inject constructor(
                 return searchResult
             }
         } catch (e: Exception) {
-            if (e !is CancellationException) {
-                logger.logException(e)
-            }
+            logger.logException(e)
         }
 
         return emptyList()
@@ -146,9 +143,7 @@ class MemoryCacheSearchWorksitesRepository @Inject constructor(
                 return searchResult
             }
         } catch (e: Exception) {
-            if (e !is CancellationException) {
-                logger.logException(e)
-            }
+            logger.logException(e)
         }
 
         return emptyList()

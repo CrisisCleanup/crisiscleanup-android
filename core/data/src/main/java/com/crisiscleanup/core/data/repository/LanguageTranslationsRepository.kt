@@ -27,10 +27,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -79,8 +77,6 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000),
         )
 
-    private var translationCache = emptyMap<String, String>()
-
     private val languageTranslations = appPreferences.userPreferences.flatMapLatest {
         val key = it.languageKey.ifEmpty { EnglishLanguage.key }
         languageDao.streamLanguageTranslations(key)
@@ -93,8 +89,16 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
             replay = 1,
         )
 
-    override val translationCount = languageTranslations
-        .map { it?.translations?.size ?: 0 }
+    private val translations = languageTranslations
+        .mapLatest { it?.translations ?: emptyMap() }
+        .stateIn(
+            scope = coroutineScope,
+            initialValue = emptyMap(),
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    override val translationCount = translations
+        .mapLatest { it.size }
         .stateIn(
             scope = coroutineScope,
             initialValue = 0,
@@ -110,13 +114,6 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
     )
 
     private var setLanguageJob: Job? = null
-
-    init {
-        languageTranslations.onEach {
-            translationCache = it?.translations ?: emptyMap()
-        }
-            .launchIn(coroutineScope)
-    }
 
     private suspend fun pullLanguages() = coroutineScope {
         val languageDescriptions =
@@ -188,6 +185,6 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
     }
 
     override fun translate(phraseKey: String): String? {
-        return translationCache[phraseKey] ?: statusRepository.translateStatus(phraseKey)
+        return translations.value[phraseKey] ?: statusRepository.translateStatus(phraseKey)
     }
 }
