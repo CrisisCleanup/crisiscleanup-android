@@ -26,7 +26,7 @@ class IncidentDaoPlus @Inject constructor(
         }
     }
 
-    suspend fun updateFormFields(
+    internal suspend fun updateFormFields(
         incidentId: Long,
         formFields: Collection<IncidentFormFieldEntity>,
     ) {
