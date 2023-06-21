@@ -104,15 +104,9 @@ class CaseShareViewModel @Inject constructor(
         accountDataRepository.accountData,
     ) { online, accountData ->
         if (!online) {
-            translator(
-                "info.share_requires_internet",
-                R.string.share_requires_internet,
-            )
+            translator("info.share_requires_internet")
         } else if (accountData.isTokenInvalid) {
-            translator(
-                "info.share_requires_login",
-                R.string.share_requires_login,
-            )
+            translator("info.share_requires_login")
         } else {
             ""
         }
@@ -179,13 +173,13 @@ class CaseShareViewModel @Inject constructor(
             if (isEmail) {
                 if (!inputValidator.validateEmailAddress(contact)) {
                     contactErrorMessage =
-                        translator("info.enter_valid_email_address", R.string.invalid_email)
+                        translator("info.enter_valid_email")
                     return
                 }
             } else {
                 if (!inputValidator.validatePhoneNumber(contact)) {
                     contactErrorMessage =
-                        translator("info.enter_valid_phone_number", R.string.invalid_phone)
+                        translator("info.enter_valid_phone")
                     return
                 }
             }

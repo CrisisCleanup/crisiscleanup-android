@@ -479,7 +479,7 @@ class ExistingCaseViewModel @Inject constructor(
 
     private fun updateHeaderTitle(caseNumber: String = "") {
         headerTitle.value = if (caseNumber.isEmpty()) translate("nav.work_view_case")
-        else resourceProvider.getString(R.string.view_case_number, caseNumber)
+        else translate("caseVue.view_case_number", caseNumber)
     }
 
     private fun refreshOrganizationLookup() {

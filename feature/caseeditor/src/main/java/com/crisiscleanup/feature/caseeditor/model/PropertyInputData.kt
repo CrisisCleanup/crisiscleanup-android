@@ -54,7 +54,7 @@ class PropertyInputData(
             messages.add(translator("caseForm.phone_required"))
         }
         if (email.isNotBlank() && !inputValidator.validateEmailAddress(email)) {
-            messages.add(translator("invitationSignup.invalid_email_error", R.string.invalid_email))
+            messages.add(translator("info.enter_valid_email"))
         }
         return messages.joinToString("\n")
     }
@@ -71,7 +71,7 @@ class PropertyInputData(
             return false
         }
         if (email.isNotBlank() && !inputValidator.validateEmailAddress(email)) {
-            emailError = translator("invitationSignup.invalid_email_error", R.string.invalid_email)
+            emailError = translator("info.enter_valid_email")
             return false
         }
         return true

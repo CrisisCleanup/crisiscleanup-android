@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="view_case_number">actions.view %1$s</string>
+    <string name="view_case_number">++actions.view %1$s</string>
 
-    <string name="organization_issue_try_re_authenticating">info.organization_issue_log_out</string>
-    <string name="incident_is_in_progress">%s info.incident_loading</string>
-    <string name="incident_issue_try_again">info.current_incident_problem</string>
+    <string name="organization_issue_try_re_authenticating">++info.organization_issue_log_out</string>
+    <string name="incident_is_in_progress">++%s info.incident_loading</string>
+    <string name="incident_issue_try_again">++info.current_incident_problem</string>
 
-    <string name="stop_suggesting_existing_cases">~~Stop searching existing cases</string>
+    <string name="stop_suggesting_existing_cases">++Stop searching existing cases</string>
     <string name="invalid_email">++info.enter_valid_email</string>
-    <string name="invalid_phone">info.enter_valid_phone</string>
+    <string name="invalid_phone">++info.enter_valid_phone</string>
 
-    <string name="location_address_search">formLabels.location</string>
-    <string name="location_out_of_incident_bounds">~~This location is outside of %s.</string>
+    <string name="location_address_search">++formLabels.location</string>
+    <string name="location_out_of_incident_bounds">++This location is outside of %s.</string>
 
-    <string name="allow_location_permission">~~Allow location</string>
-    <string name="location_permission_explanation">~~My Location needs access to the device\'s location. Grant access in the App info/settings > Permissions.</string>
-    <string name="app_settings">~~App settings</string>
+    <string name="allow_location_permission">++Allow location</string>
+    <string name="location_permission_explanation">++My Location needs access to the device\'s location. Grant access in the App info/settings > Permissions.</string>
+    <string name="app_settings">++App settings</string>
 
-    <string name="geocoded_addresses">~~Addresses</string>
-    <string name="location_query_hint">~~Search for an existing worksite or an address in general.\nSelecting the worksite opens it for editing.</string>
+    <string name="geocoded_addresses">++Addresses</string>
+    <string name="location_query_hint">++Search for an existing worksite or an address in general.\nSelecting the worksite opens it for editing.</string>
     <string name="no_location_results">~~No cases or addresses match \'%s\'.</string>
 
     <string name="select_option_for_field">~~Select option for %s</string>
@@ -46,8 +46,8 @@
     <string name="add_flag">~~Add Flag</string>
     <string name="remove_type_flag">Remove %s flag</string>
 
-    <string name="share_requires_internet">~~Connect to the internet to share</string>
-    <string name="share_requires_login">~~Login to share</string>
+    <string name="share_requires_internet">++Connect to the internet to share</string>
+    <string name="share_requires_login">++Login to share</string>
     <string name="share_case_method">~~How would you like to share this case?</string>
     <string name="sms_text_message">~~SMS text message</string>
     <string name="remove_share_user">~~Remove %s from shared</string>

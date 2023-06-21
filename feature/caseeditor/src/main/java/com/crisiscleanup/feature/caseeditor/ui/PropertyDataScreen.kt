@@ -203,7 +203,6 @@ private fun PropertyFormResidentNameView(
                         Text(
                             LocalAppTranslator.current.translator(
                                 "actions.stop_searching_cases",
-                                R.string.stop_suggesting_existing_cases,
                             ),
                             modifier = Modifier.offset(x = 12.dp),
                         )

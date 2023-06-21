@@ -45,10 +45,7 @@ internal fun EditCaseAddressSearchRoute(
 
         Column {
             TopAppBarBackAction(
-                title = LocalAppTranslator.current.translator(
-                    "info.location_address_search",
-                    R.string.location_address_search,
-                ),
+                title = LocalAppTranslator.current.translator("formLabels.location"),
                 onAction = onBack,
             )
             val locationQuery by editor.locationInputData.locationQuery.collectAsStateWithLifecycle()
@@ -106,10 +103,7 @@ internal fun ColumnScope.AddressSearchResults(
     val isShortQuery by editor.isShortQuery.collectAsStateWithLifecycle()
     if (isShortQuery) {
         Text(
-            LocalAppTranslator.current.translator(
-                "info.search_cases_addresses_hint",
-                R.string.location_query_hint
-            ),
+            LocalAppTranslator.current.translator("caseForm.location_instructions"),
             modifier = Modifier.textMessagePadding(),
             style = MaterialTheme.typography.bodyLarge,
         )

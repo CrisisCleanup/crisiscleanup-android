@@ -298,7 +298,7 @@ internal class EditableLocationDataEditor(
         .map {
             if (it) ""
             else resourceProvider.getString(
-                R.string.location_out_of_incident_bounds,
+                LocalAppTranslator.current.translator("caseForm.case_outside_incident_name")
                 worksiteProvider.incident.name,
             )
         }

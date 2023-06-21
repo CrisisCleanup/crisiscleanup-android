@@ -164,14 +164,14 @@ internal class CaseEditorDataLoader(
 
             if (organization.id <= 0) {
                 logger.logException(Exception("Organization $organization is not set when editing worksite $worksiteId"))
-                return@mapLatest CaseEditorUiState.Error(R.string.organization_issue_try_re_authenticating)
+                return@mapLatest CaseEditorUiState.Error(translate("info.organization_issue_log_out"))
             }
 
             val (incident, bounds) = incidentData
 
             if (!pullingIncident && incident.formFields.isEmpty()) {
                 logger.logException(Exception("Incident $incidentIdIn is missing form fields when editing worksite $worksiteId"))
-                return@mapLatest CaseEditorUiState.Error(R.string.incident_issue_try_again)
+                return@mapLatest CaseEditorUiState.Error(translate("info.incident_loading"))
             }
 
             if (bounds.locations.isEmpty()) {

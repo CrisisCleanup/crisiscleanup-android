@@ -142,7 +142,7 @@ private fun ListSearchResults(
         if (results.addresses.isNotEmpty()) {
             listItemTitle(
                 itemKey = "title-addresses",
-                text = translator("info.addresses", R.string.geocoded_addresses),
+                text = translator("caseView.full_address"),
             )
 
             items(
