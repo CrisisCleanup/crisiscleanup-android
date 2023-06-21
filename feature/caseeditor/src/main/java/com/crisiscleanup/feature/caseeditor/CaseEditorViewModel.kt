@@ -370,7 +370,7 @@ class CaseEditorViewModel @Inject constructor(
             if (isCreateWorksite) translate("casesVue.new_case")
             else translate("nav.work_view_case")
         } else {
-            resourceProvider.getString(R.string.view_case_number, caseNumber)
+            "${translate("actions.view")} $caseNumber"
         }
     }
 

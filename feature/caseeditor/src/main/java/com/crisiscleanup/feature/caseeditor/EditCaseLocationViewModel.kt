@@ -297,10 +297,10 @@ internal class EditableLocationDataEditor(
     override val locationOutOfBoundsMessage = isLocationInBounds
         .map {
             if (it) ""
-            else resourceProvider.getString(
-                LocalAppTranslator.current.translator("caseForm.case_outside_incident_name")
-                worksiteProvider.incident.name,
-            )
+            else {
+                translator("caseForm.case_outside_incident_name")
+                    .replace("{incident}", worksiteProvider.incident.name)
+            }
         }
         .stateIn(
             scope = coroutineScope,

@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -19,11 +17,11 @@ import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.textMessagePadding
+import com.crisiscleanup.core.ui.LinkifyHtmlText
 import com.crisiscleanup.feature.caseeditor.CaseLocationDataEditor
 import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
 import com.crisiscleanup.feature.caseeditor.EditCaseLocationViewModel
 import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
-import com.crisiscleanup.feature.caseeditor.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -102,10 +100,10 @@ internal fun ColumnScope.AddressSearchResults(
 ) {
     val isShortQuery by editor.isShortQuery.collectAsStateWithLifecycle()
     if (isShortQuery) {
-        Text(
-            LocalAppTranslator.current.translator("caseForm.location_instructions"),
+        val instructions = LocalAppTranslator.current.translator("caseForm.location_instructions")
+        LinkifyHtmlText(
             modifier = Modifier.textMessagePadding(),
-            style = MaterialTheme.typography.bodyLarge,
+            text = instructions,
         )
     } else {
         val query = locationQuery.trim()

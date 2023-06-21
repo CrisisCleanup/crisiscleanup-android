@@ -164,22 +164,26 @@ internal class CaseEditorDataLoader(
 
             if (organization.id <= 0) {
                 logger.logException(Exception("Organization $organization is not set when editing worksite $worksiteId"))
-                return@mapLatest CaseEditorUiState.Error(translate("info.organization_issue_log_out"))
+                return@mapLatest CaseEditorUiState.Error(
+                    errorMessage = translate("info.organization_issue_log_out")
+                )
             }
 
             val (incident, bounds) = incidentData
 
             if (!pullingIncident && incident.formFields.isEmpty()) {
                 logger.logException(Exception("Incident $incidentIdIn is missing form fields when editing worksite $worksiteId"))
-                return@mapLatest CaseEditorUiState.Error(translate("info.incident_loading"))
+                val errorMessage = translate("info.incident_loading")
+                    .replace("{name}", incident.name)
+                return@mapLatest CaseEditorUiState.Error(
+                    errorMessage = errorMessage
+                )
             }
 
             if (bounds.locations.isEmpty()) {
                 logger.logException(Exception("Incident ${incident.id} ${incident.name} is lacking locations."))
-                val errorMessage = resourceProvider.getString(
-                    R.string.incident_is_in_progress,
-                    incident.name,
-                )
+                val errorMessage = translate("info.current_incident_problem")
+                    .replace("{name}", incident.name)
                 return@mapLatest CaseEditorUiState.Error(errorMessage = errorMessage)
             }
 

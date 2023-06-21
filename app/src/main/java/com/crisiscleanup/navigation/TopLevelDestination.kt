@@ -1,6 +1,5 @@
 package com.crisiscleanup.navigation
 
-import androidx.annotation.StringRes
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.icon.Icon
 import com.crisiscleanup.core.designsystem.icon.Icon.DrawableResourceIcon
@@ -10,7 +9,6 @@ enum class TopLevelDestination(
     val selectedIcon: Icon,
     val unselectedIcon: Icon,
     val titleTranslateKey: String,
-    @StringRes val titleResId: Int = 0,
 ) {
     CASES(
         selectedIcon = DrawableResourceIcon(CrisisCleanupIcons.Cases),

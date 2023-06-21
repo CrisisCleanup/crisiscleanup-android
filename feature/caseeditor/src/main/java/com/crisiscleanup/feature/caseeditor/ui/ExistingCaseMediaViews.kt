@@ -305,14 +305,11 @@ private fun ExplainCameraPermissionDialog(
     closeText: String = "",
 ) {
     if (showDialog) {
-        val translator = LocalAppTranslator.current.translator
+        val t = LocalAppTranslator.current.translator
         OpenSettingsDialog(
-            translator("info.allow_access_to_camera", R.string.allow_camera_permission),
-            translator(
-                "info.explain_allow_access_to_camera_android",
-                R.string.camera_permission_explanation
-            ),
-            confirmText = translator("info.app_settings", R.string.app_settings),
+            t("info.allow_access_to_camera"),
+            t("info.explain_allow_access_to_camera_android"),
+            confirmText = t("info.app_settings"),
             dismissText = closeText,
             closeDialog = closeDialog,
         )

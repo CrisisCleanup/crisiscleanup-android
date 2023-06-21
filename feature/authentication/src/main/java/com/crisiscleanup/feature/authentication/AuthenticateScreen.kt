@@ -276,11 +276,9 @@ private fun AuthenticatedScreen(
 
         Text(
             modifier = fillWidthPadded,
-            text = stringResource(
-                translator("info.account_is"),
-                authState.accountData.fullName,
-                authState.accountData.emailAddress
-            ),
+            text = translator("info.account_is")
+                .replace("{full_name}", authState.accountData.fullName)
+                .replace("{email_address}", authState.accountData.emailAddress)
         )
 
         val authErrorMessage by viewModel.errorMessage

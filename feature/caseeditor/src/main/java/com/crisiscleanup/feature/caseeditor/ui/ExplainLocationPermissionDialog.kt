@@ -9,7 +9,6 @@ import androidx.core.content.ContextCompat
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
-import com.crisiscleanup.feature.caseeditor.R
 
 @Composable
 fun OpenSettingsDialog(
@@ -52,11 +51,11 @@ fun ExplainLocationPermissionDialog(
     closeText: String = "",
 ) {
     if (showDialog) {
-        val translator = LocalAppTranslator.current.translator
+        val t = LocalAppTranslator.current.translator
         OpenSettingsDialog(
-            translator("info.allow_access_to_location"),
-            translator("info.location_permission_explanation"),
-            confirmText = translator("info.app_settings"),
+            t("info.allow_access_to_location"),
+            t("info.location_permission_explanation"),
+            confirmText = t("info.app_settings"),
             dismissText = closeText,
             closeDialog = closeDialog,
         )

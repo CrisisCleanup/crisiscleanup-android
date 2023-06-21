@@ -52,7 +52,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.IntOffset
@@ -63,7 +62,6 @@ import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import com.crisiscleanup.AuthState
 import com.crisiscleanup.MainActivityViewModel
-import com.crisiscleanup.R
 import com.crisiscleanup.core.common.NavigationObserver
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.designsystem.AppTranslator
@@ -87,7 +85,6 @@ import com.crisiscleanup.feature.cases.ui.SelectIncidentDialog
 import com.crisiscleanup.navigation.CrisisCleanupNavHost
 import com.crisiscleanup.navigation.TopLevelDestination
 import com.crisiscleanup.feature.authentication.R as authenticationR
-import com.crisiscleanup.feature.cases.R as casesR
 
 @Composable
 fun CrisisCleanupApp(
@@ -109,14 +106,11 @@ fun CrisisCleanupApp(
             val isOffline by appState.isOffline.collectAsStateWithLifecycle()
 
             val translationCount by viewModel.translationCount.collectAsStateWithLifecycle()
-            val appTranslator = remember(viewModel) {
+            val appTranslator = remember(viewModel.translator.translationCount) {
                 AppTranslator(translator = viewModel.translator)
             }
             val notConnectedMessage = remember(translationCount) {
-                appTranslator.translator(
-                    "info.no_internet",
-                    R.string.not_connected_to_internet,
-                )
+                appTranslator.translator("info.no_internet")
             }
             LaunchedEffect(isOffline) {
                 if (isOffline) snackbarHostState.showSnackbar(
@@ -267,10 +261,7 @@ private fun NavigableContent(
             ) {
                 val title = headerTitle.ifBlank {
                     appState.currentTopLevelDestination?.let { destination ->
-                        LocalAppTranslator.current.translator(
-                            destination.titleTranslateKey,
-                            destination.titleResId,
-                        )
+                        LocalAppTranslator.current.translator(destination.titleTranslateKey)
                     } ?: ""
                 }
                 val onOpenIncidents = if (appState.isMenuRoute) openIncidentsSelect else null
@@ -365,7 +356,7 @@ private fun ExpiredTokenAlert(
     openAuthentication: () -> Unit,
 ) {
     val translator = LocalAppTranslator.current.translator
-    val message = translator("info.log_in_for_updates", R.string.login_reminder)
+    val message = translator("info.log_in_for_updates")
     val loginText = translator("actions.login", authenticationR.string.login)
     LaunchedEffect(Unit) {
         val result = snackbarHostState.showSnackbar(
@@ -395,7 +386,8 @@ private fun AppHeader(
     openAuthentication: () -> Unit = {},
     onOpenIncidents: (() -> Unit)? = null,
 ) {
-    val actionText = LocalAppTranslator.current.translator("actions.account")
+    val t = LocalAppTranslator.current.translator
+    val actionText = t("actions.account")
     TopAppBarDefault(
         modifier = modifier,
         titleResId = titleRes,
@@ -418,7 +410,7 @@ private fun AppHeader(
                     TruncatedAppBarText(title = title)
                     Icon(
                         imageVector = CrisisCleanupIcons.ArrowDropDown,
-                        contentDescription = LocalAppTranslator.current.translator("nav.change_incident"),
+                        contentDescription = t("nav.change_incident"),
                         tint = MaterialTheme.colorScheme.primary,
                     )
                     AnimatedVisibility(
@@ -465,7 +457,7 @@ private fun CrisisCleanupNavRail(
     val translator = LocalAppTranslator.current.translator
     CrisisCleanupNavigationRail(modifier = modifier) {
         destinations.forEach { destination ->
-            val title = translator(destination.titleTranslateKey, destination.titleResId)
+            val title = translator(destination.titleTranslateKey)
             val selected = currentDestination.isTopLevelDestinationInHierarchy(destination)
             CrisisCleanupNavigationRailItem(
                 selected = selected,
@@ -487,7 +479,7 @@ private fun CrisisCleanupBottomBar(
     val translator = LocalAppTranslator.current.translator
     CrisisCleanupNavigationBar(modifier = modifier) {
         destinations.forEach { destination ->
-            val title = translator(destination.titleTranslateKey, destination.titleResId)
+            val title = translator(destination.titleTranslateKey)
             val selected = currentDestination.isTopLevelDestinationInHierarchy(destination)
             CrisisCleanupNavigationBarItem(
                 selected = selected,

@@ -20,7 +20,6 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -153,9 +152,10 @@ private fun ListCases(
                     listCaseResults(options, onCaseSelect, isEditable = true)
                 } else {
                     item {
+                        val translator = LocalAppTranslator.current.translator
                         val message =
                             if (isShortQ) translator("info.search_query_is_short")
-                            else translator("info.no_search_results", q)
+                            else translator("info.no_search_results").replace("{query}", q)
                         Text(message, listItemModifier)
                     }
                 }
@@ -171,7 +171,7 @@ private fun LazyListScope.recentCases(
     if (cases.isNotEmpty()) {
         item("section-title") {
             Text(
-                text = translator("casesVue.recently_viewed"),
+                text = LocalAppTranslator.current.translator("casesVue.recently_viewed"),
                 modifier = Modifier.listItemPadding(),
             )
         }
