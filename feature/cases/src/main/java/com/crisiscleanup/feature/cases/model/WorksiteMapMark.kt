@@ -7,9 +7,6 @@ import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.MarkerState
 
-val WorksiteMapMark.coordinates: LatLng
-    get() = LatLng(latitude, longitude)
-
 data class WorksiteGoogleMapMark(
     val source: WorksiteMapMark,
     val latLng: LatLng,

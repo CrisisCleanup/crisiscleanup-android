@@ -211,6 +211,7 @@ class AppSyncer @Inject constructor(
     }
 
     private suspend fun incidentPull(id: Long) {
+        // TODO Handle errors properly
         incidentsRepository.pullIncident(id)
         incidentsRepository.pullIncidentOrganizations(id)
 

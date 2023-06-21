@@ -10,7 +10,6 @@ data class PopulatedLocation(
 
 private fun toDoubleList(s: String) = s.split(",")
     .mapNotNull { it.toDoubleOrNull() }
-    .map { it }
 
 fun PopulatedLocation.asExternalModel(): Location {
     val sequenceStrings = entity.coordinates.split("\n")
