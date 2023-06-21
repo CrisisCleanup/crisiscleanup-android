@@ -30,6 +30,8 @@ import com.crisiscleanup.feature.menu.navigation.menuScreen
 import com.crisiscleanup.feature.syncinsights.navigation.navigateToSyncInsights
 import com.crisiscleanup.feature.syncinsights.navigation.syncInsightsScreen
 import com.crisiscleanup.feature.team.navigation.teamScreen
+import com.crisiscleanup.feature.userfeedback.navigation.navigateToUserFeedback
+import com.crisiscleanup.feature.userfeedback.navigation.userFeedbackScreen
 
 /**
  * Top-level navigation graph. Navigation is organized as explained at
@@ -81,6 +83,12 @@ fun CrisisCleanupNavHost(
         { ids: ExistingWorksiteIdentifier -> navController.rerouteToCaseChange(ids) }
     }
 
+    val openUserFeedback = remember(navController) {
+        {
+            navController.navigateToUserFeedback()
+        }
+    }
+
     val openSyncLogs = remember(navController) {
         {
             navController.navigateToSyncInsights()
@@ -110,9 +118,11 @@ fun CrisisCleanupNavHost(
         dashboardScreen()
         teamScreen()
         menuScreen(
+            openUserFeedback,
             openSyncLogs,
         )
         viewImageScreen(onBack)
+        userFeedbackScreen(onBack)
         syncInsightsScreen(viewCase)
     }
 }

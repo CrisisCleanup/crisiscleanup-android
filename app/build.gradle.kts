@@ -95,6 +95,7 @@ dependencies {
     implementation(project(":feature:mediamanage"))
     implementation(project(":feature:syncinsights"))
     implementation(project(":feature:team"))
+    implementation(project(":feature:userfeedback"))
 
     implementation(project(":core:appheader"))
     implementation(project(":core:appnav"))
