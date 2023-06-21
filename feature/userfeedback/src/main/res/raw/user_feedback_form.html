@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <script
+                id="ze-snippet"
+                src="https://static.zdassets.com/ekr/snippet.js?key=8ded7c6f-5e21-423d-bd23-75d1a3dfc46c"></script>
+        <title>Crisis Cleanup Feedback</title>
+    </head>
+    <script>
+    const openLauncher = () => {
+        const launcher = document.getElementById("launcher")
+        if (launcher) {
+            const buttons = launcher.contentDocument.getElementsByTagName("button")
+            if (buttons) {
+                var launcherButton = buttons[0]
+                Array.from(buttons).forEach(button => {
+                    if (button.dataset.testid == "launcher") {
+                        launcherButton = button
+                    }
+                })
+                launcherButton.click()
+            }
+            return true
+        }
+        return false
+    }
+
+    let waitCounter = 0
+    const waitForLauncher = () => {
+        if (openLauncher()) {
+            return
+        }
+
+        if (waitCounter++ > 10) {
+            return
+        }
+
+        console.log("Waiting for feedback content to load", waitCounter)
+        setTimeout(waitForLauncher, 1000)
+    }
+
+    waitForLauncher()
+
+    </script>
+</html>

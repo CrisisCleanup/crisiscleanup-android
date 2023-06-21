@@ -25,6 +25,7 @@ interface IncidentsRepository {
 
     suspend fun pullIncident(id: Long)
 
+    // TODO Not all callers handle errors. Trace and handle properly.
     suspend fun pullIncidentOrganizations(incidentId: Long, force: Boolean = false)
 
     suspend fun getMatchingIncidents(q: String): List<IncidentIdNameType>

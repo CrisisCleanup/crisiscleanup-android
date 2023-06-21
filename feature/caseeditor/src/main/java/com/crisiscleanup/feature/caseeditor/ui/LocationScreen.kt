@@ -128,7 +128,7 @@ internal fun getLayoutParameters(isMoveLocationMode: Boolean): Pair<Boolean, Mod
         mapHeight = screenHeight
     } else {
         mapWidth = minScreenDimension
-        mapHeight = minScreenDimension.times(0.6f)
+        mapHeight = minScreenDimension.times(0.6f).coerceAtMost(300.dp)
     }
     val mapModifier = Modifier.sizeIn(maxWidth = mapWidth, maxHeight = mapHeight)
 

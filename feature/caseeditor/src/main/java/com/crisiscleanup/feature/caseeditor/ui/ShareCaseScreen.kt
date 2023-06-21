@@ -316,7 +316,7 @@ private fun LazyListScope.shareCaseInput(
             label = translator(hintTranslationKey),
             value = receiverContact,
             onValueChange = { viewModel.receiverContactManual.value = it },
-            keyboardType = if (viewModel.isEmailContactMethod) KeyboardType.Email else KeyboardType.Phone,
+            keyboardType = if (viewModel.isEmailContactMethod) KeyboardType.Email else KeyboardType.Password,
             imeAction = ImeAction.Done,
             isError = false,
             hasFocus = false,

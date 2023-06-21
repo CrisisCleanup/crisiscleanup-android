@@ -230,7 +230,8 @@ internal fun LazyListScope.existingWorkTypeItems(
                 Spacer(
                     Modifier
                         .fillMaxWidth()
-                        .height(1.dp)
+                        // TODO Common dimensions
+                        .height(4.dp)
                 )
             }
         }

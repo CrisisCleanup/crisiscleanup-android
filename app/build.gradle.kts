@@ -12,7 +12,7 @@ plugins {
 
 android {
     defaultConfig {
-        val buildVersion = 102
+        val buildVersion = 104
         applicationId = "com.crisiscleanup"
         versionCode = buildVersion
         versionName = "0.1.${buildVersion - 100}"
@@ -95,6 +95,7 @@ dependencies {
     implementation(project(":feature:mediamanage"))
     implementation(project(":feature:syncinsights"))
     implementation(project(":feature:team"))
+    implementation(project(":feature:userfeedback"))
 
     implementation(project(":core:appheader"))
     implementation(project(":core:appnav"))

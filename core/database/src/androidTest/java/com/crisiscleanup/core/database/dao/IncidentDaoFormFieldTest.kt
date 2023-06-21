@@ -29,7 +29,7 @@ class IncidentDaoFormFieldTest {
         incidentDao.upsertIncidents(testIncidents)
     }
 
-    private suspend fun getIncidentFormFields(incidentId: Long) =
+    private fun getIncidentFormFields(incidentId: Long) =
         incidentDao.getFormFieldsIncident(incidentId)
             ?.asExternalModel()?.formFields?.sortedWith { a, b -> a.fieldKey.compareTo(b.fieldKey) }
 

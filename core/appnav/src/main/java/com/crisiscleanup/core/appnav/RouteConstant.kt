@@ -10,6 +10,8 @@ object RouteConstant {
     const val teamRoute = "team_route"
     val topLevelRoutes = setOf(casesRoute, menuRoute)
 
+    const val userFeedbackRoute = "user_feedback_route"
+
     const val syncInsightsRoute = "sync_insights_route"
 
     const val casesSearchRoute = "cases_search"

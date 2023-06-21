@@ -8,14 +8,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
+import com.crisiscleanup.core.designsystem.theme.optionItemPadding
 
 @Composable
 internal fun MenuRoute(
+    openUserFeedback: () -> Unit = {},
     openSyncLogs: () -> Unit = {},
 ) {
     MenuScreen(
+        openUserFeedback = openUserFeedback,
         openSyncLogs = openSyncLogs,
     )
 }
@@ -23,6 +27,7 @@ internal fun MenuRoute(
 @Composable
 internal fun MenuScreen(
     viewModel: MenuViewModel = hiltViewModel(),
+    openUserFeedback: () -> Unit = {},
     openSyncLogs: () -> Unit = {},
 ) {
     Box(Modifier.fillMaxSize()) {
@@ -30,6 +35,12 @@ internal fun MenuScreen(
             Text(
                 modifier = listItemModifier,
                 text = viewModel.versionText,
+            )
+
+            CrisisCleanupTextButton(
+                modifier = Modifier.optionItemPadding(),
+                text = LocalAppTranslator.current.translator("~~Give feedback on app"),
+                onClick = openUserFeedback,
             )
 
             if (viewModel.isDebuggable) {

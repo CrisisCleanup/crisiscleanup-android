@@ -4,6 +4,7 @@ import android.util.Log
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.log.TagLogger
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import kotlinx.coroutines.CancellationException
 import javax.inject.Inject
 
 class CrisisCleanupAppLogger @Inject constructor(
@@ -22,7 +23,7 @@ class CrisisCleanupAppLogger @Inject constructor(
     }
 
     override fun logException(e: Exception) {
-        if (e is InterruptedException) {
+        if (e is CancellationException || e is InterruptedException) {
             return
         }
 
