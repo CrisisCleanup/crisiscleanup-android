@@ -81,7 +81,7 @@ fun SelectIncidentDialog(
                 Column {
                     Text(
                         modifier = Modifier.padding(textPadding),
-                        text = stringResource(R.string.change_incident),
+                        text = LocalAppTranslator.current.translator("nav.change_incident"),
                         style = MaterialTheme.typography.titleLarge
                     )
 
@@ -181,7 +181,7 @@ private fun NoIncidentsContent(
     Column(modifier) {
         Text(
             modifier = modifier.padding(textPadding),
-            text = stringResource(R.string.no_incidents_to_select),
+            text = LocalAppTranslator.current.translator("info.no_incidents_to_select"),
             style = MaterialTheme.typography.titleLarge,
         )
         CrisisCleanupTextButton(

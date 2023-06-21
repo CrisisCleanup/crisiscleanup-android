@@ -207,7 +207,7 @@ internal fun NoCasesScreen(
                     .align(Alignment.Center)
                     .widthIn(max = 300.dp)
             ) {
-                Text(stringResource(R.string.issues_loading_incidents))
+                Text(text = LocalAppTranslator.current.translator("info.incident_load_error"))
                 // TODO Use constant for spacing
                 Spacer(modifier = Modifier.height(16.dp))
                 CrisisCleanupButton(
@@ -443,7 +443,7 @@ internal fun CasesOverlayActions(
         ) {
             Icon(
                 painter = painterResource(disasterResId),
-                contentDescription = stringResource(R.string.change_incident),
+                contentDescription = translator("nav.change_incident"),
             )
         }
 

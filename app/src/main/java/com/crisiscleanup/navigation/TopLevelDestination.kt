@@ -15,7 +15,7 @@ enum class TopLevelDestination(
     CASES(
         selectedIcon = DrawableResourceIcon(CrisisCleanupIcons.Cases),
         unselectedIcon = DrawableResourceIcon(CrisisCleanupIcons.Cases),
-        titleTranslateKey = "casesVue.cases",
+        titleTranslateKey = "nav.work",
     ),
     DASHBOARD(
         selectedIcon = DrawableResourceIcon(CrisisCleanupIcons.Dashboard),
@@ -25,12 +25,11 @@ enum class TopLevelDestination(
     TEAM(
         selectedIcon = DrawableResourceIcon(CrisisCleanupIcons.Team),
         unselectedIcon = DrawableResourceIcon(CrisisCleanupIcons.Team),
-        titleTranslateKey = "userView.team",
+        titleTranslateKey = "nav.organization_teams",
     ),
     MENU(
         selectedIcon = ImageVectorIcon(CrisisCleanupIcons.Menu),
         unselectedIcon = ImageVectorIcon(CrisisCleanupIcons.Menu),
         titleTranslateKey = "nav.menu",
-        titleResId = com.crisiscleanup.feature.menu.R.string.menu,
     )
 }

@@ -134,7 +134,7 @@ class AuthenticationViewModel @Inject constructor(
 
         if (!inputValidator.validateEmailAddress(emailAddress)) {
             errorMessage.value =
-                translator("invitationSignup.invalid_email_error", R.string.enter_valid_email)
+                translator("invitationSignup.email_error")
             isInvalidEmail.value = true
             return false
         }

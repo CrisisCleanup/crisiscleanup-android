@@ -114,7 +114,7 @@ fun CrisisCleanupApp(
             }
             val notConnectedMessage = remember(translationCount) {
                 appTranslator.translator(
-                    "info.not_connected_to_internet",
+                    "info.no_internet",
                     R.string.not_connected_to_internet,
                 )
             }
@@ -365,7 +365,7 @@ private fun ExpiredTokenAlert(
     openAuthentication: () -> Unit,
 ) {
     val translator = LocalAppTranslator.current.translator
-    val message = translator("account.login_reminder", R.string.login_reminder)
+    val message = translator("info.log_in_for_updates", R.string.login_reminder)
     val loginText = translator("actions.login", authenticationR.string.login)
     LaunchedEffect(Unit) {
         val result = snackbarHostState.showSnackbar(
@@ -418,7 +418,7 @@ private fun AppHeader(
                     TruncatedAppBarText(title = title)
                     Icon(
                         imageVector = CrisisCleanupIcons.ArrowDropDown,
-                        contentDescription = stringResource(casesR.string.change_incident),
+                        contentDescription = LocalAppTranslator.current.translator("nav.change_incident"),
                         tint = MaterialTheme.colorScheme.primary,
                     )
                     AnimatedVisibility(

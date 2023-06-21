@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="dismiss">~~Dismiss</string>
-    <string name="account_is">%s (%s)</string>
-    <string name="enter_valid_email">~~Enter a valid email</string>
-    <string name="prompt_save_password">~~Would you like to save your account password for auto login in the future?</string>
-    <string name="do_not_ask_save_credentials">~~Do not ask to save credentials again.</string>
+    <string name="dismiss">++actions.dismiss</string>
+    <string name="account_is">++%s (%s)</string>
+    <string name="enter_valid_email">++info.enter_valid_email</string>
+    <string name="prompt_save_password">++Would you like to save your account password for auto login in the future?</string>
+    <string name="do_not_ask_save_credentials">++Do not ask to save credentials again.</string>
 
     <!--
         Fallback for when app loads initially.

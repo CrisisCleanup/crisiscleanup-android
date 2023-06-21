@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Crisis Cleanup</string>
-    <string name="app_name_short">Cleanup</string>
+    <string name="app_name_short">CCU</string>
 
-    <string name="not_connected_to_internet">~~⚠️ No internet connection.</string>
-    <string name="login_reminder">~~Login to access latest data.</string>
+    <string name="not_connected_to_internet">++info.no_internet</string>
+    <string name="login_reminder">++info.log_in_for_updates</string>
 </resources>

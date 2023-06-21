@@ -277,7 +277,7 @@ private fun AuthenticatedScreen(
         Text(
             modifier = fillWidthPadded,
             text = stringResource(
-                R.string.account_is,
+                translator("info.account_is"),
                 authState.accountData.fullName,
                 authState.accountData.emailAddress
             ),
@@ -306,7 +306,7 @@ private fun AuthenticatedScreen(
             modifier = fillWidthPadded,
             onClick = closeAuthentication,
             enabled = isNotBusy,
-            textResId = R.string.dismiss,
+            text = translator("actions.dismiss"),
         )
     }
 }
@@ -321,7 +321,7 @@ private fun SaveCredentialsPrompt(
     if (showSaveCredentials) {
         Text(
             modifier = fillWidthPadded,
-            text = stringResource(R.string.prompt_save_password),
+            text = LocalAppTranslator.current.translator("~~Would you like to save your account password for auto login in the future?"),
         )
 
         BusyButton(
@@ -356,7 +356,9 @@ private fun SaveCredentialsPrompt(
                     onCheckedChange = setDisableSave
                 )
 
-                Text(stringResource(R.string.do_not_ask_save_credentials))
+                Text(
+                    text = LocalAppTranslator.current.translator("~~Do not ask to save credentials again."),
+                )
             }
         }
 

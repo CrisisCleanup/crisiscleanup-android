@@ -110,7 +110,7 @@ internal fun CasesSearchRoute(
                     CrisisCleanupIconButton(
                         iconResId = R.drawable.ic_dials,
                         onClick = openFilter,
-                        contentDescription = translator("events.object_filter"),
+                        contentDescription = translator("casesVue.filters"),
                     )
                 }
 
@@ -154,8 +154,8 @@ private fun ListCases(
                 } else {
                     item {
                         val message =
-                            if (isShortQ) stringResource(R.string.search_query_is_short)
-                            else stringResource(R.string.no_search_results_for, q)
+                            if (isShortQ) translator("info.search_query_is_short")
+                            else translator("info.no_search_results", q)
                         Text(message, listItemModifier)
                     }
                 }
@@ -171,7 +171,7 @@ private fun LazyListScope.recentCases(
     if (cases.isNotEmpty()) {
         item("section-title") {
             Text(
-                text = stringResource(R.string.recently_viewed),
+                text = translator("casesVue.recently_viewed"),
                 modifier = Modifier.listItemPadding(),
             )
         }

@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="view_case_number">~~View %1$s</string>
+    <string name="view_case_number">actions.view %1$s</string>
 
-    <string name="organization_issue_try_re_authenticating">There seems to be an issue with your organization. Try logging out and logging in again.</string>
-    <string name="incident_is_in_progress">%s is in the process of starting up. It\'ll be active shortly.</string>
-    <string name="incident_issue_try_again">There seems to be an issue with the current incident. Please try again. Connect to the internet if possible.</string>
+    <string name="organization_issue_try_re_authenticating">info.organization_issue_log_out</string>
+    <string name="incident_is_in_progress">%s info.incident_loading</string>
+    <string name="incident_issue_try_again">info.current_incident_problem</string>
 
     <string name="stop_suggesting_existing_cases">~~Stop searching existing cases</string>
-    <string name="invalid_email">~~Enter a valid email address.</string>
-    <string name="invalid_phone">~~Enter a valid phone number.</string>
+    <string name="invalid_email">++info.enter_valid_email</string>
+    <string name="invalid_phone">info.enter_valid_phone</string>
 
-    <string name="location_address_search">~~Location/address search</string>
-    <string name="location_out_of_incident_bounds">This location is outside of %s.</string>
+    <string name="location_address_search">formLabels.location</string>
+    <string name="location_out_of_incident_bounds">~~This location is outside of %s.</string>
 
     <string name="allow_location_permission">~~Allow location</string>
     <string name="location_permission_explanation">~~My Location needs access to the device\'s location. Grant access in the App info/settings > Permissions.</string>
