@@ -54,9 +54,9 @@ internal fun ColumnScope.SearchContents(
         if (locationSearchResults.isEmpty) {
             if (!isBusySearching && locationSearchResults.query == query) {
                 val translator = LocalAppTranslator.current.translator
-                var text = translator("info.cases_search_no_results")
-                if (text == "info.cases_search_no_results") {
-                    text = stringResource(R.string.no_location_results, locationSearchResults.query)
+                var text = translator("worksiteSearchInput.no_location_results")
+                if (text == "worksiteSearchInput.no_location_results") {
+                    text = translator("worksiteSearchInput.no_location_results_query", locationSearchResults.query)
                 }
                 Text(
                     text,

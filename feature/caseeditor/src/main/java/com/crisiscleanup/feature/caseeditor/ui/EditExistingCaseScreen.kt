@@ -183,7 +183,7 @@ internal fun EditExistingCaseRoute(
             if (isEmptyWorksite) {
                 if (viewModel.worksiteIdArg == EmptyWorksite.id) {
                     Text(
-                        stringResource(R.string.no_worksite_selected),
+                        translator("info.no_worksite_selected"),
                         Modifier.listItemPadding(),
                     )
                 } else {
@@ -298,8 +298,8 @@ private fun TopBar(
             val iconResId = if (isFavorite) R.drawable.ic_heart_filled
             else R.drawable.ic_heart_outline
             val favoriteDescription =
-                if (isFavorite) translator("actions.remove_favorite", R.string.remove_favorite)
-                else translator("actions.save_as_favorite", R.string.save_as_favorite)
+                if (isFavorite) translator("actions.not_member_of_my_org")
+                else translator("actions.member_of_my_org")
             val favoriteTint = getTopIconActionColor(isFavorite, isEditable)
             CrisisCleanupIconButton(
                 iconResId = iconResId,

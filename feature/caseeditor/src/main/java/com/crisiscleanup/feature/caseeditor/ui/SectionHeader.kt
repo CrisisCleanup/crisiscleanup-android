@@ -93,7 +93,7 @@ internal fun SectionHeaderCollapsible(
         var description = translator(translateKey)
         description = if (description == translateKey) {
             val descriptionResId =
-                if (isCollapsed) R.string.collapse_section else R.string.expand_section
+                if (isCollapsed) translator("actions.collapse_section") else translator("actions.expand_section")
             stringResource(descriptionResId, sectionTitle)
         } else {
             description.replace("{section}", sectionTitle)

@@ -385,9 +385,9 @@ private fun SelectItem(
                 if (!enabled) {
                     tint = tint.disabledAlpha()
                 }
-                var description = LocalAppTranslator.current.translator("info.select_option_for")
-                description = if (description == "info.select_option_for") {
-                    stringResource(R.string.select_option_for_field, label)
+                var description = LocalAppTranslator.current.translator("formLabels.select_option_for")
+                description = if (description == "formLabels.select_option_for") {
+                    translator("formLabels.select_option_for", label)
                 } else {
                     description.replace("{field}", label)
                 }

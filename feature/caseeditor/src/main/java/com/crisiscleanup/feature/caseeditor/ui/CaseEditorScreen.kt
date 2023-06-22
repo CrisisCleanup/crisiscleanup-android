@@ -677,8 +677,8 @@ private fun PromptChangesDialog(
 ) {
     val translator = LocalAppTranslator.current.translator
     CrisisCleanupAlertDialog(
-        title = translator("info.changes", R.string.changes),
-        text = translator("info.continue_or_lose_changes", R.string.changes_choice),
+        title = translator("caseForm.unsaved_changes"),
+        text = translator("caseForm.continue_edit_or_lose_changes"),
         onDismissRequest = onStay,
         dismissButton = {
             CrisisCleanupTextButton(
@@ -709,12 +709,12 @@ private fun InvalidSaveDialog(
         if (invalidWorksiteInfo.invalidSection != WorksiteSection.None) {
             val translator = LocalAppTranslator.current.translator
             val message = invalidWorksiteInfo.message.ifBlank {
-                translator("info.missing_required_fields", R.string.incomplete_required_data)
+                translator("caseForm.missing_required_fields")
             }
             val onDismiss =
                 remember(viewModel) { { viewModel.showInvalidWorksiteSave.value = false } }
             CrisisCleanupAlertDialog(
-                title = translator("info.incomplete_case_info", R.string.incomplete_information),
+                title = translator("caseForm.missing_required_fields_title"),
                 text = message,
                 onDismissRequest = onDismiss,
                 dismissButton = {
@@ -725,7 +725,7 @@ private fun InvalidSaveDialog(
                 },
                 confirmButton = {
                     CrisisCleanupTextButton(
-                        text = translator("actions.fix", R.string.fix),
+                        text = translator("actions.fix"),
                         onClick = {
                             when (val section = invalidWorksiteInfo.invalidSection) {
                                 WorksiteSection.Property -> onEditPropertyData()

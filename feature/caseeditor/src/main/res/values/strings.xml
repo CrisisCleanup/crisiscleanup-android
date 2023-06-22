@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="no_location_results">~~No cases or addresses match \'%s\'.</string>
+    <string name="no_location_results">++No cases or addresses match \'%s\'.</string>
 
-    <string name="select_option_for_field">~~Select option for %s</string>
+    <string name="select_option_for_field">++Select option for %s</string>
 
-    <string name="changes">~~Changes</string>
-    <string name="changes_choice">~~Changes have been made.\nWould you like to continue making changes?\nPressing No loses all changes.</string>
+    <string name="changes">++Changes</string>
+    <string name="changes_choice">++Changes have been made.\nWould you like to continue making changes?\nPressing No loses all changes.</string>
 
-    <string name="incomplete_information">~~Incomplete information</string>
-    <string name="incomplete_required_data">~~All required fields are not defined.</string>
-    <string name="fix">~~Fix</string>
+    <string name="incomplete_information">++Incomplete information</string>
+    <string name="incomplete_required_data">++All required fields are not defined.</string>
+    <string name="fix">++Fix</string>
 
-    <string name="expand_section">~~Expand %s</string>
-    <string name="collapse_section">~~Collapse %s</string>
+    <string name="expand_section">++Expand %s</string>
+    <string name="collapse_section">++Collapse %s</string>
 
-    <string name="is_pending_sync">~~Pending sync</string>
-    <string name="is_syncing">~~Syncing</string>
+    <string name="is_pending_sync">++Pending sync</string>
+    <string name="is_syncing">++Syncing</string>
 
     <string name="save_as_favorite">~~Save as favorite</string>
     <string name="remove_favorite">~~Remove favorite</string>

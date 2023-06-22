@@ -382,7 +382,7 @@ class CaseEditorViewModel @Inject constructor(
             6 -> WorksiteSection.VolunteerReport
             else -> WorksiteSection.None
         },
-        message = translator("info.missing_required_fields", R.string.incomplete_required_data),
+        message = translator("caseForm.missing_required_fields"),
     )
 
     private fun translateInvalidInfo(

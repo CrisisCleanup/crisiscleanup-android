@@ -72,14 +72,14 @@ internal fun CaseIncidentView(
             ) {
                 Icon(
                     imageVector = CrisisCleanupIcons.CloudSync,
-                    contentDescription = stringResource(R.string.is_syncing),
+                    contentDescription = translator("info.is_syncing"),
                 )
             }
         } else if (isPendingSync) {
             CrisisCleanupIconButton(
                 onClick = scheduleSync,
                 imageVector = CrisisCleanupIcons.CloudOff,
-                contentDescription = stringResource(R.string.is_pending_sync),
+                contentDescription = translator("info.is_pending_sync"),
                 tint = primaryRedColor,
             )
         }
