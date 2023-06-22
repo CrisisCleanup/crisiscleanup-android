@@ -260,7 +260,7 @@ private fun LazyListScope.shareCaseInput(
     listTextItem(translator("shareWorksite.share_via_email_phone_intro"))
 
     labelTextItem(
-        translator("info.share_case_method", R.string.share_case_method),
+        translator("shareWorksite.share_case_method"),
         isBold = true,
     )
 
@@ -268,7 +268,7 @@ private fun LazyListScope.shareCaseInput(
         CrisisCleanupRadioButton(
             listItemModifier.listCheckboxAlignStartOffset(),
             viewModel.isEmailContactMethod,
-            text = translator("formLabels.email"),
+            text = translator("shareWorksite.email"),
             onSelect = { viewModel.isEmailContactMethod = true },
             enabled = isEditable,
         )
@@ -277,7 +277,7 @@ private fun LazyListScope.shareCaseInput(
         CrisisCleanupRadioButton(
             listItemModifier.listCheckboxAlignStartOffset(),
             !viewModel.isEmailContactMethod,
-            text = translator("formLabels.sms_text_message", R.string.sms_text_message),
+            text = translator("shareWorksite.sms_text_message", R.string.sms_text_message),
             onSelect = { viewModel.isEmailContactMethod = false },
             enabled = isEditable,
         )
@@ -364,7 +364,7 @@ private fun ReceiverContactItem(
         contentColor = contentColor.disabledAlpha()
     }
 
-    val removeShareTranslateKey = "actions.remove_share_user"
+    val removeShareTranslateKey = "shareWorksite.remove_share_user"
     val removeShareStringTemplate = translator(removeShareTranslateKey)
 
     FlowRow(
@@ -373,7 +373,7 @@ private fun ReceiverContactItem(
     ) {
         receiverContacts.forEachIndexed { index, contact ->
             val description = if (removeShareStringTemplate == removeShareTranslateKey) {
-                stringResource(R.string.remove_share_user, contact.contactValue)
+                translator("shareWorksite.remove_share_user", contact.contactValue)
             } else {
                 removeShareStringTemplate.replace("{user}", contact.contactValue)
             }

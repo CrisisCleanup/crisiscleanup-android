@@ -963,9 +963,7 @@ private val existingCaseActions = listOf(
     ),
     IconTextAction(
         iconResId = R.drawable.ic_flag_small,
-        // TODO "actions.flag" is already taken and not "Flag"
-        translationKey = "events.object_flag",
-        textResId = R.string.flag,
+        translationKey = "nav.flag",
     ),
     IconTextAction(
         iconResId = R.drawable.ic_history_small,

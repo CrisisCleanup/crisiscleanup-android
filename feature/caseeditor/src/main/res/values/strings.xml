@@ -17,15 +17,15 @@
     <string name="is_pending_sync">++Pending sync</string>
     <string name="is_syncing">++Syncing</string>
 
-    <string name="save_as_favorite">~~Save as favorite</string>
-    <string name="remove_favorite">~~Remove favorite</string>
+    <string name="save_as_favorite">++Save as favorite</string>
+    <string name="remove_favorite">++Remove favorite</string>
 
-    <string name="no_worksite_selected">A worksite was not selected. Therefore this should not have appeared.</string>
+    <string name="no_worksite_selected">++A worksite was not selected. Therefore this should not have appeared.</string>
 
-    <string name="flag">~~Flag</string>
+    <string name="flag">++Flag</string>
     <string name="info">~~Info</string>
-    <string name="add_flag">~~Add Flag</string>
-    <string name="remove_type_flag">Remove %s flag</string>
+    <string name="add_flag">++Add Flag</string>
+    <string name="remove_type_flag">++Remove %s flag</string>
 
     <string name="share_case_method">~~How would you like to share this case?</string>
     <string name="sms_text_message">~~SMS text message</string>

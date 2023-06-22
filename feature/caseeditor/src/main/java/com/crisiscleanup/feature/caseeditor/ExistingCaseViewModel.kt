@@ -289,7 +289,7 @@ class ExistingCaseViewModel @Inject constructor(
         val photosTitle = translate("caseForm.photos").let {
             if (fileCount > 0) "$it (${fileCount})" else it
         }
-        val notesTitle = translate("phoneDashboard.notes").let {
+        val notesTitle = translate("formLabels.notes").let {
             if (notes.isNotEmpty()) "$it (${notes.size})" else it
         }
         listOf(

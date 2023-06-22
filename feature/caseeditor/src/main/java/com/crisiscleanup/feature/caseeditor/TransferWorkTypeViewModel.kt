@@ -54,7 +54,7 @@ class TransferWorkTypeViewModel @Inject constructor(
     private val organizationId = transferWorkTypeProvider.organizationId
 
     val screenTitle = when (transferType) {
-        Release -> translate("actions.release_cases")
+        Release -> translate("actions.release")
         Request -> translate("workTypeRequestModal.work_type_request")
         else -> ""
     }
