@@ -4,12 +4,15 @@ import com.google.android.gms.maps.model.LatLng
 
 object CoordinateUtil {
     fun getMiddleLongitude(left: Double, right: Double): Double {
-        return if (right >= left) {
-            (left + right) * 0.5
-        } else {
-            val sign = if (kotlin.math.abs(left) > kotlin.math.abs(right)) -1 else 1
-            return (right + left + 360 * sign) * 0.5
+        var l = left
+        while (l > right) {
+            l -= 360
         }
+
+        val longitude = ((right + l) * 0.5) % 360
+        return if (longitude < -180) longitude + 360
+        else if (longitude > 180) longitude - 360
+        else longitude
     }
 
     fun getMiddleCoordinate(sw: LatLng, ne: LatLng) = LatLng(

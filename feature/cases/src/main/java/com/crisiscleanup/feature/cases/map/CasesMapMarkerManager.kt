@@ -82,15 +82,15 @@ internal class CasesMapMarkerManager(
 
             ensureActive()
 
-            val mLatRad = Math.toRadians(middle.latitude)
-            val mLngRad = Math.toRadians(middle.longitude)
+            val mLatRad = middle.latitude.radians
+            val mLngRad = middle.longitude.radians
             val midR = sin(mLatRad)
             val midX = midR * cos(mLngRad)
             val midY = midR * sin(mLngRad)
             val midZ = cos(mLatRad)
             fun approxDistanceFromMiddle(latitude: Double, longitude: Double): Double {
-                val latRad = Math.toRadians(latitude)
-                val lngRad = Math.toRadians(longitude)
+                val latRad = latitude.radians
+                val lngRad = longitude.radians
                 val r = sin(latRad)
                 val x = r * cos(lngRad)
                 val y = r * sin(lngRad)
@@ -133,6 +133,9 @@ internal class CasesMapMarkerManager(
             Pair(marks, q.fullCount)
         }
 }
+
+private val Double.radians: Double
+    get() = Math.toRadians(this)
 
 private data class BoundsQueryParams(
     val fullCount: Int,

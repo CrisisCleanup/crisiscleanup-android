@@ -136,7 +136,7 @@ class CasesViewModel @Inject constructor(
         logger,
     )
 
-    var incidentLocationBounds = mapBoundsManager.mapCameraBounds
+    val incidentLocationBounds = mapBoundsManager.mapCameraBounds
 
     val isIncidentLoading = incidentsRepository.isLoading
     private val isGeneratingWorksiteMarkers = MutableStateFlow(false)
