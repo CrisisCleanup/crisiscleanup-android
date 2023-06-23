@@ -416,9 +416,9 @@ class CasesViewModel @Inject constructor(
                 ensureActive()
             }
 
-            val markOffsets = marks.map { Pair(0f, 0f) }.toMutableList()
+            val markOffsets = marks.map { zeroOffset }.toMutableList()
             if (buckets.isNotEmpty()) {
-                buckets.map {
+                buckets.forEach {
                     val count = it.size
                     val offsetScale = denseScreenOffsetScale + (count - 5).coerceAtLeast(0) * 0.2f
                     if (count > 1) {

@@ -38,8 +38,8 @@ import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
+import com.crisiscleanup.feature.cases.CasesSearchViewModel
 import com.crisiscleanup.feature.cases.R
-import com.crisiscleanup.feature.cases.model.CasesSearchViewModel
 
 @Composable
 internal fun CasesSearchRoute(

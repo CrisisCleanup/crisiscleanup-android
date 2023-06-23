@@ -1,4 +1,4 @@
-package com.crisiscleanup.feature.cases.model
+package com.crisiscleanup.feature.cases
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
