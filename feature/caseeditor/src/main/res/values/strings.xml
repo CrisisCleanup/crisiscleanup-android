@@ -23,13 +23,13 @@
     <string name="no_worksite_selected">++A worksite was not selected. Therefore this should not have appeared.</string>
 
     <string name="flag">++Flag</string>
-    <string name="info">~~Info</string>
+    <string name="info">??Info</string>
     <string name="add_flag">++Add Flag</string>
     <string name="remove_type_flag">++Remove %s flag</string>
 
-    <string name="share_case_method">~~How would you like to share this case?</string>
-    <string name="sms_text_message">~~SMS text message</string>
-    <string name="remove_share_user">~~Remove %s from shared</string>
+    <string name="share_case_method">++How would you like to share this case?</string>
+    <string name="sms_text_message">++SMS text message</string>
+    <string name="remove_share_user">++Remove %s from shared</string>
 
     <string name="release_reason_is_required">~~What is the reason for release?</string>
     <string name="request_reason_is_required">~~What is the reason for request?</string>
