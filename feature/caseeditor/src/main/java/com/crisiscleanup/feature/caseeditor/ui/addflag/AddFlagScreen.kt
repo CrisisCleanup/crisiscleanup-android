@@ -129,6 +129,7 @@ private fun CaseEditAddFlagScreen(
                 WorksiteFlagType.MarkForDeletion -> GeneralFlagView(
                     WorksiteFlagType.MarkForDeletion,
                     onBack = onBack,
+                    isEditable = isEditable,
                 )
 
                 WorksiteFlagType.ReportAbuse -> ReportAbuseFlagView(

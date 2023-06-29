@@ -5,6 +5,7 @@ import androidx.room.Embedded
 import androidx.room.Relation
 import com.crisiscleanup.core.model.data.WorkTypeStatusClaim
 import com.crisiscleanup.core.model.data.Worksite
+import com.crisiscleanup.core.model.data.WorksiteFlagType
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 import kotlinx.datetime.Instant
 
@@ -93,6 +94,7 @@ data class PopulatedWorksiteMapVisual(
     val flags: List<WorksiteFlagEntity>,
 )
 
+private val highPriorityFlagLiteral = WorksiteFlagType.HighPriority.literal
 fun PopulatedWorksiteMapVisual.asExternalModel() = WorksiteMapMark(
     id = id,
     latitude = latitude,
@@ -102,5 +104,8 @@ fun PopulatedWorksiteMapVisual.asExternalModel() = WorksiteMapMark(
     workTypeCount = workTypeCount,
     // TODO Account for unsynced local favorites as well
     isFavorite = favoriteId != null,
-    isHighPriority = flags.find { it.isHighPriority == true } != null,
+    isHighPriority = flags.find {
+        it.isHighPriority == true ||
+                it.reasonT == highPriorityFlagLiteral
+    } != null,
 )
