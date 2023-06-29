@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AppMemoryStats
+import com.crisiscleanup.core.common.VisualAlertManager
 import com.crisiscleanup.core.common.WorksiteLocationEditor
 import com.crisiscleanup.core.common.event.TrimMemoryEventManager
 import com.crisiscleanup.core.common.event.TrimMemoryListener
@@ -17,6 +18,7 @@ import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.commonassets.getDisasterIcon
 import com.crisiscleanup.core.data.IncidentSelector
+import com.crisiscleanup.core.data.repository.CasesFilterRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.data.util.IncidentDataPullReporter
@@ -80,6 +82,8 @@ class CasesViewModel @Inject constructor(
     private val tileProvider: TileProvider,
     private val worksiteLocationEditor: WorksiteLocationEditor,
     private val syncPuller: SyncPuller,
+    private val casesFilterRepository: CasesFilterRepository,
+    val visualAlertManager: VisualAlertManager,
     appMemoryStats: AppMemoryStats,
     trimMemoryEventManager: TrimMemoryEventManager,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
@@ -157,12 +161,20 @@ class CasesViewModel @Inject constructor(
     val worksitesMapMarkers = combine(
         qsm.worksiteQueryState,
         mapBoundsManager.isMapLoaded,
-        ::Pair
+        casesFilterRepository.casesFilter,
+        ::Triple
     )
         // TODO Make delay a parameter
         .debounce(250)
-        .flatMapLatest { (wqs, isMapLoaded) ->
+        .flatMapLatest { (wqs, isMapLoaded, filters) ->
             val id = wqs.incidentId
+
+            if (filters.changeCount > 0) {
+                // TODO Query from backend (if internet is available)
+                //      Use results for next steps
+                // ensureActive()
+            }
+
             val skipMarkers = !isMapLoaded ||
                     isTableView.value ||
                     id == EmptyIncident.id ||
@@ -261,7 +273,9 @@ class CasesViewModel @Inject constructor(
         val marksQuery = mapMarkerManager.queryWorksitesInBounds(id, sw, ne)
         val marks = marksQuery.first
         val markOffsets = denseMarkerOffsets(marks)
+
         ensureActive()
+
         marks.mapIndexed { index, mark ->
             val offset = if (index < markOffsets.size) markOffsets[index] else zeroOffset
             mark.asWorksiteGoogleMapMark(mapCaseIconProvider, offset)

@@ -4,7 +4,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.addresssearch.AddressSearchRepository
-import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.InputValidator
 import com.crisiscleanup.core.common.KeyResourceTranslator
@@ -63,11 +62,6 @@ import kotlinx.datetime.Instant
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
-internal const val DetailsFormGroupKey = "property_info"
-internal const val WorkFormGroupKey = "work_info"
-internal const val HazardsFormGroupKey = "hazards_info"
-internal const val VolunteerReportFormGroupKey = "claim_status_report_info"
-
 @HiltViewModel
 class CaseEditorViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -85,7 +79,6 @@ class CaseEditorViewModel @Inject constructor(
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val syncPusher: SyncPusher,
     networkMonitor: NetworkMonitor,
-    private val resourceProvider: AndroidResourceProvider,
     appEnv: AppEnv,
     @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
@@ -196,7 +189,6 @@ class CaseEditorViewModel @Inject constructor(
             { key -> translate(key) },
             editableWorksiteProvider,
             networkMonitor,
-            resourceProvider,
             viewModelScope,
             ioDispatcher,
             appEnv,
@@ -257,7 +249,6 @@ class CaseEditorViewModel @Inject constructor(
                     searchWorksitesRepository,
                     addressSearchRepository,
                     caseIconProvider,
-                    resourceProvider,
                     drawableResourceBitmapProvider,
                     existingWorksiteSelector,
                     translator,

@@ -20,6 +20,7 @@ import com.crisiscleanup.core.appnav.RouteConstant.dashboardRoute
 import com.crisiscleanup.core.appnav.RouteConstant.menuRoute
 import com.crisiscleanup.core.appnav.RouteConstant.teamRoute
 import com.crisiscleanup.core.appnav.RouteConstant.topLevelRoutes
+import com.crisiscleanup.core.appnav.RouteConstant.userFeedbackRoute
 import com.crisiscleanup.core.appnav.RouteConstant.viewImageRoute
 import com.crisiscleanup.core.common.NavigationObserver
 import com.crisiscleanup.core.common.NetworkMonitor
@@ -98,6 +99,9 @@ class CrisisCleanupAppState(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = false
         )
+
+    val hideLoginAlert: Boolean
+        @Composable get() = currentDestination?.route == userFeedbackRoute
 
     /**
      * Map of top level destinations to be used in the TopBar, BottomBar and NavRail. The key is the

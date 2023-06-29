@@ -1,10 +1,12 @@
 package com.crisiscleanup.feature.caseeditor
 
-import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.TagLogger
+import com.crisiscleanup.core.commoncase.model.FormFieldNode
+import com.crisiscleanup.core.commoncase.model.WorkFormGroupKey
+import com.crisiscleanup.core.commoncase.model.flatten
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
@@ -17,8 +19,6 @@ import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.IncidentFormField
 import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteFormValue
-import com.crisiscleanup.feature.caseeditor.model.FormFieldNode
-import com.crisiscleanup.feature.caseeditor.model.flatten
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -53,7 +53,6 @@ internal class CaseEditorDataLoader(
     translate: (String) -> String,
     private val editableWorksiteProvider: EditableWorksiteProvider,
     private val networkMonitor: NetworkMonitor,
-    resourceProvider: AndroidResourceProvider,
     coroutineScope: CoroutineScope,
     coroutineDispatcher: CoroutineDispatcher,
     appEnv: AppEnv,

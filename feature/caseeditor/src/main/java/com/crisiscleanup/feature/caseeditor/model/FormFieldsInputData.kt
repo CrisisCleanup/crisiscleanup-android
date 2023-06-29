@@ -2,6 +2,7 @@ package com.crisiscleanup.feature.caseeditor.model
 
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import com.crisiscleanup.core.commoncase.model.FormFieldNode
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.WorkTypeStatus
 import com.crisiscleanup.core.model.data.Worksite

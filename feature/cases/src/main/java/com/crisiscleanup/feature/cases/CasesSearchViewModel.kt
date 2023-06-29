@@ -9,6 +9,7 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.data.IncidentSelector
+import com.crisiscleanup.core.data.repository.CasesFilterRepository
 import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
@@ -37,6 +38,7 @@ class CasesSearchViewModel @Inject constructor(
     private val worksitesRepository: WorksitesRepository,
     private val searchWorksitesRepository: SearchWorksitesRepository,
     private val mapCaseIconProvider: MapCaseIconProvider,
+    private val filterRepository: CasesFilterRepository,
     @Logger(CrisisCleanupLoggers.Cases) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
@@ -91,9 +93,10 @@ class CasesSearchViewModel @Inject constructor(
             .debounce(200)
             .map(String::trim)
             .distinctUntilChanged(),
-        ::Pair
+        filterRepository.casesFilter,
+        ::Triple
     )
-        .map { (incidentId, q) ->
+        .map { (incidentId, q, filters) ->
             if (incidentId != EmptyIncident.id) {
                 if (q.length < 3) {
                     return@map CasesSearchResults(q)
@@ -101,6 +104,7 @@ class CasesSearchViewModel @Inject constructor(
 
                 isSearching.value = true
                 try {
+                    // TODO Send filters along search
                     val results = searchWorksitesRepository.searchWorksites(incidentId, q)
                     val options = results.map { summary ->
                         CaseSummaryResult(

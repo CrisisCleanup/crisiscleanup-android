@@ -1,4 +1,4 @@
-package com.crisiscleanup.feature.caseeditor.ui
+package com.crisiscleanup.core.designsystem.component
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Text
@@ -9,15 +9,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
-import com.crisiscleanup.core.ui.LinkifyHtmlText
 
 @Composable
-internal fun HelpRow(
+fun HelpRow(
     text: String,
     iconContentDescription: String,
     modifier: Modifier = Modifier,
@@ -33,7 +30,7 @@ internal fun HelpRow(
 }
 
 @Composable
-internal fun HelpAction(
+fun HelpAction(
     helpHint: String,
     showHelp: () -> Unit,
 ) {
@@ -45,12 +42,11 @@ internal fun HelpAction(
 }
 
 @Composable
-internal fun HelpDialog(
+fun HelpDialog(
     title: String,
     text: String,
     onClose: () -> Unit = {},
     hasHtml: Boolean = false,
-    okText: String = "",
 ) {
     CrisisCleanupAlertDialog(
         title = title,
@@ -64,7 +60,7 @@ internal fun HelpDialog(
         onDismissRequest = onClose,
         confirmButton = {
             CrisisCleanupTextButton(
-                text = okText,
+                text = LocalAppTranslator.current.translator("actions.ok"),
                 onClick = onClose,
             )
         },
@@ -72,12 +68,11 @@ internal fun HelpDialog(
 }
 
 @Composable
-internal fun WithHelpDialog(
+fun WithHelpDialog(
     rememberKey: Any,
     helpTitle: String,
     helpText: String,
     hasHtml: Boolean = false,
-    okText: String = "",
     content: @Composable (() -> Unit) -> Unit,
 ) {
     var rememberHelpTitle by remember { mutableStateOf("") }
@@ -97,7 +92,6 @@ internal fun WithHelpDialog(
             text = rememberHelpText,
             onClose = { rememberHelpText = "" },
             hasHtml = hasHtml,
-            okText = okText,
         )
     }
 }

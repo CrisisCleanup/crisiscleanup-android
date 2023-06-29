@@ -106,10 +106,6 @@ internal class IncidentDataPullStatsUpdater(
     }
 
     fun endPull() {
-        reportChange(
-            pullStats.copy(
-                isEnded = true,
-            )
-        )
+        reportChange(pullStats.copy(isEnded = true))
     }
 }

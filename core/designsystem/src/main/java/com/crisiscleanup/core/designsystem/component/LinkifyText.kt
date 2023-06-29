@@ -1,4 +1,4 @@
-package com.crisiscleanup.core.ui
+package com.crisiscleanup.core.designsystem.component
 
 import android.text.method.LinkMovementMethod
 import android.text.util.Linkify
@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.text.HtmlCompat
+import com.crisiscleanup.core.designsystem.R
 import java.util.regex.Pattern
 
 @Composable

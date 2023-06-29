@@ -10,6 +10,8 @@ import com.crisiscleanup.core.common.event.AuthEventBus
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPuller
+import com.crisiscleanup.core.commonassets.R
+import com.crisiscleanup.core.commonassets.getDisasterIcon
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
@@ -75,6 +77,13 @@ class MainActivityViewModel @Inject constructor(
     )
 
     val translationCount = translator.translationCount
+
+    val disasterIconResId = incidentSelector.incident.map { getDisasterIcon(it.disaster) }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = R.drawable.ic_disaster_other,
+            started = SharingStarted.WhileSubscribed(),
+        )
 
     private val isSyncingWorksitesFull = combine(
         incidentSelector.incidentId,

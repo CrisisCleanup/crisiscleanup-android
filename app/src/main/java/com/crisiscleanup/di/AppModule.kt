@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import androidx.credentials.CredentialManager
 import com.crisiscleanup.AndroidLocationProvider
 import com.crisiscleanup.AndroidPermissionManager
+import com.crisiscleanup.AppVisualAlertManager
 import com.crisiscleanup.CrisisCleanupAppEnv
 import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.common.*
@@ -53,6 +54,9 @@ interface AppModule {
 
     @Binds
     fun bindsLocationProvider(provider: AndroidLocationProvider): LocationProvider
+
+    @Binds
+    fun bindsVisualAlertManager(manager: AppVisualAlertManager): VisualAlertManager
 }
 
 @Module

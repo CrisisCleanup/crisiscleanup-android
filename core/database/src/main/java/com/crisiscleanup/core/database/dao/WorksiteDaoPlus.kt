@@ -5,7 +5,6 @@ import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
 import com.crisiscleanup.core.database.model.BoundedSyncedWorksiteIds
 import com.crisiscleanup.core.database.model.NetworkFileEntity
-import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
 import com.crisiscleanup.core.database.model.SwNeBounds
 import com.crisiscleanup.core.database.model.WorkTypeEntity
 import com.crisiscleanup.core.database.model.WorksiteEntities
@@ -15,7 +14,6 @@ import com.crisiscleanup.core.database.model.WorksiteFormDataEntity
 import com.crisiscleanup.core.database.model.WorksiteLocalModifiedAt
 import com.crisiscleanup.core.database.model.WorksiteNetworkFileCrossRef
 import com.crisiscleanup.core.database.model.WorksiteNoteEntity
-import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
@@ -73,10 +71,6 @@ class WorksiteDaoPlus @Inject constructor(
         worksiteId: Long,
         unassociatedFlags: List<WorksiteFlagEntity>,
     ) = db.withTransaction {
-        if (unassociatedFlags.isEmpty()) {
-            return@withTransaction
-        }
-
         val flags = unassociatedFlags.map { it.copy(worksiteId = worksiteId) }
         val flagDao = db.worksiteFlagDao()
         val reasons = flags.map(WorksiteFlagEntity::reasonT)
@@ -151,6 +145,14 @@ class WorksiteDaoPlus @Inject constructor(
             return@withTransaction true
 
         } else if (!isLocallyModified) {
+            if (worksiteDao.getRootCount(
+                    id = modifiedAt.id,
+                    expectedLocalModifiedAt = modifiedAt.localModifiedAt,
+                    networkId = worksite.networkId,
+                ) == 0
+            ) {
+                throw Exception("Worksite has been changed since local modified state was fetched")
+            }
             worksiteDao.syncUpdateWorksiteRoot(
                 id = modifiedAt.id,
                 expectedLocalModifiedAt = modifiedAt.localModifiedAt,
@@ -369,38 +371,6 @@ class WorksiteDaoPlus @Inject constructor(
         worksitesEntities.forEach { entities ->
             syncNetworkWorksite(entities, syncedAt)
         }
-    }
-
-    fun streamWorksitesMapVisual(
-        incidentId: Long,
-        latitudeSouth: Double,
-        latitudeNorth: Double,
-        longitudeLeft: Double,
-        longitudeRight: Double,
-        limit: Int = 600,
-        offset: Int = 0,
-    ): Flow<List<PopulatedWorksiteMapVisual>> {
-        val worksiteDao = db.worksiteDao()
-        val isLongitudeOrdered = longitudeLeft < longitudeRight
-        return if (isLongitudeOrdered)
-            worksiteDao.streamWorksitesMapVisual(
-                incidentId,
-                latitudeSouth,
-                latitudeNorth,
-                longitudeLeft,
-                longitudeRight,
-                limit,
-                offset,
-            )
-        else worksiteDao.streamWorksitesMapVisualLongitudeCrossover(
-            incidentId,
-            latitudeSouth,
-            latitudeNorth,
-            longitudeLeft,
-            longitudeRight,
-            limit,
-            offset,
-        )
     }
 
     fun getWorksitesCount(

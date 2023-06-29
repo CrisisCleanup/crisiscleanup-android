@@ -15,6 +15,7 @@ object RouteConstant {
     const val syncInsightsRoute = "sync_insights_route"
 
     const val casesSearchRoute = "cases_search"
+    const val casesFilterRoute = "cases_filter"
 
     const val caseEditorRoute = "case_editor"
     const val caseEditSearchAddressRoute = "$caseEditorRoute/edit_search_address"

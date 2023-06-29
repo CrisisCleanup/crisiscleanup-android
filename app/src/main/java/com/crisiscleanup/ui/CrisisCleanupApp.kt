@@ -1,6 +1,6 @@
 package com.crisiscleanup.ui
 
-import androidx.annotation.StringRes
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
@@ -64,6 +64,7 @@ import com.crisiscleanup.AuthState
 import com.crisiscleanup.MainActivityViewModel
 import com.crisiscleanup.core.common.NavigationObserver
 import com.crisiscleanup.core.common.NetworkMonitor
+import com.crisiscleanup.core.commonassets.DisasterIcon
 import com.crisiscleanup.core.designsystem.AppTranslator
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupBackground
@@ -106,13 +107,12 @@ fun CrisisCleanupApp(
             val isOffline by appState.isOffline.collectAsStateWithLifecycle()
 
             val translationCount by viewModel.translationCount.collectAsStateWithLifecycle()
-            val appTranslator = remember(viewModel.translator.translationCount) {
+            val appTranslator = remember(translationCount) {
                 AppTranslator(translator = viewModel.translator)
             }
-            val notConnectedMessage = remember(translationCount) {
-                appTranslator.translator("info.no_internet")
-            }
+
             LaunchedEffect(isOffline) {
+                val notConnectedMessage = appTranslator.translator("info.no_internet")
                 if (isOffline) snackbarHostState.showSnackbar(
                     message = notConnectedMessage,
                     duration = SnackbarDuration.Indefinite,
@@ -127,7 +127,13 @@ fun CrisisCleanupApp(
                 // Render content even if translations are not fully downloaded in case internet connection is not available.
                 // Translations without fallbacks will show until translations are downloaded.
                 CompositionLocalProvider(LocalAppTranslator provides appTranslator) {
-                    LoadedContent(snackbarHostState, appState, viewModel, authState)
+                    LoadedContent(
+                        snackbarHostState,
+                        appState,
+                        viewModel,
+                        authState,
+                        translationCount,
+                    )
                 }
             }
         }
@@ -140,6 +146,7 @@ private fun LoadedContent(
     appState: CrisisCleanupAppState,
     viewModel: MainActivityViewModel,
     authState: AuthState,
+    translationCount: Int = 0,
 ) {
     val isAccountExpired by viewModel.isAccessTokenExpired
 
@@ -167,6 +174,8 @@ private fun LoadedContent(
             { showIncidentPicker = true }
         }
 
+        val disasterIconResId by viewModel.disasterIconResId.collectAsStateWithLifecycle()
+
         NavigableContent(
             snackbarHostState,
             appState,
@@ -175,11 +184,16 @@ private fun LoadedContent(
             { openAuthentication = true },
             profilePictureUri,
             isAccountExpired,
+            disasterIconResId,
             openIncidentsSelect,
         )
 
-        if (isAccountExpired) {
-            ExpiredTokenAlert(snackbarHostState) { openAuthentication = true }
+        if (isAccountExpired &&
+            !appState.hideLoginAlert
+        ) {
+            ExpiredTokenAlert(snackbarHostState, translationCount) {
+                openAuthentication = true
+            }
         }
 
         if (showIncidentPicker) {
@@ -240,6 +254,7 @@ private fun NavigableContent(
     openAuthentication: () -> Unit,
     profilePictureUri: String,
     isAccountExpired: Boolean,
+    @DrawableRes disasterIconResId: Int,
     openIncidentsSelect: () -> Unit,
 ) {
     val showNavigation = appState.isTopLevelRoute
@@ -272,6 +287,7 @@ private fun NavigableContent(
                     profilePictureUri = profilePictureUri,
                     isAccountExpired = isAccountExpired,
                     openAuthentication = openAuthentication,
+                    disasterIconResId = disasterIconResId,
                     onOpenIncidents = onOpenIncidents,
                 )
             }
@@ -353,12 +369,13 @@ private fun NavigableContent(
 @Composable
 private fun ExpiredTokenAlert(
     snackbarHostState: SnackbarHostState,
+    translationCount: Int,
     openAuthentication: () -> Unit,
 ) {
     val translator = LocalAppTranslator.current.translator
     val message = translator("info.log_in_for_updates")
     val loginText = translator("actions.login", authenticationR.string.login)
-    LaunchedEffect(Unit) {
+    LaunchedEffect(translationCount) {
         val result = snackbarHostState.showSnackbar(
             message,
             actionLabel = loginText,
@@ -378,19 +395,18 @@ private fun ExpiredTokenAlert(
 @Composable
 private fun AppHeader(
     modifier: Modifier = Modifier,
-    @StringRes titleRes: Int = 0,
     title: String = "",
     isAppHeaderLoading: Boolean = false,
     profilePictureUri: String = "",
     isAccountExpired: Boolean = false,
     openAuthentication: () -> Unit = {},
+    @DrawableRes disasterIconResId: Int = 0,
     onOpenIncidents: (() -> Unit)? = null,
 ) {
     val t = LocalAppTranslator.current.translator
     val actionText = t("actions.account")
     TopAppBarDefault(
         modifier = modifier,
-        titleResId = titleRes,
         title = title,
         profilePictureUri = profilePictureUri,
         actionIcon = CrisisCleanupIcons.Account,
@@ -407,7 +423,11 @@ private fun AppHeader(
                     modifier = modifier.clickable(onClick = onOpenIncidents),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    TruncatedAppBarText(title = title)
+                    DisasterIcon(disasterIconResId, title)
+                    TruncatedAppBarText(
+                        title = title,
+                        modifier = Modifier.padding(start = 8.dp),
+                    )
                     Icon(
                         imageVector = CrisisCleanupIcons.ArrowDropDown,
                         contentDescription = t("nav.change_incident"),

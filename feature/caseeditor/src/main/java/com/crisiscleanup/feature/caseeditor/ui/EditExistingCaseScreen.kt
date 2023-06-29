@@ -93,9 +93,9 @@ import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteFlagType
 import com.crisiscleanup.core.model.data.WorksiteNote
-import com.crisiscleanup.core.ui.LinkifyEmailText
-import com.crisiscleanup.core.ui.LinkifyLocationText
-import com.crisiscleanup.core.ui.LinkifyPhoneText
+import com.crisiscleanup.core.designsystem.component.LinkifyEmailText
+import com.crisiscleanup.core.designsystem.component.LinkifyLocationText
+import com.crisiscleanup.core.designsystem.component.LinkifyPhoneText
 import com.crisiscleanup.feature.caseeditor.ExistingCaseViewModel
 import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
 import com.crisiscleanup.feature.caseeditor.R

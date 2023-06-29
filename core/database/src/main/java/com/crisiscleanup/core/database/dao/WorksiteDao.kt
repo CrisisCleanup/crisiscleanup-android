@@ -62,52 +62,6 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
-        $selectFromMapVisualClause
-        WHERE incident_id=:incidentId AND
-              (longitude BETWEEN :longitudeWest AND :longitudeEast) AND
-              (latitude BETWEEN :latitudeSouth AND :latitudeNorth)
-        GROUP BY w.id
-        ORDER BY updated_at DESC, w.id DESC
-        LIMIT :limit
-        OFFSET :offset
-        """
-    )
-    fun streamWorksitesMapVisual(
-        incidentId: Long,
-        latitudeSouth: Double,
-        latitudeNorth: Double,
-        longitudeWest: Double,
-        longitudeEast: Double,
-        limit: Int,
-        offset: Int,
-    ): Flow<List<PopulatedWorksiteMapVisual>>
-
-    @Transaction
-    @Query(
-        """
-        $selectFromMapVisualClause
-        WHERE incident_id=:incidentId AND
-              (longitude>=:longitudeLeft OR longitude<=:longitudeRight) AND
-              (latitude BETWEEN :latitudeSouth AND :latitudeNorth)
-        GROUP BY w.id
-        ORDER BY updated_at DESC, w.id DESC
-        LIMIT :limit
-        OFFSET :offset
-        """
-    )
-    fun streamWorksitesMapVisualLongitudeCrossover(
-        incidentId: Long,
-        latitudeSouth: Double,
-        latitudeNorth: Double,
-        longitudeLeft: Double,
-        longitudeRight: Double,
-        limit: Int,
-        offset: Int,
-    ): Flow<List<PopulatedWorksiteMapVisual>>
-
-    @Transaction
-    @Query(
-        """
         SELECT id, network_id, local_modified_at, is_local_modified
         FROM worksites_root
         WHERE network_id IN (:worksiteIds)
@@ -116,23 +70,6 @@ interface WorksiteDao {
     fun getWorksitesLocalModifiedAt(
         worksiteIds: Collection<Long>,
     ): List<WorksiteLocalModifiedAt>
-
-    @Transaction
-    @Query(
-        """
-        $selectFromMapVisualClause
-        WHERE incident_id=:incidentId
-        GROUP BY w.id
-        ORDER BY updated_at DESC, w.id DESC
-        LIMIT :limit
-        OFFSET :offset
-        """
-    )
-    fun getWorksitesMapVisual(
-        incidentId: Long,
-        limit: Int,
-        offset: Int,
-    ): List<PopulatedWorksiteMapVisual>
 
     @Transaction
     @Query(
@@ -248,6 +185,21 @@ interface WorksiteDao {
 
     @Update
     fun update(worksite: WorksiteEntity)
+
+    @Transaction
+    @Query(
+        """
+        SELECT COUNT(id) FROM worksites_root
+        WHERE id=:id AND
+              network_id=:networkId AND
+              local_modified_at=:expectedLocalModifiedAt
+        """
+    )
+    fun getRootCount(
+        id: Long,
+        expectedLocalModifiedAt: Instant,
+        networkId: Long,
+    ): Int
 
     @Transaction
     @Query(

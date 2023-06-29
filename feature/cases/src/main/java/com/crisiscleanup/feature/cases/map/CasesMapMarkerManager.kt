@@ -82,6 +82,21 @@ internal class CasesMapMarkerManager(
 
             ensureActive()
 
+            val sw = q.southwest
+            val ne = q.northeast
+            val mapMarks = worksitesRepository.getWorksitesMapVisual(
+                incidentId,
+                sw.latitude,
+                ne.latitude,
+                sw.longitude,
+                ne.longitude,
+                // TODO Review if this is sufficient and mostly complete
+                q.queryCount.coerceAtMost(2 * maxMarkersOnMap),
+                0,
+            )
+
+            ensureActive()
+
             val mLatRad = middle.latitude.radians
             val mLngRad = middle.longitude.radians
             val midR = sin(mLatRad)
@@ -98,28 +113,16 @@ internal class CasesMapMarkerManager(
                 return (x - midX).pow(2.0) + (y - midY).pow(2.0) + (z - midZ).pow(2.0)
             }
 
-            val sw = q.southwest
-            val ne = q.northeast
-            val distanceToMiddleSorted = worksitesRepository.getWorksitesMapVisual(
-                incidentId,
-                sw.latitude,
-                ne.latitude,
-                sw.longitude,
-                ne.longitude,
-                // TODO Review if this is sufficient and mostly complete
-                q.queryCount.coerceAtMost(2 * maxMarkersOnMap),
-                0,
-            )
-                .mapIndexed { index, mark ->
-                    val distanceMeasure = approxDistanceFromMiddle(mark.latitude, mark.longitude)
-                    MarkerFromCenter(
-                        index,
-                        mark,
-                        mark.latitude - middle.latitude,
-                        mark.longitude - middle.longitude,
-                        distanceMeasure,
-                    )
-                }
+            val distanceToMiddleSorted = mapMarks.mapIndexed { index, mark ->
+                val distanceMeasure = approxDistanceFromMiddle(mark.latitude, mark.longitude)
+                MarkerFromCenter(
+                    index,
+                    mark,
+                    mark.latitude - middle.latitude,
+                    mark.longitude - middle.longitude,
+                    distanceMeasure,
+                )
+            }
                 .sortedWith { a, b -> if (a.distanceMeasure - b.distanceMeasure <= 0) -1 else 1 }
 
             val endIndex = distanceToMiddleSorted.size.coerceAtMost(maxMarkersOnMap)

@@ -100,6 +100,7 @@ fun PopulatedWorksiteMapVisual.asExternalModel() = WorksiteMapMark(
     statusClaim = WorkTypeStatusClaim.make(keyWorkTypeStatus, keyWorkTypeOrgClaim),
     workType = WorkTypeStatusClaim.getType(keyWorkTypeType),
     workTypeCount = workTypeCount,
+    // TODO Account for unsynced local favorites as well
     isFavorite = favoriteId != null,
     isHighPriority = flags.find { it.isHighPriority == true } != null,
 )

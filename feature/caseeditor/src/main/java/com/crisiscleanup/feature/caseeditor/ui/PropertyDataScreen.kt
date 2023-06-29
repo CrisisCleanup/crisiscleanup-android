@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
+import com.crisiscleanup.core.designsystem.component.HelpRow
+import com.crisiscleanup.core.designsystem.component.WithHelpDialog
 import com.crisiscleanup.core.commoncase.ui.ExistingCaseLocationsDropdownItems
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupRadioButton
@@ -37,7 +39,6 @@ import com.crisiscleanup.core.model.data.AutoContactFrequency
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.feature.caseeditor.CasePropertyDataEditor
 import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
-import com.crisiscleanup.feature.caseeditor.R
 
 @Composable
 internal fun PropertyFormView(
@@ -112,7 +113,6 @@ internal fun PropertyFormView(
         viewModel,
         helpTitle = autoContactFrequencyLabel,
         helpText = translator("casesVue.auto_contact_frequency_help"),
-        okText = translator("actions.ok"),
     ) { showHelp ->
         HelpRow(autoContactFrequencyLabel, viewModel.helpHint, showHelp = showHelp)
     }

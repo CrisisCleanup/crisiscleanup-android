@@ -23,7 +23,7 @@ class CrisisCleanupAppLogger @Inject constructor(
     }
 
     override fun logException(e: Exception) {
-        if (e is CancellationException || e is InterruptedException) {
+        if (e is CancellationException) {
             return
         }
 

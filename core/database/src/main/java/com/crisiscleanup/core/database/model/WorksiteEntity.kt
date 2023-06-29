@@ -146,6 +146,7 @@ data class WorksiteEntity(
             value = ["worksite_id", "work_type"], unique = true,
             name = "unique_worksite_work_type",
         ),
+        Index(value = ["worksite_id", "network_id"]),
         Index(value = ["status", "worksite_id"]),
         Index(value = ["claimed_by", "worksite_id"]),
     ],

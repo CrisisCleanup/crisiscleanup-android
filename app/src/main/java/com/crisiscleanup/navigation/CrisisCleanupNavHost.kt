@@ -20,8 +20,10 @@ import com.crisiscleanup.feature.caseeditor.navigation.existingCaseTransferWorkT
 import com.crisiscleanup.feature.caseeditor.navigation.navigateToCaseEditor
 import com.crisiscleanup.feature.caseeditor.navigation.navigateToExistingCase
 import com.crisiscleanup.feature.caseeditor.navigation.rerouteToCaseChange
+import com.crisiscleanup.feature.cases.navigation.casesFilterScreen
 import com.crisiscleanup.feature.cases.navigation.casesGraph
 import com.crisiscleanup.feature.cases.navigation.casesSearchScreen
+import com.crisiscleanup.feature.cases.navigation.navigateToCasesFilter
 import com.crisiscleanup.feature.cases.navigation.navigateToCasesSearch
 import com.crisiscleanup.feature.cases.ui.CasesAction
 import com.crisiscleanup.feature.dashboard.navigation.dashboardScreen
@@ -83,6 +85,10 @@ fun CrisisCleanupNavHost(
         { ids: ExistingWorksiteIdentifier -> navController.rerouteToCaseChange(ids) }
     }
 
+    val openFilterCases = remember(navController) {
+        { navController.navigateToCasesFilter() }
+    }
+
     val openUserFeedback = remember(navController) {
         {
             navController.navigateToUserFeedback()
@@ -102,7 +108,8 @@ fun CrisisCleanupNavHost(
     ) {
         casesGraph(
             nestedGraphs = {
-                casesSearchScreen(onBack, replaceRouteOpenCase)
+                casesSearchScreen(onBack, replaceRouteOpenCase, openFilterCases)
+                casesFilterScreen(onBack)
                 caseEditorScreen(navController, onBack)
                 caseEditSearchAddressScreen(navController, onBack)
                 caseEditMoveLocationOnMapScreen(onBack)
@@ -112,6 +119,7 @@ fun CrisisCleanupNavHost(
                 caseShareRoute(onBack)
             },
             onCasesAction = onCasesAction,
+            filterCases = openFilterCases,
             createCase = createNewCase,
             viewCase = viewCase,
         )
