@@ -29,7 +29,7 @@ fun UserFeedbackRoute(
     val context = LocalContext.current
     Column {
         TopAppBarBackAction(
-            title = com.crisiscleanup.core.designsystem.LocalAppTranslator.current.translator("~~Feedback"),
+            title = com.crisiscleanup.core.designsystem.LocalAppTranslator.current.translator("nav.feedback"),
             onAction = onBack,
         )
 

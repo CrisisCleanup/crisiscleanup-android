@@ -526,6 +526,7 @@ private fun CasesCountView(
         val countText = if (visibleCount in 1 until totalCount) {
             pluralStringResource(
                 R.plurals.visible_total_case_count,
+// I don't know how to implement the localizations, so here they are: info.total_case_count_zero, info.total_case_count_one, info.total_case_count_other
                 visibleCount,
                 visibleCount,
                 totalCount,
