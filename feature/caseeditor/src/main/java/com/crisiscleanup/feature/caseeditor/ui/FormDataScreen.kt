@@ -1,21 +1,15 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
+import com.crisiscleanup.core.designsystem.component.HelpDialog
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemNestedPadding
-import com.crisiscleanup.core.ui.rememberCloseKeyboard
-import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
 import com.crisiscleanup.feature.caseeditor.model.FieldDynamicValue
 import com.crisiscleanup.feature.caseeditor.model.FormFieldsInputData
@@ -109,7 +103,6 @@ private fun HelpContent(
             title = helpTitle,
             text = helpText,
             onClose = { helpText = "" },
-            okText = LocalAppTranslator.current.translator("actions.ok"),
         )
     }
 }

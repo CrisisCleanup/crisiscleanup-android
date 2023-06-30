@@ -14,6 +14,7 @@ import com.crisiscleanup.core.database.model.asLookup
 import com.crisiscleanup.core.model.data.IncidentOrganization
 import com.crisiscleanup.core.model.data.OrganizationIdName
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapLatest
 import javax.inject.Inject
@@ -78,7 +79,7 @@ class OfflineFirstOrganizationsRepository @Inject constructor(
             return incidentOrganizationDao.getOrganizations(organizationIds)
                 .map(PopulatedIncidentOrganization::asExternalModel)
         } catch (e: Exception) {
-            if (e !is InterruptedException) {
+            if (e !is CancellationException) {
                 logger.logException(e)
             }
         }

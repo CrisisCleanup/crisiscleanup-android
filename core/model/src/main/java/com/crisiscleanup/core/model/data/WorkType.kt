@@ -40,6 +40,9 @@ enum class WorkTypeStatus(val literal: String) {
     ClosedNoHelpWanted("closed_no-help-wanted"),
     ClosedDuplicate("closed_duplicate"),
     ClosedRejected("closed_rejected"),
+    NeedUnfilled("need_unfilled"),
+    NeedFilled("need_filled"),
+    NeedOverdue("need_overdue"),
 }
 
 private val literalStatusLookup = WorkTypeStatus.values().associateBy(WorkTypeStatus::literal)

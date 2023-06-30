@@ -4,20 +4,24 @@ import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.feature.cases.model.CoordinateBoundsDefault
 import com.crisiscleanup.feature.cases.model.WorksiteQueryStateDefault
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
-class CasesQueryStateManager constructor(
+internal class CasesQueryStateManager(
     incidentSelector: IncidentSelector,
     coroutineScope: CoroutineScope,
     mapChangeDebounceTimeout: Long = 50,
 ) {
-    internal val isTableView = MutableStateFlow(false)
+    val isTableView = MutableStateFlow(false)
 
-    internal val mapZoom = MutableStateFlow(0f)
+    val mapZoom = MutableStateFlow(0f)
 
-    internal val mapBounds = MutableStateFlow(CoordinateBoundsDefault)
+    val mapBounds = MutableStateFlow(CoordinateBoundsDefault)
 
-    internal var worksiteQueryState = MutableStateFlow(WorksiteQueryStateDefault)
+    var worksiteQueryState = MutableStateFlow(WorksiteQueryStateDefault)
 
     init {
         incidentSelector.incident.onEach {

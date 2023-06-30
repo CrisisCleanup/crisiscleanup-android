@@ -17,7 +17,7 @@ import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.textMessagePadding
-import com.crisiscleanup.core.ui.LinkifyHtmlText
+import com.crisiscleanup.core.designsystem.component.LinkifyHtmlText
 import com.crisiscleanup.feature.caseeditor.CaseLocationDataEditor
 import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
 import com.crisiscleanup.feature.caseeditor.EditCaseLocationViewModel

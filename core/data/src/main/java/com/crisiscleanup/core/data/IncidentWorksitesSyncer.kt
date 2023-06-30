@@ -16,6 +16,7 @@ import com.crisiscleanup.core.database.model.WorksiteFlagEntity
 import com.crisiscleanup.core.model.data.IncidentDataSyncStats
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
@@ -118,7 +119,7 @@ class IncidentWorksitesSyncer @Inject constructor(
                 statsUpdater.updateRequestedCount(requestedCount)
             }
         } catch (e: Exception) {
-            if (e is InterruptedException) {
+            if (e is CancellationException) {
                 throw e
             }
 

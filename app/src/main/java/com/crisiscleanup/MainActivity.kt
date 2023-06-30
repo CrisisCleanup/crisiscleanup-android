@@ -26,6 +26,7 @@ import com.crisiscleanup.MainActivityUiState.Success
 import com.crisiscleanup.core.common.NavigationObserver
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.PermissionManager
+import com.crisiscleanup.core.common.VisualAlertManager
 import com.crisiscleanup.core.common.event.AuthEventBus
 import com.crisiscleanup.core.common.event.TrimMemoryEventManager
 import com.crisiscleanup.core.common.log.AppLogger
@@ -86,6 +87,9 @@ class MainActivity : ComponentActivity() {
     @Inject
     @FeedbackTriggerProviderKey(FeedbackTriggerProviders.Default)
     internal lateinit var feedbackTriggerProvider: FeedbackTriggerProvider
+
+    @Inject
+    internal lateinit var visualAlertManager: VisualAlertManager
 
     private lateinit var credentialSaveRetrieveManager: CredentialSaveRetrieveManager
 
@@ -182,6 +186,7 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         syncPuller.appPullIncidentWorksitesDelta()
+        visualAlertManager.setNonProductionAppAlert(true)
     }
 
     override fun onPause() {

@@ -35,7 +35,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
@@ -82,37 +81,9 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             )
         }
 
-    override suspend fun streamWorksitesMapVisual(
-        incidentId: Long,
-        latitudeSouth: Double,
-        latitudeNorth: Double,
-        longitudeLeft: Double,
-        longitudeRight: Double,
-        limit: Int,
-        offset: Int,
-    ) = withContext(ioDispatcher) {
-        return@withContext worksiteDaoPlus.streamWorksitesMapVisual(
-            incidentId,
-            latitudeSouth,
-            latitudeNorth,
-            longitudeLeft,
-            longitudeRight,
-            limit,
-            offset,
-        )
-            .map { it.map(PopulatedWorksiteMapVisual::asExternalModel) }
-    }
-
     override fun streamRecentWorksites(incidentId: Long) =
         recentWorksiteDao.streamRecentWorksites(incidentId)
             .map { it.map(PopulatedRecentWorksite::asSummaryEntity) }
-
-    override fun getWorksitesMapVisual(
-        incidentId: Long,
-        limit: Int,
-        offset: Int
-    ) = worksiteDao.getWorksitesMapVisual(incidentId, limit, offset)
-        .map(PopulatedWorksiteMapVisual::asExternalModel)
 
     override fun getWorksitesMapVisual(
         incidentId: Long,

@@ -9,9 +9,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
-import com.crisiscleanup.core.designsystem.theme.optionItemPadding
+import com.crisiscleanup.core.designsystem.theme.listItemPadding
 
 @Composable
 internal fun MenuRoute(
@@ -37,8 +38,8 @@ internal fun MenuScreen(
                 text = viewModel.versionText,
             )
 
-            CrisisCleanupTextButton(
-                modifier = Modifier.optionItemPadding(),
+            CrisisCleanupButton(
+                modifier = Modifier.listItemPadding(),
                 text = LocalAppTranslator.current.translator("info.give_app_feedback"),
                 onClick = openUserFeedback,
             )

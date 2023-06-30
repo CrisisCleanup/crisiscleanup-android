@@ -38,7 +38,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -47,7 +46,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.actionEdgeSpace
 import com.crisiscleanup.core.designsystem.component.actionInnerSpace
 import com.crisiscleanup.core.designsystem.component.actionRoundCornerShape
@@ -87,72 +88,72 @@ import com.crisiscleanup.core.mapmarker.R as mapMarkerR
 
 @Composable
 internal fun CasesRoute(
+    viewModel: CasesViewModel = hiltViewModel(),
     onCasesAction: (CasesAction) -> Unit = { },
-    casesViewModel: CasesViewModel = hiltViewModel(),
     createNewCase: (Long) -> Unit = {},
     viewCase: (Long, Long) -> Boolean = { _, _ -> false },
 ) {
-    val incidentsData by casesViewModel.incidentsData.collectAsStateWithLifecycle(IncidentsData.Loading)
-    val isIncidentLoading by casesViewModel.isIncidentLoading.collectAsState(true)
+    val incidentsData by viewModel.incidentsData.collectAsStateWithLifecycle(IncidentsData.Loading)
+    val isIncidentLoading by viewModel.isIncidentLoading.collectAsState(true)
     if (incidentsData is IncidentsData.Incidents) {
-        val isTableView by casesViewModel.isTableView.collectAsStateWithLifecycle()
+        val isTableView by viewModel.isTableView.collectAsStateWithLifecycle()
         BackHandler(enabled = isTableView) {
-            casesViewModel.setContentViewType(false)
+            viewModel.setContentViewType(false)
         }
 
-        val isLayerView by casesViewModel.isLayerView
+        val isLayerView by viewModel.isLayerView
 
-        val disasterResId by casesViewModel.disasterIconResId.collectAsStateWithLifecycle()
+        val disasterResId by viewModel.disasterIconResId.collectAsStateWithLifecycle()
         var showChangeIncident by rememberSaveable { mutableStateOf(false) }
-        val onIncidentSelect = remember(casesViewModel) { { showChangeIncident = true } }
+        val onIncidentSelect = remember(viewModel) { { showChangeIncident = true } }
 
-        val rememberOnCasesAction = remember(onCasesAction, casesViewModel) {
+        val rememberOnCasesAction = remember(onCasesAction, viewModel) {
             { action: CasesAction ->
                 when (action) {
                     CasesAction.CreateNew -> {
-                        val incidentId = casesViewModel.incidentId
+                        val incidentId = viewModel.incidentId
                         if (incidentId != EmptyIncident.id) {
                             createNewCase(incidentId)
                         }
                     }
 
-                    CasesAction.MapView -> casesViewModel.setContentViewType(false)
-                    CasesAction.TableView -> casesViewModel.setContentViewType(true)
-                    CasesAction.Layers -> casesViewModel.toggleLayersView()
-                    CasesAction.ZoomToInteractive -> casesViewModel.zoomToInteractive()
-                    CasesAction.ZoomToIncident -> casesViewModel.zoomToIncidentBounds()
-                    CasesAction.ZoomIn -> casesViewModel.zoomIn()
-                    CasesAction.ZoomOut -> casesViewModel.zoomOut()
+                    CasesAction.MapView -> viewModel.setContentViewType(false)
+                    CasesAction.TableView -> viewModel.setContentViewType(true)
+                    CasesAction.Layers -> viewModel.toggleLayersView()
+                    CasesAction.ZoomToInteractive -> viewModel.zoomToInteractive()
+                    CasesAction.ZoomToIncident -> viewModel.zoomToIncidentBounds()
+                    CasesAction.ZoomIn -> viewModel.zoomIn()
+                    CasesAction.ZoomOut -> viewModel.zoomOut()
                     else -> onCasesAction(action)
                 }
             }
         }
-        val isMapBusy by casesViewModel.isMapBusy.collectAsStateWithLifecycle(false)
-        val casesCount by casesViewModel.casesCount.collectAsStateWithLifecycle()
-        val worksitesOnMap by casesViewModel.worksitesMapMarkers.collectAsStateWithLifecycle()
-        val mapCameraBounds by casesViewModel.incidentLocationBounds.collectAsStateWithLifecycle()
-        val mapCameraZoom by casesViewModel.mapCameraZoom.collectAsStateWithLifecycle()
+        val isMapBusy by viewModel.isMapBusy.collectAsStateWithLifecycle(false)
+        val casesCount by viewModel.casesCount.collectAsStateWithLifecycle()
+        val worksitesOnMap by viewModel.worksitesMapMarkers.collectAsStateWithLifecycle()
+        val mapCameraBounds by viewModel.incidentLocationBounds.collectAsStateWithLifecycle()
+        val mapCameraZoom by viewModel.mapCameraZoom.collectAsStateWithLifecycle()
         val tileOverlayState = rememberTileOverlayState()
-        val tileChangeValue by casesViewModel.overviewTileDataChange
-        val clearTileLayer = remember(casesViewModel) {
-            { casesViewModel.clearTileLayer }
+        val tileChangeValue by viewModel.overviewTileDataChange
+        val clearTileLayer = remember(viewModel) {
+            { viewModel.clearTileLayer }
         }
-        val casesDotTileProvider = remember(casesViewModel) {
-            { casesViewModel.overviewMapTileProvider() }
+        val casesDotTileProvider = remember(viewModel) {
+            { viewModel.overviewMapTileProvider() }
         }
-        val onMapLoadStart = remember(casesViewModel) { { casesViewModel.onMapLoadStart() } }
-        val onMapLoaded = remember(casesViewModel) { { casesViewModel.onMapLoaded() } }
-        val onMapCameraChange = remember(casesViewModel) {
+        val onMapLoadStart = remember(viewModel) { { viewModel.onMapLoadStart() } }
+        val onMapLoaded = remember(viewModel) { { viewModel.onMapLoaded() } }
+        val onMapCameraChange = remember(viewModel) {
             { position: CameraPosition, projection: Projection?, activeChange: Boolean ->
-                casesViewModel.onMapCameraChange(position, projection, activeChange)
+                viewModel.onMapCameraChange(position, projection, activeChange)
             }
         }
-        val showDataProgress by casesViewModel.showDataProgress.collectAsStateWithLifecycle(false)
-        val dataProgress by casesViewModel.dataProgress.collectAsStateWithLifecycle(0f)
-        val onMapMarkerSelect = remember(casesViewModel) {
-            { mark: WorksiteMapMark -> viewCase(casesViewModel.incidentId, mark.id) }
+        val showDataProgress by viewModel.showDataProgress.collectAsStateWithLifecycle(false)
+        val dataProgress by viewModel.dataProgress.collectAsStateWithLifecycle(0f)
+        val onMapMarkerSelect = remember(viewModel) {
+            { mark: WorksiteMapMark -> viewCase(viewModel.incidentId, mark.id) }
         }
-        val editedWorksiteLocation = casesViewModel.editedWorksiteLocation
+        val editedWorksiteLocation = viewModel.editedWorksiteLocation
         CasesScreen(
             showDataProgress = showDataProgress,
             dataProgress = dataProgress,
@@ -178,15 +179,45 @@ internal fun CasesRoute(
         )
 
         if (showChangeIncident) {
-            val closeDialog = remember(casesViewModel) { { showChangeIncident = false } }
+            val closeDialog = remember(viewModel) { { showChangeIncident = false } }
             SelectIncidentDialog(closeDialog)
         }
     } else {
         val isLoading = incidentsData is IncidentsData.Loading || isIncidentLoading
-        val reloadIncidents = remember(casesViewModel) { { casesViewModel.refreshIncidentsData() } }
+        val reloadIncidents = remember(viewModel) { { viewModel.refreshIncidentsData() } }
         NoCasesScreen(
             isLoading = isLoading,
             onRetryLoad = reloadIncidents,
+        )
+    }
+
+    NonProductionDialog()
+}
+
+@Composable
+private fun NonProductionDialog(
+    viewModel: CasesViewModel = hiltViewModel(),
+) {
+    var showDialog by remember { mutableStateOf(false) }
+    if (viewModel.visualAlertManager.takeNonProductionAppAlert()) {
+        showDialog = true
+    }
+    if (showDialog) {
+        val hideDialog = {
+            viewModel.visualAlertManager.setNonProductionAppAlert(false)
+            showDialog = false
+        }
+        val translator = LocalAppTranslator.current.translator
+        CrisisCleanupAlertDialog(
+            onDismissRequest = hideDialog,
+            title = "~~Friendly reminder",
+            confirmButton = {
+                CrisisCleanupTextButton(
+                    text = translator("actions.ok"),
+                    onClick = hideDialog
+                )
+            },
+            text = "~~Changes made in this app are not permanent. This version of the app is for testing and all changes will be reset on a daily basis. You are essential to our efforts in getting to the full release. We appreciate you very much."
         )
     }
 }
@@ -247,7 +278,7 @@ internal fun CasesScreen(
 ) {
     Box(modifier.then(Modifier.fillMaxSize())) {
         if (isTableView) {
-            Text("Table view", Modifier.padding(48.dp))
+            Text("Table under construction", Modifier.padding(horizontal = 24.dp, vertical = 96.dp))
         } else {
             CasesMapView(
                 mapCameraBounds,

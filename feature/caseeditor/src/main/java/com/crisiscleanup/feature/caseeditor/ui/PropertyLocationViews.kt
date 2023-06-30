@@ -13,7 +13,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
+import com.crisiscleanup.core.designsystem.component.HelpRow
 import com.crisiscleanup.core.designsystem.component.OutlinedSingleLineTextField
+import com.crisiscleanup.core.designsystem.component.WithHelpDialog
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.feature.caseeditor.CaseLocationDataEditor
@@ -46,7 +48,6 @@ internal fun PropertyLocationView(
             helpTitle = locationText,
             helpText = translator("caseForm.location_instructions"),
             hasHtml = true,
-            translator("actions.ok"),
         ) { showHelp ->
             HelpRow(
                 locationText,

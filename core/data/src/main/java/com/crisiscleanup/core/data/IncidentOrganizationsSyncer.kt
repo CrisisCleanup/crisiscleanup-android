@@ -12,6 +12,7 @@ import com.crisiscleanup.core.database.dao.IncidentOrganizationDaoPlus
 import com.crisiscleanup.core.database.dao.PersonContactDao
 import com.crisiscleanup.core.database.model.IncidentOrganizationSyncStatsEntity
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -90,7 +91,7 @@ class IncidentOrganizationsSyncer @Inject constructor(
                 statsUpdater.updateRequestedCount(requestedCount)
             }
         } catch (e: Exception) {
-            if (e is InterruptedException) {
+            if (e is CancellationException) {
                 throw e
             }
 

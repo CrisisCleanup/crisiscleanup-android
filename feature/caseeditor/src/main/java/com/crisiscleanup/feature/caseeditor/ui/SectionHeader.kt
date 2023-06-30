@@ -18,6 +18,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
+import com.crisiscleanup.core.designsystem.component.HelpAction
+import com.crisiscleanup.core.designsystem.component.WithHelpDialog
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.attentionBackgroundColor
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
@@ -80,8 +82,7 @@ internal fun SectionHeaderCollapsible(
         val iconVector =
             if (isCollapsed) CrisisCleanupIcons.ExpandLess else CrisisCleanupIcons.ExpandMore
         if (help.isNotBlank()) {
-            val okText = LocalAppTranslator.current.translator("actions.ok")
-            WithHelpDialog(viewModel, sectionTitle, help, true, okText) { showHelp ->
+            WithHelpDialog(viewModel, sectionTitle, help, true) { showHelp ->
                 HelpAction(viewModel.helpHint, showHelp)
             }
         }

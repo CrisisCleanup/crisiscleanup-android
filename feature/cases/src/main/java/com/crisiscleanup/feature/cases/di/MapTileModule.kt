@@ -1,4 +1,4 @@
-package com.crisiscleanup.feature.cases
+package com.crisiscleanup.feature.cases.di
 
 import com.crisiscleanup.feature.cases.map.CaseDotsMapTileRenderer
 import com.crisiscleanup.feature.cases.map.CasesOverviewMapTileRenderer

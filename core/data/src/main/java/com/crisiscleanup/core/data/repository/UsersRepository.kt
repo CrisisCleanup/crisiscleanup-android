@@ -7,6 +7,7 @@ import com.crisiscleanup.core.data.model.asExternalModel
 import com.crisiscleanup.core.model.data.PersonContact
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkPersonContact
+import kotlinx.coroutines.CancellationException
 import javax.inject.Inject
 
 interface UsersRepository {
@@ -30,7 +31,7 @@ class OfflineFirstUsersRepository @Inject constructor(
             return networkDataSource.searchUsers(q, organization, limit)
                 .map(NetworkPersonContact::asExternalModel)
         } catch (e: Exception) {
-            if (e !is InterruptedException) {
+            if (e !is CancellationException) {
                 logger.logException(e)
             }
         }

@@ -1,14 +1,14 @@
 package com.crisiscleanup.feature.caseeditor
 
 import com.crisiscleanup.core.common.WorksiteLocationEditor
+import com.crisiscleanup.core.commoncase.model.EmptyFormFieldNode
+import com.crisiscleanup.core.commoncase.model.FormFieldNode
 import com.crisiscleanup.core.mapmarker.model.DefaultIncidentBounds
 import com.crisiscleanup.core.mapmarker.model.IncidentBounds
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.Worksite
-import com.crisiscleanup.feature.caseeditor.model.EmptyFormFieldNode
-import com.crisiscleanup.feature.caseeditor.model.FormFieldNode
 import com.google.android.gms.maps.model.LatLng
 import dagger.Binds
 import dagger.Module

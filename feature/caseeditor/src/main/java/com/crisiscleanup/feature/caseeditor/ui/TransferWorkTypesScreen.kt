@@ -32,8 +32,8 @@ import com.crisiscleanup.core.designsystem.theme.listItemNestedPadding
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemTopPadding
-import com.crisiscleanup.core.ui.LinkifyHtmlText
-import com.crisiscleanup.core.ui.LinkifyPhoneEmailText
+import com.crisiscleanup.core.designsystem.component.LinkifyHtmlText
+import com.crisiscleanup.core.designsystem.component.LinkifyPhoneEmailText
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.TransferWorkTypeViewModel

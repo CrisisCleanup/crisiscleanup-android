@@ -18,6 +18,7 @@ fun NavController.navigateToCases(navOptions: NavOptions? = null) {
 fun NavGraphBuilder.casesGraph(
     nestedGraphs: NavGraphBuilder.() -> Unit,
     onCasesAction: (CasesAction) -> Unit = { },
+    filterCases: () -> Unit = {},
     createCase: (Long) -> Unit = {},
     viewCase: (Long, Long) -> Boolean = { _, _ -> false },
 ) {
@@ -30,7 +31,7 @@ fun NavGraphBuilder.casesGraph(
                 { casesAction: CasesAction ->
                     when (casesAction) {
                         CasesAction.Filters -> {
-                            // TODO Navigate to filters screen
+                            filterCases()
                         }
 
                         else -> onCasesAction(casesAction)

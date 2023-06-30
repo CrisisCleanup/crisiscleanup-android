@@ -5,7 +5,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.addresssearch.AddressSearchRepository
 import com.crisiscleanup.core.addresssearch.model.toLatLng
-import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.NetworkMonitor
@@ -132,7 +131,6 @@ internal class EditableLocationDataEditor(
     searchWorksitesRepository: SearchWorksitesRepository,
     addressSearchRepository: AddressSearchRepository,
     caseIconProvider: MapCaseIconProvider,
-    resourceProvider: AndroidResourceProvider,
     drawableResourceBitmapProvider: DrawableResourceBitmapProvider,
     private val existingWorksiteSelector: ExistingWorksiteSelector,
     translator: KeyResourceTranslator,
@@ -585,7 +583,6 @@ class EditCaseLocationViewModel @Inject constructor(
     searchWorksitesRepository: SearchWorksitesRepository,
     addressSearchRepository: AddressSearchRepository,
     caseIconProvider: MapCaseIconProvider,
-    resourceProvider: AndroidResourceProvider,
     drawableResourceBitmapProvider: DrawableResourceBitmapProvider,
     existingWorksiteSelector: ExistingWorksiteSelector,
     networkMonitor: NetworkMonitor,
@@ -602,7 +599,6 @@ class EditCaseLocationViewModel @Inject constructor(
         searchWorksitesRepository,
         addressSearchRepository,
         caseIconProvider,
-        resourceProvider,
         drawableResourceBitmapProvider,
         existingWorksiteSelector,
         translator,

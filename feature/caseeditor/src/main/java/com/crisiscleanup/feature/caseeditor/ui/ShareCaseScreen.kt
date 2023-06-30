@@ -428,7 +428,7 @@ private fun LazyListScope.contactSuggestionsItem(
         val isEmail = viewModel.isEmailContactMethod
         val searchForHintTranslationKey =
             if (isEmail) "shareWorksite.search_emails" else "shareWorksite.search_phones"
-        val keyboardType = if (isEmail) KeyboardType.Email else KeyboardType.Phone
+        val keyboardType = if (isEmail) KeyboardType.Email else KeyboardType.Password
         Box(Modifier.fillMaxWidth()) {
             var contentWidth by remember { mutableStateOf(Size.Zero) }
 

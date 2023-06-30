@@ -1,5 +1,16 @@
 package com.crisiscleanup.core.commonassets
 
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import com.crisiscleanup.core.designsystem.theme.incidentDisasterContainerColor
+import com.crisiscleanup.core.designsystem.theme.incidentDisasterContentColor
 import com.crisiscleanup.core.model.data.Disaster
 
 private val statusIcons = mapOf(
@@ -25,3 +36,23 @@ private val statusIcons = mapOf(
 )
 
 fun getDisasterIcon(disaster: Disaster) = statusIcons[disaster] ?: R.drawable.ic_disaster_other
+
+@Composable
+fun DisasterIcon(
+    @DrawableRes disasterResId: Int,
+    incidentName: String,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier,
+        shape = CircleShape,
+        color = incidentDisasterContainerColor,
+        contentColor = incidentDisasterContentColor,
+    ) {
+        Icon(
+            modifier = Modifier.padding(8.dp),
+            painter = painterResource(disasterResId),
+            contentDescription = incidentName,
+        )
+    }
+}

@@ -82,25 +82,9 @@ internal class CasesMapMarkerManager(
 
             ensureActive()
 
-            val mLatRad = Math.toRadians(middle.latitude)
-            val mLngRad = Math.toRadians(middle.longitude)
-            val midR = sin(mLatRad)
-            val midX = midR * cos(mLngRad)
-            val midY = midR * sin(mLngRad)
-            val midZ = cos(mLatRad)
-            fun approxDistanceFromMiddle(latitude: Double, longitude: Double): Double {
-                val latRad = Math.toRadians(latitude)
-                val lngRad = Math.toRadians(longitude)
-                val r = sin(latRad)
-                val x = r * cos(lngRad)
-                val y = r * sin(lngRad)
-                val z = cos(latRad)
-                return (x - midX).pow(2.0) + (y - midY).pow(2.0) + (z - midZ).pow(2.0)
-            }
-
             val sw = q.southwest
             val ne = q.northeast
-            val distanceToMiddleSorted = worksitesRepository.getWorksitesMapVisual(
+            val mapMarks = worksitesRepository.getWorksitesMapVisual(
                 incidentId,
                 sw.latitude,
                 ne.latitude,
@@ -110,16 +94,35 @@ internal class CasesMapMarkerManager(
                 q.queryCount.coerceAtMost(2 * maxMarkersOnMap),
                 0,
             )
-                .mapIndexed { index, mark ->
-                    val distanceMeasure = approxDistanceFromMiddle(mark.latitude, mark.longitude)
-                    MarkerFromCenter(
-                        index,
-                        mark,
-                        mark.latitude - middle.latitude,
-                        mark.longitude - middle.longitude,
-                        distanceMeasure,
-                    )
-                }
+
+            ensureActive()
+
+            val mLatRad = middle.latitude.radians
+            val mLngRad = middle.longitude.radians
+            val midR = sin(mLatRad)
+            val midX = midR * cos(mLngRad)
+            val midY = midR * sin(mLngRad)
+            val midZ = cos(mLatRad)
+            fun approxDistanceFromMiddle(latitude: Double, longitude: Double): Double {
+                val latRad = latitude.radians
+                val lngRad = longitude.radians
+                val r = sin(latRad)
+                val x = r * cos(lngRad)
+                val y = r * sin(lngRad)
+                val z = cos(latRad)
+                return (x - midX).pow(2.0) + (y - midY).pow(2.0) + (z - midZ).pow(2.0)
+            }
+
+            val distanceToMiddleSorted = mapMarks.mapIndexed { index, mark ->
+                val distanceMeasure = approxDistanceFromMiddle(mark.latitude, mark.longitude)
+                MarkerFromCenter(
+                    index,
+                    mark,
+                    mark.latitude - middle.latitude,
+                    mark.longitude - middle.longitude,
+                    distanceMeasure,
+                )
+            }
                 .sortedWith { a, b -> if (a.distanceMeasure - b.distanceMeasure <= 0) -1 else 1 }
 
             val endIndex = distanceToMiddleSorted.size.coerceAtMost(maxMarkersOnMap)
@@ -133,6 +136,9 @@ internal class CasesMapMarkerManager(
             Pair(marks, q.fullCount)
         }
 }
+
+private val Double.radians: Double
+    get() = Math.toRadians(this)
 
 private data class BoundsQueryParams(
     val fullCount: Int,

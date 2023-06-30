@@ -215,7 +215,6 @@ class ExistingCaseViewModel @Inject constructor(
             { key -> translate(key) },
             editableWorksiteProvider,
             networkMonitor,
-            resourceProvider,
             viewModelScope,
             ioDispatcher,
             appEnv,

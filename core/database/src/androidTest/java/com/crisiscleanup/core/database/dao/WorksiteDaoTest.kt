@@ -89,7 +89,7 @@ class WorksiteDaoTest {
 
         // Sync
         val syncingWorksites = listOf(
-            testWorksiteEntity(4, 1, "missing-created-at-4", updatedAtB, null),
+            testWorksiteEntity(4, 1, "missing-created-at-4", updatedAtB),
             testWorksiteFullEntity(5, 1, createdAtB).copy(
                 createdAt = null
             ),

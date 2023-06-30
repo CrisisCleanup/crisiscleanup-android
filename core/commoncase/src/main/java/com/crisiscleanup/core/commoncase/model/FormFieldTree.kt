@@ -1,7 +1,12 @@
-package com.crisiscleanup.feature.caseeditor.model
+package com.crisiscleanup.core.commoncase.model
 
 import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.model.data.IncidentFormField
+
+const val DetailsFormGroupKey = "property_info"
+const val WorkFormGroupKey = "work_info"
+const val HazardsFormGroupKey = "hazards_info"
+const val VolunteerReportFormGroupKey = "claim_status_report_info"
 
 data class FormFieldNode(
     val formField: IncidentFormField,
@@ -72,7 +77,7 @@ fun FormFieldNode.flatten(): FormFieldNode {
     return copy(children = flatChildren)
 }
 
-internal val EmptyIncidentFormField = IncidentFormField(
+val EmptyIncidentFormField = IncidentFormField(
     "",
     "",
     "",
@@ -94,7 +99,7 @@ internal val EmptyIncidentFormField = IncidentFormField(
     selectToggleWorkType = "",
 )
 
-internal val EmptyFormFieldNode = FormFieldNode(
+val EmptyFormFieldNode = FormFieldNode(
     EmptyIncidentFormField,
     emptyList(),
     emptyMap(),
