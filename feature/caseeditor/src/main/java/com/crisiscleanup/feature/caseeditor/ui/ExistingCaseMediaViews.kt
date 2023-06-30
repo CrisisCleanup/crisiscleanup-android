@@ -68,7 +68,7 @@ private val addMediaStrokeGap = 6.dp
 private fun AddMediaView(
     modifier: Modifier = Modifier,
 ) {
-    val text = LocalAppTranslator.current.translator("info.add_media", R.string.add_media)
+    val text = LocalAppTranslator.current.translator("actions.add_media")
     val contentColor = primaryBlueColor
     val backgroundColor = primaryBlueOneTenthColor
     val cornerRadius: Float
@@ -264,7 +264,7 @@ internal fun TakePhotoSelectImage(
 
                 CrisisCleanupTextButton(
                     listItemModifier,
-                    text = translator("actions.take_photo", R.string.take_photo),
+                    text = translator("actions.take_photo"),
                     onClick = {
                         if (viewModel.takePhoto()) {
                             continueTakePhoto()

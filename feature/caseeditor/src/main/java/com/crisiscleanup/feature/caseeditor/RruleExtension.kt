@@ -61,11 +61,12 @@ fun RRule.toHumanReadableText(
                 if (byDay.isEmpty()) {
                     resources.getQuantityString(
                         R.plurals.n_days,
+//I have no idea how to add the translations, so here they are: recurringSchedule.n_days_one, recurringSchedule.n_days_other
                         positiveInterval,
                         positiveInterval,
                     )
                 } else {
-                    resources.getString(R.string.weekday_mtof)
+                    translator("recurringSchedule.weekday_mtof")
                 }
             }
 
@@ -73,19 +74,21 @@ fun RRule.toHumanReadableText(
                 if (byDay.isNotEmpty()) {
                     var weekPart = resources.getQuantityString(
                         R.plurals.n_weeks,
+//I have no idea how to add the translations, so here they are: recurringSchedule.n_weeks_one, recurringSchedule.n_weeks_other
                         positiveInterval,
                         positiveInterval,
                     )
                     val profile = profile()
                     if (profile.isAllDays) {
-                        val everyDay = resources.getString(R.string.every_day)
+                        val everyDay = translator("recurringSchedule.every_day")
                         weekPart = "$weekPart $everyDay"
                     } else if (profile.isWeekdays) {
-                        val onWeekdays = resources.getString(R.string.on_weekdays)
+                        val onWeekdays = translator("recurringSchedule.on_weekdays")
                         weekPart = "$weekPart $onWeekdays"
                     } else {
                         val sundayToSaturday =
                             resources.getStringArray(R.array.days_sunday_through_saturday)
+//I have no idea how to add the translations, so here they are: recurringSchedule.sunday, recurringSchedule.monday, recurringSchedule.tuesday, recurringSchedule.wednesday, recurringSchedule.thursday, recurringSchedule.friday, recurringSchedule.saturday
                         val sortedDays = byDay.map(WeekdayNum::weekday)
                             .toSet()
                             .asSequence()
@@ -103,12 +106,13 @@ fun RRule.toHumanReadableText(
                             .toList()
                         val onDays = if (sortedDays.size == 1) {
                             val daysString = sortedDays.joinToString(", ")
-                            resources.getString(R.string.on_days, daysString)
+                            translator("recurringSchedule.on_days", daysString)
                         } else if (sortedDays.size > 1) {
                             val startDays = sortedDays.slice(0 until sortedDays.size - 1)
                             val daysString = startDays.joinToString(", ")
                             resources.getQuantityString(
                                 R.plurals.on_and_days,
+//I have no idea how to add the translations, so here they are: recurringSchedule.on_and_days_one, recurringSchedule.on_and_days_other
                                 startDays.size,
                                 daysString,
                                 sortedDays.last(),
@@ -129,13 +133,12 @@ fun RRule.toHumanReadableText(
             else -> ""
         }
         if (frequencyPart.isNotBlank()) {
-            val every = resources.getString(R.string.every)
+            val every = translator("recurringSchedule.every")
             val untilDate = until?.let {
                 untilDateFormat.format(it)
             }
             val untilPart = if (untilDate?.isNotBlank() == true) resources.getString(
-                R.string.until_date,
-                untilDate,
+               translator("recurringSchedule.until_date", untilDate)
             ) else ""
             val frequencyString = listOf(
                 every,

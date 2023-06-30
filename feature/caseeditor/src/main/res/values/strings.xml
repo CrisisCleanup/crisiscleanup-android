@@ -31,48 +31,48 @@
     <string name="sms_text_message">++SMS text message</string>
     <string name="remove_share_user">++Remove %s from shared</string>
 
-    <string name="release_reason_is_required">~~What is the reason for release?</string>
-    <string name="request_reason_is_required">~~What is the reason for request?</string>
-    <string name="transfer_work_type_is_required">~~Select at least one work type..</string>
+    <string name="release_reason_is_required">++What is the reason for release?</string>
+    <string name="request_reason_is_required">++What is the reason for request?</string>
+    <string name="transfer_work_type_is_required">++Select at least one work type..</string>
 
-    <string name="before_cleanup">~~Before cleanup</string>
-    <string name="after_cleanup">~~After cleanup</string>
-    <string name="add_media">~~Add Media</string>
-    <string name="take_photo">~~Take photo</string>
-    <string name="allow_camera_permission">~~Allow access to camera</string>
-    <string name="camera_permission_explanation">~~Grant access to camera in the App info/settings > Permissions.</string>
+    <string name="before_cleanup">++Before cleanup</string>
+    <string name="after_cleanup">++After cleanup</string>
+    <string name="add_media">++Add Media</string>
+    <string name="take_photo">++Take photo</string>
+    <string name="allow_camera_permission">--Allow access to camera</string>
+    <string name="camera_permission_explanation">--Grant access to camera in the App info/settings > Permissions.</string>
 
-    <string name="copied_value">~~Copied %s</string>
+    <string name="copied_value">++Copied %s</string>
 
-    <string name="remove_until_recurring_date">Remove until</string>
-    <string name="specify_interval">Specify an interval</string>
+    <string name="remove_until_recurring_date">++Remove until</string>
+    <string name="specify_interval">++Specify an interval</string>
 
     <plurals name="n_days">
-        <item quantity="one">day</item>
-        <item quantity="other">%d days</item>
+        <item quantity="one">++day</item>
+        <item quantity="other">++%d days</item>
     </plurals>
     <plurals name="n_weeks">
-        <item quantity="one">week</item>
-        <item quantity="other">%d weeks</item>
+        <item quantity="one">++week</item>
+        <item quantity="other">++%d weeks</item>
     </plurals>
-    <string name="every">Every</string>
-    <string name="every_day">every day</string>
-    <string name="on_weekdays">on weekdays (M-F)</string>
-    <string name="weekday_mtof">weekday (M-F)</string>
+    <string name="every">++Every</string>
+    <string name="every_day">++every day</string>
+    <string name="on_weekdays">++on weekdays (M-F)</string>
+    <string name="weekday_mtof">++weekday (M-F)</string>
     <string-array name="days_sunday_through_saturday">
-        <item>Sunday</item>
-        <item>Monday</item>
-        <item>Tuesday</item>
-        <item>Wednesday</item>
-        <item>Thursday</item>
-        <item>Friday</item>
-        <item>Saturday</item>
+        <item>++Sunday</item>
+        <item>++Monday</item>
+        <item>++Tuesday</item>
+        <item>++Wednesday</item>
+        <item>++Thursday</item>
+        <item>++Friday</item>
+        <item>++Saturday</item>
     </string-array>
-    <string name="on_days">on %s</string>
+    <string name="on_days">++on %s</string>
     <plurals name="on_and_days">
-        <item quantity="one">on %s and %s</item>
-        <item quantity="other">on %s, and %s</item>
+        <item quantity="one">++on %s and %s</item>
+        <item quantity="other">++on %s, and %s</item>
     </plurals>
-    <string name="until_date">until %s</string>
-    <string name="next_recur">Next: %s</string>
+    <string name="until_date">++until %s</string>
+    <string name="next_recur">++Next: %s</string>
 </resources>

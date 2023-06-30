@@ -335,7 +335,7 @@ private fun FrequencyIntervalDialog(
     val submitInterval = { closeDialog(interval) }
 
     CrisisCleanupAlertDialog(
-        title = stringResource(R.string.specify_interval),
+        title = translator("recurringSchedule.specify_interval"),
         onDismissRequest = dismissDialog,
         dismissButton = {
             CrisisCleanupTextButton(
@@ -440,7 +440,7 @@ private fun FrequencyDatePicker(
         rRule.until?.let {
             CrisisCleanupIconButton(
                 imageVector = CrisisCleanupIcons.Clear,
-                contentDescriptionResId = R.string.remove_until_recurring_date,
+                contentDescriptionResId = translator("recurringSchedule.remove_until_recurring_date"),
                 onClick = {
                     rRule.until = null
                     updateRrule()

@@ -808,8 +808,8 @@ internal fun EditExistingCasePhotosView(
 
     val translator = LocalAppTranslator.current.translator
     val sectionTitleResIds = mapOf(
-        ImageCategory.Before to translator("info.before_cleanup", R.string.before_cleanup),
-        ImageCategory.After to translator("info.after_cleanup", R.string.after_cleanup),
+        ImageCategory.Before to translator("caseForm.before_photos"),
+        ImageCategory.After to translator("caseForm.after_photos"),
     )
     // TODO Determine spacing and sizing based on available height.
     //      This viewport has

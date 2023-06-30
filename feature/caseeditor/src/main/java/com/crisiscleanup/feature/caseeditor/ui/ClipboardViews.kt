@@ -59,7 +59,7 @@ internal fun BoxScope.CopiedToClipboard(
             val copiedTranslateKey = "info.copied_value"
             var copiedText = translator(copiedTranslateKey)
             copiedText = if (copiedText == copiedTranslateKey) stringResource(
-                R.string.copied_value,
+                copiedTranslateKey,
                 clipboardContents,
             )
             else copiedText.replace("{value}", clipboardContents)
