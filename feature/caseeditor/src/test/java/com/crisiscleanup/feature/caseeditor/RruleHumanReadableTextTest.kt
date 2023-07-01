@@ -1,28 +1,49 @@
 package com.crisiscleanup.feature.caseeditor
 
-import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
-import com.crisiscleanup.core.common.AndroidResourceProvider
-import com.crisiscleanup.core.common.ApplicationResourceProvider
+import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.philjay.Frequency
 import com.philjay.RRule
 import com.philjay.Weekday
 import com.philjay.WeekdayNum
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
 import org.junit.Assert.assertEquals
-import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
 
-@RunWith(AndroidJUnit4::class)
 class RruleHumanReadableTextTest {
-    private lateinit var resourceProvider: AndroidResourceProvider
+    private val translator = object : KeyResourceTranslator {
+        override val translationCount: StateFlow<Int> = MutableStateFlow(0)
 
-    @Before
-    fun setup() {
-        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        resourceProvider = ApplicationResourceProvider(appContext)
+        override fun translate(phraseKey: String): String? {
+            return when (phraseKey) {
+                "recurringSchedule.n_days_one" -> "day"
+                "recurringSchedule.n_days_other" -> "days"
+                "recurringSchedule.weekday_mtof" -> "weekday (M-F)"
+                "recurringSchedule.n_weeks_one" -> " week"
+                "recurringSchedule.n_weeks_other" -> "weeks"
+                "recurringSchedule.every_day" -> "every day"
+                "recurringSchedule.on_weekdays" -> "on weekdays (M-F)"
+                "recurringSchedule.sunday" -> "Sunday"
+                "recurringSchedule.monday" -> "Monday"
+                "recurringSchedule.tuesday" -> "Tuesday"
+                "recurringSchedule.wednesday" -> "Wednesday"
+                "recurringSchedule.thursday" -> "Thursday"
+                "recurringSchedule.friday" -> "Friday"
+                "recurringSchedule.saturday" -> "Saturday"
+                "recurringSchedule.on_days" -> "on"
+                "recurringSchedule.on_and_days_one" -> "on {days} and {last_day}"
+                "recurringSchedule.on_and_days_other" -> "on {days}, and {last_day}"
+                "recurringSchedule.every" -> "Every"
+                "recurringSchedule.until_date" -> "until"
+                else -> null
+            }
+        }
+
+        override fun translate(phraseKey: String, fallbackResId: Int): String {
+            return translate(phraseKey) ?: phraseKey
+        }
     }
 
     private val untilA = Instant.fromEpochSeconds(2639649641)
@@ -53,7 +74,7 @@ class RruleHumanReadableTextTest {
                 3,
                 listOf(Weekday.Monday),
                 untilA,
-            ).toHumanReadableText(resourceProvider)
+            ).toHumanReadableText(translator)
             val expected = ""
             assertEquals(expected, actual)
         }
@@ -61,29 +82,28 @@ class RruleHumanReadableTextTest {
 
     @Test
     fun dailyEveryDay() {
-        val actual = makeRrule(Frequency.Daily).toHumanReadableText(resourceProvider)
+        val actual = makeRrule(Frequency.Daily).toHumanReadableText(translator)
         val expected = "Every day."
         assertEquals(expected, actual)
 
         val actualUntil = makeRrule(
             Frequency.Daily,
             until = untilA,
-        ).toHumanReadableText(resourceProvider)
-        println("Until $untilADate")
+        ).toHumanReadableText(translator)
         val expectedUntil = "Every day until $untilADate."
         assertEquals(expectedUntil, actualUntil)
     }
 
     @Test
     fun dailyEveryOneDay() {
-        val actual = makeRrule(Frequency.Daily, 1).toHumanReadableText(resourceProvider)
+        val actual = makeRrule(Frequency.Daily, 1).toHumanReadableText(translator)
         val expected = "Every day."
         assertEquals(expected, actual)
     }
 
     @Test
     fun dailyEveryNDays() {
-        val actual = makeRrule(Frequency.Daily, 2).toHumanReadableText(resourceProvider)
+        val actual = makeRrule(Frequency.Daily, 2).toHumanReadableText(translator)
         val expected = "Every 2 days."
         assertEquals(expected, actual)
     }
@@ -94,7 +114,7 @@ class RruleHumanReadableTextTest {
             Frequency.Daily,
             2,
             listOf(Weekday.Sunday),
-        ).toHumanReadableText(resourceProvider)
+        ).toHumanReadableText(translator)
         val expected = "Every weekday (M-F)."
         assertEquals(expected, actual)
     }
@@ -103,7 +123,7 @@ class RruleHumanReadableTextTest {
     fun weeklyNoDays() {
         val actual = makeRrule(
             Frequency.Weekly,
-        ).toHumanReadableText(resourceProvider)
+        ).toHumanReadableText(translator)
         val expected = ""
         assertEquals(expected, actual)
     }
@@ -122,7 +142,7 @@ class RruleHumanReadableTextTest {
                 Weekday.Sunday,
                 Weekday.Friday,
             )
-        ).toHumanReadableText(resourceProvider)
+        ).toHumanReadableText(translator)
         val expected = "Every 2 weeks every day."
         assertEquals(expected, actual)
     }
@@ -139,7 +159,7 @@ class RruleHumanReadableTextTest {
                 Weekday.Tuesday,
                 Weekday.Wednesday,
             )
-        ).toHumanReadableText(resourceProvider)
+        ).toHumanReadableText(translator)
         val expected = "Every week on weekdays (M-F)."
         assertEquals(expected, actual)
     }
@@ -154,7 +174,7 @@ class RruleHumanReadableTextTest {
                 Weekday.Friday,
                 Weekday.Wednesday,
             ),
-        ).toHumanReadableText(resourceProvider)
+        ).toHumanReadableText(translator)
         val expectedA = "Every 3 weeks on Wednesday, Thursday, and Friday."
         assertEquals(expectedA, actualA)
 
@@ -164,7 +184,7 @@ class RruleHumanReadableTextTest {
             listOf(
                 Weekday.Wednesday,
             ),
-        ).toHumanReadableText(resourceProvider)
+        ).toHumanReadableText(translator)
         val expectedB = "Every 6 weeks on Wednesday."
         assertEquals(expectedB, actualB)
 
@@ -180,7 +200,7 @@ class RruleHumanReadableTextTest {
                 Weekday.Friday,
             ),
             untilA,
-        ).toHumanReadableText(resourceProvider)
+        ).toHumanReadableText(translator)
         val expectedC =
             "Every week on Sunday, Monday, Wednesday, Thursday, Friday, and Saturday until $untilADate."
         assertEquals(expectedC, actualC)
@@ -192,7 +212,7 @@ class RruleHumanReadableTextTest {
                 Weekday.Wednesday,
                 Weekday.Sunday,
             ),
-        ).toHumanReadableText(resourceProvider)
+        ).toHumanReadableText(translator)
         val expectedD = "Every 6 weeks on Sunday and Wednesday."
         assertEquals(expectedD, actualD)
     }

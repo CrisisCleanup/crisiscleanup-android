@@ -41,7 +41,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -68,7 +67,7 @@ private val addMediaStrokeGap = 6.dp
 private fun AddMediaView(
     modifier: Modifier = Modifier,
 ) {
-    val text = LocalAppTranslator.current.translator("info.add_media", R.string.add_media)
+    val text = LocalAppTranslator.current.translator("actions.add_media")
     val contentColor = primaryBlueColor
     val backgroundColor = primaryBlueOneTenthColor
     val cornerRadius: Float
@@ -208,7 +207,7 @@ internal fun PhotosSection(
                                         .size(64.dp)
                                         .padding(16.dp),
                                     imageVector = CrisisCleanupIcons.CloudSync,
-                                    contentDescription = stringResource(R.string.is_syncing),
+                                    contentDescription = LocalAppTranslator.current.translator("info.is_syncing"),
                                 )
                             }
                         }
@@ -264,7 +263,7 @@ internal fun TakePhotoSelectImage(
 
                 CrisisCleanupTextButton(
                     listItemModifier,
-                    text = translator("actions.take_photo", R.string.take_photo),
+                    text = translator("actions.take_photo"),
                     onClick = {
                         if (viewModel.takePhoto()) {
                             continueTakePhoto()

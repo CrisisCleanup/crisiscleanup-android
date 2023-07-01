@@ -37,7 +37,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -69,7 +68,6 @@ import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.core.ui.LocalAppLayout
 import com.crisiscleanup.feature.cases.CasesViewModel
-import com.crisiscleanup.feature.cases.R
 import com.crisiscleanup.feature.cases.model.WorksiteGoogleMapMark
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.Projection
@@ -553,20 +551,16 @@ private fun CasesCountView(
     modifier: Modifier = Modifier,
 ) {
     val (visibleCount, totalCount) = casesCount
+    val t = LocalAppTranslator.current.translator
     if (totalCount > -1) {
-        val countText = if (visibleCount in 1 until totalCount) {
-            pluralStringResource(
-                R.plurals.visible_total_case_count,
-                visibleCount,
-                visibleCount,
-                totalCount,
-            )
+        val countText = if (visibleCount == totalCount) {
+            if (totalCount == 1) t("info.1_of_1_case")
+            else t("info.t_of_t_cases").replace("total_count", "$totalCount")
         } else {
-            pluralStringResource(
-                R.plurals.total_case_count,
-                totalCount,
-                totalCount,
-            )
+            if (visibleCount == 0 && totalCount == 1) t("info.0_of_1_case")
+            else t("info.v_of_t_cases")
+                .replace("{visible_count}", "$visibleCount")
+                .replace("{total_count}", "$totalCount")
         }
 
         // Common dimensions and styles

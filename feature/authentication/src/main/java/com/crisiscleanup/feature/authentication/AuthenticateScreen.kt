@@ -319,7 +319,7 @@ private fun SaveCredentialsPrompt(
     if (showSaveCredentials) {
         Text(
             modifier = fillWidthPadded,
-            text = LocalAppTranslator.current.translator("~~Would you like to save your account password for auto login in the future?"),
+            text = LocalAppTranslator.current.translator("info.save_password_mobile_prompt"),
         )
 
         BusyButton(
@@ -355,7 +355,7 @@ private fun SaveCredentialsPrompt(
                 )
 
                 Text(
-                    text = LocalAppTranslator.current.translator("~~Do not ask to save credentials again."),
+                    text = LocalAppTranslator.current.translator("info.do_not_ask_for_credentials_again"),
                 )
             }
         }

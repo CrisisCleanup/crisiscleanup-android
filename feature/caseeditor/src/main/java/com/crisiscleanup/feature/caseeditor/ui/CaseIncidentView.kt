@@ -12,11 +12,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.commonassets.DisasterIcon
 import com.crisiscleanup.core.commonassets.getDisasterIcon
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
@@ -24,7 +24,6 @@ import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.primaryRedColor
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.Incident
-import com.crisiscleanup.feature.caseeditor.R
 
 @Composable
 internal fun CaseIncidentView(
@@ -52,6 +51,7 @@ internal fun CaseIncidentView(
             style = MaterialTheme.typography.headlineSmall,
         )
 
+        val translator = LocalAppTranslator.current.translator
         if (isSyncing) {
             Box(
                 // minimumInteractiveComponentSize > IconButtonTokens.StateLayerSize
@@ -60,14 +60,14 @@ internal fun CaseIncidentView(
             ) {
                 Icon(
                     imageVector = CrisisCleanupIcons.CloudSync,
-                    contentDescription = stringResource(R.string.is_syncing),
+                    contentDescription = translator("info.is_syncing"),
                 )
             }
         } else if (isPendingSync) {
             CrisisCleanupIconButton(
                 onClick = scheduleSync,
                 imageVector = CrisisCleanupIcons.CloudOff,
-                contentDescription = stringResource(R.string.is_pending_sync),
+                contentDescription = translator("info.is_pending_sync"),
                 tint = primaryRedColor,
             )
         }

@@ -32,7 +32,6 @@ import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseLocationDataEditor
 import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
 import com.crisiscleanup.feature.caseeditor.LocationSearchResults
-import com.crisiscleanup.feature.caseeditor.R
 
 @Composable
 internal fun ColumnScope.SearchContents(
@@ -54,10 +53,8 @@ internal fun ColumnScope.SearchContents(
         if (locationSearchResults.isEmpty) {
             if (!isBusySearching && locationSearchResults.query == query) {
                 val translator = LocalAppTranslator.current.translator
-                var text = translator("info.cases_search_no_results")
-                if (text == "info.cases_search_no_results") {
-                    text = stringResource(R.string.no_location_results, locationSearchResults.query)
-                }
+                val text = translator("worksiteSearchInput.no_location_results")
+                    .replace("{q}", locationSearchResults.query)
                 Text(
                     text,
                     modifier = Modifier.textMessagePadding(),

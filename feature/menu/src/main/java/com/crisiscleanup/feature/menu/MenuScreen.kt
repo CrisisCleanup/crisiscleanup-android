@@ -40,7 +40,7 @@ internal fun MenuScreen(
 
             CrisisCleanupButton(
                 modifier = Modifier.listItemPadding(),
-                text = LocalAppTranslator.current.translator("~~Provide feedback on this app"),
+                text = LocalAppTranslator.current.translator("info.give_app_feedback"),
                 onClick = openUserFeedback,
             )
 

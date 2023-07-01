@@ -90,7 +90,7 @@ private fun CaseEditAddFlagScreen(
     ) {
         Column {
             TopAppBarCancelAction(
-                title = translator("caseForm.add_flag", R.string.add_flag),
+                title = translator("actions.flag"),
                 onAction = onBack,
             )
 

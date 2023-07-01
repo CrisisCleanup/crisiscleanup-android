@@ -54,7 +54,7 @@ class TransferWorkTypeViewModel @Inject constructor(
     private val organizationId = transferWorkTypeProvider.organizationId
 
     val screenTitle = when (transferType) {
-        Release -> translate("actions.release_cases")
+        Release -> translate("actions.release")
         Request -> translate("workTypeRequestModal.work_type_request")
         else -> ""
     }
@@ -146,21 +146,15 @@ class TransferWorkTypeViewModel @Inject constructor(
         if (transferReason.isBlank()) {
             val isRelease = transferType == Release
             val reasonTranslateKey =
-                if (isRelease) "info.release_reason_is_required"
-                else "info.request_reason_is_required"
-            var reason = translate(reasonTranslateKey)
-            if (reason == reasonTranslateKey) {
-                val reasonResId = if (isRelease) R.string.release_reason_is_required
-                else R.string.request_reason_is_required
-                reason = resourceProvider.getString(reasonResId)
-            }
-            errorMessageReason.value = reason
+                if (isRelease) "workTypeRequestModal.explain_release_case_required"
+                else "workTypeRequestModal.explain_request_case_required"
+            errorMessageReason.value = translate(reasonTranslateKey)
         }
 
         errorMessageWorkType.value = ""
         if (workTypesState.filter { it.value }.isEmpty()) {
             errorMessageWorkType.value =
-                resourceProvider.getString(R.string.transfer_work_type_is_required)
+                translate("workTypeRequestModal.transfer_work_type_is_required")
         }
 
         if (errorMessageReason.value.isBlank() &&

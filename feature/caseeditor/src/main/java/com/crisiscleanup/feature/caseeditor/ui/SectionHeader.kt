@@ -13,7 +13,6 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -26,7 +25,6 @@ import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listRowItemStartPadding
 import com.crisiscleanup.feature.caseeditor.CaseEditorViewModel
-import com.crisiscleanup.feature.caseeditor.R
 
 @Composable
 private fun CircleNumber(
@@ -91,14 +89,8 @@ internal fun SectionHeaderCollapsible(
         val translator = LocalAppTranslator.current.translator
         val translateKey = if (isCollapsed) "actions.collapse_section"
         else "actions.expand_section"
-        var description = translator(translateKey)
-        description = if (description == translateKey) {
-            val descriptionResId =
-                if (isCollapsed) R.string.collapse_section else R.string.expand_section
-            stringResource(descriptionResId, sectionTitle)
-        } else {
-            description.replace("{section}", sectionTitle)
-        }
+        val description = translator(translateKey)
+            .replace("{section}", sectionTitle)
         Icon(
             imageVector = iconVector,
             contentDescription = description,

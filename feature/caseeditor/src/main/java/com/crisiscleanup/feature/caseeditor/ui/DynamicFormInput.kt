@@ -27,16 +27,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.toSize
-import com.crisiscleanup.core.designsystem.component.HelpAction
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupFilterChip
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextArea
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
+import com.crisiscleanup.core.designsystem.component.HelpAction
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.centerAlignTextFieldLabelOffset
@@ -51,7 +50,6 @@ import com.crisiscleanup.core.designsystem.theme.listRowItemStartPadding
 import com.crisiscleanup.core.designsystem.theme.optionItemHeight
 import com.crisiscleanup.core.model.data.WorkTypeStatus
 import com.crisiscleanup.core.network.model.DynamicValue
-import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.model.FieldDynamicValue
 
 private const val FallbackRrule = "RRULE:FREQ=WEEKLY;BYDAY=MO;INTERVAL=1;BYHOUR=11"
@@ -386,12 +384,9 @@ private fun SelectItem(
                 if (!enabled) {
                     tint = tint.disabledAlpha()
                 }
-                var description = LocalAppTranslator.current.translator("info.select_option_for")
-                description = if (description == "info.select_option_for") {
-                    stringResource(R.string.select_option_for_field, label)
-                } else {
-                    description.replace("{field}", label)
-                }
+                val description =
+                    LocalAppTranslator.current.translator("formLabels.select_option_for")
+                        .replace("{field}", label)
                 Icon(
                     imageVector = CrisisCleanupIcons.UnfoldMore,
                     contentDescription = description,

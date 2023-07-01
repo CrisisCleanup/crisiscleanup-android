@@ -73,6 +73,9 @@ import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCen
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupFab
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationDefaults
+import com.crisiscleanup.core.designsystem.component.LinkifyEmailText
+import com.crisiscleanup.core.designsystem.component.LinkifyLocationText
+import com.crisiscleanup.core.designsystem.component.LinkifyPhoneText
 import com.crisiscleanup.core.designsystem.component.TopBarBackAction
 import com.crisiscleanup.core.designsystem.component.actionEdgeSpace
 import com.crisiscleanup.core.designsystem.component.fabPlusSpaceHeight
@@ -93,9 +96,6 @@ import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteFlagType
 import com.crisiscleanup.core.model.data.WorksiteNote
-import com.crisiscleanup.core.designsystem.component.LinkifyEmailText
-import com.crisiscleanup.core.designsystem.component.LinkifyLocationText
-import com.crisiscleanup.core.designsystem.component.LinkifyPhoneText
 import com.crisiscleanup.feature.caseeditor.ExistingCaseViewModel
 import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
 import com.crisiscleanup.feature.caseeditor.R
@@ -179,11 +179,14 @@ internal fun EditExistingCaseRoute(
                 onCaseLongPress,
             )
 
+            val appTranslator = remember(viewModel) {
+                AppTranslator(translator = viewModel)
+            }
             val tabTitles by viewModel.tabTitles.collectAsStateWithLifecycle()
             if (isEmptyWorksite) {
                 if (viewModel.worksiteIdArg == EmptyWorksite.id) {
                     Text(
-                        stringResource(R.string.no_worksite_selected),
+                        appTranslator.translator("info.no_worksite_selected"),
                         Modifier.listItemPadding(),
                     )
                 } else {
@@ -198,9 +201,6 @@ internal fun EditExistingCaseRoute(
                     statusOptions,
                     false,
                 )
-                val appTranslator = remember(viewModel) {
-                    AppTranslator(translator = viewModel)
-                }
                 CompositionLocalProvider(
                     LocalCaseEditor provides caseEditor,
                     LocalAppTranslator provides appTranslator,
@@ -298,8 +298,8 @@ private fun TopBar(
             val iconResId = if (isFavorite) R.drawable.ic_heart_filled
             else R.drawable.ic_heart_outline
             val favoriteDescription =
-                if (isFavorite) translator("actions.remove_favorite", R.string.remove_favorite)
-                else translator("actions.save_as_favorite", R.string.save_as_favorite)
+                if (isFavorite) translator("actions.not_member_of_my_org")
+                else translator("actions.member_of_my_org")
             val favoriteTint = getTopIconActionColor(isFavorite, isEditable)
             CrisisCleanupIconButton(
                 iconResId = iconResId,
@@ -591,12 +591,8 @@ private fun FlagChip(
         val color = FlagColors[flagType] ?: FlagColorFallback
         val text = translator(flagType.literal)
         val removeFlagTranslateKey = "actions.remove_type_flag"
-        var description = translator(removeFlagTranslateKey)
-        if (description == removeFlagTranslateKey) {
-            description = stringResource(R.string.remove_type_flag, text)
-        } else {
-            description.replace("{flag}", text)
-        }
+        val description = translator(removeFlagTranslateKey)
+            .replace("{flag}", text)
 
         var contentColor = Color.White
         if (!isEditable) {
@@ -808,8 +804,8 @@ internal fun EditExistingCasePhotosView(
 
     val translator = LocalAppTranslator.current.translator
     val sectionTitleResIds = mapOf(
-        ImageCategory.Before to translator("info.before_cleanup", R.string.before_cleanup),
-        ImageCategory.After to translator("info.after_cleanup", R.string.after_cleanup),
+        ImageCategory.Before to translator("caseForm.before_photos"),
+        ImageCategory.After to translator("caseForm.after_photos"),
     )
     // TODO Determine spacing and sizing based on available height.
     //      This viewport has
@@ -963,9 +959,7 @@ private val existingCaseActions = listOf(
     ),
     IconTextAction(
         iconResId = R.drawable.ic_flag_small,
-        // TODO "actions.flag" is already taken and not "Flag"
-        translationKey = "events.object_flag",
-        textResId = R.string.flag,
+        translationKey = "nav.flag",
     ),
     IconTextAction(
         iconResId = R.drawable.ic_history_small,
