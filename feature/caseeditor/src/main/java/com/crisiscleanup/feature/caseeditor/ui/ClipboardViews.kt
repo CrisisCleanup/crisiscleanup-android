@@ -16,13 +16,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.theme.navigationContainerColor
-import com.crisiscleanup.feature.caseeditor.R
 import kotlinx.coroutines.delay
 
 @Composable
@@ -56,13 +54,8 @@ internal fun BoxScope.CopiedToClipboard(
             containerColor = navigationContainerColor,
         ) {
             val translator = LocalAppTranslator.current.translator
-            val copiedTranslateKey = "info.copied_value"
-            var copiedText = translator(copiedTranslateKey)
-            copiedText = if (copiedText == copiedTranslateKey) stringResource(
-                copiedTranslateKey,
-                clipboardContents,
-            )
-            else copiedText.replace("{value}", clipboardContents)
+            val copiedText = translator("info.copied_value")
+                .replace("{value}", clipboardContents)
             Text(
                 text = copiedText,
                 // TODO Common dimensions

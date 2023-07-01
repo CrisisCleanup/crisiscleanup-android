@@ -292,7 +292,7 @@ class ExistingCaseViewModel @Inject constructor(
             if (notes.isNotEmpty()) "$it (${notes.size})" else it
         }
         listOf(
-            resourceProvider.getString(R.string.info),
+            translate("nav.info"),
             photosTitle,
             notesTitle,
         )
@@ -383,7 +383,7 @@ class ExistingCaseViewModel @Inject constructor(
                     summaryJobTypes.combineTrimText(),
                     workType.recur?.let { rRuleString ->
                         try {
-                            return@let RRule(rRuleString).toHumanReadableText(resourceProvider)
+                            return@let RRule(rRuleString).toHumanReadableText(translator)
                         } catch (e: Exception) {
                             logger.logException(e)
                         }
@@ -394,7 +394,7 @@ class ExistingCaseViewModel @Inject constructor(
                             try {
                                 val nextDate =
                                     nextRecurDateFormat.format(nextRecurAt.toJavaInstant())
-                                return@let translate("shareWorksite.next_recur", nextDate)
+                                return@let "${translate("shareWorksite.next_recur")} $nextDate"
                             } catch (e: Exception) {
                                 logger.logException(e)
                             }

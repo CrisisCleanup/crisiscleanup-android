@@ -39,7 +39,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -68,7 +67,6 @@ import com.crisiscleanup.core.designsystem.theme.optionItemPadding
 import com.crisiscleanup.core.designsystem.theme.primaryRedColor
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.feature.caseeditor.CaseShareViewModel
-import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.ShareContactInfo
 import com.crisiscleanup.feature.caseeditor.util.CaseStaticText
 import com.crisiscleanup.feature.caseeditor.util.TwoActionBar
@@ -277,7 +275,7 @@ private fun LazyListScope.shareCaseInput(
         CrisisCleanupRadioButton(
             listItemModifier.listCheckboxAlignStartOffset(),
             !viewModel.isEmailContactMethod,
-            text = translator("shareWorksite.sms_text_message", R.string.sms_text_message),
+            text = translator("shareWorksite.sms_text_message"),
             onSelect = { viewModel.isEmailContactMethod = false },
             enabled = isEditable,
         )
@@ -372,11 +370,8 @@ private fun ReceiverContactItem(
         horizontalArrangement = listItemSpacedBy,
     ) {
         receiverContacts.forEachIndexed { index, contact ->
-            val description = if (removeShareStringTemplate == removeShareTranslateKey) {
-                translator("shareWorksite.remove_share_user", contact.contactValue)
-            } else {
-                removeShareStringTemplate.replace("{user}", contact.contactValue)
-            }
+            val description = removeShareStringTemplate
+                .replace("{user}", contact.contactValue)
 
             AssistChip(
                 leadingIcon = {

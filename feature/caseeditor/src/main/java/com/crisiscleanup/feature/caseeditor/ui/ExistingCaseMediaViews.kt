@@ -41,7 +41,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -208,7 +207,7 @@ internal fun PhotosSection(
                                         .size(64.dp)
                                         .padding(16.dp),
                                     imageVector = CrisisCleanupIcons.CloudSync,
-                                    contentDescription = stringResource(R.string.is_syncing),
+                                    contentDescription = LocalAppTranslator.current.translator("info.is_syncing"),
                                 )
                             }
                         }

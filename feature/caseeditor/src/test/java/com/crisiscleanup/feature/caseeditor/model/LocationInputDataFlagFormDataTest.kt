@@ -1,6 +1,6 @@
 package com.crisiscleanup.feature.caseeditor.model
 
-import com.crisiscleanup.core.common.AndroidResourceProvider
+import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteFormValue
@@ -18,7 +18,7 @@ import kotlin.time.Duration.Companion.seconds
 
 class LocationInputDataFlagFormDataTest {
     @MockK
-    lateinit var resourceProvider: AndroidResourceProvider
+    lateinit var translator: KeyResourceTranslator
 
     private val now = Clock.System.now()
     private val createdAtA = now.minus(2.days)
@@ -32,7 +32,7 @@ class LocationInputDataFlagFormDataTest {
     @Test
     fun updateCase_noChangeInWrongLocation() {
         val baseWorksite = worksiteFlagsTest(baseFlags)
-        val locationInputData = LocationInputData(baseWorksite, resourceProvider)
+        val locationInputData = LocationInputData(translator, baseWorksite)
 
         val noChangeUpdate = locationInputData.updateCase()
         assertEquals(baseWorksite, noChangeUpdate)
@@ -41,7 +41,7 @@ class LocationInputDataFlagFormDataTest {
     @Test
     fun updateCase_noChangeInWrongLocation_nullFlags() {
         val nullFlagsWorksite = worksiteFlagsTest(null)
-        val nullFlagsInputData = LocationInputData(nullFlagsWorksite, resourceProvider)
+        val nullFlagsInputData = LocationInputData(translator, nullFlagsWorksite)
         val nullFlagsUpdate = nullFlagsInputData.updateCase()
         assertEquals(nullFlagsWorksite, nullFlagsUpdate)
     }
@@ -49,7 +49,7 @@ class LocationInputDataFlagFormDataTest {
     @Test
     fun updateCase_noChangeInWrongLocation_emptyFlags() {
         val emptyFlagsWorksite = worksiteFlagsTest(emptyList())
-        val emptyFlagsInputData = LocationInputData(emptyFlagsWorksite, resourceProvider)
+        val emptyFlagsInputData = LocationInputData(translator, emptyFlagsWorksite)
         val emptyFlagsUpdate = emptyFlagsInputData.updateCase()
         assertEquals(emptyFlagsWorksite, emptyFlagsUpdate)
     }
@@ -89,7 +89,7 @@ class LocationInputDataFlagFormDataTest {
             )
         )
 
-        val locationInputData = LocationInputData(worksite, resourceProvider)
+        val locationInputData = LocationInputData(translator, worksite)
         locationInputData.hasWrongLocation = true
 
         val updated = locationInputData.updateCase()
@@ -105,7 +105,7 @@ class LocationInputDataFlagFormDataTest {
             )
         )
 
-        val locationInputData = LocationInputData(worksite, resourceProvider)
+        val locationInputData = LocationInputData(translator, worksite)
         locationInputData.hasWrongLocation = true
 
         val updated = locationInputData.updateCase()
@@ -117,7 +117,7 @@ class LocationInputDataFlagFormDataTest {
     fun updateCase_isWrongLocation_nullFlags() {
         val worksite = worksiteFlagsTest(null)
 
-        val locationInputData = LocationInputData(worksite, resourceProvider)
+        val locationInputData = LocationInputData(translator, worksite)
         locationInputData.hasWrongLocation = true
 
         val updated = locationInputData.updateCase()
@@ -129,7 +129,7 @@ class LocationInputDataFlagFormDataTest {
     fun updateCase_isWrongLocation_emptyFlags() {
         val worksite = worksiteFlagsTest(emptyList())
 
-        val locationInputData = LocationInputData(worksite, resourceProvider)
+        val locationInputData = LocationInputData(translator, worksite)
         locationInputData.hasWrongLocation = true
 
         val updated = locationInputData.updateCase()
@@ -159,7 +159,7 @@ class LocationInputDataFlagFormDataTest {
             )
         )
 
-        val locationInputData = LocationInputData(worksite, resourceProvider)
+        val locationInputData = LocationInputData(translator, worksite)
         assertTrue(locationInputData.hasWrongLocation)
 
         locationInputData.hasWrongLocation = false
@@ -181,7 +181,7 @@ class LocationInputDataFlagFormDataTest {
             )
         )
 
-        val locationInputData = LocationInputData(worksite, resourceProvider)
+        val locationInputData = LocationInputData(translator, worksite)
         assertTrue(locationInputData.hasWrongLocation)
 
         locationInputData.hasWrongLocation = false
@@ -194,7 +194,7 @@ class LocationInputDataFlagFormDataTest {
     @Test
     fun updateCase_noChangeInFormData() {
         val worksite = worksiteFormTest(baseFormData)
-        val locationInputData = LocationInputData(worksite, resourceProvider)
+        val locationInputData = LocationInputData(translator, worksite)
 
         val update = locationInputData.updateCase()
         assertEquals(worksite, update)
@@ -203,7 +203,7 @@ class LocationInputDataFlagFormDataTest {
     @Test
     fun updateCase_noChangeInFormData_nullForm() {
         val worksite = worksiteFormTest(null)
-        val locationInputData = LocationInputData(worksite, resourceProvider)
+        val locationInputData = LocationInputData(translator, worksite)
 
         val update = locationInputData.updateCase()
         assertEquals(worksite, update)
@@ -212,7 +212,7 @@ class LocationInputDataFlagFormDataTest {
     @Test
     fun updateCase_noChangeInFormData_emptyForm() {
         val worksite = worksiteFormTest(emptyMap())
-        val locationInputData = LocationInputData(worksite, resourceProvider)
+        val locationInputData = LocationInputData(translator, worksite)
 
         val update = locationInputData.updateCase()
         assertEquals(worksite, update)
@@ -250,7 +250,7 @@ class LocationInputDataFlagFormDataTest {
                 ),
             )
         )
-        val locationInputData = LocationInputData(worksite, resourceProvider)
+        val locationInputData = LocationInputData(translator, worksite)
         locationInputData.crossStreetNearbyLandmark = "cross-street"
 
         val update = locationInputData.updateCase()
@@ -265,7 +265,7 @@ class LocationInputDataFlagFormDataTest {
                 "form-data-a" to WorksiteFormValue(valueString = "a"),
             )
         )
-        val locationInputData = LocationInputData(worksite, resourceProvider)
+        val locationInputData = LocationInputData(translator, worksite)
         locationInputData.crossStreetNearbyLandmark = "cross-street"
 
         val update = locationInputData.updateCase()
@@ -276,7 +276,7 @@ class LocationInputDataFlagFormDataTest {
     @Test
     fun updateCase_hasCrossStreet_emptyFormData() {
         val worksite = worksiteFormTest(emptyMap())
-        val locationInputData = LocationInputData(worksite, resourceProvider)
+        val locationInputData = LocationInputData(translator, worksite)
         locationInputData.crossStreetNearbyLandmark = "cross-street"
 
         val update = locationInputData.updateCase()
@@ -287,7 +287,7 @@ class LocationInputDataFlagFormDataTest {
     @Test
     fun updateCase_hasCrossStreet_nullFormData() {
         val worksite = worksiteFormTest(null)
-        val locationInputData = LocationInputData(worksite, resourceProvider)
+        val locationInputData = LocationInputData(translator, worksite)
         locationInputData.crossStreetNearbyLandmark = "cross-street"
 
         val update = locationInputData.updateCase()
@@ -320,7 +320,7 @@ class LocationInputDataFlagFormDataTest {
                 ),
             )
         )
-        val locationInputData = LocationInputData(worksite, resourceProvider)
+        val locationInputData = LocationInputData(translator, worksite)
         assertEquals("cross-street-a", locationInputData.crossStreetNearbyLandmark)
 
         locationInputData.crossStreetNearbyLandmark = " "
@@ -345,7 +345,7 @@ class LocationInputDataFlagFormDataTest {
                 "cross_street" to WorksiteFormValue(valueString = "cross-street-a"),
             )
         )
-        val locationInputData = LocationInputData(worksite, resourceProvider)
+        val locationInputData = LocationInputData(translator, worksite)
         assertEquals("cross-street-a", locationInputData.crossStreetNearbyLandmark)
 
         locationInputData.crossStreetNearbyLandmark = " "

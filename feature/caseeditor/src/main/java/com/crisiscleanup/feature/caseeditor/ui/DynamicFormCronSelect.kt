@@ -27,7 +27,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -49,7 +48,6 @@ import com.crisiscleanup.core.designsystem.theme.listItemNestedPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
-import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.weekdayOrderLookup
 import com.philjay.Frequency
 import com.philjay.RRule
@@ -335,7 +333,7 @@ private fun FrequencyIntervalDialog(
     val submitInterval = { closeDialog(interval) }
 
     CrisisCleanupAlertDialog(
-        title = translator("recurringSchedule.specify_interval"),
+        title = LocalAppTranslator.current.translator("recurringSchedule.specify_interval"),
         onDismissRequest = dismissDialog,
         dismissButton = {
             CrisisCleanupTextButton(
@@ -440,7 +438,7 @@ private fun FrequencyDatePicker(
         rRule.until?.let {
             CrisisCleanupIconButton(
                 imageVector = CrisisCleanupIcons.Clear,
-                contentDescriptionResId = translator("recurringSchedule.remove_until_recurring_date"),
+                contentDescription = LocalAppTranslator.current.translator("recurringSchedule.remove_until_recurring_date"),
                 onClick = {
                     rRule.until = null
                     updateRrule()

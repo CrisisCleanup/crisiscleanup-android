@@ -73,6 +73,9 @@ import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCen
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupFab
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationDefaults
+import com.crisiscleanup.core.designsystem.component.LinkifyEmailText
+import com.crisiscleanup.core.designsystem.component.LinkifyLocationText
+import com.crisiscleanup.core.designsystem.component.LinkifyPhoneText
 import com.crisiscleanup.core.designsystem.component.TopBarBackAction
 import com.crisiscleanup.core.designsystem.component.actionEdgeSpace
 import com.crisiscleanup.core.designsystem.component.fabPlusSpaceHeight
@@ -93,9 +96,6 @@ import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteFlagType
 import com.crisiscleanup.core.model.data.WorksiteNote
-import com.crisiscleanup.core.designsystem.component.LinkifyEmailText
-import com.crisiscleanup.core.designsystem.component.LinkifyLocationText
-import com.crisiscleanup.core.designsystem.component.LinkifyPhoneText
 import com.crisiscleanup.feature.caseeditor.ExistingCaseViewModel
 import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
 import com.crisiscleanup.feature.caseeditor.R
@@ -179,11 +179,14 @@ internal fun EditExistingCaseRoute(
                 onCaseLongPress,
             )
 
+            val appTranslator = remember(viewModel) {
+                AppTranslator(translator = viewModel)
+            }
             val tabTitles by viewModel.tabTitles.collectAsStateWithLifecycle()
             if (isEmptyWorksite) {
                 if (viewModel.worksiteIdArg == EmptyWorksite.id) {
                     Text(
-                        translator("info.no_worksite_selected"),
+                        appTranslator.translator("info.no_worksite_selected"),
                         Modifier.listItemPadding(),
                     )
                 } else {
@@ -198,9 +201,6 @@ internal fun EditExistingCaseRoute(
                     statusOptions,
                     false,
                 )
-                val appTranslator = remember(viewModel) {
-                    AppTranslator(translator = viewModel)
-                }
                 CompositionLocalProvider(
                     LocalCaseEditor provides caseEditor,
                     LocalAppTranslator provides appTranslator,
@@ -591,12 +591,8 @@ private fun FlagChip(
         val color = FlagColors[flagType] ?: FlagColorFallback
         val text = translator(flagType.literal)
         val removeFlagTranslateKey = "actions.remove_type_flag"
-        var description = translator(removeFlagTranslateKey)
-        if (description == removeFlagTranslateKey) {
-            description = stringResource(R.string.remove_type_flag, text)
-        } else {
-            description.replace("{flag}", text)
-        }
+        val description = translator(removeFlagTranslateKey)
+            .replace("{flag}", text)
 
         var contentColor = Color.White
         if (!isEditable) {
