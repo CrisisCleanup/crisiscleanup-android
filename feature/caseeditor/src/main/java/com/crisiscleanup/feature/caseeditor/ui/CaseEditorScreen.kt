@@ -59,13 +59,14 @@ import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.separatorColor
 import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.ui.ScreenKeyboardVisibility
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
+import com.crisiscleanup.core.ui.screenKeyboardVisibility
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseEditorUiState
 import com.crisiscleanup.feature.caseeditor.CaseEditorViewModel
 import com.crisiscleanup.feature.caseeditor.CasePropertyDataEditor
 import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
-import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.WorksiteSection
 import com.crisiscleanup.feature.caseeditor.model.FormFieldsInputData
 import kotlinx.coroutines.launch
@@ -419,19 +420,22 @@ private fun ColumnScope.FullEditView(
         BusyIndicatorFloatingTopCenter(isLoadingWorksite)
     }
 
-    val claimAndSaveChanges = remember(viewModel) { { viewModel.saveChanges(true) } }
-    val saveChanges = remember(viewModel) { { viewModel.saveChanges(false) } }
-    val translator = LocalAppTranslator.current.translator
-    SaveActionBar(
-        enable = isEditable,
-        isSaving = isSavingData,
-        onCancel = onCancel,
-        onClaimAndSave = claimAndSaveChanges,
-        onSave = saveChanges,
-        saveText = translator("actions.save"),
-        saveClaimText = translator("actions.save_claim"),
-        cancelText = translator("actions.cancel"),
-    )
+    val keyboardVisibility by screenKeyboardVisibility()
+    if (keyboardVisibility == ScreenKeyboardVisibility.NotVisible) {
+        val claimAndSaveChanges = remember(viewModel) { { viewModel.saveChanges(true) } }
+        val saveChanges = remember(viewModel) { { viewModel.saveChanges(false) } }
+        val translator = LocalAppTranslator.current.translator
+        SaveActionBar(
+            enable = isEditable,
+            isSaving = isSavingData,
+            onCancel = onCancel,
+            onClaimAndSave = claimAndSaveChanges,
+            onSave = saveChanges,
+            saveText = translator("actions.save"),
+            saveClaimText = translator("actions.save_claim"),
+            cancelText = translator("actions.cancel"),
+        )
+    }
 
     val showBackChangesDialog by viewModel.promptUnsavedChanges
     val showCancelChangesDialog by viewModel.promptCancelChanges
