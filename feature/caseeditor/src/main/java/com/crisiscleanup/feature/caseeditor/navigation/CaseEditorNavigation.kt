@@ -13,6 +13,7 @@ import com.crisiscleanup.core.appnav.RouteConstant.caseAddFlagRoute
 import com.crisiscleanup.core.appnav.RouteConstant.caseEditMapMoveLocationRoute
 import com.crisiscleanup.core.appnav.RouteConstant.caseEditSearchAddressRoute
 import com.crisiscleanup.core.appnav.RouteConstant.caseEditorRoute
+import com.crisiscleanup.core.appnav.RouteConstant.caseHistoryRoute
 import com.crisiscleanup.core.appnav.RouteConstant.caseShareRoute
 import com.crisiscleanup.core.appnav.RouteConstant.viewCaseRoute
 import com.crisiscleanup.core.appnav.RouteConstant.viewCaseTransferWorkTypesRoute
@@ -21,6 +22,7 @@ import com.crisiscleanup.core.appnav.navigateToViewImage
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
+import com.crisiscleanup.feature.caseeditor.ui.CaseEditCaseHistoryRoute
 import com.crisiscleanup.feature.caseeditor.ui.CaseEditShareCaseRoute
 import com.crisiscleanup.feature.caseeditor.ui.CaseEditorRoute
 import com.crisiscleanup.feature.caseeditor.ui.EditCaseAddressSearchRoute
@@ -102,6 +104,7 @@ fun NavController.navigateToCaseEditSearchAddress() = this.navigate(caseEditSear
 fun NavController.navigateToCaseEditLocationMapMove() = this.navigate(caseEditMapMoveLocationRoute)
 fun NavController.navigateToCaseAddFlag() = this.navigate(caseAddFlagRoute)
 fun NavController.navigateToCaseShare() = this.navigate(caseShareRoute)
+fun NavController.navigateToCaseHistory() = this.navigate(caseHistoryRoute)
 
 fun NavGraphBuilder.existingCaseScreen(
     navController: NavHostController,
@@ -138,6 +141,7 @@ fun NavGraphBuilder.existingCaseScreen(
         }
         val navToCaseAddFlag = remember(navController) { { navController.navigateToCaseAddFlag() } }
         val navToCaseShare = remember(navController) { { navController.navigateToCaseShare() } }
+        val navToCaseHistory = remember(navController) { { navController.navigateToCaseHistory() } }
         EditExistingCaseRoute(
             onBack = onBackClick,
             onFullEdit = navToEditCase,
@@ -145,6 +149,7 @@ fun NavGraphBuilder.existingCaseScreen(
             openPhoto = navToViewImage,
             openAddFlag = navToCaseAddFlag,
             openShareCase = navToCaseShare,
+            openCaseHistory = navToCaseHistory,
         )
     }
 }
@@ -224,11 +229,21 @@ fun NavGraphBuilder.caseAddFlagScreen(
     }
 }
 
-fun NavGraphBuilder.caseShareRoute(
+fun NavGraphBuilder.caseShareScreen(
     onBack: () -> Unit = {},
 ) {
     composable(route = caseShareRoute) {
         CaseEditShareCaseRoute(
+            onBack = onBack,
+        )
+    }
+}
+
+fun NavGraphBuilder.caseHistoryScreen(
+    onBack: () -> Unit = {},
+) {
+    composable(route = caseHistoryRoute) {
+        CaseEditCaseHistoryRoute(
             onBack = onBack,
         )
     }

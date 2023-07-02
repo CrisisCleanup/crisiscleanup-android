@@ -135,6 +135,7 @@ internal fun EditExistingCaseRoute(
     openPhoto: (ViewImageArgs) -> Unit = { _ -> },
     openAddFlag: () -> Unit = {},
     openShareCase: () -> Unit = {},
+    openCaseHistory: () -> Unit = {},
 ) {
     val isPendingTransfer by viewModel.transferWorkTypeProvider.isPendingTransfer
     if (isPendingTransfer) {
@@ -218,6 +219,7 @@ internal fun EditExistingCaseRoute(
                         onFullEdit,
                         onCaseFlags = openAddFlag,
                         onCaseShare = openShareCase,
+                        onCaseHistory = openCaseHistory,
                     )
                 }
             }
@@ -388,6 +390,7 @@ private fun BottomActions(
     onFullEdit: (ExistingWorksiteIdentifier) -> Unit = {},
     onCaseFlags: () -> Unit = {},
     onCaseShare: () -> Unit = {},
+    onCaseHistory: () -> Unit = {},
 ) {
     val translator = LocalAppTranslator.current.translator
     val isEditable = LocalCaseEditor.current.isEditable
@@ -417,7 +420,7 @@ private fun BottomActions(
                     when (index) {
                         0 -> onCaseShare()
                         1 -> onCaseFlags()
-                        2 -> {}
+                        2 -> onCaseHistory()
                         3 -> onFullEdit(
                             ExistingWorksiteIdentifier(
                                 worksite.incidentId,

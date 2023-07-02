@@ -25,6 +25,7 @@ object RouteConstant {
     const val viewCaseTransferWorkTypesRoute = "$viewCaseRoute/transfer_work_types"
     const val caseAddFlagRoute = "$viewCaseRoute/add_flag"
     const val caseShareRoute = "$viewCaseRoute/share_case"
+    const val caseHistoryRoute = "$viewCaseRoute/case_history"
 
     const val viewImageRoute = "view_image"
 }
