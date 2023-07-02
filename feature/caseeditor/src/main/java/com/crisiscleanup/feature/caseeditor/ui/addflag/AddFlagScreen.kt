@@ -40,10 +40,11 @@ import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.optionItemHeight
 import com.crisiscleanup.core.model.data.WorksiteFlagType
+import com.crisiscleanup.core.ui.ScreenKeyboardVisibility
+import com.crisiscleanup.core.ui.screenKeyboardVisibility
 import com.crisiscleanup.feature.caseeditor.CaseAddFlagViewModel
 import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
 import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifierNone
-import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.util.TwoActionBar
 
 @Composable
@@ -90,7 +91,7 @@ private fun CaseEditAddFlagScreen(
     ) {
         Column {
             TopAppBarCancelAction(
-                title = translator("actions.flag"),
+                title = translator("nav.flag"),
                 onAction = onBack,
             )
 
@@ -230,13 +231,18 @@ internal fun AddFlagSaveActionBar(
     enabled: Boolean = false,
     enableSave: Boolean = true,
     isBusy: Boolean = false,
-) = TwoActionBar(
-    onPositiveAction = onSave,
-    onCancel = onCancel,
-    enabled = enabled,
-    enablePositive = enableSave,
-    isBusy = isBusy,
-)
+) {
+    val keyboardVisibility by screenKeyboardVisibility()
+    if (keyboardVisibility == ScreenKeyboardVisibility.NotVisible) {
+        TwoActionBar(
+            onPositiveAction = onSave,
+            onCancel = onCancel,
+            enabled = enabled,
+            enablePositive = enableSave,
+            isBusy = isBusy,
+        )
+    }
+}
 
 @Composable
 private fun ColumnScope.GeneralFlagView(

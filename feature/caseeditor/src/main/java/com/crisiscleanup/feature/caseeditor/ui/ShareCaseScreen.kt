@@ -65,7 +65,10 @@ import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.optionItemPadding
 import com.crisiscleanup.core.designsystem.theme.primaryRedColor
+import com.crisiscleanup.core.ui.ScreenKeyboardVisibility
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
+import com.crisiscleanup.core.ui.screenKeyboardVisibility
+import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseShareViewModel
 import com.crisiscleanup.feature.caseeditor.ShareContactInfo
 import com.crisiscleanup.feature.caseeditor.util.CaseStaticText
@@ -156,7 +159,11 @@ private fun ColumnScope.CaseShareContent(
     val onRemoveContact = remember(viewModel) { { index: Int -> viewModel.deleteContact(index) } }
 
     Box(Modifier.weight(1f)) {
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier
+                .scrollFlingListener(closeKeyboard)
+                .fillMaxSize(),
+        ) {
             if (viewModel.showShareScreen) {
                 shareCaseInput(
                     viewModel,
@@ -183,7 +190,10 @@ private fun ColumnScope.CaseShareContent(
         AnimatedBusyIndicator(isLoading)
     }
 
-    if (viewModel.showShareScreen) {
+    val keyboardVisibility by screenKeyboardVisibility()
+    if (viewModel.showShareScreen &&
+        keyboardVisibility == ScreenKeyboardVisibility.NotVisible
+    ) {
         TwoActionBar(
             onCancel = onBack,
             enabled = isEditable,
@@ -457,6 +467,7 @@ private fun LazyListScope.contactSuggestionsItem(
             ) {
                 derivedStateOf {
                     contactOptions.isNotEmpty() &&
+                            receiverContact.isNotBlank() &&
                             dismissSuggestionsQuery != receiverContact
                 }
             }
