@@ -17,11 +17,10 @@ import com.crisiscleanup.core.database.dao.WorksiteDao
 import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
 import com.crisiscleanup.core.database.dao.WorksiteSyncStatDao
 import com.crisiscleanup.core.database.model.PopulatedRecentWorksite
-import com.crisiscleanup.core.database.model.PopulatedWorksite
 import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
 import com.crisiscleanup.core.database.model.RecentWorksiteEntity
 import com.crisiscleanup.core.database.model.asExternalModel
-import com.crisiscleanup.core.database.model.asSummaryEntity
+import com.crisiscleanup.core.database.model.asSummary
 import com.crisiscleanup.core.database.model.asWorksiteSyncStatsEntity
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.IncidentDataSyncStats
@@ -65,10 +64,6 @@ class OfflineFirstWorksitesRepository @Inject constructor(
 
     override val incidentDataPullStats = worksitesSyncer.dataPullStats
 
-    override fun streamWorksites(incidentId: Long, limit: Int, offset: Int) =
-        worksiteDao.streamWorksites(incidentId, limit, offset)
-            .map { it.map(PopulatedWorksite::asExternalModel) }
-
     override fun streamIncidentWorksitesCount(id: Long) = worksiteDao.streamWorksitesCount(id)
 
     private val orgId = accountDataRepository.accountData.map { it.org.id }
@@ -83,7 +78,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
 
     override fun streamRecentWorksites(incidentId: Long) =
         recentWorksiteDao.streamRecentWorksites(incidentId)
-            .map { it.map(PopulatedRecentWorksite::asSummaryEntity) }
+            .map { it.map(PopulatedRecentWorksite::asSummary) }
 
     override fun getWorksitesMapVisual(
         incidentId: Long,

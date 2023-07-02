@@ -2,7 +2,6 @@ package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.model.data.IncidentDataSyncStats
 import com.crisiscleanup.core.model.data.LocalWorksite
-import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.core.model.data.WorksiteSummary
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
@@ -17,11 +16,6 @@ interface WorksitesRepository {
     val isLoading: Flow<Boolean>
 
     val syncWorksitesFullIncidentId: Flow<Long>
-
-    /**
-     * Stream of an incident's [Worksite]s
-     */
-    fun streamWorksites(incidentId: Long, limit: Int, offset: Int): Flow<List<Worksite>>
 
     fun streamIncidentWorksitesCount(id: Long): Flow<Int>
 

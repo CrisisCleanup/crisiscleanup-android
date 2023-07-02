@@ -294,7 +294,7 @@ internal fun CasesScreen(
                 editedWorksiteLocation,
             )
         }
-        CasesOverlayActions(
+        CasesOverlayElements(
             modifier,
             onSelectIncident,
             disasterResId,
@@ -440,7 +440,7 @@ internal fun BoxScope.CasesMapView(
 }
 
 @Composable
-internal fun CasesOverlayActions(
+private fun CasesOverlayElements(
     modifier: Modifier = Modifier,
     onSelectIncident: () -> Unit = {},
     @DrawableRes disasterResId: Int = commonAssetsR.drawable.ic_disaster_other,
@@ -553,12 +553,12 @@ private fun CasesCountView(
     val (visibleCount, totalCount) = casesCount
     val t = LocalAppTranslator.current.translator
     if (totalCount > -1) {
-        val countText = if (visibleCount == totalCount) {
-            if (totalCount == 1) t("info.1_of_1_case")
-            else t("info.t_of_t_cases").replace("total_count", "$totalCount")
+        val countText = if (visibleCount == totalCount || visibleCount == 0) {
+            if (visibleCount == 0) t("info.t_of_t_cases").replace("{visible_count}", "$totalCount")
+            else if (totalCount == 1) t("info.1_of_1_case")
+            else t("info.t_of_t_cases").replace("{visible_count}", "$totalCount")
         } else {
-            if (visibleCount == 0 && totalCount == 1) t("info.0_of_1_case")
-            else t("info.v_of_t_cases")
+            t("info.v_of_t_cases")
                 .replace("{visible_count}", "$visibleCount")
                 .replace("{total_count}", "$totalCount")
         }
@@ -589,7 +589,7 @@ private fun CasesCountView(
 @Composable
 fun CasesOverlayActionsPreview() {
     CrisisCleanupTheme {
-        CasesOverlayActions()
+        CasesOverlayElements()
     }
 }
 

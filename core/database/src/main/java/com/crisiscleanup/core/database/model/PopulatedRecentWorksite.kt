@@ -15,7 +15,7 @@ data class PopulatedRecentWorksite(
     val worksite: WorksiteEntity
 )
 
-fun PopulatedRecentWorksite.asSummaryEntity(): WorksiteSummary {
+fun PopulatedRecentWorksite.asSummary(): WorksiteSummary {
     with(worksite) {
         return WorksiteSummary(
             id,
