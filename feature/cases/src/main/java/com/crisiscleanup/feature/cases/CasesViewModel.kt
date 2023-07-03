@@ -4,6 +4,7 @@ import android.content.ComponentCallbacks2
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppMemoryStats
 import com.crisiscleanup.core.common.VisualAlertManager
 import com.crisiscleanup.core.common.WorksiteLocationEditor
@@ -88,6 +89,7 @@ class CasesViewModel @Inject constructor(
     trimMemoryEventManager: TrimMemoryEventManager,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.Cases) private val logger: AppLogger,
+    val appEnv: AppEnv,
 ) : ViewModel(), TrimMemoryListener {
     val incidentsData = loadIncidentDataUseCase()
 
