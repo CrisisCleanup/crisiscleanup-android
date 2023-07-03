@@ -67,7 +67,6 @@ fun UserFeedbackRoute(
                         loadUrl("file:///android_res/raw/user_feedback_form.html?accountCcid=$accountId")
                         webChromeClient = getChromeClient(
                             onChooseFileCallback,
-                            true,
                         )
                     }
                 })

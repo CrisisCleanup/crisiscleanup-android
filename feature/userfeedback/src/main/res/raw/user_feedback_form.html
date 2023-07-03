@@ -44,7 +44,8 @@
                         if (!isNaN(ccid)) {
                             setTimeout(() => {
                                 ccidElement.value = ccid
-                            }, 1000)
+                                parent?.style?.setProperty('display', null)
+                            }, 5000)
                         }
                     }
                     break
@@ -63,21 +64,25 @@
         }
         const waitForForm = () => {
             const iFrames = document.getElementsByTagName("iframe")
+            let targetFields = []
             for (const iFrame of Array.from(iFrames)) {
-                const targetFields = fieldsData.map( ({ key, id }) => {
+                targetFields = fieldsData.map( ({ key, id }) => {
                     const selector = `label[data-fieldid='key:${id}']`
                     const element = iFrame.contentDocument.body.querySelector(selector)
                     return element ? { key, id, element } : null
                 })
                 .filter(f => f)
 
+                if (targetFields.length == fieldsData.length) {
+                    break
+                }
+            }
+
+            if (targetFields.length == fieldsData.length) {
                 Array.from(targetFields).forEach(input => {
                     autofillField(input)
                 })
-
-                if (targetFields.length == fieldsData.length) {
-                    return
-                }
+                return
             }
 
             if (formWaitCounter++ < 20) {
