@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
@@ -19,12 +20,16 @@ fun HelpRow(
     iconContentDescription: String,
     modifier: Modifier = Modifier,
     showHelp: () -> Unit = {},
+    isBold: Boolean = false,
 ) {
     Row(
         modifier = modifier.listItemHorizontalPadding(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(text)
+        Text(
+            text,
+            fontWeight = if (isBold) FontWeight.Bold else null
+        )
         HelpAction(iconContentDescription, showHelp)
     }
 }
