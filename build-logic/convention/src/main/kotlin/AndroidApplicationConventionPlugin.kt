@@ -17,6 +17,7 @@
 import com.android.build.api.dsl.ApplicationExtension
 import com.google.samples.apps.nowinandroid.configureGradleManagedDevices
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
+import com.google.samples.apps.nowinandroid.DefaultConfigTargetSdk
 import com.google.samples.apps.nowinandroid.configureKotlinAndroid
 import com.google.samples.apps.nowinandroid.configureKotlinAndroidToolchain
 import com.google.samples.apps.nowinandroid.configurePrintApksTask
@@ -35,7 +36,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
             configureKotlinAndroidToolchain()
             extensions.configure<ApplicationExtension> {
                 configureKotlinAndroid(this)
-                defaultConfig.targetSdk = 33
+                defaultConfig.targetSdk = DefaultConfigTargetSdk
                 configureGradleManagedDevices(this)
             }
             extensions.configure<ApplicationAndroidComponentsExtension> {
@@ -43,5 +44,4 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
             }
         }
     }
-
 }

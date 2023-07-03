@@ -1,5 +1,6 @@
 package com.crisiscleanup.feature.cases
 
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.KeyResourceTranslator
@@ -32,6 +33,13 @@ class CasesFilterViewModel @Inject constructor(
 ) : ViewModel() {
     val casesFilter = casesFilterRepository.casesFilter
 
+    val sectionExpandState = mutableStateMapOf<CollapsibleFilterSection, Boolean>()
+        .also { map ->
+            CollapsibleFilterSection.values().forEach {
+                map[it] = true
+            }
+        }
+
     val workTypes = incidentSelector.incidentId
         .flatMapLatest { id ->
             incidentsRepository.streamIncident(id)
@@ -51,6 +59,16 @@ class CasesFilterViewModel @Inject constructor(
             emptyList()
         }
 
+    val distanceOptions = listOf(
+        Pair(0f, "~~Any Distance"),
+        Pair(0.3f, "~~0.3 miles"),
+        Pair(1f, "~~1 mile"),
+        Pair(5f, "~~5 miles"),
+        Pair(20f, "~~20 miles"),
+        Pair(50f, "~~50 miles"),
+        Pair(100f, "~~100 miles"),
+    )
+
     init {
         workTypes.onEach {
             logger.logDebug("Work types", workTypes)
@@ -61,4 +79,13 @@ class CasesFilterViewModel @Inject constructor(
     fun changeFilters(filters: CasesFilter) {
         casesFilterRepository.changeFilter(filters)
     }
+}
+
+enum class CollapsibleFilterSection {
+    Distance,
+    General,
+    PersonalInfo,
+    Flags,
+    Work,
+    Dates,
 }

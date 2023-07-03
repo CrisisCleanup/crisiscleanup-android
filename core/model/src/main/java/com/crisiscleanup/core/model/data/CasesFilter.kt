@@ -5,14 +5,14 @@ import kotlinx.datetime.Instant
 private const val defaultFilterDistance = 100f
 
 const val CasesFilterMinDaysAgo: Int = 3
-const val CasesFilterMaxDaysAgo: Int = 180
+const val CasesFilterMaxDaysAgo: Int = 193
 private const val defaultDaysAgo = CasesFilterMaxDaysAgo
 
 data class CasesFilter(
     val svi: Float = 0f,
     val daysAgoUpdated: Int = defaultDaysAgo,
     /**
-     * In miles
+     * In miles. 0 is any distance.
      */
     val distance: Float = defaultFilterDistance,
     val isWithinPrimaryResponseArea: Boolean = false,
