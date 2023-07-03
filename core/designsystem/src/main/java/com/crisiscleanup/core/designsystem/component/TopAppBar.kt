@@ -23,6 +23,7 @@ import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -186,7 +187,8 @@ private fun TopBarNavAction(
     Row(
         modifier
             .clickable(onClick = action)
-            .padding(8.dp)
+            .padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         CompositionLocalProvider(LocalContentColor provides primaryBlueColor) {
             val actionText = text.ifEmpty { if (textResId != 0) stringResource(textResId) else "" }
@@ -424,4 +426,10 @@ private fun CrisisCleanupTopAppBarImagePreview() {
         profilePictureUri = "https://avatars.dicebear.com/api/bottts/Demo User.svg",
         isActionAttention = true,
     )
+}
+
+@Preview
+@Composable
+private fun TopAppBarBackPreview() {
+    TopBarNavAction()
 }

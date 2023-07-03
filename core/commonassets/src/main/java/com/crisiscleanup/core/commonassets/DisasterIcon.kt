@@ -50,7 +50,7 @@ fun DisasterIcon(
         contentColor = incidentDisasterContentColor,
     ) {
         Icon(
-            modifier = Modifier.padding(8.dp),
+            modifier = Modifier.padding(2.dp),
             painter = painterResource(disasterResId),
             contentDescription = incidentName,
         )

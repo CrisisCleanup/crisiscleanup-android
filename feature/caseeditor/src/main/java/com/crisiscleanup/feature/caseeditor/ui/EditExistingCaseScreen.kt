@@ -567,8 +567,8 @@ private fun LazyListScope.flagItems(
     worksite: Worksite,
     removeFlag: (WorksiteFlag) -> Unit = {},
 ) {
-    worksite.flags
-        ?.let { flags ->
+    worksite.flags?.let { flags ->
+        if (flags.isNotEmpty()) {
             item(key = "section-content-flags") {
                 ProvideTextStyle(value = MaterialTheme.typography.bodyMedium) {
                     FlowRow(
@@ -581,6 +581,7 @@ private fun LazyListScope.flagItems(
                 }
             }
         }
+    }
 }
 
 @Composable

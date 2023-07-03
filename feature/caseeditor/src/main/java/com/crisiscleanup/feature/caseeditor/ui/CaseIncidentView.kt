@@ -20,6 +20,7 @@ import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
+import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.primaryRedColor
 import com.crisiscleanup.core.model.data.EmptyIncident
@@ -38,8 +39,7 @@ internal fun CaseIncidentView(
     Row(
         modifier = modifier
             .listItemPadding()
-            // Match icon frame size below
-            .heightIn(min = 48.dp),
+            .listItemHeight(),
         verticalAlignment = Alignment.CenterVertically,
         // TODO Common dimensions
         horizontalArrangement = Arrangement.spacedBy(16.dp)

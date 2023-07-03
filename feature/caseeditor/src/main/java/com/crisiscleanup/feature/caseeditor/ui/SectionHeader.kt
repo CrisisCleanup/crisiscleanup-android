@@ -34,7 +34,7 @@ private fun CircleNumber(
     modifier = Modifier
         // TODO Common dimensions
         .size(26.dp)
-        .padding(top = 2.dp)
+        .padding(top = 6.dp)
         .drawBehind {
             drawCircle(
                 color = attentionBackgroundColor,
