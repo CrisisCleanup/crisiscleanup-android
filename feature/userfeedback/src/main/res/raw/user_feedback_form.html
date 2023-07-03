@@ -31,16 +31,21 @@
             { key: 'ccid', id: '16781124470797' },
             { key: 'appType', id: '17191842436621' },
         ]
-        const autofillField = ({key, id, element}) => {
+        const qs = new URLSearchParams(window.location.search)
+        const autofillField = ({ key, id, element }) => {
             const parent = element.parentNode
             switch(key) {
                 case 'ccid':
                     const ccidSelector = `input[name='key:${id}']`
                     const ccidElement = parent.querySelector(ccidSelector)
                     if (ccidElement) {
-                        // TODO Set actual ID
-                        ccidElement.value = "0"
+                        const ccid = qs.get('accountCcid')
                         parent?.style?.setProperty('display', 'none')
+                        if (!isNaN(ccid)) {
+                            setTimeout(() => {
+                                ccidElement.value = ccid
+                            }, 1000)
+                        }
                     }
                     break
                 case 'appType':
