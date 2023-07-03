@@ -1,5 +1,6 @@
 package com.crisiscleanup.feature.userfeedback.ui
 
+import android.annotation.SuppressLint
 import android.net.Uri
 import android.util.Log
 import android.webkit.ConsoleMessage
@@ -20,6 +21,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.feature.userfeedback.UserFeedbackViewModel
 
+@SuppressLint("SetJavaScriptEnabled")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserFeedbackRoute(
@@ -57,6 +59,7 @@ fun UserFeedbackRoute(
                     loadUrl("file:///android_res/raw/user_feedback_form.html")
                     webChromeClient = getChromeClient(
                         onChooseFileCallback,
+                        true,
                     )
                 }
             })
