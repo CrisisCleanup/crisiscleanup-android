@@ -29,8 +29,9 @@
     const autofillData = () => {
         const fieldsData = [
             { key: 'ccid', id: '16781124470797' },
-            { key: 'appType', id: '17191842436621' },
+            { key: 'appType', id: '17295140815757' },
         ]
+        const autofillValueDelayMillis = 5000
         const qs = new URLSearchParams(window.location.search)
         const autofillField = ({ key, id, element }) => {
             const parent = element.parentNode
@@ -44,20 +45,18 @@
                         if (!isNaN(ccid)) {
                             setTimeout(() => {
                                 ccidElement.value = ccid
-                                parent?.style?.setProperty('display', null)
-                            }, 5000)
+                            }, autofillValueDelayMillis)
                         }
                     }
                     break
                 case 'appType':
-                    const appTypeSelector = `div[data-garden-id='dropdowns.select']`
+                    const appTypeSelector = `input[name='key:${id}']`
                     const appTypeElement = parent.querySelector(appTypeSelector)
-                    const appTypeInputSelector = `input[data-garden-id='dropdowns.input']`
-                    const appTypeInput = parent.querySelector(appTypeInputSelector)
-                    if (appTypeElement && appTypeInput) {
-                        appTypeElement.textContent = "Android"
-                        appTypeInput.value = "android"
+                    if (appTypeElement) {
                         parent?.style?.setProperty('display', 'none')
+                        setTimeout(() => {
+                            appTypeElement.value = "Android"
+                        }, autofillValueDelayMillis)
                     }
                     break
             }
