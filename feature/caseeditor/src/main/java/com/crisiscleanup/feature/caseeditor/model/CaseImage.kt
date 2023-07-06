@@ -33,7 +33,7 @@ fun NetworkImage.asCaseImage() = CaseImage(
 )
 
 fun WorksiteLocalImage.asCaseImage() = CaseImage(
-    id = id,
+    id,
     false,
     thumbnailUri = uri,
     imageUri = uri,

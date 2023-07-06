@@ -43,23 +43,23 @@ internal class CaseEditorDataLoader(
     worksiteIdIn: Long?,
     accountDataRepository: AccountDataRepository,
     incidentsRepository: IncidentsRepository,
-    private val incidentRefresher: IncidentRefresher,
+    incidentRefresher: IncidentRefresher,
     incidentBoundsProvider: IncidentBoundsProvider,
-    private val worksitesRepository: WorksitesRepository,
-    private val worksiteChangeRepository: WorksiteChangeRepository,
+    worksitesRepository: WorksitesRepository,
+    worksiteChangeRepository: WorksiteChangeRepository,
     languageRepository: LanguageTranslationsRepository,
     languageRefresher: LanguageRefresher,
     workTypeStatusRepository: WorkTypeStatusRepository,
     translate: (String) -> String,
     private val editableWorksiteProvider: EditableWorksiteProvider,
-    private val networkMonitor: NetworkMonitor,
+    networkMonitor: NetworkMonitor,
     coroutineScope: CoroutineScope,
     coroutineDispatcher: CoroutineDispatcher,
     appEnv: AppEnv,
     private val logger: AppLogger,
     private val debugTag: String = "",
 ) {
-    private val logDebug = appEnv.isDebuggable && debugTag.isNotEmpty()
+    private val logDebug = appEnv.isDebuggable && debugTag.isNotBlank()
 
     val editSections = MutableStateFlow<List<String>>(emptyList())
 
@@ -274,7 +274,7 @@ internal class CaseEditorDataLoader(
                         updatedFormData[formField.fieldKey] = WorksiteFormValue.trueValue
                     }
                 }
-                if (updatedFormData.size != (worksiteState.formData?.size ?: 0)) {
+                if (updatedFormData.size != worksiteState.formData?.size) {
                     worksiteState = worksiteState.copy(
                         formData = updatedFormData,
                     )

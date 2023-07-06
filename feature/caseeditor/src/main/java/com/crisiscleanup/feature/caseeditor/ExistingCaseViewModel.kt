@@ -14,7 +14,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.NetworkMonitor
@@ -98,7 +97,6 @@ class ExistingCaseViewModel @Inject constructor(
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val syncPusher: SyncPusher,
     networkMonitor: NetworkMonitor,
-    private val resourceProvider: AndroidResourceProvider,
     packageManager: PackageManager,
     private val contentResolver: ContentResolver,
     drawableResourceBitmapProvider: DrawableResourceBitmapProvider,
@@ -258,7 +256,6 @@ class ExistingCaseViewModel @Inject constructor(
                 isCameraPermissionGranted = true
             }
         }.launchIn(viewModelScope)
-
     }
 
     val isLoading = dataLoader.isLoading

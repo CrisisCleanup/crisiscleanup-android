@@ -22,11 +22,10 @@ class IncidentRefresher @Inject constructor(
 
     suspend fun pullIncident(id: Long) {
         if (networkMonitor.isNotOnline.first() ||
-            recentlyRefreshedIncident.get() == id
+            recentlyRefreshedIncident.getAndSet(id) == id
         ) {
             return
         }
-        recentlyRefreshedIncident.set(id)
 
         try {
             incidentsRepository.pullIncident(id)
