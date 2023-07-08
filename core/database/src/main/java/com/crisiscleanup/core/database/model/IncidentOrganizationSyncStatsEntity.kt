@@ -35,11 +35,3 @@ fun IncidentOrganizationSyncStatsEntity.asExternalModel() = IncidentDataSyncStat
     ),
     appBuildVersionCode = appBuildVersionCode,
 )
-
-fun IncidentDataSyncStats.asOrganizationSyncStatsEntity() = IncidentOrganizationSyncStatsEntity(
-    incidentId = incidentId,
-    targetCount = dataCount,
-    successfulSync = if (syncAttempt.successfulSeconds <= 0) null
-    else Instant.fromEpochSeconds(syncAttempt.successfulSeconds),
-    appBuildVersionCode = appBuildVersionCode,
-)

@@ -25,7 +25,7 @@ class IncidentOrganizationDaoPlus @Inject constructor(
         organizationAffiliates: Collection<OrganizationAffiliateEntity>,
     ) = db.withTransaction {
         val organizationDao = db.incidentOrganizationDao()
-        // TODO Write tests that only specific organization data is deleted and updated
+        // TODO Test coverage. Only specified organization data is deleted and updated.
         val organizationIds = organizations.map(IncidentOrganizationEntity::id).toSet()
         organizationDao.deletePrimaryContactCrossRefs(organizationIds)
         organizationDao.insertIgnorePrimaryContactCrossRefs(organizationContactCrossRefs)

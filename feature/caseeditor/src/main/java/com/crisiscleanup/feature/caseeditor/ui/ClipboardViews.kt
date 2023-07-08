@@ -55,7 +55,7 @@ internal fun BoxScope.CopiedToClipboard(
         ) {
             val translator = LocalAppTranslator.current.translator
             val copiedText = translator("info.copied_value")
-                .replace("{value}", clipboardContents)
+                .replace("{copied_string}", clipboardContents)
             Text(
                 text = copiedText,
                 // TODO Common dimensions

@@ -26,5 +26,5 @@ interface SyncLogDao {
 
     @Transaction
     @Query("DELETE FROM sync_logs WHERE log_time<:minLogTime")
-    fun trimOldSyncLogs(minLogTime: Instant = Clock.System.now().minus(30.days))
+    fun trimOldSyncLogs(minLogTime: Instant = Clock.System.now().minus(14.days))
 }
