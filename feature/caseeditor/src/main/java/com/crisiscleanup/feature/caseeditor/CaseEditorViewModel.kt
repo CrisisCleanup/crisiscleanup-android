@@ -110,9 +110,6 @@ class CaseEditorViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    private val incidentFieldLookup: StateFlow<Map<String, GroupSummaryFieldLookup>>
-    private val workTypeGroupChildrenLookup: StateFlow<Map<String, Collection<String>>>
-
     val showInvalidWorksiteSave = MutableStateFlow(false)
     val invalidWorksiteInfo = mutableStateOf(InvalidWorksiteInfo())
 
@@ -194,9 +191,6 @@ class CaseEditorViewModel @Inject constructor(
             appEnv,
             logger,
         )
-
-        incidentFieldLookup = dataLoader.incidentFieldLookup
-        workTypeGroupChildrenLookup = dataLoader.workTypeGroupChildrenLookup
 
         dataLoader.worksiteStream
             .onEach {
