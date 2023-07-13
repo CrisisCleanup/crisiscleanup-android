@@ -211,17 +211,19 @@ private fun NonProductionDialog(
             viewModel.visualAlertManager.setNonProductionAppAlert(false)
             showDialog = false
         }
-        val translator = LocalAppTranslator.current.translator
+        val localTranslator = LocalAppTranslator.current
+        val translationCount by localTranslator.translator.translationCount.collectAsStateWithLifecycle()
+        val t = remember(translationCount) { localTranslator.translator }
         CrisisCleanupAlertDialog(
             onDismissRequest = hideDialog,
-            title = translator("phoneBeta.title"),
+            title = t("phoneBeta.title"),
             confirmButton = {
                 CrisisCleanupTextButton(
-                    text = translator("actions.ok"),
+                    text = t("actions.ok"),
                     onClick = hideDialog
                 )
             },
-            text = translator("phoneBeta.explanation")
+            text = t("phoneBeta.explanation")
         )
     }
 }
