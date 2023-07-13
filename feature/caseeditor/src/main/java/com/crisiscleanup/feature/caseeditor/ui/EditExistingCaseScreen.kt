@@ -96,6 +96,8 @@ import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteFlagType
 import com.crisiscleanup.core.model.data.WorksiteNote
+import com.crisiscleanup.core.ui.ScreenKeyboardVisibility
+import com.crisiscleanup.core.ui.screenKeyboardVisibility
 import com.crisiscleanup.feature.caseeditor.ExistingCaseViewModel
 import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
 import com.crisiscleanup.feature.caseeditor.R
@@ -213,14 +215,16 @@ internal fun EditExistingCaseRoute(
                         openPhoto,
                         copyToClipboard,
                     )
-
-                    BottomActions(
-                        worksite,
-                        onFullEdit,
-                        onCaseFlags = openAddFlag,
-                        onCaseShare = openShareCase,
-                        onCaseHistory = openCaseHistory,
-                    )
+                    val keyboardVisibility by screenKeyboardVisibility()
+                    if (keyboardVisibility == ScreenKeyboardVisibility.NotVisible) {
+                        BottomActions(
+                            worksite,
+                            onFullEdit,
+                            onCaseFlags = openAddFlag,
+                            onCaseShare = openShareCase,
+                            onCaseHistory = openCaseHistory,
+                        )
+                    }
                 }
             }
         }

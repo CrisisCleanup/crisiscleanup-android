@@ -116,6 +116,7 @@ internal fun CasesSearchRoute(
                 ListCases(
                     q.isEmpty(),
                     closeKeyboard = closeKeyboard,
+                    isEditable = !isSelectingResult,
                 )
             }
 
@@ -129,6 +130,7 @@ private fun ListCases(
     showRecents: Boolean,
     viewModel: CasesSearchViewModel = hiltViewModel(),
     closeKeyboard: () -> Unit = {},
+    isEditable: Boolean = false,
 ) {
     val searchResults by viewModel.searchResults.collectAsStateWithLifecycle()
 
@@ -145,17 +147,17 @@ private fun ListCases(
         state = lazyListState,
     ) {
         if (showRecents) {
-            recentCases(recentCases, onCaseSelect)
+            recentCases(recentCases, onCaseSelect, isEditable)
         } else {
             with(searchResults) {
                 if (options.isNotEmpty()) {
-                    listCaseResults(options, onCaseSelect, isEditable = true)
+                    listCaseResults(options, onCaseSelect, isEditable = isEditable)
                 } else {
                     item {
                         val translator = LocalAppTranslator.current.translator
                         val message =
                             if (isShortQ) translator("info.search_query_is_short")
-                            else translator("info.no_search_results").replace("{query}", q)
+                            else translator("info.no_search_results").replace("{search_string}", q)
                         Text(message, listItemModifier)
                     }
                 }
@@ -167,6 +169,7 @@ private fun ListCases(
 private fun LazyListScope.recentCases(
     cases: List<CaseSummaryResult>,
     onSelect: (CaseSummaryResult) -> Unit = {},
+    isEditable: Boolean = false,
 ) {
     if (cases.isNotEmpty()) {
         item("section-title") {
@@ -177,5 +180,5 @@ private fun LazyListScope.recentCases(
         }
     }
 
-    listCaseResults(cases, onSelect, isEditable = true)
+    listCaseResults(cases, onSelect, isEditable = isEditable)
 }

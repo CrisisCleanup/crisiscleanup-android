@@ -99,7 +99,7 @@ class SingleEditableWorksiteProvider @Inject constructor() : EditableWorksitePro
 
     override fun setEditedLocation(coordinates: LatLng) = setCoordinates(coordinates)
 
-    override fun clearEditedLocation() = setCoordinates(null)
+    override fun clearEditedLocation() = setCoordinates()
 
     override fun takeEditedLocation(): Pair<Double, Double>? = editedLocation.getAndSet(null)
 

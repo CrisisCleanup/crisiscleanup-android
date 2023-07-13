@@ -25,9 +25,76 @@
         return false
     }
 
+    let formWaitCounter = 0
+    const autofillData = () => {
+        const fieldsData = [
+            { key: 'ccid', id: '16781124470797' },
+            { key: 'appType', id: '17295140815757' },
+        ]
+        const autofillValueDelayMillis = 5000
+        const qs = new URLSearchParams(window.location.search)
+        const autofillField = ({ key, id, element }) => {
+            const parent = element.parentNode
+            switch(key) {
+                case 'ccid':
+                    const ccidSelector = `input[name='key:${id}']`
+                    const ccidElement = parent.querySelector(ccidSelector)
+                    if (ccidElement) {
+                        const ccid = qs.get('accountCcid')
+                        parent?.style?.setProperty('display', 'none')
+                        if (!isNaN(ccid)) {
+                            setTimeout(() => {
+                                ccidElement.value = ccid
+                            }, autofillValueDelayMillis)
+                        }
+                    }
+                    break
+                case 'appType':
+                    const appTypeSelector = `input[name='key:${id}']`
+                    const appTypeElement = parent.querySelector(appTypeSelector)
+                    if (appTypeElement) {
+                        parent?.style?.setProperty('display', 'none')
+                        setTimeout(() => {
+                            appTypeElement.value = "Android"
+                        }, autofillValueDelayMillis)
+                    }
+                    break
+            }
+        }
+        const waitForForm = () => {
+            const iFrames = document.getElementsByTagName("iframe")
+            let targetFields = []
+            for (const iFrame of Array.from(iFrames)) {
+                targetFields = fieldsData.map( ({ key, id }) => {
+                    const selector = `label[data-fieldid='key:${id}']`
+                    const element = iFrame.contentDocument.body.querySelector(selector)
+                    return element ? { key, id, element } : null
+                })
+                .filter(f => f)
+
+                if (targetFields.length == fieldsData.length) {
+                    break
+                }
+            }
+
+            if (targetFields.length == fieldsData.length) {
+                Array.from(targetFields).forEach(input => {
+                    autofillField(input)
+                })
+                return
+            }
+
+            if (formWaitCounter++ < 20) {
+                setTimeout(waitForForm, 100)
+            }
+        }
+        waitForForm()
+    }
+
     let waitCounter = 0
     const waitForLauncher = () => {
         if (openLauncher()) {
+            autofillData()
             return
         }
 

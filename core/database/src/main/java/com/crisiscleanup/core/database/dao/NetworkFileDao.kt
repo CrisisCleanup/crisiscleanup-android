@@ -24,11 +24,11 @@ interface NetworkFileDao {
         DELETE FROM network_files WHERE id IN(
             SELECT id FROM network_file_local_images i
             INNER JOIN worksite_to_network_file w ON w.network_file_id=i.id
-            WHERE worksite_id=:worksiteId AND is_deleted<>0 AND i.id NOT IN(:ids)
+            WHERE worksite_id=:worksiteId AND is_deleted<>0 AND i.id NOT IN(:keepIds)
         )
         """
     )
-    fun deleteDeleted(worksiteId: Long, ids: Collection<Long>)
+    fun deleteDeleted(worksiteId: Long, keepIds: Collection<Long>)
 
     @Transaction
     @Query(

@@ -297,7 +297,7 @@ internal class EditableLocationDataEditor(
             if (it) ""
             else {
                 translator("caseForm.case_outside_incident_name")
-                    .replace("{incident}", worksiteProvider.incident.name)
+                    .replace("{incident_name}", worksiteProvider.incident.name)
             }
         }
         .stateIn(

@@ -32,7 +32,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
@@ -41,7 +40,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 interface WorksiteChangeRepository {
-    val syncingWorksiteIds: StateFlow<Set<Long>>
+    val syncingWorksiteIds: Flow<Set<Long>>
 
     val streamWorksitesPendingSync: Flow<List<Worksite>>
 
@@ -301,10 +300,10 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
         if (networkWorksiteId > 0) {
             try {
                 syncNetworkWorksite = networkDataSource.getWorksite(networkWorksiteId)
+                incidentId = worksiteDao.getIncidentId(worksiteId)
             } catch (e: Exception) {
                 syncLogger.log("Worksite sync end fail ${e.message}")
             }
-            incidentId = worksiteDao.getIncidentId(worksiteId)
         }
 
         val isFullySynced = worksiteDaoPlus.onSyncEnd(worksiteId)
