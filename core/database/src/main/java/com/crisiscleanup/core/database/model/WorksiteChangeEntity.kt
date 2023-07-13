@@ -1,6 +1,7 @@
 package com.crisiscleanup.core.database.model
 
 import androidx.room.*
+import androidx.room.Index.Order
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
@@ -16,6 +17,11 @@ import kotlinx.datetime.Instant
     ],
     indices = [
         Index(value = ["worksite_id", "created_at"]),
+        Index(value = ["worksite_id", "save_attempt"]),
+        Index(
+            value = ["worksite_id", "save_attempt_at", "created_at"],
+            orders = [Order.ASC, Order.ASC, Order.DESC],
+        ),
     ]
 )
 data class WorksiteChangeEntity(

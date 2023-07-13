@@ -7,7 +7,7 @@ import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.CloudOff
+import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -19,7 +19,6 @@ import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.MyLocation
-import androidx.compose.material.icons.filled.NoteAdd
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonOutline
 import androidx.compose.material.icons.filled.Phone
@@ -47,7 +46,7 @@ object CrisisCleanupIcons {
     val Cases = R.drawable.ic_cases
     val Clear = icons.Clear
     val CloudSync = icons.CloudSync
-    val CloudOff = icons.CloudOff
+    val Cloud = icons.Cloud
     val Dashboard = R.drawable.ic_dashboard
     val Delete = icons.Delete
     val Edit = icons.Edit

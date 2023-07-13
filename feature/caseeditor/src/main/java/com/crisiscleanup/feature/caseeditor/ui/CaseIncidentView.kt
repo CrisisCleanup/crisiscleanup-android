@@ -3,7 +3,6 @@ package com.crisiscleanup.feature.caseeditor.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -22,7 +21,7 @@ import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
-import com.crisiscleanup.core.designsystem.theme.primaryRedColor
+import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.Incident
 
@@ -66,9 +65,9 @@ internal fun CaseIncidentView(
         } else if (isPendingSync) {
             CrisisCleanupIconButton(
                 onClick = scheduleSync,
-                imageVector = CrisisCleanupIcons.CloudOff,
+                imageVector = CrisisCleanupIcons.Cloud,
                 contentDescription = translator("info.is_pending_sync"),
-                tint = primaryRedColor,
+                tint = primaryOrangeColor,
             )
         }
     }

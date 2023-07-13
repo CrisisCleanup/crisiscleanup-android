@@ -68,6 +68,7 @@ interface WorksiteChangeRepository {
     suspend fun saveDeletePhoto(fileId: Long): Long
 
     suspend fun trySyncWorksite(worksiteId: Long): Boolean
+    suspend fun syncUnattemptedWorksite(worksiteId: Long)
 
     suspend fun syncWorksiteMedia(): Boolean
 }
@@ -172,7 +173,9 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
                     }
                     worksiteId = worksiteIds.first()
 
-                    if (worksiteId == previousWorksiteId) {
+                    if (worksiteId == previousWorksiteId &&
+                        worksiteChangeDao.getSaveFailCount(worksiteId) > 0
+                    ) {
                         break
                     }
                     previousWorksiteId = worksiteId
@@ -194,6 +197,12 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
     }
 
     override suspend fun trySyncWorksite(worksiteId: Long) = trySyncWorksite(worksiteId, false)
+
+    override suspend fun syncUnattemptedWorksite(worksiteId: Long) {
+        if (worksiteChangeDao.getSaveFailCount(worksiteId) == 0) {
+            trySyncWorksite(worksiteId, false)
+        }
+    }
 
     private suspend fun trySyncWorksite(
         worksiteId: Long,
@@ -219,7 +228,6 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
                 _syncingWorksiteIds.add(worksiteId)
                 syncingWorksiteIds.value = _syncingWorksiteIds.toSet()
             }
-
 
             syncWorksite(worksiteId)
         } catch (e: Exception) {

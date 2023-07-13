@@ -358,7 +358,9 @@ class AppSyncer @Inject constructor(
                 return@launch
             }
 
-            worksiteChangeRepository.trySyncWorksite(worksiteId)
+            if (worksiteChangeRepository.trySyncWorksite(worksiteId)) {
+                worksiteChangeRepository.syncUnattemptedWorksite(worksiteId)
+            }
         }
     }
 

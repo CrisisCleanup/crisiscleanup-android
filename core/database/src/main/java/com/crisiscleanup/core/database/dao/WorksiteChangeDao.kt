@@ -64,7 +64,7 @@ interface WorksiteChangeDao {
     )
     fun streamWorksitesPendingSync(): Flow<List<PopulatedWorksite>>
 
-    // TODO Write tests, add matching index
+    // TODO Write tests
     @Transaction
     @Query(
         """
@@ -78,4 +78,14 @@ interface WorksiteChangeDao {
         """
     )
     fun getWorksitesPendingSync(limit: Int): List<Long>
+
+    @Transaction
+    @Query(
+        """
+        SELECT COUNT(id)
+        FROM worksite_changes
+        WHERE worksite_id=:worksiteId AND save_attempt>0
+        """
+    )
+    fun getSaveFailCount(worksiteId: Long): Int
 }

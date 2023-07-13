@@ -92,7 +92,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         IncidentFtsEntity::class,
         IncidentOrganizationFtsEntity::class,
     ],
-    version = 28,
+    version = 29,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
@@ -121,6 +121,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         AutoMigration(from = 25, to = 26),
         AutoMigration(from = 26, to = 27),
         AutoMigration(from = 27, to = 28),
+        AutoMigration(from = 28, to = 29),
     ],
     exportSchema = true,
 )
