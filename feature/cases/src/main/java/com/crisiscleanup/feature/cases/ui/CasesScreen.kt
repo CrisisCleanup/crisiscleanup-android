@@ -208,14 +208,14 @@ private fun NonProductionDialog(
         val translator = LocalAppTranslator.current.translator
         CrisisCleanupAlertDialog(
             onDismissRequest = hideDialog,
-            title = "~~Friendly reminder",
+            title = translator("phoneBeta.title"),
             confirmButton = {
                 CrisisCleanupTextButton(
                     text = translator("actions.ok"),
                     onClick = hideDialog
                 )
             },
-            text = "~~Changes made in this app are not permanent. This version of the app is for testing and all changes will be reset on a daily basis. You are essential to our efforts in getting to the full release. We appreciate you very much."
+            text = translator("phoneBeta.explanation")
         )
     }
 }

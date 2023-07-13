@@ -192,7 +192,7 @@ private fun LazyListScope.sviSlider(
     rangeSliderItem(
         translator("svi.most_vulnerable"),
         translator("svi.everyone"),
-        labelTranslateKey = "~~Vulnerability",
+        labelTranslateKey = "svi.vulnerability",
         value = filters.svi,
         onUpdate = { f: Float -> onUpdateFilter(filters.copy(svi = f)) },
         helpTranslateKey = "svi.svi_more_info_link",
@@ -206,8 +206,8 @@ private fun LazyListScope.daysUpdatedSlider(
     onUpdateFilter: (CasesFilter) -> Unit = {}
 ) {
     rangeSliderItem(
-        translator("{days} days ago").replace("{days}", CasesFilterMinDaysAgo.toString()),
-        translator("{days} days ago").replace("{days}", CasesFilterMaxDaysAgo.toString()),
+        translator("worksiteFilters.days_ago").replace("{days}", CasesFilterMinDaysAgo.toString()),
+        translator("worksiteFilters.days_ago").replace("{days}", CasesFilterMaxDaysAgo.toString()),
         // TODO Common dimensions
         modifier = Modifier.padding(top = 16.dp),
         labelTranslateKey = "worksiteFilters.updated",
@@ -245,12 +245,12 @@ private fun FilterHeaderCollapsible(
 }
 
 private val sectionTranslationKey = mapOf(
-    CollapsibleFilterSection.Distance to "~~Distance",
-    CollapsibleFilterSection.General to "~~General",
-    CollapsibleFilterSection.PersonalInfo to "~~Personal Info",
-    CollapsibleFilterSection.Flags to "~~Flags",
-    CollapsibleFilterSection.Work to "~~Work",
-    CollapsibleFilterSection.Dates to "~~Dates",
+    CollapsibleFilterSection.Distance to translator("worksiteFilters.distance"),
+    CollapsibleFilterSection.General to translator("worksiteFilters.general"),
+    CollapsibleFilterSection.PersonalInfo to translator("worksiteFilters.personal_info"),
+    CollapsibleFilterSection.Flags to translator("worksiteFilters.flags"),
+    CollapsibleFilterSection.Work to translator("worksiteFilters.work"),
+    CollapsibleFilterSection.Dates to translator("worksiteFilters.dates"),
 )
 
 private fun LazyListScope.collapsibleSectionHeader(

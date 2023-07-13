@@ -60,13 +60,13 @@ class CasesFilterViewModel @Inject constructor(
         }
 
     val distanceOptions = listOf(
-        Pair(0f, "~~Any Distance"),
-        Pair(0.3f, "~~0.3 miles"),
-        Pair(1f, "~~1 mile"),
-        Pair(5f, "~~5 miles"),
-        Pair(20f, "~~20 miles"),
-        Pair(50f, "~~50 miles"),
-        Pair(100f, "~~100 miles"),
+        Pair(0f, translator("worksiteFilters.any_distance")),
+        Pair(0.3f, translator("worksiteFilters.point_3_miles")),
+        Pair(1f, translator("worksiteFilters.one_mile")),
+        Pair(5f, translator("worksiteFilters.five_miles")),
+        Pair(20f, translator("worksiteFilters.twenty_miles")),
+        Pair(50f, translator("worksiteFilters.fifty_miles")),
+        Pair(100f, translator("worksiteFilters.one_hundred_miles")),
     )
 
     init {
