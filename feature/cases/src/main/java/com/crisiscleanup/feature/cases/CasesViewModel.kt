@@ -1,15 +1,21 @@
 package com.crisiscleanup.feature.cases
 
 import android.content.ComponentCallbacks2
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppMemoryStats
+import com.crisiscleanup.core.common.LocationProvider
+import com.crisiscleanup.core.common.PermissionManager
+import com.crisiscleanup.core.common.PermissionStatus
 import com.crisiscleanup.core.common.VisualAlertManager
 import com.crisiscleanup.core.common.WorksiteLocationEditor
 import com.crisiscleanup.core.common.event.TrimMemoryEventManager
 import com.crisiscleanup.core.common.event.TrimMemoryListener
+import com.crisiscleanup.core.common.locationPermissionGranted
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -29,6 +35,7 @@ import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
+import com.crisiscleanup.core.mapmarker.util.toLatLng
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.feature.cases.map.CasesMapBoundsManager
@@ -60,6 +67,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
@@ -82,6 +90,8 @@ class CasesViewModel @Inject constructor(
     private val mapTileRenderer: CasesOverviewMapTileRenderer,
     private val tileProvider: TileProvider,
     private val worksiteLocationEditor: WorksiteLocationEditor,
+    private val permissionManager: PermissionManager,
+    private val locationProvider: LocationProvider,
     private val syncPuller: SyncPuller,
     private val casesFilterRepository: CasesFilterRepository,
     val visualAlertManager: VisualAlertManager,
@@ -241,6 +251,9 @@ class CasesViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
+    var showExplainPermissionLocation by mutableStateOf(false)
+    var isMyLocationEnabled by mutableStateOf(false)
+
     init {
         trimMemoryEventManager.addListener(this)
 
@@ -254,6 +267,15 @@ class CasesViewModel @Inject constructor(
             .debounce(16)
             .throttleLatest(1_000)
             .onEach { refreshTiles(it.first, it.second) }
+            .launchIn(viewModelScope)
+
+        permissionManager.permissionChanges
+            .map {
+                if (it == locationPermissionGranted) {
+                    setMapToMyCoordinates()
+                }
+                isMyLocationEnabled = permissionManager.hasLocationPermission
+            }
             .launchIn(viewModelScope)
     }
 
@@ -334,6 +356,35 @@ class CasesViewModel @Inject constructor(
     }
 
     fun zoomToInteractive() = adjustMapZoom(mapTileRenderer.zoomThreshold + 1.1f)
+
+    private fun setMapToMyCoordinates() {
+        viewModelScope.launch {
+            locationProvider.getLocation()?.let { myLocation ->
+                _mapCameraZoom.value = MapViewCameraZoom(
+                    myLocation.toLatLng(),
+                    (11f + Math.random() * 1e-3).toFloat(),
+                )
+            }
+        }
+    }
+
+    fun useMyLocation() {
+        when (permissionManager.requestLocationPermission()) {
+            PermissionStatus.Granted -> {
+                setMapToMyCoordinates()
+            }
+
+            PermissionStatus.ShowRationale -> {
+                showExplainPermissionLocation = true
+            }
+
+            PermissionStatus.Requesting,
+            PermissionStatus.Denied,
+            PermissionStatus.Undefined -> {
+                // Ignore these statuses as they're not important
+            }
+        }
+    }
 
     private suspend fun refreshTiles(
         idCount: IncidentIdWorksiteCount,

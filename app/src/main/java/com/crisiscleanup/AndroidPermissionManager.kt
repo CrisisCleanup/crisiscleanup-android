@@ -27,6 +27,9 @@ import javax.inject.Singleton
 class AndroidPermissionManager @Inject constructor(
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : PermissionManager, DefaultLifecycleObserver {
+    override val hasLocationPermission: Boolean
+        get() = hasPermission(ACCESS_COARSE_LOCATION)
+
     override val permissionChanges = MutableStateFlow(Pair("", PermissionStatus.Undefined))
 
     private var requestPermissionLauncher: ActivityResultLauncher<String>? = null
@@ -55,6 +58,16 @@ class AndroidPermissionManager @Inject constructor(
 
     override fun onDestroy(owner: LifecycleOwner) {
         requestPermissionLauncher?.unregister()
+    }
+
+    private fun hasPermission(permission: String): Boolean {
+        activityWr.get()?.let { activity ->
+            return ContextCompat.checkSelfPermission(
+                activity,
+                permission
+            ) == PackageManager.PERMISSION_GRANTED
+        }
+        return false
     }
 
     private fun requestPermission(permission: String): PermissionStatus {

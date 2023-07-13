@@ -13,6 +13,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
+import com.crisiscleanup.core.designsystem.component.ExplainLocationPermissionDialog
 import com.crisiscleanup.core.designsystem.component.HelpRow
 import com.crisiscleanup.core.designsystem.component.OutlinedSingleLineTextField
 import com.crisiscleanup.core.designsystem.component.WithHelpDialog
@@ -104,7 +105,6 @@ internal fun PropertyLocationView(
         ExplainLocationPermissionDialog(
             showDialog = explainPermission,
             closeDialog = closePermissionDialog,
-            closeText = translator("actions.close"),
         )
     }
 }

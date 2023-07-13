@@ -48,6 +48,7 @@ import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCen
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
+import com.crisiscleanup.core.designsystem.component.ExplainLocationPermissionDialog
 import com.crisiscleanup.core.designsystem.component.actionEdgeSpace
 import com.crisiscleanup.core.designsystem.component.actionInnerSpace
 import com.crisiscleanup.core.designsystem.component.actionRoundCornerShape
@@ -68,6 +69,7 @@ import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.core.ui.LocalAppLayout
 import com.crisiscleanup.feature.cases.CasesViewModel
+import com.crisiscleanup.feature.cases.R
 import com.crisiscleanup.feature.cases.model.WorksiteGoogleMapMark
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.Projection
@@ -133,14 +135,7 @@ internal fun CasesRoute(
         val mapCameraZoom by viewModel.mapCameraZoom.collectAsStateWithLifecycle()
         val tileOverlayState = rememberTileOverlayState()
         val tileChangeValue by viewModel.overviewTileDataChange
-        val clearTileLayer = remember(viewModel) {
-            { viewModel.clearTileLayer }
-        }
-        val casesDotTileProvider = remember(viewModel) {
-            { viewModel.overviewMapTileProvider() }
-        }
-        val onMapLoadStart = remember(viewModel) { { viewModel.onMapLoadStart() } }
-        val onMapLoaded = remember(viewModel) { { viewModel.onMapLoaded() } }
+        val clearTileLayer = remember(viewModel) { { viewModel.clearTileLayer } }
         val onMapCameraChange = remember(viewModel) {
             { position: CameraPosition, projection: Projection?, activeChange: Boolean ->
                 viewModel.onMapCameraChange(position, projection, activeChange)
@@ -152,12 +147,14 @@ internal fun CasesRoute(
             { mark: WorksiteMapMark -> viewCase(viewModel.incidentId, mark.id) }
         }
         val editedWorksiteLocation = viewModel.editedWorksiteLocation
+        val isMyLocationEnabled = viewModel.isMyLocationEnabled
         CasesScreen(
             showDataProgress = showDataProgress,
             dataProgress = dataProgress,
             disasterResId = disasterResId,
             onSelectIncident = onIncidentSelect,
             onCasesAction = rememberOnCasesAction,
+            centerOnMyLocation = viewModel::useMyLocation,
             isTableView = isTableView,
             isLayerView = isLayerView,
             isMapBusy = isIncidentLoading || isMapBusy,
@@ -168,18 +165,27 @@ internal fun CasesRoute(
             tileChangeValue = tileChangeValue,
             tileOverlayState = tileOverlayState,
             clearTileLayer = clearTileLayer,
-            casesDotTileProvider = casesDotTileProvider,
-            onMapLoadStart = onMapLoadStart,
-            onMapLoaded = onMapLoaded,
+            casesDotTileProvider = viewModel::overviewMapTileProvider,
+            onMapLoadStart = viewModel::onMapLoadStart,
+            onMapLoaded = viewModel::onMapLoaded,
             onMapCameraChange = onMapCameraChange,
             onMarkerSelect = onMapMarkerSelect,
             editedWorksiteLocation = editedWorksiteLocation,
+            isMyLocationEnabled = isMyLocationEnabled,
         )
 
         if (showChangeIncident) {
             val closeDialog = remember(viewModel) { { showChangeIncident = false } }
             SelectIncidentDialog(closeDialog)
         }
+
+        val closePermissionDialog =
+            remember(viewModel) { { viewModel.showExplainPermissionLocation = false } }
+        val explainPermission = viewModel.showExplainPermissionLocation
+        ExplainLocationPermissionDialog(
+            showDialog = explainPermission,
+            closeDialog = closePermissionDialog,
+        )
     } else {
         val isLoading = incidentsData is IncidentsData.Loading || isIncidentLoading
         val reloadIncidents = remember(viewModel) { { viewModel.refreshIncidentsData() } }
@@ -257,6 +263,7 @@ internal fun CasesScreen(
     onSelectIncident: () -> Unit = {},
     @DrawableRes disasterResId: Int = commonAssetsR.drawable.ic_disaster_other,
     onCasesAction: (CasesAction) -> Unit = {},
+    centerOnMyLocation: () -> Unit = {},
     isTableView: Boolean = false,
     isLayerView: Boolean = false,
     isMapBusy: Boolean = false,
@@ -273,6 +280,7 @@ internal fun CasesScreen(
     onMapCameraChange: (CameraPosition, Projection?, Boolean) -> Unit = { _, _, _ -> },
     onMarkerSelect: (WorksiteMapMark) -> Boolean = { false },
     editedWorksiteLocation: LatLng? = null,
+    isMyLocationEnabled: Boolean = false,
 ) {
     Box(modifier.then(Modifier.fillMaxSize())) {
         if (isTableView) {
@@ -292,6 +300,7 @@ internal fun CasesScreen(
                 onMapCameraChange,
                 onMarkerSelect,
                 editedWorksiteLocation,
+                isMyLocationEnabled,
             )
         }
         CasesOverlayElements(
@@ -299,6 +308,7 @@ internal fun CasesScreen(
             onSelectIncident,
             disasterResId,
             onCasesAction,
+            centerOnMyLocation,
             isTableView,
             casesCount,
         )
@@ -334,6 +344,7 @@ internal fun BoxScope.CasesMapView(
     onMapCameraChange: (CameraPosition, Projection?, Boolean) -> Unit = { _, _, _ -> },
     onMarkerSelect: (WorksiteMapMark) -> Boolean = { false },
     editedWorksiteLocation: LatLng? = null,
+    isMyLocationEnabled: Boolean = false,
     onEditLocationZoom: Float = 12f,
 ) {
     // TODO Profile and optimize recompositions when map is changed (by user) if possible.
@@ -350,7 +361,10 @@ internal fun BoxScope.CasesMapView(
         )
     }
 
-    val mapProperties by rememberMapProperties(mapMarkerR.raw.map_style)
+    val mapProperties by rememberMapProperties(
+        mapMarkerR.raw.map_style,
+        isMyLocation = isMyLocationEnabled,
+    )
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
         uiSettings = uiSettings,
@@ -445,6 +459,7 @@ private fun CasesOverlayElements(
     onSelectIncident: () -> Unit = {},
     @DrawableRes disasterResId: Int = commonAssetsR.drawable.ic_disaster_other,
     onCasesAction: (CasesAction) -> Unit = {},
+    centerOnMyLocation: () -> Unit = {},
     isTableView: Boolean = false,
     casesCount: Pair<Int, Int> = Pair(0, 0),
 ) {
@@ -456,6 +471,7 @@ private fun CasesOverlayElements(
             actionBar,
             newCaseFab,
             toggleTableMap,
+            myLocation,
             countTextRef,
         ) = createRefs()
 
@@ -503,6 +519,22 @@ private fun CasesOverlayElements(
                 end.linkTo(actionBar.start)
             },
         )
+
+        FloatingActionButton(
+            modifier = modifier
+                .actionSize()
+                .constrainAs(myLocation) {
+                    end.linkTo(toggleTableMap.end)
+                    bottom.linkTo(newCaseFab.top, margin = actionEdgeSpace)
+                },
+            onClick = centerOnMyLocation,
+            shape = actionRoundCornerShape,
+        ) {
+            Icon(
+                painterResource(R.drawable.ic_my_location),
+                contentDescription = translator("~~My location"),
+            )
+        }
 
         val onNewCase = remember(onCasesAction) { { onCasesAction(CasesAction.CreateNew) } }
         FloatingActionButton(

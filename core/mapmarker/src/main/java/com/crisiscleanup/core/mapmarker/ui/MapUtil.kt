@@ -33,6 +33,7 @@ fun rememberMapUiSettings(
 @Composable
 fun rememberMapProperties(
     @RawRes mapStyle: Int = 0,
+    isMyLocation: Boolean = false,
 ): MutableState<MapProperties> {
     val context = LocalContext.current
     val mapStyleOptions = if (mapStyle == 0) null
@@ -41,6 +42,7 @@ fun rememberMapProperties(
         mutableStateOf(
             MapProperties(
                 mapStyleOptions = mapStyleOptions,
+                isMyLocationEnabled = isMyLocation,
             )
         )
     }

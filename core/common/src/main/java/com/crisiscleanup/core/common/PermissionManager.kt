@@ -4,6 +4,8 @@ import android.Manifest
 import kotlinx.coroutines.flow.StateFlow
 
 interface PermissionManager {
+    val hasLocationPermission: Boolean
+
     /**
      * Only statuses requested, granted, or denied will be represented
      */
