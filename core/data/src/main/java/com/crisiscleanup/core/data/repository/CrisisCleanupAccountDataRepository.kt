@@ -26,25 +26,20 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
     @ApplicationScope private val externalScope: CoroutineScope,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : AccountDataRepository {
-    /* UPDATE [CrisisCleanupAccountDataRepositoryTest] when changing below */
-
-    override var accessTokenCached: String = ""
-        private set
-
     override val accountData: Flow<AccountData> = dataSource.accountData
-        .map {
-            accessTokenCached = it.accessToken
-            it
-        }
         .shareIn(
             scope = externalScope,
             SharingStarted.WhileSubscribed(),
             replay = 1,
         )
 
-    override val isAuthenticated: Flow<Boolean> = accountData.map {
-        it.accessToken.isNotEmpty()
-    }
+    override val isAuthenticated: Flow<Boolean> = accountData.map { it.hasAuthenticated }
+
+    override val refreshToken: String
+        get() = dataSource.refreshToken
+
+    override val accessToken: String
+        get() = dataSource.accessToken
 
     @VisibleForTesting
     internal val observeJobs: List<Job>
@@ -53,15 +48,13 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
         val logoutsJob = externalScope.launch(ioDispatcher) {
             authEventBus.logouts.collect { onLogout() }
         }
-        val expiredTokensJob = externalScope.launch(ioDispatcher) {
-            authEventBus.expiredTokens.collect { onExpiredToken() }
-        }
-        observeJobs = listOf(logoutsJob, expiredTokensJob)
+        observeJobs = listOf(logoutsJob)
     }
 
     override suspend fun setAccount(
-        id: Long,
+        refreshToken: String,
         accessToken: String,
+        id: Long,
         email: String,
         firstName: String,
         lastName: String,
@@ -69,10 +62,10 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
         profilePictureUri: String,
         org: OrgData,
     ) {
-        accessTokenCached = accessToken
         dataSource.setAccount(
-            id,
+            refreshToken,
             accessToken,
+            id,
             email,
             firstName,
             lastName,
@@ -82,17 +75,31 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
         )
     }
 
-    private suspend fun clearAccount() {
-        accessTokenCached = ""
-        dataSource.clearAccount()
+    override suspend fun updateAccountTokens(
+        refreshToken: String,
+        accessToken: String,
+        expirySeconds: Long
+    ) {
+        val isClearing = refreshToken.isBlank()
+        dataSource.updateAccountTokens(
+            refreshToken,
+            if (isClearing) "" else accessToken,
+            if (isClearing) 0 else expirySeconds
+        )
+    }
+
+    override suspend fun clearAccountTokens() {
+        updateAccountTokens("", "", 0)
     }
 
     private suspend fun onLogout() {
-        clearAccount()
+        dataSource.clearAccount()
     }
 
-    private suspend fun onExpiredToken() {
-        accessTokenCached = ""
-        dataSource.expireToken()
+    // For dev
+    fun expireAccessToken() {
+        externalScope.launch {
+            dataSource.updateAccountTokens(refreshToken, "", 0)
+        }
     }
 }

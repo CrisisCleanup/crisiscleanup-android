@@ -2,18 +2,14 @@ package com.crisiscleanup.feature.authentication
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -26,8 +22,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.focus.FocusState
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -54,7 +48,6 @@ fun AuthenticateScreen(
     enableBackHandler: Boolean = false,
     isDebug: Boolean = false,
 ) {
-    // TODO Write test(s)
     val onCloseScreen = remember(viewModel, closeAuthentication) {
         {
             viewModel.onCloseScreen()
@@ -62,7 +55,11 @@ fun AuthenticateScreen(
         }
     }
 
-    // TODO Write test
+    val isAuthenticateSuccessful by viewModel.isAuthenticateSuccessful.collectAsStateWithLifecycle()
+    if (isAuthenticateSuccessful) {
+        onCloseScreen()
+    }
+
     BackHandler(enableBackHandler) {
         onCloseScreen()
     }
@@ -78,19 +75,18 @@ fun AuthenticateScreen(
         is AuthenticateScreenUiState.Ready -> {
             val readyState = uiState as AuthenticateScreenUiState.Ready
             readyState.authenticationState.let {
-                if (it.isTokenInvalid) {
+                if (it.isAccountValid) {
+                    AuthenticatedScreen(
+                        it,
+                        modifier,
+                        onCloseScreen,
+                    )
+                } else {
                     LoginScreen(
                         it,
                         modifier,
                         onCloseScreen,
                         isDebug = isDebug,
-                    )
-
-                } else {
-                    AuthenticatedScreen(
-                        it,
-                        modifier,
-                        onCloseScreen,
                     )
                 }
             }
@@ -158,14 +154,6 @@ private fun LoginScreen(
     ) {
         CrisisCleanupLogoRow()
 
-        val onInputFocus = remember(viewModel) {
-            { focusState: FocusState ->
-                if (focusState.hasFocus) {
-                    viewModel.onInputFocus()
-                }
-            }
-        }
-
         Text(
             modifier = fillWidthPadded,
             text = translator("actions.login", R.string.login),
@@ -183,9 +171,7 @@ private fun LoginScreen(
             remember(viewModel) { { s: String -> viewModel.loginInputData.emailAddress = s } }
         val clearErrorVisuals = remember(viewModel) { { viewModel.clearErrorVisuals() } }
         OutlinedClearableTextField(
-            // TODO Listening onFocusChanged forces an input to recompose on any input change.
-            //      Research if possible to decouple focus change when not in focus.
-            modifier = fillWidthPadded.onFocusChanged(onInputFocus),
+            modifier = fillWidthPadded,
             label = translator("loginForm.email_placeholder", R.string.email),
             value = viewModel.loginInputData.emailAddress,
             onValueChange = updateEmailInput,
@@ -208,7 +194,7 @@ private fun LoginScreen(
             }
         }
         OutlinedObfuscatingTextField(
-            modifier = fillWidthPadded.onFocusChanged(onInputFocus),
+            modifier = fillWidthPadded,
             label = translator("loginForm.password_placeholder", R.string.password),
             value = viewModel.loginInputData.password,
             onValueChange = updatePasswordInput,
@@ -248,7 +234,7 @@ private fun LoginScreen(
             indicateBusy = !isNotBusy,
         )
 
-        if (authState.hasAccessToken) {
+        if (authState.hasAuthenticated) {
             CrisisCleanupButton(
                 modifier = fillWidthPadded,
                 onClick = closeAuthentication,
@@ -286,12 +272,6 @@ private fun AuthenticatedScreen(
 
         val isNotBusy by viewModel.isNotAuthenticating.collectAsStateWithLifecycle()
 
-        SaveCredentialsPrompt(
-            viewModel,
-            closeAuthentication,
-            isNotBusy,
-        )
-
         BusyButton(
             modifier = fillWidthPadded,
             onClick = viewModel::logout,
@@ -306,61 +286,6 @@ private fun AuthenticatedScreen(
             enabled = isNotBusy,
             text = translator("actions.dismiss"),
         )
-    }
-}
-
-@Composable
-private fun SaveCredentialsPrompt(
-    viewModel: AuthenticationViewModel = hiltViewModel(),
-    closeAuthentication: () -> Unit = {},
-    isNotBusy: Boolean,
-) {
-    val showSaveCredentials by viewModel.showSaveCredentialsAction
-    if (showSaveCredentials) {
-        Text(
-            modifier = fillWidthPadded,
-            text = LocalAppTranslator.current.translator("info.save_password_mobile_prompt"),
-        )
-
-        BusyButton(
-            modifier = fillWidthPadded,
-            onClick = {
-                viewModel.saveCredentials()
-                closeAuthentication()
-            },
-            enabled = isNotBusy,
-            text = LocalAppTranslator.current.translator("actions.save"),
-            indicateBusy = !isNotBusy,
-        )
-
-        val showDisableSave by viewModel.showDisableSaveCredentials.collectAsStateWithLifecycle()
-        if (showDisableSave) {
-            var disableSave by remember { mutableStateOf(false) }
-            val setDisableSave = remember(viewModel) {
-                { disable: Boolean ->
-                    disableSave = disable
-                    viewModel.setDisableSaveCredentials(disable)
-                }
-            }
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .clickable { setDisableSave(!disableSave) },
-                verticalAlignment = Alignment.CenterVertically,
-
-                ) {
-                Checkbox(
-                    checked = disableSave,
-                    onCheckedChange = setDisableSave
-                )
-
-                Text(
-                    text = LocalAppTranslator.current.translator("info.do_not_ask_for_credentials_again"),
-                )
-            }
-        }
-
-        Spacer(Modifier.height(48.dp))
     }
 }
 

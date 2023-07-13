@@ -493,7 +493,7 @@ class WorksiteChangeProcessor(
         if (networkMonitor.isNotOnline.first()) {
             throw NoInternetConnectionException()
         }
-        if (accountData.isTokenInvalid) {
+        if (!accountData.areTokensValid) {
             throw ExpiredTokenException()
         }
     }

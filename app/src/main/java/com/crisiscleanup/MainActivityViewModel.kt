@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.KeyResourceTranslator
-import com.crisiscleanup.core.common.event.AuthEventBus
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPuller
@@ -32,7 +31,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -41,7 +39,6 @@ class MainActivityViewModel @Inject constructor(
     accountDataRepository: AccountDataRepository,
     incidentSelector: IncidentSelector,
     val appHeaderUiState: AppHeaderUiState,
-    authEventBus: AuthEventBus,
     incidentsRepository: IncidentsRepository,
     worksitesRepository: WorksitesRepository,
     val translator: KeyResourceTranslator,
@@ -60,21 +57,24 @@ class MainActivityViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000)
         )
 
-    var isAccessTokenExpired = mutableStateOf(false)
+    /**
+     * API account tokens need re-issuing
+     */
+    var isAccountExpired = mutableStateOf(false)
         private set
 
-    val authState: StateFlow<AuthState> = accountDataRepository.accountData.map {
-        isAccessTokenExpired.value = it.isTokenExpired
+    val authState: StateFlow<AuthState> = accountDataRepository.accountData
+        .map {
+            isAccountExpired.value = !it.areTokensValid
 
-        val hasAuthenticated = it.accessToken.isNotEmpty()
-
-        if (hasAuthenticated) AuthState.Authenticated(it)
-        else AuthState.NotAuthenticated
-    }.stateIn(
-        scope = viewModelScope,
-        initialValue = AuthState.Loading,
-        started = SharingStarted.WhileSubscribed()
-    )
+            if (it.hasAuthenticated) AuthState.Authenticated(it)
+            else AuthState.NotAuthenticated
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = AuthState.Loading,
+            started = SharingStarted.WhileSubscribed()
+        )
 
     val translationCount = translator.translationCount
 
@@ -96,12 +96,7 @@ class MainActivityViewModel @Inject constructor(
     ) { b0, b1, b2 -> b0 || b1 || b2 }
 
     init {
-        viewModelScope.launch {
-            authEventBus.expiredTokens.collect { onExpiredToken() }
-        }
-
         accountDataRepository.accountData
-            .filter { !it.isTokenInvalid }
             .onEach {
                 sync(false)
                 syncPuller.appPullIncident(incidentSelector.incidentId.first())
@@ -124,10 +119,6 @@ class MainActivityViewModel @Inject constructor(
 
     private fun sync(cancelOngoing: Boolean) {
         syncPuller.appPull(false, cancelOngoing)
-    }
-
-    private fun onExpiredToken() {
-        isAccessTokenExpired.value = true
     }
 }
 

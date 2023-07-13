@@ -3,6 +3,9 @@ package com.crisiscleanup.core.network.retrofit
 import com.crisiscleanup.core.network.CrisisCleanupAuthApi
 import com.crisiscleanup.core.network.model.NetworkAuthPayload
 import com.crisiscleanup.core.network.model.NetworkAuthResult
+import com.crisiscleanup.core.network.model.NetworkOauthPayload
+import com.crisiscleanup.core.network.model.NetworkOauthResult
+import com.crisiscleanup.core.network.model.NetworkRefreshToken
 import retrofit2.Retrofit
 import retrofit2.http.Body
 import retrofit2.http.POST
@@ -14,19 +17,29 @@ private interface AuthApi {
     @POST("api-token-auth")
     suspend fun login(@Body body: NetworkAuthPayload): NetworkAuthResult
 
-    @TokenAuthenticationHeader
-    @POST("logout")
-    suspend fun logout()
+    @ThrowClientErrorHeader
+    @POST("api-mobile-auth")
+    suspend fun oauthLogin(@Body body: NetworkOauthPayload): NetworkOauthResult
+
+    @ThrowClientErrorHeader
+    @POST("api-mobile-refresh-token")
+    suspend fun refreshAccountTokens(@Body body: NetworkRefreshToken): NetworkOauthResult
 }
 
 @Singleton
 class AuthApiClient @Inject constructor(
-    @RetrofitConfiguration(RetrofitConfigurations.CrisisCleanup) retrofit: Retrofit,
+    @RetrofitConfiguration(RetrofitConfigurations.Auth) retrofit: Retrofit,
 ) : CrisisCleanupAuthApi {
     private val networkApi = retrofit.create(AuthApi::class.java)
 
     override suspend fun login(email: String, password: String): NetworkAuthResult =
         networkApi.login(NetworkAuthPayload(email, password))
+
+    override suspend fun oauthLogin(email: String, password: String): NetworkOauthResult =
+        networkApi.oauthLogin(NetworkOauthPayload(email, password))
+
+    override suspend fun refreshTokens(refreshToken: String): NetworkOauthResult =
+        networkApi.refreshAccountTokens(NetworkRefreshToken(refreshToken))
 
     override suspend fun logout() {}
 }

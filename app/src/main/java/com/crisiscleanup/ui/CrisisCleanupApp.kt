@@ -148,7 +148,7 @@ private fun LoadedContent(
     authState: AuthState,
     translationCount: Int = 0,
 ) {
-    val isAccountExpired by viewModel.isAccessTokenExpired
+    val isAccountExpired by viewModel.isAccountExpired
 
     val isNotAuthenticatedState = authState !is AuthState.Authenticated
     var openAuthentication by rememberSaveable { mutableStateOf(isNotAuthenticatedState) }
@@ -188,10 +188,11 @@ private fun LoadedContent(
             openIncidentsSelect,
         )
 
-        if (isAccountExpired &&
+        if (
+            isAccountExpired &&
             !appState.hideLoginAlert
         ) {
-            ExpiredTokenAlert(snackbarHostState, translationCount) {
+            ExpiredAccountAlert(snackbarHostState, translationCount) {
                 openAuthentication = true
             }
         }
@@ -367,7 +368,7 @@ private fun NavigableContent(
 }
 
 @Composable
-private fun ExpiredTokenAlert(
+private fun ExpiredAccountAlert(
     snackbarHostState: SnackbarHostState,
     translationCount: Int,
     openAuthentication: () -> Unit,

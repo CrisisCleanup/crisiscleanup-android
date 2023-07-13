@@ -3,7 +3,6 @@ package com.crisiscleanup.sync
 import android.content.Context
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.di.ApplicationScope
-import com.crisiscleanup.core.common.event.AuthEventBus
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncLogger
@@ -45,7 +44,6 @@ class AppSyncer @Inject constructor(
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val appPreferences: LocalAppPreferencesDataSource,
     private val syncLogger: SyncLogger,
-    private val authEventBus: AuthEventBus,
     private val networkMonitor: NetworkMonitor,
     @ApplicationContext private val context: Context,
     @ApplicationScope private val applicationScope: CoroutineScope,
@@ -63,31 +61,28 @@ class AppSyncer @Inject constructor(
 
     private val languagePullMutex = Mutex()
 
-    private suspend fun isInvalidAccountToken(isInBackground: Boolean): Boolean {
-        val accountData = accountDataRepository.accountData.first()
-        if (accountData.isTokenInvalid) {
-            if (isInBackground) {
-                // TODO Query and confirm token is truly expired. If so show notification to authenticate. If not expired fix syncing logic to query and cache true token before making network calls.
-            } else {
-                authEventBus.onExpiredToken()
+    private suspend fun notifyInvalidAccountToken(isInBackground: Boolean) {
+        if (isInBackground) {
+            val accountData = accountDataRepository.accountData.first()
+            if (!accountData.areTokensValid) {
+                // if (worksiteChangeRepository.hasPendingChanges()) {
+                // TODO If pending changes exist show notification to login for syncing to finish
+                // }
             }
-            return true
         }
-        return false
     }
 
     private suspend fun isNotOnline() = networkMonitor.isNotOnline.first()
 
     private suspend fun onSyncPreconditions(isInBackground: Boolean): SyncResult? {
-        if (isInvalidAccountToken(isInBackground)) {
-            return SyncResult.NotAttempted("Invalid account token")
-        }
+        notifyInvalidAccountToken(isInBackground)
 
         if (isNotOnline()) {
             return SyncResult.NotAttempted("Not online")
         }
 
         // Other constraints are not important.
+        // Validity of tokens are determined in the network layer
         // When app is running assume sync is necessary.
         // When app is in background assume Work constraints have been defined.
 
@@ -261,7 +256,7 @@ class AppSyncer @Inject constructor(
         }
     }
 
-    override suspend fun syncPullWorksitesFull(): Deferred<SyncResult> {
+    override suspend fun syncPullWorksitesFullAsync(): Deferred<SyncResult> {
         synchronized(pullWorksitesFullJobLock) {
             stopSyncPullWorksitesFull()
             val deferred = applicationScope.async {

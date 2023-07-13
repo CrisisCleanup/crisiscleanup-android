@@ -5,6 +5,7 @@ import coil.ImageLoader
 import coil.decode.SvgDecoder
 import coil.util.DebugLogger
 import com.crisiscleanup.core.common.AppEnv
+import com.crisiscleanup.core.network.AuthInterceptorProvider
 import com.crisiscleanup.core.network.BuildConfig
 import com.crisiscleanup.core.network.RetrofitInterceptorProvider
 import com.crisiscleanup.core.network.fake.FakeAssetManager
@@ -46,6 +47,18 @@ object NetworkModule {
     @Provides
     @Singleton
     fun providesRequestHeaderKeysLookup() = RequestHeaderKeysLookup()
+
+    @RetrofitConfiguration(RetrofitConfigurations.Auth)
+    @Provides
+    @Singleton
+    fun providesCrisisCleanupAuthRetrofit(
+        interceptorProvider: AuthInterceptorProvider,
+        json: Json,
+        appEnv: AppEnv,
+    ): Retrofit {
+        val interceptors = listOf(interceptorProvider.clientErrorInterceptor)
+        return getCrisisCleanupApiBuilder(interceptors, json, appEnv)
+    }
 
     @RetrofitConfiguration(RetrofitConfigurations.CrisisCleanup)
     @Provides

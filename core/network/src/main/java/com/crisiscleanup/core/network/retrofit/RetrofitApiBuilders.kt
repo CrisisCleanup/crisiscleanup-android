@@ -9,6 +9,7 @@ import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Converter
 import retrofit2.Retrofit
 import java.util.concurrent.TimeUnit
 import javax.inject.Qualifier
@@ -22,6 +23,7 @@ internal annotation class RetrofitConfiguration(val retrofit: RetrofitConfigurat
 
 internal enum class RetrofitConfigurations {
     Basic,
+    Auth,
     CrisisCleanup,
 }
 
@@ -41,6 +43,27 @@ private fun getClientBuilder(isDebuggable: Boolean = false): OkHttpClient.Builde
     return clientBuilder
 }
 
+private val Json.converterFactory: Converter.Factory
+    get() = asConverterFactory("application/json".toMediaType())
+
+internal fun getCrisisCleanupApiBuilder(
+    interceptors: Collection<Interceptor>,
+    networkApiJson: Json,
+    appEnv: AppEnv,
+): Retrofit {
+    val clientBuilder = getClientBuilder(appEnv.isDebuggable)
+
+    interceptors.forEach {
+        clientBuilder.addInterceptor(it)
+    }
+
+    return Retrofit.Builder()
+        .baseUrl(CrisisCleanupApiBaseUrl)
+        .client(clientBuilder.build())
+        .addConverterFactory(networkApiJson.converterFactory)
+        .build()
+}
+
 internal fun getCrisisCleanupApiBuilder(
     interceptorProvider: RetrofitInterceptorProvider,
     headerKeysLookup: RequestHeaderKeysLookup,
@@ -57,9 +80,7 @@ internal fun getCrisisCleanupApiBuilder(
         .baseUrl(CrisisCleanupApiBaseUrl)
         .client(clientBuilder.build())
         .addCallAdapterFactory(RequestHeaderCallAdapterFactory(headerKeysLookup))
-        .addConverterFactory(
-            networkApiJson.asConverterFactory("application/json".toMediaType())
-        )
+        .addConverterFactory(networkApiJson.converterFactory)
         .build()
 }
 

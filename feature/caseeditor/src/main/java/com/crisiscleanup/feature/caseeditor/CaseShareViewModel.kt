@@ -96,7 +96,7 @@ class CaseShareViewModel @Inject constructor(
         isOnline,
         accountDataRepository.accountData,
     ) { online, accountData ->
-        online && !accountData.isTokenInvalid
+        online && accountData.areTokensValid
     }
 
     val notSharableMessage = combine(
@@ -105,7 +105,7 @@ class CaseShareViewModel @Inject constructor(
     ) { online, accountData ->
         if (!online) {
             translator("info.share_requires_internet")
-        } else if (accountData.isTokenInvalid) {
+        } else if (!accountData.areTokensValid) {
             translator("info.share_requires_login")
         } else {
             ""

@@ -209,13 +209,13 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
         rethrowError: Boolean,
     ): Boolean {
         if (networkMonitor.isNotOnline.first()) {
-            syncLogger.log("Not syncing. No internet connection.")
+            syncLogger.log("Not attempting. No internet connection.")
             return false
         }
 
         val accountData = accountDataRepository.accountData.first()
-        if (accountData.isTokenInvalid) {
-            syncLogger.log("Not syncing. Invalid account token.")
+        if (!accountData.areTokensValid) {
+            syncLogger.log("Not attempting. Invalid tokens.")
             return false
         }
 
@@ -234,10 +234,6 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
             var unhandledException: Exception? = null
             when (e) {
                 is NoInternetConnectionException -> {}
-
-                is ExpiredTokenException -> {
-                    authEventBus.onExpiredToken()
-                }
 
                 else -> {
                     unhandledException = e

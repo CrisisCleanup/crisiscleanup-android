@@ -123,7 +123,7 @@ class SyncWorksitesFullWorker @AssistedInject constructor(
 
                 val isSyncSuccess = awaitAll(
                     async {
-                        val result = syncPuller.syncPullWorksitesFull().await()
+                        val result = syncPuller.syncPullWorksitesFullAsync().await()
                         result is SyncResult.Success || result is SyncResult.NotAttempted
                     },
                 ).all { it }

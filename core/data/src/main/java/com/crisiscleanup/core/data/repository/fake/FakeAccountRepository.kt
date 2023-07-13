@@ -22,15 +22,23 @@ class FakeAccountRepository : AccountDataRepository {
 
     override val accountData: Flow<AccountData> = _accountData.filterNotNull()
 
-    override val accessTokenCached: String = ""
 
-    override val isAuthenticated: Flow<Boolean> = accountData.map {
-        it.accessToken.isNotEmpty()
+    override val isAuthenticated: Flow<Boolean> = accountData.map { it.hasAuthenticated }
+
+    override var refreshToken: String = ""
+        private set
+    override var accessToken: String = ""
+        private set
+
+    private fun setAccountTokens(refreshToken: String, accessToken: String) {
+        this.refreshToken = refreshToken
+        this.accessToken = accessToken
     }
 
     override suspend fun setAccount(
-        id: Long,
+        refreshToken: String,
         accessToken: String,
+        id: Long,
         email: String,
         firstName: String,
         lastName: String,
@@ -38,18 +46,31 @@ class FakeAccountRepository : AccountDataRepository {
         profilePictureUri: String,
         org: OrgData,
     ) {
-        current.let {
-            _accountData.tryEmit(
-                it.copy(
-                    id = id,
-                    accessToken = accessToken,
-                    fullName = "$firstName $lastName".trim(),
-                    tokenExpiry = Instant.fromEpochSeconds(expirySeconds),
-                    emailAddress = email,
-                    profilePictureUri = profilePictureUri,
-                    org = org,
-                )
+        setAccountTokens(refreshToken, accessToken)
+        _accountData.tryEmit(
+            this.current.copy(
+                id = id,
+                fullName = "$firstName $lastName".trim(),
+                tokenExpiry = Instant.fromEpochSeconds(expirySeconds),
+                emailAddress = email,
+                profilePictureUri = profilePictureUri,
+                org = org,
             )
-        }
+        )
+    }
+
+    override suspend fun updateAccountTokens(
+        refreshToken: String,
+        accessToken: String,
+        expirySeconds: Long
+    ) {
+        setAccountTokens(refreshToken, accessToken)
+        _accountData.tryEmit(
+            current.copy(tokenExpiry = Instant.fromEpochSeconds(expirySeconds))
+        )
+    }
+
+    override suspend fun clearAccountTokens() {
+        updateAccountTokens("", "", 0)
     }
 }

@@ -106,7 +106,7 @@ class ViewImageViewModel @Inject constructor(
                         },
                         onError = {
                             val isTokenInvalid =
-                                accountDataRepository.accessTokenCached.isBlank()
+                                accountDataRepository.accessToken.isBlank()
 
                             logger.logDebug("Failed to load image $isOffline $isTokenInvalid $imageId $imageUrl")
 

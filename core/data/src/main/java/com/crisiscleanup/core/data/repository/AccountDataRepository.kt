@@ -11,25 +11,20 @@ interface AccountDataRepository {
     val accountData: Flow<AccountData>
 
     /**
-     * Cached value of access token
-     *
-     * The token may be expired (if defined). Access [accountData] for latest values.
-     */
-    val accessTokenCached: String
-
-    /**
-     * Stream of authenticated account status
-     *
-     * See if the authenticated account is expired in [accountData].
+     * Authenticated meaning the user has authenticated successfully at least once
      */
     val isAuthenticated: Flow<Boolean>
+
+    val refreshToken: String
+    val accessToken: String
 
     /**
      * Set authenticated account info
      */
     suspend fun setAccount(
-        id: Long,
+        refreshToken: String,
         accessToken: String,
+        id: Long,
         email: String,
         firstName: String,
         lastName: String,
@@ -37,4 +32,12 @@ interface AccountDataRepository {
         profilePictureUri: String,
         org: OrgData,
     )
+
+    suspend fun updateAccountTokens(
+        refreshToken: String,
+        accessToken: String,
+        expirySeconds: Long,
+    )
+
+    suspend fun clearAccountTokens()
 }

@@ -7,6 +7,7 @@ import com.crisiscleanup.core.network.model.NetworkIncidentOrganization
 import com.crisiscleanup.core.network.model.NetworkLanguageDescription
 import com.crisiscleanup.core.network.model.NetworkLanguageTranslation
 import com.crisiscleanup.core.network.model.NetworkLocation
+import com.crisiscleanup.core.network.model.NetworkOauthResult
 import com.crisiscleanup.core.network.model.NetworkOrganizationsResult
 import com.crisiscleanup.core.network.model.NetworkPersonContact
 import com.crisiscleanup.core.network.model.NetworkWorkTypeRequest
@@ -20,7 +21,8 @@ import kotlinx.datetime.Instant
 
 interface CrisisCleanupAuthApi {
     suspend fun login(email: String, password: String): NetworkAuthResult
-
+    suspend fun oauthLogin(email: String, password: String): NetworkOauthResult
+    suspend fun refreshTokens(refreshToken: String): NetworkOauthResult
     suspend fun logout()
 }
 

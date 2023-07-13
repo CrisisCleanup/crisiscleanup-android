@@ -38,3 +38,26 @@ data class NetworkAuthOrganization(
     @SerialName("is_active")
     val isActive: Boolean,
 )
+
+@Serializable
+data class NetworkOauthPayload(
+    val username: String,
+    val password: String,
+)
+
+@Serializable
+data class NetworkRefreshToken(
+    @SerialName("refresh_token")
+    val refreshToken: String,
+)
+
+@Serializable
+data class NetworkOauthResult(
+    val error: String? = null,
+    @SerialName("refresh_token")
+    val refreshToken: String? = null,
+    @SerialName("access_token")
+    val accessToken: String? = null,
+    @SerialName("expires_in")
+    val expiresIn: Int? = null,
+)

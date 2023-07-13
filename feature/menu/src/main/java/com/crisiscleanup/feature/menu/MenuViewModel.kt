@@ -5,10 +5,11 @@ import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.DatabaseVersionProvider
 import com.crisiscleanup.core.common.di.ApplicationScope
-import com.crisiscleanup.core.common.event.AuthEventBus
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPuller
+import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.CrisisCleanupAccountDataRepository
 import com.crisiscleanup.core.data.repository.SyncLogRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -19,12 +20,12 @@ import javax.inject.Inject
 @HiltViewModel
 class MenuViewModel @Inject constructor(
     syncLogRepository: SyncLogRepository,
+    private val accountDataRepository: AccountDataRepository,
     private val appVersionProvider: AppVersionProvider,
-    private val authEventBus: AuthEventBus,
     appEnv: AppEnv,
     private val syncPuller: SyncPuller,
     private val databaseVersionProvider: DatabaseVersionProvider,
-    @ApplicationScope externalScope: CoroutineScope,
+    @ApplicationScope private val externalScope: CoroutineScope,
     @Dispatcher(IO) ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     val isDebuggable = appEnv.isDebuggable
@@ -48,7 +49,15 @@ class MenuViewModel @Inject constructor(
 
     fun simulateTokenExpired() {
         if (isDebuggable) {
-            authEventBus.onExpiredToken()
+            (accountDataRepository as CrisisCleanupAccountDataRepository).expireAccessToken()
+        }
+    }
+
+    fun clearRefreshToken() {
+        if (isDebuggable) {
+            externalScope.launch {
+                accountDataRepository.clearAccountTokens()
+            }
         }
     }
 

@@ -30,17 +30,20 @@ data class NetworkCrisisCleanupApiError(
     @Serializable(IterableStringSerializer::class)
     val message: List<String>? = null,
 ) {
-    val isExpiredToken = message?.size == 1 && message[0] == "Token has expired."
+    internal val isExpiredToken = message?.size == 1 && message[0] == "Token has expired."
 }
 
 fun Collection<NetworkCrisisCleanupApiError>.tryThrowException() {
     if (isNotEmpty()) {
         val exception =
-            if (any(NetworkCrisisCleanupApiError::isExpiredToken)) ExpiredTokenException()
+            if (hasExpiredToken) ExpiredTokenException()
             else Exception(condenseMessages)
         throw exception
     }
 }
+
+val Collection<NetworkCrisisCleanupApiError>.hasExpiredToken: Boolean
+    get() = any(NetworkCrisisCleanupApiError::isExpiredToken)
 
 val Collection<NetworkCrisisCleanupApiError>.condenseMessages: String
     get() = mapNotNull { it.message?.joinToString(". ") }

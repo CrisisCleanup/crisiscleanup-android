@@ -14,7 +14,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
-import androidx.credentials.CredentialManager
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
@@ -79,9 +78,6 @@ class MainActivity : ComponentActivity() {
     internal lateinit var logger: AppLogger
 
     @Inject
-    internal lateinit var credentialManager: CredentialManager
-
-    @Inject
     internal lateinit var permissionManager: PermissionManager
 
     @Inject
@@ -90,8 +86,6 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     internal lateinit var visualAlertManager: VisualAlertManager
-
-    private lateinit var credentialSaveRetrieveManager: CredentialSaveRetrieveManager
 
     private val lifecycleObservers = mutableListOf<LifecycleObserver>()
 
@@ -105,12 +99,6 @@ class MainActivity : ComponentActivity() {
         lifecycleObservers.addAll(feedbackTriggerProvider.triggers.mapNotNull { it as? LifecycleObserver })
 
         lifecycleObservers.forEach { lifecycle.addObserver(it) }
-
-        credentialSaveRetrieveManager = CredentialSaveRetrieveManager(
-            lifecycleScope,
-            credentialManager,
-            logger,
-        )
 
         var uiState: MainActivityUiState by mutableStateOf(Loading)
         var authState: AuthState by mutableStateOf(AuthState.Loading)
@@ -162,20 +150,6 @@ class MainActivity : ComponentActivity() {
                 viewModel.authState.collect { authState = it }
             }
         }
-
-        lifecycleScope.launch {
-            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                authEventBus.credentialRequests
-                    .collect { onCredentialsRequest() }
-            }
-        }
-
-        lifecycleScope.launch {
-            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                authEventBus.saveCredentialRequests
-                    .collect { onSaveCredentials(it.first, it.second) }
-            }
-        }
     }
 
     override fun onResume() {
@@ -203,14 +177,6 @@ class MainActivity : ComponentActivity() {
     override fun onTrimMemory(level: Int) {
         trimMemoryEventManager.onTrimMemory(level)
         super.onTrimMemory(level)
-    }
-
-    private fun onCredentialsRequest() {
-        credentialSaveRetrieveManager.passkeySignIn(this, authEventBus)
-    }
-
-    private fun onSaveCredentials(emailAddress: String, password: String) {
-        credentialSaveRetrieveManager.saveAccountPassword(this, emailAddress, password)
     }
 }
 

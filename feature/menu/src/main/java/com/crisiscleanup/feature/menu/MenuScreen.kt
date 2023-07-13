@@ -2,6 +2,7 @@ package com.crisiscleanup.feature.menu
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
@@ -13,6 +14,7 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 
 @Composable
 internal fun MenuRoute(
@@ -68,10 +70,17 @@ internal fun MenuScreenDebug(
         text = databaseText,
     )
 
-    CrisisCleanupTextButton(
-        onClick = { viewModel.simulateTokenExpired() },
-        text = "Expire token",
-    )
+    Row(horizontalArrangement = listItemSpacedBy) {
+        CrisisCleanupTextButton(
+            onClick = { viewModel.clearRefreshToken() },
+            text = "Clear refresh token",
+        )
+
+        CrisisCleanupTextButton(
+            onClick = { viewModel.simulateTokenExpired() },
+            text = "Expire token",
+        )
+    }
 
     CrisisCleanupTextButton(
         onClick = { viewModel.syncWorksitesFull() },

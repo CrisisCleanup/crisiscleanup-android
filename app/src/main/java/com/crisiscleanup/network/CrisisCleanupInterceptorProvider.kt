@@ -5,16 +5,22 @@ import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.network.AuthInterceptorProvider
+import com.crisiscleanup.core.network.CrisisCleanupAuthApi
 import com.crisiscleanup.core.network.RetrofitInterceptorProvider
 import com.crisiscleanup.core.network.model.CrisisCleanupNetworkException
 import com.crisiscleanup.core.network.model.ExpiredTokenException
 import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError
 import com.crisiscleanup.core.network.model.NetworkErrors
 import com.crisiscleanup.core.network.model.ServerErrorException
+import com.crisiscleanup.core.network.model.hasExpiredToken
 import com.crisiscleanup.core.network.retrofit.RequestHeaderKey
 import com.crisiscleanup.core.network.retrofit.RequestHeaderKeysLookup
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.datetime.Clock
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import okhttp3.Interceptor
 import okhttp3.Request
@@ -24,13 +30,32 @@ import okhttp3.ResponseBody.Companion.toResponseBody
 import javax.inject.Inject
 import javax.inject.Singleton
 
+private fun Json.parseNetworkErrors(response: String): List<NetworkCrisisCleanupApiError> {
+    var errors: List<NetworkCrisisCleanupApiError> = emptyList()
+    try {
+        val networkErrors = decodeFromString<NetworkErrors>(response)
+        errors = networkErrors.errors
+    } catch (e: Exception) {
+        // No errors
+    }
+    return errors
+}
+
+private fun Json.parseNetworkErrors(responseBody: ResponseBody): List<NetworkCrisisCleanupApiError> {
+    val errorBody = responseBody.string()
+    return parseNetworkErrors(errorBody)
+}
+
 @Singleton
 class CrisisCleanupInterceptorProvider @Inject constructor(
     private val accountDataRepository: AccountDataRepository,
     private val headerKeysLookup: RequestHeaderKeysLookup,
     private val authEventBus: AuthEventBus,
+    private val apiClient: CrisisCleanupAuthApi,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : RetrofitInterceptorProvider {
+    private val refreshMutex = Mutex()
+
     @OptIn(ExperimentalSerializationApi::class)
     private val json = Json {
         ignoreUnknownKeys = true
@@ -47,11 +72,100 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
             var request = chain.request()
 
             getHeaderKey(request, RequestHeaderKey.AccessTokenAuth)?.let {
-                request = addAuthorizationHeader(request)
+                request = setAuthorizationHeader(request)
+
+                return@Interceptor tryAuthRequest(chain, request)
             }
 
             chain.proceed(request)
         }
+    }
+
+    private fun setAuthorizationHeader(request: Request): Request {
+        runBlocking {
+            val accountData = accountDataRepository.accountData.first()
+            if (!accountData.areTokensValid) {
+                throw ExpiredTokenException()
+            }
+
+            if (accountData.isAccessTokenExpired) {
+                if (refreshMutex.tryLock()) {
+                    try {
+                        if (!refreshTokens()) {
+                            throw ExpiredTokenException()
+                        }
+                    } finally {
+                        refreshMutex.unlock()
+                    }
+                } else {
+                    throw ExpiredTokenException()
+                }
+            }
+        }
+
+        val accessToken = accountDataRepository.accessToken
+        return request.newBuilder()
+            .addHeader("Authorization", "Bearer $accessToken")
+            .build()
+    }
+
+    private fun isExpiredToken(response: Response): Pair<Boolean, Response> {
+        if (response.code == 401) {
+            return Pair(true, response)
+        }
+        response.body?.let { responseBody ->
+            val body = responseBody.string()
+            val errors = json.parseNetworkErrors(body)
+            val bodyCopy = body.toResponseBody(responseBody.contentType())
+            val copyResponse = response.newBuilder().body(bodyCopy).build()
+            return Pair(errors.hasExpiredToken, copyResponse)
+        }
+        return Pair(false, response)
+    }
+
+    private val invalidRefreshTokenErrorMessages = setOf(
+        "refresh_token_already_revoked",
+        "invalid_refresh_token",
+    )
+
+    private suspend fun refreshTokens(): Boolean {
+        val refreshToken = accountDataRepository.refreshToken
+        if (refreshToken.isNotBlank()) {
+            val refreshResult = apiClient.refreshTokens(refreshToken)
+            if (refreshResult.error == null) {
+                accountDataRepository.updateAccountTokens(
+                    refreshResult.refreshToken!!,
+                    refreshResult.accessToken!!,
+                    Clock.System.now().epochSeconds + refreshResult.expiresIn!!,
+                )
+                authEventBus.onTokensRefreshed()
+                return true
+            } else {
+                if (invalidRefreshTokenErrorMessages.contains(refreshResult.error)) {
+                    accountDataRepository.clearAccountTokens()
+                }
+            }
+        }
+        return false
+    }
+
+    private fun tryAuthRequest(chain: Interceptor.Chain, request: Request): Response {
+        val response = chain.proceed(request)
+
+        val (isExpired, nextResponse) = isExpiredToken(response)
+        if (isExpired) {
+            runBlocking {
+                if (refreshTokens()) {
+                    return@runBlocking setAuthorizationHeader(request)
+                }
+                return@runBlocking null
+            }?.let {
+                return chain.proceed(it)
+            }
+            throw ExpiredTokenException()
+        }
+
+        return nextResponse
     }
 
     private val wrapResponseInterceptor by lazy {
@@ -76,39 +190,6 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
         }
     }
 
-    private fun parseNetworkErrors(responseBody: ResponseBody): List<NetworkCrisisCleanupApiError> {
-        val errorBody = responseBody.string()
-        var errors: List<NetworkCrisisCleanupApiError> = emptyList()
-        try {
-            val networkErrors = json.decodeFromString<NetworkErrors>(errorBody)
-            errors = networkErrors.errors
-        } catch (e: Exception) {
-            // No errors
-        }
-        return errors
-    }
-
-    private val expiredTokenInterceptor by lazy {
-        Interceptor { chain ->
-            val request = chain.request()
-            val response = chain.proceed(request)
-            if (response.code in 400..499) {
-                if (response.code == 401) {
-                    authEventBus.onExpiredToken()
-                    throw ExpiredTokenException()
-                }
-                response.body?.let { responseBody ->
-                    val errors = parseNetworkErrors(responseBody)
-                    if (errors.any(NetworkCrisisCleanupApiError::isExpiredToken)) {
-                        authEventBus.onExpiredToken()
-                        throw ExpiredTokenException()
-                    }
-                }
-            }
-            response
-        }
-    }
-
     private val clientErrorInterceptor by lazy {
         Interceptor { chain ->
             val request = chain.request()
@@ -116,7 +197,7 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
             if (response.code in 400..499) {
                 getHeaderKey(request, RequestHeaderKey.ThrowClientError)?.let {
                     response.body?.let { responseBody ->
-                        val errors = parseNetworkErrors(responseBody)
+                        val errors = json.parseNetworkErrors(responseBody)
                         throw CrisisCleanupNetworkException(
                             request.url.toUrl().toString(),
                             response.code,
@@ -144,19 +225,35 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
     override val interceptors: List<Interceptor> = listOf(
         headerInterceptor,
         wrapResponseInterceptor,
-        expiredTokenInterceptor,
         clientErrorInterceptor,
         serverErrorInterceptor,
     )
+}
 
-    private fun addAuthorizationHeader(request: Request): Request {
-        val accessToken = accountDataRepository.accessTokenCached
-        return if (accessToken.isNotEmpty()) {
-            request.newBuilder()
-                .addHeader("Authorization", "Bearer $accessToken")
-                .build()
-        } else {
-            request
+@Singleton
+class CrisisCleanupAuthInterceptorProvider @Inject constructor() : AuthInterceptorProvider {
+    @OptIn(ExperimentalSerializationApi::class)
+    private val json = Json {
+        ignoreUnknownKeys = true
+        explicitNulls = false
+    }
+
+    override val clientErrorInterceptor by lazy {
+        Interceptor { chain ->
+            val request = chain.request()
+            val response = chain.proceed(request)
+            if (response.code in 400..499) {
+                response.body?.let { responseBody ->
+                    val errors = json.parseNetworkErrors(responseBody)
+                    throw CrisisCleanupNetworkException(
+                        request.url.toUrl().toString(),
+                        response.code,
+                        response.message,
+                        errors,
+                    )
+                }
+            }
+            response
         }
     }
 }
