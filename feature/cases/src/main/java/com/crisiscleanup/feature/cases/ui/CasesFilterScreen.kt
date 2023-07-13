@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -39,8 +38,6 @@ import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.CasesFilterMaxDaysAgo
 import com.crisiscleanup.core.model.data.CasesFilterMinDaysAgo
-import com.crisiscleanup.core.ui.rememberCloseKeyboard
-import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.cases.CasesFilterViewModel
 import com.crisiscleanup.feature.cases.CollapsibleFilterSection
 
@@ -245,12 +242,12 @@ private fun FilterHeaderCollapsible(
 }
 
 private val sectionTranslationKey = mapOf(
-    CollapsibleFilterSection.Distance to translator("worksiteFilters.distance"),
-    CollapsibleFilterSection.General to translator("worksiteFilters.general"),
-    CollapsibleFilterSection.PersonalInfo to translator("worksiteFilters.personal_info"),
-    CollapsibleFilterSection.Flags to translator("worksiteFilters.flags"),
-    CollapsibleFilterSection.Work to translator("worksiteFilters.work"),
-    CollapsibleFilterSection.Dates to translator("worksiteFilters.dates"),
+    CollapsibleFilterSection.Distance to "worksiteFilters.distance",
+    CollapsibleFilterSection.General to "worksiteFilters.general",
+    CollapsibleFilterSection.PersonalInfo to "worksiteFilters.personal_info",
+    CollapsibleFilterSection.Flags to "worksiteFilters.flags",
+    CollapsibleFilterSection.Work to "worksiteFilters.work",
+    CollapsibleFilterSection.Dates to "worksiteFilters.dates",
 )
 
 private fun LazyListScope.collapsibleSectionHeader(
