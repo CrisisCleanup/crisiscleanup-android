@@ -192,6 +192,7 @@ interface TestWorksiteChangeDao {
         SELECT *
         FROM worksite_changes
         WHERE worksite_id=:worksiteId
+        ORDER BY id ASC
         """
     )
     fun getEntitiesOrderId(worksiteId: Long): List<WorksiteChangeEntity>

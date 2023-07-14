@@ -234,7 +234,6 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
             var unhandledException: Exception? = null
             when (e) {
                 is NoInternetConnectionException -> {}
-
                 else -> {
                     unhandledException = e
                 }

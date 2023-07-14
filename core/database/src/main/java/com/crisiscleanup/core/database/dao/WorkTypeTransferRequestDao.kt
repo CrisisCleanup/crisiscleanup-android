@@ -17,7 +17,7 @@ interface WorkTypeTransferRequestDao {
         WHERE worksite_id=:worksiteId AND work_type NOT IN(:workTypes) AND network_id>0
         """
     )
-    fun deleteUnspecified(worksiteId: Long, workTypes: Set<String>)
+    fun syncDeleteUnspecified(worksiteId: Long, workTypes: Set<String>)
 
     @Transaction
     @Query(

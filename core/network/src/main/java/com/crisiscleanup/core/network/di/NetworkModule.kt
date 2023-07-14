@@ -3,6 +3,7 @@ package com.crisiscleanup.core.network.di
 import android.content.Context
 import coil.ImageLoader
 import coil.decode.SvgDecoder
+import coil.disk.DiskCache
 import coil.util.DebugLogger
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.network.AuthInterceptorProvider
@@ -109,6 +110,12 @@ object NetworkModule {
             .callFactory(callFactory)
             .components {
                 add(SvgDecoder.Factory())
+            }
+            .diskCache {
+                DiskCache.Builder()
+                    .directory(application.cacheDir.resolve("image_cache"))
+                    .maxSizePercent(0.02)
+                    .build()
             }
             // Assume most content images are versioned urls
             // but some problematic images are fetching each time

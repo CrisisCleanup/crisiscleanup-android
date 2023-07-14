@@ -13,7 +13,7 @@ class WorkTypeTransferRequestDaoPlus @Inject constructor(
             val worksiteId = it.worksiteId
             db.withTransaction {
                 val transferRequestDao = db.workTypeTransferRequestDao()
-                transferRequestDao.deleteUnspecified(
+                transferRequestDao.syncDeleteUnspecified(
                     worksiteId,
                     requests.map(WorkTypeTransferRequestEntity::workType).toSet(),
                 )

@@ -1,13 +1,10 @@
 package com.crisiscleanup.core.datastore
 
 import androidx.datastore.core.DataStore
-import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.model.data.OrgData
 import com.crisiscleanup.core.model.data.emptyOrgData
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
 import javax.inject.Inject
 
@@ -19,7 +16,6 @@ import javax.inject.Inject
 class AccountInfoDataSource @Inject constructor(
     private val dataStore: DataStore<AccountInfo>,
     private val secureDataSource: SecureDataSource,
-    @ApplicationScope private val externalScope: CoroutineScope,
 ) {
     companion object {
         fun defaultProfilePictureUri(fullName: String): String =
@@ -55,18 +51,6 @@ class AccountInfoDataSource @Inject constructor(
 
     private fun saveAuthTokens(refreshToken: String, accessToken: String) {
         secureDataSource.saveAuthTokens(refreshToken, accessToken)
-    }
-
-    fun clearAccountTokens() {
-        // TODO Atomic save
-        saveAuthTokens("", "")
-        externalScope.launch {
-            dataStore.updateData {
-                it.copy {
-                    this.expirySeconds = 0
-                }
-            }
-        }
     }
 
     suspend fun clearAccount() {
