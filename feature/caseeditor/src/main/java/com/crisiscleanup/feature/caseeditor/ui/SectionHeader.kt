@@ -1,9 +1,9 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.component.CollapsibleIcon
 import com.crisiscleanup.core.designsystem.component.HelpAction
@@ -29,21 +30,25 @@ import com.crisiscleanup.feature.caseeditor.CaseEditorViewModel
 private fun CircleNumber(
     number: Int,
     style: TextStyle = MaterialTheme.typography.bodyLarge,
-) = Text(
-    "$number",
-    modifier = Modifier
-        // TODO Common dimensions
-        .size(26.dp)
-        .padding(top = 6.dp)
-        .drawBehind {
-            drawCircle(
-                color = attentionBackgroundColor,
-                radius = this.size.maxDimension * 0.5f,
-            )
-        },
-    style = style,
-    textAlign = TextAlign.Center,
-)
+) {
+    Box(
+        Modifier
+            .size(26.dp)
+            .drawBehind {
+                drawCircle(
+                    color = attentionBackgroundColor,
+                    radius = this.size.maxDimension * 0.5f,
+                )
+            }
+    ) {
+        Text(
+            "$number",
+            Modifier.align(Alignment.Center),
+            style = style,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
 
 // TODO Common styles
 private val headerTextStyle: TextStyle
@@ -117,4 +122,10 @@ internal fun SectionHeader(
             it()
         }
     }
+}
+
+@Preview
+@Composable
+private fun CircleNumberPreview() {
+    CircleNumber(number = 1)
 }
