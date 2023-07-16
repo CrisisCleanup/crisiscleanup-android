@@ -31,6 +31,7 @@ class FakeAuthApi @Inject constructor() : CrisisCleanupAuthApi {
         return NetworkOauthResult(
             refreshToken = "refresh-token",
             accessToken = "access-token",
+            expiresIn = 3600,
         )
     }
 
@@ -40,6 +41,7 @@ class FakeAuthApi @Inject constructor() : CrisisCleanupAuthApi {
         return NetworkOauthResult(
             refreshToken = "refresh-token-${refreshTokenCounter++}",
             accessToken = "access-token",
+            expiresIn = 3600,
         )
     }
 }

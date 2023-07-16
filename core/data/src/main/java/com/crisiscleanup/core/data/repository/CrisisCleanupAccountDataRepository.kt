@@ -99,7 +99,8 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
     // For dev
     fun expireAccessToken() {
         externalScope.launch {
-            dataSource.updateAccountTokens(refreshToken, "", 0)
+            dataSource.ignoreNextAccountChange()
+            dataSource.updateAccountTokens(refreshToken, "", 1)
         }
     }
 }

@@ -93,7 +93,6 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
     private val worksitesRepository: WorksitesRepository,
     private val organizationsRepository: OrganizationsRepository,
     private val localImageRepository: LocalImageRepository,
-    private val authEventBus: AuthEventBus,
     private val networkMonitor: NetworkMonitor,
     private val appEnv: AppEnv,
     private val syncLogger: SyncLogger,

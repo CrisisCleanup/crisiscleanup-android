@@ -1,5 +1,6 @@
 package com.crisiscleanup.network
 
+import android.util.Log
 import com.crisiscleanup.core.common.event.AuthEventBus
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
@@ -13,6 +14,7 @@ import com.crisiscleanup.core.network.model.ExpiredTokenException
 import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError
 import com.crisiscleanup.core.network.model.NetworkErrors
 import com.crisiscleanup.core.network.model.ServerErrorException
+import com.crisiscleanup.core.network.model.SingleNetworkError
 import com.crisiscleanup.core.network.model.hasExpiredToken
 import com.crisiscleanup.core.network.retrofit.RequestHeaderKey
 import com.crisiscleanup.core.network.retrofit.RequestHeaderKeysLookup
@@ -27,6 +29,7 @@ import okhttp3.Request
 import okhttp3.Response
 import okhttp3.ResponseBody
 import okhttp3.ResponseBody.Companion.toResponseBody
+import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -36,7 +39,7 @@ private fun Json.parseNetworkErrors(response: String): List<NetworkCrisisCleanup
         val networkErrors = decodeFromString<NetworkErrors>(response)
         errors = networkErrors.errors
     } catch (e: Exception) {
-        // No errors
+        // No errors or not formatted as expected
     }
     return errors
 }
@@ -131,17 +134,17 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
     private suspend fun refreshTokens(): Boolean {
         val refreshToken = accountDataRepository.refreshToken
         if (refreshToken.isNotBlank()) {
-            val refreshResult = apiClient.refreshTokens(refreshToken)
-            if (refreshResult.error == null) {
+            try {
+                val refreshResult = apiClient.refreshTokens(refreshToken)
                 accountDataRepository.updateAccountTokens(
-                    refreshResult.refreshToken!!,
-                    refreshResult.accessToken!!,
-                    Clock.System.now().epochSeconds + refreshResult.expiresIn!!,
+                    refreshResult.refreshToken,
+                    refreshResult.accessToken,
+                    Clock.System.now().epochSeconds + refreshResult.expiresIn,
                 )
                 authEventBus.onTokensRefreshed()
                 return true
-            } else {
-                if (invalidRefreshTokenErrorMessages.contains(refreshResult.error)) {
+            } catch (e: NetworkAuthException) {
+                if (invalidRefreshTokenErrorMessages.contains(e.message)) {
                     accountDataRepository.clearAccountTokens()
                 }
             }
@@ -244,16 +247,32 @@ class CrisisCleanupAuthInterceptorProvider @Inject constructor() : AuthIntercept
             val response = chain.proceed(request)
             if (response.code in 400..499) {
                 response.body?.let { responseBody ->
-                    val errors = json.parseNetworkErrors(responseBody)
-                    throw CrisisCleanupNetworkException(
-                        request.url.toUrl().toString(),
-                        response.code,
-                        response.message,
-                        errors,
-                    )
+                    val errorBody = responseBody.string()
+                    var authErrorMessage = ""
+                    try {
+                        val singleError = json.decodeFromString<SingleNetworkError>(errorBody)
+                        authErrorMessage = singleError.error
+                    } catch (e: Exception) {
+                        Log.w(
+                            "network-error",
+                            "Network auth error format not parsed $errorBody"
+                        )
+                    }
+                    if (authErrorMessage.isNotBlank()) {
+                        throw NetworkAuthException(authErrorMessage)
+                    } else {
+                        throw CrisisCleanupNetworkException(
+                            request.url.toUrl().toString(),
+                            response.code,
+                            response.message,
+                            emptyList(),
+                        )
+                    }
                 }
             }
             response
         }
     }
 }
+
+private class NetworkAuthException(message: String) : IOException(message)

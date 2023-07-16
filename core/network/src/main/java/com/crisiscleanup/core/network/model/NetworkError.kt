@@ -21,6 +21,11 @@ data class NetworkErrors(
     val errors: List<NetworkCrisisCleanupApiError>,
 )
 
+@Serializable
+data class SingleNetworkError(
+    val error: String,
+)
+
 /**
  * General error from the API
  */

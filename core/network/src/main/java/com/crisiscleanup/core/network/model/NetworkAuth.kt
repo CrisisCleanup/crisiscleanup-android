@@ -53,11 +53,10 @@ data class NetworkRefreshToken(
 
 @Serializable
 data class NetworkOauthResult(
-    val error: String? = null,
     @SerialName("refresh_token")
-    val refreshToken: String? = null,
+    val refreshToken: String,
     @SerialName("access_token")
-    val accessToken: String? = null,
+    val accessToken: String,
     @SerialName("expires_in")
-    val expiresIn: Int? = null,
+    val expiresIn: Int,
 )

@@ -1,11 +1,13 @@
 package com.crisiscleanup.core.datastore
 
 import androidx.datastore.core.DataStore
+import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.model.data.OrgData
 import com.crisiscleanup.core.model.data.emptyOrgData
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Instant
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
 // TODO Rewrite tests
@@ -16,6 +18,7 @@ import javax.inject.Inject
 class AccountInfoDataSource @Inject constructor(
     private val dataStore: DataStore<AccountInfo>,
     private val secureDataSource: SecureDataSource,
+    private val appEnv: AppEnv,
 ) {
     companion object {
         fun defaultProfilePictureUri(fullName: String): String =
@@ -97,6 +100,13 @@ class AccountInfoDataSource @Inject constructor(
             it.copy {
                 this.expirySeconds = expirySeconds
             }
+        }
+    }
+
+    private val skipChangeGuard = AtomicBoolean(false)
+    fun ignoreNextAccountChange() {
+        if (appEnv.isNotProduction) {
+            skipChangeGuard.set(true)
         }
     }
 }

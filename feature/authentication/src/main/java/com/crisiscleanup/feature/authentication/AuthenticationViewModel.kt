@@ -134,22 +134,16 @@ class AuthenticationViewModel @Inject constructor(
             try {
                 val result = authApiClient.login(emailAddress, password)
                 val oauthResult = authApiClient.oauthLogin(emailAddress, password)
-                val hasError =
-                    result.errors?.isNotEmpty() == true || oauthResult.error?.isNotBlank() == true
+                val hasError = result.errors?.isNotEmpty() == true
                 if (hasError) {
                     errorMessage.value = translator("info.unknown_error")
 
-                    val logErrorMessage = listOf(
-                        result.errors?.condenseMessages,
-                        oauthResult.error,
-                    )
-                        .combineTrimText("\n")
-                        .ifBlank { "Server error" }
+                    val logErrorMessage =result.errors?.condenseMessages?.ifBlank { "Server error" }
                     logger.logException(Exception(logErrorMessage))
                 } else {
-                    val refreshToken = oauthResult.refreshToken!!
-                    val accessToken = oauthResult.accessToken!!
-                    val expirySeconds = Clock.System.now().epochSeconds + oauthResult.expiresIn!!
+                    val refreshToken = oauthResult.refreshToken
+                    val accessToken = oauthResult.accessToken
+                    val expirySeconds = Clock.System.now().epochSeconds + oauthResult.expiresIn
 
                     val claims = result.claims!!
                     val profilePicUri =
