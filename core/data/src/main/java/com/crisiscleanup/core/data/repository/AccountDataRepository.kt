@@ -39,5 +39,7 @@ interface AccountDataRepository {
         expirySeconds: Long,
     )
 
+    suspend fun updateAccountTokens()
+
     suspend fun clearAccountTokens()
 }

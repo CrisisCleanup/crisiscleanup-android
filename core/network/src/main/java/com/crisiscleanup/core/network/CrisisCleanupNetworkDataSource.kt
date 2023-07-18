@@ -22,7 +22,7 @@ import kotlinx.datetime.Instant
 interface CrisisCleanupAuthApi {
     suspend fun login(email: String, password: String): NetworkAuthResult
     suspend fun oauthLogin(email: String, password: String): NetworkOauthResult
-    suspend fun refreshTokens(refreshToken: String): NetworkOauthResult
+    suspend fun refreshTokens(refreshToken: String): NetworkOauthResult?
     suspend fun logout()
 }
 

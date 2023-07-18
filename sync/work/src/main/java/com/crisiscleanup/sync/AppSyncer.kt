@@ -61,7 +61,9 @@ class AppSyncer @Inject constructor(
 
     private val languagePullMutex = Mutex()
 
-    private suspend fun notifyInvalidAccountToken(isInBackground: Boolean) {
+    private suspend fun validateAccountTokens(isInBackground: Boolean) {
+        accountDataRepository.updateAccountTokens()
+
         if (isInBackground) {
             val accountData = accountDataRepository.accountData.first()
             if (!accountData.areTokensValid) {
@@ -75,14 +77,16 @@ class AppSyncer @Inject constructor(
     private suspend fun isNotOnline() = networkMonitor.isNotOnline.first()
 
     private suspend fun onSyncPreconditions(isInBackground: Boolean): SyncResult? {
-        notifyInvalidAccountToken(isInBackground)
-
         if (isNotOnline()) {
             return SyncResult.NotAttempted("Not online")
         }
 
+        validateAccountTokens(isInBackground)
+        if (!accountDataRepository.accountData.first().areTokensValid) {
+            return SyncResult.NotAttempted("Invalid account tokens")
+        }
+
         // Other constraints are not important.
-        // Validity of tokens are determined in the network layer
         // When app is running assume sync is necessary.
         // When app is in background assume Work constraints have been defined.
 

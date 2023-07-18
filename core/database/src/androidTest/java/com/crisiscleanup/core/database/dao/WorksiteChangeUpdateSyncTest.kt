@@ -7,6 +7,7 @@ import com.crisiscleanup.core.database.TestUtil.testAppVersionProvider
 import com.crisiscleanup.core.database.TestUtil.testChangeSerializer
 import com.crisiscleanup.core.database.TestUtil.testUuidGenerator
 import com.crisiscleanup.core.database.WorksiteTestUtil
+import com.crisiscleanup.core.database.isNearNow
 import com.crisiscleanup.core.database.model.PopulatedIdNetworkId
 import com.crisiscleanup.core.database.model.WorkTypeTransferRequestEntity
 import com.crisiscleanup.core.database.model.WorksiteChangeEntity
@@ -289,8 +290,9 @@ class WorksiteChangeUpdateSyncTest {
         assertEquals(expected, actual)
     }
 
+    // TODO Create custom matcher/assertion
     private fun Instant.assertRecentTime(maxDuration: Duration = 1.seconds) {
-        assertTrue(now - this < maxDuration)
+        assertTrue(isNearNow(maxDuration))
     }
 
     @Test

@@ -6,6 +6,7 @@ import com.crisiscleanup.core.network.model.NetworkAuthResult
 import com.crisiscleanup.core.network.model.NetworkOauthPayload
 import com.crisiscleanup.core.network.model.NetworkOauthResult
 import com.crisiscleanup.core.network.model.NetworkRefreshToken
+import kotlinx.coroutines.sync.Mutex
 import retrofit2.Retrofit
 import retrofit2.http.Body
 import retrofit2.http.POST
@@ -32,14 +33,24 @@ class AuthApiClient @Inject constructor(
 ) : CrisisCleanupAuthApi {
     private val networkApi = retrofit.create(AuthApi::class.java)
 
+    private val refreshMutex = Mutex()
+
     override suspend fun login(email: String, password: String): NetworkAuthResult =
         networkApi.login(NetworkAuthPayload(email, password))
 
     override suspend fun oauthLogin(email: String, password: String): NetworkOauthResult =
         networkApi.oauthLogin(NetworkOauthPayload(email, password))
 
-    override suspend fun refreshTokens(refreshToken: String): NetworkOauthResult =
-        networkApi.refreshAccountTokens(NetworkRefreshToken(refreshToken))
+    override suspend fun refreshTokens(refreshToken: String): NetworkOauthResult? {
+        if (refreshMutex.tryLock()) {
+            try {
+                return networkApi.refreshAccountTokens(NetworkRefreshToken(refreshToken))
+            } finally {
+                refreshMutex.unlock()
+            }
+        }
+        return null
+    }
 
     override suspend fun logout() {}
 }

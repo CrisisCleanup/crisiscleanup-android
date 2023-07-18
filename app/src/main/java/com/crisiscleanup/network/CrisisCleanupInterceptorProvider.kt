@@ -20,7 +20,6 @@ import com.crisiscleanup.core.network.retrofit.RequestHeaderKey
 import com.crisiscleanup.core.network.retrofit.RequestHeaderKeysLookup
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.Mutex
 import kotlinx.datetime.Clock
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
@@ -57,7 +56,6 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
     private val apiClient: CrisisCleanupAuthApi,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : RetrofitInterceptorProvider {
-    private val refreshMutex = Mutex()
 
     @OptIn(ExperimentalSerializationApi::class)
     private val json = Json {
@@ -91,18 +89,10 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
                 throw ExpiredTokenException()
             }
 
-            if (accountData.isAccessTokenExpired) {
-                if (refreshMutex.tryLock()) {
-                    try {
-                        if (!refreshTokens()) {
-                            throw ExpiredTokenException()
-                        }
-                    } finally {
-                        refreshMutex.unlock()
-                    }
-                } else {
-                    throw ExpiredTokenException()
-                }
+            if (accountData.isAccessTokenExpired &&
+                !refreshTokens()
+            ) {
+                throw ExpiredTokenException()
             }
         }
 
@@ -135,14 +125,15 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
         val refreshToken = accountDataRepository.refreshToken
         if (refreshToken.isNotBlank()) {
             try {
-                val refreshResult = apiClient.refreshTokens(refreshToken)
-                accountDataRepository.updateAccountTokens(
-                    refreshResult.refreshToken,
-                    refreshResult.accessToken,
-                    Clock.System.now().epochSeconds + refreshResult.expiresIn,
-                )
-                authEventBus.onTokensRefreshed()
-                return true
+                apiClient.refreshTokens(refreshToken)?.let { refreshResult ->
+                    accountDataRepository.updateAccountTokens(
+                        refreshResult.refreshToken,
+                        refreshResult.accessToken,
+                        Clock.System.now().epochSeconds + refreshResult.expiresIn,
+                    )
+                    authEventBus.onTokensRefreshed()
+                    return true
+                }
             } catch (e: NetworkAuthException) {
                 if (invalidRefreshTokenErrorMessages.contains(e.message)) {
                     accountDataRepository.clearAccountTokens()
