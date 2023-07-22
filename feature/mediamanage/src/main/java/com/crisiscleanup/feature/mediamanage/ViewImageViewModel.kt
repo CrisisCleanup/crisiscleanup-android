@@ -72,6 +72,7 @@ class ViewImageViewModel @Inject constructor(
     private val imageId = caseEditorArgs.imageId
     val screenTitle = caseEditorArgs.title
 
+    private val isDeleting = MutableStateFlow(false)
     val isDeleted = MutableStateFlow(false)
 
     private val isOffline = networkMonitor.isNotOnline
@@ -106,16 +107,17 @@ class ViewImageViewModel @Inject constructor(
                         },
                         onError = {
                             val isTokenInvalid =
-                                accountDataRepository.accessToken.isBlank()
+                                accountDataRepository.refreshToken.isBlank()
 
                             logger.logDebug("Failed to load image $isOffline $isTokenInvalid $imageId $imageUrl")
 
                             // TODO Test all three states show correctly
                             // TODO String res
-                            val message =
-                                if (isOffline.value) "Connect to the internet to download this photo."
-                                else if (isTokenInvalid) "Login again and refresh the image."
-                                else "Unable to load photo. Try refreshing the image."
+                            val messageKey =
+                                if (isOffline.value) "~~Connect to the internet to download this photo."
+                                else if (isTokenInvalid) "~~Login again and refresh the image."
+                                else "~~Try refreshing and opening the image again."
+                            val message = translate(messageKey)
                             channel.trySend(ViewImageUiState.Error(message))
                         },
                     )
@@ -171,11 +173,12 @@ class ViewImageViewModel @Inject constructor(
     val isImageDeletable = combine(
         uiState,
         isSyncing,
-        ::Pair,
-    ).map { (state, isSyncingImage) ->
+        isDeleting,
+        ::Triple,
+    ).map { (state, syncing, deleting) ->
         state is ViewImageUiState.Image &&
                 imageId > 0 &&
-                !isSyncingImage
+                !(syncing || deleting)
     }
         .stateIn(
             scope = viewModelScope,
@@ -183,16 +186,16 @@ class ViewImageViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    private var savedImageRotation = AtomicReference(999)
+    private val savedImageRotation = AtomicReference(999)
 
     init {
         viewModelScope.launch(ioDispatcher) {
             val rotation = localImageRepository.getImageRotation(imageId, isNetworkImage)
-            savedImageRotation = AtomicReference(rotation)
             withContext(Dispatchers.Main) {
                 if (rotation != imageRotation.value) {
                     imageRotation.value = rotation
                 }
+                savedImageRotation.set(rotation)
             }
         }
 
@@ -211,6 +214,7 @@ class ViewImageViewModel @Inject constructor(
     fun translate(key: String) = translator.translate(key) ?: key
 
     fun deleteImage() {
+        isDeleting.value = true
         viewModelScope.launch(ioDispatcher) {
             try {
                 if (isNetworkImage) {
@@ -227,6 +231,8 @@ class ViewImageViewModel @Inject constructor(
             } catch (e: Exception) {
                 // TODO Show error
                 logger.logException(e)
+            } finally {
+                isDeleting.value = false
             }
         }
     }

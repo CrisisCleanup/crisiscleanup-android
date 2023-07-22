@@ -6,7 +6,8 @@ import com.crisiscleanup.core.model.data.WorksiteFormValue
 import com.crisiscleanup.core.network.model.DynamicValue
 import com.google.android.gms.maps.model.LatLng
 
-fun Worksite.coordinates() = LatLng(latitude, longitude)
+val Worksite.coordinates: LatLng
+    get() = LatLng(latitude, longitude)
 
 fun Worksite.copyModifiedFlags(
     hasFlag: Boolean,

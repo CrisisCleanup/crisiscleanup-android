@@ -525,7 +525,7 @@ class CaseEditorViewModel @Inject constructor(
                 )
                 val worksiteId = worksiteIdArg!!
 
-                worksiteProvider.setEditedLocation(worksite.coordinates())
+                worksiteProvider.setEditedLocation(worksite.coordinates)
                 if (isIncidentChange) {
                     incidentSelector.setIncident(saveChangeIncident)
                 } else {

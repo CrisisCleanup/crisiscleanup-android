@@ -11,8 +11,8 @@ abstract class EditCaseBaseViewModel(
     private val translator: KeyResourceTranslator,
     @Logger(CrisisCleanupLoggers.Worksites) protected val logger: AppLogger,
 ) : ViewModel(), KeyResourceTranslator {
-    val breakGlassHint = translator("actions.edit") ?: ""
-    val helpHint = translator("actions.help_alt") ?: ""
+    val breakGlassHint = translator("actions.edit")
+    val helpHint = translator("actions.help_alt")
 
     abstract fun onSystemBack(): Boolean
 

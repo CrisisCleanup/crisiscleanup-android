@@ -257,7 +257,7 @@ internal fun LocationFormView(
     OutlinedClearableTextField(
         modifier = listItemModifier,
         labelResId = 0,
-        label = translator("cross_street"),
+        label = translator("formLabels.cross_street"),
         value = inputData.crossStreetNearbyLandmark,
         onValueChange = updateCrossStreet,
         keyboardType = KeyboardType.Text,

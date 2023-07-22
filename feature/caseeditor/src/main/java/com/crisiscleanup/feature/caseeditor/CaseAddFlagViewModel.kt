@@ -107,7 +107,7 @@ class CaseAddFlagViewModel @Inject constructor(
         )
 
     val nearbyOrganizations = editableWorksiteProvider.editableWorksite.mapLatest {
-        val coordinates = it.coordinates()
+        val coordinates = it.coordinates
         organizationsRepository.getNearbyClaimingOrganizations(
             coordinates.latitude,
             coordinates.longitude,

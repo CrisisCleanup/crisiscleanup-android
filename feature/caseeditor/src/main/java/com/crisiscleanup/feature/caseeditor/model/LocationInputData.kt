@@ -19,7 +19,7 @@ class LocationInputData(
     private var referenceWorksite = worksite
 
     var locationQuery = MutableStateFlow("")
-    val coordinates = MutableStateFlow(worksite.coordinates())
+    val coordinates = MutableStateFlow(worksite.coordinates)
     var streetAddress by mutableStateOf(worksite.address)
     var zipCode by mutableStateOf(worksite.postalCode)
     var city by mutableStateOf(worksite.city)
@@ -77,7 +77,7 @@ class LocationInputData(
         }
 
     private fun isChanged(worksite: Worksite): Boolean {
-        return this.coordinates.value != worksite.coordinates() ||
+        return this.coordinates.value != worksite.coordinates ||
                 streetAddress.trim() != worksite.address ||
                 zipCode.trim() != worksite.postalCode ||
                 city.trim() != worksite.city ||

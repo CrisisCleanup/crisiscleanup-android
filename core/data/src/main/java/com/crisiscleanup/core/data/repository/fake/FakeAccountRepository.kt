@@ -65,14 +65,6 @@ class FakeAccountRepository : AccountDataRepository {
         expirySeconds: Long
     ) {
         setAccountTokens(refreshToken, accessToken)
-        current.copy(tokenExpiry = Instant.fromEpochSeconds(expirySeconds))
-        )
-    }
-
-    override suspend fun updateAccountTokens() {
-    }
-
-    override suspend fun clearAccountTokens() {
         _accountData.tryEmit(
             current.copy(tokenExpiry = Instant.fromEpochSeconds(expirySeconds))
         )

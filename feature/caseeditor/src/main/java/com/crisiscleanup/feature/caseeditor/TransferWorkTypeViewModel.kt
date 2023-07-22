@@ -42,7 +42,6 @@ class TransferWorkTypeViewModel @Inject constructor(
     private val editableWorksiteProvider: EditableWorksiteProvider,
     private val transferWorkTypeProvider: TransferWorkTypeProvider,
     private val translator: KeyResourceTranslator,
-    private val resourceProvider: AndroidResourceProvider,
     private val syncPusher: SyncPusher,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,

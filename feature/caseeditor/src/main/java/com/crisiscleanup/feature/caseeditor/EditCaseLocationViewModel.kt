@@ -202,8 +202,8 @@ internal class EditableLocationDataEditor(
         incidentId = worksiteIn.incidentId
 
         if (worksite.isNew &&
-            (worksite.coordinates() == EmptyWorksite.coordinates() ||
-                    worksite.coordinates() == DefaultCoordinates)
+            (worksite.coordinates == EmptyWorksite.coordinates ||
+                    worksite.coordinates == DefaultCoordinates)
         ) {
             val incidentBounds = worksiteProvider.incidentBounds
             var worksiteCoordinates: LatLng = incidentBounds.centroid
@@ -258,7 +258,7 @@ internal class EditableLocationDataEditor(
             )
         }
 
-        setDefaultMapCamera(worksite.coordinates())
+        setDefaultMapCamera(worksite.coordinates)
     }
 
     override val isLocationSearching = locationSearchManager.isSearching

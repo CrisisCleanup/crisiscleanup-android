@@ -24,6 +24,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -61,8 +62,9 @@ internal fun ViewImageRoute(
     viewModel: ViewImageViewModel = hiltViewModel(),
     onBack: () -> Unit = {},
 ) {
-    var isFullscreenMode by remember { mutableStateOf(false) }
-    val toggleFullscreen = remember(viewModel) { { isFullscreenMode = !isFullscreenMode } }
+    var isFullscreenMode by remember { mutableStateOf(true) }
+    var isOverlayActions by remember { mutableStateOf(true) }
+    val toggleActions = remember(viewModel) { { isOverlayActions = !isOverlayActions } }
 
     val onBackRestoreFullscreen = remember(viewModel) {
         {
@@ -84,7 +86,8 @@ internal fun ViewImageRoute(
         ViewImageScreen(
             onBack = onBackRestoreFullscreen,
             isFullscreenMode = isFullscreenMode,
-            toggleFullscreen = toggleFullscreen,
+            isOverlayActions = isOverlayActions,
+            toggleActions = toggleActions,
         )
     }
 }
@@ -94,16 +97,17 @@ private fun ViewImageScreen(
     viewModel: ViewImageViewModel = hiltViewModel(),
     onBack: () -> Unit = {},
     isFullscreenMode: Boolean = false,
-    toggleFullscreen: () -> Unit = {},
+    isOverlayActions: Boolean = false,
+    toggleActions: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isImageLoaded = uiState is ViewImageUiState.Image
-    val isFullscreenImage = isFullscreenMode && isImageLoaded
+    val overlayActions = isOverlayActions || !isImageLoaded
     (LocalContext.current as? Activity)?.window?.let { window ->
         with(WindowCompat.getInsetsController(window, window.decorView)) {
             systemBarsBehavior =
                 WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            if (isFullscreenImage) {
+            if (isFullscreenMode) {
                 hide(WindowInsetsCompat.Type.systemBars())
             } else {
                 show(WindowInsetsCompat.Type.systemBars())
@@ -111,54 +115,64 @@ private fun ViewImageScreen(
         }
     }
 
-    val contentModifier = if (isFullscreenImage) Modifier else Modifier.systemBarsPadding()
-    Column(
-        modifier = contentModifier,
+    Box(
+        Modifier
+            .background(color = Color.Black)
+            .fillMaxSize(),
     ) {
-        if (!isFullscreenImage) {
-            TopBar(onBack = onBack)
-
-            if (uiState is ViewImageUiState.Error) {
-                val errorState = uiState as ViewImageUiState.Error
-                Text(
-                    errorState.message,
-                    listItemModifier.systemBarsPadding(),
+        when (uiState) {
+            ViewImageUiState.Loading -> {
+                BusyIndicatorFloatingTopCenter(
+                    true,
+                    // TODO Common styles
+                    color = Color.White,
                 )
+            }
+
+            is ViewImageUiState.Image -> {
+                val imageData = uiState as ViewImageUiState.Image
+                val imageRotation by viewModel.imageRotation.collectAsStateWithLifecycle()
+                DynamicImageView(imageData, imageRotation, toggleActions)
+
+                androidx.compose.animation.AnimatedVisibility(
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                    visible = overlayActions,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                ) {
+                    ImageActionBar()
+                }
+            }
+
+            else -> {}
+        }
+
+        androidx.compose.animation.AnimatedVisibility(
+            modifier = Modifier.align(Alignment.TopCenter),
+            visible = overlayActions,
+            enter = fadeIn(),
+            exit = fadeOut(),
+        ) {
+            Column {
+                TopBar(onBack = onBack)
+
+                if (uiState is ViewImageUiState.Error) {
+                    val errorState = uiState as ViewImageUiState.Error
+                    Text(
+                        errorState.message,
+                        listItemModifier.systemBarsPadding(),
+                    )
+                }
             }
         }
 
-        Box(
-            Modifier
-                .weight(1f)
-                .background(color = Color.Black)
-                .fillMaxSize(),
+        androidx.compose.animation.AnimatedVisibility(
+            modifier = Modifier.align(Alignment.BottomCenter),
+            visible = overlayActions,
+            enter = fadeIn(),
+            exit = fadeOut(),
         ) {
-            when (uiState) {
-                ViewImageUiState.Loading -> {
-                    BusyIndicatorFloatingTopCenter(
-                        true,
-                        // TODO Common styles
-                        color = Color.White,
-                    )
-                }
-
-                is ViewImageUiState.Image -> {
-                    val imageData = uiState as ViewImageUiState.Image
-                    val imageRotation by viewModel.imageRotation.collectAsStateWithLifecycle()
-                    DynamicImageView(imageData, imageRotation, isFullscreenMode, toggleFullscreen)
-
-                    androidx.compose.animation.AnimatedVisibility(
-                        modifier = Modifier.align(Alignment.BottomCenter),
-                        visible = !isFullscreenImage,
-                        enter = fadeIn(),
-                        exit = fadeOut(),
-                    ) {
-                        ImageActionBar()
-                    }
-                }
-
-                else -> {}
-            }
+            ImageActionBar()
         }
     }
 }
@@ -215,8 +229,7 @@ private fun capPanOffset(
 private fun DynamicImageView(
     imageData: ViewImageUiState.Image,
     rotationDegrees: Int = 0,
-    isFullscreen: Boolean,
-    toggleFullscreen: () -> Unit = {},
+    toggleActions: () -> Unit = {},
 ) {
     var screenSizeInset by remember { mutableStateOf(Pair(0, 0)) }
     var screenSizeFull by remember { mutableStateOf(Pair(0, 0)) }
@@ -225,10 +238,8 @@ private fun DynamicImageView(
     var imageScalesRest by remember { mutableStateOf(RectangularScale()) }
     var imageScalesRotated by remember { mutableStateOf(RectangularScale()) }
 
-    var scale by remember { mutableStateOf(1f) }
+    var scale by remember { mutableFloatStateOf(1f) }
     var translation by remember { mutableStateOf(Offset.Zero) }
-
-    var wasFullscreen by remember { mutableStateOf(false) }
 
     val image = imageData.image
     val isDefaultDimensions = imageSize.first == 0 && image.width > 0
@@ -254,15 +265,12 @@ private fun DynamicImageView(
                     }
             }
         }
-
-        wasFullscreen = isFullscreen
     }
 
-    val screenSize =
-        if (isFullscreen && screenSizeFull.first > 0) screenSizeFull else screenSizeInset
+    val screenSize = screenSizeFull
     val isRotated = rotationDegrees % 180 != 0
 
-    if (isFullscreen != wasFullscreen || isDefaultDimensions) {
+    if (isDefaultDimensions) {
         imageScalesRest = RectangularScale.getScales(imageSize, screenSize)
         imageScalesRotated = RectangularScale.getScales(imageSize, screenSize, true)
 
@@ -272,8 +280,6 @@ private fun DynamicImageView(
 
         val trueScale = scale * scales.fitScalePx
         translation = capPanOffset(imageSize, trueScale, screenSize, translation)
-
-        wasFullscreen = isFullscreen
     }
 
     val imageScales = if (isRotated) imageScalesRotated else imageScalesRest
@@ -282,7 +288,7 @@ private fun DynamicImageView(
         modifier = Modifier
             .fillMaxSize()
             .combinedClickable(
-                onClick = toggleFullscreen,
+                onClick = toggleActions,
                 onDoubleClick = {
                     with(imageScales) {
                         if (translation == Offset.Zero) {

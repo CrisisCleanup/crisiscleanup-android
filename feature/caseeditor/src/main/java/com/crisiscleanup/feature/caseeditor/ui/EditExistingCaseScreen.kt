@@ -703,7 +703,7 @@ private fun LazyListScope.propertyInfoItems(
                     worksite.state,
                     worksite.postalCode,
                 ).combineTrimText()
-                val coordinates = worksite.coordinates()
+                val coordinates = worksite.coordinates
                 val locationQuery = if (hasWrongLocation) ""
                 else "geo:${coordinates.latitude},${coordinates.longitude}?q=$fullAddress"
                 PropertyInfoRow(
@@ -721,7 +721,7 @@ private fun LazyListScope.propertyInfoItems(
                 )
 
                 PropertyInfoMapView(
-                    worksite.coordinates(),
+                    worksite.coordinates,
                     // TODO Common dimensions
                     Modifier
                         .height(192.dp)
