@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -38,6 +39,10 @@ import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.CasesFilterMaxDaysAgo
 import com.crisiscleanup.core.model.data.CasesFilterMinDaysAgo
+import com.crisiscleanup.core.model.data.WorkTypeStatus
+import com.crisiscleanup.core.model.data.WorksiteFlagType
+import com.crisiscleanup.core.ui.rememberCloseKeyboard
+import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.cases.CasesFilterViewModel
 import com.crisiscleanup.feature.cases.CollapsibleFilterSection
 
@@ -54,6 +59,8 @@ internal fun CasesFilterRoute(
 
     val updateFilters =
         remember(viewModel) { { filters: CasesFilter -> viewModel.changeFilters(filters) } }
+    val workTypeStatuses by viewModel.workTypeStatuses.collectAsStateWithLifecycle()
+    val workTypes by viewModel.workTypes.collectAsStateWithLifecycle(emptyList())
 
     val filters by viewModel.casesFilter.collectAsStateWithLifecycle()
     CompositionLocalProvider(
@@ -65,59 +72,166 @@ internal fun CasesFilterRoute(
                 onAction = onBack,
             )
 
-            Text("Filters under construction")
+            val sectionExpandState = remember { viewModel.sectionExpandState }
+            val toggleCollapsible = { section: CollapsibleFilterSection ->
+                sectionExpandState[section] = !sectionExpandState[section]!!
+            }
 
-//            val sectionExpandState = remember { viewModel.sectionExpandState }
-//            val toggleCollapsible = { section: CollapsibleFilterSection ->
-//                sectionExpandState[section] = !sectionExpandState[section]!!
-//            }
-//
-//            val closeKeyboard = rememberCloseKeyboard(viewModel)
-//
-//            val updateWithinPrimary = remember(viewModel)
-//            {
-//                { b: Boolean ->
-//                    updateFilters(filters.copy(isWithinPrimaryResponseArea = b))
-//                }
-//            }
-//            val updateWithinSecondary = remember(viewModel)
-//            {
-//                { b: Boolean ->
-//                    updateFilters(filters.copy(isWithinSecondaryResponseArea = b))
-//                }
-//            }
-//            val updateAssignedToMyTeam = remember(viewModel)
-//            {
-//                { b: Boolean ->
-//                    updateFilters(filters.copy(isAssignedToMyTeam = b))
-//                }
-//            }
-//
-//            LazyColumn(
-//                Modifier
-//                    .scrollFlingListener(closeKeyboard)
-//                    .weight(1f),
-//            ) {
-//                sviSlider(translator, filters, updateFilters)
-//                daysUpdatedSlider(translator, filters, updateFilters)
-//                distanceOptions(
-//                    translator,
-//                    filters,
-//                    updateFilters,
-//                    sectionExpandState[CollapsibleFilterSection.Distance]!!,
-//                    toggleCollapsible,
-//                    viewModel.distanceOptions,
-//                )
-//                generalOptions(
-//                    filters,
-//                    updateFilters,
-//                    sectionExpandState[CollapsibleFilterSection.General]!!,
-//                    toggleCollapsible,
-//                    updateWithinPrimary = updateWithinPrimary,
-//                    updateWithinSecondary = updateWithinSecondary,
-//                    updateTeamAssignment = updateAssignedToMyTeam,
-//                )
-//            }
+            val closeKeyboard = rememberCloseKeyboard(viewModel)
+
+            val updateWithinPrimary = remember(viewModel)
+            {
+                { b: Boolean -> updateFilters(filters.copy(isWithinPrimaryResponseArea = b)) }
+            }
+            val updateWithinSecondary = remember(viewModel)
+            {
+                { b: Boolean -> updateFilters(filters.copy(isWithinSecondaryResponseArea = b)) }
+            }
+            val updateAssignedToMyTeam = remember(viewModel)
+            {
+                { b: Boolean -> updateFilters(filters.copy(isAssignedToMyTeam = b)) }
+            }
+            val updateIsUnclaimed = remember(viewModel)
+            {
+                { b: Boolean -> updateFilters(filters.copy(isUnclaimed = b)) }
+            }
+            val updateIsClaimedByMyOrg = remember(viewModel)
+            {
+                { b: Boolean -> updateFilters(filters.copy(isClaimedByMyOrg = b)) }
+            }
+            val updateIsReportedByMyOrg = remember(viewModel)
+            {
+                { b: Boolean -> updateFilters(filters.copy(isReportedByMyOrg = b)) }
+            }
+            val updateIsStatusOpen = remember(viewModel)
+            {
+                { b: Boolean -> updateFilters(filters.copy(isStatusOpen = b)) }
+            }
+            val updateIsStatusClosed = remember(viewModel)
+            {
+                { b: Boolean -> updateFilters(filters.copy(isStatusClosed = b)) }
+            }
+            val updateWorkTypeStatus = remember(viewModel) {
+                { status: WorkTypeStatus, b: Boolean ->
+                    val statuses = filters.workTypeStatuses.toMutableSet()
+                    if (b) {
+                        statuses.add(status)
+                    } else {
+                        statuses.remove(status)
+                    }
+                    updateFilters(
+                        filters.copy(workTypeStatuses = statuses)
+                    )
+                }
+            }
+            val updateMemberOfMyOrg = remember(viewModel)
+            {
+                { b: Boolean -> updateFilters(filters.copy(isMemberOfMyOrg = b)) }
+            }
+            val updateChildrenInHome = remember(viewModel)
+            {
+                { b: Boolean -> updateFilters(filters.copy(hasChildrenInHome = b)) }
+            }
+            val updateFirstResponder = remember(viewModel)
+            {
+                { b: Boolean -> updateFilters(filters.copy(isFirstResponder = b)) }
+            }
+            val updateOlderThan60 = remember(viewModel)
+            {
+                { b: Boolean -> updateFilters(filters.copy(isOlderThan60 = b)) }
+            }
+            val updateVeteran = remember(viewModel)
+            {
+                { b: Boolean -> updateFilters(filters.copy(isVeteran = b)) }
+            }
+            val updateFlags = remember(viewModel) {
+                { flag: WorksiteFlagType, b: Boolean ->
+                    val flags = filters.worksiteFlags.toMutableSet()
+                    if (b) {
+                        flags.add(flag)
+                    } else {
+                        flags.remove(flag)
+                    }
+                    updateFilters(
+                        filters.copy(worksiteFlags = flags)
+                    )
+                }
+            }
+            val updateWorkTypes = remember(viewModel) {
+                { workType: String, b: Boolean ->
+                    val workTypes = filters.workTypes.toMutableSet()
+                    if (b) {
+                        workTypes.add(workType)
+                    } else {
+                        workTypes.remove(workType)
+                    }
+                    updateFilters(
+                        filters.copy(workTypes = workTypes)
+                    )
+                }
+            }
+            val updateNoWorkType = remember(viewModel)
+            {
+                { b: Boolean -> updateFilters(filters.copy(isNoWorkType = b)) }
+            }
+
+            val isGeneralExpanded = sectionExpandState[CollapsibleFilterSection.General]!!
+            LazyColumn(
+                Modifier
+                    .scrollFlingListener(closeKeyboard)
+                    .weight(1f),
+            ) {
+                sviSlider(translator, filters, updateFilters)
+                daysUpdatedSlider(translator, filters, updateFilters)
+                distanceOptions(
+                    translator,
+                    filters,
+                    updateFilters,
+                    sectionExpandState[CollapsibleFilterSection.Distance]!!,
+                    toggleCollapsible,
+                    viewModel.distanceOptions,
+                )
+                generalOptions(
+                    filters,
+                    isGeneralExpanded,
+                    toggleCollapsible,
+                    updateWithinPrimary = updateWithinPrimary,
+                    updateWithinSecondary = updateWithinSecondary,
+                    updateTeamAssignment = updateAssignedToMyTeam,
+                    updateIsUnclaimed = updateIsUnclaimed,
+                    updateIsClaimedByMyOrg = updateIsClaimedByMyOrg,
+                    updateIsReportedByMyOrg = updateIsReportedByMyOrg,
+                    updateIsStatusOpen = updateIsStatusOpen,
+                    workTypeStatuses = workTypeStatuses,
+                    updateIsStatusClosed = updateIsStatusClosed,
+                    updateWorkTypeStatus = updateWorkTypeStatus,
+                )
+                personalInfoOptions(
+                    filters,
+                    sectionExpandState[CollapsibleFilterSection.PersonalInfo]!!,
+                    toggleCollapsible,
+                    updateMemberOfMyOrg = updateMemberOfMyOrg,
+                    updateChildrenInHome = updateChildrenInHome,
+                    updateFirstResponder = updateFirstResponder,
+                    updateOlderThan60 = updateOlderThan60,
+                    updateVeteran = updateVeteran,
+                )
+                flagOptions(
+                    filters,
+                    sectionExpandState[CollapsibleFilterSection.Flags]!!,
+                    toggleCollapsible,
+                    viewModel.worksiteFlags,
+                    updateFlags,
+                )
+                workOptions(
+                    filters,
+                    sectionExpandState[CollapsibleFilterSection.Work]!!,
+                    toggleCollapsible,
+                    workTypes,
+                    updateWorkTypes,
+                    updateNoWorkType,
+                )
+            }
         }
     }
 }
@@ -331,12 +445,18 @@ private fun LazyListScope.checkboxItem(
 
 private fun LazyListScope.generalOptions(
     filters: CasesFilter,
-    onUpdateFilter: (CasesFilter) -> Unit = {},
     isSectionExpanded: Boolean = false,
     toggleSection: (CollapsibleFilterSection) -> Unit = {},
     updateWithinPrimary: (Boolean) -> Unit = {},
     updateWithinSecondary: (Boolean) -> Unit = {},
     updateTeamAssignment: (Boolean) -> Unit = {},
+    updateIsUnclaimed: (Boolean) -> Unit = {},
+    updateIsClaimedByMyOrg: (Boolean) -> Unit = {},
+    updateIsReportedByMyOrg: (Boolean) -> Unit = {},
+    updateIsStatusOpen: (Boolean) -> Unit = {},
+    updateIsStatusClosed: (Boolean) -> Unit = {},
+    workTypeStatuses: Collection<WorkTypeStatus> = emptyList(),
+    updateWorkTypeStatus: (WorkTypeStatus, Boolean) -> Unit = { _, _ -> },
 ) {
     collapsibleSectionHeader(
         CollapsibleFilterSection.General,
@@ -368,6 +488,177 @@ private fun LazyListScope.generalOptions(
             filters.isAssignedToMyTeam,
             { b: Boolean -> updateTeamAssignment(b) },
             { updateTeamAssignment(!filters.isAssignedToMyTeam) },
+        )
+
+        subsectionHeader("worksiteFilters.claim_reported_by")
+
+        checkboxItem(
+            "worksiteFilters.unclaimed",
+            filters.isUnclaimed,
+            { b: Boolean -> updateIsUnclaimed(b) },
+            { updateIsUnclaimed(!filters.isUnclaimed) },
+        )
+
+        checkboxItem(
+            "worksiteFilters.claimed_by_my_org",
+            filters.isClaimedByMyOrg,
+            { b: Boolean -> updateIsClaimedByMyOrg(b) },
+            { updateIsClaimedByMyOrg(!filters.isClaimedByMyOrg) },
+        )
+
+        checkboxItem(
+            "worksiteFilters.reported_by_my_org",
+            filters.isReportedByMyOrg,
+            { b: Boolean -> updateIsReportedByMyOrg(b) },
+            { updateIsReportedByMyOrg(!filters.isReportedByMyOrg) },
+        )
+
+        subsectionHeader("worksiteFilters.over_all_status")
+
+        checkboxItem(
+            "worksiteFilters.open",
+            filters.isStatusOpen,
+            { b: Boolean -> updateIsStatusOpen(b) },
+            { updateIsStatusOpen(!filters.isStatusOpen) },
+        )
+
+        checkboxItem(
+            "worksiteFilters.closed",
+            filters.isStatusClosed,
+            { b: Boolean -> updateIsStatusClosed(b) },
+            { updateIsStatusClosed(!filters.isStatusClosed) },
+        )
+
+        subsectionHeader("worksiteFilters.detailed_status")
+
+        for (status in workTypeStatuses) {
+            val isChecked = filters.workTypeStatuses.contains(status)
+            checkboxItem(
+                status.literal,
+                isChecked,
+                { b: Boolean -> updateWorkTypeStatus(status, b) },
+                { updateWorkTypeStatus(status, !isChecked) },
+            )
+        }
+    }
+}
+
+private fun LazyListScope.personalInfoOptions(
+    filters: CasesFilter,
+    isSectionExpanded: Boolean = false,
+    toggleSection: (CollapsibleFilterSection) -> Unit = {},
+    updateMemberOfMyOrg: (Boolean) -> Unit = {},
+    updateOlderThan60: (Boolean) -> Unit = {},
+    updateChildrenInHome: (Boolean) -> Unit = {},
+    updateFirstResponder: (Boolean) -> Unit = {},
+    updateVeteran: (Boolean) -> Unit = {},
+) {
+    collapsibleSectionHeader(
+        CollapsibleFilterSection.PersonalInfo,
+        isSectionExpanded,
+        toggleSection,
+    )
+
+    if (isSectionExpanded) {
+        subsectionHeader("worksiteFilters.my_organization")
+
+        checkboxItem(
+            "worksiteFilters.member_of_my_org",
+            filters.isMemberOfMyOrg,
+            { b: Boolean -> updateMemberOfMyOrg(b) },
+            { updateMemberOfMyOrg(!filters.isMemberOfMyOrg) },
+        )
+
+        subsectionHeader("worksiteFilters.personal_info")
+
+        checkboxItem(
+            "formLabels.older_than_60",
+            filters.isOlderThan60,
+            { b: Boolean -> updateOlderThan60(b) },
+            { updateOlderThan60(!filters.isOlderThan60) },
+        )
+
+        checkboxItem(
+            "formLabels.children_in_home",
+            filters.hasChildrenInHome,
+            { b: Boolean -> updateChildrenInHome(b) },
+            { updateChildrenInHome(!filters.hasChildrenInHome) },
+        )
+
+        checkboxItem(
+            "formLabels.first_responder",
+            filters.isFirstResponder,
+            { b: Boolean -> updateFirstResponder(b) },
+            { updateFirstResponder(!filters.isFirstResponder) },
+        )
+
+        checkboxItem(
+            "formLabels.veteran",
+            filters.isVeteran,
+            { b: Boolean -> updateVeteran(b) },
+            { updateVeteran(!filters.isVeteran) },
+        )
+    }
+}
+
+private fun LazyListScope.flagOptions(
+    filters: CasesFilter,
+    isSectionExpanded: Boolean = false,
+    toggleSection: (CollapsibleFilterSection) -> Unit = {},
+    flags: Collection<WorksiteFlagType> = emptyList(),
+    updateWorksiteFlags: (WorksiteFlagType, Boolean) -> Unit = { _, _ -> },
+) {
+    collapsibleSectionHeader(
+        CollapsibleFilterSection.Flags,
+        isSectionExpanded,
+        toggleSection,
+    )
+
+    if (isSectionExpanded) {
+        for (flag in flags) {
+            val isChecked = filters.worksiteFlags.contains(flag)
+            checkboxItem(
+                flag.literal,
+                isChecked,
+                { b: Boolean -> updateWorksiteFlags(flag, b) },
+                { updateWorksiteFlags(flag, !isChecked) },
+            )
+        }
+    }
+}
+
+private fun LazyListScope.workOptions(
+    filters: CasesFilter,
+    isSectionExpanded: Boolean = false,
+    toggleSection: (CollapsibleFilterSection) -> Unit = {},
+    workTypes: Collection<String> = emptyList(),
+    updateWorkTypes: (String, Boolean) -> Unit = { _, _ -> },
+    updateNoWorkType: (Boolean) -> Unit = {},
+) {
+    collapsibleSectionHeader(
+        CollapsibleFilterSection.Work,
+        isSectionExpanded,
+        toggleSection,
+    )
+
+    if (isSectionExpanded) {
+        for (workType in workTypes) {
+            val isChecked = filters.workTypes.contains(workType)
+            checkboxItem(
+                "workType.${workType}",
+                isChecked,
+                { b: Boolean -> updateWorkTypes(workType, b) },
+                { updateWorkTypes(workType, !isChecked) },
+            )
+        }
+
+        subsectionHeader("worksiteFilters.missing_information")
+
+        checkboxItem(
+            "worksiteFilters.no_work_type",
+            filters.isNoWorkType,
+            { b: Boolean -> updateNoWorkType(b) },
+            { updateNoWorkType(!filters.isNoWorkType) },
         )
     }
 }

@@ -20,6 +20,7 @@ import javax.inject.Singleton
 
 interface WorkTypeStatusRepository {
     val workTypeStatusOptions: StateFlow<List<WorkTypeStatus>>
+    val workTypeStatusFilterOptions: StateFlow<List<WorkTypeStatus>>
 
     suspend fun loadStatuses(force: Boolean = false)
 
@@ -39,6 +40,8 @@ class CrisisCleanupWorkTypeStatusRepository @Inject constructor(
 
     override var workTypeStatusOptions = MutableStateFlow(emptyList<WorkTypeStatus>())
 
+    override var workTypeStatusFilterOptions = MutableStateFlow(emptyList<WorkTypeStatus>())
+
     override suspend fun loadStatuses(force: Boolean) {
         if (statusLookup.isNotEmpty()) {
             return
@@ -56,9 +59,13 @@ class CrisisCleanupWorkTypeStatusRepository @Inject constructor(
             }
         }
 
-        statusLookup = workTypeStatusDao.getStatuses().asStatusLookup()
+        val statuses = workTypeStatusDao.getStatuses()
+        statusLookup = statuses.asStatusLookup()
         workTypeStatusOptions.value = statusLookup.filter { it.value.primaryState != "need" }
             .map { statusFromLiteral(it.key) }
+        workTypeStatusFilterOptions.value = statuses
+            .map { statusFromLiteral(it.status) }
+            .sortedBy(WorkTypeStatus::name)
     }
 
     override fun translateStatus(status: String) = statusLookup[status]?.name

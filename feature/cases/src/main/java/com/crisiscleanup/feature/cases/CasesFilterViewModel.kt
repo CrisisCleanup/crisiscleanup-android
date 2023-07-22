@@ -12,9 +12,11 @@ import com.crisiscleanup.core.commoncase.model.WorkFormGroupKey
 import com.crisiscleanup.core.commoncase.model.flatten
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.CasesFilterRepository
+import com.crisiscleanup.core.data.repository.CrisisCleanupWorkTypeStatusRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
 import com.crisiscleanup.core.model.data.CasesFilter
+import com.crisiscleanup.core.model.data.WorksiteFlagType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
@@ -24,6 +26,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CasesFilterViewModel @Inject constructor(
+    workTypeStatusRepository: CrisisCleanupWorkTypeStatusRepository,
     private val casesFilterRepository: CasesFilterRepository,
     incidentSelector: IncidentSelector,
     incidentsRepository: IncidentsRepository,
@@ -40,6 +43,10 @@ class CasesFilterViewModel @Inject constructor(
             }
         }
 
+    val workTypeStatuses = workTypeStatusRepository.workTypeStatusFilterOptions
+
+    val worksiteFlags = WorksiteFlagType.values().sortedBy { it.literal }
+
     val workTypes = incidentSelector.incidentId
         .flatMapLatest { id ->
             incidentsRepository.streamIncident(id)
@@ -53,7 +60,11 @@ class CasesFilterViewModel @Inject constructor(
                     .map(FormFieldNode::flatten)
 
                 return@map formFieldRootNode.firstOrNull { it.fieldKey == WorkFormGroupKey }
-                    ?.let { node -> node.children.filter { it.parentKey == WorkFormGroupKey } }
+                    ?.let { node ->
+                        node.children.filter { it.parentKey == WorkFormGroupKey }
+                            .map { it.formField.selectToggleWorkType }
+                            .sortedBy { it }
+                    }
                     ?: emptyList()
             }
             emptyList()

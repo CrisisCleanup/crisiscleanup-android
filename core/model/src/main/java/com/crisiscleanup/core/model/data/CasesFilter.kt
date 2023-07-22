@@ -23,19 +23,19 @@ data class CasesFilter(
     val isReportedByMyOrg: Boolean = false,
     val isStatusOpen: Boolean = false,
     val isStatusClosed: Boolean = false,
-    val workTypeStatuses: Collection<WorkTypeStatus> = emptyList(),
+    val workTypeStatuses: Collection<WorkTypeStatus> = emptySet(),
     val isMemberOfMyOrg: Boolean = false,
     val isOlderThan60: Boolean = false,
     val hasChildrenInHome: Boolean = false,
     val isFirstResponder: Boolean = false,
     val isVeteran: Boolean = false,
-    val worksiteFlags: Collection<WorksiteFlagType> = emptyList(),
-    val workTypes: Collection<String> = emptyList(),
+    val worksiteFlags: Collection<WorksiteFlagType> = emptySet(),
+    val workTypes: Collection<String> = emptySet(),
     val isNoWorkType: Boolean = false,
     val createdAt: Instant? = null,
     val updatedAt: Instant? = null,
 ) {
-    val isDefault = this == DefaultCasesFilter
+    private val isDefault = this == DefaultCasesFilter
 
     val changeCount: Int
         get() {
