@@ -11,7 +11,7 @@ import com.crisiscleanup.core.appnav.ViewImageArgs.Companion.imageIdArg
 import com.crisiscleanup.core.appnav.ViewImageArgs.Companion.isNetworkImageArg
 import com.crisiscleanup.feature.mediamanage.ui.ViewImageRoute
 
-fun NavGraphBuilder.viewImageScreen(
+fun NavGraphBuilder.viewSingleImageScreen(
     onBack: () -> Unit,
 ) {
     val queryString = listOf(

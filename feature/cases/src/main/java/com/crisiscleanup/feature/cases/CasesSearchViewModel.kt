@@ -161,6 +161,10 @@ class CasesSearchViewModel @Inject constructor(
             }
         }
     }
+
+    fun clearSelection() {
+        selectedWorksite.value = Pair(EmptyIncident.id, EmptyWorksite.id)
+    }
 }
 
 data class CasesSearchResults(

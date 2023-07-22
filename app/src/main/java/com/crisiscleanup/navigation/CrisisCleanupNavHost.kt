@@ -28,7 +28,7 @@ import com.crisiscleanup.feature.cases.navigation.navigateToCasesFilter
 import com.crisiscleanup.feature.cases.navigation.navigateToCasesSearch
 import com.crisiscleanup.feature.cases.ui.CasesAction
 import com.crisiscleanup.feature.dashboard.navigation.dashboardScreen
-import com.crisiscleanup.feature.mediamanage.navigation.viewImageScreen
+import com.crisiscleanup.feature.mediamanage.navigation.viewSingleImageScreen
 import com.crisiscleanup.feature.menu.navigation.menuScreen
 import com.crisiscleanup.feature.syncinsights.navigation.navigateToSyncInsights
 import com.crisiscleanup.feature.syncinsights.navigation.syncInsightsScreen
@@ -109,7 +109,7 @@ fun CrisisCleanupNavHost(
     ) {
         casesGraph(
             nestedGraphs = {
-                casesSearchScreen(onBack, replaceRouteOpenCase, openFilterCases)
+                casesSearchScreen(onBack, viewCase, openFilterCases)
                 casesFilterScreen(onBack)
                 caseEditorScreen(navController, onBack)
                 caseEditSearchAddressScreen(navController, onBack)
@@ -131,7 +131,7 @@ fun CrisisCleanupNavHost(
             openUserFeedback,
             openSyncLogs,
         )
-        viewImageScreen(onBack)
+        viewSingleImageScreen(onBack)
         userFeedbackScreen(onBack)
         syncInsightsScreen(viewCase)
     }

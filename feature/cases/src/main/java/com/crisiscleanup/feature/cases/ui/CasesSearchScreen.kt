@@ -51,6 +51,7 @@ internal fun CasesSearchRoute(
     val selectedWorksite by viewModel.selectedWorksite.collectAsStateWithLifecycle()
     if (selectedWorksite.second != EmptyWorksite.id) {
         openCase(selectedWorksite.first, selectedWorksite.second)
+        viewModel.clearSelection()
     } else {
         val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
         val isNotLoading = !isLoading
