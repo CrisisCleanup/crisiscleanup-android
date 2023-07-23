@@ -23,7 +23,7 @@ fun HelpRow(
     isBold: Boolean = false,
 ) {
     Row(
-        modifier = modifier.listItemHorizontalPadding(),
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(

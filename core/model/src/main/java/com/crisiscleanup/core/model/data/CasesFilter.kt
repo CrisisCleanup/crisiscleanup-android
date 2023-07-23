@@ -6,6 +6,7 @@ private const val defaultFilterDistance = 0f
 
 const val CasesFilterMinDaysAgo: Int = 3
 const val CasesFilterMaxDaysAgo: Int = 193
+private const val CasesFilterDaysAgoDelta = CasesFilterMaxDaysAgo - CasesFilterMinDaysAgo
 private const val defaultDaysAgo = CasesFilterMaxDaysAgo
 
 data class CasesFilter(
@@ -35,6 +36,12 @@ data class CasesFilter(
     val createdAt: Pair<Instant, Instant>? = null,
     val updatedAt: Pair<Instant, Instant>? = null,
 ) {
+    companion object {
+        fun determineDaysAgo(daysAgoNormalized: Float) =
+            CasesFilterMinDaysAgo + (daysAgoNormalized * CasesFilterDaysAgoDelta).toInt()
+                .coerceIn(0, CasesFilterDaysAgoDelta)
+    }
+
     private val isDefault = this == DefaultCasesFilter
 
     val changeCount: Int
@@ -69,16 +76,13 @@ data class CasesFilter(
         }
 
     val daysAgoNormalized
-        get() = (daysAgoUpdated.toFloat() / CasesFilterMaxDaysAgo).coerceIn(
+        get() = ((daysAgoUpdated.toFloat() - CasesFilterMinDaysAgo) / CasesFilterDaysAgoDelta).coerceIn(
             0f,
             1f
         )
 
-    fun expandDaysAgo(daysAgoNormalized: Float): CasesFilter {
-        val daysAgo = (daysAgoNormalized * CasesFilterMaxDaysAgo).toInt()
-            .coerceIn(CasesFilterMinDaysAgo, CasesFilterMaxDaysAgo)
-        return copy(daysAgoUpdated = daysAgo)
-    }
+    fun expandDaysAgo(daysAgoNormalized: Float) =
+        copy(daysAgoUpdated = determineDaysAgo(daysAgoNormalized))
 }
 
 private val DefaultCasesFilter = CasesFilter()

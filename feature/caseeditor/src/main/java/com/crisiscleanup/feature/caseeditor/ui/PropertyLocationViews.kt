@@ -18,6 +18,7 @@ import com.crisiscleanup.core.designsystem.component.HelpRow
 import com.crisiscleanup.core.designsystem.component.OutlinedSingleLineTextField
 import com.crisiscleanup.core.designsystem.component.WithHelpDialog
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
+import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.feature.caseeditor.CaseLocationDataEditor
 import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
@@ -53,8 +54,10 @@ internal fun PropertyLocationView(
             HelpRow(
                 locationText,
                 viewModel.helpHint,
-                // TODO Common dimensions
-                modifier = Modifier.padding(top = 16.dp),
+                modifier = Modifier
+                    .listItemHorizontalPadding()
+                    // TODO Common dimensions
+                    .padding(top = 16.dp),
                 showHelp = showHelp,
             )
         }

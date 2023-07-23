@@ -136,6 +136,8 @@ enum class WorksiteFlagType(val literal: String) {
 
 private val flagLiteralLookup = WorksiteFlagType.values().associateBy(WorksiteFlagType::literal)
 
+fun flagFromLiteral(literal: String) = flagLiteralLookup[literal]
+
 data class WorksiteFlag(
     val id: Long,
     val action: String,

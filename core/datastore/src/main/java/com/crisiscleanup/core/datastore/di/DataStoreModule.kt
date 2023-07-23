@@ -48,4 +48,18 @@ object DataStoreModule {
         ) {
             context.dataStoreFile("account_info.pb")
         }
+
+    @Provides
+    @Singleton
+    fun providesCasesFiltersProtoDataStore(
+        @ApplicationContext context: Context,
+        @Dispatcher(IO) ioDispatcher: CoroutineDispatcher,
+        serializer: CasesFiltersProtoSerializer
+    ): DataStore<LocalPersistedCasesFilters> =
+        DataStoreFactory.create(
+            serializer = serializer,
+            scope = CoroutineScope(ioDispatcher + SupervisorJob()),
+        ) {
+            context.dataStoreFile("local_persisted_cases_filters.pb")
+        }
 }

@@ -16,7 +16,6 @@ class AccountInfoProtoSerializer @Inject constructor() : Serializer<AccountInfo>
     override suspend fun readFrom(input: InputStream): AccountInfo =
         try {
             // readFrom is already called on the data store background thread
-            @Suppress("BlockingMethodInNonBlockingContext")
             AccountInfo.parseFrom(input)
         } catch (exception: InvalidProtocolBufferException) {
             throw CorruptionException("Cannot read proto.", exception)
@@ -24,7 +23,6 @@ class AccountInfoProtoSerializer @Inject constructor() : Serializer<AccountInfo>
 
     override suspend fun writeTo(t: AccountInfo, output: OutputStream) {
         // writeTo is already called on the data store background thread
-        @Suppress("BlockingMethodInNonBlockingContext")
         t.writeTo(output)
     }
 }

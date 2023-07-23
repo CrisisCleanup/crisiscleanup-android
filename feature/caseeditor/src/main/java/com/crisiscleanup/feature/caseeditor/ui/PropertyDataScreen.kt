@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.DropdownMenu
@@ -25,14 +26,15 @@ import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
-import com.crisiscleanup.core.designsystem.component.HelpRow
-import com.crisiscleanup.core.designsystem.component.WithHelpDialog
 import com.crisiscleanup.core.commoncase.ui.ExistingCaseLocationsDropdownItems
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupRadioButton
+import com.crisiscleanup.core.designsystem.component.HelpRow
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
+import com.crisiscleanup.core.designsystem.component.WithHelpDialog
 import com.crisiscleanup.core.designsystem.theme.listItemDropdownMenuOffset
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
+import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.model.data.AutoContactFrequency
@@ -114,7 +116,15 @@ internal fun PropertyFormView(
         helpTitle = autoContactFrequencyLabel,
         helpText = translator("casesVue.auto_contact_frequency_help"),
     ) { showHelp ->
-        HelpRow(autoContactFrequencyLabel, viewModel.helpHint, showHelp = showHelp)
+        HelpRow(
+            autoContactFrequencyLabel,
+            viewModel.helpHint,
+            Modifier
+                .listItemHorizontalPadding()
+                // TODO Common dimensions
+                .padding(top = 16.dp),
+            showHelp = showHelp
+        )
     }
     val updateContactFrequency = remember(inputData) {
         { it: AutoContactFrequency -> inputData.autoContactFrequency = it }

@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+option java_package = "com.crisiscleanup.core.datastore";
+option java_multiple_files = true;
+
+message LocalPersistedCasesFilters {
+  float svi = 1;
+  int32 days_ago_updated = 2;
+  float distance = 3;
+  bool is_within_primary_response_area = 4;
+  bool is_within_secondary_response_area = 5;
+  bool is_assigned_to_my_team = 6;
+  bool is_unclaimed = 7;
+  bool is_claimed_by_my_org = 8;
+  bool is_reported_by_my_org = 9;
+  bool is_status_open = 10;
+  bool is_status_closed = 11;
+  map<string, bool> work_type_statuses = 12;
+  bool is_member_of_my_org = 13;
+  bool is_older_than_60 = 14;
+  bool has_children_in_home = 15;
+  bool is_first_responder = 16;
+  bool is_veteran = 17;
+  map<string, bool> worksite_flags = 18;
+  map<string, bool> work_types = 19;
+  bool is_no_work_type = 20;
+  int64 created_at_start_seconds = 21;
+  int64 created_at_end_seconds = 22;
+  int64 updated_at_start_seconds = 23;
+  int64 updated_at_end_seconds = 24;
+}

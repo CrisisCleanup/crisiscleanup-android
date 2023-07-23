@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -50,6 +49,7 @@ import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
+import com.crisiscleanup.core.designsystem.component.FormListSectionSeparator
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
@@ -57,7 +57,6 @@ import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
-import com.crisiscleanup.core.designsystem.theme.separatorColor
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.ui.ScreenKeyboardVisibility
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
@@ -555,7 +554,7 @@ private fun LazyListScope.fullEditContent(
                 key = "section-separator-$index",
                 contentType = SectionSeparatorContentType,
             ) {
-                SectionSeparator()
+                FormListSectionSeparator()
             }
 
             val sectionIndex = index + 1
@@ -571,17 +570,6 @@ private fun LazyListScope.fullEditContent(
             )
         }
     }
-}
-
-@Composable
-private fun SectionSeparator() {
-    Box(
-        Modifier
-            .fillMaxWidth()
-            // TODO Common dimensions
-            .height(32.dp)
-            .background(color = separatorColor)
-    )
 }
 
 private fun LazyListScope.propertyLocationSection(

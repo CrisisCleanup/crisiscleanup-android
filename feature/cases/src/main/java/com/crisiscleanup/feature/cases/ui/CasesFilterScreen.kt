@@ -1,5 +1,6 @@
 package com.crisiscleanup.feature.cases.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -23,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -37,6 +39,7 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupRadioButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
 import com.crisiscleanup.core.designsystem.component.ExplainLocationPermissionDialog
+import com.crisiscleanup.core.designsystem.component.FormListSectionSeparator
 import com.crisiscleanup.core.designsystem.component.HelpRow
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.WithHelpDialog
@@ -50,6 +53,7 @@ import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
+import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
 import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.CasesFilterMaxDaysAgo
 import com.crisiscleanup.core.model.data.CasesFilterMinDaysAgo
@@ -132,6 +136,13 @@ private fun ColumnScope.FilterControls(
 
     val closeKeyboard = rememberCloseKeyboard(viewModel)
 
+    val updatedDaysDisplay = remember(viewModel) {
+        { n: Float ->
+            val daysAgo = CasesFilter.determineDaysAgo(n)
+            "$daysAgo"
+        }
+    }
+
     val updateDistance = { distance: Float ->
         viewModel.tryChangeDistanceFilter(distance)
     }
@@ -207,10 +218,13 @@ private fun ColumnScope.FilterControls(
     LazyColumn(
         Modifier
             .scrollFlingListener(closeKeyboard)
-            .weight(1f),
+            .weight(1f)
+            // TODO Common colors
+            .background(Color.White),
     ) {
         sviSlider(translator, filters, updateFilters)
-        daysUpdatedSlider(translator, filters, updateFilters)
+        itemSectionSeparator()
+        daysUpdatedSlider(translator, filters, updateFilters, updatedDaysDisplay)
         distanceOptions(
             filters,
             updateDistance,
@@ -276,6 +290,7 @@ private fun LazyListScope.rangeSliderItem(
     onUpdate: (Float) -> Unit = {},
     helpTranslateKey: String = "",
     isHelpHtml: Boolean = false,
+    currentValueDisplay: (Float) -> String = { "" },
 ) {
     item {
         val translator = LocalAppTranslator.current.translator
@@ -285,8 +300,11 @@ private fun LazyListScope.rangeSliderItem(
                 .then(modifier)
         ) {
             if (helpTranslateKey.isEmpty()) {
+                val currentValue = currentValueDisplay(value)
+                val text = if (currentValue.isBlank()) label else "$label ($currentValue)"
                 Text(
-                    label,
+                    text,
+                    modifier = Modifier.listItemVerticalPadding(),
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
                 )
@@ -312,14 +330,16 @@ private fun LazyListScope.rangeSliderItem(
             )
 
             Row(Modifier.fillMaxWidth()) {
+                val textStyle = MaterialTheme.typography.bodyMedium
                 Text(
                     minValueLabel,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = textStyle,
                 )
                 Spacer(Modifier.weight(1f))
+
                 Text(
                     maxValueLabel,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = textStyle,
                 )
             }
         }
@@ -329,7 +349,8 @@ private fun LazyListScope.rangeSliderItem(
 private fun LazyListScope.sviSlider(
     translator: KeyResourceTranslator,
     filters: CasesFilter,
-    onUpdateFilter: (CasesFilter) -> Unit = {}
+    onUpdateFilter: (CasesFilter) -> Unit = {},
+    sviValueDisplay: (Float) -> String = { "" },
 ) {
     rangeSliderItem(
         translator("svi.most_vulnerable"),
@@ -339,22 +360,23 @@ private fun LazyListScope.sviSlider(
         onUpdate = { f: Float -> onUpdateFilter(filters.copy(svi = f)) },
         helpTranslateKey = "svi.svi_more_info_link",
         isHelpHtml = true,
+        currentValueDisplay = sviValueDisplay,
     )
 }
 
 private fun LazyListScope.daysUpdatedSlider(
     translator: KeyResourceTranslator,
     filters: CasesFilter,
-    onUpdateFilter: (CasesFilter) -> Unit = {}
+    onUpdateFilter: (CasesFilter) -> Unit = {},
+    daysUpdatedDisplay: (Float) -> String = { "" },
 ) {
     rangeSliderItem(
         translator("worksiteFilters.days_ago").replace("{days}", CasesFilterMinDaysAgo.toString()),
         translator("worksiteFilters.days_ago").replace("{days}", CasesFilterMaxDaysAgo.toString()),
-        // TODO Common dimensions
-        modifier = Modifier.padding(top = 16.dp),
         labelTranslateKey = "worksiteFilters.updated",
         value = filters.daysAgoNormalized,
         onUpdate = { f: Float -> onUpdateFilter(filters.expandDaysAgo(f)) },
+        currentValueDisplay = daysUpdatedDisplay,
     )
 }
 
@@ -374,7 +396,7 @@ private fun FilterHeaderCollapsible(
     ) {
         Text(
             sectionTitle,
-            style = MaterialTheme.typography.bodyLarge,
+            style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
         )
         val iconVector =
@@ -395,11 +417,22 @@ private val sectionTranslationKey = mapOf(
     CollapsibleFilterSection.Dates to "worksiteFilters.dates",
 )
 
+private fun LazyListScope.itemSectionSeparator() {
+    item(contentType = "section-separator") {
+        FormListSectionSeparator()
+    }
+}
+
 private fun LazyListScope.collapsibleSectionHeader(
     section: CollapsibleFilterSection,
     isSectionExpanded: Boolean = false,
     toggleSection: (CollapsibleFilterSection) -> Unit = {},
+    isFirstSection: Boolean = false,
 ) {
+    if (!isFirstSection) {
+        itemSectionSeparator()
+    }
+
     val translationKey = sectionTranslationKey[section] ?: ""
     item(
         key = "section-header-$section",
@@ -735,7 +768,7 @@ private fun FilterDatePicker(
     ) {
         val dateText = dateRange?.let {
             val startDate = dateFormatter.format(it.first.toJavaInstant())
-            val endDate = dateFormatter.format(it.first.toJavaInstant())
+            val endDate = dateFormatter.format(it.second.toJavaInstant())
             "$startDate - $endDate"
         } ?: ""
         Text(dateText)
@@ -790,8 +823,6 @@ private fun LazyListScope.dateOptions(
     )
 
     if (isSectionExpanded) {
-        subsectionHeader("worksiteFilters.missing_information")
-
         dateItem(
             "worksiteFilters.created",
             filters.createdAt,

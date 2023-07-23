@@ -2,15 +2,24 @@ package com.crisiscleanup.core.data.repository
 
 import android.util.LruCache
 import com.crisiscleanup.core.common.NetworkMonitor
+import com.crisiscleanup.core.common.di.ApplicationScope
+import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
+import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.datastore.CasesFiltersDataSource
 import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.queryMap
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -20,14 +29,21 @@ interface CasesFilterRepository {
     val filterQueryParams: Flow<Map<String, Any?>>
 
     fun changeFilters(filters: CasesFilter)
+    fun updateFilters(workTypes: Collection<String>)
 }
 
 @Singleton
 class CrisisCleanupCasesFilterRepository @Inject constructor(
+    private val dataSource: CasesFiltersDataSource,
     private val networkMonitor: NetworkMonitor,
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     accountDataRepository: AccountDataRepository,
+    @ApplicationScope private val externalScope: CoroutineScope,
+    @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
 ) : CasesFilterRepository {
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
     private val _casesFilters = MutableStateFlow(CasesFilter())
     override val casesFilters = _casesFilters
 
@@ -58,8 +74,24 @@ class CrisisCleanupCasesFilterRepository @Inject constructor(
             queryParams
         }
 
+    init {
+        externalScope.launch(ioDispatcher) {
+            dataSource.casesFilters
+                .onEach {
+                    _casesFilters.value = it
+                }
+                .collect()
+        }
+    }
+
     override fun changeFilters(filters: CasesFilter) {
-        casesFilters.value = filters
+        externalScope.launch(ioDispatcher) {
+            dataSource.updateFilters(filters)
+        }
+    }
+
+    override fun updateFilters(workTypes: Collection<String>) {
+        // TODO Update work types removing non-matching
     }
 
     fun getFilteredWorksiteIds(): List<Long>? {
