@@ -56,6 +56,7 @@ private fun CasesActionButton(
 internal fun CasesActionBar(
     modifier: Modifier = Modifier,
     onCasesAction: (CasesAction) -> Unit = {},
+    filtersCount: Int = 0,
 ) {
     Row(
         modifier,
@@ -64,12 +65,14 @@ internal fun CasesActionBar(
         CasesActionButton(
             modifier, CasesAction.Search, onCasesAction, shape = actionStartRoundCornerShape
         )
-        CasesActionButton(
-            modifier,
-            CasesAction.Filters,
-            onCasesAction,
-            shape = actionEndRoundCornerShape,
-        )
+        FilterButtonBadge(filtersCount) {
+            CasesActionButton(
+                modifier,
+                CasesAction.Filters,
+                onCasesAction,
+                shape = actionEndRoundCornerShape,
+            )
+        }
     }
 }
 

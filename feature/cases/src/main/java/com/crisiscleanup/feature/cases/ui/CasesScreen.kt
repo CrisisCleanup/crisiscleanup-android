@@ -136,6 +136,7 @@ internal fun CasesRoute(
                 }
             }
         }
+        val filtersCount by viewModel.filtersCount.collectAsStateWithLifecycle(0)
         val isMapBusy by viewModel.isMapBusy.collectAsStateWithLifecycle(false)
         val casesCount by viewModel.casesCount.collectAsStateWithLifecycle()
         val worksitesOnMap by viewModel.worksitesMapMarkers.collectAsStateWithLifecycle()
@@ -165,6 +166,7 @@ internal fun CasesRoute(
             centerOnMyLocation = viewModel::useMyLocation,
             isTableView = isTableView,
             isLayerView = isLayerView,
+            filtersCount = filtersCount,
             isMapBusy = isIncidentLoading || isMapBusy,
             casesCount = casesCount,
             worksitesOnMap = worksitesOnMap,
@@ -293,6 +295,7 @@ internal fun CasesScreen(
     centerOnMyLocation: () -> Unit = {},
     isTableView: Boolean = false,
     isLayerView: Boolean = false,
+    filtersCount: Int = 0,
     isMapBusy: Boolean = false,
     casesCount: Pair<Int, Int> = Pair(0, 0),
     worksitesOnMap: List<WorksiteGoogleMapMark> = emptyList(),
@@ -338,6 +341,7 @@ internal fun CasesScreen(
             centerOnMyLocation,
             isTableView,
             casesCount,
+            filtersCount,
         )
 
         AnimatedVisibility(
@@ -489,6 +493,7 @@ private fun CasesOverlayElements(
     centerOnMyLocation: () -> Unit = {},
     isTableView: Boolean = false,
     casesCount: Pair<Int, Int> = Pair(0, 0),
+    filtersCount: Int = 0,
 ) {
     val translator = LocalAppTranslator.current.translator
     ConstraintLayout(Modifier.fillMaxSize()) {
@@ -536,6 +541,7 @@ private fun CasesOverlayElements(
                 end.linkTo(parent.end, margin = actionEdgeSpace)
             },
             onCasesAction,
+            filtersCount,
         )
 
         CasesCountView(

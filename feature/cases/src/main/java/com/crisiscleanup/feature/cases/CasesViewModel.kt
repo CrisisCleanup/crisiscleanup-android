@@ -25,6 +25,7 @@ import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.commonassets.getDisasterIcon
 import com.crisiscleanup.core.data.IncidentSelector
+import com.crisiscleanup.core.data.repository.CasesFilterRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.data.util.IncidentDataPullReporter
@@ -91,6 +92,7 @@ class CasesViewModel @Inject constructor(
     private val worksiteLocationEditor: WorksiteLocationEditor,
     private val permissionManager: PermissionManager,
     private val locationProvider: LocationProvider,
+    private val filterRepository: CasesFilterRepository,
     private val syncPuller: SyncPuller,
     val visualAlertManager: VisualAlertManager,
     appMemoryStats: AppMemoryStats,
@@ -115,6 +117,8 @@ class CasesViewModel @Inject constructor(
         incidentSelector,
         viewModelScope,
     )
+
+    val filtersCount = filterRepository.filtersCount
 
     val isTableView = qsm.isTableView
 

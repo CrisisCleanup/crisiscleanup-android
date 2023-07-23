@@ -16,13 +16,11 @@ import javax.inject.Singleton
 
 interface CasesFilterRepository {
     val casesFilters: StateFlow<CasesFilter>
+    val filtersCount: Flow<Int>
     val filterQueryParams: Flow<Map<String, Any?>>
 
     fun changeFilters(filters: CasesFilter)
 }
-
-val CasesFilterRepository.filterChangeCount: Int
-    get() = casesFilters.value.changeCount
 
 @Singleton
 class CrisisCleanupCasesFilterRepository @Inject constructor(
@@ -32,6 +30,8 @@ class CrisisCleanupCasesFilterRepository @Inject constructor(
 ) : CasesFilterRepository {
     private val _casesFilters = MutableStateFlow(CasesFilter())
     override val casesFilters = _casesFilters
+
+    override val filtersCount = casesFilters.map { it.changeCount }
 
     private val queryParamCache = LruCache<Pair<CasesFilter, Long>, Map<String, Any?>>(30)
 

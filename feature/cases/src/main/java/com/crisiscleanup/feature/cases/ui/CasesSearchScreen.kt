@@ -61,11 +61,11 @@ internal fun CasesSearchRoute(
             }
         }
 
-        val q by viewModel.searchQuery.collectAsStateWithLifecycle()
+        val filtersCount by viewModel.filtersCount.collectAsStateWithLifecycle(0)
 
+        val q by viewModel.searchQuery.collectAsStateWithLifecycle()
         val updateQuery =
             remember(viewModel) { { text: String -> viewModel.searchQuery.value = text } }
-
 
         val closeKeyboard = rememberCloseKeyboard(viewModel)
         val translator = LocalAppTranslator.current.translator
@@ -98,11 +98,13 @@ internal fun CasesSearchRoute(
                         onEnter = closeKeyboard,
                         isError = false,
                     )
-                    CrisisCleanupIconButton(
-                        iconResId = R.drawable.ic_dials,
-                        onClick = openFilter,
-                        contentDescription = translator("casesVue.filters"),
-                    )
+                    FilterButtonBadge(filtersCount) {
+                        CrisisCleanupIconButton(
+                            iconResId = R.drawable.ic_dials,
+                            onClick = openFilter,
+                            contentDescription = translator("casesVue.filters"),
+                        )
+                    }
                 }
 
                 ListCases(

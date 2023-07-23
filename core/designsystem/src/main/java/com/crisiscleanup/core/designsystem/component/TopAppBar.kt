@@ -306,7 +306,6 @@ private fun AvatarAttentionBadge(
     ) {
         content()
     }
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

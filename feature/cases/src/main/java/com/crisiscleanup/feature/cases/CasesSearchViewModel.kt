@@ -58,6 +58,8 @@ class CasesSearchViewModel @Inject constructor(
 
     val selectedWorksite = MutableStateFlow(Pair(EmptyIncident.id, EmptyWorksite.id))
 
+    val filtersCount = filterRepository.filtersCount
+
     val recentWorksites = incidentSelector.incidentId
         .flatMapLatest { incidentId ->
             try {
