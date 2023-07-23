@@ -2,10 +2,10 @@ package com.crisiscleanup.core.model.data
 
 import kotlinx.datetime.Instant
 
-private const val defaultFilterDistance = 100f
+private const val defaultFilterDistance = 0f
 
-internal const val CasesFilterMinDaysAgo: Int = 3
-internal const val CasesFilterMaxDaysAgo: Int = 193
+const val CasesFilterMinDaysAgo: Int = 3
+const val CasesFilterMaxDaysAgo: Int = 193
 private const val defaultDaysAgo = CasesFilterMaxDaysAgo
 
 data class CasesFilter(

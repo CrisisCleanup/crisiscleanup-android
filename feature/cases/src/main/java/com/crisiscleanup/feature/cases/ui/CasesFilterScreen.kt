@@ -36,6 +36,7 @@ import com.crisiscleanup.core.designsystem.component.CollapsibleIcon
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupRadioButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
+import com.crisiscleanup.core.designsystem.component.ExplainLocationPermissionDialog
 import com.crisiscleanup.core.designsystem.component.HelpRow
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.WithHelpDialog
@@ -101,6 +102,15 @@ internal fun CasesFilterRoute(
                 updateFilters = updateFilters,
             )
         }
+
+        val closePermissionDialog =
+            remember(viewModel) { { viewModel.showExplainPermissionLocation = false } }
+        val explainPermission = viewModel.showExplainPermissionLocation
+        ExplainLocationPermissionDialog(
+            showDialog = explainPermission,
+            closeDialog = closePermissionDialog,
+            explanation = "~~Filtering by distance is not possible without GPS location access."
+        )
     }
 }
 
@@ -122,6 +132,9 @@ private fun ColumnScope.FilterControls(
 
     val closeKeyboard = rememberCloseKeyboard(viewModel)
 
+    val updateDistance = { distance: Float ->
+        viewModel.tryChangeDistanceFilter(distance)
+    }
     val updateWithinPrimary = { b: Boolean ->
         updateFilters(filters.copy(isWithinPrimaryResponseArea = b))
     }
@@ -200,7 +213,7 @@ private fun ColumnScope.FilterControls(
         daysUpdatedSlider(translator, filters, updateFilters)
         distanceOptions(
             filters,
-            updateFilters,
+            updateDistance,
             sectionExpandState[CollapsibleFilterSection.Distance]!!,
             toggleCollapsible,
             viewModel.distanceOptions,
@@ -404,7 +417,7 @@ private fun LazyListScope.collapsibleSectionHeader(
 
 private fun LazyListScope.distanceOptions(
     filters: CasesFilter,
-    onUpdateFilter: (CasesFilter) -> Unit = {},
+    updateDistance: (Float) -> Unit = {},
     isSectionExpanded: Boolean = false,
     toggleSection: (CollapsibleFilterSection) -> Unit = {},
     options: List<Pair<Float, String>> = emptyList(),
@@ -422,7 +435,7 @@ private fun LazyListScope.distanceOptions(
                     listItemModifier,
                     selected = filters.distance == it.first,
                     text = it.second,
-                    onSelect = { onUpdateFilter(filters.copy(distance = it.first)) }
+                    onSelect = { updateDistance(it.first) }
                 )
             }
         }

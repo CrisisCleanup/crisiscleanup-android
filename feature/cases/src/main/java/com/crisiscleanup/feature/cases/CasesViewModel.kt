@@ -25,7 +25,6 @@ import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.commonassets.getDisasterIcon
 import com.crisiscleanup.core.data.IncidentSelector
-import com.crisiscleanup.core.data.repository.CasesFilterRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.data.util.IncidentDataPullReporter
@@ -93,7 +92,6 @@ class CasesViewModel @Inject constructor(
     private val permissionManager: PermissionManager,
     private val locationProvider: LocationProvider,
     private val syncPuller: SyncPuller,
-    private val casesFilterRepository: CasesFilterRepository,
     val visualAlertManager: VisualAlertManager,
     appMemoryStats: AppMemoryStats,
     trimMemoryEventManager: TrimMemoryEventManager,
@@ -173,19 +171,12 @@ class CasesViewModel @Inject constructor(
     val worksitesMapMarkers = combine(
         qsm.worksiteQueryState,
         mapBoundsManager.isMapLoaded,
-        casesFilterRepository.casesFilters,
-        ::Triple
+        ::Pair
     )
         // TODO Make delay a parameter
         .debounce(250)
-        .flatMapLatest { (wqs, isMapLoaded, filters) ->
+        .flatMapLatest { (wqs, isMapLoaded) ->
             val id = wqs.incidentId
-
-            if (filters.changeCount > 0) {
-                // TODO Query from backend (if internet is available)
-                //      Use results for next steps
-                // ensureActive()
-            }
 
             val skipMarkers = !isMapLoaded ||
                     isTableView.value ||
