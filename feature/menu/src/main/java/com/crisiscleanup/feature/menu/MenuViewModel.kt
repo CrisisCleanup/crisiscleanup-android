@@ -8,6 +8,7 @@ import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPuller
+import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupAccountDataRepository
 import com.crisiscleanup.core.data.repository.SyncLogRepository
@@ -21,6 +22,7 @@ import javax.inject.Inject
 class MenuViewModel @Inject constructor(
     syncLogRepository: SyncLogRepository,
     private val accountDataRepository: AccountDataRepository,
+    private val accountDataRefresher: AccountDataRefresher,
     private val appVersionProvider: AppVersionProvider,
     appEnv: AppEnv,
     private val syncPuller: SyncPuller,
@@ -44,6 +46,8 @@ class MenuViewModel @Inject constructor(
     init {
         externalScope.launch(ioDispatcher) {
             syncLogRepository.trimOldLogs()
+
+            accountDataRefresher.updateProfilePicture()
         }
     }
 

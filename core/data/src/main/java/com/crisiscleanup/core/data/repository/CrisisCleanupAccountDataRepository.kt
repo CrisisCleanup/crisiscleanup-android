@@ -114,7 +114,7 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
                     logger.logDebug("Refreshed soon/expiring account tokens")
                 }
             }
-        } catch (e: Exception){
+        } catch (e: Exception) {
             logger.logException(e)
         }
     }

@@ -11,6 +11,10 @@ import retrofit2.http.QueryMap
 import javax.inject.Inject
 
 private interface DataSourceApi {
+    @TokenAuthenticationHeader
+    @GET("users/me")
+    suspend fun getProfile(): NetworkAccountProfileResult
+
     @GET("statuses")
     suspend fun getStatuses(): NetworkWorkTypeStatusResult
 
@@ -199,6 +203,11 @@ class DataApiClient @Inject constructor(
     @RetrofitConfiguration(RetrofitConfigurations.CrisisCleanup) retrofit: Retrofit,
 ) : CrisisCleanupNetworkDataSource {
     private val networkApi = retrofit.create(DataSourceApi::class.java)
+
+    override suspend fun getProfilePic(): String? {
+        val result = networkApi.getProfile()
+        return result.files?.firstOrNull(NetworkFile::isProfilePicture)?.largeThumbnailUrl
+    }
 
     override suspend fun getStatuses() = networkApi.getStatuses()
 

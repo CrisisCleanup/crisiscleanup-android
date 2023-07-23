@@ -27,6 +27,8 @@ interface CrisisCleanupAuthApi {
 }
 
 interface CrisisCleanupNetworkDataSource {
+    suspend fun getProfilePic(): String?
+
     suspend fun getStatuses(): NetworkWorkTypeStatusResult
 
     suspend fun getIncidents(

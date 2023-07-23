@@ -103,6 +103,16 @@ class AccountInfoDataSource @Inject constructor(
         }
     }
 
+    suspend fun updateProfilePicture(
+        pictureUri: String,
+    ) {
+        dataStore.updateData {
+            it.copy {
+                profilePictureUri = pictureUri
+            }
+        }
+    }
+
     private val skipChangeGuard = AtomicBoolean(false)
     fun ignoreNextAccountChange() {
         if (appEnv.isNotProduction) {
