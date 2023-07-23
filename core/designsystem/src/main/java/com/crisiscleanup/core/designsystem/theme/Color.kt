@@ -85,6 +85,9 @@ val statusDoneByOthersNhwDiColor = Color(statusDoneByOthersNhwColorCode)
 val statusOutOfScopeRejectedColor = Color(statusOutOfScopeRejectedColorCode)
 val statusUnresponsiveColor = Color(statusUnresponsiveColorCode)
 
+val avatarAttentionColor = primaryRedColor
+val avatarStandardColor = statusCompletedColor
+
 internal val md_theme_light_primary = Color(0xFF735C00)
 internal val md_theme_light_onPrimary = Color(0xFFFFFFFF)
 internal val md_theme_light_primaryContainer = Color(0xFFFFE085)

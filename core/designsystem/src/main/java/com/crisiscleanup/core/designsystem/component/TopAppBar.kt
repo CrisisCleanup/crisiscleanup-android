@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.QuestionMark
@@ -37,6 +38,8 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.avatarAttentionColor
+import com.crisiscleanup.core.designsystem.theme.avatarStandardColor
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 
 @Composable
@@ -286,23 +289,24 @@ fun TopAppBarBackCaretAction(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AttentionBadge(
-    addBadge: Boolean,
+private fun AvatarAttentionBadge(
+    isAlert: Boolean,
     content: @Composable () -> Unit
 ) {
-    if (addBadge) {
-        BadgedBox(
-            badge = {
-                Badge(Modifier.offset((-16).dp, 16.dp)) {
-                    Text("!")
-                }
-            },
-        ) {
-            content()
-        }
-    } else {
+    BadgedBox(
+        badge = {
+            Badge(
+                // TODO Common/relative dimensions
+                Modifier
+                    .size(16.dp, 16.dp)
+                    .offset((-4).dp, 32.dp),
+                containerColor = if (isAlert) avatarAttentionColor else avatarStandardColor
+            )
+        },
+    ) {
         content()
     }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -338,7 +342,7 @@ fun TopAppBarDefault(
             }
         }
     val actionsContent: (@Composable (RowScope.() -> Unit)) = @Composable {
-        AttentionBadge(isActionAttention) {
+        AvatarAttentionBadge(isActionAttention) {
             IconButton(onClick = onActionClick) {
                 if (profilePictureUri.isEmpty()) {
                     Icon(
@@ -348,11 +352,14 @@ fun TopAppBarDefault(
                     )
                 } else {
                     val fallbackPainter = rememberVectorPainter(actionIcon)
+                    val placeholderPainter = rememberVectorPainter(CrisisCleanupIcons.Account)
+                    // TODO Show error as necessary
                     AsyncImage(
                         model = profilePictureUri,
                         contentDescription = actionText,
                         fallback = fallbackPainter,
                         contentScale = ContentScale.FillBounds,
+                        placeholder = placeholderPainter,
                     )
                 }
             }
