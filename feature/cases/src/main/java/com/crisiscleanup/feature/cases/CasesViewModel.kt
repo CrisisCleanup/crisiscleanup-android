@@ -173,7 +173,7 @@ class CasesViewModel @Inject constructor(
     val worksitesMapMarkers = combine(
         qsm.worksiteQueryState,
         mapBoundsManager.isMapLoaded,
-        casesFilterRepository.casesFilter,
+        casesFilterRepository.casesFilters,
         ::Triple
     )
         // TODO Make delay a parameter

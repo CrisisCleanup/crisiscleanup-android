@@ -2,6 +2,7 @@ package com.crisiscleanup.feature.cases.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,13 +11,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -24,18 +28,27 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.common.KeyResourceTranslator
+import com.crisiscleanup.core.common.noonTime
 import com.crisiscleanup.core.designsystem.AppTranslator
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
+import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.CollapsibleIcon
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupRadioButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
 import com.crisiscleanup.core.designsystem.component.HelpRow
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.WithHelpDialog
+import com.crisiscleanup.core.designsystem.component.actionHeight
+import com.crisiscleanup.core.designsystem.component.cancelButtonColors
+import com.crisiscleanup.core.designsystem.component.roundedOutline
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
+import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.CasesFilterMaxDaysAgo
 import com.crisiscleanup.core.model.data.CasesFilterMinDaysAgo
@@ -45,6 +58,14 @@ import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.cases.CasesFilterViewModel
 import com.crisiscleanup.feature.cases.CollapsibleFilterSection
+import kotlinx.datetime.Instant
+import kotlinx.datetime.toJavaInstant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+
+private val dateFormatter = DateTimeFormatter
+    .ofPattern("yyyy-MM-dd")
+    .withZone(ZoneId.systemDefault())
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,183 +77,175 @@ internal fun CasesFilterRoute(
     val appTranslator = remember(viewModel) {
         AppTranslator(translator = translator)
     }
-
-    val updateFilters =
-        remember(viewModel) { { filters: CasesFilter -> viewModel.changeFilters(filters) } }
-    val workTypeStatuses by viewModel.workTypeStatuses.collectAsStateWithLifecycle()
-    val workTypes by viewModel.workTypes.collectAsStateWithLifecycle(emptyList())
-
-    val filters by viewModel.casesFilter.collectAsStateWithLifecycle()
     CompositionLocalProvider(
         LocalAppTranslator provides appTranslator,
     ) {
+        val filters by viewModel.casesFilters.collectAsStateWithLifecycle()
+        val updateFilters =
+            remember(viewModel) { { filters: CasesFilter -> viewModel.changeFilters(filters) } }
+
         Column(Modifier.fillMaxSize()) {
             TopAppBarBackAction(
                 title = translator("worksiteFilters.filters"),
                 onAction = onBack,
             )
 
-            val sectionExpandState = remember { viewModel.sectionExpandState }
-            val toggleCollapsible = { section: CollapsibleFilterSection ->
-                sectionExpandState[section] = !sectionExpandState[section]!!
-            }
+            FilterControls(
+                filters,
+                updateFilters = updateFilters,
+            )
 
-            val closeKeyboard = rememberCloseKeyboard(viewModel)
-
-            val updateWithinPrimary = remember(viewModel)
-            {
-                { b: Boolean -> updateFilters(filters.copy(isWithinPrimaryResponseArea = b)) }
-            }
-            val updateWithinSecondary = remember(viewModel)
-            {
-                { b: Boolean -> updateFilters(filters.copy(isWithinSecondaryResponseArea = b)) }
-            }
-            val updateAssignedToMyTeam = remember(viewModel)
-            {
-                { b: Boolean -> updateFilters(filters.copy(isAssignedToMyTeam = b)) }
-            }
-            val updateIsUnclaimed = remember(viewModel)
-            {
-                { b: Boolean -> updateFilters(filters.copy(isUnclaimed = b)) }
-            }
-            val updateIsClaimedByMyOrg = remember(viewModel)
-            {
-                { b: Boolean -> updateFilters(filters.copy(isClaimedByMyOrg = b)) }
-            }
-            val updateIsReportedByMyOrg = remember(viewModel)
-            {
-                { b: Boolean -> updateFilters(filters.copy(isReportedByMyOrg = b)) }
-            }
-            val updateIsStatusOpen = remember(viewModel)
-            {
-                { b: Boolean -> updateFilters(filters.copy(isStatusOpen = b)) }
-            }
-            val updateIsStatusClosed = remember(viewModel)
-            {
-                { b: Boolean -> updateFilters(filters.copy(isStatusClosed = b)) }
-            }
-            val updateWorkTypeStatus = remember(viewModel) {
-                { status: WorkTypeStatus, b: Boolean ->
-                    val statuses = filters.workTypeStatuses.toMutableSet()
-                    if (b) {
-                        statuses.add(status)
-                    } else {
-                        statuses.remove(status)
-                    }
-                    updateFilters(
-                        filters.copy(workTypeStatuses = statuses)
-                    )
-                }
-            }
-            val updateMemberOfMyOrg = remember(viewModel)
-            {
-                { b: Boolean -> updateFilters(filters.copy(isMemberOfMyOrg = b)) }
-            }
-            val updateChildrenInHome = remember(viewModel)
-            {
-                { b: Boolean -> updateFilters(filters.copy(hasChildrenInHome = b)) }
-            }
-            val updateFirstResponder = remember(viewModel)
-            {
-                { b: Boolean -> updateFilters(filters.copy(isFirstResponder = b)) }
-            }
-            val updateOlderThan60 = remember(viewModel)
-            {
-                { b: Boolean -> updateFilters(filters.copy(isOlderThan60 = b)) }
-            }
-            val updateVeteran = remember(viewModel)
-            {
-                { b: Boolean -> updateFilters(filters.copy(isVeteran = b)) }
-            }
-            val updateFlags = remember(viewModel) {
-                { flag: WorksiteFlagType, b: Boolean ->
-                    val flags = filters.worksiteFlags.toMutableSet()
-                    if (b) {
-                        flags.add(flag)
-                    } else {
-                        flags.remove(flag)
-                    }
-                    updateFilters(
-                        filters.copy(worksiteFlags = flags)
-                    )
-                }
-            }
-            val updateWorkTypes = remember(viewModel) {
-                { workType: String, b: Boolean ->
-                    val workTypes = filters.workTypes.toMutableSet()
-                    if (b) {
-                        workTypes.add(workType)
-                    } else {
-                        workTypes.remove(workType)
-                    }
-                    updateFilters(
-                        filters.copy(workTypes = workTypes)
-                    )
-                }
-            }
-            val updateNoWorkType = remember(viewModel)
-            {
-                { b: Boolean -> updateFilters(filters.copy(isNoWorkType = b)) }
-            }
-
-            val isGeneralExpanded = sectionExpandState[CollapsibleFilterSection.General]!!
-            LazyColumn(
-                Modifier
-                    .scrollFlingListener(closeKeyboard)
-                    .weight(1f),
-            ) {
-                sviSlider(translator, filters, updateFilters)
-                daysUpdatedSlider(translator, filters, updateFilters)
-                distanceOptions(
-                    translator,
-                    filters,
-                    updateFilters,
-                    sectionExpandState[CollapsibleFilterSection.Distance]!!,
-                    toggleCollapsible,
-                    viewModel.distanceOptions,
-                )
-                generalOptions(
-                    filters,
-                    isGeneralExpanded,
-                    toggleCollapsible,
-                    updateWithinPrimary = updateWithinPrimary,
-                    updateWithinSecondary = updateWithinSecondary,
-                    updateTeamAssignment = updateAssignedToMyTeam,
-                    updateIsUnclaimed = updateIsUnclaimed,
-                    updateIsClaimedByMyOrg = updateIsClaimedByMyOrg,
-                    updateIsReportedByMyOrg = updateIsReportedByMyOrg,
-                    updateIsStatusOpen = updateIsStatusOpen,
-                    workTypeStatuses = workTypeStatuses,
-                    updateIsStatusClosed = updateIsStatusClosed,
-                    updateWorkTypeStatus = updateWorkTypeStatus,
-                )
-                personalInfoOptions(
-                    filters,
-                    sectionExpandState[CollapsibleFilterSection.PersonalInfo]!!,
-                    toggleCollapsible,
-                    updateMemberOfMyOrg = updateMemberOfMyOrg,
-                    updateChildrenInHome = updateChildrenInHome,
-                    updateFirstResponder = updateFirstResponder,
-                    updateOlderThan60 = updateOlderThan60,
-                    updateVeteran = updateVeteran,
-                )
-                flagOptions(
-                    filters,
-                    sectionExpandState[CollapsibleFilterSection.Flags]!!,
-                    toggleCollapsible,
-                    viewModel.worksiteFlags,
-                    updateFlags,
-                )
-                workOptions(
-                    filters,
-                    sectionExpandState[CollapsibleFilterSection.Work]!!,
-                    toggleCollapsible,
-                    workTypes,
-                    updateWorkTypes,
-                    updateNoWorkType,
-                )
-            }
+            BottomActionBar(
+                onBack = onBack,
+                filters = filters,
+                updateFilters = updateFilters,
+            )
         }
+    }
+}
+
+@Composable
+private fun ColumnScope.FilterControls(
+    filters: CasesFilter,
+    viewModel: CasesFilterViewModel = hiltViewModel(),
+    updateFilters: (CasesFilter) -> Unit = {},
+) {
+    val translator = LocalAppTranslator.current.translator
+
+    val workTypeStatuses by viewModel.workTypeStatuses.collectAsStateWithLifecycle()
+    val workTypes by viewModel.workTypes.collectAsStateWithLifecycle(emptyList())
+
+    val sectionExpandState = remember { viewModel.sectionExpandState }
+    val toggleCollapsible = { section: CollapsibleFilterSection ->
+        sectionExpandState[section] = !sectionExpandState[section]!!
+    }
+
+    val closeKeyboard = rememberCloseKeyboard(viewModel)
+
+    val updateWithinPrimary = { b: Boolean ->
+        updateFilters(filters.copy(isWithinPrimaryResponseArea = b))
+    }
+    val updateWithinSecondary = { b: Boolean ->
+        updateFilters(filters.copy(isWithinSecondaryResponseArea = b))
+    }
+    val updateAssignedToMyTeam = { b: Boolean ->
+        updateFilters(filters.copy(isAssignedToMyTeam = b))
+    }
+    val updateIsUnclaimed = { b: Boolean -> updateFilters(filters.copy(isUnclaimed = b)) }
+    val updateIsClaimedByMyOrg = { b: Boolean -> updateFilters(filters.copy(isClaimedByMyOrg = b)) }
+    val updateIsReportedByMyOrg = { b: Boolean ->
+        updateFilters(filters.copy(isReportedByMyOrg = b))
+    }
+    val updateIsStatusOpen = { b: Boolean -> updateFilters(filters.copy(isStatusOpen = b)) }
+    val updateIsStatusClosed = { b: Boolean -> updateFilters(filters.copy(isStatusClosed = b)) }
+    val updateWorkTypeStatus = { status: WorkTypeStatus, b: Boolean ->
+        val statuses = filters.workTypeStatuses.toMutableSet()
+        if (b) {
+            statuses.add(status)
+        } else {
+            statuses.remove(status)
+        }
+        updateFilters(
+            filters.copy(workTypeStatuses = statuses)
+        )
+    }
+    val updateMemberOfMyOrg = { b: Boolean -> updateFilters(filters.copy(isMemberOfMyOrg = b)) }
+    val updateChildrenInHome = { b: Boolean -> updateFilters(filters.copy(hasChildrenInHome = b)) }
+    val updateFirstResponder = { b: Boolean -> updateFilters(filters.copy(isFirstResponder = b)) }
+    val updateOlderThan60 = { b: Boolean -> updateFilters(filters.copy(isOlderThan60 = b)) }
+    val updateVeteran = { b: Boolean -> updateFilters(filters.copy(isVeteran = b)) }
+    val updateFlags = { flag: WorksiteFlagType, b: Boolean ->
+        val flags = filters.worksiteFlags.toMutableSet()
+        if (b) {
+            flags.add(flag)
+        } else {
+            flags.remove(flag)
+        }
+        updateFilters(
+            filters.copy(worksiteFlags = flags)
+        )
+    }
+    val updateWorkTypes = { workType: String, b: Boolean ->
+        val modifiedWorkTypes = filters.workTypes.toMutableSet()
+        if (b) {
+            modifiedWorkTypes.add(workType)
+        } else {
+            modifiedWorkTypes.remove(workType)
+        }
+        updateFilters(
+            filters.copy(workTypes = modifiedWorkTypes)
+        )
+    }
+    val updateNoWorkType = { b: Boolean -> updateFilters(filters.copy(isNoWorkType = b)) }
+    val updateCreatedAt = { dateRange: Pair<Instant, Instant>? ->
+        updateFilters(filters.copy(createdAt = dateRange))
+    }
+    val updateUpdatedAt = { dateRange: Pair<Instant, Instant>? ->
+        updateFilters(filters.copy(updatedAt = dateRange))
+    }
+
+    val isGeneralExpanded = sectionExpandState[CollapsibleFilterSection.General]!!
+    LazyColumn(
+        Modifier
+            .scrollFlingListener(closeKeyboard)
+            .weight(1f),
+    ) {
+        sviSlider(translator, filters, updateFilters)
+        daysUpdatedSlider(translator, filters, updateFilters)
+        distanceOptions(
+            filters,
+            updateFilters,
+            sectionExpandState[CollapsibleFilterSection.Distance]!!,
+            toggleCollapsible,
+            viewModel.distanceOptions,
+        )
+        generalOptions(
+            filters,
+            isGeneralExpanded,
+            toggleCollapsible,
+            updateWithinPrimary = updateWithinPrimary,
+            updateWithinSecondary = updateWithinSecondary,
+            updateTeamAssignment = updateAssignedToMyTeam,
+            updateIsUnclaimed = updateIsUnclaimed,
+            updateIsClaimedByMyOrg = updateIsClaimedByMyOrg,
+            updateIsReportedByMyOrg = updateIsReportedByMyOrg,
+            updateIsStatusOpen = updateIsStatusOpen,
+            workTypeStatuses = workTypeStatuses,
+            updateIsStatusClosed = updateIsStatusClosed,
+            updateWorkTypeStatus = updateWorkTypeStatus,
+        )
+        personalInfoOptions(
+            filters,
+            sectionExpandState[CollapsibleFilterSection.PersonalInfo]!!,
+            toggleCollapsible,
+            updateMemberOfMyOrg = updateMemberOfMyOrg,
+            updateChildrenInHome = updateChildrenInHome,
+            updateFirstResponder = updateFirstResponder,
+            updateOlderThan60 = updateOlderThan60,
+            updateVeteran = updateVeteran,
+        )
+        flagOptions(
+            filters,
+            sectionExpandState[CollapsibleFilterSection.Flags]!!,
+            toggleCollapsible,
+            viewModel.worksiteFlags,
+            updateFlags = updateFlags,
+        )
+        workOptions(
+            filters,
+            sectionExpandState[CollapsibleFilterSection.Work]!!,
+            toggleCollapsible,
+            workTypes,
+            updateWorkTypes = updateWorkTypes,
+            updateNoWorkType = updateNoWorkType,
+        )
+        dateOptions(
+            filters,
+            sectionExpandState[CollapsibleFilterSection.Dates]!!,
+            toggleCollapsible,
+            updateCreatedAt = updateCreatedAt,
+            updateUpdatedAt = updateUpdatedAt,
+        )
     }
 }
 
@@ -377,7 +390,6 @@ private fun LazyListScope.collapsibleSectionHeader(
         FilterHeaderCollapsible(
             // TODO Common dimensions
             modifier = Modifier.padding(top = 16.dp),
-            // TODO Map translation key
             sectionTitle = LocalAppTranslator.current.translator(translationKey),
             isCollapsed = !isSectionExpanded,
             toggleCollapse = { toggleSection(section) },
@@ -386,7 +398,6 @@ private fun LazyListScope.collapsibleSectionHeader(
 }
 
 private fun LazyListScope.distanceOptions(
-    translator: KeyResourceTranslator,
     filters: CasesFilter,
     onUpdateFilter: (CasesFilter) -> Unit = {},
     isSectionExpanded: Boolean = false,
@@ -606,7 +617,7 @@ private fun LazyListScope.flagOptions(
     isSectionExpanded: Boolean = false,
     toggleSection: (CollapsibleFilterSection) -> Unit = {},
     flags: Collection<WorksiteFlagType> = emptyList(),
-    updateWorksiteFlags: (WorksiteFlagType, Boolean) -> Unit = { _, _ -> },
+    updateFlags: (WorksiteFlagType, Boolean) -> Unit = { _, _ -> },
 ) {
     collapsibleSectionHeader(
         CollapsibleFilterSection.Flags,
@@ -620,8 +631,8 @@ private fun LazyListScope.flagOptions(
             checkboxItem(
                 flag.literal,
                 isChecked,
-                { b: Boolean -> updateWorksiteFlags(flag, b) },
-                { updateWorksiteFlags(flag, !isChecked) },
+                { b: Boolean -> updateFlags(flag, b) },
+                { updateFlags(flag, !isChecked) },
             )
         }
     }
@@ -659,6 +670,155 @@ private fun LazyListScope.workOptions(
             filters.isNoWorkType,
             { b: Boolean -> updateNoWorkType(b) },
             { updateNoWorkType(!filters.isNoWorkType) },
+        )
+    }
+}
+
+private fun LazyListScope.dateItem(
+    textTranslateKey: String,
+    dateRange: Pair<Instant, Instant>?,
+    onDateChange: (Pair<Instant, Instant>?) -> Unit,
+) {
+    item(contentType = "filter-date") {
+        val translator = LocalAppTranslator.current.translator
+        val label = translator(textTranslateKey)
+        Text(
+            label,
+            Modifier.listItemHorizontalPadding(),
+            style = MaterialTheme.typography.bodyLarge,
+        )
+        FilterDatePicker(
+            label,
+            listItemModifier,
+            dateRange = dateRange,
+            onDateChange = onDateChange,
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FilterDatePicker(
+    label: String,
+    modifier: Modifier = Modifier,
+    dateRange: Pair<Instant, Instant>? = null,
+    onDateChange: (Pair<Instant, Instant>?) -> Unit = {},
+) {
+    var showDatePicker by remember { mutableStateOf(false) }
+    Row(
+        Modifier
+            .clickable(onClick = { showDatePicker = true })
+            .then(modifier)
+            .roundedOutline()
+            .listItemHorizontalPadding(),
+        horizontalArrangement = listItemSpacedByHalf,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        val dateText = dateRange?.let {
+            val startDate = dateFormatter.format(it.first.toJavaInstant())
+            val endDate = dateFormatter.format(it.first.toJavaInstant())
+            "$startDate - $endDate"
+        } ?: ""
+        Text(dateText)
+        Spacer(
+            Modifier
+                .weight(1f)
+                .actionHeight()
+        )
+        if (dateRange != null) {
+            CrisisCleanupIconButton(
+                imageVector = CrisisCleanupIcons.Clear,
+                onClick = { onDateChange(null) }
+            )
+        }
+        Icon(
+            imageVector = CrisisCleanupIcons.Calendar,
+            contentDescription = label,
+        )
+    }
+    if (showDatePicker) {
+        com.crisiscleanup.core.designsystem.component.DateRangePickerDialog(
+            selectedMillis = dateRange?.let {
+                Pair(
+                    it.first.toEpochMilliseconds(),
+                    it.second.toEpochMilliseconds()
+                )
+            },
+            onCloseDialog = { selectedMillis ->
+                val selectedDateRange = selectedMillis?.let {
+                    val startDate = Instant.fromEpochMilliseconds(it.first).noonTime
+                    val endDate = Instant.fromEpochMilliseconds(it.second).noonTime
+                    Pair(startDate, endDate)
+                }
+                onDateChange(selectedDateRange)
+                showDatePicker = false
+            }
+        )
+    }
+}
+
+private fun LazyListScope.dateOptions(
+    filters: CasesFilter,
+    isSectionExpanded: Boolean = false,
+    toggleSection: (CollapsibleFilterSection) -> Unit = {},
+    updateCreatedAt: (Pair<Instant, Instant>?) -> Unit = {},
+    updateUpdatedAt: (Pair<Instant, Instant>?) -> Unit = {},
+) {
+    collapsibleSectionHeader(
+        CollapsibleFilterSection.Dates,
+        isSectionExpanded,
+        toggleSection,
+    )
+
+    if (isSectionExpanded) {
+        subsectionHeader("worksiteFilters.missing_information")
+
+        dateItem(
+            "worksiteFilters.created",
+            filters.createdAt,
+        ) { dateRange: Pair<Instant, Instant>? ->
+            updateCreatedAt(dateRange)
+        }
+
+        dateItem(
+            "worksiteFilters.updated",
+            filters.updatedAt,
+        ) { dateRange: Pair<Instant, Instant>? ->
+            updateUpdatedAt(dateRange)
+        }
+    }
+}
+
+@Composable
+fun BottomActionBar(
+    onBack: () -> Unit,
+    filters: CasesFilter,
+    viewModel: CasesFilterViewModel = hiltViewModel(),
+    updateFilters: (CasesFilter) -> Unit = {},
+) {
+    val translator = LocalAppTranslator.current.translator
+    Row(
+        modifier = listItemModifier,
+        horizontalArrangement = listItemSpacedBy,
+    ) {
+        val filterCount = filters.changeCount
+        BusyButton(
+            Modifier.weight(1f),
+            text = translator("actions.clear_filters"),
+            enabled = filterCount > 0,
+            onClick = { updateFilters(CasesFilter()) },
+            colors = cancelButtonColors(),
+        )
+        val applyFilters = translator("actions.apply_filters")
+        val applyText = if (filterCount > 0) "$applyFilters ($filterCount)" else applyFilters
+        BusyButton(
+            Modifier.weight(1f),
+            text = applyText,
+            enabled = filterCount > 0,
+            onClick = {
+                viewModel.applyFilters(filters)
+                onBack()
+            },
         )
     }
 }

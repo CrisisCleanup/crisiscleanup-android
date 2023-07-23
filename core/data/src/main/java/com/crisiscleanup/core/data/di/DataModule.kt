@@ -106,6 +106,12 @@ interface DataModule {
     fun bindsUsersRepository(
         repository: OfflineFirstUsersRepository
     ): UsersRepository
+
+    @Singleton
+    @Binds
+    fun casesFiltersRepository(
+        repository: CrisisCleanupCasesFilterRepository
+    ): CasesFilterRepository
 }
 
 @Module

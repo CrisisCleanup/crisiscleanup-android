@@ -93,7 +93,7 @@ class CasesSearchViewModel @Inject constructor(
             .debounce(200)
             .map(String::trim)
             .distinctUntilChanged(),
-        filterRepository.casesFilter,
+        filterRepository.casesFilters,
         ::Triple
     )
         .map { (incidentId, q, filters) ->

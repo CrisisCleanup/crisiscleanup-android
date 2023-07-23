@@ -16,10 +16,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -31,6 +27,7 @@ import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.ClearableTextField
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
+import com.crisiscleanup.core.designsystem.component.roundedOutline
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
@@ -80,13 +77,7 @@ internal fun CasesSearchRoute(
                     Modifier
                         .listItemVerticalPadding()
                         .padding(horizontal = 8.dp)
-                        .drawBehind {
-                            drawRoundRect(
-                                color = Color.Gray,
-                                style = Stroke(width = 1.dp.toPx()),
-                                cornerRadius = CornerRadius(4.dp.toPx()),
-                            )
-                        },
+                        .roundedOutline(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     CrisisCleanupIconButton(

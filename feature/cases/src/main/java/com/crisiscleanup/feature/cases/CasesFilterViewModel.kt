@@ -2,7 +2,6 @@ package com.crisiscleanup.feature.cases
 
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
@@ -18,10 +17,9 @@ import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
 import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.WorksiteFlagType
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 @HiltViewModel
@@ -34,7 +32,7 @@ class CasesFilterViewModel @Inject constructor(
     val translator: KeyResourceTranslator,
     @Logger(CrisisCleanupLoggers.Cases) private val logger: AppLogger,
 ) : ViewModel() {
-    val casesFilter = casesFilterRepository.casesFilter
+    val casesFilters = MutableStateFlow(casesFilterRepository.casesFilters.value)
 
     val sectionExpandState = mutableStateMapOf<CollapsibleFilterSection, Boolean>()
         .also { map ->
@@ -80,15 +78,12 @@ class CasesFilterViewModel @Inject constructor(
         Pair(100f, translator("worksiteFilters.one_hundred_miles")),
     )
 
-    init {
-        workTypes.onEach {
-            logger.logDebug("Work types", workTypes)
-        }
-            .launchIn(viewModelScope)
+    fun changeFilters(filters: CasesFilter) {
+        casesFilters.value = filters
     }
 
-    fun changeFilters(filters: CasesFilter) {
-        casesFilterRepository.changeFilter(filters)
+    fun applyFilters(filters: CasesFilter) {
+        casesFilterRepository.changeFilters(filters)
     }
 }
 

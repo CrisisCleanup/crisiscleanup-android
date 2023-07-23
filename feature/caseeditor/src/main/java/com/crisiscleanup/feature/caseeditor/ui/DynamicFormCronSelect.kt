@@ -11,15 +11,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DatePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +36,7 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupFilterChip
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupRadioButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
+import com.crisiscleanup.core.designsystem.component.DatePickerDialog
 import com.crisiscleanup.core.designsystem.component.OutlinedSingleLineTextField
 import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
@@ -458,45 +456,5 @@ private fun FrequencyDatePicker(
                 showDatePicker = false
             }
         )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun DatePickerDialog(
-    selectedMillis: Long? = null,
-    onCloseDialog: (Long?) -> Unit = {},
-) {
-    // val year = Calendar.getInstance().get(Calendar.YEAR)
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = selectedMillis,
-        // TODO There is a bug when the year range is set where cycling back in year very
-        //      quickly in succession will cause a crash
-        //      java.lang.IllegalArgumentException: Index should be non-negative (-1)
-        // yearRange = year until (year + 4),
-    )
-    val confirmEnabled =
-        remember { derivedStateOf { datePickerState.selectedDateMillis != null } }
-    androidx.compose.material3.DatePickerDialog(
-        onDismissRequest = {
-            onCloseDialog(null)
-        },
-        confirmButton = {
-            CrisisCleanupTextButton(
-                onClick = {
-                    onCloseDialog(datePickerState.selectedDateMillis)
-                },
-                enabled = confirmEnabled.value,
-                text = "OK",
-            )
-        },
-        dismissButton = {
-            CrisisCleanupTextButton(
-                onClick = { onCloseDialog(null) },
-                text = "Cancel",
-            )
-        },
-    ) {
-        DatePicker(state = datePickerState)
     }
 }

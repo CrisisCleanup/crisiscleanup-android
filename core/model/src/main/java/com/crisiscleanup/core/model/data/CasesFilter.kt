@@ -32,8 +32,8 @@ data class CasesFilter(
     val worksiteFlags: Collection<WorksiteFlagType> = emptySet(),
     val workTypes: Collection<String> = emptySet(),
     val isNoWorkType: Boolean = false,
-    val createdAt: Instant? = null,
-    val updatedAt: Instant? = null,
+    val createdAt: Pair<Instant, Instant>? = null,
+    val updatedAt: Pair<Instant, Instant>? = null,
 ) {
     private val isDefault = this == DefaultCasesFilter
 
@@ -53,14 +53,14 @@ data class CasesFilter(
             if (isReportedByMyOrg) count++
             if (isStatusOpen) count++
             if (isStatusClosed) count++
-            if (workTypeStatuses.isNotEmpty()) count++
+            if (workTypeStatuses.isNotEmpty()) count += workTypeStatuses.size
             if (isMemberOfMyOrg) count++
             if (isOlderThan60) count++
             if (hasChildrenInHome) count++
             if (isFirstResponder) count++
             if (isVeteran) count++
-            if (worksiteFlags.isNotEmpty()) count++
-            if (workTypes.isNotEmpty()) count++
+            if (worksiteFlags.isNotEmpty()) count += worksiteFlags.size
+            if (workTypes.isNotEmpty()) count += workTypes.size
             if (isNoWorkType) count++
             if (createdAt != null) count++
             if (updatedAt != null) count++
