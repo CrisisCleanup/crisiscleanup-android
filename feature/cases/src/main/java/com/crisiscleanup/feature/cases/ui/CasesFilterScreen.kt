@@ -136,8 +136,14 @@ private fun ColumnScope.FilterControls(
     val updateIsReportedByMyOrg = { b: Boolean ->
         updateFilters(filters.copy(isReportedByMyOrg = b))
     }
-    val updateIsStatusOpen = { b: Boolean -> updateFilters(filters.copy(isStatusOpen = b)) }
-    val updateIsStatusClosed = { b: Boolean -> updateFilters(filters.copy(isStatusClosed = b)) }
+    val updateOverallStatus = { isOpen: Boolean, isClosed: Boolean ->
+        updateFilters(
+            filters.copy(
+                isStatusOpen = isOpen,
+                isStatusClosed = isClosed,
+            )
+        )
+    }
     val updateWorkTypeStatus = { status: WorkTypeStatus, b: Boolean ->
         val statuses = filters.workTypeStatuses.toMutableSet()
         if (b) {
@@ -209,9 +215,8 @@ private fun ColumnScope.FilterControls(
             updateIsUnclaimed = updateIsUnclaimed,
             updateIsClaimedByMyOrg = updateIsClaimedByMyOrg,
             updateIsReportedByMyOrg = updateIsReportedByMyOrg,
-            updateIsStatusOpen = updateIsStatusOpen,
+            updateOverallStatus = updateOverallStatus,
             workTypeStatuses = workTypeStatuses,
-            updateIsStatusClosed = updateIsStatusClosed,
             updateWorkTypeStatus = updateWorkTypeStatus,
         )
         personalInfoOptions(
@@ -464,8 +469,7 @@ private fun LazyListScope.generalOptions(
     updateIsUnclaimed: (Boolean) -> Unit = {},
     updateIsClaimedByMyOrg: (Boolean) -> Unit = {},
     updateIsReportedByMyOrg: (Boolean) -> Unit = {},
-    updateIsStatusOpen: (Boolean) -> Unit = {},
-    updateIsStatusClosed: (Boolean) -> Unit = {},
+    updateOverallStatus: (Boolean, Boolean) -> Unit = { _, _ -> },
     workTypeStatuses: Collection<WorkTypeStatus> = emptyList(),
     updateWorkTypeStatus: (WorkTypeStatus, Boolean) -> Unit = { _, _ -> },
 ) {
@@ -526,18 +530,20 @@ private fun LazyListScope.generalOptions(
 
         subsectionHeader("worksiteFilters.over_all_status")
 
+        val isStatusOpen = filters.isStatusOpen
         checkboxItem(
             "worksiteFilters.open",
-            filters.isStatusOpen,
-            { b: Boolean -> updateIsStatusOpen(b) },
-            { updateIsStatusOpen(!filters.isStatusOpen) },
+            isStatusOpen,
+            { b: Boolean -> updateOverallStatus(isStatusOpen, false) },
+            { updateOverallStatus(!isStatusOpen, false) },
         )
 
+        val isStatusClosed = !isStatusOpen && filters.isStatusClosed
         checkboxItem(
             "worksiteFilters.closed",
-            filters.isStatusClosed,
-            { b: Boolean -> updateIsStatusClosed(b) },
-            { updateIsStatusClosed(!filters.isStatusClosed) },
+            isStatusClosed,
+            { b: Boolean -> updateOverallStatus(false, b) },
+            { updateOverallStatus(false, !isStatusClosed) },
         )
 
         subsectionHeader("worksiteFilters.detailed_status")

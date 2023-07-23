@@ -113,6 +113,14 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
             val copyResponse = response.newBuilder().body(bodyCopy).build()
             return Pair(errors.hasExpiredToken, copyResponse)
         }
+        Log.w(
+            "network-interceptor",
+            """
+                Token was not expired and body was null.
+                Error requires closing the response and possibly rebuilding the request/response.
+                """
+        )
+        // TODO If body is null from above wouldn't response need to close (and rebuild)?
         return Pair(false, response)
     }
 

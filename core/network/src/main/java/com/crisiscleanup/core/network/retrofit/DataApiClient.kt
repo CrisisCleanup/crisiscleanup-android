@@ -7,6 +7,7 @@ import retrofit2.Retrofit
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
+import retrofit2.http.QueryMap
 import javax.inject.Inject
 
 private interface DataSourceApi {
@@ -76,6 +77,8 @@ private interface DataSourceApi {
         incidentId: Long,
         @Query("search")
         q: String,
+        @QueryMap
+        filters: Map<String, @JvmSuppressWildcards Any?> = emptyMap(),
     ): NetworkWorksitesShortResult
 
     @TokenAuthenticationHeader

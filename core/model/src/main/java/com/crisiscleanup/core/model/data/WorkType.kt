@@ -45,6 +45,24 @@ enum class WorkTypeStatus(val literal: String) {
     NeedOverdue("need_overdue"),
 }
 
+val openWorkTypeStatuses = listOf(
+    WorkTypeStatus.OpenAssigned,
+    WorkTypeStatus.OpenUnassigned,
+    WorkTypeStatus.OpenPartiallyCompleted,
+    WorkTypeStatus.OpenNeedsFollowUp,
+    WorkTypeStatus.OpenUnresponsive,
+)
+
+val closedWorkTypeStatuses = listOf(
+    WorkTypeStatus.ClosedCompleted,
+    WorkTypeStatus.ClosedIncomplete,
+    WorkTypeStatus.ClosedOutOfScope,
+    WorkTypeStatus.ClosedDoneByOthers,
+    WorkTypeStatus.ClosedNoHelpWanted,
+    WorkTypeStatus.ClosedDuplicate,
+    WorkTypeStatus.ClosedRejected,
+)
+
 private val literalStatusLookup = WorkTypeStatus.values().associateBy(WorkTypeStatus::literal)
 fun statusFromLiteral(literal: String) =
     literalStatusLookup[literal] ?: WorkTypeStatus.Unknown
