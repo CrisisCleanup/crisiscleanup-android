@@ -109,7 +109,7 @@ fun CrisisCleanupNavHost(
     ) {
         casesGraph(
             nestedGraphs = {
-                casesSearchScreen(onBack, viewCase, openFilterCases)
+                casesSearchScreen(onBack, viewCase)
                 casesFilterScreen(onBack)
                 caseEditorScreen(navController, onBack)
                 caseEditSearchAddressScreen(navController, onBack)

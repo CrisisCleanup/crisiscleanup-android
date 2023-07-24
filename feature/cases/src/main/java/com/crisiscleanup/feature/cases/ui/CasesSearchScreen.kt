@@ -36,12 +36,10 @@ import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.cases.CasesSearchViewModel
-import com.crisiscleanup.feature.cases.R
 
 @Composable
 internal fun CasesSearchRoute(
     onBackClick: () -> Unit = {},
-    openFilter: () -> Unit = {},
     openCase: (Long, Long) -> Boolean = { _, _ -> false },
     viewModel: CasesSearchViewModel = hiltViewModel(),
 ) {
@@ -60,8 +58,6 @@ internal fun CasesSearchRoute(
                 onBackClick()
             }
         }
-
-        val filtersCount by viewModel.filtersCount.collectAsStateWithLifecycle(0)
 
         val q by viewModel.searchQuery.collectAsStateWithLifecycle()
         val updateQuery =
@@ -98,13 +94,6 @@ internal fun CasesSearchRoute(
                         onEnter = closeKeyboard,
                         isError = false,
                     )
-                    FilterButtonBadge(filtersCount) {
-                        CrisisCleanupIconButton(
-                            iconResId = R.drawable.ic_dials,
-                            onClick = openFilter,
-                            contentDescription = translator("casesVue.filters"),
-                        )
-                    }
                 }
 
                 ListCases(

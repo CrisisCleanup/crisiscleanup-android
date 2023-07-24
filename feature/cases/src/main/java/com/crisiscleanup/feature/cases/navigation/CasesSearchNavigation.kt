@@ -14,13 +14,11 @@ fun NavController.navigateToCasesSearch(navOptions: NavOptions? = null) {
 fun NavGraphBuilder.casesSearchScreen(
     onBackClick: () -> Unit,
     openCase: (Long, Long) -> Boolean = { _, _ -> false },
-    openFilter: () -> Unit = {},
 ) {
     composable(route = RouteConstant.casesSearchRoute) {
         CasesSearchRoute(
             onBackClick,
             openCase = openCase,
-            openFilter = openFilter,
         )
     }
 }

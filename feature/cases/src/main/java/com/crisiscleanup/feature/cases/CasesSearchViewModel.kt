@@ -9,7 +9,6 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.data.IncidentSelector
-import com.crisiscleanup.core.data.repository.CasesFilterRepository
 import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
@@ -38,7 +37,6 @@ class CasesSearchViewModel @Inject constructor(
     private val worksitesRepository: WorksitesRepository,
     private val searchWorksitesRepository: SearchWorksitesRepository,
     private val mapCaseIconProvider: MapCaseIconProvider,
-    filterRepository: CasesFilterRepository,
     @Logger(CrisisCleanupLoggers.Cases) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
@@ -57,8 +55,6 @@ class CasesSearchViewModel @Inject constructor(
         )
 
     val selectedWorksite = MutableStateFlow(Pair(EmptyIncident.id, EmptyWorksite.id))
-
-    val filtersCount = filterRepository.filtersCount
 
     val recentWorksites = incidentSelector.incidentId
         .flatMapLatest { incidentId ->
