@@ -20,7 +20,9 @@ class AccountDataRefresher @Inject constructor(
     private var profilePictureUpdateTime = Instant.fromEpochSeconds(0)
 
     suspend fun updateProfilePicture() {
-        if (profilePictureUpdateTime.plus(1.days) > Clock.System.now()) {
+        if (dataSource.refreshToken.isBlank() ||
+            profilePictureUpdateTime.plus(1.days) > Clock.System.now()
+        ) {
             return
         }
 
