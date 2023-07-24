@@ -38,7 +38,7 @@ class CasesSearchViewModel @Inject constructor(
     private val worksitesRepository: WorksitesRepository,
     private val searchWorksitesRepository: SearchWorksitesRepository,
     private val mapCaseIconProvider: MapCaseIconProvider,
-    private val filterRepository: CasesFilterRepository,
+    filterRepository: CasesFilterRepository,
     @Logger(CrisisCleanupLoggers.Cases) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
