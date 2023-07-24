@@ -24,6 +24,7 @@ interface SearchWorksitesRepository {
     suspend fun searchWorksites(
         incidentId: Long,
         q: String,
+        applyFilters: Boolean = false,
     ): Collection<WorksiteSummary>
 
     suspend fun locationSearchWorksites(
@@ -70,13 +71,15 @@ class MemoryCacheSearchWorksitesRepository @Inject constructor(
     override suspend fun searchWorksites(
         incidentId: Long,
         q: String,
+        applyFilters: Boolean,
     ): Collection<WorksiteSummary> = coroutineScope {
         val (filters, filterQuery) = filterRepository.filterQuery.first()
-        val hasFilters = filters.changeCount > 0
+        val hasFilters = applyFilters && filters.changeCount > 0
 
         val (incidentQuery, now, cacheResults) = getCacheResults(incidentId, q)
+        val useCache = !hasFilters
 
-        if (!hasFilters) {
+        if (useCache) {
             cacheResults?.let {
                 return@coroutineScope it
             }
@@ -85,11 +88,8 @@ class MemoryCacheSearchWorksitesRepository @Inject constructor(
         // TODO Search local when offline
 
         try {
-            var results = networkDataSource.getSearchWorksites(
-                incidentId,
-                q,
-                filterQuery,
-            )
+            val searchFilters = if (hasFilters) filterQuery else emptyMap()
+            var results = networkDataSource.getSearchWorksites(incidentId, q, searchFilters)
 
             if (hasFilters) {
                 ensureActive()
@@ -125,7 +125,7 @@ class MemoryCacheSearchWorksitesRepository @Inject constructor(
                 }
 
                 // TODO Support filters in caching? Or not worth the cost?
-                if (!hasFilters) {
+                if (useCache) {
                     searchCache.put(incidentQuery, Pair(now, searchResult))
                 }
 
