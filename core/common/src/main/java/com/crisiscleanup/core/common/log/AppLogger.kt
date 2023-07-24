@@ -6,6 +6,8 @@ interface AppLogger {
     fun logDebug(vararg logs: Any)
 
     fun logException(e: Exception)
+
+    fun logCapture(message: String)
 }
 
 interface TagLogger : AppLogger {

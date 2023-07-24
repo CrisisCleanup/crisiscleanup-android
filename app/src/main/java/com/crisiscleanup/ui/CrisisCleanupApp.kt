@@ -164,7 +164,7 @@ private fun LoadedContent(
         )
     } else {
         val accountData = (authState as AuthState.Authenticated).accountData
-        val profilePictureUri by remember { mutableStateOf(accountData.profilePictureUri) }
+        val profilePictureUri = accountData.profilePictureUri
         val appHeaderBar = viewModel.appHeaderUiState
         val appHeaderTitle by appHeaderBar.title.collectAsStateWithLifecycle()
         val isHeaderLoading by viewModel.showHeaderLoading.collectAsState(false)

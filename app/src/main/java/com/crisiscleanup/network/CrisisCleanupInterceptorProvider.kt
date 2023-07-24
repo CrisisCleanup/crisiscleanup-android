@@ -102,7 +102,7 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
             .build()
     }
 
-    private fun isExpiredToken(response: Response): Pair<Boolean, Response> {
+    private fun isExpiredToken(response: Response, logPaths: String): Pair<Boolean, Response> {
         if (response.code == 401) {
             return Pair(true, response)
         }
@@ -113,14 +113,8 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
             val copyResponse = response.newBuilder().body(bodyCopy).build()
             return Pair(errors.hasExpiredToken, copyResponse)
         }
-        Log.w(
-            "network-interceptor",
-            """
-                Token was not expired and body was null.
-                Error requires closing the response and possibly rebuilding the request/response.
-                """
-        )
         // TODO If body is null from above wouldn't response need to close (and rebuild)?
+        logger.logCapture("Token was not expired and body was null for $logPaths. Incoming exception?")
         return Pair(false, response)
     }
 
@@ -154,7 +148,10 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
     private fun tryAuthRequest(chain: Interceptor.Chain, request: Request): Response {
         val response = chain.proceed(request)
 
-        val (isExpired, nextResponse) = isExpiredToken(response)
+        val (isExpired, nextResponse) = isExpiredToken(
+            response,
+            request.url.pathSegments.joinToString("/"),
+        )
         if (isExpired) {
             runBlocking {
                 if (refreshTokens()) {
