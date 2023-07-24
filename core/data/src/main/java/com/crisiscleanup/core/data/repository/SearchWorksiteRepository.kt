@@ -1,12 +1,20 @@
 package com.crisiscleanup.core.data.repository
 
 import android.util.LruCache
+import com.crisiscleanup.core.common.HaversineDistance
+import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
+import com.crisiscleanup.core.common.radians
+import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.WorksiteSummary
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
+import com.crisiscleanup.core.network.model.NetworkWorksiteShort
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.first
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
@@ -24,8 +32,13 @@ interface SearchWorksitesRepository {
     ): Collection<WorksiteSummary>
 }
 
+private val Double.kmToMiles: Double
+    get() = this * 0.621371
+
 class MemoryCacheSearchWorksitesRepository @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,
+    private val filterRepository: CasesFilterRepository,
+    private val locationProvider: LocationProvider,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
 ) : SearchWorksitesRepository {
     // TODO Make size configurable and consider different size determination
@@ -57,16 +70,35 @@ class MemoryCacheSearchWorksitesRepository @Inject constructor(
     override suspend fun searchWorksites(
         incidentId: Long,
         q: String,
-    ): Collection<WorksiteSummary> {
+    ): Collection<WorksiteSummary> = coroutineScope {
+        val (filters, filterQuery) = filterRepository.filterQuery.first()
+        val hasFilters = filters.changeCount > 0
+
         val (incidentQuery, now, cacheResults) = getCacheResults(incidentId, q)
-        cacheResults?.let {
-            return it
+
+        if (!hasFilters) {
+            cacheResults?.let {
+                return@coroutineScope it
+            }
         }
 
-        // TODO Search local as well
+        // TODO Search local when offline
 
         try {
-            val results = networkDataSource.getSearchWorksites(incidentId, q)
+            var results = networkDataSource.getSearchWorksites(
+                incidentId,
+                q,
+                filterQuery,
+            )
+
+            if (hasFilters) {
+                ensureActive()
+
+                results = filterResults(results, filters)
+
+                ensureActive()
+            }
+
             if (results.isNotEmpty()) {
                 val searchResult = results.map { networkWorksite ->
                     val workType = networkWorksite.newestKeyWorkType?.let { keyWorkType ->
@@ -91,14 +123,68 @@ class MemoryCacheSearchWorksitesRepository @Inject constructor(
                         )
                     }
                 }
-                searchCache.put(incidentQuery, Pair(now, searchResult))
-                return searchResult
+
+                // TODO Support filters in caching? Or not worth the cost?
+                if (!hasFilters) {
+                    searchCache.put(incidentQuery, Pair(now, searchResult))
+                }
+
+                return@coroutineScope searchResult
             }
         } catch (e: Exception) {
             logger.logException(e)
         }
 
-        return emptyList()
+        return@coroutineScope emptyList()
+    }
+
+    private suspend fun filterResults(
+        results: List<NetworkWorksiteShort>,
+        filters: CasesFilter,
+    ): List<NetworkWorksiteShort> {
+        val uniqueIds = mutableSetOf<Long>()
+        val uniqueResults = mutableListOf<NetworkWorksiteShort>()
+
+        var hasLocation = false
+        var locationLatitude = 0.0
+        var locationLongitude = 0.0
+        locationProvider.getLocation()?.let { currentLocation ->
+            locationLatitude = currentLocation.first.radians
+            locationLongitude = currentLocation.second.radians
+            hasLocation = true
+        }
+
+        for (result in results) {
+            if (uniqueIds.contains(result.id)) {
+                continue
+            }
+
+            val distance = if (hasLocation && filters.isDistanceChanged) {
+                val resultCoordinates = result.location.coordinates
+                val (resultLongitude, resultLatitude) = resultCoordinates
+                val kmDistance = HaversineDistance.calculate(
+                    locationLatitude, locationLongitude,
+                    resultLatitude.radians, resultLongitude.radians
+                )
+                kmDistance.kmToMiles
+            } else {
+                null
+            }
+
+            if (!filters.localFilter(
+                    result.svi ?: 0f,
+                    result.updatedAt,
+                    distance
+                )
+            ) {
+                continue
+            }
+
+            uniqueResults.add(result)
+            uniqueIds.add(result.id)
+        }
+
+        return uniqueResults
     }
 
     override suspend fun locationSearchWorksites(

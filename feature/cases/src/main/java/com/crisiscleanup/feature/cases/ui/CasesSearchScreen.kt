@@ -132,6 +132,7 @@ private fun ListCases(
         { result: CaseSummaryResult -> viewModel.onSelectWorksite(result) }
     }
     val recentCases by viewModel.recentWorksites.collectAsStateWithLifecycle()
+    val filterCount by viewModel.filtersCount.collectAsStateWithLifecycle(0)
 
     val lazyListState = rememberLazyListState()
     LazyColumn(
@@ -151,6 +152,9 @@ private fun ListCases(
                         val translator = LocalAppTranslator.current.translator
                         val message =
                             if (isShortQ) translator("info.search_query_is_short")
+                            else if (filterCount > 0) translator("~~No cases found matching {search_string} with {filter_count} filters applied.")
+                                .replace("{search_string}", q)
+                                .replace("{filter_count}", "$filterCount")
                             else translator("info.no_search_results").replace("{search_string}", q)
                         Text(message, listItemModifier)
                     }

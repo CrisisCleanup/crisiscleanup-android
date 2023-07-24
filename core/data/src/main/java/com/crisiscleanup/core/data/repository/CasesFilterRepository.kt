@@ -26,7 +26,7 @@ import javax.inject.Singleton
 interface CasesFilterRepository {
     val casesFilters: StateFlow<CasesFilter>
     val filtersCount: Flow<Int>
-    val filterQueryParams: Flow<Map<String, Any?>>
+    val filterQuery: Flow<Pair<CasesFilter, Map<String, Any>>>
 
     fun changeFilters(filters: CasesFilter)
     fun updateFilters(workTypes: Collection<String>)
@@ -49,9 +49,9 @@ class CrisisCleanupCasesFilterRepository @Inject constructor(
 
     override val filtersCount = casesFilters.map { it.changeCount }
 
-    private val queryParamCache = LruCache<Pair<CasesFilter, Long>, Map<String, Any?>>(30)
+    private val queryParamCache = LruCache<Pair<CasesFilter, Long>, Map<String, Any>>(30)
 
-    override val filterQueryParams = combine(
+    override val filterQuery = combine(
         accountDataRepository.accountData,
         casesFilters,
         ::Pair,
@@ -61,17 +61,17 @@ class CrisisCleanupCasesFilterRepository @Inject constructor(
             val orgId = accountData.org.id
             val cacheKey = Pair(filters, orgId)
             queryParamCache.get(cacheKey)?.let { cached ->
-                return@map cached
+                return@map Pair(filters, cached)
             }
 
             if (filters.changeCount == 0) {
                 queryParamCache.put(cacheKey, emptyMap())
-                return@map emptyMap()
+                return@map Pair(filters, emptyMap())
             }
 
             val queryParams = filters.queryMap(orgId)
             queryParamCache.put(cacheKey, queryParams)
-            queryParams
+            Pair(filters, queryParams)
         }
 
     init {

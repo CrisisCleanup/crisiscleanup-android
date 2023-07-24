@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.model.data
 
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
 private const val defaultFilterDistance = 0f
@@ -10,7 +11,7 @@ private const val CasesFilterDaysAgoDelta = CasesFilterMaxDaysAgo - CasesFilterM
 private const val defaultDaysAgo = CasesFilterMaxDaysAgo
 
 data class CasesFilter(
-    val svi: Float = 0f,
+    val svi: Float = 1f,
     val daysAgoUpdated: Int = defaultDaysAgo,
     /**
      * In miles. 0 is any distance.
@@ -43,6 +44,12 @@ data class CasesFilter(
     }
 
     private val isDefault = this == DefaultCasesFilter
+
+    private val isUpdatedDaysAgoChanged: Boolean
+        get() = daysAgoUpdated != defaultDaysAgo
+
+    val isDistanceChanged: Boolean
+        get() = distance != defaultFilterDistance
 
     val changeCount: Int
         get() {
@@ -83,6 +90,36 @@ data class CasesFilter(
 
     fun expandDaysAgo(daysAgoNormalized: Float) =
         copy(daysAgoUpdated = determineDaysAgo(daysAgoNormalized))
+
+    /**
+     * @return TRUE if values meet local filters or FALSE otherwise
+     */
+    fun localFilter(
+        compareSvi: Float,
+        updatedAt: Instant,
+        haversineDistanceMiles: Double?,
+    ): Boolean {
+        if (compareSvi > svi) {
+            return false
+        }
+
+        if (isUpdatedDaysAgoChanged) {
+            val resultDaysAgoUpdate = Clock.System.now().minus(updatedAt).inWholeDays
+            if (resultDaysAgoUpdate > daysAgoUpdated) {
+                return false
+            }
+        }
+
+        if (isDistanceChanged) {
+            haversineDistanceMiles?.let {
+                if (it > distance) {
+                    return false
+                }
+            }
+        }
+
+        return true
+    }
 }
 
 private val DefaultCasesFilter = CasesFilter()

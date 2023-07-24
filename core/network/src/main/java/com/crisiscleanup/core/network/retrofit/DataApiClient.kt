@@ -82,7 +82,7 @@ private interface DataSourceApi {
         @Query("search")
         q: String,
         @QueryMap
-        filters: Map<String, @JvmSuppressWildcards Any?> = emptyMap(),
+        filters: Map<String, @JvmSuppressWildcards Any> = emptyMap(),
     ): NetworkWorksitesShortResult
 
     @TokenAuthenticationHeader
@@ -314,7 +314,8 @@ class DataApiClient @Inject constructor(
     override suspend fun getSearchWorksites(
         incidentId: Long,
         q: String,
-    ) = networkApi.getWorksitesSearch(incidentId, q)
+        filters: Map<String, Any>,
+    ) = networkApi.getWorksitesSearch(incidentId, q, filters)
         .let {
             it.errors?.tryThrowException()
             it.results ?: emptyList()

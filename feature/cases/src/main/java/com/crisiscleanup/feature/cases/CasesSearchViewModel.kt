@@ -95,10 +95,9 @@ class CasesSearchViewModel @Inject constructor(
             .debounce(200)
             .map(String::trim)
             .distinctUntilChanged(),
-        filterRepository.casesFilters,
-        ::Triple
+        ::Pair
     )
-        .map { (incidentId, q, filters) ->
+        .map { (incidentId, q) ->
             if (incidentId != EmptyIncident.id) {
                 if (q.length < 3) {
                     return@map CasesSearchResults(q)
@@ -118,6 +117,7 @@ class CasesSearchViewModel @Inject constructor(
                 } catch (e: Exception) {
                     logger.logException(e)
                 } finally {
+                    // TODO Does this pattern work with cancellations?
                     isSearching.value = false
                 }
             }

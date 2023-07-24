@@ -61,7 +61,7 @@ private fun dateRangeQueryString(
     )
 }
 
-fun CasesFilter.queryMap(myOrgId: Long): Map<String, Any?> {
+fun CasesFilter.queryMap(myOrgId: Long): Map<String, Any> {
     // TODO svi, updated days ago, and distance
 
     val queryMap = mutableMapOf<String, Any?>(
@@ -92,5 +92,12 @@ fun CasesFilter.queryMap(myOrgId: Long): Map<String, Any?> {
     addDateQueryParams("created", createdAt)
     addDateQueryParams("updated", updatedAt)
 
-    return queryMap
+    val nonNullQueryMap = mutableMapOf<String, Any>()
+    for ((key, value) in queryMap) {
+        if (value != null) {
+            nonNullQueryMap[key] = value
+        }
+    }
+
+    return nonNullQueryMap
 }

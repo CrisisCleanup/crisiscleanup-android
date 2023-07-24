@@ -88,6 +88,7 @@ interface CrisisCleanupNetworkDataSource {
     suspend fun getSearchWorksites(
         incidentId: Long,
         q: String,
+        filters: Map<String, Any> = emptyMap(),
     ): List<NetworkWorksiteShort>
 
     suspend fun getLanguages(): List<NetworkLanguageDescription>
