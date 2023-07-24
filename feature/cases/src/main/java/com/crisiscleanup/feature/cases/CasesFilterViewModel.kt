@@ -1,7 +1,6 @@
 package com.crisiscleanup.feature.cases
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -43,16 +42,8 @@ class CasesFilterViewModel @Inject constructor(
     @Logger(CrisisCleanupLoggers.Cases) private val logger: AppLogger,
 ) : ViewModel() {
     var showExplainPermissionLocation by mutableStateOf(false)
-    var isMyLocationEnabled by mutableStateOf(false)
 
     val casesFilters = MutableStateFlow(casesFilterRepository.casesFilters.value)
-
-    val sectionExpandState = mutableStateMapOf<CollapsibleFilterSection, Boolean>()
-        .also { map ->
-            CollapsibleFilterSection.values().forEach {
-                map[it] = true
-            }
-        }
 
     val workTypeStatuses = workTypeStatusRepository.workTypeStatusFilterOptions
 
@@ -99,7 +90,6 @@ class CasesFilterViewModel @Inject constructor(
                 if (it == locationPermissionGranted) {
                     changeDistanceFilter()
                 }
-                isMyLocationEnabled = permissionManager.hasLocationPermission
             }
             .launchIn(viewModelScope)
     }

@@ -21,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,12 +38,15 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupRadioButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
 import com.crisiscleanup.core.designsystem.component.ExplainLocationPermissionDialog
+import com.crisiscleanup.core.designsystem.component.FocusSectionSlider
 import com.crisiscleanup.core.designsystem.component.FormListSectionSeparator
 import com.crisiscleanup.core.designsystem.component.HelpRow
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.WithHelpDialog
 import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
+import com.crisiscleanup.core.designsystem.component.rememberFocusSectionSliderState
+import com.crisiscleanup.core.designsystem.component.rememberSectionContentIndexLookup
 import com.crisiscleanup.core.designsystem.component.roundedOutline
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
@@ -87,7 +91,11 @@ internal fun CasesFilterRoute(
         val updateFilters =
             remember(viewModel) { { filters: CasesFilter -> viewModel.changeFilters(filters) } }
 
-        Column(Modifier.fillMaxSize()) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .background(Color.White)
+        ) {
             TopAppBarBackAction(
                 title = translator("worksiteFilters.filters"),
                 onAction = onBack,
@@ -115,6 +123,15 @@ internal fun CasesFilterRoute(
     }
 }
 
+private val collapsibleFilterSections = listOf(
+    CollapsibleFilterSection.Distance,
+    CollapsibleFilterSection.General,
+    CollapsibleFilterSection.PersonalInfo,
+    CollapsibleFilterSection.Flags,
+    CollapsibleFilterSection.Work,
+    CollapsibleFilterSection.Dates,
+)
+
 @Composable
 private fun ColumnScope.FilterControls(
     filters: CasesFilter,
@@ -126,10 +143,60 @@ private fun ColumnScope.FilterControls(
     val workTypeStatuses by viewModel.workTypeStatuses.collectAsStateWithLifecycle()
     val workTypes by viewModel.workTypes.collectAsStateWithLifecycle(emptyList())
 
-    val sectionExpandState = remember { viewModel.sectionExpandState }
-    val toggleCollapsible = { section: CollapsibleFilterSection ->
-        sectionExpandState[section] = !sectionExpandState[section]!!
+    val filterSections = remember(viewModel) {
+        collapsibleFilterSections.map {
+            val translateKey = sectionTranslationKey[it]!!
+            translator(translateKey)
+        }
     }
+    val sectionCollapseStates = remember(viewModel) {
+        val collapseStates = SnapshotStateList<Boolean>()
+        for (i in collapsibleFilterSections) {
+            collapseStates.add(false)
+        }
+        collapseStates
+    }
+
+    val generalItemIndex = 7
+    val personalInfoItemIndex = generalItemIndex + 13 + workTypeStatuses.size + 2
+    val flagsItemIndex = personalInfoItemIndex + 9
+    val workItemIndex = flagsItemIndex + viewModel.worksiteFlags.size + 2
+    val datesItemIndex = workItemIndex + workTypes.size + 4
+    val indexLookups by rememberSectionContentIndexLookup(
+        mapOf(
+            0 to 4,
+            1 to generalItemIndex,
+            2 to personalInfoItemIndex,
+            3 to flagsItemIndex,
+            4 to workItemIndex,
+            5 to datesItemIndex,
+        )
+    )
+
+    val sectionSliderState = rememberFocusSectionSliderState(
+        viewModel,
+        sectionCollapseStates,
+        indexLookups,
+    )
+
+    FocusSectionSlider(
+        filterSections,
+        sectionSliderState,
+        indexLookups,
+        sectionCollapseStates,
+    )
+
+    val toggleSectionCollapse = remember(viewModel) {
+        { sectionIndex: Int ->
+            sectionCollapseStates[sectionIndex] = !sectionCollapseStates[sectionIndex]
+        }
+    }
+    val toggleDistanceSection = remember(viewModel) { { toggleSectionCollapse(0) } }
+    val toggleGeneralSection = remember(viewModel) { { toggleSectionCollapse(1) } }
+    val togglePersonalInfoSection = remember(viewModel) { { toggleSectionCollapse(2) } }
+    val toggleFlagsSection = remember(viewModel) { { toggleSectionCollapse(3) } }
+    val toggleWorkSection = remember(viewModel) { { toggleSectionCollapse(4) } }
+    val toggleDatesSection = remember(viewModel) { { toggleSectionCollapse(5) } }
 
     val closeKeyboard = rememberCloseKeyboard(viewModel)
 
@@ -211,13 +278,13 @@ private fun ColumnScope.FilterControls(
         updateFilters(filters.copy(updatedAt = dateRange))
     }
 
-    val isGeneralExpanded = sectionExpandState[CollapsibleFilterSection.General]!!
     LazyColumn(
         Modifier
             .scrollFlingListener(closeKeyboard)
             .weight(1f)
             // TODO Common colors
             .background(Color.White),
+        state = sectionSliderState.contentListState,
     ) {
         sviSlider(translator, filters, updateFilters)
         itemSectionSeparator()
@@ -225,14 +292,14 @@ private fun ColumnScope.FilterControls(
         distanceOptions(
             filters,
             updateDistance,
-            sectionExpandState[CollapsibleFilterSection.Distance]!!,
-            toggleCollapsible,
+            !sectionCollapseStates[0],
+            toggleDistanceSection,
             viewModel.distanceOptions,
         )
         generalOptions(
             filters,
-            isGeneralExpanded,
-            toggleCollapsible,
+            !sectionCollapseStates[1],
+            toggleGeneralSection,
             updateWithinPrimary = updateWithinPrimary,
             updateWithinSecondary = updateWithinSecondary,
             updateTeamAssignment = updateAssignedToMyTeam,
@@ -245,8 +312,8 @@ private fun ColumnScope.FilterControls(
         )
         personalInfoOptions(
             filters,
-            sectionExpandState[CollapsibleFilterSection.PersonalInfo]!!,
-            toggleCollapsible,
+            !sectionCollapseStates[2],
+            togglePersonalInfoSection,
             updateMemberOfMyOrg = updateMemberOfMyOrg,
             updateChildrenInHome = updateChildrenInHome,
             updateFirstResponder = updateFirstResponder,
@@ -255,23 +322,23 @@ private fun ColumnScope.FilterControls(
         )
         flagOptions(
             filters,
-            sectionExpandState[CollapsibleFilterSection.Flags]!!,
-            toggleCollapsible,
+            !sectionCollapseStates[3],
+            toggleFlagsSection,
             viewModel.worksiteFlags,
             updateFlags = updateFlags,
         )
         workOptions(
             filters,
-            sectionExpandState[CollapsibleFilterSection.Work]!!,
-            toggleCollapsible,
+            !sectionCollapseStates[4],
+            toggleWorkSection,
             workTypes,
             updateWorkTypes = updateWorkTypes,
             updateNoWorkType = updateNoWorkType,
         )
         dateOptions(
             filters,
-            sectionExpandState[CollapsibleFilterSection.Dates]!!,
-            toggleCollapsible,
+            !sectionCollapseStates[5],
+            toggleDatesSection,
             updateCreatedAt = updateCreatedAt,
             updateUpdatedAt = updateUpdatedAt,
         )
@@ -423,7 +490,7 @@ private fun LazyListScope.itemSectionSeparator() {
 private fun LazyListScope.collapsibleSectionHeader(
     section: CollapsibleFilterSection,
     isSectionExpanded: Boolean = false,
-    toggleSection: (CollapsibleFilterSection) -> Unit = {},
+    toggleSection: () -> Unit = {},
     isFirstSection: Boolean = false,
 ) {
     if (!isFirstSection) {
@@ -438,7 +505,7 @@ private fun LazyListScope.collapsibleSectionHeader(
         FilterHeaderCollapsible(
             sectionTitle = LocalAppTranslator.current.translator(translationKey),
             isCollapsed = !isSectionExpanded,
-            toggleCollapse = { toggleSection(section) },
+            toggleCollapse = toggleSection,
         )
     }
 }
@@ -447,7 +514,7 @@ private fun LazyListScope.distanceOptions(
     filters: CasesFilter,
     updateDistance: (Float) -> Unit = {},
     isSectionExpanded: Boolean = false,
-    toggleSection: (CollapsibleFilterSection) -> Unit = {},
+    toggleSection: () -> Unit = {},
     options: List<Pair<Float, String>> = emptyList(),
 ) {
     collapsibleSectionHeader(
@@ -503,7 +570,7 @@ private fun LazyListScope.checkboxItem(
 private fun LazyListScope.generalOptions(
     filters: CasesFilter,
     isSectionExpanded: Boolean = false,
-    toggleSection: (CollapsibleFilterSection) -> Unit = {},
+    toggleSection: () -> Unit = {},
     updateWithinPrimary: (Boolean) -> Unit = {},
     updateWithinSecondary: (Boolean) -> Unit = {},
     updateTeamAssignment: (Boolean) -> Unit = {},
@@ -575,7 +642,7 @@ private fun LazyListScope.generalOptions(
         checkboxItem(
             "worksiteFilters.open",
             isStatusOpen,
-            { b: Boolean -> updateOverallStatus(isStatusOpen, false) },
+            { b: Boolean -> updateOverallStatus(b, false) },
             { updateOverallStatus(!isStatusOpen, false) },
         )
 
@@ -604,7 +671,7 @@ private fun LazyListScope.generalOptions(
 private fun LazyListScope.personalInfoOptions(
     filters: CasesFilter,
     isSectionExpanded: Boolean = false,
-    toggleSection: (CollapsibleFilterSection) -> Unit = {},
+    toggleSection: () -> Unit = {},
     updateMemberOfMyOrg: (Boolean) -> Unit = {},
     updateOlderThan60: (Boolean) -> Unit = {},
     updateChildrenInHome: (Boolean) -> Unit = {},
@@ -662,7 +729,7 @@ private fun LazyListScope.personalInfoOptions(
 private fun LazyListScope.flagOptions(
     filters: CasesFilter,
     isSectionExpanded: Boolean = false,
-    toggleSection: (CollapsibleFilterSection) -> Unit = {},
+    toggleSection: () -> Unit = {},
     flags: Collection<WorksiteFlagType> = emptyList(),
     updateFlags: (WorksiteFlagType, Boolean) -> Unit = { _, _ -> },
 ) {
@@ -688,7 +755,7 @@ private fun LazyListScope.flagOptions(
 private fun LazyListScope.workOptions(
     filters: CasesFilter,
     isSectionExpanded: Boolean = false,
-    toggleSection: (CollapsibleFilterSection) -> Unit = {},
+    toggleSection: () -> Unit = {},
     workTypes: Collection<String> = emptyList(),
     updateWorkTypes: (String, Boolean) -> Unit = { _, _ -> },
     updateNoWorkType: (Boolean) -> Unit = {},
@@ -807,7 +874,7 @@ private fun FilterDatePicker(
 private fun LazyListScope.dateOptions(
     filters: CasesFilter,
     isSectionExpanded: Boolean = false,
-    toggleSection: (CollapsibleFilterSection) -> Unit = {},
+    toggleSection: () -> Unit = {},
     updateCreatedAt: (Pair<Instant, Instant>?) -> Unit = {},
     updateUpdatedAt: (Pair<Instant, Instant>?) -> Unit = {},
 ) {
@@ -867,3 +934,4 @@ fun BottomActionBar(
         )
     }
 }
+
