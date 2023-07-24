@@ -29,7 +29,7 @@ interface CasesFilterRepository {
     val filterQuery: Flow<Pair<CasesFilter, Map<String, Any>>>
 
     fun changeFilters(filters: CasesFilter)
-    fun updateFilters(workTypes: Collection<String>)
+    fun updateWorkTypeFilters(workTypes: Collection<String>)
 }
 
 @Singleton
@@ -90,7 +90,7 @@ class CrisisCleanupCasesFilterRepository @Inject constructor(
         }
     }
 
-    override fun updateFilters(workTypes: Collection<String>) {
+    override fun updateWorkTypeFilters(workTypes: Collection<String>) {
         // TODO Update work types removing non-matching
     }
 

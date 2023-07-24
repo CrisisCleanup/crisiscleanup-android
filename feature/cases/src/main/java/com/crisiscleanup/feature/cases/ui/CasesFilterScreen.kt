@@ -101,7 +101,6 @@ internal fun CasesFilterRoute(
             BottomActionBar(
                 onBack = onBack,
                 filters = filters,
-                updateFilters = updateFilters,
             )
         }
 
@@ -840,7 +839,6 @@ fun BottomActionBar(
     onBack: () -> Unit,
     filters: CasesFilter,
     viewModel: CasesFilterViewModel = hiltViewModel(),
-    updateFilters: (CasesFilter) -> Unit = {},
 ) {
     val translator = LocalAppTranslator.current.translator
     Row(
@@ -848,19 +846,20 @@ fun BottomActionBar(
         horizontalArrangement = listItemSpacedBy,
     ) {
         val filterCount = filters.changeCount
+        val hasFilters = filterCount > 0
         BusyButton(
             Modifier.weight(1f),
             text = translator("actions.clear_filters"),
-            enabled = filterCount > 0,
-            onClick = { updateFilters(CasesFilter()) },
+            enabled = hasFilters,
+            onClick = viewModel::clearFilters,
             colors = cancelButtonColors(),
         )
         val applyFilters = translator("actions.apply_filters")
-        val applyText = if (filterCount > 0) "$applyFilters ($filterCount)" else applyFilters
+        val applyText = if (hasFilters) "$applyFilters ($filterCount)" else applyFilters
         BusyButton(
             Modifier.weight(1f),
             text = applyText,
-            enabled = filterCount > 0,
+            enabled = hasFilters,
             onClick = {
                 viewModel.applyFilters(filters)
                 onBack()

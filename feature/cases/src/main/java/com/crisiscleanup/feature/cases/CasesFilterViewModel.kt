@@ -139,6 +139,12 @@ class CasesFilterViewModel @Inject constructor(
         casesFilters.value = filters
     }
 
+    fun clearFilters() {
+        val filters = CasesFilter()
+        changeFilters(filters)
+        applyFilters(filters)
+    }
+
     fun applyFilters(filters: CasesFilter) {
         casesFilterRepository.changeFilters(filters)
     }
