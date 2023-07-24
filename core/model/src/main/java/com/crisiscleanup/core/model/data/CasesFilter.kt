@@ -3,6 +3,7 @@ package com.crisiscleanup.core.model.data
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
+private const val defaultSvi = 1f
 private const val defaultFilterDistance = 0f
 
 const val CasesFilterMinDaysAgo: Int = 3
@@ -11,7 +12,7 @@ private const val CasesFilterDaysAgoDelta = CasesFilterMaxDaysAgo - CasesFilterM
 private const val defaultDaysAgo = CasesFilterMaxDaysAgo
 
 data class CasesFilter(
-    val svi: Float = 1f,
+    val svi: Float = defaultSvi,
     val daysAgoUpdated: Int = defaultDaysAgo,
     /**
      * In miles. 0 is any distance.
@@ -56,7 +57,7 @@ data class CasesFilter(
             if (isDefault) return 0
 
             var count = 0
-            if (svi > 0) count++
+            if (svi != defaultSvi) count++
             if (daysAgoUpdated != defaultDaysAgo) count++
             if (distance != defaultFilterDistance) count++
             if (isWithinPrimaryResponseArea) count++
