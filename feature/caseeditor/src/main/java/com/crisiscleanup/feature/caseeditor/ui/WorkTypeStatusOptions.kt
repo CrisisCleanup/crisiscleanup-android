@@ -126,7 +126,7 @@ private fun WorkTypeStatusOption(
         ) {}
         Text(
             translator(status.literal),
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodySmall,
         )
         if (showOpenIcon) {
             var tint = LocalContentColor.current
