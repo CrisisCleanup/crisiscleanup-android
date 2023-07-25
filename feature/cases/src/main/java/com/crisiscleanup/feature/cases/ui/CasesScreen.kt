@@ -31,10 +31,12 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -74,6 +76,7 @@ import com.crisiscleanup.core.designsystem.component.actionRoundCornerShape
 import com.crisiscleanup.core.designsystem.component.actionSize
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContainerColor
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContentColor
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
@@ -747,7 +750,10 @@ private fun BoxScope.CasesTableView(
                 val caseCountText =
                     if (casesCount == 1) "$casesCount ${translator("casesVue.case")}"
                     else "$casesCount ${translator("casesVue.cases")}"
-                Text(caseCountText)
+                Text(
+                    caseCountText,
+                    style = LocalFontStyles.current.header4,
+                )
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -803,17 +809,22 @@ private fun TableViewSortSelect(
 
     Box {
         // TODO: Dropdown where by distance asks for location permission
-        CrisisCleanupOutlinedButton(
-            text = sortText,
-            enabled = isEditable,
-            onClick = { showOptions = true },
+        CompositionLocalProvider(
+            LocalTextStyle provides MaterialTheme.typography.bodySmall
         ) {
-            Icon(
-                modifier = Modifier
-                    .offset(x = 16.dp),
-                imageVector = CrisisCleanupIcons.ArrowDropDown,
-                contentDescription = null
-            )
+            CrisisCleanupOutlinedButton(
+                text = sortText,
+                enabled = isEditable,
+                onClick = { showOptions = true },
+                fontWeight = FontWeight.W400,
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .offset(x = 16.dp),
+                    imageVector = CrisisCleanupIcons.ArrowDropDown,
+                    contentDescription = null
+                )
+            }
         }
 
         val onSelect = { sortBy: WorksiteSortBy ->
@@ -834,7 +845,7 @@ private fun TableViewSortSelect(
                             val text = translator(option.translateKey)
                             Text(
                                 text,
-                                fontWeight = if (option == selectedSort) FontWeight.Bold else null
+                                fontWeight = if (option == selectedSort) FontWeight.Bold else FontWeight.W400
                             )
                         },
                         onClick = { onSelect(option) },
@@ -885,7 +896,7 @@ private fun TableViewItem(
             Text(
                 worksite.caseNumber,
                 modifier = Modifier.offset(x = (-14).dp),
-                style = MaterialTheme.typography.titleMedium,
+                style = LocalFontStyles.current.header3,
             )
 
             Spacer(modifier = Modifier.weight(1f))
@@ -896,9 +907,13 @@ private fun TableViewItem(
                     Text(
                         distanceText,
                         modifier = Modifier.padding(end = 8.dp),
+                        style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Bold,
                     )
-                    Text(translator("~~mi"))
+                    Text(
+                        translator("~~mi"),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
                 }
             }
         }

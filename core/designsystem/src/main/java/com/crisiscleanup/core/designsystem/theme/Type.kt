@@ -1,6 +1,7 @@
 package com.crisiscleanup.core.designsystem.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -30,7 +31,7 @@ data class CrisisCleanupTypography(
     val header5: TextStyle,
 )
 
-val crisisCleanupTypography = CrisisCleanupTypography(
+val CrisisCleanupTypographyDefault = CrisisCleanupTypography(
     linkTextStyle = TextStyle(
         fontFamily = NunitoSans,
         fontWeight = FontWeight.W700,
@@ -88,6 +89,8 @@ val crisisCleanupTypography = CrisisCleanupTypography(
         fontSize = 14.sp
     )
 )
+
+val LocalFontStyles = staticCompositionLocalOf { CrisisCleanupTypographyDefault }
 
 internal val AppTypography = Typography(
     labelLarge = TextStyle(

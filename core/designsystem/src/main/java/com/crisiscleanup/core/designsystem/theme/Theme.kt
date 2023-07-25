@@ -150,6 +150,7 @@ internal fun CrisisCleanupTheme(
     CompositionLocalProvider(
         LocalBackgroundTheme provides defaultBackgroundTheme,
         LocalDimensions provides dimensions,
+        LocalFontStyles provides CrisisCleanupTypographyDefault,
     ) {
         MaterialTheme(
             colorScheme = colorScheme,
