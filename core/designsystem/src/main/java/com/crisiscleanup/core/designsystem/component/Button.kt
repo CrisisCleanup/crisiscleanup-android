@@ -36,6 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.cancelButtonContainerColor
 import com.crisiscleanup.core.designsystem.theme.cancelButtonContentColor
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
@@ -93,10 +94,17 @@ private fun Text(
     @StringRes textResId: Int = 0,
     text: String = "",
 ) {
+    val style = LocalFontStyles.current.header4
     if (textResId != 0) {
-        Text(stringResource(textResId))
+        Text(
+            stringResource(textResId),
+            style = style,
+        )
     } else {
-        Text(text)
+        Text(
+            text,
+            style = style,
+        )
     }
 }
 

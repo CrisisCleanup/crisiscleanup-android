@@ -48,6 +48,7 @@ import com.crisiscleanup.core.designsystem.component.rememberFocusSectionSliderS
 import com.crisiscleanup.core.designsystem.component.rememberSectionContentIndexLookup
 import com.crisiscleanup.core.designsystem.component.roundedOutline
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
@@ -365,7 +366,7 @@ private fun LazyListScope.rangeSliderItem(
                 Text(
                     text,
                     modifier = Modifier.listItemVerticalPadding(),
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = LocalFontStyles.current.header3,
                     fontWeight = FontWeight.Bold,
                 )
             } else {
@@ -390,7 +391,7 @@ private fun LazyListScope.rangeSliderItem(
             )
 
             Row(Modifier.fillMaxWidth()) {
-                val textStyle = MaterialTheme.typography.bodyMedium
+                val textStyle = MaterialTheme.typography.bodySmall
                 Text(
                     minValueLabel,
                     style = textStyle,
@@ -456,8 +457,7 @@ private fun FilterHeaderCollapsible(
     ) {
         Text(
             sectionTitle,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
+            style = LocalFontStyles.current.header3,
         )
         val iconVector =
             if (isCollapsed) CrisisCleanupIcons.ExpandLess
@@ -540,8 +540,7 @@ private fun LazyListScope.subsectionHeader(
         Text(
             text = LocalAppTranslator.current(translateKey),
             modifier = listItemModifier,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Bold,
+            style = LocalFontStyles.current.header4,
         )
     }
 }

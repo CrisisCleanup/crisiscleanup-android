@@ -906,7 +906,7 @@ private fun TableViewItem(
                 Row {
                     Text(
                         distanceText,
-                        modifier = Modifier.padding(end = 8.dp),
+                        modifier = Modifier.padding(end = 4.dp),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Bold,
                     )
