@@ -1,6 +1,8 @@
 package com.crisiscleanup.feature.cases.model
 
+import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.model.data.WorksiteSortBy
 import com.google.android.gms.maps.model.LatLng
 
 data class CoordinateBounds(
@@ -20,7 +22,8 @@ data class WorksiteQueryState(
     val coordinateBounds: CoordinateBounds,
     val isTableView: Boolean,
     val isZoomInteractive: Boolean,
-    // TODO Filters and additional
+    val tableViewSort: WorksiteSortBy,
+    val filters: CasesFilter,
 )
 
 val WorksiteQueryStateDefault = WorksiteQueryState(
@@ -30,4 +33,6 @@ val WorksiteQueryStateDefault = WorksiteQueryState(
     coordinateBounds = CoordinateBoundsDefault,
     isTableView = false,
     isZoomInteractive = false,
+    tableViewSort = WorksiteSortBy.None,
+    filters = CasesFilter(),
 )

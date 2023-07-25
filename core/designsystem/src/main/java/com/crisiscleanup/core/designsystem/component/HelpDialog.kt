@@ -12,7 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
-import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 
 @Composable
 fun HelpRow(

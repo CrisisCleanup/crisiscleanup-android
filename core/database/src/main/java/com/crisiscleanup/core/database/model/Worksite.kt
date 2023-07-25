@@ -21,6 +21,7 @@ fun Worksite.asEntities(
         address = address,
         autoContactFrequencyT = autoContactFrequencyT,
         caseNumber = caseNumber,
+        caseNumberOrder = parseCaseNumberOrder(caseNumber),
         city = city,
         county = county,
         createdAt = createdAt,

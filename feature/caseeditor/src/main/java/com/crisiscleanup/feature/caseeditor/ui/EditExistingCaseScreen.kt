@@ -64,9 +64,9 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.appnav.ViewImageArgs
-import com.crisiscleanup.core.common.combineTrimText
 import com.crisiscleanup.core.common.filterNotBlankTrim
 import com.crisiscleanup.core.common.urlEncode
+import com.crisiscleanup.core.commoncase.model.addressQuery
 import com.crisiscleanup.core.designsystem.AppTranslator
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
@@ -696,16 +696,7 @@ private fun LazyListScope.propertyInfoItems(
                         )
                     }
                 }
-                val hasWrongLocation = worksite.hasWrongLocationFlag
-                val fullAddress = listOf(
-                    worksite.address,
-                    worksite.city,
-                    worksite.state,
-                    worksite.postalCode,
-                ).combineTrimText()
-                val coordinates = worksite.coordinates
-                val locationQuery = if (hasWrongLocation) ""
-                else "geo:${coordinates.latitude},${coordinates.longitude}?q=$fullAddress"
+                val (fullAddress, locationQuery) = worksite.addressQuery
                 PropertyInfoRow(
                     CrisisCleanupIcons.Location,
                     fullAddress,

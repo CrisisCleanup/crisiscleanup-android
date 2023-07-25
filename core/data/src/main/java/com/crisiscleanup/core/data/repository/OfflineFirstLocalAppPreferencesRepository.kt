@@ -7,6 +7,7 @@ import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.core.model.data.DarkThemeConfig
 import com.crisiscleanup.core.model.data.UserData
+import com.crisiscleanup.core.model.data.WorksiteSortBy
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -54,6 +55,9 @@ class OfflineFirstLocalAppPreferencesRepository @Inject constructor(
         preferencesDataSource.setSelectedIncident(id)
 
     override suspend fun setLanguageKey(key: String) = preferencesDataSource.setLanguageKey(key)
+
+    override suspend fun setTableViewSortBy(sortBy: WorksiteSortBy) =
+        preferencesDataSource.setTableViewSortBy(sortBy)
 
     private suspend fun onLogout() {
         preferencesDataSource.clearSyncData()

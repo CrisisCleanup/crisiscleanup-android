@@ -4,6 +4,7 @@ import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.model.data.DarkThemeConfig
 import com.crisiscleanup.core.model.data.SyncAttempt
 import com.crisiscleanup.core.model.data.UserData
+import com.crisiscleanup.core.model.data.WorksiteSortBy
 import kotlinx.coroutines.channels.BufferOverflow.DROP_OLDEST
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -17,6 +18,7 @@ private val emptyUserData = UserData(
     disableSaveCredentialsPrompt = false,
     selectedIncidentId = -1,
     languageKey = "",
+    tableViewSortBy = WorksiteSortBy.None,
 )
 
 class TestLocalAppPreferencesRepository : LocalAppPreferencesRepository {
@@ -59,6 +61,12 @@ class TestLocalAppPreferencesRepository : LocalAppPreferencesRepository {
     override suspend fun setLanguageKey(key: String) {
         currentUserData.let { current ->
             _userData.tryEmit(current.copy(languageKey = key))
+        }
+    }
+
+    override suspend fun setTableViewSortBy(sortBy: WorksiteSortBy) {
+        currentUserData.let { current ->
+            _userData.tryEmit(current.copy(tableViewSortBy = sortBy))
         }
     }
 }

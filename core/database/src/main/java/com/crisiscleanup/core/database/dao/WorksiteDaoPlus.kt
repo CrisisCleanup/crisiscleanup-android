@@ -5,6 +5,7 @@ import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
 import com.crisiscleanup.core.database.model.BoundedSyncedWorksiteIds
 import com.crisiscleanup.core.database.model.NetworkFileEntity
+import com.crisiscleanup.core.database.model.PopulatedWorksite
 import com.crisiscleanup.core.database.model.SwNeBounds
 import com.crisiscleanup.core.database.model.WorkTypeEntity
 import com.crisiscleanup.core.database.model.WorksiteEntities
@@ -14,6 +15,8 @@ import com.crisiscleanup.core.database.model.WorksiteFormDataEntity
 import com.crisiscleanup.core.database.model.WorksiteLocalModifiedAt
 import com.crisiscleanup.core.database.model.WorksiteNetworkFileCrossRef
 import com.crisiscleanup.core.database.model.WorksiteNoteEntity
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.ensureActive
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
@@ -168,6 +171,7 @@ class WorksiteDaoPlus @Inject constructor(
                     address = address,
                     autoContactFrequencyT = autoContactFrequencyT,
                     caseNumber = caseNumber,
+                    caseNumberOrder = caseNumberOrder,
                     city = city,
                     county = county,
                     createdAt = createdAt,
@@ -308,17 +312,18 @@ class WorksiteDaoPlus @Inject constructor(
         if (worksiteId > 0) {
             with(core) {
                 worksiteDao.syncFillWorksite(
-                    worksiteId,
-                    autoContactFrequencyT,
-                    caseNumber,
-                    email,
-                    favoriteId,
-                    phone1,
-                    phone2,
-                    plusCode,
-                    svi,
-                    reportedBy,
-                    what3Words,
+                    id = worksiteId,
+                    autoContactFrequencyT = autoContactFrequencyT,
+                    caseNumber = caseNumber,
+                    caseNumberOrder = caseNumberOrder,
+                    email = email,
+                    favoriteId = favoriteId,
+                    phone1 = phone1,
+                    phone2 = phone2,
+                    plusCode = plusCode,
+                    svi = svi,
+                    reportedBy = reportedBy,
+                    what3Words = what3Words,
                 )
             }
 
@@ -447,5 +452,39 @@ class WorksiteDaoPlus @Inject constructor(
 
         if (boundsIndex >= remainingBounds.size) emptyList()
         else remainingBounds.subList(boundsIndex, remainingBounds.size)
+    }
+
+    suspend fun loadBoundedWorksites(
+        incidentId: Long,
+        maxLoadCount: Int,
+        remainingBounds: List<SwNeBounds>,
+    ) = coroutineScope {
+        db.withTransaction {
+            val worksiteDao = db.worksiteDao()
+
+            val loadedWorksites = mutableListOf<PopulatedWorksite>()
+
+            var boundsIndex = 0
+            while (boundsIndex < remainingBounds.size) {
+                with(remainingBounds[boundsIndex++]) {
+                    val worksites = worksiteDao.getWorksitesInBounds(
+                        incidentId,
+                        south,
+                        north,
+                        west,
+                        east,
+                    )
+                    loadedWorksites.addAll(worksites)
+                }
+
+                ensureActive()
+
+                if (loadedWorksites.size > maxLoadCount) {
+                    break
+                }
+            }
+
+            loadedWorksites
+        }
     }
 }

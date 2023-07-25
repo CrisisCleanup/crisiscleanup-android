@@ -2,6 +2,7 @@ package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.model.data.DarkThemeConfig
 import com.crisiscleanup.core.model.data.UserData
+import com.crisiscleanup.core.model.data.WorksiteSortBy
 import kotlinx.coroutines.flow.Flow
 
 interface LocalAppPreferencesRepository {
@@ -27,4 +28,6 @@ interface LocalAppPreferencesRepository {
     suspend fun setSelectedIncident(id: Long)
 
     suspend fun setLanguageKey(key: String)
+
+    suspend fun setTableViewSortBy(sortBy: WorksiteSortBy)
 }

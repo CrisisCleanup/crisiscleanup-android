@@ -7,6 +7,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -15,13 +17,17 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -33,12 +39,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalDensity
@@ -50,12 +58,16 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.commoncase.model.addressQuery
+import com.crisiscleanup.core.commoncase.ui.IncidentDropdownSelect
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupOutlinedButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.ExplainLocationPermissionDialog
+import com.crisiscleanup.core.designsystem.component.FormListSectionSeparator
 import com.crisiscleanup.core.designsystem.component.actionEdgeSpace
 import com.crisiscleanup.core.designsystem.component.actionInnerSpace
 import com.crisiscleanup.core.designsystem.component.actionRoundCornerShape
@@ -64,7 +76,11 @@ import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContainerColor
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContentColor
+import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
+import com.crisiscleanup.core.designsystem.theme.neutralIconColor
+import com.crisiscleanup.core.designsystem.theme.optionItemHeight
 import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
 import com.crisiscleanup.core.domain.IncidentsData
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraBounds
@@ -74,10 +90,13 @@ import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
 import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
 import com.crisiscleanup.core.mapmarker.ui.rememberMapUiSettings
 import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteMapMark
+import com.crisiscleanup.core.model.data.WorksiteSortBy
 import com.crisiscleanup.core.ui.LocalAppLayout
 import com.crisiscleanup.feature.cases.CasesViewModel
 import com.crisiscleanup.feature.cases.R
+import com.crisiscleanup.feature.cases.WorksiteDistance
 import com.crisiscleanup.feature.cases.model.WorksiteGoogleMapMark
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.Projection
@@ -91,6 +110,7 @@ import com.google.maps.android.compose.TileOverlay
 import com.google.maps.android.compose.TileOverlayState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberTileOverlayState
+import java.text.DecimalFormat
 import com.crisiscleanup.core.commonassets.R as commonAssetsR
 import com.crisiscleanup.core.mapmarker.R as mapMarkerR
 
@@ -138,6 +158,7 @@ internal fun CasesRoute(
         }
         val filtersCount by viewModel.filtersCount.collectAsStateWithLifecycle(0)
         val isMapBusy by viewModel.isMapBusy.collectAsStateWithLifecycle(false)
+        val isTableBusy by viewModel.isTableBusy.collectAsStateWithLifecycle(false)
         val casesCount by viewModel.casesCount.collectAsStateWithLifecycle()
         val worksitesOnMap by viewModel.worksitesMapMarkers.collectAsStateWithLifecycle()
         val mapCameraBounds by viewModel.incidentLocationBounds.collectAsStateWithLifecycle()
@@ -155,6 +176,12 @@ internal fun CasesRoute(
         val onMapMarkerSelect = remember(viewModel) {
             { mark: WorksiteMapMark -> viewCase(viewModel.incidentId, mark.id) }
         }
+        val onTableItemSelect = remember(viewModel) {
+            { worksite: Worksite ->
+                viewCase(viewModel.incidentId, worksite.id)
+                Unit
+            }
+        }
         val editedWorksiteLocation = viewModel.editedWorksiteLocation
         val isMyLocationEnabled = viewModel.isMyLocationEnabled
         CasesScreen(
@@ -168,6 +195,7 @@ internal fun CasesRoute(
             isLayerView = isLayerView,
             filtersCount = filtersCount,
             isMapBusy = isIncidentLoading || isMapBusy,
+            isTableBusy = isIncidentLoading || isTableBusy,
             casesCount = casesCount,
             worksitesOnMap = worksitesOnMap,
             mapCameraBounds = mapCameraBounds,
@@ -182,6 +210,7 @@ internal fun CasesRoute(
             onMarkerSelect = onMapMarkerSelect,
             editedWorksiteLocation = editedWorksiteLocation,
             isMyLocationEnabled = isMyLocationEnabled,
+            onTableItemSelect = onTableItemSelect,
         )
 
         if (showChangeIncident) {
@@ -232,7 +261,7 @@ private fun NonProductionDialog(
                     horizontalArrangement = listItemSpacedBy,
                 ) {
                     Image(
-                        imageVector = Icons.Default.Warning,
+                        imageVector = CrisisCleanupIcons.Warning,
                         contentDescription = "Beta app does not save information",
                         modifier = Modifier.size(96.dp),
                         colorFilter = ColorFilter.tint(Color.Red),
@@ -297,6 +326,7 @@ internal fun CasesScreen(
     isLayerView: Boolean = false,
     filtersCount: Int = 0,
     isMapBusy: Boolean = false,
+    isTableBusy: Boolean = false,
     casesCount: Pair<Int, Int> = Pair(0, 0),
     worksitesOnMap: List<WorksiteGoogleMapMark> = emptyList(),
     mapCameraBounds: MapViewCameraBounds = MapViewCameraBoundsDefault,
@@ -311,10 +341,19 @@ internal fun CasesScreen(
     onMarkerSelect: (WorksiteMapMark) -> Boolean = { false },
     editedWorksiteLocation: LatLng? = null,
     isMyLocationEnabled: Boolean = false,
+    onTableItemSelect: (Worksite) -> Unit = {},
 ) {
     Box(modifier.then(Modifier.fillMaxSize())) {
         if (isTableView) {
-            Text("Table under construction", Modifier.padding(horizontal = 24.dp, vertical = 96.dp))
+            CasesTableView(
+                isTableBusy = isTableBusy,
+                disasterResId = disasterResId,
+                openIncidentSelect = onSelectIncident,
+                onCasesAction = onCasesAction,
+                filtersCount = filtersCount,
+                casesCount = casesCount.second,
+                onTableItemSelect = onTableItemSelect,
+            )
         } else {
             CasesMapView(
                 mapCameraBounds,
@@ -496,6 +535,9 @@ private fun CasesOverlayElements(
     filtersCount: Int = 0,
 ) {
     val translator = LocalAppTranslator.current.translator
+
+    val isMapView = !isTableView
+
     ConstraintLayout(Modifier.fillMaxSize()) {
         val (
             disasterAction,
@@ -507,24 +549,24 @@ private fun CasesOverlayElements(
             countTextRef,
         ) = createRefs()
 
-        FloatingActionButton(
-            modifier = modifier
-                .constrainAs(disasterAction) {
-                    start.linkTo(parent.start, margin = actionEdgeSpace)
-                    top.linkTo(parent.top, margin = actionEdgeSpace)
-                },
-            onClick = onSelectIncident,
-            shape = CircleShape,
-            containerColor = incidentDisasterContainerColor,
-            contentColor = incidentDisasterContentColor,
-        ) {
-            Icon(
-                painter = painterResource(disasterResId),
-                contentDescription = translator("nav.change_incident"),
-            )
-        }
+        if (isMapView) {
+            FloatingActionButton(
+                modifier = modifier
+                    .constrainAs(disasterAction) {
+                        start.linkTo(parent.start, margin = actionEdgeSpace)
+                        top.linkTo(parent.top, margin = actionEdgeSpace)
+                    },
+                onClick = onSelectIncident,
+                shape = CircleShape,
+                containerColor = incidentDisasterContainerColor,
+                contentColor = incidentDisasterContentColor,
+            ) {
+                Icon(
+                    painter = painterResource(disasterResId),
+                    contentDescription = translator("nav.change_incident"),
+                )
+            }
 
-        if (!isTableView) {
             CasesZoomBar(
                 modifier.constrainAs(zoomBar) {
                     top.linkTo(disasterAction.bottom, margin = actionInnerSpace)
@@ -533,40 +575,40 @@ private fun CasesOverlayElements(
                 },
                 onCasesAction,
             )
-        }
 
-        CasesActionBar(
-            modifier.constrainAs(actionBar) {
-                top.linkTo(parent.top, margin = actionEdgeSpace)
-                end.linkTo(parent.end, margin = actionEdgeSpace)
-            },
-            onCasesAction,
-            filtersCount,
-        )
-
-        CasesCountView(
-            casesCount,
-            Modifier.constrainAs(countTextRef) {
-                top.linkTo(parent.top, margin = actionEdgeSpace)
-                start.linkTo(disasterAction.end)
-                end.linkTo(actionBar.start)
-            },
-        )
-
-        FloatingActionButton(
-            modifier = modifier
-                .actionSize()
-                .constrainAs(myLocation) {
-                    end.linkTo(toggleTableMap.end)
-                    bottom.linkTo(newCaseFab.top, margin = actionEdgeSpace)
+            CasesActionBar(
+                modifier.constrainAs(actionBar) {
+                    top.linkTo(parent.top, margin = actionEdgeSpace)
+                    end.linkTo(parent.end, margin = actionEdgeSpace)
                 },
-            onClick = centerOnMyLocation,
-            shape = actionRoundCornerShape,
-        ) {
-            Icon(
-                painterResource(R.drawable.ic_my_location),
-                contentDescription = translator("~~My location"),
+                onCasesAction,
+                filtersCount,
             )
+
+            CasesCountView(
+                casesCount,
+                Modifier.constrainAs(countTextRef) {
+                    top.linkTo(parent.top, margin = actionEdgeSpace)
+                    start.linkTo(disasterAction.end)
+                    end.linkTo(actionBar.start)
+                },
+            )
+
+            FloatingActionButton(
+                modifier = modifier
+                    .actionSize()
+                    .constrainAs(myLocation) {
+                        end.linkTo(toggleTableMap.end)
+                        bottom.linkTo(newCaseFab.top, margin = actionEdgeSpace)
+                    },
+                onClick = centerOnMyLocation,
+                shape = actionRoundCornerShape,
+            ) {
+                Icon(
+                    painterResource(R.drawable.ic_my_location),
+                    contentDescription = translator("~~My location"),
+                )
+            }
         }
 
         val onNewCase = remember(onCasesAction) { { onCasesAction(CasesAction.CreateNew) } }
@@ -646,6 +688,281 @@ private fun CasesCountView(
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyMedium,
             )
+        }
+    }
+}
+
+@Composable
+private fun BoxScope.CasesTableView(
+    viewModel: CasesViewModel = hiltViewModel(),
+    isTableBusy: Boolean = false,
+    @DrawableRes disasterResId: Int = commonAssetsR.drawable.ic_disaster_other,
+    openIncidentSelect: () -> Unit = {},
+    onCasesAction: (CasesAction) -> Unit = {},
+    filtersCount: Int = 0,
+    casesCount: Int = 0,
+    onTableItemSelect: (Worksite) -> Unit = {},
+) {
+    val translator = LocalAppTranslator.current.translator
+
+    val tableSort by viewModel.tableViewSort.collectAsStateWithLifecycle()
+    val changeTableSort = remember(viewModel) {
+        { sortBy: WorksiteSortBy -> viewModel.changeTableSort(sortBy) }
+    }
+
+    val selectedIncident by viewModel.selectedIncident.collectAsStateWithLifecycle()
+
+    BusyIndicatorFloatingTopCenter(isTableBusy)
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .background(Color.White),
+    ) {
+        Row(
+            listItemModifier,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IncidentDropdownSelect(
+                onOpenIncidents = openIncidentSelect,
+                disasterIconResId = disasterResId,
+                title = selectedIncident.shortName,
+                contentDescription = selectedIncident.shortName,
+                isLoading = isTableBusy,
+            )
+
+            Spacer(Modifier.weight(1f))
+            CasesActionFlatButton(CasesAction.Search, onCasesAction)
+            FilterButtonBadge(filtersCount) {
+                CasesActionFlatButton(CasesAction.Filters, onCasesAction)
+            }
+        }
+
+        Row(
+            listItemModifier,
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = listItemSpacedByHalf,
+        ) {
+            if (casesCount >= 0) {
+                val caseCountText =
+                    if (casesCount == 1) "$casesCount ${translator("casesVue.case")}"
+                    else "$casesCount ${translator("casesVue.cases")}"
+                Text(caseCountText)
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            TableViewSortSelect(
+                tableSort,
+                isEditable = !isTableBusy,
+                onChange = changeTableSort
+            )
+        }
+
+        val tableData by viewModel.tableData.collectAsStateWithLifecycle()
+
+        val listState = rememberLazyListState()
+        LazyColumn(
+            state = listState,
+        )
+        {
+            items(
+                tableData,
+                key = { it.worksite.id },
+                contentType = { "table-item" },
+            ) {
+                TableViewItem(
+                    it,
+                    onViewCase = { onTableItemSelect(it.worksite) },
+                )
+                FormListSectionSeparator()
+            }
+        }
+    }
+}
+
+private val sortByOptions = listOf(
+    WorksiteSortBy.Nearest,
+    WorksiteSortBy.CaseNumber,
+    WorksiteSortBy.Name,
+    WorksiteSortBy.City,
+    WorksiteSortBy.CountyParish,
+)
+
+@Composable
+private fun TableViewSortSelect(
+    tableSort: WorksiteSortBy,
+    isEditable: Boolean = false,
+    onChange: (WorksiteSortBy) -> Unit = {},
+) {
+    val translator = LocalAppTranslator.current.translator
+
+    val sortText = translator(tableSort.translateKey)
+
+    var showOptions by remember { mutableStateOf(false) }
+
+    Box {
+        // TODO: Dropdown where by distance asks for location permission
+        CrisisCleanupOutlinedButton(
+            text = sortText,
+            enabled = isEditable,
+            onClick = { showOptions = true },
+        ) {
+            Icon(
+                modifier = Modifier
+                    .offset(x = 16.dp),
+                imageVector = CrisisCleanupIcons.ArrowDropDown,
+                contentDescription = null
+            )
+        }
+
+        val onSelect = { sortBy: WorksiteSortBy ->
+            onChange(sortBy)
+            showOptions = false
+        }
+        DropdownMenu(
+            expanded = showOptions,
+            onDismissRequest = { showOptions = false },
+        ) {
+            val selectedSort = if (tableSort == WorksiteSortBy.None) WorksiteSortBy.CaseNumber
+            else tableSort
+            for (option in sortByOptions) {
+                key(option) {
+                    DropdownMenuItem(
+                        modifier = Modifier.optionItemHeight(),
+                        text = {
+                            val text = translator(option.translateKey)
+                            Text(
+                                text,
+                                fontWeight = if (option == selectedSort) FontWeight.Bold else null
+                            )
+                        },
+                        onClick = { onSelect(option) },
+                    )
+                }
+            }
+        }
+    }
+}
+
+private val oneDecimalFormat = DecimalFormat("#.#")
+
+@Composable
+private fun TableViewItem(
+    worksiteDistance: WorksiteDistance,
+    onViewCase: () -> Unit = {},
+) {
+    val translator = LocalAppTranslator.current.translator
+
+    val (worksite, distance) = worksiteDistance
+    val (fullAddress, locationQuery) = worksite.addressQuery
+
+    Column(
+        Modifier
+            .clickable(onClick = onViewCase)
+            // TODO Common dimensions
+            .padding(16.dp),
+        verticalArrangement = listItemSpacedBy,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = listItemSpacedBy,
+        ) {
+            Box(
+                modifier = Modifier
+                    .offset(x = (-8).dp)
+                    // Similar to IconButton/IconButtonTokens.StateLayer*
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .clickable { /*TODO*/ },
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painterResource(R.drawable.ic_flag_filled_small),
+                    contentDescription = translator("nav.flag"),
+                )
+            }
+            Text(
+                worksite.caseNumber,
+                modifier = Modifier.offset(x = (-14).dp),
+                style = MaterialTheme.typography.titleMedium,
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            if (distance >= 0) {
+                val distanceText = oneDecimalFormat.format(distance)
+                Row {
+                    Text(
+                        distanceText,
+                        modifier = Modifier.padding(end = 8.dp),
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(translator("~~mi"))
+                }
+            }
+        }
+
+//        LineDivider()
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = listItemSpacedBy,
+        ) {
+            Icon(
+                imageVector = CrisisCleanupIcons.Person,
+                contentDescription = translator("nav.phone"),
+                tint = neutralIconColor,
+            )
+            Text(worksite.name)
+        }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = listItemSpacedBy,
+        ) {
+            Icon(
+                imageVector = CrisisCleanupIcons.Location,
+                contentDescription = translator("profileOrg.address"),
+                tint = neutralIconColor,
+            )
+            Text(fullAddress)
+        }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = listItemSpacedBy,
+        ) {
+            // TODO If single phone open to dialer
+            //      If multiple dropdown and open to dialer on each
+            //      If no numbers parsed and has text show dialog
+            CrisisCleanupOutlinedButton(
+                onClick = { /*TODO*/ },
+                // TODO Enable if has any phone numbers
+                enabled = worksite.phone1.isNotBlank(),
+            ) {
+                Icon(
+                    imageVector = CrisisCleanupIcons.Phone,
+                    contentDescription = translator("nav.phone"),
+                )
+            }
+
+            CrisisCleanupOutlinedButton(
+                onClick = { /*TODO*/ },
+                enabled = locationQuery.isNotBlank(),
+            ) {
+                Icon(
+                    imageVector = CrisisCleanupIcons.Directions,
+                    contentDescription = translator("~~Directions"),
+                )
+            }
+
+            // TODO Add to team
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // TODO Show busy and determine work type state then show correct action
+            Text("actions")
         }
     }
 }

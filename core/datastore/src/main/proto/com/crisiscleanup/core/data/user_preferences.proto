@@ -25,4 +25,6 @@ message UserPreferences {
   bool disable_save_credentials_prompt = 6;
 
   string language_key = 7;
+
+  string table_view_sort_by = 8;
 }

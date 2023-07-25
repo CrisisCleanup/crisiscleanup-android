@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.database.model
 
+import android.util.Log
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -75,7 +76,7 @@ data class WorksiteRootEntity(
         Index(value = ["incident_id", "longitude", "latitude"]),
         Index(value = ["incident_id", "svi"]),
         Index(value = ["incident_id", "updated_at"]),
-        Index(value = ["incident_id", "case_number"]),
+        Index(value = ["incident_id", "case_number_order"]),
         Index(value = ["incident_id", "name", "county", "city", "case_number"]),
         Index(value = ["incident_id", "city", "name", "case_number"]),
         Index(value = ["incident_id", "county", "name", "case_number"]),
@@ -93,6 +94,8 @@ data class WorksiteEntity(
     val autoContactFrequencyT: String?,
     @ColumnInfo("case_number")
     val caseNumber: String,
+    @ColumnInfo("case_number_order", defaultValue = "0")
+    val caseNumberOrder: Long,
     val city: String,
     val county: String,
     // This can be null if full data is queried without short
@@ -134,6 +137,18 @@ data class WorksiteEntity(
     @ColumnInfo("is_local_favorite", defaultValue = "0")
     val isLocalFavorite: Boolean = false,
 )
+
+private val endNumbersCapture = Regex("\\d+$")
+fun parseCaseNumberOrder(caseNumber: String): Long {
+    try {
+        endNumbersCapture.find(caseNumber)?.value?.toLong()?.let {
+            return it
+        }
+    } catch (e: Exception) {
+        Log.w("worksite-entity", "Unable to parse case number order ${e.message}")
+    }
+    return 0
+}
 
 @Entity(
     "work_types",

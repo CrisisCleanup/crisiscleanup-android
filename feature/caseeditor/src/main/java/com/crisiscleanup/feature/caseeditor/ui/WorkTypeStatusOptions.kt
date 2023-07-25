@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
@@ -98,9 +99,13 @@ private fun WorkTypeStatusOptions(
     val modifier = Modifier.optionItemHeight()
     for (option in statusOptions) {
         DropdownMenuItem(
-            // TODO Change color of selected option
             modifier = modifier,
-            text = { WorkTypeStatusOption(option) },
+            text = {
+                WorkTypeStatusOption(
+                    option,
+                    isSelected = option == selectedStatus,
+                )
+            },
             onClick = { onSelect(option) },
         )
     }
@@ -112,6 +117,7 @@ private fun WorkTypeStatusOption(
     modifier: Modifier = Modifier,
     showOpenIcon: Boolean = false,
     enabled: Boolean = false,
+    isSelected: Boolean = false,
 ) {
     Row(
         modifier = modifier,
@@ -127,6 +133,7 @@ private fun WorkTypeStatusOption(
         Text(
             translator(status.literal),
             style = MaterialTheme.typography.bodySmall,
+            fontWeight = if (isSelected) FontWeight.Bold else null,
         )
         if (showOpenIcon) {
             var tint = LocalContentColor.current

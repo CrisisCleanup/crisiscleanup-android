@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppMemoryStats
+import com.crisiscleanup.core.common.HaversineDistance
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.PermissionStatus
@@ -15,18 +16,21 @@ import com.crisiscleanup.core.common.VisualAlertManager
 import com.crisiscleanup.core.common.WorksiteLocationEditor
 import com.crisiscleanup.core.common.event.TrimMemoryEventManager
 import com.crisiscleanup.core.common.event.TrimMemoryListener
+import com.crisiscleanup.core.common.kmToMiles
 import com.crisiscleanup.core.common.locationPermissionGranted
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.common.radians
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.commonassets.getDisasterIcon
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.CasesFilterRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
+import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.data.util.IncidentDataPullReporter
 import com.crisiscleanup.core.data.util.IncidentDataPullStats
@@ -37,7 +41,9 @@ import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
 import com.crisiscleanup.core.mapmarker.util.toLatLng
 import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteMapMark
+import com.crisiscleanup.core.model.data.WorksiteSortBy
 import com.crisiscleanup.feature.cases.map.CasesMapBoundsManager
 import com.crisiscleanup.feature.cases.map.CasesMapMarkerManager
 import com.crisiscleanup.feature.cases.map.CasesMapTileLayerManager
@@ -54,22 +60,25 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import kotlin.math.PI
 import kotlin.math.abs
@@ -92,7 +101,8 @@ class CasesViewModel @Inject constructor(
     private val worksiteLocationEditor: WorksiteLocationEditor,
     private val permissionManager: PermissionManager,
     private val locationProvider: LocationProvider,
-    private val filterRepository: CasesFilterRepository,
+    filterRepository: CasesFilterRepository,
+    private val appPreferencesRepository: LocalAppPreferencesRepository,
     private val syncPuller: SyncPuller,
     val visualAlertManager: VisualAlertManager,
     appMemoryStats: AppMemoryStats,
@@ -105,7 +115,7 @@ class CasesViewModel @Inject constructor(
 
     val incidentId: Long
         get() = incidentSelector.incidentId.value
-
+    val selectedIncident = incidentSelector.incident
     val disasterIconResId = incidentSelector.incident.map { getDisasterIcon(it.disaster) }
         .stateIn(
             scope = viewModelScope,
@@ -115,12 +125,23 @@ class CasesViewModel @Inject constructor(
 
     private val qsm = CasesQueryStateManager(
         incidentSelector,
+        filterRepository,
         viewModelScope,
     )
 
     val filtersCount = filterRepository.filtersCount
 
     val isTableView = qsm.isTableView
+
+    val tableViewSort = appPreferencesRepository.userPreferences
+        .map { it.tableViewSortBy }
+        .distinctUntilChanged()
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = WorksiteSortBy.None,
+            started = SharingStarted.WhileSubscribed(),
+        )
+    private val pendingTableSort = AtomicReference(WorksiteSortBy.None)
 
     fun setContentViewType(isTableView: Boolean) {
         this.isTableView.value = isTableView
@@ -157,14 +178,25 @@ class CasesViewModel @Inject constructor(
     val incidentLocationBounds = mapBoundsManager.mapCameraBounds
 
     val isIncidentLoading = incidentsRepository.isLoading
+
+    private val incidentWorksitesCount = incidentSelector.incidentId.flatMapLatest { id ->
+        worksitesRepository.streamIncidentWorksitesCount(id)
+            .map { count -> IncidentIdWorksiteCount(id, count) }
+    }.shareIn(
+        scope = viewModelScope,
+        replay = 1,
+        started = SharingStarted.WhileSubscribed(1_000)
+    )
+
     private val isGeneratingWorksiteMarkers = MutableStateFlow(false)
     val isMapBusy = combine(
         mapBoundsManager.isDeterminingBounds,
         mapTileRenderer.isBusy,
         isGeneratingWorksiteMarkers,
-    ) { b0, b1, b2 ->
-        b0 || b1 || b2
-    }
+    ) { b0, b1, b2 -> b0 || b1 || b2 }
+
+    private val isFetchingTableData = MutableStateFlow(false)
+    val isTableBusy: Flow<Boolean> = isFetchingTableData
 
     private val mapMarkerManager = CasesMapMarkerManager(
         worksitesRepository,
@@ -173,13 +205,14 @@ class CasesViewModel @Inject constructor(
     )
 
     val worksitesMapMarkers = combine(
+        incidentWorksitesCount,
         qsm.worksiteQueryState,
         mapBoundsManager.isMapLoaded,
-        ::Pair
+        ::Triple
     )
         // TODO Make delay a parameter
         .debounce(250)
-        .flatMapLatest { (wqs, isMapLoaded) ->
+        .mapLatest { (_, wqs, isMapLoaded) ->
             val id = wqs.incidentId
 
             val skipMarkers = !isMapLoaded ||
@@ -188,15 +221,34 @@ class CasesViewModel @Inject constructor(
                     mapTileRenderer.rendersAt(wqs.zoom)
 
             if (skipMarkers) {
-                flowOf(emptyList())
+                emptyList()
             } else {
                 isGeneratingWorksiteMarkers.value = true
                 try {
                     val markers = generateWorksiteMarkers(wqs)
-                    flowOf(markers)
+                    markers
                 } finally {
                     isGeneratingWorksiteMarkers.value = false
                 }
+            }
+        }
+        .flowOn(ioDispatcher)
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = emptyList(),
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    val tableData = combine(
+        incidentWorksitesCount,
+        qsm.worksiteQueryState,
+        ::Pair,
+    )
+        .mapLatest { (_, wqs) ->
+            if (wqs.isTableView) {
+                fetchTableData(wqs)
+            } else {
+                emptyList()
             }
         }
         .flowOn(ioDispatcher)
@@ -219,15 +271,6 @@ class CasesViewModel @Inject constructor(
     private val tileClearRefreshInterval = 5.seconds
     private var tileRefreshedInstant: Instant = Instant.fromEpochSeconds(0)
     private var tileClearWorksitesCount = 0
-
-    private val incidentWorksitesCount = incidentSelector.incidentId.flatMapLatest { id ->
-        worksitesRepository.streamIncidentWorksitesCount(id)
-            .map { count -> IncidentIdWorksiteCount(id, count) }
-    }.shareIn(
-        scope = viewModelScope,
-        replay = 1,
-        started = SharingStarted.WhileSubscribed(1_000)
-    )
 
     val casesCount = combine(
         isIncidentLoading,
@@ -267,10 +310,21 @@ class CasesViewModel @Inject constructor(
         permissionManager.permissionChanges
             .map {
                 if (it == locationPermissionGranted) {
-                    setMapToMyCoordinates()
+                    if (isTableView.value) {
+                        val sortBy = pendingTableSort.getAndSet(WorksiteSortBy.None)
+                        if (sortBy != WorksiteSortBy.None) {
+                            setSortBy(sortBy)
+                        }
+                    } else {
+                        setMapToMyCoordinates()
+                    }
                 }
                 isMyLocationEnabled = permissionManager.hasLocationPermission
             }
+            .launchIn(viewModelScope)
+
+        tableViewSort
+            .onEach { qsm.tableViewSort.value = it }
             .launchIn(viewModelScope)
     }
 
@@ -299,6 +353,52 @@ class CasesViewModel @Inject constructor(
             val offset = if (index < markOffsets.size) markOffsets[index] else zeroOffset
             mark.asWorksiteGoogleMapMark(mapCaseIconProvider, offset)
         }
+    }
+
+    private suspend fun fetchTableData(wqs: WorksiteQueryState) = coroutineScope {
+        val filters = wqs.filters
+        var sortBy = wqs.tableViewSort
+
+        val isDistanceSort = sortBy == WorksiteSortBy.Nearest
+        val locationCoordinates = locationProvider.getLocation()
+        val hasLocation = locationCoordinates != null
+        if (isDistanceSort && !hasLocation) {
+            sortBy = WorksiteSortBy.CaseNumber
+        }
+
+        val locationLatitude = locationCoordinates?.first ?: 0.0
+        val locationLongitude = locationCoordinates?.second ?: 0.0
+        val worksites = worksitesRepository.getTableData(
+            incidentId,
+            filters,
+            sortBy,
+            locationLatitude,
+            locationLongitude,
+        )
+
+        val strideCount = 100
+        val locationLatitudeRad = locationLatitude.radians
+        val locationLongitudeRad = locationLongitude.radians
+        val tableData = worksites.mapIndexed { i, worksite ->
+            if (i % strideCount == 0) {
+                ensureActive()
+            }
+
+            var distance = -1.0
+            if (hasLocation) {
+                val worksiteLatitudeRad = worksite.latitude.radians
+                val worksiteLongitudeRad = worksite.longitude.radians
+                val haversineDistance = HaversineDistance.calculate(
+                    locationLatitudeRad, locationLongitudeRad,
+                    worksiteLatitudeRad, worksiteLongitudeRad,
+                )
+                distance = haversineDistance.kmToMiles
+            }
+
+            WorksiteDistance(worksite, distance)
+        }
+
+        tableData
     }
 
     fun onMapLoadStart() {
@@ -499,6 +599,39 @@ class CasesViewModel @Inject constructor(
             markOffsets
         }
 
+    private fun setSortBy(sortBy: WorksiteSortBy) {
+        viewModelScope.launch(ioDispatcher) {
+            logger.logDebug("Updating sort by $sortBy")
+            appPreferencesRepository.setTableViewSortBy(sortBy)
+        }
+    }
+
+    fun changeTableSort(sortBy: WorksiteSortBy) {
+        if (sortBy == WorksiteSortBy.Nearest) {
+            when (permissionManager.requestLocationPermission()) {
+                PermissionStatus.Granted -> {
+                    setSortBy(sortBy)
+                }
+
+                PermissionStatus.ShowRationale -> {
+                    pendingTableSort.set(sortBy)
+                    showExplainPermissionLocation = true
+                }
+
+                PermissionStatus.Requesting -> {
+                    pendingTableSort.set(sortBy)
+                }
+
+                PermissionStatus.Denied,
+                PermissionStatus.Undefined -> {
+                    // Ignorable
+                }
+            }
+        } else {
+            setSortBy(sortBy)
+        }
+    }
+
     // TrimMemoryListener
 
     override fun onTrimMemory(level: Int) {
@@ -509,3 +642,8 @@ class CasesViewModel @Inject constructor(
         }
     }
 }
+
+data class WorksiteDistance(
+    val worksite: Worksite,
+    val distanceMiles: Double,
+)

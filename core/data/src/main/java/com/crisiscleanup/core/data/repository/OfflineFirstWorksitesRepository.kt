@@ -1,9 +1,12 @@
 package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.common.AppVersionProvider
+import com.crisiscleanup.core.common.HaversineDistance
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
+import com.crisiscleanup.core.common.radians
+import com.crisiscleanup.core.data.CoordinateGridQuery
 import com.crisiscleanup.core.data.WorksitesFullSyncer
 import com.crisiscleanup.core.data.WorksitesSyncer
 import com.crisiscleanup.core.data.model.asEntities
@@ -15,19 +18,25 @@ import com.crisiscleanup.core.database.dao.WorksiteDao
 import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
 import com.crisiscleanup.core.database.dao.WorksiteSyncStatDao
 import com.crisiscleanup.core.database.model.PopulatedRecentWorksite
+import com.crisiscleanup.core.database.model.PopulatedWorksite
 import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
 import com.crisiscleanup.core.database.model.RecentWorksiteEntity
+import com.crisiscleanup.core.database.model.SwNeBounds
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.database.model.asSummary
 import com.crisiscleanup.core.database.model.asWorksiteSyncStatsEntity
+import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.IncidentDataSyncStats
 import com.crisiscleanup.core.model.data.SyncAttempt
+import com.crisiscleanup.core.model.data.Worksite
+import com.crisiscleanup.core.model.data.WorksiteSortBy
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.CrisisCleanupWriteApi
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -263,5 +272,105 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             logger.logException(e)
         }
         return false
+    }
+
+    override suspend fun getTableData(
+        incidentId: Long,
+        filters: CasesFilter,
+        sortBy: WorksiteSortBy,
+        latitude: Double,
+        longitude: Double,
+        count: Int,
+    ): List<Worksite> = coroutineScope {
+        val queryCount = count.coerceAtLeast(100)
+        val records = when (sortBy) {
+            WorksiteSortBy.Nearest -> getNearestWorksites(
+                incidentId,
+                latitude,
+                longitude,
+                queryCount,
+            )
+
+            WorksiteSortBy.Name -> worksiteDao.getWorksitesOrderByName(incidentId, queryCount)
+
+            WorksiteSortBy.City -> worksiteDao.getWorksitesOrderByCity(incidentId, queryCount)
+
+            WorksiteSortBy.CountyParish -> worksiteDao.getWorksitesOrderByCounty(
+                incidentId,
+                queryCount
+            )
+
+            else -> worksiteDao.getWorksitesOrderByCaseNumber(incidentId, queryCount)
+        }
+
+        ensureActive()
+
+        if (filters.changeCount != 0) {
+            // TODO Apply filters before mapping ensuring active every stride
+        }
+
+        ensureActive()
+
+        records.map(PopulatedWorksite::asExternalModel)
+    }
+
+    private suspend fun getNearestWorksites(
+        incidentId: Long,
+        latitude: Double,
+        longitude: Double,
+        count: Int,
+    ): List<PopulatedWorksite> = coroutineScope {
+        val strideCount = 100
+
+        val worksiteCount = worksiteDao.getWorksitesCount(incidentId)
+
+        val boundedWorksites: List<PopulatedWorksite>
+        if (worksiteCount <= count) {
+            boundedWorksites = worksiteDao.getWorksites(incidentId)
+        } else {
+            // 161 km ~= 100 mi
+            val radialDegrees = 161 / 111.0
+            val areaBounds = SwNeBounds(
+                south = (latitude - radialDegrees).coerceAtLeast(-90.0),
+                north = (latitude + radialDegrees).coerceAtMost(90.0),
+                west = (longitude - radialDegrees).coerceAtLeast(-180.0),
+                east = (longitude + radialDegrees).coerceAtMost(180.0),
+            )
+            val boundedWorksiteRectCount = worksiteDao.getBoundedWorksiteCount(
+                incidentId,
+                latitudeSouth = areaBounds.south,
+                latitudeNorth = areaBounds.north,
+                longitudeWest = areaBounds.west,
+                longitudeEast = areaBounds.east,
+            )
+            val gridQuery = CoordinateGridQuery(areaBounds)
+            val targetBucketCount = 10
+            gridQuery.initializeGrid(boundedWorksiteRectCount, targetBucketCount)
+
+            val maxQueryCount = (count * 1.5).toInt()
+            boundedWorksites = worksiteDaoPlus.loadBoundedWorksites(
+                incidentId,
+                maxQueryCount,
+                gridQuery.getSwNeGridCells(),
+            )
+        }
+
+        val latRad = latitude.radians
+        val lngRad = longitude.radians
+        val withDistance = mutableListOf<Pair<PopulatedWorksite, Double>>()
+        for (i in boundedWorksites.indices) {
+            val worksite = boundedWorksites[i]
+            val distance = HaversineDistance.calculate(
+                latRad, lngRad,
+                worksite.entity.latitude.radians, worksite.entity.longitude.radians,
+            )
+            withDistance.add(Pair(worksite, distance))
+            if (i % strideCount == 0) {
+                ensureActive()
+            }
+        }
+        return@coroutineScope withDistance
+            .sortedBy { it.second }
+            .map { it.first }
     }
 }

@@ -1,8 +1,11 @@
 package com.crisiscleanup.core.data.repository
 
+import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.IncidentDataSyncStats
 import com.crisiscleanup.core.model.data.LocalWorksite
+import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteMapMark
+import com.crisiscleanup.core.model.data.WorksiteSortBy
 import com.crisiscleanup.core.model.data.WorksiteSummary
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import kotlinx.coroutines.flow.Flow
@@ -77,4 +80,13 @@ interface WorksitesRepository {
         shareMessage: String,
         noClaimReason: String?,
     ): Boolean
+
+    suspend fun getTableData(
+        incidentId: Long,
+        filters: CasesFilter,
+        sortBy: WorksiteSortBy,
+        latitude: Double,
+        longitude: Double,
+        count: Int = 360,
+    ): List<Worksite>
 }

@@ -4,6 +4,8 @@ import androidx.datastore.core.DataStore
 import com.crisiscleanup.core.model.data.DarkThemeConfig
 import com.crisiscleanup.core.model.data.SyncAttempt
 import com.crisiscleanup.core.model.data.UserData
+import com.crisiscleanup.core.model.data.WorksiteSortBy
+import com.crisiscleanup.core.model.data.worksiteSortByFromLiteral
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
 import javax.inject.Inject
@@ -43,6 +45,8 @@ class LocalAppPreferencesDataSource @Inject constructor(
                 selectedIncidentId = it.selectedIncidentId,
 
                 languageKey = it.languageKey,
+
+                tableViewSortBy = worksiteSortByFromLiteral(it.tableViewSortBy),
             )
         }
 
@@ -118,6 +122,12 @@ class LocalAppPreferencesDataSource @Inject constructor(
     suspend fun setLanguageKey(key: String) {
         userPreferences.updateData {
             it.copy { languageKey = key }
+        }
+    }
+
+    suspend fun setTableViewSortBy(sortBy: WorksiteSortBy) {
+        userPreferences.updateData {
+            it.copy { tableViewSortBy = sortBy.literal }
         }
     }
 }

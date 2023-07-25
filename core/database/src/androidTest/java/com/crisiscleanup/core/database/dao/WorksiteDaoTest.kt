@@ -64,7 +64,8 @@ class WorksiteDaoTest {
         networkId: Long,
         incidentId: Long = 1,
         address: String = "test-address",
-        createdAt: Instant? = null
+        createdAt: Instant? = null,
+        caseNumberOrder: Long = 0
     ) =
         testWorksiteEntity(
             networkId,
@@ -72,6 +73,7 @@ class WorksiteDaoTest {
             address,
             updatedAtA,
             createdAt,
+            caseNumberOrder,
         )
 
     /**
@@ -150,9 +152,9 @@ class WorksiteDaoTest {
             existingEntity(2),
             existingEntity(3, 23, address = "test-address-23"),
             existingEntity(4, createdAt = createdAtA),
-            existingEntity(5),
+            existingEntity(5, caseNumberOrder = 52),
             existingEntity(6, createdAt = createdAtA),
-            existingEntity(7),
+            existingEntity(7, caseNumberOrder = 52),
         )
         existingWorksites = insertWorksites(existingWorksites, previousSyncedAt)
 
@@ -297,7 +299,8 @@ class WorksiteDaoTest {
             ),
             testWorksiteShortEntity(2, 1, createdAtB).copy(
                 address = "expected-address",
-                caseNumber = "expected-case",
+                caseNumber = "expected-case 875",
+                caseNumberOrder = 875,
                 city = "expected-city",
                 county = "expected-county",
                 favoriteId = existingWorksite.favoriteId!! + 1L,
@@ -328,7 +331,8 @@ class WorksiteDaoTest {
             testWorksiteFullEntity(2, 1, createdAtB).copy(
                 id = 2,
                 address = "expected-address",
-                caseNumber = "expected-case",
+                caseNumber = "expected-case 875",
+                caseNumberOrder = 875,
                 city = "expected-city",
                 county = "expected-county",
                 favoriteId = existingWorksite.favoriteId!! + 1L,
@@ -357,6 +361,7 @@ fun testWorksiteEntity(
     address: String,
     updatedAt: Instant,
     createdAt: Instant? = null,
+    caseNumberOrder: Long = 0,
     id: Long = 0,
 ) = WorksiteEntity(
     id = id,
@@ -365,6 +370,7 @@ fun testWorksiteEntity(
     address = address,
     autoContactFrequencyT = "",
     caseNumber = "",
+    caseNumberOrder = caseNumberOrder,
     city = "",
     county = "",
     createdAt = createdAt,
@@ -399,7 +405,8 @@ fun testWorksiteFullEntity(
     incidentId = incidentId,
     address = "123 address st",
     autoContactFrequencyT = "enum.never",
-    caseNumber = "case",
+    caseNumber = "case52",
+    caseNumberOrder = 52,
     city = "city 123",
     county = "county 123",
     createdAt = createdAt,
@@ -435,7 +442,8 @@ fun testWorksiteShortEntity(
     incidentId = incidentId,
     address = "123 address st short",
     autoContactFrequencyT = null,
-    caseNumber = "case short",
+    caseNumber = "case short96",
+    caseNumberOrder = 96,
     city = "city short 123",
     county = "county short 123",
     createdAt = createdAt,

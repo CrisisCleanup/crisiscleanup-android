@@ -189,19 +189,19 @@ private fun PropertyFormResidentNameView(
             }
         }
 
-        var hideDropdown by remember { mutableStateOf(false) }
-        val onStopSuggestions = remember(editor) {
-            {
-                hideDropdown = true
-                editor.stopSearchingWorksites()
+        if (!existingCasesResults.isEmpty) {
+            var hideDropdown by remember { mutableStateOf(false) }
+            val onStopSuggestions = remember(editor) {
+                {
+                    hideDropdown = true
+                    editor.stopSearchingWorksites()
+                }
             }
-        }
 
-        if (!(hideDropdown || existingCasesResults.isEmpty)) {
             DropdownMenu(
                 modifier = Modifier
                     .width(with(LocalDensity.current) { contentWidth.width.toDp() }),
-                expanded = true,
+                expanded = !hideDropdown,
                 onDismissRequest = onStopSuggestions,
                 offset = listItemDropdownMenuOffset,
                 properties = PopupProperties(focusable = false)

@@ -12,7 +12,7 @@ plugins {
 
 android {
     defaultConfig {
-        val buildVersion = 114
+        val buildVersion = 117
         applicationId = "com.crisiscleanup"
         versionCode = buildVersion
         versionName = "0.1.${buildVersion - 100}"
@@ -101,6 +101,7 @@ dependencies {
     implementation(project(":core:appnav"))
     implementation(project(":core:common"))
     implementation(project(":core:commonassets"))
+    implementation(project(":core:commoncase"))
     implementation(project(":core:data"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:model"))

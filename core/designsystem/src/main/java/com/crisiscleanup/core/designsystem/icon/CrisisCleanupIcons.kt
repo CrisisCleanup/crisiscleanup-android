@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Directions
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -29,6 +30,7 @@ import androidx.compose.material.icons.filled.Rotate90DegreesCw
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.crisiscleanup.core.designsystem.R
@@ -51,6 +53,7 @@ object CrisisCleanupIcons {
     val Close = icons.Close
     val Dashboard = R.drawable.ic_dashboard
     val Delete = icons.Delete
+    val Directions = icons.Directions
     val Edit = icons.Edit
     val ExpandLess = icons.ExpandLess
     val ExpandMore = icons.ExpandMore
@@ -70,6 +73,7 @@ object CrisisCleanupIcons {
     val UnfoldMore = icons.UnfoldMore
     val Visibility = icons.Visibility
     val VisibilityOff = icons.VisibilityOff
+    val Warning = icons.Warning
 }
 
 /**

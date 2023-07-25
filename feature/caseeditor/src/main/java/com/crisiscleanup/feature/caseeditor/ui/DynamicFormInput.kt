@@ -403,7 +403,7 @@ private fun SelectItem(
             }
         }
 
-        if (showDropdown && itemData.selectOptions.isNotEmpty()) {
+        if (itemData.selectOptions.isNotEmpty()) {
             val onSelect = { key: String ->
                 onChange(key)
                 showDropdown = false
@@ -413,7 +413,7 @@ private fun SelectItem(
                     .width(with(LocalDensity.current) {
                         contentWidth.width.toDp().minus(listItemDropdownMenuOffset.x.times(2))
                     }),
-                expanded = true,
+                expanded = showDropdown,
                 onDismissRequest = { showDropdown = false },
                 offset = listItemDropdownMenuOffset,
             ) {

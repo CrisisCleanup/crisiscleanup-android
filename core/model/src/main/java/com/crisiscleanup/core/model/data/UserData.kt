@@ -16,4 +16,6 @@ data class UserData(
     val selectedIncidentId: Long,
 
     val languageKey: String,
+
+    val tableViewSortBy: WorksiteSortBy,
 )

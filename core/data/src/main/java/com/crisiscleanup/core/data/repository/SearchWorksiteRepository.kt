@@ -3,6 +3,7 @@ package com.crisiscleanup.core.data.repository
 import android.util.LruCache
 import com.crisiscleanup.core.common.HaversineDistance
 import com.crisiscleanup.core.common.LocationProvider
+import com.crisiscleanup.core.common.kmToMiles
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -32,9 +33,6 @@ interface SearchWorksitesRepository {
         q: String,
     ): Collection<WorksiteSummary>
 }
-
-private val Double.kmToMiles: Double
-    get() = this * 0.621371
 
 class MemoryCacheSearchWorksitesRepository @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,

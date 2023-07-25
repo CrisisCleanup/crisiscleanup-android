@@ -50,6 +50,8 @@ object TestUtil {
         override fun logDebug(vararg logs: Any) {}
 
         override fun logException(e: Exception) {}
+
+        override fun logCapture(message: String) {}
     })
 
     fun testSyncLogger(): SyncLogger = spyk(object : SyncLogger {

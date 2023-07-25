@@ -205,7 +205,7 @@ class WorksiteSyncFillTest {
             id = coreB.id,
             networkId = coreB.networkId,
             autoContactFrequencyT = updateCore.autoContactFrequencyT,
-            caseNumber = "case-update",
+            caseNumber = "case52-update",
             email = updateCore.email,
             favoriteId = updateCore.favoriteId!!,
             phone1 = updateCore.phone1,

@@ -17,6 +17,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.FloatingActionButtonElevation
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -32,6 +33,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.cancelButtonContainerColor
 import com.crisiscleanup.core.designsystem.theme.cancelButtonContentColor
@@ -176,11 +178,13 @@ fun CrisisCleanupOutlinedButton(
     onClick: () -> Unit = {},
     enabled: Boolean = false,
     borderColor: Color = LocalContentColor.current,
+    trailingContent: (@Composable () -> Unit)? = null,
 ) {
     val border = BorderStroke(
         width = 1.dp,
         color = if (enabled) borderColor else borderColor.disabledAlpha(),
     )
+    val buttonText = text.ifBlank { if (textResId != 0) stringResource(textResId) else "" }
     OutlinedButton(
         modifier = modifier,
         onClick = onClick,
@@ -188,7 +192,10 @@ fun CrisisCleanupOutlinedButton(
         shape = roundedRectangleButtonShape(),
         border = border,
     ) {
-        Text(text.ifEmpty { if (textResId != 0) stringResource(textResId) else "" })
+        if (buttonText.isNotBlank()) {
+            Text(buttonText)
+        }
+        trailingContent?.invoke()
     }
 }
 
@@ -239,7 +246,7 @@ fun CrisisCleanupButtonPreview() {
     CrisisCleanupTheme {
         CrisisCleanupButton(
             enabled = true,
-            text = "Press"
+            text = "Press",
         )
     }
 }
@@ -261,6 +268,10 @@ fun BusyButtonPreview() {
 @Composable
 fun CrisisCleanupOutlinedButtonPreview() {
     CrisisCleanupTheme {
-        CrisisCleanupOutlinedButton(text = "Outlined")
+        CrisisCleanupOutlinedButton(text = "Outlined") {
+            Icon(
+                imageVector = CrisisCleanupIcons.ArrowDropDown, contentDescription = null
+            )
+        }
     }
 }

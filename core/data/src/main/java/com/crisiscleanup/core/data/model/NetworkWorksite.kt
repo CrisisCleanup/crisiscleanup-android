@@ -5,6 +5,7 @@ import com.crisiscleanup.core.database.model.WorksiteEntity
 import com.crisiscleanup.core.database.model.WorksiteFlagEntity
 import com.crisiscleanup.core.database.model.WorksiteFormDataEntity
 import com.crisiscleanup.core.database.model.WorksiteNoteEntity
+import com.crisiscleanup.core.database.model.parseCaseNumberOrder
 import com.crisiscleanup.core.network.model.KeyDynamicValuePair
 import com.crisiscleanup.core.network.model.NetworkFile
 import com.crisiscleanup.core.network.model.NetworkFlag
@@ -23,6 +24,7 @@ fun NetworkWorksiteFull.asEntity() = WorksiteEntity(
     address = address,
     autoContactFrequencyT = autoContactFrequencyT,
     caseNumber = caseNumber,
+    caseNumberOrder = parseCaseNumberOrder(caseNumber),
     city = city,
     county = county,
     email = email,
@@ -52,6 +54,7 @@ fun NetworkWorksiteCoreData.asEntity() = WorksiteEntity(
     address = address,
     autoContactFrequencyT = autoContactFrequencyT,
     caseNumber = caseNumber,
+    caseNumberOrder = parseCaseNumberOrder(caseNumber),
     city = city,
     county = county,
     email = email,
@@ -79,6 +82,7 @@ fun NetworkWorksiteShort.asEntity() = WorksiteEntity(
     incidentId = incident,
     address = address,
     caseNumber = caseNumber,
+    caseNumberOrder = parseCaseNumberOrder(caseNumber),
     city = city,
     county = county,
     createdAt = createdAt,
@@ -109,6 +113,7 @@ fun NetworkWorksitePage.asEntity() = WorksiteEntity(
     incidentId = incident,
     address = address,
     caseNumber = caseNumber,
+    caseNumberOrder = parseCaseNumberOrder(caseNumber),
     city = city,
     county = county,
     createdAt = createdAt,

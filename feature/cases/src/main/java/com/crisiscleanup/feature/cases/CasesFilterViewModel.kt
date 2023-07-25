@@ -115,7 +115,10 @@ class CasesFilterViewModel @Inject constructor(
                 showExplainPermissionLocation = true
             }
 
-            PermissionStatus.Requesting,
+            PermissionStatus.Requesting -> {
+                distanceOptionCached.set(distance)
+            }
+
             PermissionStatus.Denied,
             PermissionStatus.Undefined -> {
                 // Ignore these statuses as they're not important

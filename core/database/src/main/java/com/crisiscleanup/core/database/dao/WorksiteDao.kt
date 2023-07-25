@@ -135,6 +135,24 @@ interface WorksiteDao {
     ): Int
 
     @Transaction
+    @Query(
+        """
+        SELECT *
+        FROM worksites
+        WHERE incident_id=:incidentId AND
+              (longitude BETWEEN :longitudeWest AND :longitudeEast) AND
+              (latitude BETWEEN :latitudeSouth AND :latitudeNorth)
+        """
+    )
+    fun getWorksitesInBounds(
+        incidentId: Long,
+        latitudeSouth: Double,
+        latitudeNorth: Double,
+        longitudeWest: Double,
+        longitudeEast: Double,
+    ): List<PopulatedWorksite>
+
+    @Transaction
     @Query("SELECT COUNT(id) FROM worksites_root WHERE incident_id=:incidentId")
     fun streamWorksitesCount(incidentId: Long): Flow<Int>
 
@@ -231,6 +249,7 @@ interface WorksiteDao {
         address         =:address,
         auto_contact_frequency_t=COALESCE(:autoContactFrequencyT,auto_contact_frequency_t),
         case_number     =:caseNumber,
+        case_number_order   =:caseNumberOrder,
         city            =:city,
         county          =:county,
         created_at      =COALESCE(:createdAt, created_at),
@@ -261,6 +280,7 @@ interface WorksiteDao {
         address: String,
         autoContactFrequencyT: String?,
         caseNumber: String,
+        caseNumberOrder: Long,
         city: String,
         county: String,
         createdAt: Instant?,
@@ -290,6 +310,7 @@ interface WorksiteDao {
         SET
         auto_contact_frequency_t=COALESCE(auto_contact_frequency_t, :autoContactFrequencyT),
         case_number =CASE WHEN LENGTH(case_number)==0 THEN :caseNumber ELSE case_number END,
+        case_number_order =CASE WHEN LENGTH(case_number)==0 THEN :caseNumberOrder ELSE case_number_order END,
         email       =COALESCE(email, :email),
         favorite_id =COALESCE(favorite_id, :favoriteId),
         phone1      =CASE WHEN LENGTH(COALESCE(phone1,''))<2 THEN :phone1 ELSE phone1 END,
@@ -305,6 +326,7 @@ interface WorksiteDao {
         id: Long,
         autoContactFrequencyT: String?,
         caseNumber: String,
+        caseNumberOrder: Long,
         email: String?,
         favoriteId: Long?,
         phone1: String?,
@@ -389,4 +411,53 @@ interface WorksiteDao {
         longitudeWest: Double,
         longitudeEast: Double,
     ): List<BoundedSyncedWorksiteIds>
+
+    @Transaction
+    @Query("SELECT * FROM worksites WHERE incident_id=:incidentId")
+    fun getWorksites(incidentId: Long): List<PopulatedWorksite>
+
+    @Transaction
+    @Query(
+        """
+        SELECT * 
+        FROM worksites
+        WHERE incident_id=:incidentId
+        ORDER BY name, county, city, case_number_order LIMIT :limit
+        """
+    )
+    fun getWorksitesOrderByName(incidentId: Long, limit: Int): List<PopulatedWorksite>
+
+    @Transaction
+    @Query(
+        """
+        SELECT * 
+        FROM worksites
+        WHERE incident_id=:incidentId
+        ORDER BY city, name, case_number_order LIMIT :limit
+        """
+    )
+    fun getWorksitesOrderByCity(incidentId: Long, limit: Int): List<PopulatedWorksite>
+
+    @Transaction
+    @Query(
+        """
+        SELECT * 
+        FROM worksites
+        WHERE incident_id=:incidentId
+        ORDER BY county, name, case_number_order LIMIT :limit
+        """
+    )
+
+    fun getWorksitesOrderByCounty(incidentId: Long, limit: Int): List<PopulatedWorksite>
+
+    @Transaction
+    @Query(
+        """
+        SELECT * 
+        FROM worksites
+        WHERE incident_id=:incidentId
+        ORDER BY case_number_order LIMIT :limit
+        """
+    )
+    fun getWorksitesOrderByCaseNumber(incidentId: Long, limit: Int): List<PopulatedWorksite>
 }

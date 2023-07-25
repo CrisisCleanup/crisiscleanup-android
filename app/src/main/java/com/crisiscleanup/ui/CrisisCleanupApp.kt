@@ -3,11 +3,8 @@ package com.crisiscleanup.ui
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideIn
 import androidx.compose.animation.slideOut
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -23,10 +20,8 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -46,7 +41,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -64,7 +58,7 @@ import com.crisiscleanup.AuthState
 import com.crisiscleanup.MainActivityViewModel
 import com.crisiscleanup.core.common.NavigationObserver
 import com.crisiscleanup.core.common.NetworkMonitor
-import com.crisiscleanup.core.commonassets.DisasterIcon
+import com.crisiscleanup.core.commoncase.ui.IncidentDropdownSelect
 import com.crisiscleanup.core.designsystem.AppTranslator
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupBackground
@@ -420,32 +414,14 @@ private fun AppHeader(
             if (onOpenIncidents == null) {
                 TruncatedAppBarText(title = title)
             } else {
-                Row(
-                    modifier = modifier.clickable(onClick = onOpenIncidents),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    DisasterIcon(disasterIconResId, title)
-                    TruncatedAppBarText(
-                        title = title,
-                        modifier = Modifier.padding(start = 8.dp),
-                    )
-                    Icon(
-                        imageVector = CrisisCleanupIcons.ArrowDropDown,
-                        contentDescription = t("nav.change_incident"),
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
-                    AnimatedVisibility(
-                        visible = isAppHeaderLoading,
-                        enter = fadeIn(),
-                        exit = fadeOut()
-                    ) {
-                        CircularProgressIndicator(
-                            modifier
-                                .size(48.dp)
-                                .padding(8.dp)
-                        )
-                    }
-                }
+                IncidentDropdownSelect(
+                    modifier,
+                    onOpenIncidents,
+                    disasterIconResId,
+                    title = title,
+                    contentDescription = t("nav.change_incident"),
+                    isLoading = isAppHeaderLoading,
+                )
             }
         }
     )
