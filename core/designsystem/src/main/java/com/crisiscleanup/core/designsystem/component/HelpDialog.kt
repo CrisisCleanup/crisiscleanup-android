@@ -64,7 +64,7 @@ fun HelpDialog(
         onDismissRequest = onClose,
         confirmButton = {
             CrisisCleanupTextButton(
-                text = LocalAppTranslator.current.translator("actions.ok"),
+                text = LocalAppTranslator.current("actions.ok"),
                 onClick = onClose,
             )
         },

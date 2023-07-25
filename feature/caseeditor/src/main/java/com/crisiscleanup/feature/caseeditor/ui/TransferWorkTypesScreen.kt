@@ -18,11 +18,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.crisiscleanup.core.designsystem.AppTranslator
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextArea
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
+import com.crisiscleanup.core.designsystem.component.LinkifyHtmlText
+import com.crisiscleanup.core.designsystem.component.LinkifyPhoneEmailText
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
 import com.crisiscleanup.core.designsystem.theme.listCheckboxAlignStartOffset
@@ -32,8 +33,6 @@ import com.crisiscleanup.core.designsystem.theme.listItemNestedPadding
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemTopPadding
-import com.crisiscleanup.core.designsystem.component.LinkifyHtmlText
-import com.crisiscleanup.core.designsystem.component.LinkifyPhoneEmailText
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.TransferWorkTypeViewModel
@@ -80,11 +79,8 @@ internal fun TransferWorkTypesRoute(
                     .verticalScroll(scrollState)
                     .weight(1f)
             ) {
-                val appTranslator = remember(viewModel) {
-                    AppTranslator(translator = viewModel)
-                }
                 CompositionLocalProvider(
-                    LocalAppTranslator provides appTranslator,
+                    LocalAppTranslator provides viewModel,
                 ) {
                     TransferWorkTypesView(
                         isEditable = isEditable,
@@ -109,7 +105,7 @@ internal fun TransferWorkTypesView(
     isEditable: Boolean = false,
     onTransfer: () -> Unit = {},
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     val textStyle = MaterialTheme.typography.bodyLarge
 
     when (viewModel.transferType) {
@@ -209,7 +205,7 @@ private fun WorkTypeSection(
     viewModel: TransferWorkTypeViewModel,
     isEditable: Boolean = false,
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     val errorMessageWorkType by viewModel.errorMessageWorkType.collectAsStateWithLifecycle()
     ErrorText(errorMessageWorkType)
 
@@ -240,7 +236,7 @@ private fun BottomActionBar(
     isEditable: Boolean = false,
     onTransfer: () -> Unit = {},
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     Row(
         modifier = Modifier
             .padding(16.dp),

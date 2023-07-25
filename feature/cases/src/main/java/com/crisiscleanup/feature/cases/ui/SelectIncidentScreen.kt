@@ -81,7 +81,7 @@ fun SelectIncidentDialog(
                 Column {
                     Text(
                         modifier = Modifier.padding(textPadding),
-                        text = LocalAppTranslator.current.translator("nav.change_incident"),
+                        text = LocalAppTranslator.current("nav.change_incident"),
                         style = MaterialTheme.typography.titleLarge
                     )
 
@@ -166,7 +166,7 @@ private fun ColumnScope.IncidentSelectContent(
                 .padding(padding),
             onClick = onBackClick,
             enabled = enableInput,
-            text = LocalAppTranslator.current.translator("actions.close"),
+            text = LocalAppTranslator.current("actions.close"),
         )
     }
 }
@@ -181,7 +181,7 @@ private fun NoIncidentsContent(
     Column(modifier) {
         Text(
             modifier = modifier.padding(textPadding),
-            text = LocalAppTranslator.current.translator("info.no_incidents_to_select"),
+            text = LocalAppTranslator.current("info.no_incidents_to_select"),
             style = MaterialTheme.typography.titleLarge,
         )
         CrisisCleanupTextButton(
@@ -189,7 +189,7 @@ private fun NoIncidentsContent(
                 .padding(padding)
                 .align(Alignment.End),
             onClick = onBackClick,
-            text = LocalAppTranslator.current.translator("actions.close"),
+            text = LocalAppTranslator.current("actions.close"),
         )
     }
 }

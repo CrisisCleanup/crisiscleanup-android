@@ -64,7 +64,7 @@ internal fun CasesSearchRoute(
             remember(viewModel) { { text: String -> viewModel.searchQuery.value = text } }
 
         val closeKeyboard = rememberCloseKeyboard(viewModel)
-        val translator = LocalAppTranslator.current.translator
+        val translator = LocalAppTranslator.current
 
         Box(Modifier.fillMaxSize()) {
             Column {
@@ -137,7 +137,7 @@ private fun ListCases(
                     listCaseResults(options, onCaseSelect, isEditable = isEditable)
                 } else {
                     item {
-                        val translator = LocalAppTranslator.current.translator
+                        val translator = LocalAppTranslator.current
                         val message =
                             if (isShortQ) translator("info.search_query_is_short")
                             else translator("info.no_search_results").replace("{search_string}", q)
@@ -157,7 +157,7 @@ private fun LazyListScope.recentCases(
     if (cases.isNotEmpty()) {
         item("section-title") {
             Text(
-                text = LocalAppTranslator.current.translator("casesVue.recently_viewed"),
+                text = LocalAppTranslator.current("casesVue.recently_viewed"),
                 modifier = Modifier.listItemPadding(),
             )
         }

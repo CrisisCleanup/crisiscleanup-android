@@ -35,7 +35,7 @@ internal fun PropertyLocationView(
     onMoveLocationOnMap: () -> Unit = {},
     openAddressSearch: () -> Unit = {},
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     val isEditable = LocalCaseEditor.current.isEditable
 
     val editDifferentWorksite by editor.editIncidentWorksite.collectAsStateWithLifecycle()
@@ -118,7 +118,7 @@ private fun LocationMapActionBar(
     moveLocationOnMap: () -> Unit = {},
     useMyLocation: () -> Unit = {},
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     Row {
         // TODO Common dimensions
         val modifier = Modifier

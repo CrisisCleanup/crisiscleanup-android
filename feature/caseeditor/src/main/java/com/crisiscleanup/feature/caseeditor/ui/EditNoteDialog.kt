@@ -19,7 +19,7 @@ fun EditNoteDialog(
     onSave: (WorksiteNote) -> Unit = {},
     onCancel: () -> Unit = {},
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     var isSaving by rememberSaveable { mutableStateOf(false) }
     var noteContent by rememberSaveable { mutableStateOf(note.note.trim()) }
     val saveNote = {

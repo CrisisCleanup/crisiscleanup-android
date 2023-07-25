@@ -49,7 +49,7 @@ fun ExplainLocationPermissionDialog(
     explanation: String? = null,
 ) {
     if (showDialog) {
-        val t = LocalAppTranslator.current.translator
+        val t = LocalAppTranslator.current
         val permissionExplanation = explanation ?: t("info.location_permission_explanation")
         OpenSettingsDialog(
             t("info.allow_access_to_location"),

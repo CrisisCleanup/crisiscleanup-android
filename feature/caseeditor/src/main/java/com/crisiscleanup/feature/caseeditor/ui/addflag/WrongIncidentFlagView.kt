@@ -50,7 +50,7 @@ internal fun ColumnScope.WrongIncidentFlagView(
     onBack: () -> Unit = {},
     isEditable: Boolean = false,
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
 
     val closeKeyboard = rememberCloseKeyboard(viewModel)
 

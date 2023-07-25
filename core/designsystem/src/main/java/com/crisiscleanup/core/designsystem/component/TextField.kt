@@ -244,7 +244,7 @@ fun ClearableTextField(
         ) {
             Icon(
                 CrisisCleanupIcons.Clear,
-                contentDescription = LocalAppTranslator.current.translator("actions.clear"),
+                contentDescription = LocalAppTranslator.current("actions.clear"),
                 tint = tint,
             )
         }
@@ -301,7 +301,7 @@ fun OutlinedObfuscatingTextField(
                 else CrisisCleanupIcons.VisibilityOff
                 val translateKey = if (isObfuscating) "actions.show"
                 else "actions.hide"
-                val translator = LocalAppTranslator.current.translator
+                val translator = LocalAppTranslator.current
                 Icon(
                     icon,
                     contentDescription = translator(translateKey),

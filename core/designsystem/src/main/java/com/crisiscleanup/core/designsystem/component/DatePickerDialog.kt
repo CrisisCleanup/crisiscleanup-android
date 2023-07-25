@@ -43,7 +43,7 @@ fun DatePickerDialog(
             datePickerState.selectedDateMillis != null
         }
     }
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     androidx.compose.material3.DatePickerDialog(
         onDismissRequest = {
             onCloseDialog(null)
@@ -85,7 +85,7 @@ fun DateRangePickerDialog(
                     datePickerState.selectedEndDateMillis != null
         }
     }
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     androidx.compose.material3.DatePickerDialog(
         onDismissRequest = {
             onCloseDialog(selectedMillis)

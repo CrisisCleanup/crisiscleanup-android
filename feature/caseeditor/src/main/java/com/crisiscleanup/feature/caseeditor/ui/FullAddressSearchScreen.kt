@@ -43,7 +43,7 @@ internal fun EditCaseAddressSearchRoute(
 
         Column {
             TopAppBarBackAction(
-                title = LocalAppTranslator.current.translator("formLabels.location"),
+                title = LocalAppTranslator.current("formLabels.location"),
                 onAction = onBack,
             )
             val locationQuery by editor.locationInputData.locationQuery.collectAsStateWithLifecycle()
@@ -70,7 +70,7 @@ internal fun FullAddressSearchInput(
     isEditable: Boolean = false,
 ) {
     val updateQuery = remember(viewModel) { { s: String -> editor.onQueryChange(s) } }
-    val fullAddressLabel = LocalAppTranslator.current.translator("caseView.full_address")
+    val fullAddressLabel = LocalAppTranslator.current("caseView.full_address")
     OutlinedClearableTextField(
         modifier = Modifier
             .fillMaxWidth()
@@ -100,7 +100,7 @@ internal fun ColumnScope.AddressSearchResults(
 ) {
     val isShortQuery by editor.isShortQuery.collectAsStateWithLifecycle()
     if (isShortQuery) {
-        val instructions = LocalAppTranslator.current.translator("caseForm.location_instructions")
+        val instructions = LocalAppTranslator.current("caseForm.location_instructions")
         LinkifyHtmlText(
             modifier = Modifier.textMessagePadding(),
             text = instructions,

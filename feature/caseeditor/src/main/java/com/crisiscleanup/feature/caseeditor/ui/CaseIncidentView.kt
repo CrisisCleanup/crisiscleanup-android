@@ -50,7 +50,7 @@ internal fun CaseIncidentView(
             style = MaterialTheme.typography.headlineSmall,
         )
 
-        val translator = LocalAppTranslator.current.translator
+        val translator = LocalAppTranslator.current
         if (isSyncing) {
             Box(
                 // minimumInteractiveComponentSize > IconButtonTokens.StateLayerSize

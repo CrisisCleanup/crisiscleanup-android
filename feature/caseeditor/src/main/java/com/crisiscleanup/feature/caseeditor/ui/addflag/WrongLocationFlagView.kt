@@ -31,7 +31,7 @@ internal fun ColumnScope.WrongLocationFlagView(
     isEditable: Boolean = false,
     setWrongLocationFlag: () -> Unit = {},
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
 
     val wrongLocationText by viewModel.wrongLocationText.collectAsStateWithLifecycle()
     val isProcessingLocation by viewModel.isProcessingLocation.collectAsStateWithLifecycle()

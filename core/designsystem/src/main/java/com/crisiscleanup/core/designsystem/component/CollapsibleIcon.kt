@@ -12,7 +12,7 @@ fun CollapsibleIcon(
     sectionTitle: String,
     iconVector: ImageVector,
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     val translateKey = if (isCollapsed) "actions.collapse_section"
     else "actions.expand_section"
     val description = translator(translateKey)

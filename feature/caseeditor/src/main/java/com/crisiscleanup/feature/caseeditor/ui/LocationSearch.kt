@@ -52,7 +52,7 @@ internal fun ColumnScope.SearchContents(
         val locationSearchResults by editor.searchResults.collectAsStateWithLifecycle()
         if (locationSearchResults.isEmpty) {
             if (!isBusySearching && locationSearchResults.query == query) {
-                val translator = LocalAppTranslator.current.translator
+                val translator = LocalAppTranslator.current
                 val text = translator("worksiteSearchInput.no_location_results")
                     .replace("{q}", locationSearchResults.query)
                 Text(
@@ -121,7 +121,7 @@ private fun ListSearchResults(
     closeKeyboard: () -> Unit = {},
     isEditable: Boolean = false,
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     LazyColumn(modifier.scrollFlingListener(closeKeyboard)) {
         if (results.worksites.isNotEmpty()) {
             listItemTitle(

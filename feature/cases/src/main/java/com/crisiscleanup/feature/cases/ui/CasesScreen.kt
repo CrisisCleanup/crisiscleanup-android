@@ -250,9 +250,9 @@ private fun NonProductionDialog(
             viewModel.visualAlertManager.setNonProductionAppAlert(false)
             showDialog = false
         }
-        val localTranslator = LocalAppTranslator.current
-        val translationCount by localTranslator.translator.translationCount.collectAsStateWithLifecycle()
-        val t = remember(translationCount) { localTranslator.translator }
+        val translator = LocalAppTranslator.current
+        val translationCount by translator.translationCount.collectAsStateWithLifecycle()
+        val t = remember(translationCount) { translator }
         CrisisCleanupAlertDialog(
             onDismissRequest = hideDialog,
             titleContent = {
@@ -300,13 +300,13 @@ internal fun NoCasesScreen(
                     .align(Alignment.Center)
                     .widthIn(max = 300.dp)
             ) {
-                Text(text = LocalAppTranslator.current.translator("info.incident_load_error"))
+                Text(text = LocalAppTranslator.current("info.incident_load_error"))
                 // TODO Use constant for spacing
                 Spacer(modifier = Modifier.height(16.dp))
                 CrisisCleanupButton(
                     modifier = modifier.align(Alignment.End),
                     onClick = onRetryLoad,
-                    text = LocalAppTranslator.current.translator("actions.retry"),
+                    text = LocalAppTranslator.current("actions.retry"),
                 )
             }
         }
@@ -534,7 +534,7 @@ private fun CasesOverlayElements(
     casesCount: Pair<Int, Int> = Pair(0, 0),
     filtersCount: Int = 0,
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
 
     val isMapView = !isTableView
 
@@ -658,7 +658,7 @@ private fun CasesCountView(
     modifier: Modifier = Modifier,
 ) {
     val (visibleCount, totalCount) = casesCount
-    val t = LocalAppTranslator.current.translator
+    val t = LocalAppTranslator.current
     if (totalCount > -1) {
         val countText = if (visibleCount == totalCount || visibleCount == 0) {
             if (visibleCount == 0) t("info.t_of_t_cases").replace("{visible_count}", "$totalCount")
@@ -703,7 +703,7 @@ private fun BoxScope.CasesTableView(
     casesCount: Int = 0,
     onTableItemSelect: (Worksite) -> Unit = {},
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
 
     val tableSort by viewModel.tableViewSort.collectAsStateWithLifecycle()
     val changeTableSort = remember(viewModel) {
@@ -795,7 +795,7 @@ private fun TableViewSortSelect(
     isEditable: Boolean = false,
     onChange: (WorksiteSortBy) -> Unit = {},
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
 
     val sortText = translator(tableSort.translateKey)
 
@@ -852,7 +852,7 @@ private fun TableViewItem(
     worksiteDistance: WorksiteDistance,
     onViewCase: () -> Unit = {},
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
 
     val (worksite, distance) = worksiteDistance
     val (fullAddress, locationQuery) = worksite.addressQuery

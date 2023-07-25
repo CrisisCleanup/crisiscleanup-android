@@ -124,7 +124,7 @@ private fun WorkTypeStatusOption(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = listItemSpacedByHalf,
     ) {
-        val translator = LocalAppTranslator.current.translator
+        val translator = LocalAppTranslator.current
         Surface(
             Modifier.size(16.dp),
             shape = CircleShape,

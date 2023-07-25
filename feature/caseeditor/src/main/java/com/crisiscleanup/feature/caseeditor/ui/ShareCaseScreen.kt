@@ -48,7 +48,6 @@ import androidx.compose.ui.window.PopupProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.common.KeyResourceTranslator
-import com.crisiscleanup.core.designsystem.AppTranslator
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.AnimatedBusyIndicator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
@@ -107,12 +106,9 @@ fun CaseEditShareCaseRoute(
 
         val isEditable = !(isLoading || isSharing) && notSharableMessage.isBlank()
 
-        val translator = viewModel.translator
-        val appTranslator = remember(viewModel) {
-            AppTranslator(translator = translator)
-        }
+        val translator: KeyResourceTranslator = viewModel.translator
         CompositionLocalProvider(
-            LocalAppTranslator provides appTranslator,
+            LocalAppTranslator provides translator,
         ) {
             Column(Modifier.fillMaxSize()) {
                 TopAppBarCancelAction(
@@ -149,7 +145,7 @@ private fun ColumnScope.CaseShareContent(
     onBack: () -> Unit,
     viewModel: CaseShareViewModel = hiltViewModel(),
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     val closeKeyboard = rememberCloseKeyboard(viewModel)
 
     val isShareEnabled by viewModel.isShareEnabled.collectAsStateWithLifecycle(true)

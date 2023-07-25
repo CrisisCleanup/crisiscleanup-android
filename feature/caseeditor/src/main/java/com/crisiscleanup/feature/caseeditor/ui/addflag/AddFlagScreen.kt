@@ -30,7 +30,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.crisiscleanup.core.designsystem.AppTranslator
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.AnimatedBusyIndicator
 import com.crisiscleanup.core.designsystem.component.TopAppBarCancelAction
@@ -71,9 +70,6 @@ private fun CaseEditAddFlagScreen(
     viewModel: CaseAddFlagViewModel = hiltViewModel(),
 ) {
     val translator = viewModel.translator
-    val appTranslator = remember(viewModel) {
-        AppTranslator(translator = translator)
-    }
 
     var flagFlow by remember { mutableStateOf<WorksiteFlagType?>(null) }
     val updateFlagFlow =
@@ -87,7 +83,7 @@ private fun CaseEditAddFlagScreen(
     val isEditable by viewModel.isEditable.collectAsStateWithLifecycle()
 
     CompositionLocalProvider(
-        LocalAppTranslator provides appTranslator,
+        LocalAppTranslator provides translator,
     ) {
         Column {
             TopAppBarCancelAction(
@@ -170,7 +166,7 @@ private fun FlagsDropdown(
     isEditable: Boolean = false,
     isLoading: Boolean = false,
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
 
     var contentWidth by remember { mutableStateOf(Size.Zero) }
 

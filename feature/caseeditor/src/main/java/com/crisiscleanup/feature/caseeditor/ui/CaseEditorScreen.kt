@@ -27,7 +27,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.crisiscleanup.core.designsystem.AppTranslator
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
@@ -109,10 +108,7 @@ internal fun CaseEditorRoute(
                     onAction = onNavigateBack,
                 )
 
-                val appTranslator = remember(viewModel) {
-                    AppTranslator(translator = viewModel)
-                }
-                CompositionLocalProvider(LocalAppTranslator provides appTranslator) {
+                CompositionLocalProvider(LocalAppTranslator provides viewModel) {
                     CaseEditorScreen(
                         onNavigateCancel = onNavigateCancel,
                         onEditSearchAddress = onEditSearchAddress,
@@ -265,7 +261,7 @@ private fun ColumnScope.FullEditView(
     if (keyboardVisibility == ScreenKeyboardVisibility.NotVisible) {
         val claimAndSaveChanges = remember(viewModel) { { viewModel.saveChanges(true) } }
         val saveChanges = remember(viewModel) { { viewModel.saveChanges(false) } }
-        val translator = LocalAppTranslator.current.translator
+        val translator = LocalAppTranslator.current
         SaveActionBar(
             enable = isEditable,
             isSaving = isSavingData,
@@ -464,7 +460,7 @@ private fun PromptChangesDialog(
     onStay: () -> Unit = {},
     onAbort: () -> Unit = {},
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     CrisisCleanupAlertDialog(
         title = translator("caseForm.unsaved_changes"),
         text = translator("caseForm.continue_edit_or_lose_changes"),
@@ -496,7 +492,7 @@ private fun InvalidSaveDialog(
     if (promptInvalidSave) {
         val invalidWorksiteInfo = viewModel.invalidWorksiteInfo.value
         if (invalidWorksiteInfo.invalidSection != WorksiteSection.None) {
-            val translator = LocalAppTranslator.current.translator
+            val translator = LocalAppTranslator.current
             val message = invalidWorksiteInfo.message.ifBlank {
                 translator("caseForm.missing_required_fields")
             }

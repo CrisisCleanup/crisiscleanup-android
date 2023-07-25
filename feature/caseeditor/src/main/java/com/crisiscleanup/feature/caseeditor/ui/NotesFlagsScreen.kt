@@ -103,7 +103,7 @@ internal fun LazyListScope.staticNoteItems(
 internal fun SurvivorNoteLegend(
     modifier: Modifier = Modifier,
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     Row(
         modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -132,7 +132,7 @@ internal fun OnCreateNote(
     }
     EditNoteDialog(
         note = WorksiteNote.create(),
-        dialogTitle = LocalAppTranslator.current.translator("caseView.add_note"),
+        dialogTitle = LocalAppTranslator.current("caseView.add_note"),
         onSave = onSave,
         onCancel = dismissDialog,
     )
@@ -151,7 +151,7 @@ internal fun HighPriorityFlagInput(
     CrisisCleanupTextCheckbox(
         listItemModifier.listCheckboxAlignStartOffset(),
         inputData.isHighPriority,
-        text = LocalAppTranslator.current.translator("flag.flag_high_priority"),
+        text = LocalAppTranslator.current("flag.flag_high_priority"),
         onToggle = toggleHighPriority,
         onCheckChange = updateHighPriority,
         enabled = enabled,
@@ -171,7 +171,7 @@ internal fun MemberOfMyOrgFlagInput(
     CrisisCleanupTextCheckbox(
         listItemModifier.listCheckboxAlignStartOffset(),
         inputData.isAssignedToOrgMember,
-        text = LocalAppTranslator.current.translator("actions.member_of_my_org"),
+        text = LocalAppTranslator.current("actions.member_of_my_org"),
         onToggle = toggleAssignTo,
         onCheckChange = updateAssignTo,
         enabled = enabled,

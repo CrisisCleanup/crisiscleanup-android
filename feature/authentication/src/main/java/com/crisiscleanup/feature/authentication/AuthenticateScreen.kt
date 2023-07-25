@@ -146,7 +146,7 @@ private fun LoginScreen(
     viewModel: AuthenticationViewModel = hiltViewModel(),
     isDebug: Boolean = false,
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     AuthenticateScreenContainer(
         Modifier
             .fillMaxSize()
@@ -252,7 +252,7 @@ private fun AuthenticatedScreen(
     closeAuthentication: () -> Unit = {},
     viewModel: AuthenticationViewModel = hiltViewModel(),
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     AuthenticateScreenContainer(
         Modifier
             .fillMaxSize()

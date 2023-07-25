@@ -47,7 +47,7 @@ private fun CasesActionButton(
     CrisisCleanupElevatedIconButton(
         modifier = modifier.actionSmallSize(),
         iconResId = action.iconResId,
-        contentDescription = LocalAppTranslator.current.translator(action.descriptionTranslateKey),
+        contentDescription = LocalAppTranslator.current(action.descriptionTranslateKey),
         onClick = { onCasesAction(action) },
         shape = shape,
     )
@@ -57,10 +57,10 @@ private fun CasesActionButton(
 internal fun CasesActionFlatButton(
     action: CasesAction,
     onCasesAction: (CasesAction) -> Unit,
-)  {
+) {
     CrisisCleanupIconButton(
         iconResId = action.iconResId,
-        contentDescription = LocalAppTranslator.current.translator(action.descriptionTranslateKey),
+        contentDescription = LocalAppTranslator.current(action.descriptionTranslateKey),
         onClick = { onCasesAction(action) },
     )
 }

@@ -37,7 +37,7 @@ fun UserFeedbackRoute(
     val context = LocalContext.current
     Column {
         TopAppBarBackAction(
-            title = LocalAppTranslator.current.translator("nav.feedback"),
+            title = LocalAppTranslator.current("nav.feedback"),
             onAction = onBack,
         )
 

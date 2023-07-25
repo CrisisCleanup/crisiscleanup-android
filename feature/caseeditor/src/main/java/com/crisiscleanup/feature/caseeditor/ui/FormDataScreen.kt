@@ -25,7 +25,7 @@ private fun FormItems(
     val breakGlassHint = viewModel.breakGlassHint
     val helpHint = viewModel.helpHint
 
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
 
     val groupExpandState = remember { inputData.groupExpandState }
 

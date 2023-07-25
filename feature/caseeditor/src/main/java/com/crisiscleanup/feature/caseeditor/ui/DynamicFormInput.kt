@@ -385,7 +385,7 @@ private fun SelectItem(
                     tint = tint.disabledAlpha()
                 }
                 val description =
-                    LocalAppTranslator.current.translator("formLabels.select_option_for")
+                    LocalAppTranslator.current("formLabels.select_option_for")
                         .replace("{field}", label)
                 Icon(
                     imageVector = CrisisCleanupIcons.UnfoldMore,

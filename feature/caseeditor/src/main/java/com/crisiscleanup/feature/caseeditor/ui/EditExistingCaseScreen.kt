@@ -64,6 +64,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.appnav.ViewImageArgs
+import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.filterNotBlankTrim
 import com.crisiscleanup.core.common.urlEncode
 import com.crisiscleanup.core.commoncase.model.addressQuery
@@ -182,14 +183,12 @@ internal fun EditExistingCaseRoute(
                 onCaseLongPress,
             )
 
-            val appTranslator = remember(viewModel) {
-                AppTranslator(translator = viewModel)
-            }
+            val translator: KeyResourceTranslator = viewModel
             val tabTitles by viewModel.tabTitles.collectAsStateWithLifecycle()
             if (isEmptyWorksite) {
                 if (viewModel.worksiteIdArg == EmptyWorksite.id) {
                     Text(
-                        appTranslator.translator("info.no_worksite_selected"),
+                        translator("info.no_worksite_selected"),
                         Modifier.listItemPadding(),
                     )
                 } else {
@@ -206,7 +205,7 @@ internal fun EditExistingCaseRoute(
                 )
                 CompositionLocalProvider(
                     LocalCaseEditor provides caseEditor,
-                    LocalAppTranslator provides appTranslator,
+                    LocalAppTranslator provides translator,
                 ) {
                     ExistingCaseContent(
                         tabTitles,
@@ -288,7 +287,7 @@ private fun TopBar(
         @Composable {}
     } else {
         @Composable {
-            val translator = LocalAppTranslator.current.translator
+            val translator = LocalAppTranslator.current
             val highPriorityTranslateKey =
                 if (isHighPriority) "actions.unmark_high_priority"
                 else "flag.flag_high_priority"
@@ -396,7 +395,7 @@ private fun BottomActions(
     onCaseShare: () -> Unit = {},
     onCaseHistory: () -> Unit = {},
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     val isEditable = LocalCaseEditor.current.isEditable
     var contentColor = Color.Black
     if (!isEditable) {
@@ -561,7 +560,7 @@ private fun LazyListScope.itemInfoSectionHeader(
     SectionHeader(
         Modifier.padding(top = if (sectionIndex > 0) edgeSpacing else 0.dp),
         sectionIndex,
-        LocalAppTranslator.current.translator(titleTranslateKey),
+        LocalAppTranslator.current(titleTranslateKey),
         trailingContent,
     )
 }
@@ -594,7 +593,7 @@ private fun FlagChip(
     removeFlag: (WorksiteFlag) -> Unit = {},
 ) {
     flag.flagType?.let { flagType ->
-        val translator = LocalAppTranslator.current.translator
+        val translator = LocalAppTranslator.current
         val isEditable = LocalCaseEditor.current.isEditable
         val color = FlagColors[flagType] ?: FlagColorFallback
         val text = translator(flagType.literal)
@@ -740,7 +739,7 @@ private fun LazyListScope.workItems(
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.spacedBy(edgeSpacingHalf),
             ) {
-                val translator = LocalAppTranslator.current.translator
+                val translator = LocalAppTranslator.current
                 if (profile.unclaimed.isNotEmpty()) {
                     WorkTypePrimaryAction(translator("actions.claim_all_alt"), claimAll)
                 }
@@ -801,7 +800,7 @@ internal fun EditExistingCasePhotosView(
 
     var showCameraMediaSelect by remember { mutableStateOf(false) }
 
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     val sectionTitleResIds = mapOf(
         ImageCategory.Before to translator("caseForm.before_photos"),
         ImageCategory.After to translator("caseForm.after_photos"),
@@ -924,7 +923,7 @@ internal fun EditExistingCaseNotesView(
         ) {
             Icon(
                 painter = painterResource(R.drawable.ic_note),
-                contentDescription = LocalAppTranslator.current.translator("caseView.add_note_alt"),
+                contentDescription = LocalAppTranslator.current("caseView.add_note_alt"),
             )
         }
 

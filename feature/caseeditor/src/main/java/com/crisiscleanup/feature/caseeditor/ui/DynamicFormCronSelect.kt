@@ -141,7 +141,7 @@ internal fun FrequencyDailyWeeklyViews(
     enabled: Boolean,
     updateFrequency: (String) -> Unit = {},
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     val rRuleString = rRuleIn.ifEmpty { defaultRrule }
     // TODO Test invalid string. Possibly parse manually if invalid?
     val rRule = RRule(rRuleString)
@@ -331,7 +331,7 @@ private fun FrequencyIntervalDialog(
     val submitInterval = { closeDialog(interval) }
 
     CrisisCleanupAlertDialog(
-        title = LocalAppTranslator.current.translator("recurringSchedule.specify_interval"),
+        title = LocalAppTranslator.current("recurringSchedule.specify_interval"),
         onDismissRequest = dismissDialog,
         dismissButton = {
             CrisisCleanupTextButton(
@@ -436,7 +436,7 @@ private fun FrequencyDatePicker(
         rRule.until?.let {
             CrisisCleanupIconButton(
                 imageVector = CrisisCleanupIcons.Clear,
-                contentDescription = LocalAppTranslator.current.translator("recurringSchedule.remove_until_recurring_date"),
+                contentDescription = LocalAppTranslator.current("recurringSchedule.remove_until_recurring_date"),
                 onClick = {
                     rRule.until = null
                     updateRrule()

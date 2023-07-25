@@ -12,7 +12,7 @@ import com.crisiscleanup.feature.caseeditor.CaseLocationDataEditor
 internal fun LocationOutOfBoundsDialog(
     editor: CaseLocationDataEditor,
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     val outOfBoundsData by editor.locationOutOfBounds.collectAsStateWithLifecycle()
     outOfBoundsData?.let {
         val title: String

@@ -48,7 +48,7 @@ internal fun PropertyFormView(
     editor: CasePropertyDataEditor,
     focusOnOpen: Boolean = false,
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     val isEditable = LocalCaseEditor.current.isEditable
 
     val inputData = editor.propertyInputData
@@ -153,7 +153,7 @@ private fun PropertyFormResidentNameView(
     isEditable: Boolean = true,
     focusOnOpen: Boolean = false,
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     val inputData = editor.propertyInputData
 
     val residentName by inputData.residentName.collectAsStateWithLifecycle()
@@ -211,7 +211,7 @@ private fun PropertyFormResidentNameView(
                 DropdownMenuItem(
                     text = {
                         Text(
-                            LocalAppTranslator.current.translator(
+                            LocalAppTranslator.current(
                                 "actions.stop_searching_cases",
                             ),
                             modifier = Modifier.offset(x = 12.dp),

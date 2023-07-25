@@ -41,7 +41,7 @@ internal fun PropertyNotesFlagsView(
     editor: CaseNotesFlagsDataEditor,
     collapsedNotesVisibleCount: Int = 3,
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     val isEditable = LocalCaseEditor.current.isEditable
 
     var isCreatingNote by remember { mutableStateOf(false) }

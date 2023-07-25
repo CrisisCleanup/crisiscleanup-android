@@ -75,7 +75,7 @@ private fun EditCaseMapMoveLocationScreen(
     onBack: () -> Unit = {},
     isEditable: Boolean = false,
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     Column {
         TopAppBarBackAction(
             title = translator("caseForm.select_on_map"),
@@ -195,7 +195,7 @@ private fun SaveActionBar(
     onBack: () -> Unit = {},
     isEditable: Boolean = false,
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     val onSave = remember(viewModel) {
         {
             if (editor.onSaveMoveLocationCoordinates()) {

@@ -163,7 +163,7 @@ fun TopAppBarBackCancel(
     val actionsContent: (@Composable (RowScope.() -> Unit)) =
         @Composable {
             Text(
-                LocalAppTranslator.current.translator("actions.cancel"),
+                LocalAppTranslator.current("actions.cancel"),
                 // TODO Style, height of app bar
                 modifier
                     .clickable(onClick = onCancel)
@@ -218,7 +218,7 @@ fun TopBarBackAction(
     TopBarNavAction(
         modifier,
         action,
-        text = LocalAppTranslator.current.translator("actions.back"),
+        text = LocalAppTranslator.current("actions.back"),
         image = CrisisCleanupIcons.ArrowBack,
     )
 }
@@ -274,7 +274,7 @@ fun TopAppBarBackCaretAction(
             TopBarNavAction(
                 modifier,
                 onAction,
-                text = LocalAppTranslator.current.translator(navigationTranslateKey),
+                text = LocalAppTranslator.current(navigationTranslateKey),
                 image = CrisisCleanupIcons.ArrowBack,
             )
         }

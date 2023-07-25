@@ -88,7 +88,7 @@ private fun ClaimingOrganization(
         ) {
             Text(name)
             val myOrganizationLabel =
-                LocalAppTranslator.current.translator("profileUser.your_organization")
+                LocalAppTranslator.current("profileUser.your_organization")
             Text(
                 "($myOrganizationLabel)",
                 style = MaterialTheme.typography.bodySmall,
@@ -107,7 +107,7 @@ private fun WorkTypeOrgClaims(
     modifier: Modifier = Modifier,
 ) {
     Text(
-        LocalAppTranslator.current.translator("caseView.claimed_by"),
+        LocalAppTranslator.current("caseView.claimed_by"),
         modifier,
         style = MaterialTheme.typography.bodySmall,
     )
@@ -161,7 +161,7 @@ private fun WorkTypeSummaryView(
                 WorkTypeStatusDropdown(workType.status, updateWorkTypeStatus)
                 Spacer(Modifier.weight(1f))
 
-                val translator = LocalAppTranslator.current.translator
+                val translator = LocalAppTranslator.current
                 if (workType.isClaimed) {
                     if (isClaimedByMyOrg) {
                         WorkTypeAction(translator("actions.unclaim")) {
@@ -263,7 +263,7 @@ internal fun LazyListScope.workTypeSectionTitle(
     val style = if (isSmallTitle) MaterialTheme.typography.bodySmall
     else MaterialTheme.typography.bodyLarge
     Text(
-        LocalAppTranslator.current.translator(titleTranslateKey),
+        LocalAppTranslator.current(titleTranslateKey),
         modifier,
         style = style,
     )

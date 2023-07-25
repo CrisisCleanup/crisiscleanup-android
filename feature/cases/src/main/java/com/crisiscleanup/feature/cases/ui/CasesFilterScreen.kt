@@ -30,7 +30,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.noonTime
-import com.crisiscleanup.core.designsystem.AppTranslator
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.CollapsibleIcon
@@ -81,11 +80,8 @@ internal fun CasesFilterRoute(
     viewModel: CasesFilterViewModel = hiltViewModel(),
 ) {
     val translator = viewModel.translator
-    val appTranslator = remember(viewModel) {
-        AppTranslator(translator = translator)
-    }
     CompositionLocalProvider(
-        LocalAppTranslator provides appTranslator,
+        LocalAppTranslator provides translator,
     ) {
         val filters by viewModel.casesFilters.collectAsStateWithLifecycle()
         val updateFilters =
@@ -138,7 +134,7 @@ private fun ColumnScope.FilterControls(
     viewModel: CasesFilterViewModel = hiltViewModel(),
     updateFilters: (CasesFilter) -> Unit = {},
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
 
     val workTypeStatuses by viewModel.workTypeStatuses.collectAsStateWithLifecycle()
     val workTypes by viewModel.workTypes.collectAsStateWithLifecycle(emptyList())
@@ -357,7 +353,7 @@ private fun LazyListScope.rangeSliderItem(
     currentValueDisplay: (Float) -> String = { "" },
 ) {
     item {
-        val translator = LocalAppTranslator.current.translator
+        val translator = LocalAppTranslator.current
         val label = translator(labelTranslateKey)
         Column(
             listItemModifier
@@ -503,7 +499,7 @@ private fun LazyListScope.collapsibleSectionHeader(
         contentType = "section-header",
     ) {
         FilterHeaderCollapsible(
-            sectionTitle = LocalAppTranslator.current.translator(translationKey),
+            sectionTitle = LocalAppTranslator.current(translationKey),
             isCollapsed = !isSectionExpanded,
             toggleCollapse = toggleSection,
         )
@@ -542,7 +538,7 @@ private fun LazyListScope.subsectionHeader(
 ) {
     item(contentType = "subsection-header") {
         Text(
-            text = LocalAppTranslator.current.translator(translateKey),
+            text = LocalAppTranslator.current(translateKey),
             modifier = listItemModifier,
             style = MaterialTheme.typography.bodyLarge,
             fontWeight = FontWeight.Bold,
@@ -559,7 +555,7 @@ private fun LazyListScope.checkboxItem(
     item(contentType = "filter-checkbox") {
         CrisisCleanupTextCheckbox(
             listItemModifier,
-            text = LocalAppTranslator.current.translator(textTranslateKey),
+            text = LocalAppTranslator.current(textTranslateKey),
             checked = isChecked,
             onCheckChange = onCheckChange,
             onToggle = onToggle,
@@ -794,7 +790,7 @@ private fun LazyListScope.dateItem(
     onDateChange: (Pair<Instant, Instant>?) -> Unit,
 ) {
     item(contentType = "filter-date") {
-        val translator = LocalAppTranslator.current.translator
+        val translator = LocalAppTranslator.current
         val label = translator(textTranslateKey)
         Text(
             label,
@@ -907,7 +903,7 @@ fun BottomActionBar(
     filters: CasesFilter,
     viewModel: CasesFilterViewModel = hiltViewModel(),
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     Row(
         modifier = listItemModifier,
         horizontalArrangement = listItemSpacedBy,

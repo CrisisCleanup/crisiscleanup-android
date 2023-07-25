@@ -69,7 +69,7 @@ internal fun TwoActionBar(
     cancelTranslationKey: String = "actions.cancel",
     positiveTranslationKey: String = "actions.save",
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     Row(
         modifier = Modifier
             // TODO Common dimensions

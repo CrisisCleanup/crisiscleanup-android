@@ -21,11 +21,8 @@ fun CaseEditCaseHistoryRoute(
     viewModel: CaseHistoryViewModel = hiltViewModel(),
 ) {
     val translator = viewModel.translator
-    val appTranslator = remember(viewModel) {
-        AppTranslator(translator = translator)
-    }
     CompositionLocalProvider(
-        LocalAppTranslator provides appTranslator,
+        LocalAppTranslator provides translator,
     ) {
         Column(Modifier.fillMaxSize()) {
             TopAppBarBackAction(

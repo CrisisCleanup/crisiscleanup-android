@@ -213,7 +213,7 @@ internal fun BoxScope.LocationMapView(
 internal fun LocationFormView(
     editor: CaseLocationDataEditor,
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     val isEditable = LocalCaseEditor.current.isEditable
 
     val inputData = editor.locationInputData
@@ -292,7 +292,7 @@ private fun LocationAddressFormView(
     closeKeyboard: () -> Unit = {},
     isEditable: Boolean = false,
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     val inputData = editor.locationInputData
 
     val updateAddress = remember(inputData) { { s: String -> inputData.streetAddress = s } }

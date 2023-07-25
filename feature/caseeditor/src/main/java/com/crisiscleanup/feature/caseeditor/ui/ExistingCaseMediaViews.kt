@@ -68,7 +68,7 @@ private val addMediaStrokeGap = 6.dp
 private fun AddMediaView(
     modifier: Modifier = Modifier,
 ) {
-    val text = LocalAppTranslator.current.translator("actions.add_media")
+    val text = LocalAppTranslator.current("actions.add_media")
     val contentColor = primaryBlueColor
     val backgroundColor = primaryBlueOneTenthColor
     val cornerRadius: Float
@@ -208,7 +208,7 @@ internal fun PhotosSection(
                                         .size(64.dp)
                                         .padding(16.dp),
                                     imageVector = CrisisCleanupIcons.CloudSync,
-                                    contentDescription = LocalAppTranslator.current.translator("info.is_syncing"),
+                                    contentDescription = LocalAppTranslator.current("info.is_syncing"),
                                 )
                             }
                         }
@@ -226,7 +226,7 @@ internal fun TakePhotoSelectImage(
     showOptions: Boolean = false,
     closeOptions: () -> Unit = {},
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     var cameraPhotoUri by remember { mutableStateOf(Uri.parse("")) }
     val cameraPhotoLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
@@ -305,7 +305,7 @@ private fun ExplainCameraPermissionDialog(
     closeText: String = "",
 ) {
     if (showDialog) {
-        val t = LocalAppTranslator.current.translator
+        val t = LocalAppTranslator.current
         OpenSettingsDialog(
             t("info.allow_access_to_camera"),
             t("info.explain_allow_access_to_camera_android"),

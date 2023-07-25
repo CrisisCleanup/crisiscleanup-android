@@ -59,7 +59,6 @@ import com.crisiscleanup.MainActivityViewModel
 import com.crisiscleanup.core.common.NavigationObserver
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.commoncase.ui.IncidentDropdownSelect
-import com.crisiscleanup.core.designsystem.AppTranslator
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupBackground
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationBar
@@ -101,12 +100,10 @@ fun CrisisCleanupApp(
             val isOffline by appState.isOffline.collectAsStateWithLifecycle()
 
             val translationCount by viewModel.translationCount.collectAsStateWithLifecycle()
-            val appTranslator = remember(translationCount) {
-                AppTranslator(translator = viewModel.translator)
-            }
+            val translator = viewModel.translator
 
             LaunchedEffect(isOffline) {
-                val notConnectedMessage = appTranslator.translator("info.no_internet")
+                val notConnectedMessage = translator("info.no_internet")
                 if (isOffline) snackbarHostState.showSnackbar(
                     message = notConnectedMessage,
                     duration = SnackbarDuration.Indefinite,
@@ -120,7 +117,7 @@ fun CrisisCleanupApp(
             } else {
                 // Render content even if translations are not fully downloaded in case internet connection is not available.
                 // Translations without fallbacks will show until translations are downloaded.
-                CompositionLocalProvider(LocalAppTranslator provides appTranslator) {
+                CompositionLocalProvider(LocalAppTranslator provides translator) {
                     LoadedContent(
                         snackbarHostState,
                         appState,
@@ -271,7 +268,7 @@ private fun NavigableContent(
             ) {
                 val title = headerTitle.ifBlank {
                     appState.currentTopLevelDestination?.let { destination ->
-                        LocalAppTranslator.current.translator(destination.titleTranslateKey)
+                        LocalAppTranslator.current(destination.titleTranslateKey)
                     } ?: ""
                 }
                 val onOpenIncidents = if (appState.isMenuRoute) openIncidentsSelect else null
@@ -367,7 +364,7 @@ private fun ExpiredAccountAlert(
     translationCount: Int,
     openAuthentication: () -> Unit,
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     val message = translator("info.log_in_for_updates")
     val loginText = translator("actions.login", authenticationR.string.login)
     LaunchedEffect(translationCount) {
@@ -398,7 +395,7 @@ private fun AppHeader(
     @DrawableRes disasterIconResId: Int = 0,
     onOpenIncidents: (() -> Unit)? = null,
 ) {
-    val t = LocalAppTranslator.current.translator
+    val t = LocalAppTranslator.current
     val actionText = t("actions.account")
     TopAppBarDefault(
         modifier = modifier,
@@ -451,7 +448,7 @@ private fun CrisisCleanupNavRail(
     currentDestination: NavDestination?,
     modifier: Modifier = Modifier,
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     CrisisCleanupNavigationRail(modifier = modifier) {
         destinations.forEach { destination ->
             val title = translator(destination.titleTranslateKey)
@@ -473,7 +470,7 @@ private fun CrisisCleanupBottomBar(
     currentDestination: NavDestination?,
     modifier: Modifier = Modifier
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     CrisisCleanupNavigationBar(modifier = modifier) {
         destinations.forEach { destination ->
             val title = translator(destination.titleTranslateKey)

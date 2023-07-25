@@ -53,7 +53,7 @@ internal fun BoxScope.CopiedToClipboard(
                 .padding(horizontal = 4.dp, vertical = verticalOffset),
             containerColor = navigationContainerColor,
         ) {
-            val translator = LocalAppTranslator.current.translator
+            val translator = LocalAppTranslator.current
             val copiedText = translator("info.copied_value")
                 .replace("{copied_string}", clipboardContents)
             Text(

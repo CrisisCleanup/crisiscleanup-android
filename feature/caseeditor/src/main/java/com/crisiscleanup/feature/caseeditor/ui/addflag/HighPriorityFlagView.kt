@@ -47,7 +47,7 @@ internal fun ColumnScope.HighPriorityFlagView(
     onBack: () -> Unit = {},
     isEditable: Boolean = false,
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
 
     var isHighPriority by remember { mutableStateOf(false) }
 
@@ -145,7 +145,7 @@ private fun ContactsDialog(
     contacts: List<PersonContact>,
     onCloseDialog: () -> Unit,
 ) {
-    val translator = LocalAppTranslator.current.translator
+    val translator = LocalAppTranslator.current
     CrisisCleanupAlertDialog(
         title = translator("flag.primary_contacts"),
         onDismissRequest = onCloseDialog,
