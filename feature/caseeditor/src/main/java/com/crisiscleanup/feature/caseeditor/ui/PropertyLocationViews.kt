@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -18,6 +20,7 @@ import com.crisiscleanup.core.designsystem.component.HelpRow
 import com.crisiscleanup.core.designsystem.component.OutlinedSingleLineTextField
 import com.crisiscleanup.core.designsystem.component.WithHelpDialog
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.feature.caseeditor.CaseLocationDataEditor
@@ -124,20 +127,24 @@ private fun LocationMapActionBar(
         val modifier = Modifier
             .padding(8.dp)
             .weight(1f)
-        CrisisCleanupIconTextButton(
-            modifier = modifier,
-            iconResId = R.drawable.ic_select_on_map,
-            label = translator("caseForm.select_on_map"),
-            onClick = moveLocationOnMap,
-            enabled = isEditable,
-        )
-        CrisisCleanupIconTextButton(
-            modifier = modifier,
-            iconResId = R.drawable.ic_use_my_location,
-            label = translator("caseForm.use_my_location"),
-            onClick = useMyLocation,
-            enabled = isEditable,
-        )
+        CompositionLocalProvider(
+            LocalTextStyle provides LocalFontStyles.current.header4,
+        ) {
+            CrisisCleanupIconTextButton(
+                modifier = modifier,
+                iconResId = R.drawable.ic_select_on_map,
+                label = translator("caseForm.select_on_map"),
+                onClick = moveLocationOnMap,
+                enabled = isEditable,
+            )
+            CrisisCleanupIconTextButton(
+                modifier = modifier,
+                iconResId = R.drawable.ic_use_my_location,
+                label = translator("caseForm.use_my_location"),
+                onClick = useMyLocation,
+                enabled = isEditable,
+            )
+        }
     }
 }
 

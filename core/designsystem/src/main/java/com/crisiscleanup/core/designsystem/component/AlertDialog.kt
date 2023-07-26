@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 
 @Composable
 fun CrisisCleanupAlertDialog(
@@ -28,7 +29,12 @@ fun CrisisCleanupAlertDialog(
     textContent: @Composable () -> Unit = {},
 ) {
     val titleComposable: @Composable () -> Unit = if (title.isBlank()) titleContent else {
-        @Composable { Text(title) }
+        @Composable {
+            Text(
+                title,
+                style = LocalFontStyles.current.header3,
+            )
+        }
     }
     val textComposable: @Composable () -> Unit = {
         CompositionLocalProvider(

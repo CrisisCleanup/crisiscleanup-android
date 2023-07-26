@@ -20,6 +20,7 @@ import com.crisiscleanup.core.designsystem.component.CollapsibleIcon
 import com.crisiscleanup.core.designsystem.component.HelpAction
 import com.crisiscleanup.core.designsystem.component.WithHelpDialog
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.attentionBackgroundColor
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
@@ -50,9 +51,8 @@ private fun CircleNumber(
     }
 }
 
-// TODO Common styles
 private val headerTextStyle: TextStyle
-    @Composable @ReadOnlyComposable get() = MaterialTheme.typography.titleMedium
+    @Composable @ReadOnlyComposable get() = LocalFontStyles.current.header3
 
 @Composable
 internal fun SectionHeaderCollapsible(

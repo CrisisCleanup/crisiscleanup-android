@@ -19,8 +19,10 @@ import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.Incident
@@ -40,14 +42,13 @@ internal fun CaseIncidentView(
             .listItemPadding()
             .listItemHeight(),
         verticalAlignment = Alignment.CenterVertically,
-        // TODO Common dimensions
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        horizontalArrangement = listItemSpacedBy,
     ) {
         DisasterIcon(disasterResId, incidentName)
         Text(
             incidentName,
             Modifier.weight(1f),
-            style = MaterialTheme.typography.headlineSmall,
+            style = LocalFontStyles.current.header1,
         )
 
         val translator = LocalAppTranslator.current

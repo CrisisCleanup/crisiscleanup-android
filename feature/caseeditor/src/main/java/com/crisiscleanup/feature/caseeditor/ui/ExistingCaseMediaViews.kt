@@ -20,7 +20,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -50,6 +49,7 @@ import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.OpenSettingsDialog
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.designsystem.theme.primaryBlueOneTenthColor
@@ -108,7 +108,7 @@ private fun AddMediaView(
             )
             Text(
                 text,
-                style = MaterialTheme.typography.titleMedium,
+                style = LocalFontStyles.current.header5,
                 textAlign = TextAlign.Center,
                 color = contentColor,
             )
@@ -131,7 +131,7 @@ internal fun PhotosSection(
     Text(
         title,
         listItemModifier,
-        style = MaterialTheme.typography.titleMedium,
+        style = LocalFontStyles.current.header4,
     )
 
     val gridState = rememberLazyStaggeredGridState()

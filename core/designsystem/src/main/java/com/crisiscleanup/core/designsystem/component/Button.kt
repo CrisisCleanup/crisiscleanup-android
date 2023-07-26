@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -93,19 +94,12 @@ private fun primaryButtonColors() = ButtonDefaults.buttonColors(
 private fun Text(
     @StringRes textResId: Int = 0,
     text: String = "",
+    style: TextStyle = LocalFontStyles.current.header4,
 ) {
-    val style = LocalFontStyles.current.header4
-    if (textResId != 0) {
-        Text(
-            stringResource(textResId),
-            style = style,
-        )
-    } else {
-        Text(
-            text,
-            style = style,
-        )
-    }
+    Text(
+        if (textResId != 0) stringResource(textResId) else text,
+        style = style,
+    )
 }
 
 @Composable
@@ -118,6 +112,7 @@ fun BusyButton(
     indicateBusy: Boolean = false,
     colors: ButtonColors = primaryButtonColors(),
     isSharpCorners: Boolean = false,
+    style: TextStyle = LocalFontStyles.current.header4,
 ) {
     val shape = if (isSharpCorners) RectangleShape else roundedRectangleButtonShape()
     Button(
@@ -132,7 +127,7 @@ fun BusyButton(
             // TODO Common dimensions
             CircularProgressIndicator(Modifier.size(24.dp))
         } else {
-            Text(textResId, text)
+            Text(textResId, text, style)
         }
     }
 }

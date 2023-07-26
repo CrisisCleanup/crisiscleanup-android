@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -21,6 +23,7 @@ import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
@@ -93,15 +96,19 @@ private fun EditCaseMapMoveLocationScreen(
             }
 
             val useMyLocation = remember(viewModel) { { editor.useMyLocation() } }
-            CrisisCleanupIconTextButton(
-                modifier = Modifier
-                    .listItemHeight()
-                    .fillMaxWidth(),
-                iconResId = R.drawable.ic_use_my_location,
-                label = translator("caseForm.use_my_location"),
-                onClick = useMyLocation,
-                enabled = isEditable,
-            )
+            CompositionLocalProvider(
+                LocalTextStyle provides LocalFontStyles.current.header4,
+            ) {
+                CrisisCleanupIconTextButton(
+                    modifier = Modifier
+                        .listItemHeight()
+                        .fillMaxWidth(),
+                    iconResId = R.drawable.ic_use_my_location,
+                    label = translator("caseForm.use_my_location"),
+                    onClick = useMyLocation,
+                    enabled = isEditable,
+                )
+            }
 
             SaveActionBar(viewModel, editor, onBack, isEditable)
         } else {

@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -38,9 +39,14 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.avatarAttentionColor
 import com.crisiscleanup.core.designsystem.theme.avatarStandardColor
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
+
+private val titleStyle: TextStyle
+    @Composable
+    get() = LocalFontStyles.current.header3
 
 @Composable
 fun TruncatedAppBarText(
@@ -57,6 +63,7 @@ fun TruncatedAppBarText(
         modifier = modifier.widthIn(max = maxWidth),
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
+        style = titleStyle,
     )
 }
 
@@ -167,7 +174,8 @@ fun TopAppBarBackCancel(
                 // TODO Style, height of app bar
                 modifier
                     .clickable(onClick = onCancel)
-                    .padding(8.dp)
+                    .padding(8.dp),
+                style = titleStyle,
             )
         }
     CenterAlignedTopAppBar(
@@ -185,7 +193,7 @@ private fun TopBarNavAction(
     action: () -> Unit = {},
     @StringRes textResId: Int = 0,
     text: String = "",
-    image: ImageVector? = null,
+    image: ImageVector? = CrisisCleanupIcons.ArrowBack,
 ) {
     // TODO Text style and match height of app bar
     Row(
@@ -202,10 +210,7 @@ private fun TopBarNavAction(
                     contentDescription = actionText,
                 )
             }
-            Text(
-                actionText,
-                style = MaterialTheme.typography.bodyLarge,
-            )
+            Text(actionText)
         }
     }
 }
@@ -219,7 +224,6 @@ fun TopBarBackAction(
         modifier,
         action,
         text = LocalAppTranslator.current("actions.back"),
-        image = CrisisCleanupIcons.ArrowBack,
     )
 }
 
@@ -275,7 +279,6 @@ fun TopAppBarBackCaretAction(
                 modifier,
                 onAction,
                 text = LocalAppTranslator.current(navigationTranslateKey),
-                image = CrisisCleanupIcons.ArrowBack,
             )
         }
     CenterAlignedTopAppBar(

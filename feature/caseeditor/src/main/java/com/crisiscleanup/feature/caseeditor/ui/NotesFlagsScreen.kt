@@ -37,7 +37,6 @@ internal fun NoteView(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier) {
-        // TODO Different styling when isSurvivor and not
         val relativeDate = note.getRelativeDate()
         if (relativeDate.isNotEmpty()) {
             Text(

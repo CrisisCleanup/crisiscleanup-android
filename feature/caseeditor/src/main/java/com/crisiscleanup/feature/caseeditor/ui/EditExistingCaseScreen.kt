@@ -68,7 +68,6 @@ import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.filterNotBlankTrim
 import com.crisiscleanup.core.common.urlEncode
 import com.crisiscleanup.core.commoncase.model.addressQuery
-import com.crisiscleanup.core.designsystem.AppTranslator
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupFab
@@ -81,6 +80,7 @@ import com.crisiscleanup.core.designsystem.component.TopBarBackAction
 import com.crisiscleanup.core.designsystem.component.actionEdgeSpace
 import com.crisiscleanup.core.designsystem.component.fabPlusSpaceHeight
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
@@ -269,7 +269,10 @@ private fun TopBar(
             ),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(title)
+            Text(
+                title,
+                style = LocalFontStyles.current.header3,
+            )
 
             if (subTitle.isNotBlank()) {
                 Text(
@@ -350,7 +353,12 @@ private fun ColumnScope.ExistingCaseContent(
     ) {
         tabTitles.forEachIndexed { index, title ->
             Tab(
-                text = { Text(title) },
+                text = {
+                    Text(
+                        title,
+                        style = LocalFontStyles.current.header4,
+                    )
+                },
                 selected = selectedTabIndex == index,
                 onClick = {
                     coroutine.launch {

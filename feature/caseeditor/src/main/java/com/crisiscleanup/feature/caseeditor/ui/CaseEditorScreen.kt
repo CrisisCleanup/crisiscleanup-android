@@ -40,6 +40,7 @@ import com.crisiscleanup.core.designsystem.component.rememberFocusSectionSliderS
 import com.crisiscleanup.core.designsystem.component.rememberSectionContentIndexLookup
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.LocalDimensions
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.ui.ScreenKeyboardVisibility
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
@@ -557,6 +558,7 @@ private fun SaveActionBar(
             ),
         horizontalArrangement = dimensions.itemInnerSpacingHorizontalFlexible,
     ) {
+        val style = LocalFontStyles.current.header5
         BusyButton(
             Modifier.weight(1f),
             text = cancelText,
@@ -564,6 +566,7 @@ private fun SaveActionBar(
             onClick = onCancel,
             colors = cancelButtonColors(),
             isSharpCorners = isSharpCorners,
+            style = style,
         )
         BusyButton(
             Modifier.weight(1.5f),
@@ -572,6 +575,7 @@ private fun SaveActionBar(
             indicateBusy = isSaving,
             onClick = onClaimAndSave,
             isSharpCorners = isSharpCorners,
+            style = style,
         )
         BusyButton(
             Modifier.weight(1.1f),
@@ -580,6 +584,7 @@ private fun SaveActionBar(
             indicateBusy = isSaving,
             onClick = onSave,
             isSharpCorners = isSharpCorners,
+            style = style,
         )
     }
 }

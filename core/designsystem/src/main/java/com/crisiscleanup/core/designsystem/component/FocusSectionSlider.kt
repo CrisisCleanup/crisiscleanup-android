@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -25,6 +26,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
@@ -71,10 +73,11 @@ fun FocusSectionSlider(
             ) {
                 if (index < editSections.size) {
                     val sectionTitle = editSections[index]
-                    androidx.compose.material3.Text(
+                    Text(
                         "${index + 1}. $sectionTitle",
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
+                        style = LocalFontStyles.current.header4,
                     )
 
                 } else {

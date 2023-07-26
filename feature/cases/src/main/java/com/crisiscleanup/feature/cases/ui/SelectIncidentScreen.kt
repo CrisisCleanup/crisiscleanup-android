@@ -23,7 +23,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -33,9 +32,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.domain.IncidentsData
 import com.crisiscleanup.core.model.data.Incident
-import com.crisiscleanup.feature.cases.R
 import com.crisiscleanup.feature.cases.SelectIncidentViewModel
 
 @Composable
@@ -82,7 +81,7 @@ fun SelectIncidentDialog(
                     Text(
                         modifier = Modifier.padding(textPadding),
                         text = LocalAppTranslator.current("nav.change_incident"),
-                        style = MaterialTheme.typography.titleLarge
+                        style = LocalFontStyles.current.header3,
                     )
 
                     val incidents = (incidentsData as IncidentsData.Incidents).incidents
