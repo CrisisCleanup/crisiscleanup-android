@@ -746,7 +746,7 @@ private fun BoxScope.CasesTableView(
 
     Column(
         Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .background(Color.White),
     ) {
         Row(
@@ -802,6 +802,15 @@ private fun BoxScope.CasesTableView(
         }
 
         val tableData by viewModel.tableData.collectAsStateWithLifecycle()
+
+        val tableSortMessage by viewModel.tableSortResultsMessage.collectAsStateWithLifecycle()
+        if (tableSortMessage.isNotBlank()) {
+            Text(
+                tableSortMessage,
+                listItemModifier,
+                style = LocalFontStyles.current.header3,
+            )
+        }
 
         val listState = rememberLazyListState()
         LazyColumn(
@@ -1001,6 +1010,11 @@ private fun TableViewItem(
             // TODO If single phone open to dialer
             //      If multiple dropdown and open to dialer on each
             //      If no numbers parsed and has text show dialog
+            //      Parse each phone number by
+            //      1. Replacing all non-numerics with blanks
+            //      2. Replacing all consecutive spaces more than 1 space with with a new line
+            //      3. Remove single spaces consolidating number sequences
+            //      4. List remaining numbers of there are any 10 or 9 digit numbers or original numbers with newlines if no numbers recognized
             CrisisCleanupOutlinedButton(
                 onClick = { /*TODO*/ },
                 // TODO Enable if has any phone numbers
@@ -1022,13 +1036,13 @@ private fun TableViewItem(
                 )
             }
 
-            // TODO Add to team
+            // TODO Implement add to team when team management is in play
 
             Spacer(modifier = Modifier.weight(1f))
 
             // TODO Show busy and determine work type state then show correct action
-            //      Enable if is editable
-            Text("actions")
+            //      Enable if isEditable
+            // Text("actions")
         }
     }
 }

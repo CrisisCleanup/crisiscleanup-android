@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppMemoryStats
 import com.crisiscleanup.core.common.HaversineDistance
+import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.PermissionStatus
@@ -108,6 +109,7 @@ class CasesViewModel @Inject constructor(
     private val appPreferencesRepository: LocalAppPreferencesRepository,
     worksiteProvider: WorksiteProvider,
     worksiteChangeRepository: WorksiteChangeRepository,
+    private val translator: KeyResourceTranslator,
     private val syncPuller: SyncPuller,
     val visualAlertManager: VisualAlertManager,
     appMemoryStats: AppMemoryStats,
@@ -138,6 +140,8 @@ class CasesViewModel @Inject constructor(
 
     val isTableView = qsm.isTableView
 
+    val tableDataDistanceSortSearchRadius = 100.0f
+
     val tableViewSort = appPreferencesRepository.userPreferences
         .map { it.tableViewSortBy }
         .distinctUntilChanged()
@@ -147,6 +151,7 @@ class CasesViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
     private val pendingTableSort = AtomicReference(WorksiteSortBy.None)
+    val tableSortResultsMessage = MutableStateFlow("")
 
     private val tableViewDataLoader = CasesTableViewDataLoader(
         worksiteProvider,
@@ -266,6 +271,7 @@ class CasesViewModel @Inject constructor(
     )
         .mapLatest { (_, wqs) ->
             if (wqs.isTableView) {
+                tableSortResultsMessage.value = ""
                 fetchTableData(wqs)
             } else {
                 emptyList()
@@ -416,6 +422,15 @@ class CasesViewModel @Inject constructor(
             }
 
             WorksiteDistance(worksite, distance)
+        }
+
+        if (isDistanceSort && tableData.isEmpty()) {
+            tableSortResultsMessage.value =
+                translator("~~No Cases were found within {search_radius} mi.")
+                    .replace(
+                        "{search_radius}",
+                        tableDataDistanceSortSearchRadius.toInt().toString()
+                    )
         }
 
         tableData

@@ -17,7 +17,7 @@ internal class CasesQueryStateManager(
     coroutineScope: CoroutineScope,
     mapChangeDebounceTimeout: Long = 50,
 ) {
-    val isTableView = MutableStateFlow(false)
+    val isTableView = MutableStateFlow(true)
 
     val mapZoom = MutableStateFlow(0f)
 

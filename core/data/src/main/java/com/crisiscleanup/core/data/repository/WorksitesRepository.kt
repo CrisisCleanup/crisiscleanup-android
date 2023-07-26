@@ -87,6 +87,7 @@ interface WorksitesRepository {
         sortBy: WorksiteSortBy,
         latitude: Double,
         longitude: Double,
+        searchRadius: Float = 100f,
         count: Int = 360,
     ): List<Worksite>
 }

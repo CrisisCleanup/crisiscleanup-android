@@ -280,6 +280,8 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         sortBy: WorksiteSortBy,
         latitude: Double,
         longitude: Double,
+        // miles
+        searchRadius: Float,
         count: Int,
     ): List<Worksite> = coroutineScope {
         val queryCount = count.coerceAtLeast(100)
@@ -289,6 +291,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
                 latitude,
                 longitude,
                 queryCount,
+                searchRadius,
             )
 
             WorksiteSortBy.Name -> worksiteDao.getWorksitesOrderByName(incidentId, queryCount)
@@ -319,6 +322,8 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         latitude: Double,
         longitude: Double,
         count: Int,
+        // miles
+        searchRadius: Float = 100.0f,
     ): List<PopulatedWorksite> = coroutineScope {
         val strideCount = 100
 
@@ -328,13 +333,14 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         if (worksiteCount <= count) {
             boundedWorksites = worksiteDao.getWorksites(incidentId)
         } else {
-            // 161 km ~= 100 mi
-            val radialDegrees = 161 / 111.0
+            val r = searchRadius.coerceAtLeast(24.0f)
+            val latitudeRadialDegrees = r / 69.0
+            val longitudeRadialDegrees = r / 54.6
             val areaBounds = SwNeBounds(
-                south = (latitude - radialDegrees).coerceAtLeast(-90.0),
-                north = (latitude + radialDegrees).coerceAtMost(90.0),
-                west = (longitude - radialDegrees).coerceAtLeast(-180.0),
-                east = (longitude + radialDegrees).coerceAtMost(180.0),
+                south = (latitude - latitudeRadialDegrees).coerceAtLeast(-90.0),
+                north = (latitude + latitudeRadialDegrees).coerceAtMost(90.0),
+                west = (longitude - longitudeRadialDegrees).coerceAtLeast(-180.0),
+                east = (longitude + longitudeRadialDegrees).coerceAtMost(180.0),
             )
             val boundedWorksiteRectCount = worksiteDao.getBoundedWorksiteCount(
                 incidentId,
