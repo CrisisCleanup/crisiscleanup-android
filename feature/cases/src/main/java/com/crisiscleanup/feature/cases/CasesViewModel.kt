@@ -27,10 +27,12 @@ import com.crisiscleanup.core.common.radians
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.commonassets.getDisasterIcon
+import com.crisiscleanup.core.commoncase.WorksiteProvider
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.CasesFilterRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
+import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.data.util.IncidentDataPullReporter
 import com.crisiscleanup.core.data.util.IncidentDataPullStats
@@ -60,9 +62,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
@@ -78,6 +80,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import kotlin.math.PI
@@ -103,6 +106,8 @@ class CasesViewModel @Inject constructor(
     private val locationProvider: LocationProvider,
     filterRepository: CasesFilterRepository,
     private val appPreferencesRepository: LocalAppPreferencesRepository,
+    worksiteProvider: WorksiteProvider,
+    worksiteChangeRepository: WorksiteChangeRepository,
     private val syncPuller: SyncPuller,
     val visualAlertManager: VisualAlertManager,
     appMemoryStats: AppMemoryStats,
@@ -142,6 +147,21 @@ class CasesViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
     private val pendingTableSort = AtomicReference(WorksiteSortBy.None)
+
+    private val tableViewDataLoader = CasesTableViewDataLoader(
+        worksiteProvider,
+        worksitesRepository,
+        worksiteChangeRepository,
+    )
+    val isLoadingTableViewData = tableViewDataLoader.isLoading
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    val openWorksiteAddFlagCounter = MutableStateFlow(0)
+    private val openWorksiteAddFlag = AtomicBoolean(false)
 
     fun setContentViewType(isTableView: Boolean) {
         this.isTableView.value = isTableView
@@ -196,7 +216,7 @@ class CasesViewModel @Inject constructor(
     ) { b0, b1, b2 -> b0 || b1 || b2 }
 
     private val isFetchingTableData = MutableStateFlow(false)
-    val isTableBusy: Flow<Boolean> = isFetchingTableData
+    val isTableBusy: StateFlow<Boolean> = isFetchingTableData
 
     private val mapMarkerManager = CasesMapMarkerManager(
         worksitesRepository,
@@ -601,7 +621,6 @@ class CasesViewModel @Inject constructor(
 
     private fun setSortBy(sortBy: WorksiteSortBy) {
         viewModelScope.launch(ioDispatcher) {
-            logger.logDebug("Updating sort by $sortBy")
             appPreferencesRepository.setTableViewSortBy(sortBy)
         }
     }
@@ -631,6 +650,17 @@ class CasesViewModel @Inject constructor(
             setSortBy(sortBy)
         }
     }
+
+    fun onOpenCaseFlags(worksite: Worksite) {
+        viewModelScope.launch(ioDispatcher) {
+            if (tableViewDataLoader.loadWorksiteForAddFlags(worksite.id)) {
+                openWorksiteAddFlag.set(true)
+                openWorksiteAddFlagCounter.value++
+            }
+        }
+    }
+
+    fun takeOpenWorksiteAddFlag() = openWorksiteAddFlag.getAndSet(false)
 
     // TrimMemoryListener
 

@@ -215,6 +215,15 @@ private val NoRippleTheme = object : RippleTheme {
     override fun rippleAlpha() = RippleAlpha(0f, 0f, 0f, 0f)
 }
 
+private val fabElevationZero: FloatingActionButtonElevation
+    @Composable
+    get() = FloatingActionButtonDefaults.elevation(
+        defaultElevation = 0.dp,
+        pressedElevation = 0.dp,
+        focusedElevation = 0.dp,
+        hoveredElevation = 0.dp,
+    )
+
 @Composable
 fun CrisisCleanupFab(
     onClick: () -> Unit,
@@ -229,13 +238,15 @@ fun CrisisCleanupFab(
     CompositionLocalProvider(
         LocalRippleTheme provides if (enabled) LocalRippleTheme.current else NoRippleTheme
     ) {
+        // TODO Complex conditions below are due to some bug when shape is not a circle.
+        //      Container color would not need the condition if elevation changed as expected.
+        //      Elevation does not change as expected when shape is not a circle.
+        //      File a bug or wait for fixes in the future.
         FloatingActionButton(
             modifier = modifier,
-            containerColor = if (enabled) containerColor else disabledButtonContainerColor,
+            containerColor = if (enabled || shape != CircleShape) containerColor else disabledButtonContainerColor,
             contentColor = if (enabled) contentColor else disabledButtonContentColor,
-            elevation = if (enabled) elevation else FloatingActionButtonDefaults.elevation(
-                defaultElevation = 0.dp,
-            ),
+            elevation = if (enabled) elevation else fabElevationZero,
             shape = shape,
             onClick = {
                 if (enabled) {

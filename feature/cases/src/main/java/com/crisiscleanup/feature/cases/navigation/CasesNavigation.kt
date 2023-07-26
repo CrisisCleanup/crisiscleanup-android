@@ -21,6 +21,7 @@ fun NavGraphBuilder.casesGraph(
     filterCases: () -> Unit = {},
     createCase: (Long) -> Unit = {},
     viewCase: (Long, Long) -> Boolean = { _, _ -> false },
+    caseAddFlag: () -> Unit = {},
 ) {
     navigation(
         route = casesGraphRoutePattern,
@@ -42,6 +43,7 @@ fun NavGraphBuilder.casesGraph(
                 onCasesAction = rememberOnCasesAction,
                 createNewCase = createCase,
                 viewCase = viewCase,
+                openAddFlag = caseAddFlag,
             )
         }
 

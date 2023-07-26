@@ -68,6 +68,7 @@ class DesignSystemDetector : Detector(), Detector.UastScanner {
             "OutlinedButton" to "CrisisCleanupOutlinedButton",
             "TextButton" to "CrisisCleanupTextButton",
             "RadioButton" to "CrisisCleanupRadioButton",
+            "FloatingActionButton" to "CrisisCleanupFab",
             "FilterChip" to "CrisisCleanupFilterChip",
             "ElevatedFilterChip" to "CrisisCleanupFilterChip",
             // "DropdownMenu" to "CrisisCleanupDropdownMenu",

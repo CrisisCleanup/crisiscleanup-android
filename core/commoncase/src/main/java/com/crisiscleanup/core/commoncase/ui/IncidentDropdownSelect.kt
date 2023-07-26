@@ -10,14 +10,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.commonassets.DisasterIcon
 import com.crisiscleanup.core.designsystem.component.TruncatedAppBarText
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 
 @Composable
 fun IncidentDropdownSelect(
@@ -27,31 +29,39 @@ fun IncidentDropdownSelect(
     title: String = "",
     contentDescription: String = "",
     isLoading: Boolean = false,
+    enabled: Boolean = true,
 ) {
     Row(
-        modifier = modifier.clickable(onClick = onOpenIncidents),
+        modifier = modifier.clickable(
+            onClick = onOpenIncidents,
+            enabled = enabled,
+        ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        DisasterIcon(disasterIconResId, title)
-        TruncatedAppBarText(
-            title = title,
-            modifier = Modifier.padding(start = 8.dp),
-        )
-        Icon(
-            imageVector = CrisisCleanupIcons.ArrowDropDown,
-            contentDescription = contentDescription,
-            tint = MaterialTheme.colorScheme.primary,
-        )
-        AnimatedVisibility(
-            visible = isLoading,
-            enter = fadeIn(),
-            exit = fadeOut()
+        val contentColor = LocalContentColor.current
+        CompositionLocalProvider(
+            LocalContentColor provides if (enabled) contentColor else contentColor.disabledAlpha()
         ) {
-            CircularProgressIndicator(
-                modifier
-                    .size(48.dp)
-                    .padding(8.dp)
+            DisasterIcon(disasterIconResId, title)
+            TruncatedAppBarText(
+                title = title,
+                modifier = Modifier.padding(start = 8.dp),
             )
+            Icon(
+                imageVector = CrisisCleanupIcons.ArrowDropDown,
+                contentDescription = contentDescription,
+            )
+            AnimatedVisibility(
+                visible = isLoading,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                CircularProgressIndicator(
+                    modifier
+                        .size(48.dp)
+                        .padding(8.dp)
+                )
+            }
         }
     }
 }

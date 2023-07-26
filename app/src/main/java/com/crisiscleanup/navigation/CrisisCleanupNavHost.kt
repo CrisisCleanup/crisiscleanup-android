@@ -18,6 +18,7 @@ import com.crisiscleanup.feature.caseeditor.navigation.caseHistoryScreen
 import com.crisiscleanup.feature.caseeditor.navigation.caseShareScreen
 import com.crisiscleanup.feature.caseeditor.navigation.existingCaseScreen
 import com.crisiscleanup.feature.caseeditor.navigation.existingCaseTransferWorkTypesScreen
+import com.crisiscleanup.feature.caseeditor.navigation.navigateToCaseAddFlag
 import com.crisiscleanup.feature.caseeditor.navigation.navigateToCaseEditor
 import com.crisiscleanup.feature.caseeditor.navigation.navigateToExistingCase
 import com.crisiscleanup.feature.caseeditor.navigation.rerouteToCaseChange
@@ -102,6 +103,8 @@ fun CrisisCleanupNavHost(
         }
     }
 
+    val navToCaseAddFlag = remember(navController) { { navController.navigateToCaseAddFlag() } }
+
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -124,6 +127,7 @@ fun CrisisCleanupNavHost(
             filterCases = openFilterCases,
             createCase = createNewCase,
             viewCase = viewCase,
+            caseAddFlag = navToCaseAddFlag,
         )
         dashboardScreen()
         teamScreen()

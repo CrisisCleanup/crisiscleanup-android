@@ -57,11 +57,13 @@ private fun CasesActionButton(
 internal fun CasesActionFlatButton(
     action: CasesAction,
     onCasesAction: (CasesAction) -> Unit,
+    enabled: Boolean = false,
 ) {
     CrisisCleanupIconButton(
         iconResId = action.iconResId,
         contentDescription = LocalAppTranslator.current(action.descriptionTranslateKey),
         onClick = { onCasesAction(action) },
+        enabled = enabled,
     )
 }
 

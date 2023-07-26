@@ -31,6 +31,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -66,6 +67,7 @@ import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupFab
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupOutlinedButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.ExplainLocationPermissionDialog
@@ -77,6 +79,7 @@ import com.crisiscleanup.core.designsystem.component.actionSize
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
+import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContainerColor
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContentColor
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
@@ -123,7 +126,15 @@ internal fun CasesRoute(
     onCasesAction: (CasesAction) -> Unit = { },
     createNewCase: (Long) -> Unit = {},
     viewCase: (Long, Long) -> Boolean = { _, _ -> false },
+    openAddFlag: () -> Unit = {},
 ) {
+    val openAddFlagCounter by viewModel.openWorksiteAddFlagCounter.collectAsStateWithLifecycle()
+    LaunchedEffect(openAddFlagCounter) {
+        if (viewModel.takeOpenWorksiteAddFlag()) {
+            openAddFlag()
+        }
+    }
+
     val incidentsData by viewModel.incidentsData.collectAsStateWithLifecycle(IncidentsData.Loading)
     val isIncidentLoading by viewModel.isIncidentLoading.collectAsState(true)
     if (incidentsData is IncidentsData.Incidents) {
@@ -161,7 +172,7 @@ internal fun CasesRoute(
         }
         val filtersCount by viewModel.filtersCount.collectAsStateWithLifecycle(0)
         val isMapBusy by viewModel.isMapBusy.collectAsStateWithLifecycle(false)
-        val isTableBusy by viewModel.isTableBusy.collectAsStateWithLifecycle(false)
+        val isTableDataTransient by viewModel.isLoadingTableViewData.collectAsStateWithLifecycle()
         val casesCount by viewModel.casesCount.collectAsStateWithLifecycle()
         val worksitesOnMap by viewModel.worksitesMapMarkers.collectAsStateWithLifecycle()
         val mapCameraBounds by viewModel.incidentLocationBounds.collectAsStateWithLifecycle()
@@ -197,8 +208,9 @@ internal fun CasesRoute(
             isTableView = isTableView,
             isLayerView = isLayerView,
             filtersCount = filtersCount,
-            isMapBusy = isIncidentLoading || isMapBusy,
-            isTableBusy = isIncidentLoading || isTableBusy,
+            isIncidentLoading = isIncidentLoading,
+            isMapBusy = isMapBusy,
+            isTableDataTransient = isTableDataTransient,
             casesCount = casesCount,
             worksitesOnMap = worksitesOnMap,
             mapCameraBounds = mapCameraBounds,
@@ -328,8 +340,9 @@ internal fun CasesScreen(
     isTableView: Boolean = false,
     isLayerView: Boolean = false,
     filtersCount: Int = 0,
+    isIncidentLoading: Boolean = false,
     isMapBusy: Boolean = false,
-    isTableBusy: Boolean = false,
+    isTableDataTransient: Boolean = false,
     casesCount: Pair<Int, Int> = Pair(0, 0),
     worksitesOnMap: List<WorksiteGoogleMapMark> = emptyList(),
     mapCameraBounds: MapViewCameraBounds = MapViewCameraBoundsDefault,
@@ -349,7 +362,8 @@ internal fun CasesScreen(
     Box(modifier.then(Modifier.fillMaxSize())) {
         if (isTableView) {
             CasesTableView(
-                isTableBusy = isTableBusy,
+                isIncidentLoading = isIncidentLoading,
+                isTableDataTransient = isTableDataTransient,
                 disasterResId = disasterResId,
                 openIncidentSelect = onSelectIncident,
                 onCasesAction = onCasesAction,
@@ -361,7 +375,7 @@ internal fun CasesScreen(
             CasesMapView(
                 mapCameraBounds,
                 mapCameraZoom,
-                isMapBusy,
+                isIncidentLoading || isMapBusy,
                 worksitesOnMap,
                 tileChangeValue,
                 clearTileLayer,
@@ -384,6 +398,7 @@ internal fun CasesScreen(
             isTableView,
             casesCount,
             filtersCount,
+            disableTableViewActions = isTableDataTransient,
         )
 
         AnimatedVisibility(
@@ -536,6 +551,7 @@ private fun CasesOverlayElements(
     isTableView: Boolean = false,
     casesCount: Pair<Int, Int> = Pair(0, 0),
     filtersCount: Int = 0,
+    disableTableViewActions: Boolean = false,
 ) {
     val translator = LocalAppTranslator.current
 
@@ -614,8 +630,10 @@ private fun CasesOverlayElements(
             }
         }
 
+        val enableLowerActions = !isTableView || !disableTableViewActions
+
         val onNewCase = remember(onCasesAction) { { onCasesAction(CasesAction.CreateNew) } }
-        FloatingActionButton(
+        CrisisCleanupFab(
             modifier = modifier
                 .actionSize()
                 .constrainAs(newCaseFab) {
@@ -624,6 +642,7 @@ private fun CasesOverlayElements(
                 },
             onClick = onNewCase,
             shape = actionRoundCornerShape,
+            enabled = enableLowerActions,
         ) {
             Icon(
                 imageVector = CrisisCleanupIcons.Add,
@@ -637,7 +656,7 @@ private fun CasesOverlayElements(
         val tableMapAction = if (isTableView) CasesAction.MapView else CasesAction.TableView
         val toggleMapTableView = remember(tableMapAction) { { onCasesAction(tableMapAction) } }
         val bottomPadding = actionInnerSpace.plus(additionalBottomPadding)
-        FloatingActionButton(
+        CrisisCleanupFab(
             modifier = modifier
                 .actionSize()
                 .constrainAs(toggleTableMap) {
@@ -646,6 +665,7 @@ private fun CasesOverlayElements(
                 },
             onClick = toggleMapTableView,
             shape = actionRoundCornerShape,
+            enabled = enableLowerActions,
         ) {
             Icon(
                 painter = painterResource(tableMapAction.iconResId),
@@ -698,7 +718,8 @@ private fun CasesCountView(
 @Composable
 private fun BoxScope.CasesTableView(
     viewModel: CasesViewModel = hiltViewModel(),
-    isTableBusy: Boolean = false,
+    isIncidentLoading: Boolean = false,
+    isTableDataTransient: Boolean = false,
     @DrawableRes disasterResId: Int = commonAssetsR.drawable.ic_disaster_other,
     openIncidentSelect: () -> Unit = {},
     onCasesAction: (CasesAction) -> Unit = {},
@@ -708,6 +729,8 @@ private fun BoxScope.CasesTableView(
 ) {
     val translator = LocalAppTranslator.current
 
+    val isTableBusy by viewModel.isTableBusy.collectAsStateWithLifecycle(false)
+
     val tableSort by viewModel.tableViewSort.collectAsStateWithLifecycle()
     val changeTableSort = remember(viewModel) {
         { sortBy: WorksiteSortBy -> viewModel.changeTableSort(sortBy) }
@@ -715,7 +738,11 @@ private fun BoxScope.CasesTableView(
 
     val selectedIncident by viewModel.selectedIncident.collectAsStateWithLifecycle()
 
-    BusyIndicatorFloatingTopCenter(isTableBusy)
+    val isEditable = !isTableDataTransient
+
+    val onOpenFlags = remember(viewModel) {
+        { worksite: Worksite -> viewModel.onOpenCaseFlags(worksite) }
+    }
 
     Column(
         Modifier
@@ -731,13 +758,22 @@ private fun BoxScope.CasesTableView(
                 disasterIconResId = disasterResId,
                 title = selectedIncident.shortName,
                 contentDescription = selectedIncident.shortName,
-                isLoading = isTableBusy,
+                isLoading = isIncidentLoading,
+                enabled = isEditable
             )
 
             Spacer(Modifier.weight(1f))
-            CasesActionFlatButton(CasesAction.Search, onCasesAction)
+            CasesActionFlatButton(
+                CasesAction.Search,
+                onCasesAction,
+                isEditable,
+            )
             FilterButtonBadge(filtersCount) {
-                CasesActionFlatButton(CasesAction.Filters, onCasesAction)
+                CasesActionFlatButton(
+                    CasesAction.Filters,
+                    onCasesAction,
+                    isEditable,
+                )
             }
         }
 
@@ -760,7 +796,7 @@ private fun BoxScope.CasesTableView(
 
             TableViewSortSelect(
                 tableSort,
-                isEditable = !isTableBusy,
+                isEditable = !(isIncidentLoading || isTableBusy || isTableDataTransient),
                 onChange = changeTableSort
             )
         }
@@ -780,11 +816,15 @@ private fun BoxScope.CasesTableView(
                 TableViewItem(
                     it,
                     onViewCase = { onTableItemSelect(it.worksite) },
+                    onOpenFlags = { onOpenFlags(it.worksite) },
+                    isEditable = isEditable,
                 )
                 FormListSectionSeparator()
             }
         }
     }
+
+    BusyIndicatorFloatingTopCenter(isTableBusy || isTableDataTransient)
 }
 
 private val sortByOptions = listOf(
@@ -862,6 +902,8 @@ private val oneDecimalFormat = DecimalFormat("#.#")
 private fun TableViewItem(
     worksiteDistance: WorksiteDistance,
     onViewCase: () -> Unit = {},
+    onOpenFlags: () -> Unit = {},
+    isEditable: Boolean = false,
 ) {
     val translator = LocalAppTranslator.current
 
@@ -870,7 +912,10 @@ private fun TableViewItem(
 
     Column(
         Modifier
-            .clickable(onClick = onViewCase)
+            .clickable(
+                onClick = onViewCase,
+                enabled = isEditable,
+            )
             // TODO Common dimensions
             .padding(16.dp),
         verticalArrangement = listItemSpacedBy,
@@ -885,12 +930,17 @@ private fun TableViewItem(
                     // Similar to IconButton/IconButtonTokens.StateLayer*
                     .size(40.dp)
                     .clip(CircleShape)
-                    .clickable { /*TODO*/ },
+                    .clickable(
+                        onClick = onOpenFlags,
+                        enabled = isEditable,
+                    ),
                 contentAlignment = Alignment.Center,
             ) {
+                val tint = LocalContentColor.current
                 Icon(
                     painterResource(R.drawable.ic_flag_filled_small),
                     contentDescription = translator("nav.flag"),
+                    tint = if (isEditable) tint else tint.disabledAlpha(),
                 )
             }
             Text(
@@ -954,7 +1004,7 @@ private fun TableViewItem(
             CrisisCleanupOutlinedButton(
                 onClick = { /*TODO*/ },
                 // TODO Enable if has any phone numbers
-                enabled = worksite.phone1.isNotBlank(),
+                enabled = isEditable && worksite.phone1.isNotBlank(),
             ) {
                 Icon(
                     imageVector = CrisisCleanupIcons.Phone,
@@ -964,7 +1014,7 @@ private fun TableViewItem(
 
             CrisisCleanupOutlinedButton(
                 onClick = { /*TODO*/ },
-                enabled = locationQuery.isNotBlank(),
+                enabled = isEditable && locationQuery.isNotBlank(),
             ) {
                 Icon(
                     imageVector = CrisisCleanupIcons.Directions,
@@ -977,6 +1027,7 @@ private fun TableViewItem(
             Spacer(modifier = Modifier.weight(1f))
 
             // TODO Show busy and determine work type state then show correct action
+            //      Enable if is editable
             Text("actions")
         }
     }
