@@ -23,6 +23,7 @@ enum class CrisisCleanupLoggers {
     Auth,
     Cases,
     Navigation,
+    Network,
     Token,
     Incidents,
     Worksites,

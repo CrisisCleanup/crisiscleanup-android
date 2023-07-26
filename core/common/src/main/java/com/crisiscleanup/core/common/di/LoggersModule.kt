@@ -41,6 +41,13 @@ object LoggersModule {
     }
 
     @Provides
+    @Logger(CrisisCleanupLoggers.Network)
+    fun providesNetworkLogger(logger: TagLogger): AppLogger {
+        logger.tag = "network"
+        return logger
+    }
+
+    @Provides
     @Logger(CrisisCleanupLoggers.Token)
     fun providesTokenLogger(logger: TagLogger): AppLogger {
         logger.tag = "token"

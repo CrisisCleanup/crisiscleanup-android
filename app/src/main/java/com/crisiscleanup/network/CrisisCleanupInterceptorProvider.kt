@@ -48,13 +48,16 @@ private fun Json.parseNetworkErrors(responseBody: ResponseBody): List<NetworkCri
     return parseNetworkErrors(errorBody)
 }
 
+private val Request.pathsForLog: String
+    get() = url.pathSegments.joinToString("/")
+
 @Singleton
 class CrisisCleanupInterceptorProvider @Inject constructor(
     private val accountDataRepository: AccountDataRepository,
     private val headerKeysLookup: RequestHeaderKeysLookup,
     private val authEventBus: AuthEventBus,
     private val apiClient: CrisisCleanupAuthApi,
-    @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
+    @Logger(CrisisCleanupLoggers.Network) private val logger: AppLogger,
 ) : RetrofitInterceptorProvider {
 
     @OptIn(ExperimentalSerializationApi::class)
@@ -150,11 +153,14 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
 
         val (isExpired, nextResponse) = isExpiredToken(
             response,
-            request.url.pathSegments.joinToString("/"),
+            request.pathsForLog,
         )
         if (isExpired) {
+            logger.logCapture("Expired token trying refresh ${request.pathsForLog}")
             runBlocking {
                 if (refreshTokens()) {
+                    logger.logCapture(("Closing response before  ${request.pathsForLog}"))
+                    response.close()
                     return@runBlocking setAuthorizationHeader(request)
                 }
                 return@runBlocking null
@@ -164,6 +170,7 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
             throw ExpiredTokenException()
         }
 
+        logger.logCapture("Valid token copy response ${request.pathsForLog}")
         return nextResponse
     }
 
