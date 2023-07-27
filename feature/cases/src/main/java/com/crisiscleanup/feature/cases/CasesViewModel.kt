@@ -140,7 +140,7 @@ class CasesViewModel @Inject constructor(
 
     val isTableView = qsm.isTableView
 
-    val tableDataDistanceSortSearchRadius = 100.0f
+    private val tableDataDistanceSortSearchRadius = 100.0f
 
     val tableViewSort = appPreferencesRepository.userPreferences
         .map { it.tableViewSortBy }

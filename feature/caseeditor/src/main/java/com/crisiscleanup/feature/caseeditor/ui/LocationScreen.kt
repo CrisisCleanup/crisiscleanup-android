@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.coerceAtMost
@@ -261,6 +262,7 @@ internal fun LocationFormView(
         value = inputData.crossStreetNearbyLandmark,
         onValueChange = updateCrossStreet,
         keyboardType = KeyboardType.Text,
+        keyboardCapitalization = KeyboardCapitalization.Words,
         isError = false,
         enabled = isEditable,
         imeAction = ImeAction.Next,
@@ -308,6 +310,7 @@ private fun LocationAddressFormView(
         value = inputData.streetAddress,
         onValueChange = updateAddress,
         keyboardType = KeyboardType.Password,
+        keyboardCapitalization = KeyboardCapitalization.Words,
         isError = isAddressError,
         hasFocus = focusAddress,
         onNext = clearAddressError,
@@ -346,7 +349,8 @@ private fun LocationAddressFormView(
         label = "$countyLabel *",
         value = inputData.county,
         onValueChange = updateCounty,
-        keyboardType = KeyboardType.Password,
+        keyboardType = KeyboardType.Text,
+        keyboardCapitalization = KeyboardCapitalization.Words,
         isError = isCountyError,
         hasFocus = focusCounty,
         onNext = clearCountyError,
@@ -365,7 +369,8 @@ private fun LocationAddressFormView(
         label = "$cityLabel *",
         value = inputData.city,
         onValueChange = updateCity,
-        keyboardType = KeyboardType.Password,
+        keyboardType = KeyboardType.Text,
+        keyboardCapitalization = KeyboardCapitalization.Words,
         isError = isCityError,
         hasFocus = focusCity,
         onNext = clearCityError,
@@ -389,7 +394,8 @@ private fun LocationAddressFormView(
         label = "$stateLabel *",
         value = inputData.state,
         onValueChange = updateState,
-        keyboardType = KeyboardType.Password,
+        keyboardType = KeyboardType.Text,
+        keyboardCapitalization = KeyboardCapitalization.Words,
         isError = isStateError,
         hasFocus = focusState,
         imeAction = ImeAction.Done,

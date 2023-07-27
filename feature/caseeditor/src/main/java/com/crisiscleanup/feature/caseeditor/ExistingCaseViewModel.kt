@@ -27,6 +27,7 @@ import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.common.relativeTime
 import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
@@ -166,6 +167,19 @@ class ExistingCaseViewModel @Inject constructor(
         )
 
     val editableWorksite = editableWorksiteProvider.editableWorksite
+    val updatedAtText = editableWorksite.map { worksite ->
+        worksite.updatedAt?.let {
+            logger.logDebug("Updated $it")
+            return@map translator("~~Updated {relative_time}")
+                .replace("{relative_time}", it.relativeTime)
+        }
+        ""
+    }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = "",
+            started = SharingStarted.WhileSubscribed(),
+        )
 
     private val previousNoteCount = AtomicInteger(0)
 

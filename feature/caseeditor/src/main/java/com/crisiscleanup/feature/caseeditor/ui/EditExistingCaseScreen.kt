@@ -3,6 +3,7 @@ package com.crisiscleanup.feature.caseeditor.ui
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -185,6 +186,18 @@ internal fun EditExistingCaseRoute(
 
             val translator: KeyResourceTranslator = viewModel
             val tabTitles by viewModel.tabTitles.collectAsStateWithLifecycle()
+
+            val updatedAtText by viewModel.updatedAtText.collectAsStateWithLifecycle()
+            if (updatedAtText.isNotBlank()) {
+                Text(
+                    updatedAtText,
+                    Modifier
+                        .background(Color.White)
+                        .then(listItemModifier),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+
             if (isEmptyWorksite) {
                 if (viewModel.worksiteIdArg == EmptyWorksite.id) {
                     Text(
