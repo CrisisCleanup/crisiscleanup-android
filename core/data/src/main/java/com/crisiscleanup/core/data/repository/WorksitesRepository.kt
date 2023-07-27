@@ -24,6 +24,8 @@ interface WorksitesRepository {
 
     fun streamLocalWorksite(worksiteId: Long): Flow<LocalWorksite?>
 
+    suspend fun getWorksite(worksiteId: Long): Worksite
+
     fun streamRecentWorksites(incidentId: Long): Flow<List<WorksiteSummary>>
 
     fun getWorksitesMapVisual(

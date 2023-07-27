@@ -36,7 +36,7 @@ interface WorksiteDao {
 
     @Transaction
     @Query("SELECT * FROM worksites WHERE id=:id")
-    fun getWorksite(id: Long): PopulatedWorksite
+    fun getWorksite(id: Long): PopulatedLocalWorksite
 
     @Transaction
     @Query("SELECT * FROM worksites WHERE id=:id")

@@ -63,8 +63,9 @@ internal class CaseEditorDataLoader(
 
     val editSections = MutableStateFlow<List<String>>(emptyList())
 
-    val incidentFieldLookup = MutableStateFlow(emptyMap<String, GroupSummaryFieldLookup>())
-    val workTypeGroupChildrenLookup = MutableStateFlow(emptyMap<String, Collection<String>>())
+    private val incidentFieldLookup = MutableStateFlow(emptyMap<String, GroupSummaryFieldLookup>())
+    private val workTypeGroupChildrenLookup =
+        MutableStateFlow(emptyMap<String, Collection<String>>())
     private var workTypeGroupFormFields = emptyMap<String, IncidentFormField>()
 
     private val dataLoadCountStream = MutableStateFlow(0)

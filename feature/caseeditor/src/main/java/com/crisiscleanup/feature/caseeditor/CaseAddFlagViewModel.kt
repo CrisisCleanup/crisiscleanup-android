@@ -1,5 +1,6 @@
 package com.crisiscleanup.feature.caseeditor
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.addresssearch.AddressSearchRepository
@@ -11,6 +12,7 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.common.throttleLatest
+import com.crisiscleanup.core.commoncase.WorksiteProvider
 import com.crisiscleanup.core.data.IncidentSelectManager
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.DatabaseManagementRepository
@@ -24,6 +26,7 @@ import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteFlagType
 import com.crisiscleanup.feature.caseeditor.model.coordinates
+import com.crisiscleanup.feature.caseeditor.navigation.CaseAddFlagArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -40,6 +43,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CaseAddFlagViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
+    worksiteProvider: WorksiteProvider,
     editableWorksiteProvider: EditableWorksiteProvider,
     organizationsRepository: OrganizationsRepository,
     incidentsRepository: IncidentsRepository,
@@ -53,7 +58,11 @@ class CaseAddFlagViewModel @Inject constructor(
     @Logger(CrisisCleanupLoggers.Cases) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
-    private val worksiteIn = editableWorksiteProvider.editableWorksite.value
+    private val caseAddFlagArgs = CaseAddFlagArgs(savedStateHandle)
+    private val editableWorksite =
+        if (caseAddFlagArgs.isFromCaseEdit) editableWorksiteProvider.editableWorksite
+        else worksiteProvider.editableWorksite
+    private val worksiteIn = editableWorksite.value
     private val flagsIn =
         worksiteIn.flags?.mapNotNull(WorksiteFlag::flagType)?.toSet() ?: emptySet()
 
@@ -103,7 +112,7 @@ class CaseAddFlagViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val nearbyOrganizations = editableWorksiteProvider.editableWorksite.mapLatest {
+    val nearbyOrganizations = editableWorksite.mapLatest {
         val coordinates = it.coordinates
         organizationsRepository.getNearbyClaimingOrganizations(
             coordinates.latitude,

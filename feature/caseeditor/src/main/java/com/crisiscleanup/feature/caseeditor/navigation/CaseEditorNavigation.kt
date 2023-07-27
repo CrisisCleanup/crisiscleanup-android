@@ -34,6 +34,7 @@ import com.crisiscleanup.feature.caseeditor.ui.addflag.CaseEditAddFlagRoute
 @VisibleForTesting
 internal const val incidentIdArg = "incidentId"
 internal const val worksiteIdArg = "worksiteId"
+internal const val isFromCaseEditArg = "isFromCaseEdit"
 
 internal class CaseEditorArgs(val incidentId: Long, val worksiteId: Long?) {
     constructor(savedStateHandle: SavedStateHandle) : this(
@@ -46,6 +47,12 @@ internal class ExistingCaseArgs(val incidentId: Long, val worksiteId: Long) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         checkNotNull(savedStateHandle[incidentIdArg]),
         checkNotNull(savedStateHandle[worksiteIdArg]),
+    )
+}
+
+internal class CaseAddFlagArgs(val isFromCaseEdit: Boolean) {
+    constructor(savedStateHandle: SavedStateHandle) : this(
+        checkNotNull(savedStateHandle.get<Boolean>(isFromCaseEditArg)),
     )
 }
 
@@ -102,7 +109,11 @@ fun NavGraphBuilder.caseEditorScreen(
 
 fun NavController.navigateToCaseEditSearchAddress() = this.navigate(caseEditSearchAddressRoute)
 fun NavController.navigateToCaseEditLocationMapMove() = this.navigate(caseEditMapMoveLocationRoute)
-fun NavController.navigateToCaseAddFlag() = this.navigate(caseAddFlagRoute)
+
+fun NavController.navigateToCaseAddFlag(isFromCaseEdit: Boolean) {
+    this.navigate("$caseAddFlagRoute?$isFromCaseEditArg=$isFromCaseEdit")
+}
+
 fun NavController.navigateToCaseShare() = this.navigate(caseShareRoute)
 fun NavController.navigateToCaseHistory() = this.navigate(caseHistoryRoute)
 
@@ -139,7 +150,8 @@ fun NavGraphBuilder.existingCaseScreen(
         val navToViewImage = remember(navController) {
             { args: ViewImageArgs -> navController.navigateToViewImage(args) }
         }
-        val navToCaseAddFlag = remember(navController) { { navController.navigateToCaseAddFlag() } }
+        val navToCaseAddFlag =
+            remember(navController) { { navController.navigateToCaseAddFlag(true) } }
         val navToCaseShare = remember(navController) { { navController.navigateToCaseShare() } }
         val navToCaseHistory = remember(navController) { { navController.navigateToCaseHistory() } }
         EditExistingCaseRoute(
@@ -221,7 +233,15 @@ fun NavGraphBuilder.caseAddFlagScreen(
     onBack: () -> Unit = {},
     rerouteIncidentChange: (ExistingWorksiteIdentifier) -> Unit = {},
 ) {
-    composable(route = caseAddFlagRoute) {
+    composable(
+        route = "$caseAddFlagRoute?$isFromCaseEditArg={$isFromCaseEditArg}",
+        arguments = listOf(
+            navArgument(isFromCaseEditArg) {
+                type = NavType.BoolType
+                defaultValue = false
+            },
+        ),
+    ) {
         CaseEditAddFlagRoute(
             onBack = onBack,
             rerouteIncidentChange = rerouteIncidentChange,

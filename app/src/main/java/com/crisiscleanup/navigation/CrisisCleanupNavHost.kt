@@ -103,7 +103,8 @@ fun CrisisCleanupNavHost(
         }
     }
 
-    val navToCaseAddFlag = remember(navController) { { navController.navigateToCaseAddFlag() } }
+    val navToCaseAddFlagNonEditing =
+        remember(navController) { { navController.navigateToCaseAddFlag(false) } }
 
     NavHost(
         navController = navController,
@@ -127,7 +128,7 @@ fun CrisisCleanupNavHost(
             filterCases = openFilterCases,
             createCase = createNewCase,
             viewCase = viewCase,
-            caseAddFlag = navToCaseAddFlag,
+            caseAddFlag = navToCaseAddFlagNonEditing,
         )
         dashboardScreen()
         teamScreen()

@@ -81,6 +81,13 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             )
         }
 
+    override suspend fun getWorksite(worksiteId: Long) =
+        worksiteDao.getWorksite(worksiteId).asExternalModel(
+            orgId.first(),
+            languageTranslationsRepository,
+        )
+            .worksite
+
     override fun streamRecentWorksites(incidentId: Long) =
         recentWorksiteDao.streamRecentWorksites(incidentId)
             .map { it.map(PopulatedRecentWorksite::asSummary) }

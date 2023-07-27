@@ -157,6 +157,7 @@ class CasesViewModel @Inject constructor(
         worksiteProvider,
         worksitesRepository,
         worksiteChangeRepository,
+        logger,
     )
     val isLoadingTableViewData = tableViewDataLoader.isLoading
         .stateIn(
@@ -668,7 +669,7 @@ class CasesViewModel @Inject constructor(
 
     fun onOpenCaseFlags(worksite: Worksite) {
         viewModelScope.launch(ioDispatcher) {
-            if (tableViewDataLoader.loadWorksiteForAddFlags(worksite.id)) {
+            if (tableViewDataLoader.loadWorksiteForAddFlags(worksite)) {
                 openWorksiteAddFlag.set(true)
                 openWorksiteAddFlagCounter.value++
             }

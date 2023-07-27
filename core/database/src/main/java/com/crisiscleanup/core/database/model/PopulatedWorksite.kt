@@ -9,6 +9,11 @@ import com.crisiscleanup.core.model.data.WorksiteFlagType
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 import kotlinx.datetime.Instant
 
+/**
+ * For read-only purposes with minimal data
+ *
+ * Use [PopulatedLocalWorksite] for copying, modifying, and mutating
+ */
 data class PopulatedWorksite(
     @Embedded
     val entity: WorksiteEntity,
