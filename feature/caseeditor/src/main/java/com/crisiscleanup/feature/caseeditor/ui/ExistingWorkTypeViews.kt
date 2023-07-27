@@ -240,8 +240,10 @@ internal fun LazyListScope.organizationWorkClaims(
         workTypeSectionTitle(
             "caseView.claimed_by",
             "claimed-by-$orgId-small",
-            Modifier.listItemHorizontalPadding(),
-            true,
+            Modifier
+                .listItemHorizontalPadding()
+                .padding(top = 16.dp),
+            isSmallTitle = true,
         )
         workTypeSectionTitle(
             orgName,

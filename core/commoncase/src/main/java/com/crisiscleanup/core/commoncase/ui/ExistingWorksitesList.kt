@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -16,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import com.crisiscleanup.core.common.combineTrimText
 import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
-import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemOptionPadding
 import com.crisiscleanup.core.designsystem.theme.listRowItemStartPadding
 import com.crisiscleanup.core.designsystem.theme.optionItemPadding
@@ -43,14 +41,8 @@ private fun CaseView(
                     .listRowItemStartPadding()
             ) {
                 with(summary) {
-                    Text(
-                        listOf(name, caseNumber).combineTrimText(),
-                        style = LocalFontStyles.current.header4,
-                    )
-                    Text(
-                        listOf(address, city, state).combineTrimText(),
-                        style = MaterialTheme.typography.bodyLarge,
-                    )
+                    Text(listOf(name, caseNumber).combineTrimText())
+                    Text(listOf(address, city, state).combineTrimText())
                 }
             }
         }
