@@ -205,6 +205,8 @@ class ExistingCaseViewModel @Inject constructor(
             )
         }
 
+    val actionDescriptionMessage = MutableStateFlow("")
+
     init {
         updateHeaderTitle()
 
@@ -573,12 +575,20 @@ class ExistingCaseViewModel @Inject constructor(
         val changedWorksite =
             startingWorksite.copy(isAssignedToOrgMember = !startingWorksite.isLocalFavorite)
         saveWorksiteChange(startingWorksite, changedWorksite)
+
+        val messageTranslateKey = if (changedWorksite.isLocalFavorite) "~~Is member of my org"
+        else "actions.member_of_my_org"
+        actionDescriptionMessage.value = translate(messageTranslateKey)
     }
 
     fun toggleHighPriority() {
         val startingWorksite = referenceWorksite
         val changedWorksite = startingWorksite.toggleHighPriorityFlag()
         saveWorksiteChange(startingWorksite, changedWorksite)
+
+        val messageTranslateKey = if (changedWorksite.hasHighPriorityFlag) "~~Is high priority"
+        else "~~Not high priority"
+        actionDescriptionMessage.value = translate(messageTranslateKey)
     }
 
     fun updateWorkType(workType: WorkType, isStatusChange: Boolean) {

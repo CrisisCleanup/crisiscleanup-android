@@ -71,17 +71,20 @@ import com.crisiscleanup.core.common.urlEncode
 import com.crisiscleanup.core.commoncase.model.addressQuery
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
+import com.crisiscleanup.core.designsystem.component.CardSurface
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupFab
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationDefaults
 import com.crisiscleanup.core.designsystem.component.LinkifyEmailText
 import com.crisiscleanup.core.designsystem.component.LinkifyLocationText
 import com.crisiscleanup.core.designsystem.component.LinkifyPhoneText
+import com.crisiscleanup.core.designsystem.component.TemporaryDialog
 import com.crisiscleanup.core.designsystem.component.TopBarBackAction
 import com.crisiscleanup.core.designsystem.component.actionEdgeSpace
 import com.crisiscleanup.core.designsystem.component.fabPlusSpaceHeight
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
+import com.crisiscleanup.core.designsystem.theme.cardContainerColor
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
@@ -242,6 +245,9 @@ internal fun EditExistingCaseRoute(
         }
 
         CopiedToClipboard(clipboardContents)
+
+        val actionDescription by viewModel.actionDescriptionMessage.collectAsStateWithLifecycle()
+        TemporaryDialog(actionDescription)
     }
 }
 

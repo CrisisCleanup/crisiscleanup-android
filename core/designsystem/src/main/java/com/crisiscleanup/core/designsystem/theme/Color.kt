@@ -62,6 +62,8 @@ fun Color.disabledAlpha() = copy(alpha = disabledOpacity)
 val disabledButtonContainerColor = md_theme_onSurface.copy(alpha = disabledContainerOpacity)
 val disabledButtonContentColor = md_theme_onSurface.disabledAlpha()
 
+val cardContainerColor = Color.White
+
 const val statusUnknownColorCode = 0xFF000000
 const val statusUnclaimedColorCode = 0xFFD0021B
 const val statusNotStartedColorCode = 0xFFFAB92E

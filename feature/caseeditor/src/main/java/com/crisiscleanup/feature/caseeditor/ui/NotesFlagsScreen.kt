@@ -20,8 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
+import com.crisiscleanup.core.designsystem.component.CardSurface
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
+import com.crisiscleanup.core.designsystem.theme.cardContainerColor
 import com.crisiscleanup.core.designsystem.theme.listCheckboxAlignStartOffset
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.survivorNoteColor

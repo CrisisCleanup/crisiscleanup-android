@@ -361,15 +361,19 @@ internal fun CasesScreen(
 ) {
     Box(modifier.then(Modifier.fillMaxSize())) {
         if (isTableView) {
-            CasesTableView(
-                isIncidentLoading = isIncidentLoading,
-                isTableDataTransient = isTableDataTransient,
-                disasterResId = disasterResId,
-                openIncidentSelect = onSelectIncident,
-                onCasesAction = onCasesAction,
-                filtersCount = filtersCount,
-                casesCount = casesCount.second,
-                onTableItemSelect = onTableItemSelect,
+//            CasesTableView(
+//                isIncidentLoading = isIncidentLoading,
+//                isTableDataTransient = isTableDataTransient,
+//                disasterResId = disasterResId,
+//                openIncidentSelect = onSelectIncident,
+//                onCasesAction = onCasesAction,
+//                filtersCount = filtersCount,
+//                casesCount = casesCount.second,
+//                onTableItemSelect = onTableItemSelect,
+//            )
+            Text(
+                "Table view under construction",
+                Modifier.padding(48.dp),
             )
         } else {
             CasesMapView(
