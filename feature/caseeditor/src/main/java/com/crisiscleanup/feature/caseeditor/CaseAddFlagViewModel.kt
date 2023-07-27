@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.addresssearch.AddressSearchRepository
 import com.crisiscleanup.core.common.KeyResourceTranslator
-import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -27,7 +26,6 @@ import com.crisiscleanup.core.model.data.WorksiteFlagType
 import com.crisiscleanup.feature.caseeditor.model.coordinates
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -54,7 +52,6 @@ class CaseAddFlagViewModel @Inject constructor(
     val translator: KeyResourceTranslator,
     @Logger(CrisisCleanupLoggers.Cases) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-    @ApplicationScope private val externalScope: CoroutineScope,
 ) : ViewModel() {
     private val worksiteIn = editableWorksiteProvider.editableWorksite.value
     private val flagsIn =
@@ -204,9 +201,7 @@ class CaseAddFlagViewModel @Inject constructor(
             )
 
             if (schedulePush) {
-                externalScope.launch {
-                    syncPusher.appPushWorksite(worksiteIn.id)
-                }
+                syncPusher.appPushWorksite(worksiteIn.id)
             }
         } finally {
             isSavingWorksite.value = false

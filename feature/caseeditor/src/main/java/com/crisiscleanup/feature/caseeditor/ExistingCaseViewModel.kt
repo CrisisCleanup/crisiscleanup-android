@@ -21,7 +21,6 @@ import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.PermissionStatus
 import com.crisiscleanup.core.common.cameraPermissionGranted
 import com.crisiscleanup.core.common.combineTrimText
-import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -55,7 +54,6 @@ import com.google.android.gms.maps.model.BitmapDescriptor
 import com.philjay.RRule
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -103,7 +101,6 @@ class ExistingCaseViewModel @Inject constructor(
     drawableResourceBitmapProvider: DrawableResourceBitmapProvider,
     appEnv: AppEnv,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
-    @ApplicationScope private val externalScope: CoroutineScope,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel(), KeyResourceTranslator {
     private val caseEditorArgs = ExistingCaseArgs(savedStateHandle)
@@ -550,19 +547,23 @@ class ExistingCaseViewModel @Inject constructor(
                         orgId,
                     )
 
-                    // TODO Debounce (and throttle) saves in case of successive changes.
-                    externalScope.launch {
-                        syncPusher.appPushWorksite(worksiteIdArg)
-                    }
+                    syncPusher.appPushWorksite(worksiteIdArg)
                 } catch (e: Exception) {
-                    logger.logException(e)
-
-                    // TODO Show dialog save failed. Try again. If still fails seek help.
+                    onSaveFail(e)
                 } finally {
                     isSavingWorksite.value = false
                 }
             }
         }
+    }
+
+    private fun onSaveFail(
+        e: Exception,
+        isMediaSave: Boolean = false
+    ) {
+        logger.logException(e)
+
+        // TODO Show dialog save failed. Try again. If still fails seek help.
     }
 
     fun takeNoteAdded(): Boolean {
@@ -744,8 +745,7 @@ class ExistingCaseViewModel @Inject constructor(
 
                     syncPusher.scheduleSyncMedia()
                 } catch (e: Exception) {
-                    // TODO Show error message
-                    logger.logException(e)
+                    onSaveFail(e, true)
                 } finally {
                     isSavingMedia.value = false
                 }

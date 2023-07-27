@@ -15,7 +15,6 @@ import coil.request.ImageRequest
 import com.crisiscleanup.core.appnav.ViewImageArgs
 import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.NetworkMonitor
-import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -28,7 +27,6 @@ import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -65,7 +63,6 @@ class ViewImageViewModel @Inject constructor(
     networkMonitor: NetworkMonitor,
     @Logger(CrisisCleanupLoggers.Media) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
-    @ApplicationScope private val externalScope: CoroutineScope,
 ) : ViewModel() {
     private val caseEditorArgs = ViewImageArgs(savedStateHandle)
     private val isNetworkImage = caseEditorArgs.isNetworkImage
@@ -220,9 +217,7 @@ class ViewImageViewModel @Inject constructor(
                 if (isNetworkImage) {
                     val worksiteId = worksiteChangeRepository.saveDeletePhoto(imageId)
                     if (worksiteId > 0) {
-                        externalScope.launch {
-                            syncPusher.appPushWorksite(worksiteId)
-                        }
+                        syncPusher.appPushWorksite(worksiteId)
                     }
                 } else {
                     localImageRepository.deleteLocalImage(imageId)

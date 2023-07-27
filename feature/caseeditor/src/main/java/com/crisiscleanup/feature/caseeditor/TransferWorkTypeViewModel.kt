@@ -7,7 +7,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.KeyResourceTranslator
-import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -22,7 +21,6 @@ import com.crisiscleanup.feature.caseeditor.WorkTypeTransferType.Request
 import com.crisiscleanup.feature.caseeditor.model.contactList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -46,7 +44,6 @@ class TransferWorkTypeViewModel @Inject constructor(
     private val syncPusher: SyncPusher,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-    @ApplicationScope private val externalScope: CoroutineScope,
 ) : ViewModel(), KeyResourceTranslator {
     val transferType = transferWorkTypeProvider.transferType
 
@@ -202,9 +199,7 @@ class TransferWorkTypeViewModel @Inject constructor(
                     if (isRequest) emptyList() else workTypes,
                 )
 
-                externalScope.launch {
-                    syncPusher.appPushWorksite(worksite.id)
-                }
+                syncPusher.appPushWorksite(worksite.id)
 
                 isTransferred.value = true
             } catch (e: Exception) {
