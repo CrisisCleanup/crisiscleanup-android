@@ -57,6 +57,7 @@ import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.TopAppBarCancelAction
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.listCheckboxAlignStartOffset
 import com.crisiscleanup.core.designsystem.theme.listItemDropdownMenuOffset
@@ -486,6 +487,7 @@ private fun LazyListScope.contactSuggestionsItem(
                             Text(
                                 "${contact.name}\n${contact.contactValue}",
                                 Modifier.optionItemPadding(),
+                                style = LocalFontStyles.current.header4,
                             )
                         },
                         onClick = { viewModel.onAddContact(contact) },

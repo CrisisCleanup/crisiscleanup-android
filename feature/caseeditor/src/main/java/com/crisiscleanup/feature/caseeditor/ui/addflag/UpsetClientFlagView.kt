@@ -32,6 +32,7 @@ import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupRadioButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextArea
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemDropdownMenuOffset
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
@@ -167,6 +168,7 @@ internal fun ColumnScope.UpsetClientFlagView(
                                 Text(
                                     organization.name,
                                     Modifier.optionItemPadding(),
+                                    style = LocalFontStyles.current.header4,
                                 )
                             },
                             onClick = {

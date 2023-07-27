@@ -28,7 +28,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalContentColor
@@ -573,7 +572,7 @@ private fun CasesOverlayElements(
         ) = createRefs()
 
         if (isMapView) {
-            FloatingActionButton(
+            CrisisCleanupFab(
                 modifier = modifier
                     .constrainAs(disasterAction) {
                         start.linkTo(parent.start, margin = actionEdgeSpace)
@@ -583,6 +582,8 @@ private fun CasesOverlayElements(
                 shape = CircleShape,
                 containerColor = incidentDisasterContainerColor,
                 contentColor = incidentDisasterContentColor,
+                // TODO Disable when no incidents are available
+                enabled = true,
             ) {
                 Icon(
                     painter = painterResource(disasterResId),
@@ -617,7 +618,7 @@ private fun CasesOverlayElements(
                 },
             )
 
-            FloatingActionButton(
+            CrisisCleanupFab(
                 modifier = modifier
                     .actionSize()
                     .constrainAs(myLocation) {
@@ -626,6 +627,7 @@ private fun CasesOverlayElements(
                     },
                 onClick = centerOnMyLocation,
                 shape = actionRoundCornerShape,
+                enabled = true,
             ) {
                 Icon(
                     painterResource(R.drawable.ic_my_location),
@@ -713,7 +715,6 @@ private fun CasesCountView(
                 ),
                 color = Color.White,
                 textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodyMedium,
             )
         }
     }

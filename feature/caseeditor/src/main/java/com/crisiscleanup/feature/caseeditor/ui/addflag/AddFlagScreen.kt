@@ -34,6 +34,7 @@ import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.AnimatedBusyIndicator
 import com.crisiscleanup.core.designsystem.component.TopAppBarCancelAction
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
@@ -208,7 +209,12 @@ private fun FlagsDropdown(
                 key(option.literal) {
                     DropdownMenuItem(
                         modifier = Modifier.optionItemHeight(),
-                        text = { Text(translator(option.literal)) },
+                        text = {
+                            Text(
+                                translator(option.literal),
+                                style = LocalFontStyles.current.header4,
+                            )
+                        },
                         onClick = {
                             onSelectedFlagFlow(option)
                             showDropdown = false

@@ -38,6 +38,7 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
 import com.crisiscleanup.core.designsystem.component.HelpAction
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.centerAlignTextFieldLabelOffset
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.listCheckboxAlignStartOffset
@@ -434,14 +435,24 @@ private fun DropdownItems(
 ) {
     DropdownMenuItem(
         modifier = Modifier.optionItemHeight(),
-        text = { Text("") },
+        text = {
+            Text(
+                "",
+                style = LocalFontStyles.current.header4,
+            )
+        },
         onClick = { onSelect("") },
     )
     for (option in options) {
         key(option.key) {
             DropdownMenuItem(
                 modifier = Modifier.optionItemHeight(),
-                text = { Text(option.value) },
+                text = {
+                    Text(
+                        option.value,
+                        style = LocalFontStyles.current.header4,
+                    )
+                },
                 onClick = { onSelect(option.key) },
             )
         }

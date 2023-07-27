@@ -32,6 +32,7 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupRadioButton
 import com.crisiscleanup.core.designsystem.component.HelpRow
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.WithHelpDialog
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemDropdownMenuOffset
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
@@ -211,10 +212,9 @@ private fun PropertyFormResidentNameView(
                 DropdownMenuItem(
                     text = {
                         Text(
-                            LocalAppTranslator.current(
-                                "actions.stop_searching_cases",
-                            ),
+                            LocalAppTranslator.current("actions.stop_searching_cases"),
                             modifier = Modifier.offset(x = 12.dp),
+                            style = LocalFontStyles.current.header4,
                         )
                     },
                     onClick = onStopSuggestions,

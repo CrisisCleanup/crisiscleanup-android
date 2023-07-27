@@ -34,6 +34,7 @@ import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.AnimatedBusyIndicator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemDropdownMenuOffset
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
@@ -150,6 +151,7 @@ internal fun ColumnScope.WrongIncidentFlagView(
                                 Text(
                                     incident.name,
                                     Modifier.optionItemPadding(),
+                                    style = LocalFontStyles.current.header4,
                                 )
                             },
                             onClick = {
