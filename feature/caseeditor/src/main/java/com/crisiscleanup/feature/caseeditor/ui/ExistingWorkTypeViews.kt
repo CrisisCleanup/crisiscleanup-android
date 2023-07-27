@@ -105,7 +105,7 @@ private fun WorkTypeSummaryView(
                 Text(
                     jobSummary,
                     modifier.padding(top = edgeSpacingHalf),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                 )
             }
 

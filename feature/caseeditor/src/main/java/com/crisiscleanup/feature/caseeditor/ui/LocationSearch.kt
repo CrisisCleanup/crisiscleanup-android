@@ -23,6 +23,7 @@ import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.commoncase.ui.listCaseResults
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemOptionPadding
 import com.crisiscleanup.core.designsystem.theme.textMessagePadding
@@ -94,7 +95,7 @@ private fun ListTitle(
     Text(
         if (textResId == 0) text else stringResource(textResId),
         modifier = listItemModifier,
-        style = MaterialTheme.typography.headlineSmall,
+        style = LocalFontStyles.current.header3,
     )
 }
 

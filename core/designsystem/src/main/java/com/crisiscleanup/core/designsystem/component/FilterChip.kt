@@ -24,7 +24,7 @@ fun SelectableFilterChip(
     enabled: Boolean = true,
     leadingIcon: (@Composable () -> Unit)? = null,
     label: @Composable () -> Unit,
-    textStyle: TextStyle = MaterialTheme.typography.bodyMedium,
+    textStyle: TextStyle = MaterialTheme.typography.bodySmall,
     chipBorder: SelectableChipBorder = ChipDefaults.filterChipBorder(),
     chipColors: SelectableChipColors = ChipDefaults.filterChipColors(selected),
 ) = FilterChip(
@@ -52,7 +52,7 @@ fun CrisisCleanupFilterChip(
     enabled: Boolean = true,
     leadingIcon: (@Composable () -> Unit)? = null,
     label: @Composable () -> Unit,
-    textStyle: TextStyle = MaterialTheme.typography.bodyMedium,
+    textStyle: TextStyle = MaterialTheme.typography.bodySmall,
 ) = SelectableFilterChip(
     selected,
     onClick,

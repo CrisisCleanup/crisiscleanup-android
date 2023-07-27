@@ -604,7 +604,7 @@ private fun LazyListScope.flagItems(
     worksite.flags?.let { flags ->
         if (flags.isNotEmpty()) {
             item(key = "section-content-flags") {
-                ProvideTextStyle(value = MaterialTheme.typography.bodyMedium) {
+                ProvideTextStyle(value = MaterialTheme.typography.bodySmall) {
                     FlowRow(
                         listItemModifier,
                         horizontalArrangement = listItemSpacedBy,

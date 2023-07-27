@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemBottomPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
@@ -41,7 +42,7 @@ internal fun SyncInsightsRoute(
             Text(
                 "Sync insights",
                 Modifier.weight(1f),
-                style = MaterialTheme.typography.headlineSmall,
+                style = LocalFontStyles.current.header5,
             )
 
             if (pendingSync.isNotEmpty()) {
@@ -80,7 +81,7 @@ internal fun SyncInsightsRoute(
                     Text(
                         "Pending",
                         modifier = listItemModifier,
-                        style = MaterialTheme.typography.titleMedium,
+                        style = LocalFontStyles.current.header4,
                     )
                 }
                 items(
@@ -91,7 +92,7 @@ internal fun SyncInsightsRoute(
                     Text(
                         it,
                         modifier = listItemModifier,
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodySmall,
                     )
                 }
             }
@@ -102,7 +103,7 @@ internal fun SyncInsightsRoute(
                 Text(
                     "Logs",
                     modifier = listItemModifier,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = LocalFontStyles.current.header4,
                 )
             }
 
@@ -141,7 +142,7 @@ private fun SyncLogDetail(log: SyncLogItem) = with(log.syncLog) {
     if (!log.isContinuingLogType) {
         Text(
             "$logType ${log.relativeTime}",
-            style = MaterialTheme.typography.titleSmall
+            style = LocalFontStyles.current.header5,
         )
     }
     Text(message)

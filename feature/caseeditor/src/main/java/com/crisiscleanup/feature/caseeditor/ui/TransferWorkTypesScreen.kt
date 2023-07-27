@@ -26,6 +26,7 @@ import com.crisiscleanup.core.designsystem.component.LinkifyHtmlText
 import com.crisiscleanup.core.designsystem.component.LinkifyPhoneEmailText
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listCheckboxAlignStartOffset
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
@@ -135,7 +136,7 @@ internal fun TransferWorkTypesView(
                     translator("workTypeRequestModal.contacts"),
                     // TODO Common dimensions
                     textModifier,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = LocalFontStyles.current.header4,
                 )
                 for (s in contacts) {
                     LinkifyPhoneEmailText(

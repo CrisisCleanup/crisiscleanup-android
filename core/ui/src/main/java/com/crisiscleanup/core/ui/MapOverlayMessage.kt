@@ -33,7 +33,7 @@ fun BoxScope.MapOverlayMessage(
             Text(
                 text = message,
                 modifier = Modifier.textMessagePadding(),
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodySmall,
             )
         }
     }

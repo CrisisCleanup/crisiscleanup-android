@@ -33,7 +33,7 @@ internal fun DashboardScreen(
                 .fillMaxWidth()
                 .padding(48.dp),
             textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.bodyMedium
+            style = MaterialTheme.typography.bodySmall
         )
     }
 }

@@ -122,7 +122,7 @@ fun CaseEditShareCaseRoute(
                         Text(
                             notSharableMessage,
                             listItemModifier,
-                            style = MaterialTheme.typography.headlineSmall,
+                            style = LocalFontStyles.current.header5,
                         )
                     }
                 }

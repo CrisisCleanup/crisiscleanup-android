@@ -36,6 +36,7 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.OutlinedObfuscatingTextField
 import com.crisiscleanup.core.designsystem.theme.DayNightPreviews
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.feature.authentication.model.AuthenticationState
 import com.crisiscleanup.core.common.R as commonR
@@ -132,7 +133,7 @@ private fun ConditionalErrorMessage(errorMessage: String) {
         Text(
             modifier = fillWidthPadded,
             text = errorMessage,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.error,
         )
     }
@@ -157,7 +158,7 @@ private fun LoginScreen(
         Text(
             modifier = fillWidthPadded,
             text = translator("actions.login", R.string.login),
-            style = MaterialTheme.typography.headlineMedium
+            style = LocalFontStyles.current.header2,
         )
 
         val authErrorMessage by viewModel.errorMessage

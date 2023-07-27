@@ -181,7 +181,7 @@ private fun NoIncidentsContent(
         Text(
             modifier = modifier.padding(textPadding),
             text = LocalAppTranslator.current("info.no_incidents_to_select"),
-            style = MaterialTheme.typography.titleLarge,
+            style = LocalFontStyles.current.header3,
         )
         CrisisCleanupTextButton(
             modifier = modifier
