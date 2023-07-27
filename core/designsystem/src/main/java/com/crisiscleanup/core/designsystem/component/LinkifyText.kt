@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.designsystem.component
 
+import android.graphics.Typeface
 import android.text.method.LinkMovementMethod
 import android.text.util.Linkify
 import android.widget.TextView
@@ -9,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.text.HtmlCompat
 import com.crisiscleanup.core.designsystem.R
 import java.util.regex.Pattern
@@ -22,7 +24,9 @@ fun LinkifyText(
 ) {
     val context = LocalContext.current
     val linkifyTextView = remember {
+        val typeface = ResourcesCompat.getFont(context, R.font.nunito_sans_family)
         TextView(context, null, 0, textStyleRes)
+            .apply { setTypeface(typeface, Typeface.NORMAL) }
     }
     AndroidView(
         factory = { linkifyTextView },
