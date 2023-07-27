@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.log.AppLogger
@@ -27,6 +26,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -72,7 +73,17 @@ class TransferWorkTypeViewModel @Inject constructor(
         else null
 
     val errorMessageReason = MutableStateFlow("")
-    val errorMessageWorkType = MutableStateFlow("")
+    private val errorMessageWorkType = MutableStateFlow("")
+    val errorMessage = combine(
+        errorMessageReason,
+        errorMessageWorkType,
+    ) { s0, s1 -> s0.ifBlank { s1 } }
+        .debounce(100)
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = "",
+            started = SharingStarted.WhileSubscribed(),
+        )
 
     private val requestWorkTypesState =
         organizationsRepository.organizationLookup.map { orgLookup ->
@@ -140,8 +151,12 @@ class TransferWorkTypeViewModel @Inject constructor(
         }
     }
 
-    fun commitTransfer(): Boolean {
+    fun clearErrorMessage() {
         errorMessageReason.value = ""
+        errorMessageWorkType.value = ""
+    }
+
+    fun commitTransfer(): Boolean {
         if (transferReason.isBlank()) {
             val isRelease = transferType == Release
             val reasonTranslateKey =
@@ -150,7 +165,6 @@ class TransferWorkTypeViewModel @Inject constructor(
             errorMessageReason.value = translate(reasonTranslateKey)
         }
 
-        errorMessageWorkType.value = ""
         if (workTypesState.filter { it.value }.isEmpty()) {
             errorMessageWorkType.value =
                 translate("workTypeRequestModal.transfer_work_type_is_required")

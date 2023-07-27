@@ -13,14 +13,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextArea
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
 import com.crisiscleanup.core.designsystem.component.LinkifyHtmlText
 import com.crisiscleanup.core.designsystem.component.LinkifyPhoneEmailText
@@ -68,6 +72,7 @@ internal fun TransferWorkTypesRoute(
                 }
             }
         }
+        // TODO Janky in logs. Switch to LazyColumn?
         Column {
             TopAppBarBackAction(
                 title = viewModel.screenTitle,
@@ -93,6 +98,25 @@ internal fun TransferWorkTypesRoute(
                 onBack,
                 isEditable,
                 onTransfer,
+            )
+        }
+
+        val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
+        var showErrorMessage by remember(errorMessage) { mutableStateOf(true) }
+        if (errorMessage.isNotBlank() && showErrorMessage) {
+            val closeDialog = {
+                showErrorMessage = false
+                viewModel.clearErrorMessage()
+            }
+            CrisisCleanupAlertDialog(
+                text = errorMessage,
+                onDismissRequest = closeDialog,
+                confirmButton = {
+                    CrisisCleanupTextButton(
+                        text = LocalAppTranslator.current("actions.ok"),
+                        onClick = closeDialog,
+                    )
+                },
             )
         }
     } else {
@@ -182,8 +206,6 @@ private fun ReasonSection(
     onTransfer: () -> Unit = {},
 ) {
     val errorMessageReason by viewModel.errorMessageReason.collectAsStateWithLifecycle()
-    ErrorText(errorMessageReason)
-
     val hasFocus = errorMessageReason.isNotEmpty()
 
     CrisisCleanupTextArea(
@@ -207,8 +229,8 @@ private fun WorkTypeSection(
     isEditable: Boolean = false,
 ) {
     val translator = LocalAppTranslator.current
-    val errorMessageWorkType by viewModel.errorMessageWorkType.collectAsStateWithLifecycle()
-    ErrorText(errorMessageWorkType)
+
+    // TODO Focus on first checkbox if work type error exists
 
     val workTypeState = remember { viewModel.workTypesState }
     val checkboxItemModifier = listItemModifier.listCheckboxAlignStartOffset()
