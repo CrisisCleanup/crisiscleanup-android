@@ -526,7 +526,11 @@ internal fun EditExistingCaseInfoView(
     val requestAll = remember(viewModel) { { viewModel.requestAll() } }
     val releaseAll = remember(viewModel) { { viewModel.releaseAll() } }
     val updateWorkType =
-        remember(viewModel) { { updated: WorkType -> viewModel.updateWorkType(updated) } }
+        remember(viewModel) {
+            { updated: WorkType, isStatusChange: Boolean ->
+                viewModel.updateWorkType(updated, isStatusChange)
+            }
+        }
     val requestWorkType =
         remember(viewModel) { { workType: WorkType -> viewModel.requestWorkType(workType) } }
     val releaseWorkType =
@@ -749,7 +753,7 @@ private fun LazyListScope.workItems(
     claimAll: () -> Unit = {},
     releaseAll: () -> Unit = {},
     requestAll: () -> Unit = {},
-    updateWorkType: (WorkType) -> Unit = {},
+    updateWorkType: (WorkType, Boolean) -> Unit = { _, _ -> },
     requestWorkType: (WorkType) -> Unit = {},
     releaseWorkType: (WorkType) -> Unit = {},
 ) {

@@ -15,7 +15,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -129,33 +128,31 @@ private fun WorkTypeOrgClaims(
 @Composable
 private fun WorkTypeSummaryView(
     summary: WorkTypeSummary,
-    rowItemModifier: Modifier = Modifier,
-    updateWorkType: (WorkType) -> Unit = {},
+    modifier: Modifier = Modifier,
+    updateWorkType: (WorkType, Boolean) -> Unit = { _, _ -> },
     requestWorkType: (WorkType) -> Unit = {},
     releaseWorkType: (WorkType) -> Unit = {},
 ) = with(summary) {
-    val updateWorkTypeStatus = remember(updateWorkType) {
-        { status: WorkTypeStatus ->
-            updateWorkType(workType.copy(statusLiteral = status.literal))
-        }
+    val updateWorkTypeStatus = { status: WorkTypeStatus ->
+        updateWorkType(workType.copy(statusLiteral = status.literal), true)
     }
     CardSurface(elevation = 1.dp) {
         Column {
             Text(
                 name,
-                rowItemModifier.padding(top = edgeSpacing),
+                modifier.padding(top = edgeSpacing),
                 style = MaterialTheme.typography.bodyLarge,
             )
             if (jobSummary.isNotBlank()) {
                 Text(
                     jobSummary,
-                    rowItemModifier.padding(top = edgeSpacingHalf),
+                    modifier.padding(top = edgeSpacingHalf),
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
 
             Row(
-                modifier = rowItemModifier.listItemVerticalPadding(),
+                modifier = modifier.listItemVerticalPadding(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 WorkTypeStatusDropdown(workType.status, updateWorkTypeStatus)
@@ -165,7 +162,7 @@ private fun WorkTypeSummaryView(
                 if (workType.isClaimed) {
                     if (isClaimedByMyOrg) {
                         WorkTypeAction(translator("actions.unclaim")) {
-                            updateWorkType(workType.copy(orgClaim = null))
+                            updateWorkType(workType.copy(orgClaim = null), false)
                         }
                     } else if (isReleasable) {
                         WorkTypeAction(translator("actions.release")) { releaseWorkType(workType) }
@@ -176,7 +173,7 @@ private fun WorkTypeSummaryView(
                     }
                 } else {
                     WorkTypePrimaryAction(translator("actions.claim")) {
-                        updateWorkType(workType.copy(orgClaim = myOrgId))
+                        updateWorkType(workType.copy(orgClaim = myOrgId), false)
                     }
                 }
             }
@@ -215,7 +212,7 @@ internal fun LazyListScope.existingWorkTypeItems(
     sectionKey: String,
     summaries: List<WorkTypeSummary>,
     rowItemModifier: Modifier = Modifier,
-    updateWorkType: (WorkType) -> Unit = {},
+    updateWorkType: (WorkType, Boolean) -> Unit = { _, _ -> },
     requestWorkType: (WorkType) -> Unit = {},
     releaseWorkType: (WorkType) -> Unit = {},
 ) {
@@ -272,7 +269,7 @@ internal fun LazyListScope.workTypeSectionTitle(
 internal fun LazyListScope.organizationWorkClaims(
     orgClaimWorkType: OrgClaimWorkType,
     rowItemModifier: Modifier = Modifier,
-    updateWorkType: (WorkType) -> Unit = {},
+    updateWorkType: (WorkType, Boolean) -> Unit = { _, _ -> },
     requestWorkType: (WorkType) -> Unit = {},
     releaseWorkType: (WorkType) -> Unit = {},
 ) = with(orgClaimWorkType) {

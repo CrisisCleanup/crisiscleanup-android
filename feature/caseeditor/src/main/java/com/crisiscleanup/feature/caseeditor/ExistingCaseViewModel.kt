@@ -169,7 +169,6 @@ class ExistingCaseViewModel @Inject constructor(
     val editableWorksite = editableWorksiteProvider.editableWorksite
     val updatedAtText = editableWorksite.map { worksite ->
         worksite.updatedAt?.let {
-            logger.logDebug("Updated $it")
             return@map translator("~~Updated {relative_time}")
                 .replace("{relative_time}", it.relativeTime)
         }
@@ -426,10 +425,14 @@ class ExistingCaseViewModel @Inject constructor(
             }
 
             val claimedWorkType = summaries.filter { summary -> summary.workType.orgClaim != null }
-            val unclaimed = summaries.filter { summary -> summary.workType.orgClaim == null }
+            val unclaimed = summaries
+                .filter { summary -> summary.workType.orgClaim == null }
+                .sortedBy { summary -> summary.workType.workTypeLiteral }
             val otherOrgClaimedWorkTypes =
                 claimedWorkType.filterNot(WorkTypeSummary::isClaimedByMyOrg)
-            val orgClaimedWorkTypes = claimedWorkType.filter(WorkTypeSummary::isClaimedByMyOrg)
+            val orgClaimedWorkTypes = claimedWorkType
+                .filter(WorkTypeSummary::isClaimedByMyOrg)
+                .sortedBy { summary -> summary.workType.workTypeLiteral }
 
             val otherOrgClaimMap = mutableMapOf<Long, MutableList<WorkTypeSummary>>()
             otherOrgClaimedWorkTypes.forEach { summary ->
@@ -443,7 +446,12 @@ class ExistingCaseViewModel @Inject constructor(
                 if (name == null) {
                     refreshOrganizationLookup()
                 }
-                OrgClaimWorkType(orgId, name ?: "", summaries, false)
+                OrgClaimWorkType(
+                    orgId,
+                    name ?: "",
+                    summaries.sortedBy { summary -> summary.workType.workTypeLiteral },
+                    false
+                )
             }
 
             val myOrgName = myOrg.name
@@ -573,13 +581,21 @@ class ExistingCaseViewModel @Inject constructor(
         saveWorksiteChange(startingWorksite, changedWorksite)
     }
 
-    fun updateWorkType(workType: WorkType) {
+    fun updateWorkType(workType: WorkType, isStatusChange: Boolean) {
         val startingWorksite = referenceWorksite
         val updatedWorkTypes =
             startingWorksite.workTypes
                 .filter { it.workType != workType.workType }
                 .toMutableList()
-                .apply { add(workType) }
+                .apply {
+                    val changed =
+                        if (isStatusChange && workType.orgClaim == null) {
+                            workType.copy(orgClaim = organizationId)
+                        } else {
+                            workType
+                        }
+                    add(changed)
+                }
         val changedWorksite = startingWorksite.copy(workTypes = updatedWorkTypes)
         saveWorksiteChange(startingWorksite, changedWorksite)
     }
