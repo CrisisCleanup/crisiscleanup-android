@@ -404,13 +404,25 @@ class WorksiteDaoPlus @Inject constructor(
         )
     }
 
-    suspend fun onSyncEnd(worksiteId: Long, syncedAt: Instant = Clock.System.now()): Boolean {
+    suspend fun onSyncEnd(
+        worksiteId: Long,
+        syncLogger: SyncLogger,
+        syncedAt: Instant = Clock.System.now(),
+    ): Boolean {
         return db.withTransaction {
-            val hasModification = db.worksiteFlagDao().getUnsyncedCount(worksiteId) > 0 ||
-                    db.worksiteNoteDao().getUnsyncedCount(worksiteId) > 0 ||
-                    db.workTypeDao().getUnsyncedCount(worksiteId) > 0 ||
-                    db.worksiteChangeDao().getChangeCount(worksiteId) > 0
+            val flagChanges = db.worksiteFlagDao().getUnsyncedCount(worksiteId)
+            val noteChanges = db.worksiteNoteDao().getUnsyncedCount(worksiteId)
+            val workTypeChanges = db.workTypeDao().getUnsyncedCount(worksiteId)
+            val changes = db.worksiteChangeDao().getChangeCount(worksiteId)
+            val hasModification = flagChanges > 0 ||
+                    noteChanges > 0 ||
+                    workTypeChanges > 0 ||
+                    changes > 0
             return@withTransaction if (hasModification) {
+                syncLogger.log(
+                    "Pending changes on sync end",
+                    details = "flag: $flagChanges\nnote: $noteChanges\nwork type: $workTypeChanges\nchanges: $changes"
+                )
                 false
             } else {
                 db.worksiteDao().setRootUnmodified(worksiteId, syncedAt)

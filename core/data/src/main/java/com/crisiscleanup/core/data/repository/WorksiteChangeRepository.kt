@@ -2,7 +2,6 @@ package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.NetworkMonitor
-import com.crisiscleanup.core.common.event.AuthEventBus
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -308,7 +307,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
             }
         }
 
-        val isFullySynced = worksiteDaoPlus.onSyncEnd(worksiteId)
+        val isFullySynced = worksiteDaoPlus.onSyncEnd(worksiteId, syncLogger)
         if (isFullySynced) {
             syncLogger.clear()
                 .log("Worksite fully synced.")

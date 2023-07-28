@@ -203,7 +203,10 @@ class WorksiteWorkTypeTest {
                 recur = "recur-synced-new",
             ),
         )
-        assertEquals(expectedWorkTypes, actual.asExternalModel().workTypes.sortedBy(WorkType::id))
+        assertEquals(
+            expectedWorkTypes,
+            actual.asExternalModel(515).worksite.workTypes.sortedBy(WorkType::id)
+        )
 
         actual = worksiteDao.getWorksite(2)
         val expectedWorkTypesB = listOf(

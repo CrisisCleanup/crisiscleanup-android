@@ -181,7 +181,7 @@ class WorksiteCoreChangeTest {
             caseNumber = fullyDefinedWorksite.caseNumber,
             city = fullyDefinedWorksite.city,
             county = fullyDefinedWorksite.county,
-            email = fullyDefinedWorksite.email,
+            email = fullyDefinedWorksite.email ?: "",
             favorite = fullyDefinedWorksite.favorite,
             formData = emptyList(),
             incident = fullyDefinedWorksite.incident,
@@ -189,14 +189,14 @@ class WorksiteCoreChangeTest {
             location = fullyDefinedWorksite.location,
             name = fullyDefinedWorksite.name,
             phone1 = fullyDefinedWorksite.phone1,
-            phone2 = fullyDefinedWorksite.phone2,
+            phone2 = fullyDefinedWorksite.phone2 ?: "",
             plusCode = fullyDefinedWorksite.plusCode,
             postalCode = fullyDefinedWorksite.postalCode,
             reportedBy = fullyDefinedWorksite.reportedBy,
             state = fullyDefinedWorksite.state,
             svi = fullyDefinedWorksite.svi,
             updatedAt = fullyDefinedWorksite.updatedAt,
-            what3words = fullyDefinedWorksite.what3words,
+            what3words = fullyDefinedWorksite.what3words ?: "",
             workTypes = emptyList(),
 
             skipDuplicateCheck = true,
@@ -240,7 +240,7 @@ class WorksiteCoreChangeTest {
             caseNumber = fullyDefinedWorksite.caseNumber,
             city = changeSnapshot.city,
             county = changeSnapshot.county,
-            email = changeSnapshot.email,
+            email = changeSnapshot.email ?: "",
             favorite = fullyDefinedWorksite.favorite,
             formData = emptyList(),
             incident = changeSnapshot.incidentId,
@@ -251,14 +251,14 @@ class WorksiteCoreChangeTest {
             ),
             name = changeSnapshot.name,
             phone1 = changeSnapshot.phone1,
-            phone2 = fullyDefinedWorksite.phone2,
+            phone2 = fullyDefinedWorksite.phone2 ?: "",
             plusCode = fullyDefinedWorksite.plusCode,
             postalCode = changeSnapshot.postalCode,
             reportedBy = fullyDefinedWorksite.reportedBy,
             state = changeSnapshot.state,
             svi = fullyDefinedWorksite.svi,
             updatedAt = changeSnapshot.updatedAt!!,
-            what3words = fullyDefinedWorksite.what3words,
+            what3words = fullyDefinedWorksite.what3words ?: "",
             workTypes = emptyList(),
 
             skipDuplicateCheck = true,
@@ -311,7 +311,7 @@ class WorksiteCoreChangeTest {
             caseNumber = fullyDefinedWorksite.caseNumber,
             city = changeSnapshot.city,
             county = changeSnapshot.county,
-            email = changeSnapshot.email,
+            email = changeSnapshot.email ?: "",
             favorite = fullyDefinedWorksite.favorite,
             formData = emptyList(),
             incident = fullyDefinedWorksite.incident,
@@ -329,7 +329,60 @@ class WorksiteCoreChangeTest {
             state = changeSnapshot.state,
             svi = fullyDefinedWorksite.svi,
             updatedAt = changeSnapshot.updatedAt!!,
-            what3words = changeSnapshot.what3Words,
+            what3words = changeSnapshot.what3Words ?: "",
+            workTypes = emptyList(),
+
+            skipDuplicateCheck = true,
+            sendSms = null,
+        )
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun clearProperties() {
+        val startSnapshot = testCoreSnapshot(
+            email = "email",
+            phone2 = "phone2",
+            what3Words = "what-3-words",
+        )
+        val changeSnapshot = startSnapshot.copy(
+            email = null,
+            phone2 = "",
+            what3Words = null,
+        )
+
+        val updatedAt = updatedAtA
+        val actual = fullyDefinedWorksite.getCoreChange(
+            startSnapshot,
+            changeSnapshot,
+            fullyDefinedWorksite.formData,
+            null,
+            updatedAt,
+        )
+
+        val expected = NetworkWorksitePush(
+            id = fullyDefinedWorksite.id,
+            address = fullyDefinedWorksite.address,
+            autoContactFrequencyT = fullyDefinedWorksite.autoContactFrequencyT,
+            caseNumber = fullyDefinedWorksite.caseNumber,
+            city = fullyDefinedWorksite.city,
+            county = fullyDefinedWorksite.county,
+            email = "",
+            favorite = fullyDefinedWorksite.favorite,
+            formData = fullyDefinedWorksite.formData,
+            incident = fullyDefinedWorksite.incident,
+            keyWorkType = null,
+            location = fullyDefinedWorksite.location,
+            name = fullyDefinedWorksite.name,
+            phone1 = fullyDefinedWorksite.phone1,
+            phone2 = "",
+            plusCode = fullyDefinedWorksite.plusCode,
+            postalCode = fullyDefinedWorksite.postalCode,
+            reportedBy = fullyDefinedWorksite.reportedBy,
+            state = fullyDefinedWorksite.state,
+            svi = fullyDefinedWorksite.svi,
+            updatedAt = updatedAt,
+            what3words = "",
             workTypes = emptyList(),
 
             skipDuplicateCheck = true,

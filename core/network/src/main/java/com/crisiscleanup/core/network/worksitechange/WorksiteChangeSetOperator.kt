@@ -34,7 +34,7 @@ class WorksiteChangeSetOperator @Inject constructor() {
             caseNumber = null,
             city = coreB.city,
             county = coreB.county,
-            email = coreB.email,
+            email = coreB.email ?: "",
             // New does not have favorite. Member of my org makes a followup request.
             favorite = null,
             formData = coreB.networkFormData,
@@ -51,7 +51,7 @@ class WorksiteChangeSetOperator @Inject constructor() {
             state = coreB.state,
             svi = null,
             updatedAt = coreB.updatedAt ?: Clock.System.now(),
-            what3words = null,
+            what3words = "",
             workTypes = null,
 
             skipDuplicateCheck = true,
@@ -140,6 +140,7 @@ internal fun NetworkWorksiteFull.getCoreChange(
             coreA.longitude != coreB.longitude
     val locationPush = if (isLocationChange) coreB.pointLocation else location
 
+    // Pass explicit "" to clear a value on the backend
     return NetworkWorksitePush(
         id = id,
         address = address.change(coreA.address, coreB.address),
@@ -150,7 +151,7 @@ internal fun NetworkWorksiteFull.getCoreChange(
         caseNumber = caseNumber,
         city = city.change(coreA.city, coreB.city),
         county = county.change(coreA.county, coreB.county),
-        email = baseChange(email, coreA.email, coreB.email)?.ifEmpty { null },
+        email = baseChange(email, coreA.email, coreB.email) ?: "",
         // Member of my org/favorite change is performed in a followup call
         favorite = favorite,
         formData = formDataPush,
@@ -159,14 +160,14 @@ internal fun NetworkWorksiteFull.getCoreChange(
         location = locationPush,
         name = name.change(coreA.name, coreB.name),
         phone1 = phone1.change(coreA.phone1, coreB.phone1),
-        phone2 = baseChange(phone2, coreA.phone2, coreB.phone2)?.ifEmpty { null },
+        phone2 = baseChange(phone2, coreA.phone2, coreB.phone2) ?: "",
         plusCode = baseChange(plusCode, coreA.plusCode, coreB.plusCode)?.ifEmpty { null },
         postalCode = baseChange(postalCode, coreA.postalCode, coreB.postalCode),
         reportedBy = reportedBy,
         state = state.change(coreA.state, coreB.state),
         svi = svi,
         updatedAt = updatedAtPush,
-        what3words = baseChange(what3words, coreA.what3Words, coreB.what3Words)?.ifEmpty { null },
+        what3words = baseChange(what3words, coreA.what3Words, coreB.what3Words) ?: "",
         // TODO Review if this works
         workTypes = emptyList(),
 

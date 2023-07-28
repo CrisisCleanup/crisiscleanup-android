@@ -15,7 +15,7 @@ data class NetworkWorksitePush(
     val caseNumber: String?,
     val city: String,
     val county: String,
-    val email: String?,
+    val email: String,
     // val events: List<NetworkEvent>,
     val favorite: NetworkType?,
     // val files: List<NetworkFile>,
@@ -31,7 +31,7 @@ data class NetworkWorksitePush(
     // Notes are followup requests.
     // val notes
     val phone1: String,
-    val phone2: String?,
+    val phone2: String,
     @SerialName("pluscode")
     val plusCode: String?,
     @SerialName("postal_code")
@@ -46,7 +46,7 @@ data class NetworkWorksitePush(
     @SerialName("updated_at")
     val updatedAt: Instant,
     @SerialName("what3words")
-    val what3words: String?,
+    val what3words: String,
     @SerialName("work_types")
     val workTypes: List<NetworkWorkType>?,
 
