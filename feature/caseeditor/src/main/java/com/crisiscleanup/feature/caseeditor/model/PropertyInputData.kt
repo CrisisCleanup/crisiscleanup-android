@@ -7,7 +7,6 @@ import com.crisiscleanup.core.common.InputValidator
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.model.data.AutoContactFrequency
 import com.crisiscleanup.core.model.data.Worksite
-import com.crisiscleanup.feature.caseeditor.R
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class PropertyInputData(
@@ -53,7 +52,7 @@ class PropertyInputData(
         if (phoneNumber.isBlank()) {
             messages.add(translator("caseForm.phone_required"))
         }
-        if (email.isNotBlank() && !inputValidator.validateEmailAddress(email)) {
+        if (email.isNotBlank() && !inputValidator.hasEmailAddress(email)) {
             messages.add(translator("info.enter_valid_email"))
         }
         return messages.joinToString("\n")
@@ -70,7 +69,7 @@ class PropertyInputData(
             phoneNumberError = translator("caseForm.phone_required")
             return false
         }
-        if (email.isNotBlank() && !inputValidator.validateEmailAddress(email)) {
+        if (email.isNotBlank() && !inputValidator.hasEmailAddress(email)) {
             emailError = translator("info.enter_valid_email")
             return false
         }
