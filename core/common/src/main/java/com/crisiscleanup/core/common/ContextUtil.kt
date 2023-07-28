@@ -13,3 +13,12 @@ fun Context.openDialer(phoneNumber: String) {
         Log.w("open-dialer", t.message ?: "Unknown exception")
     }
 }
+
+fun Context.openMaps(locationQuery: String) {
+    try {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(locationQuery))
+        startActivity(intent)
+    } catch (t: Throwable) {
+        Log.w("open-maps", t.message ?: "Unknown exception")
+    }
+}

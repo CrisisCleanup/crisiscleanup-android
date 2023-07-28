@@ -726,7 +726,8 @@ private fun LazyListScope.propertyInfoItems(
                         )
                     }
                 }
-                val (fullAddress, locationQuery) = worksite.addressQuery
+                // TODO Show alert if wrong address is checked. Providing additional context.
+                val (fullAddress, geoQuery, locationQuery) = worksite.addressQuery
                 PropertyInfoRow(
                     CrisisCleanupIcons.Location,
                     fullAddress,
@@ -738,7 +739,7 @@ private fun LazyListScope.propertyInfoItems(
                         .fillMaxWidth()
                         .padding(horizontal = edgeSpacing, vertical = edgeSpacingHalf),
                     isLocation = !worksite.hasWrongLocationFlag,
-                    locationQuery = locationQuery,
+                    locationQuery = geoQuery.ifBlank { locationQuery },
                 )
 
                 PropertyInfoMapView(

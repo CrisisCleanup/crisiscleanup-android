@@ -43,18 +43,21 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.common.ParsedPhoneNumber
 import com.crisiscleanup.core.common.PhoneNumberUtil
 import com.crisiscleanup.core.common.openDialer
+import com.crisiscleanup.core.common.openMaps
 import com.crisiscleanup.core.commonassets.R
 import com.crisiscleanup.core.commoncase.model.addressQuery
 import com.crisiscleanup.core.commoncase.ui.IncidentDropdownSelect
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupOutlinedButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.FormListSectionSeparator
 import com.crisiscleanup.core.designsystem.component.LinkifyPhoneText
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
+import com.crisiscleanup.core.designsystem.theme.attentionBackgroundColor
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
@@ -104,6 +107,10 @@ internal fun BoxScope.CasesTableView(
             phoneNumberList = list
         }
     }
+
+    var isWrongLocationDialogVisible by remember { mutableStateOf(false) }
+    val showWrongLocationDialog = remember(viewModel) { { isWrongLocationDialogVisible = true } }
+    val hideWrongLocationDialog = remember(viewModel) { { isWrongLocationDialogVisible = false } }
 
     Column(
         Modifier
@@ -191,6 +198,7 @@ internal fun BoxScope.CasesTableView(
                     onOpenFlags = { onOpenFlags(it.worksite) },
                     isEditable = isEditable,
                     showPhoneNumbers = setPhoneNumberList,
+                    showWrongLocationDialog = showWrongLocationDialog,
                 )
                 FormListSectionSeparator()
             }
@@ -203,6 +211,20 @@ internal fun BoxScope.CasesTableView(
         parsedNumbers = phoneNumberList,
         setPhoneNumbers = setPhoneNumberList,
     )
+
+    if (isWrongLocationDialogVisible) {
+        CrisisCleanupAlertDialog(
+            title = "~~Flagged",
+            text = "~~This Case is marked as having a wrong location/address. It is advised to read all provided location and address information, notes, and/or make contact before traveling.",
+            onDismissRequest = hideWrongLocationDialog,
+            confirmButton = {
+                CrisisCleanupTextButton(
+                    text = LocalAppTranslator.current("actions.ok"),
+                    onClick = hideWrongLocationDialog,
+                )
+            },
+        )
+    }
 }
 
 private val sortByOptions = listOf(
@@ -282,11 +304,12 @@ private fun TableViewItem(
     onOpenFlags: () -> Unit = {},
     isEditable: Boolean = false,
     showPhoneNumbers: (List<ParsedPhoneNumber>) -> Unit = {},
+    showWrongLocationDialog: () -> Unit = {},
 ) {
     val translator = LocalAppTranslator.current
 
     val (worksite, distance) = worksiteDistance
-    val (fullAddress, locationQuery) = worksite.addressQuery
+    val (fullAddress, geoQuery, locationQuery) = worksite.addressQuery
 
     Column(
         Modifier
@@ -367,7 +390,18 @@ private fun TableViewItem(
                 contentDescription = translator("profileOrg.address"),
                 tint = neutralIconColor,
             )
-            Text(fullAddress)
+            Text(
+                fullAddress,
+                Modifier.weight(1f),
+            )
+            if (worksite.hasWrongLocationFlag) {
+                CrisisCleanupIconButton(
+                    imageVector = CrisisCleanupIcons.Warning,
+                    contentDescription = translator("flag.worksite_wrong_location_description"),
+                    onClick = showWrongLocationDialog,
+                    tint = attentionBackgroundColor,
+                )
+            }
         }
 
         Row(
@@ -394,8 +428,11 @@ private fun TableViewItem(
             }
 
             CrisisCleanupOutlinedButton(
-                onClick = { /*TODO*/ },
-                enabled = isEditable && locationQuery.isNotBlank(),
+                onClick = {
+                    val query = geoQuery.ifBlank { locationQuery }
+                    context.openMaps(query)
+                },
+                enabled = isEditable && geoQuery.isNotBlank(),
             ) {
                 Icon(
                     imageVector = CrisisCleanupIcons.Directions,

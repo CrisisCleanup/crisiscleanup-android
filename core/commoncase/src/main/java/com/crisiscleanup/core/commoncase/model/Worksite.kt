@@ -14,10 +14,11 @@ val Worksite.fullAddress: String
 /**
  * @returns (Human readable address text, Query for maps navigation)
  */
-val Worksite.addressQuery: Pair<String, String>
+val Worksite.addressQuery: Triple<String, String, String>
     get() {
-        // TODO Alert if wrong address is checked? Just for context?
+        val coordinates = "$latitude,$longitude"
+        val geoQuery = "geo:0,0?q=$coordinates"
         val addressText = fullAddress
-        val locationQuery = "geo:${latitude},${longitude}?q=$addressText"
-        return Pair(addressText, locationQuery)
+        val locationQuery = "geo:$coordinates?q=$addressText"
+        return Triple(addressText, geoQuery, locationQuery)
     }
