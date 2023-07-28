@@ -14,27 +14,16 @@
  *   limitations under the License.
  */
 
-import com.android.build.gradle.TestExtension
-import com.google.samples.apps.nowinandroid.DefaultConfigTargetSdk
-import com.google.samples.apps.nowinandroid.configureGradleManagedDevices
-import com.google.samples.apps.nowinandroid.configureKotlinAndroid
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.kotlin.dsl.configure
 
-class AndroidTestConventionPlugin : Plugin<Project> {
+class FirebasePerfConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
-            with(pluginManager) {
-                apply("com.android.test")
-                apply("org.jetbrains.kotlin.android")
-            }
-
-            extensions.configure<TestExtension> {
-                configureKotlinAndroid(this)
-                defaultConfig.targetSdk = DefaultConfigTargetSdk
-                configureGradleManagedDevices(this)
+            pluginManager.findPlugin("com.google.firebase.firebase-perf").apply {
+                version = "1.4.1"
             }
         }
     }
+
 }

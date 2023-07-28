@@ -1,7 +1,7 @@
 [versions]
 accompanist = "0.31.2-alpha"
 androidDesugarJdkLibs = "2.0.3"
-androidGradlePlugin = "8.0.2"
+androidGradlePlugin = "8.1.0"
 androidMapsUtil = "2.3.0"
 androidMapsUtilKtx = "3.4.0"
 androidMaterial = "1.9.0"
@@ -9,10 +9,10 @@ androidxActivity = "1.7.2"
 androidxAppCompat = "1.6.1"
 androidxBrowser = "1.5.0"
 androidxComposeBom = "2023.06.01"
-androidxComposeCompiler = "1.4.7"
-androidxComposeMaterial3 = "1.2.0-alpha03"
+androidxComposeCompiler = "1.5.0"
+androidxComposeMaterial3 = "1.2.0-alpha04"
 androidxComposeRuntimeTracing = "1.0.0-alpha03"
-androidxConstraintLayout = "1.1.0-alpha10"
+androidxConstraintLayout = "1.1.0-alpha11"
 androidxCore = "1.10.1"
 androidxCoreSplashscreen = "1.0.1"
 androidxDataStore = "1.0.0"
@@ -35,31 +35,31 @@ androidxWindowManager = "1.1.0"
 androidxWork = "2.8.1"
 apacheCommonsText = "1.10.0"
 coil = "2.3.0"
-firebaseAppDistribution = "16.0.0-beta08"
-firebaseBom = "32.1.1"
-firebaseCrashlyticsPlugin = "2.9.6"
+firebaseAppDistribution = "16.0.0-beta09"
+firebaseBom = "32.2.0"
+firebaseCrashlyticsPlugin = "2.9.7"
 firebasePerfPlugin = "1.4.2"
 gmsPlugin = "4.3.14"
 googleMapsCompose = "2.9.1"
 googlePlaces = "3.2.0"
-hilt = "2.44.2"
+hilt = "2.47"
 hiltExt = "1.0.0"
 jacoco = "0.8.7"
 junit4 = "4.13.2"
 jwtDecode = "2.0.1"
-kotlin = "1.8.21"
-kotlinxCoroutines = "1.7.0"
-kotlinxCoroutinesPlayServices = "1.7.0"
+kotlin = "1.9.0"
+kotlinxCoroutines = "1.7.1"
+kotlinxCoroutinesPlayServices = "1.7.1"
 kotlinxDatetime = "0.4.0"
 kotlinxSerializationJson = "1.5.1"
-ksp = "1.8.21-1.0.11"
-lint = "31.0.2"
+ksp = "1.9.0-1.0.11"
+lint = "31.1.0"
 mockk = "1.13.5"
 okhttp = "4.11.0"
 philJayRrule = "1.0.3"
 playServicesLocation = "21.0.1"
 playServicesMaps = "18.1.0"
-protobuf = "3.23.0"
+protobuf = "3.23.4"
 protobufPlugin = "0.9.1"
 retrofit = "2.9.0"
 retrofitKotlinxSerializationJson = "1.0.0"
@@ -122,14 +122,12 @@ androidx-window-manager = { module = "androidx.window:window", version.ref = "an
 androidx-work-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "androidxWork" }
 androidx-work-testing = { group = "androidx.work", name = "work-testing", version.ref = "androidxWork" }
 apache-commons-text = { group = "org.apache.commons", name = "commons-text", version.ref = "apacheCommonsText" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics-ktx" }
 firebase-appdistribution-api = { group = "com.google.firebase", name = "firebase-appdistribution-api-ktx", version.ref = "firebaseAppDistribution" }
 firebase-appdistribution = { group = "com.google.firebase", name = "firebase-appdistribution", version.ref = "firebaseAppDistribution" }
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
-firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics-ktx" }
 firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics-ktx" }
-firebase-crashlytics-gradle = { group = "com.google.firebase", name = "firebase-crashlytics-gradle", version.ref = "firebaseCrashlyticsPlugin" }
 firebase-performance = { group = "com.google.firebase", name = "firebase-perf-ktx" }
-firebase-performance-gradle = { group = "com.google.firebase", name = "perf-plugin", version.ref = "firebasePerfPlugin" }
 google-maps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "googleMapsCompose" }
 google-places = { group = "com.google.android.libraries.places", name = "places", version.ref = "googlePlaces" }
 coil-kt = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
@@ -170,6 +168,8 @@ turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine
 
 # Dependencies of the included build-logic
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
+firebase-crashlytics-gradlePlugin = { group = "com.google.firebase", name = "firebase-crashlytics-gradle", version.ref = "firebaseCrashlyticsPlugin" }
+firebase-performance-gradlePlugin = { group = "com.google.firebase", name = "perf-plugin", version.ref = "firebasePerfPlugin" }
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 
