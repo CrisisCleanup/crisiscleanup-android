@@ -106,9 +106,9 @@ class MainActivityViewModel @Inject constructor(
         incidentSelector.incidentId
             .filter { it != EmptyIncident.id }
             .onEach {
+                syncPuller.stopSyncPullWorksitesFull()
                 sync(true)
                 syncPuller.appPullIncident(it)
-                syncPuller.stopSyncPullWorksitesFull()
             }
             .flowOn(ioDispatcher)
             .launchIn(viewModelScope)

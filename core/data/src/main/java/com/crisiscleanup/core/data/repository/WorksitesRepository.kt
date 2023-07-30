@@ -59,6 +59,8 @@ interface WorksitesRepository {
 
     fun getWorksiteSyncStats(incidentId: Long): IncidentDataSyncStats?
 
+    suspend fun getNetworkWorksiteCount(incidentId: Long, secondsSince: Long = 0): Int
+
     fun getLocalId(networkWorksiteId: Long): Long
 
     suspend fun syncNetworkWorksite(

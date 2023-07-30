@@ -30,7 +30,10 @@ internal object SyncPull {
         if (incidentId > 0) {
             incidentsRepository.getIncident(incidentId)?.let {
                 val syncStats = worksitesRepository.getWorksiteSyncStats(incidentId)
-                if (syncStats?.shouldSync != false) {
+                val syncedSeconds = syncStats?.syncAttempt?.successfulSeconds ?: 0
+                if (syncStats?.shouldSync != false ||
+                    worksitesRepository.getNetworkWorksiteCount(incidentId, syncedSeconds) > 0
+                ) {
                     stepsBuilder.setPullIncidentIdWorksites(incidentId)
                 }
             }

@@ -134,6 +134,9 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     override fun getWorksiteSyncStats(incidentId: Long) =
         worksiteSyncStatDao.getSyncStats(incidentId)?.asExternalModel()
 
+    override suspend fun getNetworkWorksiteCount(incidentId: Long, secondsSince: Long) =
+        worksitesSyncer.networkWorksitesCount(incidentId, Instant.fromEpochSeconds(secondsSince))
+
     private suspend fun queryUpdatedSyncStats(
         incidentId: Long,
         reset: Boolean,
@@ -149,8 +152,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         }
 
         val syncStart = Clock.System.now()
-        val worksitesCount =
-            worksitesSyncer.networkWorksitesCount(incidentId, Instant.fromEpochSeconds(0))
+        val worksitesCount = getNetworkWorksiteCount(incidentId)
         val syncStats = IncidentDataSyncStats(
             incidentId,
             syncStart,
@@ -183,6 +185,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             val savedWorksitesCount = worksiteDao.getWorksitesCount(incidentId)
             if (syncStats.syncAttempt.shouldSyncPassively() ||
                 savedWorksitesCount < syncStats.dataCount ||
+                getNetworkWorksiteCount(incidentId, syncStats.syncAttempt.successfulSeconds) > 0 ||
                 forceQueryDeltas
             ) {
                 worksitesSyncer.sync(incidentId, syncStats)
