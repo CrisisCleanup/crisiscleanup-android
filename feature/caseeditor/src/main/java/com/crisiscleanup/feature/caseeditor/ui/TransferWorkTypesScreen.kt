@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.commoncase.WorkTypeTransferType
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
@@ -41,7 +42,6 @@ import com.crisiscleanup.core.designsystem.theme.listItemTopPadding
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.TransferWorkTypeViewModel
-import com.crisiscleanup.feature.caseeditor.WorkTypeTransferType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

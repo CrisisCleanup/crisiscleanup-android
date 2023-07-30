@@ -7,6 +7,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import com.crisiscleanup.core.database.model.BoundedSyncedWorksiteIds
 import com.crisiscleanup.core.database.model.PopulatedLocalWorksite
+import com.crisiscleanup.core.database.model.PopulatedTableDataWorksite
 import com.crisiscleanup.core.database.model.PopulatedWorksite
 import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
 import com.crisiscleanup.core.database.model.WorksiteEntity
@@ -133,24 +134,6 @@ interface WorksiteDao {
         longitudeLeft: Double,
         longitudeRight: Double,
     ): Int
-
-    @Transaction
-    @Query(
-        """
-        SELECT *
-        FROM worksites
-        WHERE incident_id=:incidentId AND
-              (longitude BETWEEN :longitudeWest AND :longitudeEast) AND
-              (latitude BETWEEN :latitudeSouth AND :latitudeNorth)
-        """
-    )
-    fun getWorksitesInBounds(
-        incidentId: Long,
-        latitudeSouth: Double,
-        latitudeNorth: Double,
-        longitudeWest: Double,
-        longitudeEast: Double,
-    ): List<PopulatedWorksite>
 
     @Transaction
     @Query("SELECT COUNT(id) FROM worksites_root WHERE incident_id=:incidentId")
@@ -414,7 +397,25 @@ interface WorksiteDao {
 
     @Transaction
     @Query("SELECT * FROM worksites WHERE incident_id=:incidentId")
-    fun getWorksites(incidentId: Long): List<PopulatedWorksite>
+    fun getTableWorksites(incidentId: Long): List<PopulatedTableDataWorksite>
+
+    @Transaction
+    @Query(
+        """
+        SELECT *
+        FROM worksites
+        WHERE incident_id=:incidentId AND
+              (longitude BETWEEN :longitudeWest AND :longitudeEast) AND
+              (latitude BETWEEN :latitudeSouth AND :latitudeNorth)
+        """
+    )
+    fun getTableWorksitesInBounds(
+        incidentId: Long,
+        latitudeSouth: Double,
+        latitudeNorth: Double,
+        longitudeWest: Double,
+        longitudeEast: Double,
+    ): List<PopulatedTableDataWorksite>
 
     @Transaction
     @Query(
@@ -425,7 +426,7 @@ interface WorksiteDao {
         ORDER BY name, county, city, case_number_order LIMIT :limit
         """
     )
-    fun getWorksitesOrderByName(incidentId: Long, limit: Int): List<PopulatedWorksite>
+    fun getTableWorksitesOrderByName(incidentId: Long, limit: Int): List<PopulatedTableDataWorksite>
 
     @Transaction
     @Query(
@@ -436,7 +437,7 @@ interface WorksiteDao {
         ORDER BY city, name, case_number_order LIMIT :limit
         """
     )
-    fun getWorksitesOrderByCity(incidentId: Long, limit: Int): List<PopulatedWorksite>
+    fun getTableWorksitesOrderByCity(incidentId: Long, limit: Int): List<PopulatedTableDataWorksite>
 
     @Transaction
     @Query(
@@ -448,7 +449,10 @@ interface WorksiteDao {
         """
     )
 
-    fun getWorksitesOrderByCounty(incidentId: Long, limit: Int): List<PopulatedWorksite>
+    fun getTableWorksitesOrderByCounty(
+        incidentId: Long,
+        limit: Int,
+    ): List<PopulatedTableDataWorksite>
 
     @Transaction
     @Query(
@@ -459,5 +463,8 @@ interface WorksiteDao {
         ORDER BY case_number_order LIMIT :limit
         """
     )
-    fun getWorksitesOrderByCaseNumber(incidentId: Long, limit: Int): List<PopulatedWorksite>
+    fun getTableWorksitesOrderByCaseNumber(
+        incidentId: Long,
+        limit: Int,
+    ): List<PopulatedTableDataWorksite>
 }

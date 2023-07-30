@@ -80,6 +80,8 @@ import com.crisiscleanup.core.designsystem.component.LinkifyLocationText
 import com.crisiscleanup.core.designsystem.component.LinkifyPhoneText
 import com.crisiscleanup.core.designsystem.component.TemporaryDialog
 import com.crisiscleanup.core.designsystem.component.TopBarBackAction
+import com.crisiscleanup.core.designsystem.component.WorkTypeAction
+import com.crisiscleanup.core.designsystem.component.WorkTypePrimaryAction
 import com.crisiscleanup.core.designsystem.component.actionEdgeSpace
 import com.crisiscleanup.core.designsystem.component.fabPlusSpaceHeight
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
@@ -124,8 +126,8 @@ import kotlinx.coroutines.launch
 internal val edgeSpacing = 16.dp
 internal val edgeSpacingHalf = edgeSpacing.times(0.5f)
 
-private val FlagColorFallback = Color(0xFF000000)
-private val FlagColors = mapOf(
+private val flagColorFallback = Color(0xFF000000)
+private val flagColors = mapOf(
     WorksiteFlagType.HighPriority to Color(0xFF367bc3),
     WorksiteFlagType.UpsetClient to Color(0xFF00b3bf),
     WorksiteFlagType.ReportAbuse to Color(0xFFd79425),
@@ -626,7 +628,7 @@ private fun FlagChip(
     flag.flagType?.let { flagType ->
         val translator = LocalAppTranslator.current
         val isEditable = LocalCaseEditor.current.isEditable
-        val color = FlagColors[flagType] ?: FlagColorFallback
+        val color = flagColors[flagType] ?: flagColorFallback
         val text = translator(flagType.literal)
         val removeFlagTranslateKey = "actions.remove_type_flag"
         val description = translator(removeFlagTranslateKey)
@@ -771,14 +773,15 @@ private fun LazyListScope.workItems(
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.spacedBy(edgeSpacingHalf),
             ) {
-                val translator = LocalAppTranslator.current
+                val t = LocalAppTranslator.current
+                val isEditable = LocalCaseEditor.current.isEditable
                 if (profile.unclaimed.isNotEmpty()) {
-                    WorkTypePrimaryAction(translator("actions.claim_all_alt"), claimAll)
+                    WorkTypePrimaryAction(t("actions.claim_all_alt"), isEditable, claimAll)
                 }
                 if (profile.releasableCount > 0) {
-                    WorkTypeAction(translator("actions.release_all"), releaseAll)
+                    WorkTypeAction(t("actions.release_all"), isEditable, releaseAll)
                 } else if (profile.requestableCount > 0) {
-                    WorkTypeAction(translator("actions.request_all"), requestAll)
+                    WorkTypeAction(t("actions.request_all"), isEditable, requestAll)
                 }
             }
         }

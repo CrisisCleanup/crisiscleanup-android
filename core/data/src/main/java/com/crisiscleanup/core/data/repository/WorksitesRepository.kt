@@ -3,6 +3,7 @@ package com.crisiscleanup.core.data.repository
 import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.IncidentDataSyncStats
 import com.crisiscleanup.core.model.data.LocalWorksite
+import com.crisiscleanup.core.model.data.TableDataWorksite
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.core.model.data.WorksiteSortBy
@@ -91,5 +92,5 @@ interface WorksitesRepository {
         longitude: Double,
         searchRadius: Float = 100f,
         count: Int = 360,
-    ): List<Worksite>
+    ): List<TableDataWorksite>
 }

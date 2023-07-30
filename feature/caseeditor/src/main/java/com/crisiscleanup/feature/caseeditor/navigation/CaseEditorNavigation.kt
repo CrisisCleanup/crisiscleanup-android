@@ -56,6 +56,12 @@ internal class CaseAddFlagArgs(val isFromCaseEdit: Boolean) {
     )
 }
 
+internal class TransferWorkTypeArgs(val isFromCaseEdit: Boolean) {
+    constructor(savedStateHandle: SavedStateHandle) : this(
+        checkNotNull(savedStateHandle.get<Boolean>(isFromCaseEditArg)),
+    )
+}
+
 fun NavController.navigateToCaseEditor(incidentId: Long, worksiteId: Long? = null) {
     val routeParts = mutableListOf("$caseEditorRoute?$incidentIdArg=$incidentId")
     worksiteId?.let { routeParts.add("$worksiteIdArg=$worksiteId") }
@@ -144,7 +150,7 @@ fun NavGraphBuilder.existingCaseScreen(
         }
         val navToTransferWorkType = remember(navController) {
             {
-                navController.navigateToExistingCaseTransferWorkType()
+                navController.navigateToTransferWorkType(true)
             }
         }
         val navToViewImage = remember(navController) {
@@ -166,8 +172,8 @@ fun NavGraphBuilder.existingCaseScreen(
     }
 }
 
-fun NavController.navigateToExistingCaseTransferWorkType() =
-    this.navigate(viewCaseTransferWorkTypesRoute)
+fun NavController.navigateToTransferWorkType(isFromCaseEdit: Boolean) =
+    this.navigate("$viewCaseTransferWorkTypesRoute?$isFromCaseEditArg=$isFromCaseEdit")
 
 internal fun NavController.popRouteStartingWith(route: String) {
     popBackStack()
@@ -224,7 +230,15 @@ fun NavGraphBuilder.caseEditMoveLocationOnMapScreen(
 fun NavGraphBuilder.existingCaseTransferWorkTypesScreen(
     onBack: () -> Unit = {},
 ) {
-    composable(route = viewCaseTransferWorkTypesRoute) {
+    composable(
+        route = "$viewCaseTransferWorkTypesRoute?$isFromCaseEditArg={$isFromCaseEditArg}",
+        arguments = listOf(
+            navArgument(isFromCaseEditArg) {
+                type = NavType.BoolType
+                defaultValue = false
+            },
+        ),
+    ) {
         TransferWorkTypesRoute(onBack = onBack)
     }
 }

@@ -4,7 +4,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlin.time.Duration.Companion.days
 
-private val releaseDaysThreshold = 30.days
+internal val WorkTypeReleaseDaysThreshold = 30.days
 
 data class WorkType(
     val id: Long,
@@ -22,7 +22,7 @@ data class WorkType(
     val workType: WorkTypeType = typeFromLiteral(workTypeLiteral)
 
     val isReleaseEligible = createdAt?.let {
-        Clock.System.now().minus(it) > releaseDaysThreshold
+        Clock.System.now().minus(it) > WorkTypeReleaseDaysThreshold
     } ?: false
 }
 

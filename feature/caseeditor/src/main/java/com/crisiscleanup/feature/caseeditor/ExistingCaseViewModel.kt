@@ -28,6 +28,8 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.relativeTime
 import com.crisiscleanup.core.common.sync.SyncPusher
+import com.crisiscleanup.core.commoncase.TransferWorkTypeProvider
+import com.crisiscleanup.core.commoncase.WorkTypeTransferType
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository

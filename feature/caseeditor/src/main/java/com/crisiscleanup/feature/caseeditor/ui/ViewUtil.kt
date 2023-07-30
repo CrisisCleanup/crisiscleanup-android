@@ -1,24 +1,15 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
 import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconTextButton
-import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
-import com.crisiscleanup.core.designsystem.theme.*
-import com.crisiscleanup.feature.caseeditor.R
+import com.crisiscleanup.core.designsystem.theme.actionLinkColor
+import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
+import com.crisiscleanup.core.designsystem.theme.listItemTopPadding
 
 private val errorMessageModifier = Modifier
     .listItemHorizontalPadding()

@@ -18,7 +18,7 @@ import com.crisiscleanup.core.database.dao.WorksiteDao
 import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
 import com.crisiscleanup.core.database.dao.WorksiteSyncStatDao
 import com.crisiscleanup.core.database.model.PopulatedRecentWorksite
-import com.crisiscleanup.core.database.model.PopulatedWorksite
+import com.crisiscleanup.core.database.model.PopulatedTableDataWorksite
 import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
 import com.crisiscleanup.core.database.model.RecentWorksiteEntity
 import com.crisiscleanup.core.database.model.SwNeBounds
@@ -29,8 +29,9 @@ import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.IncidentDataSyncStats
 import com.crisiscleanup.core.model.data.SyncAttempt
-import com.crisiscleanup.core.model.data.Worksite
+import com.crisiscleanup.core.model.data.TableDataWorksite
 import com.crisiscleanup.core.model.data.WorksiteSortBy
+import com.crisiscleanup.core.model.data.getClaimStatus
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.CrisisCleanupWriteApi
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
@@ -60,6 +61,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private val dataSource: CrisisCleanupNetworkDataSource,
     private val writeApi: CrisisCleanupWriteApi,
     private val workTypeTransferRequestDaoPlus: WorkTypeTransferRequestDaoPlus,
+    private val organizationsRepository: OfflineFirstOrganizationsRepository,
     private val appVersionProvider: AppVersionProvider,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
 ) : WorksitesRepository, IncidentDataPullReporter {
@@ -290,7 +292,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         // miles
         searchRadius: Float,
         count: Int,
-    ): List<Worksite> = coroutineScope {
+    ): List<TableDataWorksite> = coroutineScope {
         val queryCount = count.coerceAtLeast(100)
         val records = when (sortBy) {
             WorksiteSortBy.Nearest -> getNearestWorksites(
@@ -301,16 +303,16 @@ class OfflineFirstWorksitesRepository @Inject constructor(
                 searchRadius,
             )
 
-            WorksiteSortBy.Name -> worksiteDao.getWorksitesOrderByName(incidentId, queryCount)
+            WorksiteSortBy.Name -> worksiteDao.getTableWorksitesOrderByName(incidentId, queryCount)
 
-            WorksiteSortBy.City -> worksiteDao.getWorksitesOrderByCity(incidentId, queryCount)
+            WorksiteSortBy.City -> worksiteDao.getTableWorksitesOrderByCity(incidentId, queryCount)
 
-            WorksiteSortBy.CountyParish -> worksiteDao.getWorksitesOrderByCounty(
+            WorksiteSortBy.CountyParish -> worksiteDao.getTableWorksitesOrderByCounty(
                 incidentId,
                 queryCount
             )
 
-            else -> worksiteDao.getWorksitesOrderByCaseNumber(incidentId, queryCount)
+            else -> worksiteDao.getTableWorksitesOrderByCaseNumber(incidentId, queryCount)
         }
 
         ensureActive()
@@ -321,7 +323,21 @@ class OfflineFirstWorksitesRepository @Inject constructor(
 
         ensureActive()
 
-        records.map(PopulatedWorksite::asExternalModel)
+        val strideCount = 100
+        val tableData = mutableListOf<TableDataWorksite>()
+        val affiliateIds = organizationsRepository.getOrganizationAffiliateIds(orgId.first())
+        for (i in records.indices) {
+            if (i % strideCount == 0) {
+                ensureActive()
+            }
+
+            val worksite = records[i].asExternalModel()
+            val claimStatus = worksite.getClaimStatus(affiliateIds)
+            val tableRecord = TableDataWorksite(worksite, claimStatus)
+            tableData.add(tableRecord)
+        }
+
+        tableData
     }
 
     private suspend fun getNearestWorksites(
@@ -331,14 +347,14 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         count: Int,
         // miles
         searchRadius: Float = 100.0f,
-    ): List<PopulatedWorksite> = coroutineScope {
+    ): List<PopulatedTableDataWorksite> = coroutineScope {
         val strideCount = 100
 
         val worksiteCount = worksiteDao.getWorksitesCount(incidentId)
 
-        val boundedWorksites: List<PopulatedWorksite>
+        val boundedWorksites: List<PopulatedTableDataWorksite>
         if (worksiteCount <= count) {
-            boundedWorksites = worksiteDao.getWorksites(incidentId)
+            boundedWorksites = worksiteDao.getTableWorksites(incidentId)
         } else {
             val r = searchRadius.coerceAtLeast(24.0f)
             val latitudeRadialDegrees = r / 69.0
@@ -361,7 +377,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             gridQuery.initializeGrid(boundedWorksiteRectCount, targetBucketCount)
 
             val maxQueryCount = (count * 1.5).toInt()
-            boundedWorksites = worksiteDaoPlus.loadBoundedWorksites(
+            boundedWorksites = worksiteDaoPlus.loadBoundedTableWorksites(
                 incidentId,
                 maxQueryCount,
                 gridQuery.getSwNeGridCells(),
@@ -370,12 +386,13 @@ class OfflineFirstWorksitesRepository @Inject constructor(
 
         val latRad = latitude.radians
         val lngRad = longitude.radians
-        val withDistance = mutableListOf<Pair<PopulatedWorksite, Double>>()
+        val withDistance = mutableListOf<Pair<PopulatedTableDataWorksite, Double>>()
         for (i in boundedWorksites.indices) {
             val worksite = boundedWorksites[i]
+            val entity = worksite.base.entity
             val distance = HaversineDistance.calculate(
                 latRad, lngRad,
-                worksite.entity.latitude.radians, worksite.entity.longitude.radians,
+                entity.latitude.radians, entity.longitude.radians,
             )
             withDistance.add(Pair(worksite, distance))
             if (i % strideCount == 0) {

@@ -55,6 +55,8 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupOutlinedButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.FormListSectionSeparator
 import com.crisiscleanup.core.designsystem.component.LinkifyPhoneText
+import com.crisiscleanup.core.designsystem.component.WorkTypeAction
+import com.crisiscleanup.core.designsystem.component.WorkTypePrimaryAction
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.attentionBackgroundColor
@@ -66,6 +68,8 @@ import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
 import com.crisiscleanup.core.designsystem.theme.listRowItemStartPadding
 import com.crisiscleanup.core.designsystem.theme.neutralIconColor
 import com.crisiscleanup.core.designsystem.theme.optionItemHeight
+import com.crisiscleanup.core.model.data.TableWorksiteClaimAction
+import com.crisiscleanup.core.model.data.TableWorksiteClaimStatus
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteSortBy
 import com.crisiscleanup.feature.cases.CasesViewModel
@@ -94,6 +98,7 @@ internal fun BoxScope.CasesTableView(
     }
 
     val selectedIncident by viewModel.selectedIncident.collectAsStateWithLifecycle()
+    val isTurnOnRelease = selectedIncident.turnOnRelease
 
     val isEditable = !isTableDataTransient
 
@@ -111,6 +116,8 @@ internal fun BoxScope.CasesTableView(
     var isWrongLocationDialogVisible by remember { mutableStateOf(false) }
     val showWrongLocationDialog = remember(viewModel) { { isWrongLocationDialogVisible = true } }
     val hideWrongLocationDialog = remember(viewModel) { { isWrongLocationDialogVisible = false } }
+
+    val claimActionErrorMessage by viewModel.changeClaimActionErrorMessage.collectAsStateWithLifecycle()
 
     Column(
         Modifier
@@ -173,6 +180,7 @@ internal fun BoxScope.CasesTableView(
         }
 
         val tableData by viewModel.tableData.collectAsStateWithLifecycle()
+        val changingClaimIds by viewModel.worksitesChangingClaimAction.collectAsStateWithLifecycle()
 
         val tableSortMessage by viewModel.tableSortResultsMessage.collectAsStateWithLifecycle()
         if (tableSortMessage.isNotBlank()) {
@@ -181,6 +189,12 @@ internal fun BoxScope.CasesTableView(
                 listItemModifier,
                 style = LocalFontStyles.current.header3,
             )
+        }
+
+        val onWorksiteClaimAction = remember(viewModel) {
+            { worksite: Worksite, claimAction: TableWorksiteClaimAction ->
+                viewModel.onWorksiteClaimAction(worksite, claimAction)
+            }
         }
 
         val listState = rememberLazyListState()
@@ -192,13 +206,20 @@ internal fun BoxScope.CasesTableView(
                 key = { it.worksite.id },
                 contentType = { "table-item" },
             ) {
+                val worksite = it.worksite
+                val isChangingClaim = changingClaimIds.contains(worksite.id)
                 TableViewItem(
                     it,
-                    onViewCase = { onTableItemSelect(it.worksite) },
-                    onOpenFlags = { onOpenFlags(it.worksite) },
+                    onViewCase = { onTableItemSelect(worksite) },
+                    onOpenFlags = { onOpenFlags(worksite) },
                     isEditable = isEditable,
                     showPhoneNumbers = setPhoneNumberList,
                     showWrongLocationDialog = showWrongLocationDialog,
+                    isTurnOnRelease = isTurnOnRelease,
+                    onWorksiteClaimAction = { claimAction: TableWorksiteClaimAction ->
+                        onWorksiteClaimAction(worksite, claimAction)
+                    },
+                    isChangingClaim = isChangingClaim,
                 )
                 FormListSectionSeparator()
             }
@@ -221,6 +242,23 @@ internal fun BoxScope.CasesTableView(
                 CrisisCleanupTextButton(
                     text = LocalAppTranslator.current("actions.ok"),
                     onClick = hideWrongLocationDialog,
+                )
+            },
+        )
+    }
+
+    var isClaimActionDialogVisible by remember(claimActionErrorMessage) { mutableStateOf(true) }
+    if (claimActionErrorMessage.isNotBlank() && isClaimActionDialogVisible) {
+        val dismissDialog =
+            remember(claimActionErrorMessage) { { isClaimActionDialogVisible = false } }
+        CrisisCleanupAlertDialog(
+            title = "~~Error",
+            text = claimActionErrorMessage,
+            onDismissRequest = dismissDialog,
+            confirmButton = {
+                CrisisCleanupTextButton(
+                    text = LocalAppTranslator.current("actions.ok"),
+                    onClick = dismissDialog,
                 )
             },
         )
@@ -305,10 +343,14 @@ private fun TableViewItem(
     isEditable: Boolean = false,
     showPhoneNumbers: (List<ParsedPhoneNumber>) -> Unit = {},
     showWrongLocationDialog: () -> Unit = {},
+    isTurnOnRelease: Boolean = false,
+    onWorksiteClaimAction: (TableWorksiteClaimAction) -> Unit = {},
+    isChangingClaim: Boolean = false,
 ) {
     val translator = LocalAppTranslator.current
 
-    val (worksite, distance) = worksiteDistance
+    val worksite = worksiteDistance.worksite
+    val distance = worksiteDistance.distanceMiles
     val (fullAddress, geoQuery, locationQuery) = worksite.addressQuery
 
     Column(
@@ -444,9 +486,46 @@ private fun TableViewItem(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // TODO Show busy and determine work type state then show correct action
-            //      Enable if isEditable
-            // Text("actions")
+            val isClaimActionEditable = isEditable && !isChangingClaim
+            when (worksiteDistance.claimStatus) {
+                TableWorksiteClaimStatus.HasUnclaimed -> {
+                    WorkTypePrimaryAction(
+                        translator("actions.claim"),
+                        isClaimActionEditable,
+                    ) {
+                        onWorksiteClaimAction(TableWorksiteClaimAction.Claim)
+                    }
+                }
+
+                TableWorksiteClaimStatus.ClaimedByMyOrg -> {
+                    WorkTypeAction(
+                        translator("actions.unclaim"),
+                        isClaimActionEditable,
+                    ) {
+                        onWorksiteClaimAction(TableWorksiteClaimAction.Unclaim)
+                    }
+                }
+
+                TableWorksiteClaimStatus.ClaimedByOthers -> {
+                    val isReleasable = isTurnOnRelease && worksite.isReleaseEligible
+                    val actionText = if (isReleasable) translator("actions.release")
+                    else translator("actions.request")
+                    WorkTypeAction(actionText, isClaimActionEditable) {
+                        if (isReleasable) {
+                            onWorksiteClaimAction(TableWorksiteClaimAction.Release)
+                        } else {
+                            onWorksiteClaimAction(TableWorksiteClaimAction.Request)
+                        }
+                    }
+                }
+
+                TableWorksiteClaimStatus.Requested -> {
+                    Text(
+                        translator("caseView.requested"),
+                        Modifier.listItemVerticalPadding(),
+                    )
+                }
+            }
         }
     }
 }

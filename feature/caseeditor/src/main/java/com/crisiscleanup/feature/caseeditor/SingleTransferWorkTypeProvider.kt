@@ -1,7 +1,8 @@
 package com.crisiscleanup.feature.caseeditor
 
-import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import com.crisiscleanup.core.commoncase.TransferWorkTypeProvider
+import com.crisiscleanup.core.commoncase.WorkTypeTransferType
 import com.crisiscleanup.core.model.data.WorkType
 import dagger.Binds
 import dagger.Module
@@ -9,27 +10,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Inject
 import javax.inject.Singleton
-
-interface TransferWorkTypeProvider {
-    val isPendingTransfer: State<Boolean>
-    val transferType: WorkTypeTransferType
-    val workTypes: Map<WorkType, Boolean>
-    var reason: String
-
-    val organizationId: Long
-    val organizationName: String
-    val caseNumber: String
-
-    fun startTransfer(
-        organizationId: Long,
-        transferType: WorkTypeTransferType,
-        workTypes: Map<WorkType, Boolean>,
-        organizationName: String = "",
-        caseNumber: String = "",
-    )
-
-    fun clearPendingTransfer()
-}
 
 @Singleton
 class SingleTransferWorkTypeProvider @Inject constructor() : TransferWorkTypeProvider {
@@ -76,12 +56,6 @@ class SingleTransferWorkTypeProvider @Inject constructor() : TransferWorkTypePro
     override fun clearPendingTransfer() {
         isPendingTransfer.value = false
     }
-}
-
-enum class WorkTypeTransferType {
-    None,
-    Request,
-    Release,
 }
 
 @Module

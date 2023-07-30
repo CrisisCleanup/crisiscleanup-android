@@ -13,6 +13,9 @@ import javax.inject.Singleton
 @Singleton
 class MemoryWorksiteProvider @Inject constructor() : WorksiteProvider {
     override val editableWorksite = MutableStateFlow(EmptyWorksite)
+    override var workTypeTranslationLookup = emptyMap<String, String>()
+
+    override fun translate(key: String) = workTypeTranslationLookup[key]
 }
 
 @Module

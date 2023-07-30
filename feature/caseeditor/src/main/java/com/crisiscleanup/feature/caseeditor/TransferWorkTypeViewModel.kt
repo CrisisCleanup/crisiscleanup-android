@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.KeyResourceTranslator
@@ -13,12 +14,13 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPusher
+import com.crisiscleanup.core.commoncase.TransferWorkTypeProvider
+import com.crisiscleanup.core.commoncase.WorkTypeTransferType.*
+import com.crisiscleanup.core.commoncase.WorksiteProvider
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
-import com.crisiscleanup.feature.caseeditor.WorkTypeTransferType.None
-import com.crisiscleanup.feature.caseeditor.WorkTypeTransferType.Release
-import com.crisiscleanup.feature.caseeditor.WorkTypeTransferType.Request
 import com.crisiscleanup.feature.caseeditor.model.contactList
+import com.crisiscleanup.feature.caseeditor.navigation.TransferWorkTypeArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -36,16 +38,20 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TransferWorkTypeViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     organizationsRepository: OrganizationsRepository,
     private val worksiteChangeRepository: WorksiteChangeRepository,
+    private val worksiteProvider: WorksiteProvider,
     private val editableWorksiteProvider: EditableWorksiteProvider,
     private val transferWorkTypeProvider: TransferWorkTypeProvider,
-    private val translator: KeyResourceTranslator,
+    val translator: KeyResourceTranslator,
     private val syncPusher: SyncPusher,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel(), KeyResourceTranslator {
+    private val transferWorkTypeArgs = TransferWorkTypeArgs(savedStateHandle)
     val transferType = transferWorkTypeProvider.transferType
+    private val isFromCaseEdit = transferWorkTypeArgs.isFromCaseEdit
 
     val isTransferable = transferType != None && transferWorkTypeProvider.workTypes.isNotEmpty()
     private val organizationId = transferWorkTypeProvider.organizationId
@@ -120,6 +126,10 @@ class TransferWorkTypeViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
+    private val editableWorksite =
+        if (isFromCaseEdit) editableWorksiteProvider.editableWorksite
+        else worksiteProvider.editableWorksite
+
     init {
         transferWorkTypeProvider.clearPendingTransfer()
 
@@ -188,7 +198,7 @@ class TransferWorkTypeViewModel @Inject constructor(
                 if (it.value) workTypeIdLookup[it.key]
                 else null
             }
-            val worksite = editableWorksiteProvider.editableWorksite.value
+            val worksite = editableWorksite.value
             try {
                 worksiteChangeRepository.saveWorkTypeTransfer(
                     worksite,
@@ -217,11 +227,14 @@ class TransferWorkTypeViewModel @Inject constructor(
 
     override fun translate(phraseKey: String) = translate(phraseKey, 0)
 
-    override fun translate(phraseKey: String, fallbackResId: Int) =
-        editableWorksiteProvider.translate(phraseKey) ?: translator.translate(
+    override fun translate(phraseKey: String, fallbackResId: Int): String {
+        val translated = if (isFromCaseEdit) editableWorksiteProvider.translate(phraseKey)
+        else worksiteProvider.translate(phraseKey)
+        return translated ?: translator.translate(
             phraseKey,
             fallbackResId
         )
+    }
 }
 
 data class RequestWorkTypeState(

@@ -28,11 +28,14 @@ import com.crisiscleanup.core.common.radians
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.commonassets.getDisasterIcon
+import com.crisiscleanup.core.commoncase.TransferWorkTypeProvider
 import com.crisiscleanup.core.commoncase.WorksiteProvider
 import com.crisiscleanup.core.data.IncidentSelector
+import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.CasesFilterRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
+import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.data.util.IncidentDataPullReporter
@@ -44,6 +47,8 @@ import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
 import com.crisiscleanup.core.mapmarker.util.toLatLng
 import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.model.data.TableDataWorksite
+import com.crisiscleanup.core.model.data.TableWorksiteClaimAction
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.core.model.data.WorksiteSortBy
@@ -109,6 +114,9 @@ class CasesViewModel @Inject constructor(
     private val appPreferencesRepository: LocalAppPreferencesRepository,
     worksiteProvider: WorksiteProvider,
     worksiteChangeRepository: WorksiteChangeRepository,
+    accountDataRepository: AccountDataRepository,
+    organizationsRepository: OrganizationsRepository,
+    val transferWorkTypeProvider: TransferWorkTypeProvider,
     private val translator: KeyResourceTranslator,
     private val syncPuller: SyncPuller,
     val visualAlertManager: VisualAlertManager,
@@ -157,6 +165,10 @@ class CasesViewModel @Inject constructor(
         worksiteProvider,
         worksitesRepository,
         worksiteChangeRepository,
+        accountDataRepository,
+        organizationsRepository,
+        incidentsRepository,
+        translator,
         logger,
     )
     val isLoadingTableViewData = tableViewDataLoader.isLoading
@@ -168,6 +180,9 @@ class CasesViewModel @Inject constructor(
 
     val openWorksiteAddFlagCounter = MutableStateFlow(0)
     private val openWorksiteAddFlag = AtomicBoolean(false)
+
+    val worksitesChangingClaimAction = tableViewDataLoader.worksitesChangingClaimAction
+    val changeClaimActionErrorMessage = MutableStateFlow("")
 
     fun setContentViewType(isTableView: Boolean) {
         this.isTableView.value = isTableView
@@ -406,15 +421,15 @@ class CasesViewModel @Inject constructor(
         val strideCount = 100
         val locationLatitudeRad = locationLatitude.radians
         val locationLongitudeRad = locationLongitude.radians
-        val tableData = worksites.mapIndexed { i, worksite ->
+        val tableData = worksites.mapIndexed { i, tableData ->
             if (i % strideCount == 0) {
                 ensureActive()
             }
 
             var distance = -1.0
             if (hasLocation) {
-                val worksiteLatitudeRad = worksite.latitude.radians
-                val worksiteLongitudeRad = worksite.longitude.radians
+                val worksiteLatitudeRad = tableData.worksite.latitude.radians
+                val worksiteLongitudeRad = tableData.worksite.longitude.radians
                 val haversineDistance = HaversineDistance.calculate(
                     locationLatitudeRad, locationLongitudeRad,
                     worksiteLatitudeRad, worksiteLongitudeRad,
@@ -422,7 +437,7 @@ class CasesViewModel @Inject constructor(
                 distance = haversineDistance.kmToMiles
             }
 
-            WorksiteDistance(worksite, distance)
+            WorksiteDistance(tableData, distance)
         }
 
         if (isDistanceSort && tableData.isEmpty()) {
@@ -676,6 +691,23 @@ class CasesViewModel @Inject constructor(
         }
     }
 
+    fun onWorksiteClaimAction(
+        worksite: Worksite,
+        claimAction: TableWorksiteClaimAction,
+    ) {
+        changeClaimActionErrorMessage.value = ""
+        viewModelScope.launch(ioDispatcher) {
+            val result = tableViewDataLoader.onWorkTypeClaimAction(
+                worksite,
+                claimAction,
+                transferWorkTypeProvider,
+            )
+            if (result.errorMessage.isNotBlank()) {
+                changeClaimActionErrorMessage.value = result.errorMessage
+            }
+        }
+    }
+
     fun takeOpenWorksiteAddFlag() = openWorksiteAddFlag.getAndSet(false)
 
     // TrimMemoryListener
@@ -690,6 +722,9 @@ class CasesViewModel @Inject constructor(
 }
 
 data class WorksiteDistance(
-    val worksite: Worksite,
+    val data: TableDataWorksite,
     val distanceMiles: Double,
-)
+) {
+    val worksite = data.worksite
+    val claimStatus = data.claimStatus
+}

@@ -7,7 +7,14 @@ import com.crisiscleanup.feature.caseeditor.model.PropertyInputData
 import com.crisiscleanup.feature.caseeditor.model.asCaseLocation
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import java.util.concurrent.atomic.AtomicReference
 
 class ResidentNameSearchManager(
@@ -91,4 +98,3 @@ data class ResidentNameSearchResults(
     val isEmpty = worksites.isEmpty()
     val isNotEmpty = !isEmpty
 }
-

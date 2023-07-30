@@ -82,6 +82,10 @@ data class Worksite(
     }
 
     fun toggleHighPriorityFlag() = toggleFlag(WorksiteFlagType.HighPriority)
+
+    val isReleaseEligible = createdAt?.let {
+        Clock.System.now().minus(it) > WorkTypeReleaseDaysThreshold
+    } ?: false
 }
 
 val EmptyWorksite = Worksite(

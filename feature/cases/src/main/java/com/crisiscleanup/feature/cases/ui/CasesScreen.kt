@@ -99,12 +99,18 @@ internal fun CasesRoute(
     createNewCase: (Long) -> Unit = {},
     viewCase: (Long, Long) -> Boolean = { _, _ -> false },
     openAddFlag: () -> Unit = {},
+    openTransferWorkType: () -> Unit = {},
 ) {
     val openAddFlagCounter by viewModel.openWorksiteAddFlagCounter.collectAsStateWithLifecycle()
     LaunchedEffect(openAddFlagCounter) {
         if (viewModel.takeOpenWorksiteAddFlag()) {
             openAddFlag()
         }
+    }
+
+    val isPendingTransfer by viewModel.transferWorkTypeProvider.isPendingTransfer
+    if (isPendingTransfer) {
+        openTransferWorkType()
     }
 
     val incidentsData by viewModel.incidentsData.collectAsStateWithLifecycle(IncidentsData.Loading)
@@ -182,7 +188,7 @@ internal fun CasesRoute(
             filtersCount = filtersCount,
             isIncidentLoading = isIncidentLoading,
             isMapBusy = isMapBusy,
-            isTableDataTransient = isTableDataTransient,
+            isTableDataTransient = isTableDataTransient || isPendingTransfer,
             casesCount = casesCount,
             worksitesOnMap = worksitesOnMap,
             mapCameraBounds = mapCameraBounds,

@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.InputValidator
 import com.crisiscleanup.core.common.KeyResourceTranslator
-import com.crisiscleanup.core.common.combineTrimText
 import com.crisiscleanup.core.common.event.AuthEventBus
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
@@ -138,7 +137,8 @@ class AuthenticationViewModel @Inject constructor(
                 if (hasError) {
                     errorMessage.value = translator("info.unknown_error")
 
-                    val logErrorMessage =result.errors?.condenseMessages?.ifBlank { "Server error" }
+                    val logErrorMessage =
+                        result.errors?.condenseMessages?.ifBlank { "Server error" }
                     logger.logException(Exception(logErrorMessage))
                 } else {
                     val refreshToken = oauthResult.refreshToken

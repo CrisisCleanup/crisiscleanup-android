@@ -5,7 +5,7 @@ import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
 import com.crisiscleanup.core.database.model.BoundedSyncedWorksiteIds
 import com.crisiscleanup.core.database.model.NetworkFileEntity
-import com.crisiscleanup.core.database.model.PopulatedWorksite
+import com.crisiscleanup.core.database.model.PopulatedTableDataWorksite
 import com.crisiscleanup.core.database.model.SwNeBounds
 import com.crisiscleanup.core.database.model.WorkTypeEntity
 import com.crisiscleanup.core.database.model.WorksiteEntities
@@ -466,7 +466,7 @@ class WorksiteDaoPlus @Inject constructor(
         else remainingBounds.subList(boundsIndex, remainingBounds.size)
     }
 
-    suspend fun loadBoundedWorksites(
+    suspend fun loadBoundedTableWorksites(
         incidentId: Long,
         maxLoadCount: Int,
         remainingBounds: List<SwNeBounds>,
@@ -474,12 +474,12 @@ class WorksiteDaoPlus @Inject constructor(
         db.withTransaction {
             val worksiteDao = db.worksiteDao()
 
-            val loadedWorksites = mutableListOf<PopulatedWorksite>()
+            val loadedWorksites = mutableListOf<PopulatedTableDataWorksite>()
 
             var boundsIndex = 0
             while (boundsIndex < remainingBounds.size) {
                 with(remainingBounds[boundsIndex++]) {
-                    val worksites = worksiteDao.getWorksitesInBounds(
+                    val worksites = worksiteDao.getTableWorksitesInBounds(
                         incidentId,
                         south,
                         north,

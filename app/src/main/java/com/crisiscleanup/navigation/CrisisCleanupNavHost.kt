@@ -21,6 +21,7 @@ import com.crisiscleanup.feature.caseeditor.navigation.existingCaseTransferWorkT
 import com.crisiscleanup.feature.caseeditor.navigation.navigateToCaseAddFlag
 import com.crisiscleanup.feature.caseeditor.navigation.navigateToCaseEditor
 import com.crisiscleanup.feature.caseeditor.navigation.navigateToExistingCase
+import com.crisiscleanup.feature.caseeditor.navigation.navigateToTransferWorkType
 import com.crisiscleanup.feature.caseeditor.navigation.rerouteToCaseChange
 import com.crisiscleanup.feature.cases.navigation.casesFilterScreen
 import com.crisiscleanup.feature.cases.navigation.casesGraph
@@ -106,6 +107,9 @@ fun CrisisCleanupNavHost(
     val navToCaseAddFlagNonEditing =
         remember(navController) { { navController.navigateToCaseAddFlag(false) } }
 
+    val navToTransferWorkTypeNonEditing =
+        remember(navController) { { navController.navigateToTransferWorkType(false) } }
+
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -129,6 +133,7 @@ fun CrisisCleanupNavHost(
             createCase = createNewCase,
             viewCase = viewCase,
             caseAddFlag = navToCaseAddFlagNonEditing,
+            caseTransferWorkType = navToTransferWorkTypeNonEditing,
         )
         dashboardScreen()
         teamScreen()

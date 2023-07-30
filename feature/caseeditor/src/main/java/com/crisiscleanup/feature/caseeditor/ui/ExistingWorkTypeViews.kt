@@ -7,9 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -20,8 +18,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CardSurface
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupOutlinedButton
+import com.crisiscleanup.core.designsystem.component.WorkTypeAction
+import com.crisiscleanup.core.designsystem.component.WorkTypePrimaryAction
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
@@ -116,21 +114,26 @@ private fun WorkTypeSummaryView(
                 WorkTypeStatusDropdown(workType.status, updateWorkTypeStatus)
                 Spacer(Modifier.weight(1f))
 
-                val translator = LocalAppTranslator.current
+                val t = LocalAppTranslator.current
+                val isEditable = LocalCaseEditor.current.isEditable
                 if (workType.isClaimed) {
                     if (isClaimedByMyOrg) {
-                        WorkTypeAction(translator("actions.unclaim")) {
+                        WorkTypeAction(t("actions.unclaim"), isEditable) {
                             updateWorkType(workType.copy(orgClaim = null), false)
                         }
                     } else if (isReleasable) {
-                        WorkTypeAction(translator("actions.release")) { releaseWorkType(workType) }
+                        WorkTypeAction(t("actions.release"), isEditable) {
+                            releaseWorkType(workType)
+                        }
                     } else if (isRequested) {
-                        Text(translator("caseView.requested"))
+                        Text(t("caseView.requested"))
                     } else {
-                        WorkTypeAction(translator("actions.request")) { requestWorkType(workType) }
+                        WorkTypeAction(t("actions.request"), isEditable) {
+                            requestWorkType(workType)
+                        }
                     }
                 } else {
-                    WorkTypePrimaryAction(translator("actions.claim")) {
+                    WorkTypePrimaryAction(t("actions.claim"), isEditable) {
                         updateWorkType(workType.copy(orgClaim = myOrgId), false)
                     }
                 }
@@ -138,33 +141,6 @@ private fun WorkTypeSummaryView(
         }
     }
 }
-
-@Composable
-internal fun WorkTypeAction(
-    text: String,
-    onClick: () -> Unit = {},
-) = CrisisCleanupOutlinedButton(
-    // TODO Common dimensions
-    modifier = Modifier.widthIn(100.dp),
-    text = text,
-    onClick = onClick,
-    enabled = LocalCaseEditor.current.isEditable,
-)
-
-@Composable
-internal fun WorkTypePrimaryAction(
-    text: String,
-    onClick: () -> Unit = {},
-) = CrisisCleanupButton(
-    // TODO Common dimensions
-    modifier = Modifier.widthIn(100.dp),
-    text = text,
-    onClick = onClick,
-    enabled = LocalCaseEditor.current.isEditable,
-    elevation = ButtonDefaults.buttonElevation(
-        defaultElevation = 1.dp,
-    ),
-)
 
 internal fun LazyListScope.existingWorkTypeItems(
     sectionKey: String,

@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ripple.LocalRippleTheme
@@ -258,6 +259,35 @@ fun CrisisCleanupFab(
         }
     }
 }
+
+@Composable
+fun WorkTypeAction(
+    text: String,
+    enabled: Boolean,
+    onClick: () -> Unit = {},
+) = CrisisCleanupOutlinedButton(
+    // TODO Common dimensions
+    modifier = Modifier.widthIn(100.dp),
+    text = text,
+    onClick = onClick,
+    enabled = enabled,
+)
+
+@Composable
+fun WorkTypePrimaryAction(
+    text: String,
+    enabled: Boolean,
+    onClick: () -> Unit = {},
+) = CrisisCleanupButton(
+    // TODO Common dimensions
+    modifier = Modifier.widthIn(100.dp),
+    text = text,
+    onClick = onClick,
+    enabled = enabled,
+    elevation = ButtonDefaults.buttonElevation(
+        defaultElevation = 1.dp,
+    ),
+)
 
 @Preview
 @Composable
