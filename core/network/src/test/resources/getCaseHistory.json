@@ -1,0 +1,399 @@
+{
+  "events": [
+    {
+      "id": 6627661,
+      "event_key": "user_read_worksite",
+      "attr": {
+        "url": "https://app.staging.crisiscleanup.io/incident/255/work/987",
+        "medium": "web",
+        "actor_id": 986,
+        "patient_id": 987,
+        "api_endpoint": "/worksites/987",
+        "button_text_t": null,
+        "incident_name": "Hurricane Nicole",
+        "patient_wwtsp": [
+          {
+            "phase": 4,
+            "status": "open_unassigned",
+            "claimed_by": 89,
+            "work_type_key": "trees",
+            "claimed_by_name": "Crisis Cleanup Admin",
+            "commercial_value": 3750
+          }
+        ],
+        "patient_symbol": "$",
+        "actor_last_name": "A",
+        "actor_first_name": "S",
+        "actor_session_id": "f825a6ab-fdbf-4c91-b7c1-509ea2cc2acf",
+        "patient_iso_code": "USD",
+        "actor_language_id": 2,
+        "patient_case_number": "W727",
+        "patient_currency_id": 1,
+        "patient_completed_db": "0.000",
+        "actor_location_source": "IP Address Geocoder",
+        "actor_organization_name": "Crisis Cleanup Admin",
+        "patient_location_source": "Google Maps API",
+        "actor_location_precision": "Imprecise",
+        "patient_commercial_value": 3750,
+        "patient_completed_by_ccu": "0.000",
+        "patient_redacted_address": {
+          "svi": "0.99750",
+          "city": "Cocoa",
+          "state": "Florida",
+          "county": "Brevard County",
+          "address1": "xxx Grace Avenue",
+          "postal_code": "32922"
+        },
+        "patient_location_precision": "~2 meters",
+        "patient_value_completed_db": "0.00",
+        "patient_completed_by_anybody": "0.000",
+        "patient_value_completed_by_ccu": "0.00",
+        "patient_value_completed_by_anybody": "0.00",
+        "patient_one_default_currency_equals": 1
+      },
+      "created_at": "2023-06-18T17:39:46Z",
+      "created_by": 986,
+      "actor_id": 986,
+      "actor_blurred_location": {
+        "type": "Point",
+        "coordinates": [
+          -80.6856331804918,
+          28.020972480753322
+        ]
+      },
+      "actor_location_name": "West Melbourne, Florida",
+      "patient_blurred_location": {
+        "type": "Point",
+        "coordinates": [
+          -80.75270002021773,
+          28.352215478589077
+        ]
+      },
+      "patient_location_name": "Cocoa, Florida",
+      "recipient_blurred_location": null,
+      "recipient_location_name": null,
+      "name_t": "events.user_read_worksite",
+      "past_tense_t": "events.user_read_worksite_pt",
+      "present_progressive_t": "events.user_read_worksite_ppt",
+      "map_destination": "patient"
+    },
+    {
+      "id": 6627640,
+      "event_key": "user_read_worksite",
+      "attr": {
+        "url": "https://app.staging.crisiscleanup.io/incident/255/work/987",
+        "medium": "web",
+        "actor_id": 986,
+        "patient_id": 987,
+        "api_endpoint": "/worksites/987",
+        "button_text_t": null,
+        "incident_name": "Hurricane Nicole",
+        "patient_wwtsp": [
+          {
+            "phase": 4,
+            "status": "open_unassigned",
+            "claimed_by": null,
+            "work_type_key": "trees",
+            "claimed_by_name": null,
+            "commercial_value": 3750
+          }
+        ],
+        "patient_symbol": "$",
+        "actor_last_name": "A",
+        "actor_first_name": "S",
+        "actor_session_id": "f825a6ab-fdbf-4c91-b7c1-509ea2cc2acf",
+        "patient_iso_code": "USD",
+        "actor_language_id": 2,
+        "patient_case_number": "W727",
+        "patient_currency_id": 1,
+        "patient_completed_db": "0.000",
+        "actor_location_source": "IP Address Geocoder",
+        "actor_organization_name": "Crisis Cleanup Admin",
+        "patient_location_source": "Google Maps API",
+        "actor_location_precision": "Imprecise",
+        "patient_commercial_value": 3750,
+        "patient_completed_by_ccu": "0.000",
+        "patient_redacted_address": {
+          "svi": "0.99750",
+          "city": "Cocoa",
+          "state": "Florida",
+          "county": "Brevard County",
+          "address1": "xxx Grace Avenue",
+          "postal_code": "32922"
+        },
+        "patient_location_precision": "~2 meters",
+        "patient_value_completed_db": "0.00",
+        "patient_completed_by_anybody": "0.000",
+        "patient_value_completed_by_ccu": "0.00",
+        "patient_value_completed_by_anybody": "0.00",
+        "patient_one_default_currency_equals": 1
+      },
+      "created_at": "2023-06-17T19:58:46Z",
+      "created_by": 986,
+      "actor_id": 986,
+      "actor_blurred_location": {
+        "type": "Point",
+        "coordinates": [
+          -80.68534824972232,
+          28.020985726867657
+        ]
+      },
+      "actor_location_name": "West Melbourne, Florida",
+      "patient_blurred_location": {
+        "type": "Point",
+        "coordinates": [
+          -80.75270002021773,
+          28.352215478589077
+        ]
+      },
+      "patient_location_name": "Cocoa, Florida",
+      "recipient_blurred_location": null,
+      "recipient_location_name": null,
+      "name_t": "events.user_read_worksite",
+      "past_tense_t": "events.user_read_worksite_pt",
+      "present_progressive_t": "events.user_read_worksite_ppt",
+      "map_destination": "patient"
+    },
+    {
+      "id": 6627629,
+      "event_key": "user_read_worksite",
+      "attr": {
+        "url": "https://app.staging.crisiscleanup.io/incident/255/work/987",
+        "medium": "web",
+        "actor_id": 986,
+        "patient_id": 987,
+        "api_endpoint": "/worksites/987",
+        "button_text_t": null,
+        "incident_name": "Hurricane Nicole",
+        "patient_wwtsp": [
+          {
+            "phase": 4,
+            "status": "open_unassigned",
+            "claimed_by": null,
+            "work_type_key": "trees",
+            "claimed_by_name": null,
+            "commercial_value": 3750
+          }
+        ],
+        "patient_symbol": "$",
+        "actor_last_name": "A",
+        "actor_first_name": "S",
+        "actor_session_id": "d13ab33d-a79c-4e71-929d-c5ecf8049a90",
+        "patient_iso_code": "USD",
+        "actor_language_id": 2,
+        "patient_case_number": "W727",
+        "patient_currency_id": 1,
+        "patient_completed_db": "0.000",
+        "actor_location_source": "IP Address Geocoder",
+        "actor_organization_name": "Crisis Cleanup Admin",
+        "patient_location_source": "Google Maps API",
+        "actor_location_precision": "Imprecise",
+        "patient_commercial_value": 3750,
+        "patient_completed_by_ccu": "0.000",
+        "patient_redacted_address": {
+          "svi": "0.99750",
+          "city": "Cocoa",
+          "state": "Florida",
+          "county": "Brevard County",
+          "address1": "xxx Grace Avenue",
+          "postal_code": "32922"
+        },
+        "patient_location_precision": "~2 meters",
+        "patient_value_completed_db": "0.00",
+        "patient_completed_by_anybody": "0.000",
+        "patient_value_completed_by_ccu": "0.00",
+        "patient_value_completed_by_anybody": "0.00",
+        "patient_one_default_currency_equals": 1
+      },
+      "created_at": "2023-06-16T18:40:28Z",
+      "created_by": 986,
+      "actor_id": 986,
+      "actor_blurred_location": {
+        "type": "Point",
+        "coordinates": [
+          -80.71085860967031,
+          28.16386236018584
+        ]
+      },
+      "actor_location_name": "West Melbourne, Florida",
+      "patient_blurred_location": {
+        "type": "Point",
+        "coordinates": [
+          -80.75270002021773,
+          28.352215478589077
+        ]
+      },
+      "patient_location_name": "Cocoa, Florida",
+      "recipient_blurred_location": null,
+      "recipient_location_name": null,
+      "name_t": "events.user_read_worksite",
+      "past_tense_t": "events.user_read_worksite_pt",
+      "present_progressive_t": "events.user_read_worksite_ppt",
+      "map_destination": "patient"
+    },
+    {
+      "id": 6627145,
+      "event_key": "user_unjoin_wwwtsp_from_organization",
+      "attr": {
+        "url": null,
+        "medium": "web",
+        "actor_id": 986,
+        "patient_id": 989,
+        "api_endpoint": "/worksites/247005/unclaim",
+        "recipient_id": 89,
+        "button_text_t": null,
+        "incident_name": "Hurricane Nicole",
+        "patient_phase": 4,
+        "patient_name_t": "workType.debris",
+        "patient_status": "open_unassigned",
+        "patient_symbol": null,
+        "recipient_name": "Crisis Cleanup Admin",
+        "actor_last_name": "A",
+        "actor_first_name": "S",
+        "actor_session_id": "0057fa24-f948-406d-bab8-ab4a5e86ebe2",
+        "patient_iso_code": null,
+        "actor_language_id": 2,
+        "patient_substatus": "unassigned",
+        "patient_claimed_by": 89,
+        "patient_case_number": "W646",
+        "patient_currency_id": null,
+        "patient_worksite_id": 985,
+        "patient_completed_db": "0.00",
+        "actor_location_source": "IP Address Geocoder",
+        "patient_primary_state": "open",
+        "patient_status_name_t": "status.open_unassigned",
+        "patient_work_type_key": "debris",
+        "actor_organization_name": "Crisis Cleanup Admin",
+        "patient_claimed_by_name": "Crisis Cleanup Admin",
+        "patient_location_source": "Google Maps API",
+        "actor_location_precision": "Imprecise",
+        "patient_commercial_value": 1500,
+        "patient_completed_by_ccu": "0.00",
+        "patient_redacted_address": null,
+        "patient_substatus_name_t": "substatus.unassigned",
+        "recipient_location_source": "CrisisCleanup Locations Catalog",
+        "patient_location_precision": "~2 meters",
+        "patient_value_completed_db": "0.00",
+        "patient_completed_by_anybody": "0.00",
+        "patient_primary_state_name_t": "status.open",
+        "recipient_location_precision": "Approximate",
+        "patient_value_completed_by_ccu": "0.00",
+        "patient_value_completed_by_anybody": "0.00",
+        "patient_one_default_currency_equals": null
+      },
+      "created_at": "2023-06-08T13:37:15Z",
+      "created_by": 986,
+      "actor_id": 986,
+      "actor_blurred_location": {
+        "type": "Point",
+        "coordinates": [
+          -80.71040299333707,
+          28.164195525910696
+        ]
+      },
+      "actor_location_name": "West Melbourne, Florida",
+      "patient_blurred_location": {
+        "type": "Point",
+        "coordinates": [
+          -82.06649015448153,
+          27.27389161750497
+        ]
+      },
+      "patient_location_name": "Myakka City, Florida",
+      "recipient_blurred_location": {
+        "type": "Point",
+        "coordinates": [
+          -86.9046517383809,
+          36.29399688195084
+        ]
+      },
+      "recipient_location_name": "Crisis Cleanup Admin Org: Primary Response Area",
+      "name_t": "events.user_unjoin_wwwtsp_from_organization",
+      "past_tense_t": "events.user_unjoin_wwwtsp_from_organization_pt",
+      "present_progressive_t": "events.user_unjoin_wwwtsp_from_organization_ppt",
+      "map_destination": "patient"
+    },
+    {
+      "id": 6627142,
+      "event_key": "user_join_wwwtsp_with_organization",
+      "attr": {
+        "url": null,
+        "medium": "web",
+        "actor_id": 986,
+        "patient_id": 989,
+        "api_endpoint": "/worksites/247005/claim",
+        "recipient_id": 89,
+        "button_text_t": null,
+        "incident_name": "Hurricane Nicole",
+        "patient_phase": 4,
+        "patient_name_t": "workType.debris",
+        "patient_status": "open_unassigned",
+        "patient_symbol": null,
+        "recipient_name": "Crisis Cleanup Admin",
+        "actor_last_name": "A",
+        "actor_first_name": "S",
+        "actor_session_id": "0057fa24-f948-406d-bab8-ab4a5e86ebe2",
+        "patient_iso_code": null,
+        "actor_language_id": 2,
+        "patient_substatus": "unassigned",
+        "patient_claimed_by": 89,
+        "patient_case_number": "W646",
+        "patient_currency_id": null,
+        "patient_worksite_id": 247005,
+        "patient_completed_db": "0.00",
+        "actor_location_source": "IP Address Geocoder",
+        "patient_primary_state": "open",
+        "patient_status_name_t": "status.open_unassigned",
+        "patient_work_type_key": "debris",
+        "actor_organization_name": "Crisis Cleanup Admin",
+        "patient_claimed_by_name": "Crisis Cleanup Admin",
+        "patient_location_source": "Google Maps API",
+        "actor_location_precision": "Imprecise",
+        "patient_commercial_value": 1500,
+        "patient_completed_by_ccu": "0.00",
+        "patient_redacted_address": null,
+        "patient_substatus_name_t": "substatus.unassigned",
+        "recipient_location_source": "CrisisCleanup Locations Catalog",
+        "patient_location_precision": "~2 meters",
+        "patient_value_completed_db": "0.00",
+        "patient_completed_by_anybody": "0.00",
+        "patient_primary_state_name_t": "status.open",
+        "recipient_location_precision": "Approximate",
+        "patient_value_completed_by_ccu": "0.00",
+        "patient_value_completed_by_anybody": "0.00",
+        "patient_one_default_currency_equals": null
+      },
+      "created_at": "2023-06-08T13:36:51Z",
+      "created_by": 986,
+      "actor_id": 986,
+      "actor_blurred_location": {
+        "type": "Point",
+        "coordinates": [
+          -80.71067186616338,
+          28.163838239032362
+        ]
+      },
+      "actor_location_name": "West Melbourne, Florida",
+      "patient_blurred_location": {
+        "type": "Point",
+        "coordinates": [
+          -82.06649015448153,
+          27.27389161750497
+        ]
+      },
+      "patient_location_name": "Myakka City, Florida",
+      "recipient_blurred_location": {
+        "type": "Point",
+        "coordinates": [
+          -90.09010580407387,
+          46.219789154444555
+        ]
+      },
+      "recipient_location_name": "Crisis Cleanup Admin Org: Primary Response Area",
+      "name_t": "events.user_join_wwwtsp_with_organization",
+      "past_tense_t": "events.user_join_wwwtsp_with_organization_pt",
+      "present_progressive_t": "events.user_join_wwwtsp_with_organization_ppt",
+      "map_destination": "patient"
+    }
+  ]
+}

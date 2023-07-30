@@ -169,6 +169,14 @@ private interface DataSourceApi {
         @Query("limit")
         limit: Int,
     ): NetworkUsersResult
+
+    @TokenAuthenticationHeader
+    @WrapResponseHeader("events")
+    @GET("worksites/{id}/history")
+    suspend fun getCaseHistory(
+        @Path("id")
+        worksiteId: Long,
+    ): NetworkCaseHistoryResult
 }
 
 private val worksiteCoreDataFields = listOf(
@@ -351,4 +359,10 @@ class DataApiClient @Inject constructor(
                 it.errors?.tryThrowException()
                 it.results ?: emptyList()
             }
+
+    override suspend fun getCaseHistory(worksiteId: Long) = networkApi.getCaseHistory(worksiteId)
+        .let {
+            it.errors?.tryThrowException()
+            it.events ?: emptyList()
+        }
 }

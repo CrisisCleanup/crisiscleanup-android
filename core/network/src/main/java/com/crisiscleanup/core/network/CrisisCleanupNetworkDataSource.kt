@@ -1,6 +1,7 @@
 package com.crisiscleanup.core.network
 
 import com.crisiscleanup.core.network.model.NetworkAuthResult
+import com.crisiscleanup.core.network.model.NetworkCaseHistoryEvent
 import com.crisiscleanup.core.network.model.NetworkCountResult
 import com.crisiscleanup.core.network.model.NetworkIncident
 import com.crisiscleanup.core.network.model.NetworkIncidentOrganization
@@ -109,4 +110,6 @@ interface CrisisCleanupNetworkDataSource {
         organization: Long,
         limit: Int = 10,
     ): List<NetworkPersonContact>
+
+    suspend fun getCaseHistory(worksiteId: Long): List<NetworkCaseHistoryEvent>
 }
