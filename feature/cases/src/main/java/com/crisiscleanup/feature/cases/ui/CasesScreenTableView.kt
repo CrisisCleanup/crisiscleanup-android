@@ -25,6 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -74,6 +75,7 @@ import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteSortBy
 import com.crisiscleanup.feature.cases.CasesViewModel
 import com.crisiscleanup.feature.cases.WorksiteDistance
+import kotlinx.coroutines.delay
 import java.text.DecimalFormat
 
 @Composable
@@ -198,6 +200,10 @@ internal fun BoxScope.CasesTableView(
         }
 
         val listState = rememberLazyListState()
+        LaunchedEffect(tableSort) {
+            delay(150)
+            listState.scrollToItem(0)
+        }
         LazyColumn(
             state = listState,
         ) {
