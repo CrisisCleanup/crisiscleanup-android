@@ -258,6 +258,7 @@ private fun ColumnScope.FullEditView(
         BusyIndicatorFloatingTopCenter(isLoadingWorksite)
     }
 
+    val showClaimAndSave by viewModel.showClaimAndSave.collectAsStateWithLifecycle(false)
     val keyboardVisibility by screenKeyboardVisibility()
     if (keyboardVisibility == ScreenKeyboardVisibility.NotVisible) {
         val claimAndSaveChanges = remember(viewModel) { { viewModel.saveChanges(true) } }
@@ -267,6 +268,7 @@ private fun ColumnScope.FullEditView(
             enable = isEditable,
             isSaving = isSavingData,
             onCancel = onCancel,
+            showClaimAndSave = showClaimAndSave,
             onClaimAndSave = claimAndSaveChanges,
             onSave = saveChanges,
             saveText = translator("actions.save"),
@@ -542,6 +544,7 @@ private fun SaveActionBar(
     enable: Boolean = false,
     isSaving: Boolean = false,
     onCancel: () -> Unit = {},
+    showClaimAndSave: Boolean = false,
     onClaimAndSave: () -> Unit = {},
     onSave: () -> Unit = {},
     saveText: String = "",
@@ -568,17 +571,19 @@ private fun SaveActionBar(
             isSharpCorners = isSharpCorners,
             style = style,
         )
+        if (showClaimAndSave) {
+            BusyButton(
+                Modifier.weight(1.5f),
+                text = saveClaimText,
+                enabled = enable,
+                indicateBusy = isSaving,
+                onClick = onClaimAndSave,
+                isSharpCorners = isSharpCorners,
+                style = style,
+            )
+        }
         BusyButton(
-            Modifier.weight(1.5f),
-            text = saveClaimText,
-            enabled = enable,
-            indicateBusy = isSaving,
-            onClick = onClaimAndSave,
-            isSharpCorners = isSharpCorners,
-            style = style,
-        )
-        BusyButton(
-            Modifier.weight(1.1f),
+            Modifier.weight(if (showClaimAndSave) 1.1f else 1f),
             text = saveText,
             enabled = enable,
             indicateBusy = isSaving,

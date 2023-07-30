@@ -53,6 +53,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
@@ -159,6 +160,12 @@ class CaseEditorViewModel @Inject constructor(
     val changeExistingWorksite = MutableStateFlow(ExistingWorksiteIdentifierNone)
     private var saveChangeIncident = EmptyIncident
     private val changingIncidentWorksite: Worksite
+
+    val showClaimAndSave =
+        editingWorksite.map {
+            isCreateWorksite ||
+                    it.workTypes.firstOrNull { w -> w.orgClaim == null } != null
+        }
 
     init {
         updateHeaderTitle()
