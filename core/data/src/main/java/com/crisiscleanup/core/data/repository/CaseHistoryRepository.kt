@@ -8,7 +8,6 @@ import com.crisiscleanup.core.database.dao.CaseHistoryDao
 import com.crisiscleanup.core.database.dao.CaseHistoryDaoPlus
 import com.crisiscleanup.core.database.dao.PersonContactDao
 import com.crisiscleanup.core.database.dao.WorksiteDao
-import com.crisiscleanup.core.database.model.PopulatedCaseHistoryEvent
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.CaseHistoryEvent
 import com.crisiscleanup.core.model.data.CaseHistoryUserEvents
@@ -36,6 +35,7 @@ class OfflineFirstCaseHistoryRepository @Inject constructor(
     private val worksiteDao: WorksiteDao,
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val caseHistoryDaoPlus: CaseHistoryDaoPlus,
+    private val translator: LanguageTranslationsRepository,
     @Logger(Cases) private val logger: AppLogger,
 ) : CaseHistoryRepository {
     private val _loadingWorksiteId = MutableStateFlow(EmptyWorksite.id)
@@ -46,7 +46,7 @@ class OfflineFirstCaseHistoryRepository @Inject constructor(
             val epoch0 = Instant.fromEpochSeconds(0)
             val userEventMap = mutableMapOf<Long, MutableList<CaseHistoryEvent>>()
             val userNewestCreatedAtMap = mutableMapOf<Long, Instant>()
-            events.map(PopulatedCaseHistoryEvent::asExternalModel)
+            events.map { it.asExternalModel(translator) }
                 .forEach { event ->
                     val userId = event.createdBy
                     if (!userEventMap.contains(userId)) {
@@ -64,7 +64,10 @@ class OfflineFirstCaseHistoryRepository @Inject constructor(
 
             val sortingData = mutableListOf<Pair<CaseHistoryUserEvents, Instant>>()
             for ((userId, userEvents) in userEventMap) {
-                val contact = personContactDao.getContact(userId)
+                var contact = personContactDao.getContact(userId)
+                if (contact == null) {
+                    // TODO Query for user and org and save from backend
+                }
                 val person = contact?.entity
                 val org = contact?.organization
                 sortingData.add(

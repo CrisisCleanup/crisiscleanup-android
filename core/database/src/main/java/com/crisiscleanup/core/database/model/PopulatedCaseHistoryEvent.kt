@@ -2,8 +2,8 @@ package com.crisiscleanup.core.database.model
 
 import androidx.room.Embedded
 import androidx.room.Relation
+import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.model.data.CaseHistoryEvent
-import com.crisiscleanup.core.model.data.CaseHistoryEventAttr
 
 data class PopulatedCaseHistoryEvent(
     @Embedded
@@ -15,21 +15,8 @@ data class PopulatedCaseHistoryEvent(
     val attr: CaseHistoryEventAttrEntity,
 )
 
-fun PopulatedCaseHistoryEvent.asExternalModel(): CaseHistoryEvent {
-    val eventAttr = with(attr) {
-        CaseHistoryEventAttr(
-            incidentName = incidentName,
-            patientCaseNumber = patientCaseNumber,
-            patientId = patientId,
-            patientLabelT = patientLabelT,
-            patientLocationName = patientLocationName,
-            patientNameT = patientNameT,
-            patientStatusNameT = patientStatusNameT,
-            recipientCaseNumber = recipientCaseNumber,
-            recipientId = recipientId,
-            recipientName = recipientName,
-        )
-    }
+fun PopulatedCaseHistoryEvent.asExternalModel(translator: KeyTranslator): CaseHistoryEvent {
+    val translate = { key: String? -> key?.let { translator.translate(it) } ?: "" }
     with(entity) {
         return CaseHistoryEvent(
             id = id,
@@ -37,10 +24,17 @@ fun PopulatedCaseHistoryEvent.asExternalModel(): CaseHistoryEvent {
             createdAt = createdAt,
             createdBy = createdBy,
             eventKey = eventKey,
-            pastTenseT = pastTenseT,
+            pastTenseDescription = translate(pastTenseT)
+                .replace("{incident_name}", attr.incidentName)
+                .replace("{patient_case_number}", attr.patientCaseNumber ?: "")
+                .replace("{patient_label_t}", translate(attr.patientLabelT))
+                .replace("{patient_location_name}", attr.patientLocationName ?: "")
+                .replace("{patient_name_t}", translate(attr.patientNameT))
+                .replace("{patient_status_name_t}", translate(attr.patientStatusNameT))
+                .replace("{recipient_case_number}", attr.recipientCaseNumber ?: "")
+                .replace("{recipient_name_t}", translate(attr.recipientNameT)),
             actorLocationName = actorLocationName,
             recipientLocationName = recipientLocationName,
-            attr = eventAttr,
         )
     }
 }

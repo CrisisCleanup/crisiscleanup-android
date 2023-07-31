@@ -76,4 +76,6 @@ data class CaseHistoryEventAttrEntity(
     val recipientId: Long?,
     @ColumnInfo("recipient_name")
     val recipientName: String?,
+    @ColumnInfo("recipient_name_t")
+    val recipientNameT: String?,
 )

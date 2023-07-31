@@ -13,7 +13,7 @@ fun NetworkCaseHistoryEvent.asEntities(worksiteId: Long): Pair<CaseHistoryEventE
             createdBy = createdBy,
             eventKey = eventKey,
             pastTenseT = pastTenseT,
-            actorLocationName = actorLocationName,
+            actorLocationName = actorLocationName ?: "",
             recipientLocationName = recipientLocationName,
         ),
         with(attr) {
@@ -29,6 +29,7 @@ fun NetworkCaseHistoryEvent.asEntities(worksiteId: Long): Pair<CaseHistoryEventE
                 recipientCaseNumber = recipientCaseNumber,
                 recipientId = recipientId,
                 recipientName = recipientName,
+                recipientNameT = recipientNameT,
             )
         },
     )

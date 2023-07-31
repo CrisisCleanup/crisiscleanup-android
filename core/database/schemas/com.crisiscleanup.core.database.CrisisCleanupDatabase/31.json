@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 31,
-    "identityHash": "33d8b276e0d9cecf5acac460a39bc894",
+    "identityHash": "e8aa36a0fad71a3fcb79b5ad310ac175",
     "entities": [
       {
         "tableName": "work_type_statuses",
@@ -2447,7 +2447,7 @@
       },
       {
         "tableName": "case_history_event_attrs",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `incident_name` TEXT NOT NULL, `patient_case_number` TEXT, `patient_id` INTEGER NOT NULL, `patient_label_t` TEXT, `patient_location_name` TEXT, `patient_name_t` TEXT, `patient_status_name_t` TEXT, `recipient_case_number` TEXT, `recipient_id` INTEGER, `recipient_name` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`id`) REFERENCES `case_history_events`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `incident_name` TEXT NOT NULL, `patient_case_number` TEXT, `patient_id` INTEGER NOT NULL, `patient_label_t` TEXT, `patient_location_name` TEXT, `patient_name_t` TEXT, `patient_status_name_t` TEXT, `recipient_case_number` TEXT, `recipient_id` INTEGER, `recipient_name` TEXT, `recipient_name_t` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`id`) REFERENCES `case_history_events`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -2514,6 +2514,12 @@
             "columnName": "recipient_name",
             "affinity": "TEXT",
             "notNull": false
+          },
+          {
+            "fieldPath": "recipientNameT",
+            "columnName": "recipient_name_t",
+            "affinity": "TEXT",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -2541,7 +2547,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '33d8b276e0d9cecf5acac460a39bc894')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e8aa36a0fad71a3fcb79b5ad310ac175')"
     ]
   }
 }

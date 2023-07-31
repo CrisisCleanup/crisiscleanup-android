@@ -49,7 +49,9 @@ val cancelButtonContentColor = md_theme_primary
 val actionLinkColor = primaryBlueColor
 val separatorColor = Color(0xFFF6F8F9)
 val selectedOptionContainerColor = Color(0xFFF6F8F9)
+val neutralBackgroundColor = md_theme_background
 val neutralIconColor = Color(0xFF848F99)
+val neutralFontColor = Color(0xFF818181)
 val navigationContainerColor = Color(0xFF2D2D2D)
 
 // Color pick from screenshot

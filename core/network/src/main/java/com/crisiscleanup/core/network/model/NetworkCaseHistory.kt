@@ -22,7 +22,7 @@ data class NetworkCaseHistoryEvent(
     @SerialName("past_tense_t")
     val pastTenseT: String,
     @SerialName("actor_location_name")
-    val actorLocationName: String,
+    val actorLocationName: String? = null,
     @SerialName("recipient_location_name")
     val recipientLocationName: String? = null,
     val attr: NetworkCaseHistoryAttrs,
@@ -50,4 +50,6 @@ data class NetworkCaseHistoryAttrs(
     val recipientId: Long? = null,
     @SerialName("recipient_name")
     val recipientName: String? = null,
+    @SerialName("recipient_name_t")
+    val recipientNameT: String? = null,
 )

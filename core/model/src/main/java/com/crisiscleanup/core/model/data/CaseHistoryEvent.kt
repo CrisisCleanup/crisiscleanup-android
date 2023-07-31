@@ -17,21 +17,7 @@ data class CaseHistoryEvent(
     val createdAt: Instant,
     val createdBy: Long,
     val eventKey: String,
-    val pastTenseT: String,
+    val pastTenseDescription: String,
     val actorLocationName: String,
     val recipientLocationName: String?,
-    val attr: CaseHistoryEventAttr,
-)
-
-data class CaseHistoryEventAttr(
-    val incidentName: String,
-    val patientCaseNumber: String?,
-    val patientId: Long,
-    val patientLabelT: String?,
-    val patientLocationName: String?,
-    val patientNameT: String?,
-    val patientStatusNameT: String?,
-    val recipientCaseNumber: String?,
-    val recipientId: Long?,
-    val recipientName: String?,
 )
