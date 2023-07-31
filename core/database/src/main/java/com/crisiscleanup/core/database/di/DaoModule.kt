@@ -63,4 +63,7 @@ object DaoModule {
 
     @Provides
     fun localImageDao(db: CrisisCleanupDatabase) = db.localImageDao()
+
+    @Provides
+    fun caseHistoryDao(db: CrisisCleanupDatabase) = db.caseHistoryDao()
 }

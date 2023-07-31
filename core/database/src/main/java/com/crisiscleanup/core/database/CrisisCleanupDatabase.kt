@@ -9,6 +9,7 @@ import com.crisiscleanup.core.database.DatabaseMigrations.Schema10To11
 import com.crisiscleanup.core.database.DatabaseMigrations.Schema18To19
 import com.crisiscleanup.core.database.DatabaseMigrations.Schema2To3
 import com.crisiscleanup.core.database.DatabaseMigrations.Schema3to4
+import com.crisiscleanup.core.database.dao.CaseHistoryDao
 import com.crisiscleanup.core.database.dao.IncidentDao
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDao
 import com.crisiscleanup.core.database.dao.LanguageDao
@@ -29,6 +30,8 @@ import com.crisiscleanup.core.database.dao.WorksiteNoteDao
 import com.crisiscleanup.core.database.dao.WorksiteSyncStatDao
 import com.crisiscleanup.core.database.dao.fts.IncidentFtsEntity
 import com.crisiscleanup.core.database.dao.fts.IncidentOrganizationFtsEntity
+import com.crisiscleanup.core.database.model.CaseHistoryEventAttrEntity
+import com.crisiscleanup.core.database.model.CaseHistoryEventEntity
 import com.crisiscleanup.core.database.model.IncidentEntity
 import com.crisiscleanup.core.database.model.IncidentFormFieldEntity
 import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
@@ -91,8 +94,10 @@ import com.crisiscleanup.core.database.util.InstantConverter
         IncidentWorksitesFullSyncStatsEntity::class,
         IncidentFtsEntity::class,
         IncidentOrganizationFtsEntity::class,
+        CaseHistoryEventEntity::class,
+        CaseHistoryEventAttrEntity::class,
     ],
-    version = 30,
+    version = 31,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
@@ -123,6 +128,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         AutoMigration(from = 27, to = 28),
         AutoMigration(from = 28, to = 29),
         AutoMigration(from = 29, to = 30),
+        AutoMigration(from = 30, to = 31),
     ],
     exportSchema = true,
 )
@@ -151,4 +157,5 @@ abstract class CrisisCleanupDatabase : RoomDatabase(), DatabaseVersionProvider {
     abstract fun workTypeTransferRequestDao(): WorkTypeTransferRequestDao
     abstract fun networkFileDao(): NetworkFileDao
     abstract fun localImageDao(): LocalImageDao
+    abstract fun caseHistoryDao(): CaseHistoryDao
 }

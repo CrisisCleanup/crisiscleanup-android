@@ -17,21 +17,37 @@ data class NetworkCaseHistoryEvent(
     val eventKey: String,
     @SerialName("created_at")
     val createdAt: Instant,
+    @SerialName("created_by")
+    val createdBy: Long,
     @SerialName("past_tense_t")
     val pastTenseT: String,
     @SerialName("actor_location_name")
     val actorLocationName: String,
+    @SerialName("recipient_location_name")
+    val recipientLocationName: String? = null,
     val attr: NetworkCaseHistoryAttrs,
 )
 
 @Serializable
 data class NetworkCaseHistoryAttrs(
-    @SerialName("patient_case_number")
-    val patientCaseNumber: String,
     @SerialName("incident_name")
     val incidentName: String,
+    @SerialName("patient_case_number")
+    val patientCaseNumber: String? = null,
+    @SerialName("patient_id")
+    val patientId: Long,
     @SerialName("patient_label_t")
     val patientLabelT: String? = null,
+    @SerialName("patient_location_name")
+    val patientLocationName: String? = null,
+    @SerialName("patient_name_t")
+    val patientNameT: String? = null,
+    @SerialName("patient_status_name_t")
+    val patientStatusNameT: String? = null,
     @SerialName("recipient_case_number")
     val recipientCaseNumber: String? = null,
+    @SerialName("recipient_id")
+    val recipientId: Long? = null,
+    @SerialName("recipient_name")
+    val recipientName: String? = null,
 )

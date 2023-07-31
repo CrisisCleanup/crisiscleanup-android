@@ -7,6 +7,8 @@ import androidx.room.Transaction
 import androidx.room.TypeConverters
 import com.crisiscleanup.core.database.dao.fts.IncidentFtsEntity
 import com.crisiscleanup.core.database.dao.fts.IncidentOrganizationFtsEntity
+import com.crisiscleanup.core.database.model.CaseHistoryEventAttrEntity
+import com.crisiscleanup.core.database.model.CaseHistoryEventEntity
 import com.crisiscleanup.core.database.model.IncidentEntity
 import com.crisiscleanup.core.database.model.IncidentFormFieldEntity
 import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
@@ -72,6 +74,8 @@ import kotlinx.datetime.Instant
         IncidentWorksitesFullSyncStatsEntity::class,
         IncidentFtsEntity::class,
         IncidentOrganizationFtsEntity::class,
+        CaseHistoryEventEntity::class,
+        CaseHistoryEventAttrEntity::class,
     ],
     version = 1,
 )

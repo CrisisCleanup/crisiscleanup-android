@@ -5,6 +5,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
 import com.crisiscleanup.core.database.model.PersonContactEntity
+import com.crisiscleanup.core.database.model.PopulatedPersonContactOrganization
 
 @Dao
 interface PersonContactDao {
@@ -25,4 +26,8 @@ interface PersonContactDao {
         """
     )
     fun trimIncidentOrganizationContacts()
+
+    @Transaction
+    @Query("SELECT * FROM person_contacts WHERE id=:id")
+    fun getContact(id: Long): PopulatedPersonContactOrganization?
 }

@@ -112,6 +112,12 @@ interface DataModule {
     fun casesFiltersRepository(
         repository: CrisisCleanupCasesFilterRepository
     ): CasesFilterRepository
+
+    @Singleton
+    @Binds
+    fun caseHistoryRepository(
+        repository: OfflineFirstCaseHistoryRepository
+    ): CaseHistoryRepository
 }
 
 @Module
