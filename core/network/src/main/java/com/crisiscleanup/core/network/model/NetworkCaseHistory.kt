@@ -35,13 +35,15 @@ data class NetworkCaseHistoryAttrs(
     @SerialName("patient_case_number")
     val patientCaseNumber: String? = null,
     @SerialName("patient_id")
-    val patientId: Long,
+    val patientId: Long? = null,
     @SerialName("patient_label_t")
     val patientLabelT: String? = null,
     @SerialName("patient_location_name")
     val patientLocationName: String? = null,
     @SerialName("patient_name_t")
     val patientNameT: String? = null,
+    @SerialName("patient_reason_t")
+    val patientReasonT: String? = null,
     @SerialName("patient_status_name_t")
     val patientStatusNameT: String? = null,
     @SerialName("recipient_case_number")

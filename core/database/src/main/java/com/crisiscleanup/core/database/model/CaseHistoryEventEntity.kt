@@ -68,6 +68,8 @@ data class CaseHistoryEventAttrEntity(
     val patientLocationName: String?,
     @ColumnInfo("patient_name_t")
     val patientNameT: String?,
+    @ColumnInfo("patient_reason_t")
+    val patientReasonT: String?,
     @ColumnInfo("patient_status_name_t")
     val patientStatusNameT: String?,
     @ColumnInfo("recipient_case_number")

@@ -26,12 +26,14 @@ fun PopulatedCaseHistoryEvent.asExternalModel(translator: KeyTranslator): CaseHi
             eventKey = eventKey,
             pastTenseDescription = translate(pastTenseT)
                 .replace("{incident_name}", attr.incidentName)
-                .replace("{patient_case_number}", attr.patientCaseNumber ?: "")
+                .replace("{patient_case_number}", attr.patientCaseNumber ?: "?")
                 .replace("{patient_label_t}", translate(attr.patientLabelT))
                 .replace("{patient_location_name}", attr.patientLocationName ?: "")
                 .replace("{patient_name_t}", translate(attr.patientNameT))
+                .replace("{patient_reason_t}", translate(attr.patientReasonT))
                 .replace("{patient_status_name_t}", translate(attr.patientStatusNameT))
                 .replace("{recipient_case_number}", attr.recipientCaseNumber ?: "")
+                .replace("{recipient_name}", attr.recipientName ?: "?")
                 .replace("{recipient_name_t}", translate(attr.recipientNameT)),
             actorLocationName = actorLocationName,
             recipientLocationName = recipientLocationName,

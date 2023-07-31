@@ -65,8 +65,6 @@ fun CaseEditCaseHistoryRoute(
             )
 
             Box(Modifier.weight(1f)) {
-                BusyIndicatorFloatingTopCenter(isBusy = isLoadingCaseHistory)
-
                 val listState = rememberLazyListState()
                 LazyColumn(
                     state = listState,
@@ -98,6 +96,8 @@ fun CaseEditCaseHistoryRoute(
                         }
                     }
                 }
+
+                BusyIndicatorFloatingTopCenter(isBusy = isLoadingCaseHistory)
             }
         }
     }

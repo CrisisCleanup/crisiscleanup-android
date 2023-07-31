@@ -99,7 +99,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         CaseHistoryEventAttrEntity::class,
         PersonOrganizationCrossRef::class,
     ],
-    version = 32,
+    version = 33,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
@@ -132,6 +132,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         AutoMigration(from = 29, to = 30),
         AutoMigration(from = 30, to = 31),
         AutoMigration(from = 31, to = 32),
+        AutoMigration(from = 32, to = 33),
     ],
     exportSchema = true,
 )
