@@ -67,7 +67,10 @@ class TransferWorkTypeViewModel @Inject constructor(
 
     val transferWorkTypesState = transferWorkTypeProvider.workTypes
     val workTypesState = mutableStateMapOf<Long, Boolean>()
-        .also { map -> transferWorkTypesState.forEach { map[it.key.id] = it.value } }
+        .also { map ->
+            val isSingleWorkType = transferWorkTypesState.size == 1
+            transferWorkTypesState.forEach { map[it.key.id] = it.value || isSingleWorkType }
+        }
 
     var transferReason by mutableStateOf("")
 

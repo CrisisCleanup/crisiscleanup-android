@@ -248,7 +248,7 @@ private fun WorkTypeSection(
             text = translator(workType.workTypeLiteral),
             onToggle = { updateRequests(!isChecked) },
             onCheckChange = updateRequests,
-            enabled = isEditable && workTypeState.size > 1,
+            enabled = isEditable,
         )
     }
 }
