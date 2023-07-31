@@ -23,6 +23,7 @@ import com.crisiscleanup.core.database.model.NetworkFileLocalImageEntity
 import com.crisiscleanup.core.database.model.OrganizationAffiliateEntity
 import com.crisiscleanup.core.database.model.OrganizationPrimaryContactCrossRef
 import com.crisiscleanup.core.database.model.PersonContactEntity
+import com.crisiscleanup.core.database.model.PersonOrganizationCrossRef
 import com.crisiscleanup.core.database.model.PopulatedIdNetworkId
 import com.crisiscleanup.core.database.model.PopulatedLocalWorksite
 import com.crisiscleanup.core.database.model.RecentWorksiteEntity
@@ -76,6 +77,7 @@ import kotlinx.datetime.Instant
         IncidentOrganizationFtsEntity::class,
         CaseHistoryEventEntity::class,
         CaseHistoryEventAttrEntity::class,
+        PersonOrganizationCrossRef::class,
     ],
     version = 1,
 )

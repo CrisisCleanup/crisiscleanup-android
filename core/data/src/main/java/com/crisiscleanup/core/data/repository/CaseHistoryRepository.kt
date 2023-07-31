@@ -3,16 +3,22 @@ package com.crisiscleanup.core.data.repository
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers.Cases
 import com.crisiscleanup.core.common.log.Logger
+import com.crisiscleanup.core.data.model.PersonContactEntities
 import com.crisiscleanup.core.data.model.asEntities
 import com.crisiscleanup.core.database.dao.CaseHistoryDao
 import com.crisiscleanup.core.database.dao.CaseHistoryDaoPlus
+import com.crisiscleanup.core.database.dao.IncidentOrganizationDaoPlus
 import com.crisiscleanup.core.database.dao.PersonContactDao
+import com.crisiscleanup.core.database.dao.PersonContactDaoPlus
 import com.crisiscleanup.core.database.dao.WorksiteDao
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.CaseHistoryEvent
 import com.crisiscleanup.core.model.data.CaseHistoryUserEvents
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
+import com.crisiscleanup.core.network.model.NetworkPersonContact
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -25,7 +31,7 @@ interface CaseHistoryRepository {
 
     suspend fun streamEvents(worksiteId: Long): Flow<List<CaseHistoryUserEvents>>
 
-    suspend fun refreshEvents(worksiteId: Long)
+    suspend fun refreshEvents(worksiteId: Long): Int
 }
 
 @Singleton
@@ -35,6 +41,8 @@ class OfflineFirstCaseHistoryRepository @Inject constructor(
     private val worksiteDao: WorksiteDao,
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val caseHistoryDaoPlus: CaseHistoryDaoPlus,
+    private val personContactDaoPlus: PersonContactDaoPlus,
+    private val incidentOrganizationDaoPlus: IncidentOrganizationDaoPlus,
     private val translator: LanguageTranslationsRepository,
     @Logger(Cases) private val logger: AppLogger,
 ) : CaseHistoryRepository {
@@ -43,53 +51,73 @@ class OfflineFirstCaseHistoryRepository @Inject constructor(
 
     override suspend fun streamEvents(worksiteId: Long) = caseHistoryDao.streamEvents(worksiteId)
         .map { events ->
-            val epoch0 = Instant.fromEpochSeconds(0)
-            val userEventMap = mutableMapOf<Long, MutableList<CaseHistoryEvent>>()
-            val userNewestCreatedAtMap = mutableMapOf<Long, Instant>()
-            events.map { it.asExternalModel(translator) }
-                .forEach { event ->
-                    val userId = event.createdBy
-                    if (!userEventMap.contains(userId)) {
-                        userEventMap[userId] = mutableListOf()
-                        userNewestCreatedAtMap[userId] = epoch0
+            coroutineScope {
+                val epoch0 = Instant.fromEpochSeconds(0)
+                val userEventMap = mutableMapOf<Long, MutableList<CaseHistoryEvent>>()
+                val userNewestCreatedAtMap = mutableMapOf<Long, Instant>()
+                events.map { it.asExternalModel(translator) }
+                    .forEach { event ->
+                        val userId = event.createdBy
+                        if (!userEventMap.contains(userId)) {
+                            userEventMap[userId] = mutableListOf()
+                            userNewestCreatedAtMap[userId] = epoch0
+                        }
+                        userEventMap[userId]?.add(event)
+                        if (event.createdAt > userNewestCreatedAtMap[userId]!!) {
+                            userNewestCreatedAtMap[userId] = event.createdAt
+                        }
                     }
-                    userEventMap[userId]?.add(event)
-                    if (event.createdAt > userNewestCreatedAtMap[userId]!!) {
-                        userNewestCreatedAtMap[userId] = event.createdAt
-                    }
-                }
 
-            // TODO Check cancellation
-            // ensureActive()
+                ensureActive()
 
-            val sortingData = mutableListOf<Pair<CaseHistoryUserEvents, Instant>>()
-            for ((userId, userEvents) in userEventMap) {
-                var contact = personContactDao.getContact(userId)
-                if (contact == null) {
-                    // TODO Query for user and org and save from backend
-                }
-                val person = contact?.entity
-                val org = contact?.organization
-                sortingData.add(
-                    Pair(
-                        CaseHistoryUserEvents(
-                            userId = userId,
-                            userName = "${person?.firstName ?: ""} ${person?.lastName ?: ""}".trim(),
-                            orgName = org?.name ?: "",
-                            userPhone = person?.mobile ?: "",
-                            userEmail = person?.email ?: "",
-                            events = userEvents,
-                        ),
-                        userNewestCreatedAtMap[userId] ?: epoch0,
+                val userIds = userEventMap.keys
+                queryUpdateUsers(userIds)
+
+                ensureActive()
+
+                val sortingData = mutableListOf<Pair<CaseHistoryUserEvents, Instant>>()
+                for ((userId, userEvents) in userEventMap) {
+                    val contact = personContactDao.getContact(userId)
+                    val person = contact?.entity
+                    val org = contact?.organization
+                    sortingData.add(
+                        Pair(
+                            CaseHistoryUserEvents(
+                                userId = userId,
+                                userName = "${person?.firstName ?: ""} ${person?.lastName ?: ""}".trim(),
+                                orgName = org?.name ?: "",
+                                userPhone = person?.mobile ?: "",
+                                userEmail = person?.email ?: "",
+                                events = userEvents,
+                            ),
+                            userNewestCreatedAtMap[userId] ?: epoch0,
+                        )
                     )
-                )
-            }
+                }
 
-            sortingData.sortedByDescending { it.second }
-                .map { it.first }
+                sortingData.sortedByDescending { it.second }
+                    .map { it.first }
+            }
         }
 
-    override suspend fun refreshEvents(worksiteId: Long) {
+    private suspend fun queryUpdateUsers(userIds: Collection<Long>) {
+        try {
+            val networkUsers = networkDataSource.getUsers(userIds)
+            val entities = networkUsers.map(NetworkPersonContact::asEntities)
+
+            val organizations = entities.map(PersonContactEntities::organization)
+            val affiliates = entities.map(PersonContactEntities::organizationAffiliates)
+            incidentOrganizationDaoPlus.saveMissing(organizations, affiliates)
+
+            val persons = entities.map(PersonContactEntities::personContact)
+            val personOrganizations = entities.map(PersonContactEntities::personToOrganization)
+            personContactDaoPlus.savePersons(persons, personOrganizations)
+        } catch (e: Exception) {
+            logger.logException(e)
+        }
+    }
+
+    override suspend fun refreshEvents(worksiteId: Long): Int {
         _loadingWorksiteId.value = worksiteId
         try {
             val networkWorksiteId = worksiteDao.getWorksiteNetworkId(worksiteId)
@@ -98,10 +126,12 @@ class OfflineFirstCaseHistoryRepository @Inject constructor(
             val events = entities.map { it.first }
             val attrs = entities.map { it.second }
             caseHistoryDaoPlus.saveEvents(events, attrs)
+            return events.size
         } catch (e: Exception) {
             logger.logException(e)
         } finally {
             _loadingWorksiteId.value = EmptyWorksite.id
         }
+        return 0
     }
 }

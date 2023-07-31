@@ -19,4 +19,14 @@ data class NetworkPersonContact(
     val lastName: String,
     val email: String,
     val mobile: String,
-)
+    val organization: ContactOrganization,
+) {
+    @Serializable
+    data class ContactOrganization(
+        val id: Long,
+        val name: String,
+        val affiliates: Collection<Long>,
+        @SerialName("type_t")
+        val typeT: String?,
+    )
+}

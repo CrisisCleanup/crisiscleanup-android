@@ -5,12 +5,16 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
 import com.crisiscleanup.core.database.model.PersonContactEntity
+import com.crisiscleanup.core.database.model.PersonOrganizationCrossRef
 import com.crisiscleanup.core.database.model.PopulatedPersonContactOrganization
 
 @Dao
 interface PersonContactDao {
     @Upsert
     fun upsert(contacts: Collection<PersonContactEntity>)
+
+    @Upsert
+    fun upsertPersonOrganizations(personOrganizations: Collection<PersonOrganizationCrossRef>)
 
     @Transaction
     @Query(

@@ -11,10 +11,11 @@ data class PopulatedPersonContactOrganization(
         parentColumn = "id",
         entityColumn = "id",
         associateBy = Junction(
-            value = OrganizationPrimaryContactCrossRef::class,
-            parentColumn = "contact_id",
+            value = PersonOrganizationCrossRef::class,
+            parentColumn = "id",
             entityColumn = "organization_id",
         )
     )
-    val organization: IncidentOrganizationEntity,
+    // Missing cross ref will crash so be flexible
+    val organization: IncidentOrganizationEntity?,
 )

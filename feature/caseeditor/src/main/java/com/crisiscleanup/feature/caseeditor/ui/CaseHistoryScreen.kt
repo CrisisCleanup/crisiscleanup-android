@@ -50,7 +50,7 @@ fun CaseEditCaseHistoryRoute(
         val isLoadingCaseHistory by viewModel.isLoadingCaseHistory.collectAsStateWithLifecycle(false)
 
         val historyEvents by viewModel.historyEvents.collectAsStateWithLifecycle()
-        val isDataLoaded by viewModel.isHistoryLoaded.collectAsStateWithLifecycle()
+        val hasEvents by viewModel.hasEvents.collectAsStateWithLifecycle()
 
         Column(Modifier.fillMaxSize()) {
             TopAppBarBackAction(
@@ -78,35 +78,23 @@ fun CaseEditCaseHistoryRoute(
                         )
                     }
 
-//                    item {
-//                        Text(
-//                            translator("caseHistory.claimed_by"),
-//                            listItemModifier,
-//                            style = MaterialTheme.typography.bodySmall
-//                        )
-//                    }
-//
-//                    // TODO List all orgs claimed by
-
-                    if (isDataLoaded) {
-                        if (historyEvents.isEmpty()) {
-                            item {
-                                Text(
-                                    "~~No history",
-                                    listItemModifier,
-                                )
-                            }
-                        } else {
-                            items(
-                                historyEvents,
-                                key = { it.userId }) {
-                                CardSurface(listItemModifier) {
-                                    Column(Modifier.fillMaxWidth()) {
-                                        HistoryUser(it)
-                                        HistoryEvents(it.events)
-                                    }
+                    if (hasEvents) {
+                        items(
+                            historyEvents,
+                            key = { it.userId }) {
+                            CardSurface(listItemModifier) {
+                                Column(Modifier.fillMaxWidth()) {
+                                    HistoryUser(it)
+                                    HistoryEvents(it.events)
                                 }
                             }
+                        }
+                    } else {
+                        item {
+                            Text(
+                                "~~No history",
+                                listItemModifier,
+                            )
                         }
                     }
                 }
@@ -149,8 +137,6 @@ private fun HistoryUser(
 private fun HistoryEvents(
     events: List<CaseHistoryEvent>,
 ) {
-    val translator = LocalAppTranslator.current
-
     Column(
         Modifier
             .background(neutralBackgroundColor)

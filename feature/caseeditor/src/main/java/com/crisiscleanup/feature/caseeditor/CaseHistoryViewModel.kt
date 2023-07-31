@@ -8,6 +8,7 @@ import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.repository.CaseHistoryRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -44,16 +45,12 @@ class CaseHistoryViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val isHistoryLoaded = historyEvents.map { true }
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = false,
-            started = SharingStarted.WhileSubscribed(),
-        )
+    val hasEvents = MutableStateFlow(true)
 
     init {
         viewModelScope.launch(ioDispatcher) {
-            caseHistoryRepository.refreshEvents(worksiteId)
+            val eventCount = caseHistoryRepository.refreshEvents(worksiteId)
+            hasEvents.value = eventCount > 0
         }
     }
 }

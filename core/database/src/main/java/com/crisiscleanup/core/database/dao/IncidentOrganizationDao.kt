@@ -84,4 +84,8 @@ interface IncidentOrganizationDao {
         """
     )
     fun matchOrganizationName(query: String): List<PopulatedOrganizationIdNameMatchInfo>
+
+    @Transaction
+    @Query("SELECT id FROM incident_organizations WHERE id=:id")
+    fun findOrganization(id: Long): Long?
 }

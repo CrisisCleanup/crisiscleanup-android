@@ -112,4 +112,6 @@ interface CrisisCleanupNetworkDataSource {
     ): List<NetworkPersonContact>
 
     suspend fun getCaseHistory(worksiteId: Long): List<NetworkCaseHistoryEvent>
+
+    suspend fun getUsers(ids: Collection<Long>): List<NetworkPersonContact>
 }

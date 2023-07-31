@@ -177,6 +177,13 @@ private interface DataSourceApi {
         @Path("id")
         worksiteId: Long,
     ): NetworkCaseHistoryResult
+
+    @TokenAuthenticationHeader
+    @GET("/users")
+    suspend fun getUsers(
+        @Query("id__in")
+        ids: String,
+    ): NetworkUsersResult
 }
 
 private val worksiteCoreDataFields = listOf(
@@ -365,4 +372,11 @@ class DataApiClient @Inject constructor(
             it.errors?.tryThrowException()
             it.events ?: emptyList()
         }
+
+    override suspend fun getUsers(ids: Collection<Long>) =
+        networkApi.getUsers(ids.joinToString(","))
+            .let {
+                it.errors?.tryThrowException()
+                it.results ?: emptyList()
+            }
 }

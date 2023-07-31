@@ -32,4 +32,25 @@ class IncidentOrganizationDaoPlus @Inject constructor(
         organizationDao.deleteOrganizationAffiliates(organizationIds)
         organizationDao.insertIgnoreAffiliateOrganization(organizationAffiliates)
     }
+
+    suspend fun saveMissing(
+        organizations: List<IncidentOrganizationEntity>,
+        affiliateIds: List<Collection<Long>>,
+    ) = db.withTransaction {
+        val organizationsDao = db.incidentOrganizationDao()
+        val newOrganizations = mutableListOf<IncidentOrganizationEntity>()
+        val newAffiliates = mutableListOf<OrganizationAffiliateEntity>()
+        for (i in organizations.indices) {
+            val organization = organizations[i]
+            if (organizationsDao.findOrganization(organization.id) == null) {
+                newOrganizations.add(organization)
+                val affiliates = affiliateIds[i].map {
+                    OrganizationAffiliateEntity(organization.id, it)
+                }
+                newAffiliates.addAll(affiliates)
+            }
+        }
+        organizationsDao.upsert(newOrganizations)
+        organizationsDao.insertIgnoreAffiliateOrganization(newAffiliates)
+    }
 }
