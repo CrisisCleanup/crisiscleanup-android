@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Cloud
@@ -47,6 +48,7 @@ object CrisisCleanupIcons {
     val ArrowDropDown = icons.ArrowDropDown
     val Calendar = icons.CalendarMonth
     val Cases = R.drawable.ic_cases
+    val Check = icons.Check
     val Clear = icons.Clear
     val CloudSync = icons.CloudSync
     val Cloud = icons.Cloud

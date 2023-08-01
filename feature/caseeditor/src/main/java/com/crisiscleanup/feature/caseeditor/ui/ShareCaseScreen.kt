@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -51,9 +52,11 @@ import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.AnimatedBusyIndicator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupRadioButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextArea
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
+import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.TopAppBarCancelAction
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
@@ -63,6 +66,7 @@ import com.crisiscleanup.core.designsystem.theme.listCheckboxAlignStartOffset
 import com.crisiscleanup.core.designsystem.theme.listItemDropdownMenuOffset
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.optionItemPadding
 import com.crisiscleanup.core.designsystem.theme.primaryRedColor
 import com.crisiscleanup.core.ui.ScreenKeyboardVisibility
@@ -83,13 +87,14 @@ fun CaseEditShareCaseRoute(
     viewModel: CaseShareViewModel = hiltViewModel(),
 ) {
     val isShared by viewModel.isShared.collectAsStateWithLifecycle()
-    val hasClaimedWorkType by viewModel.hasClaimedWorkType.collectAsStateWithLifecycle()
     if (isShared) {
         onBack()
     } else {
-        val navigateBack = remember(viewModel) {
+        val hasClaimedWorkType by viewModel.hasClaimedWorkType.collectAsStateWithLifecycle()
+        val isOnSecondStep = viewModel.showShareScreen && hasClaimedWorkType != true
+        val navigateBack = remember(isOnSecondStep) {
             {
-                if (viewModel.showShareScreen && hasClaimedWorkType != true) {
+                if (isOnSecondStep) {
                     viewModel.showShareScreen = false
                 } else {
                     onBack()
@@ -112,10 +117,18 @@ fun CaseEditShareCaseRoute(
             LocalAppTranslator provides translator,
         ) {
             Column(Modifier.fillMaxSize()) {
-                TopAppBarCancelAction(
-                    title = translator("actions.share"),
-                    onAction = navigateBack,
-                )
+                val screenTitle = translator("actions.share")
+                if (isOnSecondStep) {
+                    TopAppBarBackAction(
+                        title = screenTitle,
+                        onAction = navigateBack,
+                    )
+                } else {
+                    TopAppBarCancelAction(
+                        title = screenTitle,
+                        onAction = navigateBack,
+                    )
+                }
 
                 if (notSharableMessage.isNotBlank()) {
                     CompositionLocalProvider(LocalContentColor provides primaryRedColor) {
@@ -315,25 +328,38 @@ private fun LazyListScope.shareCaseInput(
             if (viewModel.isEmailContactMethod) "shareWorksite.manually_enter_emails"
             else "shareWorksite.manually_enter_phones"
         val receiverContact by viewModel.receiverContactManual.collectAsStateWithLifecycle()
-        OutlinedClearableTextField(
-            modifier = listItemModifier,
-            labelResId = 0,
-            label = translator(hintTranslationKey),
-            value = receiverContact,
-            onValueChange = { viewModel.receiverContactManual.value = it },
-            keyboardType = if (viewModel.isEmailContactMethod) KeyboardType.Email else KeyboardType.Password,
-            imeAction = ImeAction.Done,
-            isError = false,
-            hasFocus = false,
-            onEnter = {
+        Row(
+            listItemModifier,
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = listItemSpacedByHalf,
+        ) {
+            val acceptInput = {
                 if (receiverContact.isBlank()) {
                     closeKeyboard()
                 } else {
                     viewModel.onAddContact(receiverContact)
                 }
-            },
-            enabled = isEditable,
-        )
+            }
+            OutlinedClearableTextField(
+                modifier = Modifier.weight(1f),
+                labelResId = 0,
+                label = translator(hintTranslationKey),
+                value = receiverContact,
+                onValueChange = { viewModel.receiverContactManual.value = it },
+                keyboardType = if (viewModel.isEmailContactMethod) KeyboardType.Email else KeyboardType.Password,
+                imeAction = ImeAction.Done,
+                isError = false,
+                hasFocus = false,
+                onEnter = acceptInput,
+                enabled = isEditable,
+            )
+
+            CrisisCleanupIconButton(
+                imageVector = CrisisCleanupIcons.Check,
+                onClick = acceptInput,
+                enabled = isEditable,
+            )
+        }
     }
 
     contactSuggestionsItem(
@@ -404,6 +430,7 @@ private fun ReceiverContactItem(
                     Text(
                         contact.contactValue,
                         Modifier.padding(end = 2.dp),
+                        style = MaterialTheme.typography.bodySmall,
                     )
                 },
                 shape = CircleShape,
