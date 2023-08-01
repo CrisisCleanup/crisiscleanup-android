@@ -357,7 +357,7 @@ private fun ColumnScope.ExistingCaseContent(
 ) {
     val pagerState = rememberPagerState(
         initialPage = 0,
-        initialPageOffsetFraction = 0f
+        initialPageOffsetFraction = 0f,
     ) { tabTitles.size }
     val selectedTabIndex = pagerState.currentPage
     val coroutine = rememberCoroutineScope()

@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.text.HtmlCompat
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CardSurface
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
@@ -48,7 +49,13 @@ internal fun NoteView(
                 style = MaterialTheme.typography.bodySmall,
             )
         }
-        Text(text = note.note)
+        var noteText = note.note
+        if (noteText.contains('<') &&
+            noteText.contains('>')
+        ) {
+            noteText = HtmlCompat.fromHtml(noteText, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
+        }
+        Text(noteText)
     }
 }
 
