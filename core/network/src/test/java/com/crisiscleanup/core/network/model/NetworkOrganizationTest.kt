@@ -30,7 +30,7 @@ class NetworkOrganizationTest {
                     firstName = "test",
                     lastName = "test",
                     email = "test@test.com",
-                    mobile = "5353151368"
+                    mobile = "5353151368",
                 )
             )
         )

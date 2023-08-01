@@ -258,18 +258,32 @@ class CaseAddFlagViewModel @Inject constructor(
         otherOrgQ.value = query
     }
 
+    private fun getSelectedOrganizations(
+        otherOrgQuery: String,
+        otherOrganizationsInvolved: List<OrganizationIdName>,
+    ): List<Long> {
+        val isQueryMatchingOrg = otherOrganizationsInvolved.isNotEmpty() &&
+                otherOrgQuery.trim() == otherOrganizationsInvolved.first().name.trim()
+        return if (isQueryMatchingOrg) listOf(otherOrganizationsInvolved.first().id)
+        else emptyList()
+    }
+
     fun onUpsetClient(
         notes: String,
         isMyOrgInvolved: Boolean?,
         otherOrgQuery: String,
         otherOrganizationsInvolved: List<OrganizationIdName>,
     ) {
-        val isQueryMatchingOrg = otherOrganizationsInvolved.isNotEmpty() &&
-                otherOrgQuery.trim() == otherOrganizationsInvolved.first().name.trim()
-
+        val organizations = getSelectedOrganizations(otherOrgQuery, otherOrganizationsInvolved)
         val upsetClientFlag = WorksiteFlag.flag(
             WorksiteFlagType.UpsetClient,
             notes,
+        ).copy(
+            attr = WorksiteFlag.FlagAttributes(
+                involvesMyOrg = isMyOrgInvolved,
+                haveContactedOtherOrg = null,
+                organizations = organizations,
+            )
         )
         commitFlag(upsetClientFlag)
     }
@@ -291,11 +305,20 @@ class CaseAddFlagViewModel @Inject constructor(
         contactOutcome: String,
         notes: String,
         action: String,
+        otherOrgQuery: String,
+        otherOrganizationsInvolved: List<OrganizationIdName>,
     ) {
+        val organizations = getSelectedOrganizations(otherOrgQuery, otherOrganizationsInvolved)
         val reportAbuseFlag = WorksiteFlag.flag(
             WorksiteFlagType.ReportAbuse,
             notes,
             requestedAction = action,
+        ).copy(
+            attr = WorksiteFlag.FlagAttributes(
+                involvesMyOrg = null,
+                haveContactedOtherOrg = isContacted,
+                organizations = organizations,
+            )
         )
         commitFlag(reportAbuseFlag)
     }

@@ -279,6 +279,7 @@ fun WorksiteFlagEntity.asExternalModel(translator: KeyTranslator? = null) = Work
     reasonT = reasonT,
     reason = translator?.translate(reasonT) ?: reasonT,
     requestedAction = requestedAction ?: "",
+    attr = null,
 )
 
 @Entity(

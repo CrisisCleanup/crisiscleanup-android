@@ -151,6 +151,7 @@ data class WorksiteFlag(
     val reasonT: String,
     val reason: String,
     val requestedAction: String,
+    val attr: FlagAttributes?,
 ) {
     companion object {
         internal fun flag(
@@ -168,6 +169,7 @@ data class WorksiteFlag(
             reasonT = reasonT,
             reason = reason,
             requestedAction = requestedAction,
+            attr = null,
         )
 
         fun flag(
@@ -191,6 +193,15 @@ data class WorksiteFlag(
 
     val flagType: WorksiteFlagType?
         get() = flagLiteralLookup[reasonT]
+
+    data class FlagAttributes(
+        // Upset client
+        val involvesMyOrg: Boolean?,
+        // Report abuse
+        val haveContactedOtherOrg: Boolean?,
+        // Upset client or report abuse
+        val organizations: List<Long>,
+    )
 }
 
 data class WorksiteNote(

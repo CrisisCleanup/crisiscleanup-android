@@ -188,9 +188,10 @@ internal fun ColumnScope.WrongIncidentFlagView(
             viewModel.onWrongIncident(isIncidentListed, incidentQuery, selectedIncident)
         }
     }
+    val isSelected = !isIncidentListed || selectedIncident?.name == incidentQuery
     AddFlagSaveActionBar(
         onSave = onSave,
         onCancel = onBack,
-        enabled = isEditable,
+        enabled = isEditable && isSelected,
     )
 }

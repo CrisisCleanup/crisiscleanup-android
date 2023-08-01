@@ -55,6 +55,7 @@ fun Worksite.asSnapshotModel(
             isAssignedToOrgMember = isAssignedToOrgMember,
         ),
         flags?.map { flag ->
+            val attr = flag.attr
             FlagSnapshot(
                 flag.id,
                 FlagSnapshot.Flag(
@@ -66,6 +67,9 @@ fun Worksite.asSnapshotModel(
                     reasonT = flag.reasonT,
                     reason = flag.reason,
                     requestedAction = flag.requestedAction,
+                    involvesMyOrg = attr?.involvesMyOrg,
+                    haveContactedOtherOrg = attr?.haveContactedOtherOrg,
+                    organizationIds = attr?.organizations ?: emptyList(),
                 )
             )
         } ?: emptyList(),

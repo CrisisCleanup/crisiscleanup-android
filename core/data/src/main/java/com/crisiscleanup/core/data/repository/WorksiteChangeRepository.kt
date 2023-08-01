@@ -72,7 +72,7 @@ interface WorksiteChangeRepository {
     suspend fun syncWorksiteMedia(): Boolean
 }
 
-private const val MaxSyncTries = 3
+private const val MAX_SYNC_TRIES = 3
 
 @Singleton
 class CrisisCleanupWorksiteChangeRepository @Inject constructor(
@@ -278,7 +278,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
 
             syncLogger.log("Sync changes starting.")
 
-            val worksiteChanges = sortedChanges.map { it.asExternalModel(MaxSyncTries) }
+            val worksiteChanges = sortedChanges.map { it.asExternalModel(MAX_SYNC_TRIES) }
             try {
                 syncWorksiteChanges(worksiteChanges)
             } catch (e: Exception) {
@@ -388,7 +388,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
             worksiteChangeDaoPlus.updateSyncChanges(
                 worksiteId,
                 syncResult.changeResults,
-                MaxSyncTries,
+                MAX_SYNC_TRIES,
             )
 
             syncResult.changeResults.mapNotNull { it.exception }

@@ -1,6 +1,11 @@
 package com.crisiscleanup.core.testing.model
 
-import com.crisiscleanup.core.model.data.*
+import com.crisiscleanup.core.model.data.AutoContactFrequency
+import com.crisiscleanup.core.model.data.WorkType
+import com.crisiscleanup.core.model.data.Worksite
+import com.crisiscleanup.core.model.data.WorksiteFlag
+import com.crisiscleanup.core.model.data.WorksiteFormValue
+import com.crisiscleanup.core.model.data.WorksiteNote
 import kotlinx.datetime.Instant
 
 fun makeTestWorksite(
@@ -73,4 +78,5 @@ fun makeTestWorksiteFlag(
     reasonT = reasonT,
     reason = reason,
     requestedAction = "",
+    attr = null,
 )

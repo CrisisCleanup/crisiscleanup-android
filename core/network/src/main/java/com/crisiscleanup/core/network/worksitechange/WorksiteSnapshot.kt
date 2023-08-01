@@ -124,11 +124,27 @@ data class FlagSnapshot(
         val reasonT: String,
         val reason: String,
         val requestedAction: String,
+        // TODO Test coverage for all related flag attr
+        // Attrs
+        val involvesMyOrg: Boolean? = null,
+        val haveContactedOtherOrg: Boolean? = null,
+        val organizationIds: List<Long> = emptyList(),
     )
 }
 
+private fun yesNo(b: Boolean) = if (b) "Yes" else "No"
+
 fun FlagSnapshot.asNetworkFlag(): NetworkFlag {
     with(flag) {
+        val addAttributes = involvesMyOrg != null ||
+                haveContactedOtherOrg != null ||
+                organizationIds.isNotEmpty()
+        val attr = if (addAttributes) NetworkFlag.FlagAttributes(
+            involvesYou = involvesMyOrg?.let { yesNo(it) },
+            haveContactedOtherOrg = haveContactedOtherOrg?.let { yesNo(it) },
+            organizations = organizationIds,
+        )
+        else null
         return NetworkFlag(
             id = if (id > 0) id else null,
             action = action.ifBlank { null },
@@ -137,6 +153,7 @@ fun FlagSnapshot.asNetworkFlag(): NetworkFlag {
             notes = notes.ifBlank { null },
             reasonT = reasonT,
             requestedAction = requestedAction.ifBlank { null },
+            attr = attr,
         )
     }
 }

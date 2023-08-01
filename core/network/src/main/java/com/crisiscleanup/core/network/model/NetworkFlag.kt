@@ -18,7 +18,18 @@ data class NetworkFlag(
     val reasonT: String,
     @SerialName("requested_action")
     val requestedAction: String?,
-)
+
+    val attr: FlagAttributes? = null,
+) {
+    @Serializable
+    data class FlagAttributes(
+        @SerialName("involves_you")
+        val involvesYou: String? = null,
+        @SerialName("have_you_contacted_org")
+        val haveContactedOtherOrg: String? = null,
+        val organizations: List<Long>? = null,
+    )
+}
 
 @Serializable
 data class NetworkFlagId(

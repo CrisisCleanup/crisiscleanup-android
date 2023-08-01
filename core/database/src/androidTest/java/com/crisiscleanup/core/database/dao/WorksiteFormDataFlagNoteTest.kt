@@ -156,6 +156,7 @@ class WorksiteFormDataFlagNoteTest {
                 "reason-new-a",
                 "reason-new-a-translated",
                 "requested-action-new-a",
+                attr = null,
             ),
         )
         assertEquals(expectedFlags, actualWorksite.worksite.flags)
@@ -282,6 +283,7 @@ class WorksiteFormDataFlagNoteTest {
                 "flag-b",
                 "flag-b-translated",
                 "updated-requested-action-flag-b",
+                attr = null,
             ),
             WorksiteFlag(
                 3,
@@ -292,6 +294,7 @@ class WorksiteFormDataFlagNoteTest {
                 "reason-new-a",
                 "reason-new-a-translated",
                 "requested-action-new-a",
+                attr = null,
             ),
         )
         assertEquals(expectedFlags, actualWorksite.worksite.flags)
@@ -394,6 +397,7 @@ class WorksiteFormDataFlagNoteTest {
                 "reason-flag-a",
                 "reason-flag-a-translated",
                 "requested-action-flag-a",
+                attr = null,
             ),
         )
         assertEquals(expectedFlags, actualWorksite.worksite.flags)

@@ -11,12 +11,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupRadioButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextArea
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
+import com.crisiscleanup.core.model.data.OrganizationIdName
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseAddFlagViewModel
@@ -33,6 +35,13 @@ internal fun ColumnScope.ReportAbuseFlagView(
 
     val closeKeyboard = rememberCloseKeyboard(viewModel)
 
+    val otherOrgQuery by viewModel.otherOrgQ.collectAsStateWithLifecycle()
+    val onOtherOrgQueryChange = remember(viewModel) {
+        { q: String -> viewModel.onOrgQueryChange(q) }
+    }
+    var otherOrganizations by remember { mutableStateOf<List<OrganizationIdName>>(emptyList()) }
+    val otherOrgSuggestions by viewModel.otherOrgResults.collectAsStateWithLifecycle()
+
     var outcome by remember { mutableStateOf("") }
     var flagNotes by remember { mutableStateOf("") }
     var flagAction by remember { mutableStateOf("") }
@@ -46,6 +55,17 @@ internal fun ColumnScope.ReportAbuseFlagView(
             .fillMaxWidth()
     ) {
         listTextItem(translator("flag.organizations_complaining_about"))
+
+        item {
+            OrganizationsSearch(
+                orgQuery = otherOrgQuery,
+                onQueryChange = onOtherOrgQueryChange,
+                orgSuggestions = otherOrgSuggestions,
+                onOrgSelected = { otherOrganizations = listOf(it) },
+                rememberKey = viewModel,
+                isEditable = isEditable,
+            )
+        }
 
         listTextItem(translator("flag.must_contact_org_first"))
 
@@ -115,7 +135,9 @@ internal fun ColumnScope.ReportAbuseFlagView(
                 organizationContacted,
                 outcome,
                 flagNotes,
-                flagAction
+                flagAction,
+                otherOrgQuery,
+                otherOrganizations,
             )
         }
     }

@@ -21,7 +21,7 @@ data class NetworkPersonContact(
     val mobile: String,
     // Provided from /users.
     // Not provided from /organizations
-    val organization: ContactOrganization?,
+    val organization: ContactOrganization? = null,
 ) {
     @Serializable
     data class ContactOrganization(
