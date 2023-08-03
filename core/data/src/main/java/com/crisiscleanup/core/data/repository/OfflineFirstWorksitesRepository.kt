@@ -280,7 +280,6 @@ class OfflineFirstWorksitesRepository @Inject constructor(
 
             return true
         } catch (e: Exception) {
-            // TODO Show dialog
             logger.logException(e)
         }
         return false

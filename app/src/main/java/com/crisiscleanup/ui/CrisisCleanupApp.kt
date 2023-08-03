@@ -457,7 +457,12 @@ private fun CrisisCleanupNavRail(
                 selected = selected,
                 onClick = { onNavigateToDestination(destination) },
                 icon = { destination.Icon(selected, title) },
-                label = { Text(title) }
+                label = {
+                    Text(
+                        title,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                },
             )
         }
     }
@@ -479,7 +484,12 @@ private fun CrisisCleanupBottomBar(
                 selected = selected,
                 onClick = { onNavigateToDestination(destination) },
                 icon = { destination.Icon(selected, title) },
-                label = { Text(title) }
+                label = {
+                    Text(
+                        title,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                },
             )
         }
     }

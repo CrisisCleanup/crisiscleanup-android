@@ -43,6 +43,7 @@ import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.TopAppBarCancelAction
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
+import com.crisiscleanup.core.designsystem.theme.listItemBottomPadding
 import com.crisiscleanup.core.designsystem.theme.listItemDropdownMenuOffset
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
@@ -254,9 +255,13 @@ internal fun OrganizationsSearch(
     var contentWidth by remember { mutableStateOf(Size.Zero) }
     Box(Modifier.fillMaxWidth()) {
         OutlinedClearableTextField(
-            modifier = listItemModifier.onGloballyPositioned {
-                contentWidth = it.size.toSize()
-            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .listItemHorizontalPadding()
+                .listItemBottomPadding()
+                .onGloballyPositioned {
+                    contentWidth = it.size.toSize()
+                },
             labelResId = 0,
             label = translator("profileOrg.organization_name"),
             value = orgQuery,

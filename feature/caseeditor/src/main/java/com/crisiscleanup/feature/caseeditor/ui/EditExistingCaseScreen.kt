@@ -474,7 +474,12 @@ private fun BottomActions(
                         )
                     }
                 },
-                label = { Text(label) },
+                label = {
+                    Text(
+                        label,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                },
                 colors = NavigationBarItemDefaults.colors(
                     unselectedIconColor = contentColor,
                     unselectedTextColor = contentColor,
