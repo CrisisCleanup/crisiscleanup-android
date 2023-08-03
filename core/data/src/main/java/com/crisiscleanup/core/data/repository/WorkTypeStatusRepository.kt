@@ -64,8 +64,8 @@ class CrisisCleanupWorkTypeStatusRepository @Inject constructor(
         workTypeStatusOptions.value = statusLookup.filter { it.value.primaryState != "need" }
             .map { statusFromLiteral(it.key) }
         workTypeStatusFilterOptions.value = statuses
+            .sortedBy(PopulatedWorkTypeStatus::name)
             .map { statusFromLiteral(it.status) }
-            .sortedBy(WorkTypeStatus::name)
     }
 
     override fun translateStatus(status: String) = statusLookup[status]?.name

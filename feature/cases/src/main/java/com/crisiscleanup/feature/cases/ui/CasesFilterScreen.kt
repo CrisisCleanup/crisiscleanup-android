@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
@@ -376,12 +377,16 @@ private fun LazyListScope.rangeSliderItem(
                     helpText = translator(helpTranslateKey),
                     hasHtml = isHelpHtml,
                 ) { showHelp ->
-                    HelpRow(
-                        text = label,
-                        iconContentDescription = label,
-                        showHelp = showHelp,
-                        isBold = true,
-                    )
+                    CompositionLocalProvider(
+                        LocalTextStyle provides LocalFontStyles.current.header3
+                    ) {
+                        HelpRow(
+                            text = label,
+                            iconContentDescription = label,
+                            showHelp = showHelp,
+                            isBold = true,
+                        )
+                    }
                 }
             }
 

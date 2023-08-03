@@ -5,19 +5,13 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.crisiscleanup.core.designsystem.R
 
 val Roboto = FontFamily.Default
 val NunitoSans = FontFamily(
-    Font(R.font.nunito_sans, FontWeight.Normal),
-    Font(R.font.nunito_sans, FontWeight.W400),
-    Font(R.font.nunito_sans_italic, style = FontStyle.Italic),
-    Font(R.font.nunito_sans_bold, FontWeight.Bold),
-    Font(R.font.nunito_sans_bold, FontWeight.W700),
-    Font(R.font.nunito_sans_bold_italic, FontWeight.Bold, style = FontStyle.Italic),
+    Font(R.font.nunito_sans_family),
 )
 
 data class CrisisCleanupTypography(

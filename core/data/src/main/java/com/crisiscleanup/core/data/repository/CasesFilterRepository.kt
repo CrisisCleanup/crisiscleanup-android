@@ -1,13 +1,11 @@
 package com.crisiscleanup.core.data.repository
 
 import android.util.LruCache
-import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.datastore.CasesFiltersDataSource
 import com.crisiscleanup.core.model.data.CasesFilter
-import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.queryMap
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -35,8 +33,6 @@ interface CasesFilterRepository {
 @Singleton
 class CrisisCleanupCasesFilterRepository @Inject constructor(
     private val dataSource: CasesFiltersDataSource,
-    private val networkMonitor: NetworkMonitor,
-    private val networkDataSource: CrisisCleanupNetworkDataSource,
     accountDataRepository: AccountDataRepository,
     @ApplicationScope private val externalScope: CoroutineScope,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,

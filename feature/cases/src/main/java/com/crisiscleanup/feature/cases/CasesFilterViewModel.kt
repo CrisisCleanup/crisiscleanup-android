@@ -17,9 +17,9 @@ import com.crisiscleanup.core.commoncase.model.WorkFormGroupKey
 import com.crisiscleanup.core.commoncase.model.flatten
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.CasesFilterRepository
-import com.crisiscleanup.core.data.repository.CrisisCleanupWorkTypeStatusRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
+import com.crisiscleanup.core.data.repository.WorkTypeStatusRepository
 import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.WorksiteFlagType
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,7 +32,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CasesFilterViewModel @Inject constructor(
-    workTypeStatusRepository: CrisisCleanupWorkTypeStatusRepository,
+    workTypeStatusRepository: WorkTypeStatusRepository,
     private val casesFilterRepository: CasesFilterRepository,
     incidentSelector: IncidentSelector,
     incidentsRepository: IncidentsRepository,
