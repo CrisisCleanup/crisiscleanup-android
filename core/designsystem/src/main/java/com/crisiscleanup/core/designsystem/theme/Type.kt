@@ -10,9 +10,7 @@ import androidx.compose.ui.unit.sp
 import com.crisiscleanup.core.designsystem.R
 
 val Roboto = FontFamily.Default
-val NunitoSans = FontFamily(
-    Font(R.font.nunito_sans_family),
-)
+val NunitoSans = FontFamily(Font(R.font.nunito_sans_family))
 
 data class CrisisCleanupTypography(
     val linkTextStyle: TextStyle,

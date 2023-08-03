@@ -184,6 +184,7 @@ fun CrisisCleanupOutlinedButton(
     enabled: Boolean = false,
     borderColor: Color = LocalContentColor.current,
     fontWeight: FontWeight? = null,
+    style: TextStyle = LocalFontStyles.current.header4,
     trailingContent: (@Composable () -> Unit)? = null,
 ) {
     val border = BorderStroke(
@@ -202,6 +203,7 @@ fun CrisisCleanupOutlinedButton(
             Text(
                 buttonText,
                 fontWeight = fontWeight,
+                style = style,
             )
         }
         trailingContent?.invoke()
