@@ -1,0 +1,3 @@
+# See: https://maestro.mobile.dev/api-reference/configuration/workspace-configuration
+flows:
+  - ".maestro/tests/*"
