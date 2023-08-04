@@ -5,15 +5,17 @@ tags:
   - staging
   - production
   - pull-request
+env:
+  SEARCH_QUERY: qwertyqwerty
 onFlowStart:
   - runFlow: login.yaml
 ---
 - tapOn: "Search"
 - assertVisible: "Search"
 - tapOn: "Search"
-- inputText: "qwertyqwerty"
-- assertVisible: "No cases found matching qwertyqwerty."
+- inputText: ${SEARCH_QUERY}
+- assertVisible: "No cases found matching ${SEARCH_QUERY}."
 - assertVisible: "Clear"
 - tapOn: "Clear"
-- assertNotVisible: "No cases found matching qwertyqwerty."
+- assertNotVisible: "No cases found matching ${SEARCH_QUERY}."
 
