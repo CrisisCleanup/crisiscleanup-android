@@ -1,6 +1,7 @@
 name: Login
 appId: ${MAESTRO_APP_ID}
 ---
+- clearState
 - launchApp
 - assertVisible: "Crisis Cleanup"
 - assertVisible:
