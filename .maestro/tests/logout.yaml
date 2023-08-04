@@ -1,5 +1,11 @@
 name: Logout
 appId: ${MAESTRO_APP_ID}
+tags:
+  - development
+  - staging
+  - production
+  - auth
+  - pull-request
 onFlowStart:
   - runFlow: login.yaml
 ---
