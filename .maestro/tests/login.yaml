@@ -1,5 +1,11 @@
 name: Login
 appId: ${MAESTRO_APP_ID}
+tags:
+  - development
+  - staging
+  - production
+  - auth
+  - pull-request
 ---
 - clearState
 - launchApp
