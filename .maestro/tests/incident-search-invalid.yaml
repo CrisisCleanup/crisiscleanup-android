@@ -1,0 +1,19 @@
+name: Incident Search with invalid query
+appId: ${MAESTRO_APP_ID}
+tags:
+  - development
+  - staging
+  - production
+  - pull-request
+onFlowStart:
+  - runFlow: login.yaml
+---
+- tapOn: "Search"
+- assertVisible: "Search"
+- tapOn: "Search"
+- inputText: "qwertyqwerty"
+- assertVisible: "No cases found matching qwertyqwerty."
+- assertVisible: "Clear"
+- tapOn: "Clear"
+- assertNotVisible: "No cases found matching qwertyqwerty."
+
