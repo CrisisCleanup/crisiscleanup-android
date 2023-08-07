@@ -6,7 +6,7 @@ tags:
   - production
   - pull-request
 onFlowStart:
-  - runFlow: login.yaml
+  - runFlow: ../login.yaml
 ---
 - tapOn: "Change Incident"
 - assertVisible: "Change Incident"
