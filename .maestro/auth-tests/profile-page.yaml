@@ -1,0 +1,20 @@
+name: Profile Page
+appId: ${MAESTRO_APP_ID}
+tags:
+  - development
+  - staging
+  - production
+  - auth
+  - pull-request
+onFlowStart:
+  - runFlow: login.yaml
+---
+- launchApp
+- tapOn: "Menu"
+- tapOn: "Account"
+- assertVisible: .*crisis.*cleanup.*
+# Currently logged in user's email should be visible on profile page
+- assertVisible: .*${MAESTRO_APP_EMAIL}.*
+- assertVisible: .*logout.*
+- assertVisible: .*dismiss.*
+
