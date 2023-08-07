@@ -4,6 +4,7 @@ import com.crisiscleanup.core.common.haversineDistance
 import com.crisiscleanup.core.data.repository.CasesFilterRepository
 import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
 import com.crisiscleanup.core.database.model.asExternalModel
+import com.crisiscleanup.core.database.model.passesFilter
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 
 fun List<PopulatedWorksiteMapVisual>.filter(
@@ -52,9 +53,5 @@ fun List<PopulatedWorksiteMapVisual>.filter(
 
 private val PopulatedWorksiteMapVisual.isFavorite: Boolean
     get() {
-        return if (root.isLocalModified) {
-            isLocalFavorite
-        } else {
-            favoriteId != null
-        }
+        return if (root.isLocalModified) isLocalFavorite else favoriteId != null
     }

@@ -1,8 +1,5 @@
-package com.crisiscleanup.core.data.model
+package com.crisiscleanup.core.database.model
 
-import com.crisiscleanup.core.database.model.WorkTypeEntity
-import com.crisiscleanup.core.database.model.WorksiteFlagEntity
-import com.crisiscleanup.core.database.model.WorksiteFormDataEntity
 import com.crisiscleanup.core.model.data.CasesFilter
 import kotlinx.datetime.Instant
 
