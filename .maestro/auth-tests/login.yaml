@@ -26,4 +26,6 @@ tags:
 - assertVisible: "Change Incident"
 - assertVisible: "Search"
 - assertVisible: "Filters"
+# Show total number of cases
+- assertVisible: .*(\d+)(\s)(Cases).*
 
