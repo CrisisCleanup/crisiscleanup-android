@@ -1,9 +1,12 @@
 package com.crisiscleanup.core.database.dao
 
 import androidx.room.withTransaction
+import com.crisiscleanup.core.common.haversineDistance
+import com.crisiscleanup.core.common.radians
 import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
 import com.crisiscleanup.core.database.model.BoundedSyncedWorksiteIds
+import com.crisiscleanup.core.database.model.CoordinateGridQuery
 import com.crisiscleanup.core.database.model.NetworkFileEntity
 import com.crisiscleanup.core.database.model.PopulatedTableDataWorksite
 import com.crisiscleanup.core.database.model.SwNeBounds
@@ -15,6 +18,9 @@ import com.crisiscleanup.core.database.model.WorksiteFormDataEntity
 import com.crisiscleanup.core.database.model.WorksiteLocalModifiedAt
 import com.crisiscleanup.core.database.model.WorksiteNetworkFileCrossRef
 import com.crisiscleanup.core.database.model.WorksiteNoteEntity
+import com.crisiscleanup.core.database.model.filter
+import com.crisiscleanup.core.model.data.CasesFilter
+import com.crisiscleanup.core.model.data.WorksiteSortBy
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.datetime.Clock
@@ -371,7 +377,7 @@ class WorksiteDaoPlus @Inject constructor(
 
     suspend fun syncWorksites(
         worksitesEntities: List<WorksiteEntities>,
-        syncedAt: Instant
+        syncedAt: Instant,
     ) = db.withTransaction {
         worksitesEntities.forEach { entities ->
             syncNetworkWorksite(entities, syncedAt)
@@ -421,7 +427,7 @@ class WorksiteDaoPlus @Inject constructor(
             return@withTransaction if (hasModification) {
                 syncLogger.log(
                     "Pending changes on sync end",
-                    details = "flag: $flagChanges\nnote: $noteChanges\nwork type: $workTypeChanges\nchanges: $changes"
+                    details = "flag: $flagChanges\nnote: $noteChanges\nwork type: $workTypeChanges\nchanges: $changes",
                 )
                 false
             } else {
@@ -466,37 +472,223 @@ class WorksiteDaoPlus @Inject constructor(
         else remainingBounds.subList(boundsIndex, remainingBounds.size)
     }
 
-    suspend fun loadBoundedTableWorksites(
+    suspend fun loadTableWorksites(
         incidentId: Long,
-        maxLoadCount: Int,
-        remainingBounds: List<SwNeBounds>,
-    ) = coroutineScope {
-        db.withTransaction {
-            val worksiteDao = db.worksiteDao()
-
-            val loadedWorksites = mutableListOf<PopulatedTableDataWorksite>()
-
-            var boundsIndex = 0
-            while (boundsIndex < remainingBounds.size) {
-                with(remainingBounds[boundsIndex++]) {
-                    val worksites = worksiteDao.getTableWorksitesInBounds(
+        filters: CasesFilter,
+        organizationAffiliates: Set<Long>,
+        sortBy: WorksiteSortBy,
+        coordinates: Pair<Double, Double>?,
+        // miles
+        searchRadius: Float,
+        count: Int,
+    ): List<PopulatedTableDataWorksite> = coroutineScope {
+        when (sortBy) {
+            WorksiteSortBy.Nearest -> {
+                if (coordinates == null) {
+                    emptyList()
+                } else {
+                    getNearestTableWorksites(
                         incidentId,
-                        south,
-                        north,
-                        west,
-                        east,
+                        count,
+                        searchRadius,
+                        filters,
+                        organizationAffiliates,
+                        coordinates,
                     )
-                    loadedWorksites.addAll(worksites)
-                }
-
-                ensureActive()
-
-                if (loadedWorksites.size > maxLoadCount) {
-                    break
                 }
             }
 
-            loadedWorksites
+            else -> getFilteredTableWorksites(
+                sortBy,
+                incidentId,
+                count,
+                filters,
+                organizationAffiliates,
+                coordinates,
+            )
         }
+    }
+
+    private suspend fun getFilteredTableWorksites(
+        sortBy: WorksiteSortBy,
+        incidentId: Long,
+        count: Int,
+        filters: CasesFilter,
+        organizationAffiliates: Set<Long>,
+        coordinates: Pair<Double, Double>?,
+    ): List<PopulatedTableDataWorksite> = coroutineScope {
+        val queryCount = count.coerceAtLeast(100)
+        var queryOffset = 0
+
+        val worksiteDao = db.worksiteDao()
+        val worksiteData = mutableListOf<PopulatedTableDataWorksite>()
+        while (worksiteData.size < queryCount) {
+            val records = when (sortBy) {
+                WorksiteSortBy.Name -> worksiteDao.getTableWorksitesOrderByName(
+                    incidentId,
+                    queryCount,
+                    queryOffset,
+                )
+
+                WorksiteSortBy.City -> worksiteDao.getTableWorksitesOrderByCity(
+                    incidentId,
+                    queryCount,
+                    queryOffset,
+                )
+
+                WorksiteSortBy.CountyParish -> worksiteDao.getTableWorksitesOrderByCounty(
+                    incidentId,
+                    queryCount,
+                    queryOffset,
+                )
+
+                else -> worksiteDao.getTableWorksitesOrderByCaseNumber(
+                    incidentId,
+                    queryCount,
+                    queryOffset,
+                )
+            }
+
+            ensureActive()
+
+            val filteredRecords = records.filter(
+                filters,
+                organizationAffiliates,
+                coordinates,
+            )
+
+            ensureActive()
+
+            worksiteData.addAll(filteredRecords)
+
+            queryOffset += queryCount
+
+            if (sortBy == WorksiteSortBy.Nearest || records.size < queryCount) {
+                break
+            }
+        }
+
+        worksiteData
+    }
+
+    private suspend fun getNearestTableWorksites(
+        incidentId: Long,
+        count: Int,
+        // miles
+        searchRadius: Float = 100.0f,
+        filters: CasesFilter,
+        organizationAffiliates: Set<Long>,
+        coordinates: Pair<Double, Double>,
+    ): List<PopulatedTableDataWorksite> = coroutineScope {
+        val strideCount = 100
+
+        val latitude = coordinates.first
+        val longitude = coordinates.second
+
+        val worksiteDao = db.worksiteDao()
+        val worksiteCount = worksiteDao.getWorksitesCount(incidentId)
+
+        val boundedWorksites: List<PopulatedTableDataWorksite>
+        if (worksiteCount <= count) {
+            boundedWorksites = worksiteDao.getTableWorksites(incidentId).filter(
+                filters,
+                organizationAffiliates,
+                coordinates,
+            )
+        } else {
+            val r = searchRadius.coerceAtLeast(24.0f)
+            val latitudeRadialDegrees = r / 69.0
+            val longitudeRadialDegrees = r / 54.6
+            val areaBounds = SwNeBounds(
+                south = (latitude - latitudeRadialDegrees).coerceAtLeast(-90.0),
+                north = (latitude + latitudeRadialDegrees).coerceAtMost(90.0),
+                west = (longitude - longitudeRadialDegrees).coerceAtLeast(-180.0),
+                east = (longitude + longitudeRadialDegrees).coerceAtMost(180.0),
+            )
+            val boundedWorksiteRectCount = worksiteDao.getBoundedWorksiteCount(
+                incidentId,
+                latitudeSouth = areaBounds.south,
+                latitudeNorth = areaBounds.north,
+                longitudeWest = areaBounds.west,
+                longitudeEast = areaBounds.east,
+            )
+            val gridQuery = CoordinateGridQuery(areaBounds)
+            val targetBucketCount = 10
+            gridQuery.initializeGrid(boundedWorksiteRectCount, targetBucketCount)
+
+            val maxQueryCount = (count * 1.5).toInt()
+            boundedWorksites = loadBoundedTableWorksites(
+                incidentId,
+                maxQueryCount,
+                gridQuery.getSwNeGridCells(),
+                filters,
+                organizationAffiliates,
+                coordinates,
+            )
+        }
+
+        val latRad = latitude.radians
+        val lngRad = longitude.radians
+        val withDistance = mutableListOf<Pair<PopulatedTableDataWorksite, Double>>()
+        for (i in boundedWorksites.indices) {
+            val worksite = boundedWorksites[i]
+            val entity = worksite.base.entity
+            val distance = haversineDistance(
+                latRad, lngRad,
+                entity.latitude.radians, entity.longitude.radians,
+            )
+            withDistance.add(Pair(worksite, distance))
+            if (i % strideCount == 0) {
+                ensureActive()
+            }
+        }
+        return@coroutineScope withDistance
+            .sortedBy { it.second }
+            .map { it.first }
+    }
+
+    private suspend fun loadBoundedTableWorksites(
+        incidentId: Long,
+        maxLoadCount: Int,
+        remainingBounds: List<SwNeBounds>,
+        filters: CasesFilter,
+        organizationAffiliates: Set<Long>,
+        coordinates: Pair<Double, Double>,
+    ) = coroutineScope {
+        val worksiteDao = db.worksiteDao()
+
+        val loadedWorksites = mutableListOf<PopulatedTableDataWorksite>()
+
+        var boundsIndex = 0
+        while (boundsIndex < remainingBounds.size) {
+            var records: List<PopulatedTableDataWorksite>
+            with(remainingBounds[boundsIndex++]) {
+                records = worksiteDao.getTableWorksitesInBounds(
+                    incidentId,
+                    south,
+                    north,
+                    west,
+                    east,
+                )
+            }
+
+            ensureActive()
+
+            val filteredRecords = records.filter(
+                filters,
+                organizationAffiliates,
+                coordinates,
+            )
+
+            ensureActive()
+
+            loadedWorksites.addAll(filteredRecords)
+
+            if (loadedWorksites.size > maxLoadCount) {
+                break
+            }
+        }
+
+        loadedWorksites
     }
 }

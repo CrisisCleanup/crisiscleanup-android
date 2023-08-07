@@ -1,14 +1,13 @@
-package com.crisiscleanup.core.data
+package com.crisiscleanup.core.database.model
 
-import com.crisiscleanup.core.database.model.SwNeBounds
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-internal class CoordinateGridQuery(
+class CoordinateGridQuery(
     private val areaBounds: SwNeBounds,
 ) {
-    internal var sortedCellCoordinates: List<Pair<Int, Int>> = emptyList()
+    var sortedCellCoordinates: List<Pair<Int, Int>> = emptyList()
         private set
 
     private var latitudeDelta: Double = 0.0

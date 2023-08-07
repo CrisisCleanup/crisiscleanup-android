@@ -1,13 +1,13 @@
 package com.crisiscleanup.core.database.dao
 
-import com.crisiscleanup.core.database.CrisisCleanupDatabase
+import com.crisiscleanup.core.database.TestCrisisCleanupDatabase
 import com.crisiscleanup.core.database.TestUtil
 import com.crisiscleanup.core.database.TestUtil.testSyncLogger
+import com.crisiscleanup.core.database.TestWorksiteDao
 import com.crisiscleanup.core.database.WorksiteTestUtil
 import com.crisiscleanup.core.database.WorksiteTestUtil.testIncidents
 import com.crisiscleanup.core.database.model.WorkTypeEntity
 import com.crisiscleanup.core.database.model.WorksiteEntity
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -20,17 +20,17 @@ import kotlin.test.assertNull
 import kotlin.time.Duration.Companion.seconds
 
 class WorksiteDaoTest {
-    private lateinit var db: CrisisCleanupDatabase
+    private lateinit var db: TestCrisisCleanupDatabase
 
-    private lateinit var worksiteDao: WorksiteDao
+    private lateinit var worksiteDao: TestWorksiteDao
     private lateinit var worksiteDaoPlus: WorksiteDaoPlus
 
     private val syncLogger = testSyncLogger()
 
     @Before
     fun createDb() {
-        db = TestUtil.getDatabase()
-        worksiteDao = db.worksiteDao()
+        db = TestUtil.getTestDatabase()
+        worksiteDao = db.testWorksiteDao()
         worksiteDaoPlus = WorksiteDaoPlus(db, syncLogger)
     }
 
@@ -65,7 +65,7 @@ class WorksiteDaoTest {
         incidentId: Long = 1,
         address: String = "test-address",
         createdAt: Instant? = null,
-        caseNumberOrder: Long = 0
+        caseNumberOrder: Long = 0,
     ) =
         testWorksiteEntity(
             networkId,
@@ -93,7 +93,7 @@ class WorksiteDaoTest {
         val syncingWorksites = listOf(
             testWorksiteEntity(4, 1, "missing-created-at-4", updatedAtB),
             testWorksiteFullEntity(5, 1, createdAtB).copy(
-                createdAt = null
+                createdAt = null,
             ),
             testWorksiteEntity(6, 1, "created-at-6", updatedAtB, createdAtB),
             testWorksiteFullEntity(7, 1, createdAtB),
@@ -106,10 +106,10 @@ class WorksiteDaoTest {
         // Assert
 
         var expected = listOf(existingWorksites[2])
-        var actual = worksiteDao.streamWorksites(23, 99).first().map { it.entity }
+        var actual = worksiteDao.getWorksites(23, 99).map { it.entity }
         assertEquals(expected, actual)
 
-        actual = worksiteDao.streamWorksites(1, 99).first().map { it.entity }
+        actual = worksiteDao.getWorksites(1, 99).map { it.entity }
 
         // Order by updated_at desc id desc
         // updatedA > updatedB > fullA.updated_at
@@ -167,7 +167,7 @@ class WorksiteDaoTest {
             // Modify 4 and 5 should keep original created_at
             testWorksiteEntity(4, 1, "missing-created-at-4", updatedAtB, null),
             testWorksiteFullEntity(5, 1, createdAtB).copy(
-                createdAt = null
+                createdAt = null,
             ),
 
             // Modify 6 and 7 should update created_at
@@ -182,10 +182,10 @@ class WorksiteDaoTest {
         // Assert
 
         var expected = listOf(existingWorksites[2])
-        var actual = worksiteDao.streamWorksites(23, 99).first().map { it.entity }
+        var actual = worksiteDao.getWorksites(23, 99).map { it.entity }
         assertEquals(expected, actual)
 
-        actual = worksiteDao.streamWorksites(1, 99).first().map { it.entity }
+        actual = worksiteDao.getWorksites(1, 99).map { it.entity }
 
         // Order by updated_at desc id desc
         // updatedA > updatedB > fullA.updated_at
@@ -273,7 +273,7 @@ class WorksiteDaoTest {
         existingWorksites = insertWorksites(existingWorksites, previousSyncedAt)
 
         val expected = listOf(existingWorksites[0].copy(id = 1))
-        val actual = worksiteDao.streamWorksites(1, 99).first().map { it.entity }
+        val actual = worksiteDao.getWorksites(1, 99).map { it.entity }
         assertEquals(expected, actual)
     }
 
@@ -295,7 +295,7 @@ class WorksiteDaoTest {
             // Missing created_at
             testWorksiteShortEntity(1, 1, createdAtB).copy(
                 createdAt = null,
-                address = "expected-address"
+                address = "expected-address",
             ),
             testWorksiteShortEntity(2, 1, createdAtB).copy(
                 address = "expected-address",
@@ -348,7 +348,7 @@ class WorksiteDaoTest {
                 updatedAt = existingWorksite.updatedAt.plus(11.seconds),
             ),
         )
-        val actual = worksiteDao.streamWorksites(1, 99).first().map { it.entity }
+        val actual = worksiteDao.getWorksites(1, 99).map { it.entity }
         assertEquals(expected, actual)
     }
 
@@ -398,7 +398,7 @@ fun testWorksiteFullEntity(
     networkId: Long,
     incidentId: Long,
     createdAt: Instant,
-    id: Long = 0
+    id: Long = 0,
 ) = WorksiteEntity(
     id = id,
     networkId = networkId,
@@ -435,7 +435,7 @@ fun testWorksiteShortEntity(
     networkId: Long,
     incidentId: Long,
     createdAt: Instant,
-    id: Long = 0
+    id: Long = 0,
 ) = WorksiteEntity(
     id = id,
     networkId = networkId,

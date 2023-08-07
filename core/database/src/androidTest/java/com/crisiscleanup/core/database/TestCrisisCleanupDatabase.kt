@@ -26,6 +26,7 @@ import com.crisiscleanup.core.database.model.PersonContactEntity
 import com.crisiscleanup.core.database.model.PersonOrganizationCrossRef
 import com.crisiscleanup.core.database.model.PopulatedIdNetworkId
 import com.crisiscleanup.core.database.model.PopulatedLocalWorksite
+import com.crisiscleanup.core.database.model.PopulatedWorksite
 import com.crisiscleanup.core.database.model.RecentWorksiteEntity
 import com.crisiscleanup.core.database.model.SyncLogEntity
 import com.crisiscleanup.core.database.model.WorkTypeEntity
@@ -103,7 +104,7 @@ interface TestIncidentDao {
         UPDATE incidents
         SET is_archived=1
         WHERE id NOT IN(:unarchivedIds)
-        """
+        """,
     )
     suspend fun setExcludedArchived(unarchivedIds: Set<Long>)
 }
@@ -116,7 +117,7 @@ interface TestWorksiteDao {
         UPDATE worksites_root
         SET local_modified_at=:modifiedAt, is_local_modified=1
         WHERE id=:id
-        """
+        """,
     )
     fun setLocallyModified(id: Long, modifiedAt: Instant)
 
@@ -131,6 +132,23 @@ interface TestWorksiteDao {
     @Transaction
     @Query("SELECT * FROM worksites WHERE id=:id")
     fun getWorksiteEntity(id: Long): WorksiteEntity?
+
+    @Transaction
+    @Query(
+        """
+        SELECT *
+        FROM worksites
+        WHERE incident_id=:incidentId
+        ORDER BY updated_at DESC, id DESC
+        LIMIT :limit
+        OFFSET :offset
+        """,
+    )
+    fun getWorksites(
+        incidentId: Long,
+        limit: Int,
+        offset: Int = 0,
+    ): List<PopulatedWorksite>
 }
 
 @Dao
@@ -160,7 +178,7 @@ interface TestNoteDao {
         SET network_id=:networkId,
             local_global_uuid=:localGlobalUuid
         WHERE id=:id
-        """
+        """,
     )
     fun updateNetworkId(id: Long, networkId: Long, localGlobalUuid: String = "")
 }
@@ -174,7 +192,7 @@ interface TestWorkTypeDao {
         FROM work_types
         WHERE worksite_id=:worksiteId
         ORDER BY work_type ASC, id ASC
-        """
+        """,
     )
     fun getEntities(worksiteId: Long): List<WorkTypeEntity>
 }
@@ -188,7 +206,7 @@ interface TestWorksiteChangeDao {
         FROM worksite_changes
         WHERE worksite_id=:worksiteId
         ORDER BY created_at DESC
-        """
+        """,
     )
     fun getEntities(worksiteId: Long): List<WorksiteChangeEntity>
 
@@ -199,7 +217,7 @@ interface TestWorksiteChangeDao {
         FROM worksite_changes
         WHERE worksite_id=:worksiteId
         ORDER BY id ASC
-        """
+        """,
     )
     fun getEntitiesOrderId(worksiteId: Long): List<WorksiteChangeEntity>
 }
@@ -212,7 +230,7 @@ interface TestWorkTypeRequestDao {
         SELECT *
         FROM worksite_work_type_requests
         WHERE worksite_id=:worksiteId
-        """
+        """,
     )
     fun getEntities(worksiteId: Long): List<WorkTypeTransferRequestEntity>
 

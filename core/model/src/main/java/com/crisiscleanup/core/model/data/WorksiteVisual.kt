@@ -13,8 +13,8 @@ data class WorksiteMapMark(
     /**
      * Is this mark excluded by filters
      *
-     * TRUE does not render the mark or renders it with less significance
-     * FALSE renders the mark as usual
+     * TRUE does not render the mark or renders it with less significance.
+     * FALSE renders the mark as usual.
      */
     val isFilteredOut: Boolean = false,
 )

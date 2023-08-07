@@ -1,6 +1,5 @@
-package com.crisiscleanup.core.data
+package com.crisiscleanup.core.database.model
 
-import com.crisiscleanup.core.database.model.SwNeBounds
 import org.junit.Test
 import kotlin.math.pow
 import kotlin.test.assertEquals

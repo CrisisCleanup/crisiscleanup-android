@@ -90,8 +90,7 @@ interface WorksitesRepository {
         incidentId: Long,
         filters: CasesFilter,
         sortBy: WorksiteSortBy,
-        latitude: Double,
-        longitude: Double,
+        coordinates: Pair<Double, Double>?,
         searchRadius: Float = 100f,
         count: Int = 360,
     ): List<TableDataWorksite>

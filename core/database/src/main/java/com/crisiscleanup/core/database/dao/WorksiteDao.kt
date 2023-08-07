@@ -8,7 +8,6 @@ import androidx.room.Update
 import com.crisiscleanup.core.database.model.BoundedSyncedWorksiteIds
 import com.crisiscleanup.core.database.model.PopulatedLocalWorksite
 import com.crisiscleanup.core.database.model.PopulatedTableDataWorksite
-import com.crisiscleanup.core.database.model.PopulatedWorksite
 import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
 import com.crisiscleanup.core.database.model.WorksiteEntity
 import com.crisiscleanup.core.database.model.WorksiteLocalModifiedAt
@@ -37,23 +36,6 @@ interface WorksiteDao {
     @Transaction
     @Query("SELECT * FROM worksites WHERE id=:id")
     fun streamLocalWorksite(id: Long): Flow<PopulatedLocalWorksite?>
-
-    @Transaction
-    @Query(
-        """
-        SELECT *
-        FROM worksites
-        WHERE incident_id=:incidentId
-        ORDER BY updated_at DESC, id DESC
-        LIMIT :limit
-        OFFSET :offset
-        """,
-    )
-    fun streamWorksites(
-        incidentId: Long,
-        limit: Int,
-        offset: Int = 0,
-    ): Flow<List<PopulatedWorksite>>
 
     @Transaction
     @Query(
@@ -423,35 +405,15 @@ interface WorksiteDao {
         SELECT * 
         FROM worksites
         WHERE incident_id=:incidentId
-        ORDER BY name, county, city, case_number_order LIMIT :limit
+        ORDER BY name, county, city, case_number_order
+        LIMIT :limit
+        OFFSET :offset
         """,
     )
-    fun getTableWorksitesOrderByName(incidentId: Long, limit: Int): List<PopulatedTableDataWorksite>
-
-    @Transaction
-    @Query(
-        """
-        SELECT * 
-        FROM worksites
-        WHERE incident_id=:incidentId
-        ORDER BY city, name, case_number_order LIMIT :limit
-        """,
-    )
-    fun getTableWorksitesOrderByCity(incidentId: Long, limit: Int): List<PopulatedTableDataWorksite>
-
-    @Transaction
-    @Query(
-        """
-        SELECT * 
-        FROM worksites
-        WHERE incident_id=:incidentId
-        ORDER BY county, name, case_number_order LIMIT :limit
-        """,
-    )
-
-    fun getTableWorksitesOrderByCounty(
+    fun getTableWorksitesOrderByName(
         incidentId: Long,
         limit: Int,
+        offset: Int,
     ): List<PopulatedTableDataWorksite>
 
     @Transaction
@@ -460,11 +422,49 @@ interface WorksiteDao {
         SELECT * 
         FROM worksites
         WHERE incident_id=:incidentId
-        ORDER BY case_number_order LIMIT :limit
+        ORDER BY city, name, case_number_order
+        LIMIT :limit
+        OFFSET :offset
+        """,
+    )
+    fun getTableWorksitesOrderByCity(
+        incidentId: Long,
+        limit: Int,
+        offset: Int,
+    ): List<PopulatedTableDataWorksite>
+
+    @Transaction
+    @Query(
+        """
+        SELECT * 
+        FROM worksites
+        WHERE incident_id=:incidentId
+        ORDER BY county, name, case_number_order
+        LIMIT :limit
+        OFFSET :offset
+        """,
+    )
+
+    fun getTableWorksitesOrderByCounty(
+        incidentId: Long,
+        limit: Int,
+        offset: Int,
+    ): List<PopulatedTableDataWorksite>
+
+    @Transaction
+    @Query(
+        """
+        SELECT * 
+        FROM worksites
+        WHERE incident_id=:incidentId
+        ORDER BY case_number_order
+        LIMIT :limit
+        OFFSET :offset
         """,
     )
     fun getTableWorksitesOrderByCaseNumber(
         incidentId: Long,
         limit: Int,
+        offset: Int,
     ): List<PopulatedTableDataWorksite>
 }

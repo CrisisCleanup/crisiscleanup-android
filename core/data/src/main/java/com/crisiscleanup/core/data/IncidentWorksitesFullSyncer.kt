@@ -11,6 +11,7 @@ import com.crisiscleanup.core.database.dao.WorksiteDao
 import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
 import com.crisiscleanup.core.database.dao.WorksiteSyncStatDao
 import com.crisiscleanup.core.database.model.BoundedSyncedWorksiteIds
+import com.crisiscleanup.core.database.model.CoordinateGridQuery
 import com.crisiscleanup.core.database.model.IncidentWorksitesFullSyncStatsEntity
 import com.crisiscleanup.core.database.model.SwNeBounds
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
@@ -78,7 +79,7 @@ class IncidentWorksitesFullSyncer @Inject constructor(
 
     private suspend fun saveWorksitesFull(
         initialSyncCount: Int,
-        syncStats: IncidentWorksitesFullSyncStatsEntity
+        syncStats: IncidentWorksitesFullSyncStatsEntity,
     ) = coroutineScope {
         val incidentId = syncStats.incidentId
 
@@ -134,7 +135,7 @@ class IncidentWorksitesFullSyncer @Inject constructor(
                 }
                 if (pagedCount >= worksiteCount) {
                     worksiteSyncStatDao.upsert(
-                        syncStats.copy(syncedAt = syncStartedAt)
+                        syncStats.copy(syncedAt = syncStartedAt),
                     )
                 }
             } else {
@@ -153,7 +154,7 @@ class IncidentWorksitesFullSyncer @Inject constructor(
                                 latitude = locationQueryParameters.latitude,
                                 longitude = locationQueryParameters.longitude,
                                 radius = locationQueryParameters.searchRadius,
-                            )
+                            ),
                         )
                     }
                 } else {

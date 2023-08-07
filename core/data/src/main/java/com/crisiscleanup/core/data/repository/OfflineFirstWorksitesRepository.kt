@@ -3,12 +3,9 @@ package com.crisiscleanup.core.data.repository
 import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.di.ApplicationScope
-import com.crisiscleanup.core.common.haversineDistance
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
-import com.crisiscleanup.core.common.radians
-import com.crisiscleanup.core.data.CoordinateGridQuery
 import com.crisiscleanup.core.data.WorksitesFullSyncer
 import com.crisiscleanup.core.data.WorksitesSyncer
 import com.crisiscleanup.core.data.model.asEntities
@@ -21,9 +18,7 @@ import com.crisiscleanup.core.database.dao.WorksiteDao
 import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
 import com.crisiscleanup.core.database.dao.WorksiteSyncStatDao
 import com.crisiscleanup.core.database.model.PopulatedRecentWorksite
-import com.crisiscleanup.core.database.model.PopulatedTableDataWorksite
 import com.crisiscleanup.core.database.model.RecentWorksiteEntity
-import com.crisiscleanup.core.database.model.SwNeBounds
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.database.model.asSummary
 import com.crisiscleanup.core.database.model.asWorksiteSyncStatsEntity
@@ -311,39 +306,21 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         incidentId: Long,
         filters: CasesFilter,
         sortBy: WorksiteSortBy,
-        latitude: Double,
-        longitude: Double,
+        coordinates: Pair<Double, Double>?,
         // miles
         searchRadius: Float,
         count: Int,
     ): List<TableDataWorksite> = coroutineScope {
-        val queryCount = count.coerceAtLeast(100)
-        val records = when (sortBy) {
-            WorksiteSortBy.Nearest -> getNearestWorksites(
-                incidentId,
-                latitude,
-                longitude,
-                queryCount,
-                searchRadius,
-            )
-
-            WorksiteSortBy.Name -> worksiteDao.getTableWorksitesOrderByName(incidentId, queryCount)
-
-            WorksiteSortBy.City -> worksiteDao.getTableWorksitesOrderByCity(incidentId, queryCount)
-
-            WorksiteSortBy.CountyParish -> worksiteDao.getTableWorksitesOrderByCounty(
-                incidentId,
-                queryCount,
-            )
-
-            else -> worksiteDao.getTableWorksitesOrderByCaseNumber(incidentId, queryCount)
-        }
-
-        ensureActive()
-
-        if (filters.changeCount != 0) {
-            // TODO Apply filters before mapping ensuring active every stride
-        }
+        val records = worksiteDaoPlus.loadTableWorksites(
+            incidentId,
+            filters,
+            organizationAffiliates.value,
+            sortBy,
+            coordinates,
+            // miles
+            searchRadius,
+            count,
+        )
 
         ensureActive()
 
@@ -362,69 +339,5 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         }
 
         tableData
-    }
-
-    private suspend fun getNearestWorksites(
-        incidentId: Long,
-        latitude: Double,
-        longitude: Double,
-        count: Int,
-        // miles
-        searchRadius: Float = 100.0f,
-    ): List<PopulatedTableDataWorksite> = coroutineScope {
-        val strideCount = 100
-
-        val worksiteCount = worksiteDao.getWorksitesCount(incidentId)
-
-        val boundedWorksites: List<PopulatedTableDataWorksite>
-        if (worksiteCount <= count) {
-            boundedWorksites = worksiteDao.getTableWorksites(incidentId)
-        } else {
-            val r = searchRadius.coerceAtLeast(24.0f)
-            val latitudeRadialDegrees = r / 69.0
-            val longitudeRadialDegrees = r / 54.6
-            val areaBounds = SwNeBounds(
-                south = (latitude - latitudeRadialDegrees).coerceAtLeast(-90.0),
-                north = (latitude + latitudeRadialDegrees).coerceAtMost(90.0),
-                west = (longitude - longitudeRadialDegrees).coerceAtLeast(-180.0),
-                east = (longitude + longitudeRadialDegrees).coerceAtMost(180.0),
-            )
-            val boundedWorksiteRectCount = worksiteDao.getBoundedWorksiteCount(
-                incidentId,
-                latitudeSouth = areaBounds.south,
-                latitudeNorth = areaBounds.north,
-                longitudeWest = areaBounds.west,
-                longitudeEast = areaBounds.east,
-            )
-            val gridQuery = CoordinateGridQuery(areaBounds)
-            val targetBucketCount = 10
-            gridQuery.initializeGrid(boundedWorksiteRectCount, targetBucketCount)
-
-            val maxQueryCount = (count * 1.5).toInt()
-            boundedWorksites = worksiteDaoPlus.loadBoundedTableWorksites(
-                incidentId,
-                maxQueryCount,
-                gridQuery.getSwNeGridCells(),
-            )
-        }
-
-        val latRad = latitude.radians
-        val lngRad = longitude.radians
-        val withDistance = mutableListOf<Pair<PopulatedTableDataWorksite, Double>>()
-        for (i in boundedWorksites.indices) {
-            val worksite = boundedWorksites[i]
-            val entity = worksite.base.entity
-            val distance = haversineDistance(
-                latRad, lngRad,
-                entity.latitude.radians, entity.longitude.radians,
-            )
-            withDistance.add(Pair(worksite, distance))
-            if (i % strideCount == 0) {
-                ensureActive()
-            }
-        }
-        return@coroutineScope withDistance
-            .sortedBy { it.second }
-            .map { it.first }
     }
 }

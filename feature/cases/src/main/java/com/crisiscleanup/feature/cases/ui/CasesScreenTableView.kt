@@ -75,6 +75,7 @@ import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteSortBy
 import com.crisiscleanup.feature.cases.CasesViewModel
 import com.crisiscleanup.feature.cases.WorksiteDistance
+import kotlinx.coroutines.delay
 import java.text.DecimalFormat
 
 @Composable
@@ -201,6 +202,7 @@ internal fun BoxScope.CasesTableView(
         val listState = rememberLazyListState()
         LaunchedEffect(tableSort) {
             if (viewModel.takeSortByChange()) {
+                delay(150)
                 listState.scrollToItem(0)
             }
         }

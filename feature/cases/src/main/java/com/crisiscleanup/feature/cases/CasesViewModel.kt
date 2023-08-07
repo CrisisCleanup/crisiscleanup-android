@@ -411,17 +411,16 @@ class CasesViewModel @Inject constructor(
             sortBy = WorksiteSortBy.CaseNumber
         }
 
-        val locationLatitude = locationCoordinates?.first ?: 0.0
-        val locationLongitude = locationCoordinates?.second ?: 0.0
         val worksites = worksitesRepository.getTableData(
             wqs.incidentId,
             filters,
             sortBy,
-            locationLatitude,
-            locationLongitude,
+            locationCoordinates,
         )
 
         val strideCount = 100
+        val locationLatitude = locationCoordinates?.first ?: 0.0
+        val locationLongitude = locationCoordinates?.second ?: 0.0
         val locationLatitudeRad = locationLatitude.radians
         val locationLongitudeRad = locationLongitude.radians
         val tableData = worksites.mapIndexed { i, tableData ->
