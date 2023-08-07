@@ -18,7 +18,11 @@ App is started from [Now in Android](https://github.com/android/nowinandroid).
 3. Make sure the required env vars defined in [`.envrc`](.envrc) are set in your environment.
 4. Run tests
     ```sh
-    maestro test ./.maestro/tests
+    maestro test ./.maestro/<test-dir>
+
+    # Run all tests using test script (recommended)
+    # Build app before to get app apk before running
+    ./scripts/maestro.sh app/build/outputs/apk/demo/debug/app-demo-debug.apk local
     ```
 
 ### Start maestro studio
