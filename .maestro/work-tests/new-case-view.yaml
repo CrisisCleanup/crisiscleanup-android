@@ -89,3 +89,21 @@ onFlowStart:
     direction: DOWN
 - assertVisible: ".*Volunteer Report.*"
 
+
+# Clicking cancel should close popup
+- tapOn: ".*Cancel.*"
+- assertVisible: "Work"
+- assertVisible: "Menu"
+
+# Reopen New case popup
+- tapOn: ".*new case.*"
+- assertVisible: ".*new case.*"
+- assertNotVisible: "Work"
+- assertNotVisible: "Menu"
+
+# Clicking back should close popup
+- tapOn:
+    text: ".*Back.*"
+    index: 1
+- assertVisible: "Work"
+- assertVisible: "Menu"
