@@ -1,0 +1,28 @@
+name: Switch between table and map view
+appId: ${MAESTRO_APP_ID}
+tags:
+  - development
+  - staging
+  - production
+  - pull-request
+onFlowStart:
+  - runFlow: ../auth-tests/login.yaml
+---
+- tapOn: "Work"
+- assertVisible: "Work"
+- assertVisible: "Menu"
+- assertVisible: ".*Change Incident.*"
+- assertVisible: ".*Search.*"
+- assertVisible: ".*Filters.*"
+- assertVisible: ".*Zoom in.*"
+- assertVisible: ".*Zoom out.*"
+- assertVisible: ".*Change Incident.*"
+- assertVisible: ".*Zoom to Interactive.*"
+- assertVisible: ".*Zoom to Incident.*"
+- assertVisible: ".*Search.*"
+- assertVisible: ".*Filters.*"
+- assertVisible: ".*My location.*"
+- assertVisible: ".*New Case.*"
+- assertVisible: ".*Table View.*"
+# Show total number of cases
+- assertVisible: .*(\d+)(\s)(Cases).*
