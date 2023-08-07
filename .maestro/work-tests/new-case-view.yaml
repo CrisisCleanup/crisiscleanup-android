@@ -1,0 +1,91 @@
+name: New Case View
+appId: ${MAESTRO_APP_ID}
+tags:
+  - development
+  - staging
+  - production
+  - pull-request
+onFlowStart:
+  - runFlow: ../auth-tests/login.yaml
+---
+- tapOn: ".*new case.*"
+- assertVisible: ".*new case.*"
+- assertVisible:
+    text: "back"
+    index: 1
+
+# Bottom actions buttons should be visible
+- assertVisible: ".*cancel.*"
+- assertVisible: ".*Claim & Save.*"
+- assertVisible: ".*Save.*"
+
+# New case sections and required elements should be visible
+- scrollUntilVisible:
+    element: ".*Property Information.*" 
+    direction: DOWN
+- assertVisible: ".*Property Information.*"
+
+- scrollUntilVisible:
+    element: ".*Resident Name.*" 
+    direction: DOWN
+- assertVisible: ".*Resident Name.*"
+
+- scrollUntilVisible:
+    element: ".*Phone.*" 
+    direction: DOWN
+- assertVisible: ".*Phone.*"
+
+- scrollUntilVisible:
+    element: ".*Email.*" 
+    direction: DOWN
+- assertVisible: ".*Email.*"
+
+- scrollUntilVisible:
+    element: ".*Location.*" 
+    direction: DOWN
+- assertVisible: ".*Location.*"
+
+- scrollUntilVisible:
+    element: ".*Full Address.*" 
+    direction: DOWN
+- assertVisible: ".*Full Address.*"
+
+- scrollUntilVisible:
+    element: ".*Google Map.*" 
+    direction: DOWN
+- assertVisible: ".*Google Map.*"
+
+- scrollUntilVisible:
+    element: ".*Select on Map.*" 
+    direction: DOWN
+- assertVisible:
+    text: ".*Select on Map.*"
+    index: 1
+  
+- scrollUntilVisible:
+    element: ".*Use My Location.*" 
+    direction: DOWN
+- assertVisible:
+    text: ".*Use My Location.*"
+    index: 1
+  
+- scrollUntilVisible:
+    element: ".*Notes.*" 
+    direction: DOWN
+- assertVisible: ".*Notes.*"
+
+- scrollUntilVisible:
+    element: ".*Case Details.*" 
+    direction: DOWN
+- assertVisible: ".*Case Details.*"
+
+- scrollUntilVisible:
+    element: ".*Work.*" 
+    direction: DOWN
+- assertVisible: ".*Work.*"
+
+- scrollUntilVisible:
+    element: ".*Volunteer Report.*" 
+    direction: DOWN
+- assertVisible: ".*Volunteer Report.*"
+
