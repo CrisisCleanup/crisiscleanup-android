@@ -8,7 +8,7 @@ tags:
 env:
   SEARCH_QUERY: qwertyqwerty
 onFlowStart:
-  - runFlow: ../login.yaml
+  - runFlow: ../auth-tests/login.yaml
 ---
 - tapOn: "Search"
 - assertVisible: "Search"
