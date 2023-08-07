@@ -1,7 +1,7 @@
 package com.crisiscleanup.feature.cases.map
 
 import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.model.data.EmptyIncident
@@ -20,7 +20,7 @@ internal class CasesMapTileLayerManager(
     private val mapBoundsManager: CasesMapBoundsManager,
     private val logger: AppLogger,
 ) {
-    private var tileDataChangeKey = mutableStateOf(0L)
+    private var tileDataChangeKey = mutableLongStateOf(0L)
 
     /**
      * Indicates the Compose map should refresh as tile data has changed in a significant manner
@@ -68,10 +68,10 @@ internal class CasesMapTileLayerManager(
     }
 
     // TODO Develop a change mechanism that guarantees uniqueness from any change
-    fun onTileChange() = onTileChange(tileDataChangeKey.value + 1)
+    fun onTileChange() = onTileChange(tileDataChangeKey.longValue + 1)
 
     private fun onTileChange(dataChangeValue: Long) {
-        tileDataChangeKey.value = dataChangeValue % 1_000_000
+        tileDataChangeKey.longValue = dataChangeValue % 1_000_000
     }
 }
 

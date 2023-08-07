@@ -22,6 +22,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.metrics.performance.JankStats
 import com.crisiscleanup.MainActivityUiState.Loading
 import com.crisiscleanup.MainActivityUiState.Success
+import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.NavigationObserver
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.PermissionManager
@@ -79,6 +80,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     internal lateinit var permissionManager: PermissionManager
+
+    @Inject
+    internal lateinit var locationProvider: LocationProvider
 
     @Inject
     @FeedbackTriggerProviderKey(FeedbackTriggerProviders.Default)
@@ -154,6 +158,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        locationProvider.startObservingLocation()
         lazyStats.get().isTrackingEnabled = true
     }
 
@@ -165,6 +170,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onPause() {
         super.onPause()
+        locationProvider.stopObservingLocation()
         lazyStats.get().isTrackingEnabled = false
     }
 

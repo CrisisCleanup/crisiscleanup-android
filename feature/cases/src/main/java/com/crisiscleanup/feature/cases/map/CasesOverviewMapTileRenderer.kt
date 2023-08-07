@@ -120,7 +120,7 @@ class CaseDotsMapTileRenderer @Inject constructor(
     }
 
     private fun renderTile(
-        coordinates: TileCoordinates
+        coordinates: TileCoordinates,
     ): Tile? {
         try {
             renderingCount.value = renderingCounter.incrementAndGet()
@@ -131,7 +131,7 @@ class CaseDotsMapTileRenderer @Inject constructor(
     }
 
     private fun renderTileInternal(
-        coordinates: TileCoordinates
+        coordinates: TileCoordinates,
     ): Tile? {
         val incidentId = incidentIdCache
 
@@ -217,6 +217,8 @@ class CaseDotsMapTileRenderer @Inject constructor(
                     it.statusClaim,
                     it.workType,
                     it.workTypeCount > 1,
+                    it.isDuplicate,
+                    it.isFilteredOut,
                 )?.let { dotBitmap ->
                     coordinates.fromLatLng(it.latitude, it.longitude)?.let { xyNorm ->
                         val (xNorm, yNorm) = xyNorm

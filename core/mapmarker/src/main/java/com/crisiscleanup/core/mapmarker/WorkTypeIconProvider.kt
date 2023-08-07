@@ -1,6 +1,12 @@
 package com.crisiscleanup.core.mapmarker
 
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Matrix
+import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.Drawable
 import androidx.collection.LruCache
 import androidx.compose.ui.geometry.Offset
@@ -10,7 +16,50 @@ import androidx.core.graphics.red
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.model.data.WorkTypeStatusClaim
 import com.crisiscleanup.core.model.data.WorkTypeType
-import com.crisiscleanup.core.model.data.WorkTypeType.*
+import com.crisiscleanup.core.model.data.WorkTypeType.AnimalServices
+import com.crisiscleanup.core.model.data.WorkTypeType.Ash
+import com.crisiscleanup.core.model.data.WorkTypeType.CatchmentGutters
+import com.crisiscleanup.core.model.data.WorkTypeType.ChimneyCapping
+import com.crisiscleanup.core.model.data.WorkTypeType.ConstructionConsultation
+import com.crisiscleanup.core.model.data.WorkTypeType.CoreReliefItems
+import com.crisiscleanup.core.model.data.WorkTypeType.Debris
+import com.crisiscleanup.core.model.data.WorkTypeType.DeferredMaintenance
+import com.crisiscleanup.core.model.data.WorkTypeType.Demolition
+import com.crisiscleanup.core.model.data.WorkTypeType.DomesticServices
+import com.crisiscleanup.core.model.data.WorkTypeType.Erosion
+import com.crisiscleanup.core.model.data.WorkTypeType.Escort
+import com.crisiscleanup.core.model.data.WorkTypeType.Favorite
+import com.crisiscleanup.core.model.data.WorkTypeType.Fence
+import com.crisiscleanup.core.model.data.WorkTypeType.Fire
+import com.crisiscleanup.core.model.data.WorkTypeType.Food
+import com.crisiscleanup.core.model.data.WorkTypeType.Important
+import com.crisiscleanup.core.model.data.WorkTypeType.Landslide
+import com.crisiscleanup.core.model.data.WorkTypeType.Leak
+import com.crisiscleanup.core.model.data.WorkTypeType.Meals
+import com.crisiscleanup.core.model.data.WorkTypeType.MoldRemediation
+import com.crisiscleanup.core.model.data.WorkTypeType.MuckOut
+import com.crisiscleanup.core.model.data.WorkTypeType.Other
+import com.crisiscleanup.core.model.data.WorkTypeType.Oxygen
+import com.crisiscleanup.core.model.data.WorkTypeType.Pipe
+import com.crisiscleanup.core.model.data.WorkTypeType.Ppe
+import com.crisiscleanup.core.model.data.WorkTypeType.Prescription
+import com.crisiscleanup.core.model.data.WorkTypeType.Rebuild
+import com.crisiscleanup.core.model.data.WorkTypeType.RebuildTotal
+import com.crisiscleanup.core.model.data.WorkTypeType.RetardantCleanup
+import com.crisiscleanup.core.model.data.WorkTypeType.Sandbagging
+import com.crisiscleanup.core.model.data.WorkTypeType.Shelter
+import com.crisiscleanup.core.model.data.WorkTypeType.Shopping
+import com.crisiscleanup.core.model.data.WorkTypeType.SmokeDamage
+import com.crisiscleanup.core.model.data.WorkTypeType.SnowGround
+import com.crisiscleanup.core.model.data.WorkTypeType.SnowRoof
+import com.crisiscleanup.core.model.data.WorkTypeType.Structure
+import com.crisiscleanup.core.model.data.WorkTypeType.Tarp
+import com.crisiscleanup.core.model.data.WorkTypeType.TemporaryHousing
+import com.crisiscleanup.core.model.data.WorkTypeType.Trees
+import com.crisiscleanup.core.model.data.WorkTypeType.TreesHeavyEquipment
+import com.crisiscleanup.core.model.data.WorkTypeType.Unknown
+import com.crisiscleanup.core.model.data.WorkTypeType.WaterBottles
+import com.crisiscleanup.core.model.data.WorkTypeType.WellnessCheck
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.material.animation.ArgbEvaluatorCompat
@@ -22,8 +71,8 @@ import javax.inject.Singleton
 class WorkTypeIconProvider @Inject constructor(
     private val resourceProvider: AndroidResourceProvider,
 ) : MapCaseIconProvider {
-    private val cache = LruCache<CacheKey, BitmapDescriptor>(64)
-    private val bitmapCache = LruCache<CacheKey, Bitmap>(64)
+    private val cache = LruCache<WorkTypeIconCacheKey, BitmapDescriptor>(64)
+    private val bitmapCache = LruCache<WorkTypeIconCacheKey, Bitmap>(64)
 
     private val argbEvaluator = ArgbEvaluatorCompat()
 
@@ -52,7 +101,7 @@ class WorkTypeIconProvider @Inject constructor(
         plusDrawable = resourceProvider.getDrawable(R.drawable.ic_work_type_plus)
     }
 
-    private fun cacheIconBitmap(cacheKey: CacheKey): BitmapDescriptor {
+    private fun cacheIconBitmap(cacheKey: WorkTypeIconCacheKey): BitmapDescriptor {
         val bitmap = drawIcon(cacheKey)
         val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap)
         synchronized(cache) {
@@ -68,13 +117,17 @@ class WorkTypeIconProvider @Inject constructor(
         isFavorite: Boolean,
         isImportant: Boolean,
         hasMultipleWorkTypes: Boolean,
-    ): BitmapDescriptor? {
-        val cacheKey = CacheKey(
+        isDuplicate: Boolean,
+        isFilteredOut: Boolean,
+    ): BitmapDescriptor {
+        val cacheKey = WorkTypeIconCacheKey(
             statusClaim,
             workType,
             hasMultipleWorkTypes,
             isFavorite = isFavorite,
             isImportant = isImportant,
+            isDuplicate = isDuplicate,
+            isFilteredOut = isFilteredOut,
         )
         synchronized(cache) {
             cache.get(cacheKey)?.let {
@@ -89,8 +142,16 @@ class WorkTypeIconProvider @Inject constructor(
         statusClaim: WorkTypeStatusClaim,
         workType: WorkTypeType,
         hasMultipleWorkTypes: Boolean,
+        isDuplicate: Boolean,
+        isFilteredOut: Boolean,
     ): Bitmap? {
-        val cacheKey = CacheKey(statusClaim, workType, hasMultipleWorkTypes)
+        val cacheKey = WorkTypeIconCacheKey(
+            statusClaim,
+            workType,
+            hasMultipleWorkTypes,
+            isDuplicate,
+            isFilteredOut,
+        )
         synchronized(cache) {
             bitmapCache.get(cacheKey)?.let {
                 return it
@@ -106,7 +167,7 @@ class WorkTypeIconProvider @Inject constructor(
         }
     }
 
-    private fun drawIcon(cacheKey: CacheKey): Bitmap {
+    private fun drawIcon(cacheKey: WorkTypeIconCacheKey): Bitmap {
         val iconResId = if (cacheKey.isFavorite) statusIcons[Favorite]!!
         else if (cacheKey.isImportant) statusIcons[Important]!!
         else statusIcons[cacheKey.workType] ?: R.drawable.ic_work_type_unknown
@@ -130,7 +191,12 @@ class WorkTypeIconProvider @Inject constructor(
         )
         drawable.draw(canvas)
 
-        val colors = getMapMarkerColors(cacheKey.statusClaim)
+        val colors = getMapMarkerColors(
+            cacheKey.statusClaim,
+            cacheKey.isDuplicate,
+            cacheKey.isFilteredOut,
+        )
+        val fillAlpha = if (colors.fill.alpha < 1) (colors.fill.alpha * 255).toInt() else 255
 
         for (w in shadowRadius until rightBounds) {
             for (h in shadowRadius until bottomBounds) {
@@ -145,10 +211,10 @@ class WorkTypeIconProvider @Inject constructor(
                             colors.strokeInt,
                         )
                     val color = Color.argb(
-                        alpha,
-                        colorValue shr 16,
-                        colorValue shr 8,
-                        colorValue,
+                        fillAlpha,
+                        (colorValue and 0xFF0000) shr 16,
+                        (colorValue and 0x00FF00) shr 8,
+                        (colorValue and 0x0000FF),
                     )
                     output.setPixel(w, h, color)
                 }
@@ -177,7 +243,6 @@ class WorkTypeIconProvider @Inject constructor(
                     bottomBounds,
                 )
                 plusDrawable.draw(canvas)
-
             }
         }
 
@@ -236,10 +301,12 @@ class WorkTypeIconProvider @Inject constructor(
     )
 }
 
-private data class CacheKey(
+private data class WorkTypeIconCacheKey(
     val statusClaim: WorkTypeStatusClaim,
     val workType: WorkTypeType,
     val hasMultipleWorkTypes: Boolean,
     val isFavorite: Boolean = false,
     val isImportant: Boolean = false,
+    val isDuplicate: Boolean = false,
+    val isFilteredOut: Boolean = false,
 )

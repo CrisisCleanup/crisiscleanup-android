@@ -16,11 +16,6 @@ import com.crisiscleanup.core.database.model.WorksiteRootEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Instant
 
-private const val selectFromMapVisualClause = """
-        SELECT w.id, latitude, longitude, key_work_type_type, key_work_type_org, key_work_type_status, COUNT(wt.id) as work_type_count, favorite_id
-        FROM worksites w LEFT JOIN work_types wt ON w.id=wt.worksite_id
-        """
-
 @Dao
 interface WorksiteDao {
     @Transaction
@@ -52,12 +47,12 @@ interface WorksiteDao {
         ORDER BY updated_at DESC, id DESC
         LIMIT :limit
         OFFSET :offset
-        """
+        """,
     )
     fun streamWorksites(
         incidentId: Long,
         limit: Int,
-        offset: Int = 0
+        offset: Int = 0,
     ): Flow<List<PopulatedWorksite>>
 
     @Transaction
@@ -66,7 +61,7 @@ interface WorksiteDao {
         SELECT id, network_id, local_modified_at, is_local_modified
         FROM worksites_root
         WHERE network_id IN (:worksiteIds)
-        """
+        """,
     )
     fun getWorksitesLocalModifiedAt(
         worksiteIds: Collection<Long>,
@@ -75,7 +70,12 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
-        $selectFromMapVisualClause
+        SELECT w.id,
+               latitude, longitude,
+               key_work_type_type, key_work_type_org, key_work_type_status, COUNT(wt.id) as work_type_count,
+               favorite_id,
+               w.created_at, is_local_favorite, reported_by, svi, updated_at
+        FROM worksites w LEFT JOIN work_types wt ON w.id=wt.worksite_id
         WHERE incident_id=:incidentId AND
               (longitude BETWEEN :longitudeWest AND :longitudeEast) AND
               (latitude BETWEEN :latitudeSouth AND :latitudeNorth)
@@ -83,7 +83,7 @@ interface WorksiteDao {
         ORDER BY updated_at DESC, w.id DESC
         LIMIT :limit
         OFFSET :offset
-        """
+        """,
     )
     fun getWorksitesMapVisual(
         incidentId: Long,
@@ -107,7 +107,7 @@ interface WorksiteDao {
         WHERE incident_id=:incidentId AND
               (longitude BETWEEN :longitudeWest AND :longitudeEast) AND
               (latitude BETWEEN :latitudeSouth AND :latitudeNorth)
-        """
+        """,
     )
     fun getWorksitesCount(
         incidentId: Long,
@@ -125,7 +125,7 @@ interface WorksiteDao {
         WHERE incident_id=:incidentId AND
               (longitude>=:longitudeLeft OR longitude<=:longitudeRight) AND
               (latitude BETWEEN :latitudeSouth AND :latitudeNorth)
-        """
+        """,
     )
     fun getWorksitesCountLongitudeCrossover(
         incidentId: Long,
@@ -152,7 +152,7 @@ interface WorksiteDao {
             :networkId,
             :incidentId
         )
-        """
+        """,
     )
     fun insertOrRollbackWorksiteRoot(
         syncedAt: Instant,
@@ -172,7 +172,7 @@ interface WorksiteDao {
             local_modified_at   =:localModifiedAt,
             is_local_modified   =1
         WHERE id=:id
-        """
+        """,
     )
     fun updateRoot(
         id: Long,
@@ -194,7 +194,7 @@ interface WorksiteDao {
         WHERE id=:id AND
               network_id=:networkId AND
               local_modified_at=:expectedLocalModifiedAt
-        """
+        """,
     )
     fun getRootCount(
         id: Long,
@@ -213,7 +213,7 @@ interface WorksiteDao {
         WHERE id=:id AND
               network_id=:networkId AND
               local_modified_at=:expectedLocalModifiedAt
-        """
+        """,
     )
     fun syncUpdateWorksiteRoot(
         id: Long,
@@ -254,7 +254,7 @@ interface WorksiteDao {
         what3Words      =COALESCE(:what3Words, what3Words),
         updated_at      =:updatedAt
         WHERE id=:id AND network_id=:networkId
-        """
+        """,
     )
     fun syncUpdateWorksite(
         id: Long,
@@ -303,7 +303,7 @@ interface WorksiteDao {
         reported_by =COALESCE(reported_by, :reportedBy),
         what3Words  =COALESCE(what3Words, :what3Words)
         WHERE id=:id
-        """
+        """,
     )
     fun syncFillWorksite(
         id: Long,
@@ -328,7 +328,7 @@ interface WorksiteDao {
         WHERE is_local_modified<>0
         ORDER BY local_modified_at DESC
         LIMIT :limit
-        """
+        """,
     )
     fun getLocallyModifiedWorksites(limit: Int): List<Long>
 
@@ -339,7 +339,7 @@ interface WorksiteDao {
         SET network_id=:networkId,
             local_global_uuid=''
         WHERE id=:id;
-        """
+        """,
     )
     fun updateRootNetworkId(id: Long, networkId: Long)
 
@@ -355,7 +355,7 @@ interface WorksiteDao {
             is_local_modified   =0,
             sync_attempt        =0
         WHERE id=:worksiteId
-        """
+        """,
     )
     fun setRootUnmodified(worksiteId: Long, syncedAt: Instant)
 
@@ -367,7 +367,7 @@ interface WorksiteDao {
         WHERE incident_id=:incidentId AND
               (longitude BETWEEN :longitudeWest AND :longitudeEast) AND
               (latitude BETWEEN :latitudeSouth AND :latitudeNorth)
-        """
+        """,
     )
     fun getBoundedWorksiteCount(
         incidentId: Long,
@@ -385,7 +385,7 @@ interface WorksiteDao {
         WHERE w.incident_id=:incidentId AND
               (longitude BETWEEN :longitudeWest AND :longitudeEast) AND
               (latitude BETWEEN :latitudeSouth AND :latitudeNorth)
-        """
+        """,
     )
     fun getBoundedSyncedWorksiteIds(
         incidentId: Long,
@@ -407,7 +407,7 @@ interface WorksiteDao {
         WHERE incident_id=:incidentId AND
               (longitude BETWEEN :longitudeWest AND :longitudeEast) AND
               (latitude BETWEEN :latitudeSouth AND :latitudeNorth)
-        """
+        """,
     )
     fun getTableWorksitesInBounds(
         incidentId: Long,
@@ -424,7 +424,7 @@ interface WorksiteDao {
         FROM worksites
         WHERE incident_id=:incidentId
         ORDER BY name, county, city, case_number_order LIMIT :limit
-        """
+        """,
     )
     fun getTableWorksitesOrderByName(incidentId: Long, limit: Int): List<PopulatedTableDataWorksite>
 
@@ -435,7 +435,7 @@ interface WorksiteDao {
         FROM worksites
         WHERE incident_id=:incidentId
         ORDER BY city, name, case_number_order LIMIT :limit
-        """
+        """,
     )
     fun getTableWorksitesOrderByCity(incidentId: Long, limit: Int): List<PopulatedTableDataWorksite>
 
@@ -446,7 +446,7 @@ interface WorksiteDao {
         FROM worksites
         WHERE incident_id=:incidentId
         ORDER BY county, name, case_number_order LIMIT :limit
-        """
+        """,
     )
 
     fun getTableWorksitesOrderByCounty(
@@ -461,7 +461,7 @@ interface WorksiteDao {
         FROM worksites
         WHERE incident_id=:incidentId
         ORDER BY case_number_order LIMIT :limit
-        """
+        """,
     )
     fun getTableWorksitesOrderByCaseNumber(
         incidentId: Long,

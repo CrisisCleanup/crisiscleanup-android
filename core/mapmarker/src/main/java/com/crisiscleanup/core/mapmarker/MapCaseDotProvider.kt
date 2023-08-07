@@ -21,11 +21,11 @@ interface MapCaseDotProvider : MapCaseIconProvider {
 class InMemoryDotProvider @Inject constructor(
     resourceProvider: AndroidResourceProvider,
 ) : MapCaseDotProvider {
-    private val cache = LruCache<WorkTypeStatusClaim, BitmapDescriptor>(16)
-    private val bitmapCache = LruCache<WorkTypeStatusClaim, Bitmap>(16)
+    private val cache = LruCache<DotCacheKey, BitmapDescriptor>(16)
+    private val bitmapCache = LruCache<DotCacheKey, Bitmap>(16)
 
     private var cacheDotDrawProperties: DotDrawProperties
-    private var dotOffsetPx: Offset = Offset(0f, 0f)
+    private var dotOffsetPx = Offset(0f, 0f)
 
     override val iconOffset: Offset
         get() = dotOffsetPx
@@ -52,10 +52,14 @@ class InMemoryDotProvider @Inject constructor(
     }
 
     private fun cacheDotBitmap(
-        statusClaim: WorkTypeStatusClaim,
+        cacheKey: DotCacheKey,
         dotDrawProperties: DotDrawProperties,
     ): BitmapDescriptor? {
-        val colors = getMapMarkerColors(statusClaim)
+        val colors = getMapMarkerColors(
+            cacheKey.statusClaim,
+            cacheKey.isDuplicate,
+            cacheKey.isFilteredOut,
+        )
         val bitmap = drawDot(colors, dotDrawProperties)
         val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap)
         synchronized(cache) {
@@ -63,8 +67,8 @@ class InMemoryDotProvider @Inject constructor(
                 return null
             }
 
-            bitmapCache.put(statusClaim, bitmap)
-            cache.put(statusClaim, bitmapDescriptor)
+            bitmapCache.put(cacheKey, bitmap)
+            cache.put(cacheKey, bitmapDescriptor)
             return bitmapDescriptor
         }
     }
@@ -75,32 +79,38 @@ class InMemoryDotProvider @Inject constructor(
         isFavorite: Boolean,
         isImportant: Boolean,
         hasMultipleWorkTypes: Boolean,
+        isDuplicate: Boolean,
+        isFilteredOut: Boolean,
     ): BitmapDescriptor? {
+        val cacheKey = DotCacheKey(statusClaim, isDuplicate, isFilteredOut)
         synchronized(cache) {
-            cache.get(statusClaim)?.let {
+            cache.get(cacheKey)?.let {
                 return it
             }
         }
 
-        return cacheDotBitmap(statusClaim, cacheDotDrawProperties)
+        return cacheDotBitmap(cacheKey, cacheDotDrawProperties)
     }
 
     override fun getIconBitmap(
         statusClaim: WorkTypeStatusClaim,
         workType: WorkTypeType,
         hasMultipleWorkTypes: Boolean,
+        isDuplicate: Boolean,
+        isFilteredOut: Boolean,
     ): Bitmap? {
+        val cacheKey = DotCacheKey(statusClaim, isDuplicate, isFilteredOut)
         synchronized(cache) {
-            bitmapCache.get(statusClaim)?.let {
+            bitmapCache.get(cacheKey)?.let {
                 return it
             }
         }
 
         val dotDrawProperties = cacheDotDrawProperties
-        cacheDotBitmap(statusClaim, dotDrawProperties)
+        cacheDotBitmap(cacheKey, dotDrawProperties)
         synchronized(cache) {
             if (cacheDotDrawProperties == dotDrawProperties) {
-                bitmapCache.get(statusClaim)?.let {
+                bitmapCache.get(cacheKey)?.let {
                     return it
                 }
             }
@@ -155,3 +165,9 @@ data class DotDrawProperties(
         )
     }
 }
+
+private data class DotCacheKey(
+    val statusClaim: WorkTypeStatusClaim,
+    val isDuplicate: Boolean = false,
+    val isFilteredOut: Boolean = false,
+)

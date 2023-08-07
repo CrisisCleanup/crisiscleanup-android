@@ -75,7 +75,6 @@ import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteSortBy
 import com.crisiscleanup.feature.cases.CasesViewModel
 import com.crisiscleanup.feature.cases.WorksiteDistance
-import kotlinx.coroutines.delay
 import java.text.DecimalFormat
 
 @Composable
@@ -177,7 +176,7 @@ internal fun BoxScope.CasesTableView(
             TableViewSortSelect(
                 tableSort,
                 isEditable = !(isIncidentLoading || isTableBusy || isTableDataTransient),
-                onChange = changeTableSort
+                onChange = changeTableSort,
             )
         }
 
@@ -201,8 +200,9 @@ internal fun BoxScope.CasesTableView(
 
         val listState = rememberLazyListState()
         LaunchedEffect(tableSort) {
-            delay(150)
-            listState.scrollToItem(0)
+            if (viewModel.takeSortByChange()) {
+                listState.scrollToItem(0)
+            }
         }
         LazyColumn(
             state = listState,
@@ -294,7 +294,7 @@ private fun TableViewSortSelect(
     Box {
         // TODO: Dropdown where by distance asks for location permission
         CompositionLocalProvider(
-            LocalTextStyle provides MaterialTheme.typography.bodySmall
+            LocalTextStyle provides MaterialTheme.typography.bodySmall,
         ) {
             CrisisCleanupOutlinedButton(
                 text = sortText,
@@ -305,7 +305,7 @@ private fun TableViewSortSelect(
                 Icon(
                     modifier = Modifier.offset(x = 16.dp),
                     imageVector = CrisisCleanupIcons.ArrowDropDown,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
         }
@@ -328,7 +328,7 @@ private fun TableViewSortSelect(
                             val text = translator(option.translateKey)
                             Text(
                                 text,
-                                fontWeight = if (option == selectedSort) FontWeight.Bold else FontWeight.W400
+                                fontWeight = if (option == selectedSort) FontWeight.Bold else FontWeight.W400,
                             )
                         },
                         onClick = { onSelect(option) },

@@ -1,7 +1,9 @@
 package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.common.AppVersionProvider
-import com.crisiscleanup.core.common.HaversineDistance
+import com.crisiscleanup.core.common.LocationProvider
+import com.crisiscleanup.core.common.di.ApplicationScope
+import com.crisiscleanup.core.common.haversineDistance
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -11,6 +13,7 @@ import com.crisiscleanup.core.data.WorksitesFullSyncer
 import com.crisiscleanup.core.data.WorksitesSyncer
 import com.crisiscleanup.core.data.model.asEntities
 import com.crisiscleanup.core.data.model.asEntity
+import com.crisiscleanup.core.data.model.filter
 import com.crisiscleanup.core.data.util.IncidentDataPullReporter
 import com.crisiscleanup.core.database.dao.RecentWorksiteDao
 import com.crisiscleanup.core.database.dao.WorkTypeTransferRequestDaoPlus
@@ -19,7 +22,6 @@ import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
 import com.crisiscleanup.core.database.dao.WorksiteSyncStatDao
 import com.crisiscleanup.core.database.model.PopulatedRecentWorksite
 import com.crisiscleanup.core.database.model.PopulatedTableDataWorksite
-import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
 import com.crisiscleanup.core.database.model.RecentWorksiteEntity
 import com.crisiscleanup.core.database.model.SwNeBounds
 import com.crisiscleanup.core.database.model.asExternalModel
@@ -36,11 +38,14 @@ import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.CrisisCleanupWriteApi
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
@@ -62,8 +67,11 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private val writeApi: CrisisCleanupWriteApi,
     private val workTypeTransferRequestDaoPlus: WorkTypeTransferRequestDaoPlus,
     private val organizationsRepository: OfflineFirstOrganizationsRepository,
+    private val filterRepository: CasesFilterRepository,
+    private val locationProvider: LocationProvider,
     private val appVersionProvider: AppVersionProvider,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
+    @ApplicationScope externalScope: CoroutineScope,
 ) : WorksitesRepository, IncidentDataPullReporter {
     override val isLoading = MutableStateFlow(false)
 
@@ -74,6 +82,15 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     override fun streamIncidentWorksitesCount(id: Long) = worksiteDao.streamWorksitesCount(id)
 
     private val orgId = accountDataRepository.accountData.map { it.org.id }
+
+    private val organizationAffiliates = orgId.map {
+        organizationsRepository.getOrganizationAffiliateIds(it).toSet()
+    }
+        .stateIn(
+            scope = externalScope,
+            initialValue = emptySet(),
+            started = SharingStarted.WhileSubscribed(),
+        )
 
     override fun streamLocalWorksite(worksiteId: Long) =
         worksiteDao.streamLocalWorksite(worksiteId).map {
@@ -101,7 +118,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         longitudeWest: Double,
         longitudeEast: Double,
         limit: Int,
-        offset: Int
+        offset: Int,
     ) = worksiteDao.getWorksitesMapVisual(
         incidentId,
         latitudeSouth,
@@ -111,7 +128,12 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         limit,
         offset,
     )
-        .map(PopulatedWorksiteMapVisual::asExternalModel)
+        .filter(
+            filterRepository,
+            organizationAffiliates.value,
+            // TODO Move into view layer for reloading on location change
+            locationProvider.cachedLocation.value,
+        )
 
     override fun getWorksitesCount(incidentId: Long) = worksiteDao.getWorksitesCount(incidentId)
 
@@ -120,13 +142,13 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         latitudeSouth: Double,
         latitudeNorth: Double,
         longitudeLeft: Double,
-        longitudeRight: Double
+        longitudeRight: Double,
     ) = worksiteDaoPlus.getWorksitesCount(
         incidentId,
         latitudeSouth,
         latitudeNorth,
         longitudeLeft,
-        longitudeRight
+        longitudeRight,
     )
 
     override fun getLocalId(networkWorksiteId: Long) = worksiteDao.getWorksiteId(networkWorksiteId)
@@ -255,7 +277,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
                 id = worksiteId,
                 incidentId = incidentId,
                 viewedAt = viewStart,
-            )
+            ),
         )
     }
 
@@ -267,7 +289,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         emails: List<String>,
         phoneNumbers: List<String>,
         shareMessage: String,
-        noClaimReason: String?
+        noClaimReason: String?,
     ): Boolean {
         try {
             writeApi.shareWorksite(
@@ -311,7 +333,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
 
             WorksiteSortBy.CountyParish -> worksiteDao.getTableWorksitesOrderByCounty(
                 incidentId,
-                queryCount
+                queryCount,
             )
 
             else -> worksiteDao.getTableWorksitesOrderByCaseNumber(incidentId, queryCount)
@@ -392,7 +414,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         for (i in boundedWorksites.indices) {
             val worksite = boundedWorksites[i]
             val entity = worksite.base.entity
-            val distance = HaversineDistance.calculate(
+            val distance = haversineDistance(
                 latRad, lngRad,
                 entity.latitude.radians, entity.longitude.radians,
             )

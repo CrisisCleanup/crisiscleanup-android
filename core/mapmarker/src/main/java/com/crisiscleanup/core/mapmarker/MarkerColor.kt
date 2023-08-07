@@ -1,14 +1,34 @@
 package com.crisiscleanup.core.mapmarker
 
 import androidx.compose.ui.graphics.Color
-import com.crisiscleanup.core.designsystem.theme.*
-import com.crisiscleanup.core.model.data.CaseStatus.*
+import com.crisiscleanup.core.designsystem.theme.disabledAlpha
+import com.crisiscleanup.core.designsystem.theme.statusCompletedColorCode
+import com.crisiscleanup.core.designsystem.theme.statusDoneByOthersNhwColorCode
+import com.crisiscleanup.core.designsystem.theme.statusDuplicateClaimedColorCode
+import com.crisiscleanup.core.designsystem.theme.statusDuplicateUnclaimedColorCode
+import com.crisiscleanup.core.designsystem.theme.statusInProgressColorCode
+import com.crisiscleanup.core.designsystem.theme.statusNeedsFollowUpColorCode
+import com.crisiscleanup.core.designsystem.theme.statusNotStartedColorCode
+import com.crisiscleanup.core.designsystem.theme.statusOutOfScopeRejectedColorCode
+import com.crisiscleanup.core.designsystem.theme.statusPartiallyCompletedColorCode
+import com.crisiscleanup.core.designsystem.theme.statusUnclaimedColorCode
+import com.crisiscleanup.core.designsystem.theme.statusUnknownColorCode
+import com.crisiscleanup.core.model.data.CaseStatus.ClaimedNotStarted
+import com.crisiscleanup.core.model.data.CaseStatus.Completed
+import com.crisiscleanup.core.model.data.CaseStatus.DoneByOthersNhwPc
+import com.crisiscleanup.core.model.data.CaseStatus.InProgress
+import com.crisiscleanup.core.model.data.CaseStatus.Incomplete
+import com.crisiscleanup.core.model.data.CaseStatus.NeedsFollowUp
+import com.crisiscleanup.core.model.data.CaseStatus.OutOfScopeDu
+import com.crisiscleanup.core.model.data.CaseStatus.PartiallyCompleted
+import com.crisiscleanup.core.model.data.CaseStatus.Unclaimed
+import com.crisiscleanup.core.model.data.CaseStatus.Unknown
 import com.crisiscleanup.core.model.data.WorkTypeStatus
 import com.crisiscleanup.core.model.data.WorkTypeStatusClaim
 
 data class MapMarkerColor(
-    private val fillLong: Long,
-    private val strokeLong: Long = 0xFFFFFFFF,
+    val fillLong: Long,
+    val strokeLong: Long = 0xFFFFFFFF,
     val fillInt: Int = fillLong.toInt(),
     val strokeInt: Int = strokeLong.toInt(),
     val fill: Color = Color(fillLong),
@@ -32,24 +52,44 @@ private val statusMapMarkerColors = mapOf(
 
 private val statusClaimMapMarkerColors = mapOf(
     WorkTypeStatusClaim(WorkTypeStatus.ClosedDuplicate, true) to MapMarkerColor(
-        statusDuplicateClaimedColorCode
+        statusDuplicateClaimedColorCode,
     ),
     WorkTypeStatusClaim(WorkTypeStatus.OpenPartiallyCompleted, false) to MapMarkerColor(
-        statusUnclaimedColorCode
+        statusUnclaimedColorCode,
     ),
     WorkTypeStatusClaim(WorkTypeStatus.OpenNeedsFollowUp, false) to MapMarkerColor(
-        statusUnclaimedColorCode
+        statusUnclaimedColorCode,
     ),
     WorkTypeStatusClaim(WorkTypeStatus.ClosedDuplicate, false) to MapMarkerColor(
-        statusDuplicateUnclaimedColorCode
+        statusDuplicateUnclaimedColorCode,
     ),
 )
 
-internal fun getMapMarkerColors(statusClaim: WorkTypeStatusClaim): MapMarkerColor {
+internal fun getMapMarkerColors(
+    statusClaim: WorkTypeStatusClaim,
+    isDuplicate: Boolean,
+    isFilteredOut: Boolean,
+): MapMarkerColor {
     var colors = statusClaimMapMarkerColors[statusClaim]
     if (colors == null) {
         val status = statusClaimToStatus[statusClaim]
         colors = statusMapMarkerColors[status] ?: statusMapMarkerColors[Unknown]!!
     }
+
+    if (isDuplicate) {
+        colors = colors.copy(
+            fill = colors.fill.copy(alpha = 0.667f),
+            stroke = colors.stroke.copy(alpha = 0.667f),
+        )
+    } else if (isFilteredOut) {
+        colors = MapMarkerColor(0xFFFFFFFF, colors.fillLong)
+            .let {
+                it.copy(
+                    fill = it.fill.copy(alpha = 0.333f),
+                    stroke = it.stroke.disabledAlpha(),
+                )
+            }
+    }
+
     return colors
 }

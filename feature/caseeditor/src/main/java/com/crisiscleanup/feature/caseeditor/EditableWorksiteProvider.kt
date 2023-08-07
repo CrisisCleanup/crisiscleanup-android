@@ -53,7 +53,7 @@ interface EditableWorksiteProvider {
 fun EditableWorksiteProvider.getGroupNode(key: String) =
     formFields.firstOrNull { it.fieldKey == key } ?: EmptyFormFieldNode
 
-fun EditableWorksiteProvider.reset(incidentId: Long = EmptyIncident.id) = run {
+fun EditableWorksiteProvider.reset(incidentId: Long = EmptyIncident.id) {
     incident = EmptyIncident
     incidentBounds = DefaultIncidentBounds
     editableWorksite.value = EmptyWorksite.copy(
@@ -137,7 +137,7 @@ class SingleEditableWorksiteProvider @Inject constructor() : EditableWorksitePro
                 IncidentChangeData(
                     incident,
                     worksite.copy(incidentId = incident.id),
-                )
+                ),
             )
         }
     }
@@ -159,7 +159,7 @@ interface EditableWorksiteModule {
     @Binds
     @Singleton
     fun bindsEditableWorksiteProvider(
-        provider: SingleEditableWorksiteProvider
+        provider: SingleEditableWorksiteProvider,
     ): EditableWorksiteProvider
 
     @Binds

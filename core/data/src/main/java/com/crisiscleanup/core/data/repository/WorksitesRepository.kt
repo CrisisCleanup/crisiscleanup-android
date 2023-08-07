@@ -36,7 +36,7 @@ interface WorksitesRepository {
         longitudeWest: Double,
         longitudeEast: Double,
         limit: Int,
-        offset: Int
+        offset: Int,
     ): List<WorksiteMapMark>
 
     fun getWorksitesCount(incidentId: Long): Int

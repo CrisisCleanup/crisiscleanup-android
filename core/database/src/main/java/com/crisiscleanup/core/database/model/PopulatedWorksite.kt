@@ -97,10 +97,37 @@ data class PopulatedWorksiteMapVisual(
         entityColumn = "worksite_id",
     )
     val flags: List<WorksiteFlagEntity>,
+
+    // Filter fields
+    @ColumnInfo("created_at")
+    val createdAt: Instant? = null,
+    @ColumnInfo("is_local_favorite")
+    val isLocalFavorite: Boolean = false,
+    @ColumnInfo("reported_by")
+    val reportedBy: Long?,
+    val svi: Float?,
+    @ColumnInfo("updated_at")
+    val updatedAt: Instant,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "worksite_id",
+    )
+    val workTypes: List<WorkTypeEntity>,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "id",
+    )
+    val root: WorksiteRootEntity,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "worksite_id",
+    )
+    val formData: List<WorksiteFormDataEntity>,
 )
 
 private val highPriorityFlagLiteral = WorksiteFlagType.HighPriority.literal
-fun PopulatedWorksiteMapVisual.asExternalModel() = WorksiteMapMark(
+private val isDuplicateLiteral = WorksiteFlagType.Duplicate.literal
+fun PopulatedWorksiteMapVisual.asExternalModel(isFilteredOut: Boolean = false) = WorksiteMapMark(
     id = id,
     latitude = latitude,
     longitude = longitude,
@@ -109,8 +136,10 @@ fun PopulatedWorksiteMapVisual.asExternalModel() = WorksiteMapMark(
     workTypeCount = workTypeCount,
     // TODO Account for unsynced local favorites as well
     isFavorite = favoriteId != null,
-    isHighPriority = flags.find {
+    isHighPriority = flags.any {
         it.isHighPriority == true ||
                 it.reasonT == highPriorityFlagLiteral
-    } != null,
+    },
+    isDuplicate = flags.any { it.reasonT == isDuplicateLiteral },
+    isFilteredOut = isFilteredOut,
 )

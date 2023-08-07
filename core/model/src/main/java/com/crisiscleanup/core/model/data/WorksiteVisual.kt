@@ -9,4 +9,12 @@ data class WorksiteMapMark(
     val workTypeCount: Int,
     val isFavorite: Boolean = false,
     val isHighPriority: Boolean = false,
+    val isDuplicate: Boolean = false,
+    /**
+     * Is this mark excluded by filters
+     *
+     * TRUE does not render the mark or renders it with less significance
+     * FALSE renders the mark as usual
+     */
+    val isFilteredOut: Boolean = false,
 )

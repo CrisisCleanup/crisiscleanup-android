@@ -1,8 +1,8 @@
 package com.crisiscleanup.core.data.repository
 
 import android.util.LruCache
-import com.crisiscleanup.core.common.HaversineDistance
 import com.crisiscleanup.core.common.LocationProvider
+import com.crisiscleanup.core.common.haversineDistance
 import com.crisiscleanup.core.common.kmToMiles
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
@@ -157,22 +157,22 @@ class MemoryCacheSearchWorksitesRepository @Inject constructor(
                 continue
             }
 
-            val distance = if (hasLocation && filters.isDistanceChanged) {
+            val distance = if (hasLocation && filters.hasDistanceFilter) {
                 val resultCoordinates = result.location.coordinates
                 val (resultLongitude, resultLatitude) = resultCoordinates
-                val kmDistance = HaversineDistance.calculate(
+                val kmDistance = haversineDistance(
                     locationLatitude, locationLongitude,
-                    resultLatitude.radians, resultLongitude.radians
+                    resultLatitude.radians, resultLongitude.radians,
                 )
                 kmDistance.kmToMiles
             } else {
                 null
             }
 
-            if (!filters.localFilter(
+            if (!filters.passesFilter(
                     result.svi ?: 0f,
                     result.updatedAt,
-                    distance
+                    distance,
                 )
             ) {
                 continue

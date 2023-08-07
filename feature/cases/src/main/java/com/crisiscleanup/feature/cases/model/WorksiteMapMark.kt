@@ -28,9 +28,11 @@ fun WorksiteMapMark.asWorksiteGoogleMapMark(
         mapIcon = iconProvider.getIcon(
             statusClaim,
             workType,
-            isFavorite,
-            isHighPriority,
-            workTypeCount > 1,
+            isFavorite = isFavorite,
+            isImportant = isHighPriority,
+            hasMultipleWorkTypes = workTypeCount > 1,
+            isDuplicate = isDuplicate,
+            isFilteredOut = isFilteredOut,
         ),
         mapIconOffset = Offset(0.5f + xOffset, 0.5f + yOffset),
     )

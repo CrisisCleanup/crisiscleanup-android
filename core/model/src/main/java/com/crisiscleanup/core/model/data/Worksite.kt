@@ -66,6 +66,8 @@ data class Worksite(
         get() = flags?.any(WorksiteFlag::isHighPriorityFlag) ?: false
     val hasWrongLocationFlag: Boolean
         get() = flags?.any(WorksiteFlag::isWrongLocationFlag) ?: false
+    val hasDuplicateFlag: Boolean
+        get() = flags?.any(WorksiteFlag::isDuplicateFlag) ?: false
 
     val crossStreetNearbyLandmark: String
         get() = formData?.get(CROSS_STREET_FIELD_KEY)?.valueString ?: ""
@@ -190,6 +192,7 @@ data class WorksiteFlag(
 
     val isHighPriorityFlag = reasonT == WorksiteFlagType.HighPriority.literal
     val isWrongLocationFlag = reasonT == WorksiteFlagType.WrongLocation.literal
+    val isDuplicateFlag = reasonT == WorksiteFlagType.Duplicate.literal
 
     val flagType: WorksiteFlagType?
         get() = flagLiteralLookup[reasonT]

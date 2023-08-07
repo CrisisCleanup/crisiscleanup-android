@@ -11,7 +11,7 @@ interface WorksiteProvider {
     fun translate(key: String): String?
 }
 
-fun WorksiteProvider.reset(incidentId: Long) = run {
+fun WorksiteProvider.reset(incidentId: Long) {
     editableWorksite.value = EmptyWorksite.copy(
         incidentId = incidentId,
     )

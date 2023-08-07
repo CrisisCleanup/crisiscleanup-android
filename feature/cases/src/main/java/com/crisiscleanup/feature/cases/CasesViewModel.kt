@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppMemoryStats
-import com.crisiscleanup.core.common.HaversineDistance
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.PermissionManager
@@ -17,6 +16,7 @@ import com.crisiscleanup.core.common.VisualAlertManager
 import com.crisiscleanup.core.common.WorksiteLocationEditor
 import com.crisiscleanup.core.common.event.TrimMemoryEventManager
 import com.crisiscleanup.core.common.event.TrimMemoryListener
+import com.crisiscleanup.core.common.haversineDistance
 import com.crisiscleanup.core.common.kmToMiles
 import com.crisiscleanup.core.common.locationPermissionGranted
 import com.crisiscleanup.core.common.log.AppLogger
@@ -75,6 +75,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
@@ -158,6 +159,7 @@ class CasesViewModel @Inject constructor(
             initialValue = WorksiteSortBy.None,
             started = SharingStarted.WhileSubscribed(),
         )
+    private val tableViewSortChange = AtomicBoolean(false)
     private val pendingTableSort = AtomicReference(WorksiteSortBy.None)
     val tableSortResultsMessage = MutableStateFlow("")
 
@@ -226,7 +228,7 @@ class CasesViewModel @Inject constructor(
     }.shareIn(
         scope = viewModelScope,
         replay = 1,
-        started = SharingStarted.WhileSubscribed(1_000)
+        started = SharingStarted.WhileSubscribed(1_000),
     )
 
     private val isGeneratingWorksiteMarkers = MutableStateFlow(false)
@@ -249,7 +251,7 @@ class CasesViewModel @Inject constructor(
         incidentWorksitesCount,
         qsm.worksiteQueryState,
         mapBoundsManager.isMapLoaded,
-        ::Triple
+        ::Triple,
     )
         // TODO Make delay a parameter
         .debounce(250)
@@ -257,7 +259,7 @@ class CasesViewModel @Inject constructor(
             val id = wqs.incidentId
 
             val skipMarkers = !isMapLoaded ||
-                    isTableView.value ||
+                    wqs.isTableView ||
                     id == EmptyIncident.id ||
                     mapTileRenderer.rendersAt(wqs.zoom)
 
@@ -342,7 +344,8 @@ class CasesViewModel @Inject constructor(
         combine(
             incidentWorksitesCount,
             dataPullReporter.incidentDataPullStats,
-            ::Pair,
+            filterRepository.casesFilters,
+            ::Triple,
         )
             .debounce(16)
             .throttleLatest(1_000)
@@ -411,7 +414,7 @@ class CasesViewModel @Inject constructor(
         val locationLatitude = locationCoordinates?.first ?: 0.0
         val locationLongitude = locationCoordinates?.second ?: 0.0
         val worksites = worksitesRepository.getTableData(
-            incidentId,
+            wqs.incidentId,
             filters,
             sortBy,
             locationLatitude,
@@ -430,7 +433,7 @@ class CasesViewModel @Inject constructor(
             if (hasLocation) {
                 val worksiteLatitudeRad = tableData.worksite.latitude.radians
                 val worksiteLongitudeRad = tableData.worksite.longitude.radians
-                val haversineDistance = HaversineDistance.calculate(
+                val haversineDistance = haversineDistance(
                     locationLatitudeRad, locationLongitudeRad,
                     worksiteLatitudeRad, worksiteLongitudeRad,
                 )
@@ -445,7 +448,7 @@ class CasesViewModel @Inject constructor(
                 translator("~~No Cases were found within {search_radius} mi.")
                     .replace(
                         "{search_radius}",
-                        tableDataDistanceSortSearchRadius.toInt().toString()
+                        tableDataDistanceSortSearchRadius.toInt().toString(),
                     )
         }
 
@@ -466,7 +469,7 @@ class CasesViewModel @Inject constructor(
     fun onMapCameraChange(
         cameraPosition: CameraPosition,
         projection: Projection?,
-        isActiveChange: Boolean
+        isActiveChange: Boolean,
     ) {
         qsm.mapZoom.value = cameraPosition.zoom
 
@@ -526,7 +529,8 @@ class CasesViewModel @Inject constructor(
 
             PermissionStatus.Requesting,
             PermissionStatus.Denied,
-            PermissionStatus.Undefined -> {
+            PermissionStatus.Undefined,
+            -> {
                 // Ignore these statuses as they're not important
             }
         }
@@ -652,9 +656,14 @@ class CasesViewModel @Inject constructor(
 
     private fun setSortBy(sortBy: WorksiteSortBy) {
         viewModelScope.launch(ioDispatcher) {
-            appPreferencesRepository.setTableViewSortBy(sortBy)
+            if (sortBy != appPreferencesRepository.userPreferences.first().tableViewSortBy) {
+                tableViewSortChange.set(true)
+                appPreferencesRepository.setTableViewSortBy(sortBy)
+            }
         }
     }
+
+    fun takeSortByChange() = tableViewSortChange.getAndSet(false)
 
     fun changeTableSort(sortBy: WorksiteSortBy) {
         if (sortBy == WorksiteSortBy.Nearest) {
@@ -673,7 +682,8 @@ class CasesViewModel @Inject constructor(
                 }
 
                 PermissionStatus.Denied,
-                PermissionStatus.Undefined -> {
+                PermissionStatus.Undefined,
+                -> {
                     // Ignorable
                 }
             }

@@ -37,7 +37,7 @@ class CasesTableViewDataLoader(
     private val isLoadingWorkTypeWorksite = MutableStateFlow(false)
     val isLoading = combine(
         isLoadingFlagsWorksite,
-        isLoadingWorkTypeWorksite
+        isLoadingWorkTypeWorksite,
     ) { b0, b1 -> b0 || b1 }
 
     private val worksiteChangingClaimIds = AtomicReference<MutableSet<Long>>(mutableSetOf())
@@ -92,7 +92,7 @@ class CasesTableViewDataLoader(
             logger.logException(e)
             return WorksiteClaimActionResult(
                 errorMessage = "~~Something went wrong while making changes to {case_number}."
-                    .replace("{case_number}", worksite.caseNumber)
+                    .replace("{case_number}", worksite.caseNumber),
             )
         } finally {
             synchronized(worksiteChangingClaimIds) {
@@ -136,15 +136,13 @@ class CasesTableViewDataLoader(
 
         when (claimAction) {
             TableWorksiteClaimAction.Claim -> {
-                return if (claimStatus == TableWorksiteClaimStatus.HasUnclaimed) {
+                if (claimStatus == TableWorksiteClaimStatus.HasUnclaimed) {
                     val changeWorkTypes = worksite.workTypes.map {
                         if (it.isClaimed) it
                         else it.copy(orgClaim = myOrgId)
                     }
                     saveChanges(worksite, changeWorkTypes, myOrgId)
-                    WorksiteClaimActionResult(isSuccess = true)
-                } else {
-                    WorksiteClaimActionResult(statusChangedTo = claimStatus)
+                    return WorksiteClaimActionResult(isSuccess = true)
                 }
             }
 
@@ -155,9 +153,7 @@ class CasesTableViewDataLoader(
                         else it.copy(orgClaim = null)
                     }
                     saveChanges(worksite, changeWorkTypes, myOrgId)
-                    WorksiteClaimActionResult(isSuccess = true)
-                } else {
-                    WorksiteClaimActionResult(statusChangedTo = claimStatus)
+                    return WorksiteClaimActionResult(isSuccess = true)
                 }
             }
 
@@ -165,9 +161,7 @@ class CasesTableViewDataLoader(
                 if (claimStatus == TableWorksiteClaimStatus.ClaimedByOthers) {
                     setWorkTypeLookup(incidentId)
                     startTransfer(WorkTypeTransferType.Request)
-                    WorksiteClaimActionResult(isSuccess = true)
-                } else {
-                    WorksiteClaimActionResult(statusChangedTo = claimStatus)
+                    return WorksiteClaimActionResult(isSuccess = true)
                 }
             }
 
@@ -175,9 +169,7 @@ class CasesTableViewDataLoader(
                 if (claimStatus == TableWorksiteClaimStatus.ClaimedByOthers) {
                     setWorkTypeLookup(incidentId)
                     startTransfer(WorkTypeTransferType.Release)
-                    WorksiteClaimActionResult(isSuccess = true)
-                } else {
-                    WorksiteClaimActionResult(statusChangedTo = claimStatus)
+                    return WorksiteClaimActionResult(isSuccess = true)
                 }
             }
         }

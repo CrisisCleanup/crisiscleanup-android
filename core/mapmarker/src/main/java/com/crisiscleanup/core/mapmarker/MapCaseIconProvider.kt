@@ -18,11 +18,15 @@ interface MapCaseIconProvider {
         isFavorite: Boolean,
         isImportant: Boolean,
         hasMultipleWorkTypes: Boolean,
+        isDuplicate: Boolean = false,
+        isFilteredOut: Boolean = false,
     ): BitmapDescriptor?
 
     fun getIconBitmap(
         statusClaim: WorkTypeStatusClaim,
         workType: WorkTypeType,
         hasMultipleWorkTypes: Boolean,
+        isDuplicate: Boolean = false,
+        isFilteredOut: Boolean = false,
     ): Bitmap?
 }
