@@ -1,0 +1,20 @@
+name: Incident Selector
+appId: ${MAESTRO_APP_ID}
+tags:
+  - development
+  - staging
+  - production
+  - pull-request
+onFlowStart:
+  - runFlow: ../auth-tests/login.yaml
+---
+- tapOn: "Change Incident"
+- assertVisible: "Change Incident"
+- assertVisible: "Close"
+- "scroll"
+- assertVisible:
+    id: "android:id/content"
+- assertNotVisible: "Menu"
+- tapOn: "Close"
+- assertNotVisible: "Close"
+- assertVisible: "Menu"

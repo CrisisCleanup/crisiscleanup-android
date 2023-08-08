@@ -1,0 +1,21 @@
+name: Logout
+appId: ${MAESTRO_APP_ID}
+tags:
+  - development
+  - staging
+  - production
+  - auth
+  - pull-request
+onFlowStart:
+  - runFlow: login.yaml
+---
+- launchApp
+- assertVisible: "Work"
+- assertVisible: "Menu"
+- tapOn: "Menu"
+- tapOn: "Account"
+- tapOn: "Logout"
+- assertVisible: "Crisis Cleanup"
+- assertVisible:
+    text: "Login"
+    index: 0

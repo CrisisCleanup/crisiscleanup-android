@@ -1,0 +1,51 @@
+name: Work filters sections visibility
+appId: ${MAESTRO_APP_ID}
+tags:
+  - development
+  - staging
+  - production
+  - pull-request
+onFlowStart:
+  - runFlow: ../auth-tests/login.yaml
+---
+- tapOn: "Filters"
+- assertVisible: "Filters"
+
+- scrollUntilVisible:
+    element: "Vulnerability"
+    direction: DOWN
+- assertVisible:
+    text: "Vulnerability"
+    index: 1
+
+- scrollUntilVisible:
+    element: "Distance"
+    direction: DOWN
+- assertVisible: "Distance"
+
+- scrollUntilVisible:
+    element: "General"
+    direction: DOWN
+- assertVisible: "General"
+
+- scrollUntilVisible:
+    element: "Personal Info"
+    direction: DOWN
+- assertVisible:
+    text: "Personal Info"
+    index: 0
+  
+- scrollUntilVisible:
+    element: "Flags"
+    direction: DOWN
+- assertVisible: "Flags"
+
+- scrollUntilVisible:
+    element: "Work"
+    direction: DOWN
+- assertVisible: "Work"
+
+- scrollUntilVisible:
+    element: "Dates"
+    direction: DOWN
+- assertVisible: "Dates"

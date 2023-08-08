@@ -1,0 +1,58 @@
+name: Switch incidents from incident selector
+appId: ${MAESTRO_APP_ID}
+tags:
+  - development
+  - staging
+  - production
+  - pull-request
+onFlowStart:
+  - runFlow: ../auth-tests/login.yaml
+env:
+  INCIDENT_SELECTOR_COORDS: "9%,9%"
+  FIRST_INCIDENT: ".*(flood|tornado).*"
+  SECOND_INCIDENT: ".*(storm|hurricane|fire).*"
+---
+- tapOn: "Menu"
+
+# Find first type incident and select it
+- tapOn:
+    point: ${INCIDENT_SELECTOR_COORDS}
+- assertVisible: "Change Incident"
+
+- scrollUntilVisible:
+    element: ${FIRST_INCIDENT}
+
+- tapOn:
+    text: ${FIRST_INCIDENT} 
+    index: 0
+
+- assertVisible: ${FIRST_INCIDENT} 
+
+# Find second type of incident and select it
+- tapOn:
+    point: ${INCIDENT_SELECTOR_COORDS}
+- assertVisible: "Change Incident"
+
+- scrollUntilVisible:
+    element: ${SECOND_INCIDENT} 
+
+- tapOn:
+    text: ${SECOND_INCIDENT}  
+    index: 0
+
+- assertVisible: ${SECOND_INCIDENT}  
+
+# Find first type of incident again and select it
+- tapOn:
+    point: ${INCIDENT_SELECTOR_COORDS}
+- assertVisible: "Change Incident"
+
+- scrollUntilVisible:
+    element: ${FIRST_INCIDENT} 
+
+- tapOn:
+    text: ${FIRST_INCIDENT}  
+    index: 0
+
+- assertVisible: ${FIRST_INCIDENT}  
+

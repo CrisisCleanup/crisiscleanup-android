@@ -1,0 +1,15 @@
+name: Switch between table and map view
+appId: ${MAESTRO_APP_ID}
+tags:
+  - development
+  - staging
+  - production
+  - pull-request
+onFlowStart:
+  - runFlow: ../auth-tests/login.yaml
+---
+- tapOn: "Table View"
+- assertVisible: "Map View"
+- tapOn: "Map View"
+- assertVisible: "Table View"
+
