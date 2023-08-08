@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -119,6 +120,7 @@ private fun CrisisCleanupLogoRow() {
     ) {
         Image(
             modifier = Modifier
+                .testTag("ccuLogo")
                 // TODO Adjust image size to screen size
                 .sizeIn(maxWidth = 160.dp),
             painter = painterResource(commonR.drawable.crisis_cleanup_logo),
@@ -156,7 +158,7 @@ private fun LoginScreen(
         CrisisCleanupLogoRow()
 
         Text(
-            modifier = fillWidthPadded,
+            modifier = fillWidthPadded.testTag("loginHeaderText"),
             text = translator("actions.login", R.string.login),
             style = LocalFontStyles.current.header2,
         )
@@ -172,7 +174,7 @@ private fun LoginScreen(
             remember(viewModel) { { s: String -> viewModel.loginInputData.emailAddress = s } }
         val clearErrorVisuals = remember(viewModel) { { viewModel.clearErrorVisuals() } }
         OutlinedClearableTextField(
-            modifier = fillWidthPadded,
+            modifier = fillWidthPadded.testTag("loginEmailTextField"),
             label = translator("loginForm.email_placeholder", R.string.email),
             value = viewModel.loginInputData.emailAddress,
             onValueChange = updateEmailInput,
@@ -195,7 +197,7 @@ private fun LoginScreen(
             }
         }
         OutlinedObfuscatingTextField(
-            modifier = fillWidthPadded,
+            modifier = fillWidthPadded.testTag("loginPasswordTextField"),
             label = translator("loginForm.password_placeholder", R.string.password),
             value = viewModel.loginInputData.password,
             onValueChange = updatePasswordInput,
@@ -219,7 +221,7 @@ private fun LoginScreen(
                 }
             }
             BusyButton(
-                modifier = fillWidthPadded,
+                modifier = fillWidthPadded.testTag("loginLoginDebugBtn"),
                 onClick = rememberDebugAuthenticate,
                 enabled = isNotBusy,
                 text = "Login debug",
@@ -228,7 +230,7 @@ private fun LoginScreen(
         }
 
         BusyButton(
-            modifier = fillWidthPadded,
+            modifier = fillWidthPadded.testTag("loginLoginBtn"),
             onClick = viewModel::authenticateEmailPassword,
             enabled = isNotBusy,
             text = translator("actions.login", R.string.login),
@@ -237,7 +239,7 @@ private fun LoginScreen(
 
         if (authState.hasAuthenticated) {
             CrisisCleanupButton(
-                modifier = fillWidthPadded,
+                modifier = fillWidthPadded.testTag("loginCancelBtn"),
                 onClick = closeAuthentication,
                 enabled = isNotBusy,
                 text = translator("actions.cancel", R.string.cancel),
@@ -262,7 +264,7 @@ private fun AuthenticatedScreen(
         CrisisCleanupLogoRow()
 
         Text(
-            modifier = fillWidthPadded,
+            modifier = fillWidthPadded.testTag("authedProfileAccountInfo"),
             text = translator("info.account_is")
                 .replace("{full_name}", authState.accountData.fullName)
                 .replace("{email_address}", authState.accountData.emailAddress)
@@ -274,7 +276,7 @@ private fun AuthenticatedScreen(
         val isNotBusy by viewModel.isNotAuthenticating.collectAsStateWithLifecycle()
 
         BusyButton(
-            modifier = fillWidthPadded,
+            modifier = fillWidthPadded.testTag("authedProfileLogoutBtn"),
             onClick = viewModel::logout,
             enabled = isNotBusy,
             text = translator("actions.logout"),
@@ -282,7 +284,7 @@ private fun AuthenticatedScreen(
         )
 
         CrisisCleanupButton(
-            modifier = fillWidthPadded,
+            modifier = fillWidthPadded.testTag("authedProfileDismissBtn"),
             onClick = closeAuthentication,
             enabled = isNotBusy,
             text = translator("actions.dismiss"),
