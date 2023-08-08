@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupElevatedIconButton
@@ -54,7 +55,9 @@ private fun CasesActionButton(
     shape: Shape = actionRoundCornerShape,
 ) {
     CrisisCleanupElevatedIconButton(
-        modifier = modifier.actionSmallSize(),
+        modifier = modifier
+            .actionSmallSize()
+            .testTag(action.testTag),
         iconResId = action.iconResId,
         contentDescription = LocalAppTranslator.current(action.descriptionTranslateKey),
         onClick = { onCasesAction(action) },
@@ -69,6 +72,7 @@ internal fun CasesActionFlatButton(
     enabled: Boolean = false,
 ) {
     CrisisCleanupIconButton(
+        modifier = Modifier.testTag(action.testTag),
         iconResId = action.iconResId,
         contentDescription = LocalAppTranslator.current(action.descriptionTranslateKey),
         onClick = { onCasesAction(action) },
