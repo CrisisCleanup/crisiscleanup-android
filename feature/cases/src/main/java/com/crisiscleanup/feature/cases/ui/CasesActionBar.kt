@@ -24,17 +24,26 @@ import com.crisiscleanup.feature.cases.R
 enum class CasesAction(
     val iconResId: Int,
     val descriptionTranslateKey: String,
+    val testTag: String,
 ) {
-    CreateNew(android.R.drawable.btn_plus, "nav.new_case"),
-    Search(R.drawable.ic_search, "actions.search"),
-    TableView(R.drawable.ic_table, "actions.table_view_alt"),
-    Filters(R.drawable.ic_dials, "casesVue.filters"),
-    Layers(R.drawable.ic_layers, "casesVue.layers"),
-    MapView(R.drawable.ic_map, "casesVue.map_view"),
-    ZoomToInteractive(R.drawable.ic_zoom_interactive, "worksiteMap.zoom_to_interactive"),
-    ZoomToIncident(R.drawable.ic_zoom_incident, "worksiteMap.zoom_to_incident"),
-    ZoomIn(R.drawable.ic_plus, "actions.zoom_in"),
-    ZoomOut(R.drawable.ic_minus, "actions.zoom_out"),
+    CreateNew(android.R.drawable.btn_plus, "nav.new_case", "workNewCaseBtn"),
+    Search(R.drawable.ic_search, "actions.search", "workIncidentSearchBtn"),
+    TableView(R.drawable.ic_table, "actions.table_view_alt", "workTableViewToggleBtn"),
+    Filters(R.drawable.ic_dials, "casesVue.filters", "workIncidentFilterBtn"),
+    Layers(R.drawable.ic_layers, "casesVue.layers", "workIncidentLayerBtn"),
+    MapView(R.drawable.ic_map, "casesVue.map_view", "workMapViewToggleBtn"),
+    ZoomToInteractive(
+        R.drawable.ic_zoom_interactive,
+        "worksiteMap.zoom_to_interactive",
+        "workZoomToInteractiveBtn",
+    ),
+    ZoomToIncident(
+        R.drawable.ic_zoom_incident,
+        "worksiteMap.zoom_to_incident",
+        "workZoomToIncidentBtn",
+    ),
+    ZoomIn(R.drawable.ic_plus, "actions.zoom_in", "workZoomInBtn"),
+    ZoomOut(R.drawable.ic_minus, "actions.zoom_out", "workZoomOutBtn"),
 }
 
 @Composable
