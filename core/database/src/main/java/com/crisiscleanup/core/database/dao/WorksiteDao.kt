@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import com.crisiscleanup.core.database.dao.fts.PopulatedWorksiteTextMatchInfo
 import com.crisiscleanup.core.database.model.BoundedSyncedWorksiteIds
 import com.crisiscleanup.core.database.model.PopulatedLocalWorksite
 import com.crisiscleanup.core.database.model.PopulatedTableDataWorksite
@@ -467,4 +468,43 @@ interface WorksiteDao {
         limit: Int,
         offset: Int,
     ): List<PopulatedTableDataWorksite>
+
+
+    @Transaction
+    @Query("SELECT case_number FROM worksites ORDER BY RANDOM() LIMIT 1")
+    fun getRandomWorksiteCaseNumber(): String?
+
+    @Transaction
+    @Query("INSERT INTO worksite_text_fts(worksite_text_fts) VALUES ('rebuild')")
+    fun rebuildWorksiteTextFts()
+
+    // TODO Is there a more efficient matching of incident and FTS?
+    @Transaction
+    @Query(
+        """
+        SELECT w.*,
+        matchinfo(worksite_text_fts, 'pcnalx') AS match_info
+        FROM worksite_text_fts f
+        INNER JOIN worksites w ON f.docid=w.id
+        WHERE w.incident_id=:incidentId AND worksite_text_fts MATCH :query
+        LIMIT :limit
+        """,
+    )
+    fun matchWorksiteTextTokens(
+        incidentId: Long,
+        query: String,
+        limit: Int = 100,
+    ): List<PopulatedWorksiteTextMatchInfo>
+
+    @Transaction
+    @Query(
+        """
+        SELECT w.id
+        FROM worksite_text_fts f
+        INNER JOIN worksites w ON f.docid=w.id
+        WHERE worksite_text_fts MATCH :query
+        LIMIT 1
+        """,
+    )
+    fun matchWorksiteTextTokens(query: String): List<Long>
 }

@@ -28,7 +28,7 @@ import kotlinx.datetime.Instant
 import javax.inject.Inject
 
 class WorksiteDaoPlus @Inject constructor(
-    private val db: CrisisCleanupDatabase,
+    internal val db: CrisisCleanupDatabase,
     private val syncLogger: SyncLogger,
 ) {
     private suspend fun getWorksiteLocalModifiedAt(

@@ -8,6 +8,8 @@ import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.radians
+import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
+import com.crisiscleanup.core.database.dao.fts.getMatchingWorksites
 import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.WorksiteSummary
@@ -32,19 +34,22 @@ interface SearchWorksitesRepository {
         incidentId: Long,
         q: String,
     ): Collection<WorksiteSummary>
+
+    suspend fun getMatchingLocalWorksites(incidentId: Long, q: String): Collection<WorksiteSummary>
 }
 
 class MemoryCacheSearchWorksitesRepository @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val filterRepository: CasesFilterRepository,
     private val locationProvider: LocationProvider,
+    private val worksiteDaoPlus: WorksiteDaoPlus,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
 ) : SearchWorksitesRepository {
     // TODO Make size configurable and consider different size determination
     private val searchCache =
         LruCache<IncidentQuery, Pair<Instant, Collection<WorksiteSummary>>>(30)
 
-    private val staleResultDuration = 30.minutes
+    private val staleResultDuration = 10.minutes
 
     private fun getCacheResults(
         incidentId: Long,
@@ -53,8 +58,6 @@ class MemoryCacheSearchWorksitesRepository @Inject constructor(
         val incidentQuery = IncidentQuery(incidentId, q)
 
         val now = Clock.System.now()
-
-        // TODO Search local on device data. Will need to change the method of data delivery.
 
         var cacheResults: Collection<WorksiteSummary>? = null
         searchCache.get(incidentQuery)?.let {
@@ -82,8 +85,6 @@ class MemoryCacheSearchWorksitesRepository @Inject constructor(
                 return@coroutineScope it
             }
         }
-
-        // TODO Search local when offline
 
         try {
             val searchFilters = if (hasFilters) filterQuery else emptyMap()
@@ -122,7 +123,6 @@ class MemoryCacheSearchWorksitesRepository @Inject constructor(
                     }
                 }
 
-                // TODO Support filters in caching? Or not worth the cost?
                 if (useCache) {
                     searchCache.put(incidentQuery, Pair(now, searchResult))
                 }
@@ -194,8 +194,6 @@ class MemoryCacheSearchWorksitesRepository @Inject constructor(
             return it
         }
 
-        // TODO Search local as well
-
         try {
             val results = networkDataSource.getLocationSearchWorksites(incidentId, q)
             if (results.isNotEmpty()) {
@@ -232,6 +230,9 @@ class MemoryCacheSearchWorksitesRepository @Inject constructor(
 
         return emptyList()
     }
+
+    override suspend fun getMatchingLocalWorksites(incidentId: Long, q: String) =
+        worksiteDaoPlus.getMatchingWorksites(incidentId, q)
 }
 
 private data class IncidentQuery(
