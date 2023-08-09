@@ -90,6 +90,7 @@ class WorkTypeIconProvider @Inject constructor(
         get() = bitmapCenterOffset
 
     private val plusDrawable: Drawable
+    private val plusDrawableTransparent: Drawable
 
     init {
         bitmapSize = resourceProvider.dpToPx(bitmapSizeDp).toInt()
@@ -99,6 +100,9 @@ class WorkTypeIconProvider @Inject constructor(
         shadowRadius = resourceProvider.dpToPx(shadowRadiusDp).toInt()
 
         plusDrawable = resourceProvider.getDrawable(R.drawable.ic_work_type_plus)
+        plusDrawableTransparent = resourceProvider.getDrawable(R.drawable.ic_work_type_plus).also {
+            it.alpha = (255 * filteredOutMarkerAlpha).toInt()
+        }
     }
 
     private fun cacheIconBitmap(cacheKey: WorkTypeIconCacheKey): BitmapDescriptor {
@@ -195,6 +199,7 @@ class WorkTypeIconProvider @Inject constructor(
             cacheKey.statusClaim,
             cacheKey.isDuplicate,
             cacheKey.isFilteredOut,
+            false,
         )
         val fillAlpha = if (colors.fill.alpha < 1) (colors.fill.alpha * 255).toInt() else 255
 
@@ -236,13 +241,14 @@ class WorkTypeIconProvider @Inject constructor(
 
         if (cacheKey.hasMultipleWorkTypes) {
             synchronized(plusDrawable) {
-                plusDrawable.setBounds(
-                    rightBounds - plusDrawable.intrinsicWidth,
-                    bottomBounds - plusDrawable.intrinsicHeight,
+                val pd = if (cacheKey.isFilteredOut) plusDrawableTransparent else plusDrawable
+                pd.setBounds(
+                    rightBounds - pd.intrinsicWidth,
+                    bottomBounds - pd.intrinsicHeight,
                     rightBounds,
                     bottomBounds,
                 )
-                plusDrawable.draw(canvas)
+                pd.draw(canvas)
             }
         }
 

@@ -59,6 +59,7 @@ class InMemoryDotProvider @Inject constructor(
             cacheKey.statusClaim,
             cacheKey.isDuplicate,
             cacheKey.isFilteredOut,
+            true,
         )
         val bitmap = drawDot(colors, dotDrawProperties)
         val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap)

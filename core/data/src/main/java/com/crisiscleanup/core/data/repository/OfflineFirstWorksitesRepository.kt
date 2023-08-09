@@ -61,7 +61,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private val dataSource: CrisisCleanupNetworkDataSource,
     private val writeApi: CrisisCleanupWriteApi,
     private val workTypeTransferRequestDaoPlus: WorkTypeTransferRequestDaoPlus,
-    private val organizationsRepository: OfflineFirstOrganizationsRepository,
+    organizationsRepository: OfflineFirstOrganizationsRepository,
     private val filterRepository: CasesFilterRepository,
     private val locationProvider: LocationProvider,
     private val appVersionProvider: AppVersionProvider,
@@ -311,10 +311,11 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         searchRadius: Float,
         count: Int,
     ): List<TableDataWorksite> = coroutineScope {
+        val affiliateIds = organizationAffiliates.value
         val records = worksiteDaoPlus.loadTableWorksites(
             incidentId,
             filters,
-            organizationAffiliates.value,
+            affiliateIds,
             sortBy,
             coordinates,
             // miles
@@ -326,7 +327,6 @@ class OfflineFirstWorksitesRepository @Inject constructor(
 
         val strideCount = 100
         val tableData = mutableListOf<TableDataWorksite>()
-        val affiliateIds = organizationsRepository.getOrganizationAffiliateIds(orgId.first())
         for (i in records.indices) {
             if (i % strideCount == 0) {
                 ensureActive()

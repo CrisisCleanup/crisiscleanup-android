@@ -47,8 +47,8 @@ data class CasesFilter(
 
     val isDefault = this == DefaultCasesFilter
 
-    val hasSviFilter = svi != DEFAULT_SVI
-    val hasUpdatedFilter = daysAgoUpdated != DEFAULT_DAYS_AGO
+    private val hasSviFilter = svi != DEFAULT_SVI
+    private val hasUpdatedFilter = daysAgoUpdated != DEFAULT_DAYS_AGO
     val hasDistanceFilter = distance != DEFAULT_FILTER_DISTANCE
 
     val changeCount by lazy {
@@ -56,8 +56,8 @@ data class CasesFilter(
 
         var count = 0
         if (hasSviFilter) count++
-        if (daysAgoUpdated != DEFAULT_DAYS_AGO) count++
-        if (distance != DEFAULT_FILTER_DISTANCE) count++
+        if (hasUpdatedFilter) count++
+        if (hasDistanceFilter) count++
         if (isWithinPrimaryResponseArea) count++
         if (isWithinSecondaryResponseArea) count++
         if (isAssignedToMyTeam) count++

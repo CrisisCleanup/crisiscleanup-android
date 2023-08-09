@@ -1,7 +1,6 @@
 package com.crisiscleanup.core.mapmarker
 
 import androidx.compose.ui.graphics.Color
-import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.statusCompletedColorCode
 import com.crisiscleanup.core.designsystem.theme.statusDoneByOthersNhwColorCode
 import com.crisiscleanup.core.designsystem.theme.statusDuplicateClaimedColorCode
@@ -65,10 +64,15 @@ private val statusClaimMapMarkerColors = mapOf(
     ),
 )
 
+internal const val filteredOutMarkerAlpha = 0.12f
+private const val filteredOutDotAlpha = 0.4f
+private const val duplicateMarkerAlpha = 0.3f
+
 internal fun getMapMarkerColors(
     statusClaim: WorkTypeStatusClaim,
     isDuplicate: Boolean,
     isFilteredOut: Boolean,
+    isDot: Boolean,
 ): MapMarkerColor {
     var colors = statusClaimMapMarkerColors[statusClaim]
     if (colors == null) {
@@ -78,15 +82,16 @@ internal fun getMapMarkerColors(
 
     if (isDuplicate) {
         colors = colors.copy(
-            fill = colors.fill.copy(alpha = 0.667f),
-            stroke = colors.stroke.copy(alpha = 0.667f),
+            fill = colors.fill.copy(alpha = duplicateMarkerAlpha),
+            stroke = colors.stroke.copy(alpha = duplicateMarkerAlpha),
         )
     } else if (isFilteredOut) {
+        val alpha = if (isDot) filteredOutDotAlpha else filteredOutMarkerAlpha
         colors = MapMarkerColor(0xFFFFFFFF, colors.fillLong)
             .let {
                 it.copy(
-                    fill = it.fill.copy(alpha = 0.333f),
-                    stroke = it.stroke.disabledAlpha(),
+                    fill = it.fill.copy(alpha = alpha),
+                    stroke = it.stroke.copy(alpha = alpha),
                 )
             }
     }
