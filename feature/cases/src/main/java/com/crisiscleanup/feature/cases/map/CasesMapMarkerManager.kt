@@ -1,6 +1,7 @@
 package com.crisiscleanup.feature.cases.map
 
 import com.crisiscleanup.core.common.AppMemoryStats
+import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.radians
 import com.crisiscleanup.core.data.repository.WorksitesRepository
@@ -18,6 +19,7 @@ import kotlin.math.sin
 internal class CasesMapMarkerManager(
     private val worksitesRepository: WorksitesRepository,
     private val appMemoryStats: AppMemoryStats,
+    private val locationProvider: LocationProvider,
     private val logger: AppLogger,
 ) {
     private fun getWorksitesCount(id: Long, sw: LatLng, ne: LatLng) =
@@ -93,6 +95,7 @@ internal class CasesMapMarkerManager(
             // TODO Review if this is sufficient and mostly complete
             q.queryCount.coerceAtMost(2 * maxMarkersOnMap),
             0,
+            locationProvider.getLocation(),
         )
 
         ensureActive()

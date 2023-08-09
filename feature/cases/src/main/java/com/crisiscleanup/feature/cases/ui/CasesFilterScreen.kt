@@ -92,7 +92,7 @@ internal fun CasesFilterRoute(
         Column(
             Modifier
                 .fillMaxSize()
-                .background(Color.White)
+                .background(Color.White),
         ) {
             TopAppBarBackAction(
                 title = translator("worksiteFilters.filters"),
@@ -116,7 +116,7 @@ internal fun CasesFilterRoute(
         ExplainLocationPermissionDialog(
             showDialog = explainPermission,
             closeDialog = closePermissionDialog,
-            explanation = "~~Filtering by distance is not possible without GPS location access."
+            explanation = "~~Filtering by distance is not possible without GPS location access.",
         )
     }
 }
@@ -168,7 +168,7 @@ private fun ColumnScope.FilterControls(
             3 to flagsItemIndex,
             4 to workItemIndex,
             5 to datesItemIndex,
-        )
+        ),
     )
 
     val sectionSliderState = rememberFocusSectionSliderState(
@@ -227,7 +227,7 @@ private fun ColumnScope.FilterControls(
             filters.copy(
                 isStatusOpen = isOpen,
                 isStatusClosed = isClosed,
-            )
+            ),
         )
     }
     val updateWorkTypeStatus = { status: WorkTypeStatus, b: Boolean ->
@@ -238,7 +238,7 @@ private fun ColumnScope.FilterControls(
             statuses.remove(status)
         }
         updateFilters(
-            filters.copy(workTypeStatuses = statuses)
+            filters.copy(workTypeStatuses = statuses),
         )
     }
     val updateMemberOfMyOrg = { b: Boolean -> updateFilters(filters.copy(isMemberOfMyOrg = b)) }
@@ -254,7 +254,7 @@ private fun ColumnScope.FilterControls(
             flags.remove(flag)
         }
         updateFilters(
-            filters.copy(worksiteFlags = flags)
+            filters.copy(worksiteFlags = flags),
         )
     }
     val updateWorkTypes = { workType: String, b: Boolean ->
@@ -265,7 +265,7 @@ private fun ColumnScope.FilterControls(
             modifiedWorkTypes.remove(workType)
         }
         updateFilters(
-            filters.copy(workTypes = modifiedWorkTypes)
+            filters.copy(workTypes = modifiedWorkTypes),
         )
     }
     val updateNoWorkType = { b: Boolean -> updateFilters(filters.copy(isNoWorkType = b)) }
@@ -359,7 +359,7 @@ private fun LazyListScope.rangeSliderItem(
         val label = translator(labelTranslateKey)
         Column(
             listItemModifier
-                .then(modifier)
+                .then(modifier),
         ) {
             if (helpTranslateKey.isEmpty()) {
                 val currentValue = currentValueDisplay(value)
@@ -378,7 +378,7 @@ private fun LazyListScope.rangeSliderItem(
                     hasHtml = isHelpHtml,
                 ) { showHelp ->
                     CompositionLocalProvider(
-                        LocalTextStyle provides LocalFontStyles.current.header3
+                        LocalTextStyle provides LocalFontStyles.current.header3,
                     ) {
                         HelpRow(
                             text = label,
@@ -531,7 +531,7 @@ private fun LazyListScope.distanceOptions(
                     listItemModifier,
                     selected = filters.distance == it.first,
                     text = it.second,
-                    onSelect = { updateDistance(it.first) }
+                    onSelect = { updateDistance(it.first) },
                 )
             }
         }
@@ -777,14 +777,15 @@ private fun LazyListScope.workOptions(
             )
         }
 
-        subsectionHeader("worksiteFilters.missing_information")
-
-        checkboxItem(
-            "worksiteFilters.no_work_type",
-            filters.isNoWorkType,
-            { b: Boolean -> updateNoWorkType(b) },
-            { updateNoWorkType(!filters.isNoWorkType) },
-        )
+        // TODO Include later as necessary
+//        subsectionHeader("worksiteFilters.missing_information")
+//
+//        checkboxItem(
+//            "worksiteFilters.no_work_type",
+//            filters.isNoWorkType,
+//            { b: Boolean -> updateNoWorkType(b) },
+//            { updateNoWorkType(!filters.isNoWorkType) },
+//        )
     }
 }
 
@@ -837,12 +838,12 @@ private fun FilterDatePicker(
         Spacer(
             Modifier
                 .weight(1f)
-                .actionHeight()
+                .actionHeight(),
         )
         if (dateRange != null) {
             CrisisCleanupIconButton(
                 imageVector = CrisisCleanupIcons.Clear,
-                onClick = { onDateChange(null) }
+                onClick = { onDateChange(null) },
             )
         }
         Icon(
@@ -855,7 +856,7 @@ private fun FilterDatePicker(
             selectedMillis = dateRange?.let {
                 Pair(
                     it.first.toEpochMilliseconds(),
-                    it.second.toEpochMilliseconds()
+                    it.second.toEpochMilliseconds(),
                 )
             },
             onCloseDialog = { selectedMillis ->
@@ -866,7 +867,7 @@ private fun FilterDatePicker(
                 }
                 onDateChange(selectedDateRange)
                 showDatePicker = false
-            }
+            },
         )
     }
 }

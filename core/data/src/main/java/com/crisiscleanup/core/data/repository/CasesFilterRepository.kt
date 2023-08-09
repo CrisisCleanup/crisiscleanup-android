@@ -89,11 +89,4 @@ class CrisisCleanupCasesFilterRepository @Inject constructor(
     override fun updateWorkTypeFilters(workTypes: Collection<String>) {
         // TODO Update work types removing non-matching
     }
-
-    fun getFilteredWorksiteIds(): List<Long>? {
-        // TODO Get network worksites
-        //      Update local
-        //      Return IDs
-        return null
-    }
 }

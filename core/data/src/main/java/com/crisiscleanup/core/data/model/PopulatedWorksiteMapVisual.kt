@@ -1,6 +1,8 @@
 package com.crisiscleanup.core.data.model
 
 import com.crisiscleanup.core.common.haversineDistance
+import com.crisiscleanup.core.common.kmToMiles
+import com.crisiscleanup.core.common.radians
 import com.crisiscleanup.core.data.repository.CasesFilterRepository
 import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
 import com.crisiscleanup.core.database.model.asExternalModel
@@ -17,15 +19,17 @@ fun List<PopulatedWorksiteMapVisual>.filter(
         return map(PopulatedWorksiteMapVisual::asExternalModel)
     }
 
+    val filterByDistance = location != null && filters.hasDistanceFilter
+    val latRad = location?.first?.radians ?: 0.0
+    val lngRad = location?.second?.radians ?: 0.0
     return mapNotNull {
-        var distance = 0.0
-        if (filters.hasDistanceFilter) {
-            location?.let { (lat, lng) ->
-                distance = haversineDistance(
-                    lat, lng,
-                    it.latitude, it.longitude,
-                )
-            }
+        val distance = if (filterByDistance) {
+            haversineDistance(
+                latRad, lngRad,
+                it.latitude.radians, it.longitude.radians,
+            ).kmToMiles
+        } else {
+            0.0
         }
         if (!filters.passesFilter(
                 it.svi ?: 0f,

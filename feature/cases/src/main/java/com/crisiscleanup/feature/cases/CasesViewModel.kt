@@ -244,6 +244,7 @@ class CasesViewModel @Inject constructor(
     private val mapMarkerManager = CasesMapMarkerManager(
         worksitesRepository,
         appMemoryStats,
+        locationProvider,
         logger,
     )
 
@@ -340,6 +341,9 @@ class CasesViewModel @Inject constructor(
         trimMemoryEventManager.addListener(this)
 
         mapTileRenderer.enableTileBoundaries()
+        viewModelScope.launch {
+            setTileRendererLocation()
+        }
 
         combine(
             incidentWorksitesCount,
@@ -355,6 +359,8 @@ class CasesViewModel @Inject constructor(
         permissionManager.permissionChanges
             .map {
                 if (it == locationPermissionGranted) {
+                    setTileRendererLocation()
+
                     if (isTableView.value) {
                         val sortBy = pendingTableSort.getAndSet(WorksiteSortBy.None)
                         if (sortBy != WorksiteSortBy.None) {
@@ -371,6 +377,10 @@ class CasesViewModel @Inject constructor(
         tableViewSort
             .onEach { qsm.tableViewSort.value = it }
             .launchIn(viewModelScope)
+    }
+
+    private suspend fun setTileRendererLocation() {
+        mapTileRenderer.setLocation(locationProvider.getLocation())
     }
 
     fun refreshIncidentsData() {
@@ -419,24 +429,21 @@ class CasesViewModel @Inject constructor(
         )
 
         val strideCount = 100
-        val locationLatitude = locationCoordinates?.first ?: 0.0
-        val locationLongitude = locationCoordinates?.second ?: 0.0
-        val locationLatitudeRad = locationLatitude.radians
-        val locationLongitudeRad = locationLongitude.radians
+        val latitudeRad = locationCoordinates?.first?.radians ?: 0.0
+        val longitudeRad = locationCoordinates?.second?.radians ?: 0.0
         val tableData = worksites.mapIndexed { i, tableData ->
             if (i % strideCount == 0) {
                 ensureActive()
             }
 
-            var distance = -1.0
-            if (hasLocation) {
-                val worksiteLatitudeRad = tableData.worksite.latitude.radians
-                val worksiteLongitudeRad = tableData.worksite.longitude.radians
-                val haversineDistance = haversineDistance(
-                    locationLatitudeRad, locationLongitudeRad,
-                    worksiteLatitudeRad, worksiteLongitudeRad,
-                )
-                distance = haversineDistance.kmToMiles
+            val distance = if (hasLocation) {
+                val worksite = tableData.worksite
+                haversineDistance(
+                    latitudeRad, longitudeRad,
+                    worksite.latitude.radians, worksite.longitude.radians,
+                ).kmToMiles
+            } else {
+                -1.0
             }
 
             WorksiteDistance(tableData, distance)

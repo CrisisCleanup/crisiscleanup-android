@@ -3,6 +3,8 @@ package com.crisiscleanup.core.database.model
 import androidx.room.Embedded
 import androidx.room.Relation
 import com.crisiscleanup.core.common.haversineDistance
+import com.crisiscleanup.core.common.kmToMiles
+import com.crisiscleanup.core.common.radians
 import com.crisiscleanup.core.model.data.CasesFilter
 
 data class PopulatedTableDataWorksite(
@@ -39,17 +41,19 @@ fun List<PopulatedTableDataWorksite>.filter(
         return this
     }
 
+    val filterByDistance = location != null && filters.hasDistanceFilter
+    val latRad = location?.first?.radians ?: 0.0
+    val lngRad = location?.second?.radians ?: 0.0
     return mapNotNull {
         val worksite = it.base.entity
 
-        var distance = 0.0
-        if (filters.hasDistanceFilter) {
-            location?.let { (lat, lng) ->
-                distance = haversineDistance(
-                    lat, lng,
-                    worksite.latitude, worksite.longitude,
-                )
-            }
+        val distance = if (filterByDistance) {
+            haversineDistance(
+                latRad, lngRad,
+                worksite.latitude.radians, worksite.longitude.radians,
+            ).kmToMiles
+        } else {
+            0.0
         }
         if (!filters.passesFilter(
                 worksite.svi ?: 0f,

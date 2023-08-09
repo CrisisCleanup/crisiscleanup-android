@@ -1,7 +1,6 @@
 package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.common.AppVersionProvider
-import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
@@ -63,7 +62,6 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private val workTypeTransferRequestDaoPlus: WorkTypeTransferRequestDaoPlus,
     organizationsRepository: OfflineFirstOrganizationsRepository,
     private val filterRepository: CasesFilterRepository,
-    private val locationProvider: LocationProvider,
     private val appVersionProvider: AppVersionProvider,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
     @ApplicationScope externalScope: CoroutineScope,
@@ -114,6 +112,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         longitudeEast: Double,
         limit: Int,
         offset: Int,
+        coordinates: Pair<Double, Double>?,
     ) = worksiteDao.getWorksitesMapVisual(
         incidentId,
         latitudeSouth,
@@ -126,8 +125,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         .filter(
             filterRepository,
             organizationAffiliates.value,
-            // TODO Move into view layer for reloading on location change
-            locationProvider.cachedLocation.value,
+            coordinates,
         )
 
     override fun getWorksitesCount(incidentId: Long) = worksiteDao.getWorksitesCount(incidentId)

@@ -40,6 +40,8 @@ interface CasesOverviewMapTileRenderer {
      */
     fun setIncident(id: Long, worksitesCount: Int, clearCache: Boolean = true): Boolean
 
+    fun setLocation(coordinates: Pair<Double, Double>?)
+
     fun enableTileBoundaries()
 
     /**
@@ -74,6 +76,8 @@ class CaseDotsMapTileRenderer @Inject constructor(
     private var isRenderingBorder = false
     private val borderTile = BorderTile(tileSizePx)
 
+    private var locationCoordinates: Pair<Double, Double>? = null
+
     override fun rendersAt(zoom: Float): Boolean =
         // Lower zoom is far out, higher zoom is closer in
         zoom < zoomThreshold + 1
@@ -88,6 +92,10 @@ class CaseDotsMapTileRenderer @Inject constructor(
             this.worksitesCount = worksitesCount
         }
         return isIncidentChanged
+    }
+
+    override fun setLocation(coordinates: Pair<Double, Double>?) {
+        locationCoordinates = coordinates
     }
 
     override fun enableTileBoundaries() {
@@ -199,6 +207,7 @@ class CaseDotsMapTileRenderer @Inject constructor(
                 ne.longitude,
                 limit,
                 offset,
+                locationCoordinates,
             )
 
             // Incident has changed this tile is invalid

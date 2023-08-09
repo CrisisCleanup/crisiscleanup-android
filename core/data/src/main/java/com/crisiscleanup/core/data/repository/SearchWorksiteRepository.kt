@@ -143,28 +143,22 @@ class MemoryCacheSearchWorksitesRepository @Inject constructor(
         val uniqueIds = mutableSetOf<Long>()
         val uniqueResults = mutableListOf<NetworkWorksiteShort>()
 
-        var hasLocation = false
-        var locationLatitude = 0.0
-        var locationLongitude = 0.0
-        locationProvider.getLocation()?.let { currentLocation ->
-            locationLatitude = currentLocation.first.radians
-            locationLongitude = currentLocation.second.radians
-            hasLocation = true
-        }
+        val coordinates = locationProvider.getLocation()
+        val filterByDistance = coordinates != null && filters.hasDistanceFilter
+        val locationLatitudeRad = coordinates?.first?.radians ?: 0.0
+        val locationLongitudeRad = coordinates?.second?.radians ?: 0.0
 
         for (result in results) {
             if (uniqueIds.contains(result.id)) {
                 continue
             }
 
-            val distance = if (hasLocation && filters.hasDistanceFilter) {
-                val resultCoordinates = result.location.coordinates
-                val (resultLongitude, resultLatitude) = resultCoordinates
-                val kmDistance = haversineDistance(
-                    locationLatitude, locationLongitude,
+            val distance = if (filterByDistance) {
+                val (resultLongitude, resultLatitude) = result.location.coordinates
+                haversineDistance(
+                    locationLatitudeRad, locationLongitudeRad,
                     resultLatitude.radians, resultLongitude.radians,
-                )
-                kmDistance.kmToMiles
+                ).kmToMiles
             } else {
                 null
             }
