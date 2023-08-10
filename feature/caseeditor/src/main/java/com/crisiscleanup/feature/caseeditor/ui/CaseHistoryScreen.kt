@@ -90,7 +90,7 @@ fun CaseEditCaseHistoryRoute(
                     } else {
                         item {
                             Text(
-                                "~~No history",
+                                translator("caseHistory.no_history"),
                                 listItemModifier,
                             )
                         }

@@ -606,7 +606,7 @@ private fun CasesOverlayElements(
             ) {
                 Icon(
                     painterResource(R.drawable.ic_my_location),
-                    contentDescription = translator("~~My location"),
+                    contentDescription = translator("actions.my_location"),
                 )
             }
         }

@@ -243,8 +243,8 @@ internal fun BoxScope.CasesTableView(
 
     if (isWrongLocationDialogVisible) {
         CrisisCleanupAlertDialog(
-            title = "~~Flagged",
-            text = "~~This Case is marked as having a wrong location/address. It is advised to read all provided location and address information, notes, and/or make contact before traveling.",
+            title = LocalAppTranslator.current("flag.worksite_wrong_location"),
+            text = LocalAppTranslator.current("flag.worksite_wrong_location_description"),
             onDismissRequest = hideWrongLocationDialog,
             confirmButton = {
                 CrisisCleanupTextButton(
@@ -260,7 +260,7 @@ internal fun BoxScope.CasesTableView(
         val dismissDialog =
             remember(claimActionErrorMessage) { { isClaimActionDialogVisible = false } }
         CrisisCleanupAlertDialog(
-            title = "~~Error",
+            title =  LocalAppTranslator.current("info.error"),
             text = claimActionErrorMessage,
             onDismissRequest = dismissDialog,
             confirmButton = {
@@ -425,7 +425,7 @@ private fun TableViewItem(
         ) {
             Icon(
                 imageVector = CrisisCleanupIcons.Person,
-                contentDescription = translator("phoneDashboard.name"),
+                contentDescription = translator("~~phoneDashboard.name"),
                 tint = neutralIconColor,
             )
             Text(worksite.name)
@@ -437,7 +437,7 @@ private fun TableViewItem(
         ) {
             Icon(
                 imageVector = CrisisCleanupIcons.Location,
-                contentDescription = translator("profileOrg.address"),
+                contentDescription = translator("~~profileOrg.address"),
                 tint = neutralIconColor,
             )
             Text(

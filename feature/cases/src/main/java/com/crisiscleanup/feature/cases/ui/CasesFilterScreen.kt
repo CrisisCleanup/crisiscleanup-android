@@ -116,7 +116,7 @@ internal fun CasesFilterRoute(
         ExplainLocationPermissionDialog(
             showDialog = explainPermission,
             closeDialog = closePermissionDialog,
-            explanation = "~~Filtering by distance is not possible without GPS location access.",
+            explanation = translator("worksiteFilters.location_required_to_filter_by_distance"),
         )
     }
 }

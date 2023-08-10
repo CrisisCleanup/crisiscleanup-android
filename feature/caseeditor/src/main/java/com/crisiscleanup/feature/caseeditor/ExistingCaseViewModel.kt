@@ -170,7 +170,7 @@ class ExistingCaseViewModel @Inject constructor(
     val editableWorksite = editableWorksiteProvider.editableWorksite
     val updatedAtText = editableWorksite.map { worksite ->
         worksite.updatedAt?.let {
-            return@map translator("~~Updated {relative_time}")
+            return@map translator("caseView.updated_ago")
                 .replace("{relative_time}", it.relativeTime)
         }
         ""
@@ -585,7 +585,7 @@ class ExistingCaseViewModel @Inject constructor(
             startingWorksite.copy(isAssignedToOrgMember = !startingWorksite.isLocalFavorite)
         saveWorksiteChange(startingWorksite, changedWorksite)
 
-        val messageTranslateKey = if (changedWorksite.isLocalFavorite) "~~Is member of my org"
+        val messageTranslateKey = if (changedWorksite.isLocalFavorite) "caseView.member_my_org"
         else "actions.member_of_my_org"
         actionDescriptionMessage.value = translate(messageTranslateKey)
     }
@@ -595,8 +595,8 @@ class ExistingCaseViewModel @Inject constructor(
         val changedWorksite = startingWorksite.toggleHighPriorityFlag()
         saveWorksiteChange(startingWorksite, changedWorksite)
 
-        val messageTranslateKey = if (changedWorksite.hasHighPriorityFlag) "~~Is high priority"
-        else "~~Not high priority"
+        val messageTranslateKey = if (changedWorksite.hasHighPriorityFlag) "caseView.high_priority"
+        else "caseView.not_high_priority"
         actionDescriptionMessage.value = translate(messageTranslateKey)
     }
 

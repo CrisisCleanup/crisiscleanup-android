@@ -111,9 +111,9 @@ class ViewImageViewModel @Inject constructor(
                             // TODO Test all three states show correctly
                             // TODO String res
                             val messageKey =
-                                if (isOffline.value) "~~Connect to the internet to download this photo."
-                                else if (isTokenInvalid) "~~Login again and refresh the image."
-                                else "~~Try refreshing and opening the image again."
+                                if (isOffline.value) "worksiteImages.connect_to_download_photo"
+                                else if (isTokenInvalid) "worksiteImages.login_and_refresh_image"
+                                else "worksiteImages.try_refreshing_open_image"
                             val message = translate(messageKey)
                             channel.trySend(ViewImageUiState.Error(message))
                         },
@@ -143,7 +143,7 @@ class ViewImageViewModel @Inject constructor(
             }
 
             // TODO String res
-            val message = "There was an issue loading this image for viewing."
+            val message = "worksiteImages.unable_to_load"
             // TODO Delete entry in this case? Think it through
             ViewImageUiState.Error(message)
         }
