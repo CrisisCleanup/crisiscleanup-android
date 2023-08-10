@@ -203,6 +203,7 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
             if (response.code in 400..499) {
                 getHeaderKey(request, RequestHeaderKey.ThrowClientError)?.let {
                     response.body?.let { responseBody ->
+                        logger.logCapture("Code ${response.code} message ${response.message} paths ${request.pathsForLog}")
                         val errors = json.parseNetworkErrors(responseBody)
                         throw CrisisCleanupNetworkException(
                             request.url.toUrl().toString(),
@@ -222,6 +223,7 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
             val request = chain.request()
             val response = chain.proceed(request)
             if (response.code in 500..599) {
+                logger.logCapture("Code ${response.code} message ${response.message} paths ${request.pathsForLog}")
                 throw ServerErrorException(response)
             }
             response
@@ -258,7 +260,7 @@ class CrisisCleanupAuthInterceptorProvider @Inject constructor() : AuthIntercept
                     } catch (e: Exception) {
                         Log.w(
                             "network-error",
-                            "Network auth error format not parsed $errorBody"
+                            "Network auth error format not parsed $errorBody",
                         )
                     }
                     if (authErrorMessage.isNotBlank()) {
