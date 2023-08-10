@@ -33,11 +33,11 @@ object DatabaseMigrations {
     @DeleteColumn.Entries(
         DeleteColumn(
             tableName = "worksite_flags",
-            columnName = "is_invalid"
+            columnName = "is_invalid",
         ),
         DeleteColumn(
             tableName = "work_types",
-            columnName = "is_invalid"
+            columnName = "is_invalid",
         ),
     )
     class Schema10To11 : AutoMigrationSpec
@@ -45,12 +45,19 @@ object DatabaseMigrations {
     @DeleteColumn.Entries(
         DeleteColumn(
             tableName = "worksite_flags",
-            columnName = "local_global_uuid"
+            columnName = "local_global_uuid",
         ),
         DeleteColumn(
             tableName = "work_types",
-            columnName = "local_global_uuid"
+            columnName = "local_global_uuid",
         ),
     )
     class Schema18To19 : AutoMigrationSpec
+
+    @DeleteTable.Entries(
+        DeleteTable(
+            tableName = "worksite_text_fts",
+        ),
+    )
+    class Schema35To36 : AutoMigrationSpec
 }

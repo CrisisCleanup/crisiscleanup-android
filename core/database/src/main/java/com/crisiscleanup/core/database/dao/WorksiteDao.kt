@@ -475,7 +475,7 @@ interface WorksiteDao {
     fun getRandomWorksiteCaseNumber(): String?
 
     @Transaction
-    @Query("INSERT INTO worksite_text_fts(worksite_text_fts) VALUES ('rebuild')")
+    @Query("INSERT INTO worksite_text_fts_b(worksite_text_fts_b) VALUES ('rebuild')")
     fun rebuildWorksiteTextFts()
 
     // TODO Is there a more efficient matching of incident and FTS?
@@ -483,10 +483,10 @@ interface WorksiteDao {
     @Query(
         """
         SELECT w.*,
-        matchinfo(worksite_text_fts, 'pcnalx') AS match_info
-        FROM worksite_text_fts f
+        matchinfo(worksite_text_fts_b, 'pcnalx') AS match_info
+        FROM worksite_text_fts_b f
         INNER JOIN worksites w ON f.docid=w.id
-        WHERE w.incident_id=:incidentId AND worksite_text_fts MATCH :query
+        WHERE w.incident_id=:incidentId AND worksite_text_fts_b MATCH :query
         LIMIT :limit
         """,
     )
@@ -500,9 +500,9 @@ interface WorksiteDao {
     @Query(
         """
         SELECT w.id
-        FROM worksite_text_fts f
+        FROM worksite_text_fts_b f
         INNER JOIN worksites w ON f.docid=w.id
-        WHERE worksite_text_fts MATCH :query
+        WHERE worksite_text_fts_b MATCH :query
         LIMIT 1
         """,
     )

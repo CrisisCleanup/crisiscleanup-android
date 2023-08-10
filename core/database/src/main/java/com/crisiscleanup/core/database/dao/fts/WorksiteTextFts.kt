@@ -18,13 +18,15 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 
 @Entity(
-    "worksite_text_fts",
+    "worksite_text_fts_b",
 )
 @Fts4(contentEntity = WorksiteEntity::class)
 data class WorksiteTextFtsEntity(
     val address: String,
     @ColumnInfo("case_number")
     val caseNumber: String,
+    val city: String,
+    val county: String,
     val email: String,
     val name: String,
     val phone1: String,
@@ -44,10 +46,12 @@ data class PopulatedWorksiteTextMatchInfo(
     val sortScore by lazy {
         matchInfoInts.okapiBm25Score(0) * 0.9 +
                 matchInfoInts.okapiBm25Score(1) +
-                matchInfoInts.okapiBm25Score(2) * 0.7 +
-                matchInfoInts.okapiBm25Score(3) * 0.9 +
-                matchInfoInts.okapiBm25Score(4) * 0.6 +
-                matchInfoInts.okapiBm25Score(5) * 0.6
+                matchInfoInts.okapiBm25Score(2) * 0.8 +
+                matchInfoInts.okapiBm25Score(3) * 0.7 +
+                matchInfoInts.okapiBm25Score(4) * 0.7 +
+                matchInfoInts.okapiBm25Score(5) * 0.9 +
+                matchInfoInts.okapiBm25Score(6) * 0.6 +
+                matchInfoInts.okapiBm25Score(7) * 0.6
     }
 
     override fun equals(other: Any?): Boolean {

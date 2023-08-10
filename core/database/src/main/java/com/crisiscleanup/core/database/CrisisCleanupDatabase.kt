@@ -8,6 +8,7 @@ import com.crisiscleanup.core.common.DatabaseVersionProvider
 import com.crisiscleanup.core.database.DatabaseMigrations.Schema10To11
 import com.crisiscleanup.core.database.DatabaseMigrations.Schema18To19
 import com.crisiscleanup.core.database.DatabaseMigrations.Schema2To3
+import com.crisiscleanup.core.database.DatabaseMigrations.Schema35To36
 import com.crisiscleanup.core.database.DatabaseMigrations.Schema3to4
 import com.crisiscleanup.core.database.dao.CaseHistoryDao
 import com.crisiscleanup.core.database.dao.IncidentDao
@@ -101,7 +102,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         PersonOrganizationCrossRef::class,
         WorksiteTextFtsEntity::class,
     ],
-    version = 35,
+    version = 36,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
@@ -137,6 +138,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         AutoMigration(from = 32, to = 33),
         AutoMigration(from = 33, to = 34),
         AutoMigration(from = 34, to = 35),
+        AutoMigration(from = 35, to = 36, spec = Schema35To36::class),
     ],
     exportSchema = true,
 )
