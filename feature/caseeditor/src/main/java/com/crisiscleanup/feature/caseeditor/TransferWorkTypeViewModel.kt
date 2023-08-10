@@ -65,7 +65,11 @@ class TransferWorkTypeViewModel @Inject constructor(
     val isTransferred = MutableStateFlow(false)
     val isTransferring = MutableStateFlow(false)
 
-    val transferWorkTypesState = transferWorkTypeProvider.workTypes
+    private val transferWorkTypesState = transferWorkTypeProvider.workTypes
+    val sortedWorkTypes =
+        transferWorkTypesState.keys.toMutableList()
+            .sortedWith { a, b -> a.workTypeLiteral.compareTo(b.workTypeLiteral) }
+            .toList()
     val workTypesState = mutableStateMapOf<Long, Boolean>()
         .also { map ->
             val isSingleWorkType = transferWorkTypesState.size == 1

@@ -234,8 +234,7 @@ private fun WorkTypeSection(
 
     val workTypeState = remember { viewModel.workTypesState }
     val checkboxItemModifier = listItemModifier.listCheckboxAlignStartOffset()
-    viewModel.transferWorkTypesState.forEach {
-        val workType = it.key
+    viewModel.sortedWorkTypes.forEach { workType ->
         val id = workType.id
         val isChecked = workTypeState[id]!!
         val updateRequests = { b: Boolean ->

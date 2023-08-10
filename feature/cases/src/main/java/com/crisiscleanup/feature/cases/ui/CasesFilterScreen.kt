@@ -927,7 +927,6 @@ fun BottomActionBar(
         BusyButton(
             Modifier.weight(1f),
             text = applyText,
-            enabled = hasFilters,
             onClick = {
                 viewModel.applyFilters(filters)
                 onBack()
