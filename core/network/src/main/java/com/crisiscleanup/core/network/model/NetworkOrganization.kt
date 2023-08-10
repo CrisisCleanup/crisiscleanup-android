@@ -17,6 +17,8 @@ data class NetworkIncidentOrganization(
     val affiliates: Collection<Long>,
     @SerialName("primary_location")
     val primaryLocation: Long?,
+    @SerialName("secondary_location")
+    val secondaryLocation: Long?,
     @SerialName("type_t")
     val typeT: String?,
     @SerialName("primary_contacts")

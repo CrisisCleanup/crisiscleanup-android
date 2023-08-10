@@ -272,7 +272,7 @@ private fun NonProductionDialog(
                     onClick = hideDialog,
                 )
             },
-            text = t("phoneBeta.explanation")
+            text = t("phoneBeta.explanation"),
         )
     }
 }
@@ -291,7 +291,7 @@ internal fun NoCasesScreen(
             Column(
                 modifier
                     .align(Alignment.Center)
-                    .widthIn(max = 300.dp)
+                    .widthIn(max = 300.dp),
             ) {
                 Text(text = LocalAppTranslator.current("info.incident_load_error"))
                 // TODO Use constant for spacing
@@ -385,7 +385,7 @@ internal fun CasesScreen(
                 .fillMaxWidth(),
             visible = showDataProgress,
             enter = fadeIn(),
-            exit = fadeOut()
+            exit = fadeOut(),
         ) {
             LinearProgressIndicator(
                 progress = dataProgress,
@@ -477,7 +477,7 @@ internal fun BoxScope.CasesMapView(
             // TODO Make padding dp a parameter
             val padding = with(currentLocalDensity) { 8.dp.toPx() }
             val update = CameraUpdateFactory.newLatLngBounds(
-                mapCameraBounds.bounds, padding.toInt()
+                mapCameraBounds.bounds, padding.toInt(),
             )
             if (mapCameraBounds.durationMs > 0) {
                 cameraPositionState.animate(update, mapCameraBounds.durationMs)
@@ -490,7 +490,7 @@ internal fun BoxScope.CasesMapView(
     LaunchedEffect(mapCameraZoom) {
         if (mapCameraZoom.takeApply()) {
             val update = CameraUpdateFactory.newLatLngZoom(
-                mapCameraZoom.center, mapCameraZoom.zoom
+                mapCameraZoom.center, mapCameraZoom.zoom,
             )
             if (mapCameraZoom.durationMs > 0) {
                 cameraPositionState.animate(update, mapCameraZoom.durationMs)

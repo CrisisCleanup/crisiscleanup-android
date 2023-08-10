@@ -30,6 +30,7 @@ import com.crisiscleanup.core.common.relativeTime
 import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.commoncase.TransferWorkTypeProvider
 import com.crisiscleanup.core.commoncase.WorkTypeTransferType
+import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
@@ -88,6 +89,7 @@ class ExistingCaseViewModel @Inject constructor(
     incidentBoundsProvider: IncidentBoundsProvider,
     worksitesRepository: WorksitesRepository,
     languageRepository: LanguageTranslationsRepository,
+    accountDataRefresher: AccountDataRefresher,
     languageRefresher: LanguageRefresher,
     workTypeStatusRepository: WorkTypeStatusRepository,
     private val localImageRepository: LocalImageRepository,
@@ -270,6 +272,10 @@ class ExistingCaseViewModel @Inject constructor(
                 isCameraPermissionGranted = true
             }
         }.launchIn(viewModelScope)
+
+        viewModelScope.launch(ioDispatcher) {
+            accountDataRefresher.updateMyOrganization(false)
+        }
     }
 
     val isLoading = dataLoader.isLoading

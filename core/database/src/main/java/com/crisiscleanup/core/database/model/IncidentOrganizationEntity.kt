@@ -13,6 +13,10 @@ data class IncidentOrganizationEntity(
     @PrimaryKey
     val id: Long,
     val name: String,
+    @ColumnInfo("primary_location")
+    val primaryLocation: Long?,
+    @ColumnInfo("secondary_location")
+    val secondaryLocation: Long?,
 )
 
 @Entity(
@@ -37,7 +41,7 @@ data class IncidentOrganizationEntity(
             value = ["contact_id", "organization_id"],
             name = "idx_contact_to_organization",
         ),
-    ]
+    ],
 )
 data class OrganizationPrimaryContactCrossRef(
     @ColumnInfo("organization_id")
@@ -61,10 +65,10 @@ data class OrganizationPrimaryContactCrossRef(
     ],
     indices = [
         Index(value = ["affiliate_id", "id"]),
-    ]
+    ],
 )
 data class OrganizationAffiliateEntity(
     val id: Long,
     @ColumnInfo("affiliate_id")
-    val affiliateId: Long
+    val affiliateId: Long,
 )

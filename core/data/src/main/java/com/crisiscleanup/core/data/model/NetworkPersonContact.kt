@@ -26,6 +26,8 @@ fun NetworkPersonContact.asEntities(): PersonContactEntities {
     val organizationEntity = IncidentOrganizationEntity(
         id = organization!!.id,
         name = organization!!.name,
+        primaryLocation = null,
+        secondaryLocation = null,
     )
     val personContact = asEntity()
     val personToOrganization = PersonOrganizationCrossRef(id, organization!!.id)

@@ -30,6 +30,8 @@ interface CrisisCleanupAuthApi {
 interface CrisisCleanupNetworkDataSource {
     suspend fun getProfilePic(): String?
 
+    suspend fun getOrganizations(organizations: List<Long>): List<NetworkIncidentOrganization>
+
     suspend fun getStatuses(): NetworkWorkTypeStatusResult
 
     suspend fun getIncidents(

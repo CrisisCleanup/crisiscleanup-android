@@ -15,6 +15,13 @@ private interface DataSourceApi {
     @GET("users/me")
     suspend fun getProfile(): NetworkAccountProfileResult
 
+    @TokenAuthenticationHeader
+    @GET("organizations")
+    suspend fun getOrganizations(
+        @Query("id__in")
+        ids: String,
+    ): NetworkOrganizationsResult
+
     @GET("statuses")
     suspend fun getStatuses(): NetworkWorkTypeStatusResult
 
@@ -224,6 +231,12 @@ class DataApiClient @Inject constructor(
         return result.files?.firstOrNull(NetworkFile::isProfilePicture)?.largeThumbnailUrl
     }
 
+    override suspend fun getOrganizations(organizations: List<Long>) =
+        networkApi.getOrganizations(organizations.joinToString(",")).let {
+            it.errors?.tryThrowException()
+            it.results ?: emptyList()
+        }
+
     override suspend fun getStatuses() = networkApi.getStatuses()
 
     override suspend fun getIncidents(
@@ -319,7 +332,7 @@ class DataApiClient @Inject constructor(
         incidentId,
         locationSearchFields,
         q,
-        limit
+        limit,
     )
         .let {
             it.errors?.tryThrowException()
@@ -353,7 +366,7 @@ class DataApiClient @Inject constructor(
 
     override suspend fun getNearbyOrganizations(
         latitude: Double,
-        longitude: Double
+        longitude: Double,
     ) = networkApi.getNearbyClaimingOrganizations("$longitude,$latitude")
         .let {
             it.errors?.tryThrowException()

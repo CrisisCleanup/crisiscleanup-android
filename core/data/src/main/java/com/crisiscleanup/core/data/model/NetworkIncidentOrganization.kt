@@ -10,6 +10,8 @@ import com.crisiscleanup.core.network.model.NetworkPersonContact
 fun NetworkIncidentOrganization.asEntity() = IncidentOrganizationEntity(
     id = id,
     name = name,
+    primaryLocation = primaryLocation,
+    secondaryLocation = secondaryLocation,
 )
 
 fun NetworkIncidentOrganization.primaryContactCrossReferences() =

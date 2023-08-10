@@ -10,7 +10,7 @@ private const val WorksitesStableModelBuildVersion = 126
 /**
  * Build version of the app where incident organization (related) entity models were last changed
  */
-const val IncidentOrganizationsStableModelBuildVersion = 69
+const val IncidentOrganizationsStableModelBuildVersion = 127
 
 /**
  * Keeps track of incident data (worksites, organizations, ...) syncing

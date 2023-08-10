@@ -12,6 +12,7 @@ import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.commonassets.R
 import com.crisiscleanup.core.commonassets.getDisasterIcon
 import com.crisiscleanup.core.data.IncidentSelector
+import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
@@ -41,6 +42,7 @@ class MainActivityViewModel @Inject constructor(
     val appHeaderUiState: AppHeaderUiState,
     incidentsRepository: IncidentsRepository,
     worksitesRepository: WorksitesRepository,
+    accountDataRefresher: AccountDataRefresher,
     val translator: KeyResourceTranslator,
     private val syncPuller: SyncPuller,
     appEnv: AppEnv,
@@ -54,7 +56,7 @@ class MainActivityViewModel @Inject constructor(
         }.stateIn(
             scope = viewModelScope,
             initialValue = MainActivityUiState.Loading,
-            started = SharingStarted.WhileSubscribed(5_000)
+            started = SharingStarted.WhileSubscribed(5_000),
         )
 
     /**
@@ -73,7 +75,7 @@ class MainActivityViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = AuthState.Loading,
-            started = SharingStarted.WhileSubscribed()
+            started = SharingStarted.WhileSubscribed(),
         )
 
     val translationCount = translator.translationCount
@@ -100,6 +102,7 @@ class MainActivityViewModel @Inject constructor(
             .onEach {
                 sync(false)
                 syncPuller.appPullIncident(incidentSelector.incidentId.first())
+                accountDataRefresher.updateMyOrganization(true)
             }
             .launchIn(viewModelScope)
 
@@ -123,12 +126,12 @@ class MainActivityViewModel @Inject constructor(
 }
 
 sealed interface MainActivityUiState {
-    object Loading : MainActivityUiState
+    data object Loading : MainActivityUiState
     data class Success(val userData: UserData) : MainActivityUiState
 }
 
 sealed interface AuthState {
-    object Loading : AuthState
+    data object Loading : AuthState
     data class Authenticated(val accountData: AccountData) : AuthState
-    object NotAuthenticated : AuthState
+    data object NotAuthenticated : AuthState
 }

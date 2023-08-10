@@ -7,13 +7,13 @@ import com.crisiscleanup.core.data.model.asEntities
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDao
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDaoPlus
 import com.crisiscleanup.core.database.dao.fts.getMatchingOrganizations
-import com.crisiscleanup.core.database.model.IncidentOrganizationEntity
 import com.crisiscleanup.core.database.model.PopulatedIncidentOrganization
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.database.model.asLookup
 import com.crisiscleanup.core.model.data.IncidentOrganization
 import com.crisiscleanup.core.model.data.OrganizationIdName
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
+import com.crisiscleanup.core.network.model.NetworkIncidentOrganization
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapLatest
 import javax.inject.Inject
@@ -23,11 +23,13 @@ interface OrganizationsRepository {
 
     val organizationLookup: Flow<Map<Long, IncidentOrganization>>
 
+    suspend fun syncOrganization(organizationId: Long, force: Boolean = false)
+
     fun getOrganizationAffiliateIds(organizationId: Long): Set<Long>
 
     suspend fun getNearbyClaimingOrganizations(
         latitude: Double,
-        longitude: Double
+        longitude: Double,
     ): List<IncidentOrganization>
 
     suspend fun getMatchingOrganizations(q: String): List<OrganizationIdName>
@@ -48,6 +50,31 @@ class OfflineFirstOrganizationsRepository @Inject constructor(
                 .associateBy(IncidentOrganization::id)
         }
 
+    private suspend fun saveOrganizations(networkOrganizations: Collection<NetworkIncidentOrganization>) {
+        val (
+            organizations,
+            primaryContacts,
+            organizationContactCrossRefs,
+            organizationAffiliates,
+        ) = networkOrganizations.asEntities(getContacts = true, getReferences = true)
+        incidentOrganizationDaoPlus.saveOrganizations(
+            organizations,
+            primaryContacts,
+        )
+        incidentOrganizationDaoPlus.saveOrganizationReferences(
+            organizations,
+            organizationContactCrossRefs,
+            organizationAffiliates,
+        )
+    }
+
+    override suspend fun syncOrganization(organizationId: Long, force: Boolean) {
+        if (force || incidentOrganizationDao.findOrganization(organizationId) == null) {
+            val networkOrganizations = networkDataSource.getOrganizations(listOf(organizationId))
+            saveOrganizations(networkOrganizations)
+        }
+    }
+
     override fun getOrganizationAffiliateIds(organizationId: Long) =
         incidentOrganizationDao.getAffiliateOrganizationIds(organizationId).toMutableSet()
             .apply { add(organizationId) }
@@ -58,23 +85,8 @@ class OfflineFirstOrganizationsRepository @Inject constructor(
     ): List<IncidentOrganization> {
         try {
             val networkOrganizations = networkDataSource.getNearbyOrganizations(latitude, longitude)
-            val (
-                organizations,
-                primaryContacts,
-                organizationContactCrossRefs,
-                organizationAffiliates,
-            ) = networkOrganizations.asEntities(getContacts = true, getReferences = true)
-            incidentOrganizationDaoPlus.saveOrganizations(
-                organizations,
-                primaryContacts,
-            )
-            incidentOrganizationDaoPlus.saveOrganizationReferences(
-                organizations,
-                organizationContactCrossRefs,
-                organizationAffiliates,
-            )
-
-            val organizationIds = organizations.map(IncidentOrganizationEntity::id)
+            saveOrganizations(networkOrganizations)
+            val organizationIds = networkOrganizations.map(NetworkIncidentOrganization::id)
             return incidentOrganizationDao.getOrganizations(organizationIds)
                 .map(PopulatedIncidentOrganization::asExternalModel)
         } catch (e: Exception) {

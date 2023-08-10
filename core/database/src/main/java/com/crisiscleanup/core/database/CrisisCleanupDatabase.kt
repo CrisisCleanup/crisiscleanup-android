@@ -102,7 +102,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         PersonOrganizationCrossRef::class,
         WorksiteTextFtsEntity::class,
     ],
-    version = 36,
+    version = 37,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
@@ -139,6 +139,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         AutoMigration(from = 33, to = 34),
         AutoMigration(from = 34, to = 35),
         AutoMigration(from = 35, to = 36, spec = Schema35To36::class),
+        AutoMigration(from = 36, to = 37),
     ],
     exportSchema = true,
 )
