@@ -451,7 +451,7 @@ class CasesViewModel @Inject constructor(
 
         if (isDistanceSort && tableData.isEmpty()) {
             tableSortResultsMessage.value =
-                translator("~~No Cases were found within {search_radius} mi.")
+                translator("caseView.no_cases_found_within_radius")
                     .replace(
                         "{search_radius}",
                         tableDataDistanceSortSearchRadius.toInt().toString(),

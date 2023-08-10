@@ -227,12 +227,12 @@ val Collection<WorksiteNote>.hasSurvivorNote: Boolean
     get() = any { it.isSurvivor }
 
 enum class WorksiteSortBy(val literal: String, val translateKey: String) {
-    None("", "~~Sort by"),
-    CaseNumber("case-number", "~~Sort by Case Number"),
-    Nearest("nearest", "~~Sort by Nearest"),
-    Name("name", "~~Sort by Name"),
-    City("city", "~~Sort by City"),
-    CountyParish("county-parish", "~~Sort by County/Parish"),
+    None("", "worksiteFilters.sort_by"),
+    CaseNumber("case-number", "worksiteFilters.sort_by_case_number"),
+    Nearest("nearest", "worksiteFilters.sort_by_nearest"),
+    Name("name", "worksiteFilters.sort_by_name"),
+    City("city", "worksiteFilters.sort_by_city"),
+    CountyParish("county-parish", "worksiteFilters.sort_by_county"),
 }
 
 private val sortByLookup = WorksiteSortBy.values().associateBy(WorksiteSortBy::literal)

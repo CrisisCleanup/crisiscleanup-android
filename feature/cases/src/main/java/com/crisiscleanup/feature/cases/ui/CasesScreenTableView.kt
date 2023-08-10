@@ -412,7 +412,7 @@ private fun TableViewItem(
                         fontWeight = FontWeight.Bold,
                     )
                     Text(
-                        translator("~~mi"),
+                        translator("caseView.miles_abbrv"),
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
@@ -425,7 +425,7 @@ private fun TableViewItem(
         ) {
             Icon(
                 imageVector = CrisisCleanupIcons.Person,
-                contentDescription = translator("~~phoneDashboard.name"),
+                contentDescription = translator("formLabels.name"),
                 tint = neutralIconColor,
             )
             Text(worksite.name)
@@ -437,7 +437,7 @@ private fun TableViewItem(
         ) {
             Icon(
                 imageVector = CrisisCleanupIcons.Location,
-                contentDescription = translator("~~profileOrg.address"),
+                contentDescription = translator("casesVue.full_address"),
                 tint = neutralIconColor,
             )
             Text(
@@ -486,7 +486,7 @@ private fun TableViewItem(
             ) {
                 Icon(
                     imageVector = CrisisCleanupIcons.Directions,
-                    contentDescription = translator("~~Directions"),
+                    contentDescription = translator("caseView.directions"),
                 )
             }
 
@@ -546,7 +546,7 @@ private fun PhoneNumbersDialog(
     if (parsedNumbers.flatMap(ParsedPhoneNumber::parsedNumbers).isNotEmpty()) {
         val dismissDialog = { setPhoneNumbers(emptyList()) }
         CrisisCleanupAlertDialog(
-            title = "~~Contact Phone",
+            title = LocalAppTranslator.current("workType.phone"),
             onDismissRequest = dismissDialog,
             confirmButton = {
                 CrisisCleanupTextButton(
