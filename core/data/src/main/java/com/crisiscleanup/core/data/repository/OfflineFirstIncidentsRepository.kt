@@ -7,13 +7,13 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.IncidentOrganizationsSyncer
 import com.crisiscleanup.core.data.model.asEntity
+import com.crisiscleanup.core.data.model.asEntitySource
 import com.crisiscleanup.core.data.model.incidentLocationCrossReferences
 import com.crisiscleanup.core.data.model.locationsAsEntity
 import com.crisiscleanup.core.database.dao.IncidentDao
 import com.crisiscleanup.core.database.dao.IncidentDaoPlus
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDao
 import com.crisiscleanup.core.database.dao.LocationDaoPlus
-import com.crisiscleanup.core.database.dao.LocationEntitySource
 import com.crisiscleanup.core.database.dao.fts.getMatchingIncidents
 import com.crisiscleanup.core.database.model.PopulatedIncident
 import com.crisiscleanup.core.database.model.asExternalModel
@@ -88,19 +88,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     private suspend fun saveLocations(incidents: Collection<NetworkIncident>) {
         val locationIds = incidents.flatMap { it.locations.map(NetworkIncidentLocation::location) }
         val locations = networkDataSource.getIncidentLocations(locationIds)
-        if (locations.isNotEmpty()) {
-            val sourceLocations = locations.map {
-                val multiCoordinates = it.geom?.condensedCoordinates
-                val coordinates = it.poly?.condensedCoordinates ?: it.point?.coordinates
-                LocationEntitySource(
-                    id = it.id,
-                    shapeType = it.shapeType,
-                    coordinates = if (multiCoordinates == null) coordinates else null,
-                    multiCoordinates = multiCoordinates,
-                )
-            }
-            locationDaoPlus.saveLocations(sourceLocations)
-        }
+        locationDaoPlus.saveLocations(locations.asEntitySource())
     }
 
     private suspend fun saveIncidentsPrimaryData(incidents: Collection<NetworkIncident>) {

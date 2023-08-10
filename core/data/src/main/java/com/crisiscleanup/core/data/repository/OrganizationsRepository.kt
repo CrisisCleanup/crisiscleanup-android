@@ -4,8 +4,10 @@ import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.data.model.asEntities
+import com.crisiscleanup.core.data.model.asEntitySource
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDao
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDaoPlus
+import com.crisiscleanup.core.database.dao.LocationDaoPlus
 import com.crisiscleanup.core.database.dao.fts.getMatchingOrganizations
 import com.crisiscleanup.core.database.model.PopulatedIncidentOrganization
 import com.crisiscleanup.core.database.model.asExternalModel
@@ -23,7 +25,11 @@ interface OrganizationsRepository {
 
     val organizationLookup: Flow<Map<Long, IncidentOrganization>>
 
-    suspend fun syncOrganization(organizationId: Long, force: Boolean = false)
+    suspend fun syncOrganization(
+        organizationId: Long,
+        force: Boolean = false,
+        updateLocations: Boolean = false,
+    )
 
     fun getOrganizationAffiliateIds(organizationId: Long): Set<Long>
 
@@ -38,6 +44,7 @@ interface OrganizationsRepository {
 class OfflineFirstOrganizationsRepository @Inject constructor(
     private val incidentOrganizationDao: IncidentOrganizationDao,
     private val incidentOrganizationDaoPlus: IncidentOrganizationDaoPlus,
+    private val locationDaoPlus: LocationDaoPlus,
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : OrganizationsRepository {
@@ -68,10 +75,32 @@ class OfflineFirstOrganizationsRepository @Inject constructor(
         )
     }
 
-    override suspend fun syncOrganization(organizationId: Long, force: Boolean) {
+    override suspend fun syncOrganization(
+        organizationId: Long,
+        force: Boolean,
+        updateLocations: Boolean,
+    ) {
         if (force || incidentOrganizationDao.findOrganization(organizationId) == null) {
-            val networkOrganizations = networkDataSource.getOrganizations(listOf(organizationId))
-            saveOrganizations(networkOrganizations)
+            try {
+                val networkOrganizations =
+                    networkDataSource.getOrganizations(listOf(organizationId))
+                saveOrganizations(networkOrganizations)
+
+                if (updateLocations) {
+                    val locationIds = networkOrganizations
+                        .flatMap {
+                            listOf(it.primaryLocation, it.secondaryLocation)
+                        }
+                        .filterNotNull()
+                    if (locationIds.isNotEmpty()) {
+                        val locations = networkDataSource.getIncidentLocations(locationIds)
+                            .asEntitySource()
+                        locationDaoPlus.saveLocations(locations)
+                    }
+                }
+            } catch (e: Exception) {
+                logger.logException(e)
+            }
         }
     }
 

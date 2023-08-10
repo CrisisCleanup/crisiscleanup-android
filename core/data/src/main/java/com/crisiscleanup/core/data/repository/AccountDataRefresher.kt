@@ -46,7 +46,7 @@ class AccountDataRefresher @Inject constructor(
     suspend fun updateMyOrganization(force: Boolean) = withContext(ioDispatcher) {
         val organizationId = accountDataRepository.accountData.first().org.id
         if (organizationId > 0) {
-            organizationsRepository.syncOrganization(organizationId, force)
+            organizationsRepository.syncOrganization(organizationId, force, true)
         }
     }
 }
