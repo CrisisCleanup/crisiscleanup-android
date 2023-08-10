@@ -165,7 +165,7 @@ internal class CaseEditorDataLoader(
             if (organization.id <= 0) {
                 logger.logException(Exception("Organization $organization is not set when editing worksite $worksiteId"))
                 return@mapLatest CaseEditorUiState.Error(
-                    errorMessage = translate("info.organization_issue_log_out")
+                    errorMessage = translate("info.organization_issue_log_out"),
                 )
             }
 
@@ -176,7 +176,7 @@ internal class CaseEditorDataLoader(
                 val errorMessage = translate("info.incident_loading")
                     .replace("{name}", incident.name)
                 return@mapLatest CaseEditorUiState.Error(
-                    errorMessage = errorMessage
+                    errorMessage = errorMessage,
                 )
             }
 
@@ -203,7 +203,7 @@ internal class CaseEditorDataLoader(
                 if ((loadedWorksite != null && takeStale()) || formFields.isEmpty()) {
                     formFields = FormFieldNode.buildTree(
                         incident.formFields,
-                        languageRepository
+                        languageRepository,
                     )
                         .map(FormFieldNode::flatten)
 
@@ -248,13 +248,15 @@ internal class CaseEditorDataLoader(
                     editSections.value = mutableListOf<String>().apply {
                         add(translate("caseForm.property_information"))
                         val requiredGroups = setOf("workInfo")
-                        addAll(formFields.map {
-                            with(it.formField) {
-                                val isRequired = requiredGroups.contains(group)
-                                if (isRequired) "$label *"
-                                else label
-                            }
-                        })
+                        addAll(
+                            formFields.map {
+                                with(it.formField) {
+                                    val isRequired = requiredGroups.contains(group)
+                                    if (isRequired) "$label *"
+                                    else label
+                                }
+                            },
+                        )
                     }
                 }
 

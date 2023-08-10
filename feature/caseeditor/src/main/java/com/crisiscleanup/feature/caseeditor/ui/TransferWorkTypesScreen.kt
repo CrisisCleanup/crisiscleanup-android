@@ -83,7 +83,7 @@ internal fun TransferWorkTypesRoute(
                 Modifier
                     .scrollFlingListener(closeKeyboard)
                     .verticalScroll(scrollState)
-                    .weight(1f)
+                    .weight(1f),
             ) {
                 CompositionLocalProvider(
                     LocalAppTranslator provides viewModel,

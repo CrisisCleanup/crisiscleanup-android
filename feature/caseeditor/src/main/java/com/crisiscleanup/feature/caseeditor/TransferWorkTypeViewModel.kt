@@ -235,7 +235,7 @@ class TransferWorkTypeViewModel @Inject constructor(
         else worksiteProvider.translate(phraseKey)
         return translated ?: translator.translate(
             phraseKey,
-            fallbackResId
+            fallbackResId,
         )
     }
 }

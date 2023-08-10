@@ -126,7 +126,7 @@ class ExistingCaseViewModel @Inject constructor(
     val isSyncing = combine(
         worksiteChangeRepository.syncingWorksiteIds,
         localImageRepository.syncingWorksiteId,
-        ::Pair
+        ::Pair,
     )
         .mapLatest { (syncingWorksiteIds, imageSyncingWorksiteId) ->
             syncingWorksiteIds.contains(worksiteIdArg) ||
@@ -311,7 +311,7 @@ class ExistingCaseViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = emptyList(),
-            started = SharingStarted.WhileSubscribed(3_000)
+            started = SharingStarted.WhileSubscribed(3_000),
         )
 
     val statusOptions = uiState
@@ -451,7 +451,7 @@ class ExistingCaseViewModel @Inject constructor(
                     orgId,
                     name ?: "",
                     summaries.sortedBy { summary -> summary.workType.workTypeLiteral },
-                    false
+                    false,
                 )
             }
 
@@ -561,7 +561,7 @@ class ExistingCaseViewModel @Inject constructor(
 
     private fun onSaveFail(
         e: Exception,
-        isMediaSave: Boolean = false
+        isMediaSave: Boolean = false,
     ) {
         logger.logException(e)
 
@@ -700,7 +700,8 @@ class ExistingCaseViewModel @Inject constructor(
 
             PermissionStatus.Requesting,
             PermissionStatus.Denied,
-            PermissionStatus.Undefined -> {
+            PermissionStatus.Undefined,
+            -> {
                 // Ignore these statuses as they're not important
             }
         }
@@ -742,7 +743,7 @@ class ExistingCaseViewModel @Inject constructor(
                             documentId = displayName,
                             uri = uri.toString(),
                             tag = addImageCategory.literal,
-                        )
+                        ),
                     )
 
                     syncPusher.scheduleSyncMedia()
@@ -771,7 +772,7 @@ class ExistingCaseViewModel @Inject constructor(
     override fun translate(phraseKey: String, fallbackResId: Int) =
         editableWorksiteProvider.translate(phraseKey) ?: translator.translate(
             phraseKey,
-            fallbackResId
+            fallbackResId,
         )
 }
 

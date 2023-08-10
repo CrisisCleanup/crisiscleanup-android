@@ -406,7 +406,7 @@ interface WorksiteDao {
         SELECT * 
         FROM worksites
         WHERE incident_id=:incidentId
-        ORDER BY name, county, city, case_number_order
+        ORDER BY name, county, city, case_number_order, case_number
         LIMIT :limit
         OFFSET :offset
         """,
@@ -423,7 +423,7 @@ interface WorksiteDao {
         SELECT * 
         FROM worksites
         WHERE incident_id=:incidentId
-        ORDER BY city, name, case_number_order
+        ORDER BY city, name, case_number_order, case_number
         LIMIT :limit
         OFFSET :offset
         """,
@@ -440,7 +440,7 @@ interface WorksiteDao {
         SELECT * 
         FROM worksites
         WHERE incident_id=:incidentId
-        ORDER BY county, name, case_number_order
+        ORDER BY county, name, case_number_order, case_number
         LIMIT :limit
         OFFSET :offset
         """,
@@ -458,7 +458,7 @@ interface WorksiteDao {
         SELECT * 
         FROM worksites
         WHERE incident_id=:incidentId
-        ORDER BY case_number_order
+        ORDER BY case_number_order, case_number
         LIMIT :limit
         OFFSET :offset
         """,

@@ -76,11 +76,11 @@ data class WorksiteRootEntity(
         Index(value = ["incident_id", "longitude", "latitude"]),
         Index(value = ["incident_id", "svi"]),
         Index(value = ["incident_id", "updated_at"]),
-        Index(value = ["incident_id", "case_number_order"]),
-        Index(value = ["incident_id", "name", "county", "city", "case_number"]),
-        Index(value = ["incident_id", "city", "name", "case_number"]),
-        Index(value = ["incident_id", "county", "name", "case_number"]),
-    ]
+        Index(value = ["incident_id", "case_number_order", "case_number"]),
+        Index(value = ["incident_id", "name", "county", "city", "case_number_order", "case_number"]),
+        Index(value = ["incident_id", "city", "name", "case_number_order", "case_number"]),
+        Index(value = ["incident_id", "county", "name", "case_number_order", "case_number"]),
+    ],
 )
 data class WorksiteEntity(
     @PrimaryKey
@@ -138,11 +138,13 @@ data class WorksiteEntity(
     val isLocalFavorite: Boolean = false,
 )
 
-private val endNumbersCapture = Regex("\\d+$")
+private val endNumbersCapture = Regex("(?:^|\\D)(\\d+)(?:\\D|$)")
 fun parseCaseNumberOrder(caseNumber: String): Long {
     try {
-        endNumbersCapture.find(caseNumber)?.value?.toLong()?.let {
-            return it
+        endNumbersCapture.find(caseNumber)?.let {
+            if (it.groupValues.size > 1) {
+                return it.groupValues[1].toLong()
+            }
         }
     } catch (e: Exception) {
         Log.w("worksite-entity", "Unable to parse case number order ${e.message}")
