@@ -47,8 +47,8 @@ data class CasesFilter(
 
     val isDefault = this == DefaultCasesFilter
 
-    private val hasSviFilter = svi != DEFAULT_SVI
-    private val hasUpdatedFilter = daysAgoUpdated != DEFAULT_DAYS_AGO
+    val hasSviFilter = svi != DEFAULT_SVI
+    val hasUpdatedFilter = daysAgoUpdated != DEFAULT_DAYS_AGO
     val hasDistanceFilter = distance != DEFAULT_FILTER_DISTANCE
 
     val changeCount by lazy {

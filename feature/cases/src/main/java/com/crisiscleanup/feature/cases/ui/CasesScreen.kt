@@ -18,8 +18,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Surface
@@ -40,7 +42,6 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -62,6 +63,7 @@ import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContainerColor
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContentColor
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
+import com.crisiscleanup.core.designsystem.theme.navigationContainerColor
 import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
 import com.crisiscleanup.core.domain.IncidentsData
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraBounds
@@ -115,6 +117,7 @@ internal fun CasesRoute(
 
     val incidentsData by viewModel.incidentsData.collectAsStateWithLifecycle(IncidentsData.Loading)
     val isIncidentLoading by viewModel.isIncidentLoading.collectAsState(true)
+    val isLoadingData by viewModel.isLoadingData.collectAsState(true)
     if (incidentsData is IncidentsData.Incidents) {
         val isTableView by viewModel.isTableView.collectAsStateWithLifecycle()
         BackHandler(enabled = isTableView) {
@@ -151,7 +154,7 @@ internal fun CasesRoute(
         val filtersCount by viewModel.filtersCount.collectAsStateWithLifecycle(0)
         val isMapBusy by viewModel.isMapBusy.collectAsStateWithLifecycle(false)
         val isTableDataTransient by viewModel.isLoadingTableViewData.collectAsStateWithLifecycle()
-        val casesCount by viewModel.casesCount.collectAsStateWithLifecycle()
+        val casesCountMapText by viewModel.casesCountMapText.collectAsStateWithLifecycle()
         val worksitesOnMap by viewModel.worksitesMapMarkers.collectAsStateWithLifecycle()
         val mapCameraBounds by viewModel.incidentLocationBounds.collectAsStateWithLifecycle()
         val mapCameraZoom by viewModel.mapCameraZoom.collectAsStateWithLifecycle()
@@ -186,10 +189,10 @@ internal fun CasesRoute(
             isTableView = isTableView,
             isLayerView = isLayerView,
             filtersCount = filtersCount,
-            isIncidentLoading = isIncidentLoading,
+            isLoadingData = isLoadingData,
             isMapBusy = isMapBusy,
             isTableDataTransient = isTableDataTransient || isPendingTransfer,
-            casesCount = casesCount,
+            casesCountMapText = casesCountMapText,
             worksitesOnMap = worksitesOnMap,
             mapCameraBounds = mapCameraBounds,
             mapCameraZoom = mapCameraZoom,
@@ -318,10 +321,10 @@ internal fun CasesScreen(
     isTableView: Boolean = false,
     isLayerView: Boolean = false,
     filtersCount: Int = 0,
-    isIncidentLoading: Boolean = false,
+    isLoadingData: Boolean = false,
     isMapBusy: Boolean = false,
     isTableDataTransient: Boolean = false,
-    casesCount: Pair<Int, Int> = Pair(0, 0),
+    casesCountMapText: String = "",
     worksitesOnMap: List<WorksiteGoogleMapMark> = emptyList(),
     mapCameraBounds: MapViewCameraBounds = MapViewCameraBoundsDefault,
     mapCameraZoom: MapViewCameraZoom = MapViewCameraZoomDefault,
@@ -340,20 +343,19 @@ internal fun CasesScreen(
     Box(modifier.then(Modifier.fillMaxSize())) {
         if (isTableView) {
             CasesTableView(
-                isIncidentLoading = isIncidentLoading,
+                isLoadingData = isLoadingData,
                 isTableDataTransient = isTableDataTransient,
                 disasterResId = disasterResId,
                 openIncidentSelect = onSelectIncident,
                 onCasesAction = onCasesAction,
                 filtersCount = filtersCount,
-                casesCount = casesCount.second,
                 onTableItemSelect = onTableItemSelect,
             )
         } else {
             CasesMapView(
                 mapCameraBounds,
                 mapCameraZoom,
-                isIncidentLoading || isMapBusy,
+                isMapBusy,
                 worksitesOnMap,
                 tileChangeValue,
                 clearTileLayer,
@@ -374,7 +376,8 @@ internal fun CasesScreen(
             onCasesAction,
             centerOnMyLocation,
             isTableView,
-            casesCount,
+            isLoadingData,
+            casesCountMapText,
             filtersCount,
             disableTableViewActions = isTableDataTransient,
         )
@@ -527,7 +530,8 @@ private fun CasesOverlayElements(
     onCasesAction: (CasesAction) -> Unit = {},
     centerOnMyLocation: () -> Unit = {},
     isTableView: Boolean = false,
-    casesCount: Pair<Int, Int> = Pair(0, 0),
+    isLoadingData: Boolean = false,
+    casesCountText: String = "",
     filtersCount: Int = 0,
     disableTableViewActions: Boolean = false,
 ) {
@@ -585,7 +589,8 @@ private fun CasesOverlayElements(
             )
 
             CasesCountView(
-                casesCount,
+                casesCountText,
+                isLoadingData,
                 Modifier.constrainAs(countTextRef) {
                     top.linkTo(parent.top, margin = actionEdgeSpace)
                     start.linkTo(disasterAction.end)
@@ -658,39 +663,36 @@ private fun CasesOverlayElements(
 
 @Composable
 private fun CasesCountView(
-    casesCount: Pair<Int, Int>,
+    countText: String,
+    isLoadingData: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val (visibleCount, totalCount) = casesCount
-    val t = LocalAppTranslator.current
-    if (totalCount > -1) {
-        val countText = if (visibleCount == totalCount || visibleCount == 0) {
-            if (visibleCount == 0) t("info.t_of_t_cases").replace("{visible_count}", "$totalCount")
-            else if (totalCount == 1) t("info.1_of_1_case")
-            else t("info.t_of_t_cases").replace("{visible_count}", "$totalCount")
-        } else {
-            t("info.v_of_t_cases")
-                .replace("{visible_count}", "$visibleCount")
-                .replace("{total_count}", "$totalCount")
-        }
-
-        // Common dimensions and styles
-        Surface(
-            modifier,
-            color = Color(0xFF393939),
-            contentColor = Color.White,
-            shadowElevation = 4.dp,
-            shape = RoundedCornerShape(4.dp),
+    // TODO Animate visibility of elements
+    // TODO Common dimensions of elements
+    Surface(
+        modifier,
+        color = navigationContainerColor,
+        contentColor = Color.White,
+        shadowElevation = 4.dp,
+        shape = RoundedCornerShape(4.dp),
+    ) {
+        Row(
+            Modifier.padding(16.dp),
+            horizontalArrangement = listItemSpacedBy,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                countText,
-                modifier = Modifier.padding(
-                    horizontal = 15.dp,
-                    vertical = 9.dp,
-                ),
-                color = Color.White,
-                textAlign = TextAlign.Center,
-            )
+            if (countText.isNotBlank()) {
+                Text(countText)
+            }
+
+            if (isLoadingData) {
+                CircularProgressIndicator(
+                    Modifier
+                        .wrapContentSize()
+                        .size(24.dp),
+                    color = Color.White,
+                )
+            }
         }
     }
 }

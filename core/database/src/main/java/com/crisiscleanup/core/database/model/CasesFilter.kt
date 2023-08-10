@@ -1,5 +1,8 @@
 package com.crisiscleanup.core.database.model
 
+import com.crisiscleanup.core.common.haversineDistance
+import com.crisiscleanup.core.common.kmToMiles
+import com.crisiscleanup.core.common.radians
 import com.crisiscleanup.core.model.data.CasesFilter
 import kotlinx.datetime.Instant
 
@@ -102,6 +105,56 @@ fun CasesFilter.passesFilter(
         if (worksiteUpdatedAt < min || worksiteUpdatedAt > max) {
             return false
         }
+    }
+
+    return true
+}
+
+internal fun CasesFilter.passes(
+    worksite: WorksiteEntity,
+    flagEntities: List<WorksiteFlagEntity>,
+    formDataEntities: List<WorksiteFormDataEntity>,
+    workTypeEntities: List<WorkTypeEntity>,
+    organizationAffiliates: Set<Long>,
+    latRad: Double?,
+    lngRad: Double?,
+    isFavorite: Boolean,
+): Boolean {
+    if (isDefault) {
+        return true
+    }
+
+    val filterByDistance = latRad != null && lngRad != null && hasDistanceFilter
+    val distance = if (filterByDistance) {
+        haversineDistance(
+            latRad!!, lngRad!!,
+            worksite.latitude.radians, worksite.longitude.radians,
+        ).kmToMiles
+    } else {
+        0.0
+    }
+    if (!passesFilter(
+            worksite.svi ?: 0f,
+            worksite.updatedAt,
+            distance,
+        )
+    ) {
+        return false
+    }
+
+    if (hasAdditionalFilters &&
+        !passesFilter(
+            organizationAffiliates,
+            flagEntities,
+            formDataEntities,
+            workTypeEntities,
+            worksite.createdAt,
+            isFavorite,
+            worksite.reportedBy,
+            worksite.updatedAt,
+        )
+    ) {
+        return false
     }
 
     return true

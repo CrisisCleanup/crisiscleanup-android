@@ -81,18 +81,17 @@ import java.text.DecimalFormat
 @Composable
 internal fun BoxScope.CasesTableView(
     viewModel: CasesViewModel = hiltViewModel(),
-    isIncidentLoading: Boolean = false,
+    isLoadingData: Boolean = false,
     isTableDataTransient: Boolean = false,
     @DrawableRes disasterResId: Int = R.drawable.ic_disaster_other,
     openIncidentSelect: () -> Unit = {},
     onCasesAction: (CasesAction) -> Unit = {},
     filtersCount: Int = 0,
-    casesCount: Int = 0,
     onTableItemSelect: (Worksite) -> Unit = {},
 ) {
-    val translator = LocalAppTranslator.current
-
     val isTableBusy by viewModel.isTableBusy.collectAsStateWithLifecycle(false)
+
+    val countText by viewModel.casesCountTableText.collectAsStateWithLifecycle()
 
     val tableSort by viewModel.tableViewSort.collectAsStateWithLifecycle()
     val changeTableSort = remember(viewModel) {
@@ -138,7 +137,7 @@ internal fun BoxScope.CasesTableView(
                 disasterIconResId = disasterResId,
                 title = selectedIncident.shortName,
                 contentDescription = selectedIncident.shortName,
-                isLoading = isIncidentLoading,
+                isLoading = isLoadingData,
                 enabled = isEditable,
             )
 
@@ -162,12 +161,9 @@ internal fun BoxScope.CasesTableView(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = listItemSpacedByHalf,
         ) {
-            if (casesCount >= 0) {
-                val caseCountText =
-                    if (casesCount == 1) "$casesCount ${translator("casesVue.case")}"
-                    else "$casesCount ${translator("casesVue.cases")}"
+            if (countText.isNotBlank()) {
                 Text(
-                    caseCountText,
+                    countText,
                     style = LocalFontStyles.current.header4,
                 )
             }
@@ -176,7 +172,7 @@ internal fun BoxScope.CasesTableView(
 
             TableViewSortSelect(
                 tableSort,
-                isEditable = !(isIncidentLoading || isTableBusy || isTableDataTransient),
+                isEditable = !(isLoadingData || isTableBusy || isTableDataTransient),
                 onChange = changeTableSort,
             )
         }
@@ -260,7 +256,7 @@ internal fun BoxScope.CasesTableView(
         val dismissDialog =
             remember(claimActionErrorMessage) { { isClaimActionDialogVisible = false } }
         CrisisCleanupAlertDialog(
-            title =  LocalAppTranslator.current("info.error"),
+            title = LocalAppTranslator.current("info.error"),
             text = claimActionErrorMessage,
             onDismissRequest = dismissDialog,
             confirmButton = {

@@ -20,8 +20,8 @@ fun List<PopulatedWorksiteMapVisual>.filter(
     }
 
     val filterByDistance = location != null && filters.hasDistanceFilter
-    val latRad = location?.first?.radians ?: 0.0
-    val lngRad = location?.second?.radians ?: 0.0
+    val latRad = if (filterByDistance) location!!.first.radians else 0.0
+    val lngRad = if (filterByDistance) location!!.second.radians else 0.0
     return mapNotNull {
         val distance = if (filterByDistance) {
             haversineDistance(

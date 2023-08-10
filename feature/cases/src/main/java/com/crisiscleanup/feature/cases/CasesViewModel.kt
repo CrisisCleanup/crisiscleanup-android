@@ -47,6 +47,7 @@ import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
 import com.crisiscleanup.core.mapmarker.util.toLatLng
 import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.model.data.IncidentIdWorksiteCount
 import com.crisiscleanup.core.model.data.TableDataWorksite
 import com.crisiscleanup.core.model.data.TableWorksiteClaimAction
 import com.crisiscleanup.core.model.data.Worksite
@@ -56,7 +57,6 @@ import com.crisiscleanup.feature.cases.map.CasesMapBoundsManager
 import com.crisiscleanup.feature.cases.map.CasesMapMarkerManager
 import com.crisiscleanup.feature.cases.map.CasesMapTileLayerManager
 import com.crisiscleanup.feature.cases.map.CasesOverviewMapTileRenderer
-import com.crisiscleanup.feature.cases.map.IncidentIdWorksiteCount
 import com.crisiscleanup.feature.cases.model.CoordinateBounds
 import com.crisiscleanup.feature.cases.model.WorksiteQueryState
 import com.crisiscleanup.feature.cases.model.asWorksiteGoogleMapMark
@@ -76,7 +76,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -204,8 +203,19 @@ class CasesViewModel @Inject constructor(
     val editedWorksiteLocation: LatLng?
         get() = worksiteLocationEditor.takeEditedLocation()?.let { LatLng(it.first, it.second) }
 
+    val isIncidentLoading = incidentsRepository.isLoading
+
     val showDataProgress = dataPullReporter.incidentDataPullStats.map { it.isOngoing }
     val dataProgress = dataPullReporter.incidentDataPullStats.map { it.progress }
+
+    /**
+     * Incident or worksites data are currently saving/caching/loading
+     */
+    val isLoadingData = combine(
+        isIncidentLoading,
+        showDataProgress,
+        worksitesRepository.isDeterminingWorksitesCount,
+    ) { b0, b1, b2 -> b0 || b1 || b2 }
 
     private var _mapCameraZoom = MutableStateFlow(MapViewCameraZoomDefault)
     val mapCameraZoom = _mapCameraZoom.asStateFlow()
@@ -220,16 +230,14 @@ class CasesViewModel @Inject constructor(
 
     val incidentLocationBounds = mapBoundsManager.mapCameraBounds
 
-    val isIncidentLoading = incidentsRepository.isLoading
-
-    private val incidentWorksitesCount = incidentSelector.incidentId.flatMapLatest { id ->
-        worksitesRepository.streamIncidentWorksitesCount(id)
-            .map { count -> IncidentIdWorksiteCount(id, count) }
-    }.shareIn(
-        scope = viewModelScope,
-        replay = 1,
-        started = SharingStarted.WhileSubscribed(1_000),
-    )
+    private val incidentWorksitesCount =
+        worksitesRepository.streamIncidentWorksitesCount(incidentSelector.incidentId)
+            .flowOn(ioDispatcher)
+            .shareIn(
+                scope = viewModelScope,
+                replay = 1,
+                started = SharingStarted.WhileSubscribed(1_000),
+            )
 
     private val isGeneratingWorksiteMarkers = MutableStateFlow(false)
     val isMapBusy = combine(
@@ -317,20 +325,70 @@ class CasesViewModel @Inject constructor(
     private var tileRefreshedInstant: Instant = Instant.fromEpochSeconds(0)
     private var tileClearWorksitesCount = 0
 
-    val casesCount = combine(
-        isIncidentLoading,
+    private val casesCount = combine(
+        isLoadingData,
+        qsm.isTableView,
         worksitesMapMarkers,
+        incidentSelector.incidentId,
         incidentWorksitesCount,
-    ) { isSyncing, markers, worksitesCount ->
-        var totalCount = worksitesCount.count
-        if (totalCount == 0 && isSyncing) {
-            totalCount = -1
+    ) { isLoading, isTableView, markers, incidentId, worksitesCount ->
+        if (incidentId != worksitesCount.id) {
+            return@combine Pair(-1, -1)
         }
-        Pair(markers.size, totalCount)
+
+        val totalCount = worksitesCount.count
+        if (totalCount == 0 && isLoading) {
+            return@combine Pair(0, -1)
+        }
+
+        if (isTableView) {
+            Pair(totalCount, totalCount)
+        }
+
+        val markerCount = markers.filterNot { it.isFilteredOut }.size
+        Pair(markerCount, totalCount)
+    }
+        .flowOn(ioDispatcher)
+        .shareIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(),
+            replay = 1,
+        )
+
+    val casesCountTableText = casesCount.map {
+        val totalCount = it.second
+        if (totalCount == 1) "$totalCount ${translator("casesVue.case")}"
+        else "$totalCount ${translator("casesVue.cases")}"
     }
         .stateIn(
             scope = viewModelScope,
-            initialValue = Pair(0, -1),
+            initialValue = "",
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    val casesCountMapText = casesCount.map {
+        val (visibleCount, totalCount) = it
+        if (totalCount < 0) {
+            return@map ""
+        }
+
+        val countText = if (visibleCount == totalCount || visibleCount == 0) {
+            if (visibleCount == 0) translator("info.t_of_t_cases")
+                .replace("{visible_count}", "$totalCount")
+            else if (totalCount == 1) translator("info.1_of_1_case")
+            else translator("info.t_of_t_cases")
+                .replace("{visible_count}", "$totalCount")
+        } else {
+            translator("info.v_of_t_cases")
+                .replace("{visible_count}", "$visibleCount")
+                .replace("{total_count}", "$totalCount")
+        }
+
+        countText
+    }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = "",
             started = SharingStarted.WhileSubscribed(),
         )
 
@@ -550,7 +608,18 @@ class CasesViewModel @Inject constructor(
         var clearCache = false
 
         pullStats.run {
-            if (!isStarted || idCount.id != incidentId) {
+            val isIncidentChange = idCount.id != incidentId
+
+            // TODO Stale tiles will flash in certain cases.
+            //      Why does the first clear call not take?
+            //      Toggle multiple times between (one large) incidents in the same area.
+            if (isIncidentChange || idCount.count == 0) {
+                tileClearWorksitesCount = 0
+                mapTileRenderer.setIncident(incidentId, 0)
+                casesMapTileManager.clearTiles()
+            }
+
+            if (!isStarted || isIncidentChange) {
                 return@run
             }
 

@@ -7,6 +7,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import com.crisiscleanup.core.database.dao.fts.PopulatedWorksiteTextMatchInfo
 import com.crisiscleanup.core.database.model.BoundedSyncedWorksiteIds
+import com.crisiscleanup.core.database.model.PopulatedFilterDataWorksite
 import com.crisiscleanup.core.database.model.PopulatedLocalWorksite
 import com.crisiscleanup.core.database.model.PopulatedTableDataWorksite
 import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
@@ -403,7 +404,7 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
-        SELECT * 
+        SELECT *
         FROM worksites
         WHERE incident_id=:incidentId
         ORDER BY name, county, city, case_number_order, case_number
@@ -437,7 +438,7 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
-        SELECT * 
+        SELECT *
         FROM worksites
         WHERE incident_id=:incidentId
         ORDER BY county, name, case_number_order, case_number
@@ -455,7 +456,7 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
-        SELECT * 
+        SELECT *
         FROM worksites
         WHERE incident_id=:incidentId
         ORDER BY case_number_order, case_number
@@ -469,6 +470,96 @@ interface WorksiteDao {
         offset: Int,
     ): List<PopulatedTableDataWorksite>
 
+    @Transaction
+    @Query(
+        """
+        SELECT *
+        FROM worksites
+        WHERE incident_id=:incidentId
+        ORDER BY id
+        LIMIT :limit
+        OFFSET :offset
+        """,
+    )
+    fun getFilterWorksites(
+        incidentId: Long,
+        limit: Int,
+        offset: Int,
+    ): List<PopulatedFilterDataWorksite>
+
+    @Transaction
+    @Query(
+        """
+        SELECT *
+        FROM worksites
+        WHERE incident_id=:incidentId AND (svi IS NULL OR svi <= :svi)
+        ORDER BY svi
+        LIMIT :limit
+        OFFSET :offset
+        """,
+    )
+    fun getFilterWorksitesBySvi(
+        incidentId: Long,
+        svi: Float,
+        limit: Int,
+        offset: Int,
+    ): List<PopulatedFilterDataWorksite>
+
+    @Transaction
+    @Query(
+        """
+        SELECT *
+        FROM worksites
+        WHERE incident_id=:incidentId AND updated_at >= :reference
+        ORDER BY svi
+        LIMIT :limit
+        OFFSET :offset
+        """,
+    )
+    fun getFilterWorksitesByUpdatedAfter(
+        incidentId: Long,
+        reference: Instant,
+        limit: Int,
+        offset: Int,
+    ): List<PopulatedFilterDataWorksite>
+
+    @Transaction
+    @Query(
+        """
+        SELECT *
+        FROM worksites
+        WHERE incident_id=:incidentId AND updated_at BETWEEN :lower AND :upper
+        ORDER BY updated_at
+        LIMIT :limit
+        OFFSET :offset
+        """,
+    )
+    fun getFilterWorksitesByUpdatedAt(
+        incidentId: Long,
+        lower: Instant,
+        upper: Instant,
+        limit: Int,
+        offset: Int,
+    ): List<PopulatedFilterDataWorksite>
+
+    @Transaction
+    @Query(
+        """
+        SELECT *
+        FROM worksites
+        WHERE incident_id=:incidentId AND created_at IS NOT NULL AND created_at BETWEEN :lower AND :upper
+        ORDER BY created_at
+        LIMIT :limit
+        OFFSET :offset
+        """,
+    )
+    fun getFilterWorksitesByCreatedAt(
+        incidentId: Long,
+        lower: Instant,
+        upper: Instant,
+        limit: Int,
+        offset: Int,
+    ): List<PopulatedFilterDataWorksite>
 
     @Transaction
     @Query("SELECT case_number FROM worksites ORDER BY RANDOM() LIMIT 1")

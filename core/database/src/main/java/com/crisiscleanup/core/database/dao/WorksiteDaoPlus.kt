@@ -8,6 +8,7 @@ import com.crisiscleanup.core.database.CrisisCleanupDatabase
 import com.crisiscleanup.core.database.model.BoundedSyncedWorksiteIds
 import com.crisiscleanup.core.database.model.CoordinateGridQuery
 import com.crisiscleanup.core.database.model.NetworkFileEntity
+import com.crisiscleanup.core.database.model.PopulatedFilterDataWorksite
 import com.crisiscleanup.core.database.model.PopulatedTableDataWorksite
 import com.crisiscleanup.core.database.model.SwNeBounds
 import com.crisiscleanup.core.database.model.WorkTypeEntity
@@ -20,12 +21,14 @@ import com.crisiscleanup.core.database.model.WorksiteNetworkFileCrossRef
 import com.crisiscleanup.core.database.model.WorksiteNoteEntity
 import com.crisiscleanup.core.database.model.filter
 import com.crisiscleanup.core.model.data.CasesFilter
+import com.crisiscleanup.core.model.data.IncidentIdWorksiteCount
 import com.crisiscleanup.core.model.data.WorksiteSortBy
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.days
 
 class WorksiteDaoPlus @Inject constructor(
     internal val db: CrisisCleanupDatabase,
@@ -691,4 +694,71 @@ class WorksiteDaoPlus @Inject constructor(
 
         loadedWorksites
     }
+
+    suspend fun getWorksitesCount(
+        incidentId: Long,
+        totalCount: Int,
+        filters: CasesFilter,
+        organizationAffiliates: Set<Long>,
+        coordinates: Pair<Double, Double>?,
+    ): IncidentIdWorksiteCount =
+        coroutineScope {
+            val stride = 2000
+            var offset = 0
+            var count = 0
+            val worksiteDao = db.worksiteDao()
+            val latRad = coordinates?.first?.radians
+            val lngRad = coordinates?.second?.radians
+            while (offset < totalCount) {
+                ensureActive()
+
+                val worksites: List<PopulatedFilterDataWorksite>
+                if (filters.hasSviFilter) {
+                    worksites = worksiteDao.getFilterWorksitesBySvi(
+                        incidentId,
+                        filters.svi,
+                        stride,
+                        offset,
+                    )
+                } else if (filters.hasUpdatedFilter) {
+                    worksites = worksiteDao.getFilterWorksitesByUpdatedAfter(
+                        incidentId,
+                        Clock.System.now().minus(filters.daysAgoUpdated.days),
+                        stride,
+                        offset,
+                    )
+                } else if (filters.updatedAt != null) {
+                    worksites = worksiteDao.getFilterWorksitesByUpdatedAt(
+                        incidentId,
+                        filters.updatedAt!!.first,
+                        filters.updatedAt!!.second,
+                        stride,
+                        offset,
+                    )
+                } else if (filters.createdAt != null) {
+                    worksites = worksiteDao.getFilterWorksitesByCreatedAt(
+                        incidentId,
+                        filters.createdAt!!.first,
+                        filters.createdAt!!.second,
+                        stride,
+                        offset,
+                    )
+                } else {
+                    worksites = worksiteDao.getFilterWorksites(incidentId, stride, offset)
+                }
+                if (worksites.isEmpty()) {
+                    break
+                }
+
+                ensureActive()
+
+                count += worksites.count {
+                    it.passesFilter(filters, organizationAffiliates, latRad, lngRad)
+                }
+
+                offset += stride
+            }
+
+            IncidentIdWorksiteCount(incidentId, count)
+        }
 }

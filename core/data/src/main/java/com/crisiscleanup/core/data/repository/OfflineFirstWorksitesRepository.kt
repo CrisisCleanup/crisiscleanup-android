@@ -1,6 +1,7 @@
 package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.common.AppVersionProvider
+import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
@@ -24,6 +25,7 @@ import com.crisiscleanup.core.database.model.asWorksiteSyncStatsEntity
 import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.IncidentDataSyncStats
+import com.crisiscleanup.core.model.data.IncidentIdWorksiteCount
 import com.crisiscleanup.core.model.data.SyncAttempt
 import com.crisiscleanup.core.model.data.TableDataWorksite
 import com.crisiscleanup.core.model.data.WorksiteSortBy
@@ -35,10 +37,16 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -62,6 +70,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private val workTypeTransferRequestDaoPlus: WorkTypeTransferRequestDaoPlus,
     organizationsRepository: OfflineFirstOrganizationsRepository,
     private val filterRepository: CasesFilterRepository,
+    private val locationProvider: LocationProvider,
     private val appVersionProvider: AppVersionProvider,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
     @ApplicationScope externalScope: CoroutineScope,
@@ -72,7 +81,38 @@ class OfflineFirstWorksitesRepository @Inject constructor(
 
     override val incidentDataPullStats = worksitesSyncer.dataPullStats
 
-    override fun streamIncidentWorksitesCount(id: Long) = worksiteDao.streamWorksitesCount(id)
+    override val isDeterminingWorksitesCount = MutableStateFlow(false)
+
+    override fun streamIncidentWorksitesCount(incidentIdStream: Flow<Long>) = combine(
+        incidentIdStream,
+        incidentIdStream.flatMapLatest { worksiteDao.streamWorksitesCount(it) },
+        filterRepository.casesFilters,
+        ::Triple,
+    )
+        .debounce(timeoutMillis = 150)
+        .distinctUntilChanged()
+        .mapLatest { (id, totalCount, filters) ->
+            if (!filters.isDefault) {
+                isDeterminingWorksitesCount.value = true
+                try {
+                    return@mapLatest worksiteDaoPlus.getWorksitesCount(
+                        id,
+                        totalCount,
+                        filters,
+                        organizationAffiliates.value,
+                        locationProvider.getLocation(),
+                    )
+                } catch (e: Exception) {
+                    logger.logCapture("Worksites count of incident $id")
+                    logger.logException(e)
+                } finally {
+                    isDeterminingWorksitesCount.value = false
+                }
+            }
+
+            isDeterminingWorksitesCount.value = false
+            IncidentIdWorksiteCount(id, totalCount)
+        }
 
     private val orgId = accountDataRepository.accountData.map { it.org.id }
 

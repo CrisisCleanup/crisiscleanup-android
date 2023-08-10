@@ -27,7 +27,12 @@ data class PopulatedWorksite(
         entityColumn = "id",
     )
     val root: WorksiteRootEntity,
-)
+) {
+    internal val isFavorite: Boolean
+        get() {
+            return if (root.isLocalModified) entity.isLocalFavorite else entity.favoriteId != null
+        }
+}
 
 fun PopulatedWorksite.asExternalModel(): Worksite {
     val validWorkTypes = workTypes

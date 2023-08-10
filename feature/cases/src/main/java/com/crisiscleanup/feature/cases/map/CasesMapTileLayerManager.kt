@@ -74,8 +74,3 @@ internal class CasesMapTileLayerManager(
         tileDataChangeKey.longValue = dataChangeValue % 1_000_000
     }
 }
-
-data class IncidentIdWorksiteCount(
-    val id: Long,
-    val count: Int,
-)

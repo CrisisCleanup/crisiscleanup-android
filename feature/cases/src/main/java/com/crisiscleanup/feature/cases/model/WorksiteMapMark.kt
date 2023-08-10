@@ -13,6 +13,7 @@ data class WorksiteGoogleMapMark(
     val markerState: MarkerState,
     val mapIcon: BitmapDescriptor?,
     val mapIconOffset: Offset,
+    val isFilteredOut: Boolean,
 )
 
 fun WorksiteMapMark.asWorksiteGoogleMapMark(
@@ -35,5 +36,6 @@ fun WorksiteMapMark.asWorksiteGoogleMapMark(
             isFilteredOut = isFilteredOut,
         ),
         mapIconOffset = Offset(0.5f + xOffset, 0.5f + yOffset),
+        isFilteredOut = isFilteredOut,
     )
 }
