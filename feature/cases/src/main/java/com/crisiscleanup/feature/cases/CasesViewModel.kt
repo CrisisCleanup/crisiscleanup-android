@@ -336,7 +336,7 @@ class CasesViewModel @Inject constructor(
             return@combine Pair(-1, -1)
         }
 
-        val totalCount = worksitesCount.count
+        val totalCount = worksitesCount.filteredCount
         if (totalCount == 0 && isLoading) {
             return@combine Pair(0, -1)
         }
@@ -613,7 +613,7 @@ class CasesViewModel @Inject constructor(
             // TODO Stale tiles will flash in certain cases.
             //      Why does the first clear call not take?
             //      Toggle multiple times between (one large) incidents in the same area.
-            if (isIncidentChange || idCount.count == 0) {
+            if (isIncidentChange || idCount.totalCount == 0) {
                 tileClearWorksitesCount = 0
                 mapTileRenderer.setIncident(incidentId, 0)
                 casesMapTileManager.clearTiles()
@@ -637,7 +637,7 @@ class CasesViewModel @Inject constructor(
                 refreshTiles = now - pullStart > tileClearRefreshInterval &&
                         sinceLastRefresh > tileClearRefreshInterval &&
                         projectedDelta > tileClearRefreshInterval
-                if (idCount.count - tileClearWorksitesCount >= 6000 &&
+                if (idCount.totalCount - tileClearWorksitesCount >= 6000 &&
                     dataCount - tileClearWorksitesCount > 3000
                 ) {
                     clearCache = true
@@ -650,13 +650,13 @@ class CasesViewModel @Inject constructor(
         }
 
         if (refreshTiles) {
-            if (mapTileRenderer.setIncident(idCount.id, idCount.count, clearCache)) {
+            if (mapTileRenderer.setIncident(idCount.id, idCount.totalCount, clearCache)) {
                 clearCache = true
             }
         }
 
         if (clearCache) {
-            tileClearWorksitesCount = idCount.count
+            tileClearWorksitesCount = idCount.totalCount
             casesMapTileManager.clearTiles()
         } else if (refreshTiles) {
             casesMapTileManager.onTileChange()

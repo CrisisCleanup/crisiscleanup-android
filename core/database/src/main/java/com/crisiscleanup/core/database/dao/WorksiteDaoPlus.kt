@@ -777,6 +777,6 @@ class WorksiteDaoPlus @Inject constructor(
                 offset += stride
             }
 
-            IncidentIdWorksiteCount(incidentId, count)
+            IncidentIdWorksiteCount(incidentId, totalCount, count)
         }
 }

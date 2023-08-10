@@ -128,7 +128,6 @@ class OfflineFirstWorksitesRepository @Inject constructor(
                         areaBounds,
                     )
                 } catch (e: Exception) {
-                    logger.logCapture("Worksites count of incident $id")
                     logger.logException(e)
                 } finally {
                     isDeterminingWorksitesCount.value = false
@@ -136,7 +135,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             }
 
             isDeterminingWorksitesCount.value = false
-            IncidentIdWorksiteCount(id, totalCount)
+            IncidentIdWorksiteCount(id, totalCount, totalCount)
         }
 
     private val organizationAffiliates = orgId.map {
