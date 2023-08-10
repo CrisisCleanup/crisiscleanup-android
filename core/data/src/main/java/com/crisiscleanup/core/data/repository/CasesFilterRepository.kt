@@ -1,30 +1,30 @@
 package com.crisiscleanup.core.data.repository
 
-import android.util.LruCache
+import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.datastore.CasesFiltersDataSource
 import com.crisiscleanup.core.model.data.CasesFilter
-import com.crisiscleanup.core.network.model.queryMap
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
 interface CasesFilterRepository {
-    val casesFilters: StateFlow<CasesFilter>
+    val casesFilters: CasesFilter
+    val casesFiltersLocation: StateFlow<Pair<CasesFilter, Boolean>>
     val filtersCount: Flow<Int>
-    val filterQuery: Flow<Pair<CasesFilter, Map<String, Any>>>
 
     fun changeFilters(filters: CasesFilter)
     fun updateWorkTypeFilters(workTypes: Collection<String>)
@@ -33,7 +33,7 @@ interface CasesFilterRepository {
 @Singleton
 class CrisisCleanupCasesFilterRepository @Inject constructor(
     private val dataSource: CasesFiltersDataSource,
-    accountDataRepository: AccountDataRepository,
+    permissionManager: PermissionManager,
     @ApplicationScope private val externalScope: CoroutineScope,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
 ) : CasesFilterRepository {
@@ -41,34 +41,20 @@ class CrisisCleanupCasesFilterRepository @Inject constructor(
     val isLoading: StateFlow<Boolean> = _isLoading
 
     private val _casesFilters = MutableStateFlow(CasesFilter())
-    override val casesFilters = _casesFilters
-
-    override val filtersCount = casesFilters.map { it.changeCount }
-
-    private val queryParamCache = LruCache<Pair<CasesFilter, Long>, Map<String, Any>>(30)
-
-    override val filterQuery = combine(
-        accountDataRepository.accountData,
-        casesFilters,
+    override val casesFiltersLocation = combine(
+        _casesFilters,
+        permissionManager.hasLocationPermission,
         ::Pair,
     )
-        .filter { (accountData, _) -> accountData.org.id > 0 }
-        .map { (accountData, filters) ->
-            val orgId = accountData.org.id
-            val cacheKey = Pair(filters, orgId)
-            queryParamCache.get(cacheKey)?.let { cached ->
-                return@map Pair(filters, cached)
-            }
+        .stateIn(
+            scope = externalScope,
+            initialValue = Pair(CasesFilter(), false),
+            started = SharingStarted.WhileSubscribed(),
+        )
+    override val casesFilters: CasesFilter
+        get() = casesFiltersLocation.value.first
 
-            if (filters.changeCount == 0) {
-                queryParamCache.put(cacheKey, emptyMap())
-                return@map Pair(filters, emptyMap())
-            }
-
-            val queryParams = filters.queryMap(orgId)
-            queryParamCache.put(cacheKey, queryParams)
-            Pair(filters, queryParams)
-        }
+    override val filtersCount = casesFiltersLocation.map { it.first.changeCount }
 
     init {
         externalScope.launch(ioDispatcher) {

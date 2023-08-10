@@ -34,6 +34,7 @@ import com.crisiscleanup.core.common.noonTime
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.CollapsibleIcon
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupRadioButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
@@ -137,6 +138,10 @@ private fun ColumnScope.FilterControls(
     updateFilters: (CasesFilter) -> Unit = {},
 ) {
     val translator = LocalAppTranslator.current
+
+    val showRequestLocationPermission by viewModel.hasInconsistentDistanceFilter.collectAsStateWithLifecycle(
+        false,
+    )
 
     val workTypeStatuses by viewModel.workTypeStatuses.collectAsStateWithLifecycle()
     val workTypes by viewModel.workTypes.collectAsStateWithLifecycle(emptyList())
@@ -293,6 +298,8 @@ private fun ColumnScope.FilterControls(
             !sectionCollapseStates[0],
             toggleDistanceSection,
             viewModel.distanceOptions,
+            showRequestLocationPermission,
+            viewModel::onRequestLocationPermission,
         )
         generalOptions(
             filters,
@@ -517,6 +524,8 @@ private fun LazyListScope.distanceOptions(
     isSectionExpanded: Boolean = false,
     toggleSection: () -> Unit = {},
     options: List<Pair<Float, String>> = emptyList(),
+    showRequestLocationPermission: Boolean = false,
+    requestLocationPermission: () -> Unit = {},
 ) {
     collapsibleSectionHeader(
         CollapsibleFilterSection.Distance,
@@ -525,6 +534,26 @@ private fun LazyListScope.distanceOptions(
     )
 
     if (isSectionExpanded) {
+        if (showRequestLocationPermission) {
+            item {
+                val translator = LocalAppTranslator.current
+                val messageKey = "~~Filtering by distance requires access to location"
+                val actionKey = "~~Grant access to location"
+
+                Column(
+                    listItemModifier,
+                    verticalArrangement = listItemSpacedBy,
+                ) {
+                    Text(translator(messageKey))
+
+                    CrisisCleanupButton(
+                        text = translator(actionKey),
+                        onClick = requestLocationPermission,
+                    )
+                }
+            }
+        }
+
         item {
             options.forEach {
                 CrisisCleanupRadioButton(

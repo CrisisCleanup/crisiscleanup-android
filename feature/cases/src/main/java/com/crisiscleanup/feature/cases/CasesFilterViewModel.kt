@@ -24,6 +24,7 @@ import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.WorksiteFlagType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -43,7 +44,14 @@ class CasesFilterViewModel @Inject constructor(
 ) : ViewModel() {
     var showExplainPermissionLocation by mutableStateOf(false)
 
-    val casesFilters = MutableStateFlow(casesFilterRepository.casesFilters.value)
+    val casesFilters = MutableStateFlow(casesFilterRepository.casesFilters)
+
+    val hasInconsistentDistanceFilter = combine(
+        permissionManager.hasLocationPermission,
+        casesFilters,
+    ) { hasPermission, filters ->
+        filters.hasDistanceFilter && !hasPermission
+    }
 
     val workTypeStatuses = workTypeStatusRepository.workTypeStatusFilterOptions
 
@@ -57,7 +65,7 @@ class CasesFilterViewModel @Inject constructor(
             incident?.formFields?.let { formFields ->
                 val formFieldRootNode = FormFieldNode.buildTree(
                     formFields,
-                    languageRepository
+                    languageRepository,
                 )
                     .map(FormFieldNode::flatten)
 
@@ -120,12 +128,17 @@ class CasesFilterViewModel @Inject constructor(
             }
 
             PermissionStatus.Denied,
-            PermissionStatus.Undefined -> {
+            PermissionStatus.Undefined,
+            -> {
                 // Ignore these statuses as they're not important
             }
         }
 
         distanceOptionCached.set(distance)
+    }
+
+    fun onRequestLocationPermission() {
+        permissionManager.requestLocationPermission()
     }
 
     fun changeFilters(filters: CasesFilter) {

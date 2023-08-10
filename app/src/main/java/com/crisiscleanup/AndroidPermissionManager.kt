@@ -1,6 +1,7 @@
 package com.crisiscleanup
 
 import android.Manifest.permission.ACCESS_COARSE_LOCATION
+import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.Manifest.permission.CAMERA
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.READ_MEDIA_IMAGES
@@ -27,8 +28,7 @@ import javax.inject.Singleton
 class AndroidPermissionManager @Inject constructor(
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : PermissionManager, DefaultLifecycleObserver {
-    override val hasLocationPermission: Boolean
-        get() = hasPermission(ACCESS_COARSE_LOCATION)
+    override val hasLocationPermission = MutableStateFlow(false)
 
     override val permissionChanges = MutableStateFlow(Pair("", PermissionStatus.Undefined))
 
@@ -43,6 +43,7 @@ class AndroidPermissionManager @Inject constructor(
     override fun onCreate(owner: LifecycleOwner) {
         (owner as? ComponentActivity)?.let { activity ->
             activityWr = WeakReference(activity)
+            publishLocationPermission()
 
             requestPermissionLauncher =
                 activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
@@ -52,6 +53,10 @@ class AndroidPermissionManager @Inject constructor(
                         if (isGranted) PermissionStatus.Granted
                         else PermissionStatus.Denied
                     permissionChanges.value = Pair(permission, status)
+
+                    if (permission == ACCESS_COARSE_LOCATION || permission == ACCESS_FINE_LOCATION) {
+                        publishLocationPermission()
+                    }
                 }
         }
     }
@@ -60,11 +65,16 @@ class AndroidPermissionManager @Inject constructor(
         requestPermissionLauncher?.unregister()
     }
 
+    private fun publishLocationPermission() {
+        hasLocationPermission.value = hasPermission(ACCESS_COARSE_LOCATION) ||
+                hasPermission(ACCESS_FINE_LOCATION)
+    }
+
     private fun hasPermission(permission: String): Boolean {
         activityWr.get()?.let { activity ->
             return ContextCompat.checkSelfPermission(
                 activity,
-                permission
+                permission,
             ) == PackageManager.PERMISSION_GRANTED
         }
         return false
@@ -77,7 +87,7 @@ class AndroidPermissionManager @Inject constructor(
                 permissionStatus == PackageManager.PERMISSION_GRANTED -> PermissionStatus.Granted
                 shouldShowRequestPermissionRationale(
                     activity,
-                    permission
+                    permission,
                 ) -> PermissionStatus.ShowRationale
 
                 else -> {

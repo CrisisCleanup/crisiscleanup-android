@@ -86,12 +86,13 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     override fun streamIncidentWorksitesCount(incidentIdStream: Flow<Long>) = combine(
         incidentIdStream,
         incidentIdStream.flatMapLatest { worksiteDao.streamWorksitesCount(it) },
-        filterRepository.casesFilters,
+        filterRepository.casesFiltersLocation,
         ::Triple,
     )
         .debounce(timeoutMillis = 150)
         .distinctUntilChanged()
-        .mapLatest { (id, totalCount, filters) ->
+        .mapLatest { (id, totalCount, filtersLocation) ->
+            val filters = filtersLocation.first
             if (!filters.isDefault) {
                 isDeterminingWorksitesCount.value = true
                 try {
@@ -163,7 +164,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         offset,
     )
         .filter(
-            filterRepository,
+            filterRepository.casesFilters,
             organizationAffiliates.value,
             coordinates,
         )

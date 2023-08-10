@@ -57,8 +57,8 @@ internal class CasesQueryStateManager(
         }
             .launchIn(coroutineScope)
 
-        filterRepository.casesFilters.onEach {
-            worksiteQueryState.value = worksiteQueryState.value.copy(filters = it)
+        filterRepository.casesFiltersLocation.onEach {
+            worksiteQueryState.value = worksiteQueryState.value.copy(filters = it.first)
         }
             .launchIn(coroutineScope)
     }

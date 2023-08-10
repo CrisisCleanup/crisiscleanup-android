@@ -406,7 +406,7 @@ class CasesViewModel @Inject constructor(
         combine(
             incidentWorksitesCount,
             dataPullReporter.incidentDataPullStats,
-            filterRepository.casesFilters,
+            filterRepository.casesFiltersLocation,
             ::Triple,
         )
             .debounce(16)
@@ -428,7 +428,7 @@ class CasesViewModel @Inject constructor(
                         setMapToMyCoordinates()
                     }
                 }
-                isMyLocationEnabled = permissionManager.hasLocationPermission
+                isMyLocationEnabled = permissionManager.hasLocationPermission.value
             }
             .launchIn(viewModelScope)
 

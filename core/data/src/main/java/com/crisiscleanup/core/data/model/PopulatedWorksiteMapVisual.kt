@@ -3,18 +3,17 @@ package com.crisiscleanup.core.data.model
 import com.crisiscleanup.core.common.haversineDistance
 import com.crisiscleanup.core.common.kmToMiles
 import com.crisiscleanup.core.common.radians
-import com.crisiscleanup.core.data.repository.CasesFilterRepository
 import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.database.model.passesFilter
+import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 
 fun List<PopulatedWorksiteMapVisual>.filter(
-    repository: CasesFilterRepository,
+    filters: CasesFilter,
     organizationAffiliates: Set<Long>,
     location: Pair<Double, Double>? = null,
 ): List<WorksiteMapMark> {
-    val filters = repository.casesFilters.value
     if (filters.isDefault) {
         return map(PopulatedWorksiteMapVisual::asExternalModel)
     }

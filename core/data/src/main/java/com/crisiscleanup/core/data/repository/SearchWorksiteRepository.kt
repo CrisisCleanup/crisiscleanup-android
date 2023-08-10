@@ -16,8 +16,6 @@ import com.crisiscleanup.core.model.data.WorksiteSummary
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkWorksiteShort
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.flow.first
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
@@ -27,7 +25,6 @@ interface SearchWorksitesRepository {
     suspend fun searchWorksites(
         incidentId: Long,
         q: String,
-        applyFilters: Boolean = false,
     ): Collection<WorksiteSummary>
 
     suspend fun locationSearchWorksites(
@@ -40,7 +37,6 @@ interface SearchWorksitesRepository {
 
 class MemoryCacheSearchWorksitesRepository @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,
-    private val filterRepository: CasesFilterRepository,
     private val locationProvider: LocationProvider,
     private val worksiteDaoPlus: WorksiteDaoPlus,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
@@ -72,32 +68,15 @@ class MemoryCacheSearchWorksitesRepository @Inject constructor(
     override suspend fun searchWorksites(
         incidentId: Long,
         q: String,
-        applyFilters: Boolean,
     ): Collection<WorksiteSummary> = coroutineScope {
-        val (filters, filterQuery) = filterRepository.filterQuery.first()
-        val hasFilters = applyFilters && filters.changeCount > 0
-
         val (incidentQuery, now, cacheResults) = getCacheResults(incidentId, q)
-        val useCache = !hasFilters
 
-        if (useCache) {
-            cacheResults?.let {
-                return@coroutineScope it
-            }
+        cacheResults?.let {
+            return@coroutineScope it
         }
 
         try {
-            val searchFilters = if (hasFilters) filterQuery else emptyMap()
-            var results = networkDataSource.getSearchWorksites(incidentId, q, searchFilters)
-
-            if (hasFilters) {
-                ensureActive()
-
-                results = filterResults(results, filters)
-
-                ensureActive()
-            }
-
+            val results = networkDataSource.getSearchWorksites(incidentId, q)
             if (results.isNotEmpty()) {
                 val searchResult = results.map { networkWorksite ->
                     val workType = networkWorksite.newestKeyWorkType?.let { keyWorkType ->
@@ -123,9 +102,7 @@ class MemoryCacheSearchWorksitesRepository @Inject constructor(
                     }
                 }
 
-                if (useCache) {
-                    searchCache.put(incidentQuery, Pair(now, searchResult))
-                }
+                searchCache.put(incidentQuery, Pair(now, searchResult))
 
                 return@coroutineScope searchResult
             }
