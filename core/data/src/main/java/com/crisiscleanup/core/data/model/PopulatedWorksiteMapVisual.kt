@@ -7,11 +7,13 @@ import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.database.model.passesFilter
 import com.crisiscleanup.core.model.data.CasesFilter
+import com.crisiscleanup.core.model.data.OrganizationLocationAreaBounds
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 
 fun List<PopulatedWorksiteMapVisual>.filter(
     filters: CasesFilter,
     organizationAffiliates: Set<Long>,
+    locationAreaBounds: OrganizationLocationAreaBounds,
     location: Pair<Double, Double>? = null,
 ): List<WorksiteMapMark> {
     if (filters.isDefault) {
@@ -49,6 +51,9 @@ fun List<PopulatedWorksiteMapVisual>.filter(
                     it.isFavorite,
                     it.reportedBy,
                     it.updatedAt,
+                    it.latitude,
+                    it.longitude,
+                    locationAreaBounds,
                 )
         it.asExternalModel(isFilteredOut)
     }

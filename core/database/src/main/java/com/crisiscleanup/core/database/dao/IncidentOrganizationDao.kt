@@ -12,6 +12,7 @@ import com.crisiscleanup.core.database.model.IncidentOrganizationSyncStatsEntity
 import com.crisiscleanup.core.database.model.OrganizationAffiliateEntity
 import com.crisiscleanup.core.database.model.OrganizationPrimaryContactCrossRef
 import com.crisiscleanup.core.database.model.PopulatedIncidentOrganization
+import com.crisiscleanup.core.database.model.PopulatedOrganizationLocationIds
 import com.crisiscleanup.core.model.data.OrganizationIdName
 import kotlinx.coroutines.flow.Flow
 
@@ -26,7 +27,7 @@ interface IncidentOrganizationDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertIgnorePrimaryContactCrossRefs(
-        contactCrossRefs: Collection<OrganizationPrimaryContactCrossRef>
+        contactCrossRefs: Collection<OrganizationPrimaryContactCrossRef>,
     )
 
     @Transaction
@@ -47,7 +48,7 @@ interface IncidentOrganizationDao {
         SELECT *
         FROM incident_organization_sync_stats
         WHERE incident_id==:incidentId
-        """
+        """,
     )
     fun getSyncStats(incidentId: Long): IncidentOrganizationSyncStatsEntity?
 
@@ -66,6 +67,10 @@ interface IncidentOrganizationDao {
     fun getAffiliateOrganizationIds(orgId: Long): List<Long>
 
     @Transaction
+    @Query("SELECT primary_location, secondary_location FROM incident_organizations WHERE id=:orgId")
+    fun getLocationIds(orgId: Long): Flow<PopulatedOrganizationLocationIds?>
+
+    @Transaction
     @Query("SELECT name FROM incident_organizations ORDER BY RANDOM() LIMIT 1")
     fun getRandomOrganizationName(): String?
 
@@ -81,7 +86,7 @@ interface IncidentOrganizationDao {
         FROM incident_organization_fts f
         INNER JOIN incident_organizations io ON f.docid=io.id
         WHERE incident_organization_fts MATCH :query
-        """
+        """,
     )
     fun matchOrganizationName(query: String): List<PopulatedOrganizationIdNameMatchInfo>
 

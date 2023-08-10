@@ -18,105 +18,106 @@ interface DataModule {
     @Singleton
     @Binds
     fun bindsNetworkMonitor(
-        networkMonitor: ConnectivityManagerNetworkMonitor
+        networkMonitor: ConnectivityManagerNetworkMonitor,
     ): NetworkMonitor
 
     @Singleton
     @Binds
     fun bindsLocalAppPreferencesRepository(
-        repository: OfflineFirstLocalAppPreferencesRepository
+        repository: OfflineFirstLocalAppPreferencesRepository,
     ): LocalAppPreferencesRepository
 
     @Singleton
     @Binds
     fun bindsAccountDataRepository(
-        repository: CrisisCleanupAccountDataRepository
+        repository: CrisisCleanupAccountDataRepository,
     ): AccountDataRepository
 
     @Singleton
     @Binds
     fun bindsWorkTypeStatusRepository(
-        repository: CrisisCleanupWorkTypeStatusRepository
+        repository: CrisisCleanupWorkTypeStatusRepository,
     ): WorkTypeStatusRepository
 
     @Singleton
     @Binds
     fun bindsIncidentsRepository(
-        incidentsRepository: OfflineFirstIncidentsRepository
+        incidentsRepository: OfflineFirstIncidentsRepository,
     ): IncidentsRepository
 
     @Singleton
     @Binds
     fun bindsLocationRepository(
-        locationsRepository: OfflineFirstLocationsRepository
+        locationsRepository: OfflineFirstLocationsRepository,
     ): LocationsRepository
 
     @Singleton
     @Binds
     fun bindsWorksiteRepository(
-        worksitesRepository: OfflineFirstWorksitesRepository
+        worksitesRepository: OfflineFirstWorksitesRepository,
     ): WorksitesRepository
 
     @Singleton
     @Binds
     fun bindsWorksitesDataPullReporter(
-        reporter: OfflineFirstWorksitesRepository
+        reporter: OfflineFirstWorksitesRepository,
     ): IncidentDataPullReporter
 
     @Singleton
     @Binds
     fun bindsLanguageTranslationRepository(
-        translationsRepository: OfflineFirstLanguageTranslationsRepository
+        translationsRepository: OfflineFirstLanguageTranslationsRepository,
     ): LanguageTranslationsRepository
 
     @Singleton
     @Binds
     fun bindsKeyTranslator(
-        translator: OfflineFirstLanguageTranslationsRepository
+        translator: OfflineFirstLanguageTranslationsRepository,
     ): KeyTranslator
 
     @Binds
     fun bindsSearchWorksitesRepository(
-        repository: MemoryCacheSearchWorksitesRepository
+        repository: MemoryCacheSearchWorksitesRepository,
     ): SearchWorksitesRepository
 
     @Singleton
     @Binds
     fun bindsWorksiteChangeRepository(
-        repository: CrisisCleanupWorksiteChangeRepository
+        repository: CrisisCleanupWorksiteChangeRepository,
     ): WorksiteChangeRepository
 
+    @Singleton
     @Binds
     fun bindsOrganizationsRepository(
-        repository: OfflineFirstOrganizationsRepository
+        repository: OfflineFirstOrganizationsRepository,
     ): OrganizationsRepository
 
     @Binds
     @Singleton
     fun bindsLocalImageRepository(
-        repository: CrisisCleanupLocalImageRepository
+        repository: CrisisCleanupLocalImageRepository,
     ): LocalImageRepository
 
     @Binds
     fun bindsDatabaseManagementRepository(
-        repository: CrisisCleanupDatabaseManagementRepository
+        repository: CrisisCleanupDatabaseManagementRepository,
     ): DatabaseManagementRepository
 
     @Binds
     fun bindsUsersRepository(
-        repository: OfflineFirstUsersRepository
+        repository: OfflineFirstUsersRepository,
     ): UsersRepository
 
     @Singleton
     @Binds
     fun casesFiltersRepository(
-        repository: CrisisCleanupCasesFilterRepository
+        repository: CrisisCleanupCasesFilterRepository,
     ): CasesFilterRepository
 
     @Singleton
     @Binds
     fun caseHistoryRepository(
-        repository: OfflineFirstCaseHistoryRepository
+        repository: OfflineFirstCaseHistoryRepository,
     ): CaseHistoryRepository
 }
 
@@ -125,7 +126,7 @@ interface DataModule {
 interface DataInternalModule {
     @Binds
     fun providesWorksitesNetworkDataCache(
-        cache: WorksitesNetworkDataFileCache
+        cache: WorksitesNetworkDataFileCache,
     ): WorksitesNetworkDataCache
 
     @Binds
@@ -136,6 +137,6 @@ interface DataInternalModule {
 
     @Binds
     fun providesIncidentOrganizationsNetworkDataCache(
-        cache: IncidentOrganizationsDataFileCache
+        cache: IncidentOrganizationsDataFileCache,
     ): IncidentOrganizationsDataCache
 }

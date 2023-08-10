@@ -22,6 +22,7 @@ import com.crisiscleanup.core.database.model.WorksiteNoteEntity
 import com.crisiscleanup.core.database.model.filter
 import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.IncidentIdWorksiteCount
+import com.crisiscleanup.core.model.data.OrganizationLocationAreaBounds
 import com.crisiscleanup.core.model.data.WorksiteSortBy
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
@@ -484,6 +485,7 @@ class WorksiteDaoPlus @Inject constructor(
         // miles
         searchRadius: Float,
         count: Int,
+        locationAreaBounds: OrganizationLocationAreaBounds,
     ): List<PopulatedTableDataWorksite> = coroutineScope {
         when (sortBy) {
             WorksiteSortBy.Nearest -> {
@@ -497,6 +499,7 @@ class WorksiteDaoPlus @Inject constructor(
                         filters,
                         organizationAffiliates,
                         coordinates,
+                        locationAreaBounds,
                     )
                 }
             }
@@ -508,6 +511,7 @@ class WorksiteDaoPlus @Inject constructor(
                 filters,
                 organizationAffiliates,
                 coordinates,
+                locationAreaBounds,
             )
         }
     }
@@ -519,6 +523,7 @@ class WorksiteDaoPlus @Inject constructor(
         filters: CasesFilter,
         organizationAffiliates: Set<Long>,
         coordinates: Pair<Double, Double>?,
+        locationAreaBounds: OrganizationLocationAreaBounds,
     ): List<PopulatedTableDataWorksite> = coroutineScope {
         val queryCount = count.coerceAtLeast(100)
         var queryOffset = 0
@@ -558,6 +563,7 @@ class WorksiteDaoPlus @Inject constructor(
                 filters,
                 organizationAffiliates,
                 coordinates,
+                locationAreaBounds,
             )
 
             ensureActive()
@@ -582,6 +588,7 @@ class WorksiteDaoPlus @Inject constructor(
         filters: CasesFilter,
         organizationAffiliates: Set<Long>,
         coordinates: Pair<Double, Double>,
+        locationAreaBounds: OrganizationLocationAreaBounds,
     ): List<PopulatedTableDataWorksite> = coroutineScope {
         val strideCount = 100
 
@@ -597,6 +604,7 @@ class WorksiteDaoPlus @Inject constructor(
                 filters,
                 organizationAffiliates,
                 coordinates,
+                locationAreaBounds,
             )
         } else {
             val r = searchRadius.coerceAtLeast(24.0f)
@@ -627,6 +635,7 @@ class WorksiteDaoPlus @Inject constructor(
                 filters,
                 organizationAffiliates,
                 coordinates,
+                locationAreaBounds,
             )
         }
 
@@ -657,6 +666,7 @@ class WorksiteDaoPlus @Inject constructor(
         filters: CasesFilter,
         organizationAffiliates: Set<Long>,
         coordinates: Pair<Double, Double>,
+        locationAreaBounds: OrganizationLocationAreaBounds,
     ) = coroutineScope {
         val worksiteDao = db.worksiteDao()
 
@@ -681,6 +691,7 @@ class WorksiteDaoPlus @Inject constructor(
                 filters,
                 organizationAffiliates,
                 coordinates,
+                locationAreaBounds,
             )
 
             ensureActive()
@@ -701,6 +712,7 @@ class WorksiteDaoPlus @Inject constructor(
         filters: CasesFilter,
         organizationAffiliates: Set<Long>,
         coordinates: Pair<Double, Double>?,
+        locationAreaBounds: OrganizationLocationAreaBounds,
     ): IncidentIdWorksiteCount =
         coroutineScope {
             val stride = 2000
@@ -753,7 +765,13 @@ class WorksiteDaoPlus @Inject constructor(
                 ensureActive()
 
                 count += worksites.count {
-                    it.passesFilter(filters, organizationAffiliates, latRad, lngRad)
+                    it.passesFilter(
+                        filters,
+                        organizationAffiliates,
+                        latRad,
+                        lngRad,
+                        locationAreaBounds,
+                    )
                 }
 
                 offset += stride

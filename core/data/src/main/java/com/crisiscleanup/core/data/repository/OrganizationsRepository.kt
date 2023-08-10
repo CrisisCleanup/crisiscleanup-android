@@ -7,16 +7,21 @@ import com.crisiscleanup.core.data.model.asEntities
 import com.crisiscleanup.core.data.model.asEntitySource
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDao
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDaoPlus
+import com.crisiscleanup.core.database.dao.LocationDao
 import com.crisiscleanup.core.database.dao.LocationDaoPlus
 import com.crisiscleanup.core.database.dao.fts.getMatchingOrganizations
 import com.crisiscleanup.core.database.model.PopulatedIncidentOrganization
+import com.crisiscleanup.core.database.model.PopulatedLocation
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.database.model.asLookup
 import com.crisiscleanup.core.model.data.IncidentOrganization
+import com.crisiscleanup.core.model.data.LocationBoundsConverter
 import com.crisiscleanup.core.model.data.OrganizationIdName
+import com.crisiscleanup.core.model.data.OrganizationLocationAreaBounds
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkIncidentOrganization
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import javax.inject.Inject
 
@@ -38,14 +43,18 @@ interface OrganizationsRepository {
         longitude: Double,
     ): List<IncidentOrganization>
 
+    fun streamPrimarySecondaryAreas(organizationId: Long): Flow<OrganizationLocationAreaBounds>
+
     suspend fun getMatchingOrganizations(q: String): List<OrganizationIdName>
 }
 
 class OfflineFirstOrganizationsRepository @Inject constructor(
     private val incidentOrganizationDao: IncidentOrganizationDao,
     private val incidentOrganizationDaoPlus: IncidentOrganizationDaoPlus,
+    private val locationDao: LocationDao,
     private val locationDaoPlus: LocationDaoPlus,
     private val networkDataSource: CrisisCleanupNetworkDataSource,
+    private val locationBoundsConverter: LocationBoundsConverter,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : OrganizationsRepository {
     override val organizationNameLookup =
@@ -123,6 +132,25 @@ class OfflineFirstOrganizationsRepository @Inject constructor(
         }
         return emptyList()
     }
+
+    override fun streamPrimarySecondaryAreas(organizationId: Long) =
+        incidentOrganizationDao.getLocationIds(organizationId).map {
+            it?.let {
+                try {
+                    val ids = listOf(it.primary, it.secondary).mapNotNull { id -> id }
+                    val bounds = locationDao.getLocations(ids)
+                        .map(PopulatedLocation::asExternalModel)
+                        .map { location -> locationBoundsConverter.convert(location) }
+                    val primary = if (it.primary == null) null else bounds[0]
+                    val secondary = if (it.secondary == null) null else bounds[bounds.size - 1]
+                    return@map OrganizationLocationAreaBounds(primary, secondary)
+                } catch (e: Exception) {
+                    logger.logException(e)
+                }
+            }
+
+            OrganizationLocationAreaBounds()
+        }
 
     override suspend fun getMatchingOrganizations(q: String) =
         incidentOrganizationDaoPlus.getMatchingOrganizations(q)

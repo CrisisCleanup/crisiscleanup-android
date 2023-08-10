@@ -4,6 +4,7 @@ import com.crisiscleanup.core.common.haversineDistance
 import com.crisiscleanup.core.common.kmToMiles
 import com.crisiscleanup.core.common.radians
 import com.crisiscleanup.core.model.data.CasesFilter
+import com.crisiscleanup.core.model.data.OrganizationLocationAreaBounds
 import kotlinx.datetime.Instant
 
 fun CasesFilter.passesFilter(
@@ -15,6 +16,9 @@ fun CasesFilter.passesFilter(
     worksiteIsFavorite: Boolean,
     worksiteReportedBy: Long?,
     worksiteUpdatedAt: Instant,
+    worksiteLatitude: Double,
+    worksiteLongitude: Double,
+    locationAreaBounds: OrganizationLocationAreaBounds,
 ): Boolean {
     if (hasWorkTypeFilters) {
         var assignedToMyTeamCount = 0
@@ -107,6 +111,22 @@ fun CasesFilter.passesFilter(
         }
     }
 
+    if (isWithinPrimaryResponseArea) {
+        locationAreaBounds.primary?.let {
+            if (!it.isInBounds(worksiteLatitude, worksiteLongitude)) {
+                return false
+            }
+        }
+    }
+
+    if (isWithinSecondaryResponseArea) {
+        locationAreaBounds.secondary?.let {
+            if (!it.isInBounds(worksiteLatitude, worksiteLongitude)) {
+                return false
+            }
+        }
+    }
+
     return true
 }
 
@@ -119,6 +139,7 @@ internal fun CasesFilter.passes(
     latRad: Double?,
     lngRad: Double?,
     isFavorite: Boolean,
+    locationAreaBounds: OrganizationLocationAreaBounds,
 ): Boolean {
     if (isDefault) {
         return true
@@ -152,6 +173,9 @@ internal fun CasesFilter.passes(
             isFavorite,
             worksite.reportedBy,
             worksite.updatedAt,
+            worksite.latitude,
+            worksite.longitude,
+            locationAreaBounds,
         )
     ) {
         return false

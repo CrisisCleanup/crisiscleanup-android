@@ -26,6 +26,7 @@ import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.IncidentDataSyncStats
 import com.crisiscleanup.core.model.data.IncidentIdWorksiteCount
+import com.crisiscleanup.core.model.data.OrganizationLocationAreaBounds
 import com.crisiscleanup.core.model.data.SyncAttempt
 import com.crisiscleanup.core.model.data.TableDataWorksite
 import com.crisiscleanup.core.model.data.WorksiteSortBy
@@ -43,6 +44,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -83,15 +85,36 @@ class OfflineFirstWorksitesRepository @Inject constructor(
 
     override val isDeterminingWorksitesCount = MutableStateFlow(false)
 
+    private val orgId = accountDataRepository.accountData.map { it.org.id }
+
+    private val organizationLocationAreaBounds = orgId
+        .filter { it > 0 }
+        .flatMapLatest {
+            organizationsRepository.streamPrimarySecondaryAreas(it)
+        }
+        .stateIn(
+            scope = externalScope,
+            initialValue = OrganizationLocationAreaBounds(),
+            started = SharingStarted.WhileSubscribed(),
+        )
+
     override fun streamIncidentWorksitesCount(incidentIdStream: Flow<Long>) = combine(
         incidentIdStream,
         incidentIdStream.flatMapLatest { worksiteDao.streamWorksitesCount(it) },
         filterRepository.casesFiltersLocation,
-        ::Triple,
-    )
+        organizationLocationAreaBounds,
+    ) { id, totalCount, filtersLocation, areaBounds ->
+        Pair(
+            Pair(id, totalCount),
+            Pair(filtersLocation, areaBounds),
+        )
+    }
         .debounce(timeoutMillis = 150)
         .distinctUntilChanged()
-        .mapLatest { (id, totalCount, filtersLocation) ->
+        .mapLatest { streams ->
+            val (id, totalCount) = streams.first
+            val (filtersLocation, areaBounds) = streams.second
+
             val filters = filtersLocation.first
             if (!filters.isDefault) {
                 isDeterminingWorksitesCount.value = true
@@ -102,6 +125,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
                         filters,
                         organizationAffiliates.value,
                         locationProvider.getLocation(),
+                        areaBounds,
                     )
                 } catch (e: Exception) {
                     logger.logCapture("Worksites count of incident $id")
@@ -114,8 +138,6 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             isDeterminingWorksitesCount.value = false
             IncidentIdWorksiteCount(id, totalCount)
         }
-
-    private val orgId = accountDataRepository.accountData.map { it.org.id }
 
     private val organizationAffiliates = orgId.map {
         organizationsRepository.getOrganizationAffiliateIds(it).toSet()
@@ -166,6 +188,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         .filter(
             filterRepository.casesFilters,
             organizationAffiliates.value,
+            organizationLocationAreaBounds.value,
             coordinates,
         )
 
@@ -350,7 +373,9 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         searchRadius: Float,
         count: Int,
     ): List<TableDataWorksite> = coroutineScope {
+        // TODO Observe if these values change frequently enough
         val affiliateIds = organizationAffiliates.value
+        val areaBounds = organizationLocationAreaBounds.value
         val records = worksiteDaoPlus.loadTableWorksites(
             incidentId,
             filters,
@@ -360,6 +385,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             // miles
             searchRadius,
             count,
+            areaBounds,
         )
 
         ensureActive()

@@ -54,7 +54,7 @@ internal fun CaseIncidentView(
             Box(
                 // minimumInteractiveComponentSize > IconButtonTokens.StateLayerSize
                 modifier = Modifier.size(48.dp),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     imageVector = CrisisCleanupIcons.CloudSync,
@@ -80,7 +80,7 @@ private fun CaseIncidentSyncingPreview() {
             CaseIncidentView(
                 incident = EmptyIncident.copy(
                     name = "Big sweeping hurricane across the gulf",
-                    shortName = "Big hurricane"
+                    shortName = "Big hurricane",
                 ),
                 isSyncing = true,
             )
@@ -96,7 +96,7 @@ private fun CaseIncidentPendingSyncPreview() {
             CaseIncidentView(
                 incident = EmptyIncident.copy(
                     name = "Big sweeping hurricane across the gulf",
-                    shortName = "Big hurricane"
+                    shortName = "Big hurricane",
                 ),
                 isPendingSync = true,
             )

@@ -12,22 +12,31 @@ import com.crisiscleanup.core.common.locationPermissionGranted
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
+import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
+import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.commoncase.model.FormFieldNode
 import com.crisiscleanup.core.commoncase.model.WorkFormGroupKey
 import com.crisiscleanup.core.commoncase.model.flatten
 import com.crisiscleanup.core.data.IncidentSelector
+import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.CasesFilterRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
+import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.WorkTypeStatusRepository
 import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.WorksiteFlagType
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 
@@ -38,8 +47,11 @@ class CasesFilterViewModel @Inject constructor(
     incidentSelector: IncidentSelector,
     incidentsRepository: IncidentsRepository,
     languageRepository: LanguageTranslationsRepository,
+    accountDataRepository: AccountDataRepository,
+    organizationsRepository: OrganizationsRepository,
     private val permissionManager: PermissionManager,
     val translator: KeyResourceTranslator,
+    @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.Cases) private val logger: AppLogger,
 ) : ViewModel() {
     var showExplainPermissionLocation by mutableStateOf(false)
@@ -91,6 +103,19 @@ class CasesFilterViewModel @Inject constructor(
     )
 
     private var distanceOptionCached = AtomicReference<Float?>(null)
+
+    val hasOrganizationAreas = accountDataRepository.accountData
+        .filter { it.org.id > 0 }
+        .flatMapLatest {
+            organizationsRepository.streamPrimarySecondaryAreas(it.org.id)
+        }
+        .map { Pair(it.primary != null, it.secondary != null) }
+        .flowOn(ioDispatcher)
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = Pair(false, false),
+            started = SharingStarted.WhileSubscribed(),
+        )
 
     init {
         permissionManager.permissionChanges

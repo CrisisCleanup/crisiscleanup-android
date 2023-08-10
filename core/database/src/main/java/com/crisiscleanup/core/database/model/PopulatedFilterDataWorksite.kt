@@ -3,6 +3,7 @@ package com.crisiscleanup.core.database.model
 import androidx.room.Embedded
 import androidx.room.Relation
 import com.crisiscleanup.core.model.data.CasesFilter
+import com.crisiscleanup.core.model.data.OrganizationLocationAreaBounds
 
 data class PopulatedFilterDataWorksite(
     @Embedded
@@ -24,6 +25,7 @@ data class PopulatedFilterDataWorksite(
         organizationAffiliates: Set<Long>,
         latRad: Double?,
         lngRad: Double?,
+        locationAreaBounds: OrganizationLocationAreaBounds,
     ) = filters.passes(
         base.entity,
         flags,
@@ -33,5 +35,6 @@ data class PopulatedFilterDataWorksite(
         latRad,
         lngRad,
         base.isFavorite,
+        locationAreaBounds,
     )
 }

@@ -143,6 +143,8 @@ private fun ColumnScope.FilterControls(
         false,
     )
 
+    val hasOrganizationAreas by viewModel.hasOrganizationAreas.collectAsStateWithLifecycle()
+
     val workTypeStatuses by viewModel.workTypeStatuses.collectAsStateWithLifecycle()
     val workTypes by viewModel.workTypes.collectAsStateWithLifecycle(emptyList())
 
@@ -305,6 +307,7 @@ private fun ColumnScope.FilterControls(
             filters,
             !sectionCollapseStates[1],
             toggleGeneralSection,
+            hasOrganizationAreas,
             updateWithinPrimary = updateWithinPrimary,
             updateWithinSecondary = updateWithinSecondary,
             updateTeamAssignment = updateAssignedToMyTeam,
@@ -600,6 +603,7 @@ private fun LazyListScope.generalOptions(
     filters: CasesFilter,
     isSectionExpanded: Boolean = false,
     toggleSection: () -> Unit = {},
+    hasOrganizationAreas: Pair<Boolean, Boolean> = Pair(false, false),
     updateWithinPrimary: (Boolean) -> Unit = {},
     updateWithinSecondary: (Boolean) -> Unit = {},
     updateTeamAssignment: (Boolean) -> Unit = {},
@@ -617,21 +621,27 @@ private fun LazyListScope.generalOptions(
     )
 
     if (isSectionExpanded) {
-        subsectionHeader("worksiteFilters.location")
+        if (hasOrganizationAreas.first || hasOrganizationAreas.second) {
+            subsectionHeader("worksiteFilters.location")
 
-        checkboxItem(
-            "worksiteFilters.in_primary_response_area",
-            filters.isWithinPrimaryResponseArea,
-            { b: Boolean -> updateWithinPrimary(b) },
-            { updateWithinPrimary(!filters.isWithinPrimaryResponseArea) },
-        )
+            if (hasOrganizationAreas.first) {
+                checkboxItem(
+                    "worksiteFilters.in_primary_response_area",
+                    filters.isWithinPrimaryResponseArea,
+                    { b: Boolean -> updateWithinPrimary(b) },
+                    { updateWithinPrimary(!filters.isWithinPrimaryResponseArea) },
+                )
+            }
 
-        checkboxItem(
-            "worksiteFilters.in_secondary_response_area",
-            filters.isWithinSecondaryResponseArea,
-            { b: Boolean -> updateWithinSecondary(b) },
-            { updateWithinSecondary(!filters.isWithinSecondaryResponseArea) },
-        )
+            if (hasOrganizationAreas.second) {
+                checkboxItem(
+                    "worksiteFilters.in_secondary_response_area",
+                    filters.isWithinSecondaryResponseArea,
+                    { b: Boolean -> updateWithinSecondary(b) },
+                    { updateWithinSecondary(!filters.isWithinSecondaryResponseArea) },
+                )
+            }
+        }
 
         subsectionHeader("worksiteFilters.team")
 

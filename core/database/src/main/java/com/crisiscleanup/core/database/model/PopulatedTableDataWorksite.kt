@@ -4,6 +4,7 @@ import androidx.room.Embedded
 import androidx.room.Relation
 import com.crisiscleanup.core.common.radians
 import com.crisiscleanup.core.model.data.CasesFilter
+import com.crisiscleanup.core.model.data.OrganizationLocationAreaBounds
 
 data class PopulatedTableDataWorksite(
     @Embedded
@@ -34,6 +35,7 @@ fun List<PopulatedTableDataWorksite>.filter(
     filters: CasesFilter,
     organizationAffiliates: Set<Long>,
     location: Pair<Double, Double>? = null,
+    locationAreaBounds: OrganizationLocationAreaBounds,
 ): List<PopulatedTableDataWorksite> {
     val filterByDistance = location != null && filters.hasDistanceFilter
     val latRad = if (filterByDistance) location!!.first.radians else null
@@ -48,6 +50,7 @@ fun List<PopulatedTableDataWorksite>.filter(
                 latRad,
                 lngRad,
                 it.base.isFavorite,
+                locationAreaBounds,
             )
         ) it else null
     }

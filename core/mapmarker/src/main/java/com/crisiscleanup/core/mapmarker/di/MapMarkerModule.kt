@@ -1,6 +1,7 @@
 package com.crisiscleanup.core.mapmarker.di
 
 import com.crisiscleanup.core.mapmarker.*
+import com.crisiscleanup.core.model.data.LocationBoundsConverter
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -28,4 +29,9 @@ interface MapMarkerModule {
     fun bindsIncidentBoundsProvider(
         calculator: MapsIncidentBoundsProvider
     ): IncidentBoundsProvider
+
+    @Binds
+    fun bindsLocationBoundsConverter(
+        converter: CrisisCleanupLocationBoundsConverter
+    ): LocationBoundsConverter
 }
