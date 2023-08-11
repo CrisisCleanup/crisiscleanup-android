@@ -34,7 +34,7 @@ onFlowStart:
 - assertVisible:
     text: "Personal Info"
     index: 0
-  
+
 - scrollUntilVisible:
     element: "Flags"
     direction: DOWN
