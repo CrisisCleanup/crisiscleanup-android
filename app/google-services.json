@@ -1,41 +1,33 @@
 {
   "project_info": {
-    "project_number": "928842574362",
-    "project_id": "crisis-cleanup",
-    "storage_bucket": "crisis-cleanup.appspot.com"
+    "project_number": "195749754575",
+    "project_id": "crisiscleanup-201303",
+    "storage_bucket": "crisiscleanup-201303.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:928842574362:android:ad5b65ac1f666b47a6ffa3",
+        "mobilesdk_app_id": "1:195749754575:android:ce70a335d010af825629ba",
         "android_client_info": {
           "package_name": "com.crisiscleanup.prod"
         }
       },
       "oauth_client": [
         {
-          "client_id": "928842574362-hn48mfr7ldfmh4ppjbto6qf65bd7bjqv.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.crisiscleanup.prod",
-            "certificate_hash": "0105646ad7f42e3919cb81dfdd4e9ef51c56e294"
-          }
-        },
-        {
-          "client_id": "928842574362-ggd60nnj6me37u74779oc65pllusis50.apps.googleusercontent.com",
+          "client_id": "195749754575-jo9qnkcr6jba6cpafpqssl875e7k4h5g.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyACvuK0s30rBf9ah7vVg2B8tazX1R5RuQY"
+          "current_key": "AIzaSyB_pmgeE4bqn1uL7MWourybTTwWUtXNVOw"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "928842574362-ggd60nnj6me37u74779oc65pllusis50.apps.googleusercontent.com",
+              "client_id": "195749754575-jo9qnkcr6jba6cpafpqssl875e7k4h5g.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
