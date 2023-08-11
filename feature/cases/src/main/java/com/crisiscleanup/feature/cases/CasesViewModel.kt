@@ -357,8 +357,11 @@ class CasesViewModel @Inject constructor(
 
     val casesCountTableText = casesCount.map {
         val totalCount = it.second
-        if (totalCount == 1) "$totalCount ${translator("casesVue.case")}"
-        else "$totalCount ${translator("casesVue.cases")}"
+        when {
+            totalCount < 0 -> ""
+            totalCount == 1 -> "$totalCount ${translator("casesVue.case")}"
+            else -> "$totalCount ${translator("casesVue.cases")}"
+        }
     }
         .stateIn(
             scope = viewModelScope,

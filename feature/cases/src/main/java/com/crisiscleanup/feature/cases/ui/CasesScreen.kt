@@ -667,7 +667,6 @@ private fun CasesCountView(
     isLoadingData: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    // TODO Animate visibility of elements
     // TODO Common dimensions of elements
     Surface(
         modifier,
@@ -681,11 +680,19 @@ private fun CasesCountView(
             horizontalArrangement = listItemSpacedBy,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (countText.isNotBlank()) {
+            AnimatedVisibility(
+                visible = countText.isNotBlank(),
+                enter = fadeIn(),
+                exit = fadeOut(),
+            ) {
                 Text(countText)
             }
 
-            if (isLoadingData) {
+            AnimatedVisibility(
+                visible = isLoadingData,
+                enter = fadeIn(),
+                exit = fadeOut(),
+            ) {
                 CircularProgressIndicator(
                     Modifier
                         .wrapContentSize()
