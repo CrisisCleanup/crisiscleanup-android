@@ -610,6 +610,7 @@ private fun CasesOverlayElements(
             CrisisCleanupFab(
                 modifier = modifier
                     .actionSize()
+                    .testTag("workMyLocationFab")
                     .constrainAs(myLocation) {
                         end.linkTo(toggleTableMap.end)
                         bottom.linkTo(newCaseFab.top, margin = actionEdgeSpace)
