@@ -7,6 +7,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -207,6 +208,7 @@ internal fun CasesRoute(
             editedWorksiteLocation = editedWorksiteLocation,
             isMyLocationEnabled = isMyLocationEnabled,
             onTableItemSelect = onTableItemSelect,
+            onSyncData = viewModel::syncWorksitesDelta,
         )
 
         if (showChangeIncident) {
@@ -339,6 +341,7 @@ internal fun CasesScreen(
     editedWorksiteLocation: LatLng? = null,
     isMyLocationEnabled: Boolean = false,
     onTableItemSelect: (Worksite) -> Unit = {},
+    onSyncData: () -> Unit = {},
 ) {
     Box(modifier.then(Modifier.fillMaxSize())) {
         if (isTableView) {
@@ -350,6 +353,7 @@ internal fun CasesScreen(
                 onCasesAction = onCasesAction,
                 filtersCount = filtersCount,
                 onTableItemSelect = onTableItemSelect,
+                onSyncData = onSyncData,
             )
         } else {
             CasesMapView(
@@ -380,6 +384,7 @@ internal fun CasesScreen(
             casesCountMapText,
             filtersCount,
             disableTableViewActions = isTableDataTransient,
+            onSyncData = onSyncData,
         )
 
         AnimatedVisibility(
@@ -534,6 +539,7 @@ private fun CasesOverlayElements(
     casesCountText: String = "",
     filtersCount: Int = 0,
     disableTableViewActions: Boolean = false,
+    onSyncData: () -> Unit = {},
 ) {
     val translator = LocalAppTranslator.current
 
@@ -596,6 +602,7 @@ private fun CasesOverlayElements(
                     start.linkTo(disasterAction.end)
                     end.linkTo(actionBar.start)
                 },
+                onSyncData,
             )
 
             CrisisCleanupFab(
@@ -666,6 +673,7 @@ private fun CasesCountView(
     countText: String,
     isLoadingData: Boolean,
     modifier: Modifier = Modifier,
+    onSyncData: () -> Unit = {},
 ) {
     // TODO Common dimensions of elements
     Surface(
@@ -676,7 +684,12 @@ private fun CasesCountView(
         shape = RoundedCornerShape(4.dp),
     ) {
         Row(
-            Modifier.padding(16.dp),
+            Modifier
+                .clickable(
+                    onClick = onSyncData,
+                    enabled = !isLoadingData,
+                )
+                .padding(horizontal = 12.dp, vertical = 9.dp),
             horizontalArrangement = listItemSpacedBy,
             verticalAlignment = Alignment.CenterVertically,
         ) {

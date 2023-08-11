@@ -15,12 +15,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -93,6 +91,7 @@ internal fun BoxScope.CasesTableView(
     onCasesAction: (CasesAction) -> Unit = {},
     filtersCount: Int = 0,
     onTableItemSelect: (Worksite) -> Unit = {},
+    onSyncData: () -> Unit = {},
 ) {
     val isTableBusy by viewModel.isTableBusy.collectAsStateWithLifecycle(false)
 
@@ -173,6 +172,10 @@ internal fun BoxScope.CasesTableView(
             ) {
                 Text(
                     countText,
+                    Modifier.clickable(
+                        onClick = onSyncData,
+                        enabled = !isLoadingData,
+                    ),
                     style = LocalFontStyles.current.header4,
                 )
             }

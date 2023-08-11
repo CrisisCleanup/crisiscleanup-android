@@ -52,9 +52,9 @@ class SyncInsightsViewModel @Inject constructor(
         it.isNotEmpty()
     }
 
-    private val logSliceCount = 40
+    private val logSliceCount = 80
     private val logSliceCountHalf = (logSliceCount * 0.5f).toInt()
-    val listBlockSize = 10
+    val listBlockSize = 20
 
     private val queryLogState = MutableStateFlow(Pair(0, 0))
 
@@ -137,7 +137,7 @@ data class LogListQueryState(
     val startIndex: Int,
     val count: Int,
     private val data: List<SyncLogItem>,
-    private val endIndex: Int = startIndex + data.size
+    private val endIndex: Int = startIndex + data.size,
 ) {
     private val boundaryPositions = Pair(
         (startIndex + data.size * 0.3f).toInt(),

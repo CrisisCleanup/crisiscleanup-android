@@ -135,7 +135,7 @@ class AppSyncer @Inject constructor(
 
     override fun appPullIncidentWorksitesDelta() {
         incidentDeltaJob?.cancel()
-        incidentDeltaJob = applicationScope.launch {
+        incidentDeltaJob = applicationScope.launch(ioDispatcher) {
             val incidentId = appPreferences.userData.first().selectedIncidentId
             incidentsRepository.getIncident(incidentId)?.let {
                 worksitesRepository.getWorksiteSyncStats(incidentId)?.let { syncStats ->

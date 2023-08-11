@@ -440,6 +440,10 @@ class CasesViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
+    fun syncWorksitesDelta() {
+        syncPuller.appPullIncidentWorksitesDelta()
+    }
+
     private suspend fun setTileRendererLocation() {
         mapTileRenderer.setLocation(locationProvider.getLocation())
     }
