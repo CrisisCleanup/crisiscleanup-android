@@ -68,7 +68,7 @@ interface IncidentOrganizationDao {
 
     @Transaction
     @Query("SELECT primary_location, secondary_location FROM incident_organizations WHERE id=:orgId")
-    fun getLocationIds(orgId: Long): Flow<PopulatedOrganizationLocationIds?>
+    fun streamLocationIds(orgId: Long): Flow<PopulatedOrganizationLocationIds?>
 
     @Transaction
     @Query("SELECT name FROM incident_organizations ORDER BY RANDOM() LIMIT 1")

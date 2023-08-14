@@ -41,7 +41,7 @@ class CaseShareViewModel @Inject constructor(
     networkMonitor: NetworkMonitor,
     private val inputValidator: InputValidator,
     val translator: KeyResourceTranslator,
-    @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher
+    @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     private val worksiteIn = editableWorksiteProvider.editableWorksite.value
 
@@ -70,7 +70,7 @@ class CaseShareViewModel @Inject constructor(
         val claimedBys = worksiteIn.workTypes.mapNotNull(WorkType::orgClaim).toSet()
         val isClaimed = claimedBys.any { claimedBy ->
             affiliatedOrgIds.contains(
-                claimedBy
+                claimedBy,
             )
         }
 
@@ -138,6 +138,7 @@ class CaseShareViewModel @Inject constructor(
     )
         .map { (orgId, query) ->
             val isEmailContact = isEmailContactMethod
+            // TODO Overlay/show loading indicator when query is in progress
             val contacts = usersRepository.getMatchingUsers(query, orgId).map {
                 val contactValue = if (isEmailContact) it.email else it.mobile
                 ShareContactInfo(

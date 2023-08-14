@@ -134,7 +134,7 @@ class OfflineFirstOrganizationsRepository @Inject constructor(
     }
 
     override fun streamPrimarySecondaryAreas(organizationId: Long) =
-        incidentOrganizationDao.getLocationIds(organizationId).map {
+        incidentOrganizationDao.streamLocationIds(organizationId).map {
             it?.let {
                 try {
                     val ids = listOf(it.primary, it.secondary).mapNotNull { id -> id }
