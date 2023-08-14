@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
@@ -46,11 +47,12 @@ fun RowScope.CrisisCleanupNavigationBarItem(
 ) {
     val selectedColor = CrisisCleanupNavigationDefaults.navigationSelectedItemColor()
     val unselectedColor = selectedColor.copy(0.5f)
+    val navBarItemTestTag = label.toString()
     NavigationBarItem(
         selected = selected,
         onClick = onClick,
         icon = if (selected) selectedIcon else icon,
-        modifier = modifier,
+        modifier = modifier.testTag("navItem_$navBarItemTestTag"),
         enabled = enabled,
         label = label,
         alwaysShowLabel = alwaysShowLabel,
@@ -77,7 +79,7 @@ fun CrisisCleanupNavigationBar(
     content: @Composable RowScope.() -> Unit
 ) {
     NavigationBar(
-        modifier = modifier,
+        modifier = modifier.testTag("appNavBar"),
         containerColor = CrisisCleanupNavigationDefaults.navigationContainerColor(),
         contentColor = CrisisCleanupNavigationDefaults.navigationContentColor(),
         tonalElevation = 0.dp,
