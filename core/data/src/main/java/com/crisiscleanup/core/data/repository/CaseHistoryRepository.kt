@@ -68,7 +68,7 @@ class OfflineFirstCaseHistoryRepository @Inject constructor(
         }
 
     private suspend fun loadEvents(
-        events: List<PopulatedCaseHistoryEvent>
+        events: List<PopulatedCaseHistoryEvent>,
     ) = coroutineScope {
         val epoch0 = Instant.fromEpochSeconds(0)
         val userEventMap = mutableMapOf<Long, MutableList<CaseHistoryEvent>>()
@@ -109,7 +109,7 @@ class OfflineFirstCaseHistoryRepository @Inject constructor(
                         events = userEvents,
                     ),
                     userNewestCreatedAtMap[userId] ?: epoch0,
-                )
+                ),
             )
         }
 
@@ -142,7 +142,7 @@ class OfflineFirstCaseHistoryRepository @Inject constructor(
                 .map { it.asEntities(worksiteId) }
             val events = entities.map { it.first }
             val attrs = entities.map { it.second }
-            caseHistoryDaoPlus.saveEvents(events, attrs)
+            caseHistoryDaoPlus.saveEvents(worksiteId, events, attrs)
             return events.size
         } catch (e: Exception) {
             logger.logException(e)
