@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -282,7 +283,7 @@ fun WorkTypePrimaryAction(
     onClick: () -> Unit = {},
 ) = CrisisCleanupButton(
     // TODO Common dimensions
-    modifier = Modifier.widthIn(100.dp),
+    modifier = Modifier.testTag("workTypePrimaryAction_$text").widthIn(100.dp),
     text = text,
     onClick = onClick,
     enabled = enabled,

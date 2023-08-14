@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -400,11 +401,14 @@ private fun TableViewItem(
                     painterResource(com.crisiscleanup.feature.cases.R.drawable.ic_flag_filled_small),
                     contentDescription = translator("nav.flag"),
                     tint = if (isEditable) tint else tint.disabledAlpha(),
+                    modifier = Modifier.testTag("tableViewItemFlagIcon")
                 )
             }
             Text(
                 worksite.caseNumber,
-                modifier = Modifier.offset(x = (-14).dp),
+                modifier = Modifier
+                    .testTag("tableViewItemCaseNumText")
+                    .offset(x = (-14).dp),
                 style = LocalFontStyles.current.header3,
             )
 
@@ -415,13 +419,16 @@ private fun TableViewItem(
                 Row {
                     Text(
                         distanceText,
-                        modifier = Modifier.padding(end = 4.dp),
+                        modifier = Modifier
+                            .testTag("tableViewItemMilesAwayText")
+                            .padding(end = 4.dp),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Bold,
                     )
                     Text(
                         translator("caseView.miles_abbrv"),
                         style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.testTag("tableViewItemMilesAbbrev"),
                     )
                 }
             }
@@ -435,8 +442,12 @@ private fun TableViewItem(
                 imageVector = CrisisCleanupIcons.Person,
                 contentDescription = translator("formLabels.name"),
                 tint = neutralIconColor,
+                modifier = Modifier.testTag("tableViewItemPersonIcon"),
             )
-            Text(worksite.name)
+            Text(
+                worksite.name,
+                modifier = Modifier.testTag("tableViewItemWorksiteName"),
+            )
         }
 
         Row(
@@ -447,10 +458,11 @@ private fun TableViewItem(
                 imageVector = CrisisCleanupIcons.Location,
                 contentDescription = translator("casesVue.full_address"),
                 tint = neutralIconColor,
+                modifier = Modifier.testTag("tableViewItemLocationIcon"),
             )
             Text(
                 fullAddress,
-                Modifier.weight(1f),
+                Modifier.testTag("tableViewItemWorksiteFullAddress").weight(1f),
             )
             if (worksite.hasWrongLocationFlag) {
                 CrisisCleanupIconButton(
@@ -458,6 +470,7 @@ private fun TableViewItem(
                     contentDescription = translator("flag.worksite_wrong_location_description"),
                     onClick = showWrongLocationDialog,
                     tint = attentionBackgroundColor,
+                    modifier = Modifier.testTag("tableViewItemWorksiteWrongLocationDialogBtn"),
                 )
             }
         }
@@ -482,6 +495,7 @@ private fun TableViewItem(
                 Icon(
                     imageVector = CrisisCleanupIcons.Phone,
                     contentDescription = translator("nav.phone"),
+                    modifier = Modifier.testTag("tableViewItemPhoneBtn"),
                 )
             }
 
@@ -495,6 +509,7 @@ private fun TableViewItem(
                 Icon(
                     imageVector = CrisisCleanupIcons.Directions,
                     contentDescription = translator("caseView.directions"),
+                    modifier = Modifier.testTag("tableViewItemDirectionsBtn"),
                 )
             }
 
@@ -538,7 +553,7 @@ private fun TableViewItem(
                 TableWorksiteClaimStatus.Requested -> {
                     Text(
                         translator("caseView.requested"),
-                        Modifier.listItemVerticalPadding(),
+                        Modifier.testTag("tableViewItemRequestedText").listItemVerticalPadding(),
                     )
                 }
             }
@@ -560,6 +575,7 @@ private fun PhoneNumbersDialog(
                 CrisisCleanupTextButton(
                     text = LocalAppTranslator.current("actions.close"),
                     onClick = dismissDialog,
+                    modifier = Modifier.testTag("tableViewItemPhoneDialogCloseBtn")
                 )
             },
         ) {
@@ -569,13 +585,13 @@ private fun PhoneNumbersDialog(
                         for (phoneNumber in parsedNumber.parsedNumbers) {
                             LinkifyPhoneText(
                                 text = phoneNumber,
-                                modifier = listItemModifier,
+                                modifier = listItemModifier.testTag("tableViewItemPhoneDialogLinkifyPhoneText"),
                             )
                         }
                     } else {
                         Text(
                             parsedNumber.source,
-                            modifier = listItemModifier,
+                            modifier = listItemModifier.testTag("tableViewItemPhoneDialogPhoneSourceText"),
                         )
                     }
                 }

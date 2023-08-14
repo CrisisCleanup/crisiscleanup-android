@@ -41,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -440,7 +441,7 @@ internal fun BoxScope.CasesMapView(
         isMyLocation = isMyLocationEnabled,
     )
     GoogleMap(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().testTag("casesMapViewContainer"),
         uiSettings = uiSettings,
         properties = mapProperties,
         onMapLoaded = onMapLoaded,
@@ -559,6 +560,7 @@ private fun CasesOverlayElements(
         if (isMapView) {
             CrisisCleanupFab(
                 modifier = modifier
+                    .testTag("workIncidentSelectorFab")
                     .constrainAs(disasterAction) {
                         start.linkTo(parent.start, margin = actionEdgeSpace)
                         top.linkTo(parent.top, margin = actionEdgeSpace)
@@ -608,6 +610,7 @@ private fun CasesOverlayElements(
             CrisisCleanupFab(
                 modifier = modifier
                     .actionSize()
+                    .testTag("workMyLocationFab")
                     .constrainAs(myLocation) {
                         end.linkTo(toggleTableMap.end)
                         bottom.linkTo(newCaseFab.top, margin = actionEdgeSpace)
@@ -629,6 +632,7 @@ private fun CasesOverlayElements(
         CrisisCleanupFab(
             modifier = modifier
                 .actionSize()
+                .testTag("workNewCaseFab")
                 .constrainAs(newCaseFab) {
                     end.linkTo(toggleTableMap.end)
                     bottom.linkTo(toggleTableMap.top, margin = actionEdgeSpace)
@@ -652,6 +656,7 @@ private fun CasesOverlayElements(
         CrisisCleanupFab(
             modifier = modifier
                 .actionSize()
+                .testTag("workToggleTableMapViewFab")
                 .constrainAs(toggleTableMap) {
                     end.linkTo(parent.end, margin = actionEdgeSpace)
                     bottom.linkTo(parent.bottom, margin = bottomPadding)

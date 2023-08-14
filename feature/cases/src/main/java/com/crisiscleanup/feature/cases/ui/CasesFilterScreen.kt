@@ -26,6 +26,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -98,6 +99,7 @@ internal fun CasesFilterRoute(
             TopAppBarBackAction(
                 title = translator("worksiteFilters.filters"),
                 onAction = onBack,
+                modifier = Modifier.testTag("workFilterBackBtn")
             )
 
             FilterControls(
