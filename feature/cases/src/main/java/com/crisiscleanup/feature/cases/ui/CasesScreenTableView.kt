@@ -303,7 +303,6 @@ private fun TableViewSortSelect(
     var showOptions by remember { mutableStateOf(false) }
 
     Box {
-        // TODO: Dropdown where by distance asks for location permission
         CompositionLocalProvider(
             LocalTextStyle provides MaterialTheme.typography.bodySmall,
         ) {
@@ -401,7 +400,7 @@ private fun TableViewItem(
                     painterResource(com.crisiscleanup.feature.cases.R.drawable.ic_flag_filled_small),
                     contentDescription = translator("nav.flag"),
                     tint = if (isEditable) tint else tint.disabledAlpha(),
-                    modifier = Modifier.testTag("tableViewItemFlagIcon")
+                    modifier = Modifier.testTag("tableViewItemFlagIcon"),
                 )
             }
             Text(
@@ -462,7 +461,9 @@ private fun TableViewItem(
             )
             Text(
                 fullAddress,
-                Modifier.testTag("tableViewItemWorksiteFullAddress").weight(1f),
+                Modifier
+                    .testTag("tableViewItemWorksiteFullAddress")
+                    .weight(1f),
             )
             if (worksite.hasWrongLocationFlag) {
                 CrisisCleanupIconButton(
@@ -553,7 +554,9 @@ private fun TableViewItem(
                 TableWorksiteClaimStatus.Requested -> {
                     Text(
                         translator("caseView.requested"),
-                        Modifier.testTag("tableViewItemRequestedText").listItemVerticalPadding(),
+                        Modifier
+                            .testTag("tableViewItemRequestedText")
+                            .listItemVerticalPadding(),
                     )
                 }
             }
@@ -575,7 +578,7 @@ private fun PhoneNumbersDialog(
                 CrisisCleanupTextButton(
                     text = LocalAppTranslator.current("actions.close"),
                     onClick = dismissDialog,
-                    modifier = Modifier.testTag("tableViewItemPhoneDialogCloseBtn")
+                    modifier = Modifier.testTag("tableViewItemPhoneDialogCloseBtn"),
                 )
             },
         ) {

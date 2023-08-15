@@ -1,6 +1,6 @@
 package com.crisiscleanup.feature.cases
 
-import com.crisiscleanup.core.common.KeyTranslator
+import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.commoncase.TransferWorkTypeProvider
 import com.crisiscleanup.core.commoncase.WorkTypeTransferType
@@ -30,7 +30,7 @@ class CasesTableViewDataLoader(
     private val accountDataRepository: AccountDataRepository,
     private val organizationsRepository: OrganizationsRepository,
     private val incidentsRepository: IncidentsRepository,
-    private val translator: KeyTranslator,
+    private val translator: KeyResourceTranslator,
     private val logger: AppLogger,
 ) {
     private val isLoadingFlagsWorksite = MutableStateFlow(false)
@@ -91,7 +91,7 @@ class CasesTableViewDataLoader(
         } catch (e: Exception) {
             logger.logException(e)
             return WorksiteClaimActionResult(
-                errorMessage = "info.error_case_save_mobile"
+                errorMessage = translator.translate("info.error_case_save_mobile", 0)
                     .replace("{case_number}", worksite.caseNumber),
             )
         } finally {
