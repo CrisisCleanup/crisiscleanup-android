@@ -9,12 +9,15 @@ tags:
 ---
 - clearState
 - launchApp
-- tapOn: "Email"
+- tapOn:
+    id: loginEmailTextField
 - inputText: ${MAESTRO_APP_EMAIL}
-- tapOn: "Password"
+- tapOn:
+    id: loginPasswordTextField
 - inputText: ${MAESTRO_APP_PASSWORD}
 - tapOn:
-    text: "Login"
-    index: 1
-- assertVisible: "Work"
-- assertVisible: "Menu"
+    id: loginLoginBtn
+- assertVisible:
+    id: navItem_Work
+- assertVisible:
+    id: navItem_Menu
