@@ -484,6 +484,7 @@ private fun CrisisCleanupBottomBar(
                 selected = selected,
                 onClick = { onNavigateToDestination(destination) },
                 icon = { destination.Icon(selected, title) },
+                modifier = Modifier.testTag("navItem_${title}"),
                 label = {
                     Text(
                         title,
