@@ -70,11 +70,11 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
@@ -246,9 +246,6 @@ class CasesViewModel @Inject constructor(
         isGeneratingWorksiteMarkers,
     ) { b0, b1, b2 -> b0 || b1 || b2 }
 
-    private val isFetchingTableData = MutableStateFlow(false)
-    val isTableBusy: StateFlow<Boolean> = isFetchingTableData
-
     private val mapMarkerManager = CasesMapMarkerManager(
         worksitesRepository,
         appMemoryStats,
@@ -325,28 +322,21 @@ class CasesViewModel @Inject constructor(
     private var tileRefreshedInstant: Instant = Instant.fromEpochSeconds(0)
     private var tileClearWorksitesCount = 0
 
-    private val casesCount = combine(
+    private val totalCasesCount = combine(
         isLoadingData,
-        qsm.isTableView,
-        worksitesMapMarkers,
         incidentSelector.incidentId,
         incidentWorksitesCount,
-    ) { isLoading, isTableView, markers, incidentId, worksitesCount ->
+    ) { isLoading, incidentId, worksitesCount ->
         if (incidentId != worksitesCount.id) {
-            return@combine Pair(-1, -1)
+            return@combine -1
         }
 
         val totalCount = worksitesCount.filteredCount
         if (totalCount == 0 && isLoading) {
-            return@combine Pair(0, -1)
+            return@combine -1
         }
 
-        if (isTableView) {
-            Pair(totalCount, totalCount)
-        }
-
-        val markerCount = markers.filterNot { it.isFilteredOut }.size
-        Pair(markerCount, totalCount)
+        totalCount
     }
         .flowOn(ioDispatcher)
         .shareIn(
@@ -355,40 +345,53 @@ class CasesViewModel @Inject constructor(
             replay = 1,
         )
 
-    val casesCountTableText = casesCount.map {
-        val totalCount = it.second
-        when {
-            totalCount < 0 -> ""
-            totalCount == 1 -> "$totalCount ${translator("casesVue.case")}"
-            else -> "$totalCount ${translator("casesVue.cases")}"
+    val casesCountTableText = combine(
+        totalCasesCount,
+        qsm.isTableView,
+        ::Pair,
+    )
+        .filter { (_, isTable) -> isTable }
+        .map { (totalCount, _) ->
+            when {
+                totalCount < 0 -> ""
+                totalCount == 1 -> "$totalCount ${translator("casesVue.case")}"
+                else -> "$totalCount ${translator("casesVue.cases")}"
+            }
         }
-    }
         .stateIn(
             scope = viewModelScope,
             initialValue = "",
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val casesCountMapText = casesCount.map {
-        val (visibleCount, totalCount) = it
-        if (totalCount < 0) {
-            return@map ""
-        }
+    val casesCountMapText = combine(
+        totalCasesCount,
+        qsm.isTableView,
+        worksitesMapMarkers,
+        ::Triple,
+    )
+        .filter { (_, isTable, _) -> !isTable }
+        .map { (totalCount, _, markers) ->
+            if (totalCount < 0) {
+                return@map ""
+            }
 
-        val countText = if (visibleCount == totalCount || visibleCount == 0) {
-            if (visibleCount == 0) translator("info.t_of_t_cases")
-                .replace("{visible_count}", "$totalCount")
-            else if (totalCount == 1) translator("info.1_of_1_case")
-            else translator("info.t_of_t_cases")
-                .replace("{visible_count}", "$totalCount")
-        } else {
-            translator("info.v_of_t_cases")
-                .replace("{visible_count}", "$visibleCount")
-                .replace("{total_count}", "$totalCount")
-        }
+            val visibleCount = markers.filterNot { it.isFilteredOut }.size
 
-        countText
-    }
+            val countText = if (visibleCount == totalCount || visibleCount == 0) {
+                if (visibleCount == 0) translator("info.t_of_t_cases")
+                    .replace("{visible_count}", "$totalCount")
+                else if (totalCount == 1) translator("info.1_of_1_case")
+                else translator("info.t_of_t_cases")
+                    .replace("{visible_count}", "$totalCount")
+            } else {
+                translator("info.v_of_t_cases")
+                    .replace("{visible_count}", "$visibleCount")
+                    .replace("{total_count}", "$totalCount")
+            }
+
+            countText
+        }
         .stateIn(
             scope = viewModelScope,
             initialValue = "",

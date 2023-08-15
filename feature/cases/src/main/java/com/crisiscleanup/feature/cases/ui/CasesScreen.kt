@@ -181,6 +181,7 @@ internal fun CasesRoute(
         }
         val editedWorksiteLocation = viewModel.editedWorksiteLocation
         val isMyLocationEnabled = viewModel.isMyLocationEnabled
+        val hasIncidents = (incidentsData as IncidentsData.Incidents).incidents.isNotEmpty()
         CasesScreen(
             showDataProgress = showDataProgress,
             dataProgress = dataProgress,
@@ -210,6 +211,7 @@ internal fun CasesRoute(
             isMyLocationEnabled = isMyLocationEnabled,
             onTableItemSelect = onTableItemSelect,
             onSyncData = viewModel::syncWorksitesDelta,
+            hasIncidents = hasIncidents,
         )
 
         if (showChangeIncident) {
@@ -343,6 +345,7 @@ internal fun CasesScreen(
     isMyLocationEnabled: Boolean = false,
     onTableItemSelect: (Worksite) -> Unit = {},
     onSyncData: () -> Unit = {},
+    hasIncidents: Boolean = false,
 ) {
     Box(modifier.then(Modifier.fillMaxSize())) {
         if (isTableView) {
@@ -355,6 +358,7 @@ internal fun CasesScreen(
                 filtersCount = filtersCount,
                 onTableItemSelect = onTableItemSelect,
                 onSyncData = onSyncData,
+                hasIncidents = hasIncidents,
             )
         } else {
             CasesMapView(
@@ -386,6 +390,7 @@ internal fun CasesScreen(
             filtersCount,
             disableTableViewActions = isTableDataTransient,
             onSyncData = onSyncData,
+            hasIncidents = hasIncidents,
         )
 
         AnimatedVisibility(
@@ -441,7 +446,9 @@ internal fun BoxScope.CasesMapView(
         isMyLocation = isMyLocationEnabled,
     )
     GoogleMap(
-        modifier = Modifier.fillMaxSize().testTag("casesMapViewContainer"),
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag("casesMapViewContainer"),
         uiSettings = uiSettings,
         properties = mapProperties,
         onMapLoaded = onMapLoaded,
@@ -541,6 +548,7 @@ private fun CasesOverlayElements(
     filtersCount: Int = 0,
     disableTableViewActions: Boolean = false,
     onSyncData: () -> Unit = {},
+    hasIncidents: Boolean = false,
 ) {
     val translator = LocalAppTranslator.current
 
@@ -569,8 +577,7 @@ private fun CasesOverlayElements(
                 shape = CircleShape,
                 containerColor = incidentDisasterContainerColor,
                 contentColor = incidentDisasterContentColor,
-                // TODO Disable when no incidents are available
-                enabled = true,
+                enabled = hasIncidents,
             ) {
                 Icon(
                     painter = painterResource(disasterResId),

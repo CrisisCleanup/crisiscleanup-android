@@ -93,9 +93,8 @@ internal fun BoxScope.CasesTableView(
     filtersCount: Int = 0,
     onTableItemSelect: (Worksite) -> Unit = {},
     onSyncData: () -> Unit = {},
+    hasIncidents: Boolean = false,
 ) {
-    val isTableBusy by viewModel.isTableBusy.collectAsStateWithLifecycle(false)
-
     val countText by viewModel.casesCountTableText.collectAsStateWithLifecycle()
 
     val tableSort by viewModel.tableViewSort.collectAsStateWithLifecycle()
@@ -143,7 +142,7 @@ internal fun BoxScope.CasesTableView(
                 title = selectedIncident.shortName,
                 contentDescription = selectedIncident.shortName,
                 isLoading = isLoadingData,
-                enabled = isEditable,
+                enabled = hasIncidents,
             )
 
             Spacer(Modifier.weight(1f))
@@ -185,7 +184,7 @@ internal fun BoxScope.CasesTableView(
 
             TableViewSortSelect(
                 tableSort,
-                isEditable = !(isLoadingData || isTableBusy || isTableDataTransient),
+                isEditable = !isLoadingData && isEditable,
                 onChange = changeTableSort,
             )
         }
@@ -243,7 +242,7 @@ internal fun BoxScope.CasesTableView(
         }
     }
 
-    BusyIndicatorFloatingTopCenter(isTableBusy || isTableDataTransient)
+    BusyIndicatorFloatingTopCenter(isTableDataTransient)
 
     PhoneNumbersDialog(
         parsedNumbers = phoneNumberList,
