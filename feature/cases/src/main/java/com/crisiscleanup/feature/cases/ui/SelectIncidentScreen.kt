@@ -79,7 +79,7 @@ fun SelectIncidentDialog(
             is IncidentsData.Incidents -> {
                 Column {
                     Text(
-                        modifier = Modifier.padding(textPadding),
+                        modifier = Modifier.testTag("selectIncidentHeader").padding(textPadding),
                         text = LocalAppTranslator.current("nav.change_incident"),
                         style = LocalFontStyles.current.header3,
                     )
