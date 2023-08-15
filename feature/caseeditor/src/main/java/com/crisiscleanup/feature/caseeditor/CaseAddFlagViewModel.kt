@@ -68,6 +68,8 @@ class CaseAddFlagViewModel @Inject constructor(
 
     val incidentWorksiteChange = MutableStateFlow(ExistingWorksiteIdentifierNone)
 
+    val screenTitle = "${translator("nav.flag")} (${worksiteIn.caseNumber})"
+
     private val allFlags = listOf(
         WorksiteFlagType.HighPriority,
         WorksiteFlagType.UpsetClient,
@@ -283,7 +285,7 @@ class CaseAddFlagViewModel @Inject constructor(
                 involvesMyOrg = isMyOrgInvolved,
                 haveContactedOtherOrg = null,
                 organizations = organizations,
-            )
+            ),
         )
         commitFlag(upsetClientFlag)
     }
@@ -318,7 +320,7 @@ class CaseAddFlagViewModel @Inject constructor(
                 involvesMyOrg = null,
                 haveContactedOtherOrg = isContacted,
                 organizations = organizations,
-            )
+            ),
         )
         commitFlag(reportAbuseFlag)
     }

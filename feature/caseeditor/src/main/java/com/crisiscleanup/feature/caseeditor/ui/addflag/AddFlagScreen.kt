@@ -101,7 +101,7 @@ private fun CaseEditAddFlagScreen(
     ) {
         Column {
             TopAppBarCancelAction(
-                title = translator("nav.flag"),
+                title = viewModel.screenTitle,
                 onAction = onBack,
             )
 
@@ -300,7 +300,7 @@ internal fun OrganizationsSearch(
             expanded = showDropdown,
             onDismissRequest = dismissDropdown,
             offset = listItemDropdownMenuOffset,
-            properties = PopupProperties(focusable = false)
+            properties = PopupProperties(focusable = false),
         ) {
             BackHandler(showDropdown) {
                 dismissDropdown()
