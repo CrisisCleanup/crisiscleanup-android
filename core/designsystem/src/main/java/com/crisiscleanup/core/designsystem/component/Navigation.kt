@@ -47,12 +47,11 @@ fun RowScope.CrisisCleanupNavigationBarItem(
 ) {
     val selectedColor = CrisisCleanupNavigationDefaults.navigationSelectedItemColor()
     val unselectedColor = selectedColor.copy(0.5f)
-    val navBarItemTestTag = label.toString()
     NavigationBarItem(
         selected = selected,
         onClick = onClick,
         icon = if (selected) selectedIcon else icon,
-        modifier = modifier.testTag("navItem_$navBarItemTestTag"),
+        modifier = modifier,
         enabled = enabled,
         label = label,
         alwaysShowLabel = alwaysShowLabel,
