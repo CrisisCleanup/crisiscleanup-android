@@ -16,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -80,9 +81,10 @@ internal fun CasesSearchRoute(
                         imageVector = CrisisCleanupIcons.ArrowBack,
                         onClick = onBackClick,
                         contentDescription = translator("actions.back"),
+                        modifier = Modifier.testTag("workIncidentSearchGoBackBtn"),
                     )
                     ClearableTextField(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.testTag("workIncidentSearchTextField").weight(1f),
                         labelResId = 0,
                         label = "",
                         placeholder = translator("actions.search"),
@@ -158,7 +160,7 @@ private fun LazyListScope.recentCases(
         item("section-title") {
             Text(
                 text = LocalAppTranslator.current("casesVue.recently_viewed"),
-                modifier = Modifier.listItemPadding(),
+                modifier = Modifier.testTag("workIncidentSearchRecentHeaderText").listItemPadding(),
             )
         }
     }
