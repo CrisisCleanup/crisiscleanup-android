@@ -10,11 +10,16 @@ onFlowStart:
   - runFlow: login.yaml
 ---
 - launchApp
-- tapOn: "Menu"
-- tapOn: "Account"
-- assertVisible: .*crisis.*cleanup.*
+- tapOn:
+    id: navItem_Menu
+- tapOn:
+    id: topBarAvatarIconBtn
+- assertVisible:
+    id: ccuLogo
 # Currently logged in user's email should be visible on profile page
 - assertVisible: .*${MAESTRO_APP_EMAIL}.*
-- assertVisible: .*logout.*
-- assertVisible: .*dismiss.*
+- assertVisible:
+    id: authedProfileLogoutBtn
+- assertVisible:
+    id: authedProfileDismissBtn
 
