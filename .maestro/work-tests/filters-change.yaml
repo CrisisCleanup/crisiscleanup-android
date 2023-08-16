@@ -83,8 +83,32 @@ onFlowStart:
 - assertVisible:
     text: "${APPLY_FILTERS_BTN_TEXT} (6)"
 
+# Apply selected filters
+- tapOn:
+    id: "filterApplyFiltersBtn"
+
+# Small indicator number beside filters button
+- assertVisible:
+    id: "filterButtonBadge_6"
+
+# Reopen filters popup
+- tapOn:
+    id: "workIncidentFilterBtn"
+
+# Originally selected filters should be selected
+- assertVisible:
+    text: "${APPLY_FILTERS_BTN_TEXT} (6)"
+
+# Clear filters
 - tapOn:
     id: "filterClearFiltersBtn"
 - assertVisible:
     text: "${APPLY_FILTERS_BTN_TEXT}"
 
+# Apply cleared filters
+- tapOn:
+    id: "filterApplyFiltersBtn"
+
+# Small indicator number beside filters button should not be visible
+- assertNotVisible:
+    id: "filterButtonBadge_6"
