@@ -8,15 +8,21 @@ tags:
 onFlowStart:
   - runFlow: ../auth-tests/login.yaml
 env:
-  INCIDENT_SELECTOR_COORDS: "9%,9%"
+  INCIDENT_SELECTOR_ID: appIncidentSelector
   FIRST_INCIDENT: ".*(flood|tornado).*"
   SECOND_INCIDENT: ".*(storm|hurricane|fire).*"
 ---
+# wait for incidents to load
+- waitForAnimationToEnd:
+    timeout: 5000
+# wait till spinner is invisible
+- assertNotVisible:
+    id: workIncidentsLoadingIndicator
 - tapOn: "Menu"
 
 # Find first type incident and select it
 - tapOn:
-    point: ${INCIDENT_SELECTOR_COORDS}
+    id: ${INCIDENT_SELECTOR_ID}
 - assertVisible: "Change Incident"
 
 - scrollUntilVisible:
@@ -30,7 +36,7 @@ env:
 
 # Find second type of incident and select it
 - tapOn:
-    point: ${INCIDENT_SELECTOR_COORDS}
+    id: ${INCIDENT_SELECTOR_ID}
 - assertVisible: "Change Incident"
 
 - scrollUntilVisible:
@@ -44,7 +50,7 @@ env:
 
 # Find first type of incident again and select it
 - tapOn:
-    point: ${INCIDENT_SELECTOR_COORDS}
+    id: ${INCIDENT_SELECTOR_ID}
 - assertVisible: "Change Incident"
 
 - scrollUntilVisible:
