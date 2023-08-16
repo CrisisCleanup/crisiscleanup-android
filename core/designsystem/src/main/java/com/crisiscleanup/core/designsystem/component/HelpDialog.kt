@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
@@ -27,6 +28,7 @@ fun HelpRow(
     ) {
         Text(
             text,
+            modifier = Modifier.testTag("helpRowText_${text}"),
             fontWeight = if (isBold) FontWeight.Bold else null
         )
         HelpAction(iconContentDescription, showHelp)
