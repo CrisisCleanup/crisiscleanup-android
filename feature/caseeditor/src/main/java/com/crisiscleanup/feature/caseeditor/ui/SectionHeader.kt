@@ -45,7 +45,7 @@ private fun CircleNumber(
     ) {
         Text(
             "$number",
-            Modifier.align(Alignment.Center),
+            Modifier.testTag("circleNumberText_${number}").align(Alignment.Center),
             style = style,
             textAlign = TextAlign.Center,
         )
