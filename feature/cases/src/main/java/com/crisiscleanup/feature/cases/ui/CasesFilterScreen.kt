@@ -957,7 +957,7 @@ fun BottomActionBar(
         val filterCount = filters.changeCount
         val hasFilters = filterCount > 0
         BusyButton(
-            Modifier.weight(1f),
+            Modifier.testTag("filterClearFiltersBtn").weight(1f),
             text = translator("actions.clear_filters"),
             enabled = hasFilters,
             onClick = viewModel::clearFilters,
@@ -966,7 +966,7 @@ fun BottomActionBar(
         val applyFilters = translator("actions.apply_filters")
         val applyText = if (hasFilters) "$applyFilters ($filterCount)" else applyFilters
         BusyButton(
-            Modifier.weight(1f),
+            Modifier.testTag("filterApplyFiltersBtn").weight(1f),
             text = applyText,
             onClick = {
                 viewModel.applyFilters(filters)
