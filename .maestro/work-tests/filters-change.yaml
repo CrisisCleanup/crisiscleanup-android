@@ -1,0 +1,35 @@
+name: Work filter changes
+appId: ${MAESTRO_APP_ID}
+tags:
+  - development
+  - staging
+  - production
+  - pull-request
+onFlowStart:
+  - runFlow: ../auth-tests/login.yaml
+---
+- tapOn:
+    id: "workIncidentFilterBtn"
+- assertVisible: "Filters"
+
+- assertVisible:
+    id: "filterClearFiltersBtn"
+- assertVisible:
+    id: "filterApplyFiltersBtn"
+
+- assertVisible:
+    text: "Apply filters"
+
+- scrollUntilVisible:
+    element:
+      id: "filterCheckbox_worksiteFilters.open"
+    direction: DOWN
+- tapOn:
+    id: "filterCheckbox_worksiteFilters.open"
+- assertVisible:
+    text: "Apply filters (1)"
+- tapOn:
+    id: "filterClearFiltersBtn"
+- assertVisible:
+    text: "Apply filters"
+
