@@ -11,6 +11,12 @@ env:
 onFlowStart:
   - runFlow: ../auth-tests/login.yaml
 ---
+# wait for incidents to load
+- waitForAnimationToEnd:
+    timeout: 5000
+# wait till spinner is invisible
+- assertNotVisible:
+    id: workIncidentsLoadingIndicator
 - tapOn:
     id: "workIncidentFilterBtn"
 - assertVisible: "Filters"
