@@ -9,6 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.commonassets.DisasterIcon
@@ -45,7 +46,7 @@ internal fun CaseIncidentView(
         DisasterIcon(disasterResId, incidentName)
         Text(
             incidentName,
-            Modifier.weight(1f),
+            Modifier.testTag("caseViewIncidentName").weight(1f),
             style = LocalFontStyles.current.header1,
         )
 
@@ -59,6 +60,7 @@ internal fun CaseIncidentView(
                 Icon(
                     imageVector = CrisisCleanupIcons.CloudSync,
                     contentDescription = translator("info.is_syncing"),
+                    modifier = Modifier.testTag("caseViewIsSyncingIcon")
                 )
             }
         } else if (isPendingSync) {
@@ -67,6 +69,7 @@ internal fun CaseIncidentView(
                 imageVector = CrisisCleanupIcons.Cloud,
                 contentDescription = translator("info.is_pending_sync"),
                 tint = primaryOrangeColor,
+                modifier = Modifier.testTag("caseViewIsPendingSyncIconBtn")
             )
         }
     }
