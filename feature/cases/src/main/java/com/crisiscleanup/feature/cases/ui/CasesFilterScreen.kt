@@ -378,7 +378,7 @@ private fun LazyListScope.rangeSliderItem(
                 val text = if (currentValue.isBlank()) label else "$label ($currentValue)"
                 Text(
                     text,
-                    modifier = Modifier.listItemVerticalPadding(),
+                    modifier = Modifier.testTag("filterSectionHeader_${text}").listItemVerticalPadding(),
                     style = LocalFontStyles.current.header3,
                     fontWeight = FontWeight.Bold,
                 )
@@ -394,6 +394,7 @@ private fun LazyListScope.rangeSliderItem(
                     ) {
                         HelpRow(
                             text = label,
+                            modifier = Modifier.testTag("filterSectionHeaderHelpRow_${label}"),
                             iconContentDescription = label,
                             showHelp = showHelp,
                             isBold = true,
