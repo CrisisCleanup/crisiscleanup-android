@@ -5,6 +5,9 @@ tags:
   - staging
   - production
   - pull-request
+env:
+  APPLY_FILTERS_BTN_TEXT: "Apply filters"
+  CLEAR_FILTERS_BTN_TEXT: "Clear filters"
 onFlowStart:
   - runFlow: ../auth-tests/login.yaml
 ---
@@ -18,7 +21,25 @@ onFlowStart:
     id: "filterApplyFiltersBtn"
 
 - assertVisible:
-    text: "Apply filters"
+    text: "${APPLY_FILTERS_BTN_TEXT}"
+
+- scrollUntilVisible:
+    element:
+      id: "filterRadioBtn_5 miles"
+    direction: DOWN
+- tapOn:
+    id: "filterRadioBtn_5 miles"
+- assertVisible:
+    text: "${APPLY_FILTERS_BTN_TEXT} (1)"
+
+- scrollUntilVisible:
+    element:
+      id: "filterCheckbox_worksiteFilters.unclaimed"
+    direction: DOWN
+- tapOn:
+    id: "filterCheckbox_worksiteFilters.unclaimed"
+- assertVisible:
+    text: "${APPLY_FILTERS_BTN_TEXT} (2)"
 
 - scrollUntilVisible:
     element:
@@ -27,9 +48,37 @@ onFlowStart:
 - tapOn:
     id: "filterCheckbox_worksiteFilters.open"
 - assertVisible:
-    text: "Apply filters (1)"
+    text: "${APPLY_FILTERS_BTN_TEXT} (3)"
+
+- scrollUntilVisible:
+    element:
+      id: "filterCheckbox_open_assigned"
+    direction: DOWN
+- tapOn:
+    id: "filterCheckbox_open_assigned"
+- assertVisible:
+    text: "${APPLY_FILTERS_BTN_TEXT} (4)"
+
+- scrollUntilVisible:
+    element:
+      id: "filterCheckbox_formLabels.older_than_60"
+    direction: DOWN
+- tapOn:
+    id: "filterCheckbox_formLabels.older_than_60"
+- assertVisible:
+    text: "${APPLY_FILTERS_BTN_TEXT} (5)"
+  
+- scrollUntilVisible:
+    element:
+      id: "filterCheckbox_flag.worksite_high_priority"
+    direction: DOWN
+- tapOn:
+    id: "filterCheckbox_flag.worksite_high_priority"
+- assertVisible:
+    text: "${APPLY_FILTERS_BTN_TEXT} (6)"
+
 - tapOn:
     id: "filterClearFiltersBtn"
 - assertVisible:
-    text: "Apply filters"
+    text: "${APPLY_FILTERS_BTN_TEXT}"
 
