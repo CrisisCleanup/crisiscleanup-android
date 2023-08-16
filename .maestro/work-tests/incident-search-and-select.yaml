@@ -1,0 +1,79 @@
+name: Incident Search with valid query and select
+appId: ${MAESTRO_APP_ID}
+tags:
+  - development
+  - staging
+  - production
+  - pull-request
+env:
+  SEARCH_QUERY: '11'
+onFlowStart:
+  - runFlow: ../auth-tests/login.yaml
+---
+# wait for incidents to load
+- waitForAnimationToEnd:
+    timeout: 5000
+# start searching after loading spinner is invisible
+- assertNotVisible:
+    id: workIncidentsLoadingIndicator
+- tapOn:
+    id: workIncidentSearchBtn
+- assertVisible: "Search"
+- tapOn:
+    id: workIncidentSearchTextField
+- inputText: ${SEARCH_QUERY}
+- tapOn:
+    id: workSearchResultItem_.*
+    index: 0
+
+# Header
+- assertVisible:
+    id: "editCaseHeaderText"
+- assertVisible:
+    id: "editCaseSubHeaderText"
+
+# Actions
+- assertVisible:
+    id: "editCaseHighPriorityToggleBtn"
+- assertVisible:
+    id: "editCaseFavoriteToggleBtn"
+
+# Tabs
+- assertVisible:
+    id: "caseInfoTab_Info"
+- assertVisible:
+    id: "caseInfoTab_Photos.*" # Tab title can be "caseInfoTab_Photos (2)", therefore use regex for assertion
+- assertVisible:
+    id: "caseInfoTab_Notes.*" # Tab title can be "caseInfoTab_Notes (3)", therefore use regex for assertion
+
+# Property Info
+- assertVisible:
+    id: "sectionHeaderTitle_1_Property Information"
+- assertVisible:
+    id: "caseViewIncidentName"
+- assertVisible:
+    id: "editCasePropertyInfoWorksiteNameRow"
+- assertVisible:
+    id: "editCasePropertyInfoPhoneRow"
+# Email is optional
+# - assertVisible:
+#     id: "editCasePropertyInfoEmailRow"
+- assertVisible:
+    id: "editCasePropertyInfoLocationRow"
+- assertVisible: "Google Map"
+
+# Work
+- scrollUntilVisible:
+    element:
+      id: "sectionHeaderTitle_3_Work"
+    direction: DOWN
+
+# Bottom Bar Actions
+- assertVisible:
+    id: "editCaseNavItem_Share"
+- assertVisible:
+    id: "editCaseNavItem_Flag"
+- assertVisible:
+    id: "editCaseNavItem_History"
+- assertVisible:
+    id: "editCaseNavItem_Edit"
