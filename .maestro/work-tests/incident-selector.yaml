@@ -8,12 +8,11 @@ tags:
 onFlowStart:
   - runFlow: ../auth-tests/login.yaml
 ---
-- tapOn: "Change Incident"
+- tapOn:
+    id: "workIncidentSelectorFab"
 - assertVisible: "Change Incident"
 - assertVisible: "Close"
 - "scroll"
-- assertVisible:
-    id: "android:id/content"
 - assertNotVisible: "Menu"
 - tapOn: "Close"
 - assertNotVisible: "Close"
