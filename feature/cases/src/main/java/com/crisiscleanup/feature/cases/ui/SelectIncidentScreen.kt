@@ -128,8 +128,7 @@ private fun ColumnScope.IncidentSelectContent(
         val listState = rememberLazyListState()
         LazyColumn(
             state = listState,
-            modifier = modifier
-                .testTag("cases:incidents"),
+            modifier = modifier,
         ) {
             items(
                 incidents.size,
@@ -141,6 +140,7 @@ private fun ColumnScope.IncidentSelectContent(
                 val fontWeight = if (isSelected) FontWeight.Bold else null
                 Text(
                     modifier = modifier
+                        .testTag("selectIncidentItem_${id}")
                         .fillParentMaxWidth()
                         .clickable(enabled = enableInput) {
                             onSelectIncident(incident)
