@@ -119,6 +119,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             if (!filters.isDefault) {
                 isDeterminingWorksitesCount.value = true
                 try {
+                    organizationAffiliates.first()
                     return@mapLatest worksiteDaoPlus.getWorksitesCount(
                         id,
                         totalCount,
@@ -186,6 +187,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     )
         .filter(
             filterRepository.casesFilters,
+            // TODO Ensure these have loaded prior to calling this method
             organizationAffiliates.value,
             organizationLocationAreaBounds.value,
             coordinates,
@@ -373,6 +375,8 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         count: Int,
     ): List<TableDataWorksite> = coroutineScope {
         // TODO Observe if these values change frequently enough
+        organizationAffiliates.first()
+        organizationLocationAreaBounds.first()
         val affiliateIds = organizationAffiliates.value
         val areaBounds = organizationLocationAreaBounds.value
         val records = worksiteDaoPlus.loadTableWorksites(

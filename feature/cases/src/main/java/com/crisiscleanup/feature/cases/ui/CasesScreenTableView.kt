@@ -542,11 +542,10 @@ private fun TableViewItem(
                     val actionText = if (isReleasable) translator("actions.release")
                     else translator("actions.request")
                     WorkTypeAction(actionText, isClaimActionEditable) {
-                        if (isReleasable) {
-                            onWorksiteClaimAction(TableWorksiteClaimAction.Release)
-                        } else {
-                            onWorksiteClaimAction(TableWorksiteClaimAction.Request)
-                        }
+                        val action =
+                            if (isReleasable) TableWorksiteClaimAction.Release
+                            else TableWorksiteClaimAction.Request
+                        onWorksiteClaimAction(action)
                     }
                 }
 

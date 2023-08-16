@@ -290,11 +290,13 @@ class CasesViewModel @Inject constructor(
 
     val tableData = combine(
         incidentWorksitesCount,
+        worksitesChangingClaimAction,
         qsm.worksiteQueryState,
-        ::Pair,
+        ::Triple,
     )
-        .mapLatest { (_, wqs) ->
+        .mapLatest { (_, _, wqs) ->
             if (wqs.isTableView) {
+                logger.logDebug("Fetching table data")
                 tableSortResultsMessage.value = ""
                 fetchTableData(wqs)
             } else {
