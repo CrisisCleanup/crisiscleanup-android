@@ -52,6 +52,12 @@ onFlowStart:
           'propertyLocationFullAddressTextField',
           'propertyLocationSelectOnMapBtn',
           'propertyLocationUseMyLocationBtn',
+          'locationCrossStreetTextField',
+          'locationAddressProblemsCheckbox',
+          'caseFlagHighPriorityCheckbox',
+          'caseMemberOfMyOrgCheckbox',
+          'propertyLabelNotesText',
+          'propertyAddNoteBtn',
         ],
       }
     }"
