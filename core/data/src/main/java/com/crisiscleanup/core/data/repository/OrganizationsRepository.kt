@@ -138,11 +138,13 @@ class OfflineFirstOrganizationsRepository @Inject constructor(
             it?.let {
                 try {
                     val ids = listOf(it.primary, it.secondary).mapNotNull { id -> id }
+                    // TODO Stream bounds
                     val bounds = locationDao.getLocations(ids)
                         .map(PopulatedLocation::asExternalModel)
                         .map { location -> locationBoundsConverter.convert(location) }
-                    val primary = if (it.primary == null) null else bounds[0]
-                    val secondary = if (it.secondary == null) null else bounds[bounds.size - 1]
+                    val primary = if (it.primary == null || bounds.isEmpty()) null else bounds[0]
+                    val secondary =
+                        if (it.secondary == null || bounds.size < ids.size) null else bounds[bounds.size - 1]
                     return@map OrganizationLocationAreaBounds(primary, secondary)
                 } catch (e: Exception) {
                     logger.logException(e)

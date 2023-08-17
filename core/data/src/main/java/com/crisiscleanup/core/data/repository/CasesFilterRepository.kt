@@ -53,6 +53,8 @@ class CrisisCleanupCasesFilterRepository @Inject constructor(
 
     override val filtersCount = casesFiltersLocation.map { it.first.changeCount }
 
+    // TODO Update or clear work type filters when incident changes
+
     override fun changeFilters(filters: CasesFilter) {
         externalScope.launch(ioDispatcher) {
             dataSource.updateFilters(filters)
