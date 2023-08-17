@@ -8,7 +8,14 @@ tags:
 onFlowStart:
   - runFlow: ../auth-tests/login.yaml
 ---
-- tapOn: ".*new case.*"
+# wait for incidents to load
+- waitForAnimationToEnd:
+    timeout: 5000
+# start searching after loading spinner is invisible
+- assertNotVisible:
+    id: workIncidentsLoadingIndicator
+- tapOn:
+    id: "workNewCaseFab"
 - assertVisible: ".*new case.*"
 - assertVisible:
     text: "back"
