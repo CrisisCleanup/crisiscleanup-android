@@ -8,21 +8,32 @@ tags:
 onFlowStart:
   - runFlow: ../auth-tests/login.yaml
 ---
-- tapOn: "Work"
-- assertVisible: "Work"
-- assertVisible: "Menu"
-- assertVisible: ".*Change Incident.*"
-- assertVisible: ".*Search.*"
-- assertVisible: ".*Filters.*"
-- assertVisible: ".*Zoom in.*"
-- assertVisible: ".*Zoom out.*"
-- assertVisible: ".*Change Incident.*"
-- assertVisible: ".*Zoom to Interactive.*"
-- assertVisible: ".*Zoom to Incident.*"
-- assertVisible: ".*Search.*"
-- assertVisible: ".*Filters.*"
-- assertVisible: ".*My location.*"
-- assertVisible: ".*New Case.*"
-- assertVisible: ".*Table View.*"
+- tapOn:
+    id: "navItem_Work"
+- assertVisible:
+    id: "navItem_Work"
+- assertVisible:
+    id: "navItem_Menu"
+
+- assertVisible:
+    id: "workIncidentSelectorFab"
+- assertVisible:
+    id: "workIncidentSearchBtn"
+- assertVisible:
+    id: "workIncidentFilterBtn"
+- assertVisible:
+    id: "workZoomInBtn" 
+- assertVisible:
+    id: "workZoomOutBtn"
+- assertVisible:
+    id: "workZoomToInteractiveBtn"
+- assertVisible:
+    id: "workZoomToIncidentBtn"
+- assertVisible:
+    id: "workMyLocationFab"
+- assertVisible:
+    id: "workNewCaseFab"
+- assertVisible:
+    id: "workToggleTableMapViewFab"
 # Show total number of cases
 - assertVisible: .*(\d+)(\s)(Cases).*
