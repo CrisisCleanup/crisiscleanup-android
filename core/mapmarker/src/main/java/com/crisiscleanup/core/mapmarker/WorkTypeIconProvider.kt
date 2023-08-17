@@ -226,18 +226,21 @@ class WorkTypeIconProvider @Inject constructor(
             }
         }
 
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            colorFilter = PorterDuffColorFilter(shadowColor, PorterDuff.Mode.SRC_IN)
+        var blurred = output
+        if (!cacheKey.isFilteredOut) {
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                colorFilter = PorterDuffColorFilter(shadowColor, PorterDuff.Mode.SRC_IN)
+            }
+            val flatShadow = Bitmap.createBitmap(
+                bitmapSize,
+                bitmapSize,
+                Bitmap.Config.ARGB_8888,
+            )
+            Canvas(flatShadow).apply {
+                drawBitmap(output, Matrix(), paint)
+            }
+            blurred = Toolkit.blur(flatShadow, shadowRadius)
         }
-        val flatShadow = Bitmap.createBitmap(
-            bitmapSize,
-            bitmapSize,
-            Bitmap.Config.ARGB_8888,
-        )
-        Canvas(flatShadow).apply {
-            drawBitmap(output, Matrix(), paint)
-        }
-        val blurred = Toolkit.blur(flatShadow, shadowRadius)
 
         if (cacheKey.hasMultipleWorkTypes) {
             synchronized(plusDrawable) {

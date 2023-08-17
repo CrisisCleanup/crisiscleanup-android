@@ -131,7 +131,7 @@ data class PopulatedWorksiteMapVisual(
 )
 
 private val highPriorityFlagLiteral = WorksiteFlagType.HighPriority.literal
-private val isDuplicateLiteral = WorksiteFlagType.Duplicate.literal
+private val duplicateFlagLiteral = WorksiteFlagType.Duplicate.literal
 fun PopulatedWorksiteMapVisual.asExternalModel(isFilteredOut: Boolean = false) = WorksiteMapMark(
     id = id,
     latitude = latitude,
@@ -145,6 +145,6 @@ fun PopulatedWorksiteMapVisual.asExternalModel(isFilteredOut: Boolean = false) =
         it.isHighPriority == true ||
                 it.reasonT == highPriorityFlagLiteral
     },
-    isDuplicate = flags.any { it.reasonT == isDuplicateLiteral },
+    isDuplicate = flags.any { it.reasonT == duplicateFlagLiteral },
     isFilteredOut = isFilteredOut,
 )

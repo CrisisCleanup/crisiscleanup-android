@@ -12,10 +12,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -40,9 +38,8 @@ class CrisisCleanupCasesFilterRepository @Inject constructor(
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading
 
-    private val _casesFilters = MutableStateFlow(CasesFilter())
     override val casesFiltersLocation = combine(
-        _casesFilters,
+        dataSource.casesFilters,
         permissionManager.hasLocationPermission,
         ::Pair,
     )
@@ -55,16 +52,6 @@ class CrisisCleanupCasesFilterRepository @Inject constructor(
         get() = casesFiltersLocation.value.first
 
     override val filtersCount = casesFiltersLocation.map { it.first.changeCount }
-
-    init {
-        externalScope.launch(ioDispatcher) {
-            dataSource.casesFilters
-                .onEach {
-                    _casesFilters.value = it
-                }
-                .collect()
-        }
-    }
 
     override fun changeFilters(filters: CasesFilter) {
         externalScope.launch(ioDispatcher) {

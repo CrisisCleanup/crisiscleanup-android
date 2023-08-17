@@ -511,7 +511,7 @@ interface WorksiteDao {
         SELECT *
         FROM worksites
         WHERE incident_id=:incidentId AND updated_at >= :reference
-        ORDER BY svi
+        ORDER BY updated_at
         LIMIT :limit
         OFFSET :offset
         """,

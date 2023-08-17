@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.common.KeyResourceTranslator
@@ -99,7 +101,7 @@ internal fun CasesFilterRoute(
             TopAppBarBackAction(
                 title = translator("worksiteFilters.filters"),
                 onAction = onBack,
-                modifier = Modifier.testTag("workFilterBackBtn")
+                modifier = Modifier.testTag("workFilterBackBtn"),
             )
 
             FilterControls(
@@ -845,7 +847,8 @@ private fun LazyListScope.dateItem(
         )
         FilterDatePicker(
             label,
-            listItemModifier,
+            // TODO Common dimensions
+            listItemModifier.padding(bottom = 8.dp),
             dateRange = dateRange,
             onDateChange = onDateChange,
         )

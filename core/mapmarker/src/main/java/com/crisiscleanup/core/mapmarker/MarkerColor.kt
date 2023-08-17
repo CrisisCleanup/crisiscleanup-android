@@ -64,7 +64,7 @@ private val statusClaimMapMarkerColors = mapOf(
     ),
 )
 
-internal const val filteredOutMarkerAlpha = 0.12f
+internal const val filteredOutMarkerAlpha = 0.2f
 private const val filteredOutDotAlpha = 0.25f
 private const val duplicateMarkerAlpha = 0.3f
 

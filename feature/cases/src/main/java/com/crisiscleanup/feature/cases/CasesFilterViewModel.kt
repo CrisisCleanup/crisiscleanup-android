@@ -56,6 +56,7 @@ class CasesFilterViewModel @Inject constructor(
 ) : ViewModel() {
     var showExplainPermissionLocation by mutableStateOf(false)
 
+    // TODO This requires the filters were previously accessed
     val casesFilters = MutableStateFlow(casesFilterRepository.casesFilters)
 
     val hasInconsistentDistanceFilter = combine(
