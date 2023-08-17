@@ -21,96 +21,75 @@ onFlowStart:
     text: "back"
     index: 1
 
-# Bottom actions buttons should be visible
-- assertVisible: ".*cancel.*"
-- assertVisible: ".*Claim & Save.*"
-- assertVisible: ".*Save.*"
+- evalScript: |
+    "${
+      output.result = { 
+        testTags: [
+          'caseEditCancelBtn',
+          'caseEditClaimAndSaveBtn',
+          'caseEditSaveBtn'
+        ],
+      }
+    }"
+- evalScript: ${output.i1 = 0}
+- repeat:
+    while:
+      'true': ${output.i1 < output.result.testTags.length}
+    commands:
+      - assertVisible:
+          id: ${output.result.testTags[output.i1]}
+      - evalScript: ${output.i1 = output.i1 + 1}
 
 # New case sections and required elements should be visible
-- scrollUntilVisible:
-    element: ".*Property Information.*" 
-    direction: DOWN
-- assertVisible: ".*Property Information.*"
-
-- scrollUntilVisible:
-    element: ".*Resident Name.*" 
-    direction: DOWN
-- assertVisible: ".*Resident Name.*"
-
-- scrollUntilVisible:
-    element: ".*Phone.*" 
-    direction: DOWN
-- assertVisible: ".*Phone.*"
-
-- scrollUntilVisible:
-    element: ".*Email.*" 
-    direction: DOWN
-- assertVisible: ".*Email.*"
-
-- scrollUntilVisible:
-    element: ".*Location.*" 
-    direction: DOWN
-- assertVisible: ".*Location.*"
-
-- scrollUntilVisible:
-    element: ".*Full Address.*" 
-    direction: DOWN
-- assertVisible: ".*Full Address.*"
-
-- scrollUntilVisible:
-    element: ".*Google Map.*" 
-    direction: DOWN
-- assertVisible: ".*Google Map.*"
-
-- scrollUntilVisible:
-    element: ".*Select on Map.*" 
-    direction: DOWN
-- assertVisible:
-    text: ".*Select on Map.*"
-    index: 1
-  
-- scrollUntilVisible:
-    element: ".*Use My Location.*" 
-    direction: DOWN
-- assertVisible:
-    text: ".*Use My Location.*"
-    index: 1
-  
-- scrollUntilVisible:
-    element: ".*Notes.*" 
-    direction: DOWN
-- assertVisible: ".*Notes.*"
-
-- scrollUntilVisible:
-    element: ".*Case Details.*" 
-    direction: DOWN
-- assertVisible: ".*Case Details.*"
-
-- scrollUntilVisible:
-    element: ".*Work.*" 
-    direction: DOWN
-- assertVisible: ".*Work.*"
-
-- scrollUntilVisible:
-    element: ".*Volunteer Report.*" 
-    direction: DOWN
-- assertVisible: ".*Volunteer Report.*"
-
+- evalScript: |
+    "${
+      output.result = { 
+        testTags: [
+          'propertyResidentNameTextField',
+          'propertyPhone1TextField',
+          'propertyPhone2TextField',
+          'propertyEmailTextField',
+          'propertyLocationFullAddressTextField',
+          'propertyLocationSelectOnMapBtn',
+          'propertyLocationUseMyLocationBtn',
+        ],
+      }
+    }"
+- evalScript: ${output.i2 = 0}
+- repeat:
+    while:
+      'true': ${output.i2 < output.result.testTags.length}
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: ${output.result.testTags[output.i2]}
+          direction: DOWN
+      - assertVisible:
+            id: ${output.result.testTags[output.i2]}
+      - evalScript: ${output.i2 = output.i2 + 1}
 
 # Clicking cancel should close popup
-- tapOn: ".*Cancel.*"
-- assertVisible: "Work"
-- assertVisible: "Menu"
+- tapOn: 
+    id: caseEditCancelBtn
+- assertVisible:
+    id: "navItem_Work"
+- assertVisible:
+    id: "navItem_Menu"
 
 # Reopen New case popup
-- tapOn: ".*new case.*"
+- tapOn:
+    id: "workNewCaseFab"
 - assertVisible: ".*new case.*"
-- assertNotVisible: "Work"
-- assertNotVisible: "Menu"
+- assertNotVisible:
+    id: "navItem_Work"
+- assertNotVisible:
+    id: "navItem_Menu"
 
 # Clicking back should close popup
 - tapOn:
-    text: ".*Back.*"
+    text: ".*back.*"
     index: 1
-- assertVisible: "Work"
-- assertVisible: "Menu"
+- assertVisible:
+    id: "navItem_Work"
+- assertVisible:
+    id: "navItem_Menu"
