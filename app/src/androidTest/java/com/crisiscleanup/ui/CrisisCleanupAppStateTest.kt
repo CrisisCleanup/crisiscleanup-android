@@ -16,14 +16,15 @@ import androidx.navigation.createGraph
 import androidx.navigation.testing.TestNavHostController
 import com.crisiscleanup.core.testing.util.TestNavigationObserver
 import com.crisiscleanup.core.testing.util.TestNetworkMonitor
-import junit.framework.TestCase.*
+import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertFalse
+import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
-import java.util.*
 
 /**
  * Tests [CrisisCleanupAppState].
