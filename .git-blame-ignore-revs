@@ -1,0 +1,4 @@
+# style(format): run spotlessApply cmd on codebase to fix lint + format issues
+cc43a9f0e1550a50d6025abb2bba2d143e799709
+# style(format): run `./gradlew --init-script gradle/init.gradle.kts spotlessApply` to format + lint all files
+1fb424562e796ea572d9f9d6d8d88c3bc9f3bb0c
