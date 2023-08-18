@@ -122,6 +122,9 @@ androidx-window-manager = { module = "androidx.window:window", version.ref = "an
 androidx-work-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "androidxWork" }
 androidx-work-testing = { group = "androidx.work", name = "work-testing", version.ref = "androidxWork" }
 apache-commons-text = { group = "org.apache.commons", name = "commons-text", version.ref = "apacheCommonsText" }
+coil-kt = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
+coil-kt-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+coil-kt-svg = { group = "io.coil-kt", name = "coil-svg", version.ref = "coil" }
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics-ktx" }
 firebase-appdistribution-api = { group = "com.google.firebase", name = "firebase-appdistribution-api-ktx", version.ref = "firebaseAppDistribution" }
 firebase-appdistribution = { group = "com.google.firebase", name = "firebase-appdistribution", version.ref = "firebaseAppDistribution" }
@@ -130,9 +133,6 @@ firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashly
 firebase-performance = { group = "com.google.firebase", name = "firebase-perf-ktx" }
 google-maps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "googleMapsCompose" }
 google-places = { group = "com.google.android.libraries.places", name = "places", version.ref = "googlePlaces" }
-coil-kt = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
-coil-kt-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
-coil-kt-svg = { group = "io.coil-kt", name = "coil-svg", version.ref = "coil" }
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
