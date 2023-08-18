@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="sync_notification_title">@string/crisis_cleanup</string>
     <string name="sync_notification_channel_name">Sync</string>

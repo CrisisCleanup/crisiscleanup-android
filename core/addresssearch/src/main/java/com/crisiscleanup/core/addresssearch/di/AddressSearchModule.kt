@@ -12,6 +12,6 @@ import dagger.hilt.components.SingletonComponent
 interface AddressSearchModule {
     @Binds
     fun bindsAddressSearchRepository(
-        repository: GooglePlaceAddressSearchRepository
+        repository: GooglePlaceAddressSearchRepository,
     ): AddressSearchRepository
 }

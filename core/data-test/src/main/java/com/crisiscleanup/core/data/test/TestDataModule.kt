@@ -14,21 +14,21 @@ import dagger.hilt.testing.TestInstallIn
 @Module
 @TestInstallIn(
     components = [SingletonComponent::class],
-    replaces = [DataModule::class]
+    replaces = [DataModule::class],
 )
 interface TestDataModule {
     @Binds
     fun bindsLocalAppPreferencesRepository(
-        localAppPreferencesRepository: OfflineFirstLocalAppPreferencesRepository
+        localAppPreferencesRepository: OfflineFirstLocalAppPreferencesRepository,
     ): LocalAppPreferencesRepository
 
     @Binds
     fun bindsAccountDataRepository(
-        repository: FakeAccountRepository
+        repository: FakeAccountRepository,
     ): AccountDataRepository
 
     @Binds
     fun bindsNetworkMonitor(
-        networkMonitor: AlwaysOnlineNetworkMonitor
+        networkMonitor: AlwaysOnlineNetworkMonitor,
     ): NetworkMonitor
 }

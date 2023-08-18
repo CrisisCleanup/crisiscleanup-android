@@ -16,8 +16,11 @@ fun List<Address?>.filterLatLng(): List<Address> {
 fun Address.asLocationAddress(): LocationAddress {
     val addressLine = getAddressLine(0) ?: ""
     val streetAddress =
-        if (addressLine.isNotBlank()) addressLine.split(",")[0]
-        else thoroughfare ?: ""
+        if (addressLine.isNotBlank()) {
+            addressLine.split(",")[0]
+        } else {
+            thoroughfare ?: ""
+        }
 
     val county = subAdminArea ?: ""
 

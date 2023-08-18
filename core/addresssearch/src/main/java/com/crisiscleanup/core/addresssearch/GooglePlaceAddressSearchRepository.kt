@@ -107,7 +107,7 @@ class GooglePlaceAddressSearchRepository @Inject constructor(
         val request = FindAutocompletePredictionsRequest.builder()
             // Call either setLocationBias() OR setLocationRestriction().
             .setLocationBias(bounds)
-            //.setLocationRestriction(bounds)
+            // .setLocationRestriction(bounds)
             .setOrigin(center)
             .setCountries(countryCodes)
             .setTypesFilter(listOf(TypeFilter.ADDRESS.toString().lowercase()))

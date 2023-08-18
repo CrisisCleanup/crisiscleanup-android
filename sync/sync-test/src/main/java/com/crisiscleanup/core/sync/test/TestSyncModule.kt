@@ -10,7 +10,7 @@ import dagger.hilt.testing.TestInstallIn
 @Module
 @TestInstallIn(
     components = [SingletonComponent::class],
-    replaces = [SyncModule::class]
+    replaces = [SyncModule::class],
 )
 interface TestSyncModule {
     @Binds

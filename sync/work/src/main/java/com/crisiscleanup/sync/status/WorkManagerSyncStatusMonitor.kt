@@ -16,7 +16,7 @@ import javax.inject.Inject
  * [SyncStatusMonitor] backed by [WorkInfo] from [WorkManager]
  */
 class WorkManagerSyncStatusMonitor @Inject constructor(
-    @ApplicationContext context: Context
+    @ApplicationContext context: Context,
 ) : SyncStatusMonitor {
     override val isSyncing: Flow<Boolean> =
         WorkManager.getInstance(context).getWorkInfosForUniqueWorkLiveData(SyncWorkName)
