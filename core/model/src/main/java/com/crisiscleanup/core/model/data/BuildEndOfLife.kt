@@ -14,7 +14,13 @@ data class BuildEndOfLife(
 
 val EarlybirdEndOfLifeFallback = BuildEndOfLife(
     Instant.fromEpochSeconds(1694982754),
-    "This app has wound down",
-    "This app has expired. Reach out to developers for the replacement.",
+    "This app has expired",
+    listOf(
+        "A new app should be available.",
+        "Search for Crisis Cleanup on Google Play.",
+        "Or reach out to Crisis Cleanup team for the replacement.",
+        "",
+        "Happy volunteering! \uD83D\uDE4C",
+    ).joinToString("\n"),
     "https://play.google.com/store/apps/details?id=com.crisiscleanup.prod",
 )

@@ -115,16 +115,21 @@ fun CrisisCleanupApp(
             if (authState is AuthState.Loading) {
                 // Splash screen should be showing
             } else {
-                // Render content even if translations are not fully downloaded in case internet connection is not available.
-                // Translations without fallbacks will show until translations are downloaded.
-                CompositionLocalProvider(LocalAppTranslator provides translator) {
-                    LoadedContent(
-                        snackbarHostState,
-                        appState,
-                        viewModel,
-                        authState,
-                        translationCount,
-                    )
+                val endOfLife = viewModel.buildEndOfLife
+                if (endOfLife?.isEndOfLife == true) {
+                    EndOfLifeView(endOfLife)
+                } else {
+                    // Render content even if translations are not fully downloaded in case internet connection is not available.
+                    // Translations without fallbacks will show until translations are downloaded.
+                    CompositionLocalProvider(LocalAppTranslator provides translator) {
+                        LoadedContent(
+                            snackbarHostState,
+                            appState,
+                            viewModel,
+                            authState,
+                            translationCount,
+                        )
+                    }
                 }
             }
         }
@@ -222,14 +227,14 @@ private fun AuthenticateContent(
                     .consumeWindowInsets(padding)
                     .windowInsetsPadding(
                         WindowInsets.safeDrawing.only(
-                            WindowInsetsSides.Horizontal
-                        )
+                            WindowInsetsSides.Horizontal,
+                        ),
                     ),
                 enableBackHandler = enableBackHandler,
                 closeAuthentication = { toggleAuthentication(false) },
                 isDebug = isDebuggable,
             )
-        }
+        },
     )
 }
 
@@ -295,7 +300,7 @@ private fun NavigableContent(
                     destinations = appState.topLevelDestinations,
                     onNavigateToDestination = appState::navigateToTopLevelDestination,
                     currentDestination = appState.currentDestination,
-                    modifier = Modifier.testTag("CrisisCleanupBottomBar")
+                    modifier = Modifier.testTag("CrisisCleanupBottomBar"),
                 )
             }
 
@@ -304,7 +309,7 @@ private fun NavigableContent(
                 Spacer(
                     Modifier
                         .fillMaxWidth()
-                        .windowInsetsPadding(windowInsets)
+                        .windowInsetsPadding(windowInsets),
                 )
             }
         },
@@ -316,8 +321,8 @@ private fun NavigableContent(
                 .consumeWindowInsets(padding)
                 .windowInsetsPadding(
                     if (isFullscreen) WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)
-                    else WindowInsets.safeDrawing
-                )
+                    else WindowInsets.safeDrawing,
+                ),
         ) {
             if (showNavigation && appState.shouldShowNavRail) {
                 CrisisCleanupNavRail(
@@ -326,7 +331,7 @@ private fun NavigableContent(
                     currentDestination = appState.currentDestination,
                     modifier = Modifier
                         .testTag("CrisisCleanupNavRail")
-                        .safeDrawingPadding()
+                        .safeDrawingPadding(),
                 )
             }
 
@@ -339,7 +344,7 @@ private fun NavigableContent(
                     ) 64.dp else 0.dp
 
                 CompositionLocalProvider(
-                    LocalAppLayout provides AppLayoutArea(snackbarHostState)
+                    LocalAppLayout provides AppLayoutArea(snackbarHostState),
                 ) {
                     CrisisCleanupNavHost(
                         navController = appState.navController,
@@ -351,7 +356,7 @@ private fun NavigableContent(
                 Spacer(
                     Modifier
                         .height(snackbarAreaHeight)
-                        .animateContentSize()
+                        .animateContentSize(),
                 )
             }
         }
@@ -420,7 +425,7 @@ private fun AppHeader(
                     isLoading = isAppHeaderLoading,
                 )
             }
-        }
+        },
     )
 }
 
@@ -473,7 +478,7 @@ private fun CrisisCleanupBottomBar(
     destinations: List<TopLevelDestination>,
     onNavigateToDestination: (TopLevelDestination) -> Unit,
     currentDestination: NavDestination?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val translator = LocalAppTranslator.current
     CrisisCleanupNavigationBar(modifier = modifier) {

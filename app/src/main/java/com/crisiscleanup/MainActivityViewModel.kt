@@ -18,13 +18,14 @@ import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.model.data.AccountData
+import com.crisiscleanup.core.model.data.BuildEndOfLife
+import com.crisiscleanup.core.model.data.EarlybirdEndOfLifeFallback
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.UserData
 import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
@@ -46,13 +47,13 @@ class MainActivityViewModel @Inject constructor(
     accountDataRefresher: AccountDataRefresher,
     val translator: KeyResourceTranslator,
     private val syncPuller: SyncPuller,
-    appEnv: AppEnv,
+    private val appEnv: AppEnv,
     firebaseAnalytics: FirebaseAnalytics,
     @Dispatcher(IO) ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     val isDebuggable = appEnv.isDebuggable
 
-    val uiState: StateFlow<MainActivityUiState> =
+    val uiState =
         localAppPreferencesRepository.userPreferences.map {
             MainActivityUiState.Success(it)
         }.stateIn(
@@ -67,7 +68,7 @@ class MainActivityViewModel @Inject constructor(
     var isAccountExpired = mutableStateOf(false)
         private set
 
-    val authState: StateFlow<AuthState> = accountDataRepository.accountData
+    val authState = accountDataRepository.accountData
         .map {
             isAccountExpired.value = !it.areTokensValid
 
@@ -98,6 +99,22 @@ class MainActivityViewModel @Inject constructor(
         worksitesRepository.isLoading,
         isSyncingWorksitesFull,
     ) { b0, b1, b2 -> b0 || b1 || b2 }
+
+    val buildEndOfLife: BuildEndOfLife?
+        get() {
+            if (appEnv.isEarlybird) {
+                (uiState.value as? MainActivityUiState.Success)?.let {
+                    var eol = it.userData.earlybirdEndOfLife
+                    if (!eol.isEndOfLife) {
+                        eol = EarlybirdEndOfLifeFallback
+                    }
+                    if (eol.isEndOfLife) {
+                        return eol
+                    }
+                }
+            }
+            return null
+        }
 
     init {
         accountDataRepository.accountData
