@@ -65,7 +65,10 @@ private val statusClaimMapMarkerColors = mapOf(
 )
 
 internal const val filteredOutMarkerAlpha = 0.2f
-private const val filteredOutDotAlpha = 0.25f
+private const val filteredOutMarkerStrokeAlpha = 1.0f
+private const val filteredOutMarkerFillAlpha = 0.25f
+private const val filteredOutDotStrokeAlpha = 0.5f
+private const val filteredOutDotFillAlpha = 0.1f
 private const val duplicateMarkerAlpha = 0.3f
 
 internal fun getMapMarkerColors(
@@ -86,12 +89,13 @@ internal fun getMapMarkerColors(
             stroke = colors.stroke.copy(alpha = duplicateMarkerAlpha),
         )
     } else if (isFilteredOut) {
-        val alpha = if (isDot) filteredOutDotAlpha else filteredOutMarkerAlpha
+        val fillAlpha = if (isDot) filteredOutDotFillAlpha else filteredOutMarkerFillAlpha
+        val strokeAlpha = if (isDot) filteredOutDotStrokeAlpha else filteredOutMarkerStrokeAlpha
         colors = MapMarkerColor(0xFFFFFFFF, colors.fillLong)
             .let {
                 it.copy(
-                    fill = it.fill.copy(alpha = alpha),
-                    stroke = it.stroke.copy(alpha = alpha),
+                    fill = it.fill.copy(alpha = fillAlpha),
+                    stroke = it.stroke.copy(alpha = strokeAlpha),
                 )
             }
     }
