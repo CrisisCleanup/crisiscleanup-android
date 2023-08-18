@@ -65,7 +65,7 @@ fun SelectIncidentDialog(
     textPadding: Dp = 16.dp,
 ) {
     val incidentsData by selectIncidentViewModel.incidentsData.collectAsStateWithLifecycle(
-        IncidentsData.Loading
+        IncidentsData.Loading,
     )
 
     WrapInDialog(onBackClick) {
@@ -140,7 +140,7 @@ private fun ColumnScope.IncidentSelectContent(
                 val fontWeight = if (isSelected) FontWeight.Bold else null
                 Text(
                     modifier = modifier
-                        .testTag("selectIncidentItem_${id}")
+                        .testTag("selectIncidentItem_$id")
                         .fillParentMaxWidth()
                         .clickable(enabled = enableInput) {
                             onSelectIncident(incident)

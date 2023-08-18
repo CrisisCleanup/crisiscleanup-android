@@ -19,11 +19,11 @@ interface RecentWorksiteDao {
         ORDER BY viewed_at DESC
         LIMIT :limit
         OFFSET :offset
-        """
+        """,
     )
     fun streamRecentWorksites(
         incidentId: Long,
         limit: Int = 16,
-        offset: Int = 0
+        offset: Int = 0,
     ): Flow<List<PopulatedRecentWorksite>>
 }

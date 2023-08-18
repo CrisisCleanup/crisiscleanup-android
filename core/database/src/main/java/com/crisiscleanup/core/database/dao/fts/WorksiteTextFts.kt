@@ -45,13 +45,13 @@ data class PopulatedWorksiteTextMatchInfo(
 
     val sortScore by lazy {
         matchInfoInts.okapiBm25Score(0) * 0.9 +
-                matchInfoInts.okapiBm25Score(1) +
-                matchInfoInts.okapiBm25Score(2) * 0.8 +
-                matchInfoInts.okapiBm25Score(3) * 0.7 +
-                matchInfoInts.okapiBm25Score(4) * 0.7 +
-                matchInfoInts.okapiBm25Score(5) * 0.9 +
-                matchInfoInts.okapiBm25Score(6) * 0.6 +
-                matchInfoInts.okapiBm25Score(7) * 0.6
+            matchInfoInts.okapiBm25Score(1) +
+            matchInfoInts.okapiBm25Score(2) * 0.8 +
+            matchInfoInts.okapiBm25Score(3) * 0.7 +
+            matchInfoInts.okapiBm25Score(4) * 0.7 +
+            matchInfoInts.okapiBm25Score(5) * 0.9 +
+            matchInfoInts.okapiBm25Score(6) * 0.6 +
+            matchInfoInts.okapiBm25Score(7) * 0.6
     }
 
     override fun equals(other: Any?): Boolean {

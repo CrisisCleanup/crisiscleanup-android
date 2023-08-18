@@ -136,7 +136,7 @@ internal fun ColumnScope.CaseEditorScreen(
             Box(
                 modifier
                     .fillMaxWidth()
-                    .weight(1f)
+                    .weight(1f),
             ) {
                 BusyIndicatorFloatingTopCenter(true)
             }
@@ -153,8 +153,11 @@ internal fun ColumnScope.CaseEditorScreen(
 
         else -> {
             val errorData = uiState as CaseEditorUiState.Error
-            val errorMessage = if (errorData.errorResId != 0) stringResource(errorData.errorResId)
-            else errorData.errorMessage.ifEmpty { stringResource(commonR.string.unexpected_error) }
+            val errorMessage = if (errorData.errorResId != 0) {
+                stringResource(errorData.errorResId)
+            } else {
+                errorData.errorMessage.ifEmpty { stringResource(commonR.string.unexpected_error) }
+            }
             Box(modifier.weight(1f)) {
                 Text(
                     text = errorMessage,
@@ -192,7 +195,7 @@ private fun ColumnScope.FullEditView(
             2 to 10,
             3 to 13,
             4 to 16,
-        )
+        ),
     )
 
     val sectionSliderState = rememberFocusSectionSliderState(
@@ -211,8 +214,8 @@ private fun ColumnScope.FullEditView(
     val areEditorsReady by viewModel.areEditorsReady.collectAsStateWithLifecycle()
     val isSavingData by viewModel.isSavingWorksite.collectAsStateWithLifecycle()
     val isEditable = areEditorsReady &&
-            caseData.isNetworkLoadFinished &&
-            !isSavingData
+        caseData.isNetworkLoadFinished &&
+        !isSavingData
 
     val isSectionCollapsed =
         remember(viewModel) { { sectionIndex: Int -> sectionCollapseStates[sectionIndex] } }
@@ -472,7 +475,7 @@ private fun PromptChangesDialog(
         dismissButton = {
             CrisisCleanupTextButton(
                 text = translator("caseForm.no"),
-                onClick = onAbort
+                onClick = onAbort,
             )
         },
         confirmButton = {
@@ -509,7 +512,7 @@ private fun InvalidSaveDialog(
                 dismissButton = {
                     CrisisCleanupTextButton(
                         text = translator("actions.cancel"),
-                        onClick = onDismiss
+                        onClick = onDismiss,
                     )
                 },
                 confirmButton = {

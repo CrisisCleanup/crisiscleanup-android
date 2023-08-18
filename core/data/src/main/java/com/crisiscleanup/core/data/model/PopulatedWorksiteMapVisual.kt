@@ -26,8 +26,10 @@ fun List<PopulatedWorksiteMapVisual>.filter(
     return mapNotNull {
         val distance = if (filterByDistance) {
             haversineDistance(
-                latRad, lngRad,
-                it.latitude.radians, it.longitude.radians,
+                latRad,
+                lngRad,
+                it.latitude.radians,
+                it.longitude.radians,
             ).kmToMiles
         } else {
             0.0
@@ -42,19 +44,19 @@ fun List<PopulatedWorksiteMapVisual>.filter(
         }
 
         val isFilteredOut = filters.hasAdditionalFilters &&
-                !filters.passesFilter(
-                    organizationAffiliates,
-                    it.flags,
-                    it.formData,
-                    it.workTypes,
-                    it.createdAt,
-                    it.isFavorite,
-                    it.reportedBy,
-                    it.updatedAt,
-                    it.latitude,
-                    it.longitude,
-                    locationAreaBounds,
-                )
+            !filters.passesFilter(
+                organizationAffiliates,
+                it.flags,
+                it.formData,
+                it.workTypes,
+                it.createdAt,
+                it.isFavorite,
+                it.reportedBy,
+                it.updatedAt,
+                it.latitude,
+                it.longitude,
+                locationAreaBounds,
+            )
         it.asExternalModel(isFilteredOut)
     }
 }

@@ -15,27 +15,27 @@ class NetworkLocationTest {
         val locations = result.results!!
         assertEquals(
             listOf("Polygon", "MultiPolygon", "Point"),
-            locations.map(NetworkLocation::shapeType)
+            locations.map(NetworkLocation::shapeType),
         )
 
         assertEquals(
             1074,
-            locations[0].poly!!.condensedCoordinates.size
+            locations[0].poly!!.condensedCoordinates.size,
         )
 
         val geoCoordinates = locations[1].geom!!.condensedCoordinates
         assertEquals(
             6,
-            geoCoordinates.size
+            geoCoordinates.size,
         )
         assertEquals(
             listOf(1582, 10, 16, 18, 26, 42),
-            geoCoordinates.map { it.size }
+            geoCoordinates.map { it.size },
         )
 
         assertEquals(
             2,
-            locations[2].point!!.coordinates.size
+            locations[2].point!!.coordinates.size,
         )
     }
 }

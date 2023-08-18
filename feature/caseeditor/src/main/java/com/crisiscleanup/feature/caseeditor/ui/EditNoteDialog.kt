@@ -43,7 +43,7 @@ fun EditNoteDialog(
         dismissButton = {
             CrisisCleanupTextButton(
                 text = translator("actions.cancel"),
-                onClick = onCancel
+                onClick = onCancel,
             )
         },
         confirmButton = {

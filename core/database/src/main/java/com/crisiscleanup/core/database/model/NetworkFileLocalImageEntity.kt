@@ -18,7 +18,7 @@ import androidx.room.PrimaryKey
     ],
     indices = [
         Index("is_deleted"),
-    ]
+    ],
 )
 data class NetworkFileLocalImageEntity(
     @PrimaryKey

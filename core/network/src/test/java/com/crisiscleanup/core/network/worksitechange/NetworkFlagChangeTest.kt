@@ -48,7 +48,8 @@ class NetworkFlagChangeTest {
 
         val actualOneLocal = noFlagsWorksite.getFlagChanges(emptyStart, startOne, emptyMap())
         assertEquals(
-            listOf(Pair(3L, testNetworkFlag(null, "reasono"))), actualOneLocal.first,
+            listOf(Pair(3L, testNetworkFlag(null, "reasono"))),
+            actualOneLocal.first,
         )
         assertEquals(emptyList(), actualOneLocal.second)
     }
@@ -86,7 +87,7 @@ class NetworkFlagChangeTest {
                 Pair(3L, testNetworkFlag(null, "reasono")),
                 Pair(4L, testNetworkFlag(null, "newer")),
             ),
-            actualAddAll.first
+            actualAddAll.first,
         )
         assertEquals(emptyList(), actualAddAll.second)
 
@@ -150,7 +151,7 @@ class NetworkFlagChangeTest {
             listOf(
                 testNetworkFlag(42, "reasono"),
                 testNetworkFlag(51, "newer"),
-            )
+            ),
         )
         val actualNone = flagsWorksiteMultiple.getFlagChanges(emptyStart, addedFlags, emptyMap())
         assertEquals(emptyList(), actualNone.first)
@@ -162,7 +163,7 @@ class NetworkFlagChangeTest {
             testNetworkFlag(42, "reasono"),
             testNetworkFlag(51, "newer"),
             testNetworkFlag(487, "pentag"),
-        )
+        ),
     )
 
     @Test
@@ -221,7 +222,7 @@ class NetworkFlagChangeTest {
                 testNetworkFlag(51, "newer"),
                 testNetworkFlag(487, "pentag"),
                 testNetworkFlag(521, "inasmu"),
-            )
+            ),
         )
         val flagIdLookup = mapOf(
             23L to 531L,
@@ -269,7 +270,7 @@ private fun testFlagSnapshot(
         reasonT = reason,
         reason = reason,
         requestedAction = "",
-    )
+    ),
 )
 
 private fun testNetworkFlag(

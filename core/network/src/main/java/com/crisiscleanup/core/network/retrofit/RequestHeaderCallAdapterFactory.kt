@@ -13,7 +13,7 @@ enum class RequestHeaderKey {
 }
 
 class RequestHeaderKeysLookup(
-    private val lookup: MutableMap<Int, Map<RequestHeaderKey, String>> = mutableMapOf()
+    private val lookup: MutableMap<Int, Map<RequestHeaderKey, String>> = mutableMapOf(),
 ) {
     private fun requestKey(request: Request): Int =
         request.url.hashCode() + 31 * request.method.hashCode()
@@ -67,18 +67,21 @@ internal class RequestHeaderCallAdapterFactory(
     override fun get(
         returnType: Type,
         annotations: Array<out Annotation>,
-        retrofit: Retrofit
+        retrofit: Retrofit,
     ): CallAdapter<*, *>? {
         val matchingAdapterFactories =
             retrofit.callAdapterFactories().filterNot { it is RequestHeaderCallAdapterFactory }
         for (adapterFactory in matchingAdapterFactories) {
             adapterFactory.get(returnType, annotations, retrofit)?.let {
-                return if (annotations.isEmpty()) it
-                else HeaderKeysCallAdapter(
-                    it as CallAdapter<Any, Any>,
-                    annotations,
-                    headerKeysLookup
-                )
+                return if (annotations.isEmpty()) {
+                    it
+                } else {
+                    HeaderKeysCallAdapter(
+                        it as CallAdapter<Any, Any>,
+                        annotations,
+                        headerKeysLookup,
+                    )
+                }
             }
         }
         return null

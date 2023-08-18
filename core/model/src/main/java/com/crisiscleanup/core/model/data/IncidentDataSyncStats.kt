@@ -52,8 +52,8 @@ data class IncidentDataSyncStats(
     private val isInitialPull = pagedCount < dataCount
 
     val shouldSync = isInitialPull ||
-            isDataVersionOutdated ||
-            syncAttempt.shouldSyncPassively(600)
+        isDataVersionOutdated ||
+        syncAttempt.shouldSyncPassively(600)
 
     val isDeltaPull = !isInitialPull
 }

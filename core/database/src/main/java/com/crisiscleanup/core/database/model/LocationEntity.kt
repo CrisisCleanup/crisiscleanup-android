@@ -12,8 +12,8 @@ data class LocationEntity(
     val id: Long,
     @ColumnInfo("shape_type", defaultValue = "")
     val shapeType: String,
-    @ColumnInfo(defaultValue = "")
     // Newline delimited sequences of
     //   comma delimited latitude,longitude coordinates
+    @ColumnInfo(defaultValue = "")
     val coordinates: String,
 )

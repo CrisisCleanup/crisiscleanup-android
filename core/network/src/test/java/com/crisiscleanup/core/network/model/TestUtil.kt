@@ -23,7 +23,7 @@ internal fun fillNetworkIncident(
     locations: List<NetworkIncidentLocation>,
     activePhone: List<String>? = null,
     turnOnRelease: Boolean = false,
-    isArchived: Boolean = false
+    isArchived: Boolean = false,
 ) = NetworkIncident(
     id,
     Instant.parse(startAt),
@@ -42,18 +42,30 @@ internal fun fillNetworkLocation(
     point: List<Double>? = null,
 ) = NetworkLocation(
     id = id,
-    geom = if (geom == null) null else NetworkLocation.LocationGeometry(
-        type = "MultiPolygon",
-        coordinates = geom,
-    ),
-    poly = if (poly == null) null else NetworkLocation.LocationPolygon(
-        type = "Polygon",
-        coordinates = poly,
-    ),
-    point = if (point == null) null else NetworkLocation.LocationPoint(
-        type = "Point",
-        coordinates = point,
-    ),
+    geom = if (geom == null) {
+        null
+    } else {
+        NetworkLocation.LocationGeometry(
+            type = "MultiPolygon",
+            coordinates = geom,
+        )
+    },
+    poly = if (poly == null) {
+        null
+    } else {
+        NetworkLocation.LocationPolygon(
+            type = "Polygon",
+            coordinates = poly,
+        )
+    },
+    point = if (point == null) {
+        null
+    } else {
+        NetworkLocation.LocationPoint(
+            type = "Point",
+            coordinates = point,
+        )
+    },
 )
 
 internal fun splitToTwos(coordinates: List<Double>): List<List<Double>> {

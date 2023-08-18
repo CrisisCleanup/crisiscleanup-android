@@ -493,7 +493,8 @@ internal fun BoxScope.CasesMapView(
             // TODO Make padding dp a parameter
             val padding = with(currentLocalDensity) { 8.dp.toPx() }
             val update = CameraUpdateFactory.newLatLngBounds(
-                mapCameraBounds.bounds, padding.toInt(),
+                mapCameraBounds.bounds,
+                padding.toInt(),
             )
             if (mapCameraBounds.durationMs > 0) {
                 cameraPositionState.animate(update, mapCameraBounds.durationMs)
@@ -506,7 +507,8 @@ internal fun BoxScope.CasesMapView(
     LaunchedEffect(mapCameraZoom) {
         if (mapCameraZoom.takeApply()) {
             val update = CameraUpdateFactory.newLatLngZoom(
-                mapCameraZoom.center, mapCameraZoom.zoom,
+                mapCameraZoom.center,
+                mapCameraZoom.zoom,
             )
             if (mapCameraZoom.durationMs > 0) {
                 cameraPositionState.animate(update, mapCameraZoom.durationMs)

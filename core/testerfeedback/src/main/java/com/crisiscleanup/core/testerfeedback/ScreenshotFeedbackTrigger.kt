@@ -40,7 +40,7 @@ class ScreenshotFeedbackTrigger @Inject constructor(
         context.contentResolver?.registerContentObserver(
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
             true,
-            this
+            this,
         )
     }
 

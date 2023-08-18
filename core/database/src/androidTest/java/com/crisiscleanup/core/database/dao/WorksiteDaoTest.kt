@@ -429,7 +429,6 @@ fun testWorksiteFullEntity(
     updatedAt = createdAt.plus(99.seconds),
 )
 
-
 // Defines all fields not nullable
 fun testWorksiteShortEntity(
     networkId: Long,

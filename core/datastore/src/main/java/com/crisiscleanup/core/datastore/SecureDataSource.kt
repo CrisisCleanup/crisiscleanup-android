@@ -8,7 +8,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 class SecureDataSource @Inject constructor(
-    @ApplicationContext context: Context
+    @ApplicationContext context: Context,
 ) {
     private val sharedPrefsFile = "crisis-cleanup-secure-prefs"
     private val sharedPreferences: SharedPreferences

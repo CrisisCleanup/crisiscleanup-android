@@ -32,8 +32,8 @@ fun updateWorkTypeStatuses(
         .filter {
             with(it.value) {
                 dynamicValue.isBooleanTrue &&
-                        isWorkTypeGroup &&
-                        workTypeLookup[key] != null
+                    isWorkTypeGroup &&
+                    workTypeLookup[key] != null
             }
         }
         .forEach {
@@ -52,7 +52,7 @@ fun updateWorkTypeStatuses(
                             recur = recur,
                             statusLiteral = workTypeStatus.literal,
                             workTypeLiteral = workTypeLiteral,
-                        )
+                        ),
                     )
                 } else {
                     val isRecurChanged = recur != existingWorkType.recur
@@ -72,7 +72,9 @@ fun updateWorkTypeStatuses(
             .associateBy(WorkType::workType)
             .values
             .sortedBy { workType -> worksite.workTypes.indexOf(workType) }
-    } else worksite.workTypes
+    } else {
+        worksite.workTypes
+    }
 
     workTypes = workTypes
         .mapNotNull { keepWorkTypes[it.workTypeLiteral] }
@@ -85,5 +87,5 @@ fun updateWorkTypeStatuses(
 fun Worksite.updateKeyWorkType(reference: Worksite) = copy(
     keyWorkType = reference.keyWorkType?.workType?.let { matchWorkType ->
         workTypes.find { it.workType == matchWorkType }
-    } ?: workTypes.firstOrNull()
+    } ?: workTypes.firstOrNull(),
 )

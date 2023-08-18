@@ -259,8 +259,11 @@ private fun getTopIconActionColor(
     isActive: Boolean,
     isEditable: Boolean,
 ): Color {
-    var tint = if (isActive) primaryRedColor
-    else neutralIconColor
+    var tint = if (isActive) {
+        primaryRedColor
+    } else {
+        neutralIconColor
+    }
     if (!isEditable) {
         tint = tint.disabledAlpha()
     }
@@ -295,14 +298,14 @@ private fun TopBar(
             Text(
                 title,
                 style = LocalFontStyles.current.header3,
-                modifier = Modifier.testTag("editCaseHeaderText")
+                modifier = Modifier.testTag("editCaseHeaderText"),
             )
 
             if (subTitle.isNotBlank()) {
                 Text(
                     subTitle,
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.testTag("editCaseSubHeaderText")
+                    modifier = Modifier.testTag("editCaseSubHeaderText"),
                 )
             }
         }
@@ -317,8 +320,11 @@ private fun TopBar(
         @Composable {
             val translator = LocalAppTranslator.current
             val highPriorityTranslateKey =
-                if (isHighPriority) "actions.unmark_high_priority"
-                else "flag.flag_high_priority"
+                if (isHighPriority) {
+                    "actions.unmark_high_priority"
+                } else {
+                    "flag.flag_high_priority"
+                }
             val highPriorityTint = getTopIconActionColor(isHighPriority, isEditable)
             CrisisCleanupIconButton(
                 iconResId = R.drawable.ic_important_filled,
@@ -326,14 +332,20 @@ private fun TopBar(
                 onClick = toggleHighPriority,
                 enabled = isEditable,
                 tint = highPriorityTint,
-                modifier = Modifier.testTag("editCaseHighPriorityToggleBtn")
+                modifier = Modifier.testTag("editCaseHighPriorityToggleBtn"),
             )
 
-            val iconResId = if (isFavorite) R.drawable.ic_heart_filled
-            else R.drawable.ic_heart_outline
+            val iconResId = if (isFavorite) {
+                R.drawable.ic_heart_filled
+            } else {
+                R.drawable.ic_heart_outline
+            }
             val favoriteDescription =
-                if (isFavorite) translator("actions.not_member_of_my_org")
-                else translator("actions.member_of_my_org")
+                if (isFavorite) {
+                    translator("actions.not_member_of_my_org")
+                } else {
+                    translator("actions.member_of_my_org")
+                }
             val favoriteTint = getTopIconActionColor(isFavorite, isEditable)
             CrisisCleanupIconButton(
                 iconResId = iconResId,
@@ -341,7 +353,7 @@ private fun TopBar(
                 onClick = toggleFavorite,
                 enabled = isEditable,
                 tint = favoriteTint,
-                modifier = Modifier.testTag("editCaseFavoriteToggleBtn")
+                modifier = Modifier.testTag("editCaseFavoriteToggleBtn"),
             )
         }
     }
@@ -392,7 +404,7 @@ private fun ColumnScope.ExistingCaseContent(
                         pagerState.animateScrollToPage(index)
                     }
                 },
-                modifier = Modifier.testTag("caseInfoTab_${title}")
+                modifier = Modifier.testTag("caseInfoTab_$title"),
             )
         }
     }
@@ -454,7 +466,7 @@ private fun BottomActions(
             }
 
             NavigationBarItem(
-                modifier = Modifier.testTag("editCaseNavItem_${label}"),
+                modifier = Modifier.testTag("editCaseNavItem_$label"),
                 selected = false,
                 onClick = {
                     when (index) {
@@ -465,7 +477,7 @@ private fun BottomActions(
                             ExistingWorksiteIdentifier(
                                 worksite.incidentId,
                                 worksite.id,
-                            )
+                            ),
                         )
                     }
                 },
@@ -589,7 +601,7 @@ internal fun EditExistingCaseInfoView(
             Spacer(
                 Modifier
                     .fillMaxWidth()
-                    .height(edgeSpacing)
+                    .height(edgeSpacing),
             )
         }
     }
@@ -663,7 +675,7 @@ private fun FlagChip(
                             onClick = { removeFlag(flag) },
                             role = Role.Button,
                         ),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         imageVector = CrisisCleanupIcons.Clear,
@@ -707,7 +719,7 @@ private fun LazyListScope.propertyInfoItems(
                         .testTag("editCasePropertyInfoWorksiteNameRow")
                         .combinedClickable(
                             onClick = {},
-                            onLongClick = { copyToClipboard(worksite.name) }
+                            onLongClick = { copyToClipboard(worksite.name) },
                         )
                         .fillMaxWidth()
                         .padding(horizontal = edgeSpacing, vertical = edgeSpacingHalf),
@@ -721,7 +733,7 @@ private fun LazyListScope.propertyInfoItems(
                         .testTag("editCasePropertyInfoPhoneRow")
                         .combinedClickable(
                             onClick = {},
-                            onLongClick = { copyToClipboard(phoneNumbers) }
+                            onLongClick = { copyToClipboard(phoneNumbers) },
                         )
                         .fillMaxWidth()
                         .padding(horizontal = edgeSpacing, vertical = edgeSpacingHalf),
@@ -736,7 +748,7 @@ private fun LazyListScope.propertyInfoItems(
                                 .testTag("editCasePropertyInfoEmailRow")
                                 .combinedClickable(
                                     onClick = {},
-                                    onLongClick = { copyToClipboard(worksite.email) }
+                                    onLongClick = { copyToClipboard(worksite.email) },
                                 )
                                 .fillMaxWidth()
                                 .padding(horizontal = edgeSpacing, vertical = edgeSpacingHalf),
@@ -753,7 +765,7 @@ private fun LazyListScope.propertyInfoItems(
                         .testTag("editCasePropertyInfoLocationRow")
                         .combinedClickable(
                             onClick = {},
-                            onLongClick = { copyToClipboard(fullAddress) }
+                            onLongClick = { copyToClipboard(fullAddress) },
                         )
                         .fillMaxWidth()
                         .padding(horizontal = edgeSpacing, vertical = edgeSpacingHalf),
@@ -945,7 +957,7 @@ internal fun EditExistingCaseNotesView(
                     Modifier
                         .fillMaxWidth()
                         // TODO Common dimensions
-                        .height(8.dp)
+                        .height(8.dp),
                 )
             }
             staticNoteItems(
@@ -961,7 +973,7 @@ internal fun EditExistingCaseNotesView(
                 Spacer(
                     Modifier
                         .fillMaxWidth()
-                        .fabPlusSpaceHeight()
+                        .fabPlusSpaceHeight(),
                 )
             }
         }

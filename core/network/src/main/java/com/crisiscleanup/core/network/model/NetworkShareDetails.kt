@@ -11,5 +11,5 @@ data class NetworkShareDetails(
     @SerialName("share_message")
     val shareMessage: String,
     @SerialName("no_claim_reason_text")
-    val noClaimReason: String?
+    val noClaimReason: String?,
 )

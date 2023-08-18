@@ -59,8 +59,7 @@ class WorksiteSyncFillTest {
         worksiteDao.insertRoot(rootB)
         worksiteDao.insertRoot(rootD)
 
-        val coreA = testWorksiteFullEntity(rootA.networkId, incidentId, now, id = rootA.id).copy(
-        )
+        val coreA = testWorksiteFullEntity(rootA.networkId, incidentId, now, id = rootA.id).copy()
         val coreB = coreA.copy(
             id = rootB.id,
             networkId = rootB.networkId,
@@ -91,7 +90,7 @@ class WorksiteSyncFillTest {
                 testWorksiteFlagEntity("reason-b", rootB.id, 35),
                 testWorksiteFlagEntity("reason-c", rootA.id, 36),
                 testWorksiteFlagEntity("reason-d", rootA.id, 37),
-            )
+            ),
         )
 
         formDataDao.upsert(
@@ -99,7 +98,7 @@ class WorksiteSyncFillTest {
                 testWorksiteFormDataEntity(rootA.id, "field-a", "value-a"),
                 testWorksiteFormDataEntity(rootA.id, "field-b", "value-b"),
                 testWorksiteFormDataEntity(rootB.id, "field-c", "value-c"),
-            )
+            ),
         )
 
         noteDao.insertIgnore(
@@ -110,7 +109,7 @@ class WorksiteSyncFillTest {
                 testWorksiteNoteEntity("note-d", rootA.id, 60, 1.hours, 16),
                 testWorksiteNoteEntity("note-e", rootB.id, 61, (-1).hours, 17),
                 testWorksiteNoteEntity("note-f", rootB.id, 62, 1.hours, 18),
-            )
+            ),
         )
 
         workTypeDao.insertIgnore(
@@ -119,7 +118,7 @@ class WorksiteSyncFillTest {
                 testWorkTypeEntity(36, "status-b", "type-b", 26, rootA.id),
                 testWorkTypeEntity(37, "status-c", "type-c", 26, rootA.id),
                 testWorkTypeEntity(38, "status-d", "type-d", 25, rootB.id),
-            )
+            ),
         )
 
         val updateCore = coreA.copy(

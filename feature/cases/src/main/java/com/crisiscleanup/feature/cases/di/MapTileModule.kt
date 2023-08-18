@@ -15,7 +15,7 @@ interface MapTileModule {
     @Singleton
     @Binds
     fun bindsTileRenderer(
-        renderer: CaseDotsMapTileRenderer
+        renderer: CaseDotsMapTileRenderer,
     ): CasesOverviewMapTileRenderer
 
     @Singleton

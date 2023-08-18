@@ -78,7 +78,7 @@ class FormDataChangeTest {
     fun deleteNone() {
         val changesMap = mapOf(
             "r" to DynamicValue("r"),
-            "s" to DynamicValue("s")
+            "s" to DynamicValue("s"),
         )
 
         assertEquals(emptyFormData, emptyWorksite.getFormDataChanges(changesMap, emptyMap()))

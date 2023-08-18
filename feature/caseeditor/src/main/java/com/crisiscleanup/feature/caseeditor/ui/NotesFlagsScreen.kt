@@ -88,8 +88,11 @@ internal fun LazyListScope.staticNoteItems(
         count,
         key = {
             val note = notes[it]
-            if (note.id > 0) note.id
-            else note.createdAt.toEpochMilliseconds()
+            if (note.id > 0) {
+                note.id
+            } else {
+                note.createdAt.toEpochMilliseconds()
+            }
         },
         contentType = { "item-note" },
     ) {
@@ -98,10 +101,13 @@ internal fun LazyListScope.staticNoteItems(
             NoteCardView(note, modifier)
         } else {
             val viewModifier =
-                if (note.isSurvivor) Modifier
-                    .background(survivorNoteColor)
-                    .then(modifier)
-                else modifier
+                if (note.isSurvivor) {
+                    Modifier
+                        .background(survivorNoteColor)
+                        .then(modifier)
+                } else {
+                    modifier
+                }
             NoteView(note, viewModifier)
         }
     }

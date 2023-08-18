@@ -24,8 +24,11 @@ class NetworkWorksiteChangeSerializer @Inject constructor() : WorksiteChangeSeri
         releaseReason: String,
         releaseWorkTypes: List<String>,
     ): Pair<Int, String> {
-        val snapshotStart = if (worksiteStart.isNew) null
-        else worksiteStart.asSnapshotModel(flagIdLookup, noteIdLookup, workTypeIdLookup)
+        val snapshotStart = if (worksiteStart.isNew) {
+            null
+        } else {
+            worksiteStart.asSnapshotModel(flagIdLookup, noteIdLookup, workTypeIdLookup)
+        }
         val snapshotChange =
             worksiteChange.asSnapshotModel(flagIdLookup, noteIdLookup, workTypeIdLookup)
         val change = WorksiteChange(
@@ -45,6 +48,6 @@ class NetworkWorksiteChangeSerializer @Inject constructor() : WorksiteChangeSeri
 interface WorksiteChangeSerializerModule {
     @Binds
     fun bindsWorksiteChangeSerializer(
-        serializer: NetworkWorksiteChangeSerializer
+        serializer: NetworkWorksiteChangeSerializer,
     ): WorksiteChangeSerializer
 }

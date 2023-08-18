@@ -156,7 +156,6 @@ class WorksiteDaoPlus @Inject constructor(
             files?.let { syncFiles(id, it) }
 
             return@withTransaction true
-
         } else if (!isLocallyModified) {
             if (worksiteDao.getRootCount(
                     id = modifiedAt.id,
@@ -215,7 +214,6 @@ class WorksiteDaoPlus @Inject constructor(
             files?.let { syncFiles(worksiteId, it) }
 
             return@withTransaction true
-
         } else {
             // Resolving changes at this point is not worth the complexity.
             // Defer to worksite (snapshot) changes resolving successfully and completely.
@@ -308,8 +306,11 @@ class WorksiteDaoPlus @Inject constructor(
         )
 
         val worksiteId =
-            if (isUpdated) db.worksiteDao().getWorksiteId(core.networkId)
-            else -1
+            if (isUpdated) {
+                db.worksiteDao().getWorksiteId(core.networkId)
+            } else {
+                -1
+            }
         return@withTransaction Pair(isUpdated, worksiteId)
     }
 
@@ -397,7 +398,7 @@ class WorksiteDaoPlus @Inject constructor(
     ): Int {
         val worksiteDao = db.worksiteDao()
         val isLongitudeOrdered = longitudeLeft < longitudeRight
-        return if (isLongitudeOrdered)
+        return if (isLongitudeOrdered) {
             worksiteDao.getWorksitesCount(
                 incidentId,
                 latitudeSouth,
@@ -405,13 +406,15 @@ class WorksiteDaoPlus @Inject constructor(
                 longitudeLeft,
                 longitudeRight,
             )
-        else worksiteDao.getWorksitesCountLongitudeCrossover(
-            incidentId,
-            latitudeSouth,
-            latitudeNorth,
-            longitudeLeft,
-            longitudeRight,
-        )
+        } else {
+            worksiteDao.getWorksitesCountLongitudeCrossover(
+                incidentId,
+                latitudeSouth,
+                latitudeNorth,
+                longitudeLeft,
+                longitudeRight,
+            )
+        }
     }
 
     suspend fun onSyncEnd(
@@ -425,9 +428,9 @@ class WorksiteDaoPlus @Inject constructor(
             val workTypeChanges = db.workTypeDao().getUnsyncedCount(worksiteId)
             val changes = db.worksiteChangeDao().getChangeCount(worksiteId)
             val hasModification = flagChanges > 0 ||
-                    noteChanges > 0 ||
-                    workTypeChanges > 0 ||
-                    changes > 0
+                noteChanges > 0 ||
+                workTypeChanges > 0 ||
+                changes > 0
             return@withTransaction if (hasModification) {
                 syncLogger.log(
                     "Pending changes on sync end",
@@ -472,8 +475,11 @@ class WorksiteDaoPlus @Inject constructor(
             }
         }
 
-        if (boundsIndex >= remainingBounds.size) emptyList()
-        else remainingBounds.subList(boundsIndex, remainingBounds.size)
+        if (boundsIndex >= remainingBounds.size) {
+            emptyList()
+        } else {
+            remainingBounds.subList(boundsIndex, remainingBounds.size)
+        }
     }
 
     suspend fun loadTableWorksites(
@@ -646,8 +652,10 @@ class WorksiteDaoPlus @Inject constructor(
             val worksite = boundedWorksites[i]
             val entity = worksite.base.entity
             val distance = haversineDistance(
-                latRad, lngRad,
-                entity.latitude.radians, entity.longitude.radians,
+                latRad,
+                lngRad,
+                entity.latitude.radians,
+                entity.longitude.radians,
             )
             withDistance.add(Pair(worksite, distance))
             if (i % strideCount == 0) {

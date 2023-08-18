@@ -15,18 +15,18 @@ interface ApplicationModule {
     @Singleton
     @Binds
     fun bindsAndroidResourceProvider(
-        resourceProvider: ApplicationResourceProvider
+        resourceProvider: ApplicationResourceProvider,
     ): AndroidResourceProvider
 
     @Binds
     fun bindsInputValidator(
-        validator: CommonInputValidator
+        validator: CommonInputValidator,
     ): InputValidator
 
     @Singleton
     @Binds
     fun bindsTrimMemoryEventManager(
-        manager: CrisisCleanupTrimMemoryEventManager
+        manager: CrisisCleanupTrimMemoryEventManager,
     ): TrimMemoryEventManager
 
     @Binds
@@ -34,11 +34,11 @@ interface ApplicationModule {
 
     @Binds
     fun bindsAppVersionProvider(
-        versionProvider: AndroidAppVersionProvider
+        versionProvider: AndroidAppVersionProvider,
     ): AppVersionProvider
 
     @Binds
     fun bindsTranslator(
-        translator: AndroidResourceTranslator
+        translator: AndroidResourceTranslator,
     ): KeyResourceTranslator
 }

@@ -24,7 +24,7 @@ object DatabaseModule {
     ): CrisisCleanupDatabase = Room.databaseBuilder(
         context,
         CrisisCleanupDatabase::class.java,
-        "crisis-cleanup-database"
+        "crisis-cleanup-database",
     ).build()
 
     @Provides

@@ -79,8 +79,11 @@ class TransferWorkTypeViewModel @Inject constructor(
     var transferReason by mutableStateOf("")
 
     val reasonHint =
-        if (transferType == Request) translate("workTypeRequestModal.reason_requested")
-        else null
+        if (transferType == Request) {
+            translate("workTypeRequestModal.reason_requested")
+        } else {
+            null
+        }
 
     val errorMessageReason = MutableStateFlow("")
     private val errorMessageWorkType = MutableStateFlow("")
@@ -134,8 +137,11 @@ class TransferWorkTypeViewModel @Inject constructor(
         )
 
     private val editableWorksite =
-        if (isFromCaseEdit) editableWorksiteProvider.editableWorksite
-        else worksiteProvider.editableWorksite
+        if (isFromCaseEdit) {
+            editableWorksiteProvider.editableWorksite
+        } else {
+            worksiteProvider.editableWorksite
+        }
 
     init {
         transferWorkTypeProvider.clearPendingTransfer()
@@ -160,7 +166,6 @@ class TransferWorkTypeViewModel @Inject constructor(
                         .replace("{organizations}", otherOrganizations)
                         .replace("{my_organization}", organizationName)
                         .replace("{case_number}", caseNumber)
-
             }
         }
     }
@@ -174,8 +179,11 @@ class TransferWorkTypeViewModel @Inject constructor(
         if (transferReason.isBlank()) {
             val isRelease = transferType == Release
             val reasonTranslateKey =
-                if (isRelease) "workTypeRequestModal.explain_release_case_required"
-                else "workTypeRequestModal.explain_request_case_required"
+                if (isRelease) {
+                    "workTypeRequestModal.explain_release_case_required"
+                } else {
+                    "workTypeRequestModal.explain_request_case_required"
+                }
             errorMessageReason.value = translate(reasonTranslateKey)
         }
 
@@ -202,8 +210,11 @@ class TransferWorkTypeViewModel @Inject constructor(
                 .map { it.id to it.workTypeLiteral }
                 .associate { it.first to it.second }
             val workTypes = workTypesState.mapNotNull {
-                if (it.value) workTypeIdLookup[it.key]
-                else null
+                if (it.value) {
+                    workTypeIdLookup[it.key]
+                } else {
+                    null
+                }
             }
             val worksite = editableWorksite.value
             try {
@@ -235,8 +246,11 @@ class TransferWorkTypeViewModel @Inject constructor(
     override fun translate(phraseKey: String) = translate(phraseKey, 0)
 
     override fun translate(phraseKey: String, fallbackResId: Int): String {
-        val translated = if (isFromCaseEdit) editableWorksiteProvider.translate(phraseKey)
-        else worksiteProvider.translate(phraseKey)
+        val translated = if (isFromCaseEdit) {
+            editableWorksiteProvider.translate(phraseKey)
+        } else {
+            worksiteProvider.translate(phraseKey)
+        }
         return translated ?: translator.translate(
             phraseKey,
             fallbackResId,

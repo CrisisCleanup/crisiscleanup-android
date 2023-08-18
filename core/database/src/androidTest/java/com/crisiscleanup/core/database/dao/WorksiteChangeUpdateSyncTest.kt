@@ -81,7 +81,7 @@ class WorksiteChangeUpdateSyncTest {
             rootEntity.copy(
                 id = 65,
                 localGlobalUuid = "local-global-uuid-2",
-            )
+            ),
         )
         val changesB = listOf(
             testWorksiteChange(65),
@@ -94,7 +94,7 @@ class WorksiteChangeUpdateSyncTest {
             rootEntity.copy(
                 id = 77,
                 localGlobalUuid = "local-global-uuid-3",
-            )
+            ),
         )
         val changesC = listOf(
             testWorksiteChange(77, archiveAction = WorksiteChangeArchiveAction.Synced),
@@ -127,8 +127,8 @@ class WorksiteChangeUpdateSyncTest {
                     51,
                     createdAtA,
                     "reason-a",
-                )
-            )
+                ),
+            ),
         )
 
         val noteDao = db.worksiteNoteDao()
@@ -140,8 +140,8 @@ class WorksiteChangeUpdateSyncTest {
                     createdAtA,
                     "note-a",
                     localGlobalUuid = "local-global-uuid-2",
-                )
-            )
+                ),
+            ),
         )
 
         val workTypeDao = db.workTypeDao()
@@ -157,7 +157,7 @@ class WorksiteChangeUpdateSyncTest {
                     workType = "work-type-b",
                     worksiteId = 51,
                 ),
-            )
+            ),
         )
 
         val workTypeRequestsDao = db.workTypeTransferRequestDao()
@@ -181,7 +181,7 @@ class WorksiteChangeUpdateSyncTest {
                     "work-type-b",
                     538,
                 ),
-            )
+            ),
         )
 
         worksiteChangeDaoPlus.updateSyncIds(
@@ -196,7 +196,7 @@ class WorksiteChangeUpdateSyncTest {
                 workTypeRequestIdMap = mapOf(
                     "work-type-a" to 524,
                     "work-type-b" to 529,
-                )
+                ),
             ),
         )
 
@@ -298,7 +298,8 @@ class WorksiteChangeUpdateSyncTest {
     @Test
     fun updateSyncChanges_oneFail() = runTest {
         worksiteChangeDaoPlus.updateSyncChanges(
-            51, listOf(testChangeResult(1, isFail = true))
+            51,
+            listOf(testChangeResult(1, isFail = true)),
         )
 
         val actual = db.testWorksiteChangeDao().getEntitiesOrderId(51)
@@ -308,7 +309,7 @@ class WorksiteChangeUpdateSyncTest {
                 1,
                 saveAttempt = 3,
                 saveAttemptAt = actual[0].saveAttemptAt,
-            )
+            ),
         )
         assertEquals(expected, actual)
         actual[0].saveAttemptAt.assertRecentTime()
@@ -317,7 +318,8 @@ class WorksiteChangeUpdateSyncTest {
     @Test
     fun updateSyncChanges_onePartiallySuccessful() = runTest {
         worksiteChangeDaoPlus.updateSyncChanges(
-            51, listOf(testChangeResult(1, isPartiallySuccessful = true))
+            51,
+            listOf(testChangeResult(1, isPartiallySuccessful = true)),
         )
 
         val actual = db.testWorksiteChangeDao().getEntitiesOrderId(51)
@@ -337,7 +339,8 @@ class WorksiteChangeUpdateSyncTest {
     @Test
     fun updateSyncChanges_oneSuccessful() = runTest {
         worksiteChangeDaoPlus.updateSyncChanges(
-            51, listOf(testChangeResult(1, isSuccessful = true))
+            51,
+            listOf(testChangeResult(1, isSuccessful = true)),
         )
 
         val actual = db.testWorksiteChangeDao().getEntitiesOrderId(51)
@@ -426,7 +429,7 @@ class WorksiteChangeUpdateSyncTest {
                 4,
                 saveAttempt = 1,
                 saveAttemptAt = actual[0].saveAttemptAt,
-            )
+            ),
         )
         assertEquals(expected, actual)
         actual[0].saveAttemptAt.assertRecentTime()
@@ -452,7 +455,7 @@ class WorksiteChangeUpdateSyncTest {
                 saveAttempt = 4,
                 saveAttemptAt = actual[0].saveAttemptAt,
             ),
-            testWorksiteChange(77, 9, saveAttempt = 4)
+            testWorksiteChange(77, 9, saveAttempt = 4),
         )
         assertEquals(expected, actual)
         actual[0].saveAttemptAt.assertRecentTime()
@@ -477,7 +480,7 @@ class WorksiteChangeUpdateSyncTest {
                 9,
                 saveAttempt = 5,
                 saveAttemptAt = actual[0].saveAttemptAt,
-            )
+            ),
         )
         assertEquals(expected, actual)
         actual[0].saveAttemptAt.assertRecentTime()

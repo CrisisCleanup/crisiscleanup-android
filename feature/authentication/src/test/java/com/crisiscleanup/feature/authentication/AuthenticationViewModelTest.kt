@@ -106,7 +106,7 @@ class AuthenticationViewModelTest {
                 syncAttempt = SyncAttempt(0, 0, 0),
                 selectedIncidentId = 0,
                 languageKey = EnglishLanguage.key,
-            )
+            ),
         )
 
         coEvery {
@@ -183,7 +183,8 @@ class AuthenticationViewModelTest {
         assertEquals(
             AuthenticationState(
                 accountData = emptyAccountData,
-            ), (viewModel.uiState.first() as Ready).authenticationState
+            ),
+            (viewModel.uiState.first() as Ready).authenticationState,
         )
         assertEquals(emptyLoginData, viewModel.loginInputData)
 
@@ -210,7 +211,7 @@ class AuthenticationViewModelTest {
                 id = 813,
                 name = "org",
                 isActive = true,
-            )
+            ),
         )
 
         // TODO How to test state during authentication?
@@ -258,7 +259,8 @@ class AuthenticationViewModelTest {
         assertEquals(
             AuthenticationState(
                 accountData = nonEmptyAccountData,
-            ), (viewModel.uiState.first() as Ready).authenticationState
+            ),
+            (viewModel.uiState.first() as Ready).authenticationState,
         )
 
         assertEquals(LoginInputData("email-address"), viewModel.loginInputData)

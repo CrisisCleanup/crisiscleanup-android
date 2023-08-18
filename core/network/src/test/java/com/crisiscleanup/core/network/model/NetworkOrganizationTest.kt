@@ -31,8 +31,8 @@ class NetworkOrganizationTest {
                     lastName = "test",
                     email = "test@test.com",
                     mobile = "5353151368",
-                )
-            )
+                ),
+            ),
         )
         assertEquals(expected, organizations[0])
     }

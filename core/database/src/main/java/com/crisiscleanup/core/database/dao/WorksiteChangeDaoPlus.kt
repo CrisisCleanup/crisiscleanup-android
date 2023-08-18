@@ -67,8 +67,11 @@ class WorksiteChangeDaoPlus @Inject constructor(
         }
 
         val logPostfix = localModifiedAt.epochSeconds.toString()
-        syncLogger.type = if (worksiteChange.isNew) "worksite-new-$logPostfix"
-        else "worksite-update-$worksiteId-$logPostfix"
+        syncLogger.type = if (worksiteChange.isNew) {
+            "worksite-new-$logPostfix"
+        } else {
+            "worksite-update-$worksiteId-$logPostfix"
+        }
 
         db.withTransaction {
             try {
@@ -150,15 +153,21 @@ class WorksiteChangeDaoPlus @Inject constructor(
                         val unsyncedLookup = inserts
                             .mapIndexedNotNull { index, flag ->
                                 val id = insertIds[index]
-                                if (id > 0) Pair(flag.reasonT, id)
-                                else null
+                                if (id > 0) {
+                                    Pair(flag.reasonT, id)
+                                } else {
+                                    null
+                                }
                             }
                             .associate { it.first to it.second }
                         if (unsyncedLookup.isNotEmpty()) {
                             val updatedIds = worksiteUpdatedIds.flags?.map {
                                 val localId = unsyncedLookup[it.reasonT]
-                                if (localId == null || it.id > 0) it
-                                else it.copy(id = localId)
+                                if (localId == null || it.id > 0) {
+                                    it
+                                } else {
+                                    it.copy(id = localId)
+                                }
                             }
                             worksiteUpdatedIds = worksiteUpdatedIds.copy(flags = updatedIds)
                         }
@@ -186,7 +195,7 @@ class WorksiteChangeDaoPlus @Inject constructor(
                                 }
                             }
                             note
-                        }
+                        },
                     )
                     syncLogger.log("Notes. Inserted ${insertNotes.size}.")
                 }
@@ -196,15 +205,21 @@ class WorksiteChangeDaoPlus @Inject constructor(
                     val unsyncedLookup = inserts
                         .mapIndexedNotNull { index, flag ->
                             val id = insertIds[index]
-                            if (id > 0) Pair(flag.workType, id)
-                            else null
+                            if (id > 0) {
+                                Pair(flag.workType, id)
+                            } else {
+                                null
+                            }
                         }
                         .associate { it.first to it.second }
                     if (unsyncedLookup.isNotEmpty()) {
                         val updatedIds = worksiteUpdatedIds.workTypes.map {
                             val localId = unsyncedLookup[it.workTypeLiteral]
-                            if (localId == null || it.id > 0) it
-                            else it.copy(id = localId)
+                            if (localId == null || it.id > 0) {
+                                it
+                            } else {
+                                it.copy(id = localId)
+                            }
                         }
                         worksiteUpdatedIds = worksiteUpdatedIds.copy(workTypes = updatedIds)
                     }
@@ -337,17 +352,20 @@ class WorksiteChangeDaoPlus @Inject constructor(
         ) { workTypeLookup ->
             val requestEntities = requests.mapNotNull {
                 workTypeLookup[it]?.let { workType ->
-                    if (workType.orgClaim == null) null
-                    else WorkTypeTransferRequestEntity(
-                        0,
-                        networkId = -1,
-                        worksiteId = worksite.id,
-                        workType = it,
-                        reason = reason,
-                        byOrg = organizationId,
-                        toOrg = workType.orgClaim!!,
-                        createdAt = localModifiedAt,
-                    )
+                    if (workType.orgClaim == null) {
+                        null
+                    } else {
+                        WorkTypeTransferRequestEntity(
+                            0,
+                            networkId = -1,
+                            worksiteId = worksite.id,
+                            workType = it,
+                            reason = reason,
+                            byOrg = organizationId,
+                            toOrg = workType.orgClaim!!,
+                            createdAt = localModifiedAt,
+                        )
+                    }
                 }
             }
 
@@ -521,8 +539,11 @@ class WorksiteChangeDaoPlus @Inject constructor(
                 if (result.isFail) {
                     worksiteChangeDao.updateSyncAttempt(result.id)
                 } else if (result.isSuccessful || result.isPartiallySuccessful) {
-                    val action = if (result.isSuccessful) WorksiteChangeArchiveAction.Synced
-                    else WorksiteChangeArchiveAction.PartiallySynced
+                    val action = if (result.isSuccessful) {
+                        WorksiteChangeArchiveAction.Synced
+                    } else {
+                        WorksiteChangeArchiveAction.PartiallySynced
+                    }
                     worksiteChangeDao.updateAction(result.id, action.literal)
                 }
             }

@@ -16,8 +16,8 @@ import dagger.hilt.components.SingletonComponent
 interface FlavoredNetworkModule {
 
     // Toggle the commented line to use a fake or an actual API
+    //    fun FakeAuthApi.binds(): CrisisCleanupAuthApi
     @Binds
-//    fun FakeAuthApi.binds(): CrisisCleanupAuthApi
     fun bindsAuthApiClient(apiClient: AuthApiClient): CrisisCleanupAuthApi
 
     @Binds

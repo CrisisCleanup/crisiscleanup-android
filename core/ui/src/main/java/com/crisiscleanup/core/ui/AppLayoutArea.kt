@@ -8,7 +8,7 @@ import androidx.compose.ui.unit.dp
 
 @Immutable
 data class AppLayoutArea(
-    val snackbarHostState: SnackbarHostState? = null
+    val snackbarHostState: SnackbarHostState? = null,
 ) {
     val isBottomSnackbarVisible: Boolean
         get() = snackbarHostState?.currentSnackbarData != null

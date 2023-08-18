@@ -12,7 +12,7 @@ data class PopulatedRecentWorksite(
         parentColumn = "id",
         entityColumn = "id",
     )
-    val worksite: WorksiteEntity
+    val worksite: WorksiteEntity,
 )
 
 fun PopulatedRecentWorksite.asSummary(): WorksiteSummary {

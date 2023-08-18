@@ -50,7 +50,7 @@ class PagingSyncLogRepository @Inject constructor(
                 logType = type.ifEmpty { this.type },
                 message = message,
                 details = details,
-            )
+            ),
         )
         return this
     }

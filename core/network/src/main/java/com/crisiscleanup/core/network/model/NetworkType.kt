@@ -10,7 +10,7 @@ data class NetworkType(
     @SerialName("type_t")
     val typeT: String,
     @SerialName("created_at")
-    val createdAt: Instant?
+    val createdAt: Instant?,
 )
 
 internal val networkTypeFavorite = NetworkType(null, "favorite", null)

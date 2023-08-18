@@ -18,7 +18,7 @@ class CasesFiltersDataSource @Inject constructor(
         if (startSeconds in 1..endSeconds) {
             Pair(
                 Instant.fromEpochSeconds(startSeconds),
-                Instant.fromEpochSeconds(endSeconds)
+                Instant.fromEpochSeconds(endSeconds),
             )
         } else {
             null

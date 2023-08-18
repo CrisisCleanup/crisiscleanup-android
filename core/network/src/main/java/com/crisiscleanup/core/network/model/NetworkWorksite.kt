@@ -119,7 +119,7 @@ data class NetworkWorksiteFull(
         val createdByOrg: Long?,
         val seconds: Int,
         val volunteers: Int,
-        val worksite: Int
+        val worksite: Int,
     )
 
     @Serializable
@@ -203,9 +203,9 @@ data class NetworkWorksiteShort(
             workTypes: List<NetworkWorksiteFull.WorkTypeShort>,
             keyWorkType: NetworkWorksiteFull.KeyWorkTypeShort?,
         ): Pair<
-                List<NetworkWorksiteFull.WorkTypeShort>,
-                NetworkWorksiteFull.KeyWorkTypeShort?,
-                > {
+            List<NetworkWorksiteFull.WorkTypeShort>,
+            NetworkWorksiteFull.KeyWorkTypeShort?,
+            > {
             val newMap = mutableMapOf<String, Pair<Int, NetworkWorksiteFull.WorkTypeShort>>()
             workTypes.forEachIndexed { index, workType ->
                 val literal = workType.workType

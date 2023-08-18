@@ -31,7 +31,7 @@ fun CrisisCleanupTextCheckbox(
         Modifier
             .clickable(
                 enabled = enabled && enableToggle,
-                onClick = onToggle
+                onClick = onToggle,
             )
             .then(modifier),
         verticalAlignment = Alignment.CenterVertically,

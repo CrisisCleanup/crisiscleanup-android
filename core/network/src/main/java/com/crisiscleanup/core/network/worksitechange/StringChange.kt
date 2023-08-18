@@ -7,8 +7,11 @@ package com.crisiscleanup.core.network.worksitechange
  * NULL indicates a reference value should be used and non-NULL indicates the returned value should be used.
  */
 private fun String.diffFrom(from: String?) =
-    if (this.trim() == (from?.trim() ?: "")) null
-    else this
+    if (this.trim() == (from?.trim() ?: "")) {
+        null
+    } else {
+        this
+    }
 
 internal fun String.change(from: String, to: String) = to.diffFrom(from) ?: this
 
@@ -18,7 +21,10 @@ internal fun baseChange(base: String?, from: String?, to: String?): String? {
     } else {
         val nFrom = from?.trim() ?: ""
         val nTo = to?.trim() ?: ""
-        if (nFrom == nTo) return base
-        else to
+        if (nFrom == nTo) {
+            return base
+        } else {
+            to
+        }
     }
 }

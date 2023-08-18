@@ -49,7 +49,7 @@ internal fun ColumnScope.UpsetClientFlagView(
         Modifier
             .scrollFlingListener(closeKeyboard)
             .weight(1f)
-            .fillMaxWidth()
+            .fillMaxWidth(),
     ) {
         labelTextItem(translator("flag.explain_why_client_upset"))
 

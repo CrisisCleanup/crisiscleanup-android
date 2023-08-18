@@ -109,7 +109,7 @@ internal fun PropertyFormView(
         onNext = clearEmailError,
         enabled = isEditable,
         imeAction = ImeAction.Done,
-        onEnter = closeKeyboard
+        onEnter = closeKeyboard,
     )
 
     val autoContactFrequencyLabel = translator("casesVue.auto_contact_frequency")
@@ -126,7 +126,7 @@ internal fun PropertyFormView(
                 .listItemHorizontalPadding()
                 // TODO Common dimensions
                 .padding(top = 16.dp),
-            showHelp = showHelp
+            showHelp = showHelp,
         )
     }
     val updateContactFrequency = remember(inputData) {
@@ -211,7 +211,7 @@ private fun PropertyFormResidentNameView(
                 expanded = !hideDropdown,
                 onDismissRequest = onStopSuggestions,
                 offset = listItemDropdownMenuOffset,
-                properties = PopupProperties(focusable = false)
+                properties = PopupProperties(focusable = false),
             ) {
                 // TODO Add same option in location search dropdown.
                 //      Stop searching entirely for the editing session when selected.

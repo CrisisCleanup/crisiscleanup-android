@@ -17,9 +17,9 @@ data class PopulatedIncident(
             value = IncidentIncidentLocationCrossRef::class,
             parentColumn = "incident_id",
             entityColumn = "incident_location_id",
-        )
+        ),
     )
-    val locations: List<IncidentLocationEntity>
+    val locations: List<IncidentLocationEntity>,
 )
 
 fun PopulatedIncident.asExternalModel() = with(entity) {
@@ -49,7 +49,7 @@ data class PopulatedFormFieldsIncident(
 
 fun PopulatedFormFieldsIncident.asExternalModel() = entity.asExternalModel().copy(
     formFields = formFields.map(IncidentFormFieldEntity::asExternalModel)
-        .filter { !(it.isInvalidated || it.isDivEnd) }
+        .filter { !(it.isInvalidated || it.isDivEnd) },
 )
 
 data class PopulatedIncidentMatch(

@@ -12,12 +12,13 @@ class FormDataCopyModifiedTest {
 
         assertEquals(worksite.formData, worksite.copyModifiedFormData(emptyMap()))
         assertEquals(
-            worksite.formData, worksite.copyModifiedFormData(
+            worksite.formData,
+            worksite.copyModifiedFormData(
                 mapOf(
                     "a" to DynamicValue(""),
                     "b" to DynamicValue("", true),
-                )
-            )
+                ),
+            ),
         )
     }
 
@@ -28,7 +29,7 @@ class FormDataCopyModifiedTest {
                 "a" to WorksiteFormValue(false, ""),
                 "b" to WorksiteFormValue(true, "", true),
                 "c" to WorksiteFormValue(true, "", false),
-            )
+            ),
         )
 
         // Remove only
@@ -39,7 +40,7 @@ class FormDataCopyModifiedTest {
             ),
             worksite.copyModifiedFormData(
                 mapOf("b" to DynamicValue("", isBoolean = true, false)),
-            )
+            ),
         )
 
         assertEquals(
@@ -49,9 +50,9 @@ class FormDataCopyModifiedTest {
             worksite.copyModifiedFormData(
                 mapOf(
                     "b" to DynamicValue("", isBoolean = true, false),
-                    "c" to DynamicValue("", isBoolean = true, false)
-                )
-            )
+                    "c" to DynamicValue("", isBoolean = true, false),
+                ),
+            ),
         )
 
         // Change/add only
@@ -64,8 +65,8 @@ class FormDataCopyModifiedTest {
             worksite.copyModifiedFormData(
                 mapOf(
                     "c" to DynamicValue("", isBoolean = true, true),
-                )
-            )
+                ),
+            ),
         )
 
         assertEquals(
@@ -78,8 +79,8 @@ class FormDataCopyModifiedTest {
             worksite.copyModifiedFormData(
                 mapOf(
                     "d" to DynamicValue("", isBoolean = true, true),
-                )
-            )
+                ),
+            ),
         )
 
         // Changes
@@ -92,8 +93,8 @@ class FormDataCopyModifiedTest {
                 mapOf(
                     "b" to DynamicValue("", isBoolean = true, true),
                     "c" to DynamicValue("", isBoolean = true, false),
-                )
-            )
+                ),
+            ),
         )
 
         assertEquals(
@@ -105,8 +106,8 @@ class FormDataCopyModifiedTest {
                 mapOf(
                     "b" to DynamicValue("", isBoolean = true, false),
                     "c" to DynamicValue("", isBoolean = true, true),
-                )
-            )
+                ),
+            ),
         )
     }
 
@@ -118,7 +119,7 @@ class FormDataCopyModifiedTest {
                 "b" to WorksiteFormValue(true, "", true),
                 "c" to WorksiteFormValue(true, "", false),
                 "d" to WorksiteFormValue(false, "early"),
-            )
+            ),
         )
 
         // Remove only
@@ -131,8 +132,8 @@ class FormDataCopyModifiedTest {
             worksite.copyModifiedFormData(
                 mapOf(
                     "d" to DynamicValue(""),
-                )
-            )
+                ),
+            ),
         )
 
         assertEquals(
@@ -144,8 +145,8 @@ class FormDataCopyModifiedTest {
             worksite.copyModifiedFormData(
                 mapOf(
                     "a" to DynamicValue(""),
-                )
-            )
+                ),
+            ),
         )
 
         assertEquals(
@@ -157,8 +158,8 @@ class FormDataCopyModifiedTest {
                 mapOf(
                     "a" to DynamicValue(""),
                     "d" to DynamicValue(""),
-                )
-            )
+                ),
+            ),
         )
 
         // Change/add
@@ -172,8 +173,8 @@ class FormDataCopyModifiedTest {
             worksite.copyModifiedFormData(
                 mapOf(
                     "a" to DynamicValue("change-a"),
-                )
-            )
+                ),
+            ),
         )
 
         assertEquals(
@@ -182,14 +183,14 @@ class FormDataCopyModifiedTest {
                 "b" to WorksiteFormValue(true, "", true),
                 "c" to WorksiteFormValue(true, "", false),
                 "d" to WorksiteFormValue(false, "early"),
-                "e" to WorksiteFormValue(false, "add-e")
+                "e" to WorksiteFormValue(false, "add-e"),
             ),
             worksite.copyModifiedFormData(
                 mapOf(
                     "a" to DynamicValue("change-a"),
                     "e" to DynamicValue("add-e"),
-                )
-            )
+                ),
+            ),
         )
 
         // Changes
@@ -198,15 +199,15 @@ class FormDataCopyModifiedTest {
                 "b" to WorksiteFormValue(true, "", true),
                 "c" to WorksiteFormValue(true, "", false),
                 "d" to WorksiteFormValue(false, "change-d"),
-                "e" to WorksiteFormValue(false, "add-e")
+                "e" to WorksiteFormValue(false, "add-e"),
             ),
             worksite.copyModifiedFormData(
                 mapOf(
                     "a" to DynamicValue(""),
                     "d" to DynamicValue("change-d "),
                     "e" to DynamicValue("add-e"),
-                )
-            )
+                ),
+            ),
         )
     }
 
@@ -221,7 +222,7 @@ class FormDataCopyModifiedTest {
                 "e" to WorksiteFormValue(false, "early"),
                 "f" to WorksiteFormValue(true, "", true),
                 "g" to WorksiteFormValue(false, " g "),
-            )
+            ),
         )
 
         // Remove only
@@ -258,8 +259,8 @@ class FormDataCopyModifiedTest {
                     "l" to DynamicValue("", true),
                     // Add
                     "m" to DynamicValue("morrey", isBoolean = true, true),
-                )
-            )
+                ),
+            ),
         )
     }
 }

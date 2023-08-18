@@ -9,7 +9,7 @@ import androidx.room.PrimaryKey
     "work_type_statuses",
     indices = [
         Index(value = ["list_order"]),
-    ]
+    ],
 )
 data class WorkTypeStatusEntity(
     @PrimaryKey

@@ -21,7 +21,7 @@ class CoordinateGridQuery(
         for (i in 0 until dimensionCount) {
             for (j in 0 until dimensionCount) {
                 val radiusSqr = (gridCenter - (i + 0.5f)).pow(2) +
-                        (gridCenter - (j + 0.5f)).pow(2)
+                    (gridCenter - (j + 0.5f)).pow(2)
                 cellCoordinates.add(Triple(i, j, radiusSqr))
             }
         }
@@ -38,11 +38,17 @@ class CoordinateGridQuery(
                         (deltaX >= 0 && deltaY == 0 && (a.second + 0.5f) > gridCenter) ||
                         (deltaX < 0 && deltaY > 0) ||
                         (deltaX < 0 && deltaY == 0 && (a.second + 0.5f) < gridCenter)
-                    ) -1
-                    else 1
+                    ) {
+                        -1
+                    } else {
+                        1
+                    }
                     order
-                } else if (a.third < b.third) -1
-                else 1
+                } else if (a.third < b.third) {
+                    -1
+                } else {
+                    1
+                }
             }
             .map { Pair(it.first, it.second) }
 

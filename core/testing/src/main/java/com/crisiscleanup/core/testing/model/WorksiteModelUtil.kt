@@ -42,7 +42,7 @@ fun makeTestWorksite(
             createdAt = noteCreatedAt,
             isSurvivor = false,
             note = "worksite-note",
-        )
+        ),
     ),
     phone1 = "phone-1",
     phone2 = "phone-2",
@@ -59,8 +59,8 @@ fun makeTestWorksite(
             orgClaim = 513,
             statusLiteral = "status",
             workTypeLiteral = "work-type",
-        )
-    )
+        ),
+    ),
 )
 
 fun makeTestWorksiteFlag(

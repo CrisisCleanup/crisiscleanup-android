@@ -16,8 +16,8 @@ data class WorksiteChangeSet(
 ) {
     val hasNonCoreChanges: Boolean
         get() = isOrgMember != null ||
-                extraNotes.isNotEmpty() ||
-                flagChanges.first.isNotEmpty() ||
-                flagChanges.second.isNotEmpty() ||
-                workTypeChanges.isNotEmpty()
+            extraNotes.isNotEmpty() ||
+            flagChanges.first.isNotEmpty() ||
+            flagChanges.second.isNotEmpty() ||
+            workTypeChanges.isNotEmpty()
 }

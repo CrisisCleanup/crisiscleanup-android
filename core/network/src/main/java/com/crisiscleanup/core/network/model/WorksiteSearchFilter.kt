@@ -18,10 +18,13 @@ private val CasesFilter.statusQueryString: String?
             statuses.addAll(closedWorkTypeStatuses)
         }
 
-        return if (statuses.isEmpty()) null
-        else workTypeStatuses
-            .map(WorkTypeStatus::literal)
-            .joinToString(",")
+        return if (statuses.isEmpty()) {
+            null
+        } else {
+            workTypeStatuses
+                .map(WorkTypeStatus::literal)
+                .joinToString(",")
+        }
     }
 
 private fun trueOrNull(b: Boolean): Boolean? {
@@ -34,14 +37,13 @@ private val CasesFilter.flagQueryString: String?
 private val CasesFilter.workQueryString: String?
     get() = if (workTypes.isEmpty()) null else workTypes.joinToString(",")
 
-
 private val dateQueryStringFormatter = DateTimeFormatter
     .ofPattern("yyyy-MM-dd")
     .withZone(ZoneId.systemDefault())
 
 private fun dateRangeQueryString(
     datePrefix: String,
-    dateRange: Pair<Instant, Instant>?
+    dateRange: Pair<Instant, Instant>?,
 ): List<Pair<String, String>>? {
     if (dateRange == null) {
         return null
@@ -57,7 +59,7 @@ private fun dateRangeQueryString(
 
     return listOf(
         Pair("${datePrefix}_at__gt", dateQueryStringFormatter.format(minDate.toJavaInstant())),
-        Pair("&${datePrefix}_at__lt=", dateQueryStringFormatter.format(maxDate.toJavaInstant()))
+        Pair("&${datePrefix}_at__lt=", dateQueryStringFormatter.format(maxDate.toJavaInstant())),
     )
 }
 

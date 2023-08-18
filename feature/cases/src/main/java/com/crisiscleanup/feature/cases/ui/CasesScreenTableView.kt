@@ -327,8 +327,11 @@ private fun TableViewSortSelect(
             expanded = showOptions,
             onDismissRequest = { showOptions = false },
         ) {
-            val selectedSort = if (tableSort == WorksiteSortBy.None) WorksiteSortBy.CaseNumber
-            else tableSort
+            val selectedSort = if (tableSort == WorksiteSortBy.None) {
+                WorksiteSortBy.CaseNumber
+            } else {
+                tableSort
+            }
             for (option in sortByOptions) {
                 key(option) {
                     DropdownMenuItem(
@@ -539,12 +542,18 @@ private fun TableViewItem(
 
                 TableWorksiteClaimStatus.ClaimedByOthers -> {
                     val isReleasable = isTurnOnRelease && worksite.isReleaseEligible
-                    val actionText = if (isReleasable) translator("actions.release")
-                    else translator("actions.request")
+                    val actionText = if (isReleasable) {
+                        translator("actions.release")
+                    } else {
+                        translator("actions.request")
+                    }
                     WorkTypeAction(actionText, isClaimActionEditable) {
                         val action =
-                            if (isReleasable) TableWorksiteClaimAction.Release
-                            else TableWorksiteClaimAction.Request
+                            if (isReleasable) {
+                                TableWorksiteClaimAction.Release
+                            } else {
+                                TableWorksiteClaimAction.Request
+                            }
                         onWorksiteClaimAction(action)
                     }
                 }

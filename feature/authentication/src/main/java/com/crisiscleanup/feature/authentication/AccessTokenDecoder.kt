@@ -7,5 +7,5 @@ interface AccessTokenDecoder {
 }
 
 data class DecodedAccessToken(
-    val expiresAt: Instant
+    val expiresAt: Instant,
 )

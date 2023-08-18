@@ -70,7 +70,7 @@ private fun WorkTypeOrgClaims(
     Column(
         Modifier.padding(bottom = edgeSpacing),
         verticalArrangement = Arrangement.spacedBy(
-            edgeSpacingHalf
+            edgeSpacingHalf,
         ),
     ) {
         if (isMyOrgClaim) {
@@ -163,7 +163,7 @@ internal fun LazyListScope.existingWorkTypeItems(
                     Modifier
                         .fillMaxWidth()
                         // TODO Common dimensions
-                        .height(4.dp)
+                        .height(4.dp),
                 )
             }
         }
@@ -192,8 +192,11 @@ internal fun LazyListScope.workTypeSectionTitle(
     "section-work-type-title-$titleItemKey",
     "section-work-type-title",
 ) {
-    val style = if (isSmallTitle) MaterialTheme.typography.bodySmall
-    else MaterialTheme.typography.bodyLarge
+    val style = if (isSmallTitle) {
+        MaterialTheme.typography.bodySmall
+    } else {
+        MaterialTheme.typography.bodyLarge
+    }
     Text(
         LocalAppTranslator.current(titleTranslateKey),
         modifier,

@@ -43,12 +43,18 @@ internal fun Collection<Location>.toLatLng(): Collection<LocationLatLng> {
 internal fun Collection<LocationLatLng>.toBounds(): IncidentBounds {
     val locations = map {
         val multiBounds = it.multiCoordinates.map { latLngs ->
-            if (latLngs.size < 3) null
-            else latLngs.toBounds()
+            if (latLngs.size < 3) {
+                null
+            } else {
+                latLngs.toBounds()
+            }
         }
         val areas = multiBounds.mapIndexed { i, latLngBounds ->
-            if (latLngBounds == null) 0.0
-            else SphericalUtil.computeArea(it.multiCoordinates[i])
+            if (latLngBounds == null) {
+                0.0
+            } else {
+                SphericalUtil.computeArea(it.multiCoordinates[i])
+            }
         }
         LocationBounds(it, multiBounds, areas)
     }
@@ -63,7 +69,7 @@ internal fun Collection<LocationLatLng>.toBounds(): IncidentBounds {
 
     val maxAreaLocation =
         locations.fold(
-            Triple<Double, List<LatLng>?, LatLngBounds?>(0.0, null, null)
+            Triple<Double, List<LatLng>?, LatLngBounds?>(0.0, null, null),
         ) { accOuter, locationLatLng ->
             var maxArea = 0.0
             var latLngs: List<LatLng>? = null
@@ -76,8 +82,11 @@ internal fun Collection<LocationLatLng>.toBounds(): IncidentBounds {
                 }
             }
 
-            if (accOuter.first > maxArea) accOuter
-            else Triple(maxArea, latLngs, bounds)
+            if (accOuter.first > maxArea) {
+                accOuter
+            } else {
+                Triple(maxArea, latLngs, bounds)
+            }
         }
     // TODO Cache the center location on save to database rather than computing every time
     var incidentCentroid = DefaultCoordinates

@@ -85,7 +85,7 @@ internal class IncidentDataPullStatsUpdater(
                 isStarted = true,
                 incidentId = incidentId,
                 pullStart = Clock.System.now(),
-            )
+            ),
         )
     }
 

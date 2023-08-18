@@ -165,7 +165,8 @@ fun parseCaseNumberOrder(caseNumber: String): Long {
     ],
     indices = [
         Index(
-            value = ["worksite_id", "work_type"], unique = true,
+            value = ["worksite_id", "work_type"],
+            unique = true,
             name = "unique_worksite_work_type",
         ),
         Index(value = ["worksite_id", "network_id"]),
@@ -244,7 +245,8 @@ data class WorksiteFormDataEntity(
     ],
     indices = [
         Index(
-            value = ["worksite_id", "reason_t"], unique = true,
+            value = ["worksite_id", "reason_t"],
+            unique = true,
             name = "unique_worksite_flag",
         ),
         Index(value = ["reason_t"]),
@@ -297,7 +299,8 @@ fun WorksiteFlagEntity.asExternalModel(translator: KeyTranslator? = null) = Work
     ],
     indices = [
         Index(
-            value = ["worksite_id", "network_id", "local_global_uuid"], unique = true,
+            value = ["worksite_id", "network_id", "local_global_uuid"],
+            unique = true,
             name = "unique_worksite_note",
         ),
     ],

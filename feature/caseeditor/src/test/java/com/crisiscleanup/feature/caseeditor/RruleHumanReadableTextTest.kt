@@ -141,7 +141,7 @@ class RruleHumanReadableTextTest {
                 Weekday.Saturday,
                 Weekday.Sunday,
                 Weekday.Friday,
-            )
+            ),
         ).toHumanReadableText(translator)
         val expected = "Every 2 weeks every day."
         assertEquals(expected, actual)
@@ -158,7 +158,7 @@ class RruleHumanReadableTextTest {
                 Weekday.Friday,
                 Weekday.Tuesday,
                 Weekday.Wednesday,
-            )
+            ),
         ).toHumanReadableText(translator)
         val expected = "Every week on weekdays (M-F)."
         assertEquals(expected, actual)

@@ -23,7 +23,8 @@ class LocalAppPreferencesDataSource @Inject constructor(
                     null,
                     DarkThemeConfigProto.DARK_THEME_CONFIG_UNSPECIFIED,
                     DarkThemeConfigProto.UNRECOGNIZED,
-                    DarkThemeConfigProto.DARK_THEME_CONFIG_FOLLOW_SYSTEM ->
+                    DarkThemeConfigProto.DARK_THEME_CONFIG_FOLLOW_SYSTEM,
+                    ->
                         DarkThemeConfig.FOLLOW_SYSTEM
 
                     DarkThemeConfigProto.DARK_THEME_CONFIG_LIGHT ->

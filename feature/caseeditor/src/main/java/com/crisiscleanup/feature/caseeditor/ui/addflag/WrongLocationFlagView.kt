@@ -53,7 +53,7 @@ internal fun ColumnScope.WrongLocationFlagView(
         Modifier
             .scrollFlingListener(closeKeyboard)
             .weight(1f)
-            .fillMaxWidth()
+            .fillMaxWidth(),
     ) {
         listTextItem(translator("flag.move_case_pin"))
 

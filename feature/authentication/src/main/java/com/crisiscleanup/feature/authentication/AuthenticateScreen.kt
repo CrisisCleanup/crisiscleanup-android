@@ -99,12 +99,12 @@ fun AuthenticateScreen(
 @Composable
 private fun AuthenticateScreenContainer(
     modifier: Modifier = Modifier,
-    content: @Composable ColumnScope.() -> Unit
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     Box(
         Modifier
             .fillMaxSize()
-            .then(modifier)
+            .then(modifier),
     ) {
         Column(Modifier.fillMaxWidth()) {
             content()
@@ -153,7 +153,7 @@ private fun LoginScreen(
     AuthenticateScreenContainer(
         Modifier
             .fillMaxSize()
-            .then(modifier)
+            .then(modifier),
     ) {
         CrisisCleanupLogoRow()
 
@@ -169,7 +169,7 @@ private fun LoginScreen(
         val isNotBusy by viewModel.isNotAuthenticating.collectAsStateWithLifecycle()
 
         val focusEmail = viewModel.loginInputData.emailAddress.isEmpty() ||
-                viewModel.isInvalidEmail.value
+            viewModel.isInvalidEmail.value
         val updateEmailInput =
             remember(viewModel) { { s: String -> viewModel.loginInputData.emailAddress = s } }
         val clearErrorVisuals = remember(viewModel) { { viewModel.clearErrorVisuals() } }
@@ -259,7 +259,7 @@ private fun AuthenticatedScreen(
     AuthenticateScreenContainer(
         Modifier
             .fillMaxSize()
-            .then(modifier)
+            .then(modifier),
     ) {
         CrisisCleanupLogoRow()
 
@@ -267,7 +267,7 @@ private fun AuthenticatedScreen(
             modifier = fillWidthPadded.testTag("authedProfileAccountInfo"),
             text = translator("info.account_is")
                 .replace("{full_name}", authState.accountData.fullName)
-                .replace("{email_address}", authState.accountData.emailAddress)
+                .replace("{email_address}", authState.accountData.emailAddress),
         )
 
         val authErrorMessage by viewModel.errorMessage

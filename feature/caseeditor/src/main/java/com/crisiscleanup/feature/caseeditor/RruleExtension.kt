@@ -30,17 +30,17 @@ data class RruleProfile(
 fun RRule.profile(): RruleProfile {
     val days = byDay.map(WeekdayNum::weekday).toSet()
     val hasWeekDays = days.contains(Weekday.Monday) &&
-            days.contains(Weekday.Tuesday) &&
-            days.contains(Weekday.Wednesday) &&
-            days.contains(Weekday.Thursday) &&
-            days.contains(Weekday.Friday)
+        days.contains(Weekday.Tuesday) &&
+        days.contains(Weekday.Wednesday) &&
+        days.contains(Weekday.Thursday) &&
+        days.contains(Weekday.Friday)
     val isWeekdays = hasWeekDays &&
-            !days.contains(Weekday.Saturday) &&
-            !days.contains(Weekday.Sunday)
+        !days.contains(Weekday.Saturday) &&
+        !days.contains(Weekday.Sunday)
     val isEveryDay = hasWeekDays &&
-            !isWeekdays &&
-            days.contains(Weekday.Saturday) &&
-            days.contains(Weekday.Sunday)
+        !isWeekdays &&
+        days.contains(Weekday.Saturday) &&
+        days.contains(Weekday.Sunday)
     return RruleProfile(isWeekdays, isEveryDay)
 }
 
@@ -142,9 +142,11 @@ fun RRule.toHumanReadableText(
                 untilDateFormat.format(it)
             }
             val untilPart =
-                if (untilDate?.isNotBlank() == true)
+                if (untilDate?.isNotBlank() == true) {
                     "${translator("recurringSchedule.until_date")} $untilDate"
-                else ""
+                } else {
+                    ""
+                }
             val frequencyString = listOf(
                 every,
                 frequencyPart,

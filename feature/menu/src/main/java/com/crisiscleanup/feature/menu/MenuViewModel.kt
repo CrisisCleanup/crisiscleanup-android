@@ -36,8 +36,11 @@ class MenuViewModel @Inject constructor(
     val versionText: String
         get() {
             val version = appVersionProvider.version
-            return if (isNotProduction) "${version.second} (${version.first})"
-            else version.second
+            return if (isNotProduction) {
+                "${version.second} (${version.first})"
+            } else {
+                version.second
+            }
         }
 
     val databaseVersionText: String

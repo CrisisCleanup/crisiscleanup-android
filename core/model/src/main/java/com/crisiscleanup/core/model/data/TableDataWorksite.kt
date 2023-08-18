@@ -8,8 +8,11 @@ fun Worksite.getClaimStatus(affiliateIds: Set<Long>): TableWorksiteClaimStatus {
     if (unclaimedCount == 0) {
         val claimedByMyOrgCount = claimedBy.filter { affiliateIds.contains(it) }.size
         claimStatus =
-            if (claimedByMyOrgCount > 0) TableWorksiteClaimStatus.ClaimedByMyOrg
-            else TableWorksiteClaimStatus.ClaimedByOthers
+            if (claimedByMyOrgCount > 0) {
+                TableWorksiteClaimStatus.ClaimedByMyOrg
+            } else {
+                TableWorksiteClaimStatus.ClaimedByOthers
+            }
 
         // TODO Test
         if (claimStatus == TableWorksiteClaimStatus.ClaimedByOthers &&

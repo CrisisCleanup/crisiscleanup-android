@@ -111,8 +111,11 @@ internal fun SyncInsightsRoute(
                 logs.count,
                 key = { it },
                 contentType = {
-                    if (logs.getLog(it)?.isContinuingLogType == true) "detail-log-item"
-                    else "one-line-log-item"
+                    if (logs.getLog(it)?.isContinuingLogType == true) {
+                        "detail-log-item"
+                    } else {
+                        "one-line-log-item"
+                    }
                 },
             ) { index ->
                 val log = logs.getLog(index)
@@ -122,12 +125,15 @@ internal fun SyncInsightsRoute(
                         Modifier.listItemPadding(),
                     )
                 } else {
-                    val modifier = if (log.isContinuingLogType) Modifier
-                        .padding(start = 16.dp)
-                        .listItemBottomPadding()
-                    else Modifier
-                        .listItemPadding()
-                        .listItemTopPadding()
+                    val modifier = if (log.isContinuingLogType) {
+                        Modifier
+                            .padding(start = 16.dp)
+                            .listItemBottomPadding()
+                    } else {
+                        Modifier
+                            .listItemPadding()
+                            .listItemTopPadding()
+                    }
                     Column(modifier.clickable { viewModel.onExpandLog(log.syncLog) }) {
                         SyncLogDetail(log)
                     }

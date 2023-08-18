@@ -83,7 +83,7 @@ private fun AddMediaView(
     }
     val borderStroke = Stroke(
         width = strokeWidth,
-        pathEffect = PathEffect.dashPathEffect(floatArrayOf(strokeDash, strokeGap), 0f)
+        pathEffect = PathEffect.dashPathEffect(floatArrayOf(strokeDash, strokeGap), 0f),
     )
     Surface(
         modifier = modifier
@@ -166,7 +166,7 @@ internal fun PhotosSection(
                     endSpaceIndex -> "end-spacer"
                     else -> "photo-image"
                 }
-            }
+            },
         ) { index ->
             when (index) {
                 0 -> {
@@ -229,7 +229,7 @@ internal fun TakePhotoSelectImage(
     val translator = LocalAppTranslator.current
     var cameraPhotoUri by remember { mutableStateOf(Uri.parse("")) }
     val cameraPhotoLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicture()
+        contract = ActivityResultContracts.TakePicture(),
     ) { isTaken ->
         if (isTaken) {
             viewModel.onMediaSelected(cameraPhotoUri, false)
@@ -237,7 +237,7 @@ internal fun TakePhotoSelectImage(
         closeOptions()
     }
     val selectImageLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia()
+        contract = ActivityResultContracts.PickVisualMedia(),
     ) { uri: Uri? ->
         uri?.let {
             viewModel.onMediaSelected(uri, true)
@@ -281,7 +281,7 @@ internal fun TakePhotoSelectImage(
                 text = translator("fileUpload.select_file_upload"),
                 onClick = {
                     selectImageLauncher.launch(
-                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
                     )
                 },
             )

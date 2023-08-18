@@ -92,8 +92,11 @@ class WorksiteChangeProcessor(
         val lastLoopIndex = sortedChanges.size - 1
         sortedChanges.forEachIndexed { index, syncChange ->
             val changes =
-                if (hasPriorUnsyncedChanges) syncChange.worksiteChange.copy(start = start)
-                else syncChange.worksiteChange
+                if (hasPriorUnsyncedChanges) {
+                    syncChange.worksiteChange.copy(start = start)
+                } else {
+                    syncChange.worksiteChange
+                }
 
             val syncResult = syncChangeDelta(syncChange, changes)
             val hasError = syncResult.hasError
@@ -104,7 +107,7 @@ class WorksiteChangeProcessor(
                     isPartiallySuccessful = syncResult.isPartiallySynced,
                     isFail = hasError,
                     exception = syncResult.primaryException,
-                )
+                ),
             )
 
             hasPriorUnsyncedChanges = !syncResult.isFullySynced
@@ -174,7 +177,7 @@ class WorksiteChangeProcessor(
 
     private suspend fun syncWorkTypeTransfer(
         syncChange: SyncWorksiteChange,
-        deltaChange: WorksiteChange
+        deltaChange: WorksiteChange,
     ): SyncChangeSetResult {
         var result = SyncChangeSetResult(false, isFullySynced = false)
         val changeCreatedAt = syncChange.createdAt
@@ -246,7 +249,6 @@ class WorksiteChangeProcessor(
                     changeSet.workTypeChanges.associate { it.workType.workType to it.localId }
                 updateWorkTypeIdMap(workTypeLocalIdLookup, false)
             }
-
         } catch (e: Exception) {
             result = when (e) {
                 is NoInternetConnectionException -> result.copy(isConnectedToInternet = false)
@@ -294,7 +296,6 @@ class WorksiteChangeProcessor(
                 val syncedFlag = writeApiClient.addFlag(changeAt, networkWorksiteId, flag)
                 flagIdMap[localId] = syncedFlag.id!!
                 syncLogger.log("Synced flag $localId (${syncedFlag.id}).")
-
             } catch (e: Exception) {
                 ensureSyncConditions()
                 addFlagExceptions[localId] = e
@@ -388,7 +389,6 @@ class WorksiteChangeProcessor(
             }
         }
 
-
         var workTypeUnclaimException: Exception? = null
         val networkUnclaimWorkTypes = unclaimWorkTypes.filter {
             val claimOrgId = workTypeOrgLookup[it]
@@ -435,24 +435,27 @@ class WorksiteChangeProcessor(
     ): SyncChangeSetResult {
         val networkWorksite = getNetworkWorksite()
         val requestWorkTypes = networkWorksite.matchOtherOrgWorkTypes(transferRequest)
-        return if (requestWorkTypes.isEmpty()) baseResult
-        else try {
-            writeApiClient.requestWorkTypes(
-                changeAt,
-                networkWorksite.id,
-                requestWorkTypes,
-                transferRequest.reason,
-            )
-
-            val workTypeRequests = networkDataSource.getWorkTypeRequests(networkWorksiteId)
-            workTypeRequests.forEach {
-                workTypeRequestIdMap[it.workType.workType] = it.id
-            }
-
+        return if (requestWorkTypes.isEmpty()) {
             baseResult
-        } catch (e: Exception) {
-            ensureSyncConditions()
-            baseResult.copy(workTypeRequestException = e)
+        } else {
+            try {
+                writeApiClient.requestWorkTypes(
+                    changeAt,
+                    networkWorksite.id,
+                    requestWorkTypes,
+                    transferRequest.reason,
+                )
+
+                val workTypeRequests = networkDataSource.getWorkTypeRequests(networkWorksiteId)
+                workTypeRequests.forEach {
+                    workTypeRequestIdMap[it.workType.workType] = it.id
+                }
+
+                baseResult
+            } catch (e: Exception) {
+                ensureSyncConditions()
+                baseResult.copy(workTypeRequestException = e)
+            }
         }
     }
 
@@ -464,28 +467,31 @@ class WorksiteChangeProcessor(
     ): SyncChangeSetResult {
         val networkWorksite = getNetworkWorksite()
         val releaseWorkTypes = networkWorksite.matchOtherOrgWorkTypes(transferRelease)
-        return if (releaseWorkTypes.isEmpty()) baseResult
-        else try {
-            writeApiClient.releaseWorkTypes(
-                changeAt,
-                networkWorksite.id,
-                releaseWorkTypes,
-                transferRelease.reason,
-            )
-
-            val workTypeLocalIdLookup = worksite.workTypes.associate {
-                it.workType.workType to it.localId
-            }
-            updateWorkTypeIdMap(workTypeLocalIdLookup, true)
-
+        return if (releaseWorkTypes.isEmpty()) {
             baseResult
-        } catch (e: Exception) {
-            // TODO Failure likely introduces inconsistencies on downstream changes and local state.
-            //      How to manage properly and completely?
-            //      Local state at this point likely has unclaimed work types.
-            //      Further operations may introduce and propagate additional inconsistencies.
-            ensureSyncConditions()
-            baseResult.copy(workTypeReleaseException = e)
+        } else {
+            try {
+                writeApiClient.releaseWorkTypes(
+                    changeAt,
+                    networkWorksite.id,
+                    releaseWorkTypes,
+                    transferRelease.reason,
+                )
+
+                val workTypeLocalIdLookup = worksite.workTypes.associate {
+                    it.workType.workType to it.localId
+                }
+                updateWorkTypeIdMap(workTypeLocalIdLookup, true)
+
+                baseResult
+            } catch (e: Exception) {
+                // TODO Failure likely introduces inconsistencies on downstream changes and local state.
+                //      How to manage properly and completely?
+                //      Local state at this point likely has unclaimed work types.
+                //      Further operations may introduce and propagate additional inconsistencies.
+                ensureSyncConditions()
+                baseResult.copy(workTypeReleaseException = e)
+            }
         }
     }
 
@@ -555,9 +561,13 @@ internal data class SyncChangeSetResult(
 
     val primaryException: Exception?
         get() {
-            return if (!isConnectedToInternet) NoInternetConnectionException()
-            else if (!isValidToken) ExpiredTokenException()
-            else dataException
+            return if (!isConnectedToInternet) {
+                NoInternetConnectionException()
+            } else if (!isValidToken) {
+                ExpiredTokenException()
+            } else {
+                dataException
+            }
         }
 
     val hasError: Boolean

@@ -41,7 +41,7 @@ class WorksiteFormDataChangeTest {
                 "b" to WorksiteFormValue(false, " b"),
                 "c" to WorksiteFormValue(true, "doesn't matter", false),
                 "d" to WorksiteFormValue(true, "irrelevant", true),
-            )
+            ),
         )
 
         val dynamicData = mapOf(
@@ -66,10 +66,10 @@ class WorksiteFormDataChangeTest {
         val worksiteNull = makeTestWorksiteFormData()
         val worksiteEmpty = makeTestWorksiteFormData(emptyMap())
         val worksiteFalse = makeTestWorksiteFormData(
-            mapOf("a" to WorksiteFormValue(true, "", false))
+            mapOf("a" to WorksiteFormValue(true, "", false)),
         )
         val worksiteTrue = makeTestWorksiteFormData(
-            mapOf("a" to WorksiteFormValue(true, "", true))
+            mapOf("a" to WorksiteFormValue(true, "", true)),
         )
 
         val dynamicDataEmpty = emptyMap<String, DynamicValue>()
@@ -90,13 +90,13 @@ class WorksiteFormDataChangeTest {
         val worksiteNull = makeTestWorksiteFormData()
         val worksiteEmpty = makeTestWorksiteFormData(emptyMap())
         val worksiteWhitespace = makeTestWorksiteFormData(
-            mapOf("a" to WorksiteFormValue(false, "  "))
+            mapOf("a" to WorksiteFormValue(false, "  ")),
         )
         val worksiteLowercase = makeTestWorksiteFormData(
-            mapOf("a" to WorksiteFormValue(false, "animal"))
+            mapOf("a" to WorksiteFormValue(false, "animal")),
         )
         val worksiteCaps = makeTestWorksiteFormData(
-            mapOf("a" to WorksiteFormValue(false, "ANIMAL"))
+            mapOf("a" to WorksiteFormValue(false, "ANIMAL")),
         )
 
         val dynamicDataEmpty = emptyMap<String, DynamicValue>()
@@ -139,7 +139,7 @@ class WorksiteFormDataChangeTest {
 
 val dateA = Clock.System.now().minus(1.days)
 internal fun makeTestWorksiteFormData(
-    formData: Map<String, WorksiteFormValue>? = null
+    formData: Map<String, WorksiteFormValue>? = null,
 ) = makeTestWorksite(
     dateA,
     dateA,

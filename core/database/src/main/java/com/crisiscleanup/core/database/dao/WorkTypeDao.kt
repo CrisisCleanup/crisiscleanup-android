@@ -22,7 +22,7 @@ interface WorkTypeDao {
         recur           =:recur,
         status          =:status
         WHERE worksite_id=:worksiteId AND work_type=:workType
-        """
+        """,
     )
     fun syncUpdateWorkType(
         worksiteId: Long,
@@ -41,7 +41,7 @@ interface WorkTypeDao {
         """
         DELETE FROM work_types
         WHERE worksite_id=:worksiteId AND network_id NOT IN(:networkIds)
-        """
+        """,
     )
     fun syncDeleteUnspecified(worksiteId: Long, networkIds: Collection<Long>)
 
@@ -59,7 +59,7 @@ interface WorkTypeDao {
         SELECT id, network_id
         FROM work_types
         WHERE worksite_id=:worksiteId AND network_id>-1
-        """
+        """,
     )
     fun getNetworkedIdMap(worksiteId: Long): List<PopulatedIdNetworkId>
 
@@ -75,7 +75,7 @@ interface WorkTypeDao {
         UPDATE OR IGNORE work_types
         SET network_id =:networkId
         WHERE id=:id
-        """
+        """,
     )
     fun updateNetworkId(id: Long, networkId: Long)
 
@@ -85,7 +85,7 @@ interface WorkTypeDao {
         UPDATE OR IGNORE work_types
         SET network_id =:networkId
         WHERE worksite_id=:worksiteId AND work_type=:workType
-        """
+        """,
     )
     fun updateNetworkId(worksiteId: Long, workType: String, networkId: Long)
 

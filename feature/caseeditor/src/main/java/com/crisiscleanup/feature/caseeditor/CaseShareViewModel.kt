@@ -121,9 +121,9 @@ class CaseShareViewModel @Inject constructor(
         receiverContacts,
     ) { sharable, loading, sharing, contacts ->
         sharable &&
-                !loading &&
-                !sharing &&
-                contacts.isNotEmpty()
+            !loading &&
+            !sharing &&
+            contacts.isNotEmpty()
     }
 
     private val contactQuery = receiverContactSuggestion

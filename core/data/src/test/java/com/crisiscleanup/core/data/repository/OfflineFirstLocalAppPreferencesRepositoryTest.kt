@@ -29,13 +29,13 @@ class OfflineFirstLocalAppPreferencesRepositoryTest {
     @Before
     fun setup() {
         preferencesDataSource = LocalAppPreferencesDataSource(
-            tmpFolder.testUserPreferencesDataStore()
+            tmpFolder.testUserPreferencesDataStore(),
         )
     }
 
     private fun setupTestRepository(
         testScheduler: TestCoroutineScheduler,
-        testScope: CoroutineScope
+        testScope: CoroutineScope,
     ): Pair<OfflineFirstLocalAppPreferencesRepository, AuthEventBus> {
         val dispatcher = StandardTestDispatcher(testScheduler)
         val bus = CrisisCleanupAuthEventBus(testScope)
@@ -62,7 +62,7 @@ class OfflineFirstLocalAppPreferencesRepositoryTest {
                 disableSaveCredentialsPrompt = false,
                 languageKey = "",
             ),
-            repository.userPreferences.first()
+            repository.userPreferences.first(),
         )
 
         repository.observeJobs.forEach(Job::cancel)
@@ -78,13 +78,13 @@ class OfflineFirstLocalAppPreferencesRepositoryTest {
             DarkThemeConfig.DARK,
             repository.userPreferences
                 .map { it.darkThemeConfig }
-                .first()
+                .first(),
         )
         assertEquals(
             DarkThemeConfig.DARK,
             preferencesDataSource.userData
                 .map { it.darkThemeConfig }
-                .first()
+                .first(),
         )
 
         repository.observeJobs.forEach(Job::cancel)

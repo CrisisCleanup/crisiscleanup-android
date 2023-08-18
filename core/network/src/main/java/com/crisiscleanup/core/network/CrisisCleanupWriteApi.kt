@@ -41,14 +41,14 @@ interface CrisisCleanupWriteApi {
         createdAt: Instant,
         worksiteId: Long,
         workTypes: List<String>,
-        reason: String
+        reason: String,
     )
 
     suspend fun releaseWorkTypes(
         createdAt: Instant,
         worksiteId: Long,
         workTypes: List<String>,
-        reason: String
+        reason: String,
     )
 
     suspend fun deleteFile(worksiteId: Long, file: Long)
@@ -72,6 +72,6 @@ interface CrisisCleanupWriteApi {
         emails: List<String>,
         phoneNumbers: List<String>,
         shareMessage: String,
-        noClaimReason: String?
+        noClaimReason: String?,
     )
 }

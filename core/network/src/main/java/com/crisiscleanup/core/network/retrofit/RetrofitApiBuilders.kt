@@ -35,9 +35,11 @@ private fun getClientBuilder(isDebuggable: Boolean = false): OkHttpClient.Builde
         .writeTimeout(60, TimeUnit.SECONDS)
 
     if (isDebuggable) {
-        clientBuilder.addInterceptor(HttpLoggingInterceptor().apply {
-            setLevel(HttpLoggingInterceptor.Level.HEADERS)
-        })
+        clientBuilder.addInterceptor(
+            HttpLoggingInterceptor().apply {
+                setLevel(HttpLoggingInterceptor.Level.HEADERS)
+            },
+        )
     }
 
     return clientBuilder

@@ -94,7 +94,6 @@ fun CrisisCleanupApp(
 ) {
     CrisisCleanupBackground {
         Box(Modifier.fillMaxSize()) {
-
             val snackbarHostState = remember { SnackbarHostState() }
 
             val isOffline by appState.isOffline.collectAsStateWithLifecycle()
@@ -104,11 +103,13 @@ fun CrisisCleanupApp(
 
             LaunchedEffect(isOffline) {
                 val notConnectedMessage = translator("info.no_internet")
-                if (isOffline) snackbarHostState.showSnackbar(
-                    message = notConnectedMessage,
-                    duration = SnackbarDuration.Indefinite,
-                    withDismissAction = true,
-                )
+                if (isOffline) {
+                    snackbarHostState.showSnackbar(
+                        message = notConnectedMessage,
+                        duration = SnackbarDuration.Indefinite,
+                        withDismissAction = true,
+                    )
+                }
             }
 
             val authState by viewModel.authState.collectAsStateWithLifecycle()
@@ -222,14 +223,14 @@ private fun AuthenticateContent(
                     .consumeWindowInsets(padding)
                     .windowInsetsPadding(
                         WindowInsets.safeDrawing.only(
-                            WindowInsetsSides.Horizontal
-                        )
+                            WindowInsetsSides.Horizontal,
+                        ),
                     ),
                 enableBackHandler = enableBackHandler,
                 closeAuthentication = { toggleAuthentication(false) },
                 isDebug = isDebuggable,
             )
-        }
+        },
     )
 }
 
@@ -295,7 +296,7 @@ private fun NavigableContent(
                     destinations = appState.topLevelDestinations,
                     onNavigateToDestination = appState::navigateToTopLevelDestination,
                     currentDestination = appState.currentDestination,
-                    modifier = Modifier.testTag("CrisisCleanupBottomBar")
+                    modifier = Modifier.testTag("CrisisCleanupBottomBar"),
                 )
             }
 
@@ -304,7 +305,7 @@ private fun NavigableContent(
                 Spacer(
                     Modifier
                         .fillMaxWidth()
-                        .windowInsetsPadding(windowInsets)
+                        .windowInsetsPadding(windowInsets),
                 )
             }
         },
@@ -315,9 +316,12 @@ private fun NavigableContent(
                 .padding(padding)
                 .consumeWindowInsets(padding)
                 .windowInsetsPadding(
-                    if (isFullscreen) WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)
-                    else WindowInsets.safeDrawing
-                )
+                    if (isFullscreen) {
+                        WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)
+                    } else {
+                        WindowInsets.safeDrawing
+                    },
+                ),
         ) {
             if (showNavigation && appState.shouldShowNavRail) {
                 CrisisCleanupNavRail(
@@ -326,7 +330,7 @@ private fun NavigableContent(
                     currentDestination = appState.currentDestination,
                     modifier = Modifier
                         .testTag("CrisisCleanupNavRail")
-                        .safeDrawingPadding()
+                        .safeDrawingPadding(),
                 )
             }
 
@@ -336,10 +340,14 @@ private fun NavigableContent(
                     if (!showNavigation &&
                         snackbarHostState.currentSnackbarData != null &&
                         keyboardVisibility == ScreenKeyboardVisibility.NotVisible
-                    ) 64.dp else 0.dp
+                    ) {
+                        64.dp
+                    } else {
+                        0.dp
+                    }
 
                 CompositionLocalProvider(
-                    LocalAppLayout provides AppLayoutArea(snackbarHostState)
+                    LocalAppLayout provides AppLayoutArea(snackbarHostState),
                 ) {
                     CrisisCleanupNavHost(
                         navController = appState.navController,
@@ -351,7 +359,7 @@ private fun NavigableContent(
                 Spacer(
                     Modifier
                         .height(snackbarAreaHeight)
-                        .animateContentSize()
+                        .animateContentSize(),
                 )
             }
         }
@@ -420,14 +428,17 @@ private fun AppHeader(
                     isLoading = isAppHeaderLoading,
                 )
             }
-        }
+        },
     )
 }
 
 @Composable
 private fun TopLevelDestination.Icon(isSelected: Boolean, description: String) {
-    val icon = if (isSelected) selectedIcon
-    else unselectedIcon
+    val icon = if (isSelected) {
+        selectedIcon
+    } else {
+        unselectedIcon
+    }
     when (icon) {
         is ImageVectorIcon -> Icon(
             imageVector = icon.imageVector,
@@ -473,7 +484,7 @@ private fun CrisisCleanupBottomBar(
     destinations: List<TopLevelDestination>,
     onNavigateToDestination: (TopLevelDestination) -> Unit,
     currentDestination: NavDestination?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val translator = LocalAppTranslator.current
     CrisisCleanupNavigationBar(modifier = modifier) {
@@ -484,7 +495,7 @@ private fun CrisisCleanupBottomBar(
                 selected = selected,
                 onClick = { onNavigateToDestination(destination) },
                 icon = { destination.Icon(selected, title) },
-                modifier = Modifier.testTag("navItem_${title}"),
+                modifier = Modifier.testTag("navItem_$title"),
                 label = {
                     Text(
                         title,

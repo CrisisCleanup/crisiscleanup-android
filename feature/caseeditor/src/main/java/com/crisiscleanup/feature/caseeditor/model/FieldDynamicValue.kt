@@ -12,7 +12,7 @@ data class FieldDynamicValue(
     val nestLevel: Int = 0,
     val dynamicValue: DynamicValue = DynamicValue(""),
     val breakGlass: FieldEditProperties = FieldEditProperties(field.isReadOnlyBreakGlass),
-    val workTypeStatus: WorkTypeStatus = WorkTypeStatus.OpenUnassigned
+    val workTypeStatus: WorkTypeStatus = WorkTypeStatus.OpenUnassigned,
 ) {
     val key = field.fieldKey
     val childrenCount = childKeys.size

@@ -133,8 +133,10 @@ class MemoryCacheSearchWorksitesRepository @Inject constructor(
             val distance = if (filterByDistance) {
                 val (resultLongitude, resultLatitude) = result.location.coordinates
                 haversineDistance(
-                    locationLatitudeRad, locationLongitudeRad,
-                    resultLatitude.radians, resultLongitude.radians,
+                    locationLatitudeRad,
+                    locationLongitudeRad,
+                    resultLatitude.radians,
+                    resultLongitude.radians,
                 ).kmToMiles
             } else {
                 null

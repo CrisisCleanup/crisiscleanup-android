@@ -79,7 +79,8 @@ fun CaseEditCaseHistoryRoute(
                     if (hasEvents) {
                         items(
                             historyEvents,
-                            key = { it.userId }) {
+                            key = { it.userId },
+                        ) {
                             CardSurface(listItemModifier) {
                                 Column(Modifier.fillMaxWidth()) {
                                     HistoryUser(it)
@@ -111,7 +112,7 @@ private fun HistoryUser(
         Modifier
             .background(Color.White)
             // TODO Common dimensions
-            .padding(16.dp)
+            .padding(16.dp),
     ) {
         Row(horizontalArrangement = listItemSpacedBy) {
             Text(
@@ -142,7 +143,7 @@ private fun HistoryEvents(
             .background(neutralBackgroundColor)
             // TODO Common dimensions
             .padding(16.dp),
-        verticalArrangement = listItemSpacedBy
+        verticalArrangement = listItemSpacedBy,
     ) {
         for (event in events) {
             Column {

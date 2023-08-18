@@ -17,7 +17,7 @@ class NewNoteTest {
                 testNoteSnapshot("", -1, -1),
                 testNoteSnapshot("not-blank", 53, -1),
                 testNoteSnapshot("not-blank", -1, 46),
-            )
+            ),
         )
         val actual = snapshot.getNewNetworkNotes(mapOf(53L to 35))
         assertEquals(emptyList(), actual)
@@ -29,11 +29,11 @@ class NewNoteTest {
             notes = listOf(
                 testNoteSnapshot("not-blank-a", 44, -1, createdAt = createdAtA),
                 testNoteSnapshot("not-blank-b", 53, -1),
-            )
+            ),
         )
         val actual = snapshot.getNewNetworkNotes(mapOf(53L to 35))
         val expected = listOf(
-            Pair(44L, NetworkNote(null, createdAtA, false, "not-blank-a"))
+            Pair(44L, NetworkNote(null, createdAtA, false, "not-blank-a")),
         )
         assertEquals(expected, actual)
     }
@@ -53,7 +53,7 @@ class NewNoteTest {
                 NetworkNote(13, sevenDaysAgo, false, "note-c"),
                 NetworkNote(14, twoDaysAgo, true, "note-d"),
                 NetworkNote(15, oneDayAgo, false, "note-e"),
-            )
+            ),
         )
 
         val actual = worksite.filterDuplicateNotes(
@@ -64,7 +64,7 @@ class NewNoteTest {
                 Pair(4L, NetworkNote(-1, sevenDaysAgo, true, "new-note-a")),
                 Pair(5L, NetworkNote(-1, now, false, "note-d")),
                 Pair(6L, NetworkNote(-1, oneDayAgo.minus(11.hours), true, "note-e")),
-            )
+            ),
         )
 
         val expected = listOf(
@@ -129,5 +129,5 @@ private fun testNoteSnapshot(
         createdAt = createdAt,
         isSurvivor = false,
         note = note,
-    )
+    ),
 )

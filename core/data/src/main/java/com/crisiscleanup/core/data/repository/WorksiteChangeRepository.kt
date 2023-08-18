@@ -349,8 +349,11 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
         val newestChange = sortedChanges.last()
         if (hasSnapshotChanges || !newestChange.isArchived) {
             val syncChanges =
-                if (hasSnapshotChanges) sortedChanges.subList(startingSyncIndex, sortedChanges.size)
-                else listOf(newestChange)
+                if (hasSnapshotChanges) {
+                    sortedChanges.subList(startingSyncIndex, sortedChanges.size)
+                } else {
+                    listOf(newestChange)
+                }
             val hasPriorUnsyncedChanges = startingSyncIndex > oldestReferenceChangeIndex + 1
             val worksiteId = newestChange.worksiteId
             val networkWorksiteId = worksiteDao.getWorksiteNetworkId(worksiteId)
@@ -395,7 +398,8 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
                 .forEach {
                     when (it) {
                         is NoInternetConnectionException,
-                        is ExpiredTokenException -> throw it
+                        is ExpiredTokenException,
+                        -> throw it
                     }
                 }
         } else {
