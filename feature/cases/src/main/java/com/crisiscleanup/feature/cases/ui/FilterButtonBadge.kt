@@ -8,6 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -25,7 +26,10 @@ internal fun FilterButtonBadge(
                         .offset(((-8)).dp, 8.dp),
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                 ) {
-                    Text("$filtersCount")
+                    Text(
+                        "$filtersCount",
+                        modifier = Modifier.testTag("filterButtonBadge_${filtersCount}"),
+                    )
                 }
             },
         ) {

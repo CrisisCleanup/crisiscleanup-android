@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -169,7 +170,7 @@ internal fun BoxScope.LocationMapView(
 
     val mapProperties by rememberMapProperties()
     GoogleMap(
-        modifier = modifier,
+        modifier = modifier.testTag("mapView"),
         uiSettings = uiSettings,
         properties = mapProperties,
         cameraPositionState = cameraPositionState,

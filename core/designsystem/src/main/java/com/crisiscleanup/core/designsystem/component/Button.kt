@@ -270,7 +270,7 @@ fun WorkTypeAction(
     onClick: () -> Unit = {},
 ) = CrisisCleanupOutlinedButton(
     // TODO Common dimensions
-    modifier = Modifier.widthIn(100.dp),
+    modifier = Modifier.testTag("workTypeAction_${text}").widthIn(100.dp),
     text = text,
     onClick = onClick,
     enabled = enabled,

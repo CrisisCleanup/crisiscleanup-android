@@ -10,12 +10,17 @@ onFlowStart:
   - runFlow: login.yaml
 ---
 - launchApp
-- assertVisible: "Work"
-- assertVisible: "Menu"
-- tapOn: "Menu"
-- tapOn: "Account"
-- tapOn: "Logout"
-- assertVisible: "Crisis Cleanup"
 - assertVisible:
-    text: "Login"
-    index: 0
+    id: navItem_Work
+- assertVisible:
+    id: navItem_Menu
+- tapOn:
+    id: navItem_Menu
+- tapOn:
+    id: topBarAvatarIconBtn
+- tapOn:
+    id: authedProfileLogoutBtn
+- assertVisible:
+    id: ccuLogo
+- assertVisible:
+    id: loginHeaderText

@@ -57,6 +57,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -197,6 +198,7 @@ internal fun EditExistingCaseRoute(
                 Text(
                     updatedAtText,
                     Modifier
+                        .testTag("editCaseUpdatedAtText")
                         .background(Color.White)
                         .then(listItemModifier),
                     style = MaterialTheme.typography.bodySmall,
@@ -293,19 +295,21 @@ private fun TopBar(
             Text(
                 title,
                 style = LocalFontStyles.current.header3,
+                modifier = Modifier.testTag("editCaseHeaderText")
             )
 
             if (subTitle.isNotBlank()) {
                 Text(
                     subTitle,
                     style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.testTag("editCaseSubHeaderText")
                 )
             }
         }
     }
 
     val navigationContent = @Composable {
-        TopBarBackAction(action = onBack)
+        TopBarBackAction(action = onBack, modifier = Modifier.testTag("topBarBackAction"))
     }
     val actionsContent: (@Composable (RowScope.() -> Unit)) = if (isLoading) {
         @Composable {}
@@ -322,6 +326,7 @@ private fun TopBar(
                 onClick = toggleHighPriority,
                 enabled = isEditable,
                 tint = highPriorityTint,
+                modifier = Modifier.testTag("editCaseHighPriorityToggleBtn")
             )
 
             val iconResId = if (isFavorite) R.drawable.ic_heart_filled
@@ -336,6 +341,7 @@ private fun TopBar(
                 onClick = toggleFavorite,
                 enabled = isEditable,
                 tint = favoriteTint,
+                modifier = Modifier.testTag("editCaseFavoriteToggleBtn")
             )
         }
     }
@@ -386,6 +392,7 @@ private fun ColumnScope.ExistingCaseContent(
                         pagerState.animateScrollToPage(index)
                     }
                 },
+                modifier = Modifier.testTag("caseInfoTab_${title}")
             )
         }
     }
@@ -447,6 +454,7 @@ private fun BottomActions(
             }
 
             NavigationBarItem(
+                modifier = Modifier.testTag("editCaseNavItem_${label}"),
                 selected = false,
                 onClick = {
                     when (index) {
@@ -696,6 +704,7 @@ private fun LazyListScope.propertyInfoItems(
                     CrisisCleanupIcons.Person,
                     worksite.name,
                     Modifier
+                        .testTag("editCasePropertyInfoWorksiteNameRow")
                         .combinedClickable(
                             onClick = {},
                             onLongClick = { copyToClipboard(worksite.name) }
@@ -709,6 +718,7 @@ private fun LazyListScope.propertyInfoItems(
                     CrisisCleanupIcons.Phone,
                     phoneNumbers,
                     Modifier
+                        .testTag("editCasePropertyInfoPhoneRow")
                         .combinedClickable(
                             onClick = {},
                             onLongClick = { copyToClipboard(phoneNumbers) }
@@ -723,6 +733,7 @@ private fun LazyListScope.propertyInfoItems(
                             CrisisCleanupIcons.Mail,
                             it,
                             Modifier
+                                .testTag("editCasePropertyInfoEmailRow")
                                 .combinedClickable(
                                     onClick = {},
                                     onLongClick = { copyToClipboard(worksite.email) }
@@ -739,6 +750,7 @@ private fun LazyListScope.propertyInfoItems(
                     CrisisCleanupIcons.Location,
                     fullAddress,
                     Modifier
+                        .testTag("editCasePropertyInfoLocationRow")
                         .combinedClickable(
                             onClick = {},
                             onLongClick = { copyToClipboard(fullAddress) }
@@ -753,6 +765,7 @@ private fun LazyListScope.propertyInfoItems(
                     worksite.coordinates,
                     // TODO Common dimensions
                     Modifier
+                        .testTag("editCasePropertyInfoMapView")
                         .height(192.dp)
                         .padding(top = edgeSpacingHalf),
                     mapMarkerIcon = mapMarkerIcon,

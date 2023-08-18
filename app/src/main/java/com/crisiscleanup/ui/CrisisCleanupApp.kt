@@ -273,7 +273,7 @@ private fun NavigableContent(
                 }
                 val onOpenIncidents = if (appState.isMenuRoute) openIncidentsSelect else null
                 AppHeader(
-                    modifier = Modifier.testTag("CrisisCleanupAppHeader"),
+                    modifier = Modifier,
                     title = title,
                     isAppHeaderLoading = isHeaderLoading,
                     profilePictureUri = profilePictureUri,
@@ -412,7 +412,7 @@ private fun AppHeader(
                 TruncatedAppBarText(title = title)
             } else {
                 IncidentDropdownSelect(
-                    modifier,
+                    modifier = Modifier.testTag("appIncidentSelector"),
                     onOpenIncidents,
                     disasterIconResId,
                     title = title,
@@ -484,6 +484,7 @@ private fun CrisisCleanupBottomBar(
                 selected = selected,
                 onClick = { onNavigateToDestination(destination) },
                 icon = { destination.Icon(selected, title) },
+                modifier = Modifier.testTag("navItem_${title}"),
                 label = {
                     Text(
                         title,

@@ -1,0 +1,114 @@
+name: Work filter changes
+appId: ${MAESTRO_APP_ID}
+tags:
+  - development
+  - staging
+  - production
+  - pull-request
+env:
+  APPLY_FILTERS_BTN_TEXT: "Apply filters"
+  CLEAR_FILTERS_BTN_TEXT: "Clear filters"
+onFlowStart:
+  - runFlow: ../auth-tests/login.yaml
+---
+# wait for incidents to load
+- waitForAnimationToEnd:
+    timeout: 5000
+# wait till spinner is invisible
+- assertNotVisible:
+    id: workIncidentsLoadingIndicator
+- tapOn:
+    id: "workIncidentFilterBtn"
+- assertVisible: "Filters"
+
+- assertVisible:
+    id: "filterClearFiltersBtn"
+- assertVisible:
+    id: "filterApplyFiltersBtn"
+
+- assertVisible:
+    text: "${APPLY_FILTERS_BTN_TEXT}"
+
+- scrollUntilVisible:
+    element:
+      id: "filterRadioBtn_5 miles"
+    direction: DOWN
+- tapOn:
+    id: "filterRadioBtn_5 miles"
+- assertVisible:
+    text: "${APPLY_FILTERS_BTN_TEXT} (1)"
+
+- scrollUntilVisible:
+    element:
+      id: "filterCheckbox_worksiteFilters.unclaimed"
+    direction: DOWN
+- tapOn:
+    id: "filterCheckbox_worksiteFilters.unclaimed"
+- assertVisible:
+    text: "${APPLY_FILTERS_BTN_TEXT} (2)"
+
+- scrollUntilVisible:
+    element:
+      id: "filterCheckbox_worksiteFilters.open"
+    direction: DOWN
+- tapOn:
+    id: "filterCheckbox_worksiteFilters.open"
+- assertVisible:
+    text: "${APPLY_FILTERS_BTN_TEXT} (3)"
+
+- scrollUntilVisible:
+    element:
+      id: "filterCheckbox_open_assigned"
+    direction: DOWN
+- tapOn:
+    id: "filterCheckbox_open_assigned"
+- assertVisible:
+    text: "${APPLY_FILTERS_BTN_TEXT} (4)"
+
+- scrollUntilVisible:
+    element:
+      id: "filterCheckbox_formLabels.older_than_60"
+    direction: DOWN
+- tapOn:
+    id: "filterCheckbox_formLabels.older_than_60"
+- assertVisible:
+    text: "${APPLY_FILTERS_BTN_TEXT} (5)"
+  
+- scrollUntilVisible:
+    element:
+      id: "filterCheckbox_flag.worksite_high_priority"
+    direction: DOWN
+- tapOn:
+    id: "filterCheckbox_flag.worksite_high_priority"
+- assertVisible:
+    text: "${APPLY_FILTERS_BTN_TEXT} (6)"
+
+# Apply selected filters
+- tapOn:
+    id: "filterApplyFiltersBtn"
+
+# Small indicator number beside filters button
+- assertVisible:
+    id: "filterButtonBadge_6"
+
+# Reopen filters popup
+- tapOn:
+    id: "workIncidentFilterBtn"
+
+# Originally selected filters should be selected
+- assertVisible:
+    text: "${APPLY_FILTERS_BTN_TEXT} (6)"
+
+# Clear filters
+- tapOn:
+    id: "filterClearFiltersBtn"
+- assertVisible:
+    text: "${APPLY_FILTERS_BTN_TEXT}"
+
+# Apply cleared filters
+- tapOn:
+    id: "filterApplyFiltersBtn"
+
+# Small indicator number beside filters button should not be visible
+- assertNotVisible:
+    id: "filterButtonBadge_6"

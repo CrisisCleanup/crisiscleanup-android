@@ -2,7 +2,9 @@ package com.crisiscleanup.core.designsystem.component
 
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 
 
@@ -20,5 +22,6 @@ fun CollapsibleIcon(
     Icon(
         imageVector = iconVector,
         contentDescription = description,
+        modifier = Modifier.testTag("collapsibleIcon_${sectionTitle}"),
     )
 }

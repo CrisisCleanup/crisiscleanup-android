@@ -12,6 +12,7 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -44,7 +45,7 @@ private fun CircleNumber(
     ) {
         Text(
             "$number",
-            Modifier.align(Alignment.Center),
+            Modifier.testTag("circleNumberText_${number}").align(Alignment.Center),
             style = style,
             textAlign = TextAlign.Center,
         )
@@ -108,13 +109,14 @@ internal fun SectionHeader(
             .listItemPadding(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        val sIndex = sectionIndex + 1
         CircleNumber(
-            sectionIndex + 1,
+            sIndex,
             style = textStyle,
         )
         Text(
             sectionTitle,
-            Modifier.listRowItemStartPadding(),
+            Modifier.testTag("sectionHeaderTitle_${sIndex}_${sectionTitle}").listRowItemStartPadding(),
             style = textStyle,
         )
         trailingContent?.let {

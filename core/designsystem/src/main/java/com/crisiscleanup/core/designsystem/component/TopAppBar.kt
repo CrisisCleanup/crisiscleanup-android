@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
@@ -345,7 +346,10 @@ fun TopAppBarDefault(
         }
     val actionsContent: (@Composable (RowScope.() -> Unit)) = @Composable {
         AvatarAttentionBadge(isActionAttention) {
-            IconButton(onClick = onActionClick) {
+            IconButton(
+                onClick = onActionClick,
+                modifier = Modifier.testTag("topBarAvatarIconBtn"),
+            ) {
                 if (profilePictureUri.isEmpty()) {
                     Icon(
                         imageVector = actionIcon,

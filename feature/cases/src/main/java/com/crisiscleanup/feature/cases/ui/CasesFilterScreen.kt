@@ -380,7 +380,9 @@ private fun LazyListScope.rangeSliderItem(
                 val text = if (currentValue.isBlank()) label else "$label ($currentValue)"
                 Text(
                     text,
-                    modifier = Modifier.listItemVerticalPadding(),
+                    modifier = Modifier
+                        .testTag("filterSectionHeader_${text}")
+                        .listItemVerticalPadding(),
                     style = LocalFontStyles.current.header3,
                     fontWeight = FontWeight.Bold,
                 )
@@ -396,6 +398,7 @@ private fun LazyListScope.rangeSliderItem(
                     ) {
                         HelpRow(
                             text = label,
+                            modifier = Modifier.testTag("filterSectionHeaderHelpRow_${label}"),
                             iconContentDescription = label,
                             showHelp = showHelp,
                             isBold = true,
@@ -441,6 +444,7 @@ private fun LazyListScope.sviSlider(
         helpTranslateKey = "svi.svi_more_info_link",
         isHelpHtml = true,
         currentValueDisplay = sviValueDisplay,
+        modifier = Modifier.testTag("filterSVISlider"), // Survivors Vulnerability Index (SVI)
     )
 }
 
@@ -457,6 +461,7 @@ private fun LazyListScope.daysUpdatedSlider(
         value = filters.daysAgoNormalized,
         onUpdate = { f: Float -> onUpdateFilter(filters.expandDaysAgo(f)) },
         currentValueDisplay = daysUpdatedDisplay,
+        modifier = Modifier.testTag("filterDaysUpdatedSlider"),
     )
 }
 
@@ -476,6 +481,7 @@ private fun FilterHeaderCollapsible(
     ) {
         Text(
             sectionTitle,
+            modifier = Modifier.testTag("filterHeaderCollapsibleTitle_${sectionTitle}"),
             style = LocalFontStyles.current.header3,
         )
         val iconVector =
@@ -519,6 +525,7 @@ private fun LazyListScope.collapsibleSectionHeader(
     ) {
         FilterHeaderCollapsible(
             sectionTitle = LocalAppTranslator.current(translationKey),
+            modifier = Modifier.testTag("filterHeaderCollapsible_${translationKey}"),
             isCollapsed = !isSectionExpanded,
             toggleCollapse = toggleSection,
         )
@@ -551,10 +558,14 @@ private fun LazyListScope.distanceOptions(
                     listItemModifier,
                     verticalArrangement = listItemSpacedBy,
                 ) {
-                    Text(translator(messageKey))
+                    Text(
+                        translator(messageKey),
+                        modifier = Modifier.testTag("filterText_${messageKey}"),
+                    )
 
                     CrisisCleanupButton(
                         text = translator(actionKey),
+                        modifier = Modifier.testTag("filterCCUBtn_${actionKey}"),
                         onClick = requestLocationPermission,
                     )
                 }
@@ -564,7 +575,7 @@ private fun LazyListScope.distanceOptions(
         item {
             options.forEach {
                 CrisisCleanupRadioButton(
-                    listItemModifier,
+                    listItemModifier.testTag("filterRadioBtn_${it.second}"),
                     selected = filters.distance == it.first,
                     text = it.second,
                     onSelect = { updateDistance(it.first) },
@@ -580,7 +591,7 @@ private fun LazyListScope.subsectionHeader(
     item(contentType = "subsection-header") {
         Text(
             text = LocalAppTranslator.current(translateKey),
-            modifier = listItemModifier,
+            modifier = listItemModifier.testTag("filterSubSectionHeader_${translateKey}"),
             style = LocalFontStyles.current.header4,
         )
     }
@@ -594,7 +605,7 @@ private fun LazyListScope.checkboxItem(
 ) {
     item(contentType = "filter-checkbox") {
         CrisisCleanupTextCheckbox(
-            listItemModifier,
+            listItemModifier.testTag("filterCheckbox_${textTranslateKey}"),
             text = LocalAppTranslator.current(textTranslateKey),
             checked = isChecked,
             onCheckChange = onCheckChange,
@@ -842,13 +853,16 @@ private fun LazyListScope.dateItem(
         val label = translator(textTranslateKey)
         Text(
             label,
-            Modifier.listItemHorizontalPadding(),
+            Modifier
+                .testTag("dateItemLabel_${label}")
+                .listItemHorizontalPadding(),
             style = MaterialTheme.typography.bodyLarge,
         )
         FilterDatePicker(
             label,
-            // TODO Common dimensions
-            listItemModifier.padding(bottom = 8.dp),
+            listItemModifier
+                .padding(bottom = 8.dp)
+                .testTag("dateItemDatePicker_${label}"),
             dateRange = dateRange,
             onDateChange = onDateChange,
         )
@@ -960,7 +974,9 @@ fun BottomActionBar(
         val filterCount = filters.changeCount
         val hasFilters = filterCount > 0
         BusyButton(
-            Modifier.weight(1f),
+            Modifier
+                .testTag("filterClearFiltersBtn")
+                .weight(1f),
             text = translator("actions.clear_filters"),
             enabled = hasFilters,
             onClick = viewModel::clearFilters,
@@ -969,7 +985,9 @@ fun BottomActionBar(
         val applyFilters = translator("actions.apply_filters")
         val applyText = if (hasFilters) "$applyFilters ($filterCount)" else applyFilters
         BusyButton(
-            Modifier.weight(1f),
+            Modifier
+                .testTag("filterApplyFiltersBtn")
+                .weight(1f),
             text = applyText,
             onClick = {
                 viewModel.applyFilters(filters)

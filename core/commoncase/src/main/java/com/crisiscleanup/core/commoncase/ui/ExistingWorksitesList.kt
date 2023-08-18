@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.testTag
 import com.crisiscleanup.core.common.combineTrimText
 import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.designsystem.theme.listItemOptionPadding
@@ -63,6 +64,7 @@ fun LazyListScope.listCaseResults(
         CaseView(
             it,
             Modifier
+                .testTag("workSearchResultItem_${it.listItemKey}")
                 .clickable(
                     enabled = isEditable,
                     onClick = { onCaseSelect(it) }

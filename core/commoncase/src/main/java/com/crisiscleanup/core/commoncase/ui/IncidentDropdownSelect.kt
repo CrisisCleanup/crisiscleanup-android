@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.commonassets.DisasterIcon
 import com.crisiscleanup.core.designsystem.component.TruncatedAppBarText
@@ -58,6 +59,7 @@ fun IncidentDropdownSelect(
             ) {
                 CircularProgressIndicator(
                     modifier
+                        .testTag("incidentSelectLoadingIndicator")
                         .size(48.dp)
                         .padding(8.dp)
                 )

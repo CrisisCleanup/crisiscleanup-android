@@ -720,6 +720,7 @@ private fun CasesCountView(
             ) {
                 CircularProgressIndicator(
                     Modifier
+                        .testTag("workIncidentsLoadingIndicator")
                         .wrapContentSize()
                         .size(24.dp),
                     color = Color.White,

@@ -11,6 +11,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -58,6 +59,7 @@ internal fun PropertyLocationView(
                 locationText,
                 viewModel.helpHint,
                 modifier = Modifier
+                    .testTag("propertyLocationHelpRow")
                     .listItemHorizontalPadding()
                     // TODO Common dimensions
                     .padding(top = 16.dp),
@@ -69,6 +71,7 @@ internal fun PropertyLocationView(
             val fullAddressLabel = translator("caseView.full_address")
             OutlinedSingleLineTextField(
                 modifier = Modifier
+                    .testTag("propertyLocationFullAddressTextField")
                     .fillMaxWidth()
                     .listItemPadding()
                     .clickable(
@@ -131,14 +134,14 @@ private fun LocationMapActionBar(
             LocalTextStyle provides LocalFontStyles.current.header4,
         ) {
             CrisisCleanupIconTextButton(
-                modifier = modifier,
+                modifier = modifier.testTag("propertyLocationSelectOnMapBtn"),
                 iconResId = R.drawable.ic_select_on_map,
                 label = translator("caseForm.select_on_map"),
                 onClick = moveLocationOnMap,
                 enabled = isEditable,
             )
             CrisisCleanupIconTextButton(
-                modifier = modifier,
+                modifier = modifier.testTag("propertyLocationUseMyLocationBtn"),
                 iconResId = R.drawable.ic_use_my_location,
                 label = translator("caseForm.use_my_location"),
                 onClick = useMyLocation,

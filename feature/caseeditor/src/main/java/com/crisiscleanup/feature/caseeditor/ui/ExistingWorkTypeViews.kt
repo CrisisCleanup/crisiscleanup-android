@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
@@ -96,13 +97,13 @@ private fun WorkTypeSummaryView(
         Column {
             Text(
                 name,
-                modifier.padding(top = edgeSpacing),
+                modifier.testTag("workTypeSummaryHeaderText").padding(top = edgeSpacing),
                 style = MaterialTheme.typography.bodyLarge,
             )
             if (jobSummary.isNotBlank()) {
                 Text(
                     jobSummary,
-                    modifier.padding(top = edgeSpacingHalf),
+                    modifier.testTag("workTypeSummarySubHeaderText").padding(top = edgeSpacingHalf),
                     style = MaterialTheme.typography.bodySmall,
                 )
             }

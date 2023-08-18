@@ -22,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -563,7 +564,9 @@ private fun SaveActionBar(
     ) {
         val style = LocalFontStyles.current.header5
         BusyButton(
-            Modifier.weight(1f),
+            Modifier
+                .testTag("caseEditCancelBtn")
+                .weight(1f),
             text = cancelText,
             enabled = enable,
             onClick = onCancel,
@@ -573,7 +576,9 @@ private fun SaveActionBar(
         )
         if (showClaimAndSave) {
             BusyButton(
-                Modifier.weight(1.5f),
+                Modifier
+                    .testTag("caseEditClaimAndSaveBtn")
+                    .weight(1.5f),
                 text = saveClaimText,
                 enabled = enable,
                 indicateBusy = isSaving,
@@ -583,7 +588,9 @@ private fun SaveActionBar(
             )
         }
         BusyButton(
-            Modifier.weight(if (showClaimAndSave) 1.1f else 1f),
+            Modifier
+                .testTag("caseEditSaveBtn")
+                .weight(if (showClaimAndSave) 1.1f else 1f),
             text = saveText,
             enabled = enable,
             indicateBusy = isSaving,

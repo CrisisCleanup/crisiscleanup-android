@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -64,7 +65,7 @@ internal fun PropertyFormView(
     val phone1Label = translator("formLabels.phone1")
     ErrorText(inputData.phoneNumberError)
     OutlinedClearableTextField(
-        modifier = listItemModifier,
+        modifier = listItemModifier.testTag("propertyPhone1TextField"),
         labelResId = 0,
         label = "$phone1Label *",
         value = inputData.phoneNumber,
@@ -80,7 +81,7 @@ internal fun PropertyFormView(
         { s: String -> inputData.phoneNumberSecondary = s }
     }
     OutlinedClearableTextField(
-        modifier = listItemModifier,
+        modifier = listItemModifier.testTag("propertyPhone2TextField"),
         labelResId = 0,
         label = translator("formLabels.phone2"),
         value = inputData.phoneNumberSecondary,
@@ -97,7 +98,7 @@ internal fun PropertyFormView(
     val closeKeyboard = rememberCloseKeyboard(editor)
     ErrorText(inputData.emailError)
     OutlinedClearableTextField(
-        modifier = listItemModifier,
+        modifier = listItemModifier.testTag("propertyEmailTextField"),
         labelResId = 0,
         label = translator("formLabels.email"),
         value = inputData.email,
@@ -121,6 +122,7 @@ internal fun PropertyFormView(
             autoContactFrequencyLabel,
             viewModel.helpHint,
             Modifier
+                .testTag("propertyAutoContactFrequencyHelpRow")
                 .listItemHorizontalPadding()
                 // TODO Common dimensions
                 .padding(top = 16.dp),
@@ -136,6 +138,7 @@ internal fun PropertyFormView(
             val isSelected = inputData.autoContactFrequency == it.first
             CrisisCleanupRadioButton(
                 Modifier
+                    .testTag("propertyAutoContactFrequencyRadioBtn_${it.second}")
                     .fillMaxWidth()
                     .listItemHeight()
                     .listItemPadding(),
@@ -168,9 +171,11 @@ private fun PropertyFormResidentNameView(
 
         val nameLabel = translator("formLabels.name")
         OutlinedClearableTextField(
-            modifier = listItemModifier.onGloballyPositioned {
-                contentWidth = it.size.toSize()
-            },
+            modifier = listItemModifier
+                .testTag("propertyResidentNameTextField")
+                .onGloballyPositioned {
+                    contentWidth = it.size.toSize()
+                },
             labelResId = 0,
             label = "$nameLabel *",
             value = residentName,
@@ -201,6 +206,7 @@ private fun PropertyFormResidentNameView(
 
             DropdownMenu(
                 modifier = Modifier
+                    .testTag("propertyResidentNameDropdown")
                     .width(with(LocalDensity.current) { contentWidth.width.toDp() }),
                 expanded = !hideDropdown,
                 onDismissRequest = onStopSuggestions,
@@ -213,7 +219,9 @@ private fun PropertyFormResidentNameView(
                     text = {
                         Text(
                             LocalAppTranslator.current("actions.stop_searching_cases"),
-                            modifier = Modifier.offset(x = 12.dp),
+                            modifier = Modifier
+                                .testTag("propertyResidentNameDropdownStopSearchingText")
+                                .offset(x = 12.dp),
                             style = LocalFontStyles.current.header4,
                         )
                     },

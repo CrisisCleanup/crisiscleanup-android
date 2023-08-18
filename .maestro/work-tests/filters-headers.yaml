@@ -8,44 +8,54 @@ tags:
 onFlowStart:
   - runFlow: ../auth-tests/login.yaml
 ---
-- tapOn: "Filters"
+# wait for incidents to load
+- waitForAnimationToEnd:
+    timeout: 5000
+# wait till spinner is invisible
+- assertNotVisible:
+    id: workIncidentsLoadingIndicator
+- tapOn:
+    id: "workIncidentFilterBtn"
 - assertVisible: "Filters"
 
 - scrollUntilVisible:
-    element: "Vulnerability"
+    element:
+        id: filterHeaderCollapsibleTitle_Distance
     direction: DOWN
 - assertVisible:
-    text: "Vulnerability"
-    index: 1
+    id: "filterHeaderCollapsibleTitle_Distance"
 
 - scrollUntilVisible:
-    element: "Distance"
-    direction: DOWN
-- assertVisible: "Distance"
-
-- scrollUntilVisible:
-    element: "General"
-    direction: DOWN
-- assertVisible: "General"
-
-- scrollUntilVisible:
-    element: "Personal Info"
+    element:
+        id: filterHeaderCollapsibleTitle_General
     direction: DOWN
 - assertVisible:
-    text: "Personal Info"
-    index: 0
+    id: "filterHeaderCollapsibleTitle_General"
 
 - scrollUntilVisible:
-    element: "Flags"
+    element:
+        id: "filterHeaderCollapsibleTitle_Personal Info"
     direction: DOWN
-- assertVisible: "Flags"
+- assertVisible:
+    id: "filterHeaderCollapsibleTitle_Personal Info"
 
 - scrollUntilVisible:
-    element: "Work"
+    element:
+        id: "filterHeaderCollapsibleTitle_Flags"
     direction: DOWN
-- assertVisible: "Work"
+- assertVisible:
+    id: "filterHeaderCollapsibleTitle_Flags"
 
 - scrollUntilVisible:
-    element: "Dates"
+    element:
+        id: "filterHeaderCollapsibleTitle_Work"
     direction: DOWN
-- assertVisible: "Dates"
+- assertVisible:
+    id: "filterHeaderCollapsibleTitle_Work"
+
+- scrollUntilVisible:
+    element:
+        id: "filterHeaderCollapsibleTitle_Dates"
+    direction: DOWN
+- assertVisible:
+    id: "filterHeaderCollapsibleTitle_Dates"

@@ -18,6 +18,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -301,11 +302,13 @@ fun OutlinedObfuscatingTextField(
                 else CrisisCleanupIcons.VisibilityOff
                 val translateKey = if (isObfuscating) "actions.show"
                 else "actions.hide"
+                val iconTestTag = if (isObfuscating) "textFieldShowIcon" else "textFieldHideIcon"
                 val translator = LocalAppTranslator.current
                 Icon(
                     icon,
                     contentDescription = translator(translateKey),
                     tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.testTag(iconTestTag),
                 )
             }
         }

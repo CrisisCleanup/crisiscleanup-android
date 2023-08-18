@@ -79,7 +79,7 @@ fun SelectIncidentDialog(
             is IncidentsData.Incidents -> {
                 Column {
                     Text(
-                        modifier = Modifier.padding(textPadding),
+                        modifier = Modifier.testTag("selectIncidentHeader").padding(textPadding),
                         text = LocalAppTranslator.current("nav.change_incident"),
                         style = LocalFontStyles.current.header3,
                     )
@@ -128,8 +128,7 @@ private fun ColumnScope.IncidentSelectContent(
         val listState = rememberLazyListState()
         LazyColumn(
             state = listState,
-            modifier = modifier
-                .testTag("cases:incidents"),
+            modifier = modifier,
         ) {
             items(
                 incidents.size,
@@ -141,6 +140,7 @@ private fun ColumnScope.IncidentSelectContent(
                 val fontWeight = if (isSelected) FontWeight.Bold else null
                 Text(
                     modifier = modifier
+                        .testTag("selectIncidentItem_${id}")
                         .fillParentMaxWidth()
                         .clickable(enabled = enableInput) {
                             onSelectIncident(incident)
