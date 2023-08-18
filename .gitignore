@@ -275,6 +275,7 @@ captures/
 debug.properties
 release.properties
 prod.properties
+earlybird.properties
 
 _ignore*.kt
 core/database/schemas/com.crisiscleanup.core.database.TestCrisisCleanupDatabase

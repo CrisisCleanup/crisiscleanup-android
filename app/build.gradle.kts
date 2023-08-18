@@ -56,10 +56,13 @@ android {
     productFlavors {
         val demo by getting {
             buildConfigField("Boolean", "IS_PROD_BUILD", "false")
-
         }
 
         val prod by getting {
+            buildConfigField("Boolean", "IS_PROD_BUILD", "true")
+        }
+
+        val earlybird by getting {
             buildConfigField("Boolean", "IS_PROD_BUILD", "true")
         }
     }
@@ -80,7 +83,7 @@ android {
 androidComponents {
     beforeVariants { variantBuilder ->
         // Unnecessary variants
-        if (variantBuilder.name == "prodDebug") {
+        if (variantBuilder.name == "prodDebug" || variantBuilder.name == "earlybirdDebug") {
             variantBuilder.enable = false
         }
     }

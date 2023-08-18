@@ -16,12 +16,13 @@ enum class FlavorDimension {
 @Suppress("EnumEntryName")
 enum class NiaFlavor(val dimension: FlavorDimension, val applicationIdSuffix: String? = null) {
     demo(FlavorDimension.contentType, ".demo"),
-    prod(FlavorDimension.contentType, ".prod")
+    prod(FlavorDimension.contentType, ".prod"),
+    earlybird(FlavorDimension.contentType, ".earlybird"),
 }
 
 fun configureFlavors(
     commonExtension: CommonExtension<*, *, *, *, *>,
-    flavorConfigurationBlock: ProductFlavor.(flavor: NiaFlavor) -> Unit = {}
+    flavorConfigurationBlock: ProductFlavor.(flavor: NiaFlavor) -> Unit = {},
 ) {
     commonExtension.apply {
         flavorDimensions += FlavorDimension.contentType.name
