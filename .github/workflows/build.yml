@@ -14,7 +14,7 @@ jobs:
   build:
     name: Build 🏗️
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 120
 
     steps:
       - name: Checkout 🛎️
@@ -71,7 +71,7 @@ jobs:
     name: Android Test 🧪
     needs: build
     runs-on: macos-latest # enables hardware acceleration in the virtual machine
-    timeout-minutes: 55
+    timeout-minutes: 120
     strategy:
       matrix:
         api-level: [26, 30]
@@ -116,7 +116,7 @@ jobs:
     name: Android Test GMD 🧪
     needs: build
     runs-on: macos-latest # enables hardware acceleration in the virtual machine
-    timeout-minutes: 55
+    timeout-minutes: 120
 
     steps:
       - name: Checkout 🛎️
