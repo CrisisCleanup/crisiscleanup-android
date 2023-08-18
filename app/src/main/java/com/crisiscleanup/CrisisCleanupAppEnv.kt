@@ -10,6 +10,8 @@ class CrisisCleanupAppEnv @Inject constructor() : AppEnv {
     override val isProduction = BuildConfig.IS_RELEASE_BUILD && BuildConfig.IS_PROD_BUILD
     override val isNotProduction = !isProduction
 
+    override val isEarlybird = BuildConfig.IS_EARLYBIRD_BUILD
+
     override fun runInNonProd(block: () -> Unit) {
         if (isNotProduction) {
             block()

@@ -56,14 +56,17 @@ android {
     productFlavors {
         val demo by getting {
             buildConfigField("Boolean", "IS_PROD_BUILD", "false")
+            buildConfigField("Boolean", "IS_EARLYBIRD_BUILD", "false")
         }
 
         val prod by getting {
             buildConfigField("Boolean", "IS_PROD_BUILD", "true")
+            buildConfigField("Boolean", "IS_EARLYBIRD_BUILD", "false")
         }
 
         val earlybird by getting {
             buildConfigField("Boolean", "IS_PROD_BUILD", "true")
+            buildConfigField("Boolean", "IS_EARLYBIRD_BUILD", "true")
         }
     }
 

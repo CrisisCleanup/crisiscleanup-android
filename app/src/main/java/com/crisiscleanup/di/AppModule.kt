@@ -17,6 +17,7 @@ import com.crisiscleanup.navigation.CrisisCleanupNavigationObserver
 import com.crisiscleanup.network.CrisisCleanupAuthInterceptorProvider
 import com.crisiscleanup.network.CrisisCleanupInterceptorProvider
 import com.crisiscleanup.ui.CrisisCleanupAppHeaderUiState
+import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -78,4 +79,9 @@ object AppObjectModule {
     fun providesContentResolver(
         @ApplicationContext context: Context,
     ): ContentResolver = context.contentResolver
+
+    @Provides
+    fun firebaseAnalytics(
+        @ApplicationContext context: Context,
+    ): FirebaseAnalytics = FirebaseAnalytics.getInstance(context)
 }

@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+option java_package = "com.crisiscleanup.core.datastore";
+option java_multiple_files = true;
+
+message AppEndUseProto {
+  int64 end_seconds = 1;
+  string title = 2;
+  string message = 3;
+  string app_link = 4;
+}

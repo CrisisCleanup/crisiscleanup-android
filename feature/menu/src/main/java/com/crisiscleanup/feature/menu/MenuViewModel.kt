@@ -1,6 +1,7 @@
 package com.crisiscleanup.feature.menu
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.DatabaseVersionProvider
@@ -11,10 +12,12 @@ import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupAccountDataRepository
+import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.SyncLogRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -24,6 +27,7 @@ class MenuViewModel @Inject constructor(
     private val accountDataRepository: AccountDataRepository,
     private val accountDataRefresher: AccountDataRefresher,
     private val appVersionProvider: AppVersionProvider,
+    private val appPreferencesRepository: LocalAppPreferencesRepository,
     appEnv: AppEnv,
     private val syncPuller: SyncPuller,
     private val databaseVersionProvider: DatabaseVersionProvider,
@@ -43,11 +47,21 @@ class MenuViewModel @Inject constructor(
     val databaseVersionText: String
         get() = if (isNotProduction) "DB ${databaseVersionProvider.databaseVersion}" else ""
 
+    val isSharingAnalytics = appPreferencesRepository.userPreferences.map {
+        it.allowAllAnalytics
+    }
+
     init {
         externalScope.launch(ioDispatcher) {
             syncLogRepository.trimOldLogs()
 
             accountDataRefresher.updateProfilePicture()
+        }
+    }
+
+    fun shareAnalytics(share: Boolean) {
+        viewModelScope.launch {
+            appPreferencesRepository.setAnalytics(share)
         }
     }
 

@@ -18,4 +18,8 @@ data class UserData(
     val languageKey: String,
 
     val tableViewSortBy: WorksiteSortBy,
+
+    val allowAllAnalytics: Boolean,
+
+    val earlybirdEndOfLife: BuildEndOfLife,
 )

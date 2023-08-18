@@ -1,6 +1,7 @@
 package com.crisiscleanup.core.testing.repository
 
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
+import com.crisiscleanup.core.model.data.BuildEndOfLife
 import com.crisiscleanup.core.model.data.DarkThemeConfig
 import com.crisiscleanup.core.model.data.SyncAttempt
 import com.crisiscleanup.core.model.data.UserData
@@ -19,6 +20,8 @@ private val emptyUserData = UserData(
     selectedIncidentId = -1,
     languageKey = "",
     tableViewSortBy = WorksiteSortBy.None,
+    allowAllAnalytics = false,
+    earlybirdEndOfLife = BuildEndOfLife(),
 )
 
 class TestLocalAppPreferencesRepository : LocalAppPreferencesRepository {
@@ -67,6 +70,18 @@ class TestLocalAppPreferencesRepository : LocalAppPreferencesRepository {
     override suspend fun setTableViewSortBy(sortBy: WorksiteSortBy) {
         currentUserData.let { current ->
             _userData.tryEmit(current.copy(tableViewSortBy = sortBy))
+        }
+    }
+
+    override suspend fun setAnalytics(allowAll: Boolean) {
+        currentUserData.let { current ->
+            _userData.tryEmit(current.copy(allowAllAnalytics = allowAll))
+        }
+    }
+
+    override suspend fun setEarlybirdEnd(end: BuildEndOfLife) {
+        currentUserData.let { current ->
+            _userData.tryEmit(current.copy(earlybirdEndOfLife = end))
         }
     }
 }

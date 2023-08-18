@@ -1,14 +1,23 @@
 package com.crisiscleanup.feature.menu
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
@@ -33,6 +42,15 @@ internal fun MenuScreen(
     openUserFeedback: () -> Unit = {},
     openSyncLogs: () -> Unit = {},
 ) {
+    val translator = LocalAppTranslator.current
+
+    val isSharingAnalytics by viewModel.isSharingAnalytics.collectAsStateWithLifecycle(false)
+    val shareAnalytics = remember(viewModel) {
+        { b: Boolean ->
+            viewModel.shareAnalytics(b)
+        }
+    }
+
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxWidth()) {
             Text(
@@ -42,9 +60,23 @@ internal fun MenuScreen(
 
             CrisisCleanupButton(
                 modifier = Modifier.listItemPadding(),
-                text = LocalAppTranslator.current("info.give_app_feedback"),
+                text = translator("info.give_app_feedback"),
                 onClick = openUserFeedback,
             )
+
+            Row(
+                listItemModifier,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    "~~Share analytics",
+                    Modifier.weight(1f),
+                )
+                Switch(
+                    checked = isSharingAnalytics,
+                    onCheckedChange = shareAnalytics,
+                )
+            }
 
             if (viewModel.isDebuggable) {
                 MenuScreenDebug()
@@ -54,6 +86,28 @@ internal fun MenuScreen(
                 CrisisCleanupTextButton(
                     onClick = openSyncLogs,
                     text = "See sync logs",
+                )
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // TODO Open in WebView?
+            val uriHandler = LocalUriHandler.current
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    translator("publicNav.terms"),
+                    Modifier
+                        .listItemPadding()
+                        .clickable { uriHandler.openUri("https://crisiscleanup.org/terms") },
+                )
+                Text(
+                    translator("nav.privacy"),
+                    Modifier
+                        .listItemPadding()
+                        .clickable { uriHandler.openUri("https://crisiscleanup.org/privacy") },
                 )
             }
         }

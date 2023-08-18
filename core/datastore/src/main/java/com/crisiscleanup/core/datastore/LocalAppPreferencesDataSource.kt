@@ -1,6 +1,7 @@
 package com.crisiscleanup.core.datastore
 
 import androidx.datastore.core.DataStore
+import com.crisiscleanup.core.model.data.BuildEndOfLife
 import com.crisiscleanup.core.model.data.DarkThemeConfig
 import com.crisiscleanup.core.model.data.SyncAttempt
 import com.crisiscleanup.core.model.data.UserData
@@ -8,6 +9,7 @@ import com.crisiscleanup.core.model.data.WorksiteSortBy
 import com.crisiscleanup.core.model.data.worksiteSortByFromLiteral
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import javax.inject.Inject
 
 /**
@@ -23,7 +25,8 @@ class LocalAppPreferencesDataSource @Inject constructor(
                     null,
                     DarkThemeConfigProto.DARK_THEME_CONFIG_UNSPECIFIED,
                     DarkThemeConfigProto.UNRECOGNIZED,
-                    DarkThemeConfigProto.DARK_THEME_CONFIG_FOLLOW_SYSTEM ->
+                    DarkThemeConfigProto.DARK_THEME_CONFIG_FOLLOW_SYSTEM,
+                    ->
                         DarkThemeConfig.FOLLOW_SYSTEM
 
                     DarkThemeConfigProto.DARK_THEME_CONFIG_LIGHT ->
@@ -47,6 +50,15 @@ class LocalAppPreferencesDataSource @Inject constructor(
                 languageKey = it.languageKey,
 
                 tableViewSortBy = worksiteSortByFromLiteral(it.tableViewSortBy),
+
+                allowAllAnalytics = it.allowAllAnalytics,
+
+                earlybirdEndOfLife = BuildEndOfLife(
+                    Instant.fromEpochSeconds(it.earlybirdBuildEnd.endSeconds),
+                    it.earlybirdBuildEnd.title,
+                    it.earlybirdBuildEnd.message,
+                    it.earlybirdBuildEnd.appLink,
+                ),
             )
         }
 
@@ -128,6 +140,25 @@ class LocalAppPreferencesDataSource @Inject constructor(
     suspend fun setTableViewSortBy(sortBy: WorksiteSortBy) {
         userPreferences.updateData {
             it.copy { tableViewSortBy = sortBy.literal }
+        }
+    }
+
+    suspend fun setAnalytics(allowAll: Boolean) {
+        userPreferences.updateData {
+            it.copy { allowAllAnalytics = allowAll }
+        }
+    }
+
+    suspend fun setEarlybirdEnd(end: BuildEndOfLife) {
+        val builder = AppEndUseProto.newBuilder()
+        builder.endSeconds = end.endDate.epochSeconds
+        builder.title = end.title
+        builder.message = end.message
+        builder.appLink = end.link
+        userPreferences.updateData {
+            it.copy {
+                earlybirdBuildEnd = builder.build()
+            }
         }
     }
 }

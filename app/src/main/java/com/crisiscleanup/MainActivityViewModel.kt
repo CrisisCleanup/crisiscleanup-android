@@ -20,6 +20,7 @@ import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.UserData
+import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.SharingStarted
@@ -46,6 +47,7 @@ class MainActivityViewModel @Inject constructor(
     val translator: KeyResourceTranslator,
     private val syncPuller: SyncPuller,
     appEnv: AppEnv,
+    firebaseAnalytics: FirebaseAnalytics,
     @Dispatcher(IO) ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     val isDebuggable = appEnv.isDebuggable
@@ -114,6 +116,11 @@ class MainActivityViewModel @Inject constructor(
                 syncPuller.appPullIncident(it)
             }
             .flowOn(ioDispatcher)
+            .launchIn(viewModelScope)
+
+        localAppPreferencesRepository.userPreferences.onEach {
+            firebaseAnalytics.setAnalyticsCollectionEnabled(it.allowAllAnalytics)
+        }
             .launchIn(viewModelScope)
 
         syncPuller.appPullLanguage()
