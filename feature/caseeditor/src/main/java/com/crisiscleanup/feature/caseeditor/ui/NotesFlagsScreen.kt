@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.text.HtmlCompat
@@ -157,7 +158,7 @@ internal fun HighPriorityFlagInput(
     val updateHighPriority =
         remember(inputData) { { b: Boolean -> inputData.isHighPriority = b } }
     CrisisCleanupTextCheckbox(
-        listItemModifier.listCheckboxAlignStartOffset(),
+        listItemModifier.listCheckboxAlignStartOffset().testTag("caseFlagHighPriorityCheckbox"),
         inputData.isHighPriority,
         text = LocalAppTranslator.current("flag.flag_high_priority"),
         onToggle = toggleHighPriority,
@@ -177,7 +178,7 @@ internal fun MemberOfMyOrgFlagInput(
     val updateAssignTo =
         remember(inputData) { { b: Boolean -> inputData.isAssignedToOrgMember = b } }
     CrisisCleanupTextCheckbox(
-        listItemModifier.listCheckboxAlignStartOffset(),
+        listItemModifier.listCheckboxAlignStartOffset().testTag("caseMemberOfMyOrgCheckbox"),
         inputData.isAssignedToOrgMember,
         text = LocalAppTranslator.current("actions.member_of_my_org"),
         onToggle = toggleAssignTo,

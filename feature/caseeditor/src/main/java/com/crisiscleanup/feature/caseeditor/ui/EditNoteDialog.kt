@@ -6,6 +6,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextArea
@@ -37,13 +39,15 @@ fun EditNoteDialog(
                 onDone = { saveNote() },
                 hasFocus = true,
                 enabled = true,
+                modifier = Modifier.testTag("caseAlertNoteTextAreaField")
             )
         },
         onDismissRequest = onCancel,
         dismissButton = {
             CrisisCleanupTextButton(
                 text = translator("actions.cancel"),
-                onClick = onCancel
+                onClick = onCancel,
+                modifier = Modifier.testTag("caseAlertNoteDismissBtn")
             )
         },
         confirmButton = {
@@ -51,6 +55,7 @@ fun EditNoteDialog(
                 text = translator("actions.add"),
                 onClick = saveNote,
                 enabled = !isSaving,
+                modifier = Modifier.testTag("caseAlertNoteSaveBtn")
             )
         },
     )
