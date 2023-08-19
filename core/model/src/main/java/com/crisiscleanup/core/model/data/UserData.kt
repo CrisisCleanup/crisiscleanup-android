@@ -20,6 +20,4 @@ data class UserData(
     val tableViewSortBy: WorksiteSortBy,
 
     val allowAllAnalytics: Boolean,
-
-    val earlybirdEndOfLife: BuildEndOfLife,
 )

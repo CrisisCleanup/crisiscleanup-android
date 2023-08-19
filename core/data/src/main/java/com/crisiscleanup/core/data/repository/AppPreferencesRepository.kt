@@ -5,7 +5,6 @@ import com.crisiscleanup.core.common.event.AuthEventBus
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
-import com.crisiscleanup.core.model.data.BuildEndOfLife
 import com.crisiscleanup.core.model.data.DarkThemeConfig
 import com.crisiscleanup.core.model.data.UserData
 import com.crisiscleanup.core.model.data.WorksiteSortBy
@@ -19,7 +18,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class OfflineFirstLocalAppPreferencesRepository @Inject constructor(
+class AppPreferencesRepository @Inject constructor(
     private val preferencesDataSource: LocalAppPreferencesDataSource,
     authEventBus: AuthEventBus,
     @ApplicationScope private val externalScope: CoroutineScope,
@@ -66,9 +65,5 @@ class OfflineFirstLocalAppPreferencesRepository @Inject constructor(
 
     override suspend fun setAnalytics(allowAll: Boolean) {
         preferencesDataSource.setAnalytics(allowAll)
-    }
-
-    override suspend fun setEarlybirdEnd(end: BuildEndOfLife) {
-        preferencesDataSource.setEarlybirdEnd(end)
     }
 }

@@ -1,6 +1,5 @@
 package com.crisiscleanup.core.data.repository
 
-import com.crisiscleanup.core.model.data.BuildEndOfLife
 import com.crisiscleanup.core.model.data.DarkThemeConfig
 import com.crisiscleanup.core.model.data.UserData
 import com.crisiscleanup.core.model.data.WorksiteSortBy
@@ -33,6 +32,4 @@ interface LocalAppPreferencesRepository {
     suspend fun setTableViewSortBy(sortBy: WorksiteSortBy)
 
     suspend fun setAnalytics(allowAll: Boolean)
-
-    suspend fun setEarlybirdEnd(end: BuildEndOfLife)
 }

@@ -7,6 +7,7 @@ import com.crisiscleanup.core.datastore.test.testUserPreferencesDataStore
 import com.crisiscleanup.core.model.data.DarkThemeConfig
 import com.crisiscleanup.core.model.data.SyncAttempt
 import com.crisiscleanup.core.model.data.UserData
+import com.crisiscleanup.core.model.data.WorksiteSortBy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
@@ -20,7 +21,7 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import kotlin.test.assertEquals
 
-class OfflineFirstLocalAppPreferencesRepositoryTest {
+class AppPreferencesRepositoryTest {
     private lateinit var preferencesDataSource: LocalAppPreferencesDataSource
 
     @get:Rule
@@ -29,17 +30,17 @@ class OfflineFirstLocalAppPreferencesRepositoryTest {
     @Before
     fun setup() {
         preferencesDataSource = LocalAppPreferencesDataSource(
-            tmpFolder.testUserPreferencesDataStore()
+            tmpFolder.testUserPreferencesDataStore(),
         )
     }
 
     private fun setupTestRepository(
         testScheduler: TestCoroutineScheduler,
-        testScope: CoroutineScope
-    ): Pair<OfflineFirstLocalAppPreferencesRepository, AuthEventBus> {
+        testScope: CoroutineScope,
+    ): Pair<AppPreferencesRepository, AuthEventBus> {
         val dispatcher = StandardTestDispatcher(testScheduler)
         val bus = CrisisCleanupAuthEventBus(testScope)
-        val repository = OfflineFirstLocalAppPreferencesRepository(
+        val repository = AppPreferencesRepository(
             preferencesDataSource,
             bus,
             testScope,
@@ -61,8 +62,10 @@ class OfflineFirstLocalAppPreferencesRepositoryTest {
                 saveCredentialsPromptCount = 0,
                 disableSaveCredentialsPrompt = false,
                 languageKey = "",
+                tableViewSortBy = WorksiteSortBy.None,
+                allowAllAnalytics = false,
             ),
-            repository.userPreferences.first()
+            repository.userPreferences.first(),
         )
 
         repository.observeJobs.forEach(Job::cancel)
@@ -78,13 +81,13 @@ class OfflineFirstLocalAppPreferencesRepositoryTest {
             DarkThemeConfig.DARK,
             repository.userPreferences
                 .map { it.darkThemeConfig }
-                .first()
+                .first(),
         )
         assertEquals(
             DarkThemeConfig.DARK,
             preferencesDataSource.userData
                 .map { it.darkThemeConfig }
-                .first()
+                .first(),
         )
 
         repository.observeJobs.forEach(Job::cancel)

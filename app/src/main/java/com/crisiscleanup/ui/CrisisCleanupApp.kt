@@ -115,13 +115,13 @@ fun CrisisCleanupApp(
             if (authState is AuthState.Loading) {
                 // Splash screen should be showing
             } else {
-                val endOfLife = viewModel.buildEndOfLife
-                if (endOfLife?.isEndOfLife == true) {
-                    EndOfLifeView(endOfLife)
-                } else {
-                    // Render content even if translations are not fully downloaded in case internet connection is not available.
-                    // Translations without fallbacks will show until translations are downloaded.
-                    CompositionLocalProvider(LocalAppTranslator provides translator) {
+                CompositionLocalProvider(LocalAppTranslator provides translator) {
+                    val endOfLife = viewModel.buildEndOfLife
+                    if (endOfLife?.isEndOfLife == true) {
+                        EndOfLifeView(endOfLife)
+                    } else {
+                        // Render content even if translations are not fully downloaded in case internet connection is not available.
+                        // Translations without fallbacks will show until translations are downloaded.
                         LoadedContent(
                             snackbarHostState,
                             appState,

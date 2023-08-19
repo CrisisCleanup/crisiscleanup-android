@@ -26,7 +26,7 @@ object DataStoreModule {
     fun providesUserPreferencesDataStore(
         @ApplicationContext context: Context,
         @Dispatcher(IO) ioDispatcher: CoroutineDispatcher,
-        userPreferencesSerializer: UserPreferencesSerializer
+        userPreferencesSerializer: UserPreferencesSerializer,
     ): DataStore<UserPreferences> =
         DataStoreFactory.create(
             serializer = userPreferencesSerializer,
@@ -37,10 +37,24 @@ object DataStoreModule {
 
     @Provides
     @Singleton
+    fun providesAppMetricsDataStore(
+        @ApplicationContext context: Context,
+        @Dispatcher(IO) ioDispatcher: CoroutineDispatcher,
+        appMetricsSerializer: AppMetricsSerializer,
+    ): DataStore<AppMetrics> =
+        DataStoreFactory.create(
+            serializer = appMetricsSerializer,
+            scope = CoroutineScope(ioDispatcher + SupervisorJob()),
+        ) {
+            context.dataStoreFile("app_metrics.pb")
+        }
+
+    @Provides
+    @Singleton
     fun providesAccountInfoProtoDataStore(
         @ApplicationContext context: Context,
         @Dispatcher(IO) ioDispatcher: CoroutineDispatcher,
-        serializer: AccountInfoProtoSerializer
+        serializer: AccountInfoProtoSerializer,
     ): DataStore<AccountInfo> =
         DataStoreFactory.create(
             serializer = serializer,
@@ -54,7 +68,7 @@ object DataStoreModule {
     fun providesCasesFiltersProtoDataStore(
         @ApplicationContext context: Context,
         @Dispatcher(IO) ioDispatcher: CoroutineDispatcher,
-        serializer: CasesFiltersProtoSerializer
+        serializer: CasesFiltersProtoSerializer,
     ): DataStore<LocalPersistedCasesFilters> =
         DataStoreFactory.create(
             serializer = serializer,

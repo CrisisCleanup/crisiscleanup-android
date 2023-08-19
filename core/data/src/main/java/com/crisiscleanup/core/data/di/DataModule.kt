@@ -24,8 +24,14 @@ interface DataModule {
     @Singleton
     @Binds
     fun bindsLocalAppPreferencesRepository(
-        repository: OfflineFirstLocalAppPreferencesRepository,
+        repository: AppPreferencesRepository,
     ): LocalAppPreferencesRepository
+
+    @Singleton
+    @Binds
+    fun bindsLocalAppMetricsRepository(
+        repository: AppMetricsRepository,
+    ): LocalAppMetricsRepository
 
     @Singleton
     @Binds
