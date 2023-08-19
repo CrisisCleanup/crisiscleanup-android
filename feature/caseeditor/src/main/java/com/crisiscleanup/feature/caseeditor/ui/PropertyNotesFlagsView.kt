@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -69,12 +70,13 @@ internal fun PropertyNotesFlagsView(
     ) {
         Text(
             text = translator("formLabels.notes"),
-            Modifier.weight(1f),
+            Modifier.testTag("propertyLabelNotesText").weight(1f),
         )
         if (isExpandable) {
             CrisisCleanupTextButton(
                 onClick = showAllNotes,
                 text = translator("actions.all_notes"),
+                modifier = Modifier.testTag("propertyAllNotesBtn"),
             )
         }
     }
@@ -99,6 +101,7 @@ internal fun PropertyNotesFlagsView(
     val onAddNote = remember(viewModel) { { isCreatingNote = true } }
     CrisisCleanupIconTextButton(
         modifier = Modifier
+            .testTag("propertyAddNoteBtn")
             .listItemHeight()
             .fillMaxWidth(),
         iconResId = R.drawable.ic_note,

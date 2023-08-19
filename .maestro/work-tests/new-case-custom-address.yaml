@@ -1,0 +1,71 @@
+name: New Case View
+appId: ${MAESTRO_APP_ID}
+tags:
+  - development
+  - staging
+  - production
+  - pull-request
+onFlowStart:
+  - runFlow: ../auth-tests/login.yaml
+---
+# wait for incidents to load
+- waitForAnimationToEnd:
+    timeout: 5000
+# start searching after loading spinner is invisible
+- assertNotVisible:
+    id: workIncidentsLoadingIndicator
+- tapOn:
+    id: "workNewCaseFab"
+- assertVisible: ".*new case.*"
+
+# Check address problems to show custom address fields
+- scrollUntilVisible:
+    element:
+      id: locationAddressProblemsCheckbox
+- tapOn:
+    id: locationAddressProblemsCheckbox 
+
+- evalScript: |
+    "${
+      output.result = { 
+        testTags: [
+          'locationStreetAddressTextField',
+          'locationPostalCodeTextField',
+          'locationCountyTextField',
+          'locationCityTextField',
+          'locationStateTextField',
+          'locationCrossStreetTextField',
+        ],
+      }
+    }"
+
+# Custom fields should be visible when address problems is checked
+- evalScript: ${output.i = 0}
+- repeat:
+    while:
+      'true': ${output.i < output.result.testTags.length}
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: ${output.result.testTags[output.i]}
+          direction: DOWN
+      - assertVisible:
+            id: ${output.result.testTags[output.i]}
+      - evalScript: ${output.i = output.i + 1}
+
+# Uncheck address problems to hide custom address fields
+- scrollUntilVisible:
+    element:
+      id: locationAddressProblemsCheckbox
+- tapOn:
+    id: locationAddressProblemsCheckbox 
+
+# Custom fields should be visible when address problems is checked
+- evalScript: ${output.i = 0}
+- repeat:
+    while:
+      'true': ${output.i < output.result.testTags.length}
+    commands:
+      - assertNotVisible:
+            id: ${output.result.testTags[output.i]}
+      - evalScript: ${output.i = output.i + 1}

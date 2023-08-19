@@ -101,11 +101,13 @@ private fun AddressSummaryInColumn(
                         imageVector = CrisisCleanupIcons.Delete,
                         onClick = onClearAddress,
                         enabled = isEditable,
+                        modifier = Modifier.testTag("locationClearAddressBtn")
                     )
                     CrisisCleanupIconButton(
                         imageVector = CrisisCleanupIcons.Edit,
                         onClick = onEditAddress,
                         enabled = isEditable,
+                        modifier = Modifier.testTag("locationEditAddressBtn")
                     )
                 }
             }
@@ -257,7 +259,7 @@ internal fun LocationFormView(
         }
     }
     OutlinedClearableTextField(
-        modifier = listItemModifier,
+        modifier = listItemModifier.testTag("locationCrossStreetTextField"),
         labelResId = 0,
         label = translator("formLabels.cross_street"),
         value = inputData.crossStreetNearbyLandmark,
@@ -280,7 +282,7 @@ internal fun LocationFormView(
         }
     }
     CrisisCleanupTextCheckbox(
-        listItemModifier.listCheckboxAlignStartOffset(),
+        listItemModifier.listCheckboxAlignStartOffset().testTag("locationAddressProblemsCheckbox"),
         inputData.hasWrongLocation,
         text = translator("caseForm.address_problems"),
         onToggle = toggleWrongLocation,
@@ -305,7 +307,7 @@ private fun LocationAddressFormView(
     val addressLabel = translator("formLabels.address")
     ErrorText(inputData.streetAddressError)
     OutlinedClearableTextField(
-        modifier = listItemModifier,
+        modifier = listItemModifier.testTag("locationStreetAddressTextField"),
         labelResId = 0,
         label = "$addressLabel *",
         value = inputData.streetAddress,
@@ -326,7 +328,7 @@ private fun LocationAddressFormView(
     val postalCodeLabel = translator("formLabels.postal_code")
     ErrorText(inputData.zipCodeError)
     OutlinedClearableTextField(
-        modifier = listItemModifier,
+        modifier = listItemModifier.testTag("locationPostalCodeTextField"),
         labelResId = 0,
         label = "$postalCodeLabel *",
         value = inputData.zipCode,
@@ -345,7 +347,7 @@ private fun LocationAddressFormView(
     val countyLabel = translator("formLabels.county")
     ErrorText(inputData.countyError)
     OutlinedClearableTextField(
-        modifier = listItemModifier,
+        modifier = listItemModifier.testTag("locationCountyTextField"),
         labelResId = 0,
         label = "$countyLabel *",
         value = inputData.county,
@@ -365,7 +367,7 @@ private fun LocationAddressFormView(
     val cityLabel = translator("formLabels.city")
     ErrorText(inputData.cityError)
     OutlinedClearableTextField(
-        modifier = listItemModifier,
+        modifier = listItemModifier.testTag("locationCityTextField"),
         labelResId = 0,
         label = "$cityLabel *",
         value = inputData.city,
@@ -390,7 +392,7 @@ private fun LocationAddressFormView(
     val stateLabel = translator("formLabels.state")
     ErrorText(inputData.stateError)
     OutlinedClearableTextField(
-        modifier = listItemModifier,
+        modifier = listItemModifier.testTag("locationStateTextField"),
         labelResId = 0,
         label = "$stateLabel *",
         value = inputData.state,

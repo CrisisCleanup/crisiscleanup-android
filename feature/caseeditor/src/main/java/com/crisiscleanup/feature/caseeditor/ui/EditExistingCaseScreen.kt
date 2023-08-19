@@ -968,7 +968,7 @@ internal fun EditExistingCaseNotesView(
 
         CrisisCleanupFab(
             onClick = onAddNote,
-            modifier = Modifier.constrainAs(newNoteFab) {
+            modifier = Modifier.testTag("editCaseAddNoteFab").constrainAs(newNoteFab) {
                 end.linkTo(parent.end, margin = actionEdgeSpace)
                 bottom.linkTo(parent.bottom, margin = actionEdgeSpace)
             },
