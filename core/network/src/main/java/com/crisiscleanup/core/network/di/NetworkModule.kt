@@ -8,14 +8,21 @@ import coil.util.DebugLogger
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.network.AuthInterceptorProvider
 import com.crisiscleanup.core.network.BuildConfig
+import com.crisiscleanup.core.network.CrisisCleanupAuthApi
+import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
+import com.crisiscleanup.core.network.CrisisCleanupWriteApi
 import com.crisiscleanup.core.network.RetrofitInterceptorProvider
 import com.crisiscleanup.core.network.fake.FakeAssetManager
+import com.crisiscleanup.core.network.retrofit.AuthApiClient
+import com.crisiscleanup.core.network.retrofit.DataApiClient
 import com.crisiscleanup.core.network.retrofit.RequestHeaderKeysLookup
 import com.crisiscleanup.core.network.retrofit.RetrofitConfiguration
 import com.crisiscleanup.core.network.retrofit.RetrofitConfigurations
+import com.crisiscleanup.core.network.retrofit.WriteApiClient
 import com.crisiscleanup.core.network.retrofit.getApiBuilder
 import com.crisiscleanup.core.network.retrofit.getCrisisCleanupApiBuilder
 import com.crisiscleanup.core.network.retrofit.getJsonApiBuilder
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -27,6 +34,19 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+interface NetworkInterfaceModule {
+    @Binds
+    fun bindsAuthApiClient(apiClient: AuthApiClient): CrisisCleanupAuthApi
+
+    @Binds
+    fun bindsDataApiClient(apiClient: DataApiClient): CrisisCleanupNetworkDataSource
+
+    @Binds
+    fun bindsWriteApiClient(apiClient: WriteApiClient): CrisisCleanupWriteApi
+}
 
 @Module
 @InstallIn(SingletonComponent::class)
