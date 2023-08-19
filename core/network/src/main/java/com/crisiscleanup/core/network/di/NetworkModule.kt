@@ -15,6 +15,7 @@ import com.crisiscleanup.core.network.retrofit.RetrofitConfiguration
 import com.crisiscleanup.core.network.retrofit.RetrofitConfigurations
 import com.crisiscleanup.core.network.retrofit.getApiBuilder
 import com.crisiscleanup.core.network.retrofit.getCrisisCleanupApiBuilder
+import com.crisiscleanup.core.network.retrofit.getJsonApiBuilder
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -80,6 +81,18 @@ object NetworkModule {
     ): Retrofit {
         val interceptors = listOf(interceptorProvider.serverErrorInterceptor)
         return getApiBuilder(interceptors, appEnv)
+    }
+
+    @RetrofitConfiguration(RetrofitConfigurations.BasicJson)
+    @Provides
+    @Singleton
+    fun providesBasicJsonRetrofit(
+        interceptorProvider: RetrofitInterceptorProvider,
+        appEnv: AppEnv,
+        json: Json,
+    ): Retrofit {
+        val interceptors = listOf(interceptorProvider.serverErrorInterceptor)
+        return getJsonApiBuilder(interceptors, appEnv, json)
     }
 
     /**

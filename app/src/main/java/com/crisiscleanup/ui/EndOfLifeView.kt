@@ -4,9 +4,11 @@ import android.webkit.URLUtil
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
@@ -27,10 +29,12 @@ internal fun EndOfLifeView(
         listItemModifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
     ) {
-        Image(
-            painter = painterResource(id = com.crisiscleanup.core.common.R.drawable.crisis_cleanup_logo),
-            contentDescription = null,
-        )
+        Box(Modifier.fillMaxWidth(0.67f)) {
+            Image(
+                painter = painterResource(id = com.crisiscleanup.core.common.R.drawable.crisis_cleanup_logo),
+                contentDescription = null,
+            )
+        }
 
         Spacer(Modifier.height(24.dp))
 

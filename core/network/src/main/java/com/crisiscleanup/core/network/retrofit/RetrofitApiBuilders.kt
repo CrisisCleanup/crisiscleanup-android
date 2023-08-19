@@ -23,6 +23,7 @@ internal annotation class RetrofitConfiguration(val retrofit: RetrofitConfigurat
 
 internal enum class RetrofitConfigurations {
     Basic,
+    BasicJson,
     Auth,
     CrisisCleanup,
 }
@@ -35,9 +36,11 @@ private fun getClientBuilder(isDebuggable: Boolean = false): OkHttpClient.Builde
         .writeTimeout(60, TimeUnit.SECONDS)
 
     if (isDebuggable) {
-        clientBuilder.addInterceptor(HttpLoggingInterceptor().apply {
-            setLevel(HttpLoggingInterceptor.Level.HEADERS)
-        })
+        clientBuilder.addInterceptor(
+            HttpLoggingInterceptor().apply {
+                setLevel(HttpLoggingInterceptor.Level.HEADERS)
+            },
+        )
     }
 
     return clientBuilder
@@ -97,5 +100,23 @@ internal fun getApiBuilder(
     return Retrofit.Builder()
         .baseUrl(CrisisCleanupApiBaseUrl)
         .client(clientBuilder.build())
+        .build()
+}
+
+internal fun getJsonApiBuilder(
+    interceptors: List<Interceptor>,
+    appEnv: AppEnv,
+    networkApiJson: Json,
+): Retrofit {
+    val clientBuilder = getClientBuilder(appEnv.isDebuggable)
+
+    interceptors.forEach {
+        clientBuilder.addInterceptor(it)
+    }
+
+    return Retrofit.Builder()
+        .baseUrl(CrisisCleanupApiBaseUrl)
+        .client(clientBuilder.build())
+        .addConverterFactory(networkApiJson.converterFactory)
         .build()
 }

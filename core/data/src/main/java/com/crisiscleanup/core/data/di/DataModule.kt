@@ -125,6 +125,11 @@ interface DataModule {
     fun caseHistoryRepository(
         repository: OfflineFirstCaseHistoryRepository,
     ): CaseHistoryRepository
+
+    @Binds
+    fun endOfLifeRepository(
+        repository: AppEndOfLifeRepository,
+    ): EndOfLifeRepository
 }
 
 @Module

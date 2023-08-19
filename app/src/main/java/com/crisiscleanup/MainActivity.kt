@@ -32,6 +32,7 @@ import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.sync.SyncPuller
+import com.crisiscleanup.core.data.repository.EndOfLifeRepository
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.navigationContainerColor
 import com.crisiscleanup.core.model.data.DarkThemeConfig
@@ -86,6 +87,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     internal lateinit var visualAlertManager: VisualAlertManager
+
+    @Inject
+    internal lateinit var endOfLifeRepository: EndOfLifeRepository
 
     private val lifecycleObservers = mutableListOf<LifecycleObserver>()
 
@@ -162,6 +166,8 @@ class MainActivity : ComponentActivity() {
         syncPuller.appPullIncidentWorksitesDelta()
         visualAlertManager.setNonProductionAppAlert(true)
         viewModel.onAppOpen()
+
+        endOfLifeRepository.saveEndOfLifeData()
     }
 
     override fun onPause() {

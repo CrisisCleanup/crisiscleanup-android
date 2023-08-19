@@ -23,6 +23,7 @@ class NetworkOrganizationTest {
             name = "test",
             affiliates = listOf(5120),
             primaryLocation = 79749,
+            secondaryLocation = null,
             typeT = "orgType.government",
             primaryContacts = listOf(
                 NetworkPersonContact(
@@ -31,8 +32,8 @@ class NetworkOrganizationTest {
                     lastName = "test",
                     email = "test@test.com",
                     mobile = "5353151368",
-                )
-            )
+                ),
+            ),
         )
         assertEquals(expected, organizations[0])
     }

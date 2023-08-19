@@ -19,8 +19,11 @@ interface FlavoredNetworkModule {
     fun bindsAuthApiClient(apiClient: AuthApiClient): CrisisCleanupAuthApi
 
     @Binds
-    fun bindsDataApiClient(dataSource: DataApiClient): CrisisCleanupNetworkDataSource
+    fun bindsDataApiClient(apiClient: DataApiClient): CrisisCleanupNetworkDataSource
 
     @Binds
-    fun bindsWriteApiClient(dataSource: WriteApiClient): CrisisCleanupWriteApi
+    fun bindsWriteApiClient(apiClient: WriteApiClient): CrisisCleanupWriteApi
+
+    @Binds
+    fun bindsEndOfLifeClient(apiClient: NoEndOfLifeClient): EndOfLifeClient
 }
