@@ -5,11 +5,12 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -39,6 +40,7 @@ import com.crisiscleanup.core.designsystem.component.OutlinedObfuscatingTextFiel
 import com.crisiscleanup.core.designsystem.theme.DayNightPreviews
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
+import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.feature.authentication.model.AuthenticationState
 import com.crisiscleanup.core.common.R as commonR
 
@@ -76,38 +78,32 @@ fun AuthenticateScreen(
 
         is AuthenticateScreenUiState.Ready -> {
             val readyState = uiState as AuthenticateScreenUiState.Ready
-            readyState.authenticationState.let {
-                if (it.isAccountValid) {
-                    AuthenticatedScreen(
-                        it,
-                        modifier,
-                        onCloseScreen,
-                    )
-                } else {
-                    LoginScreen(
-                        it,
-                        modifier,
-                        onCloseScreen,
-                        isDebug = isDebug,
-                    )
+            val authState = readyState.authenticationState
+            Box(modifier) {
+                // TODO Scroll when content is longer than screen height with keyboard open
+                Column(
+                    Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState()),
+                ) {
+                    CrisisCleanupLogoRow()
+
+                    if (authState.isAccountValid) {
+                        AuthenticatedScreen(
+                            authState,
+                            onCloseScreen,
+                        )
+                    } else {
+                        LoginScreen(
+                            authState,
+                            onCloseScreen,
+                            isDebug = isDebug,
+                        )
+
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun AuthenticateScreenContainer(
-    modifier: Modifier = Modifier,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    Box(
-        Modifier
-            .fillMaxSize()
-            .then(modifier)
-    ) {
-        Column(Modifier.fillMaxWidth()) {
-            content()
         }
     }
 }
@@ -144,152 +140,136 @@ private fun ConditionalErrorMessage(errorMessage: String) {
 @Composable
 private fun LoginScreen(
     authState: AuthenticationState,
-    modifier: Modifier = Modifier,
     closeAuthentication: () -> Unit = {},
     viewModel: AuthenticationViewModel = hiltViewModel(),
     isDebug: Boolean = false,
 ) {
     val translator = LocalAppTranslator.current
-    AuthenticateScreenContainer(
-        Modifier
-            .fillMaxSize()
-            .then(modifier)
-    ) {
-        CrisisCleanupLogoRow()
 
-        Text(
-            modifier = fillWidthPadded.testTag("loginHeaderText"),
-            text = translator("actions.login", R.string.login),
-            style = LocalFontStyles.current.header2,
-        )
+    Text(
+        modifier = listItemModifier.testTag("loginHeaderText"),
+        text = translator("actions.login", R.string.login),
+        style = LocalFontStyles.current.header2,
+    )
 
-        val authErrorMessage by viewModel.errorMessage
-        ConditionalErrorMessage(authErrorMessage)
+    val authErrorMessage by viewModel.errorMessage
+    ConditionalErrorMessage(authErrorMessage)
 
-        val isNotBusy by viewModel.isNotAuthenticating.collectAsStateWithLifecycle()
+    val isNotBusy by viewModel.isNotAuthenticating.collectAsStateWithLifecycle()
 
-        val focusEmail = viewModel.loginInputData.emailAddress.isEmpty() ||
-                viewModel.isInvalidEmail.value
-        val updateEmailInput =
-            remember(viewModel) { { s: String -> viewModel.loginInputData.emailAddress = s } }
-        val clearErrorVisuals = remember(viewModel) { { viewModel.clearErrorVisuals() } }
-        OutlinedClearableTextField(
-            modifier = fillWidthPadded.testTag("loginEmailTextField"),
-            label = translator("loginForm.email_placeholder", R.string.email),
-            value = viewModel.loginInputData.emailAddress,
-            onValueChange = updateEmailInput,
-            keyboardType = KeyboardType.Email,
-            enabled = isNotBusy,
-            isError = viewModel.isInvalidEmail.value,
-            hasFocus = focusEmail,
-            onNext = clearErrorVisuals,
-        )
+    val focusEmail = viewModel.loginInputData.emailAddress.isEmpty() ||
+            viewModel.isInvalidEmail.value
+    val updateEmailInput =
+        remember(viewModel) { { s: String -> viewModel.loginInputData.emailAddress = s } }
+    val clearErrorVisuals = remember(viewModel) { { viewModel.clearErrorVisuals() } }
+    OutlinedClearableTextField(
+        modifier = fillWidthPadded.testTag("loginEmailTextField"),
+        label = translator("loginForm.email_placeholder", R.string.email),
+        value = viewModel.loginInputData.emailAddress,
+        onValueChange = updateEmailInput,
+        keyboardType = KeyboardType.Email,
+        enabled = isNotBusy,
+        isError = viewModel.isInvalidEmail.value,
+        hasFocus = focusEmail,
+        onNext = clearErrorVisuals,
+    )
 
-        var isObfuscatingPassword by rememberSaveable { mutableStateOf(true) }
-        val focusManager = LocalFocusManager.current
-        val updatePasswordInput =
-            remember(viewModel) { { s: String -> viewModel.loginInputData.password = s } }
-        val rememberAuth = remember(viewModel) {
+    var isObfuscatingPassword by rememberSaveable { mutableStateOf(true) }
+    val focusManager = LocalFocusManager.current
+    val updatePasswordInput =
+        remember(viewModel) { { s: String -> viewModel.loginInputData.password = s } }
+    val rememberAuth = remember(viewModel) {
+        {
+            // Allows email input to request focus if necessary
+            focusManager.moveFocus(FocusDirection.Next)
+            viewModel.authenticateEmailPassword()
+        }
+    }
+    OutlinedObfuscatingTextField(
+        modifier = fillWidthPadded.testTag("loginPasswordTextField"),
+        label = translator("loginForm.password_placeholder", R.string.password),
+        value = viewModel.loginInputData.password,
+        onValueChange = updatePasswordInput,
+        isObfuscating = isObfuscatingPassword,
+        onObfuscate = { isObfuscatingPassword = !isObfuscatingPassword },
+        enabled = isNotBusy,
+        isError = viewModel.isInvalidPassword.value,
+        hasFocus = viewModel.isInvalidPassword.value,
+        onEnter = { rememberAuth() },
+        imeAction = ImeAction.Done,
+    )
+
+    if (isDebug) {
+        val rememberDebugAuthenticate = remember(viewModel) {
             {
-                // Allows email input to request focus if necessary
-                focusManager.moveFocus(FocusDirection.Next)
+                viewModel.loginInputData.apply {
+                    emailAddress = BuildConfig.DEBUG_EMAIL_ADDRESS
+                    password = BuildConfig.DEBUG_ACCOUNT_PASSWORD
+                }
                 viewModel.authenticateEmailPassword()
             }
         }
-        OutlinedObfuscatingTextField(
-            modifier = fillWidthPadded.testTag("loginPasswordTextField"),
-            label = translator("loginForm.password_placeholder", R.string.password),
-            value = viewModel.loginInputData.password,
-            onValueChange = updatePasswordInput,
-            isObfuscating = isObfuscatingPassword,
-            onObfuscate = { isObfuscatingPassword = !isObfuscatingPassword },
-            enabled = isNotBusy,
-            isError = viewModel.isInvalidPassword.value,
-            hasFocus = viewModel.isInvalidPassword.value,
-            onEnter = { rememberAuth() },
-            imeAction = ImeAction.Done,
-        )
-
-        if (isDebug) {
-            val rememberDebugAuthenticate = remember(viewModel) {
-                {
-                    viewModel.loginInputData.apply {
-                        emailAddress = BuildConfig.DEBUG_EMAIL_ADDRESS
-                        password = BuildConfig.DEBUG_ACCOUNT_PASSWORD
-                    }
-                    viewModel.authenticateEmailPassword()
-                }
-            }
-            BusyButton(
-                modifier = fillWidthPadded.testTag("loginLoginDebugBtn"),
-                onClick = rememberDebugAuthenticate,
-                enabled = isNotBusy,
-                text = "Login debug",
-                indicateBusy = !isNotBusy,
-            )
-        }
-
         BusyButton(
-            modifier = fillWidthPadded.testTag("loginLoginBtn"),
-            onClick = viewModel::authenticateEmailPassword,
+            modifier = fillWidthPadded.testTag("loginLoginDebugBtn"),
+            onClick = rememberDebugAuthenticate,
             enabled = isNotBusy,
-            text = translator("actions.login", R.string.login),
+            text = "Login debug",
             indicateBusy = !isNotBusy,
         )
+    }
 
-        if (authState.hasAuthenticated) {
-            CrisisCleanupButton(
-                modifier = fillWidthPadded.testTag("loginCancelBtn"),
-                onClick = closeAuthentication,
-                enabled = isNotBusy,
-                text = translator("actions.cancel", R.string.cancel),
-            )
-        }
+    BusyButton(
+        modifier = fillWidthPadded.testTag("loginLoginBtn"),
+        onClick = viewModel::authenticateEmailPassword,
+        enabled = isNotBusy,
+        text = translator("actions.login", R.string.login),
+        indicateBusy = !isNotBusy,
+    )
+
+    if (authState.hasAuthenticated) {
+        CrisisCleanupButton(
+            modifier = fillWidthPadded.testTag("loginCancelBtn"),
+            onClick = closeAuthentication,
+            enabled = isNotBusy,
+            text = translator("actions.cancel", R.string.cancel),
+        )
     }
 }
 
 @Composable
 private fun AuthenticatedScreen(
     authState: AuthenticationState,
-    modifier: Modifier = Modifier,
     closeAuthentication: () -> Unit = {},
     viewModel: AuthenticationViewModel = hiltViewModel(),
 ) {
     val translator = LocalAppTranslator.current
-    AuthenticateScreenContainer(
-        Modifier
-            .fillMaxSize()
-            .then(modifier)
-    ) {
-        CrisisCleanupLogoRow()
 
-        Text(
-            modifier = fillWidthPadded.testTag("authedProfileAccountInfo"),
-            text = translator("info.account_is")
-                .replace("{full_name}", authState.accountData.fullName)
-                .replace("{email_address}", authState.accountData.emailAddress)
-        )
+    Text(
+        modifier = fillWidthPadded.testTag("authedProfileAccountInfo"),
+        text = translator("info.account_is")
+            .replace("{full_name}", authState.accountData.fullName)
+            .replace("{email_address}", authState.accountData.emailAddress),
+    )
 
-        val authErrorMessage by viewModel.errorMessage
-        ConditionalErrorMessage(authErrorMessage)
+    val authErrorMessage by viewModel.errorMessage
+    ConditionalErrorMessage(authErrorMessage)
 
-        val isNotBusy by viewModel.isNotAuthenticating.collectAsStateWithLifecycle()
+    val isNotBusy by viewModel.isNotAuthenticating.collectAsStateWithLifecycle()
 
-        BusyButton(
-            modifier = fillWidthPadded.testTag("authedProfileLogoutBtn"),
-            onClick = viewModel::logout,
-            enabled = isNotBusy,
-            text = translator("actions.logout"),
-            indicateBusy = !isNotBusy,
-        )
+    BusyButton(
+        modifier = fillWidthPadded.testTag("authedProfileLogoutBtn"),
+        onClick = viewModel::logout,
+        enabled = isNotBusy,
+        text = translator("actions.logout"),
+        indicateBusy = !isNotBusy,
+    )
 
-        CrisisCleanupButton(
-            modifier = fillWidthPadded.testTag("authedProfileDismissBtn"),
-            onClick = closeAuthentication,
-            enabled = isNotBusy,
-            text = translator("actions.dismiss"),
-        )
-    }
+    CrisisCleanupButton(
+        modifier = fillWidthPadded.testTag("authedProfileDismissBtn"),
+        onClick = closeAuthentication,
+        enabled = isNotBusy,
+        text = translator("actions.dismiss"),
+    )
 }
 
 @DayNightPreviews
