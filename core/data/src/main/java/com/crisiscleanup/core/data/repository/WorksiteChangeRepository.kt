@@ -395,7 +395,8 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
                 .forEach {
                     when (it) {
                         is NoInternetConnectionException,
-                        is ExpiredTokenException -> throw it
+                        is ExpiredTokenException,
+                        -> throw it
                     }
                 }
         } else {

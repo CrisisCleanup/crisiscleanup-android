@@ -762,6 +762,12 @@ class ExistingCaseViewModel @Inject constructor(
         }
     }
 
+    fun onMediaSelected(uris: List<Uri>) {
+        uris.forEach {
+            onMediaSelected(it, true)
+        }
+    }
+
     fun scheduleSync() {
         if (!isSyncing.value) {
             syncPusher.appPushWorksite(worksiteIdArg)

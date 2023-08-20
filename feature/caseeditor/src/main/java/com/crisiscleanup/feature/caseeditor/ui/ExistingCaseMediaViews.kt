@@ -83,7 +83,7 @@ private fun AddMediaView(
     }
     val borderStroke = Stroke(
         width = strokeWidth,
-        pathEffect = PathEffect.dashPathEffect(floatArrayOf(strokeDash, strokeGap), 0f)
+        pathEffect = PathEffect.dashPathEffect(floatArrayOf(strokeDash, strokeGap), 0f),
     )
     Surface(
         modifier = modifier
@@ -166,7 +166,7 @@ internal fun PhotosSection(
                     endSpaceIndex -> "end-spacer"
                     else -> "photo-image"
                 }
-            }
+            },
         ) { index ->
             when (index) {
                 0 -> {
@@ -196,6 +196,8 @@ internal fun PhotosSection(
                             contentDescription = photo.title,
                             contentScale = ContentScale.Crop,
                         )
+                        // TODO Common dimensions
+                        val translator = LocalAppTranslator.current
                         if (syncingWorksiteImage == photo.id) {
                             Surface(
                                 modifier = Modifier
@@ -208,7 +210,23 @@ internal fun PhotosSection(
                                         .size(64.dp)
                                         .padding(16.dp),
                                     imageVector = CrisisCleanupIcons.CloudSync,
-                                    contentDescription = LocalAppTranslator.current("info.is_syncing"),
+                                    contentDescription = translator("info.is_syncing"),
+                                )
+                            }
+                        } else if (!photo.isNetworkImage) {
+                            Surface(
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(8.dp)
+                                    .clip(CircleShape),
+                                color = (Color.White.copy(alpha = 0.5f)),
+                            ) {
+                                Icon(
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .padding(4.dp),
+                                    imageVector = CrisisCleanupIcons.Cloud,
+                                    contentDescription = translator("~~Awaiting cloud sync"),
                                 )
                             }
                         }
@@ -229,7 +247,7 @@ internal fun TakePhotoSelectImage(
     val translator = LocalAppTranslator.current
     var cameraPhotoUri by remember { mutableStateOf(Uri.parse("")) }
     val cameraPhotoLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicture()
+        contract = ActivityResultContracts.TakePicture(),
     ) { isTaken ->
         if (isTaken) {
             viewModel.onMediaSelected(cameraPhotoUri, false)
@@ -237,11 +255,9 @@ internal fun TakePhotoSelectImage(
         closeOptions()
     }
     val selectImageLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia()
-    ) { uri: Uri? ->
-        uri?.let {
-            viewModel.onMediaSelected(uri, true)
-        }
+        contract = ActivityResultContracts.PickMultipleVisualMedia(),
+    ) { uris: List<Uri> ->
+        viewModel.onMediaSelected(uris)
         closeOptions()
     }
 
@@ -281,7 +297,7 @@ internal fun TakePhotoSelectImage(
                 text = translator("fileUpload.select_file_upload"),
                 onClick = {
                     selectImageLauncher.launch(
-                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
                     )
                 },
             )
