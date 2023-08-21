@@ -59,7 +59,6 @@ jobs:
           echo 'DEBUG_ACCOUNT_PASSWORD=${{ secrets.DEBUG_ACCOUNT_PASSWORD }}' >> ${{ env.ENV_VAR_FILE_NAME }}
 
       - name: Build apk for emulator
-        working-directory: android
         run: |
           ./gradlew assembleDebug --no-daemon -PreactNativeArchitectures=${{ env.ANDROID_ARCH }}
 
