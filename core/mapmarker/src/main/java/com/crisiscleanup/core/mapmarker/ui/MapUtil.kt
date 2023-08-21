@@ -25,7 +25,7 @@ fun rememberMapUiSettings(
                 mapToolbarEnabled = false,
                 myLocationButtonEnabled = myLocation,
                 scrollGesturesEnabled = !disablePanning,
-            )
+            ),
         )
     }
 }
@@ -36,14 +36,17 @@ fun rememberMapProperties(
     isMyLocation: Boolean = false,
 ): MutableState<MapProperties> {
     val context = LocalContext.current
-    val mapStyleOptions = if (mapStyle == 0) null
-    else MapStyleOptions.loadRawResourceStyle(context, mapStyle)
+    val mapStyleOptions = if (mapStyle == 0) {
+        null
+    } else {
+        MapStyleOptions.loadRawResourceStyle(context, mapStyle)
+    }
     return remember {
         mutableStateOf(
             MapProperties(
                 mapStyleOptions = mapStyleOptions,
                 isMyLocationEnabled = isMyLocation,
-            )
+            ),
         )
     }
 }

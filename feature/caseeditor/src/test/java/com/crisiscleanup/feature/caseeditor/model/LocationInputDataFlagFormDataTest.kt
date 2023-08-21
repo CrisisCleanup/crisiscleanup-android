@@ -76,6 +76,7 @@ class LocationInputDataFlagFormDataTest {
             "flag.worksite_wrong_location",
             "",
             "",
+            attr = null,
         )
         assertEquals(expectedFlag, lastFlag)
     }
@@ -86,7 +87,7 @@ class LocationInputDataFlagFormDataTest {
             listOf(
                 makeTestWorksiteFlag(createdAtA, "reason-a"),
                 makeTestWorksiteFlag(createdAtB, "reason-b"),
-            )
+            ),
         )
 
         val locationInputData = LocationInputData(translator, worksite)
@@ -102,7 +103,7 @@ class LocationInputDataFlagFormDataTest {
         val worksite = worksiteFlagsTest(
             listOf(
                 makeTestWorksiteFlag(createdAtA, "reason-a"),
-            )
+            ),
         )
 
         val locationInputData = LocationInputData(translator, worksite)
@@ -156,7 +157,7 @@ class LocationInputDataFlagFormDataTest {
             listOf(
                 makeTestWorksiteFlag(createdAtA, "flag.worksite_wrong_location"),
                 makeTestWorksiteFlag(createdAtB, "reason-b"),
-            )
+            ),
         )
 
         val locationInputData = LocationInputData(translator, worksite)
@@ -167,9 +168,11 @@ class LocationInputDataFlagFormDataTest {
         val updated = locationInputData.updateCase()
 
         assertRemoveWrongLocationFlag(
-            worksite, updated, listOf(
+            worksite,
+            updated,
+            listOf(
                 makeTestWorksiteFlag(createdAtB, "reason-b"),
-            )
+            ),
         )
     }
 
@@ -178,7 +181,7 @@ class LocationInputDataFlagFormDataTest {
         val worksite = worksiteFlagsTest(
             listOf(
                 makeTestWorksiteFlag(createdAtA, "flag.worksite_wrong_location"),
-            )
+            ),
         )
 
         val locationInputData = LocationInputData(translator, worksite)
@@ -246,9 +249,9 @@ class LocationInputDataFlagFormDataTest {
                 "form-data-b" to WorksiteFormValue(
                     isBoolean = true,
                     valueString = "",
-                    valueBoolean = false
+                    valueBoolean = false,
                 ),
-            )
+            ),
         )
         val locationInputData = LocationInputData(translator, worksite)
         locationInputData.crossStreetNearbyLandmark = "cross-street"
@@ -263,7 +266,7 @@ class LocationInputDataFlagFormDataTest {
         val worksite = worksiteFormTest(
             mapOf(
                 "form-data-a" to WorksiteFormValue(valueString = "a"),
-            )
+            ),
         )
         val locationInputData = LocationInputData(translator, worksite)
         locationInputData.crossStreetNearbyLandmark = "cross-street"
@@ -316,9 +319,9 @@ class LocationInputDataFlagFormDataTest {
                 "form-data-b" to WorksiteFormValue(
                     isBoolean = true,
                     valueString = "",
-                    valueBoolean = false
+                    valueBoolean = false,
                 ),
-            )
+            ),
         )
         val locationInputData = LocationInputData(translator, worksite)
         assertEquals("cross-street-a", locationInputData.crossStreetNearbyLandmark)
@@ -328,13 +331,15 @@ class LocationInputDataFlagFormDataTest {
         val update = locationInputData.updateCase()
 
         assertRemoveCrossStreet(
-            worksite, update, mapOf(
+            worksite,
+            update,
+            mapOf(
                 "form-data-b" to WorksiteFormValue(
                     isBoolean = true,
                     valueString = "",
-                    valueBoolean = false
+                    valueBoolean = false,
                 ),
-            )
+            ),
         )
     }
 
@@ -343,7 +348,7 @@ class LocationInputDataFlagFormDataTest {
         val worksite = worksiteFormTest(
             mapOf(
                 "cross_street" to WorksiteFormValue(valueString = "cross-street-a"),
-            )
+            ),
         )
         val locationInputData = LocationInputData(translator, worksite)
         assertEquals("cross-street-a", locationInputData.crossStreetNearbyLandmark)
@@ -363,7 +368,7 @@ private val baseFlags = listOf(
         createdAt = prevCreatedAt,
         isHighPriority = false,
         reasonT = "worksite-flag",
-    )
+    ),
 )
 private val baseFormData = mapOf(
     "boolean-data" to WorksiteFormValue(isBoolean = true, valueString = "", valueBoolean = true),
@@ -381,5 +386,5 @@ private fun worksiteFormTest(formData: Map<String, WorksiteFormValue>?) = makeTe
     prevCreatedAt,
     prevCreatedAt,
     baseFlags,
-    formData
+    formData,
 )

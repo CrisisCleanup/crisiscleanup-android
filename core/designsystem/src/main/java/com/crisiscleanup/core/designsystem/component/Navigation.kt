@@ -43,7 +43,7 @@ fun RowScope.CrisisCleanupNavigationBarItem(
     selectedIcon: @Composable () -> Unit = icon,
     enabled: Boolean = true,
     label: @Composable (() -> Unit)? = null,
-    alwaysShowLabel: Boolean = true
+    alwaysShowLabel: Boolean = true,
 ) {
     val selectedColor = CrisisCleanupNavigationDefaults.navigationSelectedItemColor()
     val unselectedColor = selectedColor.copy(0.5f)
@@ -61,7 +61,7 @@ fun RowScope.CrisisCleanupNavigationBarItem(
             selectedTextColor = selectedColor,
             unselectedTextColor = unselectedColor,
             indicatorColor = CrisisCleanupNavigationDefaults.navigationIndicatorColor(),
-        )
+        ),
     )
 }
 
@@ -75,14 +75,14 @@ fun RowScope.CrisisCleanupNavigationBarItem(
 @Composable
 fun CrisisCleanupNavigationBar(
     modifier: Modifier = Modifier,
-    content: @Composable RowScope.() -> Unit
+    content: @Composable RowScope.() -> Unit,
 ) {
     NavigationBar(
         modifier = modifier.testTag("appNavBar"),
         containerColor = CrisisCleanupNavigationDefaults.navigationContainerColor(),
         contentColor = CrisisCleanupNavigationDefaults.navigationContentColor(),
         tonalElevation = 0.dp,
-        content = content
+        content = content,
     )
 }
 
@@ -110,7 +110,7 @@ fun CrisisCleanupNavigationRailItem(
     selectedIcon: @Composable () -> Unit = icon,
     enabled: Boolean = true,
     label: @Composable (() -> Unit)? = null,
-    alwaysShowLabel: Boolean = true
+    alwaysShowLabel: Boolean = true,
 ) {
     NavigationRailItem(
         selected = selected,
@@ -126,7 +126,7 @@ fun CrisisCleanupNavigationRailItem(
             selectedTextColor = CrisisCleanupNavigationDefaults.navigationSelectedItemColor(),
             unselectedTextColor = CrisisCleanupNavigationDefaults.navigationContentColor(),
             indicatorColor = CrisisCleanupNavigationDefaults.navigationIndicatorColor(),
-        )
+        ),
     )
 }
 
@@ -142,14 +142,14 @@ fun CrisisCleanupNavigationRailItem(
 fun CrisisCleanupNavigationRail(
     modifier: Modifier = Modifier,
     header: @Composable (ColumnScope.() -> Unit)? = null,
-    content: @Composable ColumnScope.() -> Unit
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     NavigationRail(
         modifier = modifier,
         containerColor = CrisisCleanupNavigationDefaults.navigationContainerColor(),
         contentColor = CrisisCleanupNavigationDefaults.navigationContentColor(),
         header = header,
-        content = content
+        content = content,
     )
 }
 
@@ -158,6 +158,7 @@ fun CrisisCleanupNavigationRail(
  */
 object CrisisCleanupNavigationDefaults {
     private val containerColor = com.crisiscleanup.core.designsystem.theme.navigationContainerColor
+
     @Composable
     fun navigationContainerColor() = containerColor
 

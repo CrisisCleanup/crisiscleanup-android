@@ -10,9 +10,13 @@ object CoordinateUtil {
         }
 
         val longitude = ((right + l) * 0.5) % 360
-        return if (longitude < -180) longitude + 360
-        else if (longitude > 180) longitude - 360
-        else longitude
+        return if (longitude < -180) {
+            longitude + 360
+        } else if (longitude > 180) {
+            longitude - 360
+        } else {
+            longitude
+        }
     }
 
     fun getMiddleCoordinate(sw: LatLng, ne: LatLng) = LatLng(
@@ -32,7 +36,6 @@ object CoordinateUtil {
             val wrappedTo = to - 360
             val longitude = from + (wrappedTo - from) * lerp
             return if (longitude < -180) longitude + 360 else longitude
-
         } else {
             if (to >= from) {
                 return from + (to - from) * lerp

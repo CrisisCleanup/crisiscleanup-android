@@ -15,7 +15,7 @@ interface WorkTypeTransferRequestDao {
         """
         DELETE FROM worksite_work_type_requests
         WHERE worksite_id=:worksiteId AND work_type NOT IN(:workTypes) AND network_id>0
-        """
+        """,
     )
     fun syncDeleteUnspecified(worksiteId: Long, workTypes: Set<String>)
 
@@ -24,7 +24,7 @@ interface WorkTypeTransferRequestDao {
         """
         DELETE FROM worksite_work_type_requests
         WHERE worksite_id=:worksiteId AND network_id<=0
-        """
+        """,
     )
     fun deleteUnsynced(worksiteId: Long)
 
@@ -46,7 +46,7 @@ interface WorkTypeTransferRequestDao {
         rejected_at =:rejectedAt,
         approved_rejected_reason=:approvedRejectedReason
         WHERE worksite_id=:worksiteId AND work_type=:workType AND by_org=:byOrg
-        """
+        """,
     )
     fun syncUpdateRequest(
         worksiteId: Long,
@@ -66,12 +66,12 @@ interface WorkTypeTransferRequestDao {
         UPDATE OR IGNORE worksite_work_type_requests
         SET network_id =:networkId
         WHERE worksite_id=:worksiteId AND work_type=:workType AND by_org=:orgId
-        """
+        """,
     )
     fun updateNetworkId(
         worksiteId: Long,
         workType: String,
         orgId: Long,
-        networkId: Long
+        networkId: Long,
     )
 }

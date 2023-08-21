@@ -141,7 +141,8 @@ internal fun DynamicFormListItem(
         }
 
         "h5",
-        "h4" -> {
+        "h4",
+        -> {
             if (field.childrenCount == 0 && field.field.isReadOnly) {
                 Text(
                     modifier = modifier,
@@ -240,7 +241,9 @@ private fun CheckboxItem(
         @Composable {
             HelpAction(helpHint, showHelp)
         }
-    } else null
+    } else {
+        null
+    }
 
     CrisisCleanupTextCheckbox(
         modifier.listCheckboxAlignStartOffset(),
@@ -277,8 +280,11 @@ private fun SingleLineTextItem(
         rowModifier,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        val textFieldModifier = if (hasMultipleRowItems) Modifier.weight(1f)
-        else modifier
+        val textFieldModifier = if (hasMultipleRowItems) {
+            Modifier.weight(1f)
+        } else {
+            modifier
+        }
 
         val hasFocus = glassState.isGlassBroken && glassState.takeBrokenGlassFocus()
 
@@ -399,7 +405,7 @@ private fun SelectItem(
                     itemData.selectOptions[selectedOption] ?: selectedOption,
                     modifier = Modifier
                         .listItemHorizontalPadding()
-                        .listItemBottomPadding()
+                        .listItemBottomPadding(),
                 )
             }
         }
@@ -411,9 +417,11 @@ private fun SelectItem(
             }
             DropdownMenu(
                 modifier = Modifier
-                    .width(with(LocalDensity.current) {
-                        contentWidth.width.toDp().minus(listItemDropdownMenuOffset.x.times(2))
-                    }),
+                    .width(
+                        with(LocalDensity.current) {
+                            contentWidth.width.toDp().minus(listItemDropdownMenuOffset.x.times(2))
+                        },
+                    ),
                 expanded = showDropdown,
                 onDismissRequest = { showDropdown = false },
                 offset = listItemDropdownMenuOffset,
@@ -521,7 +529,9 @@ private fun CronSelect(
             {
                 HelpAction(helpHint, showHelp)
             }
-        } else null
+        } else {
+            null
+        }
     val defaultRrule = itemData.field.recurDefault.ifBlank { FallbackRrule }
     val rRuleIn = itemData.dynamicValue.valueString
     val showFrequencyInput = isInputExpanded || (rRuleIn.isNotBlank() && defaultRrule != rRuleIn)

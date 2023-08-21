@@ -56,7 +56,9 @@ internal fun TransferWorkTypesRoute(
 
     val isTransferring by viewModel.isTransferring.collectAsStateWithLifecycle()
     val isEditable = !isTransferring
-    val conditionalBack = if (isEditable) onBack else {
+    val conditionalBack = if (isEditable) {
+        onBack
+    } else {
         {}
     }
     BackHandler(isEditable) {

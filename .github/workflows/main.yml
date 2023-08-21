@@ -1,0 +1,225 @@
+name: Main
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+concurrency:
+  group: build-${{ github.job }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build 🏗️
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+
+      - name: Validate Gradle Wrapper 📝
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Copy CI gradle.properties 📋
+        run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties        
+
+      - name: Set up JDK 17 ⚙️
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: 17
+
+      - name: Setup Gradle ⚙️
+        uses: gradle/gradle-build-action@v2
+
+      - name: Build all build type and flavor permutations 🏗️
+        run: ./gradlew assembleDemoDebug
+  
+      - name: 📊 Upload build outputs (APKs)
+        uses: actions/upload-artifact@v3
+        with:
+          name: APKs
+          path: '**/build/outputs/apk/**/*.apk'
+
+  spotless-check:
+    name: Spotless Check 📝
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+
+      - name: Validate Gradle Wrapper 📝
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Copy CI gradle.properties 📋
+        run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties        
+
+      - name: Set up JDK 17 ⚙️
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: 17
+
+      - name: Setup Gradle ⚙️
+        uses: gradle/gradle-build-action@v2
+
+      - name: Check spotless 📝
+        run: ./gradlew spotlessCheck --init-script gradle/init.gradle.kts --no-configuration-cache
+
+  lint:
+    name: Lint Check 💅
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+
+      - name: Validate Gradle Wrapper 📝
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Copy CI gradle.properties 📋
+        run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties        
+
+      - name: Set up JDK 17 ⚙️
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: 17
+
+      - name: Setup Gradle ⚙️
+        uses: gradle/gradle-build-action@v2
+
+      - name: Check lint 💅
+        run: ./gradlew lintDemoDebug
+        
+      - name: 📊 Upload lint reports (HTML)
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: lint-reports
+          path: '**/build/reports/lint-results-*.html'
+
+  unit-test:
+    name: Unit Test 🧪
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+
+      - name: Validate Gradle Wrapper 📝
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Copy CI gradle.properties 📋
+        run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties        
+
+      - name: Set up JDK 17 ⚙️
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: 17
+
+      - name: Setup Gradle ⚙️
+        uses: gradle/gradle-build-action@v2
+
+      - name: Run local tests 🧪
+        run: ./gradlew testDemoDebug testProdDebug
+
+      - name: 📊 Upload test results (XML)
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: '**/build/test-results/test*UnitTest/**.xml'
+
+  androidTest:
+    if: false # disabled bc packageDemoDebugAndroidTest is failing
+    name: Android Test 🧪
+    needs: build
+    runs-on: macos-latest # enables hardware acceleration in the virtual machine
+    timeout-minutes: 90
+    strategy:
+      matrix:
+        api-level: [26, 30]
+
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+      
+      - name: Copy CI gradle.properties 📋
+        run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties
+
+      - name: Set up JDK 17 ⚙️
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: 17
+
+      - name: Setup Gradle ⚙️
+        uses: gradle/gradle-build-action@v2
+
+      - name: Build AndroidTest apps 🏗️
+        run: ./gradlew packageDemoDebug packageDemoDebugAndroidTest --daemon
+
+      - name: Run instrumentation tests 🧪
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api-level }}
+          arch: x86_64
+          disable-animations: true
+          disk-size: 6000M
+          heap-size: 600M
+          script: ./gradlew connectedDemoDebugAndroidTest --daemon
+
+      - name: 📊 Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-reports-${{ matrix.api-level }}
+          path: '**/build/reports/androidTests'
+
+  androidTest-GMD:
+    if: false # disabled bc packageDemoDebugAndroidTest is failing
+    name: Android Test GMD 🧪
+    needs: build
+    runs-on: macos-latest # enables hardware acceleration in the virtual machine
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+
+      - name: Copy CI gradle.properties 📋
+        run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties
+
+      - name: Set up JDK 17 ⚙️
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: 17
+
+      - name: Setup Gradle ⚙️
+        uses: gradle/gradle-build-action@v2
+
+      - name: Accept Android licenses ✔️
+        run: yes | "$ANDROID_HOME"/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+      - name: Build AndroidTest apps 🏗️
+        run: ./gradlew packageDemoDebug packageDemoDebugAndroidTest
+
+      - name: Run instrumented tests with GMD 🧪
+        run: ./gradlew cleanManagedDevices --unused-only &&
+          ./gradlew ciDemoDebugAndroidTest -Dorg.gradle.workers.max=1
+          -Pandroid.testoptions.manageddevices.emulator.gpu="swiftshader_indirect" -Pandroid.experimental.testOptions.managedDevices.emulator.showKernelLogging=true
+
+      - name: 📊 Upload test reports
+        if: success() || failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-reports
+          path: '**/build/reports/androidTests'

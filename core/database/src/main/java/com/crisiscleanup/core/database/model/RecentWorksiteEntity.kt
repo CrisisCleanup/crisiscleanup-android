@@ -12,7 +12,7 @@ import kotlinx.datetime.Instant
             parentColumns = ["id"],
             childColumns = ["id"],
             onDelete = ForeignKey.CASCADE,
-        )
+        ),
     ],
     indices = [
         Index(
@@ -23,7 +23,7 @@ import kotlinx.datetime.Instant
             value = ["viewed_at"],
             orders = [Order.DESC],
         ),
-    ]
+    ],
 )
 data class RecentWorksiteEntity(
     @PrimaryKey

@@ -78,7 +78,7 @@ private fun IconButton(
         Icon(
             imageVector = iconImage,
             contentDescription = contentDescription,
-            tint = MaterialTheme.colorScheme.onSurface
+            tint = MaterialTheme.colorScheme.onSurface,
         )
     }
 }
@@ -95,7 +95,7 @@ private fun StaticDynamicIcon(
             modifier = Modifier.padding(staticIconPadding),
             imageVector = imageIcon,
             contentDescription = contentDescription,
-            tint = MaterialTheme.colorScheme.onSurface
+            tint = MaterialTheme.colorScheme.onSurface,
         )
     } else {
         IconButton(onClick, imageIcon, contentDescription)
@@ -143,7 +143,7 @@ fun CrisisCleanupTopAppBar(
             navigationIcon = navigationContent,
             actions = actionsContent,
             colors = colors,
-            modifier = modifier
+            modifier = modifier,
         )
     } else {
         TopAppBar(
@@ -151,7 +151,7 @@ fun CrisisCleanupTopAppBar(
             navigationIcon = navigationContent,
             actions = actionsContent,
             colors = colors,
-            modifier = modifier
+            modifier = modifier,
         )
     }
 }
@@ -184,7 +184,7 @@ fun TopAppBarBackCancel(
         navigationIcon = navigationContent,
         actions = actionsContent,
         colors = colors,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
@@ -287,7 +287,7 @@ fun TopAppBarBackCaretAction(
         navigationIcon = navigationContent,
         actions = { },
         colors = colors,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
@@ -295,7 +295,7 @@ fun TopAppBarBackCaretAction(
 @Composable
 private fun AvatarAttentionBadge(
     isAlert: Boolean,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     BadgedBox(
         badge = {
@@ -304,7 +304,7 @@ private fun AvatarAttentionBadge(
                 Modifier
                     .size(16.dp, 16.dp)
                     .offset((-4).dp, 32.dp),
-                containerColor = if (isAlert) avatarAttentionColor else avatarStandardColor
+                containerColor = if (isAlert) avatarAttentionColor else avatarStandardColor,
             )
         },
     ) {
@@ -340,7 +340,7 @@ fun TopAppBarDefault(
                     navIcon,
                     onNavigationClick,
                     navContentDescription,
-                    navIconPadding
+                    navIconPadding,
                 )
             }
         }
@@ -390,7 +390,7 @@ private fun CrisisCleanupTopCenterAppBarPreview() {
         navIcon = CrisisCleanupIcons.Search,
         navContentDescription = "Nav",
         actionIcon = CrisisCleanupIcons.MoreVert,
-        actionIconContentDescription = "Action"
+        actionIconContentDescription = "Action",
     )
 }
 
@@ -403,7 +403,7 @@ private fun CrisisCleanupTopAppBarPreview() {
         navIcon = CrisisCleanupIcons.Search,
         titleResId = android.R.string.untitled,
         actionIcon = CrisisCleanupIcons.MoreVert,
-        actionIconContentDescription = "Action"
+        actionIconContentDescription = "Action",
     )
 }
 

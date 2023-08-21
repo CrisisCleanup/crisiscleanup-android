@@ -20,7 +20,7 @@ interface WorksiteNoteDao {
         is_survivor =:isSurvivor,
         note        =:note
         WHERE worksite_id=:worksiteId AND network_id=:networkId AND local_global_uuid=''
-        """
+        """,
     )
     fun syncUpdateNote(
         worksiteId: Long,
@@ -35,7 +35,7 @@ interface WorksiteNoteDao {
         """
         DELETE FROM worksite_notes
         WHERE worksite_id=:worksiteId AND network_id NOT IN(:networkIds)
-        """
+        """,
     )
     fun syncDeleteUnspecified(worksiteId: Long, networkIds: Collection<Long>)
 
@@ -45,7 +45,7 @@ interface WorksiteNoteDao {
         SELECT id, network_id
         FROM worksite_notes
         WHERE worksite_id=:worksiteId AND network_id>-1
-        """
+        """,
     )
     fun getNetworkedIdMap(worksiteId: Long): List<PopulatedIdNetworkId>
 
@@ -59,7 +59,7 @@ interface WorksiteNoteDao {
         SET network_id          =:networkId,
             local_global_uuid   =''
         WHERE id=:id
-        """
+        """,
     )
     fun updateNetworkId(id: Long, networkId: Long)
 

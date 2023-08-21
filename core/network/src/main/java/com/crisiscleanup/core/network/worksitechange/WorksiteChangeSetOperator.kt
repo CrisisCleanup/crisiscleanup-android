@@ -137,7 +137,7 @@ internal fun NetworkWorksiteFull.getCoreChange(
     }
 
     val isLocationChange = coreA.latitude != coreB.latitude ||
-            coreA.longitude != coreB.longitude
+        coreA.longitude != coreB.longitude
     val locationPush = if (isLocationChange) coreB.pointLocation else location
 
     // Pass explicit "" to clear a value on the backend
@@ -181,8 +181,11 @@ internal fun NetworkWorksiteFull.getFavoriteChange(
 ): Boolean? {
     val isFavoriteA = coreA.isAssignedToOrgMember
     val isFavoriteB = coreB.isAssignedToOrgMember
-    return if (isFavoriteA == isFavoriteB || isFavoriteB == (favorite != null)) null
-    else isFavoriteB
+    return if (isFavoriteA == isFavoriteB || isFavoriteB == (favorite != null)) {
+        null
+    } else {
+        isFavoriteB
+    }
 }
 
 /**
@@ -208,7 +211,7 @@ internal fun NetworkWorksiteFull.getFlagChanges(
                 snapshot = it.copy(
                     flag = it.flag.copy(
                         id = networkId,
-                    )
+                    ),
                 )
             }
         }
@@ -247,16 +250,25 @@ internal fun NetworkWorksiteFull.getFormDataChanges(
     }
 
     val newFormData = change.mapNotNull {
-        if (start.contains(it.key)) null
-        else KeyDynamicValuePair(it.key, it.value)
+        if (start.contains(it.key)) {
+            null
+        } else {
+            KeyDynamicValuePair(it.key, it.value)
+        }
     }
     val deletedFormData = start.mapNotNull {
-        if (change.contains(it.key)) null
-        else it.key
+        if (change.contains(it.key)) {
+            null
+        } else {
+            it.key
+        }
     }
     val crossChangeFormData = change.mapNotNull {
-        if (start.contains(it.key)) it
-        else null
+        if (start.contains(it.key)) {
+            it
+        } else {
+            null
+        }
     }
     val unchangedFormData = crossChangeFormData
         .mapNotNull { changeData ->
@@ -359,8 +371,8 @@ internal fun NetworkWorksiteFull.getWorkTypeChanges(
         if (it.workType.id != changeNetworkId) {
             snapshot = it.copy(
                 workType = it.workType.copy(
-                    id = changeNetworkId
-                )
+                    id = changeNetworkId,
+                ),
             )
         }
         snapshot
@@ -425,7 +437,7 @@ internal fun NetworkWorksiteFull.getWorkTypeChanges(
                                 nextRecurAt = existingWorkType.nextRecurAt,
                                 phase = existingWorkType.phase,
                                 recur = existingWorkType.recur,
-                            )
+                            ),
                         )
                     }
             }

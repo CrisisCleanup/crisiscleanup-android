@@ -18,7 +18,7 @@ class UserFeedbackViewModel @Inject constructor(
     val accountId = accountDataRepository.accountData.map { it.id }
 
     init {
-        WebView.setWebContentsDebuggingEnabled(true);
+        WebView.setWebContentsDebuggingEnabled(true)
     }
 
     fun onSaveFileCallback(callback: ValueCallback<Array<Uri>>?) {

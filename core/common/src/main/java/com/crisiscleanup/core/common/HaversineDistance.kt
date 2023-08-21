@@ -29,8 +29,10 @@ val Double.kmToMiles: Double
  * @see kmToMiles
  */
 fun haversineDistance(
-    latA: Double, lngA: Double,
-    latB: Double, lngB: Double,
+    latA: Double,
+    lngA: Double,
+    latB: Double,
+    lngB: Double,
 ): Double {
     val deltaLat = latA - latB
     val deltaLng = lngA - lngB

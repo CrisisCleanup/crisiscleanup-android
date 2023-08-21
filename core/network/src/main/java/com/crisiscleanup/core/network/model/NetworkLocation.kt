@@ -21,7 +21,7 @@ data class NetworkLocation(
     @Serializable
     data class LocationGeometry(
         val type: String,
-        val coordinates: List<List<List<List<Double>>>>
+        val coordinates: List<List<List<List<Double>>>>,
     ) {
         val condensedCoordinates = coordinates.map { flatten(it[0]) }
     }
@@ -29,7 +29,7 @@ data class NetworkLocation(
     @Serializable
     data class LocationPolygon(
         val type: String,
-        val coordinates: List<List<List<Double>>>
+        val coordinates: List<List<List<Double>>>,
     ) {
         val condensedCoordinates: List<Double> = flatten(coordinates[0])
     }
@@ -37,7 +37,7 @@ data class NetworkLocation(
     @Serializable
     data class LocationPoint(
         val type: String,
-        val coordinates: List<Double>
+        val coordinates: List<Double>,
     )
 
     companion object {

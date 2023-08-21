@@ -53,7 +53,7 @@ class WorkTypeDaoTest {
             listOf(
                 testWorkTypeEntity(111),
                 testWorkTypeEntity(112, workType = "work-type-b"),
-            )
+            ),
         )
 
         val workTypeFull = fullWorkTypeEntity(
@@ -88,14 +88,14 @@ class WorkTypeDaoTest {
             listOf(
                 workTypeFull,
                 testWorkTypeEntity(112, workType = "work-type-b"),
-            )
+            ),
         )
 
         workTypeDaoPlus.syncUpsert(
             listOf(
                 testWorkTypeEntity(111, "s", "work-type-a"),
                 testWorkTypeEntity(350, "sa", "wa"),
-            )
+            ),
         )
         val expecteds = listOf(
             // Inserts

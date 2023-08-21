@@ -37,11 +37,11 @@ open class FormFieldsInputData(
 
             // TODO Add test coverage
             val isActiveGroup = autoManageGroups &&
-                    node.children.isNotEmpty() &&
-                    node.children.any { child ->
-                        val childFormValue = worksiteFormData[child.fieldKey]
-                        childFormValue?.hasValue == true
-                    }
+                node.children.isNotEmpty() &&
+                node.children.any { child ->
+                    val childFormValue = worksiteFormData[child.fieldKey]
+                    childFormValue?.hasValue == true
+                }
             if (isActiveGroup && !dynamicValue.isBooleanTrue) {
                 managedGroups.add(node.fieldKey)
                 dynamicValue = DynamicValue("", isBoolean = true, true)
@@ -106,8 +106,11 @@ open class FormFieldsInputData(
     }
 
     protected open fun onPreCommitFieldData(data: Map<String, DynamicValue>) =
-        if (!autoManageGroups || managedGroups.isEmpty()) data
-        else data.filter { !managedGroups.contains(it.key) }
+        if (!autoManageGroups || managedGroups.isEmpty()) {
+            data
+        } else {
+            data.filter { !managedGroups.contains(it.key) }
+        }
 
     override fun updateCase() = updateCase(worksiteIn)
 

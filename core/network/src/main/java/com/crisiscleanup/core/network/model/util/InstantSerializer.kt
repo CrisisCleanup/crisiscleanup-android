@@ -15,7 +15,7 @@ object InstantSerializer : KSerializer<Instant> {
 
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor(
         serialName = "Instant",
-        kind = STRING
+        kind = STRING,
     )
 
     override fun serialize(encoder: Encoder, value: Instant) =

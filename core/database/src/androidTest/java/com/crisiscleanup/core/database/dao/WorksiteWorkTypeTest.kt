@@ -83,7 +83,7 @@ class WorksiteWorkTypeTest {
             listOf(
                 testWorkTypeEntity(1, worksiteId = 1, workType = "work-type-a"),
                 testWorkTypeEntity(11, worksiteId = 1, workType = "work-type-b"),
-            )
+            ),
         )
 
         // Sync
@@ -205,7 +205,7 @@ class WorksiteWorkTypeTest {
         )
         assertEquals(
             expectedWorkTypes,
-            actual.asExternalModel(515).worksite.workTypes.sortedBy(WorkType::id)
+            actual.asExternalModel(515).worksite.workTypes.sortedBy(WorkType::id),
         )
 
         actual = worksiteDao.getWorksite(2)
@@ -242,7 +242,7 @@ class WorksiteWorkTypeTest {
                 testWorkTypeEntity(11, worksiteId = 1, workType = "work-type-b"),
                 testWorkTypeEntity(22, worksiteId = 2, workType = "work-type-a"),
                 testWorkTypeEntity(24, worksiteId = 2, workType = "work-type-b"),
-            )
+            ),
         )
 
         // Sync

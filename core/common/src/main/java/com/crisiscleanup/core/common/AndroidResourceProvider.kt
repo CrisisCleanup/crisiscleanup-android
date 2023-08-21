@@ -24,7 +24,7 @@ interface AndroidResourceProvider {
 
 @Singleton
 class ApplicationResourceProvider @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
 ) : AndroidResourceProvider {
     override val resources: Resources = context.resources
 

@@ -94,7 +94,6 @@ fun CrisisCleanupApp(
 ) {
     CrisisCleanupBackground {
         Box(Modifier.fillMaxSize()) {
-
             val snackbarHostState = remember { SnackbarHostState() }
 
             val isOffline by appState.isOffline.collectAsStateWithLifecycle()
@@ -104,11 +103,13 @@ fun CrisisCleanupApp(
 
             LaunchedEffect(isOffline) {
                 val notConnectedMessage = translator("info.no_internet")
-                if (isOffline) snackbarHostState.showSnackbar(
-                    message = notConnectedMessage,
-                    duration = SnackbarDuration.Indefinite,
-                    withDismissAction = true,
-                )
+                if (isOffline) {
+                    snackbarHostState.showSnackbar(
+                        message = notConnectedMessage,
+                        duration = SnackbarDuration.Indefinite,
+                        withDismissAction = true,
+                    )
+                }
             }
 
             val authState by viewModel.authState.collectAsStateWithLifecycle()
@@ -320,8 +321,11 @@ private fun NavigableContent(
                 .padding(padding)
                 .consumeWindowInsets(padding)
                 .windowInsetsPadding(
-                    if (isFullscreen) WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)
-                    else WindowInsets.safeDrawing,
+                    if (isFullscreen) {
+                        WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)
+                    } else {
+                        WindowInsets.safeDrawing
+                    },
                 ),
         ) {
             if (showNavigation && appState.shouldShowNavRail) {
@@ -341,7 +345,11 @@ private fun NavigableContent(
                     if (!showNavigation &&
                         snackbarHostState.currentSnackbarData != null &&
                         keyboardVisibility == ScreenKeyboardVisibility.NotVisible
-                    ) 64.dp else 0.dp
+                    ) {
+                        64.dp
+                    } else {
+                        0.dp
+                    }
 
                 CompositionLocalProvider(
                     LocalAppLayout provides AppLayoutArea(snackbarHostState),
@@ -431,8 +439,11 @@ private fun AppHeader(
 
 @Composable
 private fun TopLevelDestination.Icon(isSelected: Boolean, description: String) {
-    val icon = if (isSelected) selectedIcon
-    else unselectedIcon
+    val icon = if (isSelected) {
+        selectedIcon
+    } else {
+        unselectedIcon
+    }
     when (icon) {
         is ImageVectorIcon -> Icon(
             imageVector = icon.imageVector,
@@ -489,7 +500,7 @@ private fun CrisisCleanupBottomBar(
                 selected = selected,
                 onClick = { onNavigateToDestination(destination) },
                 icon = { destination.Icon(selected, title) },
-                modifier = Modifier.testTag("navItem_${title}"),
+                modifier = Modifier.testTag("navItem_$title"),
                 label = {
                     Text(
                         title,

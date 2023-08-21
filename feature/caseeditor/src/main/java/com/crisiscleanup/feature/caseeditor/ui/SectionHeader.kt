@@ -41,11 +41,11 @@ private fun CircleNumber(
                     color = attentionBackgroundColor,
                     radius = this.size.maxDimension * 0.5f,
                 )
-            }
+            },
     ) {
         Text(
             "$number",
-            Modifier.testTag("circleNumberText_${number}").align(Alignment.Center),
+            Modifier.testTag("circleNumberText_$number").align(Alignment.Center),
             style = style,
             textAlign = TextAlign.Center,
         )
@@ -53,7 +53,8 @@ private fun CircleNumber(
 }
 
 private val headerTextStyle: TextStyle
-    @Composable @ReadOnlyComposable get() = LocalFontStyles.current.header3
+    @Composable @ReadOnlyComposable
+    get() = LocalFontStyles.current.header3
 
 @Composable
 internal fun SectionHeaderCollapsible(
@@ -116,7 +117,7 @@ internal fun SectionHeader(
         )
         Text(
             sectionTitle,
-            Modifier.testTag("sectionHeaderTitle_${sIndex}_${sectionTitle}").listRowItemStartPadding(),
+            Modifier.testTag("sectionHeaderTitle_${sIndex}_$sectionTitle").listRowItemStartPadding(),
             style = textStyle,
         )
         trailingContent?.let {

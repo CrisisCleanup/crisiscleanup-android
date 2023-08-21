@@ -26,7 +26,7 @@ interface NetworkFileDao {
             INNER JOIN worksite_to_network_file w ON w.network_file_id=i.id
             WHERE worksite_id=:worksiteId AND is_deleted<>0 AND i.id NOT IN(:keepIds)
         )
-        """
+        """,
     )
     fun deleteDeleted(worksiteId: Long, keepIds: Collection<Long>)
 
@@ -35,7 +35,7 @@ interface NetworkFileDao {
         """
         DELETE FROM worksite_to_network_file
         WHERE worksite_id=:worksiteId AND network_file_id NOT IN(:networkFileIds)
-        """
+        """,
     )
     fun deleteUnspecifiedCrossReferences(worksiteId: Long, networkFileIds: Collection<Long>)
 
@@ -61,7 +61,7 @@ interface NetworkFileDao {
             LEFT JOIN network_file_local_images fi ON f.id=fi.id
             INNER JOIN worksite_to_network_file wf ON f.id=wf.network_file_id
             WHERE worksite_id=:worksiteId AND fi.is_deleted<>0
-        """
+        """,
     )
     fun getDeletedPhotoNetworkFileIds(worksiteId: Long): List<Long>
 }

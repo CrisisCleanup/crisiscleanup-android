@@ -64,6 +64,6 @@ interface WorkTypeTransferModule {
     @Binds
     @Singleton
     fun bindsWorkTypeTransferProvider(
-        provider: SingleTransferWorkTypeProvider
+        provider: SingleTransferWorkTypeProvider,
     ): TransferWorkTypeProvider
 }

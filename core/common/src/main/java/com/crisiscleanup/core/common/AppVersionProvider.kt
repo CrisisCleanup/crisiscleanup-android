@@ -28,7 +28,8 @@ class AndroidAppVersionProvider @Inject constructor(
     private val packageInfo: PackageInfo
         get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             context.packageManager.getPackageInfo(
-                context.packageName, PackageInfoFlags.of(0)
+                context.packageName,
+                PackageInfoFlags.of(0),
             )
         } else {
             context.packageManager.getPackageInfo(context.packageName, 0)

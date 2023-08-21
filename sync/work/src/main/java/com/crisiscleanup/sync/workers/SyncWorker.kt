@@ -59,8 +59,11 @@ class SyncWorker @AssistedInject constructor(
 
             appContext.channelNotificationManager()?.cancel(SyncNotificationId)
 
-            if (isSyncSuccess) Result.success()
-            else Result.retry()
+            if (isSyncSuccess) {
+                Result.success()
+            } else {
+                Result.retry()
+            }
         }
     }
 

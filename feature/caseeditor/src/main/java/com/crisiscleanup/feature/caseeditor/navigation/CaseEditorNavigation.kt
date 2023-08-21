@@ -196,8 +196,9 @@ fun NavController.rerouteToCaseChange(ids: ExistingWorksiteIdentifier) {
     popBackStack()
     while (currentBackStackEntry?.destination?.route?.let {
             it.startsWith(caseEditorRoute) ||
-                    it.startsWith(viewCaseRoute)
-        } == true) {
+                it.startsWith(viewCaseRoute)
+        } == true
+    ) {
         popBackStack()
     }
 
@@ -220,7 +221,7 @@ fun NavGraphBuilder.caseEditSearchAddressScreen(
 }
 
 fun NavGraphBuilder.caseEditMoveLocationOnMapScreen(
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
 ) {
     composable(caseEditMapMoveLocationRoute) {
         EditCaseMapMoveLocationRoute(onBack = onBackClick)

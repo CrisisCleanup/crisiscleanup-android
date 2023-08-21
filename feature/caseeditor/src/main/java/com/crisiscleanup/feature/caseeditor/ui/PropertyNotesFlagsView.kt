@@ -61,11 +61,14 @@ internal fun PropertyNotesFlagsView(
     val showAllNotes = remember(inputData) { { showAllNotesDialog = true } }
     val isExpandable = notes.size > collapsedNotesVisibleCount
     Row(
-        modifier = if (isExpandable) Modifier
-            .fillMaxWidth()
-            .listItemHeight()
-            .listItemHorizontalPadding()
-        else listItemModifier,
+        modifier = if (isExpandable) {
+            Modifier
+                .fillMaxWidth()
+                .listItemHeight()
+                .listItemHorizontalPadding()
+        } else {
+            listItemModifier
+        },
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -147,7 +150,7 @@ private fun AllNotes(
                     Modifier
                         // TODO Common dimensions
                         .padding(top = 16.dp)
-                        .weight(weight = 1f, fill = false)
+                        .weight(weight = 1f, fill = false),
                 ) {
                     LazyColumn {
                         staticNoteItems(
@@ -160,7 +163,7 @@ private fun AllNotes(
                 Box(
                     Modifier
                         .listItemPadding()
-                        .align(Alignment.End)
+                        .align(Alignment.End),
                 ) {
                     CrisisCleanupTextButton(
                         onClick = onDismiss,

@@ -70,17 +70,19 @@ class SyncWorksitesFullWorker @AssistedInject constructor(
                         pullCount < totalCount
                     ) {
                         val title = appContext.getString(R.string.syncing_text, it.incidentName)
-                        val text = if (isApproximateTotal)
+                        val text = if (isApproximateTotal) {
                             appContext.getString(
                                 R.string.saved_cases_approximate_out_of,
                                 pullCount,
                                 totalCount,
                             )
-                        else appContext.getString(
-                            R.string.saved_cases_out_of,
-                            pullCount,
-                            totalCount,
-                        )
+                        } else {
+                            appContext.getString(
+                                R.string.saved_cases_out_of,
+                                pullCount,
+                                totalCount,
+                            )
+                        }
                         val progress = pullCount / totalCount.toFloat()
                         val stopSyncIntent = PendingIntent.getBroadcast(
                             appContext,
@@ -97,7 +99,7 @@ class SyncWorksitesFullWorker @AssistedInject constructor(
                                     appContext.getString(R.string.stop_syncing),
                                     stopSyncIntent,
                                 )
-                                .build()
+                                .build(),
                         )
                     }
                 }
@@ -132,8 +134,11 @@ class SyncWorksitesFullWorker @AssistedInject constructor(
                     .log("Worksites full sync end. success=$isSyncSuccess")
                     .flush()
 
-                if (isSyncSuccess) Result.success()
-                else Result.retry()
+                if (isSyncSuccess) {
+                    Result.success()
+                } else {
+                    Result.retry()
+                }
             } finally {
                 isSyncing.set(false)
                 appContext.unregisterReceiver(stopSyncingReceiver)

@@ -52,7 +52,7 @@ internal fun ColumnScope.ReportAbuseFlagView(
         Modifier
             .scrollFlingListener(closeKeyboard)
             .weight(1f)
-            .fillMaxWidth()
+            .fillMaxWidth(),
     ) {
         listTextItem(translator("flag.organizations_complaining_about"))
 

@@ -19,7 +19,7 @@ val String.ftsSanitize: String
 
 val String.ftsGlobEnds: String
     get() {
-        return "*${this}*"
+        return "*$this*"
     }
 
 val String.ftsSanitizeAsToken: String

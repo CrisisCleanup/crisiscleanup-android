@@ -164,7 +164,6 @@ class CasesSearchViewModel @Inject constructor(
         }
         .flowOn(ioDispatcher)
 
-
     val searchResults = combine(
         incidentSearchQuery,
         localSearchResults,
@@ -246,8 +245,11 @@ class CasesSearchViewModel @Inject constructor(
             try {
                 val incidentId = incidentSelector.incidentId.value
                 val worksiteId = with(result) {
-                    if (summary.id > 0) summary.id
-                    else worksitesRepository.getLocalId(networkWorksiteId)
+                    if (summary.id > 0) {
+                        summary.id
+                    } else {
+                        worksitesRepository.getLocalId(networkWorksiteId)
+                    }
                 }
                 selectedWorksite.value = Pair(incidentId, worksiteId)
             } catch (e: Exception) {

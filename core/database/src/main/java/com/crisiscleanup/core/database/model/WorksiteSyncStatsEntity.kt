@@ -80,10 +80,16 @@ fun IncidentDataSyncStats.asWorksiteSyncStatsEntity() = WorksiteSyncStatsEntity(
     syncStart = syncStart,
     targetCount = dataCount,
     pagedCount = pagedCount,
-    successfulSync = if (syncAttempt.successfulSeconds <= 0) null
-    else Instant.fromEpochSeconds(syncAttempt.successfulSeconds),
-    attemptedSync = if (syncAttempt.attemptedSeconds <= 0) null
-    else Instant.fromEpochSeconds(syncAttempt.attemptedSeconds),
+    successfulSync = if (syncAttempt.successfulSeconds <= 0) {
+        null
+    } else {
+        Instant.fromEpochSeconds(syncAttempt.successfulSeconds)
+    },
+    attemptedSync = if (syncAttempt.attemptedSeconds <= 0) {
+        null
+    } else {
+        Instant.fromEpochSeconds(syncAttempt.attemptedSeconds)
+    },
     attemptedCounter = syncAttempt.attemptedCounter,
     appBuildVersionCode = appBuildVersionCode,
 )

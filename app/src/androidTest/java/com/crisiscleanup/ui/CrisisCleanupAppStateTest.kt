@@ -16,14 +16,16 @@ import androidx.navigation.createGraph
 import androidx.navigation.testing.TestNavHostController
 import com.crisiscleanup.core.testing.util.TestNavigationObserver
 import com.crisiscleanup.core.testing.util.TestNetworkMonitor
-import junit.framework.TestCase.*
+import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertFalse
+import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
-import java.util.*
+import java.util.Locale
 
 /**
  * Tests [CrisisCleanupAppState].
@@ -56,7 +58,7 @@ class CrisisCleanupAppStateTest {
                     windowSizeClass = getCompactWindowClass(),
                     navController = navController,
                     networkMonitor = networkMonitor,
-                    coroutineScope = backgroundScope
+                    coroutineScope = backgroundScope,
                 )
             }
 
@@ -87,7 +89,7 @@ class CrisisCleanupAppStateTest {
         for (i in destinations.indices) {
             assertEquals(
                 destinations[i],
-                state.topLevelDestinations[i].name.lowercase(Locale.getDefault())
+                state.topLevelDestinations[i].name.lowercase(Locale.getDefault()),
             )
         }
     }
@@ -99,7 +101,7 @@ class CrisisCleanupAppStateTest {
                 windowSizeClass = getCompactWindowClass(),
                 navController = NavHostController(LocalContext.current),
                 networkMonitor = networkMonitor,
-                coroutineScope = backgroundScope
+                coroutineScope = backgroundScope,
             )
         }
 
@@ -114,7 +116,7 @@ class CrisisCleanupAppStateTest {
                 windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(800.dp, 800.dp)),
                 navController = NavHostController(LocalContext.current),
                 networkMonitor = networkMonitor,
-                coroutineScope = backgroundScope
+                coroutineScope = backgroundScope,
             )
         }
 
@@ -124,13 +126,12 @@ class CrisisCleanupAppStateTest {
 
     @Test
     fun CrisisCleanupAppState_showNavRail_large() = runTest {
-
         composeTestRule.setContent {
             state = CrisisCleanupAppState(
                 windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(900.dp, 1200.dp)),
                 navController = NavHostController(LocalContext.current),
                 networkMonitor = networkMonitor,
-                coroutineScope = backgroundScope
+                coroutineScope = backgroundScope,
             )
         }
 
@@ -140,13 +141,12 @@ class CrisisCleanupAppStateTest {
 
     @Test
     fun stateIsOfflineWhenNetworkMonitorIsOffline() = runTest(UnconfinedTestDispatcher()) {
-
         composeTestRule.setContent {
             state = CrisisCleanupAppState(
                 windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(900.dp, 1200.dp)),
                 navController = NavHostController(LocalContext.current),
                 networkMonitor = networkMonitor,
-                coroutineScope = backgroundScope
+                coroutineScope = backgroundScope,
             )
         }
 
@@ -154,7 +154,7 @@ class CrisisCleanupAppStateTest {
         networkMonitor.setConnected(false)
         assertEquals(
             true,
-            state.isOffline.value
+            state.isOffline.value,
         )
     }
 

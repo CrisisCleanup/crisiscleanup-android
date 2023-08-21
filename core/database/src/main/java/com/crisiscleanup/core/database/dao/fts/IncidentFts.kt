@@ -42,8 +42,8 @@ data class PopulatedIncidentIdNameMatchInfo(
 
     val sortScore by lazy {
         matchInfoInts.okapiBm25Score(0) * 3 +
-                matchInfoInts.okapiBm25Score(1) * 2 +
-                matchInfoInts.okapiBm25Score(2)
+            matchInfoInts.okapiBm25Score(1) * 2 +
+            matchInfoInts.okapiBm25Score(2)
     }
 
     override fun equals(other: Any?): Boolean {

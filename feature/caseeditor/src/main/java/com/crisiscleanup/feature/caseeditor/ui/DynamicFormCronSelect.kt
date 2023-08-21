@@ -115,7 +115,7 @@ private fun FrequencyDailyOption(
     enabled: Boolean = false,
     onSelect: () -> Unit = {},
     text: String = "",
-    trailingContent: (@Composable () -> Unit)? = null
+    trailingContent: (@Composable () -> Unit)? = null,
 ) {
     CrisisCleanupRadioButton(
         modifier = Modifier
@@ -344,7 +344,7 @@ private fun FrequencyIntervalDialog(
                 text = positiveActionText,
                 onClick = submitInterval,
             )
-        }
+        },
     ) {
         Row(
             Modifier.listItemVerticalPadding(),
@@ -431,7 +431,7 @@ private fun FrequencyDatePicker(
         Spacer(
             Modifier
                 .weight(1f)
-                .actionHeight()
+                .actionHeight(),
         )
         rRule.until?.let {
             CrisisCleanupIconButton(
@@ -454,7 +454,7 @@ private fun FrequencyDatePicker(
                 }
                 updateRrule()
                 showDatePicker = false
-            }
+            },
         )
     }
 }

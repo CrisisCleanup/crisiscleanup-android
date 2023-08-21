@@ -26,7 +26,7 @@ object FeedbackTriggerModule {
     @Provides
     @FeedbackTriggerProviderKey(FeedbackTriggerProviders.Default)
     fun providesFeedbackTriggers(
-        @FeedbackTriggerProviderKey(FeedbackTriggerProviders.Additional) triggerProvider: Optional<FeedbackTriggerProvider>
+        @FeedbackTriggerProviderKey(FeedbackTriggerProviders.Additional) triggerProvider: Optional<FeedbackTriggerProvider>,
     ): FeedbackTriggerProvider = triggerProvider.getOrNull() ?: EmptyFeedbackTriggerProvider()
 }
 

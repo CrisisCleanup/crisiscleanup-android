@@ -16,7 +16,7 @@ data class PopulatedIncidentOrganization(
             value = OrganizationPrimaryContactCrossRef::class,
             parentColumn = "organization_id",
             entityColumn = "contact_id",
-        )
+        ),
     )
     val primaryContacts: List<PersonContactEntity>,
     @Relation(

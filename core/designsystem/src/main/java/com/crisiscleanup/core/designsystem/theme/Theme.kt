@@ -115,11 +115,11 @@ val DarkColors = darkColorScheme(
 @Composable
 fun CrisisCleanupTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) = CrisisCleanupTheme(
     darkTheme = darkTheme,
     disableDynamicTheming = false,
-    content = content
+    content = content,
 )
 
 /**
@@ -134,7 +134,7 @@ fun CrisisCleanupTheme(
 internal fun CrisisCleanupTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     disableDynamicTheming: Boolean,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     // Color scheme
     val colorScheme = SingleColors
@@ -155,7 +155,7 @@ internal fun CrisisCleanupTheme(
         MaterialTheme(
             colorScheme = colorScheme,
             typography = AppTypography,
-            content = content
+            content = content,
         )
     }
 }

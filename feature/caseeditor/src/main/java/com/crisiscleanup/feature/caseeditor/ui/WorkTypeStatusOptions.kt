@@ -45,7 +45,7 @@ internal fun WorkTypeStatusDropdown(
     var showOptions by remember { mutableStateOf(false) }
     val toggleShowOptions = { showOptions = !showOptions }
     Box {
-        val restingModifier = if (applySpacing)
+        val restingModifier = if (applySpacing) {
             Modifier
                 .listCheckboxAlignItemPaddingCounterOffset()
                 .clickable(
@@ -54,13 +54,14 @@ internal fun WorkTypeStatusDropdown(
                 )
                 .listItemHeight()
                 .listItemPadding()
-        else
+        } else {
             Modifier
                 .clickable(
                     enabled = enabled,
                     onClick = toggleShowOptions,
                 )
                 .listItemHeight()
+        }
         WorkTypeStatusOption(
             selectedStatus,
             restingModifier,

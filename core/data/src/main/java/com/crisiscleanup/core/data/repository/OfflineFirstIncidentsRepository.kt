@@ -121,7 +121,9 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     private suspend fun syncInternal(forcePullAll: Boolean = false) = coroutineScope {
         isSyncing.value = true
         try {
-            val pullAll = if (forcePullAll) true else {
+            val pullAll = if (forcePullAll) {
+                true
+            } else {
                 val localIncidentsCount = incidentDao.getIncidentCount()
                 localIncidentsCount < 10
             }

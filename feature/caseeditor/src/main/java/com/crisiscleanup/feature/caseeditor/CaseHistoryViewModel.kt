@@ -23,7 +23,7 @@ class CaseHistoryViewModel @Inject constructor(
     editableWorksiteProvider: EditableWorksiteProvider,
     caseHistoryRepository: CaseHistoryRepository,
     val translator: KeyResourceTranslator,
-    @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher
+    @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     private val worksite = editableWorksiteProvider.editableWorksite.value
     private val worksiteId = worksite.id

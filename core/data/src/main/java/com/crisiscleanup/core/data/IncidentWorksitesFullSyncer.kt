@@ -216,7 +216,7 @@ class IncidentWorksitesFullSyncer @Inject constructor(
                 queryBounds,
             ) {
                 val syncWorksite = now - it.syncedAt > recentSyncDuration ||
-                        it.formData.isEmpty()
+                    it.formData.isEmpty()
                 if (!syncWorksite) {
                     skipCount++
                 }
@@ -225,11 +225,16 @@ class IncidentWorksitesFullSyncer @Inject constructor(
 
             val splitBoundedIds = boundedIds.size > byIdPageCount
             val networkQueryIds =
-                if (splitBoundedIds) boundedIds.subList(0, byIdPageCount)
-                else boundedIds
-            boundedIds = if (boundedIds.size > byIdPageCount)
+                if (splitBoundedIds) {
+                    boundedIds.subList(0, byIdPageCount)
+                } else {
+                    boundedIds
+                }
+            boundedIds = if (boundedIds.size > byIdPageCount) {
                 boundedIds.subList(byIdPageCount, boundedIds.size).toMutableList()
-            else mutableListOf()
+            } else {
+                mutableListOf()
+            }
 
             if (networkQueryIds.isEmpty()) {
                 continue
@@ -287,8 +292,8 @@ private suspend fun IncidentWorksitesFullSyncStatsEntity.asQueryParameters(
     val locationChangeLength = searchRadius * 0.5
     val hasLocation = abs(latitude) <= 90 && abs(longitude) <= 180 && searchRadius > 0
     val hasLocationChange = hasLocation &&
-            abs(latitude - this.latitude) * 111 > locationChangeLength &&
-            abs(longitude - this.longitude) * 111 > locationChangeLength
+        abs(latitude - this.latitude) * 111 > locationChangeLength &&
+        abs(longitude - this.longitude) * 111 > locationChangeLength
 
     return LocationQueryParameters(
         hasLocation,

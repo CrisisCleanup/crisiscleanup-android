@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class NetworkCaseHistoryResult(
     val errors: List<NetworkCrisisCleanupApiError>? = null,
-    val events: List<NetworkCaseHistoryEvent>? = null
+    val events: List<NetworkCaseHistoryEvent>? = null,
 )
 
 @Serializable

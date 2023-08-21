@@ -46,17 +46,17 @@ class LanguageDaoTest {
                 key = languages1[0].key,
                 name = languages1[0].name,
                 translationsJson = Json.encodeToString(
-                    mapOf("a" to "b")
+                    mapOf("a" to "b"),
                 ),
                 syncedAt = syncedAt,
-            )
+            ),
         )
 
         languageDaoPlus.saveLanguages(
             listOf(
                 testLanguageEntity("sp-MX", "Spanish Mexico"),
                 testLanguageEntity("en-GB", "British"),
-            )
+            ),
         )
 
         val languages2 = languages1.toMutableList().also {
@@ -70,11 +70,13 @@ class LanguageDaoTest {
                     translations = mapOf("a" to "b"),
                     syncedAt = syncedAt,
                 )
-            } else LanguageTranslations(
-                Language(it.key, it.name),
-                translations = emptyMap(),
-                syncedAt = Instant.fromEpochSeconds(0)
-            )
+            } else {
+                LanguageTranslations(
+                    Language(it.key, it.name),
+                    translations = emptyMap(),
+                    syncedAt = Instant.fromEpochSeconds(0),
+                )
+            }
             assertEquals(expected, translations!!.asExternalModel())
         }
     }

@@ -33,10 +33,10 @@ class PropertyInputData(
 
     private fun isChanged(worksite: Worksite) =
         residentName.value.trim() != worksite.name ||
-                phoneNumber.trim() != worksite.phone1 ||
-                phoneNumberSecondary.trim() != worksite.phone2 ||
-                email.trim() != (worksite.email ?: "") ||
-                autoContactFrequency != Worksite.autoContactFrequency(worksite.autoContactFrequencyT)
+            phoneNumber.trim() != worksite.phone1 ||
+            phoneNumberSecondary.trim() != worksite.phone2 ||
+            email.trim() != (worksite.email ?: "") ||
+            autoContactFrequency != Worksite.autoContactFrequency(worksite.autoContactFrequencyT)
 
     private fun resetValidity() {
         residentNameError = ""

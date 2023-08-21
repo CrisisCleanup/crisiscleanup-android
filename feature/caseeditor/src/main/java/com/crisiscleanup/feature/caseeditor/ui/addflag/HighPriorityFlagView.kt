@@ -70,7 +70,7 @@ internal fun ColumnScope.HighPriorityFlagView(
         Modifier
             .scrollFlingListener(closeKeyboard)
             .weight(1f)
-            .fillMaxWidth()
+            .fillMaxWidth(),
     ) {
         labelTextItem(translator("flag.please_describe_why_high_priority"))
 

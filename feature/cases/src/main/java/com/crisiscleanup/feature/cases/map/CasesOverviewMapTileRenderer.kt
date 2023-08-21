@@ -216,8 +216,11 @@ class CaseDotsMapTileRenderer @Inject constructor(
             }
 
             if (worksites.isNotEmpty() && bitmap == null) {
-                bitmap = if (isRenderingBorder) borderTile.copy()
-                else squareBitmap(tileSizePx)
+                bitmap = if (isRenderingBorder) {
+                    borderTile.copy()
+                } else {
+                    squareBitmap(tileSizePx)
+                }
                 canvas = Canvas(bitmap)
             }
 

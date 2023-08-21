@@ -68,7 +68,7 @@ object TestUtil {
         val context = ApplicationProvider.getApplicationContext<Context>()
         return Room.inMemoryDatabaseBuilder(
             context,
-            CrisisCleanupDatabase::class.java
+            CrisisCleanupDatabase::class.java,
         ).build()
     }
 
@@ -76,7 +76,7 @@ object TestUtil {
         val context = ApplicationProvider.getApplicationContext<Context>()
         return Room.inMemoryDatabaseBuilder(
             context,
-            TestCrisisCleanupDatabase::class.java
+            TestCrisisCleanupDatabase::class.java,
         ).build()
     }
 }

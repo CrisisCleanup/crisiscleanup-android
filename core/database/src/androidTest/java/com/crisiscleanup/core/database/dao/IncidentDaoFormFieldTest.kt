@@ -41,7 +41,7 @@ class IncidentDaoFormFieldTest {
                 testFormFieldEntity(23, "field-a"),
                 testFormFieldEntity(23, "field-b"),
                 testFormFieldEntity(23, "field-c"),
-            )
+            ),
         )
 
         val expected1 = listOf(
@@ -66,7 +66,7 @@ class IncidentDaoFormFieldTest {
                 testFormFieldEntity(23, "field-d"),
                 testFormFieldEntity(23, "field-b", label = "label-b"),
                 testFormFieldEntity(23, "field-c"),
-            )
+            ),
         )
         val expected2 = expected1.toMutableList().also {
             it.add(testFormField("field-d"))

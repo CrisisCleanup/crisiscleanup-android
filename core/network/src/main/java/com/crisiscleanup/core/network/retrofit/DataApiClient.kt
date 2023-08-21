@@ -298,8 +298,11 @@ class DataApiClient @Inject constructor(
         longitude: Double?,
         updatedAtAfter: Instant?,
     ): List<NetworkWorksitePage> {
-        val centerCoordinates: List<Double>? = if (latitude == null && longitude == null) null else
+        val centerCoordinates: List<Double>? = if (latitude == null && longitude == null) {
+            null
+        } else {
             listOf(latitude!!, longitude!!)
+        }
         val result = networkApi.getWorksitesPage(
             incidentId,
             pageCount,

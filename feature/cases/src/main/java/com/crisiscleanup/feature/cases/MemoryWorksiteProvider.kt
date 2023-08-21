@@ -24,6 +24,6 @@ interface WorksiteProviderModule {
     @Binds
     @Singleton
     fun bindsWorksiteProvider(
-        provider: MemoryWorksiteProvider
+        provider: MemoryWorksiteProvider,
     ): WorksiteProvider
 }

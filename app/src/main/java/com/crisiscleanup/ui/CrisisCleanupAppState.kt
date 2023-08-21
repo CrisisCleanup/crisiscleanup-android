@@ -45,7 +45,7 @@ fun rememberCrisisCleanupAppState(
     networkMonitor: NetworkMonitor,
     navigationObserver: NavigationObserver,
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
 ): CrisisCleanupAppState {
     NavigationTrackingSideEffect(navController)
     NavigationObserverSideEffect(navController, navigationObserver)
@@ -97,7 +97,7 @@ class CrisisCleanupAppState(
         .stateIn(
             scope = coroutineScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = false
+            initialValue = false,
         )
 
     val hideLoginAlert: Boolean

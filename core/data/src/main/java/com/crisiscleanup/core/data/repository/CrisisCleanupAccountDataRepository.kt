@@ -88,13 +88,13 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
     override suspend fun updateAccountTokens(
         refreshToken: String,
         accessToken: String,
-        expirySeconds: Long
+        expirySeconds: Long,
     ) {
         val isClearing = refreshToken.isBlank()
         dataSource.updateAccountTokens(
             refreshToken,
             if (isClearing) "" else accessToken,
-            if (isClearing) 0 else expirySeconds
+            if (isClearing) 0 else expirySeconds,
         )
     }
 
@@ -109,7 +109,7 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
                     updateAccountTokens(
                         refreshResult.refreshToken,
                         refreshResult.accessToken,
-                        now.plus(refreshResult.expiresIn.seconds).epochSeconds
+                        now.plus(refreshResult.expiresIn.seconds).epochSeconds,
                     )
                     logger.logDebug("Refreshed soon/expiring account tokens")
                 }

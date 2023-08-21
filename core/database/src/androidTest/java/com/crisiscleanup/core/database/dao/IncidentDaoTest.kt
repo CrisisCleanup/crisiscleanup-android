@@ -45,7 +45,7 @@ class IncidentDaoTest {
 
         assertEquals(
             listOf(2L, 1, 3),
-            savedIncidents.map { it.entity.id }
+            savedIncidents.map { it.entity.id },
         )
     }
 
@@ -63,7 +63,7 @@ class IncidentDaoTest {
         for ((incidentId, locationIds) in idMap.entries) {
             for (locationId in locationIds) {
                 incidentCrossRefs.add(
-                    IncidentIncidentLocationCrossRef(incidentId, locationId)
+                    IncidentIncidentLocationCrossRef(incidentId, locationId),
                 )
             }
         }
@@ -82,7 +82,7 @@ class IncidentDaoTest {
                 48L to setOf(15L, 226),
                 18L to setOf(226L, 31),
                 954L to setOf(15L),
-            )
+            ),
         )
         return Triple(incidentLocations, incidents, incidentToIncidentLocations)
     }
@@ -97,7 +97,7 @@ class IncidentDaoTest {
         incidentDaoPlus.saveIncidents(
             incidents,
             incidentLocations,
-            incidentToIncidentLocations
+            incidentToIncidentLocations,
         )
 
         val savedIncidents = incidentDao.streamIncidents().first()
@@ -111,7 +111,7 @@ class IncidentDaoTest {
             ),
             savedIncidents.map { incident ->
                 incident.locations.map(IncidentLocationEntity::id)
-            }
+            },
         )
     }
 
@@ -152,7 +152,7 @@ class IncidentDaoTest {
                 // New incidents
                 phoneIncidentEntity(5, "new-incident"),
                 phoneIncidentEntity(6, "phone-1, phone-2"),
-            )
+            ),
         )
 
         // Assert
@@ -192,11 +192,11 @@ class IncidentDaoTest {
         incidentDaoPlus.saveIncidents(
             incidents,
             incidentLocations,
-            incidentToIncidentLocations
+            incidentToIncidentLocations,
         )
         // Incident without location
         incidentDao.upsertIncidents(
-            listOf(testIncidentEntity(35L, testStartAtSeconds + 11))
+            listOf(testIncidentEntity(35L, testStartAtSeconds + 11)),
         )
 
         // incidentToIncidentLocations IDs
@@ -222,7 +222,7 @@ class IncidentDaoTest {
             mapOf(
                 18L to setOf(31L),
                 35L to setOf(321L, 852),
-            )
+            ),
         )
         incidentDaoPlus.saveIncidents(
             syncingIncidents,
@@ -243,7 +243,7 @@ class IncidentDaoTest {
             ),
             savedIncidents.map { incident ->
                 incident.locations.map(IncidentLocationEntity::id)
-            }
+            },
         )
     }
 

@@ -130,12 +130,12 @@ data class CasesFilter(
 
     val hasWorkTypeFilters by lazy {
         isAssignedToMyTeam ||
-                isUnclaimed ||
-                isClaimedByMyOrg ||
-                isStatusOpen ||
-                isStatusClosed ||
-                workTypeStatuses.isNotEmpty() ||
-                workTypes.isNotEmpty()
+            isUnclaimed ||
+            isClaimedByMyOrg ||
+            isStatusOpen ||
+            isStatusClosed ||
+            workTypeStatuses.isNotEmpty() ||
+            workTypes.isNotEmpty()
     }
 
     val matchingStatuses: Set<String> by lazy {

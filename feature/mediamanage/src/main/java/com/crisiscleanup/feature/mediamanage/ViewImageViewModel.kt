@@ -111,9 +111,13 @@ class ViewImageViewModel @Inject constructor(
                             // TODO Test all three states show correctly
                             // TODO String res
                             val messageKey =
-                                if (isOffline.value) "worksiteImages.connect_to_download_photo"
-                                else if (isTokenInvalid) "worksiteImages.login_and_refresh_image"
-                                else "worksiteImages.try_refreshing_open_image"
+                                if (isOffline.value) {
+                                    "worksiteImages.connect_to_download_photo"
+                                } else if (isTokenInvalid) {
+                                    "worksiteImages.login_and_refresh_image"
+                                } else {
+                                    "worksiteImages.try_refreshing_open_image"
+                                }
                             val message = translate(messageKey)
                             channel.trySend(ViewImageUiState.Error(message))
                         },
@@ -148,8 +152,11 @@ class ViewImageViewModel @Inject constructor(
             ViewImageUiState.Error(message)
         }
 
-    private val imageState = if (isNetworkImage) streamNetworkImageState
-    else streamLocalImageState
+    private val imageState = if (isNetworkImage) {
+        streamNetworkImageState
+    } else {
+        streamLocalImageState
+    }
 
     val uiState = imageState
         .stateIn(
@@ -174,8 +181,8 @@ class ViewImageViewModel @Inject constructor(
         ::Triple,
     ).map { (state, syncing, deleting) ->
         state is ViewImageUiState.Image &&
-                imageId > 0 &&
-                !(syncing || deleting)
+            imageId > 0 &&
+            !(syncing || deleting)
     }
         .stateIn(
             scope = viewModelScope,

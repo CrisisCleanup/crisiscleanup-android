@@ -39,7 +39,7 @@ private fun CaseView(
             Column(
                 Modifier
                     .weight(1f)
-                    .listRowItemStartPadding()
+                    .listRowItemStartPadding(),
             ) {
                 with(summary) {
                     Text(listOf(name, caseNumber).combineTrimText())
@@ -67,9 +67,9 @@ fun LazyListScope.listCaseResults(
                 .testTag("workSearchResultItem_${it.listItemKey}")
                 .clickable(
                     enabled = isEditable,
-                    onClick = { onCaseSelect(it) }
+                    onClick = { onCaseSelect(it) },
                 )
-                .listItemOptionPadding()
+                .listItemOptionPadding(),
         )
     }
 }
@@ -86,7 +86,7 @@ fun ExistingCaseLocationsDropdownItems(
                     caseLocation,
                     Modifier
                         .fillMaxWidth()
-                        .optionItemPadding()
+                        .optionItemPadding(),
                 )
             },
             onClick = { onCaseSelect(caseLocation) },

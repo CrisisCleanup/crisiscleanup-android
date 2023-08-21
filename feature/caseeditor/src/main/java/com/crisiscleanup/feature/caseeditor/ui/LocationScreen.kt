@@ -101,13 +101,13 @@ private fun AddressSummaryInColumn(
                         imageVector = CrisisCleanupIcons.Delete,
                         onClick = onClearAddress,
                         enabled = isEditable,
-                        modifier = Modifier.testTag("locationClearAddressBtn")
+                        modifier = Modifier.testTag("locationClearAddressBtn"),
                     )
                     CrisisCleanupIconButton(
                         imageVector = CrisisCleanupIcons.Edit,
                         onClick = onEditAddress,
                         enabled = isEditable,
-                        modifier = Modifier.testTag("locationEditAddressBtn")
+                        modifier = Modifier.testTag("locationEditAddressBtn"),
                     )
                 }
             }
@@ -151,8 +151,8 @@ internal fun BoxScope.LocationMapView(
     val onMapLoaded = remember(viewModel) { { editor.onMapLoaded() } }
     val onMapCameraChange = remember(viewModel) {
         { position: CameraPosition,
-          projection: Projection?,
-          isUserInteraction: Boolean ->
+                projection: Projection?,
+                isUserInteraction: Boolean, ->
             editor.onMapCameraChange(position, projection, isUserInteraction)
         }
     }
@@ -190,7 +190,8 @@ internal fun BoxScope.LocationMapView(
     LaunchedEffect(mapCameraZoom) {
         if (mapCameraZoom.takeApply()) {
             val update = CameraUpdateFactory.newLatLngZoom(
-                mapCameraZoom.center, mapCameraZoom.zoom
+                mapCameraZoom.center,
+                mapCameraZoom.zoom,
             )
 
             if (mapCameraZoom.durationMs > 0) {

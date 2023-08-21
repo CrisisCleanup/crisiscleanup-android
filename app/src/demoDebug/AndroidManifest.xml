@@ -1,7 +1,3 @@
-<!-- The application element should be a copy of the prod manifest with the additional attribute
-     android:usesCleartextTraffic="true"
-     This allows for http (non-secure) requests. The server must whitelist the device/emulator host.
--->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 

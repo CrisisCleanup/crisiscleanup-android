@@ -26,7 +26,7 @@ class LocalAppPreferencesDataSourceTest {
     @Before
     fun setup() {
         subject = LocalAppPreferencesDataSource(
-            tmpFolder.testUserPreferencesDataStore()
+            tmpFolder.testUserPreferencesDataStore(),
         )
     }
 
