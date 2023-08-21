@@ -104,7 +104,7 @@ jobs:
           path: '**/build/reports/lint-results-*.html'
 
   unit-test:
-    name: Build 🏗️
+    name: Unit Test 🧪
     runs-on: ubuntu-latest
     timeout-minutes: 120
 
