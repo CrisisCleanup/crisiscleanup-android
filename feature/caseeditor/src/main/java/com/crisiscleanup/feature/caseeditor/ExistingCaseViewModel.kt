@@ -491,6 +491,7 @@ class ExistingCaseViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
+    // TODO Delete local image db entries where file no longer exists in cache
     val beforeAfterPhotos = filesNotes
         .mapLatest { (files, localFiles) ->
             val beforeImages = localFiles.filterNot(CaseImage::isAfter).toMutableList()

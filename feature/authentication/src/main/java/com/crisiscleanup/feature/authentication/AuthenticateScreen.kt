@@ -158,7 +158,7 @@ private fun LoginScreen(
     val isNotBusy by viewModel.isNotAuthenticating.collectAsStateWithLifecycle()
 
     val focusEmail = viewModel.loginInputData.emailAddress.isEmpty() ||
-            viewModel.isInvalidEmail.value
+        viewModel.isInvalidEmail.value
     val updateEmailInput =
         remember(viewModel) { { s: String -> viewModel.loginInputData.emailAddress = s } }
     val clearErrorVisuals = remember(viewModel) { { viewModel.clearErrorVisuals() } }
