@@ -21,7 +21,7 @@ interface WorksiteFlagDao {
         notes           =:notes,
         requested_action=:requestedAction
         WHERE worksite_id=:worksiteId AND reason_t=:reasonT
-        """
+        """,
     )
     fun syncUpdateFlag(
         worksiteId: Long,
@@ -39,7 +39,7 @@ interface WorksiteFlagDao {
         """
         DELETE FROM worksite_flags
         WHERE worksite_id=:worksiteId AND reason_t NOT IN(:reasons)
-        """
+        """,
     )
     fun syncDeleteUnspecified(worksiteId: Long, reasons: Collection<String>)
 
@@ -48,7 +48,7 @@ interface WorksiteFlagDao {
         """
         DELETE FROM worksite_flags
         WHERE worksite_id=:worksiteId AND id NOT IN(:ids)
-        """
+        """,
     )
     fun deleteUnspecified(worksiteId: Long, ids: Collection<Long>)
 
@@ -58,7 +58,7 @@ interface WorksiteFlagDao {
         SELECT id, network_id
         FROM worksite_flags
         WHERE worksite_id=:worksiteId AND network_id>-1
-        """
+        """,
     )
     fun getNetworkedIdMap(worksiteId: Long): List<PopulatedIdNetworkId>
 
@@ -74,7 +74,7 @@ interface WorksiteFlagDao {
         UPDATE OR IGNORE worksite_flags
         SET network_id=:networkId
         WHERE id=:id
-        """
+        """,
     )
     fun updateNetworkId(id: Long, networkId: Long)
 

@@ -18,7 +18,6 @@ private interface EndOfLifeApi {
     suspend fun getEarlybirdEndOfLife(
         @Url url: String = "https://android-earlybird-end-5vzbp64o2a-uc.a.run.app",
     ): NetworkBuildEndOfLife
-
 }
 
 class EndOfLifeApiClient @Inject constructor(

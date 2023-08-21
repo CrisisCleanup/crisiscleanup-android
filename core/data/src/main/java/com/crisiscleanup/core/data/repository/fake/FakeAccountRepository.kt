@@ -22,7 +22,6 @@ class FakeAccountRepository : AccountDataRepository {
 
     override val accountData: Flow<AccountData> = _accountData.filterNotNull()
 
-
     override val isAuthenticated: Flow<Boolean> = accountData.map { it.hasAuthenticated }
 
     override var refreshToken: String = ""
@@ -55,18 +54,18 @@ class FakeAccountRepository : AccountDataRepository {
                 emailAddress = email,
                 profilePictureUri = profilePictureUri,
                 org = org,
-            )
+            ),
         )
     }
 
     override suspend fun updateAccountTokens(
         refreshToken: String,
         accessToken: String,
-        expirySeconds: Long
+        expirySeconds: Long,
     ) {
         setAccountTokens(refreshToken, accessToken)
         _accountData.tryEmit(
-            current.copy(tokenExpiry = Instant.fromEpochSeconds(expirySeconds))
+            current.copy(tokenExpiry = Instant.fromEpochSeconds(expirySeconds)),
         )
     }
 

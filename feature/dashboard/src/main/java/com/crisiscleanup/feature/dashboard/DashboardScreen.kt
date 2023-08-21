@@ -15,16 +15,16 @@ import androidx.hilt.navigation.compose.hiltViewModel
 @Composable
 internal fun DashboardRoute(
     modifier: Modifier = Modifier,
-    viewModel: DashboardViewModel = hiltViewModel()
+    viewModel: DashboardViewModel = hiltViewModel(),
 ) {
     DashboardScreen(
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
 @Composable
 internal fun DashboardScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Box(Modifier.fillMaxSize()) {
         Text(
@@ -33,7 +33,7 @@ internal fun DashboardScreen(
                 .fillMaxWidth()
                 .padding(48.dp),
             textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.bodySmall
+            style = MaterialTheme.typography.bodySmall,
         )
     }
 }

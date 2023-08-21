@@ -46,8 +46,11 @@ fun CrisisCleanupElevatedIconButton(
         elevation = elevation,
         enabled = enabled,
     ) {
-        val cd = if (contentDescriptionResId == 0) contentDescription
-        else stringResource(contentDescriptionResId)
+        val cd = if (contentDescriptionResId == 0) {
+            contentDescription
+        } else {
+            stringResource(contentDescriptionResId)
+        }
         if (iconResId != 0) {
             Icon(
                 painter = painterResource(iconResId),
@@ -73,16 +76,19 @@ fun CrisisCleanupIconButton(
     contentDescription: String = "",
     onClick: () -> Unit = {},
     enabled: Boolean = true,
-    tint: Color = LocalContentColor.current
+    tint: Color = LocalContentColor.current,
 ) {
     IconButton(
         modifier = modifier,
         onClick = onClick,
         enabled = enabled,
     ) {
-        val cd = if (contentDescriptionResId == 0) contentDescription
-        else stringResource(contentDescriptionResId)
-        val iconTint = if(enabled) tint else tint.disabledAlpha()
+        val cd = if (contentDescriptionResId == 0) {
+            contentDescription
+        } else {
+            stringResource(contentDescriptionResId)
+        }
+        val iconTint = if (enabled) tint else tint.disabledAlpha()
         if (iconResId != 0) {
             Icon(
                 painter = painterResource(iconResId),

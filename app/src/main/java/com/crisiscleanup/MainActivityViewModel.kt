@@ -98,8 +98,11 @@ class MainActivityViewModel @Inject constructor(
         .map {
             isAccountExpired.value = !it.areTokensValid
 
-            if (it.hasAuthenticated) AuthState.Authenticated(it)
-            else AuthState.NotAuthenticated
+            if (it.hasAuthenticated) {
+                AuthState.Authenticated(it)
+            } else {
+                AuthState.NotAuthenticated
+            }
         }
         .stateIn(
             scope = viewModelScope,

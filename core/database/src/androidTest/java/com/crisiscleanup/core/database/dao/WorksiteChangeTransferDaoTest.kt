@@ -152,8 +152,8 @@ class WorksiteChangeTransferDaoTest {
                     notes = "notes",
                     reasonT = "reason",
                     requestedAction = "",
-                )
-            )
+                ),
+            ),
         )
         db.worksiteNoteDao().insertIgnoreNote(
             WorksiteNoteEntity(
@@ -164,7 +164,7 @@ class WorksiteChangeTransferDaoTest {
                 createdAt = createdAtA,
                 isSurvivor = false,
                 note = "note",
-            )
+            ),
 
         )
         db.workTypeDao().insertIgnoreWorkType(
@@ -179,7 +179,7 @@ class WorksiteChangeTransferDaoTest {
                 recur = null,
                 status = "status-existing",
                 workType = "work-type-existing",
-            )
+            ),
         )
         db.workTypeDao().updateNetworkId(3, 353)
         db.workTypeDao().updateNetworkId(57, 357)
@@ -205,7 +205,7 @@ class WorksiteChangeTransferDaoTest {
                     syncAttempt = 0,
                     networkId = worksite.networkId,
                     incidentId = worksite.incidentId,
-                )
+                ),
             )
             db.worksiteDao().insert(entities.core)
         }
@@ -326,7 +326,6 @@ class WorksiteChangeTransferDaoTest {
         verify(exactly = 0) { appLogger.logException(any()) }
     }
 
-
     @Test
     fun releaseClaimedUnclaimed() = runTest {
         var workTypeInsertId = 60L
@@ -339,8 +338,9 @@ class WorksiteChangeTransferDaoTest {
                 createdAt = now,
             ),
             workTypes = testWorksite.workTypes.map { workType ->
-                if (workType.orgClaim == null) workType
-                else {
+                if (workType.orgClaim == null) {
+                    workType
+                } else {
                     WorkType(
                         id = workTypeInsertId++,
                         createdAt = now,

@@ -25,7 +25,7 @@ import com.crisiscleanup.core.designsystem.theme.LocalBackgroundTheme
 @Composable
 fun CrisisCleanupBackground(
     modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val color = LocalBackgroundTheme.current.color
     val tonalElevation = LocalBackgroundTheme.current.tonalElevation

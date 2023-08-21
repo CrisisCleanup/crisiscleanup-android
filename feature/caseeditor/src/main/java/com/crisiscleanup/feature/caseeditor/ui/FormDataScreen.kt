@@ -46,8 +46,11 @@ private fun FormItems(
             }
             val fieldShowHelp = remember(viewModel) { { showHelp(state) } }
             val modifier =
-                if (state.nestLevel > 0) listItemModifier.listItemNestedPadding(state.nestLevel * 2)
-                else listItemModifier
+                if (state.nestLevel > 0) {
+                    listItemModifier.listItemNestedPadding(state.nestLevel * 2)
+                } else {
+                    listItemModifier
+                }
             DynamicFormListItem(
                 state,
                 label,

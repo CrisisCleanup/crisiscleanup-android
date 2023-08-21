@@ -78,7 +78,9 @@ class ResidentNameSearchManager(
             } else {
                 worksiteResults.second
             }
-        } else emptyList()
+        } else {
+            emptyList()
+        }
         ResidentNameSearchResults(q, worksites)
     }
 

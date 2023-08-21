@@ -141,8 +141,11 @@ private fun ListCases(
                     item {
                         val translator = LocalAppTranslator.current
                         val message =
-                            if (isShortQ) translator("info.search_query_is_short")
-                            else translator("info.no_search_results").replace("{search_string}", q)
+                            if (isShortQ) {
+                                translator("info.search_query_is_short")
+                            } else {
+                                translator("info.no_search_results").replace("{search_string}", q)
+                            }
                         Text(message, listItemModifier)
                     }
                 }

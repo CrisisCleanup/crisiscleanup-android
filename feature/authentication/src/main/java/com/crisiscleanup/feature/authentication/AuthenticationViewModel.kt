@@ -43,7 +43,9 @@ class AuthenticationViewModel @Inject constructor(
 ) : ViewModel() {
     private var isAuthenticating = MutableStateFlow(false)
     val isNotAuthenticating = isAuthenticating.map(Boolean::not).stateIn(
-        scope = viewModelScope, initialValue = true, started = SharingStarted.WhileSubscribed()
+        scope = viewModelScope,
+        initialValue = true,
+        started = SharingStarted.WhileSubscribed(),
     )
 
     val uiState: StateFlow<AuthenticateScreenUiState> = accountDataRepository.accountData.map {

@@ -60,15 +60,18 @@ class AndroidGeocoderAddressSearchRepository @Inject constructor(
 
         val hasBounds = southwest != null && northeast != null
         try {
-            val geocoderAddresses = if (hasBounds) geocoder.getFromLocationName(
-                query,
-                maxResults,
-                southwest!!.latitude,
-                southwest.longitude,
-                northeast!!.latitude,
-                northeast.longitude
-            )
-            else geocoder.getFromLocationName(query, maxResults)
+            val geocoderAddresses = if (hasBounds) {
+                geocoder.getFromLocationName(
+                    query,
+                    maxResults,
+                    southwest!!.latitude,
+                    southwest.longitude,
+                    northeast!!.latitude,
+                    northeast.longitude,
+                )
+            } else {
+                geocoder.getFromLocationName(query, maxResults)
+            }
 
             val addresses =
                 geocoderAddresses

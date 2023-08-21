@@ -265,9 +265,9 @@ class CasesViewModel @Inject constructor(
             val id = wqs.incidentId
 
             val skipMarkers = !isMapLoaded ||
-                    wqs.isTableView ||
-                    id == EmptyIncident.id ||
-                    mapTileRenderer.rendersAt(wqs.zoom)
+                wqs.isTableView ||
+                id == EmptyIncident.id ||
+                mapTileRenderer.rendersAt(wqs.zoom)
 
             if (skipMarkers) {
                 emptyList()
@@ -381,11 +381,15 @@ class CasesViewModel @Inject constructor(
             val visibleCount = markers.filterNot { it.isFilteredOut }.size
 
             val countText = if (visibleCount == totalCount || visibleCount == 0) {
-                if (visibleCount == 0) translator("info.t_of_t_cases")
-                    .replace("{visible_count}", "$totalCount")
-                else if (totalCount == 1) translator("info.1_of_1_case")
-                else translator("info.t_of_t_cases")
-                    .replace("{visible_count}", "$totalCount")
+                if (visibleCount == 0) {
+                    translator("info.t_of_t_cases")
+                        .replace("{visible_count}", "$totalCount")
+                } else if (totalCount == 1) {
+                    translator("info.1_of_1_case")
+                } else {
+                    translator("info.t_of_t_cases")
+                        .replace("{visible_count}", "$totalCount")
+                }
             } else {
                 translator("info.v_of_t_cases")
                     .replace("{visible_count}", "$visibleCount")
@@ -509,8 +513,10 @@ class CasesViewModel @Inject constructor(
             val distance = if (hasLocation) {
                 val worksite = tableData.worksite
                 haversineDistance(
-                    latitudeRad, longitudeRad,
-                    worksite.latitude.radians, worksite.longitude.radians,
+                    latitudeRad,
+                    longitudeRad,
+                    worksite.latitude.radians,
+                    worksite.longitude.radians,
                 ).kmToMiles
             } else {
                 -1.0
@@ -647,8 +653,8 @@ class CasesViewModel @Inject constructor(
                 val sinceLastRefresh = now - tileRefreshedInstant
                 val projectedDelta = projectedFinish - now
                 refreshTiles = now - pullStart > tileClearRefreshInterval &&
-                        sinceLastRefresh > tileClearRefreshInterval &&
-                        projectedDelta > tileClearRefreshInterval
+                    sinceLastRefresh > tileClearRefreshInterval &&
+                    projectedDelta > tileClearRefreshInterval
                 if (idCount.totalCount - tileClearWorksitesCount >= 6000 &&
                     dataCount - tileClearWorksitesCount > 3000
                 ) {

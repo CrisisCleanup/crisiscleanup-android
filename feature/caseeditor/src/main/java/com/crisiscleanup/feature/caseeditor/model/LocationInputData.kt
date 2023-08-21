@@ -40,26 +40,26 @@ class LocationInputData(
 
     private val isIncompleteAddress: Boolean
         get() = streetAddress.isBlank() ||
-                zipCode.isBlank() ||
-                city.isBlank() ||
-                county.isBlank() ||
-                state.isBlank()
+            zipCode.isBlank() ||
+            city.isBlank() ||
+            county.isBlank() ||
+            state.isBlank()
 
     val isBlankAddress: Boolean
         get() = streetAddress.isBlank() &&
-                zipCode.isBlank() &&
-                city.isBlank() &&
-                county.isBlank() &&
-                state.isBlank()
+            zipCode.isBlank() &&
+            city.isBlank() &&
+            county.isBlank() &&
+            state.isBlank()
 
     var wasGeocodeAddressSelected by mutableStateOf(false)
 
     val hasAddressError: Boolean
         get() = streetAddressError.isNotBlank() ||
-                zipCodeError.isNotBlank() ||
-                cityError.isNotBlank() ||
-                countyError.isNotBlank() ||
-                stateError.isNotBlank()
+            zipCodeError.isNotBlank() ||
+            cityError.isNotBlank() ||
+            countyError.isNotBlank() ||
+            stateError.isNotBlank()
 
     val addressChangeWorksite: Worksite
         get() {
@@ -78,13 +78,13 @@ class LocationInputData(
 
     private fun isChanged(worksite: Worksite): Boolean {
         return this.coordinates.value != worksite.coordinates ||
-                streetAddress.trim() != worksite.address ||
-                zipCode.trim() != worksite.postalCode ||
-                city.trim() != worksite.city ||
-                county.trim() != worksite.county ||
-                state.trim() != worksite.state ||
-                hasWrongLocation != worksite.hasWrongLocationFlag ||
-                crossStreetNearbyLandmark.trim() != worksite.crossStreetNearbyLandmark
+            streetAddress.trim() != worksite.address ||
+            zipCode.trim() != worksite.postalCode ||
+            city.trim() != worksite.city ||
+            county.trim() != worksite.county ||
+            state.trim() != worksite.state ||
+            hasWrongLocation != worksite.hasWrongLocationFlag ||
+            crossStreetNearbyLandmark.trim() != worksite.crossStreetNearbyLandmark
     }
 
     internal fun resetValidity() {

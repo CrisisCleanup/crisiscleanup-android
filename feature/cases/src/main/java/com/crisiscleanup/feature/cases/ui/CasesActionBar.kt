@@ -91,7 +91,10 @@ internal fun CasesActionBar(
         horizontalArrangement = Arrangement.spacedBy(adjacentButtonSpace),
     ) {
         CasesActionButton(
-            modifier, CasesAction.Search, onCasesAction, shape = actionStartRoundCornerShape
+            modifier,
+            CasesAction.Search,
+            onCasesAction,
+            shape = actionStartRoundCornerShape,
         )
         FilterButtonBadge(filtersCount) {
             CasesActionButton(

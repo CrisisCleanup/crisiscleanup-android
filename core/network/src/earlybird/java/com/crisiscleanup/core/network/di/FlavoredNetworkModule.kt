@@ -1,7 +1,7 @@
 package com.crisiscleanup.core.network.di
 
-import com.crisiscleanup.core.network.endoflife.EndOfLifeClient
 import com.crisiscleanup.core.network.endoflife.EndOfLifeApiClient
+import com.crisiscleanup.core.network.endoflife.EndOfLifeClient
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

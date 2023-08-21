@@ -15,7 +15,7 @@ class AccountInfoProtoSerializerTest {
             accountInfo {
                 // Default value
             },
-            serializer.defaultValue
+            serializer.defaultValue,
         )
     }
 

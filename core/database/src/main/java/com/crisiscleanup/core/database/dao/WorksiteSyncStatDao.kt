@@ -17,7 +17,7 @@ interface WorksiteSyncStatDao {
         SELECT *
         FROM worksite_sync_stats
         WHERE incident_id==:incidentId
-        """
+        """,
     )
     fun getSyncStats(incidentId: Long): WorksiteSyncStatsEntity?
 
@@ -30,7 +30,7 @@ interface WorksiteSyncStatDao {
         UPDATE OR IGNORE worksite_sync_stats
         SET paged_count=:pagedCount
         WHERE incident_id=:incidentId AND sync_start=:syncStart
-        """
+        """,
     )
     fun updateStatsPaged(
         incidentId: Long,
@@ -49,7 +49,7 @@ interface WorksiteSyncStatDao {
             attempted_counter   =:attemptedCounter,
             app_build_version_code=:appBuildVersionCode
         WHERE incident_id=:incidentId AND sync_start=:syncStart
-        """
+        """,
     )
     fun updateStatsSuccessful(
         incidentId: Long,
@@ -80,7 +80,7 @@ interface WorksiteSyncStatDao {
             center_latitude     =:latitude,
             center_longitude    =:longitude
         WHERE incident_id=:incidentId
-        """
+        """,
     )
     fun setFullSyncCenter(
         incidentId: Long,
@@ -95,7 +95,7 @@ interface WorksiteSyncStatDao {
         UPDATE incident_worksites_full_sync_stats
         SET query_area_radius=:radius
         WHERE incident_id=:incidentId
-        """
+        """,
     )
     fun setFullSyncRadius(
         incidentId: Long,

@@ -16,9 +16,11 @@ class BorderTile(private val sizePx: Int) {
             }
             Canvas(bitmap).apply {
                 drawRect(
-                    0f, 0f,
-                    bitmap.width.toFloat(), bitmap.height.toFloat(),
-                    borderPaint
+                    0f,
+                    0f,
+                    bitmap.width.toFloat(),
+                    bitmap.height.toFloat(),
+                    borderPaint,
                 )
             }
             synchronized(this) {

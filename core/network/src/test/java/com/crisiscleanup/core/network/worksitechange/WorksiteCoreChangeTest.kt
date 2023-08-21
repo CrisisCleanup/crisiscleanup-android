@@ -53,7 +53,7 @@ class WorksiteCoreChangeTest {
                 createdAtA,
                 status = "status-min",
                 workType = "work-type-min",
-            )
+            ),
         ),
     )
     private val fullyDefinedWorksite = NetworkWorksiteFull(
@@ -73,16 +73,16 @@ class WorksiteCoreChangeTest {
                 "key",
                 9684,
                 "patient",
-                NetworkEvent.Description("key", "description", "name")
+                NetworkEvent.Description("key", "description", "name"),
             ),
         ),
         favorite = NetworkType(38, "favorite", createdAtA),
         files = emptyList(),
         flags = listOf(
-            NetworkFlag(53853, "action", createdAtA, false, "notes", "reason", null)
+            NetworkFlag(53853, "action", createdAtA, false, "notes", "reason", null),
         ),
         formData = listOf(
-            KeyDynamicValuePair("key", DynamicValue("dynamic-value"))
+            KeyDynamicValuePair("key", DynamicValue("dynamic-value")),
         ),
         incident = 875,
         keyWorkType = NetworkWorkType(
@@ -247,7 +247,7 @@ class WorksiteCoreChangeTest {
             keyWorkType = null,
             location = NetworkWorksiteFull.Location(
                 "Point",
-                listOf(changeSnapshot.longitude, changeSnapshot.latitude)
+                listOf(changeSnapshot.longitude, changeSnapshot.latitude),
             ),
             name = changeSnapshot.name,
             phone1 = changeSnapshot.phone1,
@@ -318,7 +318,7 @@ class WorksiteCoreChangeTest {
             keyWorkType = null,
             location = NetworkWorksiteFull.Location(
                 "Point",
-                listOf(changeSnapshot.longitude, changeSnapshot.latitude)
+                listOf(changeSnapshot.longitude, changeSnapshot.latitude),
             ),
             name = changeSnapshot.name,
             phone1 = changeSnapshot.phone1,

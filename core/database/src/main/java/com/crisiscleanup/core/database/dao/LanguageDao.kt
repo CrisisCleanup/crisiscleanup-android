@@ -31,7 +31,7 @@ interface LanguageDao {
         """
         INSERT OR IGNORE INTO language_translations(key, name)
         VALUES(:key, :name)
-        """
+        """,
     )
     fun insertIgnoreLanguage(
         key: String,

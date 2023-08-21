@@ -147,10 +147,13 @@ data class LogListQueryState(
     private val hasInnerBoundary = boundaryPositions.first < boundaryPositions.second
 
     fun isBoundaryPosition(position: Int) = hasInnerBoundary &&
-            (position < boundaryPositions.first || position > boundaryPositions.second)
+        (position < boundaryPositions.first || position > boundaryPositions.second)
 
-    fun getLog(index: Int) = if (index in startIndex until endIndex) data[index - startIndex]
-    else null
+    fun getLog(index: Int) = if (index in startIndex until endIndex) {
+        data[index - startIndex]
+    } else {
+        null
+    }
 }
 
 data class SyncLogItem(

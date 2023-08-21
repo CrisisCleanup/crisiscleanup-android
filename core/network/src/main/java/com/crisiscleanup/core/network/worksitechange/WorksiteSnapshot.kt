@@ -105,7 +105,7 @@ data class CoreSnapshot(
     val pointLocation: NetworkWorksiteFull.Location
         get() = NetworkWorksiteFull.Location(
             type = "Point",
-            coordinates = listOf(longitude, latitude)
+            coordinates = listOf(longitude, latitude),
         )
 }
 
@@ -137,14 +137,17 @@ private fun yesNo(b: Boolean) = if (b) "Yes" else "No"
 fun FlagSnapshot.asNetworkFlag(): NetworkFlag {
     with(flag) {
         val addAttributes = involvesMyOrg != null ||
-                haveContactedOtherOrg != null ||
-                organizationIds.isNotEmpty()
-        val attr = if (addAttributes) NetworkFlag.FlagAttributes(
-            involvesYou = involvesMyOrg?.let { yesNo(it) },
-            haveContactedOtherOrg = haveContactedOtherOrg?.let { yesNo(it) },
-            organizations = organizationIds,
-        )
-        else null
+            haveContactedOtherOrg != null ||
+            organizationIds.isNotEmpty()
+        val attr = if (addAttributes) {
+            NetworkFlag.FlagAttributes(
+                involvesYou = involvesMyOrg?.let { yesNo(it) },
+                haveContactedOtherOrg = haveContactedOtherOrg?.let { yesNo(it) },
+                organizations = organizationIds,
+            )
+        } else {
+            null
+        }
         return NetworkFlag(
             id = if (id > 0) id else null,
             action = action.ifBlank { null },
@@ -175,7 +178,7 @@ data class NoteSnapshot(
 @Serializable
 data class WorkTypeSnapshot(
     val localId: Long,
-    val workType: WorkType
+    val workType: WorkType,
 ) {
     @Serializable
     data class WorkType(
@@ -212,5 +215,5 @@ data class WorkTypeChange(
     val changedAt: Instant,
     val isClaimChange: Boolean,
     val isStatusChange: Boolean,
-    val hasChange: Boolean = isClaimChange || isStatusChange
+    val hasChange: Boolean = isClaimChange || isStatusChange,
 )

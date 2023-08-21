@@ -49,7 +49,7 @@ data class PopulatedLocalWorksite(
             value = WorksiteNetworkFileCrossRef::class,
             parentColumn = "worksite_id",
             entityColumn = "network_file_id",
-        )
+        ),
     )
     val files: List<NetworkFileEntity>,
     @Relation(
@@ -59,7 +59,7 @@ data class PopulatedLocalWorksite(
             value = WorksiteNetworkFileCrossRef::class,
             parentColumn = "worksite_id",
             entityColumn = "network_file_id",
-        )
+        ),
     )
     val fileImages: List<NetworkFileLocalImageEntity>,
     @Relation(
@@ -119,9 +119,11 @@ fun PopulatedLocalWorksite.asExternalModel(
                         if (a.networkId == b.networkId) {
                             if (a.createdAt < b.createdAt) 1 else -1
                         } else {
-                            if (a.networkId < 0) -1
-                            else if (b.networkId < 0) 1
-                            else if (a.networkId > b.networkId) -1 else 1
+                            if (a.networkId < 0) {
+                                -1
+                            } else if (b.networkId < 0) {
+                                1
+                            } else if (a.networkId > b.networkId) -1 else 1
                         }
                     }
                     .map(WorksiteNoteEntity::asExternalModel),
@@ -143,8 +145,8 @@ fun PopulatedLocalWorksite.asExternalModel(
             localImages.map(WorksiteLocalImageEntity::asExternalModel),
             LocalChange(
                 isLocalModified = root.isLocalModified ||
-                        hasImagesPendingDelete ||
-                        localImages.isNotEmpty(),
+                    hasImagesPendingDelete ||
+                    localImages.isNotEmpty(),
                 localModifiedAt = root.localModifiedAt,
                 syncedAt = root.syncedAt,
             ),

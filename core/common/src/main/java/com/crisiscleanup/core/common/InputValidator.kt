@@ -21,8 +21,11 @@ class CommonInputValidator @Inject constructor() : InputValidator {
         Patterns.EMAIL_ADDRESS.matcher(emailAddress).matches()
 
     override fun validatePhoneNumber(value: String, allowSpaces: Boolean) =
-        if (allowSpaces) phoneNumbersAndSpacesRegex.matches(value)
-        else phoneNumbersRegex.matches(value)
+        if (allowSpaces) {
+            phoneNumbersAndSpacesRegex.matches(value)
+        } else {
+            phoneNumbersRegex.matches(value)
+        }
 
     override fun hasEmailAddress(text: String) = commonEmailRegex.containsMatchIn(text)
 }

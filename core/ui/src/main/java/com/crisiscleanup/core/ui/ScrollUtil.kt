@@ -22,7 +22,7 @@ fun Modifier.touchDownConsumer(
             }
             else -> true
         }
-    }
+    },
 )
 
 fun Modifier.scrollFlingListener(

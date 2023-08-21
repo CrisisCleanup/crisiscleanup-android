@@ -15,13 +15,15 @@ class NewestWorkTypesTest {
     @Test
     fun noWorkTypes() {
         val (newestWorkTypes, newestKeyWorkType) = NetworkWorksiteFull.distinctNewestWorkTypes(
-            emptyList(), null
+            emptyList(),
+            null,
         )
         assertEquals(emptyList(), newestWorkTypes)
         assertNull(newestKeyWorkType)
 
         val (workTypesShort, keyWorkTypeShort) = NetworkWorksiteShort.distinctNewestWorkTypes(
-            emptyList(), null
+            emptyList(),
+            null,
         )
         assertEquals(emptyList(), workTypesShort)
         assertNull(keyWorkTypeShort)
@@ -78,7 +80,7 @@ class NewestWorkTypesTest {
                 orgClaim = 152,
                 status =
                 "status-high",
-                createdAt = createdAtA
+                createdAt = createdAtA,
             ),
             testWorkType(21, workType = "work-type-b"),
         )
@@ -174,7 +176,7 @@ class NewestWorkTypesTest {
                 orgClaim = 152,
                 status =
                 "status-high",
-                createdAt = createdAtA
+                createdAt = createdAtA,
             ),
             testWorkType(21, workType = "work-type-b"),
         )

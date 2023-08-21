@@ -12,7 +12,7 @@ class NetworkLanguageTest {
                 NetworkLanguageDescription("en-US", "English (United States)"),
                 NetworkLanguageDescription("es-MX", "Spanish (Mexico)"),
                 NetworkLanguageDescription("cs", "Czech"),
-            )
+            ),
         )
         assertEquals(expected, result)
     }

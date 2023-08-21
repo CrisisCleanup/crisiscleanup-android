@@ -15,6 +15,5 @@ class NetworkCaseHistoryTest {
         val events = result.events
         assertNotNull(events)
         assertEquals(5, events.size)
-
     }
 }

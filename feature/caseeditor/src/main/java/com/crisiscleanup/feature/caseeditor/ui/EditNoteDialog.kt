@@ -39,7 +39,7 @@ fun EditNoteDialog(
                 onDone = { saveNote() },
                 hasFocus = true,
                 enabled = true,
-                modifier = Modifier.testTag("caseAlertNoteTextAreaField")
+                modifier = Modifier.testTag("caseAlertNoteTextAreaField"),
             )
         },
         onDismissRequest = onCancel,
@@ -47,7 +47,7 @@ fun EditNoteDialog(
             CrisisCleanupTextButton(
                 text = translator("actions.cancel"),
                 onClick = onCancel,
-                modifier = Modifier.testTag("caseAlertNoteDismissBtn")
+                modifier = Modifier.testTag("caseAlertNoteDismissBtn"),
             )
         },
         confirmButton = {
@@ -55,7 +55,7 @@ fun EditNoteDialog(
                 text = translator("actions.add"),
                 onClick = saveNote,
                 enabled = !isSaving,
-                modifier = Modifier.testTag("caseAlertNoteSaveBtn")
+                modifier = Modifier.testTag("caseAlertNoteSaveBtn"),
             )
         },
     )

@@ -165,9 +165,11 @@ class WriteApiClient @Inject constructor(
         syncUuid: String,
         worksite: NetworkWorksitePush,
     ): NetworkWorksiteFull {
-        return if (worksite.id == null)
+        return if (worksite.id == null) {
             changeWorksiteApi.newWorksite(modifiedAt, syncUuid, worksite)
-        else changeWorksiteApi.updateWorksite(modifiedAt, syncUuid, worksite.id, worksite)
+        } else {
+            changeWorksiteApi.updateWorksite(modifiedAt, syncUuid, worksite.id, worksite)
+        }
     }
 
     override suspend fun favoriteWorksite(createdAt: Instant, worksiteId: Long) =
@@ -215,7 +217,7 @@ class WriteApiClient @Inject constructor(
         createdAt: Instant,
         worksiteId: Long,
         workTypes: List<String>,
-        reason: String
+        reason: String,
     ) {
         changeWorksiteApi.requestWorkTypes(
             createdAt,
@@ -228,7 +230,7 @@ class WriteApiClient @Inject constructor(
         createdAt: Instant,
         worksiteId: Long,
         workTypes: List<String>,
-        reason: String
+        reason: String,
     ) {
         changeWorksiteApi.releaseWorkTypes(
             createdAt,
@@ -265,7 +267,7 @@ class WriteApiClient @Inject constructor(
         emails: List<String>,
         phoneNumbers: List<String>,
         shareMessage: String,
-        noClaimReason: String?
+        noClaimReason: String?,
     ) {
         changeWorksiteApi.shareWorksite(
             worksiteId,

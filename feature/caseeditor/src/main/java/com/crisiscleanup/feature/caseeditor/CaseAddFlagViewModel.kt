@@ -60,8 +60,11 @@ class CaseAddFlagViewModel @Inject constructor(
 ) : ViewModel() {
     private val caseAddFlagArgs = CaseAddFlagArgs(savedStateHandle)
     private val editableWorksite =
-        if (caseAddFlagArgs.isFromCaseEdit) editableWorksiteProvider.editableWorksite
-        else worksiteProvider.editableWorksite
+        if (caseAddFlagArgs.isFromCaseEdit) {
+            editableWorksiteProvider.editableWorksite
+        } else {
+            worksiteProvider.editableWorksite
+        }
     private val worksiteIn = editableWorksite.value
     private val flagsIn =
         worksiteIn.flags?.mapNotNull(WorksiteFlag::flagType)?.toSet() ?: emptySet()
@@ -265,9 +268,12 @@ class CaseAddFlagViewModel @Inject constructor(
         otherOrganizationsInvolved: List<OrganizationIdName>,
     ): List<Long> {
         val isQueryMatchingOrg = otherOrganizationsInvolved.isNotEmpty() &&
-                otherOrgQuery.trim() == otherOrganizationsInvolved.first().name.trim()
-        return if (isQueryMatchingOrg) listOf(otherOrganizationsInvolved.first().id)
-        else emptyList()
+            otherOrgQuery.trim() == otherOrganizationsInvolved.first().name.trim()
+        return if (isQueryMatchingOrg) {
+            listOf(otherOrganizationsInvolved.first().id)
+        } else {
+            emptyList()
+        }
     }
 
     fun onUpsetClient(

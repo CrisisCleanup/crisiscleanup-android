@@ -15,7 +15,7 @@ class UserPreferencesSerializerTest {
             userPreferences {
                 // Default value
             },
-            userPreferencesSerializer.defaultValue
+            userPreferencesSerializer.defaultValue,
         )
     }
 

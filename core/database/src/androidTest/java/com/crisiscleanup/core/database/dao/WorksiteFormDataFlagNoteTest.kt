@@ -75,7 +75,7 @@ class WorksiteFormDataFlagNoteTest {
                 "form-field-c",
                 value = "doesn't matter",
                 isBoolValue = true,
-                valueBool = false
+                valueBool = false,
             ),
         )
         val syncingFlags = listOf(
@@ -108,8 +108,12 @@ class WorksiteFormDataFlagNoteTest {
 
         val expectedFormDataEntities = listOf(
             WorksiteFormDataEntity(
-                1, "form-field-c", true, "doesn't matter", false
-            )
+                1,
+                "form-field-c",
+                true,
+                "doesn't matter",
+                false,
+            ),
         )
         assertEquals(expectedFormDataEntities, actualPopulatedWorksite.formData)
 
@@ -124,16 +128,28 @@ class WorksiteFormDataFlagNoteTest {
                 "notes-new-a",
                 "reason-new-a",
                 "requested-action-new-a",
-            )
+            ),
         )
         assertEquals(expectedFlagEntities, actualPopulatedWorksite.flags)
 
         val expectedNoteEntities = listOf(
             WorksiteNoteEntity(
-                1, "", 34, 1, updatedAtB, true, "note-new-a"
+                1,
+                "",
+                34,
+                1,
+                updatedAtB,
+                true,
+                "note-new-a",
             ),
             WorksiteNoteEntity(
-                2, "", 45, 1, updatedAtA, false, "note-new-b"
+                2,
+                "",
+                45,
+                1,
+                updatedAtA,
+                false,
+                "note-new-b",
             ),
         )
         assertEquals(expectedNoteEntities, actualPopulatedWorksite.notes)
@@ -184,19 +200,19 @@ class WorksiteFormDataFlagNoteTest {
                 testFormDataEntity(1, "form-field-a"),
                 testFormDataEntity(1, "form-field-b"),
                 testFormDataEntity(1, "form-field-c", isBoolValue = true, valueBool = true),
-            )
+            ),
         )
         db.worksiteFlagDao().insertIgnore(
             listOf(
                 testFlagEntity(11, 1, createdAtA, "flag-a"),
                 testFlagEntity(12, 1, createdAtA, "flag-b"),
-            )
+            ),
         )
         db.worksiteNoteDao().insertIgnore(
             listOf(
                 testNotesEntity(21, 1, createdAtA, "note-a"),
                 testNotesEntity(22, 1, createdAtA, "note-b"),
-            )
+            ),
         )
 
         // Sync
@@ -209,7 +225,7 @@ class WorksiteFormDataFlagNoteTest {
                 "form-field-c",
                 value = "doesn't matter",
                 isBoolValue = true,
-                valueBool = false
+                valueBool = false,
             ),
             // Delete form-field-a
             // New
@@ -322,7 +338,9 @@ class WorksiteFormDataFlagNoteTest {
         val syncingWorksite = testWorksiteEntity(1, 1, "sync-address", updatedAtB)
         val syncingFormData = listOf(
             testFormDataEntity(
-                1, "form-field-a", "doesn't-matter",
+                1,
+                "form-field-a",
+                "doesn't-matter",
                 isBoolValue = true,
                 valueBool = false,
             ),

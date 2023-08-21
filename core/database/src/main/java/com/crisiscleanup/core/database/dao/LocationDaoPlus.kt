@@ -21,12 +21,15 @@ class LocationDaoPlus @Inject constructor(
                         }
                     } ?: ""
                 }
-                if (coordinates.isEmpty()) null
-                else LocationEntity(
-                    id = source.id,
-                    shapeType = source.shapeType,
-                    coordinates = coordinates,
-                )
+                if (coordinates.isEmpty()) {
+                    null
+                } else {
+                    LocationEntity(
+                        id = source.id,
+                        shapeType = source.shapeType,
+                        coordinates = coordinates,
+                    )
+                }
             }
         db.locationDao().upsertLocations(locations)
     }

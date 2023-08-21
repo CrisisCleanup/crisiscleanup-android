@@ -82,7 +82,7 @@ fun DateRangePickerDialog(
     val confirmEnabled = remember {
         derivedStateOf {
             datePickerState.selectedStartDateMillis != null &&
-                    datePickerState.selectedEndDateMillis != null
+                datePickerState.selectedEndDateMillis != null
         }
     }
     val translator = LocalAppTranslator.current
@@ -100,7 +100,7 @@ fun DateRangePickerDialog(
             ) {
                 CrisisCleanupIconButton(
                     imageVector = CrisisCleanupIcons.Close,
-                    onClick = { onCloseDialog(selectedMillis) }
+                    onClick = { onCloseDialog(selectedMillis) },
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 CrisisCleanupTextButton(

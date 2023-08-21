@@ -36,7 +36,7 @@ internal class DrawnDotManager(
     fun isDotOccupied(
         zoom: Int,
         xNorm: Double,
-        yNorm: Double
+        yNorm: Double,
     ): Boolean {
         if (worksitesCount < smallWorksitesCount ||
             zoom > farZoomThreshold

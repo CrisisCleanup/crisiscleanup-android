@@ -40,8 +40,11 @@ class LoadIncidentDataUseCase @Inject constructor(
 
         incidentSelector.setIncident(incident)
 
-        if (incident.id == EmptyIncident.id) IncidentsData.Empty
-        else IncidentsData.Incidents(incidents)
+        if (incident.id == EmptyIncident.id) {
+            IncidentsData.Empty
+        } else {
+            IncidentsData.Incidents(incidents)
+        }
     }.shareIn(
         scope = coroutineScope,
         started = SharingStarted.WhileSubscribed(1_000),

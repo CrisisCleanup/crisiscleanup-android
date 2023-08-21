@@ -240,7 +240,7 @@ fun CrisisCleanupFab(
     iconContent: @Composable () -> Unit = {},
 ) {
     CompositionLocalProvider(
-        LocalRippleTheme provides if (enabled) LocalRippleTheme.current else NoRippleTheme
+        LocalRippleTheme provides if (enabled) LocalRippleTheme.current else NoRippleTheme,
     ) {
         // TODO Complex conditions below are due to some bug when shape is not a circle.
         //      Container color would not need the condition if elevation changed as expected.
@@ -270,7 +270,7 @@ fun WorkTypeAction(
     onClick: () -> Unit = {},
 ) = CrisisCleanupOutlinedButton(
     // TODO Common dimensions
-    modifier = Modifier.testTag("workTypeAction_${text}").widthIn(100.dp),
+    modifier = Modifier.testTag("workTypeAction_$text").widthIn(100.dp),
     text = text,
     onClick = onClick,
     enabled = enabled,
@@ -322,7 +322,8 @@ fun CrisisCleanupOutlinedButtonPreview() {
     CrisisCleanupTheme {
         CrisisCleanupOutlinedButton(text = "Outlined") {
             Icon(
-                imageVector = CrisisCleanupIcons.ArrowDropDown, contentDescription = null
+                imageVector = CrisisCleanupIcons.ArrowDropDown,
+                contentDescription = null,
             )
         }
     }

@@ -47,8 +47,8 @@ class DesignSystemDetector : Detector(), Detector.UastScanner {
             id = "DesignSystem",
             briefDescription = "Design system",
             explanation = "This check highlights calls in code that use Compose Material " +
-                    "composables instead of equivalents from the design system " +
-                    "module.",
+                "composables instead of equivalents from the design system " +
+                "module.",
             category = Category.CUSTOM_LINT_CHECKS,
             priority = 7,
             severity = Severity.ERROR,
@@ -85,10 +85,10 @@ class DesignSystemDetector : Detector(), Detector.UastScanner {
             "OutlinedIconToggleButton" to "CrisisCleanupIconToggleButton",
             "SmallTopAppBar" to "CrisisCleanupTopAppBar",
             "MediumTopAppBar" to "CrisisCleanupTopAppBar",
-            "LargeTopAppBar" to "CrisisCleanupTopAppBar"
+            "LargeTopAppBar" to "CrisisCleanupTopAppBar",
         )
         val RECEIVER_NAMES = mapOf(
-            "Icons" to "CrisisCleanupIcons"
+            "Icons" to "CrisisCleanupIcons",
         )
 
         fun reportIssue(

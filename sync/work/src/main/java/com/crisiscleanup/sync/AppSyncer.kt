@@ -99,8 +99,11 @@ class AppSyncer @Inject constructor(
             worksitesRepository,
             appPreferences,
         )
-        val plan = if (force) unforcedPlan.copy(pullIncidents = true)
-        else unforcedPlan
+        val plan = if (force) {
+            unforcedPlan.copy(pullIncidents = true)
+        } else {
+            unforcedPlan
+        }
         if (!plan.requiresSync) {
             syncLogger.log("Skipping unforced sync")
             scheduleSyncWorksitesFull()
@@ -275,8 +278,11 @@ class AppSyncer @Inject constructor(
                     } catch (e: CancellationException) {
                         true
                     }
-                    if (isSynced) SyncResult.Success("Incident $incidentId worksites full")
-                    else SyncResult.Partial("$incidentId full sync did not finish")
+                    if (isSynced) {
+                        SyncResult.Success("Incident $incidentId worksites full")
+                    } else {
+                        SyncResult.Partial("$incidentId full sync did not finish")
+                    }
                 } else {
                     SyncResult.NotAttempted("Incident not selected")
                 }
@@ -370,8 +376,11 @@ class AppSyncer @Inject constructor(
             }
 
             val isSyncAttempted = worksiteChangeRepository.syncWorksites()
-            return@async if (isSyncAttempted) SyncResult.Success("")
-            else SyncResult.NotAttempted("Sync not attempted")
+            return@async if (isSyncAttempted) {
+                SyncResult.Success("")
+            } else {
+                SyncResult.NotAttempted("Sync not attempted")
+            }
         }
         pushJob = deferred
         return deferred
@@ -384,8 +393,11 @@ class AppSyncer @Inject constructor(
 
         return try {
             val isSyncAll = worksiteChangeRepository.syncWorksiteMedia()
-            return if (isSyncAll) SyncResult.Success("")
-            else SyncResult.Partial("Sync partial worksite media")
+            return if (isSyncAll) {
+                SyncResult.Success("")
+            } else {
+                SyncResult.Partial("Sync partial worksite media")
+            }
         } catch (e: Exception) {
             SyncResult.Error(e.message ?: "Sync media fail")
         }

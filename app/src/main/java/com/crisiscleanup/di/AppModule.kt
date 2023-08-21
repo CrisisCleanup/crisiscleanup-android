@@ -39,13 +39,13 @@ interface AppModule {
     @Singleton
     @Binds
     fun bindsCrisisCleanupAuthInterceptorProvider(
-        provider: CrisisCleanupAuthInterceptorProvider
+        provider: CrisisCleanupAuthInterceptorProvider,
     ): AuthInterceptorProvider
 
     @Singleton
     @Binds
     fun bindsCrisisCleanupInterceptorProvider(
-        provider: CrisisCleanupInterceptorProvider
+        provider: CrisisCleanupInterceptorProvider,
     ): RetrofitInterceptorProvider
 
     @Singleton

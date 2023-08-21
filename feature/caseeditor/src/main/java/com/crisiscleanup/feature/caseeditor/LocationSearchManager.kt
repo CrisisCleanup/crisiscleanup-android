@@ -128,11 +128,17 @@ internal class LocationSearchManager(
         addressSearch,
     ) { q, worksiteResults, addressResults ->
         val addresses =
-            if (addressResults.first == q) addressResults.second
-            else emptyList()
+            if (addressResults.first == q) {
+                addressResults.second
+            } else {
+                emptyList()
+            }
         val worksites =
-            if (worksiteResults.first == q) worksiteResults.second
-            else emptyList()
+            if (worksiteResults.first == q) {
+                worksiteResults.second
+            } else {
+                emptyList()
+            }
         LocationSearchResults(q, addresses, worksites)
     }
 

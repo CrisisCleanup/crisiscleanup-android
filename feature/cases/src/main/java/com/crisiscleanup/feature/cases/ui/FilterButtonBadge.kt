@@ -28,7 +28,7 @@ internal fun FilterButtonBadge(
                 ) {
                     Text(
                         "$filtersCount",
-                        modifier = Modifier.testTag("filterButtonBadge_${filtersCount}"),
+                        modifier = Modifier.testTag("filterButtonBadge_$filtersCount"),
                     )
                 }
             },

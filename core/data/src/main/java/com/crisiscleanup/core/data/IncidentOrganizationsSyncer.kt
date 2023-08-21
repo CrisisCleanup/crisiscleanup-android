@@ -38,7 +38,7 @@ class IncidentOrganizationsSyncer @Inject constructor(
 
     override suspend fun sync(incidentId: Long) {
         val statsUpdater = IncidentDataPullStatsUpdater(
-            updatePullStats = { stats -> dataPullStats.value = stats }
+            updatePullStats = { stats -> dataPullStats.value = stats },
         ).also {
             it.beginPull(incidentId)
         }
@@ -149,7 +149,7 @@ class IncidentOrganizationsSyncer @Inject constructor(
                     targetCount = syncCount,
                     successfulSync = syncStart,
                     appBuildVersionCode = appVersionProvider.versionCode,
-                )
+                ),
             )
         }
 

@@ -28,8 +28,8 @@ fun HelpRow(
     ) {
         Text(
             text,
-            modifier = Modifier.testTag("helpRowText_${text}"),
-            fontWeight = if (isBold) FontWeight.Bold else null
+            modifier = Modifier.testTag("helpRowText_$text"),
+            fontWeight = if (isBold) FontWeight.Bold else null,
         )
         HelpAction(iconContentDescription, showHelp)
     }

@@ -16,7 +16,7 @@ data class NetworkAuthResult(
     val accessToken: String? = null,
     @SerialName("user_claims")
     val claims: NetworkAuthUserClaims? = null,
-    val organizations: NetworkAuthOrganization? = null
+    val organizations: NetworkAuthOrganization? = null,
 )
 
 @Serializable

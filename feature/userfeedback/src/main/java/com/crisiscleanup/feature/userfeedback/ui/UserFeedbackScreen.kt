@@ -44,7 +44,7 @@ fun UserFeedbackRoute(
         val accountId by viewModel.accountId.collectAsStateWithLifecycle(0)
         if (accountId > 0) {
             val selectImageLauncher = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.PickVisualMedia()
+                contract = ActivityResultContracts.PickVisualMedia(),
             ) { uri: Uri? ->
                 uri?.let {
                     viewModel.onMediaSelected(uri)
@@ -54,7 +54,7 @@ fun UserFeedbackRoute(
                 { callback: ValueCallback<Array<Uri>>? ->
                     viewModel.onSaveFileCallback(callback)
                     selectImageLauncher.launch(
-                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
                     )
                 }
             }
@@ -69,7 +69,8 @@ fun UserFeedbackRoute(
                             onChooseFileCallback,
                         )
                     }
-                })
+                },
+            )
         } else {
             Box(Modifier.fillMaxSize()) {
                 BusyIndicatorFloatingTopCenter(true)
@@ -78,16 +79,15 @@ fun UserFeedbackRoute(
     }
 }
 
-
 private fun getChromeClient(
     onChooseFileCallback: (ValueCallback<Array<Uri>>?) -> Unit = {},
-    printLogs: Boolean = false
+    printLogs: Boolean = false,
 ): WebChromeClient {
     return object : WebChromeClient() {
         override fun onShowFileChooser(
             webView: WebView?,
             filePathCallback: ValueCallback<Array<Uri>>?,
-            fileChooserParams: FileChooserParams?
+            fileChooserParams: FileChooserParams?,
         ): Boolean {
             onChooseFileCallback(filePathCallback)
             return true

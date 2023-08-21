@@ -13,7 +13,7 @@ data class ExistingWorksiteIdentifier(
     val worksiteId: Long,
 ) {
     val isDefined = incidentId != EmptyIncident.id &&
-            worksiteId != EmptyWorksite.id
+        worksiteId != EmptyWorksite.id
 }
 
 val ExistingWorksiteIdentifierNone = ExistingWorksiteIdentifier(

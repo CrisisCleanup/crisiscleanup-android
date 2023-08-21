@@ -16,7 +16,7 @@ class MigrationTest {
     @get:Rule
     val helper = MigrationTestHelper(
         InstrumentationRegistry.getInstrumentation(),
-        CrisisCleanupDatabase::class.java
+        CrisisCleanupDatabase::class.java,
     )
 
     @Test
@@ -32,7 +32,7 @@ class MigrationTest {
         Room.databaseBuilder(
             InstrumentationRegistry.getInstrumentation().targetContext,
             CrisisCleanupDatabase::class.java,
-            TEST_DB
+            TEST_DB,
         )
     }
 }

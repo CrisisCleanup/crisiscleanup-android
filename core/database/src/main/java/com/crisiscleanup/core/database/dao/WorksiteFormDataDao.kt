@@ -10,7 +10,7 @@ interface WorksiteFormDataDao {
         """
         DELETE FROM worksite_form_data
         WHERE worksite_id=:worksiteId AND field_key NOT IN(:fieldKeys)
-        """
+        """,
     )
     fun deleteUnspecifiedKeys(worksiteId: Long, fieldKeys: Collection<String>)
 

@@ -65,7 +65,7 @@ class WorkTypeTransferRequestDaoTest {
                 toOrg = 513,
                 networkId = 593,
                 rejectedAt = updatedAtA,
-                approvedRejectedReason = "rejected"
+                approvedRejectedReason = "rejected",
             ),
             // Update
             testWorkTypeTransferRequestEntity(
@@ -76,7 +76,7 @@ class WorkTypeTransferRequestDaoTest {
                 toOrg = 513,
                 networkId = 93,
                 approvedAt = updatedAtA,
-                approvedRejectedReason = "approved"
+                approvedRejectedReason = "approved",
             ),
             // New, different byOrg
             testWorkTypeTransferRequestEntity(
@@ -104,12 +104,14 @@ class WorkTypeTransferRequestDaoTest {
         ).apply {
             val entityIds = listOf(2L, 3, 7, 8)
             val reasons = listOf("reason", "reason", "reason-new", "reason")
-            addAll(newRequests.mapIndexed { index, entity ->
-                entity.copy(
-                    id = entityIds[index],
-                    reason = reasons[index],
-                )
-            })
+            addAll(
+                newRequests.mapIndexed { index, entity ->
+                    entity.copy(
+                        id = entityIds[index],
+                        reason = reasons[index],
+                    )
+                },
+            )
             sortBy(WorkTypeTransferRequestEntity::id)
         }
         val actual = db.testWorkTypeRequestDao().getEntities(1)

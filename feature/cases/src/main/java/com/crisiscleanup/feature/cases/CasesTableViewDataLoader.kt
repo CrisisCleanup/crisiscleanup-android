@@ -121,8 +121,8 @@ class CasesTableViewDataLoader(
                 .map { it.workType }
             val claimedWorkTypes = worksite.workTypes.filter {
                 it.orgClaim != null &&
-                        !affiliateIds.contains(it.orgClaim) &&
-                        !requested.contains(it.workTypeLiteral)
+                    !affiliateIds.contains(it.orgClaim) &&
+                    !requested.contains(it.workTypeLiteral)
             }
             worksiteProvider.editableWorksite.value = worksite
             transferWorkTypeProvider.startTransfer(
@@ -138,8 +138,11 @@ class CasesTableViewDataLoader(
             TableWorksiteClaimAction.Claim -> {
                 if (claimStatus == TableWorksiteClaimStatus.HasUnclaimed) {
                     val changeWorkTypes = worksite.workTypes.map {
-                        if (it.isClaimed) it
-                        else it.copy(orgClaim = myOrgId)
+                        if (it.isClaimed) {
+                            it
+                        } else {
+                            it.copy(orgClaim = myOrgId)
+                        }
                     }
                     saveChanges(worksite, changeWorkTypes, myOrgId)
                     return WorksiteClaimActionResult(isSuccess = true)
@@ -149,8 +152,11 @@ class CasesTableViewDataLoader(
             TableWorksiteClaimAction.Unclaim -> {
                 if (claimStatus == TableWorksiteClaimStatus.ClaimedByMyOrg) {
                     val changeWorkTypes = worksite.workTypes.map {
-                        if (it.orgClaim != myOrgId) it
-                        else it.copy(orgClaim = null)
+                        if (it.orgClaim != myOrgId) {
+                            it
+                        } else {
+                            it.copy(orgClaim = null)
+                        }
                     }
                     saveChanges(worksite, changeWorkTypes, myOrgId)
                     return WorksiteClaimActionResult(isSuccess = true)

@@ -28,7 +28,7 @@ fun BoxScope.MapOverlayMessage(
             Modifier.padding(
                 horizontal = 16.dp,
                 vertical = 48.dp,
-            )
+            ),
         ) {
             Text(
                 text = message,

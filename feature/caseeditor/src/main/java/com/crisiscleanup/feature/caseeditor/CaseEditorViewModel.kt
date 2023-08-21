@@ -164,7 +164,7 @@ class CaseEditorViewModel @Inject constructor(
     val showClaimAndSave =
         editingWorksite.map {
             isCreateWorksite ||
-                    it.workTypes.firstOrNull { w -> w.orgClaim == null } != null
+                it.workTypes.firstOrNull { w -> w.orgClaim == null } != null
         }
 
     init {
@@ -220,9 +220,9 @@ class CaseEditorViewModel @Inject constructor(
         caseEditors = dataLoader.uiState
             .filter {
                 it.asCaseData()?.isNetworkLoadFinished == true &&
-                        editorSetInstant?.let { setInstant ->
-                            Clock.System.now().minus(setInstant) < editorSetWindow
-                        } ?: true
+                    editorSetInstant?.let { setInstant ->
+                        Clock.System.now().minus(setInstant) < editorSetWindow
+                    } ?: true
             }
             .mapLatest {
                 editorSetInstant = Clock.System.now()
@@ -270,9 +270,13 @@ class CaseEditorViewModel @Inject constructor(
                     propertyEditor.editIncidentWorksite,
                     locationEditor.editIncidentWorksite,
                 ) { w0, w1 ->
-                    if (w0.isDefined) w0
-                    else if (w1.isDefined) w1
-                    else w0
+                    if (w0.isDefined) {
+                        w0
+                    } else if (w1.isDefined) {
+                        w1
+                    } else {
+                        w0
+                    }
                 }
                     .distinctUntilChanged()
                     .onEach { identifier ->
@@ -359,8 +363,11 @@ class CaseEditorViewModel @Inject constructor(
 
     private fun updateHeaderTitle(caseNumber: String = "") {
         headerTitle.value = if (caseNumber.isEmpty()) {
-            if (isCreateWorksite) translate("casesVue.new_case")
-            else translate("nav.work_view_case")
+            if (isCreateWorksite) {
+                translate("casesVue.new_case")
+            } else {
+                translate("nav.work_view_case")
+            }
         } else {
             "${translate("actions.view")} $caseNumber"
         }
@@ -483,7 +490,7 @@ class CaseEditorViewModel @Inject constructor(
                     .updateKeyWorkType(initialWorksite)
                 val saveIncidentId = saveChangeIncident.id
                 val isIncidentChange = saveIncidentId != EmptyIncident.id &&
-                        saveIncidentId != worksite.incidentId
+                    saveIncidentId != worksite.incidentId
                 if (worksite == initialWorksite && !isIncidentChange) {
                     if (backOnSuccess) {
                         navigateBack.value = true
@@ -502,8 +509,11 @@ class CaseEditorViewModel @Inject constructor(
                 if (claimUnclaimed) {
                     workTypes = workTypes
                         .map {
-                            if (it.orgClaim != null) it
-                            else it.copy(orgClaim = editorStateData.orgId)
+                            if (it.orgClaim != null) {
+                                it
+                            } else {
+                                it.copy(orgClaim = editorStateData.orgId)
+                            }
                         }
                 }
 
@@ -512,8 +522,8 @@ class CaseEditorViewModel @Inject constructor(
                 val updatedReportedBy =
                     if (worksite.isNew) editorStateData.orgId else worksite.reportedBy
                 val clearWhat3Words = worksite.what3Words?.isNotBlank() == true &&
-                        worksite.latitude != initialWorksite.latitude ||
-                        worksite.longitude != initialWorksite.longitude
+                    worksite.latitude != initialWorksite.latitude ||
+                    worksite.longitude != initialWorksite.longitude
                 val updatedWhat3Words = if (clearWhat3Words) "" else worksite.what3Words
 
                 val updatedWorksite = worksite.copy(
@@ -581,8 +591,11 @@ class CaseEditorViewModel @Inject constructor(
             is LocationInputData -> {
                 val (isAddressError, message) = dataWriter.getUserErrorMessage()
                 val section =
-                    if (isAddressError) WorksiteSection.LocationAddress
-                    else WorksiteSection.Location
+                    if (isAddressError) {
+                        WorksiteSection.LocationAddress
+                    } else {
+                        WorksiteSection.Location
+                    }
                 invalidWorksiteInfo.value = InvalidWorksiteInfo(section, message)
                 showInvalidWorksiteSave.value = true
             }
@@ -683,7 +696,7 @@ sealed interface CaseEditorUiState {
         val isTranslationUpdated: Boolean,
     ) : CaseEditorUiState {
         val isPendingSync = !isLocalLoadFinished ||
-                localWorksite?.localChanges?.isLocalModified ?: false
+            localWorksite?.localChanges?.isLocalModified ?: false
     }
 
     data class Error(
@@ -727,7 +740,7 @@ internal data class CaseEditors(
         details,
         work,
         hazards,
-        volunteerReport
+        volunteerReport,
     ),
 ) {
     val dataWriters: List<CaseDataWriter> = mutableListOf(

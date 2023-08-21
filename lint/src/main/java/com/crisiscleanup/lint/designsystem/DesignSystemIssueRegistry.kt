@@ -19,6 +19,6 @@ class DesignSystemIssueRegistry : IssueRegistry() {
         vendorName = "Crisis Cleanup",
         // TODO Update once repo is created
         feedbackUrl = "https://github.com/CrisisCleanup/crisis-cleanup-android/issues",
-        contact = "https://github.com/CrisisCleanup/crisis-cleanup-android"
+        contact = "https://github.com/CrisisCleanup/crisis-cleanup-android",
     )
 }

@@ -63,7 +63,7 @@ class IncidentWorksitesSyncer @Inject constructor(
         syncStats: IncidentDataSyncStats,
     ) {
         val statsUpdater = IncidentDataPullStatsUpdater(
-            updatePullStats = { stats -> dataPullStats.value = stats }
+            updatePullStats = { stats -> dataPullStats.value = stats },
         ).also {
             it.beginPull(incidentId)
         }
@@ -108,7 +108,7 @@ class IncidentWorksitesSyncer @Inject constructor(
                     pageCount,
                     networkPullPage,
                     syncCount,
-                    updatedAfter
+                    updatedAfter,
                 )
                 networkPullPage++
                 requestingCount += pageCount

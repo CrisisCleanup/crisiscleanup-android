@@ -40,8 +40,8 @@ fun Worksite.copyModifiedFormData(
     val prevValue = outFormData?.get(targetFieldKey)
     val isChanged =
         prevValue == null ||
-                formValue.isBoolean && formValue.valueBoolean != prevValue.valueBoolean ||
-                !formValue.isBoolean && trimDataValue != prevValue.valueString.trim()
+            formValue.isBoolean && formValue.valueBoolean != prevValue.valueBoolean ||
+            !formValue.isBoolean && trimDataValue != prevValue.valueString.trim()
     if (!isChanged) {
         return outFormData
     }

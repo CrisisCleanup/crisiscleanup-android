@@ -15,16 +15,16 @@ import androidx.hilt.navigation.compose.hiltViewModel
 @Composable
 internal fun TeamRoute(
     modifier: Modifier = Modifier,
-    viewModel: TeamViewModel = hiltViewModel()
+    viewModel: TeamViewModel = hiltViewModel(),
 ) {
     TeamScreen(
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
 @Composable
 internal fun TeamScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Box(Modifier.fillMaxSize()) {
         Text(
@@ -33,7 +33,7 @@ internal fun TeamScreen(
                 .fillMaxWidth()
                 .padding(48.dp),
             textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.bodySmall
+            style = MaterialTheme.typography.bodySmall,
         )
     }
 }

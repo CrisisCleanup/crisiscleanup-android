@@ -20,7 +20,7 @@ class WrongLocationFlagManager(
     private val isVerifyingCoordinates = MutableStateFlow(false)
     val isProcessingLocation = combine(
         isParsingCoordinates,
-        isVerifyingCoordinates
+        isVerifyingCoordinates,
     ) { b0, b1 -> b0 || b1 }
         .stateIn(
             coroutineScope,

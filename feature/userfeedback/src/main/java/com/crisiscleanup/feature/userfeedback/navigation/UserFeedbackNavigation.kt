@@ -7,7 +7,6 @@ import androidx.navigation.compose.composable
 import com.crisiscleanup.core.appnav.RouteConstant
 import com.crisiscleanup.feature.userfeedback.ui.UserFeedbackRoute
 
-
 fun NavController.navigateToUserFeedback(navOptions: NavOptions? = null) {
     this.navigate(RouteConstant.userFeedbackRoute, navOptions)
 }

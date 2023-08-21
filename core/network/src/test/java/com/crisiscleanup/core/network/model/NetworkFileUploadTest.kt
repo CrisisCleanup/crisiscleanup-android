@@ -18,8 +18,8 @@ class NetworkFileUploadTest {
                     credential = "cred",
                     date = "date",
                     policy = "policy",
-                    signature = "sig"
-                )
+                    signature = "sig",
+                ),
             ),
         )
 

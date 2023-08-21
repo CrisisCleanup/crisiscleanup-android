@@ -17,8 +17,8 @@ import kotlinx.serialization.json.Json
             value = ["start_at"],
             orders = [Index.Order.DESC],
             name = "idx_newest_to_oldest_incidents",
-        )
-    ]
+        ),
+    ],
 )
 data class IncidentEntity(
     @PrimaryKey
@@ -75,7 +75,7 @@ fun IncidentLocationEntity.asExternalModel() = IncidentLocation(
             value = ["incident_location_id", "incident_id"],
             name = "idx_incident_location_to_incident",
         ),
-    ]
+    ],
 )
 data class IncidentIncidentLocationCrossRef(
     @ColumnInfo("incident_id")
@@ -98,7 +98,7 @@ data class IncidentIncidentLocationCrossRef(
     primaryKeys = ["incident_id", "parent_key", "field_key"],
     indices = [
         Index(value = ["data_group", "parent_key", "list_order"]),
-    ]
+    ],
 )
 data class IncidentFormFieldEntity(
     @ColumnInfo("incident_id")
@@ -149,9 +149,13 @@ fun IncidentFormFieldEntity.asExternalModel(): IncidentFormField {
     val formValues =
         if (valuesJson?.isNotEmpty() == true) Json.decodeFromString<Map<String, String>>(valuesJson) else emptyMap()
     val formValuesDefault =
-        if (formValues.isEmpty() && valuesDefaultJson?.isNotEmpty() == true) Json.decodeFromString<Map<String, String?>>(
-            valuesDefaultJson
-        ) else emptyMap()
+        if (formValues.isEmpty() && valuesDefaultJson?.isNotEmpty() == true) {
+            Json.decodeFromString<Map<String, String?>>(
+                valuesDefaultJson,
+            )
+        } else {
+            emptyMap()
+        }
     return IncidentFormField(
         label = label,
         htmlType = htmlType,

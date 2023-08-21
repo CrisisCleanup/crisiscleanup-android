@@ -170,9 +170,13 @@ internal class EditableLocationDataEditor(
 
     override val defaultMapZoom: Float
         get() {
-            val zoom = if (worksiteProvider.editableWorksite.value.address.isBlank()) 7
-            else if (isMoveLocationOnMapMode.value) 19
-            else 13
+            val zoom = if (worksiteProvider.editableWorksite.value.address.isBlank()) {
+                7
+            } else if (isMoveLocationOnMapMode.value) {
+                19
+            } else {
+                13
+            }
             return zoom + (Math.random() * 1e-3).toFloat()
         }
     private var zoomCache = defaultMapZoom
@@ -202,8 +206,10 @@ internal class EditableLocationDataEditor(
         incidentId = worksiteIn.incidentId
 
         if (worksite.isNew &&
-            (worksite.coordinates == EmptyWorksite.coordinates ||
-                    worksite.coordinates == DefaultCoordinates)
+            (
+                worksite.coordinates == EmptyWorksite.coordinates ||
+                    worksite.coordinates == DefaultCoordinates
+                )
         ) {
             val incidentBounds = worksiteProvider.incidentBounds
             var worksiteCoordinates: LatLng = incidentBounds.centroid
@@ -282,8 +288,11 @@ internal class EditableLocationDataEditor(
 
     override val mapMarkerIcon = isLocationInBounds
         .map {
-            if (it) inBoundsPinIcon
-            else outOfBoundsPinIcon
+            if (it) {
+                inBoundsPinIcon
+            } else {
+                outOfBoundsPinIcon
+            }
         }
         .flowOn(ioDispatcher)
         .stateIn(
@@ -294,8 +303,9 @@ internal class EditableLocationDataEditor(
 
     override val locationOutOfBoundsMessage = isLocationInBounds
         .map {
-            if (it) ""
-            else {
+            if (it) {
+                ""
+            } else {
                 translator("caseForm.case_outside_incident_name")
                     .replace("{incident_name}", worksiteProvider.incident.name)
             }
@@ -305,7 +315,6 @@ internal class EditableLocationDataEditor(
             initialValue = "",
             started = SharingStarted.WhileSubscribed(),
         )
-
 
     private fun setDefaultMapCamera(coordinates: LatLng) {
         if (coordinates == DefaultCoordinates) {
@@ -354,7 +363,8 @@ internal class EditableLocationDataEditor(
             }
 
             PermissionStatus.Denied,
-            PermissionStatus.Undefined -> {
+            PermissionStatus.Undefined,
+            -> {
                 // Ignore these statuses as they're not important
             }
         }
@@ -384,7 +394,7 @@ internal class EditableLocationDataEditor(
     override fun onMapCameraChange(
         cameraPosition: CameraPosition,
         projection: Projection?,
-        isActiveChange: Boolean
+        isActiveChange: Boolean,
     ) {
         zoomCache = cameraPosition.zoom
 
@@ -653,8 +663,11 @@ internal class LocationOutOfBoundsManager(
             isCheckingOutOfBounds.value = true
             try {
                 val recentIncident = boundsProvider.isInRecentIncidentBounds(coordinates)
-                locationOutOfBounds.value = if (recentIncident == null) outOfBoundsData
-                else outOfBoundsData.copy(recentIncident = recentIncident)
+                locationOutOfBounds.value = if (recentIncident == null) {
+                    outOfBoundsData
+                } else {
+                    outOfBoundsData.copy(recentIncident = recentIncident)
+                }
             } finally {
                 isCheckingOutOfBounds.value = false
             }

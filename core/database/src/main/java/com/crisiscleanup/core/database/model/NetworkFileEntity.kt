@@ -52,7 +52,7 @@ data class NetworkFileEntity(
     ],
     indices = [
         Index(value = ["network_file_id", "worksite_id"]),
-    ]
+    ],
 )
 data class WorksiteNetworkFileCrossRef(
     @ColumnInfo("worksite_id")

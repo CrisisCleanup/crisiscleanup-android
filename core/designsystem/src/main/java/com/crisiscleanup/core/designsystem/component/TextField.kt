@@ -114,18 +114,21 @@ fun SingleLineTextField(
         onDone = onEnter?.let { { onEnter() } },
     )
     val labelText = if (labelResId == 0) label else stringResource(labelResId)
-    val labelContent: (@Composable (() -> Unit)?) = if (labelText.isBlank()) null
-    else {
+    val labelContent: (@Composable (() -> Unit)?) = if (labelText.isBlank()) {
+        null
+    } else {
         { Text(labelText) }
     }
     val trailingIconContent: (@Composable (() -> Unit)?) =
-        if (value.isEmpty() || trailingIcon == null) null
-        else {
+        if (value.isEmpty() || trailingIcon == null) {
+            null
+        } else {
             { trailingIcon() }
         }
     val placeholderContent: (@Composable (() -> Unit)?) =
-        if (placeholder.isBlank()) null
-        else {
+        if (placeholder.isBlank()) {
+            null
+        } else {
             { Text(placeholder) }
         }
 
@@ -169,7 +172,7 @@ fun SingleLineTextField(
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent,
-            )
+            ),
         )
     }
 
@@ -289,8 +292,11 @@ fun OutlinedObfuscatingTextField(
     imeAction: ImeAction = ImeAction.Next,
 ) {
     val visualTransformation =
-        if (isObfuscating) PasswordVisualTransformation()
-        else VisualTransformation.None
+        if (isObfuscating) {
+            PasswordVisualTransformation()
+        } else {
+            VisualTransformation.None
+        }
 
     val trailingIcon = @Composable {
         if (value.isNotEmpty()) {
@@ -298,10 +304,16 @@ fun OutlinedObfuscatingTextField(
                 onClick = { onObfuscate?.invoke() },
                 enabled = enabled,
             ) {
-                val icon = if (isObfuscating) CrisisCleanupIcons.Visibility
-                else CrisisCleanupIcons.VisibilityOff
-                val translateKey = if (isObfuscating) "actions.show"
-                else "actions.hide"
+                val icon = if (isObfuscating) {
+                    CrisisCleanupIcons.Visibility
+                } else {
+                    CrisisCleanupIcons.VisibilityOff
+                }
+                val translateKey = if (isObfuscating) {
+                    "actions.show"
+                } else {
+                    "actions.hide"
+                }
                 val iconTestTag = if (isObfuscating) "textFieldShowIcon" else "textFieldHideIcon"
                 val translator = LocalAppTranslator.current
                 Icon(

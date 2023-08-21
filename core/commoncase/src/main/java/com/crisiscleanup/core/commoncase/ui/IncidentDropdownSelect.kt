@@ -41,7 +41,7 @@ fun IncidentDropdownSelect(
     ) {
         val contentColor = LocalContentColor.current
         CompositionLocalProvider(
-            LocalContentColor provides if (enabled) contentColor else contentColor.disabledAlpha()
+            LocalContentColor provides if (enabled) contentColor else contentColor.disabledAlpha(),
         ) {
             DisasterIcon(disasterIconResId, title)
             TruncatedAppBarText(
@@ -55,13 +55,13 @@ fun IncidentDropdownSelect(
             AnimatedVisibility(
                 visible = isLoading,
                 enter = fadeIn(),
-                exit = fadeOut()
+                exit = fadeOut(),
             ) {
                 CircularProgressIndicator(
                     modifier
                         .testTag("incidentSelectLoadingIndicator")
                         .size(48.dp)
-                        .padding(8.dp)
+                        .padding(8.dp),
                 )
             }
         }

@@ -143,7 +143,7 @@ fun PopulatedWorksiteMapVisual.asExternalModel(isFilteredOut: Boolean = false) =
     isFavorite = favoriteId != null,
     isHighPriority = flags.any {
         it.isHighPriority == true ||
-                it.reasonT == highPriorityFlagLiteral
+            it.reasonT == highPriorityFlagLiteral
     },
     isDuplicate = flags.any { it.reasonT == duplicateFlagLiteral },
     isFilteredOut = isFilteredOut,

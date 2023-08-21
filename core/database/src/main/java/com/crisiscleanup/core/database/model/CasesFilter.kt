@@ -86,7 +86,8 @@ fun CasesFilter.passesFilter(
     if (formDataFilters.isNotEmpty()) {
         if (!formData.any {
                 formDataFilters.contains(it.fieldKey) && it.isBoolValue
-            }) {
+            }
+        ) {
             return false
         }
     }
@@ -148,8 +149,10 @@ internal fun CasesFilter.passes(
     val filterByDistance = latRad != null && lngRad != null && hasDistanceFilter
     val distance = if (filterByDistance) {
         haversineDistance(
-            latRad!!, lngRad!!,
-            worksite.latitude.radians, worksite.longitude.radians,
+            latRad!!,
+            lngRad!!,
+            worksite.latitude.radians,
+            worksite.longitude.radians,
         ).kmToMiles
     } else {
         0.0

@@ -132,7 +132,7 @@ class ExistingCaseViewModel @Inject constructor(
     )
         .mapLatest { (syncingWorksiteIds, imageSyncingWorksiteId) ->
             syncingWorksiteIds.contains(worksiteIdArg) ||
-                    imageSyncingWorksiteId == worksiteIdArg
+                imageSyncingWorksiteId == worksiteIdArg
         }
         .stateIn(
             scope = viewModelScope,
@@ -194,7 +194,7 @@ class ExistingCaseViewModel @Inject constructor(
         @SuppressLint("SimpleDateFormat")
         get() {
             val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-            val fileName = "CC_${timeStamp}.jpg"
+            val fileName = "CC_$timeStamp.jpg"
             val contentValues = ContentValues().apply {
                 put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
                 put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
@@ -303,7 +303,7 @@ class ExistingCaseViewModel @Inject constructor(
     val tabTitles = filesNotes.mapLatest { (fileImages, localImages, notes) ->
         val fileCount = fileImages.size + localImages.size
         val photosTitle = translate("caseForm.photos").let {
-            if (fileCount > 0) "$it (${fileCount})" else it
+            if (fileCount > 0) "$it ($fileCount)" else it
         }
         val notesTitle = translate("formLabels.notes").let {
             if (notes.isNotEmpty()) "$it (${notes.size})" else it
@@ -338,10 +338,13 @@ class ExistingCaseViewModel @Inject constructor(
         )
 
     val subTitle = editableWorksite.mapLatest {
-        if (it.isNew) ""
-        else listOf(it.county, it.state)
-            .filter { s -> s.isNotBlank() }
-            .joinToString(", ")
+        if (it.isNew) {
+            ""
+        } else {
+            listOf(it.county, it.state)
+                .filter { s -> s.isNotBlank() }
+                .joinToString(", ")
+        }
     }
         .stateIn(
             scope = viewModelScope,
@@ -357,8 +360,8 @@ class ExistingCaseViewModel @Inject constructor(
     )
         .filter {
             it.first is CaseEditorUiState.CaseData &&
-                    !it.second.isNew &&
-                    it.third.isNotEmpty()
+                !it.second.isNew &&
+                it.third.isNotEmpty()
         }
         .filter {
             val (viewModelState, _, orgLookup) = it
@@ -506,8 +509,11 @@ class ExistingCaseViewModel @Inject constructor(
         )
 
     private fun updateHeaderTitle(caseNumber: String = "") {
-        headerTitle.value = if (caseNumber.isEmpty()) translate("nav.work_view_case")
-        else "${translate("actions.view")} $caseNumber"
+        headerTitle.value = if (caseNumber.isEmpty()) {
+            translate("nav.work_view_case")
+        } else {
+            "${translate("actions.view")} $caseNumber"
+        }
     }
 
     private fun refreshOrganizationLookup() {
@@ -585,8 +591,11 @@ class ExistingCaseViewModel @Inject constructor(
             startingWorksite.copy(isAssignedToOrgMember = !startingWorksite.isLocalFavorite)
         saveWorksiteChange(startingWorksite, changedWorksite)
 
-        val messageTranslateKey = if (changedWorksite.isLocalFavorite) "caseView.member_my_org"
-        else "actions.member_of_my_org"
+        val messageTranslateKey = if (changedWorksite.isLocalFavorite) {
+            "caseView.member_my_org"
+        } else {
+            "actions.member_of_my_org"
+        }
         actionDescriptionMessage.value = translate(messageTranslateKey)
     }
 
@@ -595,8 +604,11 @@ class ExistingCaseViewModel @Inject constructor(
         val changedWorksite = startingWorksite.toggleHighPriorityFlag()
         saveWorksiteChange(startingWorksite, changedWorksite)
 
-        val messageTranslateKey = if (changedWorksite.hasHighPriorityFlag) "caseView.high_priority"
-        else "caseView.not_high_priority"
+        val messageTranslateKey = if (changedWorksite.hasHighPriorityFlag) {
+            "caseView.high_priority"
+        } else {
+            "caseView.not_high_priority"
+        }
         actionDescriptionMessage.value = translate(messageTranslateKey)
     }
 
@@ -653,8 +665,11 @@ class ExistingCaseViewModel @Inject constructor(
             val updatedWorkTypes =
                 startingWorksite.workTypes
                     .map {
-                        if (it.isClaimed) it
-                        else it.copy(orgClaim = orgId)
+                        if (it.isClaimed) {
+                            it
+                        } else {
+                            it.copy(orgClaim = orgId)
+                        }
                     }
             val changedWorksite = startingWorksite.copy(workTypes = updatedWorkTypes)
             saveWorksiteChange(startingWorksite, changedWorksite)

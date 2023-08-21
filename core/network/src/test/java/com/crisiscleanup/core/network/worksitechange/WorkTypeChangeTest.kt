@@ -85,8 +85,8 @@ class WorkTypeChangeTest {
                     326,
                     status = "status",
                     workType = "work-type-a",
-                )
-            )
+                ),
+            ),
         )
         val actual = worksite.getWorkTypeChanges(start, emptyList(), updatedAtA)
         assertEquals(emptyChangesResult, actual)
@@ -106,8 +106,8 @@ class WorkTypeChangeTest {
                     326,
                     status = "status",
                     workType = "work-type-a",
-                )
-            )
+                ),
+            ),
         )
         val actual = worksite.getWorkTypeChanges(start, change, updatedAtA)
         assertEquals(emptyChangesResult, actual)
@@ -132,9 +132,9 @@ class WorkTypeChangeTest {
                             -1,
                             workType = "work-type-a",
                             status = "status-b",
-                        )
-                    )
-                )
+                        ),
+                    ),
+                ),
             ),
             actual,
         )
@@ -154,8 +154,8 @@ class WorkTypeChangeTest {
                     326,
                     status = "status",
                     workType = "work-type-a",
-                )
-            )
+                ),
+            ),
         )
         val actual = worksite.getWorkTypeChanges(start, change, updatedAtA)
         assertEquals(emptyChangesResult, actual)
@@ -171,8 +171,8 @@ class WorkTypeChangeTest {
                     326,
                     status = "status",
                     workType = "work-type-a",
-                )
-            )
+                ),
+            ),
         )
         val actual = worksite.getWorkTypeChanges(start, change, updatedAtA)
         assertEquals(emptyChangesResult, actual)
@@ -193,7 +193,7 @@ class WorkTypeChangeTest {
                     status = "status",
                     workType = "work-type-b",
                 ),
-            )
+            ),
         )
         val actual = worksite.getWorkTypeChanges(start, emptyList(), updatedAtA)
         assertEquals(emptyChangesResult.copy(third = listOf(326L)), actual)
@@ -215,7 +215,7 @@ class WorkTypeChangeTest {
                     phase = 2,
                     recur = "recur",
                 ),
-            )
+            ),
         )
 
         val actual = worksite.getWorkTypeChanges(emptyList(), change, updatedAtA)
@@ -233,7 +233,7 @@ class WorkTypeChangeTest {
                     status = "status-b",
                     workType = "work-type-a",
                 ),
-            )
+            ),
         )
         assertEquals(emptyChangesResult.copy(first = expectedChanges), actual)
     }
@@ -254,7 +254,7 @@ class WorkTypeChangeTest {
                     phase = 2,
                     recur = "recur",
                 ),
-            )
+            ),
         )
 
         val actual = worksite.getWorkTypeChanges(emptyList(), change, updatedAtA)
@@ -276,7 +276,7 @@ class WorkTypeChangeTest {
                 updatedAtA,
                 isClaimChange = false,
                 isStatusChange = true,
-            )
+            ),
         )
         assertEquals(emptyChangesResult.copy(second = expectedChanges), actual)
     }
@@ -334,7 +334,7 @@ class WorkTypeChangeTest {
                     orgClaim = 471,
                     phase = 4,
                 ),
-            )
+            ),
         )
         val actual = worksite.getWorkTypeChanges(start, change, updatedAtA)
         val expectedChanges = listOf(

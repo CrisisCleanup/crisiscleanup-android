@@ -13,9 +13,12 @@ internal fun BoxScope.CopiedToClipboard(
 ) {
     val clipboardManager = LocalClipboardManager.current
     val translator = LocalAppTranslator.current
-    val copiedText = if (clipboardContents.isBlank()) ""
-    else translator("info.copied_value")
-        .replace("{copied_string}", clipboardContents)
+    val copiedText = if (clipboardContents.isBlank()) {
+        ""
+    } else {
+        translator("info.copied_value")
+            .replace("{copied_string}", clipboardContents)
+    }
     TemporaryDialog(
         message = copiedText,
         onDialogStartShow = {

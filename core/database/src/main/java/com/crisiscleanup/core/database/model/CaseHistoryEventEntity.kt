@@ -20,7 +20,7 @@ import kotlinx.datetime.Instant
     indices = [
         Index(
             value = ["worksite_id", "created_by", "created_at"],
-        )
+        ),
     ],
 )
 data class CaseHistoryEventEntity(
