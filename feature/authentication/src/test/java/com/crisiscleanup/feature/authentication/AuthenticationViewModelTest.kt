@@ -113,6 +113,7 @@ class AuthenticationViewModelTest {
                 selectedIncidentId = 0,
                 languageKey = EnglishLanguage.key,
                 tableViewSortBy = WorksiteSortBy.None,
+                allowAllAnalytics = false,
             )
         )
 
