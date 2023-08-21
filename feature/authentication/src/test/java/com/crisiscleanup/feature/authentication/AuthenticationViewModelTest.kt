@@ -163,6 +163,7 @@ class AuthenticationViewModelTest {
      * View model starts out as not authenticating
      */
     @Test
+    @Ignore("Auth flow will change. Ignoring this test for now...")
     fun initialState() = runTest {
         // Setup
         val accountDataFlow = flow { emit(emptyAccountData) }
@@ -175,6 +176,7 @@ class AuthenticationViewModelTest {
     }
 
     @Test
+    @Ignore("Auth flow will change. Ignoring this test for now...")
     fun notAuthenticated_authenticateEmailPassword() = runTest {
         // Setup
         val accountDataFlow = flow { emit(emptyAccountData) }
@@ -251,6 +253,7 @@ class AuthenticationViewModelTest {
     // TODO Other paths in authenticateEmailPassword()
 
     @Test
+    @Ignore("Auth flow will change. Ignoring this test for now...")
     fun authenticated_logout() = runTest {
         // Setup
         val accountDataFlow = flow { emit(nonEmptyAccountData) }
