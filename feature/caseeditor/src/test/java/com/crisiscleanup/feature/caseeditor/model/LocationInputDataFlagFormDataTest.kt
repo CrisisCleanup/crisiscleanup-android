@@ -76,6 +76,7 @@ class LocationInputDataFlagFormDataTest {
             "flag.worksite_wrong_location",
             "",
             "",
+            attr = null
         )
         assertEquals(expectedFlag, lastFlag)
     }
