@@ -52,6 +52,10 @@ fun List<PopulatedTableDataWorksite>.filter(
                 it.base.isFavorite,
                 locationAreaBounds,
             )
-        ) it else null
+        ) {
+            it
+        } else {
+            null
+        }
     }
 }

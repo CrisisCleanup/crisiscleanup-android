@@ -46,7 +46,7 @@ internal fun ColumnScope.SearchContents(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .weight(1f)
+            .weight(1f),
     ) {
         BusyIndicatorFloatingTopCenter(isBusySearching)
 
@@ -155,7 +155,7 @@ private fun ListSearchResults(
                             enabled = isEditable,
                             onClick = { onAddressSelect(keyAddress.address) },
                         )
-                        .listItemOptionPadding()
+                        .listItemOptionPadding(),
                 ) {
                     with(keyAddress.address) {
                         Column {

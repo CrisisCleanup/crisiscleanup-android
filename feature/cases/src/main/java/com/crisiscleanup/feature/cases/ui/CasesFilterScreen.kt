@@ -381,7 +381,7 @@ private fun LazyListScope.rangeSliderItem(
                 Text(
                     text,
                     modifier = Modifier
-                        .testTag("filterSectionHeader_${text}")
+                        .testTag("filterSectionHeader_$text")
                         .listItemVerticalPadding(),
                     style = LocalFontStyles.current.header3,
                     fontWeight = FontWeight.Bold,
@@ -398,7 +398,7 @@ private fun LazyListScope.rangeSliderItem(
                     ) {
                         HelpRow(
                             text = label,
-                            modifier = Modifier.testTag("filterSectionHeaderHelpRow_${label}"),
+                            modifier = Modifier.testTag("filterSectionHeaderHelpRow_$label"),
                             iconContentDescription = label,
                             showHelp = showHelp,
                             isBold = true,
@@ -481,12 +481,15 @@ private fun FilterHeaderCollapsible(
     ) {
         Text(
             sectionTitle,
-            modifier = Modifier.testTag("filterHeaderCollapsibleTitle_${sectionTitle}"),
+            modifier = Modifier.testTag("filterHeaderCollapsibleTitle_$sectionTitle"),
             style = LocalFontStyles.current.header3,
         )
         val iconVector =
-            if (isCollapsed) CrisisCleanupIcons.ExpandLess
-            else CrisisCleanupIcons.ExpandMore
+            if (isCollapsed) {
+                CrisisCleanupIcons.ExpandLess
+            } else {
+                CrisisCleanupIcons.ExpandMore
+            }
         Spacer(Modifier.weight(1f))
 
         CollapsibleIcon(isCollapsed, sectionTitle, iconVector)
@@ -525,7 +528,7 @@ private fun LazyListScope.collapsibleSectionHeader(
     ) {
         FilterHeaderCollapsible(
             sectionTitle = LocalAppTranslator.current(translationKey),
-            modifier = Modifier.testTag("filterHeaderCollapsible_${translationKey}"),
+            modifier = Modifier.testTag("filterHeaderCollapsible_$translationKey"),
             isCollapsed = !isSectionExpanded,
             toggleCollapse = toggleSection,
         )
@@ -560,12 +563,12 @@ private fun LazyListScope.distanceOptions(
                 ) {
                     Text(
                         translator(messageKey),
-                        modifier = Modifier.testTag("filterText_${messageKey}"),
+                        modifier = Modifier.testTag("filterText_$messageKey"),
                     )
 
                     CrisisCleanupButton(
                         text = translator(actionKey),
-                        modifier = Modifier.testTag("filterCCUBtn_${actionKey}"),
+                        modifier = Modifier.testTag("filterCCUBtn_$actionKey"),
                         onClick = requestLocationPermission,
                     )
                 }
@@ -591,7 +594,7 @@ private fun LazyListScope.subsectionHeader(
     item(contentType = "subsection-header") {
         Text(
             text = LocalAppTranslator.current(translateKey),
-            modifier = listItemModifier.testTag("filterSubSectionHeader_${translateKey}"),
+            modifier = listItemModifier.testTag("filterSubSectionHeader_$translateKey"),
             style = LocalFontStyles.current.header4,
         )
     }
@@ -605,7 +608,7 @@ private fun LazyListScope.checkboxItem(
 ) {
     item(contentType = "filter-checkbox") {
         CrisisCleanupTextCheckbox(
-            listItemModifier.testTag("filterCheckbox_${textTranslateKey}"),
+            listItemModifier.testTag("filterCheckbox_$textTranslateKey"),
             text = LocalAppTranslator.current(textTranslateKey),
             checked = isChecked,
             onCheckChange = onCheckChange,
@@ -824,7 +827,7 @@ private fun LazyListScope.workOptions(
         for (workType in workTypes) {
             val isChecked = filters.workTypes.contains(workType)
             checkboxItem(
-                "workType.${workType}",
+                "workType.$workType",
                 isChecked,
                 { b: Boolean -> updateWorkTypes(workType, b) },
                 { updateWorkTypes(workType, !isChecked) },
@@ -854,7 +857,7 @@ private fun LazyListScope.dateItem(
         Text(
             label,
             Modifier
-                .testTag("dateItemLabel_${label}")
+                .testTag("dateItemLabel_$label")
                 .listItemHorizontalPadding(),
             style = MaterialTheme.typography.bodyLarge,
         )
@@ -862,7 +865,7 @@ private fun LazyListScope.dateItem(
             label,
             listItemModifier
                 .padding(bottom = 8.dp)
-                .testTag("dateItemDatePicker_${label}"),
+                .testTag("dateItemDatePicker_$label"),
             dateRange = dateRange,
             onDateChange = onDateChange,
         )
@@ -996,4 +999,3 @@ fun BottomActionBar(
         )
     }
 }
-

@@ -128,8 +128,8 @@ private fun BoxScope.MoveMapUnderLocation(
     val onMapLoaded = remember(viewModel) { { editor.onMapLoaded() } }
     val onMapCameraChange = remember(viewModel) {
         { position: CameraPosition,
-          projection: Projection?,
-          isUserInteraction: Boolean ->
+                projection: Projection?,
+                isUserInteraction: Boolean, ->
             editor.onMapCameraChange(position, projection, isUserInteraction)
         }
     }
@@ -172,7 +172,8 @@ private fun BoxScope.MoveMapUnderLocation(
     LaunchedEffect(mapCameraZoom) {
         if (mapCameraZoom.takeApply()) {
             val update = CameraUpdateFactory.newLatLngZoom(
-                mapCameraZoom.center, mapCameraZoom.zoom
+                mapCameraZoom.center,
+                mapCameraZoom.zoom,
             )
 
             if (mapCameraZoom.durationMs > 0) {

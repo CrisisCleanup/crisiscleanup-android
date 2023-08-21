@@ -113,8 +113,11 @@ internal class CaseEditorDataLoader(
 
     val worksiteStream = worksiteIdStream
         .flatMapLatest { worksiteId ->
-            if (worksiteId == null || worksiteId <= 0) flowOf(null)
-            else worksitesRepository.streamLocalWorksite(worksiteId)
+            if (worksiteId == null || worksiteId <= 0) {
+                flowOf(null)
+            } else {
+                worksitesRepository.streamLocalWorksite(worksiteId)
+            }
         }
         .distinctUntilChanged()
         .flowOn(coroutineDispatcher)
@@ -193,8 +196,11 @@ internal class CaseEditorDataLoader(
             var worksiteState = loadedWorksite ?: EmptyWorksite.copy(
                 incidentId = incidentIdIn,
                 autoContactFrequencyT = AutoContactFrequency.Often.literal,
-                flags = if (networkMonitor.isOnline.first()) EmptyWorksite.flags
-                else listOf(WorksiteFlag.wrongLocation()),
+                flags = if (networkMonitor.isOnline.first()) {
+                    EmptyWorksite.flags
+                } else {
+                    listOf(WorksiteFlag.wrongLocation())
+                },
             )
 
             with(editableWorksiteProvider) {
@@ -252,8 +258,11 @@ internal class CaseEditorDataLoader(
                             formFields.map {
                                 with(it.formField) {
                                     val isRequired = requiredGroups.contains(group)
-                                    if (isRequired) "$label *"
-                                    else label
+                                    if (isRequired) {
+                                        "$label *"
+                                    } else {
+                                        label
+                                    }
                                 }
                             },
                         )
@@ -290,20 +299,20 @@ internal class CaseEditorDataLoader(
             }
 
             var isEditingAllowed = editSections.value.isNotEmpty() &&
-                    workTypeStatuses.isNotEmpty()
+                workTypeStatuses.isNotEmpty()
             var isNetworkLoadFinished = true
             var isLocalLoadFinished = true
             if (!isCreateWorksite) {
                 // Minimal state for editing to to begin
                 isEditingAllowed = isEditingAllowed &&
-                        localWorksite != null
+                    localWorksite != null
                 isNetworkLoadFinished = isEditingAllowed &&
-                        isPulled
+                    isPulled
                 // Reliable state for editing to begin.
                 // There are edge cases where network changes are still committing/propagating locally while this is true.
                 // If internet connection is not available this may never turn true.
                 isLocalLoadFinished = isNetworkLoadFinished &&
-                        worksiteState.formData?.isNotEmpty() == true
+                    worksiteState.formData?.isNotEmpty() == true
             }
             val isTranslationUpdated =
                 editableWorksiteProvider.formFieldTranslationLookup.isNotEmpty()

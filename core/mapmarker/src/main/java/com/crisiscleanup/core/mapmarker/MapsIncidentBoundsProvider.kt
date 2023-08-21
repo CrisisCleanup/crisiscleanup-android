@@ -50,8 +50,11 @@ class MapsIncidentBoundsProvider @Inject constructor(
 
     private suspend fun publishIds(id: Long, add: Boolean) {
         val copyIds = mappingBoundsIncidentIds.first().toMutableSet()
-        if (add) copyIds.add(id)
-        else copyIds.remove(id)
+        if (add) {
+            copyIds.add(id)
+        } else {
+            copyIds.remove(id)
+        }
         mappingBoundsIncidentIds.emit(copyIds)
     }
 

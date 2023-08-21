@@ -70,7 +70,7 @@ fun Worksite.asSnapshotModel(
                     involvesMyOrg = attr?.involvesMyOrg,
                     haveContactedOtherOrg = attr?.haveContactedOtherOrg,
                     organizationIds = attr?.organizations ?: emptyList(),
-                )
+                ),
             )
         } ?: emptyList(),
         notes.map { note ->
@@ -81,7 +81,7 @@ fun Worksite.asSnapshotModel(
                     createdAt = note.createdAt,
                     isSurvivor = note.isSurvivor,
                     note = note.note,
-                )
+                ),
             )
         },
         workTypes.map { workType ->
@@ -96,7 +96,7 @@ fun Worksite.asSnapshotModel(
                     recur = workType.recur,
                     status = workType.statusLiteral,
                     workType = workType.workTypeLiteral,
-                )
+                ),
             )
         },
     )

@@ -24,8 +24,8 @@ class NotesFlagsInputData(
 
     private fun isChanged(notes: List<WorksiteNote>, worksite: Worksite): Boolean {
         return notes != worksite.notes ||
-                isHighPriority != worksite.hasHighPriorityFlag ||
-                isAssignedToOrgMember != worksite.isAssignedToOrgMember
+            isHighPriority != worksite.hasHighPriorityFlag ||
+            isAssignedToOrgMember != worksite.isAssignedToOrgMember
     }
 
     override fun updateCase() = updateCase(worksiteIn)

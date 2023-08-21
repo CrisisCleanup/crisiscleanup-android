@@ -22,16 +22,22 @@ class AccountInfoDataSource @Inject constructor(
 ) {
     companion object {
         fun defaultProfilePictureUri(fullName: String): String =
-            if (fullName.isEmpty()) ""
-            else "https://avatars.dicebear.com/api/bottts/$fullName.svg"
+            if (fullName.isEmpty()) {
+                ""
+            } else {
+                "https://avatars.dicebear.com/api/bottts/$fullName.svg"
+            }
     }
 
     val accountData = dataStore.data
         .map {
             val fullName = "${it.firstName} ${it.lastName}".trim()
             val profilePictureUri =
-                if (it.profilePictureUri?.isEmpty() == true) defaultProfilePictureUri(fullName)
-                else it.profilePictureUri
+                if (it.profilePictureUri?.isEmpty() == true) {
+                    defaultProfilePictureUri(fullName)
+                } else {
+                    it.profilePictureUri
+                }
             AccountData(
                 id = it.id,
                 tokenExpiry = Instant.fromEpochSeconds(it.expirySeconds),

@@ -42,7 +42,7 @@ fun CrisisCleanupTextArea(
             focusManager.moveFocus(nextDirection)
             onNext?.invoke()
         },
-        onDone = onDone?.let { { onDone() } }
+        onDone = onDone?.let { { onDone() } },
     )
     OutlinedTextField(
         text,

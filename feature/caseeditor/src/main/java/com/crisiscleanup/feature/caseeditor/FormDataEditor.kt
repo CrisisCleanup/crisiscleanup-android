@@ -33,7 +33,7 @@ open class EditableFormDataEditor(
             groupNode,
             ignoreFieldKeys,
             autoManageGroups = autoManageGroups,
-            isWorkInputData = isWorkInputData
+            isWorkInputData = isWorkInputData,
         )
     }
 

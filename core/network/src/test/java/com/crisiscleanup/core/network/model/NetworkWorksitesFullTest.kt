@@ -50,9 +50,9 @@ class NetworkWorksitesFullTest {
         assertEquals(
             NetworkCrisisCleanupApiError(
                 field = "detail",
-                message = listOf("Token has expired.")
+                message = listOf("Token has expired."),
             ),
-            firstError
+            firstError,
         )
     }
 
@@ -69,9 +69,9 @@ class NetworkWorksitesFullTest {
         assertEquals(
             NetworkCrisisCleanupApiError(
                 field = "incident",
-                message = listOf("Select a valid choice. That choice is not one of the available choices.")
+                message = listOf("Select a valid choice. That choice is not one of the available choices."),
             ),
-            firstError
+            firstError,
         )
     }
 }

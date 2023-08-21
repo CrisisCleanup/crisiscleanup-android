@@ -72,7 +72,7 @@ internal fun ColumnScope.WrongIncidentFlagView(
         Modifier
             .scrollFlingListener(closeKeyboard)
             .weight(1f)
-            .fillMaxWidth()
+            .fillMaxWidth(),
     ) {
         item {
             Row(
@@ -126,10 +126,10 @@ internal fun ColumnScope.WrongIncidentFlagView(
                 ) {
                     derivedStateOf {
                         incidentSuggestions.isNotEmpty() &&
-                                dismissSuggestionsQuery != incidentQuery &&
-                                selectedOptionQuery != incidentQuery &&
-                                isQueryIdentical &&
-                                isIncidentListed
+                            dismissSuggestionsQuery != incidentQuery &&
+                            selectedOptionQuery != incidentQuery &&
+                            isQueryIdentical &&
+                            isIncidentListed
                     }
                 }
                 DropdownMenu(
@@ -140,7 +140,7 @@ internal fun ColumnScope.WrongIncidentFlagView(
                     expanded = showDropdown,
                     onDismissRequest = dismissDropdown,
                     offset = listItemDropdownMenuOffset,
-                    properties = PopupProperties(focusable = false)
+                    properties = PopupProperties(focusable = false),
                 ) {
                     BackHandler {
                         dismissDropdown()

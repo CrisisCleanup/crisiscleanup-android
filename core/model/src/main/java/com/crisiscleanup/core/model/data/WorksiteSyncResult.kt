@@ -23,17 +23,22 @@ data class WorksiteSyncResult(
     )
 
     private fun <T, R> summarizeChanges(changeMap: Map<T, R>, postText: String): String =
-        if (changeMap.isEmpty()) ""
-        else "${changeMap.size} $postText"
+        if (changeMap.isEmpty()) {
+            ""
+        } else {
+            "${changeMap.size} $postText"
+        }
 
     fun getSummary(totalChangeCount: Int): String {
         var successCount = 0
         var partialSuccessCount = 0
         var failCount = 0
         changeResults.forEach {
-            if (it.isSuccessful) successCount++
-            else if (it.isPartiallySuccessful) partialSuccessCount++
-            else if (it.isFail) failCount++
+            if (it.isSuccessful) {
+                successCount++
+            } else if (it.isPartiallySuccessful) {
+                partialSuccessCount++
+            } else if (it.isFail) failCount++
         }
         val outcomeSummary = if (totalChangeCount > 1) {
             listOf(
@@ -44,11 +49,16 @@ data class WorksiteSyncResult(
             ).joinToString("\n")
         } else {
             "1 change: " + (
-                    if (successCount > 0) "success"
-                    else if (partialSuccessCount > 0) "partial"
-                    else if (failCount > 0) "fail"
-                    else ""
-                    )
+                if (successCount > 0) {
+                    "success"
+                } else if (partialSuccessCount > 0) {
+                    "partial"
+                } else if (failCount > 0) {
+                    "fail"
+                } else {
+                    ""
+                }
+                )
         }
         val changeTypeSummary = with(changeIds) {
             listOf(
@@ -65,7 +75,7 @@ data class WorksiteSyncResult(
         return listOf(
             "Network ID: ${changeIds.networkWorksiteId}",
             outcomeSummary,
-            changeTypeSummary
+            changeTypeSummary,
         )
             .joinToString("\n")
     }

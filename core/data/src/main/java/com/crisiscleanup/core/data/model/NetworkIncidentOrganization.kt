@@ -26,16 +26,25 @@ fun Collection<NetworkIncidentOrganization>.asEntities(
 ): OrganizationEntities {
     val organizations = map { it.asEntity() }
     val primaryContacts =
-        if (getContacts) flatMap {
-            it.primaryContacts?.map(NetworkPersonContact::asEntity) ?: emptyList()
+        if (getContacts) {
+            flatMap {
+                it.primaryContacts?.map(NetworkPersonContact::asEntity) ?: emptyList()
+            }
+        } else {
+            emptyList()
         }
-        else emptyList()
     val organizationContactCrossRefs =
-        if (getReferences) flatMap(NetworkIncidentOrganization::primaryContactCrossReferences)
-        else emptyList()
+        if (getReferences) {
+            flatMap(NetworkIncidentOrganization::primaryContactCrossReferences)
+        } else {
+            emptyList()
+        }
     val organizationAffiliates =
-        if (getReferences) flatMap(NetworkIncidentOrganization::affiliateOrganizationCrossReferences)
-        else emptyList()
+        if (getReferences) {
+            flatMap(NetworkIncidentOrganization::affiliateOrganizationCrossReferences)
+        } else {
+            emptyList()
+        }
     return OrganizationEntities(
         organizations,
         primaryContacts,

@@ -11,7 +11,7 @@ data class AccountData(
     val emailAddress: String,
     val profilePictureUri: String,
     val org: OrgData,
-    val areTokensValid: Boolean
+    val areTokensValid: Boolean,
 ) {
     val hasAuthenticated: Boolean
         get() = id > 0

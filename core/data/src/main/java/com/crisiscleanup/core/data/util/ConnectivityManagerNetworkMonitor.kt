@@ -19,7 +19,7 @@ import javax.inject.Singleton
 
 @Singleton
 class ConnectivityManagerNetworkMonitor @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
 ) : NetworkMonitor {
     override val isOnline: Flow<Boolean> = callbackFlow {
         val connectivityManager = context.getSystemService<ConnectivityManager>()
@@ -40,7 +40,7 @@ class ConnectivityManagerNetworkMonitor @Inject constructor(
 
             override fun onCapabilitiesChanged(
                 network: Network,
-                networkCapabilities: NetworkCapabilities
+                networkCapabilities: NetworkCapabilities,
             ) {
                 channel.trySend(connectivityManager.isCurrentlyConnected())
             }
@@ -50,7 +50,7 @@ class ConnectivityManagerNetworkMonitor @Inject constructor(
             Builder()
                 .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                 .build(),
-            callback
+            callback,
         )
 
         channel.trySend(connectivityManager.isCurrentlyConnected())
@@ -65,9 +65,10 @@ class ConnectivityManagerNetworkMonitor @Inject constructor(
 
     private fun ConnectivityManager?.isCurrentlyConnected() = when (this) {
         null -> false
-        else -> activeNetwork
-            ?.let(::getNetworkCapabilities)
-            ?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-            ?: false
+        else ->
+            activeNetwork
+                ?.let(::getNetworkCapabilities)
+                ?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                ?: false
     }
 }

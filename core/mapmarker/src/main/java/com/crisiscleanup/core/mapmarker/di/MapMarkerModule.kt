@@ -22,16 +22,16 @@ interface MapMarkerModule {
     @Singleton
     @Binds
     fun bindsBitmapIconProvider(
-        provider: CrisisCleanupDrawableResourceBitmapProvider
+        provider: CrisisCleanupDrawableResourceBitmapProvider,
     ): DrawableResourceBitmapProvider
 
     @Binds
     fun bindsIncidentBoundsProvider(
-        calculator: MapsIncidentBoundsProvider
+        calculator: MapsIncidentBoundsProvider,
     ): IncidentBoundsProvider
 
     @Binds
     fun bindsLocationBoundsConverter(
-        converter: CrisisCleanupLocationBoundsConverter
+        converter: CrisisCleanupLocationBoundsConverter,
     ): LocationBoundsConverter
 }

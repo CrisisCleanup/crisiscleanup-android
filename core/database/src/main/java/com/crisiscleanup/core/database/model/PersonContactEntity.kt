@@ -46,7 +46,7 @@ fun PersonContactEntity.asExternalModel() = PersonContact(
     ],
     indices = [
         Index(value = ["organization_id", "id"]),
-    ]
+    ],
 )
 data class PersonOrganizationCrossRef(
     val id: Long,

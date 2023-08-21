@@ -89,7 +89,7 @@ fun <T1, T2, T3, T4, T5, T6, T7, R> combine(
 ): Flow<R> = kCombine(
     kCombine(flow, flow2, flow3, ::Triple),
     kCombine(flow4, flow5, ::Pair),
-    kCombine(flow6, flow7, ::Pair)
+    kCombine(flow6, flow7, ::Pair),
 ) { t1, t2, t3 ->
     transform(
         t1.first,
@@ -115,7 +115,7 @@ fun <T1, T2, T3, T4, T5, T6, T7, T8, R> combine(
 ): Flow<R> = kCombine(
     kCombine(flow, flow2, flow3, ::Triple),
     kCombine(flow4, flow5, flow6, ::Triple),
-    kCombine(flow7, flow8, ::Pair)
+    kCombine(flow7, flow8, ::Pair),
 ) { t1, t2, t3 ->
     transform(
         t1.first,
@@ -143,7 +143,7 @@ fun <T1, T2, T3, T4, T5, T6, T7, T8, T9, R> combine(
 ): Flow<R> = kCombine(
     kCombine(flow, flow2, flow3, ::Triple),
     kCombine(flow4, flow5, flow6, ::Triple),
-    kCombine(flow7, flow8, flow9, ::Triple)
+    kCombine(flow7, flow8, flow9, ::Triple),
 ) { t1, t2, t3 ->
     transform(
         t1.first,

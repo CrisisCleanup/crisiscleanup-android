@@ -39,7 +39,7 @@ class NetworkWorkTypeRequestTest {
             byOrg = NetworkOrganizationShort(89, "Crisis Cleanup Admin"),
             toOrg = NetworkOrganizationShort(
                 4734,
-                "test to org"
+                "test to org",
             ),
             worksite = 252155,
         )

@@ -46,7 +46,7 @@ class IncidentOrganizationsDataFileCache @Inject constructor(
     override fun loadOrganizations(
         incidentId: Long,
         dataIndex: Int,
-        expectedCount: Int
+        expectedCount: Int,
     ): IncidentOrganizationsPageRequest? {
         val cacheFileName = cacheFileName(incidentId, dataIndex)
         val cacheFile = File(context.cacheDir, cacheFileName)

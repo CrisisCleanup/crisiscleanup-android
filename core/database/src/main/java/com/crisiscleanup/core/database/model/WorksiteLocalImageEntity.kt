@@ -19,7 +19,7 @@ import com.crisiscleanup.core.model.data.WorksiteLocalImage
     ],
     indices = [
         Index(value = ["worksite_id", "local_document_id"], unique = true),
-    ]
+    ],
 )
 data class WorksiteLocalImageEntity(
     @PrimaryKey(true)

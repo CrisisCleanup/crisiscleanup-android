@@ -23,6 +23,6 @@ object CoroutinesScopesModule {
     @ApplicationScope
     @Provides
     fun providesApplicationScope(
-        @Dispatcher(Default) defaultDispatcher: CoroutineDispatcher
+        @Dispatcher(Default) defaultDispatcher: CoroutineDispatcher,
     ): CoroutineScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
 }

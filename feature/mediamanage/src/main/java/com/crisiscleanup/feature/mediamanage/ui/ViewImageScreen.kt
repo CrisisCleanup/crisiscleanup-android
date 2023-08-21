@@ -298,8 +298,11 @@ private fun DynamicImageView(
                                 else -> scale.snapToNearest(fitScale, fillScale)
                             }
                         } else {
-                            scale = if (scale > fillScale) fillScale
-                            else fitScale
+                            scale = if (scale > fillScale) {
+                                fillScale
+                            } else {
+                                fitScale
+                            }
                             translation = Offset.Zero
                         }
                     }
@@ -342,11 +345,11 @@ private fun ImageActionBar(
             Spacer(Modifier.weight(1f))
             CrisisCleanupIconButton(
                 imageVector = CrisisCleanupIcons.RotateCcw,
-                onClick = { viewModel.rotateImage(false) }
+                onClick = { viewModel.rotateImage(false) },
             )
             CrisisCleanupIconButton(
                 imageVector = CrisisCleanupIcons.RotateClockwise,
-                onClick = { viewModel.rotateImage(true) }
+                onClick = { viewModel.rotateImage(true) },
             )
             Spacer(Modifier.weight(1f))
         }

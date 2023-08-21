@@ -60,7 +60,7 @@ internal fun CaseIncidentView(
                 Icon(
                     imageVector = CrisisCleanupIcons.CloudSync,
                     contentDescription = translator("info.is_syncing"),
-                    modifier = Modifier.testTag("caseViewIsSyncingIcon")
+                    modifier = Modifier.testTag("caseViewIsSyncingIcon"),
                 )
             }
         } else if (isPendingSync) {
@@ -69,7 +69,7 @@ internal fun CaseIncidentView(
                 imageVector = CrisisCleanupIcons.Cloud,
                 contentDescription = translator("info.is_pending_sync"),
                 tint = primaryOrangeColor,
-                modifier = Modifier.testTag("caseViewIsPendingSyncIconBtn")
+                modifier = Modifier.testTag("caseViewIsPendingSyncIconBtn"),
             )
         }
     }

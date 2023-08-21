@@ -325,8 +325,11 @@ private fun LazyListScope.shareCaseInput(
 
     item {
         val hintTranslationKey =
-            if (viewModel.isEmailContactMethod) "shareWorksite.manually_enter_emails"
-            else "shareWorksite.manually_enter_phones"
+            if (viewModel.isEmailContactMethod) {
+                "shareWorksite.manually_enter_emails"
+            } else {
+                "shareWorksite.manually_enter_phones"
+            }
         val receiverContact by viewModel.receiverContactManual.collectAsStateWithLifecycle()
         Row(
             listItemModifier,
@@ -417,7 +420,7 @@ private fun ReceiverContactItem(
                                 onClick = { onRemoveContact(index) },
                                 role = Role.Button,
                             ),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
                         Icon(
                             imageVector = CrisisCleanupIcons.Clear,
@@ -491,8 +494,8 @@ private fun LazyListScope.contactSuggestionsItem(
             ) {
                 derivedStateOf {
                     contactOptions.isNotEmpty() &&
-                            receiverContact.isNotBlank() &&
-                            dismissSuggestionsQuery != receiverContact
+                        receiverContact.isNotBlank() &&
+                        dismissSuggestionsQuery != receiverContact
                 }
             }
             DropdownMenu(
@@ -503,7 +506,7 @@ private fun LazyListScope.contactSuggestionsItem(
                 expanded = showDropdown,
                 onDismissRequest = dismissDropdown,
                 offset = listItemDropdownMenuOffset,
-                properties = PopupProperties(focusable = false)
+                properties = PopupProperties(focusable = false),
             ) {
                 BackHandler {
                     dismissDropdown()

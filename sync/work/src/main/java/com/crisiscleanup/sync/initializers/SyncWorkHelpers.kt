@@ -31,7 +31,7 @@ fun scheduleSync(context: Context) {
         enqueueUniqueWork(
             SyncWorkName,
             ExistingWorkPolicy.APPEND_OR_REPLACE,
-            SyncWorker.oneTimeSyncWork()
+            SyncWorker.oneTimeSyncWork(),
         )
     }
 }
@@ -41,7 +41,7 @@ fun scheduleSyncMedia(context: Context) {
         enqueueUniqueWork(
             SyncMediaWorkName,
             ExistingWorkPolicy.KEEP,
-            SyncMediaWorker.oneTimeSyncWork()
+            SyncMediaWorker.oneTimeSyncWork(),
         )
     }
 }
@@ -51,7 +51,7 @@ fun scheduleSyncWorksitesFull(context: Context) {
         enqueueUniqueWork(
             SyncWorksitesFullWorkName,
             ExistingWorkPolicy.REPLACE,
-            SyncWorksitesFullWorker.oneTimeSyncWork()
+            SyncWorksitesFullWorker.oneTimeSyncWork(),
         )
     }
 }

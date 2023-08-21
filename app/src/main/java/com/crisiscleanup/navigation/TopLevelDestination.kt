@@ -29,5 +29,5 @@ enum class TopLevelDestination(
         selectedIcon = ImageVectorIcon(CrisisCleanupIcons.Menu),
         unselectedIcon = ImageVectorIcon(CrisisCleanupIcons.Menu),
         titleTranslateKey = "nav.menu",
-    )
+    ),
 }

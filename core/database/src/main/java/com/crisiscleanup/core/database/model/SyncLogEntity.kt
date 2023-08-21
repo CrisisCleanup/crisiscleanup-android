@@ -12,8 +12,8 @@ import kotlinx.datetime.Instant
         Index(
             value = ["log_time"],
             orders = [Index.Order.DESC],
-        )
-    ]
+        ),
+    ],
 )
 data class SyncLogEntity(
     @PrimaryKey(true)

@@ -70,7 +70,8 @@ fun EditableWorksiteProvider.reset(incidentId: Long = EmptyIncident.id) {
 }
 
 @Singleton
-class SingleEditableWorksiteProvider @Inject constructor() : EditableWorksiteProvider,
+class SingleEditableWorksiteProvider @Inject constructor() :
+    EditableWorksiteProvider,
     WorksiteLocationEditor {
     override var incident = EmptyIncident
     override var incidentBounds = DefaultIncidentBounds
@@ -92,8 +93,11 @@ class SingleEditableWorksiteProvider @Inject constructor() : EditableWorksitePro
     override fun takeStale() = _isStale.getAndSet(false)
 
     private fun setCoordinates(coordinates: LatLng? = null) {
-        val latLngPair = if (coordinates == null) null
-        else Pair(coordinates.latitude, coordinates.longitude)
+        val latLngPair = if (coordinates == null) {
+            null
+        } else {
+            Pair(coordinates.latitude, coordinates.longitude)
+        }
         editedLocation.set(latLngPair)
     }
 

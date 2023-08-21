@@ -30,7 +30,9 @@ class LocationDaoTest {
             LocationEntitySource(1, "Point", listOf(-3.4, 5.1), null),
             LocationEntitySource(2, "Polygon", listOf(-13.4, 55.1, 41.2, -81.2), null),
             LocationEntitySource(
-                3, "MultiPolygon", null,
+                3,
+                "MultiPolygon",
+                null,
                 listOf(
                     listOf(-5.3, 14.5, 82.24, 4.14),
                     listOf(51.28, 42.1, 48.123, -1.88, 6.42, -7.14),
@@ -49,14 +51,16 @@ class LocationDaoTest {
             Location(1, "Point", listOf(-3.4, 5.1), null),
             Location(2, "Polygon", listOf(-13.4, 55.1, 41.2, -81.2), null),
             Location(
-                3, "MultiPolygon", null, listOf(
+                3,
+                "MultiPolygon",
+                null,
+                listOf(
                     listOf(-5.3, 14.5, 82.24, 4.14),
                     listOf(51.28, 42.1, 48.123, -1.88, 6.42, -7.14),
-                )
+                ),
             ),
             Location(5, "Triangle", listOf(-51.342, -9.3413), null),
         )
         assertEquals(expecteds, locations)
-
     }
 }

@@ -12,7 +12,7 @@ import javax.inject.Singleton
 interface DrawableResourceBitmapProvider {
     fun getIcon(
         @DrawableRes drawableResId: Int,
-        whDpDimensions: Pair<Float, Float>
+        whDpDimensions: Pair<Float, Float>,
     ): BitmapDescriptor
 }
 

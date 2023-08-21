@@ -44,7 +44,7 @@ class DynamicValueSerializerTest {
         val deserialized = TestUtil.json.decodeFromString<List<KeyDynamicValuePair>>(
             """[${serializedEntry("boolean-key", "true")},${
                 serializedEntry("string-key", """"string-value"""")
-            },${serializedEntry("boolean-false-key", "false")}]"""
+            },${serializedEntry("boolean-false-key", "false")}]""",
         )
         val expected = listOf(
             KeyDynamicValuePair(

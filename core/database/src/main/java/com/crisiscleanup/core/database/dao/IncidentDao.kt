@@ -31,7 +31,7 @@ interface IncidentDao {
         FROM incidents
         WHERE is_archived==0
         ORDER BY start_at DESC, id DESC
-        """
+        """,
     )
     fun streamIncidents(): Flow<List<PopulatedIncident>>
 
@@ -62,13 +62,13 @@ interface IncidentDao {
         """
         DELETE FROM incident_to_incident_location
         WHERE incident_id IN (:incidentIds)
-        """
+        """,
     )
     suspend fun deleteIncidentLocationCrossRefs(incidentIds: Collection<Long>)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertIgnoreIncidentLocationCrossRefs(
-        incidentCrossRefs: Collection<IncidentIncidentLocationCrossRef>
+        incidentCrossRefs: Collection<IncidentIncidentLocationCrossRef>,
     )
 
     @Transaction
@@ -77,7 +77,7 @@ interface IncidentDao {
         UPDATE incident_form_fields
         SET is_invalidated=1
         WHERE incident_id=:incidentId
-        """
+        """,
     )
     suspend fun invalidateFormFields(incidentId: Long)
 
@@ -100,7 +100,7 @@ interface IncidentDao {
         FROM incident_fts f
         INNER JOIN incidents i ON f.docid=i.id
         WHERE incident_fts MATCH :query
-        """
+        """,
     )
     fun matchIncidentTokens(query: String): List<PopulatedIncidentIdNameMatchInfo>
 }

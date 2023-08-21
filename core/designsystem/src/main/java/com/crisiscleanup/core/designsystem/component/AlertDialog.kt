@@ -42,7 +42,9 @@ fun CrisisCleanupAlertDialog(
     text: String = "",
     textContent: @Composable () -> Unit = {},
 ) {
-    val titleComposable: @Composable () -> Unit = if (title.isBlank()) titleContent else {
+    val titleComposable: @Composable () -> Unit = if (title.isBlank()) {
+        titleContent
+    } else {
         @Composable {
             Text(
                 title,
@@ -52,10 +54,13 @@ fun CrisisCleanupAlertDialog(
     }
     val textComposable: @Composable () -> Unit = {
         CompositionLocalProvider(
-            LocalTextStyle provides MaterialTheme.typography.bodyLarge
+            LocalTextStyle provides MaterialTheme.typography.bodyLarge,
         ) {
-            if (text.isBlank()) textContent()
-            else Text(text)
+            if (text.isBlank()) {
+                textContent()
+            } else {
+                Text(text)
+            }
         }
     }
 

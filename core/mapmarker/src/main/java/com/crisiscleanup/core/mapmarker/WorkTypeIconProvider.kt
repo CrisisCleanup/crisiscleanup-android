@@ -172,9 +172,13 @@ class WorkTypeIconProvider @Inject constructor(
     }
 
     private fun drawIcon(cacheKey: WorkTypeIconCacheKey): Bitmap {
-        val iconResId = if (cacheKey.isFavorite) statusIcons[Favorite]!!
-        else if (cacheKey.isImportant) statusIcons[Important]!!
-        else statusIcons[cacheKey.workType] ?: R.drawable.ic_work_type_unknown
+        val iconResId = if (cacheKey.isFavorite) {
+            statusIcons[Favorite]!!
+        } else if (cacheKey.isImportant) {
+            statusIcons[Important]!!
+        } else {
+            statusIcons[cacheKey.workType] ?: R.drawable.ic_work_type_unknown
+        }
 
         val drawable = resourceProvider.getDrawable(iconResId)
         val output = Bitmap.createBitmap(

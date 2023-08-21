@@ -33,6 +33,8 @@ data class SyncAttempt(
         recentIntervalSeconds: Int = 1800,
         backoffIntervalSeconds: Int = 15,
         nowSeconds: Long = Clock.System.now().epochSeconds,
-    ) = !(isRecent(recentIntervalSeconds, nowSeconds) ||
-            isBackingOff(backoffIntervalSeconds, nowSeconds))
+    ) = !(
+        isRecent(recentIntervalSeconds, nowSeconds) ||
+            isBackingOff(backoffIntervalSeconds, nowSeconds)
+        )
 }

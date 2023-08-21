@@ -49,7 +49,6 @@ fun FocusSectionSlider(
     pagerState: LazyListState = rememberLazyListState(),
     scrollToSection: (Int) -> Unit = {},
 ) {
-
     val pagerScrollConnection = remember(pagerState) {
         object : NestedScrollConnection {
             override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
@@ -79,7 +78,6 @@ fun FocusSectionSlider(
                         overflow = TextOverflow.Ellipsis,
                         style = LocalFontStyles.current.header4,
                     )
-
                 } else {
                     val endFillerItemWidth = LocalConfiguration.current.screenWidthDp.dp * 0.8f
                     Spacer(modifier = Modifier.width(endFillerItemWidth))
@@ -126,7 +124,7 @@ fun rememberSectionContentIndexLookup(sectionItemLookup: Map<Int, Int>): Mutable
                 sectionItem = sectionItemLookup,
                 itemSection = itemSectionLookup,
                 sectionItemCount = sectionItemCount,
-            )
+            ),
         )
     }
 }

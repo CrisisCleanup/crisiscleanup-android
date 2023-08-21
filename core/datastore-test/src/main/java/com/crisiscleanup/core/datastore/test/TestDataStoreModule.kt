@@ -17,14 +17,14 @@ import javax.inject.Singleton
 @Module
 @TestInstallIn(
     components = [SingletonComponent::class],
-    replaces = [DataStoreModule::class]
+    replaces = [DataStoreModule::class],
 )
 object TestDataStoreModule {
     @Provides
     @Singleton
     fun providesUserPreferencesDataStore(
         userPreferencesSerializer: UserPreferencesSerializer,
-        tmpFolder: TemporaryFolder
+        tmpFolder: TemporaryFolder,
     ): DataStore<UserPreferences> =
         tmpFolder.testUserPreferencesDataStore(userPreferencesSerializer)
 
@@ -32,12 +32,12 @@ object TestDataStoreModule {
     @Singleton
     fun providesAccountInfoDataStore(
         serializer: AccountInfoProtoSerializer,
-        tmpFolder: TemporaryFolder
+        tmpFolder: TemporaryFolder,
     ): DataStore<AccountInfo> = tmpFolder.testAccountInfoDataStore(serializer)
 }
 
 fun TemporaryFolder.testUserPreferencesDataStore(
-    userPreferencesSerializer: UserPreferencesSerializer = UserPreferencesSerializer()
+    userPreferencesSerializer: UserPreferencesSerializer = UserPreferencesSerializer(),
 ) = DataStoreFactory.create(
     serializer = userPreferencesSerializer,
 ) {
@@ -45,7 +45,7 @@ fun TemporaryFolder.testUserPreferencesDataStore(
 }
 
 fun TemporaryFolder.testAccountInfoDataStore(
-    serializer: AccountInfoProtoSerializer = AccountInfoProtoSerializer()
+    serializer: AccountInfoProtoSerializer = AccountInfoProtoSerializer(),
 ) = DataStoreFactory.create(
     serializer = serializer,
 ) {

@@ -29,7 +29,7 @@ interface WorksiteChangeDao {
             save_attempt    =save_attempt+1,
             save_attempt_at =:savedAt
         WHERE id=:id
-        """
+        """,
     )
     fun updateAction(id: Long, action: String, savedAt: Instant = Clock.System.now())
 
@@ -40,7 +40,7 @@ interface WorksiteChangeDao {
         SET save_attempt    =save_attempt+1,
             save_attempt_at =:savedAt
         WHERE id=:id
-        """
+        """,
     )
     fun updateSyncAttempt(id: Long, savedAt: Instant = Clock.System.now())
 
@@ -60,7 +60,7 @@ interface WorksiteChangeDao {
         FROM worksites w
         INNER JOIN (SELECT DISTINCT worksite_id FROM worksite_changes ORDER BY created_at) wc
         ON w.id = wc.worksite_id
-        """
+        """,
     )
     fun streamWorksitesPendingSync(): Flow<List<PopulatedWorksite>>
 
@@ -75,7 +75,7 @@ interface WorksiteChangeDao {
             ORDER BY min_attempt_at ASC, max_created_at ASC
         )
         LIMIT :limit
-        """
+        """,
     )
     fun getWorksitesPendingSync(limit: Int): List<Long>
 
@@ -85,7 +85,7 @@ interface WorksiteChangeDao {
         SELECT COUNT(id)
         FROM worksite_changes
         WHERE worksite_id=:worksiteId AND save_attempt>0
-        """
+        """,
     )
     fun getSaveFailCount(worksiteId: Long): Int
 }

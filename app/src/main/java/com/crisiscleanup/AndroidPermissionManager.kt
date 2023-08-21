@@ -37,8 +37,11 @@ class AndroidPermissionManager @Inject constructor(
     private var activityWr: WeakReference<ComponentActivity> = WeakReference(null)
 
     private val screenshotReadPermission =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) READ_MEDIA_IMAGES
-        else READ_EXTERNAL_STORAGE
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            READ_MEDIA_IMAGES
+        } else {
+            READ_EXTERNAL_STORAGE
+        }
 
     override fun onCreate(owner: LifecycleOwner) {
         (owner as? ComponentActivity)?.let { activity ->
@@ -50,8 +53,11 @@ class AndroidPermissionManager @Inject constructor(
                     // Assume unchanged permission since requested
                     val permission = permissionChanges.value.first
                     val status =
-                        if (isGranted) PermissionStatus.Granted
-                        else PermissionStatus.Denied
+                        if (isGranted) {
+                            PermissionStatus.Granted
+                        } else {
+                            PermissionStatus.Denied
+                        }
                     permissionChanges.value = Pair(permission, status)
 
                     if (permission == ACCESS_COARSE_LOCATION || permission == ACCESS_FINE_LOCATION) {
@@ -67,7 +73,7 @@ class AndroidPermissionManager @Inject constructor(
 
     private fun publishLocationPermission() {
         hasLocationPermission.value = hasPermission(ACCESS_COARSE_LOCATION) ||
-                hasPermission(ACCESS_FINE_LOCATION)
+            hasPermission(ACCESS_FINE_LOCATION)
     }
 
     private fun hasPermission(permission: String): Boolean {

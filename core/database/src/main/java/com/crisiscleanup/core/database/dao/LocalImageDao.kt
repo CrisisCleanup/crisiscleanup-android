@@ -45,7 +45,7 @@ interface LocalImageDao {
         UPDATE worksite_local_images
         SET tag=:tag
         WHERE worksite_id=:worksiteId AND local_document_id=:documentId
-        """
+        """,
     )
     fun update(
         worksiteId: Long,
@@ -68,7 +68,7 @@ interface LocalImageDao {
         FROM worksite_local_images
         WHERE worksite_id=:worksiteId
         ORDER BY id ASC
-        """
+        """,
     )
     fun getWorksiteLocalImages(worksiteId: Long): List<PopulatedLocalImageDescription>
 
@@ -82,7 +82,7 @@ interface LocalImageDao {
             GROUP BY worksite_id
             ORDER BY min_id ASC
         )
-        """
+        """,
     )
     fun getUploadImageWorksiteIds(): List<PopulatedWorksiteImageCount>
 }

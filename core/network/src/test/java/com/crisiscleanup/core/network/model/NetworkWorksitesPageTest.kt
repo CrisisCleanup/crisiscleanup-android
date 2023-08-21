@@ -27,9 +27,9 @@ class NetworkWorksitesPageTest {
         assertEquals(
             NetworkCrisisCleanupApiError(
                 field = "detail",
-                message = listOf("Token has expired.")
+                message = listOf("Token has expired."),
             ),
-            firstError
+            firstError,
         )
     }
 }

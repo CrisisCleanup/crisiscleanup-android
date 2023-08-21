@@ -88,7 +88,7 @@ class WorksiteChangeDaoTest {
             testWorksiteFlag(
                 0,
                 createdAtA,
-                "reason-a"
+                "reason-a",
             ),
             testWorksiteFlag(
                 33,
@@ -169,7 +169,7 @@ class WorksiteChangeDaoTest {
             testWorksiteFlag(
                 1,
                 createdAtC,
-                "reason-a"
+                "reason-a",
             ),
             // Delete 33 (from full)
             // Insert and map 11 (network ID)
@@ -304,8 +304,11 @@ class WorksiteChangeDaoTest {
 
         var entityIndex = 1L
         val expectedFlags = entityData.flags.map { flag ->
-            if (flag.id <= 0) flag.copy(id = entityIndex++)
-            else flag
+            if (flag.id <= 0) {
+                flag.copy(id = entityIndex++)
+            } else {
+                flag
+            }
         }
         val actualFlags = db.testFlagDao().getEntities(worksiteId)
         assertEquals(expectedFlags, actualFlags)
@@ -316,16 +319,22 @@ class WorksiteChangeDaoTest {
 
         entityIndex = 1
         val expectedNotes = entityData.notes.map { note ->
-            if (note.id <= 0) note.copy(id = entityIndex++)
-            else note
+            if (note.id <= 0) {
+                note.copy(id = entityIndex++)
+            } else {
+                note
+            }
         }
         val actualNotes = db.testNoteDao().getEntities(worksiteId)
         assertEquals(expectedNotes, actualNotes)
 
         entityIndex = 1
         val expectedWorkTypes = entityData.workTypes.map { workType ->
-            if (workType.id <= 0) workType.copy(id = entityIndex++)
-            else workType
+            if (workType.id <= 0) {
+                workType.copy(id = entityIndex++)
+            } else {
+                workType
+            }
         }
         val actualWorkTypes = db.testWorkTypeDao().getEntities(worksiteId)
         assertEquals(expectedWorkTypes, actualWorkTypes)
@@ -511,7 +520,7 @@ class WorksiteChangeDaoTest {
                 0,
                 worksite.networkId,
                 worksite.incidentId,
-            )
+            ),
         )
         db.worksiteDao().insert(entities.core)
         db.worksiteFlagDao().insertIgnore(entities.flags)
@@ -535,8 +544,8 @@ class WorksiteChangeDaoTest {
                     "",
                     "reason-c",
                     "",
-                )
-            )
+                ),
+            ),
         )
         db.worksiteFlagDao().updateNetworkId(21, 221)
 
@@ -551,8 +560,8 @@ class WorksiteChangeDaoTest {
                     createdAtB,
                     false,
                     "note-e",
-                )
-            )
+                ),
+            ),
         )
 
         db.workTypeDao().updateNetworkId(1, 301)
@@ -569,8 +578,8 @@ class WorksiteChangeDaoTest {
                     null,
                     "status-existing",
                     "work-type-existing",
-                )
-            )
+                ),
+            ),
         )
         db.workTypeDao().updateNetworkId(37, 237)
 
@@ -589,7 +598,7 @@ class WorksiteChangeDaoTest {
                         createdAtB,
                         "reason-network-synced-local-deleted",
                         isHighPriority = true,
-                    )
+                    ),
                 )
             },
             workTypes = worksiteFull.workTypes.toMutableList().apply {
@@ -602,7 +611,7 @@ class WorksiteChangeDaoTest {
                         "work-type-c",
                     ),
                 )
-            }
+            },
         )
         /*
          * Flags
@@ -632,17 +641,26 @@ class WorksiteChangeDaoTest {
                 worksiteSynced,
                 worksiteModified.copy(
                     flags = worksiteModified.flags!!.map {
-                        if (it.id == 0L) it.copy(id = 34)
-                        else it
+                        if (it.id == 0L) {
+                            it.copy(id = 34)
+                        } else {
+                            it
+                        }
                     },
                     notes = worksiteModified.notes.mapIndexed { index, note ->
-                        if (note.id == 0L) note.copy(id = index + 63L)
-                        else note
+                        if (note.id == 0L) {
+                            note.copy(id = index + 63L)
+                        } else {
+                            note
+                        }
                     },
                     workTypes = worksiteModified.workTypes.map {
-                        if (it.id == 0L) it.copy(id = 58)
-                        else it
-                    }
+                        if (it.id == 0L) {
+                            it.copy(id = 58)
+                        } else {
+                            it
+                        }
+                    },
                 ),
                 mapOf(
                     1L to 201,
@@ -821,7 +839,6 @@ class WorksiteChangeDaoTest {
         verify(exactly = 0) { appLogger.logException(any()) }
     }
 
-
     /**
      * Establishes initial conditions for [editSyncedWorksite_deleteExistingFlags]
      */
@@ -847,7 +864,7 @@ class WorksiteChangeDaoTest {
                 0,
                 worksite.networkId,
                 worksite.incidentId,
-            )
+            ),
         )
         db.worksiteDao().insert(entities.core)
         db.worksiteFlagDao().insertIgnore(entities.flags)
@@ -874,7 +891,7 @@ class WorksiteChangeDaoTest {
                         createdAtB,
                         "reason-network-synced-local-deleted",
                         isHighPriority = true,
-                    )
+                    ),
                 )
             },
         )
@@ -887,12 +904,18 @@ class WorksiteChangeDaoTest {
             flags = emptyList(),
             formData = worksiteSynced.formData,
             notes = worksiteSynced.notes.mapIndexed { index, note ->
-                if (note.id == 0L) note.copy(id = index + 1L)
-                else note
+                if (note.id == 0L) {
+                    note.copy(id = index + 1L)
+                } else {
+                    note
+                }
             },
             workTypes = worksiteSynced.workTypes.map {
-                if (it.id == 0L) it.copy(id = 1)
-                else it
+                if (it.id == 0L) {
+                    it.copy(id = 1)
+                } else {
+                    it
+                }
             },
         )
 

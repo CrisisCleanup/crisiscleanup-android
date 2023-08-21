@@ -27,7 +27,7 @@ interface PersonContactDao {
             ON pc.id=o2pc.contact_id
             WHERE o2pc.contact_id IS NULL
         )
-        """
+        """,
     )
     fun trimIncidentOrganizationContacts()
 

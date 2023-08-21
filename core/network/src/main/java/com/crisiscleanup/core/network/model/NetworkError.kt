@@ -41,8 +41,11 @@ data class NetworkCrisisCleanupApiError(
 fun Collection<NetworkCrisisCleanupApiError>.tryThrowException() {
     if (isNotEmpty()) {
         val exception =
-            if (hasExpiredToken) ExpiredTokenException()
-            else Exception(condenseMessages)
+            if (hasExpiredToken) {
+                ExpiredTokenException()
+            } else {
+                Exception(condenseMessages)
+            }
         throw exception
     }
 }

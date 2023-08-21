@@ -22,7 +22,7 @@ import kotlinx.datetime.Instant
             value = ["worksite_id", "save_attempt_at", "created_at"],
             orders = [Order.ASC, Order.ASC, Order.DESC],
         ),
-    ]
+    ],
 )
 data class WorksiteChangeEntity(
     @PrimaryKey(true)

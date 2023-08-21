@@ -446,7 +446,6 @@ interface WorksiteDao {
         OFFSET :offset
         """,
     )
-
     fun getTableWorksitesOrderByCounty(
         incidentId: Long,
         limit: Int,
