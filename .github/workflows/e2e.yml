@@ -1,0 +1,86 @@
+name: Maestro E2E
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true # auto cancel prev. run
+
+env:
+  MAESTRO_VERSION: 1.31.0
+  ANDROID_ARCH: x86_64
+
+jobs:
+  android-e2e:
+    name: E2e Tests 🧪
+    runs-on: macos-12 # or buildjet-4vcpu-ubuntu-2204, ubuntu-22.04-4core, macos-12-xl
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+
+      - name: Installing Maestro 📥
+        run: curl -Ls "https://get.maestro.mobile.dev" | bash # will use `MAESTRO_VERSION` from env
+
+      - name: Validate Gradle Wrapper 📝
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Copy CI gradle.properties 📋
+        run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties
+
+      - name: Set up JDK 17 ⚙️
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: 17
+
+      - name: Setup Gradle ⚙️
+        uses: gradle/gradle-build-action@v2
+
+      - name: Setup environment ⚙️
+        env:
+          ENV_VAR_FILE_NAME: debug.properties
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          BASE_URL: ${{ secrets.BASE_URL }}
+          MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
+          DEBUG_EMAIL_ADDRESS: ${{ secrets.DEBUG_EMAIL_ADDRESS }}
+          DEBUG_ACCOUNT_PASSWORD: ${{ secrets.DEBUG_ACCOUNT_PASSWORD }}
+          MAESTRO_APP_ID: com.crisiscleanup.demo.debug
+          MAESTRO_APP_EMAIL: ${{ secrets.TEST_APP_EMAIL_STAGING }}
+          MAESTRO_APP_PASSWORD: ${{ secrets.TEST_APP_PASSWORD_STAGING }}
+        run: |
+          echo 'API_BASE_URL=${{ secrets.API_BASE_URL }}' >> ${{ env.ENV_VAR_FILE_NAME }}
+          echo 'BASE_URL=${{ secrets.BASE_URL }}' >> ${{ env.ENV_VAR_FILE_NAME }}
+          echo 'MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}' >> ${{ env.ENV_VAR_FILE_NAME }}
+          echo 'DEBUG_EMAIL_ADDRESS=${{ secrets.DEBUG_EMAIL_ADDRESS }}' >> ${{ env.ENV_VAR_FILE_NAME }}
+          echo 'DEBUG_ACCOUNT_PASSWORD=${{ secrets.DEBUG_ACCOUNT_PASSWORD }}' >> ${{ env.ENV_VAR_FILE_NAME }}
+
+      - name: Build apk for emulator
+        working-directory: android
+        run: |
+          ./gradlew assembleDebug --no-daemon -PreactNativeArchitectures=${{ env.ANDROID_ARCH }}
+
+          echo "Print path to *.apk file"
+          find . -type f -name "*.apk"
+
+      - name: Install Maestro and run e2e tests
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          APK_PATH: ./app/build/outputs/apk/demo/release/app-demo-release.apk
+        with:
+          api-level: 33
+          arch: ${{ env.ANDROID_ARCH }}
+          script: |
+            adb install "${{ env.APK_PATH }}"
+            $HOME/.maestro/bin/maestro test .maestro/auth-tests --format junit
+            $HOME/.maestro/bin/maestro test .maestro/work-tests --format junit
+
+      - name: Store tests result
+        uses: actions/upload-artifact@v3
+        with:
+          name: e2e_android_report
+          path: |
+            report.xml
