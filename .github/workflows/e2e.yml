@@ -43,14 +43,6 @@ jobs:
       - name: Setup environment ⚙️
         env:
           ENV_VAR_FILE_NAME: debug.properties
-          API_BASE_URL: ${{ secrets.API_BASE_URL }}
-          BASE_URL: ${{ secrets.BASE_URL }}
-          MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
-          DEBUG_EMAIL_ADDRESS: ${{ secrets.DEBUG_EMAIL_ADDRESS }}
-          DEBUG_ACCOUNT_PASSWORD: ${{ secrets.DEBUG_ACCOUNT_PASSWORD }}
-          MAESTRO_APP_ID: com.crisiscleanup.demo.debug
-          MAESTRO_APP_EMAIL: ${{ secrets.TEST_APP_EMAIL_STAGING }}
-          MAESTRO_APP_PASSWORD: ${{ secrets.TEST_APP_PASSWORD_STAGING }}
         run: |
           echo 'API_BASE_URL=${{ secrets.API_BASE_URL }}' >> ${{ env.ENV_VAR_FILE_NAME }}
           echo 'BASE_URL=${{ secrets.BASE_URL }}' >> ${{ env.ENV_VAR_FILE_NAME }}
