@@ -61,6 +61,9 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         env:
           APK_PATH: ./app/build/outputs/apk/demo/release/app-demo-release.apk
+          MAESTRO_APP_ID: com.crisiscleanup.demo.debug
+          MAESTRO_APP_EMAIL: ${{ secrets.TEST_APP_EMAIL_PROD }}
+          MAESTRO_APP_PASSWORD: ${{ secrets.TEST_APP_PASSWORD_PROD }}
         with:
           api-level: 33
           arch: ${{ env.ANDROID_ARCH }}
