@@ -66,6 +66,7 @@ jobs:
           MAESTRO_APP_PASSWORD: ${{ secrets.TEST_APP_PASSWORD_PROD }}
         with:
           api-level: 33
+          target: google_apis
           arch: ${{ env.ANDROID_ARCH }}
           script: |
             adb install "${{ env.APK_PATH }}"
