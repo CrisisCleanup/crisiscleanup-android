@@ -44,11 +44,11 @@ jobs:
         env:
           ENV_VAR_FILE_NAME: debug.properties
         run: |
-          echo 'API_BASE_URL=${{ secrets.API_BASE_URL }}' >> ${{ env.ENV_VAR_FILE_NAME }}
-          echo 'BASE_URL=${{ secrets.BASE_URL }}' >> ${{ env.ENV_VAR_FILE_NAME }}
-          echo 'MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}' >> ${{ env.ENV_VAR_FILE_NAME }}
-          echo 'DEBUG_EMAIL_ADDRESS=${{ secrets.DEBUG_EMAIL_ADDRESS }}' >> ${{ env.ENV_VAR_FILE_NAME }}
-          echo 'DEBUG_ACCOUNT_PASSWORD=${{ secrets.DEBUG_ACCOUNT_PASSWORD }}' >> ${{ env.ENV_VAR_FILE_NAME }}
+          echo 'API_BASE_URL="https://api.staging.crisiscleanup.io"' >> ${{ env.ENV_VAR_FILE_NAME }}
+          echo 'BASE_URL="http://localhost:8080"' >> ${{ env.ENV_VAR_FILE_NAME }}
+          echo 'MAPS_API_KEY="${{ secrets.MAPS_API_KEY }}"' >> ${{ env.ENV_VAR_FILE_NAME }}
+          echo 'DEBUG_EMAIL_ADDRESS="${{ secrets.TEST_APP_EMAIL_PROD }}"' >> ${{ env.ENV_VAR_FILE_NAME }}
+          echo 'DEBUG_ACCOUNT_PASSWORD="${{ secrets.TEST_APP_PASSWORD_PROD }}"' >> ${{ env.ENV_VAR_FILE_NAME }}
 
       - name: Build apk for emulator
         run: |
