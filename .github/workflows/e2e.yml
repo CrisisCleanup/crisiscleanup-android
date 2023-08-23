@@ -58,6 +58,12 @@ jobs:
           echo "Print path to *.apk file"
           find . -type f -name "*.apk"
 
+      - name: Upload build outputs (APKs) 📤
+        uses: actions/upload-artifact@v3
+        with:
+          name: apks
+          path: '**/build/outputs/apk/**/*.apk'
+
       - name: Run E2e tests 🧪
         uses: reactivecircus/android-emulator-runner@v2
         env:
