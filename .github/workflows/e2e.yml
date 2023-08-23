@@ -1,4 +1,4 @@
-name: Maestro E2E
+name: E2E
 
 on:
   push:
@@ -51,14 +51,14 @@ jobs:
           echo 'DEBUG_EMAIL_ADDRESS="${{ secrets.TEST_APP_EMAIL_PROD }}"' >> ${{ env.ENV_VAR_FILE_NAME }}
           echo 'DEBUG_ACCOUNT_PASSWORD="${{ secrets.TEST_APP_PASSWORD_PROD }}"' >> ${{ env.ENV_VAR_FILE_NAME }}
 
-      - name: Build apk for emulator
+      - name: Build apk for emulator 🏗️
         run: |
           ./gradlew assembleDebug --no-daemon -PreactNativeArchitectures=${{ env.ANDROID_ARCH }}
 
           echo "Print path to *.apk file"
           find . -type f -name "*.apk"
 
-      - name: Install Maestro and run e2e tests
+      - name: Run E2e tests 🧪
         uses: reactivecircus/android-emulator-runner@v2
         env:
           APK_PATH: ./app/build/outputs/apk/demo/debug/app-demo-debug.apk
@@ -75,7 +75,7 @@ jobs:
             $HOME/.maestro/bin/maestro test .maestro/auth-tests --format junit
             $HOME/.maestro/bin/maestro test .maestro/work-tests --format junit
 
-      - name: Store tests result
+      - name: Upload test results 📤
         uses: actions/upload-artifact@v3
         with:
           name: e2e_android_report
