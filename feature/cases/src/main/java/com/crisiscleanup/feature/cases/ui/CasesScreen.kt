@@ -246,7 +246,7 @@ private fun NonProductionDialog(
     if (viewModel.visualAlertManager.takeNonProductionAppAlert()) {
         showDialog = true
     }
-    if (showDialog && !viewModel.appEnv.isDebuggable) {
+    if (showDialog && !viewModel.appEnv.isDebuggable && !viewModel.appEnv.isEarlybird) {
         val hideDialog = {
             viewModel.visualAlertManager.setNonProductionAppAlert(false)
             showDialog = false

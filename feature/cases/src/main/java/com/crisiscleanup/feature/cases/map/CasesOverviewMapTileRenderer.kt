@@ -260,7 +260,7 @@ class CaseDotsMapTileRenderer @Inject constructor(
     }
 }
 
-internal data class MapTileCases(
+private data class MapTileCases(
     val tileCaseCount: Int,
     val incidentCaseCount: Int,
     val tile: Tile?,

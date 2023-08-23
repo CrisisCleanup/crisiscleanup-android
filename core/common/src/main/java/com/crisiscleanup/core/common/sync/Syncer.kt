@@ -38,5 +38,5 @@ sealed interface SyncResult {
     data class Success(val notes: String) : SyncResult
     data class Partial(val notes: String) : SyncResult
     data class Error(val message: String) : SyncResult
-    object PreconditionsNotMet : SyncResult
+    data object PreconditionsNotMet : SyncResult
 }
