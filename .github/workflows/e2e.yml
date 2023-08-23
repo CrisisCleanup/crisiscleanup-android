@@ -26,20 +26,20 @@ jobs:
       - name: Installing Maestro 📥
         run: curl -Ls "https://get.maestro.mobile.dev" | bash # will use `MAESTRO_VERSION` from env
 
-      - name: Validate Gradle Wrapper 📝
-        uses: gradle/wrapper-validation-action@v1
-
-      - name: Copy CI gradle.properties 📋
-        run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties
-
-      - name: Set up JDK 17 ⚙️
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: 17
-
-      - name: Setup Gradle ⚙️
-        uses: gradle/gradle-build-action@v2
+      # - name: Validate Gradle Wrapper 📝
+      #   uses: gradle/wrapper-validation-action@v1
+      #
+      # - name: Copy CI gradle.properties 📋
+      #   run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties
+      #
+      # - name: Set up JDK 17 ⚙️
+      #   uses: actions/setup-java@v3
+      #   with:
+      #     distribution: 'zulu'
+      #     java-version: 17
+      #
+      # - name: Setup Gradle ⚙️
+      #   uses: gradle/gradle-build-action@v2
 
       - name: Setup environment ⚙️
         env:
@@ -51,24 +51,30 @@ jobs:
           echo 'DEBUG_EMAIL_ADDRESS="${{ secrets.TEST_APP_EMAIL_PROD }}"' >> ${{ env.ENV_VAR_FILE_NAME }}
           echo 'DEBUG_ACCOUNT_PASSWORD="${{ secrets.TEST_APP_PASSWORD_PROD }}"' >> ${{ env.ENV_VAR_FILE_NAME }}
 
-      - name: Build apk for emulator 🏗️
+      # - name: Build apk for emulator 🏗️
+      #   run: |
+      #     ./gradlew assembleDebug --no-daemon -PreactNativeArchitectures=${{ env.ANDROID_ARCH }}
+      #
+      #     echo "Print path to *.apk file"
+      #     find . -type f -name "*.apk"
+
+      # - name: Upload build outputs (APKs) 📤
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: apks
+      #     path: '**/build/outputs/apk/**/*.apk'
+
+      - name: Download APK
         run: |
-          ./gradlew assembleDebug --no-daemon -PreactNativeArchitectures=${{ env.ANDROID_ARCH }}
-
-          echo "Print path to *.apk file"
-          find . -type f -name "*.apk"
-
-      - name: Upload build outputs (APKs) 📤
-        uses: actions/upload-artifact@v3
-        with:
-          name: apks
-          path: '**/build/outputs/apk/**/*.apk'
+          echo "Downloading debug app apk..."
+          curl 'https://s3.amazonaws.com/app.dev.crisiscleanup.io/app-demo-debug.apk' -o ./app/app-demo-debug.apk
 
       - name: Run E2e tests 🧪
         uses: reactivecircus/android-emulator-runner@v2
         env:
-          APK_PATH: ./app/build/outputs/apk/demo/debug/app-demo-debug.apk
-          MAESTRO_DRIVER_STARTUP_TIMEOUT: 60000
+          # APK_PATH: ./app/build/outputs/apk/demo/debug/app-demo-debug.apk
+          APK_PATH: ./app/app-demo-debug.apk
+          MAESTRO_DRIVER_STARTUP_TIMEOUT: 120000
           MAESTRO_APP_ID: com.crisiscleanup.demo.debug
           MAESTRO_APP_EMAIL: ${{ secrets.TEST_APP_EMAIL_PROD }}
           MAESTRO_APP_PASSWORD: ${{ secrets.TEST_APP_PASSWORD_PROD }}
@@ -82,8 +88,9 @@ jobs:
             $HOME/.maestro/bin/maestro test .maestro/work-tests --format junit
 
       - name: Upload test results 📤
+        if: always()
         uses: actions/upload-artifact@v3
         with:
           name: e2e_android_report
           path: |
-            report.xml
+            /Users/runner/.maestro/tests
