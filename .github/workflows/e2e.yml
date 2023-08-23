@@ -61,6 +61,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         env:
           APK_PATH: ./app/build/outputs/apk/demo/debug/app-demo-debug.apk
+          MAESTRO_DRIVER_STARTUP_TIMEOUT: 60000
           MAESTRO_APP_ID: com.crisiscleanup.demo.debug
           MAESTRO_APP_EMAIL: ${{ secrets.TEST_APP_EMAIL_PROD }}
           MAESTRO_APP_PASSWORD: ${{ secrets.TEST_APP_PASSWORD_PROD }}
