@@ -8,11 +8,12 @@ plugins {
     id("nowinandroid.android.hilt")
     id("jacoco")
     id("nowinandroid.android.application.firebase")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
     defaultConfig {
-        val buildVersion = 133
+        val buildVersion = 135
         applicationId = "com.crisiscleanup"
         versionCode = buildVersion
         versionName = "0.2.${buildVersion - 129}"
@@ -81,6 +82,10 @@ android {
         }
     }
     namespace = "com.crisiscleanup"
+}
+
+secrets {
+    defaultPropertiesFileName = "secrets.defaults.properties"
 }
 
 androidComponents {
