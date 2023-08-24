@@ -65,7 +65,11 @@ internal fun MenuScreen(
             )
 
             Row(
-                listItemModifier,
+                Modifier
+                    .clickable(
+                        onClick = { shareAnalytics(!isSharingAnalytics) },
+                    )
+                    .then(listItemModifier),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
