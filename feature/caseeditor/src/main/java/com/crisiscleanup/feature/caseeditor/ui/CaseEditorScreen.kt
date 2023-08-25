@@ -43,9 +43,8 @@ import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.model.data.EmptyIncident
-import com.crisiscleanup.core.ui.ScreenKeyboardVisibility
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
-import com.crisiscleanup.core.ui.screenKeyboardVisibility
+import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseEditorUiState
 import com.crisiscleanup.feature.caseeditor.CaseEditorViewModel
@@ -214,8 +213,8 @@ private fun ColumnScope.FullEditView(
     val areEditorsReady by viewModel.areEditorsReady.collectAsStateWithLifecycle()
     val isSavingData by viewModel.isSavingWorksite.collectAsStateWithLifecycle()
     val isEditable = areEditorsReady &&
-        caseData.isNetworkLoadFinished &&
-        !isSavingData
+            caseData.isNetworkLoadFinished &&
+            !isSavingData
 
     val isSectionCollapsed =
         remember(viewModel) { { sectionIndex: Int -> sectionCollapseStates[sectionIndex] } }
@@ -263,8 +262,8 @@ private fun ColumnScope.FullEditView(
     }
 
     val showClaimAndSave by viewModel.showClaimAndSave.collectAsStateWithLifecycle(false)
-    val keyboardVisibility by screenKeyboardVisibility()
-    if (keyboardVisibility == ScreenKeyboardVisibility.NotVisible) {
+    val isKeyboardOpen = rememberIsKeyboardOpen()
+    if (!isKeyboardOpen) {
         val claimAndSaveChanges = remember(viewModel) { { viewModel.saveChanges(true) } }
         val saveChanges = remember(viewModel) { { viewModel.saveChanges(false) } }
         val translator = LocalAppTranslator.current

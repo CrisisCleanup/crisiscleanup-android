@@ -72,8 +72,7 @@ import com.crisiscleanup.core.designsystem.icon.Icon.DrawableResourceIcon
 import com.crisiscleanup.core.designsystem.icon.Icon.ImageVectorIcon
 import com.crisiscleanup.core.ui.AppLayoutArea
 import com.crisiscleanup.core.ui.LocalAppLayout
-import com.crisiscleanup.core.ui.ScreenKeyboardVisibility
-import com.crisiscleanup.core.ui.screenKeyboardVisibility
+import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
 import com.crisiscleanup.feature.authentication.AuthenticateScreen
 import com.crisiscleanup.feature.cases.ui.SelectIncidentDialog
 import com.crisiscleanup.navigation.CrisisCleanupNavHost
@@ -339,12 +338,12 @@ private fun NavigableContent(
                 )
             }
 
-            val keyboardVisibility by screenKeyboardVisibility()
+            val isKeyboardOpen = rememberIsKeyboardOpen()
             Column(Modifier.fillMaxSize()) {
                 val snackbarAreaHeight =
                     if (!showNavigation &&
                         snackbarHostState.currentSnackbarData != null &&
-                        keyboardVisibility == ScreenKeyboardVisibility.NotVisible
+                        !isKeyboardOpen
                     ) {
                         64.dp
                     } else {

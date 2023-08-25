@@ -52,9 +52,8 @@ import com.crisiscleanup.core.designsystem.theme.optionItemHeight
 import com.crisiscleanup.core.designsystem.theme.optionItemPadding
 import com.crisiscleanup.core.model.data.OrganizationIdName
 import com.crisiscleanup.core.model.data.WorksiteFlagType
-import com.crisiscleanup.core.ui.ScreenKeyboardVisibility
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
-import com.crisiscleanup.core.ui.screenKeyboardVisibility
+import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
 import com.crisiscleanup.feature.caseeditor.CaseAddFlagViewModel
 import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
 import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifierNone
@@ -288,8 +287,8 @@ internal fun OrganizationsSearch(
         ) {
             derivedStateOf {
                 orgSuggestions.isNotEmpty() &&
-                    dismissSuggestionsQuery != orgQuery &&
-                    selectedOptionQuery != orgQuery
+                        dismissSuggestionsQuery != orgQuery &&
+                        selectedOptionQuery != orgQuery
             }
         }
         DropdownMenu(
@@ -333,8 +332,8 @@ internal fun AddFlagSaveActionBar(
     enableSave: Boolean = true,
     isBusy: Boolean = false,
 ) {
-    val keyboardVisibility by screenKeyboardVisibility()
-    if (keyboardVisibility == ScreenKeyboardVisibility.NotVisible) {
+    val isKeyboardOpen = rememberIsKeyboardOpen()
+    if (!isKeyboardOpen) {
         TwoActionBar(
             onPositiveAction = onSave,
             onCancel = onCancel,

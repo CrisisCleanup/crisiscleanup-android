@@ -69,9 +69,8 @@ import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.optionItemPadding
 import com.crisiscleanup.core.designsystem.theme.primaryRedColor
-import com.crisiscleanup.core.ui.ScreenKeyboardVisibility
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
-import com.crisiscleanup.core.ui.screenKeyboardVisibility
+import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseShareViewModel
 import com.crisiscleanup.feature.caseeditor.ShareContactInfo
@@ -200,10 +199,8 @@ private fun ColumnScope.CaseShareContent(
         AnimatedBusyIndicator(isLoading)
     }
 
-    val keyboardVisibility by screenKeyboardVisibility()
-    if (viewModel.showShareScreen &&
-        keyboardVisibility == ScreenKeyboardVisibility.NotVisible
-    ) {
+    val isKeyboardOpen = rememberIsKeyboardOpen()
+    if (viewModel.showShareScreen && !isKeyboardOpen) {
         TwoActionBar(
             onCancel = onBack,
             enabled = isEditable,
@@ -324,12 +321,11 @@ private fun LazyListScope.shareCaseInput(
     }
 
     item {
-        val hintTranslationKey =
-            if (viewModel.isEmailContactMethod) {
-                "shareWorksite.manually_enter_emails"
-            } else {
-                "shareWorksite.manually_enter_phones"
-            }
+        val hintTranslationKey = if (viewModel.isEmailContactMethod) {
+            "shareWorksite.manually_enter_emails"
+        } else {
+            "shareWorksite.manually_enter_phones"
+        }
         val receiverContact by viewModel.receiverContactManual.collectAsStateWithLifecycle()
         Row(
             listItemModifier,
@@ -406,8 +402,7 @@ private fun ReceiverContactItem(
         horizontalArrangement = listItemSpacedBy,
     ) {
         receiverContacts.forEachIndexed { index, contact ->
-            val description = removeShareStringTemplate
-                .replace("{user}", contact.contactValue)
+            val description = removeShareStringTemplate.replace("{user}", contact.contactValue)
 
             AssistChip(
                 leadingIcon = {
@@ -493,9 +488,7 @@ private fun LazyListScope.contactSuggestionsItem(
                 receiverContact,
             ) {
                 derivedStateOf {
-                    contactOptions.isNotEmpty() &&
-                        receiverContact.isNotBlank() &&
-                        dismissSuggestionsQuery != receiverContact
+                    contactOptions.isNotEmpty() && receiverContact.isNotBlank() && dismissSuggestionsQuery != receiverContact
                 }
             }
             DropdownMenu(

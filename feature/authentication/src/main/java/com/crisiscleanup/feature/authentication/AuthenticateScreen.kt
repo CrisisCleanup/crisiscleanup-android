@@ -1,6 +1,7 @@
 package com.crisiscleanup.feature.authentication
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -47,6 +48,9 @@ import com.crisiscleanup.core.designsystem.theme.DayNightPreviews
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
+import com.crisiscleanup.core.ui.rememberCloseKeyboard
+import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
+import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.authentication.model.AuthenticationState
 import com.crisiscleanup.core.common.R as commonR
 
@@ -83,16 +87,22 @@ fun AuthenticateScreen(
         }
 
         is AuthenticateScreenUiState.Ready -> {
+            val isKeyboardOpen = rememberIsKeyboardOpen()
+            val closeKeyboard = rememberCloseKeyboard(viewModel)
+
             val readyState = uiState as AuthenticateScreenUiState.Ready
             val authState = readyState.authenticationState
             Box(modifier) {
                 // TODO Scroll when content is longer than screen height with keyboard open
                 Column(
                     Modifier
+                        .scrollFlingListener(closeKeyboard)
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState()),
                 ) {
-                    CrisisCleanupLogoRow()
+                    AnimatedVisibility(visible = !isKeyboardOpen) {
+                        CrisisCleanupLogoRow()
+                    }
 
                     if (authState.isAccountValid) {
                         AuthenticatedScreen(
