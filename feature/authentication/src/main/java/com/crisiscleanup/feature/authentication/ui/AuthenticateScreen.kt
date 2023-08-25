@@ -68,14 +68,24 @@ fun AuthRoute(
     openForgotPassword: () -> Unit = {},
     openEmailMagicLink: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
+    viewModel: AuthenticationViewModel = hiltViewModel(),
 ) {
-    AuthenticateScreen(
-        enableBackHandler = enableBackHandler,
-        modifier = modifier,
-        openForgotPassword = openForgotPassword,
-        openEmailMagicLink = openEmailMagicLink,
-        closeAuthentication = closeAuthentication,
-    )
+    // TODO Push route rather than toggling state
+    val showResetPassword by viewModel.showResetPassword.collectAsStateWithLifecycle(false)
+    if (showResetPassword) {
+        PasswordRecoverRoute(
+            onBack = viewModel::clearResetPassword,
+            showResetPassword = true,
+        )
+    } else {
+        AuthenticateScreen(
+            enableBackHandler = enableBackHandler,
+            modifier = modifier,
+            openForgotPassword = openForgotPassword,
+            openEmailMagicLink = openEmailMagicLink,
+            closeAuthentication = closeAuthentication,
+        )
+    }
 }
 
 @Composable

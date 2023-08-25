@@ -154,6 +154,10 @@ class MainActivity : ComponentActivity() {
                 viewModel.authState.collect { authState = it }
             }
         }
+
+        intent?.let {
+            viewModel.processMainIntent(it)
+        }
     }
 
     override fun onResume() {

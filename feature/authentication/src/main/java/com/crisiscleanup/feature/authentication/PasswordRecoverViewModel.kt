@@ -1,5 +1,8 @@
 package com.crisiscleanup.feature.authentication
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.InputValidator
@@ -19,7 +22,7 @@ import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
-class ForgotPasswordViewModel @Inject constructor(
+class PasswordRecoverViewModel @Inject constructor(
     accountDataRepository: AccountDataRepository,
     private val inputValidator: InputValidator,
     private val translator: KeyResourceTranslator,
@@ -29,22 +32,32 @@ class ForgotPasswordViewModel @Inject constructor(
     val forgotPasswordErrorMessage = MutableStateFlow("")
     val magicLinkErrorMessage = MutableStateFlow("")
 
+    // TODO Clear password values on view close
+    var password by mutableStateOf("")
+    var confirmPassword by mutableStateOf("")
+    val resetPasswordErrorMessage = MutableStateFlow("")
+    val resetPasswordConfirmErrorMessage = MutableStateFlow("")
+
+    private val isInitiatingPasswordReset = MutableStateFlow(false)
+    private val isInitiatingMagicLink = MutableStateFlow(false)
     private val isResettingPassword = MutableStateFlow(false)
-    private val isRequestingMagicLink = MutableStateFlow(false)
 
     val isBusy = combine(
+        isInitiatingPasswordReset,
+        isInitiatingMagicLink,
         isResettingPassword,
-        isRequestingMagicLink,
-        ::Pair,
+        ::Triple,
     )
-        .map { (b0, b1) -> b0 || b1 }
+        .map { (b0, b1, b2) -> b0 || b1 || b2 }
         .stateIn(
             scope = viewModelScope,
             initialValue = false,
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val isMagicLinkRequested = MutableStateFlow(false)
+    val isPasswordResetInitiated = MutableStateFlow(false)
+    val isMagicLinkInitiated = MutableStateFlow(false)
+    val isPasswordReset = MutableStateFlow(false)
 
     init {
         accountDataRepository.accountData
@@ -56,7 +69,12 @@ class ForgotPasswordViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    fun onRequestPassword() {
+    fun clearState() {
+        password = ""
+        confirmPassword = ""
+    }
+
+    fun onInitiatePasswordReset() {
         forgotPasswordErrorMessage.value = ""
 
         val email = emailAddress.value ?: ""
@@ -69,10 +87,12 @@ class ForgotPasswordViewModel @Inject constructor(
 
         // TODO Request password
 
+        // TODO: Only on success
         logger.logDebug("Request password on $email")
+        isPasswordResetInitiated.value = true
     }
 
-    fun onRequestMagicLink() {
+    fun onInitiateMagicLink() {
         magicLinkErrorMessage.value = ""
 
         val email = emailAddress.value ?: ""
@@ -85,8 +105,37 @@ class ForgotPasswordViewModel @Inject constructor(
 
         // TODO Request magic link. Set success on success
 
+        // TODO: Only on success
         logger.logDebug("Request magic link")
+        isMagicLinkInitiated.value = true
+    }
 
-        isMagicLinkRequested.value = true
+    fun clearResetPasswordErrors() {
+        resetPasswordErrorMessage.value = ""
+        resetPasswordConfirmErrorMessage.value = ""
+    }
+
+    fun onResetPassword() {
+        clearResetPasswordErrors()
+
+        val pw = password
+        val confirmPw = confirmPassword
+
+        if (pw.trim().length < 8) {
+            resetPasswordErrorMessage.value =
+                translator("invitationSignup.password_length_error")
+            return
+        }
+        if (pw != confirmPw) {
+            resetPasswordConfirmErrorMessage.value =
+                translator("resetPassword.mismatch_passwords_try_again")
+            return
+        }
+
+        logger.logDebug(("Reset password"))
+
+        // TODO: Only on success
+        clearState()
+        isPasswordReset.value = true
     }
 }

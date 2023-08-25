@@ -146,9 +146,10 @@ private fun LoadedContent(
 ) {
     val isAccountExpired by viewModel.isAccountExpired
 
+    val showPasswordReset by viewModel.showPasswordReset.collectAsStateWithLifecycle(false)
     val isNotAuthenticatedState = authState !is AuthState.Authenticated
     var openAuthentication by rememberSaveable { mutableStateOf(isNotAuthenticatedState) }
-    if (openAuthentication || isNotAuthenticatedState) {
+    if (openAuthentication || isNotAuthenticatedState || showPasswordReset) {
         val toggleAuthentication = remember(authState) {
             { open: Boolean -> openAuthentication = open }
         }

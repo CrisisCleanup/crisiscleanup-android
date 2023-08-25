@@ -10,7 +10,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
@@ -21,6 +23,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
+import com.crisiscleanup.core.designsystem.component.OutlinedObfuscatingTextField
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
@@ -28,27 +31,31 @@ import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.primaryRedColor
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
-import com.crisiscleanup.feature.authentication.ForgotPasswordViewModel
+import com.crisiscleanup.feature.authentication.PasswordRecoverViewModel
 import com.crisiscleanup.feature.authentication.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ForgotPasswordRoute(
+fun PasswordRecoverRoute(
     onBack: () -> Unit,
-    viewModel: ForgotPasswordViewModel = hiltViewModel(),
-    isMagicLinkOnly: Boolean = false,
+    viewModel: PasswordRecoverViewModel = hiltViewModel(),
+    showForgotPassword: Boolean = false,
+    showResetPassword: Boolean = false,
+    showMagicLink: Boolean = false,
 ) {
     val translator = LocalAppTranslator.current
-    val titleKey = if (isMagicLinkOnly) "nav.magic_link" else "invitationSignup.forgot_password"
-
+    var titleKey = "nav.magic_link"
+    if (showForgotPassword) {
+        titleKey = "invitationSignup.forgot_password"
+    } else if (showResetPassword) {
+        titleKey = "~~Reset Password"
+    }
 
     val emailAddress by viewModel.emailAddress.collectAsStateWithLifecycle()
     val emailAddressNn = emailAddress ?: ""
 
     val isNotLoading = emailAddress != null
     val isBusy by viewModel.isBusy.collectAsStateWithLifecycle()
-
-    val isMagicLinkRequested by viewModel.isMagicLinkRequested.collectAsStateWithLifecycle()
 
     val closeKeyboard = rememberCloseKeyboard(viewModel)
 
@@ -64,31 +71,56 @@ fun ForgotPasswordRoute(
             modifier = Modifier.testTag("forgotPasswordBackBtn"),
         )
 
-        if (!isMagicLinkOnly) {
-            ForgotPasswordView(
-                emailAddress = emailAddressNn,
-                isEditable = isNotLoading,
-                isBusy = isBusy,
-            )
+        if (showForgotPassword) {
+            val isRequested by viewModel.isPasswordResetInitiated.collectAsStateWithLifecycle()
+
+            if (isRequested) {
+                PasswordResetRequestedView()
+            } else {
+                ForgotPasswordView(
+                    emailAddress = emailAddressNn,
+                    isEditable = isNotLoading,
+                    isBusy = isBusy,
+                )
+            }
 
             Spacer(Modifier.height(32.dp))
         }
 
-        if (isMagicLinkRequested) {
-            MagicLinkRequestedView()
-        } else {
-            MagicLinkView(
-                emailAddress = emailAddressNn,
-                isEditable = isNotLoading,
-                isBusy = isBusy,
-            )
+        if (showResetPassword) {
+            val isReset by viewModel.isPasswordReset.collectAsStateWithLifecycle()
+
+            if (isReset) {
+                PasswordResetSuccessfulView()
+            } else {
+                ResetPasswordView(
+                    isEditable = isNotLoading,
+                    isBusy = isBusy,
+                )
+            }
+
+            Spacer(Modifier.height(32.dp))
+        }
+
+        if (showMagicLink) {
+            val isMagicLinkRequested by viewModel.isMagicLinkInitiated.collectAsStateWithLifecycle()
+
+            if (isMagicLinkRequested) {
+                MagicLinkRequestedView()
+            } else {
+                MagicLinkView(
+                    emailAddress = emailAddressNn,
+                    isEditable = isNotLoading,
+                    isBusy = isBusy,
+                )
+            }
         }
     }
 }
 
 @Composable
 private fun ForgotPasswordView(
-    viewModel: ForgotPasswordViewModel = hiltViewModel(),
+    viewModel: PasswordRecoverViewModel = hiltViewModel(),
     emailAddress: String = "",
     isEditable: Boolean = false,
     isBusy: Boolean = false,
@@ -131,13 +163,13 @@ private fun ForgotPasswordView(
         enabled = !isBusy,
         isError = hasError,
         hasFocus = hasError,
-        onEnter = viewModel::onRequestPassword,
+        onEnter = viewModel::onInitiatePasswordReset,
         imeAction = ImeAction.Done,
     )
 
     BusyButton(
         modifier = fillWidthPadded.testTag("forgotPasswordBtn"),
-        onClick = viewModel::onRequestPassword,
+        onClick = viewModel::onInitiatePasswordReset,
         enabled = isEditable,
         text = translator("~~Reset Password", R.string.reset_password),
         indicateBusy = isBusy,
@@ -145,8 +177,108 @@ private fun ForgotPasswordView(
 }
 
 @Composable
+private fun PasswordResetRequestedView() {
+    val translator = LocalAppTranslator.current
+
+    Text(
+        translator("resetPassword.email_arrive_soon_check_junk"),
+        listItemModifier,
+        style = LocalFontStyles.current.header3,
+    )
+}
+
+@Composable
+private fun ResetPasswordView(
+    viewModel: PasswordRecoverViewModel = hiltViewModel(),
+    isEditable: Boolean = false,
+    isBusy: Boolean = false,
+) {
+    val translator = LocalAppTranslator.current
+
+    Text(
+        translator("nav.reset_password"),
+        listItemModifier,
+        style = LocalFontStyles.current.header3,
+    )
+
+    Text(
+        translator("resetPassword.enter_new_password"),
+        listItemModifier,
+    )
+
+    var isObfuscatingPassword by remember { mutableStateOf(true) }
+    var isObfuscatingConfirmPassword by remember { mutableStateOf(true) }
+    val updatePasswordInput = remember(viewModel) {
+        { s: String -> viewModel.password = s }
+    }
+    val updateConfirmPasswordInput = remember(viewModel) {
+        { s: String -> viewModel.confirmPassword = s }
+    }
+    val passwordErrorMessage by viewModel.resetPasswordErrorMessage.collectAsStateWithLifecycle()
+    val confirmPasswordErrorMessage by viewModel.resetPasswordConfirmErrorMessage.collectAsStateWithLifecycle()
+    val hasPasswordError = passwordErrorMessage.isNotBlank()
+    val hasConfirmPasswordError = confirmPasswordErrorMessage.isNotBlank()
+
+    val errorMessage = passwordErrorMessage.ifBlank { confirmPasswordErrorMessage }
+    if (errorMessage.isNotBlank()) {
+        Text(
+            errorMessage,
+            listItemModifier,
+            color = primaryRedColor,
+        )
+    }
+
+    OutlinedObfuscatingTextField(
+        modifier = fillWidthPadded.testTag("resetPasswordTextField"),
+        label = translator("resetPassword.password"),
+        value = viewModel.password,
+        onValueChange = updatePasswordInput,
+        isObfuscating = isObfuscatingPassword,
+        onObfuscate = { isObfuscatingPassword = !isObfuscatingPassword },
+        enabled = !isBusy,
+        isError = hasPasswordError,
+        hasFocus = hasPasswordError,
+        onNext = viewModel::clearResetPasswordErrors,
+        imeAction = ImeAction.Next,
+    )
+
+    OutlinedObfuscatingTextField(
+        modifier = fillWidthPadded.testTag("resetPasswordConfirmTextField"),
+        label = translator("resetPassword.confirm_password"),
+        value = viewModel.confirmPassword,
+        onValueChange = updateConfirmPasswordInput,
+        isObfuscating = isObfuscatingConfirmPassword,
+        onObfuscate = { isObfuscatingConfirmPassword = !isObfuscatingConfirmPassword },
+        enabled = !isBusy,
+        isError = hasConfirmPasswordError,
+        hasFocus = hasConfirmPasswordError,
+        onEnter = viewModel::onResetPassword,
+        imeAction = ImeAction.Done,
+    )
+
+    BusyButton(
+        modifier = fillWidthPadded.testTag("resetPasswordBtn"),
+        onClick = viewModel::onResetPassword,
+        enabled = isEditable,
+        text = translator("actions.reset"),
+        indicateBusy = isBusy,
+    )
+}
+
+@Composable
+private fun PasswordResetSuccessfulView() {
+    val translator = LocalAppTranslator.current
+
+    Text(
+        translator("resetPassword.password_reset"),
+        listItemModifier,
+        style = LocalFontStyles.current.header3,
+    )
+}
+
+@Composable
 private fun MagicLinkView(
-    viewModel: ForgotPasswordViewModel = hiltViewModel(),
+    viewModel: PasswordRecoverViewModel = hiltViewModel(),
     emailAddress: String = "",
     isEditable: Boolean = false,
     isBusy: Boolean = false,
@@ -189,13 +321,13 @@ private fun MagicLinkView(
         enabled = !isBusy,
         isError = hasError,
         hasFocus = hasError,
-        onEnter = viewModel::onRequestMagicLink,
+        onEnter = viewModel::onInitiateMagicLink,
         imeAction = ImeAction.Done,
     )
 
     BusyButton(
         modifier = fillWidthPadded.testTag("emailMagicLinkBtn"),
-        onClick = viewModel::onRequestMagicLink,
+        onClick = viewModel::onInitiateMagicLink,
         enabled = isEditable,
         text = translator("actions.submit"),
         indicateBusy = isBusy,

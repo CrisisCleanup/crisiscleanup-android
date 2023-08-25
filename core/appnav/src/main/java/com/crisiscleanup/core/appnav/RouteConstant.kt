@@ -7,6 +7,7 @@ object RouteConstant {
     const val authRoute = "auth_route"
     const val forgotPasswordRoute = "forgot_password_route"
     const val emailLoginLinkRoute = "email_login_link_route"
+    // const val resetPasswordRoute = "reset_password_route"
 
     // This cannot be used as the navHost startDestination
     const val casesRoute = "cases_route"
