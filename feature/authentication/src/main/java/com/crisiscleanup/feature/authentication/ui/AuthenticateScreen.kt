@@ -41,7 +41,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.OutlinedObfuscatingTextField
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
@@ -66,12 +65,14 @@ fun AuthRoute(
     enableBackHandler: Boolean,
     modifier: Modifier = Modifier,
     openForgotPassword: () -> Unit = {},
+    openEmailMagicLink: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
 ) {
     AuthenticateScreen(
         enableBackHandler = enableBackHandler,
         modifier = modifier,
         openForgotPassword = openForgotPassword,
+        openEmailMagicLink = openEmailMagicLink,
         closeAuthentication = closeAuthentication,
     )
 }
@@ -81,6 +82,7 @@ private fun AuthenticateScreen(
     modifier: Modifier = Modifier,
     viewModel: AuthenticationViewModel = hiltViewModel(),
     openForgotPassword: () -> Unit = {},
+    openEmailMagicLink: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
     enableBackHandler: Boolean = false,
 ) {
@@ -135,6 +137,7 @@ private fun AuthenticateScreen(
                         LoginScreen(
                             authState,
                             openForgotPassword = openForgotPassword,
+                            openEmailMagicLink = openEmailMagicLink,
                             closeAuthentication = onCloseScreen,
                         )
 
@@ -195,17 +198,19 @@ private fun ConditionalErrorMessage(errorMessage: String) {
 @Composable
 private fun LinkAction(
     textTranslateKey: String,
+    modifier: Modifier = Modifier,
+    arrangement: Arrangement.Horizontal = Arrangement.End,
     enabled: Boolean = false,
     action: () -> Unit = {},
 ) {
     val translator = LocalAppTranslator.current
     Row(
         Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.End,
+        horizontalArrangement = arrangement,
     ) {
         Text(
             text = translator(textTranslateKey),
-            modifier = Modifier
+            modifier = modifier
                 .clickable(
                     enabled = enabled,
                     onClick = action,
@@ -221,6 +226,7 @@ private fun LinkAction(
 private fun LoginScreen(
     authState: AuthenticationState,
     openForgotPassword: () -> Unit = {},
+    openEmailMagicLink: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
     viewModel: AuthenticationViewModel = hiltViewModel(),
 ) {
@@ -255,9 +261,9 @@ private fun LoginScreen(
     )
 
     LinkAction(
-        "~~Login with email link",
-        isNotBusy,
-        viewModel::onLoginEmailLink,
+        "actions.request_magic_link",
+        enabled = isNotBusy,
+        action = openEmailMagicLink,
     )
 
     var isObfuscatingPassword by rememberSaveable { mutableStateOf(true) }
@@ -288,7 +294,7 @@ private fun LoginScreen(
     LinkAction(
         "invitationSignup.forgot_password",
         enabled = isNotBusy,
-        openForgotPassword,
+        action = openForgotPassword,
     )
 
     if (viewModel.isDebug) {
@@ -319,11 +325,11 @@ private fun LoginScreen(
     )
 
     if (authState.hasAuthenticated) {
-        CrisisCleanupButton(
+        LinkAction(
+            "actions.back",
             modifier = fillWidthPadded.testTag("loginCancelBtn"),
-            onClick = closeAuthentication,
             enabled = isNotBusy,
-            text = translator("actions.cancel", R.string.cancel),
+            action = closeAuthentication,
         )
     }
 }
@@ -356,11 +362,11 @@ private fun AuthenticatedScreen(
         indicateBusy = !isNotBusy,
     )
 
-    CrisisCleanupButton(
+    LinkAction(
+        "actions.back",
         modifier = fillWidthPadded.testTag("authedProfileDismissBtn"),
-        onClick = closeAuthentication,
         enabled = isNotBusy,
-        text = translator("actions.dismiss"),
+        action = closeAuthentication,
     )
 }
 

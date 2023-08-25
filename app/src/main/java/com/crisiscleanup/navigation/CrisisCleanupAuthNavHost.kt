@@ -7,7 +7,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.crisiscleanup.core.appnav.RouteConstant
 import com.crisiscleanup.feature.authentication.navigation.authGraph
+import com.crisiscleanup.feature.authentication.navigation.emailLoginLinkScreen
 import com.crisiscleanup.feature.authentication.navigation.forgotPasswordScreen
+import com.crisiscleanup.feature.authentication.navigation.navigateToEmailLoginLink
 import com.crisiscleanup.feature.authentication.navigation.navigateToForgotPassword
 
 @Composable
@@ -21,6 +23,8 @@ fun CrisisCleanupAuthNavHost(
 ) {
     val navToForgotPassword =
         remember(navController) { { navController.navigateToForgotPassword() } }
+    val navToEmailMagicLink =
+        remember(navController) { { navController.navigateToEmailLoginLink() } }
 
     NavHost(
         navController = navController,
@@ -30,10 +34,12 @@ fun CrisisCleanupAuthNavHost(
         authGraph(
             nestedGraphs = {
                 forgotPasswordScreen(onBack)
+                emailLoginLinkScreen(onBack)
             },
             enableBackHandler = enableBackHandler,
             closeAuthentication = closeAuthentication,
             openForgotPassword = navToForgotPassword,
+            openEmailMagicLink = navToEmailMagicLink,
         )
     }
 }

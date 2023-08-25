@@ -214,13 +214,9 @@ class AuthenticationViewModel @Inject constructor(
         }
         authEventBus.onLogout()
     }
-
-    fun onLoginEmailLink() {
-        // TODO Request email login link through API. Show message on success or fail
-    }
 }
 
 sealed interface AuthenticateScreenUiState {
-    object Loading : AuthenticateScreenUiState
+    data object Loading : AuthenticateScreenUiState
     data class Ready(val authenticationState: AuthenticationState) : AuthenticateScreenUiState
 }
