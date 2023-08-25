@@ -8,6 +8,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -23,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -37,6 +42,7 @@ import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.OutlinedObfuscatingTextField
+import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.DayNightPreviews
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
@@ -109,19 +115,36 @@ fun AuthenticateScreen(
 }
 
 @Composable
-private fun CrisisCleanupLogoRow() {
-    Row(
-        modifier = fillWidthPadded,
-        horizontalArrangement = Arrangement.Center,
-    ) {
-        Image(
-            modifier = Modifier
-                .testTag("ccuLogo")
-                // TODO Adjust image size to screen size
-                .sizeIn(maxWidth = 160.dp),
-            painter = painterResource(commonR.drawable.crisis_cleanup_logo),
-            contentDescription = stringResource(com.crisiscleanup.core.common.R.string.crisis_cleanup),
-        )
+internal fun CrisisCleanupLogoRow() {
+    // TODO Adjust to other screen sizes as necessary
+    Box(Modifier.padding(top = 16.dp, start = 8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start,
+        ) {
+            Image(
+                painterResource(R.drawable.worker_wheelbarrow_world_background),
+                modifier = Modifier
+                    .testTag("ccuBackground")
+                    .padding(top = 32.dp)
+                    .size(width = 480.dp, height = 240.dp)
+                    .offset(x = 64.dp),
+                contentScale = ContentScale.FillHeight,
+                contentDescription = null,
+            )
+        }
+        Row(
+            modifier = fillWidthPadded,
+            horizontalArrangement = Arrangement.Start,
+        ) {
+            Image(
+                modifier = Modifier
+                    .testTag("ccuLogo")
+                    .sizeIn(maxWidth = 160.dp),
+                painter = painterResource(commonR.drawable.crisis_cleanup_logo),
+                contentDescription = stringResource(com.crisiscleanup.core.common.R.string.crisis_cleanup),
+            )
+        }
     }
 }
 
@@ -149,7 +172,7 @@ private fun LoginScreen(
     Text(
         modifier = listItemModifier.testTag("loginHeaderText"),
         text = translator("actions.login", R.string.login),
-        style = LocalFontStyles.current.header2,
+        style = LocalFontStyles.current.header1,
     )
 
     val authErrorMessage by viewModel.errorMessage
@@ -158,7 +181,7 @@ private fun LoginScreen(
     val isNotBusy by viewModel.isNotAuthenticating.collectAsStateWithLifecycle()
 
     val focusEmail = viewModel.loginInputData.emailAddress.isEmpty() ||
-        viewModel.isInvalidEmail.value
+            viewModel.isInvalidEmail.value
     val updateEmailInput =
         remember(viewModel) { { s: String -> viewModel.loginInputData.emailAddress = s } }
     val clearErrorVisuals = remember(viewModel) { { viewModel.clearErrorVisuals() } }
@@ -275,5 +298,7 @@ private fun AuthenticatedScreen(
 @DayNightPreviews
 @Composable
 fun LogoRowPreview() {
-    CrisisCleanupLogoRow()
+    CrisisCleanupTheme {
+        CrisisCleanupLogoRow()
+    }
 }
