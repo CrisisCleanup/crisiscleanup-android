@@ -62,8 +62,6 @@ class MainActivityViewModel @Inject constructor(
     firebaseAnalytics: FirebaseAnalytics,
     @Dispatcher(IO) ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
-    val isDebuggable = appEnv.isDebuggable
-
     /**
      * Previous app open
      *

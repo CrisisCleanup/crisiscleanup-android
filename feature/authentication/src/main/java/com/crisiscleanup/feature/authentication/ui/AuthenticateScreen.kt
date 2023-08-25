@@ -1,8 +1,9 @@
-package com.crisiscleanup.feature.authentication
+package com.crisiscleanup.feature.authentication.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,19 +49,40 @@ import com.crisiscleanup.core.designsystem.theme.DayNightPreviews
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
+import com.crisiscleanup.core.designsystem.theme.listItemPadding
+import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
 import com.crisiscleanup.core.ui.scrollFlingListener
+import com.crisiscleanup.feature.authentication.AuthenticateScreenUiState
+import com.crisiscleanup.feature.authentication.AuthenticationViewModel
+import com.crisiscleanup.feature.authentication.BuildConfig
+import com.crisiscleanup.feature.authentication.R
 import com.crisiscleanup.feature.authentication.model.AuthenticationState
 import com.crisiscleanup.core.common.R as commonR
 
 @Composable
-fun AuthenticateScreen(
+fun AuthRoute(
+    enableBackHandler: Boolean,
+    modifier: Modifier = Modifier,
+    openForgotPassword: () -> Unit = {},
+    closeAuthentication: () -> Unit = {},
+) {
+    AuthenticateScreen(
+        enableBackHandler = enableBackHandler,
+        modifier = modifier,
+        openForgotPassword = openForgotPassword,
+        closeAuthentication = closeAuthentication,
+    )
+}
+
+@Composable
+private fun AuthenticateScreen(
     modifier: Modifier = Modifier,
     viewModel: AuthenticationViewModel = hiltViewModel(),
+    openForgotPassword: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
     enableBackHandler: Boolean = false,
-    isDebug: Boolean = false,
 ) {
     val onCloseScreen = remember(viewModel, closeAuthentication) {
         {
@@ -112,8 +134,8 @@ fun AuthenticateScreen(
                     } else {
                         LoginScreen(
                             authState,
-                            onCloseScreen,
-                            isDebug = isDebug,
+                            openForgotPassword = openForgotPassword,
+                            closeAuthentication = onCloseScreen,
                         )
 
                         Spacer(modifier = Modifier.weight(1f))
@@ -171,11 +193,36 @@ private fun ConditionalErrorMessage(errorMessage: String) {
 }
 
 @Composable
+private fun LinkAction(
+    textTranslateKey: String,
+    enabled: Boolean = false,
+    action: () -> Unit = {},
+) {
+    val translator = LocalAppTranslator.current
+    Row(
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.End,
+    ) {
+        Text(
+            text = translator(textTranslateKey),
+            modifier = Modifier
+                .clickable(
+                    enabled = enabled,
+                    onClick = action,
+                )
+                .listItemPadding(),
+            style = LocalFontStyles.current.header4,
+            color = primaryBlueColor,
+        )
+    }
+}
+
+@Composable
 private fun LoginScreen(
     authState: AuthenticationState,
+    openForgotPassword: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
     viewModel: AuthenticationViewModel = hiltViewModel(),
-    isDebug: Boolean = false,
 ) {
     val translator = LocalAppTranslator.current
 
@@ -207,6 +254,12 @@ private fun LoginScreen(
         onNext = clearErrorVisuals,
     )
 
+    LinkAction(
+        "~~Login with email link",
+        isNotBusy,
+        viewModel::onLoginEmailLink,
+    )
+
     var isObfuscatingPassword by rememberSaveable { mutableStateOf(true) }
     val focusManager = LocalFocusManager.current
     val updatePasswordInput =
@@ -232,7 +285,13 @@ private fun LoginScreen(
         imeAction = ImeAction.Done,
     )
 
-    if (isDebug) {
+    LinkAction(
+        "invitationSignup.forgot_password",
+        enabled = isNotBusy,
+        openForgotPassword,
+    )
+
+    if (viewModel.isDebug) {
         val rememberDebugAuthenticate = remember(viewModel) {
             {
                 viewModel.loginInputData.apply {

@@ -3,6 +3,7 @@ package com.crisiscleanup.feature.authentication
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.InputValidator
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.event.AuthEventBus
@@ -38,9 +39,12 @@ class AuthenticationViewModel @Inject constructor(
     private val inputValidator: InputValidator,
     private val authEventBus: AuthEventBus,
     private val translator: KeyResourceTranslator,
+    appEnv: AppEnv,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.Auth) private val logger: AppLogger,
 ) : ViewModel() {
+    val isDebug = appEnv.isDebuggable
+
     private var isAuthenticating = MutableStateFlow(false)
     val isNotAuthenticating = isAuthenticating.map(Boolean::not).stateIn(
         scope = viewModelScope,
@@ -209,6 +213,10 @@ class AuthenticationViewModel @Inject constructor(
             password = ""
         }
         authEventBus.onLogout()
+    }
+
+    fun onLoginEmailLink() {
+        // TODO Request email login link through API. Show message on success or fail
     }
 }
 

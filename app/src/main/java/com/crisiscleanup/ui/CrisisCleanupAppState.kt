@@ -15,6 +15,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import androidx.tracing.trace
+import com.crisiscleanup.core.appnav.RouteConstant.casesGraphRoutePattern
 import com.crisiscleanup.core.appnav.RouteConstant.casesRoute
 import com.crisiscleanup.core.appnav.RouteConstant.dashboardRoute
 import com.crisiscleanup.core.appnav.RouteConstant.menuRoute
@@ -112,6 +113,18 @@ class CrisisCleanupAppState(
         MENU,
     )
 
+    private var priorTopLevelDestination: TopLevelDestination = CASES
+
+    @Composable
+    fun lastTopLevelRoute(): String {
+        return when (priorTopLevelDestination) {
+            DASHBOARD -> dashboardRoute
+            TEAM -> teamRoute
+            MENU -> menuRoute
+            else -> casesGraphRoutePattern
+        }
+    }
+
     /**
      * UI logic for navigating to a top level destination in the app. Top level destinations have
      * only one copy of the destination of the back stack, and save and restore state whenever you
@@ -134,6 +147,8 @@ class CrisisCleanupAppState(
                 // Restore state when reselecting a previously selected item
                 restoreState = true
             }
+
+            priorTopLevelDestination = topLevelDestination
 
             when (topLevelDestination) {
                 CASES -> navController.navigateToCases(topLevelNavOptions)
