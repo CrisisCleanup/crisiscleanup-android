@@ -43,6 +43,7 @@ import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.OutlinedObfuscatingTextField
+import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.DayNightPreviews
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
@@ -104,7 +105,7 @@ private fun AuthenticateScreen(
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     when (uiState) {
-        AuthenticateScreenUiState.Loading -> {
+        is AuthenticateScreenUiState.Loading -> {
             Box(Modifier.fillMaxSize()) {
                 CircularProgressIndicator(Modifier.align(Alignment.Center))
             }
@@ -210,12 +211,12 @@ private fun LinkAction(
     ) {
         Text(
             text = translator(textTranslateKey),
-            modifier = modifier
+            modifier = Modifier
                 .clickable(
                     enabled = enabled,
                     onClick = action,
                 )
-                .listItemPadding(),
+                .then(modifier),
             style = LocalFontStyles.current.header4,
             color = primaryBlueColor,
         )
@@ -260,12 +261,6 @@ private fun LoginScreen(
         onNext = clearErrorVisuals,
     )
 
-    LinkAction(
-        "actions.request_magic_link",
-        enabled = isNotBusy,
-        action = openEmailMagicLink,
-    )
-
     var isObfuscatingPassword by rememberSaveable { mutableStateOf(true) }
     val focusManager = LocalFocusManager.current
     val updatePasswordInput =
@@ -292,7 +287,19 @@ private fun LoginScreen(
     )
 
     LinkAction(
+        "actions.request_magic_link",
+        Modifier
+            .actionHeight()
+            .listItemPadding(),
+        enabled = isNotBusy,
+        action = openEmailMagicLink,
+    )
+
+    LinkAction(
         "invitationSignup.forgot_password",
+        Modifier
+            .actionHeight()
+            .listItemPadding(),
         enabled = isNotBusy,
         action = openForgotPassword,
     )
@@ -327,7 +334,10 @@ private fun LoginScreen(
     if (authState.hasAuthenticated) {
         LinkAction(
             "actions.back",
-            modifier = fillWidthPadded.testTag("loginCancelBtn"),
+            modifier = Modifier
+                .listItemPadding()
+                .testTag("loginCancelBtn"),
+            arrangement = Arrangement.Start,
             enabled = isNotBusy,
             action = closeAuthentication,
         )
@@ -364,7 +374,10 @@ private fun AuthenticatedScreen(
 
     LinkAction(
         "actions.back",
-        modifier = fillWidthPadded.testTag("authedProfileDismissBtn"),
+        modifier = Modifier
+            .listItemPadding()
+            .testTag("authedProfileDismissBtn"),
+        arrangement = Arrangement.Start,
         enabled = isNotBusy,
         action = closeAuthentication,
     )
