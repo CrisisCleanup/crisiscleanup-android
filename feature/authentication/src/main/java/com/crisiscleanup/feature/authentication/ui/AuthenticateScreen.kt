@@ -298,14 +298,14 @@ private fun LoginScreen(
     )
 
     if (translateCount > 0) {
-        LinkAction(
-            "actions.request_magic_link",
-            Modifier
-                .actionHeight()
-                .listItemPadding(),
-            enabled = isNotBusy,
-            action = openEmailMagicLink,
-        )
+//        LinkAction(
+//            "actions.request_magic_link",
+//            Modifier
+//                .actionHeight()
+//                .listItemPadding(),
+//            enabled = isNotBusy,
+//            action = openEmailMagicLink,
+//        )
 
         LinkAction(
             "invitationSignup.forgot_password",
