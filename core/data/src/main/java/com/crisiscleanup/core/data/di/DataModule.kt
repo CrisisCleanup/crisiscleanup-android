@@ -116,18 +116,23 @@ interface DataModule {
 
     @Singleton
     @Binds
-    fun casesFiltersRepository(
+    fun bindsCasesFiltersRepository(
         repository: CrisisCleanupCasesFilterRepository,
     ): CasesFilterRepository
 
     @Singleton
     @Binds
-    fun caseHistoryRepository(
+    fun bindsCaseHistoryRepository(
         repository: OfflineFirstCaseHistoryRepository,
     ): CaseHistoryRepository
 
     @Binds
-    fun endOfLifeRepository(
+    fun bindsAccountUpdateRepository(
+        repository: CrisisCleanupAccountUpdateRepository,
+    ): AccountUpdateRepository
+
+    @Binds
+    fun bindsEndOfLifeRepository(
         repository: AppEndOfLifeRepository,
     ): EndOfLifeRepository
 }

@@ -19,6 +19,7 @@ interface TagLogger : AppLogger {
 annotation class Logger(val loggers: CrisisCleanupLoggers)
 
 enum class CrisisCleanupLoggers {
+    Account,
     App,
     Auth,
     Cases,

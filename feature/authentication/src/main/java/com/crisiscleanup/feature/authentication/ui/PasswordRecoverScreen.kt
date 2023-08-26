@@ -1,5 +1,6 @@
 package com.crisiscleanup.feature.authentication.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -57,6 +58,16 @@ fun PasswordRecoverRoute(
     val isNotLoading = emailAddress != null
     val isBusy by viewModel.isBusy.collectAsStateWithLifecycle()
 
+    val clearStateOnBack = remember(viewModel) {
+        {
+            viewModel.clearState()
+            onBack()
+        }
+    }
+    BackHandler(!isBusy) {
+        clearStateOnBack()
+    }
+
     val closeKeyboard = rememberCloseKeyboard(viewModel)
 
     Column(
@@ -67,7 +78,7 @@ fun PasswordRecoverRoute(
     ) {
         TopAppBarBackAction(
             title = translator(titleKey),
-            onAction = onBack,
+            onAction = clearStateOnBack,
             modifier = Modifier.testTag("forgotPasswordBackBtn"),
         )
 
@@ -75,7 +86,7 @@ fun PasswordRecoverRoute(
             val isRequested by viewModel.isPasswordResetInitiated.collectAsStateWithLifecycle()
 
             if (isRequested) {
-                PasswordResetRequestedView()
+                PasswordResetInitiatedView()
             } else {
                 ForgotPasswordView(
                     emailAddress = emailAddressNn,
@@ -88,9 +99,13 @@ fun PasswordRecoverRoute(
         }
 
         if (showResetPassword) {
+            val resetToken by viewModel.resetPasswordToken.collectAsStateWithLifecycle()
+
             val isReset by viewModel.isPasswordReset.collectAsStateWithLifecycle()
 
-            if (isReset) {
+            if (resetToken.isBlank()) {
+                PasswordResetNotPossibleView()
+            } else if (isReset) {
                 PasswordResetSuccessfulView()
             } else {
                 ResetPasswordView(
@@ -106,7 +121,7 @@ fun PasswordRecoverRoute(
             val isMagicLinkRequested by viewModel.isMagicLinkInitiated.collectAsStateWithLifecycle()
 
             if (isMagicLinkRequested) {
-                MagicLinkRequestedView()
+                MagicLinkInitiatedView()
             } else {
                 MagicLinkView(
                     emailAddress = emailAddressNn,
@@ -177,7 +192,7 @@ private fun ForgotPasswordView(
 }
 
 @Composable
-private fun PasswordResetRequestedView() {
+private fun PasswordResetInitiatedView() {
     val translator = LocalAppTranslator.current
 
     Text(
@@ -266,6 +281,16 @@ private fun ResetPasswordView(
 }
 
 @Composable
+private fun PasswordResetNotPossibleView() {
+    val translator = LocalAppTranslator.current
+
+    Text(
+        translator("~~Password reset is not possible. Retry Forgot Password again."),
+        listItemModifier,
+    )
+}
+
+@Composable
 private fun PasswordResetSuccessfulView() {
     val translator = LocalAppTranslator.current
 
@@ -335,7 +360,7 @@ private fun MagicLinkView(
 }
 
 @Composable
-private fun MagicLinkRequestedView() {
+private fun MagicLinkInitiatedView() {
     val translator = LocalAppTranslator.current
 
     Text(

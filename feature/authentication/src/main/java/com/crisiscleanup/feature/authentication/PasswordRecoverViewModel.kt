@@ -7,10 +7,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.InputValidator
 import com.crisiscleanup.core.common.KeyResourceTranslator
+import com.crisiscleanup.core.common.event.AuthEventBus
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.AccountUpdateRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -19,24 +21,29 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import javax.inject.Inject
 
 @HiltViewModel
 class PasswordRecoverViewModel @Inject constructor(
     accountDataRepository: AccountDataRepository,
+    private val accountUpdateRepository: AccountUpdateRepository,
     private val inputValidator: InputValidator,
     private val translator: KeyResourceTranslator,
-    @Logger(CrisisCleanupLoggers.Auth) private val logger: AppLogger,
+    authEventBus: AuthEventBus,
+    @Logger(CrisisCleanupLoggers.Account) private val logger: AppLogger,
 ) : ViewModel() {
     val emailAddress = MutableStateFlow<String?>(null)
     val forgotPasswordErrorMessage = MutableStateFlow("")
     val magicLinkErrorMessage = MutableStateFlow("")
 
-    // TODO Clear password values on view close
     var password by mutableStateOf("")
     var confirmPassword by mutableStateOf("")
     val resetPasswordErrorMessage = MutableStateFlow("")
     val resetPasswordConfirmErrorMessage = MutableStateFlow("")
+
+    val resetPasswordToken = authEventBus.resetPasswords
 
     private val isInitiatingPasswordReset = MutableStateFlow(false)
     private val isInitiatingMagicLink = MutableStateFlow(false)
@@ -85,11 +92,29 @@ class PasswordRecoverViewModel @Inject constructor(
             return
         }
 
-        // TODO Request password
+        isInitiatingPasswordReset.value = true
+        viewModelScope.launch {
+            try {
+                val result = accountUpdateRepository.initiatePasswordReset(email)
 
-        // TODO: Only on success
-        logger.logDebug("Request password on $email")
-        isPasswordResetInitiated.value = true
+                var isInitiated = false
+                result.expiresAt?.let {
+                    if (it > Clock.System.now()) {
+                        isInitiated = true
+                    }
+                }
+
+                if (isInitiated) {
+                    isPasswordResetInitiated.value = true
+                } else {
+                    forgotPasswordErrorMessage.value = result.errorMessage.ifBlank {
+                        translator("~~There was an issue with starting the reset password process. Try again later.")
+                    }
+                }
+            } finally {
+                isInitiatingPasswordReset.value = false
+            }
+        }
     }
 
     fun onInitiateMagicLink() {
@@ -103,11 +128,21 @@ class PasswordRecoverViewModel @Inject constructor(
             return
         }
 
-        // TODO Request magic link. Set success on success
+        isInitiatingMagicLink.value = true
+        viewModelScope.launch {
+            try {
+                val isInitiated = accountUpdateRepository.initiateEmailMagicLink(email)
 
-        // TODO: Only on success
-        logger.logDebug("Request magic link")
-        isMagicLinkInitiated.value = true
+                if (isInitiated) {
+                    isMagicLinkInitiated.value = true
+                } else {
+                    magicLinkErrorMessage.value =
+                        translator("~~There was an issue with sending a magic link. Try again later.")
+                }
+            } finally {
+                isInitiatingMagicLink.value = false
+            }
+        }
     }
 
     fun clearResetPasswordErrors() {
@@ -116,6 +151,11 @@ class PasswordRecoverViewModel @Inject constructor(
     }
 
     fun onResetPassword() {
+        val resetToken = resetPasswordToken.value
+        if (resetToken.isBlank()) {
+            return
+        }
+
         clearResetPasswordErrors()
 
         val pw = password
@@ -132,10 +172,21 @@ class PasswordRecoverViewModel @Inject constructor(
             return
         }
 
-        logger.logDebug(("Reset password"))
+        isResettingPassword.value = true
+        viewModelScope.launch {
+            try {
+                val isChanged = accountUpdateRepository.changePassword(pw, resetToken)
 
-        // TODO: Only on success
-        clearState()
-        isPasswordReset.value = true
+                if (isChanged) {
+                    isPasswordReset.value = true
+                    clearState()
+                } else {
+                    resetPasswordErrorMessage.value =
+                        translator("~~There was an issue with resetting password. Try again later.")
+                }
+            } finally {
+                isResettingPassword.value = false
+            }
+        }
     }
 }
