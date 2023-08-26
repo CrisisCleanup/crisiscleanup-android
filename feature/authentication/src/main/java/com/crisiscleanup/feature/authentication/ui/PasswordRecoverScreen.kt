@@ -186,7 +186,7 @@ private fun ForgotPasswordView(
         modifier = fillWidthPadded.testTag("forgotPasswordBtn"),
         onClick = viewModel::onInitiatePasswordReset,
         enabled = isEditable,
-        text = translator("~~Reset Password", R.string.reset_password),
+        text = translator("~~Reset Password"),
         indicateBusy = isBusy,
     )
 }

@@ -242,6 +242,7 @@ private fun LoginScreen(
     viewModel: AuthenticationViewModel = hiltViewModel(),
 ) {
     val translator = LocalAppTranslator.current
+    val translateCount by translator.translationCount.collectAsStateWithLifecycle()
 
     Text(
         modifier = listItemModifier.testTag("loginHeaderText"),
@@ -296,23 +297,25 @@ private fun LoginScreen(
         imeAction = ImeAction.Done,
     )
 
-    LinkAction(
-        "actions.request_magic_link",
-        Modifier
-            .actionHeight()
-            .listItemPadding(),
-        enabled = isNotBusy,
-        action = openEmailMagicLink,
-    )
+    if (translateCount > 0) {
+        LinkAction(
+            "actions.request_magic_link",
+            Modifier
+                .actionHeight()
+                .listItemPadding(),
+            enabled = isNotBusy,
+            action = openEmailMagicLink,
+        )
 
-    LinkAction(
-        "invitationSignup.forgot_password",
-        Modifier
-            .actionHeight()
-            .listItemPadding(),
-        enabled = isNotBusy,
-        action = openForgotPassword,
-    )
+        LinkAction(
+            "invitationSignup.forgot_password",
+            Modifier
+                .actionHeight()
+                .listItemPadding(),
+            enabled = isNotBusy,
+            action = openForgotPassword,
+        )
+    }
 
     if (viewModel.isDebug) {
         val rememberDebugAuthenticate = remember(viewModel) {
