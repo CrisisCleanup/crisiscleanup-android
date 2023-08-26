@@ -213,8 +213,8 @@ private fun ColumnScope.FullEditView(
     val areEditorsReady by viewModel.areEditorsReady.collectAsStateWithLifecycle()
     val isSavingData by viewModel.isSavingWorksite.collectAsStateWithLifecycle()
     val isEditable = areEditorsReady &&
-            caseData.isNetworkLoadFinished &&
-            !isSavingData
+        caseData.isNetworkLoadFinished &&
+        !isSavingData
 
     val isSectionCollapsed =
         remember(viewModel) { { sectionIndex: Int -> sectionCollapseStates[sectionIndex] } }
