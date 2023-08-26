@@ -1,14 +1,16 @@
 package com.crisiscleanup.core.ui
 
-import android.graphics.Rect
 import android.view.ViewTreeObserver
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalView
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 
 @Composable
 fun rememberCloseKeyboard(rememberKey: Any): () -> Unit {
@@ -24,34 +26,22 @@ fun rememberCloseKeyboard(rememberKey: Any): () -> Unit {
     }
 }
 
-enum class ScreenKeyboardVisibility {
-    Visible,
-    NotVisible,
-}
 
-// From https://stackoverflow.com/questions/74539287/observing-soft-keyboard-visibility-opened-closed-jetpack-compose
+// https://stackoverflow.com/questions/68847559/how-can-i-detect-keyboard-opening-and-closing-in-jetpack-compose
 @Composable
-fun screenKeyboardVisibility(): State<ScreenKeyboardVisibility> {
-    val keyboardState = remember { mutableStateOf(ScreenKeyboardVisibility.NotVisible) }
-    val localView = LocalView.current
-    DisposableEffect(localView) {
-        val onGlobalListener = ViewTreeObserver.OnGlobalLayoutListener {
-            val rect = Rect()
-            localView.getWindowVisibleDisplayFrame(rect)
-            val screenHeight = localView.rootView.height
-            val keypadHeight = screenHeight - rect.bottom
-            keyboardState.value = if (keypadHeight > screenHeight * 0.15) {
-                ScreenKeyboardVisibility.Visible
-            } else {
-                ScreenKeyboardVisibility.NotVisible
-            }
+fun rememberIsKeyboardOpen(): Boolean {
+    var isKeyboardOpen by remember { mutableStateOf(false) }
+    val view = LocalView.current
+    val viewTreeObserver = view.viewTreeObserver
+    DisposableEffect(viewTreeObserver) {
+        val listener = ViewTreeObserver.OnGlobalLayoutListener {
+            isKeyboardOpen = ViewCompat.getRootWindowInsets(view)
+                ?.isVisible(WindowInsetsCompat.Type.ime()) ?: true
         }
-        localView.viewTreeObserver.addOnGlobalLayoutListener(onGlobalListener)
-
+        viewTreeObserver.addOnGlobalLayoutListener(listener)
         onDispose {
-            localView.viewTreeObserver.removeOnGlobalLayoutListener(onGlobalListener)
+            viewTreeObserver.removeOnGlobalLayoutListener(listener)
         }
     }
-
-    return keyboardState
+    return isKeyboardOpen
 }

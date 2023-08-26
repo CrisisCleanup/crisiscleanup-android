@@ -8,11 +8,13 @@ import coil.util.DebugLogger
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.network.AuthInterceptorProvider
 import com.crisiscleanup.core.network.BuildConfig
+import com.crisiscleanup.core.network.CrisisCleanupAccountApi
 import com.crisiscleanup.core.network.CrisisCleanupAuthApi
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.CrisisCleanupWriteApi
 import com.crisiscleanup.core.network.RetrofitInterceptorProvider
 import com.crisiscleanup.core.network.fake.FakeAssetManager
+import com.crisiscleanup.core.network.retrofit.AccountApiClient
 import com.crisiscleanup.core.network.retrofit.AuthApiClient
 import com.crisiscleanup.core.network.retrofit.DataApiClient
 import com.crisiscleanup.core.network.retrofit.RequestHeaderKeysLookup
@@ -46,6 +48,9 @@ interface NetworkInterfaceModule {
 
     @Binds
     fun bindsWriteApiClient(apiClient: WriteApiClient): CrisisCleanupWriteApi
+
+    @Binds
+    fun bindsAccountApiClient(apiClient: AccountApiClient): CrisisCleanupAccountApi
 }
 
 @Module

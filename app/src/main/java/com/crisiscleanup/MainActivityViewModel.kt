@@ -1,5 +1,7 @@
 package com.crisiscleanup
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,6 +9,10 @@ import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.KeyResourceTranslator
+import com.crisiscleanup.core.common.event.AuthEventBus
+import com.crisiscleanup.core.common.log.AppLogger
+import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
+import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPuller
@@ -60,10 +66,10 @@ class MainActivityViewModel @Inject constructor(
     private val appVersionProvider: AppVersionProvider,
     private val appEnv: AppEnv,
     firebaseAnalytics: FirebaseAnalytics,
+    private val authEventBus: AuthEventBus,
     @Dispatcher(IO) ioDispatcher: CoroutineDispatcher,
+    @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : ViewModel() {
-    val isDebuggable = appEnv.isDebuggable
-
     /**
      * Previous app open
      *
@@ -145,6 +151,9 @@ class MainActivityViewModel @Inject constructor(
             return null
         }
 
+    // TODO Build route to auth/forgot-password rather than switches through the hierarchy
+    val showPasswordReset = authEventBus.showResetPassword
+
     init {
         accountDataRepository.accountData
             .onEach {
@@ -186,6 +195,35 @@ class MainActivityViewModel @Inject constructor(
                 if (Clock.System.now() - previousOpen.date > 1.hours) {
                     localAppMetricsRepository.setAppOpen(appVersionProvider.versionCode)
                 }
+            }
+        }
+    }
+
+    fun processMainIntent(intent: Intent) {
+        when (val action = intent.action) {
+            Intent.ACTION_VIEW -> {
+                intent.data?.let { intentUri ->
+                    intentUri.path?.let { urlPath ->
+                        processMainIntent(intentUri, urlPath)
+                    }
+                }
+            }
+
+            else -> {
+                logger.logDebug("Main intent action not handled $action")
+            }
+        }
+    }
+
+    private fun processMainIntent(url: Uri, urlPath: String) {
+        if (urlPath.startsWith("/o/callback")) {
+            url.getQueryParameter("code")?.let { code ->
+                authEventBus.onEmailLoginLink(code)
+            }
+        } else if (urlPath.startsWith("/password/reset/")) {
+            val code = urlPath.replace("/password/reset/", "")
+            if (code.isNotBlank()) {
+                authEventBus.onResetPassword(code)
             }
         }
     }

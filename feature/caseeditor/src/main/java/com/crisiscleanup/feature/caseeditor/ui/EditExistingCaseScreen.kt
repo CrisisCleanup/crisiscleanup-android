@@ -104,8 +104,7 @@ import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteFlagType
 import com.crisiscleanup.core.model.data.WorksiteNote
-import com.crisiscleanup.core.ui.ScreenKeyboardVisibility
-import com.crisiscleanup.core.ui.screenKeyboardVisibility
+import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
 import com.crisiscleanup.feature.caseeditor.ExistingCaseViewModel
 import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
 import com.crisiscleanup.feature.caseeditor.R
@@ -234,8 +233,8 @@ internal fun EditExistingCaseRoute(
                         openPhoto,
                         copyToClipboard,
                     )
-                    val keyboardVisibility by screenKeyboardVisibility()
-                    if (keyboardVisibility == ScreenKeyboardVisibility.NotVisible) {
+                    val isKeyboardOpen = rememberIsKeyboardOpen()
+                    if (!isKeyboardOpen) {
                         BottomActions(
                             worksite,
                             onFullEdit,
@@ -980,10 +979,12 @@ internal fun EditExistingCaseNotesView(
 
         CrisisCleanupFab(
             onClick = onAddNote,
-            modifier = Modifier.testTag("editCaseAddNoteFab").constrainAs(newNoteFab) {
-                end.linkTo(parent.end, margin = actionEdgeSpace)
-                bottom.linkTo(parent.bottom, margin = actionEdgeSpace)
-            },
+            modifier = Modifier
+                .testTag("editCaseAddNoteFab")
+                .constrainAs(newNoteFab) {
+                    end.linkTo(parent.end, margin = actionEdgeSpace)
+                    bottom.linkTo(parent.bottom, margin = actionEdgeSpace)
+                },
             enabled = isEditable,
         ) {
             Icon(

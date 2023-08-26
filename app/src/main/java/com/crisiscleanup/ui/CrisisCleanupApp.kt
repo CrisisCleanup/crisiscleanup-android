@@ -72,10 +72,9 @@ import com.crisiscleanup.core.designsystem.icon.Icon.DrawableResourceIcon
 import com.crisiscleanup.core.designsystem.icon.Icon.ImageVectorIcon
 import com.crisiscleanup.core.ui.AppLayoutArea
 import com.crisiscleanup.core.ui.LocalAppLayout
-import com.crisiscleanup.core.ui.ScreenKeyboardVisibility
-import com.crisiscleanup.core.ui.screenKeyboardVisibility
-import com.crisiscleanup.feature.authentication.AuthenticateScreen
+import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
 import com.crisiscleanup.feature.cases.ui.SelectIncidentDialog
+import com.crisiscleanup.navigation.CrisisCleanupAuthNavHost
 import com.crisiscleanup.navigation.CrisisCleanupNavHost
 import com.crisiscleanup.navigation.TopLevelDestination
 import com.crisiscleanup.feature.authentication.R as authenticationR
@@ -147,17 +146,18 @@ private fun LoadedContent(
 ) {
     val isAccountExpired by viewModel.isAccountExpired
 
+    val showPasswordReset by viewModel.showPasswordReset.collectAsStateWithLifecycle(false)
     val isNotAuthenticatedState = authState !is AuthState.Authenticated
     var openAuthentication by rememberSaveable { mutableStateOf(isNotAuthenticatedState) }
-    if (openAuthentication || isNotAuthenticatedState) {
+    if (openAuthentication || isNotAuthenticatedState || showPasswordReset) {
         val toggleAuthentication = remember(authState) {
             { open: Boolean -> openAuthentication = open }
         }
         AuthenticateContent(
             snackbarHostState,
+            appState,
             !isNotAuthenticatedState,
             toggleAuthentication,
-            viewModel.isDebuggable,
         )
     } else {
         val accountData = (authState as AuthState.Authenticated).accountData
@@ -208,9 +208,9 @@ private fun LoadedContent(
 @Composable
 private fun AuthenticateContent(
     snackbarHostState: SnackbarHostState,
+    appState: CrisisCleanupAppState,
     enableBackHandler: Boolean,
     toggleAuthentication: (Boolean) -> Unit,
-    isDebuggable: Boolean = false,
 ) {
     Scaffold(
         modifier = Modifier.semantics {
@@ -220,23 +220,23 @@ private fun AuthenticateContent(
         contentColor = MaterialTheme.colorScheme.onBackground,
         contentWindowInsets = WindowInsets.systemBars,
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        content = { padding ->
-            AuthenticateScreen(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .consumeWindowInsets(padding)
-                    .windowInsetsPadding(
-                        WindowInsets.safeDrawing.only(
-                            WindowInsetsSides.Horizontal,
-                        ),
+    ) { padding ->
+        CrisisCleanupAuthNavHost(
+            navController = appState.navController,
+            enableBackHandler = enableBackHandler,
+            closeAuthentication = { toggleAuthentication(false) },
+            onBack = appState::onBack,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .consumeWindowInsets(padding)
+                .windowInsetsPadding(
+                    WindowInsets.safeDrawing.only(
+                        WindowInsetsSides.Horizontal,
                     ),
-                enableBackHandler = enableBackHandler,
-                closeAuthentication = { toggleAuthentication(false) },
-                isDebug = isDebuggable,
-            )
-        },
-    )
+                ),
+        )
+    }
 }
 
 @OptIn(
@@ -339,12 +339,12 @@ private fun NavigableContent(
                 )
             }
 
-            val keyboardVisibility by screenKeyboardVisibility()
+            val isKeyboardOpen = rememberIsKeyboardOpen()
             Column(Modifier.fillMaxSize()) {
                 val snackbarAreaHeight =
                     if (!showNavigation &&
                         snackbarHostState.currentSnackbarData != null &&
-                        keyboardVisibility == ScreenKeyboardVisibility.NotVisible
+                        !isKeyboardOpen
                     ) {
                         64.dp
                     } else {
@@ -358,6 +358,7 @@ private fun NavigableContent(
                         navController = appState.navController,
                         onBack = appState::onBack,
                         modifier = Modifier.weight(1f),
+                        startDestination = appState.lastTopLevelRoute(),
                     )
                 }
 

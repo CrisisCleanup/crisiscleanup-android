@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.network
 
+import com.crisiscleanup.core.network.model.InitiatePasswordResetResult
 import com.crisiscleanup.core.network.model.NetworkAuthResult
 import com.crisiscleanup.core.network.model.NetworkCaseHistoryEvent
 import com.crisiscleanup.core.network.model.NetworkCountResult
@@ -25,6 +26,15 @@ interface CrisisCleanupAuthApi {
     suspend fun oauthLogin(email: String, password: String): NetworkOauthResult
     suspend fun refreshTokens(refreshToken: String): NetworkOauthResult?
     suspend fun logout()
+}
+
+interface CrisisCleanupAccountApi {
+    suspend fun initiateMagicLink(emailAddress: String): Boolean
+    suspend fun initiatePasswordReset(emailAddress: String): InitiatePasswordResetResult
+    suspend fun changePassword(
+        password: String,
+        token: String,
+    ): Boolean
 }
 
 interface CrisisCleanupNetworkDataSource {

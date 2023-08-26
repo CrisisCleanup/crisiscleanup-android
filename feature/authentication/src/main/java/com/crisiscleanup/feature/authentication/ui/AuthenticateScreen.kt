@@ -1,13 +1,19 @@
-package com.crisiscleanup.feature.authentication
+package com.crisiscleanup.feature.authentication.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -23,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -34,23 +41,61 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.OutlinedObfuscatingTextField
+import com.crisiscleanup.core.designsystem.component.actionHeight
+import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.DayNightPreviews
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
+import com.crisiscleanup.core.designsystem.theme.listItemPadding
+import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
+import com.crisiscleanup.core.ui.rememberCloseKeyboard
+import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
+import com.crisiscleanup.core.ui.scrollFlingListener
+import com.crisiscleanup.feature.authentication.AuthenticateScreenUiState
+import com.crisiscleanup.feature.authentication.AuthenticationViewModel
+import com.crisiscleanup.feature.authentication.BuildConfig
+import com.crisiscleanup.feature.authentication.R
 import com.crisiscleanup.feature.authentication.model.AuthenticationState
 import com.crisiscleanup.core.common.R as commonR
 
 @Composable
-fun AuthenticateScreen(
+fun AuthRoute(
+    enableBackHandler: Boolean,
+    modifier: Modifier = Modifier,
+    openForgotPassword: () -> Unit = {},
+    openEmailMagicLink: () -> Unit = {},
+    closeAuthentication: () -> Unit = {},
+    viewModel: AuthenticationViewModel = hiltViewModel(),
+) {
+    // TODO Push route rather than toggling state
+    val showResetPassword by viewModel.showResetPassword.collectAsStateWithLifecycle(false)
+    if (showResetPassword) {
+        PasswordRecoverRoute(
+            onBack = viewModel::clearResetPassword,
+            showResetPassword = true,
+        )
+    } else {
+        AuthenticateScreen(
+            enableBackHandler = enableBackHandler,
+            modifier = modifier,
+            openForgotPassword = openForgotPassword,
+            openEmailMagicLink = openEmailMagicLink,
+            closeAuthentication = closeAuthentication,
+        )
+    }
+}
+
+@Composable
+private fun AuthenticateScreen(
     modifier: Modifier = Modifier,
     viewModel: AuthenticationViewModel = hiltViewModel(),
+    openForgotPassword: () -> Unit = {},
+    openEmailMagicLink: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
     enableBackHandler: Boolean = false,
-    isDebug: Boolean = false,
 ) {
     val onCloseScreen = remember(viewModel, closeAuthentication) {
         {
@@ -70,23 +115,29 @@ fun AuthenticateScreen(
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     when (uiState) {
-        AuthenticateScreenUiState.Loading -> {
+        is AuthenticateScreenUiState.Loading -> {
             Box(Modifier.fillMaxSize()) {
                 CircularProgressIndicator(Modifier.align(Alignment.Center))
             }
         }
 
         is AuthenticateScreenUiState.Ready -> {
+            val isKeyboardOpen = rememberIsKeyboardOpen()
+            val closeKeyboard = rememberCloseKeyboard(viewModel)
+
             val readyState = uiState as AuthenticateScreenUiState.Ready
             val authState = readyState.authenticationState
             Box(modifier) {
                 // TODO Scroll when content is longer than screen height with keyboard open
                 Column(
                     Modifier
+                        .scrollFlingListener(closeKeyboard)
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState()),
                 ) {
-                    CrisisCleanupLogoRow()
+                    AnimatedVisibility(visible = !isKeyboardOpen) {
+                        CrisisCleanupLogoRow()
+                    }
 
                     if (authState.isAccountValid) {
                         AuthenticatedScreen(
@@ -96,8 +147,9 @@ fun AuthenticateScreen(
                     } else {
                         LoginScreen(
                             authState,
-                            onCloseScreen,
-                            isDebug = isDebug,
+                            openForgotPassword = openForgotPassword,
+                            openEmailMagicLink = openEmailMagicLink,
+                            closeAuthentication = onCloseScreen,
                         )
 
                         Spacer(modifier = Modifier.weight(1f))
@@ -109,19 +161,36 @@ fun AuthenticateScreen(
 }
 
 @Composable
-private fun CrisisCleanupLogoRow() {
-    Row(
-        modifier = fillWidthPadded,
-        horizontalArrangement = Arrangement.Center,
-    ) {
-        Image(
-            modifier = Modifier
-                .testTag("ccuLogo")
-                // TODO Adjust image size to screen size
-                .sizeIn(maxWidth = 160.dp),
-            painter = painterResource(commonR.drawable.crisis_cleanup_logo),
-            contentDescription = stringResource(com.crisiscleanup.core.common.R.string.crisis_cleanup),
-        )
+internal fun CrisisCleanupLogoRow() {
+    // TODO Adjust to other screen sizes as necessary
+    Box(Modifier.padding(top = 16.dp, start = 8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start,
+        ) {
+            Image(
+                painterResource(R.drawable.worker_wheelbarrow_world_background),
+                modifier = Modifier
+                    .testTag("ccuBackground")
+                    .padding(top = 32.dp)
+                    .size(width = 480.dp, height = 240.dp)
+                    .offset(x = 64.dp),
+                contentScale = ContentScale.FillHeight,
+                contentDescription = null,
+            )
+        }
+        Row(
+            modifier = fillWidthPadded,
+            horizontalArrangement = Arrangement.Start,
+        ) {
+            Image(
+                modifier = Modifier
+                    .testTag("ccuLogo")
+                    .sizeIn(maxWidth = 160.dp),
+                painter = painterResource(commonR.drawable.crisis_cleanup_logo),
+                contentDescription = stringResource(com.crisiscleanup.core.common.R.string.crisis_cleanup),
+            )
+        }
     }
 }
 
@@ -138,18 +207,47 @@ private fun ConditionalErrorMessage(errorMessage: String) {
 }
 
 @Composable
-private fun LoginScreen(
-    authState: AuthenticationState,
-    closeAuthentication: () -> Unit = {},
-    viewModel: AuthenticationViewModel = hiltViewModel(),
-    isDebug: Boolean = false,
+private fun LinkAction(
+    textTranslateKey: String,
+    modifier: Modifier = Modifier,
+    arrangement: Arrangement.Horizontal = Arrangement.End,
+    enabled: Boolean = false,
+    action: () -> Unit = {},
 ) {
     val translator = LocalAppTranslator.current
+    Row(
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = arrangement,
+    ) {
+        Text(
+            text = translator(textTranslateKey),
+            modifier = Modifier
+                .clickable(
+                    enabled = enabled,
+                    onClick = action,
+                )
+                .then(modifier),
+            style = LocalFontStyles.current.header4,
+            color = primaryBlueColor,
+        )
+    }
+}
+
+@Composable
+private fun LoginScreen(
+    authState: AuthenticationState,
+    openForgotPassword: () -> Unit = {},
+    openEmailMagicLink: () -> Unit = {},
+    closeAuthentication: () -> Unit = {},
+    viewModel: AuthenticationViewModel = hiltViewModel(),
+) {
+    val translator = LocalAppTranslator.current
+    val translateCount by translator.translationCount.collectAsStateWithLifecycle()
 
     Text(
         modifier = listItemModifier.testTag("loginHeaderText"),
         text = translator("actions.login", R.string.login),
-        style = LocalFontStyles.current.header2,
+        style = LocalFontStyles.current.header1,
     )
 
     val authErrorMessage by viewModel.errorMessage
@@ -158,7 +256,7 @@ private fun LoginScreen(
     val isNotBusy by viewModel.isNotAuthenticating.collectAsStateWithLifecycle()
 
     val focusEmail = viewModel.loginInputData.emailAddress.isEmpty() ||
-        viewModel.isInvalidEmail.value
+            viewModel.isInvalidEmail.value
     val updateEmailInput =
         remember(viewModel) { { s: String -> viewModel.loginInputData.emailAddress = s } }
     val clearErrorVisuals = remember(viewModel) { { viewModel.clearErrorVisuals() } }
@@ -199,7 +297,27 @@ private fun LoginScreen(
         imeAction = ImeAction.Done,
     )
 
-    if (isDebug) {
+    if (translateCount > 0) {
+//        LinkAction(
+//            "actions.request_magic_link",
+//            Modifier
+//                .actionHeight()
+//                .listItemPadding(),
+//            enabled = isNotBusy,
+//            action = openEmailMagicLink,
+//        )
+
+        LinkAction(
+            "invitationSignup.forgot_password",
+            Modifier
+                .actionHeight()
+                .listItemPadding(),
+            enabled = isNotBusy,
+            action = openForgotPassword,
+        )
+    }
+
+    if (viewModel.isDebug) {
         val rememberDebugAuthenticate = remember(viewModel) {
             {
                 viewModel.loginInputData.apply {
@@ -227,11 +345,14 @@ private fun LoginScreen(
     )
 
     if (authState.hasAuthenticated) {
-        CrisisCleanupButton(
-            modifier = fillWidthPadded.testTag("loginCancelBtn"),
-            onClick = closeAuthentication,
+        LinkAction(
+            "actions.back",
+            modifier = Modifier
+                .listItemPadding()
+                .testTag("loginCancelBtn"),
+            arrangement = Arrangement.Start,
             enabled = isNotBusy,
-            text = translator("actions.cancel", R.string.cancel),
+            action = closeAuthentication,
         )
     }
 }
@@ -264,16 +385,21 @@ private fun AuthenticatedScreen(
         indicateBusy = !isNotBusy,
     )
 
-    CrisisCleanupButton(
-        modifier = fillWidthPadded.testTag("authedProfileDismissBtn"),
-        onClick = closeAuthentication,
+    LinkAction(
+        "actions.back",
+        modifier = Modifier
+            .listItemPadding()
+            .testTag("authedProfileDismissBtn"),
+        arrangement = Arrangement.Start,
         enabled = isNotBusy,
-        text = translator("actions.dismiss"),
+        action = closeAuthentication,
     )
 }
 
 @DayNightPreviews
 @Composable
 fun LogoRowPreview() {
-    CrisisCleanupLogoRow()
+    CrisisCleanupTheme {
+        CrisisCleanupLogoRow()
+    }
 }
