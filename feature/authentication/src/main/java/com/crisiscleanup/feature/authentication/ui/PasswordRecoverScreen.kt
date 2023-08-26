@@ -82,47 +82,41 @@ fun PasswordRecoverRoute(
             modifier = Modifier.testTag("forgotPasswordBackBtn"),
         )
 
-        if (showForgotPassword) {
-            val isRequested by viewModel.isPasswordResetInitiated.collectAsStateWithLifecycle()
-
-            if (isRequested) {
-                PasswordResetInitiatedView()
-            } else {
+        val isResetInitiated by viewModel.isPasswordResetInitiated.collectAsStateWithLifecycle()
+        val isPasswordReset by viewModel.isPasswordReset.collectAsStateWithLifecycle()
+        val isMagicLinkInitiated by viewModel.isMagicLinkInitiated.collectAsStateWithLifecycle()
+        if (isResetInitiated) {
+            PasswordResetInitiatedView()
+        } else if (isPasswordReset) {
+            PasswordResetSuccessfulView()
+        } else if (isMagicLinkInitiated) {
+            MagicLinkInitiatedView()
+        } else {
+            if (showForgotPassword) {
                 ForgotPasswordView(
                     emailAddress = emailAddressNn,
                     isEditable = isNotLoading,
                     isBusy = isBusy,
                 )
+
+                Spacer(Modifier.height(32.dp))
             }
 
-            Spacer(Modifier.height(32.dp))
-        }
+            if (showResetPassword) {
+                val resetToken by viewModel.resetPasswordToken.collectAsStateWithLifecycle()
+                if (resetToken.isBlank()) {
+                    PasswordResetNotPossibleView()
+                } else {
+                    ResetPasswordView(
+                        isEditable = isNotLoading,
+                        isBusy = isBusy,
+                    )
+                }
 
-        if (showResetPassword) {
-            val resetToken by viewModel.resetPasswordToken.collectAsStateWithLifecycle()
-
-            val isReset by viewModel.isPasswordReset.collectAsStateWithLifecycle()
-
-            if (resetToken.isBlank()) {
-                PasswordResetNotPossibleView()
-            } else if (isReset) {
-                PasswordResetSuccessfulView()
-            } else {
-                ResetPasswordView(
-                    isEditable = isNotLoading,
-                    isBusy = isBusy,
-                )
+                Spacer(Modifier.height(32.dp))
             }
 
-            Spacer(Modifier.height(32.dp))
-        }
-
-        if (showMagicLink) {
-            val isMagicLinkRequested by viewModel.isMagicLinkInitiated.collectAsStateWithLifecycle()
-
-            if (isMagicLinkRequested) {
-                MagicLinkInitiatedView()
-            } else {
+            if (showMagicLink) {
                 MagicLinkView(
                     emailAddress = emailAddressNn,
                     isEditable = isNotLoading,

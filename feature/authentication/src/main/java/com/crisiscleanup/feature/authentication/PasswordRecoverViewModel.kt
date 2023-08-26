@@ -182,7 +182,7 @@ class PasswordRecoverViewModel @Inject constructor(
                     clearState()
                 } else {
                     resetPasswordErrorMessage.value =
-                        translator("~~There was an issue with resetting password. Try again later.")
+                        translator("~~There was an issue with reset password. Restart from Forgot Password or try again later.")
                 }
             } finally {
                 isResettingPassword.value = false
