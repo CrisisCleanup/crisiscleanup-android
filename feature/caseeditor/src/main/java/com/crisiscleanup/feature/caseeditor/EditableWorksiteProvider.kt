@@ -128,21 +128,23 @@ class SingleEditableWorksiteProvider @Inject constructor() :
         incidentChangeData.set(null)
     }
 
+    private fun setIncidentChange(incident: Incident, worksite: Worksite) {
+        incidentChangeData.set(
+            IncidentChangeData(
+                incident,
+                worksite.copy(incidentId = incident.id),
+            ),
+        )
+    }
+
     override fun setIncidentAddressChanged(incident: Incident, worksite: Worksite) {
-        val worksiteChange = worksite.copy(incidentId = incident.id)
-        incidentChangeData.set(IncidentChangeData(incident, worksiteChange))
+        setIncidentChange(incident, worksite)
         incidentIdChange.value = incident.id
     }
 
     override fun updateIncidentChangeWorksite(worksite: Worksite) {
         incidentChangeData.get()?.let {
-            val incident = it.incident
-            incidentChangeData.set(
-                IncidentChangeData(
-                    incident,
-                    worksite.copy(incidentId = incident.id),
-                ),
-            )
+            setIncidentChange(it.incident, worksite)
         }
     }
 

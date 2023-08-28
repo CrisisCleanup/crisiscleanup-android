@@ -150,9 +150,11 @@ internal fun BoxScope.LocationMapView(
 ) {
     val onMapLoaded = remember(viewModel) { { editor.onMapLoaded() } }
     val onMapCameraChange = remember(viewModel) {
-        { position: CameraPosition,
+        {
+                position: CameraPosition,
                 projection: Projection?,
-                isUserInteraction: Boolean, ->
+                isUserInteraction: Boolean,
+            ->
             editor.onMapCameraChange(position, projection, isUserInteraction)
         }
     }
@@ -283,7 +285,9 @@ internal fun LocationFormView(
         }
     }
     CrisisCleanupTextCheckbox(
-        listItemModifier.listCheckboxAlignStartOffset().testTag("locationAddressProblemsCheckbox"),
+        listItemModifier
+            .listCheckboxAlignStartOffset()
+            .testTag("locationAddressProblemsCheckbox"),
         inputData.hasWrongLocation,
         text = translator("caseForm.address_problems"),
         onToggle = toggleWrongLocation,
@@ -321,23 +325,23 @@ private fun LocationAddressFormView(
         enabled = isEditable,
     )
 
-    // TODO Move into view model to query for and present menu options.
-    val updateZipCode = remember(inputData) { { s: String -> inputData.zipCode = s } }
-    val clearZipCodeError = remember(inputData) { { inputData.zipCodeError = "" } }
-    val isZipCodeError = inputData.zipCodeError.isNotEmpty()
-    val focusZipCode = isZipCodeError
-    val postalCodeLabel = translator("formLabels.postal_code")
-    ErrorText(inputData.zipCodeError)
+    val updateCity = remember(inputData) { { s: String -> inputData.city = s } }
+    val clearCityError = remember(inputData) { { inputData.cityError = "" } }
+    val isCityError = inputData.cityError.isNotEmpty()
+    val focusCity = isCityError
+    val cityLabel = translator("formLabels.city")
+    ErrorText(inputData.cityError)
     OutlinedClearableTextField(
-        modifier = listItemModifier.testTag("locationPostalCodeTextField"),
+        modifier = listItemModifier.testTag("locationCityTextField"),
         labelResId = 0,
-        label = "$postalCodeLabel *",
-        value = inputData.zipCode,
-        onValueChange = updateZipCode,
-        keyboardType = KeyboardType.Password,
-        isError = isZipCodeError,
-        hasFocus = focusZipCode,
-        onNext = clearZipCodeError,
+        label = "$cityLabel *",
+        value = inputData.city,
+        onValueChange = updateCity,
+        keyboardType = KeyboardType.Text,
+        keyboardCapitalization = KeyboardCapitalization.Words,
+        isError = isCityError,
+        hasFocus = focusCity,
+        onNext = clearCityError,
         enabled = isEditable,
     )
 
@@ -358,26 +362,6 @@ private fun LocationAddressFormView(
         isError = isCountyError,
         hasFocus = focusCounty,
         onNext = clearCountyError,
-        enabled = isEditable,
-    )
-
-    val updateCity = remember(inputData) { { s: String -> inputData.city = s } }
-    val clearCityError = remember(inputData) { { inputData.cityError = "" } }
-    val isCityError = inputData.cityError.isNotEmpty()
-    val focusCity = isCityError
-    val cityLabel = translator("formLabels.city")
-    ErrorText(inputData.cityError)
-    OutlinedClearableTextField(
-        modifier = listItemModifier.testTag("locationCityTextField"),
-        labelResId = 0,
-        label = "$cityLabel *",
-        value = inputData.city,
-        onValueChange = updateCity,
-        keyboardType = KeyboardType.Text,
-        keyboardCapitalization = KeyboardCapitalization.Words,
-        isError = isCityError,
-        hasFocus = focusCity,
-        onNext = clearCityError,
         enabled = isEditable,
     )
 
@@ -404,6 +388,26 @@ private fun LocationAddressFormView(
         hasFocus = focusState,
         imeAction = ImeAction.Done,
         onEnter = onStateEnd,
+        enabled = isEditable,
+    )
+
+    // TODO Move into view model to query for and present menu options.
+    val updateZipCode = remember(inputData) { { s: String -> inputData.zipCode = s } }
+    val clearZipCodeError = remember(inputData) { { inputData.zipCodeError = "" } }
+    val isZipCodeError = inputData.zipCodeError.isNotEmpty()
+    val focusZipCode = isZipCodeError
+    val postalCodeLabel = translator("formLabels.postal_code")
+    ErrorText(inputData.zipCodeError)
+    OutlinedClearableTextField(
+        modifier = listItemModifier.testTag("locationPostalCodeTextField"),
+        labelResId = 0,
+        label = "$postalCodeLabel *",
+        value = inputData.zipCode,
+        onValueChange = updateZipCode,
+        keyboardType = KeyboardType.Password,
+        isError = isZipCodeError,
+        hasFocus = focusZipCode,
+        onNext = clearZipCodeError,
         enabled = isEditable,
     )
 }

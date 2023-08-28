@@ -16,7 +16,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.KeyResourceTranslator
-import com.crisiscleanup.core.common.NetworkMonitor
+import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.PermissionStatus
 import com.crisiscleanup.core.common.cameraPermissionGranted
@@ -87,6 +87,7 @@ class ExistingCaseViewModel @Inject constructor(
     organizationsRepository: OrganizationsRepository,
     incidentRefresher: IncidentRefresher,
     incidentBoundsProvider: IncidentBoundsProvider,
+    locationProvider: LocationProvider,
     worksitesRepository: WorksitesRepository,
     languageRepository: LanguageTranslationsRepository,
     accountDataRefresher: AccountDataRefresher,
@@ -99,7 +100,6 @@ class ExistingCaseViewModel @Inject constructor(
     private val translator: KeyResourceTranslator,
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val syncPusher: SyncPusher,
-    networkMonitor: NetworkMonitor,
     packageManager: PackageManager,
     private val contentResolver: ContentResolver,
     drawableResourceBitmapProvider: DrawableResourceBitmapProvider,
@@ -221,6 +221,7 @@ class ExistingCaseViewModel @Inject constructor(
             incidentsRepository,
             incidentRefresher,
             incidentBoundsProvider,
+            locationProvider,
             worksitesRepository,
             worksiteChangeRepository,
             languageRepository,
@@ -228,7 +229,6 @@ class ExistingCaseViewModel @Inject constructor(
             workTypeStatusRepository,
             { key -> translate(key) },
             editableWorksiteProvider,
-            networkMonitor,
             viewModelScope,
             ioDispatcher,
             appEnv,

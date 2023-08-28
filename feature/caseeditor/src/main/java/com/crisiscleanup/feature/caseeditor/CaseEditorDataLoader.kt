@@ -1,7 +1,7 @@
 package com.crisiscleanup.feature.caseeditor
 
 import com.crisiscleanup.core.common.AppEnv
-import com.crisiscleanup.core.common.NetworkMonitor
+import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.TagLogger
 import com.crisiscleanup.core.commoncase.model.FormFieldNode
@@ -17,8 +17,8 @@ import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
 import com.crisiscleanup.core.model.data.AutoContactFrequency
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.IncidentFormField
-import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteFormValue
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,6 +45,7 @@ internal class CaseEditorDataLoader(
     incidentsRepository: IncidentsRepository,
     incidentRefresher: IncidentRefresher,
     incidentBoundsProvider: IncidentBoundsProvider,
+    locationProvider: LocationProvider,
     worksitesRepository: WorksitesRepository,
     worksiteChangeRepository: WorksiteChangeRepository,
     languageRepository: LanguageTranslationsRepository,
@@ -52,7 +53,6 @@ internal class CaseEditorDataLoader(
     workTypeStatusRepository: WorkTypeStatusRepository,
     translate: (String) -> String,
     private val editableWorksiteProvider: EditableWorksiteProvider,
-    networkMonitor: NetworkMonitor,
     coroutineScope: CoroutineScope,
     coroutineDispatcher: CoroutineDispatcher,
     appEnv: AppEnv,
@@ -193,15 +193,25 @@ internal class CaseEditorDataLoader(
             val (localWorksite, isPulled) = third
 
             val loadedWorksite = localWorksite?.worksite
-            var worksiteState = loadedWorksite ?: EmptyWorksite.copy(
-                incidentId = incidentIdIn,
-                autoContactFrequencyT = AutoContactFrequency.Often.literal,
-                flags = if (networkMonitor.isOnline.first()) {
-                    EmptyWorksite.flags
-                } else {
-                    listOf(WorksiteFlag.wrongLocation())
-                },
-            )
+            var worksiteState = if (loadedWorksite == null) {
+                var worksiteCoordinates = bounds.centroid
+                locationProvider.coordinates?.let {
+                    val deviceLocation = LatLng(it.first, it.second)
+                    if (bounds.containsLocation(deviceLocation)) {
+                        worksiteCoordinates = deviceLocation
+                    }
+                }
+
+                EmptyWorksite.copy(
+                    incidentId = incidentIdIn,
+                    autoContactFrequencyT = AutoContactFrequency.NotOften.literal,
+                    latitude = worksiteCoordinates.latitude,
+                    longitude = worksiteCoordinates.longitude,
+                    flags = EmptyWorksite.flags,
+                )
+            } else {
+                loadedWorksite
+            }
 
             with(editableWorksiteProvider) {
                 this.incident = incident
