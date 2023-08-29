@@ -48,6 +48,8 @@ data class PopulatedFormFieldsIncident(
 )
 
 fun PopulatedFormFieldsIncident.asExternalModel() = entity.asExternalModel().copy(
+    // TODO Form fields could be invalid if currently updating.
+    //      Create a separate column indicating update state so isInvalidated isn't polluted.
     formFields = formFields.map(IncidentFormFieldEntity::asExternalModel)
         .filter { !(it.isInvalidated || it.isDivEnd) },
 )

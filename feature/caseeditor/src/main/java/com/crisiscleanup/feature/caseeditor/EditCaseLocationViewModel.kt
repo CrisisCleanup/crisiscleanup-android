@@ -474,12 +474,12 @@ internal class EditableLocationDataEditor(
     }
 
     override fun onGeocodeAddressSelected(locationAddress: LocationAddress): Boolean {
-        val coordinates = locationAddress.toLatLng()
         with(outOfBoundsManager) {
             if (isPendingOutOfBounds) {
                 return false
             }
 
+            val coordinates = locationAddress.toLatLng()
             if (!isCoordinatesInBounds(coordinates)) {
                 onLocationOutOfBounds(coordinates, locationAddress)
                 return false
