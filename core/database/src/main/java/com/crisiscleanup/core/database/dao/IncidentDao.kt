@@ -76,10 +76,13 @@ interface IncidentDao {
         """
         UPDATE incident_form_fields
         SET is_invalidated=1
-        WHERE incident_id=:incidentId
+        WHERE incident_id=:incidentId AND field_key NOT IN(:validFieldKeys)
         """,
     )
-    suspend fun invalidateFormFields(incidentId: Long)
+    suspend fun invalidateUnspecifiedFormFields(
+        incidentId: Long,
+        validFieldKeys: Set<String>,
+    )
 
     @Upsert
     suspend fun upsertFormFields(formFields: Collection<IncidentFormFieldEntity>)

@@ -20,7 +20,7 @@ internal fun LocationOutOfBoundsDialog(
         val startButton: @Composable () -> Unit
         val endButton: @Composable () -> Unit
         if (it.recentIncident == null) {
-            title = translator("Case Outside Current Incident")
+            title = translator("caseForm.case_outside_incident")
             val outsideMessage = translator("caseForm.warning_case_outside_incident")
             message = outsideMessage.replace("{incident}", it.incident.name)
             startButton = {
@@ -36,7 +36,7 @@ internal fun LocationOutOfBoundsDialog(
                 )
             }
         } else {
-            title = translator("Incorrect Location")
+            title = translator("caseForm.incorrect_location")
             val insideMessage = translator("caseForm.suggested_incident")
             message = insideMessage.replace("{incident}", it.recentIncident.name)
             startButton = {

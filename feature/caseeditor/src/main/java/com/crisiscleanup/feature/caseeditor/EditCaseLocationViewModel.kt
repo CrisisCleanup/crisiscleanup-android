@@ -27,10 +27,8 @@ import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
 import com.crisiscleanup.core.mapmarker.util.smallOffset
 import com.crisiscleanup.core.mapmarker.util.toLatLng
-import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.LocationAddress
-import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.feature.caseeditor.model.LocationInputData
 import com.crisiscleanup.feature.caseeditor.model.coordinates
 import com.google.android.gms.maps.Projection
@@ -139,8 +137,6 @@ internal class EditableLocationDataEditor(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val coroutineScope: CoroutineScope,
 ) : CaseLocationDataEditor {
-    // Worksite before lat,lng may have been auto updated
-    private val worksiteIn: Worksite
     private val incidentId: Long
 
     override val locationInputData: LocationInputData
@@ -201,29 +197,8 @@ internal class EditableLocationDataEditor(
         }
 
     init {
-        var worksite = worksiteProvider.editableWorksite.value
-        worksiteIn = worksite
-        incidentId = worksiteIn.incidentId
-
-        if (worksite.isNew &&
-            (
-                worksite.coordinates == EmptyWorksite.coordinates ||
-                    worksite.coordinates == DefaultCoordinates
-                )
-        ) {
-            val incidentBounds = worksiteProvider.incidentBounds
-            var worksiteCoordinates: LatLng = incidentBounds.centroid
-            locationProvider.coordinates?.let {
-                val deviceLocation = LatLng(it.first, it.second)
-                if (incidentBounds.containsLocation(deviceLocation)) {
-                    worksiteCoordinates = deviceLocation
-                }
-            }
-            worksite = worksite.copy(
-                latitude = worksiteCoordinates.latitude,
-                longitude = worksiteCoordinates.longitude,
-            )
-        }
+        val worksite = worksiteProvider.editableWorksite.value
+        incidentId = worksite.incidentId
 
         locationInputData = LocationInputData(
             translator,
@@ -499,12 +474,12 @@ internal class EditableLocationDataEditor(
     }
 
     override fun onGeocodeAddressSelected(locationAddress: LocationAddress): Boolean {
-        val coordinates = locationAddress.toLatLng()
         with(outOfBoundsManager) {
             if (isPendingOutOfBounds) {
                 return false
             }
 
+            val coordinates = locationAddress.toLatLng()
             if (!isCoordinatesInBounds(coordinates)) {
                 onLocationOutOfBounds(coordinates, locationAddress)
                 return false

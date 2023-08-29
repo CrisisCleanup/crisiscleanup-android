@@ -185,6 +185,7 @@ class CaseEditorViewModel @Inject constructor(
             incidentsRepository,
             incidentRefresher,
             incidentBoundsProvider,
+            locationProvider,
             worksitesRepository,
             worksiteChangeRepository,
             languageRepository,
@@ -192,7 +193,6 @@ class CaseEditorViewModel @Inject constructor(
             workTypeStatusRepository,
             { key -> translate(key) },
             editableWorksiteProvider,
-            networkMonitor,
             viewModelScope,
             ioDispatcher,
             appEnv,
@@ -682,7 +682,7 @@ class CaseEditorViewModel @Inject constructor(
 }
 
 sealed interface CaseEditorUiState {
-    object Loading : CaseEditorUiState
+    data object Loading : CaseEditorUiState
 
     data class CaseData(
         val orgId: Long,

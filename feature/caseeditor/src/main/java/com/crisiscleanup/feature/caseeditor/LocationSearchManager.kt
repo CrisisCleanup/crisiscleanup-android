@@ -74,7 +74,7 @@ internal class LocationSearchManager(
         }
         .flowOn(coroutineDispatcher)
 
-    private val oneMinute = 1 / 60
+    private val oneMinute = 1.0 / 60
 
     private val addressSearch = searchQuery
         .map { q ->

@@ -26,7 +26,6 @@ fun rememberCloseKeyboard(rememberKey: Any): () -> Unit {
     }
 }
 
-
 // https://stackoverflow.com/questions/68847559/how-can-i-detect-keyboard-opening-and-closing-in-jetpack-compose
 @Composable
 fun rememberIsKeyboardOpen(): Boolean {

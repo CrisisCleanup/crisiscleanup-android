@@ -34,10 +34,18 @@ class IncidentDaoPlus @Inject constructor(
             return
         }
 
+        val validFields = formFields
+            .filterNot { it.isInvalidated }
+        val validFieldKeys = validFields
+            .map { it.fieldKey }
+            .toSet()
         db.withTransaction {
             val incidentDao = db.incidentDao()
-            incidentDao.invalidateFormFields(incidentId)
-            incidentDao.upsertFormFields(formFields)
+            incidentDao.invalidateUnspecifiedFormFields(
+                incidentId,
+                validFieldKeys,
+            )
+            incidentDao.upsertFormFields(validFields)
         }
     }
 
