@@ -66,7 +66,7 @@ internal fun RootLoginScreen() {
         val linkText = translator("~~Register here", R.string.registerHere)
         val spannableString = SpannableString(linkText).apply {
             setSpan(
-                URLSpan("https://crisiscleanup.org/survivor"),
+                URLSpan("https://crisiscleanup.org/register"),
                 0,
                 length,
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
