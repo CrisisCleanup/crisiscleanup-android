@@ -106,17 +106,17 @@ class LocationInputData(
         if (streetAddress.isBlank()) {
             translationKeys.add("caseForm.address_required")
         }
-        if (zipCode.isBlank()) {
-            translationKeys.add("caseForm.postal_code_required")
+        if (city.isBlank()) {
+            translationKeys.add("caseForm.city_required")
         }
         if (county.isBlank()) {
             translationKeys.add("caseForm.county_required")
         }
-        if (city.isBlank()) {
-            translationKeys.add("caseForm.city_required")
-        }
         if (state.isBlank()) {
             translationKeys.add("caseForm.state_required")
+        }
+        if (zipCode.isBlank()) {
+            translationKeys.add("caseForm.postal_code_required")
         }
 
         val message = translationKeys.joinToString("\n") { translator(it) }
@@ -131,8 +131,8 @@ class LocationInputData(
             return false
         }
 
-        if (zipCode.isBlank()) {
-            zipCodeError = translator("caseForm.postal_code_required")
+        if (city.isBlank()) {
+            cityError = translator("caseForm.city_required")
             return false
         }
 
@@ -141,13 +141,13 @@ class LocationInputData(
             return false
         }
 
-        if (city.isBlank()) {
-            cityError = translator("caseForm.city_required")
+        if (state.isBlank()) {
+            stateError = translator("caseForm.state_required")
             return false
         }
 
-        if (state.isBlank()) {
-            stateError = translator("caseForm.state_required")
+        if (zipCode.isBlank()) {
+            zipCodeError = translator("caseForm.postal_code_required")
             return false
         }
 

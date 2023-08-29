@@ -300,6 +300,7 @@ private fun ColumnScope.FullEditView(
     val sliderScrollToSectionItem = sectionSliderState.sliderScrollToSectionItem
     val sliderScrollToSection = sectionSliderState.sliderScrollToSection
     val editPropertyData = remember(viewModel) { { sliderScrollToSectionItem(0, 2) } }
+    // TODO Review this item index is correct
     val editLocation = remember(viewModel) { { sliderScrollToSectionItem(0, 3) } }
     val editLocationAddress = remember(viewModel) { { sliderScrollToSectionItem(0, 4) } }
     val editFormData = remember(viewModel) { { index: Int -> sliderScrollToSection(index) } }
