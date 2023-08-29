@@ -1,5 +1,7 @@
 package com.crisiscleanup.feature.authentication.ui
 
+import android.content.Intent
+import android.net.Uri
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.method.LinkMovementMethod
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
@@ -26,6 +29,7 @@ import com.crisiscleanup.feature.authentication.R
 
 @Composable
 internal fun RootLoginScreen() {
+    val ctx = LocalContext.current
     val translator = LocalAppTranslator.current
     val isBusy = false
     Text(
@@ -67,7 +71,11 @@ internal fun RootLoginScreen() {
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag("loginNeedHelpCleaningBtn"),
-            onClick = {},
+            onClick = {
+                val openURL = Intent(Intent.ACTION_VIEW)
+                openURL.data = Uri.parse("https://crisiscleanup.org/survivor")
+                ctx.startActivity(openURL)
+            },
             enabled = !isBusy,
             text = translator("~~I need help cleaning up", R.string.iNeedHelpCleaningUp),
         )
