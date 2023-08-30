@@ -16,10 +16,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +52,7 @@ import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.DayNightPreviews
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
+import com.crisiscleanup.core.designsystem.theme.actionLinkColor
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
@@ -189,6 +195,40 @@ internal fun CrisisCleanupLogoRow() {
                     .sizeIn(maxWidth = 160.dp),
                 painter = painterResource(commonR.drawable.crisis_cleanup_logo),
                 contentDescription = stringResource(com.crisiscleanup.core.common.R.string.crisis_cleanup),
+            )
+        }
+    }
+}
+
+@Composable
+fun LoginWithDifferentMethod(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    val translator = LocalAppTranslator.current
+    TextButton(
+        modifier = modifier.padding(horizontal = 16.dp),
+        onClick = onClick,
+        shape = RoundedCornerShape(4.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                Icons.Default.ArrowBack,
+                contentDescription = "Login using different method",
+                tint = actionLinkColor,
+                modifier = Modifier
+                    .padding(horizontal = 4.dp)
+                    .size(24.dp),
+            )
+            Text(
+                text = translator("~~Login using different method"),
+                color = actionLinkColor,
+                style = LocalFontStyles.current.header3,
+                modifier = Modifier.padding(horizontal = 4.dp),
             )
         }
     }
