@@ -28,6 +28,8 @@ import com.crisiscleanup.feature.authentication.R
 internal fun RootLoginScreen() {
     val translator = LocalAppTranslator.current
     val uriHandler = LocalUriHandler.current
+    val registerHereLink = "https://crisiscleanup.org/register"
+    val iNeedHelpCleaningLink = "https://crisiscleanup.org/survivor"
     val isBusy = false
     Text(
         modifier = listItemModifier.testTag("loginHeaderText"),
@@ -70,7 +72,7 @@ internal fun RootLoginScreen() {
                 .fillMaxWidth()
                 .testTag("loginNeedHelpCleaningBtn"),
             onClick = {
-                uriHandler.openUri("https://crisiscleanup.org/survivor")
+                uriHandler.openUri(iNeedHelpCleaningLink)
             },
             enabled = !isBusy,
             text = translator("~~I need help cleaning up", R.string.iNeedHelpCleaningUp),
@@ -82,7 +84,7 @@ internal fun RootLoginScreen() {
         val linkText = translator("~~Register here", R.string.registerHere)
         val spannableString = SpannableString(linkText).apply {
             setSpan(
-                URLSpan("https://crisiscleanup.org/register"),
+                URLSpan(registerHereLink),
                 0,
                 length,
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
