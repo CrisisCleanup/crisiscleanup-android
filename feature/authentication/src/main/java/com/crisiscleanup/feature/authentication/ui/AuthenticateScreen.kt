@@ -399,6 +399,10 @@ private fun LoginScreen(
             enabled = isNotBusy,
             action = closeAuthentication,
         )
+    } else {
+        LoginWithDifferentMethod(
+            onClick = onBack,
+        )
     }
 }
 
