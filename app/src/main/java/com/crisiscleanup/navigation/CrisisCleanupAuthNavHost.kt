@@ -7,10 +7,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.crisiscleanup.core.appnav.RouteConstant
 import com.crisiscleanup.feature.authentication.navigation.authGraph
-import com.crisiscleanup.feature.authentication.navigation.emailLoginLinkScreen
-import com.crisiscleanup.feature.authentication.navigation.forgotPasswordScreen
+import com.crisiscleanup.feature.authentication.navigation.loginWithEmailScreen
 import com.crisiscleanup.feature.authentication.navigation.navigateToEmailLoginLink
 import com.crisiscleanup.feature.authentication.navigation.navigateToForgotPassword
+import com.crisiscleanup.feature.authentication.navigation.navigateToLoginWithEmail
 
 @Composable
 fun CrisisCleanupAuthNavHost(
@@ -21,6 +21,8 @@ fun CrisisCleanupAuthNavHost(
     modifier: Modifier = Modifier,
     startDestination: String = RouteConstant.authGraphRoutePattern,
 ) {
+    val navToLoginWithEmail =
+        remember(navController) { { navController.navigateToLoginWithEmail() } }
     val navToForgotPassword =
         remember(navController) { { navController.navigateToForgotPassword() } }
     val navToEmailMagicLink =
@@ -33,13 +35,15 @@ fun CrisisCleanupAuthNavHost(
     ) {
         authGraph(
             nestedGraphs = {
-                forgotPasswordScreen(onBack)
-                emailLoginLinkScreen(onBack)
+                loginWithEmailScreen(
+                    onBack = onBack,
+                    enableBackHandler = enableBackHandler,
+                    closeAuthentication = closeAuthentication,
+                    openForgotPassword = navToForgotPassword,
+                    openEmailMagicLink = navToEmailMagicLink,
+                )
             },
-            enableBackHandler = enableBackHandler,
-            closeAuthentication = closeAuthentication,
-            openForgotPassword = navToForgotPassword,
-            openEmailMagicLink = navToEmailMagicLink,
+            openLoginWithEmail = navToLoginWithEmail,
         )
     }
 }
