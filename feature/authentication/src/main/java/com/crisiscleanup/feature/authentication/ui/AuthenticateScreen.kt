@@ -71,6 +71,7 @@ import com.crisiscleanup.core.common.R as commonR
 fun AuthRoute(
     enableBackHandler: Boolean,
     modifier: Modifier = Modifier,
+    onBack: () -> Unit = {},
     openForgotPassword: () -> Unit = {},
     openEmailMagicLink: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
@@ -87,6 +88,7 @@ fun AuthRoute(
         AuthenticateScreen(
             enableBackHandler = enableBackHandler,
             modifier = modifier,
+            onBack = onBack,
             openForgotPassword = openForgotPassword,
             openEmailMagicLink = openEmailMagicLink,
             closeAuthentication = closeAuthentication,
@@ -98,6 +100,7 @@ fun AuthRoute(
 private fun AuthenticateScreen(
     modifier: Modifier = Modifier,
     viewModel: AuthenticationViewModel = hiltViewModel(),
+    onBack: () -> Unit = {},
     openForgotPassword: () -> Unit = {},
     openEmailMagicLink: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
@@ -153,6 +156,7 @@ private fun AuthenticateScreen(
                     } else {
                         LoginScreen(
                             authState,
+                            onBack = onBack,
                             openForgotPassword = openForgotPassword,
                             openEmailMagicLink = openEmailMagicLink,
                             closeAuthentication = onCloseScreen,
@@ -276,6 +280,7 @@ private fun LinkAction(
 @Composable
 private fun LoginScreen(
     authState: AuthenticationState,
+    onBack: () -> Unit = {},
     openForgotPassword: () -> Unit = {},
     openEmailMagicLink: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
@@ -296,7 +301,7 @@ private fun LoginScreen(
     val isNotBusy by viewModel.isNotAuthenticating.collectAsStateWithLifecycle()
 
     val focusEmail = viewModel.loginInputData.emailAddress.isEmpty() ||
-        viewModel.isInvalidEmail.value
+            viewModel.isInvalidEmail.value
     val updateEmailInput =
         remember(viewModel) { { s: String -> viewModel.loginInputData.emailAddress = s } }
     val clearErrorVisuals = remember(viewModel) { { viewModel.clearErrorVisuals() } }
