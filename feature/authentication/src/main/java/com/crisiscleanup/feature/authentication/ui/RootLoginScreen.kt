@@ -27,8 +27,18 @@ import com.crisiscleanup.feature.authentication.R
 import com.crisiscleanup.feature.authentication.model.AuthenticationState
 
 @Composable
+fun RootAuthRoute(
+    modifier: Modifier = Modifier,
+    openLoginWithEmail: () -> Unit = {},
+) {
+    RootLoginScreen(
+        openLoginWithEmail = openLoginWithEmail,
+    )
+}
+
+@Composable
 internal fun RootLoginScreen(
-    authState: AuthenticationState,
+    openLoginWithEmail: () -> Unit = {},
 ) {
     val translator = LocalAppTranslator.current
     val uriHandler = LocalUriHandler.current
@@ -36,6 +46,7 @@ internal fun RootLoginScreen(
     val iNeedHelpCleaningLink = "https://crisiscleanup.org/survivor"
     val isBusy = false
     Column {
+        CrisisCleanupLogoRow()
         Text(
             modifier = listItemModifier.testTag("loginHeaderText"),
             text = translator("actions.login", R.string.login),
@@ -49,7 +60,7 @@ internal fun RootLoginScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag("loginLoginWithEmailBtn"),
-                onClick = {},
+                onClick = openLoginWithEmail,
                 enabled = !isBusy,
                 text = translator("~~Login with Email", R.string.loginWithEmail),
                 indicateBusy = isBusy,
@@ -68,7 +79,7 @@ internal fun RootLoginScreen(
                     .fillMaxWidth()
                     .testTag("loginVolunteerWithOrgBtn"),
                 onClick = {},
-                enabled = false, //!isBusy,
+                enabled = false, // !isBusy,
                 text = translator("~~Volunteer with Your Org", R.string.volunteerWithYourOrg),
             )
             // TODO Open in WebView?
@@ -118,6 +129,6 @@ internal fun RootLoginScreen(
 fun RootLoginScreenPreview() {
     CrisisCleanupTheme {
         val mockAuthState = AuthenticationState(emptyAccountData)
-        RootLoginScreen(authState = mockAuthState)
+        RootLoginScreen()
     }
 }
