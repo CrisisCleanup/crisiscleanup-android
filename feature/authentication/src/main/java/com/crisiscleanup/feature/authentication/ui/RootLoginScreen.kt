@@ -35,79 +35,81 @@ internal fun RootLoginScreen(
     val registerHereLink = "https://crisiscleanup.org/register"
     val iNeedHelpCleaningLink = "https://crisiscleanup.org/survivor"
     val isBusy = false
-    Text(
-        modifier = listItemModifier.testTag("loginHeaderText"),
-        text = translator("actions.login", R.string.login),
-        style = LocalFontStyles.current.header1,
-    )
-    Column(
-        modifier = fillWidthPadded,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        BusyButton(
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("loginLoginWithEmailBtn"),
-            onClick = {},
-            enabled = !isBusy,
-            text = translator("~~Login with Email", R.string.loginWithEmail),
-            indicateBusy = isBusy,
+    Column {
+        Text(
+            modifier = listItemModifier.testTag("loginHeaderText"),
+            text = translator("actions.login", R.string.login),
+            style = LocalFontStyles.current.header1,
         )
-        BusyButton(
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("loginLoginWithPhoneBtn"),
-            onClick = {},
-            enabled = !isBusy,
-            text = translator("~~Login with Cell Phone", R.string.loginWithPhone),
-            indicateBusy = isBusy,
-        )
-        CrisisCleanupOutlinedButton(
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("loginVolunteerWithOrgBtn"),
-            onClick = {},
-            enabled = !isBusy,
-            text = translator("~~Volunteer with Your Org", R.string.volunteerWithYourOrg),
-        )
-        // TODO Open in WebView?
-        CrisisCleanupOutlinedButton(
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("loginNeedHelpCleaningBtn"),
-            onClick = {
-                uriHandler.openUri(iNeedHelpCleaningLink)
-            },
-            enabled = !isBusy,
-            text = translator("~~I need help cleaning up", R.string.iNeedHelpCleaningUp),
-        )
-    }
-    Column(
-        modifier = fillWidthPadded,
-    ) {
-        val linkText = translator("~~Register here", R.string.registerHere)
-        val spannableString = SpannableString(linkText).apply {
-            setSpan(
-                URLSpan(registerHereLink),
-                0,
-                length,
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+        Column(
+            modifier = fillWidthPadded,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            BusyButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("loginLoginWithEmailBtn"),
+                onClick = {},
+                enabled = !isBusy,
+                text = translator("~~Login with Email", R.string.loginWithEmail),
+                indicateBusy = isBusy,
+            )
+            BusyButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("loginLoginWithPhoneBtn"),
+                onClick = {},
+                enabled = !isBusy,
+                text = translator("~~Login with Cell Phone", R.string.loginWithPhone),
+                indicateBusy = isBusy,
+            )
+            CrisisCleanupOutlinedButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("loginVolunteerWithOrgBtn"),
+                onClick = {},
+                enabled = !isBusy,
+                text = translator("~~Volunteer with Your Org", R.string.volunteerWithYourOrg),
+            )
+            // TODO Open in WebView?
+            CrisisCleanupOutlinedButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("loginNeedHelpCleaningBtn"),
+                onClick = {
+                    uriHandler.openUri(iNeedHelpCleaningLink)
+                },
+                enabled = !isBusy,
+                text = translator("~~I need help cleaning up", R.string.iNeedHelpCleaningUp),
             )
         }
-        Text(
-            modifier = Modifier.testTag("loginReliefOrgAndGovText"),
-            text = translator(
-                "~~Relief organizations and government only.",
-                R.string.reliefOrgAndGovOnly,
-            ),
-        )
-        LinkifyText(
-            modifier = Modifier.testTag("loginRegisterHereLink"),
-            text = spannableString,
-            linkify = { textView ->
-                textView.movementMethod = LinkMovementMethod.getInstance()
-            },
-        )
+        Column(
+            modifier = fillWidthPadded,
+        ) {
+            val linkText = translator("~~Register here", R.string.registerHere)
+            val spannableString = SpannableString(linkText).apply {
+                setSpan(
+                    URLSpan(registerHereLink),
+                    0,
+                    length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+                )
+            }
+            Text(
+                modifier = Modifier.testTag("loginReliefOrgAndGovText"),
+                text = translator(
+                    "~~Relief organizations and government only.",
+                    R.string.reliefOrgAndGovOnly,
+                ),
+            )
+            LinkifyText(
+                modifier = Modifier.testTag("loginRegisterHereLink"),
+                text = spannableString,
+                linkify = { textView ->
+                    textView.movementMethod = LinkMovementMethod.getInstance()
+                },
+            )
+        }
     }
 }
 
