@@ -59,7 +59,7 @@ internal fun RootLoginScreen(
                     .fillMaxWidth()
                     .testTag("loginLoginWithPhoneBtn"),
                 onClick = {},
-                enabled = !isBusy,
+                enabled = false, // !isBusy,
                 text = translator("~~Login with Cell Phone", R.string.loginWithPhone),
                 indicateBusy = isBusy,
             )
@@ -68,7 +68,7 @@ internal fun RootLoginScreen(
                     .fillMaxWidth()
                     .testTag("loginVolunteerWithOrgBtn"),
                 onClick = {},
-                enabled = !isBusy,
+                enabled = false, //!isBusy,
                 text = translator("~~Volunteer with Your Org", R.string.volunteerWithYourOrg),
             )
             // TODO Open in WebView?
