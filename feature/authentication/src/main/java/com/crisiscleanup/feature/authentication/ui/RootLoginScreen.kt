@@ -22,10 +22,14 @@ import com.crisiscleanup.core.designsystem.theme.DayNightPreviews
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
+import com.crisiscleanup.core.model.data.emptyAccountData
 import com.crisiscleanup.feature.authentication.R
+import com.crisiscleanup.feature.authentication.model.AuthenticationState
 
 @Composable
-internal fun RootLoginScreen() {
+internal fun RootLoginScreen(
+    authState: AuthenticationState,
+) {
     val translator = LocalAppTranslator.current
     val uriHandler = LocalUriHandler.current
     val registerHereLink = "https://crisiscleanup.org/register"
@@ -111,6 +115,7 @@ internal fun RootLoginScreen() {
 @Composable
 fun RootLoginScreenPreview() {
     CrisisCleanupTheme {
-        RootLoginScreen()
+        val mockAuthState = AuthenticationState(emptyAccountData)
+        RootLoginScreen(authState = mockAuthState)
     }
 }
