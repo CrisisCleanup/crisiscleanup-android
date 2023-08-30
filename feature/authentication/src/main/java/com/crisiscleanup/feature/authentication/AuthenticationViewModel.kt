@@ -89,7 +89,6 @@ class AuthenticationViewModel @Inject constructor(
         loginInputData.password = ""
         errorMessage.value = ""
         isInvalidEmail.value = false
-        isInvalidEmail.value = false
         isAuthenticateSuccessful.value = false
     }
 
