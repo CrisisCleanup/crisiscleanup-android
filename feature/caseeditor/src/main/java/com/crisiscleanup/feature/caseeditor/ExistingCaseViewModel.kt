@@ -544,6 +544,7 @@ class ExistingCaseViewModel @Inject constructor(
     private fun saveWorksiteChange(
         startingWorksite: Worksite,
         changedWorksite: Worksite,
+        onSaveAction: () -> Unit = {},
     ) {
         if (startingWorksite.isNew ||
             startingWorksite == changedWorksite
@@ -563,6 +564,8 @@ class ExistingCaseViewModel @Inject constructor(
                     )
 
                     syncPusher.appPushWorksite(worksiteIdArg)
+
+                    onSaveAction()
                 } catch (e: Exception) {
                     onSaveFail(e)
                 } finally {
@@ -590,27 +593,27 @@ class ExistingCaseViewModel @Inject constructor(
         val startingWorksite = referenceWorksite
         val changedWorksite =
             startingWorksite.copy(isAssignedToOrgMember = !startingWorksite.isLocalFavorite)
-        saveWorksiteChange(startingWorksite, changedWorksite)
-
-        val messageTranslateKey = if (changedWorksite.isLocalFavorite) {
-            "caseView.member_my_org"
-        } else {
-            "actions.member_of_my_org"
+        saveWorksiteChange(startingWorksite, changedWorksite) {
+            val messageTranslateKey = if (changedWorksite.isLocalFavorite) {
+                "caseView.member_my_org"
+            } else {
+                "~~Not member of my organization"
+            }
+            actionDescriptionMessage.value = translate(messageTranslateKey)
         }
-        actionDescriptionMessage.value = translate(messageTranslateKey)
     }
 
     fun toggleHighPriority() {
         val startingWorksite = referenceWorksite
         val changedWorksite = startingWorksite.toggleHighPriorityFlag()
-        saveWorksiteChange(startingWorksite, changedWorksite)
-
-        val messageTranslateKey = if (changedWorksite.hasHighPriorityFlag) {
-            "caseView.high_priority"
-        } else {
-            "caseView.not_high_priority"
+        saveWorksiteChange(startingWorksite, changedWorksite) {
+            val messageTranslateKey = if (changedWorksite.hasHighPriorityFlag) {
+                "caseView.high_priority"
+            } else {
+                "caseView.not_high_priority"
+            }
+            actionDescriptionMessage.value = translate(messageTranslateKey)
         }
-        actionDescriptionMessage.value = translate(messageTranslateKey)
     }
 
     fun updateWorkType(workType: WorkType, isStatusChange: Boolean) {
