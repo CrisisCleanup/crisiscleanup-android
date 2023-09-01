@@ -3,12 +3,11 @@ package com.crisiscleanup.feature.authentication.navigation
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.crisiscleanup.core.appnav.RouteConstant
 import com.crisiscleanup.core.appnav.RouteConstant.loginWithEmailRoute
 import com.crisiscleanup.feature.authentication.ui.AuthRoute
 
 fun NavController.navigateToLoginWithEmail() {
-    this.navigate(RouteConstant.loginWithEmailRoute)
+    this.navigate(loginWithEmailRoute)
 }
 
 fun NavGraphBuilder.loginWithEmailScreen(
