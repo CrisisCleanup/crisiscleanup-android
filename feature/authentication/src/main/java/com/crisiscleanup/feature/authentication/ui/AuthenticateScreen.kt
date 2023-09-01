@@ -62,76 +62,56 @@ fun LoginWithEmailRoute(
             showResetPassword = true,
         )
     } else {
-        AuthenticateScreen(
-            enableBackHandler = enableBackHandler,
-            modifier = modifier,
-            onBack = onBack,
-            openForgotPassword = openForgotPassword,
-            openEmailMagicLink = openEmailMagicLink,
-            closeAuthentication = closeAuthentication,
-        )
-    }
-}
-
-@Composable
-private fun AuthenticateScreen(
-    modifier: Modifier = Modifier,
-    viewModel: AuthenticationViewModel = hiltViewModel(),
-    onBack: () -> Unit = {},
-    openForgotPassword: () -> Unit = {},
-    openEmailMagicLink: () -> Unit = {},
-    closeAuthentication: () -> Unit = {},
-    enableBackHandler: Boolean = false,
-) {
-    val onCloseScreen = remember(viewModel, closeAuthentication) {
-        {
-            viewModel.onCloseScreen()
-            closeAuthentication()
-        }
-    }
-
-    val isAuthenticateSuccessful by viewModel.isAuthenticateSuccessful.collectAsStateWithLifecycle()
-    if (isAuthenticateSuccessful) {
-        onCloseScreen()
-    }
-
-    BackHandler(enableBackHandler) {
-        onCloseScreen()
-    }
-
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    when (uiState) {
-        is AuthenticateScreenUiState.Loading -> {
-            Box(Modifier.fillMaxSize()) {
-                CircularProgressIndicator(Modifier.align(Alignment.Center))
+        val onCloseScreen = remember(viewModel, closeAuthentication) {
+            {
+                viewModel.onCloseScreen()
+                closeAuthentication()
             }
         }
 
-        is AuthenticateScreenUiState.Ready -> {
-            val isKeyboardOpen = rememberIsKeyboardOpen()
-            val closeKeyboard = rememberCloseKeyboard(viewModel)
+        val isAuthenticateSuccessful by viewModel.isAuthenticateSuccessful.collectAsStateWithLifecycle()
+        if (isAuthenticateSuccessful) {
+            onCloseScreen()
+        }
 
-            val readyState = uiState as AuthenticateScreenUiState.Ready
-            val authState = readyState.authenticationState
-            Box(modifier) {
-                // TODO Scroll when content is longer than screen height with keyboard open
-                Column(
-                    Modifier
-                        .scrollFlingListener(closeKeyboard)
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState()),
-                ) {
-                    AnimatedVisibility(visible = !isKeyboardOpen) {
-                        CrisisCleanupLogoRow()
+        BackHandler(enableBackHandler) {
+            onCloseScreen()
+        }
+
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+        when (uiState) {
+            is AuthenticateScreenUiState.Loading -> {
+                Box(Modifier.fillMaxSize()) {
+                    CircularProgressIndicator(Modifier.align(Alignment.Center))
+                }
+            }
+
+            is AuthenticateScreenUiState.Ready -> {
+                val isKeyboardOpen = rememberIsKeyboardOpen()
+                val closeKeyboard = rememberCloseKeyboard(viewModel)
+
+                val readyState = uiState as AuthenticateScreenUiState.Ready
+                val authState = readyState.authenticationState
+                Box(modifier) {
+                    // TODO Scroll when content is longer than screen height with keyboard open
+                    Column(
+                        Modifier
+                            .scrollFlingListener(closeKeyboard)
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState()),
+                    ) {
+                        AnimatedVisibility(visible = !isKeyboardOpen) {
+                            CrisisCleanupLogoRow()
+                        }
+                        LoginWithEmailScreen(
+                            authState,
+                            onBack = onBack,
+                            openForgotPassword = openForgotPassword,
+                            openEmailMagicLink = openEmailMagicLink,
+                            closeAuthentication = onCloseScreen,
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
                     }
-                    LoginWithEmailScreen(
-                        authState,
-                        onBack = onBack,
-                        openForgotPassword = openForgotPassword,
-                        openEmailMagicLink = openEmailMagicLink,
-                        closeAuthentication = onCloseScreen,
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
                 }
             }
         }
