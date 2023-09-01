@@ -12,6 +12,7 @@ fun NavController.navigateToLoginWithEmail() {
 
 fun NavGraphBuilder.loginWithEmailScreen(
     enableBackHandler: Boolean,
+    nestedGraphs: NavGraphBuilder.() -> Unit,
     onBack: () -> Unit,
     closeAuthentication: () -> Unit,
     openForgotPassword: () -> Unit,
@@ -26,4 +27,5 @@ fun NavGraphBuilder.loginWithEmailScreen(
             closeAuthentication = closeAuthentication,
         )
     }
+    nestedGraphs()
 }
