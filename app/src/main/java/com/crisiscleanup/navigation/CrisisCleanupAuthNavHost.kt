@@ -44,6 +44,7 @@ fun CrisisCleanupAuthNavHost(
                 )
             },
             openLoginWithEmail = navToLoginWithEmail,
+            closeAuthentication = closeAuthentication,
         )
     }
 }
