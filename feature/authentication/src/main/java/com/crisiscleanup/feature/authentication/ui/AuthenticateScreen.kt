@@ -45,7 +45,7 @@ import com.crisiscleanup.feature.authentication.R
 import com.crisiscleanup.feature.authentication.model.AuthenticationState
 
 @Composable
-fun AuthRoute(
+fun LoginWithEmailRoute(
     enableBackHandler: Boolean,
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
