@@ -46,9 +46,11 @@ import com.crisiscleanup.feature.authentication.model.AuthenticationState
 fun RootAuthRoute(
     modifier: Modifier = Modifier,
     openLoginWithEmail: () -> Unit = {},
+    closeAuthentication: () -> Unit = {},
 ) {
     RootAuthScreen(
         openLoginWithEmail = openLoginWithEmail,
+        closeAuthentication = closeAuthentication,
     )
 }
 
