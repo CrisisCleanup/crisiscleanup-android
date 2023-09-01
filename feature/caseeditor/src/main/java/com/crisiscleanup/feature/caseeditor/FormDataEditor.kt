@@ -65,7 +65,11 @@ internal class EditableWorkDataEditor(
         workTypeLookup: Map<String, String>,
         worksite: Worksite,
         createdAt: Instant = Clock.System.now(),
-    ) = updateWorkTypeStatuses(workTypeLookup, worksite, inputData, createdAt)
+    ) = worksite.updateWorkTypeStatuses(
+        workTypeLookup,
+        inputData.mutableFormFieldData,
+        createdAt
+    )
 }
 
 internal class EditableHazardsDataEditor(
