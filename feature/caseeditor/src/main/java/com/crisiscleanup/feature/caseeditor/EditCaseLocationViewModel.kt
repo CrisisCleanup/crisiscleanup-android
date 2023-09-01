@@ -87,6 +87,8 @@ interface CaseLocationDataEditor {
 
     val isSearchSuggested: Boolean
 
+    val onSetMyLocationAddress: StateFlow<LocationAddress?>
+
     fun useMyLocation()
 
     fun onQueryChange(q: String)
@@ -193,8 +195,13 @@ internal class EditableLocationDataEditor(
 
     override val isSearchSuggested: Boolean
         get() = with(locationInputData) {
-            !(wasGeocodeAddressSelected || isEditingAddress) || isBlankAddress
+            !(wasGeocodeAddressSelected ||
+                    isEditingAddress ||
+                    isSearchResultSelected.get()
+                    ) || isBlankAddress
         }
+
+    override val onSetMyLocationAddress = MutableStateFlow<LocationAddress?>(null)
 
     init {
         val worksite = worksiteProvider.editableWorksite.value
@@ -314,9 +321,11 @@ internal class EditableLocationDataEditor(
                 val coordinates = it.toLatLng().smallOffset()
                 locationInputData.coordinates.value = coordinates
                 _mapCameraZoom.value = MapViewCameraZoom(coordinates, defaultMapZoom)
+                // TODO Is isUserAction correct when permission must be granted?
                 if (isUserAction) {
                     locationSearchManager.queryAddress(coordinates)?.let { address ->
                         setSearchedLocationAddress(address)
+                        onSetMyLocationAddress.value = address
                     }
                 }
             }

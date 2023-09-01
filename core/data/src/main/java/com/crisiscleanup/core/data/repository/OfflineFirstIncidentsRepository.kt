@@ -184,7 +184,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
         if (!force) {
             incidentOrganizationDao.getSyncStats(incidentId)?.let {
                 if (it.targetCount > 0 &&
-                    it.successfulSync?.let { date -> Clock.System.now() - date < 14.days } == true &&
+                    it.successfulSync?.let { date -> Clock.System.now() - date < 7.days } == true &&
                     it.appBuildVersionCode >= IncidentOrganizationsStableModelBuildVersion
                 ) {
                     return
