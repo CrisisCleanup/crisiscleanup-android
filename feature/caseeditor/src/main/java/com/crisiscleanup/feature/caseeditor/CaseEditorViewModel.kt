@@ -386,6 +386,10 @@ class CaseEditorViewModel @Inject constructor(
         }
     }
 
+    fun clearFocusScrollToSection() {
+        focusScrollToSection.value = Triple(0, 0, 0)
+    }
+
     private fun focusScrollToAddressSection() {
         var scrollOffset = focusScrollToSection.value.third
         scrollOffset = if (scrollOffset == 128) 127 else 128

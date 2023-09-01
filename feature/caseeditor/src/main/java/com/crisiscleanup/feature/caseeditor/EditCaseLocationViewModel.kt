@@ -195,10 +195,11 @@ internal class EditableLocationDataEditor(
 
     override val isSearchSuggested: Boolean
         get() = with(locationInputData) {
-            !(wasGeocodeAddressSelected ||
+            !(
+                wasGeocodeAddressSelected ||
                     isEditingAddress ||
                     isSearchResultSelected.get()
-                    ) || isBlankAddress
+                ) || isBlankAddress
         }
 
     override val onSetMyLocationAddress = MutableStateFlow<LocationAddress?>(null)

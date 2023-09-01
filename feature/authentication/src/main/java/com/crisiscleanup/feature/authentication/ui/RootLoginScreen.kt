@@ -24,7 +24,6 @@ import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.feature.authentication.R
 
-
 @Composable
 internal fun RootLoginScreen() {
     val translator = LocalAppTranslator.current

@@ -15,12 +15,16 @@ class WorksiteExtensionsTest {
         )
 
         val noChangeCopyMissing = flagsWorksite.copyModifiedFlags(
-            false, { false }, WorksiteFlag::highPriority,
+            false,
+            { false },
+            WorksiteFlag::highPriority,
         )
         assertEquals(flagsWorksite.flags, noChangeCopyMissing)
 
         val noChangeCopyExists = flagsWorksite.copyModifiedFlags(
-            true, { true }, WorksiteFlag::highPriority,
+            true,
+            { true },
+            WorksiteFlag::highPriority,
         )
         assertEquals(flagsWorksite.flags, noChangeCopyExists)
     }
@@ -31,22 +35,29 @@ class WorksiteExtensionsTest {
 
         // Removing flag not in flags does not fail
         val removeNonExisting = flagsWorksite.copyModifiedFlags(
-            false, { true }, WorksiteFlag::highPriority,
+            false,
+            { true },
+            WorksiteFlag::highPriority,
         )
         assertEquals(flagsWorksite.flags, removeNonExisting)
 
         // Add a few flags
         var addFlags = flagsWorksite
             .copyModifiedFlags(
-                true, { false }, WorksiteFlag::highPriority,
+                true,
+                { false },
+                WorksiteFlag::highPriority,
             )
         addFlags = flagsWorksite.copy(flags = addFlags)
             .copyModifiedFlags(
-                true, { false }, WorksiteFlag::wrongLocation,
+                true,
+                { false },
+                WorksiteFlag::wrongLocation,
             )
         addFlags = flagsWorksite.copy(flags = addFlags)
             .copyModifiedFlags(
-                true, { false },
+                true,
+                { false },
                 {
                     WorksiteFlag.flag(
                         WorksiteFlagType.MarkForDeletion,

@@ -68,7 +68,7 @@ internal class EditableWorkDataEditor(
     ) = worksite.updateWorkTypeStatuses(
         workTypeLookup,
         inputData.mutableFormFieldData,
-        createdAt
+        createdAt,
     )
 }
 
