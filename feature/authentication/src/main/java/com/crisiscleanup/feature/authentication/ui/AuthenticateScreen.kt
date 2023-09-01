@@ -207,7 +207,7 @@ internal fun CrisisCleanupLogoRow() {
 @Composable
 fun LoginWithDifferentMethod(
     modifier: Modifier = Modifier,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     val translator = LocalAppTranslator.current
     TextButton(
@@ -453,5 +453,15 @@ private fun AuthenticatedScreen(
 fun LogoRowPreview() {
     CrisisCleanupTheme {
         CrisisCleanupLogoRow()
+    }
+}
+
+@DayNightPreviews
+@Composable
+fun LoginWithDifferentMethodPreview() {
+    CrisisCleanupTheme {
+        LoginWithDifferentMethod(
+            onClick = {},
+        )
     }
 }
