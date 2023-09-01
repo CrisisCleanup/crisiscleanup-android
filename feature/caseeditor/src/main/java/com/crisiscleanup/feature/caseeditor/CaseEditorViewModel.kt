@@ -398,6 +398,14 @@ class CaseEditorViewModel @Inject constructor(
 
     private fun translateInvalidInfo(
         translateKey: String,
+        section: WorksiteSection,
+    ) = InvalidWorksiteInfo(
+        section,
+        translate(translateKey),
+    )
+
+    private fun translateInvalidAddressInfo(
+        translateKey: String,
         section: WorksiteSection = WorksiteSection.LocationAddress,
     ): InvalidWorksiteInfo {
         val invalidSection = if (section == WorksiteSection.LocationAddress &&
@@ -434,19 +442,19 @@ class CaseEditorViewModel @Inject constructor(
             )
         }
         if (address.isBlank()) {
-            return translateInvalidInfo("caseForm.address_required")
+            return translateInvalidAddressInfo("caseForm.address_required")
         }
         if (postalCode.isBlank()) {
-            return translateInvalidInfo("caseForm.postal_code_required")
+            return translateInvalidAddressInfo("caseForm.postal_code_required")
         }
         if (county.isBlank()) {
-            return translateInvalidInfo("caseForm.county_required")
+            return translateInvalidAddressInfo("caseForm.county_required")
         }
         if (city.isBlank()) {
-            return translateInvalidInfo("caseForm.city_required")
+            return translateInvalidAddressInfo("caseForm.city_required")
         }
         if (state.isBlank()) {
-            return translateInvalidInfo("caseForm.state_required")
+            return translateInvalidAddressInfo("caseForm.state_required")
         }
 
         if (workTypes.isEmpty() ||
