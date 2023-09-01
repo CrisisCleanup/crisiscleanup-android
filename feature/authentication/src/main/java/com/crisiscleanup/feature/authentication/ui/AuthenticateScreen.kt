@@ -410,7 +410,7 @@ private fun LoginScreen(
 }
 
 @Composable
-private fun AuthenticatedScreen(
+internal fun AuthenticatedScreen(
     authState: AuthenticationState,
     closeAuthentication: () -> Unit = {},
     viewModel: AuthenticationViewModel = hiltViewModel(),
