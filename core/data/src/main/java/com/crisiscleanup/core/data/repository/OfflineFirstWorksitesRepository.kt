@@ -340,7 +340,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     }
 
     override fun getUnsyncedCounts(worksiteId: Long) =
-        worksiteDaoPlus.getUnsyncedChangeCount(worksiteId)
+        worksiteDaoPlus.getUnsyncedChangeCount(worksiteId, MAX_SYNC_TRIES)
 
     override suspend fun shareWorksite(
         worksiteId: Long,

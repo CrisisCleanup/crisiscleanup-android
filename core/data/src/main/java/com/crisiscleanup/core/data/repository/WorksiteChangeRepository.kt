@@ -72,7 +72,7 @@ interface WorksiteChangeRepository {
     suspend fun syncWorksiteMedia(): Boolean
 }
 
-private const val MAX_SYNC_TRIES = 3
+internal const val MAX_SYNC_TRIES = 3
 
 @Singleton
 class CrisisCleanupWorksiteChangeRepository @Inject constructor(
@@ -307,12 +307,13 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
             }
         }
 
-        val isFullySynced = worksiteDaoPlus.onSyncEnd(worksiteId, syncLogger)
+        val isFullySynced = worksiteDaoPlus.onSyncEnd(worksiteId, MAX_SYNC_TRIES, syncLogger)
         if (isFullySynced) {
             syncLogger.clear()
                 .log("Worksite fully synced.")
         } else {
-            syncLogger.log("Unsynced data exists.")
+            val caseNumber = syncNetworkWorksite?.caseNumber ?: "?"
+            syncLogger.log("Unsynced data exists for $caseNumber.")
         }
 
         if (syncNetworkWorksite != null && incidentId > 0) {
