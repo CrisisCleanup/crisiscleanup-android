@@ -10,6 +10,7 @@
     <string name="iNeedHelpCleaningUp">I need help cleaning up</string>
     <string name="reliefOrgAndGovOnly">Relief organizations and government only.</string>
     <string name="registerHere">Register here</string>
+    <string name="loginUsingDifferentMethod">Login using different method</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
 </resources>
