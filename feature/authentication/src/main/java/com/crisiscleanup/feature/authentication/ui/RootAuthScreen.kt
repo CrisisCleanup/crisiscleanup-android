@@ -33,11 +33,13 @@ import com.crisiscleanup.core.designsystem.theme.DayNightPreviews
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
+import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.model.data.emptyAccountData
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.authentication.AuthState
+import com.crisiscleanup.feature.authentication.AuthenticationViewModel
 import com.crisiscleanup.feature.authentication.R
 import com.crisiscleanup.feature.authentication.RootAuthViewModel
 import com.crisiscleanup.feature.authentication.model.AuthenticationState
@@ -190,6 +192,45 @@ internal fun RootAuthScreen(
             }
         }
     }
+}
+
+@Composable
+internal fun AuthenticatedScreen(
+    authState: AuthenticationState,
+    closeAuthentication: () -> Unit = {},
+    viewModel: AuthenticationViewModel = hiltViewModel(),
+) {
+    val translator = LocalAppTranslator.current
+
+    Text(
+        modifier = fillWidthPadded.testTag("authedProfileAccountInfo"),
+        text = translator("info.account_is")
+            .replace("{full_name}", authState.accountData.fullName)
+            .replace("{email_address}", authState.accountData.emailAddress),
+    )
+
+    val authErrorMessage by viewModel.errorMessage
+    ConditionalErrorMessage(authErrorMessage)
+
+    val isNotBusy by viewModel.isNotAuthenticating.collectAsStateWithLifecycle()
+
+    BusyButton(
+        modifier = fillWidthPadded.testTag("authedProfileLogoutBtn"),
+        onClick = viewModel::logout,
+        enabled = isNotBusy,
+        text = translator("actions.logout"),
+        indicateBusy = !isNotBusy,
+    )
+
+    LinkAction(
+        "actions.back",
+        modifier = Modifier
+            .listItemPadding()
+            .testTag("authedProfileDismissBtn"),
+        arrangement = Arrangement.Start,
+        enabled = isNotBusy,
+        action = closeAuthentication,
+    )
 }
 
 @DayNightPreviews
