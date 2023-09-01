@@ -147,23 +147,14 @@ private fun AuthenticateScreen(
                     AnimatedVisibility(visible = !isKeyboardOpen) {
                         CrisisCleanupLogoRow()
                     }
-
-                    if (authState.isAccountValid) {
-                        AuthenticatedScreen(
-                            authState,
-                            onCloseScreen,
-                        )
-                    } else {
-                        LoginScreen(
-                            authState,
-                            onBack = onBack,
-                            openForgotPassword = openForgotPassword,
-                            openEmailMagicLink = openEmailMagicLink,
-                            closeAuthentication = onCloseScreen,
-                        )
-
-                        Spacer(modifier = Modifier.weight(1f))
-                    }
+                    LoginScreen(
+                        authState,
+                        onBack = onBack,
+                        openForgotPassword = openForgotPassword,
+                        openEmailMagicLink = openEmailMagicLink,
+                        closeAuthentication = onCloseScreen,
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
                 }
             }
         }
