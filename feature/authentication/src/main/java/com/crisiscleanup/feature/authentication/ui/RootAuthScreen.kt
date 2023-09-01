@@ -31,13 +31,13 @@ fun RootAuthRoute(
     modifier: Modifier = Modifier,
     openLoginWithEmail: () -> Unit = {},
 ) {
-    RootLoginScreen(
+    RootAuthScreen(
         openLoginWithEmail = openLoginWithEmail,
     )
 }
 
 @Composable
-internal fun RootLoginScreen(
+internal fun RootAuthScreen(
     openLoginWithEmail: () -> Unit = {},
 ) {
     val translator = LocalAppTranslator.current
@@ -129,6 +129,6 @@ internal fun RootLoginScreen(
 fun RootLoginScreenPreview() {
     CrisisCleanupTheme {
         val mockAuthState = AuthenticationState(emptyAccountData)
-        RootLoginScreen()
+        RootAuthScreen()
     }
 }
