@@ -162,6 +162,7 @@ class CaseEditorViewModel @Inject constructor(
     private val changingIncidentWorksite: Worksite
 
     val focusScrollToSection = MutableStateFlow(Triple(0, 0, 0))
+    private var onSetMyLocationJob: Job? = null
 
     val showClaimAndSave =
         editingWorksite.map {
@@ -286,6 +287,15 @@ class CaseEditorViewModel @Inject constructor(
                     }
                     .launchIn(viewModelScope)
 
+                onSetMyLocationJob?.cancel()
+                onSetMyLocationJob = locationEditor.onSetMyLocationAddress
+                    .onEach {
+                        if (it != null) {
+                            focusScrollToAddressSection()
+                        }
+                    }
+                    .launchIn(viewModelScope)
+
                 CaseEditors(
                     propertyEditor,
                     locationEditor,
@@ -314,7 +324,7 @@ class CaseEditorViewModel @Inject constructor(
                 editors?.location?.locationInputData?.let { inputData ->
                     if (editableWorksiteProvider.takeAddressChanged()) {
                         inputData.assumeLocationAddressChanges(worksite)
-                        onAddressSuggestionSelected()
+                        focusScrollToAddressSection()
                     }
 
                     editableWorksiteProvider.peekIncidentChange?.let { changeData ->
@@ -376,8 +386,10 @@ class CaseEditorViewModel @Inject constructor(
         }
     }
 
-    private fun onAddressSuggestionSelected() {
-        focusScrollToSection.value = Triple(0, 3, 128)
+    private fun focusScrollToAddressSection() {
+        var scrollOffset = focusScrollToSection.value.third
+        scrollOffset = if (scrollOffset == 128) 127 else 128
+        focusScrollToSection.value = Triple(0, 3, scrollOffset)
     }
 
     private fun translateInvalidInfo(
