@@ -4,7 +4,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.crisiscleanup.core.appnav.RouteConstant.loginWithEmailRoute
-import com.crisiscleanup.feature.authentication.ui.AuthRoute
+import com.crisiscleanup.feature.authentication.ui.LoginWithEmailRoute
 
 fun NavController.navigateToLoginWithEmail() {
     this.navigate(loginWithEmailRoute)
@@ -18,7 +18,7 @@ fun NavGraphBuilder.loginWithEmailScreen(
     openEmailMagicLink: () -> Unit,
 ) {
     composable(route = loginWithEmailRoute) {
-        AuthRoute(
+        LoginWithEmailRoute(
             onBack = onBack,
             enableBackHandler = enableBackHandler,
             openForgotPassword = openForgotPassword,
