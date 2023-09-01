@@ -95,7 +95,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
     private val networkMonitor: NetworkMonitor,
     private val appEnv: AppEnv,
     private val syncLogger: SyncLogger,
-    @Logger(CrisisCleanupLoggers.App) private val appLogger: AppLogger,
+    @Logger(CrisisCleanupLoggers.Sync) private val appLogger: AppLogger,
 ) : WorksiteChangeRepository {
     private val _syncingWorksiteIds = mutableSetOf<Long>()
     override val syncingWorksiteIds = MutableStateFlow(emptySet<Long>())
