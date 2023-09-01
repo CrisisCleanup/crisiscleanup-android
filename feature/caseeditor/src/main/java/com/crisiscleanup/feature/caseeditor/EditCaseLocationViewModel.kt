@@ -5,7 +5,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.addresssearch.AddressSearchRepository
 import com.crisiscleanup.core.addresssearch.model.KeySearchAddress
-import com.crisiscleanup.core.addresssearch.model.toLatLng
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.NetworkMonitor
@@ -32,6 +31,7 @@ import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.LocationAddress
 import com.crisiscleanup.feature.caseeditor.model.LocationInputData
 import com.crisiscleanup.feature.caseeditor.model.coordinates
+import com.crisiscleanup.feature.caseeditor.model.toLatLng
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.CameraPosition
