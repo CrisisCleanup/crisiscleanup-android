@@ -215,7 +215,7 @@ fun rememberFocusSectionSliderState(
     val coroutineScope = rememberCoroutineScope()
     var isSliderScrollToSection by remember { mutableStateOf(false) }
     val sliderScrollToSectionItem = remember(rememberKey) {
-        { sectionIndex: Int, itemIndex: Int ->
+        { sectionIndex: Int, itemIndex: Int, scrollOffset: Int ->
             if (sectionIndex >= 0 && sectionIndex < sectionCollapseStates.size) {
                 coroutineScope.launch {
                     isSliderScrollToSection = true
@@ -234,7 +234,10 @@ fun rememberFocusSectionSliderState(
                     }
 
                     pagerState.animateScrollToItem(sectionIndex)
-                    contentListState.animateScrollToItem(visibleItemIndex.coerceAtLeast(0))
+                    contentListState.animateScrollToItem(
+                        visibleItemIndex.coerceAtLeast(0),
+                        scrollOffset,
+                    )
                 }
             }
         }
@@ -242,7 +245,7 @@ fun rememberFocusSectionSliderState(
     val sliderScrollToSection = remember(rememberKey) {
         { index: Int ->
             indexLookups.sectionItem[index]?.let { itemIndex ->
-                sliderScrollToSectionItem(index, itemIndex)
+                sliderScrollToSectionItem(index, itemIndex, 0)
             }
             Unit
         }
@@ -330,7 +333,7 @@ class FocusSectionSliderState(
     val pagerState: LazyListState,
     val contentListState: LazyListState,
     val coroutineScope: CoroutineScope,
-    val sliderScrollToSectionItem: (Int, Int) -> Unit,
+    val sliderScrollToSectionItem: (Int, Int, Int) -> Unit,
     val sliderScrollToSection: (Int) -> Unit,
     val onSliderScrollRest: (Int) -> Unit,
     val takeScrollToSection: () -> Boolean,

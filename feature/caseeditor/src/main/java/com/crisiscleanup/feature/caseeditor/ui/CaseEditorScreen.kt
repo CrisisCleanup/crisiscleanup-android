@@ -212,9 +212,7 @@ private fun ColumnScope.FullEditView(
 
     val areEditorsReady by viewModel.areEditorsReady.collectAsStateWithLifecycle()
     val isSavingData by viewModel.isSavingWorksite.collectAsStateWithLifecycle()
-    val isEditable = areEditorsReady &&
-        caseData.isNetworkLoadFinished &&
-        !isSavingData
+    val isEditable = areEditorsReady && caseData.isNetworkLoadFinished && !isSavingData
 
     val isSectionCollapsed =
         remember(viewModel) { { sectionIndex: Int -> sectionCollapseStates[sectionIndex] } }
@@ -299,10 +297,9 @@ private fun ColumnScope.FullEditView(
 
     val sliderScrollToSectionItem = sectionSliderState.sliderScrollToSectionItem
     val sliderScrollToSection = sectionSliderState.sliderScrollToSection
-    val editPropertyData = remember(viewModel) { { sliderScrollToSectionItem(0, 2) } }
-    // TODO Review this item index is correct
-    val editLocation = remember(viewModel) { { sliderScrollToSectionItem(0, 3) } }
-    val editLocationAddress = remember(viewModel) { { sliderScrollToSectionItem(0, 4) } }
+    val editPropertyData = remember(viewModel) { { sliderScrollToSectionItem(0, 2, 0) } }
+    val editLocation = remember(viewModel) { { sliderScrollToSectionItem(0, 3, 48) } }
+    val editLocationAddress = remember(viewModel) { { sliderScrollToSectionItem(0, 4, 0) } }
     val editFormData = remember(viewModel) { { index: Int -> sliderScrollToSection(index) } }
     InvalidSaveDialog(
         onEditLocationAddress = editLocationAddress,
@@ -310,6 +307,18 @@ private fun ColumnScope.FullEditView(
         onEditLocation = editLocation,
         onEditFormData = editFormData,
     )
+
+    val focusScrollToSection by viewModel.focusScrollToSection.collectAsStateWithLifecycle()
+    if (focusScrollToSection.first != 0 ||
+        focusScrollToSection.second != 0 ||
+        focusScrollToSection.third != 0
+    ) {
+        sliderScrollToSectionItem(
+            focusScrollToSection.first,
+            focusScrollToSection.second,
+            focusScrollToSection.third,
+        )
+    }
 }
 
 private fun LazyListScope.fullEditContent(
@@ -497,10 +506,10 @@ private fun InvalidSaveDialog(
 ) {
     val promptInvalidSave by viewModel.showInvalidWorksiteSave.collectAsStateWithLifecycle()
     if (promptInvalidSave) {
-        val invalidWorksiteInfo = viewModel.invalidWorksiteInfo.value
-        if (invalidWorksiteInfo.invalidSection != WorksiteSection.None) {
+        val invalidInfo = viewModel.invalidWorksiteInfo.value
+        if (invalidInfo.invalidSection != WorksiteSection.None) {
             val translator = LocalAppTranslator.current
-            val message = invalidWorksiteInfo.message.ifBlank {
+            val message = invalidInfo.message.ifBlank {
                 translator("caseForm.missing_required_fields")
             }
             val onDismiss =
@@ -519,7 +528,7 @@ private fun InvalidSaveDialog(
                     CrisisCleanupTextButton(
                         text = translator("actions.fix"),
                         onClick = {
-                            when (val section = invalidWorksiteInfo.invalidSection) {
+                            when (val section = invalidInfo.invalidSection) {
                                 WorksiteSection.Property -> onEditPropertyData()
                                 WorksiteSection.Location -> onEditLocation()
                                 WorksiteSection.LocationAddress -> onEditLocationAddress()
@@ -558,11 +567,10 @@ private fun SaveActionBar(
     val dimensions = LocalDimensions.current
     val isSharpCorners = dimensions.isThinScreenWidth
     Row(
-        modifier = Modifier
-            .padding(
-                horizontal = dimensions.edgePaddingFlexible,
-                vertical = dimensions.edgePadding,
-            ),
+        modifier = Modifier.padding(
+            horizontal = dimensions.edgePaddingFlexible,
+            vertical = dimensions.edgePadding,
+        ),
         horizontalArrangement = dimensions.itemInnerSpacingHorizontalFlexible,
     ) {
         val style = LocalFontStyles.current.header5

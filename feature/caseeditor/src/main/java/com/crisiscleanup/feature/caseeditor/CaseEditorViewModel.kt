@@ -161,6 +161,8 @@ class CaseEditorViewModel @Inject constructor(
     private var saveChangeIncident = EmptyIncident
     private val changingIncidentWorksite: Worksite
 
+    val focusScrollToSection = MutableStateFlow(Triple(0, 0, 0))
+
     val showClaimAndSave =
         editingWorksite.map {
             isCreateWorksite ||
@@ -312,6 +314,7 @@ class CaseEditorViewModel @Inject constructor(
                 editors?.location?.locationInputData?.let { inputData ->
                     if (editableWorksiteProvider.takeAddressChanged()) {
                         inputData.assumeLocationAddressChanges(worksite)
+                        onAddressSuggestionSelected()
                     }
 
                     editableWorksiteProvider.peekIncidentChange?.let { changeData ->
@@ -373,24 +376,26 @@ class CaseEditorViewModel @Inject constructor(
         }
     }
 
-    private fun incompleteFormDataInfo(writerIndex: Int) = InvalidWorksiteInfo(
-        when (writerIndex) {
-            3 -> WorksiteSection.Details
-            4 -> WorksiteSection.WorkType
-            5 -> WorksiteSection.Hazards
-            6 -> WorksiteSection.VolunteerReport
-            else -> WorksiteSection.None
-        },
-        message = translator("caseForm.missing_required_fields"),
-    )
+    private fun onAddressSuggestionSelected() {
+        focusScrollToSection.value = Triple(0, 3, 128)
+    }
 
     private fun translateInvalidInfo(
         translateKey: String,
         section: WorksiteSection = WorksiteSection.LocationAddress,
-    ) = InvalidWorksiteInfo(
-        section,
-        translate(translateKey),
-    )
+    ): InvalidWorksiteInfo {
+        val invalidSection = if (section == WorksiteSection.LocationAddress &&
+            locationEditor?.isSearchSuggested == true
+        ) {
+            WorksiteSection.Location
+        } else {
+            WorksiteSection.LocationAddress
+        }
+        return InvalidWorksiteInfo(
+            invalidSection,
+            translate(translateKey),
+        )
+    }
 
     private fun validate(worksite: Worksite): InvalidWorksiteInfo = with(worksite) {
         if (name.isBlank()) {
@@ -486,7 +491,7 @@ class CaseEditorViewModel @Inject constructor(
                 val initialWorksite = editorStateData?.worksite
                     ?: return@launch
 
-                val worksite = worksiteProvider.editableWorksite.value
+                val worksite = editingWorksite.value
                     .updateKeyWorkType(initialWorksite)
                 val saveIncidentId = saveChangeIncident.id
                 val isIncidentChange = saveIncidentId != EmptyIncident.id &&
@@ -591,17 +596,26 @@ class CaseEditorViewModel @Inject constructor(
             is LocationInputData -> {
                 val (isAddressError, message) = dataWriter.getUserErrorMessage()
                 val section =
-                    if (isAddressError) {
-                        WorksiteSection.LocationAddress
-                    } else {
+                    if (locationEditor?.isSearchSuggested == true || !isAddressError) {
                         WorksiteSection.Location
+                    } else {
+                        WorksiteSection.LocationAddress
                     }
                 invalidWorksiteInfo.value = InvalidWorksiteInfo(section, message)
                 showInvalidWorksiteSave.value = true
             }
 
             is FormFieldsInputData -> {
-                invalidWorksiteInfo.value = incompleteFormDataInfo(index)
+                invalidWorksiteInfo.value = InvalidWorksiteInfo(
+                    when (index) {
+                        3 -> WorksiteSection.Details
+                        4 -> WorksiteSection.WorkType
+                        5 -> WorksiteSection.Hazards
+                        6 -> WorksiteSection.VolunteerReport
+                        else -> WorksiteSection.None
+                    },
+                    message = translator("caseForm.missing_required_fields"),
+                )
                 showInvalidWorksiteSave.value = true
             }
         }
@@ -657,7 +671,7 @@ class CaseEditorViewModel @Inject constructor(
         }
 
         tryGetEditorState()?.let {
-            if (it.worksite != worksiteProvider.editableWorksite.value) {
+            if (it.worksite != editingWorksite.value) {
                 promptUnsavedChanges.value = true
                 return true
             }
