@@ -147,7 +147,7 @@ private fun AuthenticateScreen(
                     AnimatedVisibility(visible = !isKeyboardOpen) {
                         CrisisCleanupLogoRow()
                     }
-                    LoginScreen(
+                    LoginWithEmailScreen(
                         authState,
                         onBack = onBack,
                         openForgotPassword = openForgotPassword,
@@ -272,7 +272,7 @@ private fun LinkAction(
 }
 
 @Composable
-private fun LoginScreen(
+private fun LoginWithEmailScreen(
     authState: AuthenticationState,
     onBack: () -> Unit = {},
     openForgotPassword: () -> Unit = {},
