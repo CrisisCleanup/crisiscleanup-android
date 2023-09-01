@@ -229,7 +229,10 @@ fun LoginWithDifferentMethod(
                     .size(24.dp),
             )
             Text(
-                text = translator("~~Login using different method"),
+                text = translator(
+                    "~~Login using different method",
+                    R.string.loginUsingDifferentMethod,
+                ),
                 color = actionLinkColor,
                 style = LocalFontStyles.current.header3,
                 modifier = Modifier.padding(horizontal = 4.dp),
