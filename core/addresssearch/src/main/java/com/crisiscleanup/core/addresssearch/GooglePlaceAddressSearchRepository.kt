@@ -3,19 +3,21 @@ package com.crisiscleanup.core.addresssearch
 import android.content.Context
 import android.location.Geocoder
 import android.util.LruCache
-import com.crisiscleanup.core.addresssearch.model.KeyLocationAddress
-import com.crisiscleanup.core.addresssearch.model.asKeyLocationAddress
-import com.crisiscleanup.core.addresssearch.model.filterLatLng
-import com.crisiscleanup.core.addresssearch.util.sort
+import com.crisiscleanup.core.addresssearch.model.KeySearchAddress
+import com.crisiscleanup.core.common.combineTrimText
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
+import com.crisiscleanup.core.model.data.LocationAddress
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.AutocompletePrediction
+import com.google.android.libraries.places.api.model.AutocompleteSessionToken
+import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.model.RectangularBounds
 import com.google.android.libraries.places.api.model.TypeFilter
+import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
 import com.google.android.libraries.places.api.net.PlacesClient
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -27,6 +29,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.hours
 
@@ -50,32 +53,43 @@ class GooglePlaceAddressSearchRepository @Inject constructor(
 
     private val staleResultDuration = 1.hours
 
+    private val sessionTokenAr = AtomicReference<AutocompleteSessionToken>()
+
     // TODO Use configurable maxSize
     private val placeAutocompleteResultCache =
         LruCache<String, Pair<Instant, List<AutocompletePrediction>>>(30)
-    private val addressResultCache =
-        LruCache<String, Pair<Instant, List<KeyLocationAddress>>>(30)
 
     override fun clearCache() {
         placeAutocompleteResultCache.evictAll()
-        addressResultCache.evictAll()
     }
 
-    private suspend fun mapPredictionsToAddress(predictions: Collection<AutocompletePrediction>) =
-        coroutineScope {
-            return@coroutineScope predictions.mapNotNull { prediction ->
-                val placeText = prediction.getPrimaryText(null).toString()
-                val addresses = geocoder.getFromLocationName(placeText, 1)
-
-                ensureActive()
-
-                addresses?.filterLatLng()
-                    ?.firstOrNull()
-                    ?.asKeyLocationAddress(prediction.placeId)
-            }
+    private fun mapPredictionsToAddress(predictions: Collection<AutocompletePrediction>) =
+        predictions.map { prediction ->
+            KeySearchAddress(
+                prediction.placeId,
+                prediction.getPrimaryText(null).toString(),
+                prediction.getSecondaryText(null).toString(),
+                prediction.getFullText(null).toString(),
+            )
         }
 
     override suspend fun getAddress(coordinates: LatLng) = geocoder.getAddress(coordinates)
+
+    override fun startSearchSession() {
+        val token = AutocompleteSessionToken.newInstance()
+        sessionTokenAr.set(token)
+    }
+
+    private fun getSessionToken(): AutocompleteSessionToken {
+        synchronized(sessionTokenAr) {
+            sessionTokenAr.get()?.let {
+                return it
+            }
+            val token = AutocompleteSessionToken.newInstance()
+            sessionTokenAr.set(token)
+            return token
+        }
+    }
 
     override suspend fun searchAddresses(
         query: String,
@@ -84,20 +98,12 @@ class GooglePlaceAddressSearchRepository @Inject constructor(
         southwest: LatLng?,
         northeast: LatLng?,
         maxResults: Int,
-    ): List<KeyLocationAddress> = coroutineScope {
+    ): List<KeySearchAddress> = coroutineScope {
         val now = Clock.System.now()
-
-        addressResultCache.get(query)?.let {
-            if (now - it.first < staleResultDuration) {
-                return@coroutineScope it.second
-            }
-        }
 
         placeAutocompleteResultCache.get(query)?.let { (cacheTime, cacheResults) ->
             if (now - cacheTime < staleResultDuration) {
                 return@coroutineScope mapPredictionsToAddress(cacheResults)
-                    .sort(center)
-                    .also { addressResultCache.put(query, Pair(cacheTime, it)) }
             }
         }
 
@@ -112,6 +118,7 @@ class GooglePlaceAddressSearchRepository @Inject constructor(
             .setCountries(countryCodes)
             .setTypesFilter(listOf(TypeFilter.ADDRESS.toString().lowercase()))
             .setQuery(query)
+            .setSessionToken(getSessionToken())
             .build()
         try {
             val response = placesClient().findAutocompletePredictions(request).await()
@@ -121,8 +128,6 @@ class GooglePlaceAddressSearchRepository @Inject constructor(
             ensureActive()
 
             return@coroutineScope mapPredictionsToAddress(predictions)
-                .sort(center)
-                .also { addressResultCache.put(query, Pair(now, it)) }
         } catch (e: Exception) {
             if (e !is ApiException && e !is CancellationException) {
                 logger.logException(e)
@@ -130,5 +135,65 @@ class GooglePlaceAddressSearchRepository @Inject constructor(
         }
 
         return@coroutineScope emptyList()
+    }
+
+    override suspend fun getPlaceAddress(placeId: String): LocationAddress? {
+        val sessionToken = getSessionToken()
+        val placeFields = listOf(
+            Place.Field.LAT_LNG,
+            Place.Field.ADDRESS_COMPONENTS,
+        )
+
+        try {
+            val request = FetchPlaceRequest.builder(placeId, placeFields)
+                .setSessionToken(sessionToken)
+                .build()
+            val response = placesClient().fetchPlace(request).await()
+            val addressTypeKeys = setOf(
+                "street_number",
+                "route",
+                "locality",
+                "administrative_area_level_2",
+                "administrative_area_level_1",
+                "country",
+                "postal_code",
+            )
+            with(response.place) {
+                latLng?.let { coordinates ->
+                    addressComponents?.asList()?.let { components ->
+                        val addressComponentLookup = mutableMapOf<String, String>()
+                        components.forEach {
+                            for (t in it.types) {
+                                if (addressTypeKeys.contains(t)) {
+                                    addressComponentLookup[t] = it.name
+                                }
+                            }
+                        }
+
+                        startSearchSession()
+
+                        return LocationAddress(
+                            latitude = coordinates.latitude,
+                            longitude = coordinates.longitude,
+                            address = listOf(
+                                addressComponentLookup["street_number"] ?: "",
+                                addressComponentLookup["route"] ?: "",
+                            ).combineTrimText(),
+                            city = addressComponentLookup["locality"] ?: "",
+                            county = addressComponentLookup["administrative_area_level_2"] ?: "",
+                            state = addressComponentLookup["administrative_area_level_1"] ?: "",
+                            zipCode = addressComponentLookup["postal_code"] ?: "",
+                            country = addressComponentLookup["country"] ?: "",
+                        )
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            if (e !is ApiException && e !is CancellationException) {
+                logger.logException(e)
+            }
+        }
+
+        return null
     }
 }

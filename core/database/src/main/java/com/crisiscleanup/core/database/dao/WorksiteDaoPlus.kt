@@ -429,9 +429,9 @@ class WorksiteDaoPlus @Inject constructor(
             val workTypeChanges = db.workTypeDao().getUnsyncedCount(worksiteId)
             val changes = db.worksiteChangeDao().getChangeCount(worksiteId, maxSyncTries)
             val hasModification = flagChanges > 0 ||
-                    noteChanges > 0 ||
-                    workTypeChanges > 0 ||
-                    changes > 0
+                noteChanges > 0 ||
+                workTypeChanges > 0 ||
+                changes > 0
             return@withTransaction if (hasModification) {
                 syncLogger.log(
                     "Pending changes on sync end",

@@ -33,9 +33,10 @@ internal fun EditCaseAddressSearchRoute(
     val editor = viewModel.editor
     val editDifferentWorksite by editor.editIncidentWorksite.collectAsStateWithLifecycle()
     val isLocationCommitted by editor.isLocationCommitted.collectAsStateWithLifecycle()
+    val isAddressCommitted by editor.isAddressCommitted.collectAsStateWithLifecycle()
     if (editDifferentWorksite.isDefined) {
         openExistingCase(editDifferentWorksite)
-    } else if (isLocationCommitted) {
+    } else if (isLocationCommitted || isAddressCommitted) {
         onBack()
     } else {
         val isCheckingOutOfBounds by editor.isCheckingOutOfBounds.collectAsStateWithLifecycle()
@@ -48,13 +49,7 @@ internal fun EditCaseAddressSearchRoute(
             )
             val locationQuery by editor.locationInputData.locationQuery.collectAsStateWithLifecycle()
             FullAddressSearchInput(viewModel, editor, locationQuery, true, isEditable)
-            val onAddressSelect = remember(viewModel) {
-                {
-                    editor.commitChanges()
-                    onBack()
-                }
-            }
-            AddressSearchResults(viewModel, editor, locationQuery, onAddressSelect, isEditable)
+            AddressSearchResults(viewModel, editor, locationQuery, isEditable)
         }
 
         LocationOutOfBoundsDialog(editor)
@@ -95,7 +90,6 @@ internal fun ColumnScope.AddressSearchResults(
     viewModel: EditCaseBaseViewModel,
     editor: CaseLocationDataEditor,
     locationQuery: String,
-    onAddressSelect: () -> Unit = {},
     isEditable: Boolean = false,
 ) {
     val isShortQuery by editor.isShortQuery.collectAsStateWithLifecycle()
@@ -111,7 +105,6 @@ internal fun ColumnScope.AddressSearchResults(
             viewModel,
             editor,
             query,
-            onAddressSelect,
             isEditable,
         )
     }

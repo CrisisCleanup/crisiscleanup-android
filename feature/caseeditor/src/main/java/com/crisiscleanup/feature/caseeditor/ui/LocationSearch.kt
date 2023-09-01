@@ -18,7 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.crisiscleanup.core.common.combineTrimText
+import com.crisiscleanup.core.addresssearch.model.KeySearchAddress
 import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.commoncase.ui.listCaseResults
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
@@ -27,7 +27,6 @@ import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemOptionPadding
 import com.crisiscleanup.core.designsystem.theme.textMessagePadding
-import com.crisiscleanup.core.model.data.LocationAddress
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseLocationDataEditor
@@ -39,7 +38,6 @@ internal fun ColumnScope.SearchContents(
     viewModel: EditCaseBaseViewModel,
     editor: CaseLocationDataEditor,
     query: String = "",
-    onAddressSelect: () -> Unit = {},
     isEditable: Boolean = false,
 ) {
     val isBusySearching by editor.isLocationSearching.collectAsStateWithLifecycle(false)
@@ -69,10 +67,8 @@ internal fun ColumnScope.SearchContents(
                 }
             }
             val onAddress = remember(viewModel) {
-                { address: LocationAddress ->
-                    if (editor.onGeocodeAddressSelected(address)) {
-                        onAddressSelect()
-                    }
+                { address: KeySearchAddress ->
+                    editor.onGeocodeAddressSelected(address)
                 }
             }
             val closeKeyboard = rememberCloseKeyboard(viewModel)
@@ -118,7 +114,7 @@ private fun ListSearchResults(
     results: LocationSearchResults,
     modifier: Modifier = Modifier,
     onCaseSelect: (CaseSummaryResult) -> Unit = {},
-    onAddressSelect: (LocationAddress) -> Unit = {},
+    onAddressSelect: (KeySearchAddress) -> Unit = {},
     closeKeyboard: () -> Unit = {},
     isEditable: Boolean = false,
 ) {
@@ -153,14 +149,14 @@ private fun ListSearchResults(
                         .fillMaxWidth()
                         .clickable(
                             enabled = isEditable,
-                            onClick = { onAddressSelect(keyAddress.address) },
+                            onClick = { onAddressSelect(keyAddress) },
                         )
                         .listItemOptionPadding(),
                 ) {
-                    with(keyAddress.address) {
+                    with(keyAddress) {
                         Column {
-                            Text(address)
-                            Text(listOf(city, state, country).combineTrimText())
+                            Text(addressLine1)
+                            Text(addressLine2)
                         }
                     }
                 }
