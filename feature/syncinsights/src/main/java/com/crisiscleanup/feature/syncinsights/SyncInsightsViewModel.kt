@@ -37,7 +37,7 @@ class SyncInsightsViewModel @Inject constructor(
     private val syncPusher: SyncPusher,
     @ApplicationScope private val externalScope: CoroutineScope,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
-    @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
+    @Logger(CrisisCleanupLoggers.Sync) private val logger: AppLogger,
 ) : ViewModel() {
     val worksitesPendingSync = worksiteChangeRepository.streamWorksitesPendingSync.mapLatest {
         it.map { worksite -> "(${worksite.incidentId}, ${worksite.id}) ${worksite.caseNumber}" }

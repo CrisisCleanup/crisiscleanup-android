@@ -49,8 +49,14 @@ interface WorksiteChangeDao {
     fun delete(ids: Collection<Long>)
 
     @Transaction
-    @Query("SELECT COUNT(id) FROM worksite_changes WHERE worksite_id=:worksiteId")
-    fun getChangeCount(worksiteId: Long): Int
+    @Query(
+        """
+        SELECT COUNT(id)
+        FROM worksite_changes
+        WHERE worksite_id=:worksiteId AND save_attempt<=MAX(1, :maxSaveAttempts)
+        """,
+    )
+    fun getChangeCount(worksiteId: Long, maxSaveAttempts: Int): Int
 
     @Transaction
     @RewriteQueriesToDropUnusedColumns

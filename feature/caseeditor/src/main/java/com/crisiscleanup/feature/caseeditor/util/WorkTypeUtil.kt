@@ -35,8 +35,8 @@ fun Worksite.updateWorkTypeStatuses(
         .filter {
             with(it.value) {
                 dynamicValue.isBooleanTrue &&
-                        isWorkTypeGroup &&
-                        workTypeLookup[key] != null
+                    isWorkTypeGroup &&
+                    workTypeLookup[key] != null
             }
         }
         .forEach {

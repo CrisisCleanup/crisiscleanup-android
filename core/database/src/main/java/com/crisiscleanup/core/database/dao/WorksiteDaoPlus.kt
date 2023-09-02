@@ -419,6 +419,7 @@ class WorksiteDaoPlus @Inject constructor(
 
     suspend fun onSyncEnd(
         worksiteId: Long,
+        maxSyncTries: Int,
         syncLogger: SyncLogger,
         syncedAt: Instant = Clock.System.now(),
     ): Boolean {
@@ -426,7 +427,7 @@ class WorksiteDaoPlus @Inject constructor(
             val flagChanges = db.worksiteFlagDao().getUnsyncedCount(worksiteId)
             val noteChanges = db.worksiteNoteDao().getUnsyncedCount(worksiteId)
             val workTypeChanges = db.workTypeDao().getUnsyncedCount(worksiteId)
-            val changes = db.worksiteChangeDao().getChangeCount(worksiteId)
+            val changes = db.worksiteChangeDao().getChangeCount(worksiteId, maxSyncTries)
             val hasModification = flagChanges > 0 ||
                 noteChanges > 0 ||
                 workTypeChanges > 0 ||
@@ -445,11 +446,11 @@ class WorksiteDaoPlus @Inject constructor(
         }
     }
 
-    fun getUnsyncedChangeCount(worksiteId: Long): List<Int> = listOf(
+    fun getUnsyncedChangeCount(worksiteId: Long, maxSyncTries: Int): List<Int> = listOf(
         db.worksiteFlagDao().getUnsyncedCount(worksiteId),
         db.worksiteNoteDao().getUnsyncedCount(worksiteId),
         db.workTypeDao().getUnsyncedCount(worksiteId),
-        db.worksiteChangeDao().getChangeCount(worksiteId),
+        db.worksiteChangeDao().getChangeCount(worksiteId, maxSyncTries),
     )
 
     suspend fun loadBoundedSyncedWorksiteIds(

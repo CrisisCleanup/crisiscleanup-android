@@ -1,7 +1,7 @@
 package com.crisiscleanup.feature.caseeditor
 
 import com.crisiscleanup.core.addresssearch.AddressSearchRepository
-import com.crisiscleanup.core.addresssearch.model.KeyLocationAddress
+import com.crisiscleanup.core.addresssearch.model.KeySearchAddress
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
@@ -154,7 +154,7 @@ internal class LocationSearchManager(
 
 data class LocationSearchResults(
     val query: String,
-    val addresses: List<KeyLocationAddress>,
+    val addresses: List<KeySearchAddress>,
     val worksites: List<CaseSummaryResult>,
 ) {
     val isEmpty = addresses.isEmpty() && worksites.isEmpty()

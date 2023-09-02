@@ -35,7 +35,7 @@ class WorksiteChangeDaoPlus @Inject constructor(
     private val uuidGenerator: UuidGenerator,
     private val changeSerializer: WorksiteChangeSerializer,
     private val appVersionProvider: AppVersionProvider,
-    @Logger(CrisisCleanupLoggers.App) private val appLogger: AppLogger,
+    @Logger(CrisisCleanupLoggers.Sync) private val appLogger: AppLogger,
     private val syncLogger: SyncLogger,
 ) {
     private fun getLocalNetworkIdMap(worksite: Worksite): IdNetworkIdMaps {

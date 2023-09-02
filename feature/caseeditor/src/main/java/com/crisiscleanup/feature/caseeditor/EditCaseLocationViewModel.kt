@@ -4,7 +4,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.addresssearch.AddressSearchRepository
-import com.crisiscleanup.core.addresssearch.model.toLatLng
+import com.crisiscleanup.core.addresssearch.model.KeySearchAddress
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.NetworkMonitor
@@ -31,6 +31,7 @@ import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.LocationAddress
 import com.crisiscleanup.feature.caseeditor.model.LocationInputData
 import com.crisiscleanup.feature.caseeditor.model.coordinates
+import com.crisiscleanup.feature.caseeditor.model.toLatLng
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.CameraPosition
@@ -60,6 +61,9 @@ interface CaseLocationDataEditor {
 
     val searchResults: StateFlow<LocationSearchResults>
 
+    val isProcessingAction: StateFlow<Boolean>
+    val isAddressCommitted: StateFlow<Boolean>
+
     val editIncidentWorksite: StateFlow<ExistingWorksiteIdentifier>
     val isLocationCommitted: StateFlow<Boolean>
 
@@ -85,6 +89,11 @@ interface CaseLocationDataEditor {
 
     var isMapLoaded: Boolean
 
+    /**
+     * Encourages presenting a search bar for searching location/address by text query
+     *
+     * FALSE indicates location and address have been sufficiently defined and full search support isn't necessary.
+     */
     val isSearchSuggested: Boolean
 
     val onSetMyLocationAddress: StateFlow<LocationAddress?>
@@ -109,7 +118,7 @@ interface CaseLocationDataEditor {
 
     fun onExistingWorksiteSelected(result: CaseSummaryResult)
 
-    fun onGeocodeAddressSelected(locationAddress: LocationAddress): Boolean
+    fun onGeocodeAddressSelected(searchAddress: KeySearchAddress)
 
     fun clearAddress()
     fun onEditAddress()
@@ -129,7 +138,7 @@ internal class EditableLocationDataEditor(
     private val locationProvider: LocationProvider,
     boundsProvider: IncidentBoundsProvider,
     searchWorksitesRepository: SearchWorksitesRepository,
-    addressSearchRepository: AddressSearchRepository,
+    private val addressSearchRepository: AddressSearchRepository,
     caseIconProvider: MapCaseIconProvider,
     drawableResourceBitmapProvider: DrawableResourceBitmapProvider,
     private val existingWorksiteSelector: ExistingWorksiteSelector,
@@ -145,7 +154,23 @@ internal class EditableLocationDataEditor(
 
     private val locationSearchManager: LocationSearchManager
     override val searchResults: StateFlow<LocationSearchResults>
-    private val isSearchResultSelected = AtomicBoolean(false)
+    private val isLocationAddressFound = AtomicBoolean(false)
+
+    private val isSelectingWorksite = MutableStateFlow(false)
+    private val isSelectingAddress = MutableStateFlow(false)
+    override val isProcessingAction = kotlinx.coroutines.flow.combine(
+        isSelectingWorksite,
+        isSelectingAddress,
+        ::Pair,
+    )
+        .map { (b0, b1) -> b0 || b1 }
+        .stateIn(
+            scope = coroutineScope,
+            initialValue = false,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    override val isAddressCommitted = MutableStateFlow(false)
 
     private val outOfBoundsManager = LocationOutOfBoundsManager(
         worksiteProvider,
@@ -195,10 +220,11 @@ internal class EditableLocationDataEditor(
 
     override val isSearchSuggested: Boolean
         get() = with(locationInputData) {
-            !(wasGeocodeAddressSelected ||
+            !(
+                wasGeocodeAddressSelected ||
                     isEditingAddress ||
-                    isSearchResultSelected.get()
-                    ) || isBlankAddress
+                    isLocationAddressFound.get()
+                ) || isBlankAddress
         }
 
     override val onSetMyLocationAddress = MutableStateFlow<LocationAddress?>(null)
@@ -233,6 +259,8 @@ internal class EditableLocationDataEditor(
                 setMyLocationCoordinates()
             }
         }.launchIn(coroutineScope)
+
+        addressSearchRepository.startSearchSession()
 
         val pinMarkerSize = Pair(32f, 48f)
         coroutineScope.launch {
@@ -369,7 +397,7 @@ internal class EditableLocationDataEditor(
     )
 
     override fun onMapLoaded() {
-        val isResultSelected = isSearchResultSelected.compareAndSet(true, false)
+        val isResultSelected = isLocationAddressFound.compareAndSet(true, false)
         val duration = if (isResultSelected) 500 else 0
         _mapCameraZoom.value = centerCoordinatesZoom(duration)
         isMapLoaded = true
@@ -458,14 +486,19 @@ internal class EditableLocationDataEditor(
             this.state = state
             resetValidity()
         }
-        isSearchResultSelected.set(true)
+        isLocationAddressFound.set(true)
         clearSearchInputFocus.set(true)
         clearQuery()
     }
 
     override fun onExistingWorksiteSelected(result: CaseSummaryResult) {
+        isSelectingWorksite.value = true
         coroutineScope.launch(ioDispatcher) {
-            existingWorksiteSelector.onNetworkWorksiteSelected(result.networkWorksiteId)
+            try {
+                existingWorksiteSelector.onNetworkWorksiteSelected(result.networkWorksiteId)
+            } finally {
+                isSelectingWorksite.value = false
+            }
         }
     }
 
@@ -482,21 +515,33 @@ internal class EditableLocationDataEditor(
         }
     }
 
-    override fun onGeocodeAddressSelected(locationAddress: LocationAddress): Boolean {
+    override fun onGeocodeAddressSelected(searchAddress: KeySearchAddress) {
         with(outOfBoundsManager) {
             if (isPendingOutOfBounds) {
-                return false
+                return
             }
 
-            val coordinates = locationAddress.toLatLng()
-            if (!isCoordinatesInBounds(coordinates)) {
-                onLocationOutOfBounds(coordinates, locationAddress)
-                return false
+            isSelectingAddress.value = true
+            coroutineScope.launch(ioDispatcher) {
+                try {
+                    addressSearchRepository.getPlaceAddress(searchAddress.key)?.let { address ->
+                        val latLng = LatLng(address.latitude, address.longitude)
+                        if (!isCoordinatesInBounds(latLng)) {
+                            onLocationOutOfBounds(latLng, address)
+                            return@launch
+                        }
+
+                        setSearchedLocationAddress(address)
+                        commitChanges()
+                        isAddressCommitted.value = true
+                    }
+                } catch (e: Exception) {
+                    logger.logException(e)
+                } finally {
+                    isSelectingAddress.value = false
+                }
             }
         }
-
-        setSearchedLocationAddress(locationAddress)
-        return true
     }
 
     override fun cancelOutOfBounds() {

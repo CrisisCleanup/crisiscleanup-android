@@ -58,12 +58,22 @@ class WorksiteChangeSetOperator @Inject constructor() {
             sendSms = true,
         )
 
+        val workTypeChanges = snapshot.workTypes
+            .filter { it.workType.orgClaim != null }
+            .map {
+                it.workType.claimNew(
+                    it.localId,
+                    it.workType.createdAt ?: worksitePush.updatedAt,
+                )
+            }
+
         return WorksiteChangeSet(
             worksitePush.updatedAt,
             worksitePush,
             if (coreB.isAssignedToOrgMember) true else null,
             snapshot.getNewNetworkNotes(emptyMap()),
             Pair(snapshot.flags.map { Pair(it.localId, it.asNetworkFlag()) }, emptyList()),
+            workTypeChanges,
         )
     }
 
@@ -81,9 +91,8 @@ class WorksiteChangeSetOperator @Inject constructor() {
 
         val updatedAt = coreB.updatedAt ?: Clock.System.now()
 
-        // TODO Add new and delete from base properly.
-        //      Probably best to apply changes to coreA and coreB and have getCoreChanges resolve.
-        val (newWorkTypes, workTypeChanges, deleteWorkTypeIds) = base.getWorkTypeChanges(
+        // TODO Aren't new and delete operations dictated by form data?
+        val (_, workTypeChanges, _) = base.getWorkTypeChanges(
             start.workTypes,
             change.workTypes,
             updatedAt,

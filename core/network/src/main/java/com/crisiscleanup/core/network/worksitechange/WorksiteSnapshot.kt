@@ -205,6 +205,17 @@ data class WorkTypeSnapshot(
                 isStatusChange = status.trim() != reference.status.trim(),
             )
         }
+
+        fun claimNew(localId: Long, changedAt: Instant): WorkTypeChange {
+            return WorkTypeChange(
+                localId,
+                -1,
+                this,
+                changedAt,
+                isClaimChange = true,
+                isStatusChange = false,
+            )
+        }
     }
 }
 

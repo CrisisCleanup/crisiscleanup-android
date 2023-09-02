@@ -225,6 +225,12 @@ private fun ColumnScope.FullEditView(
 
     Box(Modifier.weight(1f)) {
         val closeKeyboard = rememberCloseKeyboard(viewModel)
+        val onScrollFling = remember(viewModel) {
+            {
+                closeKeyboard()
+                viewModel.clearFocusScrollToSection()
+            }
+        }
 
         val caseEditor = CaseEditor(
             isEditable,
@@ -234,7 +240,7 @@ private fun ColumnScope.FullEditView(
         CompositionLocalProvider(LocalCaseEditor provides caseEditor) {
             LazyColumn(
                 modifier
-                    .scrollFlingListener(closeKeyboard)
+                    .scrollFlingListener(onScrollFling)
                     .fillMaxSize(),
                 state = sectionSliderState.contentListState,
             ) {
