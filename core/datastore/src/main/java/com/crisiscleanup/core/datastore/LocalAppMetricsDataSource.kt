@@ -1,9 +1,11 @@
 package com.crisiscleanup.core.datastore
 
 import androidx.datastore.core.DataStore
+import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.model.data.AppMetricsData
 import com.crisiscleanup.core.model.data.AppOpenInstant
 import com.crisiscleanup.core.model.data.BuildEndOfLife
+import com.crisiscleanup.core.model.data.MinSupportedAppVersion
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -11,15 +13,18 @@ import javax.inject.Inject
 
 class LocalAppMetricsDataSource @Inject constructor(
     private val appMetrics: DataStore<AppMetrics>,
+    private val appVersionProvider: AppVersionProvider,
 ) {
     val metrics = appMetrics.data
         .map {
+            val ebEnd = it.earlybirdBuildEnd
+            val buildSupport = it.minBuildSupport
             AppMetricsData(
                 earlybirdEndOfLife = BuildEndOfLife(
-                    Instant.fromEpochSeconds(it.earlybirdBuildEnd.endSeconds),
-                    it.earlybirdBuildEnd.title,
-                    it.earlybirdBuildEnd.message,
-                    it.earlybirdBuildEnd.appLink,
+                    Instant.fromEpochSeconds(ebEnd.endSeconds),
+                    ebEnd.title,
+                    ebEnd.message,
+                    ebEnd.appLink,
                 ),
 
                 appOpen = AppOpenInstant(
@@ -28,6 +33,14 @@ class LocalAppMetricsDataSource @Inject constructor(
                 ),
 
                 switchToProductionApiVersion = it.productionApiSwitchVersion,
+
+                minSupportedAppVersion = MinSupportedAppVersion(
+                    minBuild = buildSupport.minVersion,
+                    title = buildSupport.title,
+                    message = buildSupport.message,
+                    link = buildSupport.appLink,
+                    isUnsupported = buildSupport.minVersion > appVersionProvider.versionCode,
+                ),
             )
         }
 
@@ -52,6 +65,19 @@ class LocalAppMetricsDataSource @Inject constructor(
             it.copy {
                 appOpenVersion = appVersion
                 appOpenSeconds = timestamp.epochSeconds
+            }
+        }
+    }
+
+    suspend fun setMinSupportedAppVersion(supportedAppVersion: MinSupportedAppVersion) {
+        val builder = AppMinUseProto.newBuilder()
+        builder.minVersion = supportedAppVersion.minBuild
+        builder.title = supportedAppVersion.title
+        builder.message = supportedAppVersion.message
+        builder.appLink = supportedAppVersion.link
+        appMetrics.updateData {
+            it.copy {
+                minBuildSupport = builder.build()
             }
         }
     }

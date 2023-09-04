@@ -32,13 +32,11 @@ import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.sync.SyncPuller
+import com.crisiscleanup.core.data.repository.AppMetricsRepository
 import com.crisiscleanup.core.data.repository.EndOfLifeRepository
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.navigationContainerColor
 import com.crisiscleanup.core.model.data.DarkThemeConfig
-import com.crisiscleanup.core.testerfeedbackapi.FeedbackTriggerProvider
-import com.crisiscleanup.core.testerfeedbackapi.di.FeedbackTriggerProviderKey
-import com.crisiscleanup.core.testerfeedbackapi.di.FeedbackTriggerProviders
 import com.crisiscleanup.ui.CrisisCleanupApp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.gms.maps.MapsInitializer
@@ -82,14 +80,13 @@ class MainActivity : ComponentActivity() {
     internal lateinit var permissionManager: PermissionManager
 
     @Inject
-    @FeedbackTriggerProviderKey(FeedbackTriggerProviders.Default)
-    internal lateinit var feedbackTriggerProvider: FeedbackTriggerProvider
-
-    @Inject
     internal lateinit var visualAlertManager: VisualAlertManager
 
     @Inject
     internal lateinit var endOfLifeRepository: EndOfLifeRepository
+
+    @Inject
+    internal lateinit var appMetricsRepository: AppMetricsRepository
 
     private val lifecycleObservers = mutableListOf<LifecycleObserver>()
 
@@ -99,8 +96,6 @@ class MainActivity : ComponentActivity() {
         MapsInitializer.initialize(this, Renderer.LATEST) {}
 
         (permissionManager as? DefaultLifecycleObserver)?.let { lifecycleObservers.add(it) }
-
-        lifecycleObservers.addAll(feedbackTriggerProvider.triggers.mapNotNull { it as? LifecycleObserver })
 
         lifecycleObservers.forEach { lifecycle.addObserver(it) }
 
@@ -172,6 +167,7 @@ class MainActivity : ComponentActivity() {
         viewModel.onAppOpen()
 
         endOfLifeRepository.saveEndOfLifeData()
+        appMetricsRepository.saveAppSupportInfo()
     }
 
     override fun onPause() {

@@ -117,8 +117,11 @@ fun CrisisCleanupApp(
             } else {
                 CompositionLocalProvider(LocalAppTranslator provides translator) {
                     val endOfLife = viewModel.buildEndOfLife
+                    val minSupportedAppVersion = viewModel.supportedApp
                     if (endOfLife?.isEndOfLife == true) {
                         EndOfLifeView(endOfLife)
+                    } else if (minSupportedAppVersion?.isUnsupported == true) {
+                        UnsupportedBuildView(minSupportedAppVersion)
                     } else {
                         // Render content even if translations are not fully downloaded in case internet connection is not available.
                         // Translations without fallbacks will show until translations are downloaded.

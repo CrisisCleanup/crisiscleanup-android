@@ -31,6 +31,7 @@ import com.crisiscleanup.core.model.data.AppOpenInstant
 import com.crisiscleanup.core.model.data.BuildEndOfLife
 import com.crisiscleanup.core.model.data.EarlybirdEndOfLifeFallback
 import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.model.data.MinSupportedAppVersion
 import com.crisiscleanup.core.model.data.UserData
 import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -54,7 +55,7 @@ import kotlin.time.Duration.Companion.hours
 @HiltViewModel
 class MainActivityViewModel @Inject constructor(
     localAppPreferencesRepository: LocalAppPreferencesRepository,
-    private val localAppMetricsRepository: LocalAppMetricsRepository,
+    private val appMetricsRepository: LocalAppMetricsRepository,
     accountDataRepository: AccountDataRepository,
     incidentSelector: IncidentSelector,
     val appHeaderUiState: AppHeaderUiState,
@@ -79,7 +80,7 @@ class MainActivityViewModel @Inject constructor(
 
     val uiState = combine(
         localAppPreferencesRepository.userPreferences,
-        localAppMetricsRepository.metrics.distinctUntilChanged(),
+        appMetricsRepository.metrics.distinctUntilChanged(),
         ::Pair,
     )
         .map { (preferences, metrics) ->
@@ -151,6 +152,16 @@ class MainActivityViewModel @Inject constructor(
             return null
         }
 
+    val supportedApp: MinSupportedAppVersion?
+        get() {
+            if (appEnv.isProduction) {
+                (uiState.value as? MainActivityUiState.Success)?.let {
+                    return it.appMetrics.minSupportedAppVersion
+                }
+            }
+            return null
+        }
+
     // TODO Build route to auth/forgot-password rather than switches through the hierarchy
     val showPasswordReset = authEventBus.showResetPassword
 
@@ -191,9 +202,9 @@ class MainActivityViewModel @Inject constructor(
     fun onAppOpen() {
         initialAppOpen.get()?.let {
             viewModelScope.launch {
-                val previousOpen = localAppMetricsRepository.metrics.first().appOpen
+                val previousOpen = appMetricsRepository.metrics.first().appOpen
                 if (Clock.System.now() - previousOpen.date > 1.hours) {
-                    localAppMetricsRepository.setAppOpen(appVersionProvider.versionCode)
+                    appMetricsRepository.setAppOpen(appVersionProvider.versionCode)
                 }
             }
         }
