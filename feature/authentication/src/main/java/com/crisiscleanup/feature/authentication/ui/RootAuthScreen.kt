@@ -4,6 +4,7 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.method.LinkMovementMethod
 import android.text.style.URLSpan
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -69,6 +70,18 @@ internal fun RootAuthScreen(
     val registerHereLink = "https://crisiscleanup.org/register"
     val iNeedHelpCleaningLink = "https://crisiscleanup.org/survivor"
     val isBusy = false
+
+    val clearStateOnBack = remember(viewModel) {
+        {
+            viewModel.clearState()
+            closeAuthentication()
+        }
+    }
+
+    BackHandler(!isBusy) {
+        clearStateOnBack()
+    }
+
     when (authState) {
         is AuthState.Loading -> {
             Box(Modifier.fillMaxSize()) {
