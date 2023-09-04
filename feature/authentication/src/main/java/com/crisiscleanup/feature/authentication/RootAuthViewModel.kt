@@ -21,7 +21,7 @@ class RootAuthViewModel @Inject constructor(
     private val accountDataRepository: AccountDataRepository,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.Auth) private val logger: AppLogger,
-): ViewModel() {
+) : ViewModel() {
     val authState = accountDataRepository.accountData
         .map {
             if (it.areTokensValid) {
@@ -35,6 +35,9 @@ class RootAuthViewModel @Inject constructor(
             initialValue = AuthState.Loading,
             started = SharingStarted.WhileSubscribed(),
         )
+
+    fun clearState() {
+    }
 }
 
 sealed interface AuthState {
