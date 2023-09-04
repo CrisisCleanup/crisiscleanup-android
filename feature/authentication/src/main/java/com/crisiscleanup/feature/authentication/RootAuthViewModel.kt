@@ -24,7 +24,7 @@ class RootAuthViewModel @Inject constructor(
 ): ViewModel() {
     val authState = accountDataRepository.accountData
         .map {
-            if (it.hasAuthenticated) {
+            if (it.areTokensValid) {
                 AuthState.Authenticated(it)
             } else {
                 AuthState.NotAuthenticated
