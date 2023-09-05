@@ -94,4 +94,8 @@ interface WorksiteChangeDao {
         """,
     )
     fun getSaveFailCount(worksiteId: Long): Int
+
+    @Transaction
+    @Query("SELECT COUNT(id) FROM worksite_changes")
+    fun getTableCount(): Long
 }

@@ -15,7 +15,7 @@ import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.commoncase.WorksiteProvider
 import com.crisiscleanup.core.data.IncidentSelectManager
 import com.crisiscleanup.core.data.repository.AccountDataRepository
-import com.crisiscleanup.core.data.repository.DatabaseManagementRepository
+import com.crisiscleanup.core.data.repository.AppDataManagementRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
@@ -48,7 +48,7 @@ class CaseAddFlagViewModel @Inject constructor(
     editableWorksiteProvider: EditableWorksiteProvider,
     organizationsRepository: OrganizationsRepository,
     incidentsRepository: IncidentsRepository,
-    databaseManagementRepository: DatabaseManagementRepository,
+    databaseManagementRepository: AppDataManagementRepository,
     private val accountDataRepository: AccountDataRepository,
     addressSearchRepository: AddressSearchRepository,
     private val worksiteChangeRepository: WorksiteChangeRepository,

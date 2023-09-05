@@ -2,6 +2,7 @@ package com.crisiscleanup.core.database.di
 
 import android.content.Context
 import androidx.room.Room
+import com.crisiscleanup.core.common.DatabaseOperator
 import com.crisiscleanup.core.common.DatabaseVersionProvider
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
 import com.crisiscleanup.core.database.dao.LocalImageDaoPlus
@@ -41,4 +42,10 @@ interface DatabaseInterfaceModule {
     fun bindsDatabaseVersionProvider(
         versionProvider: CrisisCleanupDatabase,
     ): DatabaseVersionProvider
+
+    @Binds
+    @Singleton
+    fun bindsDatabaseFileProvider(
+        fileProvider: CrisisCleanupDatabase,
+    ): DatabaseOperator
 }

@@ -99,6 +99,7 @@ class SyncWorksitesFullWorker @AssistedInject constructor(
                                     appContext.getString(R.string.stop_syncing),
                                     stopSyncIntent,
                                 )
+                                .setOnlyAlertOnce(true)
                                 .build(),
                         )
                     }

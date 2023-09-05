@@ -43,14 +43,6 @@ class AppPreferencesRepository @Inject constructor(
     override suspend fun setShouldHideOnboarding(shouldHideOnboarding: Boolean) =
         preferencesDataSource.setShouldHideOnboarding(shouldHideOnboarding)
 
-    override suspend fun incrementSaveCredentialsPrompt() {
-        preferencesDataSource.incrementSaveCredentialsPrompt()
-    }
-
-    override suspend fun setDisableSaveCredentialsPrompt(disable: Boolean) {
-        preferencesDataSource.setDisableSaveCredentialsPrompt(disable)
-    }
-
     override suspend fun setSelectedIncident(id: Long) =
         preferencesDataSource.setSelectedIncident(id)
 

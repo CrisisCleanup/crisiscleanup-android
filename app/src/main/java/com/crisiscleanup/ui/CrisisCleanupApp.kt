@@ -111,14 +111,20 @@ fun CrisisCleanupApp(
                 }
             }
 
+            val isSwitchingToProduction by viewModel.isSwitchingToProduction.collectAsStateWithLifecycle()
             val authState by viewModel.authState.collectAsStateWithLifecycle()
-            if (authState is AuthState.Loading) {
+            if (isSwitchingToProduction) {
+                SwitchToProductionView()
+            } else if (authState is AuthState.Loading) {
                 // Splash screen should be showing
             } else {
                 CompositionLocalProvider(LocalAppTranslator provides translator) {
                     val endOfLife = viewModel.buildEndOfLife
+                    val minSupportedAppVersion = viewModel.supportedApp
                     if (endOfLife?.isEndOfLife == true) {
                         EndOfLifeView(endOfLife)
+                    } else if (minSupportedAppVersion?.isUnsupported == true) {
+                        UnsupportedBuildView(minSupportedAppVersion)
                     } else {
                         // Render content even if translations are not fully downloaded in case internet connection is not available.
                         // Translations without fallbacks will show until translations are downloaded.

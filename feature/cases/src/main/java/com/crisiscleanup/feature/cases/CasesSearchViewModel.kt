@@ -9,7 +9,7 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.data.IncidentSelector
-import com.crisiscleanup.core.data.repository.DatabaseManagementRepository
+import com.crisiscleanup.core.data.repository.AppDataManagementRepository
 import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
@@ -39,7 +39,7 @@ class CasesSearchViewModel @Inject constructor(
     private val incidentSelector: IncidentSelector,
     private val worksitesRepository: WorksitesRepository,
     private val searchWorksitesRepository: SearchWorksitesRepository,
-    databaseManagementRepository: DatabaseManagementRepository,
+    databaseManagementRepository: AppDataManagementRepository,
     private val mapCaseIconProvider: MapCaseIconProvider,
     @Logger(CrisisCleanupLoggers.Cases) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,

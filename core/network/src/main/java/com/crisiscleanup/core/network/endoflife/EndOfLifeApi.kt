@@ -7,8 +7,6 @@ import retrofit2.http.GET
 import retrofit2.http.Url
 import javax.inject.Inject
 
-// https://android-earlybird-end-5vzbp64o2a-uc.a.run.app
-
 interface EndOfLifeClient {
     suspend fun getEarlybirdEndOfLife(): NetworkBuildEndOfLife?
 }
