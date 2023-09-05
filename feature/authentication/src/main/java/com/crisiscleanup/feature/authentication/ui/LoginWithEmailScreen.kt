@@ -1,6 +1,5 @@
 package com.crisiscleanup.feature.authentication.ui
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,12 +45,10 @@ import com.crisiscleanup.feature.authentication.model.AuthenticationState
 
 @Composable
 fun LoginWithEmailRoute(
-    enableBackHandler: Boolean,
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
     openForgotPassword: () -> Unit = {},
     openEmailMagicLink: () -> Unit = {},
-    closeAuthentication: () -> Unit = {},
     viewModel: AuthenticationViewModel = hiltViewModel(),
 ) {
     // TODO Push route rather than toggling state
@@ -62,19 +59,15 @@ fun LoginWithEmailRoute(
             showResetPassword = true,
         )
     } else {
-        val onCloseScreen = remember(viewModel, closeAuthentication) {
+        val onCloseScreen = remember(viewModel, onBack) {
             {
                 viewModel.onCloseScreen()
-                closeAuthentication()
+                onBack()
             }
         }
 
         val isAuthenticateSuccessful by viewModel.isAuthenticateSuccessful.collectAsStateWithLifecycle()
         if (isAuthenticateSuccessful) {
-            onCloseScreen()
-        }
-
-        BackHandler(enableBackHandler) {
             onCloseScreen()
         }
 
@@ -235,7 +228,7 @@ private fun LoginWithEmailScreen(
             "actions.back",
             modifier = Modifier
                 .listItemPadding()
-                .testTag("loginCancelBtn"),
+                .testTag("emailLoginBackBtn"),
             arrangement = Arrangement.Start,
             enabled = isNotBusy,
             action = closeAuthentication,
@@ -243,6 +236,7 @@ private fun LoginWithEmailScreen(
     } else {
         LoginWithDifferentMethod(
             onClick = onBack,
+            enabled = isNotBusy,
         )
     }
 }

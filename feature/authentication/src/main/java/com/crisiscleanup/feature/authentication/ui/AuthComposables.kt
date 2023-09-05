@@ -111,13 +111,19 @@ internal fun CrisisCleanupLogoRow() {
 fun LoginWithDifferentMethod(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
+    enabled: Boolean = false,
 ) {
     val translator = LocalAppTranslator.current
     TextButton(
         modifier = modifier.padding(horizontal = 16.dp),
         onClick = onClick,
         shape = RoundedCornerShape(4.dp),
+        enabled = enabled,
     ) {
+        val text = translator(
+            "~~Login using different method",
+            R.string.loginUsingDifferentMethod,
+        )
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center,
@@ -125,17 +131,14 @@ fun LoginWithDifferentMethod(
         ) {
             Icon(
                 Icons.Default.ArrowBack,
-                contentDescription = "Login using different method",
+                contentDescription = text,
                 tint = actionLinkColor,
                 modifier = Modifier
                     .padding(horizontal = 4.dp)
                     .size(24.dp),
             )
             Text(
-                text = translator(
-                    "~~Login using different method",
-                    R.string.loginUsingDifferentMethod,
-                ),
+                text = text,
                 color = actionLinkColor,
                 style = LocalFontStyles.current.header3,
                 modifier = Modifier.padding(horizontal = 4.dp),

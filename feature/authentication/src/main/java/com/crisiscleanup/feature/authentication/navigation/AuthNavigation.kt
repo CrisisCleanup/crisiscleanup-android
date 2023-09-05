@@ -9,6 +9,7 @@ import com.crisiscleanup.feature.authentication.ui.RootAuthRoute
 
 fun NavGraphBuilder.authGraph(
     nestedGraphs: NavGraphBuilder.() -> Unit,
+    enableBackHandler: Boolean = false,
     openLoginWithEmail: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
 ) {
@@ -18,6 +19,7 @@ fun NavGraphBuilder.authGraph(
     ) {
         composable(route = authRoute) {
             RootAuthRoute(
+                enableBackHandler = enableBackHandler,
                 openLoginWithEmail = openLoginWithEmail,
                 closeAuthentication = closeAuthentication,
             )

@@ -17,7 +17,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
@@ -35,7 +34,7 @@ import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
-import com.crisiscleanup.core.model.data.emptyAccountData
+import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
 import com.crisiscleanup.core.ui.scrollFlingListener
@@ -43,14 +42,17 @@ import com.crisiscleanup.feature.authentication.AuthState
 import com.crisiscleanup.feature.authentication.AuthenticationViewModel
 import com.crisiscleanup.feature.authentication.R
 import com.crisiscleanup.feature.authentication.RootAuthViewModel
-import com.crisiscleanup.feature.authentication.model.AuthenticationState
 
 @Composable
 fun RootAuthRoute(
-    modifier: Modifier = Modifier,
+    enableBackHandler: Boolean = false,
     openLoginWithEmail: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
 ) {
+    BackHandler(enableBackHandler) {
+        closeAuthentication()
+    }
+
     RootAuthScreen(
         openLoginWithEmail = openLoginWithEmail,
         closeAuthentication = closeAuthentication,
@@ -65,23 +67,6 @@ internal fun RootAuthScreen(
     closeAuthentication: () -> Unit = {},
 ) {
     val authState by viewModel.authState.collectAsStateWithLifecycle()
-    val translator = LocalAppTranslator.current
-    val uriHandler = LocalUriHandler.current
-    val registerHereLink = "https://crisiscleanup.org/register"
-    val iNeedHelpCleaningLink = "https://crisiscleanup.org/survivor"
-    val isBusy = false
-
-    val clearStateOnBack = remember(viewModel) {
-        {
-            viewModel.clearState()
-            closeAuthentication()
-        }
-    }
-
-    BackHandler(!isBusy) {
-        clearStateOnBack()
-    }
-
     when (authState) {
         is AuthState.Loading -> {
             Box(Modifier.fillMaxSize()) {
@@ -90,18 +75,10 @@ internal fun RootAuthScreen(
         }
 
         is AuthState.Authenticated -> {
-            val onCloseScreen = remember(viewModel, closeAuthentication) {
-                {
-                    closeAuthentication()
-                }
-            }
             val isKeyboardOpen = rememberIsKeyboardOpen()
             val closeKeyboard = rememberCloseKeyboard(viewModel)
-            val accData =
-                (authState as AuthState.Authenticated).accountData // Access the accountData property
-            val _authState = AuthenticationState(accountData = accData)
+            val accountData = (authState as AuthState.Authenticated).accountData
             Box(modifier) {
-                // TODO Scroll when content is longer than screen height with keyboard open
                 Column(
                     Modifier
                         .scrollFlingListener(closeKeyboard)
@@ -112,104 +89,27 @@ internal fun RootAuthScreen(
                         CrisisCleanupLogoRow()
                     }
                     AuthenticatedScreen(
-                        authState = _authState,
-                        closeAuthentication = onCloseScreen,
+                        accountData,
+                        closeAuthentication,
                     )
                 }
             }
         }
 
         is AuthState.NotAuthenticated -> {
-            Column {
-                CrisisCleanupLogoRow()
-                Text(
-                    modifier = listItemModifier.testTag("loginHeaderText"),
-                    text = translator("actions.login", R.string.login),
-                    style = LocalFontStyles.current.header1,
-                )
-                Column(
-                    modifier = fillWidthPadded,
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                ) {
-                    BusyButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .testTag("loginLoginWithEmailBtn"),
-                        onClick = openLoginWithEmail,
-                        enabled = !isBusy,
-                        text = translator("~~Login with Email", R.string.loginWithEmail),
-                        indicateBusy = isBusy,
-                    )
-                    BusyButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .testTag("loginLoginWithPhoneBtn"),
-                        onClick = {},
-                        enabled = false, // !isBusy,
-                        text = translator("~~Login with Cell Phone", R.string.loginWithPhone),
-                        indicateBusy = isBusy,
-                    )
-                    CrisisCleanupOutlinedButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .testTag("loginVolunteerWithOrgBtn"),
-                        onClick = {},
-                        enabled = false, // !isBusy,
-                        text = translator(
-                            "~~Volunteer with Your Org",
-                            R.string.volunteerWithYourOrg,
-                        ),
-                    )
-                    // TODO Open in WebView?
-                    CrisisCleanupOutlinedButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .testTag("loginNeedHelpCleaningBtn"),
-                        onClick = {
-                            uriHandler.openUri(iNeedHelpCleaningLink)
-                        },
-                        enabled = !isBusy,
-                        text = translator(
-                            "~~I need help cleaning up",
-                            R.string.iNeedHelpCleaningUp,
-                        ),
-                    )
-                }
-                Column(
-                    modifier = fillWidthPadded,
-                ) {
-                    val linkText = translator("~~Register here", R.string.registerHere)
-                    val spannableString = SpannableString(linkText).apply {
-                        setSpan(
-                            URLSpan(registerHereLink),
-                            0,
-                            length,
-                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
-                        )
-                    }
-                    Text(
-                        modifier = Modifier.testTag("loginReliefOrgAndGovText"),
-                        text = translator(
-                            "~~Relief organizations and government only.",
-                            R.string.reliefOrgAndGovOnly,
-                        ),
-                    )
-                    LinkifyText(
-                        modifier = Modifier.testTag("loginRegisterHereLink"),
-                        text = spannableString,
-                        linkify = { textView ->
-                            textView.movementMethod = LinkMovementMethod.getInstance()
-                        },
-                    )
-                }
-            }
+            val hasAuthenticated = (authState as AuthState.NotAuthenticated).hasAuthenticated
+            NotAuthenticatedScreen(
+                openLoginWithEmail = openLoginWithEmail,
+                closeAuthentication = closeAuthentication,
+                hasAuthenticated = hasAuthenticated,
+            )
         }
     }
 }
 
 @Composable
-internal fun AuthenticatedScreen(
-    authState: AuthenticationState,
+private fun AuthenticatedScreen(
+    accountData: AccountData,
     closeAuthentication: () -> Unit = {},
     viewModel: AuthenticationViewModel = hiltViewModel(),
 ) {
@@ -218,8 +118,8 @@ internal fun AuthenticatedScreen(
     Text(
         modifier = fillWidthPadded.testTag("authedProfileAccountInfo"),
         text = translator("info.account_is")
-            .replace("{full_name}", authState.accountData.fullName)
-            .replace("{email_address}", authState.accountData.emailAddress),
+            .replace("{full_name}", accountData.fullName)
+            .replace("{email_address}", accountData.emailAddress),
     )
 
     val authErrorMessage by viewModel.errorMessage
@@ -246,11 +146,118 @@ internal fun AuthenticatedScreen(
     )
 }
 
+@Composable
+private fun NotAuthenticatedScreen(
+    openLoginWithEmail: () -> Unit = {},
+    closeAuthentication: () -> Unit = {},
+    hasAuthenticated: Boolean = false,
+) {
+    val translator = LocalAppTranslator.current
+    val uriHandler = LocalUriHandler.current
+    val registerHereLink = "https://crisiscleanup.org/register"
+    val iNeedHelpCleaningLink = "https://crisiscleanup.org/survivor"
+
+    Column {
+        CrisisCleanupLogoRow()
+
+        Text(
+            modifier = listItemModifier.testTag("loginHeaderText"),
+            text = translator("actions.login", R.string.login),
+            style = LocalFontStyles.current.header1,
+        )
+
+        Column(
+            modifier = fillWidthPadded,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            BusyButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("loginLoginWithEmailBtn"),
+                onClick = openLoginWithEmail,
+                text = translator("~~Login with Email", R.string.loginWithEmail),
+            )
+            BusyButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("loginLoginWithPhoneBtn"),
+                onClick = {},
+                enabled = false, // !isBusy,
+                text = translator("~~Login with Cell Phone", R.string.loginWithPhone),
+            )
+            CrisisCleanupOutlinedButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("loginVolunteerWithOrgBtn"),
+                onClick = {},
+                enabled = false, // !isBusy,
+                text = translator(
+                    "~~Volunteer with Your Org",
+                    R.string.volunteerWithYourOrg,
+                ),
+            )
+            // TODO Open in WebView?
+            CrisisCleanupOutlinedButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("loginNeedHelpCleaningBtn"),
+                onClick = {
+                    uriHandler.openUri(iNeedHelpCleaningLink)
+                },
+                enabled = true,
+                text = translator(
+                    "~~I need help cleaning up",
+                    R.string.iNeedHelpCleaningUp,
+                ),
+            )
+        }
+
+        Column(
+            modifier = fillWidthPadded,
+        ) {
+            val linkText = translator("~~Register here", R.string.registerHere)
+            val spannableString = SpannableString(linkText).apply {
+                setSpan(
+                    URLSpan(registerHereLink),
+                    0,
+                    length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+                )
+            }
+            Text(
+                modifier = Modifier.testTag("loginReliefOrgAndGovText"),
+                text = translator(
+                    "~~Relief organizations and government only.",
+                    R.string.reliefOrgAndGovOnly,
+                ),
+            )
+            LinkifyText(
+                modifier = Modifier.testTag("loginRegisterHereLink"),
+                text = spannableString,
+                linkify = { textView ->
+                    textView.movementMethod = LinkMovementMethod.getInstance()
+                },
+            )
+        }
+
+        if (hasAuthenticated) {
+            LinkAction(
+                "actions.back",
+                modifier = Modifier
+                    .listItemPadding()
+                    .testTag("rootAuthBackBtn"),
+                arrangement = Arrangement.Start,
+                enabled = true,
+                action = closeAuthentication,
+            )
+        }
+    }
+}
+
 @DayNightPreviews
 @Composable
-fun RootLoginScreenPreview() {
+private fun RootLoginScreenPreview() {
     CrisisCleanupTheme {
-        val mockAuthState = AuthenticationState(emptyAccountData)
         RootAuthScreen()
     }
 }

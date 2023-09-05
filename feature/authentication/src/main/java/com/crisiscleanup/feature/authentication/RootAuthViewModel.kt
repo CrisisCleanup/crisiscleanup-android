@@ -18,7 +18,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RootAuthViewModel @Inject constructor(
-    private val accountDataRepository: AccountDataRepository,
+    accountDataRepository: AccountDataRepository,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.Auth) private val logger: AppLogger,
 ) : ViewModel() {
@@ -27,7 +27,7 @@ class RootAuthViewModel @Inject constructor(
             if (it.areTokensValid) {
                 AuthState.Authenticated(it)
             } else {
-                AuthState.NotAuthenticated
+                AuthState.NotAuthenticated(it.hasAuthenticated)
             }
         }
         .stateIn(
@@ -43,5 +43,5 @@ class RootAuthViewModel @Inject constructor(
 sealed interface AuthState {
     data object Loading : AuthState
     data class Authenticated(val accountData: AccountData) : AuthState
-    data object NotAuthenticated : AuthState
+    data class NotAuthenticated(val hasAuthenticated: Boolean) : AuthState
 }
