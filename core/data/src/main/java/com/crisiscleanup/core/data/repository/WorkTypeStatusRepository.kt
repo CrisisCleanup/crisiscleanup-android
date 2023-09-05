@@ -43,7 +43,7 @@ class CrisisCleanupWorkTypeStatusRepository @Inject constructor(
     override var workTypeStatusFilterOptions = MutableStateFlow(emptyList<WorkTypeStatus>())
 
     override suspend fun loadStatuses(force: Boolean) {
-        if (statusLookup.isNotEmpty()) {
+        if (!force && statusLookup.isNotEmpty()) {
             return
         }
 

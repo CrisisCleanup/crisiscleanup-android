@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "com/crisiscleanup/core/data/app_end_use.proto";
+import "com/crisiscleanup/core/data/app_min_use.proto";
 
 option java_package = "com.crisiscleanup.core.datastore";
 option java_multiple_files = true;
@@ -12,4 +13,6 @@ message AppMetrics {
   int64 appOpenVersion = 3;
 
   int64 productionApiSwitchVersion = 4;
+
+  AppMinUseProto minBuildSupport = 5;
 }

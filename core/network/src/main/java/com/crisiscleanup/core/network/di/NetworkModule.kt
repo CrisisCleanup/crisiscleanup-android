@@ -13,6 +13,8 @@ import com.crisiscleanup.core.network.CrisisCleanupAuthApi
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.CrisisCleanupWriteApi
 import com.crisiscleanup.core.network.RetrofitInterceptorProvider
+import com.crisiscleanup.core.network.appsupport.AppSupportApiClient
+import com.crisiscleanup.core.network.appsupport.AppSupportClient
 import com.crisiscleanup.core.network.fake.FakeAssetManager
 import com.crisiscleanup.core.network.retrofit.AccountApiClient
 import com.crisiscleanup.core.network.retrofit.AuthApiClient
@@ -51,6 +53,9 @@ interface NetworkInterfaceModule {
 
     @Binds
     fun bindsAccountApiClient(apiClient: AccountApiClient): CrisisCleanupAccountApi
+
+    @Binds
+    fun bindsAppSupportApiClient(apiClient: AppSupportApiClient): AppSupportClient
 }
 
 @Module

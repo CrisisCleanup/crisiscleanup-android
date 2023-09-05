@@ -8,9 +8,6 @@ data class UserData(
     val darkThemeConfig: DarkThemeConfig,
     val shouldHideOnboarding: Boolean,
 
-    val saveCredentialsPromptCount: Int,
-    val disableSaveCredentialsPrompt: Boolean,
-
     val syncAttempt: SyncAttempt,
 
     val selectedIncidentId: Long,

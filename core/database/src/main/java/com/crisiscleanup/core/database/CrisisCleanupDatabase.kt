@@ -4,6 +4,7 @@ import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.crisiscleanup.core.common.DatabaseOperator
 import com.crisiscleanup.core.common.DatabaseVersionProvider
 import com.crisiscleanup.core.database.DatabaseMigrations.Schema10To11
 import com.crisiscleanup.core.database.DatabaseMigrations.Schema18To19
@@ -147,9 +148,16 @@ import com.crisiscleanup.core.database.util.InstantConverter
 @TypeConverters(
     InstantConverter::class,
 )
-abstract class CrisisCleanupDatabase : RoomDatabase(), DatabaseVersionProvider {
+abstract class CrisisCleanupDatabase :
+    RoomDatabase(),
+    DatabaseVersionProvider,
+    DatabaseOperator {
     override val databaseVersion: Int
         get() = openHelper.readableDatabase.version
+
+    override fun clearAllTables() {
+        clearAllTables()
+    }
 
     abstract fun incidentDao(): IncidentDao
     abstract fun locationDao(): LocationDao

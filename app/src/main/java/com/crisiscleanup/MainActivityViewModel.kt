@@ -1,7 +1,5 @@
 package com.crisiscleanup
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -21,6 +19,8 @@ import com.crisiscleanup.core.commonassets.getDisasterIcon
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.AppDataManagementRepository
+import com.crisiscleanup.core.data.repository.ClearAppDataStep.*
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppMetricsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
@@ -31,11 +31,13 @@ import com.crisiscleanup.core.model.data.AppOpenInstant
 import com.crisiscleanup.core.model.data.BuildEndOfLife
 import com.crisiscleanup.core.model.data.EarlybirdEndOfLifeFallback
 import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.model.data.MinSupportedAppVersion
 import com.crisiscleanup.core.model.data.UserData
 import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -54,19 +56,20 @@ import kotlin.time.Duration.Companion.hours
 @HiltViewModel
 class MainActivityViewModel @Inject constructor(
     localAppPreferencesRepository: LocalAppPreferencesRepository,
-    private val localAppMetricsRepository: LocalAppMetricsRepository,
+    private val appMetricsRepository: LocalAppMetricsRepository,
     accountDataRepository: AccountDataRepository,
     incidentSelector: IncidentSelector,
     val appHeaderUiState: AppHeaderUiState,
     incidentsRepository: IncidentsRepository,
     worksitesRepository: WorksitesRepository,
+    appDataRepository: AppDataManagementRepository,
     accountDataRefresher: AccountDataRefresher,
     val translator: KeyResourceTranslator,
     private val syncPuller: SyncPuller,
     private val appVersionProvider: AppVersionProvider,
     private val appEnv: AppEnv,
     firebaseAnalytics: FirebaseAnalytics,
-    private val authEventBus: AuthEventBus,
+    authEventBus: AuthEventBus,
     @Dispatcher(IO) ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : ViewModel() {
@@ -79,7 +82,7 @@ class MainActivityViewModel @Inject constructor(
 
     val uiState = combine(
         localAppPreferencesRepository.userPreferences,
-        localAppMetricsRepository.metrics.distinctUntilChanged(),
+        appMetricsRepository.metrics.distinctUntilChanged(),
         ::Pair,
     )
         .map { (preferences, metrics) ->
@@ -129,6 +132,7 @@ class MainActivityViewModel @Inject constructor(
         incidentSelector.incidentId,
         worksitesRepository.syncWorksitesFullIncidentId,
     ) { incidentId, syncingIncidentId -> incidentId == syncingIncidentId }
+
     val showHeaderLoading = combine(
         incidentsRepository.isLoading,
         worksitesRepository.isLoading,
@@ -151,8 +155,21 @@ class MainActivityViewModel @Inject constructor(
             return null
         }
 
+    val supportedApp: MinSupportedAppVersion?
+        get() {
+            if (appEnv.isProduction) {
+                (uiState.value as? MainActivityUiState.Success)?.let {
+                    return it.appMetrics.minSupportedAppVersion
+                }
+            }
+            return null
+        }
+
     // TODO Build route to auth/forgot-password rather than switches through the hierarchy
     val showPasswordReset = authEventBus.showResetPassword
+
+    val isSwitchingToProduction: StateFlow<Boolean>
+    val productionSwitchMessage: StateFlow<String>
 
     init {
         accountDataRepository.accountData
@@ -181,7 +198,18 @@ class MainActivityViewModel @Inject constructor(
         syncPuller.appPullLanguage()
         syncPuller.appPullStatuses()
 
-        // TODO Check for inconsistent data
+        val switchProductionApiManager = SwitchProductionApiManager(
+            appMetricsRepository,
+            appDataRepository,
+            logger,
+            viewModelScope,
+        )
+        uiState
+            .filter { it is MainActivityUiState.Success }
+            .onEach { switchProductionApiManager.switchToProduction() }
+            .launchIn(viewModelScope)
+        isSwitchingToProduction = switchProductionApiManager.isSwitchingToProduction
+        productionSwitchMessage = switchProductionApiManager.productionSwitchMessage
     }
 
     private fun sync(cancelOngoing: Boolean) {
@@ -191,39 +219,10 @@ class MainActivityViewModel @Inject constructor(
     fun onAppOpen() {
         initialAppOpen.get()?.let {
             viewModelScope.launch {
-                val previousOpen = localAppMetricsRepository.metrics.first().appOpen
+                val previousOpen = appMetricsRepository.metrics.first().appOpen
                 if (Clock.System.now() - previousOpen.date > 1.hours) {
-                    localAppMetricsRepository.setAppOpen(appVersionProvider.versionCode)
+                    appMetricsRepository.setAppOpen(appVersionProvider.versionCode)
                 }
-            }
-        }
-    }
-
-    fun processMainIntent(intent: Intent) {
-        when (val action = intent.action) {
-            Intent.ACTION_VIEW -> {
-                intent.data?.let { intentUri ->
-                    intentUri.path?.let { urlPath ->
-                        processMainIntent(intentUri, urlPath)
-                    }
-                }
-            }
-
-            else -> {
-                logger.logDebug("Main intent action not handled $action")
-            }
-        }
-    }
-
-    private fun processMainIntent(url: Uri, urlPath: String) {
-        if (urlPath.startsWith("/o/callback")) {
-            url.getQueryParameter("code")?.let { code ->
-                authEventBus.onEmailLoginLink(code)
-            }
-        } else if (urlPath.startsWith("/password/reset/")) {
-            val code = urlPath.replace("/password/reset/", "")
-            if (code.isNotBlank()) {
-                authEventBus.onResetPassword(code)
             }
         }
     }

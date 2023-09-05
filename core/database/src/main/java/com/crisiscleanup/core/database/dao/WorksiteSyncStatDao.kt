@@ -69,6 +69,10 @@ interface WorksiteSyncStatDao {
     fun upsert(stats: IncidentWorksitesFullSyncStatsEntity)
 
     @Transaction
+    @Query("SELECT COUNT(*) FROM worksite_sync_stats")
+    fun getTableCount(): Long
+
+    @Transaction
     @Query("UPDATE incident_worksites_full_sync_stats SET synced_at=NULL WHERE incident_id=:incidentId")
     fun resetFullSync(incidentId: Long)
 

@@ -196,4 +196,6 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     }
 
     override suspend fun getMatchingIncidents(q: String) = incidentDaoPlus.getMatchingIncidents(q)
+
+    override suspend fun getTableCount() = incidentDao.getIncidentCount()
 }

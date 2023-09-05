@@ -20,10 +20,13 @@ import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.model.data.BuildEndOfLife
+import com.crisiscleanup.core.model.data.MinSupportedAppVersion
 
 @Composable
-internal fun EndOfLifeView(
-    endOfLife: BuildEndOfLife,
+private fun DisabledAppView(
+    title: String,
+    message: String,
+    link: String,
 ) {
     Column(
         listItemModifier.fillMaxSize(),
@@ -38,27 +41,49 @@ internal fun EndOfLifeView(
 
         Spacer(Modifier.height(24.dp))
 
-        if (endOfLife.title.isNotBlank()) {
+        if (title.isNotBlank()) {
             Text(
-                endOfLife.title,
+                title,
                 Modifier.padding(vertical = 8.dp),
                 style = LocalFontStyles.current.header2,
             )
         }
 
         Text(
-            text = endOfLife.message,
+            text = message,
             Modifier.padding(vertical = 8.dp),
         )
 
-        if (URLUtil.isValidUrl(endOfLife.link)) {
+        if (URLUtil.isValidUrl(link)) {
             val uriHandler = LocalUriHandler.current
             Text(
-                text = endOfLife.link,
+                text = link,
                 Modifier
                     .padding(vertical = 8.dp)
-                    .clickable { uriHandler.openUri(endOfLife.link) },
+                    .clickable { uriHandler.openUri(link) },
             )
         }
     }
+}
+
+@Composable
+internal fun EndOfLifeView(
+    endOfLife: BuildEndOfLife,
+) {
+    DisabledAppView(
+        title = endOfLife.title,
+        message = endOfLife.message,
+        link = endOfLife.link,
+    )
+}
+
+@Composable
+internal fun UnsupportedBuildView(
+    supportedVersion: MinSupportedAppVersion,
+) {
+    DisabledAppView(
+        title = supportedVersion.title,
+        message = supportedVersion.message,
+        link = supportedVersion.link,
+    )
 }
