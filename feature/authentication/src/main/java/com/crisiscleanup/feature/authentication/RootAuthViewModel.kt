@@ -35,9 +35,6 @@ class RootAuthViewModel @Inject constructor(
             initialValue = AuthState.Loading,
             started = SharingStarted.WhileSubscribed(),
         )
-
-    fun clearState() {
-    }
 }
 
 sealed interface AuthState {
