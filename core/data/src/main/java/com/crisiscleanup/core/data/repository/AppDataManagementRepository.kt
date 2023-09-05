@@ -90,8 +90,13 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
         }
 
         externalScope.launch(ioDispatcher) {
+            clearAppDataError = ClearAppDataStep.None
+
             try {
-                clearAppDataError = ClearAppDataStep.None
+                if (incidentsRepository.getTableCount() == 0) {
+                    appMetricsRepository.setProductionApiSwitch()
+                    return@launch
+                }
 
                 accountDataRepository.clearAccountTokens()
 
