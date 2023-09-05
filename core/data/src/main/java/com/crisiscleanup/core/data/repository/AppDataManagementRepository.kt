@@ -63,6 +63,7 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
     private val worksiteSyncStatDao: WorksiteSyncStatDao,
     private val appMetricsRepository: AppMetricsRepository,
     private val languageTranslationsRepository: LanguageTranslationsRepository,
+    private val workTypeStatusRepository: WorkTypeStatusRepository,
     private val authEventBus: AuthEventBus,
     @ApplicationScope private val externalScope: CoroutineScope,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
@@ -133,6 +134,7 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
                 _clearingAppDataStep.value = ClearAppDataStep.Cleared
 
                 languageTranslationsRepository.loadLanguages(true)
+                workTypeStatusRepository.loadStatuses(true)
             } finally {
                 _clearingAppDataStep.value = ClearAppDataStep.None
                 isClearingAppData.getAndSet(false)

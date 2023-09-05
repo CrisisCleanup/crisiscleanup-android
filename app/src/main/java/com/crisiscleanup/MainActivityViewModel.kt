@@ -1,7 +1,5 @@
 package com.crisiscleanup
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -39,6 +37,7 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -50,7 +49,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.hours
@@ -71,7 +69,7 @@ class MainActivityViewModel @Inject constructor(
     private val appVersionProvider: AppVersionProvider,
     private val appEnv: AppEnv,
     firebaseAnalytics: FirebaseAnalytics,
-    private val authEventBus: AuthEventBus,
+    authEventBus: AuthEventBus,
     @Dispatcher(IO) ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : ViewModel() {
@@ -134,6 +132,7 @@ class MainActivityViewModel @Inject constructor(
         incidentSelector.incidentId,
         worksitesRepository.syncWorksitesFullIncidentId,
     ) { incidentId, syncingIncidentId -> incidentId == syncingIncidentId }
+
     val showHeaderLoading = combine(
         incidentsRepository.isLoading,
         worksitesRepository.isLoading,
@@ -169,42 +168,8 @@ class MainActivityViewModel @Inject constructor(
     // TODO Build route to auth/forgot-password rather than switches through the hierarchy
     val showPasswordReset = authEventBus.showResetPassword
 
-    private val hasRunSwitchover = AtomicBoolean()
-    private val productionSwitchStep = appDataRepository.clearingAppDataStep
-        .map {
-            if (appDataRepository.clearAppDataError != None) {
-                logger.logException(Exception("Switchover failed $it"))
-            } else {
-                logger.logCapture("Switchover on $it")
-            }
-            it
-        }
-    val isSwitchingToProduction = productionSwitchStep
-        .map { it != None }
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = false,
-            started = SharingStarted.WhileSubscribed(),
-        )
-
-    private val productionSwitchMessageLookup = mapOf(
-        None to "Getting ready...",
-        StopSyncPull to "Stopping background data sync...",
-        SyncPush to "Saving changes to cloud...",
-        ClearData to "Clearing existing data...",
-        DatabaseNotCleared to "Unable to clear data",
-        FinalClear to "Finalizing",
-        Cleared to "App is ready!",
-    )
-    val productionSwitchMessage = productionSwitchStep
-        .map {
-            productionSwitchMessageLookup[it] ?: "Something is happening..."
-        }
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = "",
-            started = SharingStarted.WhileSubscribed(),
-        )
+    val isSwitchingToProduction: StateFlow<Boolean>
+    val productionSwitchMessage: StateFlow<String>
 
     init {
         accountDataRepository.accountData
@@ -233,18 +198,18 @@ class MainActivityViewModel @Inject constructor(
         syncPuller.appPullLanguage()
         syncPuller.appPullStatuses()
 
-        if (!appEnv.isDebuggable) {
-            uiState
-                .filter {
-                    it is MainActivityUiState.Success &&
-                        !hasRunSwitchover.getAndSet(true) &&
-                        it.appMetrics.switchToProductionApiVersion < 143
-                }
-                .onEach {
-                    appDataRepository.clearAppData()
-                }
-                .launchIn(viewModelScope)
-        }
+        val switchProductionApiManager = SwitchProductionApiManager(
+            appMetricsRepository,
+            appDataRepository,
+            logger,
+            viewModelScope,
+        )
+        uiState
+            .filter { it is MainActivityUiState.Success }
+            .onEach { switchProductionApiManager.switchToProduction() }
+            .launchIn(viewModelScope)
+        isSwitchingToProduction = switchProductionApiManager.isSwitchingToProduction
+        productionSwitchMessage = switchProductionApiManager.productionSwitchMessage
     }
 
     private fun sync(cancelOngoing: Boolean) {
@@ -258,35 +223,6 @@ class MainActivityViewModel @Inject constructor(
                 if (Clock.System.now() - previousOpen.date > 1.hours) {
                     appMetricsRepository.setAppOpen(appVersionProvider.versionCode)
                 }
-            }
-        }
-    }
-
-    fun processMainIntent(intent: Intent) {
-        when (val action = intent.action) {
-            Intent.ACTION_VIEW -> {
-                intent.data?.let { intentUri ->
-                    intentUri.path?.let { urlPath ->
-                        processMainIntent(intentUri, urlPath)
-                    }
-                }
-            }
-
-            else -> {
-                logger.logDebug("Main intent action not handled $action")
-            }
-        }
-    }
-
-    private fun processMainIntent(url: Uri, urlPath: String) {
-        if (urlPath.startsWith("/o/callback")) {
-            url.getQueryParameter("code")?.let { code ->
-                authEventBus.onEmailLoginLink(code)
-            }
-        } else if (urlPath.startsWith("/password/reset/")) {
-            val code = urlPath.replace("/password/reset/", "")
-            if (code.isNotBlank()) {
-                authEventBus.onResetPassword(code)
             }
         }
     }

@@ -83,6 +83,9 @@ class MainActivity : ComponentActivity() {
     internal lateinit var visualAlertManager: VisualAlertManager
 
     @Inject
+    internal lateinit var intentProcessor: ExternalIntentProcessor
+
+    @Inject
     internal lateinit var endOfLifeRepository: EndOfLifeRepository
 
     @Inject
@@ -151,7 +154,7 @@ class MainActivity : ComponentActivity() {
         }
 
         intent?.let {
-            viewModel.processMainIntent(it)
+            intentProcessor.processMainIntent(it)
         }
     }
 
