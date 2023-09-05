@@ -13,6 +13,8 @@ import com.crisiscleanup.feature.authentication.navigation.loginWithEmailScreen
 import com.crisiscleanup.feature.authentication.navigation.navigateToEmailLoginLink
 import com.crisiscleanup.feature.authentication.navigation.navigateToForgotPassword
 import com.crisiscleanup.feature.authentication.navigation.navigateToLoginWithEmail
+import com.crisiscleanup.feature.authentication.navigation.navigateToSurvivorInfo
+import com.crisiscleanup.feature.authentication.navigation.survivorInfoScreen
 
 @Composable
 fun CrisisCleanupAuthNavHost(
@@ -25,6 +27,8 @@ fun CrisisCleanupAuthNavHost(
 ) {
     val navToLoginWithEmail =
         remember(navController) { { navController.navigateToLoginWithEmail() } }
+    val navToSurvivorInfo =
+        remember(navController) { { navController.navigateToSurvivorInfo() } }
     val navToForgotPassword =
         remember(navController) { { navController.navigateToForgotPassword() } }
     val navToEmailMagicLink =
@@ -52,8 +56,15 @@ fun CrisisCleanupAuthNavHost(
                         )
                     },
                 )
+                survivorInfoScreen(
+                    onBack = onBack,
+                    enableBackHandler = enableBackHandler,
+                    closeAuthentication = closeAuthentication,
+                    nestedGraphs = {},
+                )
             },
             openLoginWithEmail = navToLoginWithEmail,
+            openSurvivorInfo = navToSurvivorInfo,
             closeAuthentication = closeAuthentication,
         )
     }

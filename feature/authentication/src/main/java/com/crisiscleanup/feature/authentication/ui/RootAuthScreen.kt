@@ -49,10 +49,12 @@ import com.crisiscleanup.feature.authentication.model.AuthenticationState
 fun RootAuthRoute(
     modifier: Modifier = Modifier,
     openLoginWithEmail: () -> Unit = {},
+    openSurvivorInfo: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
 ) {
     RootAuthScreen(
         openLoginWithEmail = openLoginWithEmail,
+        openSurvivorInfo = openSurvivorInfo,
         closeAuthentication = closeAuthentication,
     )
 }
@@ -62,6 +64,7 @@ internal fun RootAuthScreen(
     modifier: Modifier = Modifier,
     viewModel: RootAuthViewModel = hiltViewModel(),
     openLoginWithEmail: () -> Unit = {},
+    openSurvivorInfo: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
 ) {
     val authState by viewModel.authState.collectAsStateWithLifecycle()
@@ -165,9 +168,7 @@ internal fun RootAuthScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .testTag("loginNeedHelpCleaningBtn"),
-                        onClick = {
-                            uriHandler.openUri(iNeedHelpCleaningLink)
-                        },
+                        onClick = openSurvivorInfo,
                         enabled = !isBusy,
                         text = translator(
                             "~~I need help cleaning up",
