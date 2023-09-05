@@ -53,6 +53,7 @@ fun RootAuthRoute(
     closeAuthentication: () -> Unit = {},
 ) {
     RootAuthScreen(
+        modifier = modifier,
         openLoginWithEmail = openLoginWithEmail,
         openSurvivorInfo = openSurvivorInfo,
         closeAuthentication = closeAuthentication,
