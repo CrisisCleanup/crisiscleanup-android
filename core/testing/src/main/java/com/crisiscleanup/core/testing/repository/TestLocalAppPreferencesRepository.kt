@@ -14,8 +14,6 @@ private val emptyUserData = UserData(
     darkThemeConfig = DarkThemeConfig.FOLLOW_SYSTEM,
     shouldHideOnboarding = false,
     syncAttempt = SyncAttempt(0, 0, 0),
-    saveCredentialsPromptCount = 0,
-    disableSaveCredentialsPrompt = false,
     selectedIncidentId = -1,
     languageKey = "",
     tableViewSortBy = WorksiteSortBy.None,
@@ -38,18 +36,6 @@ class TestLocalAppPreferencesRepository : LocalAppPreferencesRepository {
     override suspend fun setShouldHideOnboarding(shouldHideOnboarding: Boolean) {
         currentUserData.let { current ->
             _userData.tryEmit(current.copy(shouldHideOnboarding = shouldHideOnboarding))
-        }
-    }
-
-    override suspend fun incrementSaveCredentialsPrompt() {
-        currentUserData.let { current ->
-            _userData.tryEmit(current.copy(saveCredentialsPromptCount = current.saveCredentialsPromptCount + 1))
-        }
-    }
-
-    override suspend fun setDisableSaveCredentialsPrompt(disable: Boolean) {
-        currentUserData.let { current ->
-            _userData.tryEmit(current.copy(disableSaveCredentialsPrompt = disable))
         }
     }
 

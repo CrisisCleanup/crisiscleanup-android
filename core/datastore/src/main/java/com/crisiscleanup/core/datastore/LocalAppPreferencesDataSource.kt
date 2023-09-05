@@ -34,9 +34,6 @@ class LocalAppPreferencesDataSource @Inject constructor(
                 },
                 shouldHideOnboarding = it.shouldHideOnboarding,
 
-                saveCredentialsPromptCount = it.saveCredentialsPromptCount,
-                disableSaveCredentialsPrompt = it.disableSaveCredentialsPrompt,
-
                 syncAttempt = SyncAttempt(
                     it.syncAttempt.successfulSeconds,
                     it.syncAttempt.attemptedSeconds,
@@ -93,18 +90,6 @@ class LocalAppPreferencesDataSource @Inject constructor(
             it.copy {
                 syncAttempt = attempt
             }
-        }
-    }
-
-    suspend fun incrementSaveCredentialsPrompt() {
-        userPreferences.updateData {
-            it.copy { saveCredentialsPromptCount++ }
-        }
-    }
-
-    suspend fun setDisableSaveCredentialsPrompt(disable: Boolean) {
-        userPreferences.updateData {
-            it.copy { disableSaveCredentialsPrompt = disable }
         }
     }
 

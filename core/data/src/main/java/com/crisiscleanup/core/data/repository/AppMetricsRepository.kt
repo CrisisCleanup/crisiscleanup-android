@@ -1,6 +1,7 @@
 package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.common.AppEnv
+import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
@@ -32,12 +33,15 @@ interface LocalAppMetricsRepository {
     )
 
     fun saveAppSupportInfo()
+
+    suspend fun setProductionApiSwitch()
 }
 
 @Singleton
 class AppMetricsRepository @Inject constructor(
     private val dataSource: LocalAppMetricsDataSource,
     private val appSupportNetworkDataSource: AppSupportClient,
+    private val appVersionProvider: AppVersionProvider,
     private val appEnv: AppEnv,
     @ApplicationScope private val externalScope: CoroutineScope,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
@@ -76,5 +80,9 @@ class AppMetricsRepository @Inject constructor(
                 }
             }
         }
+    }
+
+    override suspend fun setProductionApiSwitch() {
+        dataSource.setProductionApiSwitch(appVersionProvider.versionCode)
     }
 }

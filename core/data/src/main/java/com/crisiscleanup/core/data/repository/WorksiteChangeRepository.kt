@@ -70,6 +70,8 @@ interface WorksiteChangeRepository {
     suspend fun syncUnattemptedWorksite(worksiteId: Long)
 
     suspend fun syncWorksiteMedia(): Boolean
+
+    suspend fun getTableCount(): Long
 }
 
 internal const val MAX_SYNC_TRIES = 3
@@ -440,4 +442,6 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
         }
         return isSyncedAll
     }
+
+    override suspend fun getTableCount() = worksiteChangeDao.getTableCount()
 }

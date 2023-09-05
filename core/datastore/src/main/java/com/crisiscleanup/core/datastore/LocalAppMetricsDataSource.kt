@@ -81,4 +81,12 @@ class LocalAppMetricsDataSource @Inject constructor(
             }
         }
     }
+
+    suspend fun setProductionApiSwitch(appVersion: Long) {
+        appMetrics.updateData {
+            it.copy {
+                productionApiSwitchVersion = appVersion
+            }
+        }
+    }
 }

@@ -24,7 +24,10 @@ class AppSupportApiClient @Inject constructor(
     private val api = basicRetrofit.create(AppSupportApi::class.java)
 
     override suspend fun getAppSupportInfo(isTest: Boolean) = api.getAppSupportInfo(
-        if (isTest) "https://crisis-cleanup-app-support-5vzbp64o2a-uc.a.run.app/min-supported-version/test/android"
-        else "https://crisis-cleanup-app-support-5vzbp64o2a-uc.a.run.app/min-supported-version/android",
+        if (isTest) {
+            "https://crisis-cleanup-app-support-5vzbp64o2a-uc.a.run.app/min-supported-version/test/android"
+        } else {
+            "https://crisis-cleanup-app-support-5vzbp64o2a-uc.a.run.app/min-supported-version/android"
+        },
     )
 }

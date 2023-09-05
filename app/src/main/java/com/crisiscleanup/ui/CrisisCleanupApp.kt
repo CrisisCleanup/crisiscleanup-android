@@ -111,8 +111,11 @@ fun CrisisCleanupApp(
                 }
             }
 
+            val isSwitchingToProduction by viewModel.isSwitchingToProduction.collectAsStateWithLifecycle()
             val authState by viewModel.authState.collectAsStateWithLifecycle()
-            if (authState is AuthState.Loading) {
+            if (isSwitchingToProduction) {
+                SwitchToProductionView()
+            } else if (authState is AuthState.Loading) {
                 // Splash screen should be showing
             } else {
                 CompositionLocalProvider(LocalAppTranslator provides translator) {

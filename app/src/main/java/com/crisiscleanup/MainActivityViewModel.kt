@@ -21,6 +21,8 @@ import com.crisiscleanup.core.commonassets.getDisasterIcon
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.AppDataManagementRepository
+import com.crisiscleanup.core.data.repository.ClearAppDataStep.*
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppMetricsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
@@ -48,6 +50,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.hours
@@ -61,6 +64,7 @@ class MainActivityViewModel @Inject constructor(
     val appHeaderUiState: AppHeaderUiState,
     incidentsRepository: IncidentsRepository,
     worksitesRepository: WorksitesRepository,
+    appDataRepository: AppDataManagementRepository,
     accountDataRefresher: AccountDataRefresher,
     val translator: KeyResourceTranslator,
     private val syncPuller: SyncPuller,
@@ -165,6 +169,43 @@ class MainActivityViewModel @Inject constructor(
     // TODO Build route to auth/forgot-password rather than switches through the hierarchy
     val showPasswordReset = authEventBus.showResetPassword
 
+    private val hasRunSwitchover = AtomicBoolean()
+    private val productionSwitchStep = appDataRepository.clearingAppDataStep
+        .map {
+            if (appDataRepository.clearAppDataError != None) {
+                logger.logException(Exception("Switchover failed $it"))
+            } else {
+                logger.logCapture("Switchover on $it")
+            }
+            it
+        }
+    val isSwitchingToProduction = productionSwitchStep
+        .map { it != None }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    private val productionSwitchMessageLookup = mapOf(
+        None to "Getting ready...",
+        StopSyncPull to "Stopping background data sync...",
+        SyncPush to "Saving changes to cloud...",
+        ClearData to "Clearing existing data...",
+        DatabaseNotCleared to "Unable to clear data",
+        FinalClear to "Finalizing",
+        Cleared to "App is ready!",
+    )
+    val productionSwitchMessage = productionSwitchStep
+        .map {
+            productionSwitchMessageLookup[it] ?: "Something is happening..."
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = "",
+            started = SharingStarted.WhileSubscribed(),
+        )
+
     init {
         accountDataRepository.accountData
             .onEach {
@@ -192,7 +233,18 @@ class MainActivityViewModel @Inject constructor(
         syncPuller.appPullLanguage()
         syncPuller.appPullStatuses()
 
-        // TODO Check for inconsistent data
+        if (!appEnv.isDebuggable) {
+            uiState
+                .filter {
+                    it is MainActivityUiState.Success &&
+                        !hasRunSwitchover.getAndSet(true) &&
+                        it.appMetrics.switchToProductionApiVersion < 143
+                }
+                .onEach {
+                    appDataRepository.clearAppData()
+                }
+                .launchIn(viewModelScope)
+        }
     }
 
     private fun sync(cancelOngoing: Boolean) {
