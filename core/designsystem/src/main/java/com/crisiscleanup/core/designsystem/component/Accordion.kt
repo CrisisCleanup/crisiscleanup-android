@@ -32,7 +32,7 @@ fun Accordion(
 ) {
     var isCollapsed by remember { mutableStateOf(initiallyCollapsed) }
     val rotation: Float by animateFloatAsState(
-        if (!isCollapsed) 180f else 0f,
+        if (isCollapsed) 180f else 0f,
         label = "rotation",
     )
     Column(modifier = modifier) {
