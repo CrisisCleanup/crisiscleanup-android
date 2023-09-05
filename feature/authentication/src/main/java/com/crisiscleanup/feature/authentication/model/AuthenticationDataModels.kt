@@ -29,5 +29,4 @@ data class AuthenticationState(
     val accountData: AccountData = emptyAccountData,
 ) {
     val hasAuthenticated = accountData.hasAuthenticated
-    val isAccountValid = accountData.areTokensValid
 }
