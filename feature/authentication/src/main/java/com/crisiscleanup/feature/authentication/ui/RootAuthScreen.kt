@@ -151,13 +151,20 @@ private fun NotAuthenticatedScreen(
     openLoginWithEmail: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
     hasAuthenticated: Boolean = false,
+    viewModel: AuthenticationViewModel = hiltViewModel(),
 ) {
     val translator = LocalAppTranslator.current
     val uriHandler = LocalUriHandler.current
     val registerHereLink = "https://crisiscleanup.org/register"
     val iNeedHelpCleaningLink = "https://crisiscleanup.org/survivor"
+    val closeKeyboard = rememberCloseKeyboard(viewModel)
 
-    Column {
+    Column(
+        Modifier
+            .scrollFlingListener(closeKeyboard)
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+    ) {
         CrisisCleanupLogoRow()
 
         Text(

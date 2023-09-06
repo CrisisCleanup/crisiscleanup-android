@@ -1,42 +1,47 @@
 {
   "project_info": {
-    "project_number": "1067310599740",
-    "project_id": "crisiscleanup-nonp",
-    "storage_bucket": "crisiscleanup-nonp.appspot.com"
+    "project_number": "195749754575",
+    "project_id": "crisiscleanup-201303",
+    "storage_bucket": "crisiscleanup-201303.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1067310599740:android:673666ffae8bbcf9cdbd39",
+        "mobilesdk_app_id": "1:195749754575:android:b5ebc346fae9ae6d5629ba",
         "android_client_info": {
           "package_name": "com.crisiscleanup.demo"
         }
       },
       "oauth_client": [
         {
-          "client_id": "1067310599740-j6n1g6ri63bjnv1kim8hdr1abvv3vjee.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.crisiscleanup.demo",
-            "certificate_hash": "3fff15c4f25b14dc1af8ec6ad141c41ff6389008"
-          }
-        },
-        {
-          "client_id": "1067310599740-nijdtdhiq6m894rl041qlj5he88r2sca.apps.googleusercontent.com",
+          "client_id": "195749754575-jo9qnkcr6jba6cpafpqssl875e7k4h5g.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAyTq79XEHhzymXR7QVs6vFLlywCs_FHrY"
+          "current_key": "AIzaSyDSgGO5JeCPrcU5st210HXNKfDh73NyxK4"
+        },
+        {
+          "current_key": "AIzaSyCeH9raPhrgf5BjF5XjVarE2p5tqAj1ZTY"
+        },
+        {
+          "current_key": "AIzaSyB_pmgeE4bqn1uL7MWourybTTwWUtXNVOw"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "1067310599740-nijdtdhiq6m894rl041qlj5he88r2sca.apps.googleusercontent.com",
+              "client_id": "195749754575-jo9qnkcr6jba6cpafpqssl875e7k4h5g.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "195749754575-04vduf0klrmrq64v4d8r06adab242n5p.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.crisiscleanup.stg"
+              }
             }
           ]
         }
@@ -44,36 +49,125 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1067310599740:android:6ffa605ea7acced8cdbd39",
+        "mobilesdk_app_id": "1:195749754575:android:c25ed00acfa070b15629ba",
         "android_client_info": {
           "package_name": "com.crisiscleanup.demo.debug"
         }
       },
       "oauth_client": [
         {
-          "client_id": "1067310599740-v2kpr08rdjpudl1jvcjse714s71i0pdk.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.crisiscleanup.demo.debug",
-            "certificate_hash": "3fff15c4f25b14dc1af8ec6ad141c41ff6389008"
-          }
-        },
-        {
-          "client_id": "1067310599740-nijdtdhiq6m894rl041qlj5he88r2sca.apps.googleusercontent.com",
+          "client_id": "195749754575-jo9qnkcr6jba6cpafpqssl875e7k4h5g.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAyTq79XEHhzymXR7QVs6vFLlywCs_FHrY"
+          "current_key": "AIzaSyDSgGO5JeCPrcU5st210HXNKfDh73NyxK4"
+        },
+        {
+          "current_key": "AIzaSyCeH9raPhrgf5BjF5XjVarE2p5tqAj1ZTY"
+        },
+        {
+          "current_key": "AIzaSyB_pmgeE4bqn1uL7MWourybTTwWUtXNVOw"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "1067310599740-nijdtdhiq6m894rl041qlj5he88r2sca.apps.googleusercontent.com",
+              "client_id": "195749754575-jo9qnkcr6jba6cpafpqssl875e7k4h5g.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "195749754575-04vduf0klrmrq64v4d8r06adab242n5p.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.crisiscleanup.stg"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:195749754575:android:10dd97324c5ddaa15629ba",
+        "android_client_info": {
+          "package_name": "com.crisiscleanup.earlybird"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "195749754575-jo9qnkcr6jba6cpafpqssl875e7k4h5g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDSgGO5JeCPrcU5st210HXNKfDh73NyxK4"
+        },
+        {
+          "current_key": "AIzaSyCeH9raPhrgf5BjF5XjVarE2p5tqAj1ZTY"
+        },
+        {
+          "current_key": "AIzaSyB_pmgeE4bqn1uL7MWourybTTwWUtXNVOw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "195749754575-jo9qnkcr6jba6cpafpqssl875e7k4h5g.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "195749754575-04vduf0klrmrq64v4d8r06adab242n5p.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.crisiscleanup.stg"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:195749754575:android:ce70a335d010af825629ba",
+        "android_client_info": {
+          "package_name": "com.crisiscleanup.prod"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "195749754575-jo9qnkcr6jba6cpafpqssl875e7k4h5g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDSgGO5JeCPrcU5st210HXNKfDh73NyxK4"
+        },
+        {
+          "current_key": "AIzaSyCeH9raPhrgf5BjF5XjVarE2p5tqAj1ZTY"
+        },
+        {
+          "current_key": "AIzaSyB_pmgeE4bqn1uL7MWourybTTwWUtXNVOw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "195749754575-jo9qnkcr6jba6cpafpqssl875e7k4h5g.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "195749754575-04vduf0klrmrq64v4d8r06adab242n5p.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.crisiscleanup.stg"
+              }
             }
           ]
         }
