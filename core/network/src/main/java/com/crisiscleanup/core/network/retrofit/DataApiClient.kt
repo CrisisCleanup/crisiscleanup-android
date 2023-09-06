@@ -191,6 +191,12 @@ private interface DataSourceApi {
         @Query("id__in")
         ids: String,
     ): NetworkUsersResult
+
+    @GET("/cms")
+    suspend fun getCms(
+        @Query("tags")
+        tags: String,
+    ): CmsApiResult
 }
 
 private val worksiteCoreDataFields = listOf(
@@ -393,6 +399,12 @@ class DataApiClient @Inject constructor(
         networkApi.getUsers(ids.joinToString(","))
             .let {
                 it.errors?.tryThrowException()
+                it.results ?: emptyList()
+            }
+
+    override suspend fun getCms(tags: List<String>) =
+        networkApi.getCms(tags.joinToString(","))
+            .let {
                 it.results ?: emptyList()
             }
 }

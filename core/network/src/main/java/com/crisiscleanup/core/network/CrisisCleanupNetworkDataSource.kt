@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.network
 
+import com.crisiscleanup.core.network.model.CmsResultItem
 import com.crisiscleanup.core.network.model.InitiatePasswordResetResult
 import com.crisiscleanup.core.network.model.NetworkAuthResult
 import com.crisiscleanup.core.network.model.NetworkCaseHistoryEvent
@@ -126,4 +127,6 @@ interface CrisisCleanupNetworkDataSource {
     suspend fun getCaseHistory(worksiteId: Long): List<NetworkCaseHistoryEvent>
 
     suspend fun getUsers(ids: Collection<Long>): List<NetworkPersonContact>
+
+    suspend fun getCms(tags: List<String>): List<CmsResultItem>
 }
