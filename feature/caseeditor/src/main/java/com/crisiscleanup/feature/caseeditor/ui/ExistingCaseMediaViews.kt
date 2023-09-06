@@ -226,7 +226,7 @@ internal fun PhotosSection(
                                         .size(24.dp)
                                         .padding(4.dp),
                                     imageVector = CrisisCleanupIcons.Cloud,
-                                    contentDescription = translator("~~Awaiting cloud sync"),
+                                    contentDescription = translator("info.awaiting_cloud_sync"),
                                 )
                             }
                         }

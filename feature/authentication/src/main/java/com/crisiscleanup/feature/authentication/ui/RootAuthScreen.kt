@@ -175,7 +175,7 @@ private fun NotAuthenticatedScreen(
                     .fillMaxWidth()
                     .testTag("loginLoginWithEmailBtn"),
                 onClick = openLoginWithEmail,
-                text = translator("~~Login with Email", R.string.loginWithEmail),
+                text = translator("loginForm.login_with_email", R.string.loginWithEmail),
             )
             BusyButton(
                 modifier = Modifier
@@ -183,7 +183,7 @@ private fun NotAuthenticatedScreen(
                     .testTag("loginLoginWithPhoneBtn"),
                 onClick = {},
                 enabled = false, // !isBusy,
-                text = translator("~~Login with Cell Phone", R.string.loginWithPhone),
+                text = translator("loginForm.login_with_cell", R.string.loginWithPhone),
             )
             CrisisCleanupOutlinedButton(
                 modifier = Modifier
@@ -192,7 +192,7 @@ private fun NotAuthenticatedScreen(
                 onClick = {},
                 enabled = false, // !isBusy,
                 text = translator(
-                    "~~Volunteer with Your Org",
+                    "actions.request_access",
                     R.string.volunteerWithYourOrg,
                 ),
             )
@@ -206,7 +206,7 @@ private fun NotAuthenticatedScreen(
                 },
                 enabled = true,
                 text = translator(
-                    "~~I need help cleaning up",
+                    "loginForm.need_help_cleaning_up",
                     R.string.iNeedHelpCleaningUp,
                 ),
             )
@@ -215,7 +215,7 @@ private fun NotAuthenticatedScreen(
         Column(
             modifier = fillWidthPadded,
         ) {
-            val linkText = translator("~~Register here", R.string.registerHere)
+            val linkText = translator("actions.register", R.string.registerHere)
             val spannableString = SpannableString(linkText).apply {
                 setSpan(
                     URLSpan(registerHereLink),
@@ -227,7 +227,7 @@ private fun NotAuthenticatedScreen(
             Text(
                 modifier = Modifier.testTag("loginReliefOrgAndGovText"),
                 text = translator(
-                    "~~Relief organizations and government only.",
+                    "publicNav.relief_orgs_only",
                     R.string.reliefOrgAndGovOnly,
                 ),
             )

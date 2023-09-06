@@ -597,7 +597,7 @@ class ExistingCaseViewModel @Inject constructor(
             val messageTranslateKey = if (changedWorksite.isLocalFavorite) {
                 "caseView.member_my_org"
             } else {
-                "~~Not member of my organization"
+                "actions.not_member_of_my_org"
             }
             actionDescriptionMessage.value = translate(messageTranslateKey)
         }

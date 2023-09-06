@@ -49,7 +49,7 @@ fun PasswordRecoverRoute(
     if (showForgotPassword) {
         titleKey = "invitationSignup.forgot_password"
     } else if (showResetPassword) {
-        titleKey = "~~Reset Password"
+        titleKey = "actions.reset_password"
     }
 
     val emailAddress by viewModel.emailAddress.collectAsStateWithLifecycle()
@@ -180,7 +180,7 @@ private fun ForgotPasswordView(
         modifier = fillWidthPadded.testTag("forgotPasswordBtn"),
         onClick = viewModel::onInitiatePasswordReset,
         enabled = isEditable,
-        text = translator("~~Reset Password"),
+        text = translator("actions.reset_password"),
         indicateBusy = isBusy,
     )
 }
@@ -279,7 +279,7 @@ private fun PasswordResetNotPossibleView() {
     val translator = LocalAppTranslator.current
 
     Text(
-        translator("~~Password reset is not possible. Retry Forgot Password again."),
+        translator("resetPassword.password_reset_not_possible"),
         listItemModifier,
     )
 }

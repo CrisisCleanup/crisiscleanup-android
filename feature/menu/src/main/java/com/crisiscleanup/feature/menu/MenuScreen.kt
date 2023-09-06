@@ -73,7 +73,7 @@ internal fun MenuScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    "~~Share analytics",
+                    "actions.share_analytics",
                     Modifier.weight(1f),
                 )
                 Switch(
