@@ -12,6 +12,17 @@ class CrisisCleanupAppEnv @Inject constructor() : AppEnv {
 
     override val isEarlybird = BuildConfig.IS_EARLYBIRD_BUILD
 
+    override val apiEnvironment: String
+        get() {
+            val apiUrl = BuildConfig.API_BASE_URL
+            return when {
+                apiUrl.startsWith("https://api.dev.crisiscleanup.io") -> "Dev"
+                apiUrl.startsWith("https://api.staging.crisiscleanup.io") -> "Staging"
+                apiUrl.startsWith("https://api.crisiscleanup.org") -> "Production"
+                else -> "Local?"
+            }
+        }
+
     override fun runInNonProd(block: () -> Unit) {
         if (isNotProduction) {
             block()

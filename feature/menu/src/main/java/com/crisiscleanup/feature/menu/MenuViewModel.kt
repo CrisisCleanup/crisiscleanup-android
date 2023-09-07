@@ -28,7 +28,7 @@ class MenuViewModel @Inject constructor(
     private val accountDataRefresher: AccountDataRefresher,
     private val appVersionProvider: AppVersionProvider,
     private val appPreferencesRepository: LocalAppPreferencesRepository,
-    appEnv: AppEnv,
+    private val appEnv: AppEnv,
     private val syncPuller: SyncPuller,
     private val databaseVersionProvider: DatabaseVersionProvider,
     @ApplicationScope private val externalScope: CoroutineScope,
@@ -40,11 +40,7 @@ class MenuViewModel @Inject constructor(
     val versionText: String
         get() {
             val version = appVersionProvider.version
-            return if (isNotProduction) {
-                "${version.second} (${version.first})"
-            } else {
-                version.second
-            }
+            return "${version.second} (${version.first}) ${appEnv.apiEnvironment} Android"
         }
 
     val databaseVersionText: String
