@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.Accordion
 import com.crisiscleanup.core.designsystem.component.LinkifyHtmlText
@@ -86,10 +87,8 @@ private fun SurvivorInfoScreen(
             }
             Column {
                 survivorInfo.forEach {
-                    val title = it.title.replace("{", "").replace("}", "")
-                    val content =
-                        it.content
-                            .replace("{", "").replace("}", "")
+                    val title = translateContent(it.title, t)
+                    val content = translateContent(it.content, t)
                     Log.d("SURVIVOR", "T: $title, C: $content")
                     Accordion(
                         title = title,
@@ -103,5 +102,13 @@ private fun SurvivorInfoScreen(
                 }
             }
         }
+    }
+}
+
+fun translateContent(content: String, t: KeyResourceTranslator): String {
+    val regex = "\\{(.+?)\\}".toRegex()
+    return regex.replace(content) { matchResult ->
+        val key = matchResult.groupValues[1]
+        t(key)
     }
 }
