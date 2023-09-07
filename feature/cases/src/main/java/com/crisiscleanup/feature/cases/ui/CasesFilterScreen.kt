@@ -554,8 +554,8 @@ private fun LazyListScope.distanceOptions(
         if (showRequestLocationPermission) {
             item {
                 val translator = LocalAppTranslator.current
-                val messageKey = "~~Filtering by distance requires access to location"
-                val actionKey = "~~Grant access to location"
+                val messageKey = "info.distance_filter_requires_location"
+                val actionKey = "actions.grant_access_location"
 
                 Column(
                     listItemModifier,

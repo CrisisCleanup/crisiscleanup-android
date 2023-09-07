@@ -108,7 +108,7 @@ class PasswordRecoverViewModel @Inject constructor(
                     isPasswordResetInitiated.value = true
                 } else {
                     forgotPasswordErrorMessage.value = result.errorMessage.ifBlank {
-                        translator("~~There was an issue with starting the reset password process. Try again later.")
+                        translator("info.reset_password_start_error")
                     }
                 }
             } finally {
@@ -137,7 +137,7 @@ class PasswordRecoverViewModel @Inject constructor(
                     isMagicLinkInitiated.value = true
                 } else {
                     magicLinkErrorMessage.value =
-                        translator("~~There was an issue with sending a magic link. Try again later.")
+                        translator("info.magic_link_error")
                 }
             } finally {
                 isInitiatingMagicLink.value = false
@@ -182,7 +182,7 @@ class PasswordRecoverViewModel @Inject constructor(
                     clearState()
                 } else {
                     resetPasswordErrorMessage.value =
-                        translator("~~There was an issue with reset password. Restart from Forgot Password or try again later.")
+                        translator("info.reset_password_error")
                 }
             } finally {
                 isResettingPassword.value = false
