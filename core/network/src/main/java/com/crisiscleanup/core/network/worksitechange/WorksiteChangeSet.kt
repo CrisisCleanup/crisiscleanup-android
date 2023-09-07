@@ -12,6 +12,7 @@ data class WorksiteChangeSet(
     val extraNotes: List<Pair<Long, NetworkNote>> = emptyList(),
     val flagChanges: Pair<List<Pair<Long, NetworkFlag>>, Collection<Long>> =
         Pair(emptyList(), emptyList()),
+    val newWorkTypes: Map<String, WorkTypeChange> = emptyMap(),
     val workTypeChanges: List<WorkTypeChange> = emptyList(),
 ) {
     val hasNonCoreChanges: Boolean
@@ -19,5 +20,6 @@ data class WorksiteChangeSet(
             extraNotes.isNotEmpty() ||
             flagChanges.first.isNotEmpty() ||
             flagChanges.second.isNotEmpty() ||
+            newWorkTypes.isNotEmpty() ||
             workTypeChanges.isNotEmpty()
 }

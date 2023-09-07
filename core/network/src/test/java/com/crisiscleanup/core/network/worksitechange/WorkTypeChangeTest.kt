@@ -11,7 +11,7 @@ import kotlin.time.Duration.Companion.days
 
 class WorkTypeChangeTest {
     private val emptyChangesResult = Triple(
-        emptyList<Pair<Long, WorkTypeSnapshot.WorkType>>(),
+        emptyMap<String, WorkTypeChange>(),
         emptyList<WorkTypeChange>(),
         emptyList<Long>(),
     )
@@ -125,14 +125,18 @@ class WorkTypeChangeTest {
         val actual = worksite.getWorkTypeChanges(start, change, updatedAtA)
         assertEquals(
             emptyChangesResult.copy(
-                first = listOf(
-                    Pair(
-                        59,
-                        WorkTypeSnapshot.WorkType(
+                first = mapOf(
+                    "work-type-a" to WorkTypeChange(
+                        localId = 59,
+                        networkId = -1,
+                        workType = WorkTypeSnapshot.WorkType(
                             -1,
                             workType = "work-type-a",
                             status = "status-b",
                         ),
+                        changedAt = updatedAtA,
+                        isClaimChange = true,
+                        isStatusChange = true,
                     ),
                 ),
             ),
@@ -220,10 +224,11 @@ class WorkTypeChangeTest {
 
         val actual = worksite.getWorkTypeChanges(emptyList(), change, updatedAtA)
 
-        val expectedChanges = listOf(
-            Pair(
+        val expectedChanges = mapOf(
+            "work-type-a" to WorkTypeChange(
                 59L,
-                WorkTypeSnapshot.WorkType(
+                networkId = -1L,
+                workType = WorkTypeSnapshot.WorkType(
                     id = -1,
                     createdAt = null,
                     orgClaim = null,
@@ -233,6 +238,9 @@ class WorkTypeChangeTest {
                     status = "status-b",
                     workType = "work-type-a",
                 ),
+                changedAt = updatedAtA,
+                isClaimChange = true,
+                isStatusChange = true,
             ),
         )
         assertEquals(emptyChangesResult.copy(first = expectedChanges), actual)
