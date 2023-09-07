@@ -39,6 +39,7 @@ fun CrisisCleanupAuthNavHost(
             nestedGraphs = {
                 loginWithEmailScreen(
                     onBack = onBack,
+                    closeAuthentication = closeAuthentication,
                     openForgotPassword = navToForgotPassword,
                     openEmailMagicLink = navToEmailMagicLink,
                     nestedGraphs = {

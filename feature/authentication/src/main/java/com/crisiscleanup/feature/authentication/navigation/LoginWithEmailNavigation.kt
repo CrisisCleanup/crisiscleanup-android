@@ -13,12 +13,14 @@ fun NavController.navigateToLoginWithEmail() {
 fun NavGraphBuilder.loginWithEmailScreen(
     nestedGraphs: NavGraphBuilder.() -> Unit,
     onBack: () -> Unit,
+    closeAuthentication: () -> Unit,
     openForgotPassword: () -> Unit,
     openEmailMagicLink: () -> Unit,
 ) {
     composable(route = loginWithEmailRoute) {
         LoginWithEmailRoute(
             onBack = onBack,
+            closeAuthentication = closeAuthentication,
             openForgotPassword = openForgotPassword,
             openEmailMagicLink = openEmailMagicLink,
         )

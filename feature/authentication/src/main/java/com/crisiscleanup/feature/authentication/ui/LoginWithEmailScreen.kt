@@ -47,6 +47,7 @@ import com.crisiscleanup.feature.authentication.model.AuthenticationState
 fun LoginWithEmailRoute(
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
+    closeAuthentication: () -> Unit = {},
     openForgotPassword: () -> Unit = {},
     openEmailMagicLink: () -> Unit = {},
     viewModel: AuthenticationViewModel = hiltViewModel(),
@@ -59,10 +60,10 @@ fun LoginWithEmailRoute(
             showResetPassword = true,
         )
     } else {
-        val onCloseScreen = remember(viewModel, onBack) {
+        val onCloseScreen = remember(viewModel, closeAuthentication) {
             {
                 viewModel.onCloseScreen()
-                onBack()
+                closeAuthentication()
             }
         }
 
@@ -101,7 +102,7 @@ fun LoginWithEmailRoute(
                             onBack = onBack,
                             openForgotPassword = openForgotPassword,
                             openEmailMagicLink = openEmailMagicLink,
-                            closeAuthentication = onCloseScreen,
+                            closeAuthentication = closeAuthentication,
                         )
                         Spacer(modifier = Modifier.weight(1f))
                     }
