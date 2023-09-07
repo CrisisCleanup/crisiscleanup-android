@@ -5,5 +5,7 @@ interface AppEnv {
     val isProduction: Boolean
     val isNotProduction: Boolean
     val isEarlybird: Boolean
+
+    val apiEnvironment: String
     fun runInNonProd(block: () -> Unit)
 }
