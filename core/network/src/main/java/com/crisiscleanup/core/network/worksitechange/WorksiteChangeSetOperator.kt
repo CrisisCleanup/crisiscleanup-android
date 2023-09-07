@@ -73,7 +73,7 @@ class WorksiteChangeSetOperator @Inject constructor() {
             if (coreB.isAssignedToOrgMember) true else null,
             snapshot.getNewNetworkNotes(emptyMap()),
             Pair(snapshot.flags.map { Pair(it.localId, it.asNetworkFlag()) }, emptyList()),
-            workTypeChanges,
+            workTypeChanges = workTypeChanges,
         )
     }
 
@@ -91,8 +91,7 @@ class WorksiteChangeSetOperator @Inject constructor() {
 
         val updatedAt = coreB.updatedAt ?: Clock.System.now()
 
-        // TODO Aren't new and delete operations dictated by form data?
-        val (_, workTypeChanges, _) = base.getWorkTypeChanges(
+        val (newWorkTypes, workTypeChanges, _) = base.getWorkTypeChanges(
             start.workTypes,
             change.workTypes,
             updatedAt,
@@ -125,6 +124,7 @@ class WorksiteChangeSetOperator @Inject constructor() {
             isAssignedToOrgMember,
             newNotes,
             flagChanges,
+            newWorkTypes,
             workTypeChanges,
         )
     }
@@ -345,7 +345,7 @@ internal fun NetworkWorksiteFull.getWorkTypeChanges(
     change: List<WorkTypeSnapshot>,
     changedAt: Instant,
     workTypeIdLookup: Map<Long, Long> = emptyMap(),
-): Triple<List<Pair<Long, WorkTypeSnapshot.WorkType>>, List<WorkTypeChange>, Collection<Long>> {
+): Triple<Map<String, WorkTypeChange>, List<WorkTypeChange>, Collection<Long>> {
     val existingWorkTypes = newestWorkTypes.associate {
         with(it) {
             val workTypeCopy = WorkTypeSnapshot.WorkType(
@@ -419,7 +419,7 @@ internal fun NetworkWorksiteFull.getWorkTypeChanges(
         .filter(WorkTypeChange::hasChange)
 
     if (newWorkTypes.isEmpty() && deletedWorkTypes.isEmpty() && changedWorkTypes.isEmpty()) {
-        return Triple(emptyList(), emptyList(), emptyList())
+        return Triple(emptyMap(), emptyList(), emptyList())
     }
 
     val modified = newWorkTypes.associateBy { it.workType.workType }
@@ -452,7 +452,8 @@ internal fun NetworkWorksiteFull.getWorkTypeChanges(
             }
         }
         .filter(WorkTypeChange::hasChange)
-    val create = modified.filter { it.networkId <= 0 }.map { Pair(it.localId, it.workType) }
+    val create = modified.filter { it.networkId <= 0 }
+        .associateBy { it.workType.workType }
     val changing = modified.filter { it.networkId > 0 }
 
     return Triple(create, changing, deletedWorkTypes)

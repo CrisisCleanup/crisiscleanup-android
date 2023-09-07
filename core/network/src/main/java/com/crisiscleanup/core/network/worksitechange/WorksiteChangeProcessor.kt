@@ -235,7 +235,12 @@ class WorksiteChangeProcessor(
 
             result = syncNotes(changeCreatedAt, changeSet.extraNotes, result)
 
-            result = syncWorkTypes(changeCreatedAt, changeSet.workTypeChanges, result)
+            result = syncWorkTypes(
+                changeCreatedAt,
+                changeSet.newWorkTypes,
+                changeSet.workTypeChanges,
+                result,
+            )
 
             result = result.copy(isFullySynced = true)
 
@@ -342,12 +347,61 @@ class WorksiteChangeProcessor(
 
     private suspend fun syncWorkTypes(
         changeAt: Instant,
+        newWorkTypes: Map<String, WorkTypeChange>,
         workTypeChanges: List<WorkTypeChange>,
         baseResult: SyncChangeSetResult,
     ): SyncChangeSetResult {
         val workTypeStatusExceptions = mutableMapOf<Long, Exception>()
+        val workTypeClaimExceptions = mutableMapOf<String, Exception>()
         val claimWorkTypes = mutableSetOf<String>()
         val unclaimWorkTypes = mutableSetOf<String>()
+
+        var hasClaimChange = false
+
+        if (newWorkTypes.isNotEmpty()) {
+            val networkWorkTypes = getNetworkWorksite().newestWorkTypes
+            val claimNewWorkTypes = mutableSetOf<String>()
+            for (workType in networkWorkTypes) {
+                newWorkTypes[workType.workType]?.let {
+                    val status = it.workType.status
+                    if (status != workType.status) {
+                        try {
+                            val syncedWorkType =
+                                writeApiClient.updateWorkTypeStatus(
+                                    changeAt,
+                                    workType.id!!,
+                                    status,
+                                )
+                            workTypeIdMap[it.localId] = syncedWorkType.id!!
+                            syncLogger.log("Synced work type status $it.localId (${syncedWorkType.id}).")
+                        } catch (e: Exception) {
+                            ensureSyncConditions()
+                            workTypeStatusExceptions[it.localId] = e
+                        }
+                    }
+
+                    if (it.workType.orgClaim != null) {
+                        claimNewWorkTypes.add(it.workType.workType)
+                    }
+                }
+            }
+
+            if (claimNewWorkTypes.isNotEmpty()) {
+                try {
+                    writeApiClient.claimWorkTypes(
+                        changeAt,
+                        networkWorksiteId,
+                        claimNewWorkTypes,
+                    )
+                    hasClaimChange = true
+                    syncLogger.log("Synced work type claim ${claimNewWorkTypes.joinToString(", ")}.")
+                } catch (e: Exception) {
+                    ensureSyncConditions()
+                    workTypeClaimExceptions[claimNewWorkTypes.joinToString(", ")] = e
+                }
+            }
+        }
+
         for (workTypeChange in workTypeChanges) {
             val localId = workTypeChange.localId
             val workType = workTypeChange.workType
@@ -371,11 +425,9 @@ class WorksiteChangeProcessor(
             }
         }
 
-        var hasClaimChange = false
         val workTypeOrgLookup =
             getNetworkWorksite().newestWorkTypes.associate { it.workType to it.orgClaim }
 
-        var workTypeClaimException: Exception? = null
         val networkClaimWorkTypes = claimWorkTypes.filter { workTypeOrgLookup[it] == null }
         // Do not call to API with empty arrays as it may indicate all.
         if (networkClaimWorkTypes.isNotEmpty()) {
@@ -385,7 +437,7 @@ class WorksiteChangeProcessor(
                 syncLogger.log("Synced work type claim ${networkClaimWorkTypes.joinToString(", ")}.")
             } catch (e: Exception) {
                 ensureSyncConditions()
-                workTypeClaimException = e
+                workTypeClaimExceptions[networkClaimWorkTypes.joinToString(", ")] = e
             }
         }
 
@@ -413,7 +465,7 @@ class WorksiteChangeProcessor(
         return baseResult.copy(
             hasClaimChange = hasClaimChange,
             workTypeStatusExceptions = workTypeStatusExceptions,
-            workTypeClaimException = workTypeClaimException,
+            workTypeClaimExceptions = workTypeClaimExceptions,
             workTypeUnclaimException = workTypeUnclaimException,
         )
     }
@@ -540,7 +592,7 @@ internal data class SyncChangeSetResult(
     val deleteFlagExceptions: Map<Long, Exception> = emptyMap(),
     val noteExceptions: Map<Long, Exception> = emptyMap(),
     val workTypeStatusExceptions: Map<Long, Exception> = emptyMap(),
-    val workTypeClaimException: Exception? = null,
+    val workTypeClaimExceptions: Map<String, Exception> = emptyMap(),
     val workTypeUnclaimException: Exception? = null,
     val workTypeRequestException: Exception? = null,
     val workTypeReleaseException: Exception? = null,
@@ -553,7 +605,7 @@ internal data class SyncChangeSetResult(
                 ?: deleteFlagExceptions.values.firstOrNull()
                 ?: noteExceptions.values.firstOrNull()
                 ?: workTypeStatusExceptions.values.firstOrNull()
-                ?: workTypeClaimException
+                ?: workTypeClaimExceptions.values.firstOrNull()
                 ?: workTypeUnclaimException
                 ?: workTypeRequestException
                 ?: workTypeReleaseException
@@ -579,7 +631,7 @@ internal data class SyncChangeSetResult(
             ?.message?.joinToString(", ")
             ?: message ?: ""
 
-    private fun summarizeExceptions(key: String, exceptions: Map<Long, Exception>): String {
+    private fun <T> summarizeExceptions(key: String, exceptions: Map<T, Exception>): String {
         if (exceptions.isNotEmpty()) {
             val summary = exceptions
                 .map { "  ${it.key}: ${it.value.errorMessage}" }
@@ -597,7 +649,7 @@ internal data class SyncChangeSetResult(
             summarizeExceptions("Delete flags", deleteFlagExceptions),
             summarizeExceptions("Notes", noteExceptions),
             summarizeExceptions("Work type status", workTypeStatusExceptions),
-            workTypeClaimException?.let { "Claim work types: ${it.errorMessage}" },
+            summarizeExceptions("Claim work types", workTypeClaimExceptions),
             workTypeUnclaimException?.let { "Unclaim work types: ${it.errorMessage}" },
             workTypeRequestException?.let { "Request work types: ${it.errorMessage}" },
             workTypeReleaseException?.let { "Release work types: ${it.errorMessage}" },
