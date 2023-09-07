@@ -31,7 +31,8 @@ class SurvivorInfoViewModel @Inject constructor(
             isLoading.value = true
             survivorInfoData.value = networkDataSource.getCms(
                 listOf(
-                    "survivor-info",
+                    "faq",
+                    // "survivor-info",
                 ),
             )
             isLoading.value = false

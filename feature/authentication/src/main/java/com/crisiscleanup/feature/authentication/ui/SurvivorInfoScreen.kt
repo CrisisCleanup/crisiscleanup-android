@@ -98,6 +98,7 @@ private fun SurvivorInfoScreen(
                                 text = content,
                             )
                         },
+                        initiallyCollapsed = true,
                     )
                 }
             }
@@ -111,4 +112,9 @@ fun translateContent(content: String, t: KeyResourceTranslator): String {
         val key = matchResult.groupValues[1]
         t(key)
     }
+}
+
+@Composable
+fun SurvivorInfoLocationHero() {
+
 }
