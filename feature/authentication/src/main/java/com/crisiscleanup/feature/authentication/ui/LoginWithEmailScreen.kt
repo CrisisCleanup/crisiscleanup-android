@@ -52,60 +52,51 @@ fun LoginWithEmailRoute(
     openEmailMagicLink: () -> Unit = {},
     viewModel: AuthenticationViewModel = hiltViewModel(),
 ) {
-    // TODO Push route rather than toggling state
-    val showResetPassword by viewModel.showResetPassword.collectAsStateWithLifecycle(false)
-    if (showResetPassword) {
-        PasswordRecoverRoute(
-            onBack = viewModel::clearResetPassword,
-            showResetPassword = true,
-        )
-    } else {
-        val onCloseScreen = remember(viewModel, closeAuthentication) {
-            {
-                viewModel.onCloseScreen()
-                closeAuthentication()
+    val onCloseScreen = remember(viewModel, closeAuthentication) {
+        {
+            viewModel.onCloseScreen()
+            closeAuthentication()
+        }
+    }
+
+    val isAuthenticateSuccessful by viewModel.isAuthenticateSuccessful.collectAsStateWithLifecycle()
+    if (isAuthenticateSuccessful) {
+        onCloseScreen()
+    }
+
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    when (uiState) {
+        is AuthenticateScreenUiState.Loading -> {
+            Box(Modifier.fillMaxSize()) {
+                CircularProgressIndicator(Modifier.align(Alignment.Center))
             }
         }
 
-        val isAuthenticateSuccessful by viewModel.isAuthenticateSuccessful.collectAsStateWithLifecycle()
-        if (isAuthenticateSuccessful) {
-            onCloseScreen()
-        }
+        is AuthenticateScreenUiState.Ready -> {
+            val isKeyboardOpen = rememberIsKeyboardOpen()
+            val closeKeyboard = rememberCloseKeyboard(viewModel)
 
-        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-        when (uiState) {
-            is AuthenticateScreenUiState.Loading -> {
-                Box(Modifier.fillMaxSize()) {
-                    CircularProgressIndicator(Modifier.align(Alignment.Center))
-                }
-            }
-
-            is AuthenticateScreenUiState.Ready -> {
-                val isKeyboardOpen = rememberIsKeyboardOpen()
-                val closeKeyboard = rememberCloseKeyboard(viewModel)
-
-                val readyState = uiState as AuthenticateScreenUiState.Ready
-                val authState = readyState.authenticationState
-                Box(modifier) {
-                    // TODO Scroll when content is longer than screen height with keyboard open
-                    Column(
-                        Modifier
-                            .scrollFlingListener(closeKeyboard)
-                            .fillMaxSize()
-                            .verticalScroll(rememberScrollState()),
-                    ) {
-                        AnimatedVisibility(visible = !isKeyboardOpen) {
-                            CrisisCleanupLogoRow()
-                        }
-                        LoginWithEmailScreen(
-                            authState,
-                            onBack = onBack,
-                            openForgotPassword = openForgotPassword,
-                            openEmailMagicLink = openEmailMagicLink,
-                            closeAuthentication = closeAuthentication,
-                        )
-                        Spacer(modifier = Modifier.weight(1f))
+            val readyState = uiState as AuthenticateScreenUiState.Ready
+            val authState = readyState.authenticationState
+            Box(modifier) {
+                // TODO Scroll when content is longer than screen height with keyboard open
+                Column(
+                    Modifier
+                        .scrollFlingListener(closeKeyboard)
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState()),
+                ) {
+                    AnimatedVisibility(visible = !isKeyboardOpen) {
+                        CrisisCleanupLogoRow()
                     }
+                    LoginWithEmailScreen(
+                        authState,
+                        onBack = onBack,
+                        openForgotPassword = openForgotPassword,
+                        openEmailMagicLink = openEmailMagicLink,
+                        closeAuthentication = closeAuthentication,
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
                 }
             }
         }

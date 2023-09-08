@@ -67,8 +67,6 @@ class AuthenticationViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(),
     )
 
-    val showResetPassword = authEventBus.showResetPassword
-
     val isAuthenticateSuccessful = MutableStateFlow(false)
 
     val loginInputData = LoginInputData()
@@ -214,10 +212,6 @@ class AuthenticationViewModel @Inject constructor(
             password = ""
         }
         authEventBus.onLogout()
-    }
-
-    fun clearResetPassword() {
-        authEventBus.onResetPassword("")
     }
 }
 
