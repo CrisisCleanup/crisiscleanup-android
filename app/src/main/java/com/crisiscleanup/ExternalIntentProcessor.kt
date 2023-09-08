@@ -12,12 +12,12 @@ class ExternalIntentProcessor @Inject constructor(
     private val authEventBus: AuthEventBus,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) {
-    fun processMainIntent(intent: Intent) {
+    fun processMainIntent(intent: Intent): Boolean {
         when (val action = intent.action) {
             Intent.ACTION_VIEW -> {
                 intent.data?.let { intentUri ->
                     intentUri.path?.let { urlPath ->
-                        processMainIntent(intentUri, urlPath)
+                        return processMainIntent(intentUri, urlPath)
                     }
                 }
             }
@@ -26,9 +26,11 @@ class ExternalIntentProcessor @Inject constructor(
                 logger.logDebug("Main intent action not handled $action")
             }
         }
+
+        return false
     }
 
-    private fun processMainIntent(url: Uri, urlPath: String) {
+    private fun processMainIntent(url: Uri, urlPath: String): Boolean {
         if (urlPath.startsWith("/o/callback")) {
             url.getQueryParameter("code")?.let { code ->
                 authEventBus.onEmailLoginLink(code)
@@ -38,6 +40,9 @@ class ExternalIntentProcessor @Inject constructor(
             if (code.isNotBlank()) {
                 authEventBus.onResetPassword(code)
             }
+        } else {
+            return false
         }
+        return true
     }
 }

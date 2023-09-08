@@ -154,7 +154,12 @@ class MainActivity : ComponentActivity() {
         }
 
         intent?.let {
-            intentProcessor.processMainIntent(it)
+            if (!intentProcessor.processMainIntent(it)) {
+                it.data?.let { dataUri ->
+                    // TODO Open to browser or WebView. Do no loop back here.
+                    logger.logDebug("App link not processed $dataUri")
+                }
+            }
         }
     }
 

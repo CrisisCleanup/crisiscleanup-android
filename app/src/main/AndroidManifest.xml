@@ -49,6 +49,9 @@
                 <data android:scheme="https" />
 
                 <data android:host="${APP_LINK_TLD}" />
+
+                <data android:pathPrefix="/o/callback" />
+                <data android:pathPrefix="/password/reset" />
             </intent-filter>
         </activity>
     </application>
