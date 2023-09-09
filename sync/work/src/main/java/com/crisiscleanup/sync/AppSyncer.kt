@@ -20,6 +20,7 @@ import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.sync.SyncPull.determineSyncSteps
 import com.crisiscleanup.sync.SyncPull.executePlan
 import com.crisiscleanup.sync.initializers.scheduleSyncMedia
+import com.crisiscleanup.sync.initializers.scheduleSyncWorksites
 import com.crisiscleanup.sync.initializers.scheduleSyncWorksitesFull
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
@@ -371,19 +372,23 @@ class AppSyncer @Inject constructor(
 
     override suspend fun syncPushWorksitesAsync(): Deferred<SyncResult> {
         val deferred = applicationScope.async {
-            onSyncPreconditions(true)?.let {
-                return@async SyncResult.PreconditionsNotMet
-            }
-
-            val isSyncAttempted = worksiteChangeRepository.syncWorksites()
-            return@async if (isSyncAttempted) {
-                SyncResult.Success("")
-            } else {
-                SyncResult.NotAttempted("Sync not attempted")
-            }
+            syncPushWorksites()
         }
         pushJob = deferred
         return deferred
+    }
+
+    override suspend fun syncPushWorksites(): SyncResult {
+        onSyncPreconditions(true)?.let {
+            return SyncResult.PreconditionsNotMet
+        }
+
+        val isSyncAttempted = worksiteChangeRepository.syncWorksites()
+        return if (isSyncAttempted) {
+            SyncResult.Success("")
+        } else {
+            SyncResult.NotAttempted("Sync not attempted")
+        }
     }
 
     override suspend fun syncPushMedia(): SyncResult {
@@ -404,4 +409,6 @@ class AppSyncer @Inject constructor(
     }
 
     override fun scheduleSyncMedia() = scheduleSyncMedia(context)
+
+    override fun scheduleSyncWorksites() = scheduleSyncWorksites(context)
 }

@@ -37,6 +37,7 @@ import com.crisiscleanup.core.data.repository.EndOfLifeRepository
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.navigationContainerColor
 import com.crisiscleanup.core.model.data.DarkThemeConfig
+import com.crisiscleanup.sync.initializers.scheduleSyncWorksites
 import com.crisiscleanup.ui.CrisisCleanupApp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.gms.maps.MapsInitializer
@@ -176,6 +177,8 @@ class MainActivity : ComponentActivity() {
 
         endOfLifeRepository.saveEndOfLifeData()
         appMetricsRepository.saveAppSupportInfo()
+
+        scheduleSyncWorksites(this)
     }
 
     override fun onPause() {

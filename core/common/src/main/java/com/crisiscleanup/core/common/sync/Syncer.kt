@@ -29,8 +29,10 @@ interface SyncPusher {
     suspend fun syncPushWorksitesAsync(): Deferred<SyncResult>
     fun stopPushWorksites()
     suspend fun syncPushMedia(): SyncResult
+    suspend fun syncPushWorksites(): SyncResult
 
     fun scheduleSyncMedia()
+    fun scheduleSyncWorksites()
 }
 
 sealed interface SyncResult {
