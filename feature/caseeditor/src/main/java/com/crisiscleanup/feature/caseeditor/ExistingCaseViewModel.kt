@@ -85,6 +85,7 @@ class ExistingCaseViewModel @Inject constructor(
     accountDataRepository: AccountDataRepository,
     private val incidentsRepository: IncidentsRepository,
     organizationsRepository: OrganizationsRepository,
+    organizationRefresher: OrganizationRefresher,
     incidentRefresher: IncidentRefresher,
     incidentBoundsProvider: IncidentBoundsProvider,
     locationProvider: LocationProvider,
@@ -275,6 +276,10 @@ class ExistingCaseViewModel @Inject constructor(
 
         viewModelScope.launch(ioDispatcher) {
             accountDataRefresher.updateMyOrganization(false)
+        }
+
+        viewModelScope.launch(ioDispatcher) {
+            organizationRefresher.pullOrganization(incidentIdArg)
         }
     }
 

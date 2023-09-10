@@ -1,6 +1,7 @@
 package com.crisiscleanup.feature.caseeditor
 
 import com.crisiscleanup.core.common.NetworkMonitor
+import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
 import com.crisiscleanup.core.model.data.EmptyIncident
@@ -54,5 +55,25 @@ class LanguageRefresher @Inject constructor(
                 lastLoadInstant.set(now)
             }
         }
+    }
+}
+
+@Singleton
+class OrganizationRefresher @Inject constructor(
+    private val accountDataRefresher: AccountDataRefresher,
+) {
+    private var incidentIdPull = EmptyIncident.id
+    private var pullTime = Instant.fromEpochSeconds(0)
+
+    suspend fun pullOrganization(incidentId: Long) {
+        if (incidentIdPull == incidentId &&
+            Clock.System.now() - pullTime < 1.hours
+        ) {
+            return
+        }
+        incidentIdPull = EmptyIncident.id
+        pullTime = Clock.System.now()
+
+        accountDataRefresher.updateMyOrganization(true)
     }
 }
