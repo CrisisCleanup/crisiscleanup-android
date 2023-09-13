@@ -123,6 +123,7 @@ class WorkTypeIconProvider @Inject constructor(
         hasMultipleWorkTypes: Boolean,
         isDuplicate: Boolean,
         isFilteredOut: Boolean,
+        isVisited: Boolean,
     ): BitmapDescriptor {
         val cacheKey = WorkTypeIconCacheKey(
             statusClaim,
@@ -132,6 +133,7 @@ class WorkTypeIconProvider @Inject constructor(
             isImportant = isImportant,
             isDuplicate = isDuplicate,
             isFilteredOut = isFilteredOut,
+            isVisited = isVisited,
         )
         synchronized(cache) {
             cache.get(cacheKey)?.let {
@@ -148,6 +150,7 @@ class WorkTypeIconProvider @Inject constructor(
         hasMultipleWorkTypes: Boolean,
         isDuplicate: Boolean,
         isFilteredOut: Boolean,
+        isVisited: Boolean,
     ): Bitmap? {
         val cacheKey = WorkTypeIconCacheKey(
             statusClaim,
@@ -155,6 +158,7 @@ class WorkTypeIconProvider @Inject constructor(
             hasMultipleWorkTypes,
             isDuplicate,
             isFilteredOut,
+            isVisited,
         )
         synchronized(cache) {
             bitmapCache.get(cacheKey)?.let {
@@ -203,7 +207,8 @@ class WorkTypeIconProvider @Inject constructor(
             cacheKey.statusClaim,
             cacheKey.isDuplicate,
             cacheKey.isFilteredOut,
-            false,
+            cacheKey.isVisited,
+            isDot = false,
         )
         val fillAlpha = if (colors.fill.alpha < 1) (colors.fill.alpha * 255).toInt() else 255
 
@@ -322,4 +327,5 @@ private data class WorkTypeIconCacheKey(
     val isImportant: Boolean = false,
     val isDuplicate: Boolean = false,
     val isFilteredOut: Boolean = false,
+    val isVisited: Boolean = false,
 )

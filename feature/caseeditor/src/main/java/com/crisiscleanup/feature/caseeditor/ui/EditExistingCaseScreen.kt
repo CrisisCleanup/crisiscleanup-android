@@ -3,6 +3,7 @@ package com.crisiscleanup.feature.caseeditor.ui
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -70,6 +72,7 @@ import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.filterNotBlankTrim
 import com.crisiscleanup.core.common.urlEncode
 import com.crisiscleanup.core.commoncase.model.addressQuery
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CardSurface
@@ -106,7 +109,6 @@ import com.crisiscleanup.core.model.data.WorksiteFlagType
 import com.crisiscleanup.core.model.data.WorksiteNote
 import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
 import com.crisiscleanup.feature.caseeditor.ExistingCaseViewModel
-import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
 import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.WorkTypeProfile
 import com.crisiscleanup.feature.caseeditor.model.CaseImage
@@ -139,6 +141,7 @@ private val flagColors = mapOf(
 internal fun EditExistingCaseRoute(
     viewModel: ExistingCaseViewModel = hiltViewModel(),
     onBack: () -> Unit = {},
+    onBackToCases: () -> Unit = {},
     onFullEdit: (ExistingWorksiteIdentifier) -> Unit = {},
     openTransferWorkType: () -> Unit = {},
     openPhoto: (ViewImageArgs) -> Unit = { _ -> },
@@ -149,6 +152,11 @@ internal fun EditExistingCaseRoute(
     val isPendingTransfer by viewModel.transferWorkTypeProvider.isPendingTransfer
     if (isPendingTransfer) {
         openTransferWorkType()
+    }
+
+    val jumpToCaseOnMapOnBack by viewModel.jumpToCaseOnMapOnBack.collectAsStateWithLifecycle()
+    if (jumpToCaseOnMapOnBack) {
+        onBackToCases()
     }
 
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
@@ -568,6 +576,8 @@ internal fun EditExistingCaseInfoView(
     val releaseWorkType =
         remember(viewModel) { { workType: WorkType -> viewModel.releaseWorkType(workType) } }
 
+    val distanceAwayText by viewModel.distanceAwayText.collectAsStateWithLifecycle()
+
     LazyColumn {
         item(key = "incident-info") {
             val caseData by viewModel.caseData.collectAsStateWithLifecycle()
@@ -585,7 +595,13 @@ internal fun EditExistingCaseInfoView(
         }
 
         flagItems(worksite, removeFlag)
-        propertyInfoItems(worksite, mapMarkerIcon, copyToClipboard)
+        propertyInfoItems(
+            worksite,
+            mapMarkerIcon,
+            copyToClipboard,
+            distanceAwayText,
+            viewModel::jumpToCaseOnMap,
+        )
         workItems(
             workTypeProfile,
             claimAll = claimAll,
@@ -705,6 +721,8 @@ private fun LazyListScope.propertyInfoItems(
     worksite: Worksite,
     mapMarkerIcon: BitmapDescriptor? = null,
     copyToClipboard: (String?) -> Unit = {},
+    distanceAwayText: String = "",
+    onJumpToCaseOnMap: () -> Unit = {},
 ) {
     itemInfoSectionHeader(0, "caseForm.property_information")
 
@@ -771,6 +789,26 @@ private fun LazyListScope.propertyInfoItems(
                     isLocation = !worksite.hasWrongLocationFlag,
                     locationQuery = geoQuery.ifBlank { locationQuery },
                 )
+
+                Row(
+                    Modifier
+                        .testTag("editCasePropertyInfoJumpToCaseOnMap")
+                        .clickable(onClick = onJumpToCaseOnMap)
+                        .fillMaxWidth()
+                        .padding(horizontal = edgeSpacing, vertical = edgeSpacingHalf),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = listItemSpacedBy,
+                ) {
+                    Image(
+                        modifier = Modifier.size(24.dp),
+                        painter = painterResource(R.drawable.ic_jump_to_case_on_map),
+                        contentDescription = LocalAppTranslator.current.translate("~~Center Case on map"),
+                    )
+
+                    if (distanceAwayText.isNotBlank()) {
+                        Text(distanceAwayText, style = MaterialTheme.typography.bodyLarge)
+                    }
+                }
 
                 PropertyInfoMapView(
                     worksite.coordinates,

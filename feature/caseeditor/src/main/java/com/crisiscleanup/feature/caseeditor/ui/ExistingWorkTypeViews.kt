@@ -97,13 +97,17 @@ private fun WorkTypeSummaryView(
         Column {
             Text(
                 name,
-                modifier.testTag("workTypeSummaryHeaderText").padding(top = edgeSpacing),
+                modifier
+                    .testTag("workTypeSummaryHeaderText")
+                    .padding(top = edgeSpacing),
                 style = MaterialTheme.typography.bodyLarge,
             )
             if (jobSummary.isNotBlank()) {
                 Text(
                     jobSummary,
-                    modifier.testTag("workTypeSummarySubHeaderText").padding(top = edgeSpacingHalf),
+                    modifier
+                        .testTag("workTypeSummarySubHeaderText")
+                        .padding(top = edgeSpacingHalf),
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
@@ -112,7 +116,11 @@ private fun WorkTypeSummaryView(
                 modifier = modifier.listItemVerticalPadding(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                WorkTypeStatusDropdown(workType.status, updateWorkTypeStatus)
+                WorkTypeStatusDropdown(
+                    workType.status,
+                    workType.orgClaim != null,
+                    updateWorkTypeStatus,
+                )
                 Spacer(Modifier.weight(1f))
 
                 val t = LocalAppTranslator.current

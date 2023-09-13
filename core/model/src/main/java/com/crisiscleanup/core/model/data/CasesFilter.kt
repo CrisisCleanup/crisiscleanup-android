@@ -175,8 +175,6 @@ data class CasesFilter(
     val matchingFlags: Set<String> by lazy {
         worksiteFlags.map(WorksiteFlagType::literal).toSet()
     }
-
-    // TODO How to determine no work type?
 }
 
 private val DefaultCasesFilter = CasesFilter()

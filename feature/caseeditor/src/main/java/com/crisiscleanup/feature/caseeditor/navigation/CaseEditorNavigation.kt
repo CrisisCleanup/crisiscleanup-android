@@ -15,13 +15,14 @@ import com.crisiscleanup.core.appnav.RouteConstant.caseEditSearchAddressRoute
 import com.crisiscleanup.core.appnav.RouteConstant.caseEditorRoute
 import com.crisiscleanup.core.appnav.RouteConstant.caseHistoryRoute
 import com.crisiscleanup.core.appnav.RouteConstant.caseShareRoute
+import com.crisiscleanup.core.appnav.RouteConstant.casesRoute
 import com.crisiscleanup.core.appnav.RouteConstant.viewCaseRoute
 import com.crisiscleanup.core.appnav.RouteConstant.viewCaseTransferWorkTypesRoute
 import com.crisiscleanup.core.appnav.ViewImageArgs
 import com.crisiscleanup.core.appnav.navigateToViewImage
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
-import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
 import com.crisiscleanup.feature.caseeditor.ui.CaseEditCaseHistoryRoute
 import com.crisiscleanup.feature.caseeditor.ui.CaseEditShareCaseRoute
 import com.crisiscleanup.feature.caseeditor.ui.CaseEditorRoute
@@ -140,6 +141,7 @@ fun NavGraphBuilder.existingCaseScreen(
             },
         ),
     ) {
+        val navBackToCases = remember(navController) { { navController.popToWork() } }
         val navToEditCase = remember(navController) {
             { ids: ExistingWorksiteIdentifier ->
                 navController.navigateToCaseEditor(
@@ -162,6 +164,7 @@ fun NavGraphBuilder.existingCaseScreen(
         val navToCaseHistory = remember(navController) { { navController.navigateToCaseHistory() } }
         EditExistingCaseRoute(
             onBack = onBackClick,
+            onBackToCases = navBackToCases,
             onFullEdit = navToEditCase,
             openTransferWorkType = navToTransferWorkType,
             openPhoto = navToViewImage,
@@ -178,6 +181,13 @@ fun NavController.navigateToTransferWorkType(isFromCaseEdit: Boolean) =
 internal fun NavController.popRouteStartingWith(route: String) {
     popBackStack()
     while (currentBackStackEntry?.destination?.route?.startsWith(route) == true) {
+        popBackStack()
+    }
+}
+
+private fun NavController.popToWork() {
+    popBackStack()
+    while (currentBackStackEntry?.destination?.route?.let { it != casesRoute } == true) {
         popBackStack()
     }
 }

@@ -89,6 +89,8 @@ val statusDoneByOthersNhwDiColor = Color(statusDoneByOthersNhwColorCode)
 val statusOutOfScopeRejectedColor = Color(statusOutOfScopeRejectedColorCode)
 val statusUnresponsiveColor = Color(statusUnresponsiveColorCode)
 
+val visitedCaseMarkerColorCode = 0xFF681da8
+
 val avatarAttentionColor = primaryRedColor
 val avatarStandardColor = statusCompletedColor
 

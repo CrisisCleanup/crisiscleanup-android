@@ -37,6 +37,8 @@ import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.window.PopupProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.AnimatedBusyIndicator
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
@@ -55,8 +57,6 @@ import com.crisiscleanup.core.model.data.WorksiteFlagType
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
 import com.crisiscleanup.feature.caseeditor.CaseAddFlagViewModel
-import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
-import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifierNone
 import com.crisiscleanup.feature.caseeditor.util.TwoActionBar
 
 @Composable

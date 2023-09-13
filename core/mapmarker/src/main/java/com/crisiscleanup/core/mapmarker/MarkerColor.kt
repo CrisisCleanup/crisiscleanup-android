@@ -12,9 +12,10 @@ import com.crisiscleanup.core.designsystem.theme.statusOutOfScopeRejectedColorCo
 import com.crisiscleanup.core.designsystem.theme.statusPartiallyCompletedColorCode
 import com.crisiscleanup.core.designsystem.theme.statusUnclaimedColorCode
 import com.crisiscleanup.core.designsystem.theme.statusUnknownColorCode
+import com.crisiscleanup.core.designsystem.theme.visitedCaseMarkerColorCode
 import com.crisiscleanup.core.model.data.CaseStatus.ClaimedNotStarted
 import com.crisiscleanup.core.model.data.CaseStatus.Completed
-import com.crisiscleanup.core.model.data.CaseStatus.DoneByOthersNhwPc
+import com.crisiscleanup.core.model.data.CaseStatus.DoneByOthersNhw
 import com.crisiscleanup.core.model.data.CaseStatus.InProgress
 import com.crisiscleanup.core.model.data.CaseStatus.Incomplete
 import com.crisiscleanup.core.model.data.CaseStatus.NeedsFollowUp
@@ -43,7 +44,7 @@ private val statusMapMarkerColors = mapOf(
     PartiallyCompleted to MapMarkerColor(statusPartiallyCompletedColorCode),
     NeedsFollowUp to MapMarkerColor(statusNeedsFollowUpColorCode),
     Completed to MapMarkerColor(statusCompletedColorCode),
-    DoneByOthersNhwPc to MapMarkerColor(statusDoneByOthersNhwColorCode),
+    DoneByOthersNhw to MapMarkerColor(statusDoneByOthersNhwColorCode),
     // Unresponsive
     OutOfScopeDu to MapMarkerColor(statusOutOfScopeRejectedColorCode),
     Incomplete to MapMarkerColor(statusDoneByOthersNhwColorCode),
@@ -75,6 +76,7 @@ internal fun getMapMarkerColors(
     statusClaim: WorkTypeStatusClaim,
     isDuplicate: Boolean,
     isFilteredOut: Boolean,
+    isVisited: Boolean,
     isDot: Boolean,
 ): MapMarkerColor {
     var colors = statusClaimMapMarkerColors[statusClaim]
@@ -98,6 +100,11 @@ internal fun getMapMarkerColors(
                     stroke = it.stroke.copy(alpha = strokeAlpha),
                 )
             }
+    } else if (isVisited) {
+        colors = MapMarkerColor(
+            colors.fillLong,
+            strokeLong = visitedCaseMarkerColorCode,
+        )
     }
 
     return colors

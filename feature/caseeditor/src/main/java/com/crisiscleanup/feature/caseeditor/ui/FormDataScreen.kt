@@ -51,6 +51,7 @@ private fun FormItems(
                 } else {
                     listItemModifier
                 }
+            val isWorkTypeClaimed = inputData.isWorkTypeClaimed(state.field.selectToggleWorkType)
             DynamicFormListItem(
                 state,
                 label,
@@ -60,6 +61,7 @@ private fun FormItems(
                 helpHint,
                 fieldShowHelp,
                 isEditable,
+                isWorkTypeClaimed = isWorkTypeClaimed,
             ) { value: FieldDynamicValue ->
                 state = state.copy(
                     dynamicValue = value.dynamicValue,

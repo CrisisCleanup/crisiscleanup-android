@@ -21,15 +21,19 @@ import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.PermissionStatus
 import com.crisiscleanup.core.common.cameraPermissionGranted
 import com.crisiscleanup.core.common.combineTrimText
+import com.crisiscleanup.core.common.haversineDistance
+import com.crisiscleanup.core.common.kmToMiles
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.common.radians
 import com.crisiscleanup.core.common.relativeTime
 import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.commoncase.TransferWorkTypeProvider
 import com.crisiscleanup.core.commoncase.WorkTypeTransferType
+import com.crisiscleanup.core.commoncase.oneDecimalFormat
 import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
@@ -52,6 +56,7 @@ import com.crisiscleanup.core.model.data.WorksiteNote
 import com.crisiscleanup.feature.caseeditor.model.CaseImage
 import com.crisiscleanup.feature.caseeditor.model.ImageCategory
 import com.crisiscleanup.feature.caseeditor.model.asCaseImage
+import com.crisiscleanup.feature.caseeditor.model.coordinates
 import com.crisiscleanup.feature.caseeditor.navigation.ExistingCaseArgs
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.philjay.RRule
@@ -86,6 +91,7 @@ class ExistingCaseViewModel @Inject constructor(
     private val incidentsRepository: IncidentsRepository,
     organizationsRepository: OrganizationsRepository,
     organizationRefresher: OrganizationRefresher,
+    worksiteInteractor: CasesWorksiteInteractor,
     incidentRefresher: IncidentRefresher,
     incidentBoundsProvider: IncidentBoundsProvider,
     locationProvider: LocationProvider,
@@ -181,6 +187,32 @@ class ExistingCaseViewModel @Inject constructor(
             initialValue = "",
             started = SharingStarted.WhileSubscribed(),
         )
+
+    val distanceAwayText = editableWorksite.map { worksite ->
+        locationProvider.getLocation()?.let { (latitude, longitude) ->
+            val worksiteLatRad = worksite.latitude.radians
+            val worksiteLngRad = worksite.longitude.radians
+            val latRad = latitude.radians
+            val lngRad = longitude.radians
+            val distanceAwayMi = haversineDistance(
+                latRad,
+                lngRad,
+                worksiteLatRad,
+                worksiteLngRad,
+            ).kmToMiles
+            val distanceAwayText = oneDecimalFormat.format(distanceAwayMi)
+            return@map "$distanceAwayText ${translator("caseView.miles_abbrv")}"
+        }
+
+        ""
+    }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = "",
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    val jumpToCaseOnMapOnBack = MutableStateFlow(false)
 
     private val previousNoteCount = AtomicInteger(0)
 
@@ -281,6 +313,8 @@ class ExistingCaseViewModel @Inject constructor(
         viewModelScope.launch(ioDispatcher) {
             organizationRefresher.pullOrganization(incidentIdArg)
         }
+
+        worksiteInteractor.onSelectCase(incidentIdArg, worksiteIdArg)
     }
 
     val isLoading = dataLoader.isLoading
@@ -621,6 +655,40 @@ class ExistingCaseViewModel @Inject constructor(
         }
     }
 
+    fun jumpToCaseOnMap() {
+        caseData.value?.let {
+            val coordinates = it.worksite.coordinates
+            editableWorksiteProvider.setEditedLocation(coordinates)
+            jumpToCaseOnMapOnBack.value = true
+        }
+    }
+
+    private fun saveWorkTypeChange(
+        startingWorksite: Worksite,
+        changedWorksite: Worksite,
+    ) {
+        var updatedWorksite = changedWorksite
+
+        var workTypes = changedWorksite.workTypes
+        if (workTypes.isNotEmpty()) {
+            workTypes = workTypes.sortedBy(WorkType::workTypeLiteral)
+
+            var keyWorkType = workTypes.first()
+            changedWorksite.keyWorkType?.workTypeLiteral?.let { keyWorkTypeLiteral ->
+                workTypes.find { keyWorkTypeLiteral == it.workTypeLiteral }
+                    ?.let { matchingWorkType ->
+                        keyWorkType = matchingWorkType
+                    }
+            }
+
+            updatedWorksite = changedWorksite.copy(
+                keyWorkType = keyWorkType,
+            )
+        }
+
+        saveWorksiteChange(startingWorksite, updatedWorksite)
+    }
+
     fun updateWorkType(workType: WorkType, isStatusChange: Boolean) {
         val startingWorksite = referenceWorksite
         val updatedWorkTypes =
@@ -637,7 +705,7 @@ class ExistingCaseViewModel @Inject constructor(
                     add(changed)
                 }
         val changedWorksite = startingWorksite.copy(workTypes = updatedWorkTypes)
-        saveWorksiteChange(startingWorksite, changedWorksite)
+        saveWorkTypeChange(startingWorksite, changedWorksite)
     }
 
     fun requestWorkType(workType: WorkType) {
@@ -681,7 +749,7 @@ class ExistingCaseViewModel @Inject constructor(
                         }
                     }
             val changedWorksite = startingWorksite.copy(workTypes = updatedWorkTypes)
-            saveWorksiteChange(startingWorksite, changedWorksite)
+            saveWorkTypeChange(startingWorksite, changedWorksite)
         }
     }
 

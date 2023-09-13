@@ -18,6 +18,7 @@ data class WorksiteGoogleMapMark(
 
 fun WorksiteMapMark.asWorksiteGoogleMapMark(
     iconProvider: MapCaseIconProvider,
+    isVisited: Boolean,
     additionalScreenOffset: Pair<Float, Float>,
 ): WorksiteGoogleMapMark {
     val latLng = LatLng(latitude, longitude)
@@ -34,6 +35,7 @@ fun WorksiteMapMark.asWorksiteGoogleMapMark(
             hasMultipleWorkTypes = workTypeCount > 1,
             isDuplicate = isDuplicate,
             isFilteredOut = isFilteredOut,
+            isVisited = isVisited,
         ),
         mapIconOffset = Offset(0.5f + xOffset, 0.5f + yOffset),
         isFilteredOut = isFilteredOut,

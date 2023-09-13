@@ -16,7 +16,8 @@ open class FormFieldsInputData(
     val helpText: String = groupNode.formField.help,
     private val isWorkInputData: Boolean = false,
 ) : CaseDataWriter {
-    private val worksiteIn = worksite.copy()
+    private val worksiteIn = worksite
+    private val workTypeLookup = worksite.workTypes.associateBy(WorkType::workTypeLiteral)
 
     private val managedGroups = mutableSetOf<String>()
 
@@ -81,6 +82,8 @@ open class FormFieldsInputData(
     private val requiredFormFields = groupNode.children
         .filter { it.formField.isRequired }
         .map { it.formField }
+
+    fun isWorkTypeClaimed(workType: String) = workTypeLookup[workType]?.orgClaim != null
 
     private fun resetUnmodifiedGroups(fieldData: Map<String, DynamicValue>): Map<String, DynamicValue> {
         if (groupFields.isEmpty()) {

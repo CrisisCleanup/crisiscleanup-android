@@ -51,6 +51,7 @@ import com.crisiscleanup.core.common.openDialer
 import com.crisiscleanup.core.common.openMaps
 import com.crisiscleanup.core.commonassets.R
 import com.crisiscleanup.core.commoncase.model.addressQuery
+import com.crisiscleanup.core.commoncase.oneDecimalFormat
 import com.crisiscleanup.core.commoncase.ui.IncidentDropdownSelect
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
@@ -80,7 +81,6 @@ import com.crisiscleanup.core.model.data.WorksiteSortBy
 import com.crisiscleanup.feature.cases.CasesViewModel
 import com.crisiscleanup.feature.cases.WorksiteDistance
 import kotlinx.coroutines.delay
-import java.text.DecimalFormat
 
 @Composable
 internal fun BoxScope.CasesTableView(
@@ -350,8 +350,6 @@ private fun TableViewSortSelect(
         }
     }
 }
-
-private val oneDecimalFormat = DecimalFormat("#.#")
 
 @Composable
 private fun TableViewItem(
