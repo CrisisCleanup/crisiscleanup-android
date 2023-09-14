@@ -293,7 +293,6 @@ class CasesViewModel @Inject constructor(
     )
         .mapLatest { (_, _, wqs) ->
             if (wqs.isTableView) {
-                logger.logDebug("Fetching table data")
                 tableSortResultsMessage.value = ""
                 fetchTableData(wqs)
             } else {
@@ -483,9 +482,6 @@ class CasesViewModel @Inject constructor(
             }
             val isSelected =
                 worksiteInteractor.wasCaseSelected(incidentId, mark.id, reference = now)
-            if (isSelected) {
-                logger.logDebug("Selected worksite ${mark.id} ${mark.workType}")
-            }
             mark.asWorksiteGoogleMapMark(mapCaseIconProvider, isSelected, offset)
         }
     }

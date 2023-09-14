@@ -87,7 +87,10 @@ fun Worksite.updateWorkTypeStatuses(
 
 // TODO Test coverage
 fun Worksite.updateKeyWorkType(reference: Worksite) = copy(
-    keyWorkType = reference.keyWorkType?.workType?.let { matchWorkType ->
-        workTypes.find { it.workType == matchWorkType }
-    } ?: workTypes.firstOrNull(),
+    keyWorkType = workTypes.matchKeyWorkType(reference),
 )
+
+fun List<WorkType>.matchKeyWorkType(reference: Worksite) =
+    reference.keyWorkType?.workType?.let { matchWorkType ->
+        find { it.workType == matchWorkType }
+    } ?: firstOrNull()
