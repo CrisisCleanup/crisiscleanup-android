@@ -93,14 +93,19 @@ private fun HelpContent(
     viewModel: EditCaseBaseViewModel,
     content: @Composable ((FieldDynamicValue) -> Unit) -> Unit,
 ) {
+    val translator = LocalAppTranslator.current
     var helpTitle by remember { mutableStateOf("") }
     var helpText by remember { mutableStateOf("") }
     val showHelp = remember(viewModel) {
         { data: FieldDynamicValue ->
-            val text = data.field.help
-            if (text.isNotBlank()) {
+            if (data.field.help.isNotBlank()) {
                 helpTitle = data.field.label
-                helpText = StringEscapeUtils.unescapeHtml4(text).toString()
+
+                val helpTranslateKey = "formLabels.${data.field.help}"
+                val translated = translator(helpTranslateKey)
+                helpText =
+                    if (translated == helpTranslateKey) translator(data.field.help) else translated
+                helpText = StringEscapeUtils.unescapeHtml4(helpText).toString()
             }
         }
     }

@@ -158,11 +158,8 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
     }
 
     override fun setLanguageFromSystem() {
-        val locales = resourceProvider.resources.configuration.locales
-        if (!locales.isEmpty) {
-            val systemLocale = Locale.getDefault().toLanguageTag()
-            setLanguage(systemLocale)
-        }
+        val systemLocale = Locale.getDefault().toLanguageTag()
+        setLanguage(systemLocale)
     }
 
     private suspend fun pullUpdatedTranslations() =
