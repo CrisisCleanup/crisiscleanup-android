@@ -594,23 +594,23 @@ private fun SaveActionBar(
         )
         BusyButton(
             Modifier
-                .testTag("caseEditClaimAndSaveBtn")
-                .weight(1.5f),
-            text = saveClaimText,
-            enabled = enable,
-            indicateBusy = isSaving,
-            onClick = onClaimAndSave,
-            isSharpCorners = isSharpCorners,
-            style = style,
-        )
-        BusyButton(
-            Modifier
                 .testTag("caseEditSaveBtn")
                 .weight(1.1f),
             text = saveText,
             enabled = enable,
             indicateBusy = isSaving,
             onClick = onSave,
+            isSharpCorners = isSharpCorners,
+            style = style,
+        )
+        BusyButton(
+            Modifier
+                .testTag("caseEditClaimAndSaveBtn")
+                .weight(1.5f),
+            text = saveClaimText,
+            enabled = enable,
+            indicateBusy = isSaving,
+            onClick = onClaimAndSave,
             isSharpCorners = isSharpCorners,
             style = style,
         )
