@@ -158,7 +158,7 @@ internal fun CasesFilter.passes(
         0.0
     }
     if (!passesFilter(
-            worksite.svi ?: 0f,
+            worksite.svi,
             worksite.updatedAt,
             distance,
         )

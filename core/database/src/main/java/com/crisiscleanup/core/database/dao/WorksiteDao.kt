@@ -491,7 +491,7 @@ interface WorksiteDao {
         """
         SELECT *
         FROM worksites
-        WHERE incident_id=:incidentId AND (svi IS NULL OR svi <= :svi)
+        WHERE incident_id=:incidentId AND (svi IS NULL OR svi >= :svi)
         ORDER BY svi
         LIMIT :limit
         OFFSET :offset
