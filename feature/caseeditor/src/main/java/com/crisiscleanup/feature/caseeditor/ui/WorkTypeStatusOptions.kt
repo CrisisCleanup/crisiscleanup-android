@@ -30,12 +30,14 @@ import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.optionItemHeight
+import com.crisiscleanup.core.designsystem.theme.statusUnclaimedColor
 import com.crisiscleanup.core.designsystem.theme.statusUnknownColor
 import com.crisiscleanup.core.model.data.WorkTypeStatus
 
 @Composable
 internal fun WorkTypeStatusDropdown(
     selectedStatus: WorkTypeStatus,
+    isClaimed: Boolean,
     onStatusChange: (WorkTypeStatus) -> Unit,
     applySpacing: Boolean = false,
 ) {
@@ -67,6 +69,7 @@ internal fun WorkTypeStatusDropdown(
             restingModifier,
             true,
             enabled = enabled,
+            isUnclaimedColor = !isClaimed,
         )
 
         if (showOptions && enabled) {
@@ -119,6 +122,7 @@ private fun WorkTypeStatusOption(
     showOpenIcon: Boolean = false,
     enabled: Boolean = false,
     isSelected: Boolean = false,
+    isUnclaimedColor: Boolean = false,
 ) {
     Row(
         modifier = modifier,
@@ -126,13 +130,17 @@ private fun WorkTypeStatusOption(
         horizontalArrangement = listItemSpacedByHalf,
     ) {
         val translator = LocalAppTranslator.current
+        var color = statusOptionColors[status] ?: statusUnknownColor
+        if (isUnclaimedColor && statusUnclaimedRed.contains(status)) {
+            color = statusUnclaimedColor
+        }
         Surface(
             Modifier.size(16.dp),
             shape = CircleShape,
-            color = statusOptionColors[status] ?: statusUnknownColor,
+            color = color,
         ) {}
         Text(
-            translator(status.literal),
+            translator("status.${status.literal}"),
             style = MaterialTheme.typography.bodySmall,
             fontWeight = if (isSelected) FontWeight.Bold else null,
         )

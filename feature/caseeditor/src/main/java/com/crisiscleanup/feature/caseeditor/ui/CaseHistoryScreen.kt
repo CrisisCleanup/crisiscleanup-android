@@ -18,6 +18,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -28,6 +29,7 @@ import com.crisiscleanup.core.designsystem.component.CardSurface
 import com.crisiscleanup.core.designsystem.component.LinkifyEmailText
 import com.crisiscleanup.core.designsystem.component.LinkifyPhoneText
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
+import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
@@ -114,21 +116,29 @@ private fun HistoryUser(
             // TODO Common dimensions
             .padding(16.dp),
     ) {
+        val isLongPhone = userInfo.userPhone.length > 20
+        val isLongEmail = userInfo.userEmail.length > 20
         Row(horizontalArrangement = listItemSpacedBy) {
             Text(
                 userInfo.userName,
-                Modifier.weight(1f),
+                Modifier.weight(if (isLongPhone) 0.5f else 1.0f),
                 style = LocalFontStyles.current.header4,
             )
-            LinkifyPhoneText(userInfo.userPhone)
+            LinkifyPhoneText(
+                userInfo.userPhone,
+                modifier = if (isLongPhone) Modifier.weight(0.5f) else Modifier,
+            )
         }
         Row(horizontalArrangement = listItemSpacedBy) {
             Text(
                 userInfo.orgName,
-                Modifier.weight(1f),
+                Modifier.weight(if (isLongEmail) 0.5f else 1.0f),
             )
             if (userInfo.userEmail.isNotBlank()) {
-                LinkifyEmailText(userInfo.userEmail)
+                LinkifyEmailText(
+                    userInfo.userEmail,
+                    modifier = if (isLongEmail) Modifier.weight(0.5f) else Modifier,
+                )
             }
         }
     }
@@ -168,5 +178,22 @@ private fun HistoryEvents(
                 }
             }
         }
+    }
+}
+
+@Preview
+@Composable
+private fun previewHistoryUser() {
+    CrisisCleanupTheme {
+        HistoryUser(
+            CaseHistoryUserEvents(
+                0,
+                "very long user name that is pointless to pronounce",
+                "very long organization name the likely has an abbreviation",
+                "user phone 1234567890",
+                "endless-user-email-address@organization.org",
+                emptyList(),
+            ),
+        )
     }
 }

@@ -65,6 +65,7 @@ internal fun DynamicFormListItem(
     helpHint: String = "",
     showHelp: () -> Unit = {},
     enabled: Boolean = true,
+    isWorkTypeClaimed: Boolean = false,
     updateValue: (FieldDynamicValue) -> Unit = {},
 ) {
     val updateBoolean = remember(field) {
@@ -174,6 +175,7 @@ internal fun DynamicFormListItem(
                     helpHint,
                     showHelp,
                     enabled,
+                    isWorkTypeClaimed = isWorkTypeClaimed,
                     updateWorkTypeStatus = updateWorkTypeStatus,
                 )
             }
@@ -223,6 +225,7 @@ private fun CheckboxItem(
     helpHint: String,
     showHelp: () -> Unit = {},
     enabled: Boolean = true,
+    isWorkTypeClaimed: Boolean = false,
     updateWorkTypeStatus: (WorkTypeStatus) -> Unit = {},
 ) {
     val isNewCase = LocalCaseEditor.current.isNewCase
@@ -233,6 +236,7 @@ private fun CheckboxItem(
         @Composable {
             WorkTypeStatusDropdown(
                 itemData.workTypeStatus,
+                isWorkTypeClaimed,
                 updateWorkTypeStatus,
                 true,
             )

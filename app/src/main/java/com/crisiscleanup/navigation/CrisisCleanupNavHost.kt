@@ -7,9 +7,9 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.crisiscleanup.core.appnav.RouteConstant.casesGraphRoutePattern
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
-import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
 import com.crisiscleanup.feature.caseeditor.navigation.caseAddFlagScreen
 import com.crisiscleanup.feature.caseeditor.navigation.caseEditMoveLocationOnMapScreen
 import com.crisiscleanup.feature.caseeditor.navigation.caseEditSearchAddressScreen

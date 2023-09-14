@@ -17,6 +17,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CollapsibleIcon
 import com.crisiscleanup.core.designsystem.component.HelpAction
 import com.crisiscleanup.core.designsystem.component.WithHelpDialog
@@ -45,7 +46,9 @@ private fun CircleNumber(
     ) {
         Text(
             "$number",
-            Modifier.testTag("circleNumberText_$number").align(Alignment.Center),
+            Modifier
+                .testTag("circleNumberText_$number")
+                .align(Alignment.Center),
             style = style,
             textAlign = TextAlign.Center,
         )
@@ -86,7 +89,13 @@ internal fun SectionHeaderCollapsible(
         val iconVector =
             if (isCollapsed) CrisisCleanupIcons.ExpandLess else CrisisCleanupIcons.ExpandMore
         if (help.isNotBlank()) {
-            WithHelpDialog(viewModel, sectionTitle, help, true) { showHelp ->
+            val translator = LocalAppTranslator.current
+            val translateKey = "formLabels.$help"
+            var translated = translator(translateKey)
+            if (translated == translateKey) {
+                translated = translator(help)
+            }
+            WithHelpDialog(viewModel, sectionTitle, translated, true) { showHelp ->
                 HelpAction(viewModel.helpHint, showHelp)
             }
         }
@@ -117,7 +126,9 @@ internal fun SectionHeader(
         )
         Text(
             sectionTitle,
-            Modifier.testTag("sectionHeaderTitle_${sIndex}_$sectionTitle").listRowItemStartPadding(),
+            Modifier
+                .testTag("sectionHeaderTitle_${sIndex}_$sectionTitle")
+                .listRowItemStartPadding(),
             style = textStyle,
         )
         trailingContent?.let {

@@ -13,9 +13,8 @@ enum class CaseStatus {
     // TODO Review colors (and names) on web. There are marker colors and status colors...
     /**
      * Nhw = no help wanted
-     * Pc = partially completed
      */
-    DoneByOthersNhwPc,
+    DoneByOthersNhw,
 
     /**
      * Du = Duplicate or unresponsive

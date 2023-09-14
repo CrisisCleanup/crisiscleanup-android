@@ -18,6 +18,8 @@ import com.crisiscleanup.core.model.data.WorkTypeStatus.ClosedIncomplete
 import com.crisiscleanup.core.model.data.WorkTypeStatus.ClosedNoHelpWanted
 import com.crisiscleanup.core.model.data.WorkTypeStatus.ClosedOutOfScope
 import com.crisiscleanup.core.model.data.WorkTypeStatus.ClosedRejected
+import com.crisiscleanup.core.model.data.WorkTypeStatus.NeedOverdue
+import com.crisiscleanup.core.model.data.WorkTypeStatus.NeedUnfilled
 import com.crisiscleanup.core.model.data.WorkTypeStatus.OpenAssigned
 import com.crisiscleanup.core.model.data.WorkTypeStatus.OpenNeedsFollowUp
 import com.crisiscleanup.core.model.data.WorkTypeStatus.OpenPartiallyCompleted
@@ -45,6 +47,15 @@ val statusOptionColors = mapOf(
     ClosedNoHelpWanted to statusDoneByOthersNhwDiColor,
     ClosedDuplicate to statusDoneByOthersNhwDiColor,
     ClosedRejected to statusOutOfScopeRejectedColor,
+)
+
+val statusUnclaimedRed = setOf(
+    OpenUnassigned,
+    OpenAssigned,
+    OpenPartiallyCompleted,
+    OpenNeedsFollowUp,
+    NeedUnfilled,
+    NeedOverdue,
 )
 
 private val caseEditor = CaseEditor(

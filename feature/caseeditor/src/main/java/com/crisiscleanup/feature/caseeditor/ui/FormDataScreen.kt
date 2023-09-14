@@ -40,7 +40,11 @@ private fun FormItems(
         }
 
         key(state.key) {
-            var label = state.field.label.ifBlank { translator(state.key) }
+            val labelTranslateKey = "formLabels.${state.key}"
+            var label = translator(labelTranslateKey)
+            if (label == labelTranslateKey) {
+                label = state.field.label
+            }
             if (state.field.isRequired) {
                 label = "$label *"
             }
@@ -51,6 +55,7 @@ private fun FormItems(
                 } else {
                     listItemModifier
                 }
+            val isWorkTypeClaimed = inputData.isWorkTypeClaimed(state.field.selectToggleWorkType)
             DynamicFormListItem(
                 state,
                 label,
@@ -60,6 +65,7 @@ private fun FormItems(
                 helpHint,
                 fieldShowHelp,
                 isEditable,
+                isWorkTypeClaimed = isWorkTypeClaimed,
             ) { value: FieldDynamicValue ->
                 state = state.copy(
                     dynamicValue = value.dynamicValue,
@@ -87,14 +93,19 @@ private fun HelpContent(
     viewModel: EditCaseBaseViewModel,
     content: @Composable ((FieldDynamicValue) -> Unit) -> Unit,
 ) {
+    val translator = LocalAppTranslator.current
     var helpTitle by remember { mutableStateOf("") }
     var helpText by remember { mutableStateOf("") }
     val showHelp = remember(viewModel) {
         { data: FieldDynamicValue ->
-            val text = data.field.help
-            if (text.isNotBlank()) {
+            if (data.field.help.isNotBlank()) {
                 helpTitle = data.field.label
-                helpText = StringEscapeUtils.unescapeHtml4(text).toString()
+
+                val helpTranslateKey = "formLabels.${data.field.help}"
+                val translated = translator(helpTranslateKey)
+                helpText =
+                    if (translated == helpTranslateKey) translator(data.field.help) else translated
+                helpText = StringEscapeUtils.unescapeHtml4(helpText).toString()
             }
         }
     }

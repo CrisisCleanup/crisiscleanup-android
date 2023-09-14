@@ -28,6 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
@@ -49,7 +50,6 @@ import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseEditorUiState
 import com.crisiscleanup.feature.caseeditor.CaseEditorViewModel
 import com.crisiscleanup.feature.caseeditor.CasePropertyDataEditor
-import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
 import com.crisiscleanup.feature.caseeditor.WorksiteSection
 import com.crisiscleanup.feature.caseeditor.model.FormFieldsInputData
 import com.crisiscleanup.core.common.R as commonR
@@ -470,7 +470,11 @@ private fun LazyListScope.formDataSection(
         item(
             key = "section-$sectionIndex",
         ) {
-            FormDataItems(viewModel, inputData, LocalCaseEditor.current.isEditable)
+            FormDataItems(
+                viewModel,
+                inputData,
+                LocalCaseEditor.current.isEditable,
+            )
         }
     }
 }
@@ -590,23 +594,23 @@ private fun SaveActionBar(
         )
         BusyButton(
             Modifier
-                .testTag("caseEditClaimAndSaveBtn")
-                .weight(1.5f),
-            text = saveClaimText,
-            enabled = enable,
-            indicateBusy = isSaving,
-            onClick = onClaimAndSave,
-            isSharpCorners = isSharpCorners,
-            style = style,
-        )
-        BusyButton(
-            Modifier
                 .testTag("caseEditSaveBtn")
                 .weight(1.1f),
             text = saveText,
             enabled = enable,
             indicateBusy = isSaving,
             onClick = onSave,
+            isSharpCorners = isSharpCorners,
+            style = style,
+        )
+        BusyButton(
+            Modifier
+                .testTag("caseEditClaimAndSaveBtn")
+                .weight(1.5f),
+            text = saveClaimText,
+            enabled = enable,
+            indicateBusy = isSaving,
+            onClick = onClaimAndSave,
             isSharpCorners = isSharpCorners,
             style = style,
         )

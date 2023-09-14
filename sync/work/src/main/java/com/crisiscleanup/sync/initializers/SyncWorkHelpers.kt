@@ -13,16 +13,19 @@ import com.crisiscleanup.sync.R
 import com.crisiscleanup.sync.workers.SyncMediaWorker
 import com.crisiscleanup.sync.workers.SyncWorker
 import com.crisiscleanup.sync.workers.SyncWorksitesFullWorker
+import com.crisiscleanup.sync.workers.SyncWorksitesWorker
 import com.crisiscleanup.core.common.R as commonR
 
 internal const val SyncNotificationId = 0
-internal const val SyncMediaNotificationId = 0
-internal const val SyncWorksitesFullNotificationId = 0
+internal const val SyncMediaNotificationId = 1
+internal const val SyncWorksitesNotificationId = 2
+internal const val SyncWorksitesFullNotificationId = 3
 private const val SyncNotificationChannelID = "SyncNotificationChannel"
 
 // These names should not be changed otherwise the app may have concurrent sync requests running
 internal const val SyncWorkName = "SyncWorkName"
 internal const val SyncMediaWorkName = "SyncMediaWorkName"
+internal const val SyncWorksitesWorkName = "SyncWorksitesWorkName"
 internal const val SyncWorksitesFullWorkName = "SyncWorksitesFullWorkName"
 
 fun scheduleSync(context: Context) {
@@ -42,6 +45,16 @@ fun scheduleSyncMedia(context: Context) {
             SyncMediaWorkName,
             ExistingWorkPolicy.KEEP,
             SyncMediaWorker.oneTimeSyncWork(),
+        )
+    }
+}
+
+fun scheduleSyncWorksites(context: Context) {
+    WorkManager.getInstance(context).apply {
+        enqueueUniqueWork(
+            SyncWorksitesWorkName,
+            ExistingWorkPolicy.KEEP,
+            SyncWorksitesWorker.oneTimeSyncWork(),
         )
     }
 }

@@ -31,6 +31,7 @@ import com.crisiscleanup.core.commonassets.getDisasterIcon
 import com.crisiscleanup.core.commoncase.TransferWorkTypeProvider
 import com.crisiscleanup.core.commoncase.WorksiteProvider
 import com.crisiscleanup.core.data.IncidentSelector
+import com.crisiscleanup.core.data.WorksiteInteractor
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.CasesFilterRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
@@ -51,7 +52,6 @@ import com.crisiscleanup.core.model.data.IncidentIdWorksiteCount
 import com.crisiscleanup.core.model.data.TableDataWorksite
 import com.crisiscleanup.core.model.data.TableWorksiteClaimAction
 import com.crisiscleanup.core.model.data.Worksite
-import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.core.model.data.WorksiteSortBy
 import com.crisiscleanup.feature.cases.map.CasesMapBoundsManager
 import com.crisiscleanup.feature.cases.map.CasesMapMarkerManager
@@ -89,10 +89,6 @@ import kotlinx.datetime.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
-import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.math.cos
-import kotlin.math.sin
 import kotlin.time.Duration.Companion.seconds
 import com.crisiscleanup.core.commonassets.R as commonAssetsR
 
@@ -105,6 +101,7 @@ class CasesViewModel @Inject constructor(
     loadIncidentDataUseCase: LoadIncidentDataUseCase,
     dataPullReporter: IncidentDataPullReporter,
     private val mapCaseIconProvider: MapCaseIconProvider,
+    private val worksiteInteractor: WorksiteInteractor,
     private val mapTileRenderer: CasesOverviewMapTileRenderer,
     private val tileProvider: TileProvider,
     private val worksiteLocationEditor: WorksiteLocationEditor,
@@ -296,7 +293,6 @@ class CasesViewModel @Inject constructor(
     )
         .mapLatest { (_, _, wqs) ->
             if (wqs.isTableView) {
-                logger.logDebug("Fetching table data")
                 tableSortResultsMessage.value = ""
                 fetchTableData(wqs)
             } else {
@@ -467,20 +463,26 @@ class CasesViewModel @Inject constructor(
         return tileProvider
     }
 
-    private val zeroOffset = Pair(0f, 0f)
     private suspend fun generateWorksiteMarkers(wqs: WorksiteQueryState) = coroutineScope {
         val id = wqs.incidentId
         val sw = wqs.coordinateBounds.southWest
         val ne = wqs.coordinateBounds.northEast
         val marksQuery = mapMarkerManager.queryWorksitesInBounds(id, sw, ne)
         val marks = marksQuery.first
-        val markOffsets = denseMarkerOffsets(marks)
+        val markOffsets = mapMarkerManager.denseMarkerOffsets(marks, qsm.mapZoom.value)
 
         ensureActive()
 
+        val now = Clock.System.now()
         marks.mapIndexed { index, mark ->
-            val offset = if (index < markOffsets.size) markOffsets[index] else zeroOffset
-            mark.asWorksiteGoogleMapMark(mapCaseIconProvider, offset)
+            val offset = if (index < markOffsets.size) {
+                markOffsets[index]
+            } else {
+                mapMarkerManager.zeroOffset
+            }
+            val isSelected =
+                worksiteInteractor.wasCaseSelected(incidentId, mark.id, reference = now)
+            mark.asWorksiteGoogleMapMark(mapCaseIconProvider, isSelected, offset)
         }
     }
 
@@ -680,72 +682,6 @@ class CasesViewModel @Inject constructor(
             casesMapTileManager.onTileChange()
         }
     }
-
-    private val denseMarkCountThreshold = 15
-    private val denseMarkZoomThreshold = 14
-    private val denseDegreeThreshold = 0.0001
-    private val denseScreenOffsetScale = 0.6f
-    private suspend fun denseMarkerOffsets(marks: List<WorksiteMapMark>): List<Pair<Float, Float>> =
-        coroutineScope {
-            if (marks.size > denseMarkCountThreshold ||
-                qsm.mapZoom.value < denseMarkZoomThreshold
-            ) {
-                return@coroutineScope emptyList()
-            }
-
-            ensureActive()
-
-            val bucketIndices = IntArray(marks.size) { -1 }
-            val buckets = mutableListOf<MutableList<Int>>()
-            for (i in 0 until marks.size - 1) {
-                val iMark = marks[i]
-                for (j in i + 1 until marks.size) {
-                    val jMark = marks[j]
-                    if (abs(iMark.latitude - jMark.latitude) < denseDegreeThreshold &&
-                        abs(iMark.longitude - jMark.longitude) < denseDegreeThreshold
-                    ) {
-                        val bucketI = bucketIndices[i]
-                        if (bucketI >= 0) {
-                            bucketIndices[j] = bucketI
-                            buckets[bucketI].add(j)
-                        } else {
-                            val bucketJ = bucketIndices[j]
-                            if (bucketJ >= 0) {
-                                bucketIndices[i] = bucketJ
-                                buckets[bucketJ].add(i)
-                            } else {
-                                val bucketIndex = buckets.size
-                                bucketIndices[i] = bucketIndex
-                                bucketIndices[j] = bucketIndex
-                                buckets.add(mutableListOf(i, j))
-                            }
-                        }
-                        break
-                    }
-                }
-                ensureActive()
-            }
-
-            val markOffsets = marks.map { zeroOffset }.toMutableList()
-            if (buckets.isNotEmpty()) {
-                buckets.forEach {
-                    val count = it.size
-                    val offsetScale = denseScreenOffsetScale + (count - 5).coerceAtLeast(0) * 0.2f
-                    if (count > 1) {
-                        var offsetDir = (PI * 0.5).toFloat()
-                        val deltaDirDegrees = (2 * PI / count).toFloat()
-                        it.forEach { index ->
-                            markOffsets[index] = Pair(
-                                offsetScale * cos(offsetDir),
-                                offsetScale * sin(offsetDir),
-                            )
-                            offsetDir += deltaDirDegrees
-                        }
-                    }
-                }
-            }
-            markOffsets
-        }
 
     private fun setSortBy(sortBy: WorksiteSortBy) {
         viewModelScope.launch(ioDispatcher) {

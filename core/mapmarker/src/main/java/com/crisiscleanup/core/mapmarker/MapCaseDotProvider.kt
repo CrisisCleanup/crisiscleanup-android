@@ -59,7 +59,8 @@ class InMemoryDotProvider @Inject constructor(
             cacheKey.statusClaim,
             cacheKey.isDuplicate,
             cacheKey.isFilteredOut,
-            true,
+            isVisited = false,
+            isDot = true,
         )
         val bitmap = drawDot(colors, dotDrawProperties)
         val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap)
@@ -82,6 +83,7 @@ class InMemoryDotProvider @Inject constructor(
         hasMultipleWorkTypes: Boolean,
         isDuplicate: Boolean,
         isFilteredOut: Boolean,
+        isVisited: Boolean,
     ): BitmapDescriptor? {
         val cacheKey = DotCacheKey(statusClaim, isDuplicate, isFilteredOut)
         synchronized(cache) {
@@ -99,6 +101,7 @@ class InMemoryDotProvider @Inject constructor(
         hasMultipleWorkTypes: Boolean,
         isDuplicate: Boolean,
         isFilteredOut: Boolean,
+        isVisited: Boolean,
     ): Bitmap? {
         val cacheKey = DotCacheKey(statusClaim, isDuplicate, isFilteredOut)
         synchronized(cache) {

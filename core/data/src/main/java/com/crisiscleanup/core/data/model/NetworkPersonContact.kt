@@ -22,18 +22,18 @@ fun NetworkPersonContact.asExternalModel() = PersonContact(
     mobile = mobile,
 )
 
-fun NetworkPersonContact.asEntities(): PersonContactEntities {
+fun NetworkPersonContact.asEntities() = organization?.let {
     val organizationEntity = IncidentOrganizationEntity(
-        id = organization!!.id,
-        name = organization!!.name,
+        id = it.id,
+        name = it.name,
         primaryLocation = null,
         secondaryLocation = null,
     )
     val personContact = asEntity()
-    val personToOrganization = PersonOrganizationCrossRef(id, organization!!.id)
-    return PersonContactEntities(
+    val personToOrganization = PersonOrganizationCrossRef(id, it.id)
+    PersonContactEntities(
         organization = organizationEntity,
-        organizationAffiliates = organization!!.affiliates,
+        organizationAffiliates = it.affiliates,
         personContact = personContact,
         personToOrganization = personToOrganization,
     )

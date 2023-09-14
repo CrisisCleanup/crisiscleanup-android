@@ -12,6 +12,8 @@ import com.crisiscleanup.feature.cases.map.CoordinateUtil.lerpLongitude
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
+import kotlin.math.PI
+import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sin
@@ -138,6 +140,77 @@ internal class CasesMapMarkerManager(
 
         Pair(marks, q.fullCount)
     }
+
+    val zeroOffset = Pair(0f, 0f)
+
+    private val denseMarkCountThreshold = 15
+    private val denseMarkZoomThreshold = 14
+    private val denseDegreeThreshold = 0.0001
+    private val denseScreenOffsetScale = 0.6f
+    suspend fun denseMarkerOffsets(
+        marks: List<WorksiteMapMark>,
+        zoom: Float,
+    ): List<Pair<Float, Float>> =
+        coroutineScope {
+            if (marks.size > denseMarkCountThreshold ||
+                zoom < denseMarkZoomThreshold
+            ) {
+                return@coroutineScope emptyList()
+            }
+
+            ensureActive()
+
+            val bucketIndices = IntArray(marks.size) { -1 }
+            val buckets = mutableListOf<MutableList<Int>>()
+            for (i in 0 until marks.size - 1) {
+                val iMark = marks[i]
+                for (j in i + 1 until marks.size) {
+                    val jMark = marks[j]
+                    if (abs(iMark.latitude - jMark.latitude) < denseDegreeThreshold &&
+                        abs(iMark.longitude - jMark.longitude) < denseDegreeThreshold
+                    ) {
+                        val bucketI = bucketIndices[i]
+                        if (bucketI >= 0) {
+                            bucketIndices[j] = bucketI
+                            buckets[bucketI].add(j)
+                        } else {
+                            val bucketJ = bucketIndices[j]
+                            if (bucketJ >= 0) {
+                                bucketIndices[i] = bucketJ
+                                buckets[bucketJ].add(i)
+                            } else {
+                                val bucketIndex = buckets.size
+                                bucketIndices[i] = bucketIndex
+                                bucketIndices[j] = bucketIndex
+                                buckets.add(mutableListOf(i, j))
+                            }
+                        }
+                        break
+                    }
+                }
+                ensureActive()
+            }
+
+            val markOffsets = marks.map { zeroOffset }.toMutableList()
+            if (buckets.isNotEmpty()) {
+                buckets.forEach {
+                    val count = it.size
+                    val offsetScale = denseScreenOffsetScale + (count - 5).coerceAtLeast(0) * 0.2f
+                    if (count > 1) {
+                        var offsetDir = (PI * 0.5).toFloat()
+                        val deltaDirDegrees = (2 * PI / count).toFloat()
+                        it.forEach { index ->
+                            markOffsets[index] = Pair(
+                                offsetScale * cos(offsetDir),
+                                offsetScale * sin(offsetDir),
+                            )
+                            offsetDir += deltaDirDegrees
+                        }
+                    }
+                }
+            }
+            markOffsets
+        }
 }
 
 private data class BoundsQueryParams(

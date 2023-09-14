@@ -14,6 +14,8 @@ import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.commoncase.WorksiteProvider
 import com.crisiscleanup.core.data.IncidentSelectManager
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AppDataManagementRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository

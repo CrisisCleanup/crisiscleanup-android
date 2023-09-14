@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.ExplainLocationPermissionDialog
 import com.crisiscleanup.core.designsystem.component.HelpRow
@@ -26,7 +27,6 @@ import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.feature.caseeditor.CaseLocationDataEditor
 import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
-import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
 import com.crisiscleanup.feature.caseeditor.R
 import com.google.maps.android.compose.rememberCameraPositionState
 

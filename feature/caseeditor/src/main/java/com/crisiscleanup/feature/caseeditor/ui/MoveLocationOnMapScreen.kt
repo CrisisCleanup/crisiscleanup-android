@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
@@ -32,7 +33,6 @@ import com.crisiscleanup.core.ui.MapOverlayMessage
 import com.crisiscleanup.feature.caseeditor.CaseLocationDataEditor
 import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
 import com.crisiscleanup.feature.caseeditor.EditCaseLocationViewModel
-import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
 import com.crisiscleanup.feature.caseeditor.R
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.Projection
@@ -127,9 +127,11 @@ private fun BoxScope.MoveMapUnderLocation(
 ) {
     val onMapLoaded = remember(viewModel) { { editor.onMapLoaded() } }
     val onMapCameraChange = remember(viewModel) {
-        { position: CameraPosition,
+        {
+                position: CameraPosition,
                 projection: Projection?,
-                isUserInteraction: Boolean, ->
+                isUserInteraction: Boolean,
+            ->
             editor.onMapCameraChange(position, projection, isUserInteraction)
         }
     }

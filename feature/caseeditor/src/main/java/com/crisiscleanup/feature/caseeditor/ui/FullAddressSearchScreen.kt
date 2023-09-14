@@ -12,6 +12,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.LinkifyHtmlText
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
@@ -21,7 +22,6 @@ import com.crisiscleanup.core.designsystem.theme.textMessagePadding
 import com.crisiscleanup.feature.caseeditor.CaseLocationDataEditor
 import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
 import com.crisiscleanup.feature.caseeditor.EditCaseLocationViewModel
-import com.crisiscleanup.feature.caseeditor.ExistingWorksiteIdentifier
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

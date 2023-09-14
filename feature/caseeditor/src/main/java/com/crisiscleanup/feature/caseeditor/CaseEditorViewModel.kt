@@ -18,6 +18,8 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.data.IncidentSelector
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
@@ -40,6 +42,7 @@ import com.crisiscleanup.feature.caseeditor.model.LocationInputData
 import com.crisiscleanup.feature.caseeditor.model.PropertyInputData
 import com.crisiscleanup.feature.caseeditor.model.coordinates
 import com.crisiscleanup.feature.caseeditor.navigation.CaseEditorArgs
+import com.crisiscleanup.feature.caseeditor.util.matchKeyWorkType
 import com.crisiscleanup.feature.caseeditor.util.updateKeyWorkType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -527,6 +530,8 @@ class CaseEditorViewModel @Inject constructor(
                     return@launch
                 }
 
+                var keyWorkType = worksite.keyWorkType
+                val orgId = editorStateData.orgId
                 var workTypes = worksite.workTypes
                 if (claimUnclaimed) {
                     workTypes = workTypes
@@ -534,15 +539,15 @@ class CaseEditorViewModel @Inject constructor(
                             if (it.orgClaim != null) {
                                 it
                             } else {
-                                it.copy(orgClaim = editorStateData.orgId)
+                                it.copy(orgClaim = orgId)
                             }
                         }
+                    keyWorkType = workTypes.matchKeyWorkType(initialWorksite)
                 }
 
                 val updatedIncidentId =
                     if (isIncidentChange) saveIncidentId else worksite.incidentId
-                val updatedReportedBy =
-                    if (worksite.isNew) editorStateData.orgId else worksite.reportedBy
+                val updatedReportedBy = if (worksite.isNew) orgId else worksite.reportedBy
                 val clearWhat3Words = worksite.what3Words?.isNotBlank() == true &&
                     worksite.latitude != initialWorksite.latitude ||
                     worksite.longitude != initialWorksite.longitude
@@ -550,6 +555,7 @@ class CaseEditorViewModel @Inject constructor(
 
                 val updatedWorksite = worksite.copy(
                     incidentId = updatedIncidentId,
+                    keyWorkType = keyWorkType,
                     workTypes = workTypes,
                     reportedBy = updatedReportedBy,
                     updatedAt = Clock.System.now(),
@@ -560,7 +566,7 @@ class CaseEditorViewModel @Inject constructor(
                     initialWorksite,
                     updatedWorksite,
                     updatedWorksite.keyWorkType!!,
-                    editorStateData.orgId,
+                    orgId,
                 )
                 val worksiteId = worksiteIdArg!!
 

@@ -120,7 +120,7 @@ class OfflineFirstCaseHistoryRepository @Inject constructor(
     private suspend fun queryUpdateUsers(userIds: Collection<Long>) {
         try {
             val networkUsers = networkDataSource.getUsers(userIds)
-            val entities = networkUsers.map(NetworkPersonContact::asEntities)
+            val entities = networkUsers.mapNotNull(NetworkPersonContact::asEntities)
 
             val organizations = entities.map(PersonContactEntities::organization)
             val affiliates = entities.map(PersonContactEntities::organizationAffiliates)

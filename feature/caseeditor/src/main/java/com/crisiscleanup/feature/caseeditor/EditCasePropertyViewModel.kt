@@ -4,6 +4,7 @@ import com.crisiscleanup.core.common.InputValidator
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.model.data.AutoContactFrequency

@@ -27,5 +27,5 @@ data class NetworkLanguageTranslation(
     val subtag: String,
     @SerialName("name_t")
     val name: String,
-    val translations: Map<String, String>,
+    val translations: Map<String, String?>,
 )

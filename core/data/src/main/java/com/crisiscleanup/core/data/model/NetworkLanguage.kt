@@ -17,6 +17,6 @@ fun NetworkLanguageDescription.asEntity() = LanguageTranslationEntity(
 fun NetworkLanguageTranslation.asEntity(syncedAt: Instant) = LanguageTranslationEntity(
     key = subtag,
     name = name,
-    translationsJson = Json.encodeToString(translations),
+    translationsJson = Json.encodeToString(translations.filter { it.value != null }),
     syncedAt = syncedAt,
 )

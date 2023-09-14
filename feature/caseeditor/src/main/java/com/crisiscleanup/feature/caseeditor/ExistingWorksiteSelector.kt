@@ -1,25 +1,11 @@
 package com.crisiscleanup.feature.caseeditor
 
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
-import com.crisiscleanup.core.model.data.EmptyIncident
-import com.crisiscleanup.core.model.data.EmptyWorksite
 import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
-
-data class ExistingWorksiteIdentifier(
-    val incidentId: Long,
-    // This is the local (database) ID not network ID
-    val worksiteId: Long,
-) {
-    val isDefined = incidentId != EmptyIncident.id &&
-        worksiteId != EmptyWorksite.id
-}
-
-val ExistingWorksiteIdentifierNone = ExistingWorksiteIdentifier(
-    EmptyIncident.id,
-    EmptyWorksite.id,
-)
 
 class ExistingWorksiteSelector @Inject constructor(
     private val worksiteProvider: EditableWorksiteProvider,

@@ -34,9 +34,11 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.data.repository.AppMetricsRepository
 import com.crisiscleanup.core.data.repository.EndOfLifeRepository
+import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.navigationContainerColor
 import com.crisiscleanup.core.model.data.DarkThemeConfig
+import com.crisiscleanup.sync.initializers.scheduleSyncWorksites
 import com.crisiscleanup.ui.CrisisCleanupApp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.gms.maps.MapsInitializer
@@ -90,6 +92,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     internal lateinit var appMetricsRepository: AppMetricsRepository
+
+    @Inject
+    internal lateinit var languageTranslationsRepository: LanguageTranslationsRepository
 
     private val lifecycleObservers = mutableListOf<LifecycleObserver>()
 
@@ -176,6 +181,10 @@ class MainActivity : ComponentActivity() {
 
         endOfLifeRepository.saveEndOfLifeData()
         appMetricsRepository.saveAppSupportInfo()
+
+        languageTranslationsRepository.setLanguageFromSystem()
+
+        scheduleSyncWorksites(this)
     }
 
     override fun onPause() {
