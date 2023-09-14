@@ -137,7 +137,7 @@ private fun HistoryUser(
             if (userInfo.userEmail.isNotBlank()) {
                 LinkifyEmailText(
                     userInfo.userEmail,
-                    modifier =if (isLongEmail) Modifier.weight(0.5f) else Modifier,
+                    modifier = if (isLongEmail) Modifier.weight(0.5f) else Modifier,
                 )
             }
         }

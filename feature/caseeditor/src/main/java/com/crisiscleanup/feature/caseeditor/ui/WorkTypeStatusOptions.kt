@@ -140,7 +140,7 @@ private fun WorkTypeStatusOption(
             color = color,
         ) {}
         Text(
-            translator(status.literal),
+            translator("status.${status.literal}"),
             style = MaterialTheme.typography.bodySmall,
             fontWeight = if (isSelected) FontWeight.Bold else null,
         )

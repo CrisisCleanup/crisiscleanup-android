@@ -267,11 +267,16 @@ internal class CaseEditorDataLoader(
                         addAll(
                             formFields.map {
                                 with(it.formField) {
+                                    val labelTranslateKey = "formLabels.$fieldKey"
+                                    var translatedLabel = translate(labelTranslateKey)
+                                    if (translatedLabel == labelTranslateKey) {
+                                        translatedLabel = translate(fieldKey)
+                                    }
                                     val isRequired = requiredGroups.contains(group)
                                     if (isRequired) {
-                                        "$label *"
+                                        "$translatedLabel *"
                                     } else {
-                                        label
+                                        translatedLabel
                                     }
                                 }
                             },

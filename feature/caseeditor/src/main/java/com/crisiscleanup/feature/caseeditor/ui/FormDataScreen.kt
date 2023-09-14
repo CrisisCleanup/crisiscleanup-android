@@ -40,7 +40,11 @@ private fun FormItems(
         }
 
         key(state.key) {
-            var label = state.field.label.ifBlank { translator(state.key) }
+            val labelTranslateKey = "formLabels.${state.key}"
+            var label = translator(labelTranslateKey)
+            if (label == labelTranslateKey) {
+                label = state.field.label
+            }
             if (state.field.isRequired) {
                 label = "$label *"
             }
