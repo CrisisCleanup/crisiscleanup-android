@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.data.repository
 
+import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.log.AppLogger
@@ -33,6 +34,7 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -46,6 +48,8 @@ interface LanguageTranslationsRepository : KeyTranslator {
     suspend fun loadLanguages(force: Boolean = false)
 
     fun setLanguage(key: String = "")
+
+    fun setLanguageFromSystem()
 }
 
 @Singleton
@@ -55,6 +59,7 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
     private val languageDao: LanguageDao,
     private val languageDaoPlus: LanguageDaoPlus,
     private val statusRepository: WorkTypeStatusRepository,
+    private val resourceProvider: AndroidResourceProvider,
     @Logger(CrisisCleanupLoggers.Language) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
     @ApplicationScope private val coroutineScope: CoroutineScope,
@@ -143,10 +148,20 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
             } else {
                 pullUpdatedTranslations()
             }
+
+            setLanguageFromSystem()
         } catch (e: Exception) {
             logger.logException(e)
         } finally {
             isLoadingLanguages.value = false
+        }
+    }
+
+    override fun setLanguageFromSystem() {
+        val locales = resourceProvider.resources.configuration.locales
+        if (!locales.isEmpty) {
+            val systemLocale = Locale.getDefault().toLanguageTag()
+            setLanguage(systemLocale)
         }
     }
 
@@ -166,16 +181,17 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
     override fun setLanguage(key: String) {
         setLanguageJob?.cancel()
         setLanguageJob = coroutineScope.launch(ioDispatcher) {
-            try {
-                // TODO Set the language if local translations exist.
-                //      Pull does not need to succeed in this case.
-                //      Consider possible race condition if ordering changes.
+            val languages = supportedLanguages.first()
+                .map(Language::key)
+                .toSet()
+            val languageKey = if (languages.contains(key)) key else EnglishLanguage.key
 
-                pullUpdatedTranslations(key)
+            try {
+                pullUpdatedTranslations(languageKey)
 
                 ensureActive()
 
-                appPreferences.setLanguageKey(key)
+                appPreferences.setLanguageKey(languageKey)
             } catch (e: Exception) {
                 logger.logException(e)
             } finally {
