@@ -282,8 +282,8 @@ internal fun BoxScope.CasesTableView(
 }
 
 private val sortByOptions = listOf(
-    WorksiteSortBy.Nearest,
     WorksiteSortBy.CaseNumber,
+    WorksiteSortBy.Nearest,
     WorksiteSortBy.Name,
     WorksiteSortBy.City,
     WorksiteSortBy.CountyParish,
