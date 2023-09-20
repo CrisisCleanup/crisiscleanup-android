@@ -51,7 +51,10 @@ fun DatePickerDialog(
         confirmButton = {
             CrisisCleanupTextButton(
                 onClick = {
-                    onCloseDialog(datePickerState.selectedDateMillis)
+                    val pickedMillis = datePickerState.selectedDateMillis?.let { millis ->
+                        millis + 43200000L
+                    }
+                    onCloseDialog(pickedMillis)
                 },
                 enabled = confirmEnabled.value,
                 text = translator("actions.ok"),

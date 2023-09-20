@@ -31,6 +31,7 @@ import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.radians
 import com.crisiscleanup.core.common.relativeTime
 import com.crisiscleanup.core.common.sync.SyncPusher
+import com.crisiscleanup.core.common.utcTimeZone
 import com.crisiscleanup.core.commoncase.TransferWorkTypeProvider
 import com.crisiscleanup.core.commoncase.WorkTypeTransferType
 import com.crisiscleanup.core.commoncase.oneDecimalFormat
@@ -77,7 +78,6 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toJavaInstant
 import java.text.SimpleDateFormat
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.concurrent.atomic.AtomicBoolean
@@ -122,7 +122,7 @@ class ExistingCaseViewModel @Inject constructor(
 
     private val nextRecurDateFormat = DateTimeFormatter
         .ofPattern("EEE MMMM d yyyy ['at'] h:mm a")
-        .withZone(ZoneId.systemDefault())
+        .utcTimeZone
 
     private val dataLoader: CaseEditorDataLoader
 
