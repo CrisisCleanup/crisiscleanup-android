@@ -35,7 +35,7 @@ fun List<PopulatedWorksiteMapVisual>.filter(
             0.0
         }
         if (!filters.passesFilter(
-                it.svi ?: 0f,
+                it.svi,
                 it.updatedAt,
                 distance,
             )

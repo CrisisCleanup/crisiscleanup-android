@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +29,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.filterNotBlankTrim
+import com.crisiscleanup.core.common.utcTimeZone
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupFilterChip
@@ -53,11 +53,10 @@ import com.philjay.Weekday
 import com.philjay.WeekdayNum
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 private val recurringDateFormat =
-    DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault())
+    DateTimeFormatter.ofPattern("yyyy-MM-dd").utcTimeZone
 
 private val rRuleWeekDays = listOf(
     Weekday.Monday,
@@ -185,7 +184,7 @@ internal fun FrequencyDailyWeeklyViews(
             {
                 rRule.freq = Frequency.Weekly
                 if (rRule.byDay.isEmpty()) {
-                    rRule.byDay.add(rRuleWeekDaysNums.first())
+                    rRule.byDay.add(WeekdayNum(0, Weekday.Sunday))
                 }
                 updateRrule()
             },
@@ -206,7 +205,7 @@ internal fun FrequencyDailyWeeklyViews(
                     updateRrule()
                 },
             ) {
-                Text(translator("recurringSchedule.every"))
+                Text(translator("recurringSchedule.recur_every"))
                 FrequencyIntervalButton(
                     enabled && isEveryDay,
                     "${rRule.interval}",
@@ -317,7 +316,6 @@ private fun FrequencyIntervalButton(
     ),
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FrequencyIntervalDialog(
     intervalIn: Int,

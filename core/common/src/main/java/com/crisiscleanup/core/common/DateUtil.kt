@@ -4,6 +4,8 @@ import com.github.marlonlom.utilities.timeago.TimeAgo
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
 import kotlinx.datetime.toKotlinInstant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import kotlin.time.Duration.Companion.hours
 
@@ -15,4 +17,9 @@ val Instant.noonTime: Instant
         val javaDate = toJavaInstant()
         val startOfDay = javaDate.truncatedTo(ChronoUnit.DAYS)
         return startOfDay.toKotlinInstant().plus(12.hours)
+    }
+
+val DateTimeFormatter.utcTimeZone: DateTimeFormatter
+    get() {
+        return withZone(ZoneId.of("UTC"))
     }

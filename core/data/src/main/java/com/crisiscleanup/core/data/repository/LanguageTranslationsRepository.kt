@@ -181,7 +181,15 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
             val languages = supportedLanguages.first()
                 .map(Language::key)
                 .toSet()
-            val languageKey = if (languages.contains(key)) key else EnglishLanguage.key
+            var languageKey = EnglishLanguage.key
+            if (languages.contains(key)) {
+                languageKey = key
+            } else if (key.contains('-')) {
+                val designator = key.split('-')[0]
+                if (languages.contains(designator)) {
+                    languageKey = designator
+                }
+            }
 
             try {
                 pullUpdatedTranslations(languageKey)

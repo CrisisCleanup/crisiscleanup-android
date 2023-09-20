@@ -143,7 +143,7 @@ class MemoryCacheSearchWorksitesRepository @Inject constructor(
             }
 
             if (!filters.passesFilter(
-                    result.svi ?: 0f,
+                    result.svi,
                     result.updatedAt,
                     distance,
                 )

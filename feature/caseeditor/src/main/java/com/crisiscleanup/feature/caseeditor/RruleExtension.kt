@@ -2,11 +2,11 @@ package com.crisiscleanup.feature.caseeditor
 
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.combineTrimText
+import com.crisiscleanup.core.common.utcTimeZone
 import com.philjay.Frequency
 import com.philjay.RRule
 import com.philjay.Weekday
 import com.philjay.WeekdayNum
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 internal val weekdayOrderLookup = mapOf(
@@ -46,7 +46,7 @@ fun RRule.profile(): RruleProfile {
 
 private val untilDateFormat = DateTimeFormatter
     .ofPattern("yyyy MMM d")
-    .withZone(ZoneId.systemDefault())
+    .utcTimeZone
 
 // Tested in [RruleHumanReadableTextTest]
 fun RRule.toHumanReadableText(
@@ -60,7 +60,8 @@ fun RRule.toHumanReadableText(
                     if (positiveInterval == 1) {
                         translator("recurringSchedule.n_days_one")
                     } else {
-                        "$positiveInterval ${translator("recurringSchedule.n_days_other")}"
+                        translator("recurringSchedule.n_days_other")
+                            .replace("{value}", "$positiveInterval")
                     }
                 } else {
                     translator("recurringSchedule.weekday_mtof")
@@ -72,7 +73,8 @@ fun RRule.toHumanReadableText(
                     var weekPart = if (positiveInterval == 1) {
                         translator("recurringSchedule.n_weeks_one")
                     } else {
-                        "$positiveInterval ${translator("recurringSchedule.n_weeks_other")}"
+                        translator("recurringSchedule.n_weeks_other")
+                            .replace("{value}", "$positiveInterval")
                     }
                     val profile = profile()
                     if (profile.isAllDays) {
@@ -108,18 +110,18 @@ fun RRule.toHumanReadableText(
                             .toList()
                         val onDays = if (sortedDays.size == 1) {
                             val daysString = sortedDays.joinToString(", ")
-                            "${translator("recurringSchedule.on_days")} $daysString"
+                            translator("recurringSchedule.on_days").replace("{day}", daysString)
                         } else if (sortedDays.size > 1) {
                             val startDays = sortedDays.slice(0 until sortedDays.size - 1)
                             val daysString = startDays.joinToString(", ")
                             if (startDays.size == 1) {
                                 translator("recurringSchedule.on_and_days_one")
-                                    .replace("{days}", daysString)
-                                    .replace("{last_day}", sortedDays.last())
+                                    .replace("{day1}", daysString)
+                                    .replace("{day2}", sortedDays.last())
                             } else {
                                 translator("recurringSchedule.on_and_days_other")
-                                    .replace("{days}", daysString)
-                                    .replace("{last_day}", sortedDays.last())
+                                    .replace("{day1}", daysString)
+                                    .replace("{day2}", sortedDays.last())
                             }
                         } else {
                             ""
@@ -137,13 +139,13 @@ fun RRule.toHumanReadableText(
             else -> ""
         }
         if (frequencyPart.isNotBlank()) {
-            val every = translator("recurringSchedule.every")
+            val every = translator("recurringSchedule.recur_every")
             val untilDate = until?.let {
                 untilDateFormat.format(it)
             }
             val untilPart =
                 if (untilDate?.isNotBlank() == true) {
-                    "${translator("recurringSchedule.until_date")} $untilDate"
+                    translator("recurringSchedule.until_date").replace("{date}", untilDate)
                 } else {
                     ""
                 }

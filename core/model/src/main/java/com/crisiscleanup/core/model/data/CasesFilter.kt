@@ -4,7 +4,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlin.time.Duration.Companion.days
 
-private const val DEFAULT_SVI = 1f
+private const val DEFAULT_SVI = 0f
 private const val DEFAULT_FILTER_DISTANCE = 0f
 
 const val CasesFilterMinDaysAgo: Int = 3
@@ -95,11 +95,11 @@ data class CasesFilter(
      * @return TRUE if values meet local filters or FALSE otherwise
      */
     fun passesFilter(
-        compareSvi: Float,
+        compareSvi: Float?,
         updatedAt: Instant,
         haversineDistanceMiles: Double?,
     ): Boolean {
-        if (hasSviFilter && compareSvi > svi) {
+        if (hasSviFilter && (compareSvi ?: 1f) < svi) {
             return false
         }
 
