@@ -484,15 +484,8 @@ private fun FilterHeaderCollapsible(
             modifier = Modifier.testTag("filterHeaderCollapsibleTitle_$sectionTitle"),
             style = LocalFontStyles.current.header3,
         )
-        val iconVector =
-            if (isCollapsed) {
-                CrisisCleanupIcons.ExpandLess
-            } else {
-                CrisisCleanupIcons.ExpandMore
-            }
         Spacer(Modifier.weight(1f))
-
-        CollapsibleIcon(isCollapsed, sectionTitle, iconVector)
+        CollapsibleIcon(isCollapsed, sectionTitle)
     }
 }
 

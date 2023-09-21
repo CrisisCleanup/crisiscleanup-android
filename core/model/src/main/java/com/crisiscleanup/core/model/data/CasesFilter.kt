@@ -4,7 +4,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlin.time.Duration.Companion.days
 
-private const val DEFAULT_SVI = 0f
+const val DEFAULT_SVI = 0f
 private const val DEFAULT_FILTER_DISTANCE = 0f
 
 const val CasesFilterMinDaysAgo: Int = 3

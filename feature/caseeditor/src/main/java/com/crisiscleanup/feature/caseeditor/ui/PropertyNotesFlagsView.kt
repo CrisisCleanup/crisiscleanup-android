@@ -19,10 +19,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextArea
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
@@ -34,7 +37,6 @@ import com.crisiscleanup.core.model.data.WorksiteNote
 import com.crisiscleanup.core.model.data.hasSurvivorNote
 import com.crisiscleanup.feature.caseeditor.CaseNotesFlagsDataEditor
 import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
-import com.crisiscleanup.feature.caseeditor.R
 
 @Composable
 internal fun PropertyNotesFlagsView(
@@ -45,8 +47,6 @@ internal fun PropertyNotesFlagsView(
     val translator = LocalAppTranslator.current
     val isEditable = LocalCaseEditor.current.isEditable
 
-    var isCreatingNote by remember { mutableStateOf(false) }
-
     val inputData = editor.notesFlagsInputData
 
     HighPriorityFlagInput(inputData, isEditable)
@@ -56,6 +56,7 @@ internal fun PropertyNotesFlagsView(
     }
 
     val notes by inputData.notesStream.collectAsStateWithLifecycle(emptyList())
+    val otherNotes by inputData.otherNotes.collectAsStateWithLifecycle(emptyList())
 
     var showAllNotesDialog by remember { mutableStateOf(false) }
     val showAllNotes = remember(inputData) { { showAllNotesDialog = true } }
@@ -73,7 +74,9 @@ internal fun PropertyNotesFlagsView(
     ) {
         Text(
             text = translator("formLabels.notes"),
-            Modifier.testTag("propertyLabelNotesText").weight(1f),
+            Modifier
+                .testTag("propertyLabelNotesText")
+                .weight(1f),
         )
         if (isExpandable) {
             CrisisCleanupTextButton(
@@ -101,30 +104,36 @@ internal fun PropertyNotesFlagsView(
         NoteView(note, modifier)
     }
 
-    val onAddNote = remember(viewModel) { { isCreatingNote = true } }
-    CrisisCleanupIconTextButton(
-        modifier = Modifier
-            .testTag("propertyAddNoteBtn")
-            .listItemHeight()
-            .fillMaxWidth(),
-        iconResId = R.drawable.ic_note,
-        label = translator("caseView.add_note"),
-        onClick = onAddNote,
-        enabled = isEditable,
-    )
-
-    if (isCreatingNote) {
-        val dismissNoteDialog = { isCreatingNote = false }
-        val saveNote = remember(viewModel) {
-            { note: WorksiteNote -> editor.notesFlagsInputData.notes.add(0, note) }
-        }
-        OnCreateNote(saveNote, dismissNoteDialog)
+    val saveNote = remember(viewModel) {
+        { note: WorksiteNote -> editor.notesFlagsInputData.notes.add(0, note) }
     }
+    CrisisCleanupTextArea(
+        text = inputData.editingNote,
+        onTextChange = { inputData.editingNote = it },
+        modifier = listItemModifier,
+        label = { Text(translator("caseView.note")) },
+        enabled = isEditable,
+        imeAction = ImeAction.Default,
+    )
+    CrisisCleanupButton(
+        onClick = {
+            val note = WorksiteNote.create().copy(
+                note = inputData.editingNote,
+            )
+            saveNote(note)
+            inputData.editingNote = ""
+            // TODO Scroll to newly added note?
+        },
+        modifier = listItemModifier,
+        text = translator("actions.add"),
+        enabled = isEditable && inputData.editingNote.isNotBlank(),
+    )
 
     if (showAllNotesDialog) {
         val dismissDialog = { showAllNotesDialog = false }
         AllNotes(
             notes,
+            otherNotes,
             translator("actions.close"),
             dismissDialog,
         )
@@ -134,6 +143,7 @@ internal fun PropertyNotesFlagsView(
 @Composable
 private fun AllNotes(
     notes: List<WorksiteNote>,
+    otherNotes: List<Pair<String, String>>,
     dismissText: String = "",
     onDismiss: () -> Unit = {},
 ) {
@@ -153,6 +163,7 @@ private fun AllNotes(
                         .weight(weight = 1f, fill = false),
                 ) {
                     LazyColumn {
+                        otherNoteItems(otherNotes)
                         staticNoteItems(
                             notes,
                             notes.size,

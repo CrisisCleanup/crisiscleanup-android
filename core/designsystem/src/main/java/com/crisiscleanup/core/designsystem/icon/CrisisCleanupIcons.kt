@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.HelpOutline
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.Menu
@@ -47,6 +48,7 @@ object CrisisCleanupIcons {
     val ArrowBack = icons.ArrowBackIosNew
     val ArrowDropDown = icons.ArrowDropDown
     val Calendar = icons.CalendarMonth
+    val CaretUp = icons.KeyboardArrowUp
     val Cases = R.drawable.ic_cases
     val Check = icons.Check
     val Clear = icons.Clear

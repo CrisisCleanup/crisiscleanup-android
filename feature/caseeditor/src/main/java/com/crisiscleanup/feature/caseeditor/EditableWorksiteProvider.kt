@@ -28,6 +28,7 @@ interface EditableWorksiteProvider {
     var formFields: List<FormFieldNode>
     var formFieldTranslationLookup: Map<String, String>
     var workTypeTranslationLookup: Map<String, String>
+    var otherNotes: Flow<List<Pair<String, String>>>
 
     val isStale: Boolean
     fun setStale()
@@ -79,6 +80,7 @@ class SingleEditableWorksiteProvider @Inject constructor() :
     override var formFields = emptyList<FormFieldNode>()
     override var formFieldTranslationLookup = emptyMap<String, String>()
     override var workTypeTranslationLookup = emptyMap<String, String>()
+    override var otherNotes: Flow<List<Pair<String, String>>> = MutableStateFlow(emptyList())
 
     private val _isStale = AtomicBoolean(false)
     override val isStale: Boolean

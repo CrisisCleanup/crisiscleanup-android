@@ -68,6 +68,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -120,9 +121,8 @@ class ExistingCaseViewModel @Inject constructor(
 
     val headerTitle = MutableStateFlow("")
 
-    private val nextRecurDateFormat = DateTimeFormatter
-        .ofPattern("EEE MMMM d yyyy ['at'] h:mm a")
-        .utcTimeZone
+    private val nextRecurDateFormat =
+        DateTimeFormatter.ofPattern("EEE MMMM d yyyy ['at'] h:mm a").utcTimeZone
 
     private val dataLoader: CaseEditorDataLoader
 
@@ -339,26 +339,6 @@ class ExistingCaseViewModel @Inject constructor(
             Triple(fileImages, localImages, worksite.notes)
         }
 
-    val tabTitles = filesNotes.mapLatest { (fileImages, localImages, notes) ->
-        val fileCount = fileImages.size + localImages.size
-        val photosTitle = translate("caseForm.photos").let {
-            if (fileCount > 0) "$it ($fileCount)" else it
-        }
-        val notesTitle = translate("formLabels.notes").let {
-            if (notes.isNotEmpty()) "$it (${notes.size})" else it
-        }
-        listOf(
-            translate("nav.info"),
-            photosTitle,
-            notesTitle,
-        )
-    }
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = emptyList(),
-            started = SharingStarted.WhileSubscribed(3_000),
-        )
-
     val statusOptions = uiState
         .mapLatest {
             it.asCaseData()?.statusOptions ?: emptyList()
@@ -374,6 +354,45 @@ class ExistingCaseViewModel @Inject constructor(
             scope = viewModelScope,
             initialValue = null,
             started = SharingStarted.WhileSubscribed(),
+        )
+
+    val otherNotes = editableWorksiteProvider.editableWorksite.flatMapLatest {
+        editableWorksiteProvider.otherNotes
+    }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = emptyList(),
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    val tabTitles = combine(
+        filesNotes,
+        otherNotes,
+        ::Pair,
+    )
+        .mapLatest { (fn, on) ->
+            val (fileImages, localImages, notes) = fn
+
+            val fileCount = fileImages.size + localImages.size
+            val photosTitle = translate("caseForm.photos").let {
+                if (fileCount > 0) "$it ($fileCount)" else it
+            }
+
+            val noteCount = notes.size + on.size
+            val notesTitle = translate("formLabels.notes").let {
+                if (noteCount > 0) "$it ($noteCount)" else it
+            }
+
+            listOf(
+                translate("nav.info"),
+                photosTitle,
+                notesTitle,
+            )
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = emptyList(),
+            started = SharingStarted.WhileSubscribed(3_000),
         )
 
     val subTitle = editableWorksite.mapLatest {
@@ -454,7 +473,8 @@ class ExistingCaseViewModel @Inject constructor(
                             try {
                                 val nextDate =
                                     nextRecurDateFormat.format(nextRecurAt.toJavaInstant())
-                                return@let "${translate("shareWorksite.next_recur")} $nextDate"
+                                return@let translate("shareWorksite.next_recur")
+                                    .replace("{date}", nextDate)
                             } catch (e: Exception) {
                                 logger.logException(e)
                             }

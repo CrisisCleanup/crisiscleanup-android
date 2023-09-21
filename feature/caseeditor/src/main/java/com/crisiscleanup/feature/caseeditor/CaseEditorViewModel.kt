@@ -36,9 +36,11 @@ import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.LocalWorksite
 import com.crisiscleanup.core.model.data.WorkTypeStatus
 import com.crisiscleanup.core.model.data.Worksite
+import com.crisiscleanup.core.model.data.WorksiteNote
 import com.crisiscleanup.feature.caseeditor.model.CaseDataWriter
 import com.crisiscleanup.feature.caseeditor.model.FormFieldsInputData
 import com.crisiscleanup.feature.caseeditor.model.LocationInputData
+import com.crisiscleanup.feature.caseeditor.model.NotesFlagsInputData
 import com.crisiscleanup.feature.caseeditor.model.PropertyInputData
 import com.crisiscleanup.feature.caseeditor.model.coordinates
 import com.crisiscleanup.feature.caseeditor.navigation.CaseEditorArgs
@@ -656,6 +658,24 @@ class CaseEditorViewModel @Inject constructor(
                             setInvalidSection(index, dataWriter)
                         }
                         return false
+                    }
+
+                    (dataWriter as? NotesFlagsInputData)?.let { notesInputData ->
+                        val editingNote = notesInputData.editingNote.trim()
+                        var notes = worksite!!.notes
+                        if (editingNote.isNotBlank() &&
+                            (notes.isEmpty() || notes.first().note.trim() != editingNote)
+                        ) {
+                            notes = notes.toMutableList()
+                                .also {
+                                    val note = WorksiteNote.create().copy(note = editingNote)
+                                    it.add(0, note)
+                                }
+                            worksite = worksite!!.copy(
+                                notes = notes,
+                            )
+                            notesInputData.editingNote = ""
+                        }
                     }
                 }
 

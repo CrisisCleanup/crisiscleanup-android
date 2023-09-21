@@ -8,9 +8,11 @@ import androidx.compose.runtime.snapshotFlow
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteNote
+import kotlinx.coroutines.flow.Flow
 
 class NotesFlagsInputData(
     worksite: Worksite,
+    val otherNotes: Flow<List<Pair<String, String>>>,
 ) : CaseDataWriter {
     private val worksiteIn = worksite.copy()
 
@@ -21,6 +23,8 @@ class NotesFlagsInputData(
     var isAssignedToOrgMember by mutableStateOf(worksite.isAssignedToOrgMember)
 
     val notesStream = snapshotFlow { notes.toList() }
+
+    var editingNote by mutableStateOf("")
 
     private fun isChanged(notes: List<WorksiteNote>, worksite: Worksite): Boolean {
         return notes != worksite.notes ||

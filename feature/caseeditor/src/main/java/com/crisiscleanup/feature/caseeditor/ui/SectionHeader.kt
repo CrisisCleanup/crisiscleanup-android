@@ -21,7 +21,6 @@ import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CollapsibleIcon
 import com.crisiscleanup.core.designsystem.component.HelpAction
 import com.crisiscleanup.core.designsystem.component.WithHelpDialog
-import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.attentionBackgroundColor
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
@@ -86,8 +85,6 @@ internal fun SectionHeaderCollapsible(
             Modifier.listRowItemStartPadding(),
             style = textStyle,
         )
-        val iconVector =
-            if (isCollapsed) CrisisCleanupIcons.ExpandLess else CrisisCleanupIcons.ExpandMore
         if (help.isNotBlank()) {
             val translator = LocalAppTranslator.current
             val translateKey = "formLabels.$help"
@@ -101,7 +98,7 @@ internal fun SectionHeaderCollapsible(
         }
         Spacer(Modifier.weight(1f))
 
-        CollapsibleIcon(isCollapsed, sectionTitle, iconVector)
+        CollapsibleIcon(isCollapsed, sectionTitle)
     }
 }
 
