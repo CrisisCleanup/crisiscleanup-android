@@ -454,7 +454,8 @@ class ExistingCaseViewModel @Inject constructor(
                             try {
                                 val nextDate =
                                     nextRecurDateFormat.format(nextRecurAt.toJavaInstant())
-                                return@let "${translate("shareWorksite.next_recur")} $nextDate"
+                                return@let translate("shareWorksite.next_recur")
+                                    .replace("{date}", nextDate)
                             } catch (e: Exception) {
                                 logger.logException(e)
                             }

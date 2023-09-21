@@ -1,6 +1,5 @@
 package com.crisiscleanup.core.data.repository
 
-import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.log.AppLogger
@@ -59,7 +58,6 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
     private val languageDao: LanguageDao,
     private val languageDaoPlus: LanguageDaoPlus,
     private val statusRepository: WorkTypeStatusRepository,
-    private val resourceProvider: AndroidResourceProvider,
     @Logger(CrisisCleanupLoggers.Language) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
     @ApplicationScope private val coroutineScope: CoroutineScope,
