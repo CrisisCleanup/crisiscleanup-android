@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -243,6 +244,25 @@ internal class CaseEditorDataLoader(
                     workTypeTranslationLookup = workTypeFormFields.associate {
                         val name = formFieldTranslationLookup[it.fieldKey] ?: it.fieldKey
                         it.formField.selectToggleWorkType to name
+                    }
+
+                    val textAreaLookup = incident.formFields
+                        .filter(IncidentFormField::isTextArea)
+                        .associateBy(IncidentFormField::fieldKey)
+                    otherNotes = editableWorksite.mapNotNull { worksite ->
+                        worksite.formData?.let { worksiteFormData ->
+                            return@mapNotNull worksiteFormData
+                                .filter { textAreaLookup.containsKey(it.key) }
+                                .filter { it.value.valueString.isNotBlank() }
+                                .map {
+                                    val parentKey = textAreaLookup[it.key]!!.parentKey
+                                    val groupLabel = translate("formLabels.$parentKey")
+                                    val fieldLabel = translate("formLabels.${it.key}")
+                                    val label = "$groupLabel - $fieldLabel"
+                                    Pair(label, it.value.valueString.trim())
+                                }
+                                .sortedBy { it.first }
+                        }
                     }
 
                     val localTranslate = { s: String -> translate(s) }

@@ -1040,7 +1040,7 @@ internal fun EditExistingCaseNotesView(
                             hideOtherNotes = true
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        text = t("caseView.add_note"),
+                        text = t("actions.add"),
                         enabled = isEditable && editingNote.isNotBlank(),
                     )
                 }

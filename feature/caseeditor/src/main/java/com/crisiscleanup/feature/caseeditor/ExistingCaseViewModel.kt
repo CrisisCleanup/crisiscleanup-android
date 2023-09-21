@@ -47,7 +47,6 @@ import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
 import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
 import com.crisiscleanup.core.model.data.EmptyWorksite
-import com.crisiscleanup.core.model.data.IncidentFormField
 import com.crisiscleanup.core.model.data.NetworkImage
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.WorkTypeRequest
@@ -69,11 +68,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -340,26 +339,6 @@ class ExistingCaseViewModel @Inject constructor(
             Triple(fileImages, localImages, worksite.notes)
         }
 
-    val tabTitles = filesNotes.mapLatest { (fileImages, localImages, notes) ->
-        val fileCount = fileImages.size + localImages.size
-        val photosTitle = translate("caseForm.photos").let {
-            if (fileCount > 0) "$it ($fileCount)" else it
-        }
-        val notesTitle = translate("formLabels.notes").let {
-            if (notes.isNotEmpty()) "$it (${notes.size})" else it
-        }
-        listOf(
-            translate("nav.info"),
-            photosTitle,
-            notesTitle,
-        )
-    }
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = emptyList(),
-            started = SharingStarted.WhileSubscribed(3_000),
-        )
-
     val statusOptions = uiState
         .mapLatest {
             it.asCaseData()?.statusOptions ?: emptyList()
@@ -375,6 +354,45 @@ class ExistingCaseViewModel @Inject constructor(
             scope = viewModelScope,
             initialValue = null,
             started = SharingStarted.WhileSubscribed(),
+        )
+
+    val otherNotes = editableWorksiteProvider.editableWorksite.flatMapLatest {
+        editableWorksiteProvider.otherNotes
+    }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = emptyList(),
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    val tabTitles = combine(
+        filesNotes,
+        otherNotes,
+        ::Pair,
+    )
+        .mapLatest { (fn, on) ->
+            val (fileImages, localImages, notes) = fn
+
+            val fileCount = fileImages.size + localImages.size
+            val photosTitle = translate("caseForm.photos").let {
+                if (fileCount > 0) "$it ($fileCount)" else it
+            }
+
+            val noteCount = notes.size + on.size
+            val notesTitle = translate("formLabels.notes").let {
+                if (noteCount > 0) "$it ($noteCount)" else it
+            }
+
+            listOf(
+                translate("nav.info"),
+                photosTitle,
+                notesTitle,
+            )
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = emptyList(),
+            started = SharingStarted.WhileSubscribed(3_000),
         )
 
     val subTitle = editableWorksite.mapLatest {
@@ -550,36 +568,6 @@ class ExistingCaseViewModel @Inject constructor(
             initialValue = emptyMap(),
             started = SharingStarted.WhileSubscribed(),
         )
-
-    private val textAreaFormFields = caseData.mapNotNull {
-        it?.incident?.formFields?.filter(IncidentFormField::isTextArea)
-            ?.associateBy(IncidentFormField::fieldKey)
-    }
-    private val worksiteFormFields = editableWorksite.mapNotNull {
-        if (it.formData?.isNotEmpty() == true) {
-            it.formData
-        } else {
-            null
-        }
-    }
-    val otherNotes = combine(
-        textAreaFormFields,
-        worksiteFormFields,
-        ::Pair,
-    ).map { (textAreaLookup, formFields) ->
-        formFields.filter { textAreaLookup.containsKey(it.key) }
-            .filter { it.value.valueString.isNotBlank() }.map {
-                val parentKey = textAreaLookup[it.key]!!.parentKey
-                val groupLabel = translate("formLabels.$parentKey")
-                val fieldLabel = translate("formLabels.${it.key}")
-                val label = "$groupLabel - $fieldLabel"
-                Pair(label, it.value.valueString.trim())
-            }.sortedBy { it.first }
-    }.stateIn(
-        scope = viewModelScope,
-        initialValue = emptyList(),
-        started = SharingStarted.WhileSubscribed(),
-    )
 
     private fun updateHeaderTitle(caseNumber: String = "") {
         headerTitle.value = if (caseNumber.isEmpty()) {
