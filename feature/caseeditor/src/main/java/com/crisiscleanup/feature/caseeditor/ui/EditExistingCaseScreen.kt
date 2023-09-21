@@ -2,6 +2,9 @@ package com.crisiscleanup.feature.caseeditor.ui
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -47,7 +50,7 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -63,6 +66,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -79,6 +83,8 @@ import com.crisiscleanup.core.designsystem.component.CardSurface
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupFab
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationDefaults
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextArea
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.LinkifyEmailText
 import com.crisiscleanup.core.designsystem.component.LinkifyLocationText
 import com.crisiscleanup.core.designsystem.component.LinkifyPhoneText
@@ -107,7 +113,9 @@ import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteFlagType
 import com.crisiscleanup.core.model.data.WorksiteNote
+import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
+import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.ExistingCaseViewModel
 import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.WorkTypeProfile
@@ -970,33 +978,69 @@ internal fun EditExistingCaseNotesView(
     viewModel: ExistingCaseViewModel = hiltViewModel(),
 ) {
     val isEditable = LocalCaseEditor.current.isEditable
+    val t = LocalAppTranslator.current
 
-    var isCreatingNote by remember { mutableStateOf(false) }
-    val onAddNote = remember(viewModel) {
-        {
-            if (isEditable) {
-                isCreatingNote = true
-            }
-        }
+    var editingNote by remember { mutableStateOf("") }
+    val saveNote = remember(viewModel) {
+        { note: WorksiteNote -> viewModel.saveNote(note) }
     }
 
+    val coroutineScope = rememberCoroutineScope()
+    val closeKeyboard = rememberCloseKeyboard(viewModel)
+
     val listState = rememberLazyListState()
+    val isScrolledDown by remember {
+        derivedStateOf {
+            listState.firstVisibleItemIndex > 0
+        }
+    }
     ConstraintLayout(Modifier.fillMaxSize()) {
-        val (newNoteFab) = createRefs()
+        val (noteContent, newNoteFab) = createRefs()
 
         val notes = worksite.notes
         LazyColumn(
+            modifier = Modifier
+                .testTag("viewCaseNoteContents")
+                .constrainAs(noteContent) {
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                    top.linkTo(parent.top)
+                    bottom.linkTo(parent.bottom)
+                }
+                .fillMaxSize()
+                .scrollFlingListener(closeKeyboard),
             state = listState,
             verticalArrangement = listItemSpacedBy,
         ) {
             item {
-                Spacer(
-                    Modifier
-                        .fillMaxWidth()
-                        // TODO Common dimensions
-                        .height(8.dp),
-                )
+                Column(
+                    listItemModifier,
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = listItemSpacedBy,
+                ) {
+                    CrisisCleanupTextArea(
+                        text = editingNote,
+                        onTextChange = { editingNote = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text(t("caseView.note")) },
+                        enabled = isEditable,
+                        imeAction = ImeAction.Default,
+                    )
+
+                    CrisisCleanupTextButton(
+                        onClick = {
+                            val note = WorksiteNote.create().copy(
+                                note = editingNote,
+                            )
+                            saveNote(note)
+                            editingNote = ""
+                        },
+                        text = t("actions.save"),
+                        enabled = isEditable && editingNote.isNotBlank(),
+                    )
+                }
             }
+
             staticNoteItems(
                 notes,
                 notes.size,
@@ -1015,35 +1059,31 @@ internal fun EditExistingCaseNotesView(
             }
         }
 
-        CrisisCleanupFab(
-            onClick = onAddNote,
-            modifier = Modifier
-                .testTag("editCaseAddNoteFab")
-                .constrainAs(newNoteFab) {
-                    end.linkTo(parent.end, margin = actionEdgeSpace)
-                    bottom.linkTo(parent.bottom, margin = actionEdgeSpace)
-                },
-            enabled = isEditable,
+        val isKeyboardOpen = rememberIsKeyboardOpen()
+        AnimatedVisibility(
+            modifier = Modifier.constrainAs(newNoteFab) {
+                end.linkTo(parent.end, margin = actionEdgeSpace)
+                bottom.linkTo(parent.bottom, margin = actionEdgeSpace)
+            },
+            visible = !isKeyboardOpen,
+            enter = fadeIn(),
+            exit = fadeOut(),
         ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_note),
-                contentDescription = LocalAppTranslator.current("caseView.add_note_alt"),
-            )
-        }
-
-        if (viewModel.takeNoteAdded()) {
-            LaunchedEffect(Unit) {
-                listState.animateScrollToItem(0)
+            CrisisCleanupFab(
+                onClick = {
+                    coroutineScope.launch {
+                        listState.animateScrollToItem(0)
+                    }
+                },
+                modifier = Modifier.testTag("viewCaseAddNoteAction"),
+                enabled = isEditable && isScrolledDown,
+            ) {
+                Icon(
+                    imageVector = CrisisCleanupIcons.CaretUp,
+                    contentDescription = t("~~Scroll to top"),
+                )
             }
         }
-    }
-
-    if (isCreatingNote) {
-        val dismissNoteDialog = { isCreatingNote = false }
-        val saveNote = remember(viewModel) {
-            { note: WorksiteNote -> viewModel.saveNote(note) }
-        }
-        OnCreateNote(saveNote, dismissNoteDialog)
     }
 }
 
