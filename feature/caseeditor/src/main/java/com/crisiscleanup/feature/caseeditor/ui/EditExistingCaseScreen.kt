@@ -28,7 +28,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.pager.HorizontalPager
@@ -103,7 +102,6 @@ import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
-import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
 import com.crisiscleanup.core.designsystem.theme.neutralIconColor
 import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
@@ -1066,23 +1064,10 @@ internal fun EditExistingCaseNotesView(
                 }
 
                 if (!hideOtherNotes) {
-                    items(
+                    otherNoteItems(
                         otherNotes,
-                        key = { it.first },
-                    ) {
-                        CardSurface(cardContainerColor) {
-                            Column(
-                                listItemModifier,
-                                verticalArrangement = listItemSpacedByHalf,
-                            ) {
-                                Text(
-                                    it.first,
-                                    style = MaterialTheme.typography.bodySmall,
-                                )
-                                Text(it.second)
-                            }
-                        }
-                    }
+                        isCardView = true,
+                    )
                 }
             }
 

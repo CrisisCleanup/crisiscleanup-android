@@ -8,9 +8,11 @@ import androidx.compose.runtime.snapshotFlow
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteNote
+import kotlinx.coroutines.flow.Flow
 
 class NotesFlagsInputData(
     worksite: Worksite,
+    val otherNotes: Flow<List<Pair<String, String>>>,
 ) : CaseDataWriter {
     private val worksiteIn = worksite.copy()
 

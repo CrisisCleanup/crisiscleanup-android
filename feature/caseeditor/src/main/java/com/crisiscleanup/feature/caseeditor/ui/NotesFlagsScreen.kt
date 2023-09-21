@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -28,6 +29,7 @@ import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.cardContainerColor
 import com.crisiscleanup.core.designsystem.theme.listCheckboxAlignStartOffset
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.survivorNoteColor
 import com.crisiscleanup.core.designsystem.theme.survivorNoteColorNoTransparency
 import com.crisiscleanup.core.model.data.WorksiteNote
@@ -115,6 +117,42 @@ internal fun LazyListScope.staticNoteItems(
 }
 
 @Composable
+private fun OtherNoteView(
+    otherNote: Pair<String, String>,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier,
+        verticalArrangement = listItemSpacedByHalf,
+    ) {
+        Text(
+            otherNote.first,
+            style = MaterialTheme.typography.bodySmall,
+        )
+        Text(otherNote.second)
+    }
+}
+
+internal fun LazyListScope.otherNoteItems(
+    otherNotes: List<Pair<String, String>>,
+    modifier: Modifier = listItemModifier,
+    isCardView: Boolean = false,
+) {
+    items(
+        otherNotes,
+        key = { it.first },
+    ) {
+        if (isCardView) {
+            CardSurface(cardContainerColor) {
+                OtherNoteView(it, modifier)
+            }
+        } else {
+            OtherNoteView(it, modifier)
+        }
+    }
+}
+
+@Composable
 internal fun SurvivorNoteLegend(
     modifier: Modifier = Modifier,
 ) {
@@ -164,7 +202,9 @@ internal fun HighPriorityFlagInput(
     val updateHighPriority =
         remember(inputData) { { b: Boolean -> inputData.isHighPriority = b } }
     CrisisCleanupTextCheckbox(
-        listItemModifier.listCheckboxAlignStartOffset().testTag("caseFlagHighPriorityCheckbox"),
+        listItemModifier
+            .listCheckboxAlignStartOffset()
+            .testTag("caseFlagHighPriorityCheckbox"),
         inputData.isHighPriority,
         text = LocalAppTranslator.current("flag.flag_high_priority"),
         onToggle = toggleHighPriority,
@@ -184,7 +224,9 @@ internal fun MemberOfMyOrgFlagInput(
     val updateAssignTo =
         remember(inputData) { { b: Boolean -> inputData.isAssignedToOrgMember = b } }
     CrisisCleanupTextCheckbox(
-        listItemModifier.listCheckboxAlignStartOffset().testTag("caseMemberOfMyOrgCheckbox"),
+        listItemModifier
+            .listCheckboxAlignStartOffset()
+            .testTag("caseMemberOfMyOrgCheckbox"),
         inputData.isAssignedToOrgMember,
         text = LocalAppTranslator.current("actions.member_of_my_org"),
         onToggle = toggleAssignTo,

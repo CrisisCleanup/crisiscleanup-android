@@ -24,6 +24,7 @@ internal class EditableNotesFlagsDataEditor(
 
         notesFlagsInputData = NotesFlagsInputData(
             worksite,
+            worksiteProvider.otherNotes,
         )
     }
 

@@ -56,6 +56,7 @@ internal fun PropertyNotesFlagsView(
     }
 
     val notes by inputData.notesStream.collectAsStateWithLifecycle(emptyList())
+    val otherNotes by inputData.otherNotes.collectAsStateWithLifecycle(emptyList())
 
     var showAllNotesDialog by remember { mutableStateOf(false) }
     val showAllNotes = remember(inputData) { { showAllNotesDialog = true } }
@@ -73,7 +74,9 @@ internal fun PropertyNotesFlagsView(
     ) {
         Text(
             text = translator("formLabels.notes"),
-            Modifier.testTag("propertyLabelNotesText").weight(1f),
+            Modifier
+                .testTag("propertyLabelNotesText")
+                .weight(1f),
         )
         if (isExpandable) {
             CrisisCleanupTextButton(
@@ -125,6 +128,7 @@ internal fun PropertyNotesFlagsView(
         val dismissDialog = { showAllNotesDialog = false }
         AllNotes(
             notes,
+            otherNotes,
             translator("actions.close"),
             dismissDialog,
         )
@@ -134,6 +138,7 @@ internal fun PropertyNotesFlagsView(
 @Composable
 private fun AllNotes(
     notes: List<WorksiteNote>,
+    otherNotes: List<Pair<String, String>>,
     dismissText: String = "",
     onDismiss: () -> Unit = {},
 ) {
@@ -153,6 +158,7 @@ private fun AllNotes(
                         .weight(weight = 1f, fill = false),
                 ) {
                     LazyColumn {
+                        otherNoteItems(otherNotes)
                         staticNoteItems(
                             notes,
                             notes.size,
