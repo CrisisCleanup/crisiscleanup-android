@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.pager.HorizontalPager
@@ -80,11 +81,12 @@ import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CardSurface
+import com.crisiscleanup.core.designsystem.component.CollapsibleIcon
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupFab
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationDefaults
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextArea
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.LinkifyEmailText
 import com.crisiscleanup.core.designsystem.component.LinkifyLocationText
 import com.crisiscleanup.core.designsystem.component.LinkifyPhoneText
@@ -101,6 +103,7 @@ import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
 import com.crisiscleanup.core.designsystem.theme.neutralIconColor
 import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
@@ -334,12 +337,11 @@ private fun TopBar(
     } else {
         @Composable {
             val translator = LocalAppTranslator.current
-            val highPriorityTranslateKey =
-                if (isHighPriority) {
-                    "actions.unmark_high_priority"
-                } else {
-                    "flag.flag_high_priority"
-                }
+            val highPriorityTranslateKey = if (isHighPriority) {
+                "actions.unmark_high_priority"
+            } else {
+                "flag.flag_high_priority"
+            }
             val highPriorityTint = getTopIconActionColor(isHighPriority, isEditable)
             CrisisCleanupIconButton(
                 iconResId = R.drawable.ic_important_filled,
@@ -355,12 +357,11 @@ private fun TopBar(
             } else {
                 R.drawable.ic_heart_outline
             }
-            val favoriteDescription =
-                if (isFavorite) {
-                    translator("actions.not_member_of_my_org")
-                } else {
-                    translator("actions.member_of_my_org")
-                }
+            val favoriteDescription = if (isFavorite) {
+                translator("actions.not_member_of_my_org")
+            } else {
+                translator("actions.member_of_my_org")
+            }
             val favoriteTint = getTopIconActionColor(isFavorite, isEditable)
             CrisisCleanupIconButton(
                 iconResId = iconResId,
@@ -573,12 +574,11 @@ internal fun EditExistingCaseInfoView(
     val claimAll = remember(viewModel) { { viewModel.claimAll() } }
     val requestAll = remember(viewModel) { { viewModel.requestAll() } }
     val releaseAll = remember(viewModel) { { viewModel.releaseAll() } }
-    val updateWorkType =
-        remember(viewModel) {
-            { updated: WorkType, isStatusChange: Boolean ->
-                viewModel.updateWorkType(updated, isStatusChange)
-            }
+    val updateWorkType = remember(viewModel) {
+        { updated: WorkType, isStatusChange: Boolean ->
+            viewModel.updateWorkType(updated, isStatusChange)
         }
+    }
     val requestWorkType =
         remember(viewModel) { { workType: WorkType -> viewModel.requestWorkType(workType) } }
     val releaseWorkType =
@@ -679,8 +679,7 @@ private fun FlagChip(
         val color = flagColors[flagType] ?: flagColorFallback
         val text = translator(flagType.literal)
         val removeFlagTranslateKey = "actions.remove_type_flag"
-        val description = translator(removeFlagTranslateKey)
-            .replace("{flag}", text)
+        val description = translator(removeFlagTranslateKey).replace("{flag}", text)
 
         var contentColor = Color.White
         if (!isEditable) {
@@ -749,8 +748,8 @@ private fun LazyListScope.propertyInfoItems(
                         .fillMaxWidth()
                         .padding(horizontal = edgeSpacing, vertical = edgeSpacingHalf),
                 )
-                val phoneNumbers = listOf(worksite.phone1, worksite.phone2).filterNotBlankTrim()
-                    .joinToString("; ")
+                val phoneNumbers =
+                    listOf(worksite.phone1, worksite.phone2).filterNotBlankTrim().joinToString("; ")
                 PropertyInfoRow(
                     CrisisCleanupIcons.Phone,
                     phoneNumbers,
@@ -985,6 +984,10 @@ internal fun EditExistingCaseNotesView(
         { note: WorksiteNote -> viewModel.saveNote(note) }
     }
 
+    val otherNotes by viewModel.otherNotes.collectAsStateWithLifecycle()
+    val otherNotesLabel = t("~~Other notes")
+    var hideOtherNotes by remember { mutableStateOf(false) }
+
     val coroutineScope = rememberCoroutineScope()
     val closeKeyboard = rememberCloseKeyboard(viewModel)
 
@@ -1027,17 +1030,59 @@ internal fun EditExistingCaseNotesView(
                         imeAction = ImeAction.Default,
                     )
 
-                    CrisisCleanupTextButton(
+                    CrisisCleanupButton(
                         onClick = {
                             val note = WorksiteNote.create().copy(
                                 note = editingNote,
                             )
                             saveNote(note)
                             editingNote = ""
+                            hideOtherNotes = true
                         },
-                        text = t("actions.save"),
+                        modifier = Modifier.fillMaxWidth(),
+                        text = t("caseView.add_note"),
                         enabled = isEditable && editingNote.isNotBlank(),
                     )
+                }
+            }
+
+            if (otherNotes.isNotEmpty()) {
+                item {
+                    Row(
+                        Modifier
+                            .clickable {
+                                hideOtherNotes = !hideOtherNotes
+                            }
+                            .then(listItemModifier),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(otherNotesLabel)
+                        Spacer(Modifier.weight(1f))
+                        CollapsibleIcon(
+                            isCollapsed = hideOtherNotes,
+                            sectionTitle = otherNotesLabel,
+                        )
+                    }
+                }
+
+                if (!hideOtherNotes) {
+                    items(
+                        otherNotes,
+                        key = { it.first },
+                    ) {
+                        CardSurface(cardContainerColor) {
+                            Column(
+                                listItemModifier,
+                                verticalArrangement = listItemSpacedByHalf,
+                            ) {
+                                Text(
+                                    it.first,
+                                    style = MaterialTheme.typography.bodySmall,
+                                )
+                                Text(it.second)
+                            }
+                        }
+                    }
                 }
             }
 

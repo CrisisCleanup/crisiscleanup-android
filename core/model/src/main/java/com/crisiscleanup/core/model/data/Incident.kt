@@ -65,6 +65,7 @@ data class IncidentFormField(
     val isDivEnd = htmlTypeLower == "divend"
     val isHidden = htmlTypeLower == "hidden"
     val isFrequency = htmlTypeLower == "cronselect"
+    val isTextArea = htmlTypeLower == "textarea"
 }
 
 data class IncidentIdNameType(
