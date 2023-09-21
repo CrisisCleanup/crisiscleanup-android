@@ -3,6 +3,7 @@ package com.crisiscleanup.core.datastore
 import androidx.datastore.core.DataStore
 import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.CasesFilterMaxDaysAgo
+import com.crisiscleanup.core.model.data.DEFAULT_SVI
 import com.crisiscleanup.core.model.data.WorkTypeStatus
 import com.crisiscleanup.core.model.data.WorksiteFlagType
 import com.crisiscleanup.core.model.data.flagFromLiteral
@@ -39,7 +40,7 @@ class CasesFiltersDataSource @Inject constructor(
             val updatedAt = getDateRage(updatedAtStartSeconds, updatedAtEndSeconds)
             val isUnfiltered = daysAgoUpdated <= 0
             CasesFilter(
-                svi = if (isUnfiltered) 1.0f else svi,
+                svi = if (isUnfiltered) DEFAULT_SVI else svi,
                 daysAgoUpdated = if (isUnfiltered) CasesFilterMaxDaysAgo else daysAgoUpdated,
                 distance = distance,
                 isWithinPrimaryResponseArea = isWithinPrimaryResponseArea,
