@@ -24,6 +24,8 @@ class NotesFlagsInputData(
 
     val notesStream = snapshotFlow { notes.toList() }
 
+    var editingNote by mutableStateOf("")
+
     private fun isChanged(notes: List<WorksiteNote>, worksite: Worksite): Boolean {
         return notes != worksite.notes ||
             isHighPriority != worksite.hasHighPriorityFlag ||
