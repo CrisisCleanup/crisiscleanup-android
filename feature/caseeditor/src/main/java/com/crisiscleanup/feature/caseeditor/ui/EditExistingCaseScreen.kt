@@ -1106,7 +1106,7 @@ internal fun EditExistingCaseNotesView(
                     }
                 },
                 modifier = Modifier.testTag("viewCaseAddNoteAction"),
-                enabled = isEditable && isScrolledDown,
+                enabled = isScrolledDown,
             ) {
                 Icon(
                     imageVector = CrisisCleanupIcons.CaretUp,
