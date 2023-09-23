@@ -32,7 +32,7 @@ private interface DataSourceApi {
         fields: String,
         @Query("limit")
         limit: Int,
-        @Query("ordering")
+        @Query("sort")
         ordering: String,
         @Query("start_at__gt")
         after: Instant?,
