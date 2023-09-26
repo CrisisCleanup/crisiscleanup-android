@@ -58,6 +58,14 @@ class SyncAttemptTest {
     }
 
     @Test
+    fun backoffIntervalMaximum() {
+        val syncAttempt = SyncAttempt(10, 100, 11)
+
+        assertTrue(syncAttempt.isBackingOff(15, 100 + 3600))
+        assertFalse(syncAttempt.isBackingOff(15, 100 + 3601))
+    }
+
+    @Test
     fun shouldSyncPassively() {
         // Not recent, not backing off
         val notRecentNotBackingOff = SyncAttempt(10, 1000, 1)

@@ -50,6 +50,7 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -446,6 +447,16 @@ private fun ColumnScope.ExistingCaseContent(
             }
         }
         BusyIndicatorFloatingTopCenter(isLoading)
+    }
+
+    val closeKeyboard = rememberCloseKeyboard(pagerState)
+    val pagerPage by remember(pagerState) {
+        derivedStateOf {
+            pagerState.currentPage
+        }
+    }
+    LaunchedEffect(pagerPage) {
+        closeKeyboard()
     }
 }
 
@@ -1106,7 +1117,7 @@ internal fun EditExistingCaseNotesView(
                     }
                 },
                 modifier = Modifier.testTag("viewCaseAddNoteAction"),
-                enabled = isEditable && isScrolledDown,
+                enabled = isScrolledDown,
             ) {
                 Icon(
                     imageVector = CrisisCleanupIcons.CaretUp,

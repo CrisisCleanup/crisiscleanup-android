@@ -21,8 +21,12 @@ data class SyncAttempt(
             return false
         }
 
-        val intervalSeconds = backoffIntervalSeconds.coerceAtLeast(1)
         val deltaSeconds = (nowSeconds - attemptedSeconds).coerceAtLeast(1)
+        if (deltaSeconds > 3600) {
+            return false
+        }
+
+        val intervalSeconds = backoffIntervalSeconds.coerceAtLeast(1)
         // now < attempted + interval * 2^(tries-1)
         val lhs = ln(deltaSeconds / intervalSeconds.toFloat())
         val rhs = (attemptedCounter - 1) * ln(2f)
