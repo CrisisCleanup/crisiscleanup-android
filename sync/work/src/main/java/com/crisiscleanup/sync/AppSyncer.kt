@@ -3,6 +3,9 @@ package com.crisiscleanup.sync
 import android.content.Context
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.di.ApplicationScope
+import com.crisiscleanup.core.common.log.AppLogger
+import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
+import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncLogger
@@ -44,6 +47,7 @@ class AppSyncer @Inject constructor(
     private val statusRepository: WorkTypeStatusRepository,
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val appPreferences: LocalAppPreferencesDataSource,
+    @Logger(CrisisCleanupLoggers.Sync) private val appLogger: AppLogger,
     private val syncLogger: SyncLogger,
     private val networkMonitor: NetworkMonitor,
     @ApplicationContext private val context: Context,
@@ -122,6 +126,7 @@ class AppSyncer @Inject constructor(
             scheduleSyncWorksitesFull()
         } catch (e: Exception) {
             syncLogger.log("Sync pull fail. ${e.message}".trim())
+            appLogger.logException(e)
             return SyncResult.Error(e.message ?: "Sync fail")
         }
 
