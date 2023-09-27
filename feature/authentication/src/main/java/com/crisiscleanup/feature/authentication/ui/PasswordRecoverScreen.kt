@@ -155,7 +155,7 @@ private fun ForgotPasswordView(
     val emailErrorMessage by viewModel.forgotPasswordErrorMessage.collectAsStateWithLifecycle()
     val hasError = emailErrorMessage.isNotBlank()
 
-    if (emailErrorMessage.isNotBlank()) {
+    if (hasError) {
         Text(
             emailErrorMessage,
             listItemModifier,

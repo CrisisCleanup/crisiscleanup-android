@@ -92,6 +92,9 @@ class PasswordRecoverViewModel @Inject constructor(
             return
         }
 
+        if (isInitiatingPasswordReset.value) {
+            return
+        }
         isInitiatingPasswordReset.value = true
         viewModelScope.launch {
             try {
@@ -128,6 +131,9 @@ class PasswordRecoverViewModel @Inject constructor(
             return
         }
 
+        if (isInitiatingMagicLink.value) {
+            return
+        }
         isInitiatingMagicLink.value = true
         viewModelScope.launch {
             try {
