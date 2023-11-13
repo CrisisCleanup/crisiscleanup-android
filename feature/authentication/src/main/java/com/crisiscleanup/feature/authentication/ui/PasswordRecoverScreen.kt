@@ -79,7 +79,7 @@ fun PasswordRecoverRoute(
         TopAppBarBackAction(
             title = translator(titleKey),
             onAction = clearStateOnBack,
-            modifier = Modifier.testTag("forgotPasswordBackBtn"),
+            modifier = Modifier.testTag("passwordRecoverBackBtn"),
         )
 
         val isResetInitiated by viewModel.isPasswordResetInitiated.collectAsStateWithLifecycle()
