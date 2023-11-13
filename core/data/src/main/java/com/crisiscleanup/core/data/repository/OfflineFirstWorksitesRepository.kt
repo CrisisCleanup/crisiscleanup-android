@@ -140,7 +140,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         }
 
     private val organizationAffiliates = orgId.map {
-        organizationsRepository.getOrganizationAffiliateIds(it).toSet()
+        organizationsRepository.getOrganizationAffiliateIds(it, true).toSet()
     }
         .stateIn(
             scope = externalScope,

@@ -36,7 +36,7 @@ interface OrganizationsRepository {
         updateLocations: Boolean = false,
     )
 
-    fun getOrganizationAffiliateIds(organizationId: Long): Set<Long>
+    fun getOrganizationAffiliateIds(organizationId: Long, addOrganizationId: Boolean): Set<Long>
 
     suspend fun getNearbyClaimingOrganizations(
         latitude: Double,
@@ -113,9 +113,13 @@ class OfflineFirstOrganizationsRepository @Inject constructor(
         }
     }
 
-    override fun getOrganizationAffiliateIds(organizationId: Long) =
+    override fun getOrganizationAffiliateIds(organizationId: Long, addOrganizationId: Boolean) =
         incidentOrganizationDao.getAffiliateOrganizationIds(organizationId).toMutableSet()
-            .apply { add(organizationId) }
+            .apply {
+                if (addOrganizationId) {
+                    add(organizationId)
+                }
+            }
 
     override suspend fun getNearbyClaimingOrganizations(
         latitude: Double,

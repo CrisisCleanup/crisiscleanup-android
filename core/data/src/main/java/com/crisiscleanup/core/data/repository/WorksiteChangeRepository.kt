@@ -365,7 +365,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
             val workTypeIdLookup = workTypeDao.getNetworkedIdMap(worksiteId).asLookup()
             val organizationId = accountDataRepository.accountData.first().org.id
             val affiliateOrganizations =
-                organizationsRepository.getOrganizationAffiliateIds(organizationId)
+                organizationsRepository.getOrganizationAffiliateIds(organizationId, true)
             val syncResult = worksiteChangeSyncer.sync(
                 accountDataRepository.accountData.first(),
                 oldestReferenceChange,
