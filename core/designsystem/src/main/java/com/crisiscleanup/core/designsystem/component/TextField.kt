@@ -5,6 +5,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -20,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -94,6 +96,7 @@ fun SingleLineTextField(
     readOnly: Boolean = false,
     drawOutline: Boolean = false,
     placeholder: String = "",
+    textStyle: TextStyle = LocalTextStyle.current,
 ) {
     val focusRequester = FocusRequester()
     val modifier2 =
@@ -148,6 +151,7 @@ fun SingleLineTextField(
             trailingIcon = trailingIconContent,
             readOnly = readOnly,
             placeholder = placeholderContent,
+            textStyle = textStyle,
         )
     } else {
         TextField(
@@ -165,6 +169,7 @@ fun SingleLineTextField(
             trailingIcon = trailingIconContent,
             readOnly = readOnly,
             placeholder = placeholderContent,
+            textStyle = textStyle,
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.Transparent,
                 unfocusedContainerColor = Color.Transparent,

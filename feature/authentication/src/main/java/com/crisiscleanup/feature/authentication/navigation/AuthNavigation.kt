@@ -11,6 +11,7 @@ fun NavGraphBuilder.authGraph(
     nestedGraphs: NavGraphBuilder.() -> Unit,
     enableBackHandler: Boolean = false,
     openLoginWithEmail: () -> Unit = {},
+    openLoginWithPhone: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
 ) {
     navigation(
@@ -21,6 +22,7 @@ fun NavGraphBuilder.authGraph(
             RootAuthRoute(
                 enableBackHandler = enableBackHandler,
                 openLoginWithEmail = openLoginWithEmail,
+                openLoginWithPhone = openLoginWithPhone,
                 closeAuthentication = closeAuthentication,
             )
         }

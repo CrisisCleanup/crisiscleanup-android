@@ -116,13 +116,13 @@ fun PasswordRecoverRoute(
                 Spacer(Modifier.height(32.dp))
             }
 
-//            if (showMagicLink) {
-//                MagicLinkView(
-//                    emailAddress = emailAddressNn,
-//                    isEditable = isNotLoading,
-//                    isBusy = isBusy,
-//                )
-//            }
+            if (showMagicLink) {
+                MagicLinkView(
+                    emailAddress = emailAddressNn,
+                    isEditable = isNotLoading,
+                    isBusy = isBusy,
+                )
+            }
         }
     }
 }

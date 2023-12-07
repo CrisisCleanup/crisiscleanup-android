@@ -1,6 +1,7 @@
 package com.crisiscleanup.feature.authentication
 
 import com.crisiscleanup.core.common.AndroidResourceProvider
+import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.InputValidator
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.event.AuthEventBus
@@ -81,6 +82,17 @@ class AuthenticationViewModelTest {
 
     // private val passwordCredentialsStream = MutableSharedFlow<PasswordCredentials>(0)
 
+    private val testAppEnv = object : AppEnv {
+        override val isDebuggable = false
+        override val isProduction = true
+        override val isNotProduction = false
+        override val isEarlybird = false
+        override val apiEnvironment = ""
+
+        override fun runInNonProd(block: () -> Unit) {
+        }
+    }
+
     @Before
     fun setUp() {
         MockKAnnotations.init(this)
@@ -106,8 +118,6 @@ class AuthenticationViewModelTest {
             UserData(
                 darkThemeConfig = DarkThemeConfig.FOLLOW_SYSTEM,
                 shouldHideOnboarding = false,
-                saveCredentialsPromptCount = 0,
-                disableSaveCredentialsPrompt = false,
                 syncAttempt = SyncAttempt(0, 0, 0),
                 selectedIncidentId = 0,
                 languageKey = EnglishLanguage.key,
@@ -115,10 +125,6 @@ class AuthenticationViewModelTest {
                 allowAllAnalytics = false,
             ),
         )
-
-        coEvery {
-            appPreferences.incrementSaveCredentialsPrompt()
-        } returns Unit
 
         // every {
         //     authEventBus.passwordCredentialResults
@@ -154,6 +160,7 @@ class AuthenticationViewModelTest {
 //        appPreferences,
         translator,
 //        resProvider,
+        testAppEnv,
         UnconfinedTestDispatcher(),
         appLogger,
     )

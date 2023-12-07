@@ -6,6 +6,7 @@ object RouteConstant {
 
     const val authRoute = "auth_route"
     const val loginWithEmailRoute = "$authRoute/login_with_email"
+    const val loginWithPhoneRoute = "$authRoute/login_with_phone"
     const val forgotPasswordRoute = "forgot_password_route"
     const val emailLoginLinkRoute = "email_login_link_route"
     // const val resetPasswordRoute = "reset_password_route"

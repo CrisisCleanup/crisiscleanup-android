@@ -3,6 +3,7 @@ package com.crisiscleanup.core.network
 import com.crisiscleanup.core.network.model.InitiatePasswordResetResult
 import com.crisiscleanup.core.network.model.NetworkAuthResult
 import com.crisiscleanup.core.network.model.NetworkCaseHistoryEvent
+import com.crisiscleanup.core.network.model.NetworkCodeAuthResult
 import com.crisiscleanup.core.network.model.NetworkCountResult
 import com.crisiscleanup.core.network.model.NetworkIncident
 import com.crisiscleanup.core.network.model.NetworkIncidentOrganization
@@ -12,6 +13,8 @@ import com.crisiscleanup.core.network.model.NetworkLocation
 import com.crisiscleanup.core.network.model.NetworkOauthResult
 import com.crisiscleanup.core.network.model.NetworkOrganizationsResult
 import com.crisiscleanup.core.network.model.NetworkPersonContact
+import com.crisiscleanup.core.network.model.NetworkPhoneOneTimePasswordResult
+import com.crisiscleanup.core.network.model.NetworkUserProfile
 import com.crisiscleanup.core.network.model.NetworkWorkTypeRequest
 import com.crisiscleanup.core.network.model.NetworkWorkTypeStatusResult
 import com.crisiscleanup.core.network.model.NetworkWorksiteCoreData
@@ -24,12 +27,24 @@ import kotlinx.datetime.Instant
 interface CrisisCleanupAuthApi {
     suspend fun login(email: String, password: String): NetworkAuthResult
     suspend fun oauthLogin(email: String, password: String): NetworkOauthResult
+    suspend fun magicLinkLogin(token: String): NetworkCodeAuthResult
+    suspend fun verifyPhoneCode(
+        phoneNumber: String,
+        code: String,
+    ): NetworkPhoneOneTimePasswordResult?
+
+    suspend fun oneTimePasswordLogin(
+        accountId: Long,
+        oneTimePasswordId: Long,
+    ): NetworkCodeAuthResult?
+
     suspend fun refreshTokens(refreshToken: String): NetworkOauthResult?
     suspend fun logout()
 }
 
 interface CrisisCleanupAccountApi {
     suspend fun initiateMagicLink(emailAddress: String): Boolean
+    suspend fun initiatePhoneLogin(phoneNumber: String): Boolean
     suspend fun initiatePasswordReset(emailAddress: String): InitiatePasswordResetResult
     suspend fun changePassword(
         password: String,
@@ -126,4 +141,6 @@ interface CrisisCleanupNetworkDataSource {
     suspend fun getCaseHistory(worksiteId: Long): List<NetworkCaseHistoryEvent>
 
     suspend fun getUsers(ids: Collection<Long>): List<NetworkPersonContact>
+
+    suspend fun getProfile(accessToken: String): NetworkUserProfile?
 }

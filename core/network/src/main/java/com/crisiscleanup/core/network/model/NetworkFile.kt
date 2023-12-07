@@ -35,6 +35,9 @@ data class NetworkFile(
     val isProfilePicture = fileTypeT == "fileTypes.user_profile_picture"
 }
 
+val List<NetworkFile>.profilePictureUrl: String?
+    get() = find { it.isProfilePicture }?.largeThumbnailUrl
+
 @Serializable
 data class NetworkFilePush(
     @SerialName("file")

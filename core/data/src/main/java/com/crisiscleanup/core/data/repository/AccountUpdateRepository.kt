@@ -10,6 +10,7 @@ import javax.inject.Inject
 
 interface AccountUpdateRepository {
     suspend fun initiateEmailMagicLink(emailAddress: String): Boolean
+    suspend fun initiatePhoneLogin(phoneNumber: String): Boolean
     suspend fun initiatePasswordReset(emailAddress: String): PasswordResetInitiation
     suspend fun changePassword(password: String, token: String): Boolean
 }
@@ -21,6 +22,15 @@ class CrisisCleanupAccountUpdateRepository @Inject constructor(
     override suspend fun initiateEmailMagicLink(emailAddress: String): Boolean {
         try {
             return accountApi.initiateMagicLink(emailAddress)
+        } catch (e: Exception) {
+            logger.logException(e)
+        }
+        return false
+    }
+
+    override suspend fun initiatePhoneLogin(phoneNumber: String): Boolean {
+        try {
+            return accountApi.initiatePhoneLogin(phoneNumber)
         } catch (e: Exception) {
             logger.logException(e)
         }

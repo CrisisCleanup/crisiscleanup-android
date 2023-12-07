@@ -79,7 +79,6 @@ fun LoginWithEmailRoute(
             val readyState = uiState as AuthenticateScreenUiState.Ready
             val authState = readyState.authenticationState
             Box(modifier) {
-                // TODO Scroll when content is longer than screen height with keyboard open
                 Column(
                     Modifier
                         .scrollFlingListener(closeKeyboard)
@@ -127,7 +126,7 @@ private fun LoginWithEmailScreen(
     val isNotBusy by viewModel.isNotAuthenticating.collectAsStateWithLifecycle()
 
     val focusEmail = viewModel.loginInputData.emailAddress.isEmpty() ||
-        viewModel.isInvalidEmail.value
+            viewModel.isInvalidEmail.value
     val updateEmailInput =
         remember(viewModel) { { s: String -> viewModel.loginInputData.emailAddress = s } }
     val clearErrorVisuals = remember(viewModel) { { viewModel.clearErrorVisuals() } }
@@ -169,14 +168,14 @@ private fun LoginWithEmailScreen(
     )
 
     if (translateCount > 0) {
-//        LinkAction(
-//            "actions.request_magic_link",
-//            Modifier
-//                .actionHeight()
-//                .listItemPadding(),
-//            enabled = isNotBusy,
-//            action = openEmailMagicLink,
-//        )
+        LinkAction(
+            "actions.request_magic_link",
+            Modifier
+                .actionHeight()
+                .listItemPadding(),
+            enabled = isNotBusy,
+            action = openEmailMagicLink,
+        )
 
         LinkAction(
             "invitationSignup.forgot_password",

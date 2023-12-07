@@ -17,8 +17,8 @@ import com.crisiscleanup.core.model.data.OrgData
 import com.crisiscleanup.core.model.data.emptyOrgData
 import com.crisiscleanup.core.network.CrisisCleanupAuthApi
 import com.crisiscleanup.core.network.model.CrisisCleanupNetworkException
-import com.crisiscleanup.core.network.model.NetworkFile
 import com.crisiscleanup.core.network.model.condenseMessages
+import com.crisiscleanup.core.network.model.profilePictureUrl
 import com.crisiscleanup.feature.authentication.model.AuthenticationState
 import com.crisiscleanup.feature.authentication.model.LoginInputData
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -152,8 +152,7 @@ class AuthenticationViewModel @Inject constructor(
 
                     val claims = result.claims!!
                     val profilePicUri =
-                        claims.files?.firstOrNull(NetworkFile::isProfilePicture)?.largeThumbnailUrl
-                            ?: ""
+                        claims.files?.profilePictureUrl ?: ""
 
                     // TODO Test coverage
                     val organization = result.organizations
