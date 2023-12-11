@@ -41,4 +41,9 @@ interface ApplicationModule {
     fun bindsTranslator(
         translator: AndroidResourceTranslator,
     ): KeyResourceTranslator
+
+    @Binds
+    fun bindsQrCodeGenerator(
+        generator: QrCodeKotlinGenerator,
+    ): QrCodeGenerator
 }
