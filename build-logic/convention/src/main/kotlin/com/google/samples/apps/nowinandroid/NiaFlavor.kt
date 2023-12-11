@@ -18,6 +18,7 @@ enum class NiaFlavor(val dimension: FlavorDimension, val applicationIdSuffix: St
     demo(FlavorDimension.contentType, ".demo"),
     prod(FlavorDimension.contentType, ".prod"),
     earlybird(FlavorDimension.contentType, ".earlybird"),
+    aussie(FlavorDimension.contentType, ".aussie"),
 }
 
 fun configureFlavors(

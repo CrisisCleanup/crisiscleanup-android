@@ -2,7 +2,6 @@ package com.crisiscleanup.feature.authentication
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.crisiscleanup.core.common.event.AuthEventBus
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -17,7 +16,6 @@ import javax.inject.Inject
 @HiltViewModel
 class RootAuthViewModel @Inject constructor(
     accountDataRepository: AccountDataRepository,
-    private val authEventBus: AuthEventBus,
     @Logger(CrisisCleanupLoggers.Auth) private val logger: AppLogger,
 ) : ViewModel() {
     val authState = accountDataRepository.accountData
@@ -33,12 +31,6 @@ class RootAuthViewModel @Inject constructor(
             initialValue = AuthState.Loading,
             started = SharingStarted.WhileSubscribed(),
         )
-
-    val showResetPassword = authEventBus.showResetPassword
-
-    fun clearResetPassword() {
-        authEventBus.onResetPassword("")
-    }
 }
 
 sealed interface AuthState {

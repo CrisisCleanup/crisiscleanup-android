@@ -6,18 +6,28 @@ import com.crisiscleanup.core.network.model.NetworkEmailPayload
 import com.crisiscleanup.core.network.model.NetworkMagicLinkResult
 import com.crisiscleanup.core.network.model.NetworkPasswordResetPayload
 import com.crisiscleanup.core.network.model.NetworkPasswordResetResult
+import com.crisiscleanup.core.network.model.NetworkPhoneCodeResult
+import com.crisiscleanup.core.network.model.NetworkPhonePayload
 import retrofit2.Retrofit
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Headers
 import retrofit2.http.POST
 import retrofit2.http.Path
 import javax.inject.Inject
 
 private interface AccountApi {
+    @Headers("Cookie: ")
     @POST("magic_link")
     suspend fun initiateMagicLink(
         @Body emailPayload: NetworkEmailPayload,
     ): NetworkMagicLinkResult
+
+    @Headers("Cookie: ")
+    @POST("otp")
+    suspend fun initiatePhoneLogin(
+        @Body phonePayload: NetworkPhonePayload,
+    ): NetworkPhoneCodeResult
 
     @POST("password_reset_requests")
     suspend fun initiatePasswordReset(
@@ -43,7 +53,11 @@ class AccountApiClient @Inject constructor(
 
     override suspend fun initiateMagicLink(emailAddress: String) = accountApi.initiateMagicLink(
         NetworkEmailPayload(emailAddress),
-    ).detail.isNotBlank()
+    ).errors == null
+
+    override suspend fun initiatePhoneLogin(phoneNumber: String) = accountApi.initiatePhoneLogin(
+        NetworkPhonePayload(phoneNumber),
+    ).errors?.isNotEmpty() != true
 
     override suspend fun initiatePasswordReset(emailAddress: String) =
         accountApi.initiatePasswordReset(

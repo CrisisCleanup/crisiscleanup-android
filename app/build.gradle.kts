@@ -13,10 +13,10 @@ plugins {
 
 android {
     defaultConfig {
-        val buildVersion = 166
+        val buildVersion = 170
         applicationId = "com.crisiscleanup"
         versionCode = buildVersion
-        versionName = "0.8.${buildVersion - 155}"
+        versionName = "0.9.${buildVersion - 168}"
 
         // Custom test runner to set up Hilt dependency graph
         testInstrumentationRunner = "com.crisiscleanup.core.testing.CrisisCleanupTestRunner"
@@ -69,6 +69,11 @@ android {
             buildConfigField("Boolean", "IS_PROD_BUILD", "true")
             buildConfigField("Boolean", "IS_EARLYBIRD_BUILD", "true")
         }
+
+        val aussie by getting {
+            buildConfigField("Boolean", "IS_PROD_BUILD", "true")
+            buildConfigField("Boolean", "IS_EARLYBIRD_BUILD", "false")
+        }
     }
 
     packaging {
@@ -91,7 +96,10 @@ secrets {
 androidComponents {
     beforeVariants { variantBuilder ->
         // Unnecessary variants
-        if (variantBuilder.name == "prodDebug" || variantBuilder.name == "earlybirdDebug") {
+        if (variantBuilder.name == "prodDebug" ||
+            variantBuilder.name == "earlybirdDebug" ||
+            variantBuilder.name == "aussieDebug"
+        ) {
             variantBuilder.enable = false
         }
     }

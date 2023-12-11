@@ -17,7 +17,7 @@ interface AddressSearchRepository {
         center: LatLng? = null,
         southwest: LatLng? = null,
         northeast: LatLng? = null,
-        maxResults: Int = 8,
+        maxResults: Int = 10,
     ): List<KeySearchAddress>
 
     suspend fun getPlaceAddress(placeId: String): LocationAddress?

@@ -3,7 +3,9 @@ package com.crisiscleanup.core.network.fake
 import com.crisiscleanup.core.network.CrisisCleanupAuthApi
 import com.crisiscleanup.core.network.model.NetworkAuthResult
 import com.crisiscleanup.core.network.model.NetworkAuthUserClaims
+import com.crisiscleanup.core.network.model.NetworkCodeAuthResult
 import com.crisiscleanup.core.network.model.NetworkOauthResult
+import com.crisiscleanup.core.network.model.NetworkPhoneOneTimePasswordResult
 import kotlinx.coroutines.delay
 import javax.inject.Inject
 
@@ -34,6 +36,26 @@ class FakeAuthApi @Inject constructor() : CrisisCleanupAuthApi {
             expiresIn = 3600,
         )
     }
+
+    override suspend fun magicLinkLogin(token: String) = NetworkCodeAuthResult(
+        refreshToken = "refresh",
+        accessToken = "access",
+        expiresIn = 3600,
+    )
+
+    override suspend fun verifyPhoneCode(
+        phoneNumber: String,
+        code: String,
+    ) = NetworkPhoneOneTimePasswordResult()
+
+    override suspend fun oneTimePasswordLogin(
+        accountId: Long,
+        oneTimePasswordId: Long,
+    ) = NetworkCodeAuthResult(
+        refreshToken = "refresh",
+        accessToken = "access",
+        expiresIn = 3600,
+    )
 
     private var refreshTokenCounter = 1
     override suspend fun refreshTokens(refreshToken: String): NetworkOauthResult {

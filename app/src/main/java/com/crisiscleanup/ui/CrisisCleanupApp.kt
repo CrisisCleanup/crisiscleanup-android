@@ -7,7 +7,6 @@ import androidx.compose.animation.slideIn
 import androidx.compose.animation.slideOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -73,6 +72,8 @@ import com.crisiscleanup.core.designsystem.icon.Icon.ImageVectorIcon
 import com.crisiscleanup.core.ui.AppLayoutArea
 import com.crisiscleanup.core.ui.LocalAppLayout
 import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
+import com.crisiscleanup.feature.authentication.navigation.navigateToMagicLinkLogin
+import com.crisiscleanup.feature.authentication.navigation.navigateToPasswordReset
 import com.crisiscleanup.feature.cases.ui.SelectIncidentDialog
 import com.crisiscleanup.navigation.CrisisCleanupAuthNavHost
 import com.crisiscleanup.navigation.CrisisCleanupNavHost
@@ -153,9 +154,22 @@ private fun LoadedContent(
     val isAccountExpired by viewModel.isAccountExpired
 
     val showPasswordReset by viewModel.showPasswordReset.collectAsStateWithLifecycle(false)
+    val showMagicLinkLogin by viewModel.showMagicLinkLogin.collectAsStateWithLifecycle(false)
     val isNotAuthenticatedState = authState !is AuthState.Authenticated
     var openAuthentication by rememberSaveable { mutableStateOf(isNotAuthenticatedState) }
-    if (openAuthentication || isNotAuthenticatedState || showPasswordReset) {
+    if (openAuthentication ||
+        isNotAuthenticatedState ||
+        showPasswordReset ||
+        showMagicLinkLogin
+    ) {
+        LaunchedEffect(showPasswordReset, showMagicLinkLogin) {
+            if (showPasswordReset) {
+                appState.navController.navigateToPasswordReset()
+            } else if (showMagicLinkLogin) {
+                appState.navController.navigateToMagicLinkLogin()
+            }
+        }
+
         val toggleAuthentication = remember(authState) {
             { open: Boolean -> openAuthentication = open }
         }
@@ -209,7 +223,6 @@ private fun LoadedContent(
 
 @OptIn(
     ExperimentalComposeUiApi::class,
-    ExperimentalLayoutApi::class,
 )
 @Composable
 private fun AuthenticateContent(
@@ -246,7 +259,6 @@ private fun AuthenticateContent(
 }
 
 @OptIn(
-    ExperimentalLayoutApi::class,
     ExperimentalComposeUiApi::class,
 )
 @Composable

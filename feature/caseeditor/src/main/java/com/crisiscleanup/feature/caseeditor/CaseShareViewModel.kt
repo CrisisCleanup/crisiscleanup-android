@@ -66,7 +66,7 @@ class CaseShareViewModel @Inject constructor(
         )
 
     val hasClaimedWorkType = organizationId.map { orgId ->
-        val affiliatedOrgIds = organizationsRepository.getOrganizationAffiliateIds(orgId)
+        val affiliatedOrgIds = organizationsRepository.getOrganizationAffiliateIds(orgId, true)
         val claimedBys = worksiteIn.workTypes.mapNotNull(WorkType::orgClaim).toSet()
         val isClaimed = claimedBys.any { claimedBy ->
             affiliatedOrgIds.contains(

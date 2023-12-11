@@ -5,14 +5,20 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.crisiscleanup.core.appnav.RouteConstant.emailLoginLinkRoute
 import com.crisiscleanup.core.appnav.RouteConstant.forgotPasswordRoute
+import com.crisiscleanup.core.appnav.RouteConstant.resetPasswordRoute
 import com.crisiscleanup.feature.authentication.ui.PasswordRecoverRoute
+import com.crisiscleanup.feature.authentication.ui.ResetPasswordRoute
 
 fun NavController.navigateToForgotPassword() {
-    this.navigate(forgotPasswordRoute)
+    navigate(forgotPasswordRoute)
 }
 
 fun NavController.navigateToEmailLoginLink() {
-    this.navigate(emailLoginLinkRoute)
+    navigate(emailLoginLinkRoute)
+}
+
+fun NavController.navigateToPasswordReset() {
+    navigate(resetPasswordRoute)
 }
 
 fun NavGraphBuilder.forgotPasswordScreen(
@@ -34,6 +40,18 @@ fun NavGraphBuilder.emailLoginLinkScreen(
         PasswordRecoverRoute(
             onBack,
             showMagicLink = true,
+        )
+    }
+}
+
+fun NavGraphBuilder.resetPasswordScreen(
+    onBack: () -> Unit,
+    closeResetPassword: () -> Unit,
+) {
+    composable(route = resetPasswordRoute) {
+        ResetPasswordRoute(
+            onBack = onBack,
+            closeResetPassword = closeResetPassword,
         )
     }
 }

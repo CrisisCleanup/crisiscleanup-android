@@ -11,7 +11,51 @@ data class NetworkEmailPayload(
 
 @Serializable
 data class NetworkMagicLinkResult(
-    val detail: String,
+    val errors: List<NetworkCrisisCleanupApiError>? = null,
+)
+
+@Serializable
+data class NetworkPhonePayload(
+    @SerialName("phone_number")
+    val phone: String,
+)
+
+@Serializable
+data class NetworkPhoneCodePayload(
+    @SerialName("phone_number")
+    val phone: String,
+    @SerialName("otp")
+    val code: String,
+)
+
+@Serializable
+data class NetworkPhoneOneTimePasswordResult(
+    val errors: List<NetworkCrisisCleanupApiError>? = null,
+    val accounts: List<OneTimePasswordPhoneAccount>? = null,
+    @SerialName("otp_id")
+    val otpId: Long? = null,
+)
+
+@Serializable
+data class OneTimePasswordPhoneAccount(
+    val id: Long,
+    val email: String,
+    @SerialName("organization")
+    val organizationName: String,
+)
+
+@Serializable
+data class NetworkOneTimePasswordPayload(
+    @SerialName("user")
+    val accountId: Long,
+    @SerialName("otp_id")
+    val otpId: Long,
+)
+
+@Serializable
+data class NetworkPhoneCodeResult(
+    val errors: List<NetworkCrisisCleanupApiError>? = null,
+    val message: String?,
 )
 
 @Serializable

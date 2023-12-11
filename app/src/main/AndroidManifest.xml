@@ -32,7 +32,8 @@
 
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleInstance">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -50,8 +51,10 @@
 
                 <data android:host="${APP_LINK_TLD}" />
 
-                <data android:pathPrefix="/o/callback" />
+                <data android:pathPrefix="/l" />
                 <data android:pathPrefix="/password/reset" />
+                <data android:pathPrefix="/invitation_token" />
+                <data android:pathPrefix="/mobile_app_user_invite" />
             </intent-filter>
         </activity>
     </application>

@@ -11,6 +11,7 @@ data class NetworkLanguagesResult(
 
 @Serializable
 data class NetworkLanguageDescription(
+    val id: Long,
     val subtag: String,
     @SerialName("name_t")
     val name: String,

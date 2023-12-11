@@ -5,6 +5,8 @@ import com.crisiscleanup.core.network.model.*
 import kotlinx.datetime.Instant
 import retrofit2.Retrofit
 import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.Headers
 import retrofit2.http.Path
 import retrofit2.http.Query
 import retrofit2.http.QueryMap
@@ -191,6 +193,13 @@ private interface DataSourceApi {
         @Query("id__in")
         ids: String,
     ): NetworkUsersResult
+
+    @Headers("Cookie: ")
+    @GET("/users/me")
+    suspend fun getProfile(
+        @Header("Authorization")
+        accessToken: String,
+    ): NetworkUserProfile
 }
 
 private val worksiteCoreDataFields = listOf(
@@ -226,10 +235,7 @@ class DataApiClient @Inject constructor(
 ) : CrisisCleanupNetworkDataSource {
     private val networkApi = retrofit.create(DataSourceApi::class.java)
 
-    override suspend fun getProfilePic(): String? {
-        val result = networkApi.getProfile()
-        return result.files?.firstOrNull(NetworkFile::isProfilePicture)?.largeThumbnailUrl
-    }
+    override suspend fun getProfilePic() = networkApi.getProfile().files?.profilePictureUrl
 
     override suspend fun getOrganizations(organizations: List<Long>) =
         networkApi.getOrganizations(organizations.joinToString(",")).let {
@@ -395,4 +401,7 @@ class DataApiClient @Inject constructor(
                 it.errors?.tryThrowException()
                 it.results ?: emptyList()
             }
+
+    override suspend fun getProfile(accessToken: String) =
+        networkApi.getProfile("Bearer $accessToken")
 }

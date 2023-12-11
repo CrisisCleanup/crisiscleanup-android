@@ -112,7 +112,7 @@ class CasesTableViewDataLoader(
 
         val myOrg = accountDataRepository.accountData.first().org
         val myOrgId = myOrg.id
-        val affiliateIds = organizationsRepository.getOrganizationAffiliateIds(myOrgId)
+        val affiliateIds = organizationsRepository.getOrganizationAffiliateIds(myOrgId, true)
 
         val claimStatus = worksite.getClaimStatus(affiliateIds)
 

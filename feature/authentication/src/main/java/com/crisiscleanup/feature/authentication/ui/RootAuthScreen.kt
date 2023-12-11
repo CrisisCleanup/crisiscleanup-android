@@ -47,26 +47,18 @@ import com.crisiscleanup.feature.authentication.RootAuthViewModel
 fun RootAuthRoute(
     enableBackHandler: Boolean = false,
     openLoginWithEmail: () -> Unit = {},
+    openLoginWithPhone: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
-    viewModel: RootAuthViewModel = hiltViewModel(),
 ) {
     BackHandler(enableBackHandler) {
         closeAuthentication()
     }
 
-    // TODO Push route rather than toggling state
-    val showResetPassword by viewModel.showResetPassword.collectAsStateWithLifecycle(false)
-    if (showResetPassword) {
-        PasswordRecoverRoute(
-            onBack = viewModel::clearResetPassword,
-            showResetPassword = true,
-        )
-    } else {
-        RootAuthScreen(
-            openLoginWithEmail = openLoginWithEmail,
-            closeAuthentication = closeAuthentication,
-        )
-    }
+    RootAuthScreen(
+        openLoginWithEmail = openLoginWithEmail,
+        openLoginWithPhone = openLoginWithPhone,
+        closeAuthentication = closeAuthentication,
+    )
 }
 
 @Composable
@@ -74,6 +66,7 @@ internal fun RootAuthScreen(
     modifier: Modifier = Modifier,
     viewModel: RootAuthViewModel = hiltViewModel(),
     openLoginWithEmail: () -> Unit = {},
+    openLoginWithPhone: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
 ) {
     val authState by viewModel.authState.collectAsStateWithLifecycle()
@@ -110,6 +103,7 @@ internal fun RootAuthScreen(
             val hasAuthenticated = (authState as AuthState.NotAuthenticated).hasAuthenticated
             NotAuthenticatedScreen(
                 openLoginWithEmail = openLoginWithEmail,
+                openLoginWithPhone = openLoginWithPhone,
                 closeAuthentication = closeAuthentication,
                 hasAuthenticated = hasAuthenticated,
             )
@@ -159,15 +153,15 @@ private fun AuthenticatedScreen(
 @Composable
 private fun NotAuthenticatedScreen(
     openLoginWithEmail: () -> Unit = {},
+    openLoginWithPhone: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
     hasAuthenticated: Boolean = false,
-    viewModel: AuthenticationViewModel = hiltViewModel(),
 ) {
     val translator = LocalAppTranslator.current
     val uriHandler = LocalUriHandler.current
     val registerHereLink = "https://crisiscleanup.org/register"
     val iNeedHelpCleaningLink = "https://crisiscleanup.org/survivor"
-    val closeKeyboard = rememberCloseKeyboard(viewModel)
+    val closeKeyboard = rememberCloseKeyboard(openLoginWithEmail)
 
     Column(
         Modifier
@@ -198,8 +192,7 @@ private fun NotAuthenticatedScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag("loginLoginWithPhoneBtn"),
-                onClick = {},
-                enabled = false, // !isBusy,
+                onClick = openLoginWithPhone,
                 text = translator("loginForm.login_with_cell", R.string.loginWithPhone),
             )
             CrisisCleanupOutlinedButton(
@@ -207,7 +200,7 @@ private fun NotAuthenticatedScreen(
                     .fillMaxWidth()
                     .testTag("loginVolunteerWithOrgBtn"),
                 onClick = {},
-                enabled = false, // !isBusy,
+                enabled = !hasAuthenticated,
                 text = translator(
                     "actions.request_access",
                     R.string.volunteerWithYourOrg,
@@ -273,8 +266,8 @@ private fun NotAuthenticatedScreen(
 
 @DayNightPreviews
 @Composable
-private fun RootLoginScreenPreview() {
+private fun NotAuthenticatedScreenPreview() {
     CrisisCleanupTheme {
-        RootAuthScreen()
+        NotAuthenticatedScreen()
     }
 }
