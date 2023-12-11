@@ -88,7 +88,6 @@ class MagicLinkLoginViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 logger.logException(e)
-
             } finally {
                 isAuthenticating.value = false
             }

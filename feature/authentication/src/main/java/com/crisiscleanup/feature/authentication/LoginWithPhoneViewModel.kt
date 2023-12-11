@@ -323,7 +323,7 @@ data class PhoneNumberAccount(
     val userId: Long,
     val userDisplayName: String,
     val organizationName: String,
-    val accountDisplay: String = if (userId > 0) "${userDisplayName}, $organizationName" else "",
+    val accountDisplay: String = if (userId > 0) "$userDisplayName, $organizationName" else "",
 )
 
 val PhoneNumberAccountNone = PhoneNumberAccount(0, "", "")
@@ -336,5 +336,5 @@ private data class PhoneCodeVerification(
 
 private enum class OneTimePasswordError {
     None,
-    InvalidCode
+    InvalidCode,
 }
