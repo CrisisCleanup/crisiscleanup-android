@@ -1,21 +1,17 @@
 package com.crisiscleanup.core.designsystem.component
 
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
-import androidx.compose.material3.SelectableChipBorder
 import androidx.compose.material3.SelectableChipColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectableFilterChip(
     selected: Boolean,
@@ -25,7 +21,6 @@ fun SelectableFilterChip(
     leadingIcon: (@Composable () -> Unit)? = null,
     label: @Composable () -> Unit,
     textStyle: TextStyle = MaterialTheme.typography.bodySmall,
-    chipBorder: SelectableChipBorder = ChipDefaults.filterChipBorder(),
     chipColors: SelectableChipColors = ChipDefaults.filterChipColors(selected),
 ) = FilterChip(
     selected = selected,
@@ -39,11 +34,9 @@ fun SelectableFilterChip(
     enabled = enabled,
     leadingIcon = leadingIcon,
     shape = CircleShape,
-    border = chipBorder,
     colors = chipColors,
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CrisisCleanupFilterChip(
     selected: Boolean,
@@ -67,22 +60,7 @@ private object ChipDefaults {
     // TODO: File bug
     // FilterChip default values aren't exposed via FilterChipDefaults
     const val DisabledChipContainerAlpha = 0.12f
-    val ChipBorderWidth = 1.dp
 
-    @OptIn(ExperimentalMaterial3Api::class)
-    @Composable
-    fun filterChipBorder(): SelectableChipBorder {
-        val colors = MaterialTheme.colorScheme
-        return FilterChipDefaults.filterChipBorder(
-            borderColor = colors.onBackground,
-            selectedBorderColor = colors.primaryContainer,
-            disabledBorderColor = colors.onBackground.disabledAlpha(),
-            disabledSelectedBorderColor = colors.onBackground.disabledAlpha(),
-            selectedBorderWidth = ChipBorderWidth,
-        )
-    }
-
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun filterChipColors(selected: Boolean): SelectableChipColors {
         val colors = MaterialTheme.colorScheme
