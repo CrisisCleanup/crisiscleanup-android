@@ -1,5 +1,6 @@
 package com.crisiscleanup
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -160,11 +161,19 @@ class MainActivity : ComponentActivity() {
 
         intent?.let {
             if (!intentProcessor.processMainIntent(it)) {
-                it.data?.let { dataUri ->
-                    // TODO Open to browser or WebView. Do no loop back here.
-                    logger.logDebug("App link not processed $dataUri")
-                }
+                logUnprocessedExternalUri(it)
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        var isConsumed = false
+        intent?.let {
+            isConsumed = intentProcessor.processMainIntent(it)
+        }
+        if (!isConsumed) {
+            logUnprocessedExternalUri(intent)
+            super.onNewIntent(intent)
         }
     }
 
@@ -201,6 +210,13 @@ class MainActivity : ComponentActivity() {
     override fun onTrimMemory(level: Int) {
         trimMemoryEventManager.onTrimMemory(level)
         super.onTrimMemory(level)
+    }
+
+    private fun logUnprocessedExternalUri(intent: Intent?) {
+        intent?.data?.let { dataUri ->
+            // TODO Open to browser or WebView. Do no loop back here.
+            logger.logDebug("App link not processed $dataUri")
+        }
     }
 }
 

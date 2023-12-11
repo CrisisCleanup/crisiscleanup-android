@@ -93,7 +93,6 @@ fun LoginWithEmailRoute(
                         onBack = onBack,
                         openForgotPassword = openForgotPassword,
                         openEmailMagicLink = openEmailMagicLink,
-                        closeAuthentication = closeAuthentication,
                     )
                     Spacer(modifier = Modifier.weight(1f))
                 }
@@ -108,7 +107,6 @@ private fun LoginWithEmailScreen(
     onBack: () -> Unit = {},
     openForgotPassword: () -> Unit = {},
     openEmailMagicLink: () -> Unit = {},
-    closeAuthentication: () -> Unit = {},
     viewModel: AuthenticationViewModel = hiltViewModel(),
 ) {
     val translator = LocalAppTranslator.current
@@ -222,7 +220,7 @@ private fun LoginWithEmailScreen(
                 .testTag("emailLoginBackBtn"),
             arrangement = Arrangement.Start,
             enabled = isNotBusy,
-            action = closeAuthentication,
+            action = onBack,
         )
     } else {
         LoginWithDifferentMethod(

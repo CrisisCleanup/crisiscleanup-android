@@ -120,7 +120,6 @@ fun LoginWithPhoneRoute(
                         LoginWithPhoneScreen(
                             authState,
                             onBack = onBack,
-                            closeAuthentication = closeAuthentication,
                         )
                         Spacer(modifier = Modifier.weight(1f))
                     }
@@ -134,7 +133,6 @@ fun LoginWithPhoneRoute(
 private fun LoginWithPhoneScreen(
     authState: AuthenticationState,
     onBack: () -> Unit = {},
-    closeAuthentication: () -> Unit = {},
     viewModel: LoginWithPhoneViewModel = hiltViewModel(),
 ) {
     val translator = LocalAppTranslator.current
@@ -145,8 +143,7 @@ private fun LoginWithPhoneScreen(
         style = LocalFontStyles.current.header1,
     )
 
-    val authErrorMessage = viewModel.errorMessage
-    ConditionalErrorMessage(authErrorMessage)
+    ConditionalErrorMessage(viewModel.errorMessage)
 
     val isRequestingCode by viewModel.isRequestingCode.collectAsStateWithLifecycle()
     val isNotBusy = !isRequestingCode
@@ -189,7 +186,7 @@ private fun LoginWithPhoneScreen(
                 .testTag("phoneLoginBackBtn"),
             arrangement = Arrangement.Start,
             enabled = isNotBusy,
-            action = closeAuthentication,
+            action = onBack,
         )
     } else {
         LoginWithDifferentMethod(
@@ -226,8 +223,7 @@ private fun ColumnScope.VerifyPhoneCodeScreen(
         onAction = onBack,
     )
 
-    val authErrorMessage = viewModel.errorMessage
-    ConditionalErrorMessage(authErrorMessage)
+    ConditionalErrorMessage(viewModel.errorMessage)
 
     val singleCodes = viewModel.singleCodes.toList()
 

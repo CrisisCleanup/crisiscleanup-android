@@ -17,7 +17,9 @@ interface AuthEventBus {
 
     val showResetPassword: Flow<Boolean>
     val resetPasswords: StateFlow<String>
-    val emailLoginLinks: Flow<String>
+
+    val showMagicLinkLogin: Flow<Boolean>
+    val emailLoginCodes: Flow<String>
 
     fun onLogout()
 
@@ -37,7 +39,9 @@ class CrisisCleanupAuthEventBus @Inject constructor(
 
     override val resetPasswords = MutableStateFlow("")
     override val showResetPassword = resetPasswords.map { it.isNotBlank() }
-    override val emailLoginLinks = MutableSharedFlow<String>(1)
+
+    override val emailLoginCodes = MutableStateFlow("")
+    override val showMagicLinkLogin = emailLoginCodes.map { it.isNotBlank() }
 
     override fun onLogout() {
         externalScope.launch {
@@ -59,7 +63,7 @@ class CrisisCleanupAuthEventBus @Inject constructor(
 
     override fun onEmailLoginLink(code: String) {
         externalScope.launch {
-            emailLoginLinks.emit(code)
+            emailLoginCodes.emit(code)
         }
     }
 }

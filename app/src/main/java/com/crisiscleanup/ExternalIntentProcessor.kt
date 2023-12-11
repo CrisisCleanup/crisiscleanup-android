@@ -31,8 +31,9 @@ class ExternalIntentProcessor @Inject constructor(
     }
 
     private fun processMainIntent(url: Uri, urlPath: String): Boolean {
-        if (urlPath.startsWith("/o/callback")) {
-            url.getQueryParameter("code")?.let { code ->
+        if (urlPath.startsWith("/l/")) {
+            val code = urlPath.replace("/l/", "")
+            if (code.isNotBlank()) {
                 authEventBus.onEmailLoginLink(code)
             }
         } else if (urlPath.startsWith("/password/reset/")) {

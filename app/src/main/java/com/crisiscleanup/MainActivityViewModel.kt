@@ -20,7 +20,6 @@ import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AppDataManagementRepository
-import com.crisiscleanup.core.data.repository.ClearAppDataStep.*
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppMetricsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
@@ -165,8 +164,8 @@ class MainActivityViewModel @Inject constructor(
             return null
         }
 
-    // TODO Build route to auth/forgot-password rather than switches through the hierarchy
     val showPasswordReset = authEventBus.showResetPassword
+    val showMagicLinkLogin = authEventBus.showMagicLinkLogin
 
     val isSwitchingToProduction: StateFlow<Boolean>
     val productionSwitchMessage: StateFlow<String>

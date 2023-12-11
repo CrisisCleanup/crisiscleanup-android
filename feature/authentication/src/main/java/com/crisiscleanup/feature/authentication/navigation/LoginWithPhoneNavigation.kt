@@ -6,9 +6,8 @@ import androidx.navigation.compose.composable
 import com.crisiscleanup.core.appnav.RouteConstant
 import com.crisiscleanup.feature.authentication.ui.LoginWithPhoneRoute
 
-
 fun NavController.navigateToLoginWithPhone() {
-    this.navigate(RouteConstant.loginWithPhoneRoute)
+    navigate(RouteConstant.loginWithPhoneRoute)
 }
 
 fun NavGraphBuilder.loginWithPhoneScreen(

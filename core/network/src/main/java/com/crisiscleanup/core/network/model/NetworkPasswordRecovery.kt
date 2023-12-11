@@ -11,7 +11,7 @@ data class NetworkEmailPayload(
 
 @Serializable
 data class NetworkMagicLinkResult(
-    val detail: String,
+    val errors: List<NetworkCrisisCleanupApiError>? = null,
 )
 
 @Serializable

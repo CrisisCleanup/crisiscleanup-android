@@ -53,7 +53,7 @@ class AccountApiClient @Inject constructor(
 
     override suspend fun initiateMagicLink(emailAddress: String) = accountApi.initiateMagicLink(
         NetworkEmailPayload(emailAddress),
-    ).detail.isNotBlank()
+    ).errors == null
 
     override suspend fun initiatePhoneLogin(phoneNumber: String) = accountApi.initiatePhoneLogin(
         NetworkPhonePayload(phoneNumber),

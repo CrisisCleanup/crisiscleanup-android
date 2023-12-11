@@ -5,16 +5,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import com.crisiscleanup.core.appnav.RouteConstant
+import com.crisiscleanup.core.appnav.RouteConstant.authGraphRoutePattern
 import com.crisiscleanup.feature.authentication.navigation.authGraph
 import com.crisiscleanup.feature.authentication.navigation.emailLoginLinkScreen
 import com.crisiscleanup.feature.authentication.navigation.forgotPasswordScreen
 import com.crisiscleanup.feature.authentication.navigation.loginWithEmailScreen
 import com.crisiscleanup.feature.authentication.navigation.loginWithPhoneScreen
+import com.crisiscleanup.feature.authentication.navigation.magicLinkLoginScreen
 import com.crisiscleanup.feature.authentication.navigation.navigateToEmailLoginLink
 import com.crisiscleanup.feature.authentication.navigation.navigateToForgotPassword
 import com.crisiscleanup.feature.authentication.navigation.navigateToLoginWithEmail
 import com.crisiscleanup.feature.authentication.navigation.navigateToLoginWithPhone
+import com.crisiscleanup.feature.authentication.navigation.resetPasswordScreen
 
 @Composable
 fun CrisisCleanupAuthNavHost(
@@ -23,7 +25,7 @@ fun CrisisCleanupAuthNavHost(
     closeAuthentication: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    startDestination: String = RouteConstant.authGraphRoutePattern,
+    startDestination: String = authGraphRoutePattern,
 ) {
     val navToLoginWithEmail =
         remember(navController) { { navController.navigateToLoginWithEmail() } }
@@ -56,6 +58,14 @@ fun CrisisCleanupAuthNavHost(
                     },
                 )
                 loginWithPhoneScreen(
+                    onBack = onBack,
+                    closeAuthentication = closeAuthentication,
+                )
+                resetPasswordScreen(
+                    onBack = onBack,
+                    closeResetPassword = navToLoginWithEmail,
+                )
+                magicLinkLoginScreen(
                     onBack = onBack,
                     closeAuthentication = closeAuthentication,
                 )

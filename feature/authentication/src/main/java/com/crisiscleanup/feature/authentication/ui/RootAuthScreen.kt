@@ -49,26 +49,16 @@ fun RootAuthRoute(
     openLoginWithEmail: () -> Unit = {},
     openLoginWithPhone: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
-    viewModel: RootAuthViewModel = hiltViewModel(),
 ) {
     BackHandler(enableBackHandler) {
         closeAuthentication()
     }
 
-    // TODO Push route rather than toggling state
-    val showResetPassword by viewModel.showResetPassword.collectAsStateWithLifecycle(false)
-    if (showResetPassword) {
-        PasswordRecoverRoute(
-            onBack = viewModel::clearResetPassword,
-            showResetPassword = true,
-        )
-    } else {
-        RootAuthScreen(
-            openLoginWithEmail = openLoginWithEmail,
-            openLoginWithPhone = openLoginWithPhone,
-            closeAuthentication = closeAuthentication,
-        )
-    }
+    RootAuthScreen(
+        openLoginWithEmail = openLoginWithEmail,
+        openLoginWithPhone = openLoginWithPhone,
+        closeAuthentication = closeAuthentication,
+    )
 }
 
 @Composable

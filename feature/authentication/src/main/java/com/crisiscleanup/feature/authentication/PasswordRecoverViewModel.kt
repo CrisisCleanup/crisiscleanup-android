@@ -31,7 +31,7 @@ class PasswordRecoverViewModel @Inject constructor(
     private val accountUpdateRepository: AccountUpdateRepository,
     private val inputValidator: InputValidator,
     private val translator: KeyResourceTranslator,
-    authEventBus: AuthEventBus,
+    private val authEventBus: AuthEventBus,
     @Logger(CrisisCleanupLoggers.Account) private val logger: AppLogger,
 ) : ViewModel() {
     val emailAddress = MutableStateFlow<String?>(null)
@@ -182,7 +182,6 @@ class PasswordRecoverViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val isChanged = accountUpdateRepository.changePassword(pw, resetToken)
-
                 if (isChanged) {
                     isPasswordReset.value = true
                     clearState()
@@ -194,5 +193,9 @@ class PasswordRecoverViewModel @Inject constructor(
                 isResettingPassword.value = false
             }
         }
+    }
+
+    fun clearResetPassword() {
+        authEventBus.onResetPassword("")
     }
 }
