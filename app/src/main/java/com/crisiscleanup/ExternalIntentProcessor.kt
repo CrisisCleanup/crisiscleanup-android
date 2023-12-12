@@ -2,14 +2,14 @@ package com.crisiscleanup
 
 import android.content.Intent
 import android.net.Uri
-import com.crisiscleanup.core.common.event.AuthEventBus
+import com.crisiscleanup.core.common.event.ExternalEventBus
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import javax.inject.Inject
 
 class ExternalIntentProcessor @Inject constructor(
-    private val authEventBus: AuthEventBus,
+    private val externalEventBus: ExternalEventBus,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) {
     fun processMainIntent(intent: Intent): Boolean {
@@ -34,12 +34,12 @@ class ExternalIntentProcessor @Inject constructor(
         if (urlPath.startsWith("/l/")) {
             val code = urlPath.replace("/l/", "")
             if (code.isNotBlank()) {
-                authEventBus.onEmailLoginLink(code)
+                externalEventBus.onEmailLoginLink(code)
             }
         } else if (urlPath.startsWith("/password/reset/")) {
             val code = urlPath.replace("/password/reset/", "")
             if (code.isNotBlank()) {
-                authEventBus.onResetPassword(code)
+                externalEventBus.onResetPassword(code)
             }
         } else {
             return false

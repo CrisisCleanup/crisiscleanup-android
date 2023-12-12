@@ -6,7 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.KeyResourceTranslator
-import com.crisiscleanup.core.common.event.AuthEventBus
+import com.crisiscleanup.core.common.event.ExternalEventBus
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -31,7 +31,7 @@ class MagicLinkLoginViewModel @Inject constructor(
     authApi: CrisisCleanupAuthApi,
     dataApi: CrisisCleanupNetworkDataSource,
     private val translator: KeyResourceTranslator,
-    private val authEventBus: AuthEventBus,
+    private val externalEventBus: ExternalEventBus,
     @Dispatcher(CrisisCleanupDispatchers.IO) ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.Account) private val logger: AppLogger,
 ) : ViewModel() {
@@ -45,7 +45,7 @@ class MagicLinkLoginViewModel @Inject constructor(
         viewModelScope.launch(ioDispatcher) {
             var message = ""
             try {
-                val loginCode = authEventBus.emailLoginCodes.first()
+                val loginCode = externalEventBus.emailLoginCodes.first()
                 if (loginCode.isNotBlank()) {
                     val tokens = authApi.magicLinkLogin(loginCode)
                     tokens.accessToken?.let { accessToken ->
@@ -101,6 +101,6 @@ class MagicLinkLoginViewModel @Inject constructor(
     }
 
     fun clearMagicLinkLogin() {
-        authEventBus.onEmailLoginLink("")
+        externalEventBus.onEmailLoginLink("")
     }
 }

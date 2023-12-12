@@ -7,7 +7,7 @@ import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.KeyResourceTranslator
-import com.crisiscleanup.core.common.event.AuthEventBus
+import com.crisiscleanup.core.common.event.ExternalEventBus
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -68,7 +68,7 @@ class MainActivityViewModel @Inject constructor(
     private val appVersionProvider: AppVersionProvider,
     private val appEnv: AppEnv,
     firebaseAnalytics: FirebaseAnalytics,
-    authEventBus: AuthEventBus,
+    externalEventBus: ExternalEventBus,
     @Dispatcher(IO) ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : ViewModel() {
@@ -164,8 +164,8 @@ class MainActivityViewModel @Inject constructor(
             return null
         }
 
-    val showPasswordReset = authEventBus.showResetPassword
-    val showMagicLinkLogin = authEventBus.showMagicLinkLogin
+    val showPasswordReset = externalEventBus.showResetPassword
+    val showMagicLinkLogin = externalEventBus.showMagicLinkLogin
 
     val isSwitchingToProduction: StateFlow<Boolean>
     val productionSwitchMessage: StateFlow<String>
