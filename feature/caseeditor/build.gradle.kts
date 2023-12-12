@@ -2,16 +2,11 @@ plugins {
     id("nowinandroid.android.feature")
     id("nowinandroid.android.library.compose")
     id("nowinandroid.android.library.jacoco")
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
     defaultConfig {
         testInstrumentationRunner = "com.crisiscleanup.core.testing.CrisisCleanupTestRunner"
-    }
-
-    buildFeatures {
-        buildConfig = true
     }
 
     testOptions {
@@ -21,10 +16,6 @@ android {
     }
 
     namespace = "com.crisiscleanup.feature.caseeditor"
-}
-
-secrets {
-    defaultPropertiesFileName = "secrets.defaults.properties"
 }
 
 dependencies {

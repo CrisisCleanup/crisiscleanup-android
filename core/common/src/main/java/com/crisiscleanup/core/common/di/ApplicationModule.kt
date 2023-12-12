@@ -12,6 +12,11 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 interface ApplicationModule {
+    @Binds
+    fun bindsSettingsProvider(
+        provider: SecretsAppSettingsProvider,
+    ): AppSettingsProvider
+
     @Singleton
     @Binds
     fun bindsAndroidResourceProvider(

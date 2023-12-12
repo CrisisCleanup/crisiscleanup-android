@@ -4,6 +4,7 @@ import android.content.Context
 import android.location.Geocoder
 import android.util.LruCache
 import com.crisiscleanup.core.addresssearch.model.KeySearchAddress
+import com.crisiscleanup.core.common.AppSettingsProvider
 import com.crisiscleanup.core.common.combineTrimText
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
@@ -36,6 +37,7 @@ import kotlin.time.Duration.Companion.hours
 class GooglePlaceAddressSearchRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
+    private val settingsProvider: AppSettingsProvider,
 ) : AddressSearchRepository {
     private val geocoder = Geocoder(context)
 
@@ -44,7 +46,7 @@ class GooglePlaceAddressSearchRepository @Inject constructor(
     private suspend fun placesClient(): PlacesClient {
         placesClientMutex.withLock {
             if (_placesClient == null) {
-                Places.initialize(context, BuildConfig.MAPS_API_KEY)
+                Places.initialize(context, settingsProvider.mapsApiKey)
                 _placesClient = Places.createClient(context)
             }
         }

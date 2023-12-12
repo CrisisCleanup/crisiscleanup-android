@@ -39,7 +39,6 @@ import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.authentication.AuthenticateScreenUiState
 import com.crisiscleanup.feature.authentication.AuthenticationViewModel
-import com.crisiscleanup.feature.authentication.BuildConfig
 import com.crisiscleanup.feature.authentication.R
 import com.crisiscleanup.feature.authentication.model.AuthenticationState
 
@@ -189,8 +188,8 @@ private fun LoginWithEmailScreen(
         val rememberDebugAuthenticate = remember(viewModel) {
             {
                 viewModel.loginInputData.apply {
-                    emailAddress = BuildConfig.DEBUG_EMAIL_ADDRESS
-                    password = BuildConfig.DEBUG_ACCOUNT_PASSWORD
+                    emailAddress = viewModel.debugEmail
+                    password = viewModel.debugPassword
                 }
                 viewModel.authenticateEmailPassword()
             }
