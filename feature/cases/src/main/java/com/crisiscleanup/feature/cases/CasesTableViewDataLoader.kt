@@ -91,7 +91,7 @@ class CasesTableViewDataLoader(
         } catch (e: Exception) {
             logger.logException(e)
             return WorksiteClaimActionResult(
-                errorMessage = translator.translate("info.error_case_save_mobile", 0)
+                errorMessage = translator("info.error_case_save_mobile")
                     .replace("{case_number}", worksite.caseNumber),
             )
         } finally {

@@ -1,12 +1,17 @@
 package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.common.event.UserPersistentInvite
+import com.crisiscleanup.core.common.log.AppLogger
+import com.crisiscleanup.core.common.log.CrisisCleanupLoggers.Onboarding
+import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.model.data.CodeInviteAccept
 import com.crisiscleanup.core.model.data.IncidentOrganizationInviteInfo
 import com.crisiscleanup.core.model.data.InvitationRequest
 import com.crisiscleanup.core.model.data.JoinOrgInvite
 import com.crisiscleanup.core.model.data.JoinOrgResult
 import com.crisiscleanup.core.model.data.OrgUserInviteInfo
+import com.crisiscleanup.core.network.CrisisCleanupRegisterApi
+import kotlinx.datetime.Instant
 import javax.inject.Inject
 
 interface OrgVolunteerRepository {
@@ -25,46 +30,102 @@ interface OrgVolunteerRepository {
     ): Boolean
 }
 
-class CrisisCleanupOrgVolunteerRepository @Inject constructor() : OrgVolunteerRepository {
+class CrisisCleanupOrgVolunteerRepository @Inject constructor(
+    private val registerApi: CrisisCleanupRegisterApi,
+    @Logger(Onboarding) private val logger: AppLogger,
+) : OrgVolunteerRepository {
     override suspend fun requestInvitation(invite: InvitationRequest): InvitationRequestResult? {
-        TODO("Not yet implemented")
+        try {
+            // TODO Handle cases where an invite was already sent to the user from the org
+            val result = registerApi.registerOrgVolunteer(invite)
+            return InvitationRequestResult(
+                organizationName = result.requestedOrganization,
+                organizationRecipient = result.requestedTo,
+            )
+        } catch (e: Exception) {
+            logger.logException(e)
+        }
+
+        return null
     }
 
     override suspend fun getInvitationInfo(inviteCode: String): OrgUserInviteInfo? {
-        TODO("Not yet implemented")
+        try {
+            return registerApi.getInvitationInfo(inviteCode)
+        } catch (e: Exception) {
+            logger.logException(e)
+        }
+        return null
     }
 
     override suspend fun getInvitationInfo(invite: UserPersistentInvite): OrgUserInviteInfo? {
-        TODO("Not yet implemented")
+        try {
+            return registerApi.getInvitationInfo(invite)
+        } catch (e: Exception) {
+            logger.logException(e)
+        }
+        return null
     }
 
     override suspend fun acceptInvitation(invite: CodeInviteAccept): JoinOrgResult {
-        TODO("Not yet implemented")
+        try {
+            // TODO Handle cases where an invite was already sent to the user from the org
+            return registerApi.acceptOrgInvitation(invite)
+        } catch (e: Exception) {
+            logger.logException(e)
+        }
+        return JoinOrgResult.Unknown
     }
 
     override suspend fun getOrganizationInvite(
         organizationId: Long,
         inviterUserId: Long,
     ): JoinOrgInvite {
-        TODO("Not yet implemented")
+        try {
+            val invite =
+                registerApi.createPersistentInvitation(organizationId, userId = inviterUserId)
+            return JoinOrgInvite(
+                invite.token,
+                invite.objectId,
+                invite.expiresAt,
+            )
+        } catch (e: Exception) {
+            logger.logException(e)
+        }
+        return JoinOrgInvite("", 0, Instant.fromEpochSeconds(0))
     }
 
     override suspend fun acceptPersistentInvitation(invite: CodeInviteAccept): JoinOrgResult {
-        TODO("Not yet implemented")
+        try {
+            return registerApi.acceptPersistentInvitation(invite)
+        } catch (e: Exception) {
+            logger.logException(e)
+        }
+        return JoinOrgResult.Unknown
     }
 
     override suspend fun inviteToOrganization(
         emailAddress: String,
         organizationId: Long?,
     ): Boolean {
-        TODO("Not yet implemented")
+        try {
+            return registerApi.inviteToOrganization(emailAddress, organizationId)
+        } catch (e: Exception) {
+            logger.logException(e)
+        }
+        return false
     }
 
     override suspend fun createOrganization(
         referer: String,
         invite: IncidentOrganizationInviteInfo,
     ): Boolean {
-        TODO("Not yet implemented")
+        try {
+            return registerApi.registerOrganization(referer, invite)
+        } catch (e: Exception) {
+            logger.logException(e)
+        }
+        return false
     }
 }
 

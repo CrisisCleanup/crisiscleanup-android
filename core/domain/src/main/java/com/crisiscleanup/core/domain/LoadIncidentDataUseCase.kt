@@ -55,13 +55,13 @@ class LoadIncidentDataUseCase @Inject constructor(
 }
 
 sealed interface IncidentsData {
-    object Loading : IncidentsData
+    data object Loading : IncidentsData
 
     data class Incidents(
         val incidents: List<Incident>,
     ) : IncidentsData
 
-    object Empty : IncidentsData
+    data object Empty : IncidentsData
 }
 
 @Module

@@ -57,9 +57,8 @@ class MagicLinkLoginViewModel @Inject constructor(
                             val emailAddress = accountData.emailAddress
                             if (emailAddress.isNotBlank() && emailAddress != accountProfile.email) {
                                 message =
-                                    translator.translate(
-                                        "~~Logging in with an account different from the currently signed in account is not supported. Logout of the signed in account first then login with a different account.",
-                                        0,
+                                    translator(
+                                        "magicLink.log_out_before_different_account",
                                     )
 
                                 // TODO Clear account data and support logging in with different email address?
@@ -94,7 +93,7 @@ class MagicLinkLoginViewModel @Inject constructor(
 
             if (!isAuthenticateSuccessful.value) {
                 errorMessage = message.ifBlank {
-                    translator("~~Magic link is invalid. Request another magic link.", 0)
+                    translator("magicLink.invalid_link", 0)
                 }
             }
         }

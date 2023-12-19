@@ -141,7 +141,7 @@ class LoginWithPhoneViewModel @Inject constructor(
     }
 
     fun onIncompleteCode() {
-        errorMessage = translator.translate("~~Enter a full phone code.", 0)
+        errorMessage = translator("~~Enter a full phone code.")
     }
 
     fun requestPhoneCode(phoneNumber: String) {
@@ -150,7 +150,7 @@ class LoginWithPhoneViewModel @Inject constructor(
 
         val trimPhoneNumber = phoneNumber.trim()
         if (numberRegex.matchEntire(trimPhoneNumber) == null) {
-            errorMessage = translator.translate("info.enter_valid_phone", 0)
+            errorMessage = translator("info.enter_valid_phone")
             return
         }
 
@@ -165,10 +165,8 @@ class LoginWithPhoneViewModel @Inject constructor(
                 } else {
                     // TODO Be more specific
                     // TODO Capture error and report to backend
-                    errorMessage = translator.translate(
-                        "~~Phone number is invalid or phone login is down. Try again later.",
-                        0,
-                    )
+                    errorMessage =
+                        translator("loginWithPhone.invalid_phone_unavailable_try_again")
                 }
             } finally {
                 isRequestingCode.value = false
@@ -202,7 +200,7 @@ class LoginWithPhoneViewModel @Inject constructor(
             isSelectAccount.value &&
             selectedUserId == 0L
         ) {
-            errorMessage = translator.translate("~~Select an account to login with.", 0)
+            errorMessage = translator("loginWithPhone.select_account")
             return
         }
 
@@ -212,7 +210,7 @@ class LoginWithPhoneViewModel @Inject constructor(
         ) {
             selectedAccount.value = PhoneNumberAccountNone
             isSelectAccount.value = true
-            errorMessage = translator.translate("~~Select an account to login with.", 0)
+            errorMessage = translator("loginWithPhone.select_account")
             return
         }
 
@@ -228,10 +226,7 @@ class LoginWithPhoneViewModel @Inject constructor(
                 if (oneTimePasswordId == 0L) {
                     val result = verifyPhoneCode(phoneNumberInput.value, code)
                     if (result.associatedAccounts.isEmpty()) {
-                        errorMessage = translator.translate(
-                            "~~There are no accounts associated with this phone number.",
-                            0,
-                        )
+                        errorMessage = translator("loginWithPhone.no_account_error")
                         return@launch
                     } else {
                         oneTimePasswordId = result.otpId
@@ -267,10 +262,8 @@ class LoginWithPhoneViewModel @Inject constructor(
                                 if (emailAddress.isNotBlank() &&
                                     emailAddress != accountProfile.email
                                 ) {
-                                    errorMessage = translator.translate(
-                                        "~~Logging in with an account different from the currently signed in account is not supported. Logout of the signed in account first then login with a different account.",
-                                        0,
-                                    )
+                                    errorMessage =
+                                        translator("loginWithPhone.log_out_before_different_account")
                                     // TODO Clear account data and support logging in with different email address?
                                 } else {
                                     val expirySeconds =
@@ -291,7 +284,6 @@ class LoginWithPhoneViewModel @Inject constructor(
                                         ),
                                     )
                                     isSuccessful = true
-                                    logger.logDebug("Phone login successful")
                                 }
                             }
                         }
@@ -301,17 +293,14 @@ class LoginWithPhoneViewModel @Inject constructor(
                 if (!isSuccessful &&
                     errorMessage.isBlank()
                 ) {
-                    errorMessage =
-                        translator.translate("~~Login failed. Try requesting a new magic link.", 0)
+                    errorMessage = translator("loginWithPhone.login_failed_try_again")
                 }
 
                 isAuthenticateSuccessful.value = isSuccessful
             } catch (e: Exception) {
                 // TODO Be more specific on the failure where possible
-                errorMessage = translator.translate(
-                    "~~Check the phone number and code is correct. If login continues to fail try again later or request a new code.",
-                    0,
-                )
+                errorMessage =
+                    translator("~~Check the phone number and code is correct. If login continues to fail try again later or request a new code.")
             } finally {
                 isVerifyingCode.value = false
             }

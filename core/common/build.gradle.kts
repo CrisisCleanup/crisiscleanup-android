@@ -21,6 +21,5 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.datetime)
     implementation(libs.timeago)
-    implementation(libs.qrcode.kotlin)
     testImplementation(project(":core:testing"))
 }

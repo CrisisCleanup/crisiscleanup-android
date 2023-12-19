@@ -44,6 +44,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupLogoRow
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.SingleLineTextField
 import com.crisiscleanup.core.designsystem.component.TopAppBarCancelAction
@@ -159,7 +160,7 @@ private fun LoginWithPhoneScreen(
     }
     OutlinedClearableTextField(
         modifier = fillWidthPadded.testTag("loginPhoneTextField"),
-        label = translator("~~Enter cell phone"),
+        label = translator("loginWithPhone.enter_cell"),
         value = phoneNumber,
         onValueChange = updateEmailInput,
         keyboardType = KeyboardType.Phone,
@@ -219,7 +220,7 @@ private fun ColumnScope.VerifyPhoneCodeScreen(
     TopAppBarCancelAction(
         modifier = Modifier
             .testTag("verifyPhoneCodeBackBtn"),
-        title = translator.translate("actions.login", 0),
+        title = translator("actions.login"),
         onAction = onBack,
     )
 
@@ -230,10 +231,8 @@ private fun ColumnScope.VerifyPhoneCodeScreen(
     val obfuscatedPhoneNumber by viewModel.obfuscatedPhoneNumber.collectAsStateWithLifecycle()
     Column(listItemModifier) {
         Text(
-            translator.translate(
-                "~~Enter the ${singleCodes.size} digit code we sent to",
-                0,
-            ),
+            translator("loginWithPhone.enter_x_digit_code")
+                .replace("{codeCount}", "${singleCodes.size}"),
         )
         Text(obfuscatedPhoneNumber)
     }
@@ -320,7 +319,7 @@ private fun ColumnScope.VerifyPhoneCodeScreen(
         }
     }
     LinkAction(
-        "~~Resend Code",
+        "actions.resend_code",
         modifier = Modifier
             .listItemPadding()
             .testTag("resendPhoneCodeBtn"),
@@ -332,12 +331,12 @@ private fun ColumnScope.VerifyPhoneCodeScreen(
     val accountOptions = viewModel.accountOptions.toList()
     if (accountOptions.size > 1) {
         Text(
-            translator("~~This phone number is associated with multiple accounts."),
+            translator("loginWithPhone.phone_associated_multiple_users"),
             modifier = listItemModifier,
         )
 
         Text(
-            translator("~~Select Account"),
+            translator("actions.select_account"),
             modifier = Modifier
                 .listItemHorizontalPadding(),
             style = LocalFontStyles.current.header4,
@@ -363,7 +362,7 @@ private fun ColumnScope.VerifyPhoneCodeScreen(
                     Modifier.listItemVerticalPadding(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(selectedOption.accountDisplay.ifBlank { translator("~~Select an account") })
+                    Text(selectedOption.accountDisplay.ifBlank { translator("actions.select_account") })
                     Spacer(modifier = Modifier.weight(1f))
                     var tint = LocalContentColor.current
                     if (!isNotBusy) {
@@ -371,7 +370,7 @@ private fun ColumnScope.VerifyPhoneCodeScreen(
                     }
                     Icon(
                         imageVector = CrisisCleanupIcons.UnfoldMore,
-                        contentDescription = translator("~~Select account"),
+                        contentDescription = translator("actions.select_account"),
                         tint = tint,
                     )
                 }

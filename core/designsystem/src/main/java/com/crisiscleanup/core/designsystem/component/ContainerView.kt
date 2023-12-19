@@ -7,14 +7,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.crisiscleanup.core.designsystem.theme.unfocusedBorderColor
 
 fun Modifier.roundedOutline(
     width: Dp = 1.dp,
     radius: Dp = 4.dp,
+    // TODO Common color
+    color: Color = unfocusedBorderColor,
 ) = drawBehind {
     drawRoundRect(
-        // TODO Common color
-        color = Color.Gray,
+        color = color,
         style = Stroke(width = width.toPx()),
         cornerRadius = CornerRadius(radius.toPx()),
     )

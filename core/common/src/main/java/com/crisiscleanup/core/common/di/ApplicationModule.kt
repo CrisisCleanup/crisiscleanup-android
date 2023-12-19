@@ -54,9 +54,4 @@ interface ApplicationModule {
     fun bindsExternalEventBus(
         bus: CrisisCleanupExternalEventBus,
     ): ExternalEventBus
-
-    @Binds
-    fun bindsQrCodeGenerator(
-        generator: QrCodeKotlinGenerator,
-    ): QrCodeGenerator
 }

@@ -20,17 +20,21 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupOutlinedButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
+import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 
 @Composable
 internal fun MenuRoute(
+    openInviteTeammate: () -> Unit = {},
     openUserFeedback: () -> Unit = {},
     openSyncLogs: () -> Unit = {},
 ) {
     MenuScreen(
+        openInviteTeammate = openInviteTeammate,
         openUserFeedback = openUserFeedback,
         openSyncLogs = openSyncLogs,
     )
@@ -39,6 +43,7 @@ internal fun MenuRoute(
 @Composable
 internal fun MenuScreen(
     viewModel: MenuViewModel = hiltViewModel(),
+    openInviteTeammate: () -> Unit = {},
     openUserFeedback: () -> Unit = {},
     openSyncLogs: () -> Unit = {},
 ) {
@@ -59,9 +64,21 @@ internal fun MenuScreen(
             )
 
             CrisisCleanupButton(
-                modifier = Modifier.listItemPadding(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .listItemPadding(),
+                text = translator("usersVue.invite_new_user"),
+                onClick = openInviteTeammate,
+            )
+
+            CrisisCleanupOutlinedButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .listItemPadding()
+                    .actionHeight(),
                 text = translator("info.give_app_feedback"),
                 onClick = openUserFeedback,
+                enabled = true,
             )
 
             Row(

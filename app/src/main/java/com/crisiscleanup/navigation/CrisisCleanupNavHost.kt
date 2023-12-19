@@ -32,6 +32,8 @@ import com.crisiscleanup.feature.cases.ui.CasesAction
 import com.crisiscleanup.feature.dashboard.navigation.dashboardScreen
 import com.crisiscleanup.feature.mediamanage.navigation.viewSingleImageScreen
 import com.crisiscleanup.feature.menu.navigation.menuScreen
+import com.crisiscleanup.feature.organizationmanage.navigation.inviteTeammateScreen
+import com.crisiscleanup.feature.organizationmanage.navigation.navigateToInviteTeammate
 import com.crisiscleanup.feature.syncinsights.navigation.navigateToSyncInsights
 import com.crisiscleanup.feature.syncinsights.navigation.syncInsightsScreen
 import com.crisiscleanup.feature.team.navigation.teamScreen
@@ -88,21 +90,14 @@ fun CrisisCleanupNavHost(
         { ids: ExistingWorksiteIdentifier -> navController.rerouteToCaseChange(ids) }
     }
 
-    val openFilterCases = remember(navController) {
-        { navController.navigateToCasesFilter() }
-    }
+    val openFilterCases = remember(navController) { { navController.navigateToCasesFilter() } }
 
-    val openUserFeedback = remember(navController) {
-        {
-            navController.navigateToUserFeedback()
-        }
-    }
+    val openInviteTeammate =
+        remember(navController) { { navController.navigateToInviteTeammate() } }
 
-    val openSyncLogs = remember(navController) {
-        {
-            navController.navigateToSyncInsights()
-        }
-    }
+    val openUserFeedback = remember(navController) { { navController.navigateToUserFeedback() } }
+
+    val openSyncLogs = remember(navController) { { navController.navigateToSyncInsights() } }
 
     val navToCaseAddFlagNonEditing =
         remember(navController) { { navController.navigateToCaseAddFlag(false) } }
@@ -138,10 +133,12 @@ fun CrisisCleanupNavHost(
         dashboardScreen()
         teamScreen()
         menuScreen(
-            openUserFeedback,
-            openSyncLogs,
+            openInviteTeammate = openInviteTeammate,
+            openUserFeedback = openUserFeedback,
+            openSyncLogs = openSyncLogs,
         )
         viewSingleImageScreen(onBack)
+        inviteTeammateScreen(onBack)
         userFeedbackScreen(onBack)
         syncInsightsScreen(viewCase)
     }

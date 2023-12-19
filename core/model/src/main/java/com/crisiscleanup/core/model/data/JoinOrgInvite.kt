@@ -16,5 +16,5 @@ enum class JoinOrgResult {
     // Already joined
     Redundant,
     PendingAdditionalAction,
-    Unknown
+    Unknown,
 }

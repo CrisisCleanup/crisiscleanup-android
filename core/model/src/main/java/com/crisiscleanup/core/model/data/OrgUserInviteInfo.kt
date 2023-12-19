@@ -13,7 +13,7 @@ data class OrgUserInviteInfo(
     val isExpiredInvite: Boolean,
 )
 
-internal val ExpiredNetworkOrgInvite = OrgUserInviteInfo(
+val ExpiredNetworkOrgInvite = OrgUserInviteInfo(
     displayName = "",
     inviterEmail = "",
     inviterAvatarUrl = null,

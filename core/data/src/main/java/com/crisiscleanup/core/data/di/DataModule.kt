@@ -135,6 +135,11 @@ interface DataModule {
     fun bindsEndOfLifeRepository(
         repository: AppEndOfLifeRepository,
     ): EndOfLifeRepository
+
+    @Binds
+    fun bindsOrgVolunteerRepository(
+        repository: CrisisCleanupOrgVolunteerRepository,
+    ): OrgVolunteerRepository
 }
 
 @Module

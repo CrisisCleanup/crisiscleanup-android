@@ -194,6 +194,12 @@ private interface DataSourceApi {
         ids: String,
     ): NetworkUsersResult
 
+    @TokenAuthenticationHeader
+    @GET("/organizations")
+    suspend fun searchOrganizations(
+        @Query("search") q: String,
+    ): NetworkOrganizationsSearchResult
+
     @Headers("Cookie: ")
     @GET("/users/me")
     suspend fun getProfile(
@@ -401,6 +407,9 @@ class DataApiClient @Inject constructor(
                 it.errors?.tryThrowException()
                 it.results ?: emptyList()
             }
+
+    override suspend fun searchOrganizations(q: String) =
+        networkApi.searchOrganizations(q).results ?: emptyList()
 
     override suspend fun getProfile(accessToken: String) =
         networkApi.getProfile("Bearer $accessToken")

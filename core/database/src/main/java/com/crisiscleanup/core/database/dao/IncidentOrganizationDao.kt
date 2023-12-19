@@ -91,6 +91,18 @@ interface IncidentOrganizationDao {
     fun matchOrganizationName(query: String): List<PopulatedOrganizationIdNameMatchInfo>
 
     @Transaction
+    @Query(
+        """
+        SELECT io.id, f.name,
+        matchinfo(incident_organization_fts, 'pcnalx') AS match_info
+        FROM incident_organization_fts f
+        INNER JOIN incident_organizations io ON f.docid=io.id
+        WHERE incident_organization_fts MATCH :query
+        """,
+    )
+    fun streamMatchingOrganizations(query: String): Flow<List<PopulatedOrganizationIdNameMatchInfo>>
+
+    @Transaction
     @Query("SELECT id FROM incident_organizations WHERE id=:id")
     fun findOrganization(id: Long): Long?
 }
