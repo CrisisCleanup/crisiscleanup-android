@@ -13,7 +13,7 @@ plugins {
 
 android {
     defaultConfig {
-        val buildVersion = 170
+        val buildVersion = 173
         applicationId = "com.crisiscleanup"
         versionCode = buildVersion
         versionName = "0.9.${buildVersion - 168}"
@@ -112,6 +112,7 @@ dependencies {
     implementation(project(":feature:dashboard"))
     implementation(project(":feature:menu"))
     implementation(project(":feature:mediamanage"))
+    implementation(project(":feature:organizationmanage"))
     implementation(project(":feature:syncinsights"))
     implementation(project(":feature:team"))
     implementation(project(":feature:userfeedback"))
@@ -157,6 +158,7 @@ dependencies {
     implementation(libs.androidx.window.manager)
     implementation(libs.androidx.profileinstaller)
     implementation(libs.playservices.location)
+    implementation(libs.zxing)
 
     implementation(libs.coil.kt)
 

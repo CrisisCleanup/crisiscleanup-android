@@ -994,7 +994,7 @@ internal fun EditExistingCaseNotesView(
     }
 
     val otherNotes by viewModel.otherNotes.collectAsStateWithLifecycle()
-    val otherNotesLabel = t("~~Other notes")
+    val otherNotesLabel = t("caseView.other_notes")
     var hideOtherNotes by remember { mutableStateOf(false) }
 
     val coroutineScope = rememberCoroutineScope()

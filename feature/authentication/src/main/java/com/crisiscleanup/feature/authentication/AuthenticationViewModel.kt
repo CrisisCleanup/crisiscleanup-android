@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AppEnv
+import com.crisiscleanup.core.common.AppSettingsProvider
 import com.crisiscleanup.core.common.InputValidator
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.event.AuthEventBus
@@ -40,10 +41,13 @@ class AuthenticationViewModel @Inject constructor(
     private val authEventBus: AuthEventBus,
     private val translator: KeyResourceTranslator,
     appEnv: AppEnv,
+    settingsProvider: AppSettingsProvider,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.Auth) private val logger: AppLogger,
 ) : ViewModel() {
     val isDebug = appEnv.isDebuggable
+    val debugEmail = if (isDebug) settingsProvider.debugEmail else ""
+    val debugPassword = if (isDebug) settingsProvider.debugPassword else ""
 
     private var isAuthenticating = MutableStateFlow(false)
     val isNotAuthenticating = isAuthenticating.map(Boolean::not).stateIn(

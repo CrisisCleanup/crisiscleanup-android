@@ -27,6 +27,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupLogoRow
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.OutlinedObfuscatingTextField
 import com.crisiscleanup.core.designsystem.component.actionHeight
@@ -39,7 +40,6 @@ import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.authentication.AuthenticateScreenUiState
 import com.crisiscleanup.feature.authentication.AuthenticationViewModel
-import com.crisiscleanup.feature.authentication.BuildConfig
 import com.crisiscleanup.feature.authentication.R
 import com.crisiscleanup.feature.authentication.model.AuthenticationState
 
@@ -124,7 +124,7 @@ private fun LoginWithEmailScreen(
     val isNotBusy by viewModel.isNotAuthenticating.collectAsStateWithLifecycle()
 
     val focusEmail = viewModel.loginInputData.emailAddress.isEmpty() ||
-            viewModel.isInvalidEmail.value
+        viewModel.isInvalidEmail.value
     val updateEmailInput =
         remember(viewModel) { { s: String -> viewModel.loginInputData.emailAddress = s } }
     val clearErrorVisuals = remember(viewModel) { { viewModel.clearErrorVisuals() } }
@@ -189,8 +189,8 @@ private fun LoginWithEmailScreen(
         val rememberDebugAuthenticate = remember(viewModel) {
             {
                 viewModel.loginInputData.apply {
-                    emailAddress = BuildConfig.DEBUG_EMAIL_ADDRESS
-                    password = BuildConfig.DEBUG_ACCOUNT_PASSWORD
+                    emailAddress = viewModel.debugEmail
+                    password = viewModel.debugPassword
                 }
                 viewModel.authenticateEmailPassword()
             }

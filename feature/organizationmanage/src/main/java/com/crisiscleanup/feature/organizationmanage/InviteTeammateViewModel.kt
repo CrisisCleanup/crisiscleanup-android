@@ -1,0 +1,710 @@
+package com.crisiscleanup.feature.organizationmanage
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.crisiscleanup.core.common.AppSettingsProvider
+import com.crisiscleanup.core.common.InputValidator
+import com.crisiscleanup.core.common.KeyResourceTranslator
+import com.crisiscleanup.core.common.QrCodeGenerator
+import com.crisiscleanup.core.common.log.AppLogger
+import com.crisiscleanup.core.common.log.CrisisCleanupLoggers.Onboarding
+import com.crisiscleanup.core.common.log.Logger
+import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
+import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.data.IncidentSelectManager
+import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.OrgVolunteerRepository
+import com.crisiscleanup.core.data.repository.OrganizationsRepository
+import com.crisiscleanup.core.domain.IncidentsData
+import com.crisiscleanup.core.domain.LoadIncidentDataUseCase
+import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.model.data.Incident
+import com.crisiscleanup.core.model.data.IncidentOrganizationInviteInfo
+import com.crisiscleanup.core.model.data.JoinOrgInvite
+import com.crisiscleanup.core.model.data.OrganizationIdName
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
+
+@HiltViewModel
+class InviteTeammateViewModel @Inject constructor(
+    settingsProvider: AppSettingsProvider,
+    accountDataRepository: AccountDataRepository,
+    organizationsRepository: OrganizationsRepository,
+    private val orgVolunteerRepository: OrgVolunteerRepository,
+    private val inputValidator: InputValidator,
+    qrCodeGenerator: QrCodeGenerator,
+    loadIncidentDataUseCase: LoadIncidentDataUseCase,
+    incidentSelectManager: IncidentSelectManager,
+    private val translator: KeyResourceTranslator,
+    @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
+    @Logger(Onboarding) private val logger: AppLogger,
+) : ViewModel() {
+    private val inviteUrl = "${settingsProvider.baseUrl}/mobile_app_user_invite"
+
+    val isValidatingAccount = MutableStateFlow(false)
+
+    val accountData = accountDataRepository.accountData
+        .shareIn(
+            scope = viewModelScope,
+            replay = 1,
+            started = SharingStarted.WhileSubscribed(),
+        )
+    val hasValidTokens = accountData.map { it.areTokensValid }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    private val incidentsData = loadIncidentDataUseCase()
+
+    val inviteToAnotherOrg = MutableStateFlow(false)
+    private val affiliateOrganizationIds = MutableStateFlow<Set<Long>?>(null)
+    val selectedOtherOrg = MutableStateFlow(OrganizationIdName(0, ""))
+    val organizationNameQuery = MutableStateFlow("")
+    private val isSearchingLocalOrganizations = MutableStateFlow(false)
+    private val isSearchingNetworkOrganizations = MutableStateFlow(false)
+    val isSearchingOrganizations = combine(
+        isSearchingLocalOrganizations,
+        isSearchingNetworkOrganizations,
+        ::Pair,
+    )
+        .map { it.first || it.second }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    private val otherOrgQuery = combine(
+        inviteToAnotherOrg,
+        organizationNameQuery,
+        ::Pair,
+    )
+        .map { (inviteToAnother, q) -> if (inviteToAnother) q else "" }
+    val inviteOrgState = combine(
+        inviteToAnotherOrg,
+        selectedOtherOrg,
+        otherOrgQuery,
+        affiliateOrganizationIds,
+    ) { inviteToAnother, selectedOther, otherQ, affiliateIds ->
+        Pair(
+            Pair(inviteToAnother, selectedOther),
+            Pair(otherQ, affiliateIds),
+        )
+    }
+        .filter { (_, b) ->
+            val affiliates = b.second
+            affiliates != null
+        }
+        .map { (a, b) ->
+            val (inviteToAnother, selected) = a
+            val (q, affiliates) = b
+            var isNew = false
+            var isAffiliate = false
+            var isNonAffiliate = false
+
+            if (inviteToAnother &&
+                q.isNotBlank()
+            ) {
+                if (selected.id > 0 &&
+                    q.trim() == selected.name.trim()
+                ) {
+                    if (affiliates!!.contains(selected.id)) {
+                        isAffiliate = true
+                    } else {
+                        isNonAffiliate = true
+                    }
+                }
+
+                isNew = !(isAffiliate || isNonAffiliate)
+            }
+
+            InviteOrgState(
+                own = !inviteToAnother,
+                affiliate = isAffiliate,
+                nonAffiliate = isNonAffiliate,
+                new = isNew,
+            )
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = InviteOrgState(
+                own = false,
+                affiliate = false,
+                nonAffiliate = false,
+                new = false,
+            ),
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    private val qFlow = organizationNameQuery
+        .debounce(0.3.seconds)
+        .map(String::trim)
+        .shareIn(
+            scope = viewModelScope,
+            replay = 1,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    val organizationsSearchResult = qFlow
+        .flatMapLatest { q ->
+            // TODO Indicate loading (in thread safe manner) when querying local matches
+            // TODO Data layer (streamMatchingOrganizations) needs testing
+            if (q.isNotBlank()) {
+                organizationsRepository.streamMatchingOrganizations(q)
+                    .map { OrgSearch(q, it) }
+            } else {
+                flowOf(EmptyOrgSearch)
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = EmptyOrgSearch,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    var inviteEmailAddresses by mutableStateOf("")
+    var invitePhoneNumber by mutableStateOf("")
+    var inviteFirstName by mutableStateOf("")
+    var inviteLastName by mutableStateOf("")
+    var emailAddressError by mutableStateOf("")
+    var phoneNumberError by mutableStateOf("")
+    var firstNameError by mutableStateOf("")
+    var lastNameError by mutableStateOf("")
+    var selectedIncidentError by mutableStateOf("")
+
+    val incidents = MutableStateFlow(emptyList<Incident>())
+    val incidentLookup = MutableStateFlow(emptyMap<Long, Incident>())
+    var selectedIncidentId by mutableStateOf(EmptyIncident.id)
+
+    // TODO Size QR codes relative to min screen dimension
+    private val qrCodeSize = 512 + 256
+
+    private val isCreatingMyOrgPersistentInvitation = MutableStateFlow(false)
+    private val joinMyOrgInvite = MutableStateFlow<JoinOrgInvite?>(null)
+    private val isGeneratingMyOrgQrCode = MutableStateFlow(false)
+    val myOrgInviteQrCode = combine(
+        accountData,
+        joinMyOrgInvite,
+        ::Pair,
+    )
+        .map { (account, orgInvite) ->
+            isGeneratingMyOrgQrCode.value = true
+            try {
+                orgInvite?.let { invite ->
+                    if (!invite.isExpired) {
+                        val inviteUrl = makeInviteUrl(account.id, invite)
+                        return@map qrCodeGenerator.generate(inviteUrl, qrCodeSize)?.asImageBitmap()
+                    }
+                }
+            } finally {
+                isGeneratingMyOrgQrCode.value = false
+            }
+
+            null
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = null,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    // TODO Test affiliate org features when supported
+    private val generatingAffiliateOrgQrCode = MutableStateFlow(0L)
+    private val affiliateOrgInviteQrCode = combine(
+        accountData,
+        selectedOtherOrg,
+        affiliateOrganizationIds,
+        ::Triple,
+    )
+        .filter { (accountData, otherOrg, affiliates) ->
+            accountData.hasAuthenticated &&
+                otherOrg.id > 0 &&
+                affiliates?.contains(otherOrg.id) == true
+        }
+        .map { (account, otherOrgIdName, _) ->
+            withContext(ioDispatcher) {
+                val otherOrgId = otherOrgIdName.id
+                generatingAffiliateOrgQrCode.value = otherOrgId
+                try {
+                    val userId = account.id
+                    val invite = orgVolunteerRepository.getOrganizationInvite(
+                        organizationId = otherOrgId,
+                        inviterUserId = userId,
+                    )
+
+                    ensureActive()
+
+                    val inviteUrl = makeInviteUrl(account.id, invite)
+                    val qrCode = qrCodeGenerator.generate(inviteUrl, qrCodeSize)?.asImageBitmap()
+
+                    ensureActive()
+
+                    OrgQrCode(otherOrgId, qrCode)
+                } finally {
+                    // TODO Atomic update
+                    if (generatingAffiliateOrgQrCode.value == otherOrgId) {
+                        generatingAffiliateOrgQrCode.value = 0
+                    }
+                }
+            }
+        }
+
+    val affiliateOrgQrCode = combine(
+        inviteToAnotherOrg,
+        inviteOrgState,
+        selectedOtherOrg,
+        affiliateOrgInviteQrCode,
+    ) { inviteToAnother, inviteOrg, selectedOther, invite ->
+        Pair(
+            Pair(inviteToAnother, inviteOrg),
+            Pair(selectedOther, invite),
+        )
+    }
+        .map { (a, b) ->
+            val (inviteToAnother, inviteOrg) = a
+            val (selectedOther, invite) = b
+            if (inviteToAnother &&
+                inviteOrg.ownOrAffiliate &&
+                invite.orgId > 0 &&
+                selectedOther.id == invite.orgId
+            ) {
+                invite.qrCode
+            } else {
+                null
+            }
+        }
+        .distinctUntilChanged()
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = null,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    private val isGeneratingAffiliateQrCode = combine(
+        generatingAffiliateOrgQrCode,
+        selectedOtherOrg,
+        ::Pair,
+    )
+        .map { (generatingOrgId, selectedOrg) ->
+            generatingOrgId > 0L && generatingOrgId == selectedOrg.id
+        }
+        .shareIn(
+            scope = viewModelScope,
+            replay = 1,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    val isGeneratingQrCode = combine(
+        isCreatingMyOrgPersistentInvitation,
+        isGeneratingMyOrgQrCode,
+        isGeneratingAffiliateQrCode,
+        ::Triple,
+    )
+        .map { it.first || it.second || it.third }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    val isSendingInvite = MutableStateFlow(false)
+    val isInviteSent = MutableStateFlow(false)
+    var inviteSentTitle by mutableStateOf("")
+    var inviteSentText by mutableStateOf("")
+
+    val sendInviteErrorMessage = MutableStateFlow("")
+
+    val isLoading = combine(
+        isValidatingAccount,
+        affiliateOrganizationIds,
+        incidentsData,
+        ::Triple,
+    )
+        .map { (b0, affiliateIds, incidents) ->
+            b0 || affiliateIds == null || incidents is IncidentsData.Loading
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = true,
+            started = SharingStarted.WhileSubscribed(),
+        )
+    val isEditable = isSendingInvite
+        .map(Boolean::not)
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    val myOrgInviteOptionText = accountData.map {
+        translator("inviteTeammates.part_of_my_org")
+            .replace("{my_organization}", it.org.name)
+    }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = "",
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    val anotherOrgInviteOptionText = translator("inviteTeammates.from_another_org")
+
+    val scanQrCodeText = combine(
+        accountData,
+        inviteToAnotherOrg,
+        ::Pair,
+    )
+        .filter { (account, _) -> account.id > 0 }
+        .map { (account, inviteToOther) ->
+            if (inviteToOther) {
+                translator("inviteTeammates.invite_via_qr")
+            } else {
+                translator("inviteTeammates.scan_qr_code_to_invite")
+                    .replace("{organization}", account.org.name)
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = "",
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    init {
+        incidentsData
+            .filter { it is IncidentsData.Incidents }
+            .onEach {
+                withContext(ioDispatcher) {
+                    val incidents = (it as IncidentsData.Incidents).incidents
+                    this@InviteTeammateViewModel.incidents.value = incidents
+                    incidentLookup.value = incidents.associateBy(Incident::id)
+                }
+            }
+            .launchIn(viewModelScope)
+
+        incidentSelectManager.incidentId
+            .onEach {
+                if (selectedIncidentId <= 0) {
+                    selectedIncidentId = it
+                }
+            }
+            .launchIn(viewModelScope)
+
+        hasValidTokens
+            .onEach {
+                if (it) {
+                    isValidatingAccount.value = false
+                }
+            }
+            .launchIn(viewModelScope)
+
+        viewModelScope.launch(ioDispatcher) {
+            val orgId = accountData.first().org.id
+            // TODO Handle sync fail accordingly
+            organizationsRepository.syncOrganization(orgId, force = true, updateLocations = false)
+            affiliateOrganizationIds.value =
+                organizationsRepository.getOrganizationAffiliateIds(orgId, false)
+        }
+
+        qFlow
+            .filter { it.length > 1 }
+            .onEach { q ->
+                withContext(ioDispatcher) {
+                    // TODO Review loading pattern and fix as necessary
+                    isSearchingNetworkOrganizations.value = true
+                    try {
+                        organizationsRepository.searchOrganizations(q)
+                    } finally {
+                        isSearchingNetworkOrganizations.value = false
+                    }
+                }
+            }
+            .launchIn(viewModelScope)
+
+        organizationNameQuery
+            .onEach { q ->
+                if (q.isNotBlank()) {
+                    sendInviteErrorMessage.value = ""
+                }
+            }
+            .launchIn(viewModelScope)
+
+        accountData
+            .filter { it.hasAuthenticated }
+            .map { data ->
+                withContext(ioDispatcher) {
+                    isCreatingMyOrgPersistentInvitation.value = true
+                    try {
+                        val orgId = data.org.id
+
+                        joinMyOrgInvite.value?.let { invite ->
+                            if (invite.orgId == orgId &&
+                                !invite.isExpired
+                            ) {
+                                return@withContext invite
+                            }
+                        }
+
+                        orgVolunteerRepository.getOrganizationInvite(orgId, data.id)
+                    } finally {
+                        isCreatingMyOrgPersistentInvitation.value = false
+                    }
+                }
+            }
+            .onEach {
+                joinMyOrgInvite.value = it
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun makeInviteUrl(userId: Long, invite: JoinOrgInvite): String {
+        return "$inviteUrl?org-id=${invite.orgId}&user-id=$userId&invite-token=${invite.token}"
+    }
+
+    fun onSelectOrganization(organization: OrganizationIdName) {
+        selectedOtherOrg.value = organization
+        organizationNameQuery.value = organization.name
+    }
+
+    private fun validateSendEmailAddresses(): List<String> {
+        val emailAddresses = inviteEmailAddresses.split(",")
+            .map(String::trim)
+            .filter(String::isNotBlank)
+        val errorMessage = if (emailAddresses.isEmpty()) {
+            translator("inviteTeammates.enter_invited_emails")
+        } else {
+            val invalidEmailAddresses = emailAddresses.map { s ->
+                if (inputValidator.validateEmailAddress(s)) {
+                    ""
+                } else {
+                    translator("inviteTeammates.invalid_email_error")
+                        .replace("{email}", s)
+                }
+            }
+            invalidEmailAddresses.filter(String::isNotBlank)
+                .joinToString("\n")
+        }
+
+        if (errorMessage.isNotBlank()) {
+            emailAddressError = errorMessage
+            return emptyList()
+        }
+
+        return emailAddresses
+    }
+
+    fun onOrgQueryClose() {
+        var matchingOrg = OrganizationIdName(0, "")
+        val q = organizationNameQuery.value.trim()
+        val orgQueryLower = q.lowercase()
+        // TODO Optimize matching if result set is computationally large
+        for (result in organizationsSearchResult.value.organizations) {
+            if (result.name.trim().lowercase() == orgQueryLower) {
+                matchingOrg = result
+                break
+            }
+        }
+        if (selectedOtherOrg.value.id != matchingOrg.id) {
+            matchingOrg = OrganizationIdName(0, q)
+            selectedOtherOrg.value = matchingOrg
+            organizationNameQuery.value = matchingOrg.name
+        }
+    }
+
+    private suspend fun inviteToOrgOrAffiliate(
+        emailAddresses: List<String>,
+        organizationId: Long? = null,
+    ): Boolean {
+        val notInvited = mutableListOf<String>()
+        for (emailAddress in emailAddresses) {
+            val invited = orgVolunteerRepository.inviteToOrganization(emailAddress, organizationId)
+            if (!invited) {
+                notInvited.add(emailAddress)
+            }
+        }
+
+        if (notInvited.isNotEmpty()) {
+            sendInviteErrorMessage.value =
+                translator("inviteTeammates.emails_not_invited_error")
+                    .replace("{email_addresses}", notInvited.joinToString("\n  "))
+            return false
+        }
+        return true
+    }
+
+    private fun onInviteSent(title: String, text: String) {
+        inviteSentTitle = title
+        inviteSentText = text
+        isInviteSent.value = true
+    }
+
+    private fun onInviteSentToOrgOrAffiliate(emailAddresses: List<String>) {
+        onInviteSent(
+            title = translator("inviteTeammates.invitations_sent"),
+            text = translator(emailAddresses.joinToString("\n")),
+        )
+    }
+
+    fun onSendInvites() {
+        if (isSendingInvite.value) {
+            return
+        }
+        isSendingInvite.value = true
+        viewModelScope.launch(ioDispatcher) {
+            try {
+                sendInvites()
+            } catch (e: Exception) {
+                sendInviteErrorMessage.value =
+                    translator("~~Invites are broken. Sorry for the inconvenience. Please try again later.")
+                logger.logException(e)
+            } finally {
+                isSendingInvite.value = false
+            }
+        }
+    }
+
+    private suspend fun sendInvites() {
+        emailAddressError = ""
+        phoneNumberError = ""
+        firstNameError = ""
+        lastNameError = ""
+        selectedIncidentError = ""
+
+        sendInviteErrorMessage.value = ""
+
+        val emailAddress = accountData.first().emailAddress
+        val myEmailAddressLower = emailAddress.trim().lowercase()
+        val emailAddresses = validateSendEmailAddresses()
+            .filter { s -> s.lowercase() != myEmailAddressLower }
+        if (emailAddresses.isEmpty()) {
+            return
+        }
+
+        val inviteState = inviteOrgState.first()
+        if (inviteState.new) {
+            if (emailAddresses.size > 1) {
+                emailAddressError = translator("registerOrg.only_one_email_allowed")
+                return
+            }
+
+            if (invitePhoneNumber.isBlank()) {
+                phoneNumberError = translator("registerOrg.phone_required")
+                return
+            }
+
+            if (inviteFirstName.isBlank()) {
+                firstNameError = translator("registerOrg.first_name_required")
+                return
+            }
+
+            if (inviteLastName.isBlank()) {
+                lastNameError = translator("registerOrg.last_name_required")
+                return
+            }
+
+            if (selectedIncidentId == EmptyIncident.id) {
+                selectedIncidentError = translator("registerOrg.select_incident")
+                return
+            }
+        }
+
+        val q = organizationNameQuery.value
+        if (inviteToAnotherOrg.value) {
+            if (selectedOtherOrg.value.id > 0) {
+                if (selectedOtherOrg.value.name != q) {
+                    sendInviteErrorMessage.value = translator("registerOrg.search_and_select_org")
+                    return
+                }
+            } else {
+                if (q.trim().isBlank()) {
+                    sendInviteErrorMessage.value =
+                        translator("registerOrg.search_and_select_org_blank")
+                    return
+                }
+            }
+        }
+
+        var isSentToOrgOrAffiliate = false
+        if (inviteToAnotherOrg.value) {
+            if (inviteState.new && emailAddresses.size == 1) {
+                val organizationName = q.trim()
+                val emailContact = emailAddresses[0]
+                val isRegisterNewOrganization = orgVolunteerRepository.createOrganization(
+                    referer = emailAddress,
+                    invite = IncidentOrganizationInviteInfo(
+                        incidentId = selectedIncidentId,
+                        organizationName = organizationName,
+                        emailAddress = emailContact,
+                        mobile = invitePhoneNumber,
+                        firstName = inviteFirstName,
+                        lastName = inviteLastName,
+                    ),
+                )
+
+                if (isRegisterNewOrganization) {
+                    onInviteSent(
+                        title = translator("registerOrg.you_have_registered_org")
+                            .replace("{organization}", organizationName),
+                        text = translator("registerOrg.we_will_finalize_registration")
+                            .replace("{email}", emailContact),
+                    )
+                }
+            } else if (inviteState.affiliate) {
+                isSentToOrgOrAffiliate =
+                    inviteToOrgOrAffiliate(emailAddresses, selectedOtherOrg.value.id)
+            } else if (inviteState.nonAffiliate) {
+                // TODO Finish when API supports a corresponding endpoint
+            }
+        } else {
+            isSentToOrgOrAffiliate = inviteToOrgOrAffiliate(emailAddresses)
+        }
+
+        if (isSentToOrgOrAffiliate) {
+            onInviteSentToOrgOrAffiliate(emailAddresses)
+        }
+    }
+}
+
+data class OrgSearch(
+    val q: String,
+    val organizations: List<OrganizationIdName>,
+)
+
+private val EmptyOrgSearch = OrgSearch("", emptyList())
+
+data class OrgQrCode(
+    val orgId: Long,
+    val qrCode: ImageBitmap?,
+)
+
+data class InviteOrgState(
+    val own: Boolean,
+    val affiliate: Boolean,
+    val nonAffiliate: Boolean,
+    val new: Boolean,
+    val ownOrAffiliate: Boolean = own || affiliate,
+)

@@ -10,6 +10,8 @@ import com.crisiscleanup.core.database.dao.IncidentOrganizationDaoPlus
 import com.crisiscleanup.core.database.dao.LocationDao
 import com.crisiscleanup.core.database.dao.LocationDaoPlus
 import com.crisiscleanup.core.database.dao.fts.getMatchingOrganizations
+import com.crisiscleanup.core.database.dao.fts.streamMatchingOrganizations
+import com.crisiscleanup.core.database.model.IncidentOrganizationEntity
 import com.crisiscleanup.core.database.model.PopulatedIncidentOrganization
 import com.crisiscleanup.core.database.model.PopulatedLocation
 import com.crisiscleanup.core.database.model.asExternalModel
@@ -20,6 +22,7 @@ import com.crisiscleanup.core.model.data.OrganizationIdName
 import com.crisiscleanup.core.model.data.OrganizationLocationAreaBounds
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkIncidentOrganization
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -46,6 +49,10 @@ interface OrganizationsRepository {
     fun streamPrimarySecondaryAreas(organizationId: Long): Flow<OrganizationLocationAreaBounds>
 
     suspend fun getMatchingOrganizations(q: String): List<OrganizationIdName>
+
+    suspend fun streamMatchingOrganizations(q: String): Flow<List<OrganizationIdName>>
+
+    suspend fun searchOrganizations(q: String)
 }
 
 class OfflineFirstOrganizationsRepository @Inject constructor(
@@ -160,4 +167,25 @@ class OfflineFirstOrganizationsRepository @Inject constructor(
 
     override suspend fun getMatchingOrganizations(q: String) =
         incidentOrganizationDaoPlus.getMatchingOrganizations(q)
+
+    override suspend fun streamMatchingOrganizations(q: String) =
+        incidentOrganizationDaoPlus.streamMatchingOrganizations(q)
+
+    override suspend fun searchOrganizations(q: String) = coroutineScope {
+        val organizations = networkDataSource.searchOrganizations(q)
+        val organizationRecords = organizations.map {
+            IncidentOrganizationEntity(
+                id = it.id,
+                name = it.name,
+                primaryLocation = null,
+                secondaryLocation = null,
+            )
+        }
+
+        try {
+            incidentOrganizationDaoPlus.saveOrganizations(organizationRecords, emptyList())
+        } catch (e: Exception) {
+            logger.logException(e)
+        }
+    }
 }

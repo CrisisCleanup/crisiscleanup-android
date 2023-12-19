@@ -14,7 +14,6 @@ data class NetworkUser(
     val files: List<NetworkFile>,
 )
 
-
 @Serializable
 data class NetworkUserProfile(
     val id: Long,

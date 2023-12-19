@@ -12,11 +12,13 @@ fun NavController.navigateToMenu(navOptions: NavOptions? = null) {
 }
 
 fun NavGraphBuilder.menuScreen(
+    openInviteTeammate: () -> Unit = {},
     openUserFeedback: () -> Unit = {},
     openSyncLogs: () -> Unit = {},
 ) {
     composable(route = menuRoute) {
         MenuRoute(
+            openInviteTeammate = openInviteTeammate,
             openUserFeedback = openUserFeedback,
             openSyncLogs = openSyncLogs,
         )

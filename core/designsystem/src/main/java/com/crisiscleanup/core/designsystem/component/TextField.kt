@@ -48,6 +48,7 @@ fun OutlinedSingleLineTextField(
     onNext: (() -> Unit)? = null,
     onEnter: (() -> Unit)? = null,
     onSearch: (() -> Unit)? = null,
+    leadingIcon: (@Composable () -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
     imeAction: ImeAction = ImeAction.Next,
     nextDirection: FocusDirection = FocusDirection.Down,
@@ -67,6 +68,7 @@ fun OutlinedSingleLineTextField(
     onNext,
     onEnter,
     onSearch,
+    leadingIcon,
     trailingIcon,
     imeAction,
     nextDirection,
@@ -90,6 +92,7 @@ fun SingleLineTextField(
     onNext: (() -> Unit)? = null,
     onEnter: (() -> Unit)? = null,
     onSearch: (() -> Unit)? = null,
+    leadingIcon: (@Composable () -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
     imeAction: ImeAction = ImeAction.Next,
     nextDirection: FocusDirection = FocusDirection.Down,
@@ -122,6 +125,12 @@ fun SingleLineTextField(
     } else {
         { Text(labelText) }
     }
+    val leadingIconContent: (@Composable (() -> Unit)?) =
+        if (leadingIcon == null) {
+            null
+        } else {
+            { leadingIcon() }
+        }
     val trailingIconContent: (@Composable (() -> Unit)?) =
         if (value.isEmpty() || trailingIcon == null) {
             null
@@ -148,6 +157,7 @@ fun SingleLineTextField(
             enabled = enabled,
             isError = isError,
             visualTransformation = visualTransformation,
+            leadingIcon = leadingIconContent,
             trailingIcon = trailingIconContent,
             readOnly = readOnly,
             placeholder = placeholderContent,
@@ -166,6 +176,7 @@ fun SingleLineTextField(
             enabled = enabled,
             isError = isError,
             visualTransformation = visualTransformation,
+            leadingIcon = leadingIconContent,
             trailingIcon = trailingIconContent,
             readOnly = readOnly,
             placeholder = placeholderContent,
@@ -197,6 +208,7 @@ fun OutlinedClearableTextField(
     isError: Boolean,
     @StringRes labelResId: Int = 0,
     label: String = "",
+    leadingIcon: (@Composable () -> Unit)? = null,
     hasFocus: Boolean = false,
     keyboardType: KeyboardType = KeyboardType.Text,
     keyboardCapitalization: KeyboardCapitalization = KeyboardCapitalization.None,
@@ -212,6 +224,7 @@ fun OutlinedClearableTextField(
     enabled,
     isError,
     label,
+    leadingIcon,
     hasFocus,
     keyboardType,
     keyboardCapitalization,
@@ -232,6 +245,7 @@ fun ClearableTextField(
     enabled: Boolean,
     isError: Boolean,
     label: String = "",
+    leadingIcon: (@Composable () -> Unit)? = null,
     hasFocus: Boolean = false,
     keyboardType: KeyboardType = KeyboardType.Text,
     keyboardCapitalization: KeyboardCapitalization = KeyboardCapitalization.None,
@@ -273,6 +287,7 @@ fun ClearableTextField(
         onNext = onNext,
         onEnter = onEnter,
         onSearch = onSearch,
+        leadingIcon = leadingIcon,
         trailingIcon = trailingIcon,
         imeAction = imeAction,
         drawOutline = drawOutline,

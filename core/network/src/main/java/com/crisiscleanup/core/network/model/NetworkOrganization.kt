@@ -30,3 +30,36 @@ data class NetworkOrganizationShort(
     val id: Long,
     val name: String,
 )
+
+@Serializable
+data class NetworkOrganizationsSearchResult(
+    val errors: List<NetworkCrisisCleanupApiError>?,
+    val count: Int?,
+    val results: List<NetworkOrganizationShort>?,
+)
+
+@Serializable
+data class NetworkRegisterOrganizationResult(
+    val errors: List<NetworkCrisisCleanupApiError>?,
+    val organization: NetworkOrganizationShort,
+)
+
+@Serializable
+data class NetworkOrganizationRegistration(
+    val name: String,
+    val referral: String,
+    val incident: Long,
+    val contact: NetworkOrganizationContact,
+)
+
+@Serializable
+data class NetworkOrganizationContact(
+    val email: String,
+    @SerialName("first_name")
+    val firstName: String,
+    @SerialName("last_name")
+    val lastName: String,
+    val mobile: String,
+    val title: String?,
+    val organization: Long?,
+)

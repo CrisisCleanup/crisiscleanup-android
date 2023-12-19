@@ -28,6 +28,7 @@ enum class CrisisCleanupLoggers {
     Media,
     Navigation,
     Network,
+    Onboarding,
     Sync,
     Token,
     Worksites,

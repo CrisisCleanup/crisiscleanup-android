@@ -6,7 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.KeyResourceTranslator
-import com.crisiscleanup.core.common.event.AuthEventBus
+import com.crisiscleanup.core.common.event.ExternalEventBus
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -31,7 +31,7 @@ class MagicLinkLoginViewModel @Inject constructor(
     authApi: CrisisCleanupAuthApi,
     dataApi: CrisisCleanupNetworkDataSource,
     private val translator: KeyResourceTranslator,
-    private val authEventBus: AuthEventBus,
+    private val externalEventBus: ExternalEventBus,
     @Dispatcher(CrisisCleanupDispatchers.IO) ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.Account) private val logger: AppLogger,
 ) : ViewModel() {
@@ -45,7 +45,7 @@ class MagicLinkLoginViewModel @Inject constructor(
         viewModelScope.launch(ioDispatcher) {
             var message = ""
             try {
-                val loginCode = authEventBus.emailLoginCodes.first()
+                val loginCode = externalEventBus.emailLoginCodes.first()
                 if (loginCode.isNotBlank()) {
                     val tokens = authApi.magicLinkLogin(loginCode)
                     tokens.accessToken?.let { accessToken ->
@@ -57,9 +57,8 @@ class MagicLinkLoginViewModel @Inject constructor(
                             val emailAddress = accountData.emailAddress
                             if (emailAddress.isNotBlank() && emailAddress != accountProfile.email) {
                                 message =
-                                    translator.translate(
-                                        "~~Logging in with an account different from the currently signed in account is not supported. Logout of the signed in account first then login with a different account.",
-                                        0,
+                                    translator(
+                                        "magicLink.log_out_before_different_account",
                                     )
 
                                 // TODO Clear account data and support logging in with different email address?
@@ -88,20 +87,19 @@ class MagicLinkLoginViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 logger.logException(e)
-
             } finally {
                 isAuthenticating.value = false
             }
 
             if (!isAuthenticateSuccessful.value) {
                 errorMessage = message.ifBlank {
-                    translator("~~Magic link is invalid. Request another magic link.", 0)
+                    translator("magicLink.invalid_link", 0)
                 }
             }
         }
     }
 
     fun clearMagicLinkLogin() {
-        authEventBus.onEmailLoginLink("")
+        externalEventBus.onEmailLoginLink("")
     }
 }

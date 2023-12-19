@@ -54,7 +54,7 @@ fun MagicLinkLoginRoute(
         TopAppBarBackAction(
             modifier = Modifier
                 .testTag("magicLinkLoginBackBtn"),
-            title = translator.translate("actions.login", 0),
+            title = translator("actions.login"),
             onAction = clearStateOnBack,
         )
 

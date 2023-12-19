@@ -26,8 +26,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupLogoRow
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupOutlinedButton
 import com.crisiscleanup.core.designsystem.component.LinkifyText
+import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.DayNightPreviews
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
@@ -117,11 +119,11 @@ private fun AuthenticatedScreen(
     closeAuthentication: () -> Unit = {},
     viewModel: AuthenticationViewModel = hiltViewModel(),
 ) {
-    val translator = LocalAppTranslator.current
+    val t = LocalAppTranslator.current
 
     Text(
         modifier = fillWidthPadded.testTag("authedProfileAccountInfo"),
-        text = translator("info.account_is")
+        text = t("info.account_is")
             .replace("{full_name}", accountData.fullName)
             .replace("{email_address}", accountData.emailAddress),
     )
@@ -135,7 +137,7 @@ private fun AuthenticatedScreen(
         modifier = fillWidthPadded.testTag("authedProfileLogoutBtn"),
         onClick = viewModel::logout,
         enabled = isNotBusy,
-        text = translator("actions.logout"),
+        text = t("actions.logout"),
         indicateBusy = !isNotBusy,
     )
 
@@ -157,7 +159,7 @@ private fun NotAuthenticatedScreen(
     closeAuthentication: () -> Unit = {},
     hasAuthenticated: Boolean = false,
 ) {
-    val translator = LocalAppTranslator.current
+    val t = LocalAppTranslator.current
     val uriHandler = LocalUriHandler.current
     val registerHereLink = "https://crisiscleanup.org/register"
     val iNeedHelpCleaningLink = "https://crisiscleanup.org/survivor"
@@ -173,7 +175,7 @@ private fun NotAuthenticatedScreen(
 
         Text(
             modifier = listItemModifier.testTag("loginHeaderText"),
-            text = translator("actions.login", R.string.login),
+            text = t("actions.login", R.string.login),
             style = LocalFontStyles.current.header1,
         )
 
@@ -186,22 +188,23 @@ private fun NotAuthenticatedScreen(
                     .fillMaxWidth()
                     .testTag("loginLoginWithEmailBtn"),
                 onClick = openLoginWithEmail,
-                text = translator("loginForm.login_with_email", R.string.loginWithEmail),
+                text = t("loginForm.login_with_email", R.string.loginWithEmail),
             )
             BusyButton(
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag("loginLoginWithPhoneBtn"),
                 onClick = openLoginWithPhone,
-                text = translator("loginForm.login_with_cell", R.string.loginWithPhone),
+                text = t("loginForm.login_with_cell", R.string.loginWithPhone),
             )
             CrisisCleanupOutlinedButton(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .actionHeight()
                     .testTag("loginVolunteerWithOrgBtn"),
                 onClick = {},
                 enabled = !hasAuthenticated,
-                text = translator(
+                text = t(
                     "actions.request_access",
                     R.string.volunteerWithYourOrg,
                 ),
@@ -210,12 +213,13 @@ private fun NotAuthenticatedScreen(
             CrisisCleanupOutlinedButton(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .actionHeight()
                     .testTag("loginNeedHelpCleaningBtn"),
                 onClick = {
                     uriHandler.openUri(iNeedHelpCleaningLink)
                 },
                 enabled = true,
-                text = translator(
+                text = t(
                     "loginForm.need_help_cleaning_up",
                     R.string.iNeedHelpCleaningUp,
                 ),
@@ -225,7 +229,7 @@ private fun NotAuthenticatedScreen(
         Column(
             modifier = fillWidthPadded,
         ) {
-            val linkText = translator("actions.register", R.string.registerHere)
+            val linkText = t("actions.register", R.string.registerHere)
             val spannableString = SpannableString(linkText).apply {
                 setSpan(
                     URLSpan(registerHereLink),
@@ -236,7 +240,7 @@ private fun NotAuthenticatedScreen(
             }
             Text(
                 modifier = Modifier.testTag("loginReliefOrgAndGovText"),
-                text = translator(
+                text = t(
                     "publicNav.relief_orgs_only",
                     R.string.reliefOrgAndGovOnly,
                 ),

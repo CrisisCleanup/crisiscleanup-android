@@ -2,18 +2,10 @@ plugins {
     id("nowinandroid.android.library")
     id("nowinandroid.android.library.jacoco")
     id("nowinandroid.android.hilt")
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
-    buildFeatures {
-        buildConfig = true
-    }
     namespace = "com.crisiscleanup.core.addresssearch"
-}
-
-secrets {
-    defaultPropertiesFileName = "secrets.defaults.properties"
 }
 
 dependencies {

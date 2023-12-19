@@ -55,6 +55,13 @@ object LoggersModule {
     }
 
     @Provides
+    @Logger(CrisisCleanupLoggers.Onboarding)
+    fun providesOnboardingLogger(logger: TagLogger): AppLogger {
+        logger.tag = "onboarding"
+        return logger
+    }
+
+    @Provides
     @Logger(CrisisCleanupLoggers.Sync)
     fun providesSyncLogger(logger: TagLogger): AppLogger {
         logger.tag = "sync"

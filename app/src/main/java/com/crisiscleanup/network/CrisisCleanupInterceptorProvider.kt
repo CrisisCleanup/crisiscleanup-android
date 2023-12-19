@@ -180,7 +180,7 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
             var response: Response = chain.proceed(request)
 
             getHeaderKey(request, RequestHeaderKey.WrapResponse)?.let { key ->
-                if (response.code == 200) {
+                if (response.code in 200..299) {
                     // TODO Write tests. Including expired tokens where tokens are used.
                     // Would be more elegant to deserialize, make new, and re-serialize.
                     // Data structure is simple so text operations are sufficient.

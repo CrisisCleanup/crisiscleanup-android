@@ -1,11 +1,14 @@
 package com.crisiscleanup
 
 import com.crisiscleanup.core.common.AppEnv
+import com.crisiscleanup.core.common.AppSettingsProvider
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class CrisisCleanupAppEnv @Inject constructor() : AppEnv {
+class CrisisCleanupAppEnv @Inject constructor(
+    private val settingsProvider: AppSettingsProvider,
+) : AppEnv {
     override val isDebuggable = !(BuildConfig.IS_RELEASE_BUILD || BuildConfig.IS_PROD_BUILD)
     override val isProduction = BuildConfig.IS_RELEASE_BUILD && BuildConfig.IS_PROD_BUILD
     override val isNotProduction = !isProduction
@@ -14,7 +17,7 @@ class CrisisCleanupAppEnv @Inject constructor() : AppEnv {
 
     override val apiEnvironment: String
         get() {
-            val apiUrl = BuildConfig.API_BASE_URL
+            val apiUrl = settingsProvider.apiBaseUrl
             return when {
                 apiUrl.startsWith("https://api.dev.crisiscleanup.io") -> "Dev"
                 apiUrl.startsWith("https://api.staging.crisiscleanup.io") -> "Staging"

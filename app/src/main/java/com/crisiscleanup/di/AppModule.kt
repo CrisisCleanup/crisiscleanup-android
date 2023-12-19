@@ -7,6 +7,7 @@ import com.crisiscleanup.AndroidLocationProvider
 import com.crisiscleanup.AndroidPermissionManager
 import com.crisiscleanup.AppVisualAlertManager
 import com.crisiscleanup.CrisisCleanupAppEnv
+import com.crisiscleanup.ZxingQrCodeGenerator
 import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.common.*
 import com.crisiscleanup.core.common.log.TagLogger
@@ -65,6 +66,9 @@ interface AppModule {
 
     @Binds
     fun bindsVisualAlertManager(manager: AppVisualAlertManager): VisualAlertManager
+
+    @Binds
+    fun bindsQrCodeGenerator(generator: ZxingQrCodeGenerator): QrCodeGenerator
 }
 
 @Module
