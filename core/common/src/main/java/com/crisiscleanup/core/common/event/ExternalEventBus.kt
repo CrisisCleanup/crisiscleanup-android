@@ -17,7 +17,6 @@ interface ExternalEventBus {
     val showMagicLinkLogin: Flow<Boolean>
     val emailLoginCodes: Flow<String>
 
-    val showOrgUserInvite: Flow<Boolean>
     val orgUserInvites: Flow<String>
 
     val showOrgPersistentInvite: Flow<Boolean>
@@ -44,7 +43,6 @@ class CrisisCleanupExternalEventBus @Inject constructor(
     override val showMagicLinkLogin = emailLoginCodes.map(String::isNotBlank)
 
     override val orgUserInvites = MutableStateFlow("")
-    override val showOrgUserInvite = orgUserInvites.map(String::isNotBlank)
 
     override val orgPersistentInvites = MutableStateFlow(UserPersistentInvite(0, ""))
     override val showOrgPersistentInvite = orgPersistentInvites.map { it.inviterUserId > 0 }

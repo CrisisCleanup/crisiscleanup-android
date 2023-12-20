@@ -41,6 +41,11 @@ class ExternalIntentProcessor @Inject constructor(
             if (code.isNotBlank()) {
                 externalEventBus.onResetPassword(code)
             }
+        } else if (urlPath.startsWith("/invitation_token/")) {
+            val code = urlPath.replace("/invitation_token/", "")
+            if (code.isNotBlank()) {
+                externalEventBus.onOrgUserInvite(code)
+            }
         } else {
             return false
         }

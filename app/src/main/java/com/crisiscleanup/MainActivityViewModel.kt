@@ -166,6 +166,7 @@ class MainActivityViewModel @Inject constructor(
 
     val showPasswordReset = externalEventBus.showResetPassword
     val showMagicLinkLogin = externalEventBus.showMagicLinkLogin
+    val orgUserInvites = externalEventBus.orgUserInvites
 
     val isSwitchingToProduction: StateFlow<Boolean>
     val productionSwitchMessage: StateFlow<String>
