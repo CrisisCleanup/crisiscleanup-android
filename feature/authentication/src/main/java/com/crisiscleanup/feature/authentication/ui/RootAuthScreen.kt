@@ -41,6 +41,8 @@ import com.crisiscleanup.feature.authentication.AuthenticationViewModel
 import com.crisiscleanup.feature.authentication.R
 import com.crisiscleanup.feature.authentication.RootAuthViewModel
 
+internal const val orgRegisterLink = "https://crisiscleanup.org/register"
+
 @Composable
 fun RootAuthRoute(
     enableBackHandler: Boolean = false,
@@ -162,7 +164,6 @@ private fun NotAuthenticatedScreen(
 ) {
     val t = LocalAppTranslator.current
     val uriHandler = LocalUriHandler.current
-    val registerHereLink = "https://crisiscleanup.org/register"
     val iNeedHelpCleaningLink = "https://crisiscleanup.org/survivor"
     val closeKeyboard = rememberCloseKeyboard(openLoginWithEmail)
 
@@ -240,7 +241,7 @@ private fun NotAuthenticatedScreen(
             )
             LinkifyText(
                 linkText = t("actions.register"),
-                link = registerHereLink,
+                link = orgRegisterLink,
             )
         }
 

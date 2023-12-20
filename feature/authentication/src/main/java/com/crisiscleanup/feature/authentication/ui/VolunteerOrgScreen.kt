@@ -41,8 +41,6 @@ fun VolunteerOrgRoute(
         onBack,
     )
 
-    val registerHereLink = "https://crisiscleanup.org/register"
-
     Column(Modifier.fillMaxSize()) {
         TopAppBarBackAction(
             title = t("actions.sign_up"),
@@ -59,7 +57,6 @@ fun VolunteerOrgRoute(
                 getStartedInstruction,
                 listItemModifier,
                 style = LocalFontStyles.current.header2,
-//            .background(appTheme.colors.separatorColor)
             )
 
             InstructionTextAction(
@@ -101,7 +98,7 @@ fun VolunteerOrgRoute(
                 Text(t("volunteerOrg.if_no_account"))
                 LinkifyText(
                     linkText = t("registerOrg.register_org"),
-                    link = registerHereLink,
+                    link = orgRegisterLink,
                 )
             }
         }
