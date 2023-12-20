@@ -1,9 +1,5 @@
 package com.crisiscleanup.feature.authentication.ui
 
-import android.text.SpannableString
-import android.text.Spanned
-import android.text.method.LinkMovementMethod
-import android.text.style.URLSpan
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
@@ -50,6 +46,7 @@ fun RootAuthRoute(
     enableBackHandler: Boolean = false,
     openLoginWithEmail: () -> Unit = {},
     openLoginWithPhone: () -> Unit = {},
+    openVolunteerOrg: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
 ) {
     BackHandler(enableBackHandler) {
@@ -59,6 +56,7 @@ fun RootAuthRoute(
     RootAuthScreen(
         openLoginWithEmail = openLoginWithEmail,
         openLoginWithPhone = openLoginWithPhone,
+        openVolunteerOrg = openVolunteerOrg,
         closeAuthentication = closeAuthentication,
     )
 }
@@ -69,6 +67,7 @@ internal fun RootAuthScreen(
     viewModel: RootAuthViewModel = hiltViewModel(),
     openLoginWithEmail: () -> Unit = {},
     openLoginWithPhone: () -> Unit = {},
+    openVolunteerOrg: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
 ) {
     val authState by viewModel.authState.collectAsStateWithLifecycle()
@@ -106,6 +105,7 @@ internal fun RootAuthScreen(
             NotAuthenticatedScreen(
                 openLoginWithEmail = openLoginWithEmail,
                 openLoginWithPhone = openLoginWithPhone,
+                openVolunteerOrg = openVolunteerOrg,
                 closeAuthentication = closeAuthentication,
                 hasAuthenticated = hasAuthenticated,
             )
@@ -156,6 +156,7 @@ private fun AuthenticatedScreen(
 private fun NotAuthenticatedScreen(
     openLoginWithEmail: () -> Unit = {},
     openLoginWithPhone: () -> Unit = {},
+    openVolunteerOrg: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
     hasAuthenticated: Boolean = false,
 ) {
@@ -190,6 +191,7 @@ private fun NotAuthenticatedScreen(
                 onClick = openLoginWithEmail,
                 text = t("loginForm.login_with_email", R.string.loginWithEmail),
             )
+
             BusyButton(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -197,18 +199,20 @@ private fun NotAuthenticatedScreen(
                 onClick = openLoginWithPhone,
                 text = t("loginForm.login_with_cell", R.string.loginWithPhone),
             )
+
             CrisisCleanupOutlinedButton(
                 modifier = Modifier
                     .fillMaxWidth()
                     .actionHeight()
                     .testTag("loginVolunteerWithOrgBtn"),
-                onClick = {},
+                onClick = openVolunteerOrg,
                 enabled = !hasAuthenticated,
                 text = t(
                     "actions.request_access",
                     R.string.volunteerWithYourOrg,
                 ),
             )
+
             // TODO Open in WebView?
             CrisisCleanupOutlinedButton(
                 modifier = Modifier
@@ -226,18 +230,7 @@ private fun NotAuthenticatedScreen(
             )
         }
 
-        Column(
-            modifier = fillWidthPadded,
-        ) {
-            val linkText = t("actions.register", R.string.registerHere)
-            val spannableString = SpannableString(linkText).apply {
-                setSpan(
-                    URLSpan(registerHereLink),
-                    0,
-                    length,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
-                )
-            }
+        Column(fillWidthPadded) {
             Text(
                 modifier = Modifier.testTag("loginReliefOrgAndGovText"),
                 text = t(
@@ -246,11 +239,8 @@ private fun NotAuthenticatedScreen(
                 ),
             )
             LinkifyText(
-                modifier = Modifier.testTag("loginRegisterHereLink"),
-                text = spannableString,
-                linkify = { textView ->
-                    textView.movementMethod = LinkMovementMethod.getInstance()
-                },
+                linkText = t("actions.register"),
+                link = registerHereLink,
             )
         }
 

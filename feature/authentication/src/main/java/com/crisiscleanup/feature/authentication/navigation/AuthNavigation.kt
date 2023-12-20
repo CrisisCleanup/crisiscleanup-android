@@ -12,6 +12,7 @@ fun NavGraphBuilder.authGraph(
     enableBackHandler: Boolean = false,
     openLoginWithEmail: () -> Unit = {},
     openLoginWithPhone: () -> Unit = {},
+    openVolunteerOrg: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
 ) {
     navigation(
@@ -23,6 +24,7 @@ fun NavGraphBuilder.authGraph(
                 enableBackHandler = enableBackHandler,
                 openLoginWithEmail = openLoginWithEmail,
                 openLoginWithPhone = openLoginWithPhone,
+                openVolunteerOrg = openVolunteerOrg,
                 closeAuthentication = closeAuthentication,
             )
         }

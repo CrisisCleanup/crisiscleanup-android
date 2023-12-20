@@ -107,7 +107,6 @@ private fun Text(
 @Composable
 fun BusyButton(
     modifier: Modifier = Modifier,
-    onClick: () -> Unit = {},
     enabled: Boolean = true,
     @StringRes textResId: Int = 0,
     text: String = "",
@@ -115,6 +114,7 @@ fun BusyButton(
     colors: ButtonColors = primaryButtonColors(),
     isSharpCorners: Boolean = false,
     style: TextStyle = LocalFontStyles.current.header4,
+    onClick: () -> Unit = {},
 ) {
     val shape = if (isSharpCorners) RectangleShape else roundedRectangleButtonShape()
     Button(
@@ -157,14 +157,35 @@ fun CrisisCleanupButton(
 }
 
 @Composable
-fun CrisisCleanupTextButton(
+fun CrisisCleanupButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
+    enabled: Boolean = true,
+    colors: ButtonColors = primaryButtonColors(),
+    elevation: ButtonElevation? = ButtonDefaults.buttonElevation(),
+    content: @Composable () -> Unit = {},
+) {
+    Button(
+        modifier = modifier.actionHeight(),
+        onClick = onClick,
+        enabled = enabled,
+        colors = colors,
+        shape = roundedRectangleButtonShape(),
+        elevation = elevation,
+    ) {
+        content()
+    }
+}
+
+@Composable
+fun CrisisCleanupTextButton(
+    modifier: Modifier = Modifier,
     enabled: Boolean = true,
     @StringRes textResId: Int = 0,
     text: String = "",
     colors: ButtonColors = ButtonDefaults.textButtonColors(),
     elevation: ButtonElevation? = null,
+    onClick: () -> Unit = {},
 ) = TextButton(
     modifier = modifier.actionHeight(),
     onClick = onClick,
@@ -270,7 +291,9 @@ fun WorkTypeAction(
     onClick: () -> Unit = {},
 ) = CrisisCleanupOutlinedButton(
     // TODO Common dimensions
-    modifier = Modifier.testTag("workTypeAction_$text").widthIn(100.dp),
+    modifier = Modifier
+        .testTag("workTypeAction_$text")
+        .widthIn(100.dp),
     text = text,
     onClick = onClick,
     enabled = enabled,
@@ -283,7 +306,9 @@ fun WorkTypePrimaryAction(
     onClick: () -> Unit = {},
 ) = CrisisCleanupButton(
     // TODO Common dimensions
-    modifier = Modifier.testTag("workTypePrimaryAction_$text").widthIn(100.dp),
+    modifier = Modifier
+        .testTag("workTypePrimaryAction_$text")
+        .widthIn(100.dp),
     text = text,
     onClick = onClick,
     enabled = enabled,

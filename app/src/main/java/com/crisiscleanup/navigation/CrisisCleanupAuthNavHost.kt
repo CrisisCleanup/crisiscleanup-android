@@ -16,7 +16,12 @@ import com.crisiscleanup.feature.authentication.navigation.navigateToEmailLoginL
 import com.crisiscleanup.feature.authentication.navigation.navigateToForgotPassword
 import com.crisiscleanup.feature.authentication.navigation.navigateToLoginWithEmail
 import com.crisiscleanup.feature.authentication.navigation.navigateToLoginWithPhone
+import com.crisiscleanup.feature.authentication.navigation.navigateToVolunteerOrg
+import com.crisiscleanup.feature.authentication.navigation.navigateToVolunteerPasteInviteLink
+import com.crisiscleanup.feature.authentication.navigation.navigateToVolunteerRequestAccess
+import com.crisiscleanup.feature.authentication.navigation.navigateToVolunteerScanQrCode
 import com.crisiscleanup.feature.authentication.navigation.resetPasswordScreen
+import com.crisiscleanup.feature.authentication.navigation.volunteerOrgScreen
 
 @Composable
 fun CrisisCleanupAuthNavHost(
@@ -31,6 +36,7 @@ fun CrisisCleanupAuthNavHost(
         remember(navController) { { navController.navigateToLoginWithEmail() } }
     val navToLoginWithPhone =
         remember(navController) { { navController.navigateToLoginWithPhone() } }
+    val navToVolunteerOrg = remember(navController) { { navController.navigateToVolunteerOrg() } }
     val navToForgotPassword =
         remember(navController) { { navController.navigateToForgotPassword() } }
     val navToEmailMagicLink =
@@ -61,6 +67,15 @@ fun CrisisCleanupAuthNavHost(
                     onBack = onBack,
                     closeAuthentication = closeAuthentication,
                 )
+                volunteerOrgScreen(
+                    navController = navController,
+                    nestedGraphs = {
+                        navigateToVolunteerPasteInviteLink(onBack)
+                        navigateToVolunteerRequestAccess(onBack)
+                        navigateToVolunteerScanQrCode(onBack)
+                    },
+                    onBack = onBack,
+                )
                 resetPasswordScreen(
                     onBack = onBack,
                     closeResetPassword = navToLoginWithEmail,
@@ -73,6 +88,7 @@ fun CrisisCleanupAuthNavHost(
             enableBackHandler = enableBackHandler,
             openLoginWithEmail = navToLoginWithEmail,
             openLoginWithPhone = navToLoginWithPhone,
+            openVolunteerOrg = navToVolunteerOrg,
             closeAuthentication = closeAuthentication,
         )
     }

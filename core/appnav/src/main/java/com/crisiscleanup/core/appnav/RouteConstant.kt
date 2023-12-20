@@ -12,6 +12,11 @@ object RouteConstant {
     const val resetPasswordRoute = "$authRoute/reset_password_route"
     const val magicLinkLoginRoute = "$authRoute/magic_link_login"
 
+    const val volunteerOrgRoute = "$authRoute/volunteer_org"
+    const val volunteerPasteInviteLinkRoute = "$volunteerOrgRoute/paste_invitation_link"
+    const val volunteerRequestAccessRoute = "$volunteerOrgRoute/request_access"
+    const val volunteerScanQrCodeRoute = "$volunteerOrgRoute/scan_qr_code"
+
     // This cannot be used as the navHost startDestination
     const val casesRoute = "cases_route"
     const val dashboardRoute = "dashboard_route"

@@ -1,7 +1,10 @@
 package com.crisiscleanup.core.designsystem.component
 
 import android.graphics.Typeface
+import android.text.SpannableString
+import android.text.Spanned
 import android.text.method.LinkMovementMethod
+import android.text.style.URLSpan
 import android.text.util.Linkify
 import android.widget.TextView
 import androidx.annotation.StyleRes
@@ -14,6 +17,29 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.text.HtmlCompat
 import com.crisiscleanup.core.designsystem.R
 import java.util.regex.Pattern
+
+@Composable
+fun LinkifyText(
+    linkText: String,
+    link: String,
+    modifier: Modifier = Modifier,
+) {
+    val spannableString = SpannableString(linkText).apply {
+        setSpan(
+            URLSpan(link),
+            0,
+            length,
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+        )
+    }
+    LinkifyText(
+        modifier = modifier,
+        text = spannableString,
+        linkify = { textView ->
+            textView.movementMethod = LinkMovementMethod.getInstance()
+        },
+    )
+}
 
 @Composable
 fun LinkifyText(
