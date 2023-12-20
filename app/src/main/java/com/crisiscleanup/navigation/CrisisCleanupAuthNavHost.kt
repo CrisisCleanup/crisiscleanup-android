@@ -20,6 +20,7 @@ import com.crisiscleanup.feature.authentication.navigation.navigateToVolunteerOr
 import com.crisiscleanup.feature.authentication.navigation.navigateToVolunteerPasteInviteLink
 import com.crisiscleanup.feature.authentication.navigation.navigateToVolunteerRequestAccess
 import com.crisiscleanup.feature.authentication.navigation.navigateToVolunteerScanQrCode
+import com.crisiscleanup.feature.authentication.navigation.requestAccessScreen
 import com.crisiscleanup.feature.authentication.navigation.resetPasswordScreen
 import com.crisiscleanup.feature.authentication.navigation.volunteerOrgScreen
 
@@ -70,7 +71,7 @@ fun CrisisCleanupAuthNavHost(
                 volunteerOrgScreen(
                     navController = navController,
                     nestedGraphs = {
-                        navigateToVolunteerPasteInviteLink(onBack)
+                        navigateToVolunteerPasteInviteLink(navController, onBack)
                         navigateToVolunteerRequestAccess(onBack)
                         navigateToVolunteerScanQrCode(onBack)
                     },
@@ -83,6 +84,9 @@ fun CrisisCleanupAuthNavHost(
                 magicLinkLoginScreen(
                     onBack = onBack,
                     closeAuthentication = closeAuthentication,
+                )
+                requestAccessScreen(
+                    navController = navController,
                 )
             },
             enableBackHandler = enableBackHandler,

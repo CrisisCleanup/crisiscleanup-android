@@ -43,7 +43,7 @@ private interface RegisterApi {
     ): NetworkAcceptedInvitationRequest
 
     @WrapResponseHeader("invite")
-    @GET("invitations")
+    @GET("invitations/{code}")
     suspend fun invitationInfo(
         @Path("code") inviteCode: String,
     ): NetworkInvitationInfoResult
