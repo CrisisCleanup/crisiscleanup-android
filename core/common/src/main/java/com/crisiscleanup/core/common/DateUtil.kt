@@ -1,6 +1,7 @@
 package com.crisiscleanup.core.common
 
 import com.github.marlonlom.utilities.timeago.TimeAgo
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
 import kotlinx.datetime.toKotlinInstant
@@ -18,6 +19,9 @@ val Instant.noonTime: Instant
         val startOfDay = javaDate.truncatedTo(ChronoUnit.DAYS)
         return startOfDay.toKotlinInstant().plus(12.hours)
     }
+
+val Instant.isPast: Boolean
+    get() = this < Clock.System.now()
 
 val DateTimeFormatter.utcTimeZone: DateTimeFormatter
     get() {

@@ -31,6 +31,11 @@ data class NetworkAcceptedInvitationRequest(
 )
 
 @Serializable
+data class NetworkAcceptedCodeInvitationRequest(
+    val status: String,
+)
+
+@Serializable
 data class NetworkAcceptCodeInvite(
     @SerialName("first_name")
     val firstName: String,

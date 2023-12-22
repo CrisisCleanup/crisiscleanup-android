@@ -1,6 +1,5 @@
 package com.crisiscleanup.core.model.data
 
-import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
 data class AppMetricsData(
@@ -27,7 +26,7 @@ data class BuildEndOfLife(
     val message: String = "",
     val link: String = "",
 ) {
-    val isEndOfLife = endDate < Clock.System.now() && message.isNotBlank()
+    val isEndOfLife = endDate.isPast && message.isNotBlank()
 }
 
 val EarlybirdEndOfLifeFallback = BuildEndOfLife(

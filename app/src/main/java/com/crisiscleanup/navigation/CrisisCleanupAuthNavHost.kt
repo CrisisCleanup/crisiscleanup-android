@@ -78,6 +78,7 @@ fun CrisisCleanupAuthNavHost(
                     onBack = onBack,
                 )
                 resetPasswordScreen(
+                    isAuthenticated = false,
                     onBack = onBack,
                     closeResetPassword = navToLoginWithEmail,
                 )
@@ -86,7 +87,7 @@ fun CrisisCleanupAuthNavHost(
                     closeAuthentication = closeAuthentication,
                 )
                 requestAccessScreen(
-                    navController = navController,
+                    onBack = onBack,
                 )
             },
             enableBackHandler = enableBackHandler,

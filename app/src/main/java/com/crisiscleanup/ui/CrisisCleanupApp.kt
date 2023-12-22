@@ -35,7 +35,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -159,20 +158,9 @@ private fun LoadedContent(
     var openAuthentication by rememberSaveable { mutableStateOf(isNotAuthenticatedState) }
 
     val showPasswordReset by viewModel.showPasswordReset.collectAsStateWithLifecycle(false)
-    val showMagicLinkLogin by viewModel.showMagicLinkLogin.collectAsStateWithLifecycle(false)
-    val orgUserInviteCode by viewModel.orgUserInvites.collectAsStateWithLifecycle("")
-    val showInviteOrgUser = orgUserInviteCode.isNotBlank()
-    val navigateToAuthAction by remember {
-        derivedStateOf {
-            showPasswordReset ||
-                showMagicLinkLogin ||
-                showInviteOrgUser
-        }
-    }
 
     if (openAuthentication ||
-        isNotAuthenticatedState ||
-        navigateToAuthAction
+        isNotAuthenticatedState
     ) {
         val toggleAuthentication = remember(authState) {
             { open: Boolean -> openAuthentication = open }
@@ -184,12 +172,17 @@ private fun LoadedContent(
             toggleAuthentication,
         )
 
-        if (showPasswordReset) {
-            appState.navController.navigateToPasswordReset()
-        } else if (showMagicLinkLogin) {
-            appState.navController.navigateToMagicLinkLogin()
-        } else if (showInviteOrgUser) {
-            appState.navController.navigateToRequestAccess(orgUserInviteCode)
+        if (isNotAuthenticatedState) {
+            val showMagicLinkLogin by viewModel.showMagicLinkLogin.collectAsStateWithLifecycle(false)
+            val orgUserInviteCode by viewModel.orgUserInvites.collectAsStateWithLifecycle("")
+
+            if (showPasswordReset) {
+                appState.navController.navigateToPasswordReset(false)
+            } else if (showMagicLinkLogin) {
+                appState.navController.navigateToMagicLinkLogin()
+            } else if (orgUserInviteCode.isNotBlank()) {
+                appState.navController.navigateToRequestAccess(orgUserInviteCode)
+            }
         }
     } else {
         val accountData = (authState as AuthState.Authenticated).accountData
@@ -229,6 +222,10 @@ private fun LoadedContent(
         if (showIncidentPicker) {
             val closeDialog = { showIncidentPicker = false }
             SelectIncidentDialog(closeDialog)
+        }
+
+        if (showPasswordReset) {
+            appState.navController.navigateToPasswordReset(true)
         }
     }
 }

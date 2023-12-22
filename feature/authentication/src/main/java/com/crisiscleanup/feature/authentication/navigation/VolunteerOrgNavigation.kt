@@ -4,8 +4,12 @@ import androidx.compose.runtime.remember
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.crisiscleanup.core.appnav.RouteConstant
+import com.crisiscleanup.core.appnav.RouteConstant.volunteerRequestAccessRoute
+import com.crisiscleanup.feature.authentication.ui.RequestOrgAccessRoute
 import com.crisiscleanup.feature.authentication.ui.VolunteerOrgRoute
 import com.crisiscleanup.feature.authentication.ui.VolunteerPasteInviteLinkRoute
 
@@ -18,7 +22,8 @@ fun NavController.navigateToVolunteerPasteInviteLink() {
 }
 
 fun NavController.navigateToVolunteerRequestAccess() {
-    navigate(RouteConstant.volunteerRequestAccessRoute)
+    val route = "$volunteerRequestAccessRoute?$showEmailInputArg=true"
+    navigate(route)
 }
 
 fun NavController.navigateToVolunteerScanQrCode() {
@@ -66,8 +71,15 @@ fun NavGraphBuilder.navigateToVolunteerPasteInviteLink(
 fun NavGraphBuilder.navigateToVolunteerRequestAccess(
     onBack: () -> Unit,
 ) {
-    composable(route = RouteConstant.volunteerRequestAccessRoute) {
-        VolunteerRequestAccessRoute(
+    composable(
+        route = "$volunteerRequestAccessRoute?$showEmailInputArg={$showEmailInputArg}",
+        arguments = listOf(
+            navArgument(showEmailInputArg) {
+                type = NavType.BoolType
+            },
+        ),
+    ) {
+        RequestOrgAccessRoute(
             onBack = onBack,
         )
     }

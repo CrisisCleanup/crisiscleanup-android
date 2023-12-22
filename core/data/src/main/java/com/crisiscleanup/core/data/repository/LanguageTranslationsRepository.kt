@@ -13,6 +13,7 @@ import com.crisiscleanup.core.database.dao.LanguageDaoPlus
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.EnglishLanguage
 import com.crisiscleanup.core.model.data.Language
+import com.crisiscleanup.core.model.data.LanguageIdName
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkLanguageDescription
 import kotlinx.coroutines.CoroutineDispatcher
@@ -49,6 +50,8 @@ interface LanguageTranslationsRepository : KeyTranslator {
     fun setLanguage(key: String = "")
 
     fun setLanguageFromSystem()
+
+    suspend fun getLanguageOptions(): List<LanguageIdName>
 }
 
 @Singleton
@@ -201,6 +204,16 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
                 isSettingLanguage.value = false
             }
         }
+    }
+
+    override suspend fun getLanguageOptions(): List<LanguageIdName> {
+        try {
+            return dataSource.getLanguages().map { LanguageIdName(it.id, it.name) }
+        } catch (e: Exception) {
+            logger.logException(e)
+        }
+
+        return emptyList()
     }
 
     override fun translate(phraseKey: String): String? {

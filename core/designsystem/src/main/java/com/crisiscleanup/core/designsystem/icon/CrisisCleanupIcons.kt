@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonOutline
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.QrCode
+import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Rotate90DegreesCcw
 import androidx.compose.material.icons.filled.Rotate90DegreesCw
@@ -75,6 +76,7 @@ object CrisisCleanupIcons {
     val Person = icons.Person
     val Phone = icons.Phone
     val QrCode = icons.QrCode
+    val QuestionMark = icons.QuestionMark
     val RotateClockwise = icons.Rotate90DegreesCw
     val RotateCcw = icons.Rotate90DegreesCcw
     val Search = Icons.Rounded.Search

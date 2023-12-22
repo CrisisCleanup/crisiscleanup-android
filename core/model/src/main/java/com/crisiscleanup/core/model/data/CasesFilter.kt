@@ -1,6 +1,5 @@
 package com.crisiscleanup.core.model.data
 
-import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlin.time.Duration.Companion.days
 
@@ -103,7 +102,7 @@ data class CasesFilter(
             return false
         }
 
-        if (hasUpdatedFilter && updatedAt.plus(daysAgoUpdated.days) < Clock.System.now()) {
+        if (hasUpdatedFilter && updatedAt.plus(daysAgoUpdated.days).isPast) {
             return false
         }
 

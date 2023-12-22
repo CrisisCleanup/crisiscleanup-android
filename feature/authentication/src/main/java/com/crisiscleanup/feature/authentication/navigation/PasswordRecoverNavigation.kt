@@ -3,9 +3,10 @@ package com.crisiscleanup.feature.authentication.navigation
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.crisiscleanup.core.appnav.RouteConstant.accountResetPasswordRoute
+import com.crisiscleanup.core.appnav.RouteConstant.authResetPasswordRoute
 import com.crisiscleanup.core.appnav.RouteConstant.emailLoginLinkRoute
 import com.crisiscleanup.core.appnav.RouteConstant.forgotPasswordRoute
-import com.crisiscleanup.core.appnav.RouteConstant.resetPasswordRoute
 import com.crisiscleanup.feature.authentication.ui.PasswordRecoverRoute
 import com.crisiscleanup.feature.authentication.ui.ResetPasswordRoute
 
@@ -17,7 +18,9 @@ fun NavController.navigateToEmailLoginLink() {
     navigate(emailLoginLinkRoute)
 }
 
-fun NavController.navigateToPasswordReset() {
+fun NavController.navigateToPasswordReset(isAuthenticated: Boolean) {
+    val resetPasswordRoute =
+        if (isAuthenticated) accountResetPasswordRoute else authResetPasswordRoute
     navigate(resetPasswordRoute)
 }
 
@@ -45,9 +48,12 @@ fun NavGraphBuilder.emailLoginLinkScreen(
 }
 
 fun NavGraphBuilder.resetPasswordScreen(
+    isAuthenticated: Boolean,
     onBack: () -> Unit,
     closeResetPassword: () -> Unit,
 ) {
+    val resetPasswordRoute =
+        if (isAuthenticated) accountResetPasswordRoute else authResetPasswordRoute
     composable(route = resetPasswordRoute) {
         ResetPasswordRoute(
             onBack = onBack,

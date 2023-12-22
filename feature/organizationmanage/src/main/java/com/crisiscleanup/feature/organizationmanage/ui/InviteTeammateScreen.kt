@@ -5,13 +5,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -51,9 +49,9 @@ import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.AnimatedBusyIndicator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupLogoRow
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupRadioButton
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
+import com.crisiscleanup.core.designsystem.component.RegisterSuccessView
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.component.roundedOutline
@@ -73,7 +71,6 @@ import com.crisiscleanup.core.designsystem.theme.neutralFontColor
 import com.crisiscleanup.core.designsystem.theme.optionItemHeight
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.designsystem.theme.primaryRedColor
-import com.crisiscleanup.core.designsystem.theme.statusClosedColor
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.OrganizationIdName
@@ -104,15 +101,10 @@ fun InviteTeammateRoute(
                 BusyIndicatorFloatingTopCenter(true)
             }
         } else if (isInviteSent) {
-            Column(
-                Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                RegisterSuccessView(
-                    title = viewModel.inviteSentTitle,
-                    text = viewModel.inviteSentText,
-                )
-            }
+            RegisterSuccessView(
+                title = viewModel.inviteSentTitle,
+                text = viewModel.inviteSentText,
+            )
         } else if (hasValidTokens) {
             InviteTeammateContent()
         } else {
@@ -646,53 +638,14 @@ private fun CenteredRowImage(
     }
 }
 
-@Composable
-internal fun ColumnScope.RegisterSuccessView(
-    title: String,
-    text: String,
-) {
-    Spacer(Modifier.weight(1f))
-
-    Icon(
-        modifier = Modifier.size(64.dp),
-        imageVector = CrisisCleanupIcons.CheckCircle,
-        contentDescription = null,
-        tint = statusClosedColor,
-    )
-
-    Text(
-        title,
-        listItemModifier,
-        style = LocalFontStyles.current.header1,
-        textAlign = TextAlign.Center,
-    )
-
-    Text(
-        text,
-        listItemModifier,
-        textAlign = TextAlign.Center,
-    )
-
-    Spacer(Modifier.weight(1f))
-
-    CrisisCleanupLogoRow(true)
-
-    Spacer(Modifier.weight(1f))
-}
-
 @Preview
 @DayNightPreviews
 @Composable
 private fun RegisterSuccessViewPreview() {
     CrisisCleanupTheme {
-        Column(
-            Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            RegisterSuccessView(
-                title = "Success title",
-                text = "Very long overflowing message spilling over the extremities",
-            )
-        }
+        RegisterSuccessView(
+            title = "Success title",
+            text = "Very long overflowing message spilling over the extremities",
+        )
     }
 }

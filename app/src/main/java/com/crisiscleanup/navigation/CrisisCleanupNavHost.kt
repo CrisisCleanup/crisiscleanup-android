@@ -10,6 +10,7 @@ import com.crisiscleanup.core.appnav.RouteConstant.casesGraphRoutePattern
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
+import com.crisiscleanup.feature.authentication.navigation.resetPasswordScreen
 import com.crisiscleanup.feature.caseeditor.navigation.caseAddFlagScreen
 import com.crisiscleanup.feature.caseeditor.navigation.caseEditMoveLocationOnMapScreen
 import com.crisiscleanup.feature.caseeditor.navigation.caseEditSearchAddressScreen
@@ -141,5 +142,11 @@ fun CrisisCleanupNavHost(
         inviteTeammateScreen(onBack)
         userFeedbackScreen(onBack)
         syncInsightsScreen(viewCase)
+
+        resetPasswordScreen(
+            isAuthenticated = true,
+            onBack = onBack,
+            closeResetPassword = onBack,
+        )
     }
 }

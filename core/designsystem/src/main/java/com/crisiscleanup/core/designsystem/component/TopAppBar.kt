@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -291,7 +289,6 @@ fun TopAppBarBackCaretAction(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AvatarAttentionBadge(
     isAlert: Boolean,
@@ -321,7 +318,7 @@ fun TopAppBarDefault(
     navIcon: ImageVector? = null,
     navContentDescription: String? = null,
     navIconPadding: Dp = 16.dp,
-    actionIcon: ImageVector = Icons.Default.QuestionMark,
+    actionIcon: ImageVector = CrisisCleanupIcons.QuestionMark,
     actionText: String = "",
     isActionAttention: Boolean = false,
     colors: TopAppBarColors = TopAppBarDefaults.centerAlignedTopAppBarColors(),

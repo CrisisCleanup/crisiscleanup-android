@@ -83,6 +83,8 @@ fun ResetPasswordRoute(
             val resetToken by viewModel.resetPasswordToken.collectAsStateWithLifecycle()
             if (resetToken.isBlank()) {
                 PasswordResetNotPossibleView()
+                // TODO Account reset password requires back 2x likely due to clear state
+                // clearStateOnBack()
             } else {
                 ResetPasswordView(
                     isEditable = isEmailDefined,

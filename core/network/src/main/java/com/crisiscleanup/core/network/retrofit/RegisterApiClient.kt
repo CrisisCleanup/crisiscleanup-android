@@ -2,6 +2,7 @@ package com.crisiscleanup.core.network.retrofit
 
 import android.util.Log
 import com.crisiscleanup.core.common.event.UserPersistentInvite
+import com.crisiscleanup.core.common.isPast
 import com.crisiscleanup.core.model.data.CodeInviteAccept
 import com.crisiscleanup.core.model.data.ExpiredNetworkOrgInvite
 import com.crisiscleanup.core.model.data.IncidentOrganizationInviteInfo
@@ -11,6 +12,7 @@ import com.crisiscleanup.core.model.data.OrgUserInviteInfo
 import com.crisiscleanup.core.network.CrisisCleanupRegisterApi
 import com.crisiscleanup.core.network.model.NetworkAcceptCodeInvite
 import com.crisiscleanup.core.network.model.NetworkAcceptPersistentInvite
+import com.crisiscleanup.core.network.model.NetworkAcceptedCodeInvitationRequest
 import com.crisiscleanup.core.network.model.NetworkAcceptedInvitationRequest
 import com.crisiscleanup.core.network.model.NetworkAcceptedPersistentInvite
 import com.crisiscleanup.core.network.model.NetworkCreateOrgInvitation
@@ -26,7 +28,6 @@ import com.crisiscleanup.core.network.model.NetworkPersistentInvitationResult
 import com.crisiscleanup.core.network.model.NetworkRegisterOrganizationResult
 import com.crisiscleanup.core.network.model.NetworkUser
 import com.crisiscleanup.core.network.model.profilePictureUrl
-import kotlinx.datetime.Clock
 import retrofit2.Retrofit
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -67,7 +68,7 @@ private interface RegisterApi {
     @POST("invitations/accept")
     suspend fun acceptInvitationFromCode(
         @Body acceptInvite: NetworkAcceptCodeInvite,
-    ): NetworkAcceptedInvitationRequest
+    ): NetworkAcceptedCodeInvitationRequest
 
     @TokenAuthenticationHeader
     @WrapResponseHeader("invite")
@@ -131,7 +132,7 @@ class RegisterApiClient @Inject constructor(
 
     override suspend fun getInvitationInfo(invite: UserPersistentInvite): OrgUserInviteInfo? {
         networkApi.persistentInvitationInfo(invite.inviteToken).invite?.let { persistentInvite ->
-            if (persistentInvite.expiresAt < Clock.System.now()) {
+            if (persistentInvite.expiresAt.isPast) {
                 return ExpiredNetworkOrgInvite
             }
 
@@ -152,7 +153,7 @@ class RegisterApiClient @Inject constructor(
 
     override suspend fun getInvitationInfo(inviteCode: String): OrgUserInviteInfo? {
         networkApi.invitationInfo(inviteCode).invite?.let { invite ->
-            if (invite.expiresAt < Clock.System.now()) {
+            if (invite.expiresAt.isPast) {
                 return ExpiredNetworkOrgInvite
             }
 
@@ -184,7 +185,7 @@ class RegisterApiClient @Inject constructor(
             primaryLanguage = invite.languageId,
         )
         val acceptResult = networkApi.acceptInvitationFromCode(payload)
-        return if (acceptResult.id > 0L) {
+        return if (acceptResult.status == "invitation_accepted") {
             JoinOrgResult.Success
         } else {
             JoinOrgResult.Unknown
