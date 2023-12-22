@@ -38,7 +38,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.toSize
@@ -56,8 +55,6 @@ import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.component.roundedOutline
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
-import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
-import com.crisiscleanup.core.designsystem.theme.DayNightPreviews
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemBottomPadding
 import com.crisiscleanup.core.designsystem.theme.listItemDropdownMenuOffset
@@ -635,17 +632,5 @@ private fun CenteredRowImage(
         horizontalArrangement = Arrangement.Center,
     ) {
         Image(bitmap = image, contentDescription = null)
-    }
-}
-
-@Preview
-@DayNightPreviews
-@Composable
-private fun RegisterSuccessViewPreview() {
-    CrisisCleanupTheme {
-        RegisterSuccessView(
-            title = "Success title",
-            text = "Very long overflowing message spilling over the extremities",
-        )
     }
 }
