@@ -8,6 +8,7 @@ import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.event.ExternalEventBus
+import com.crisiscleanup.core.common.event.UserPersistentInvite
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -167,6 +168,12 @@ class MainActivityViewModel @Inject constructor(
     val showPasswordReset = externalEventBus.showResetPassword
     val showMagicLinkLogin = externalEventBus.showMagicLinkLogin
     val orgUserInvites = externalEventBus.orgUserInvites
+    val orgPersistentInvites = externalEventBus.orgPersistentInvites
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = UserPersistentInvite(0, ""),
+            started = SharingStarted.WhileSubscribed(),
+        )
 
     val isSwitchingToProduction: StateFlow<Boolean>
     val productionSwitchMessage: StateFlow<String>

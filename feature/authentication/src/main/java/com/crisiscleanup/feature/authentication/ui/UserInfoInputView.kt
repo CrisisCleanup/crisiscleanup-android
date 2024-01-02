@@ -73,6 +73,8 @@ internal fun UserInfoInputView(
     val closeKeyboard = rememberCloseKeyboard(Unit)
 
     Column {
+        // TODO Focus on top most error
+
         val hasEmailError = infoData.emailAddressError.isNotBlank()
         UserInfoErrorText(infoData.emailAddressError)
         OutlinedClearableTextField(

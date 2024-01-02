@@ -57,7 +57,7 @@ fun ResetPasswordRoute(
         clearStateOnBack()
     }
 
-    val translator = LocalAppTranslator.current
+    val t = LocalAppTranslator.current
 
     val closeKeyboard = rememberCloseKeyboard(viewModel)
 
@@ -72,7 +72,7 @@ fun ResetPasswordRoute(
             .verticalScroll(rememberScrollState()),
     ) {
         TopAppBarBackAction(
-            title = translator("actions.reset_password"),
+            title = t("actions.reset_password"),
             onAction = clearStateOnBack,
             modifier = Modifier.testTag("passwordRecoverBackBtn"),
         )

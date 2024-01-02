@@ -20,6 +20,7 @@ import com.crisiscleanup.feature.authentication.navigation.navigateToVolunteerOr
 import com.crisiscleanup.feature.authentication.navigation.navigateToVolunteerPasteInviteLink
 import com.crisiscleanup.feature.authentication.navigation.navigateToVolunteerRequestAccess
 import com.crisiscleanup.feature.authentication.navigation.navigateToVolunteerScanQrCode
+import com.crisiscleanup.feature.authentication.navigation.orgPersistentInviteScreen
 import com.crisiscleanup.feature.authentication.navigation.requestAccessScreen
 import com.crisiscleanup.feature.authentication.navigation.resetPasswordScreen
 import com.crisiscleanup.feature.authentication.navigation.volunteerOrgScreen
@@ -87,6 +88,9 @@ fun CrisisCleanupAuthNavHost(
                     closeAuthentication = closeAuthentication,
                 )
                 requestAccessScreen(
+                    onBack = onBack,
+                )
+                orgPersistentInviteScreen(
                     onBack = onBack,
                 )
             },

@@ -73,6 +73,7 @@ import com.crisiscleanup.core.ui.AppLayoutArea
 import com.crisiscleanup.core.ui.LocalAppLayout
 import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
 import com.crisiscleanup.feature.authentication.navigation.navigateToMagicLinkLogin
+import com.crisiscleanup.feature.authentication.navigation.navigateToOrgPersistentInvite
 import com.crisiscleanup.feature.authentication.navigation.navigateToPasswordReset
 import com.crisiscleanup.feature.authentication.navigation.navigateToRequestAccess
 import com.crisiscleanup.feature.cases.ui.SelectIncidentDialog
@@ -175,6 +176,7 @@ private fun LoadedContent(
         if (isNotAuthenticatedState) {
             val showMagicLinkLogin by viewModel.showMagicLinkLogin.collectAsStateWithLifecycle(false)
             val orgUserInviteCode by viewModel.orgUserInvites.collectAsStateWithLifecycle("")
+            val orgPersistentInvite by viewModel.orgPersistentInvites.collectAsStateWithLifecycle()
 
             if (showPasswordReset) {
                 appState.navController.navigateToPasswordReset(false)
@@ -182,6 +184,8 @@ private fun LoadedContent(
                 appState.navController.navigateToMagicLinkLogin()
             } else if (orgUserInviteCode.isNotBlank()) {
                 appState.navController.navigateToRequestAccess(orgUserInviteCode)
+            } else if (orgPersistentInvite.isValidInvite) {
+                appState.navController.navigateToOrgPersistentInvite(orgPersistentInvite)
             }
         }
     } else {

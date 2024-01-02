@@ -13,6 +13,7 @@ object RouteConstant {
     const val magicLinkLoginRoute = "$authRoute/magic_link_login"
 
     const val requestAccessRoute = "$authRoute/request_access"
+    const val orgPersistentInviteRoute = "$authRoute/org_persistent_invite"
 
     const val volunteerOrgRoute = "$authRoute/volunteer_org"
     const val volunteerPasteInviteLinkRoute = "$volunteerOrgRoute/paste_invitation_link"

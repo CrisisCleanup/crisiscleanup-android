@@ -19,20 +19,20 @@ class UserInfoInputData(
     var confirmPassword by mutableStateOf("")
     var language by mutableStateOf(LanguageIdName(0, ""))
 
-    var emailAddressError = ""
-    var firstNameError = ""
-    var lastNameError = ""
-    var phoneError = ""
-    var passwordError = ""
-    var confirmPasswordError = ""
+    var emailAddressError by mutableStateOf("")
+    var firstNameError by mutableStateOf("")
+    var lastNameError by mutableStateOf("")
+    var phoneError by mutableStateOf("")
+    var passwordError by mutableStateOf("")
+    var confirmPasswordError by mutableStateOf("")
 
     val hasError: Boolean
         get() = emailAddressError.isNotBlank() ||
-            firstNameError.isNotBlank() ||
-            lastNameError.isNotBlank() ||
-            phoneError.isNotBlank() ||
-            passwordError.isNotBlank() ||
-            confirmPasswordError.isNotBlank()
+                firstNameError.isNotBlank() ||
+                lastNameError.isNotBlank() ||
+                phoneError.isNotBlank() ||
+                passwordError.isNotBlank() ||
+                confirmPasswordError.isNotBlank()
 
     fun clearErrors() {
         emailAddressError = ""

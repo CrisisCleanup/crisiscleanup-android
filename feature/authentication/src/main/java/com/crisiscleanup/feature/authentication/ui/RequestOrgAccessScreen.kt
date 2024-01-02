@@ -42,6 +42,7 @@ import com.crisiscleanup.core.designsystem.theme.primaryRedColor
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.authentication.RequestOrgAccessViewModel
+import java.net.URL
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -157,37 +158,11 @@ private fun RequestOrgUserInfoInputView(
                     info.displayName.isNotBlank() &&
                     info.inviteMessage.isNotBlank()
                 ) {
-                    Row(
-                        listItemModifier,
-                        horizontalArrangement = listItemSpacedBy,
-                    ) {
-                        val actionIcon = CrisisCleanupIcons.QuestionMark
-                        val fallbackPainter = rememberVectorPainter(actionIcon)
-                        val placeholderPainter = rememberVectorPainter(CrisisCleanupIcons.Account)
-                        // TODO Show error as necessary
-                        AsyncImage(
-                            modifier = Modifier
-                                // TODO Common dimensions
-                                .size(48.dp)
-                                .clip(CircleShape),
-                            model = avatarUrl.toString(),
-                            contentDescription = info.displayName,
-                            fallback = fallbackPainter,
-                            contentScale = ContentScale.FillBounds,
-                            placeholder = placeholderPainter,
-                        )
-
-                        Column {
-                            Text(
-                                info.displayName,
-                                style = LocalFontStyles.current.header4,
-                            )
-                            Text(
-                                info.inviteMessage,
-                                style = MaterialTheme.typography.bodySmall,
-                            )
-                        }
-                    }
+                    InviterAvatar(
+                        avatarUrl,
+                        displayName = info.displayName,
+                        inviteMessage = info.inviteMessage,
+                    )
                 }
             }
         }
@@ -217,5 +192,44 @@ private fun RequestOrgUserInfoInputView(
             indicateBusy = isLoading,
             onClick = viewModel::onVolunteerWithOrg,
         )
+    }
+}
+
+@Composable
+internal fun InviterAvatar(
+    avatarUrl: URL,
+    displayName: String,
+    inviteMessage: String,
+) {
+    Row(
+        listItemModifier,
+        horizontalArrangement = listItemSpacedBy,
+    ) {
+        val actionIcon = CrisisCleanupIcons.QuestionMark
+        val fallbackPainter = rememberVectorPainter(actionIcon)
+        val placeholderPainter = rememberVectorPainter(CrisisCleanupIcons.Account)
+        // TODO Show error as necessary
+        AsyncImage(
+            modifier = Modifier
+                // TODO Common dimensions
+                .size(48.dp)
+                .clip(CircleShape),
+            model = avatarUrl.toString(),
+            contentDescription = displayName,
+            fallback = fallbackPainter,
+            contentScale = ContentScale.FillBounds,
+            placeholder = placeholderPainter,
+        )
+
+        Column {
+            Text(
+                displayName,
+                style = LocalFontStyles.current.header4,
+            )
+            Text(
+                inviteMessage,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
     }
 }

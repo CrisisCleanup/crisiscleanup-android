@@ -12,6 +12,7 @@ import com.crisiscleanup.core.appnav.RouteConstant.volunteerRequestAccessRoute
 import com.crisiscleanup.feature.authentication.ui.RequestOrgAccessRoute
 import com.crisiscleanup.feature.authentication.ui.VolunteerOrgRoute
 import com.crisiscleanup.feature.authentication.ui.VolunteerPasteInviteLinkRoute
+import com.crisiscleanup.feature.authentication.ui.VolunteerScanQrCodeRoute
 
 fun NavController.navigateToVolunteerOrg() {
     navigate(RouteConstant.volunteerOrgRoute)

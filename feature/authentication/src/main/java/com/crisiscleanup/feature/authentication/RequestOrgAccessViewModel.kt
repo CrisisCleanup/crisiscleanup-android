@@ -62,8 +62,8 @@ class RequestOrgAccessViewModel @Inject constructor(
     val inviteDisplay = MutableStateFlow<InviteDisplayInfo?>(null)
 
     val inviteInfoErrorMessage = MutableStateFlow("")
-    private val isPullingLanguageOptions = MutableStateFlow(false)
 
+    private val isPullingLanguageOptions = MutableStateFlow(false)
     val languageOptions = MutableStateFlow<List<LanguageIdName>>(emptyList())
 
     private val isRequestingInvite = MutableStateFlow(false)
@@ -140,7 +140,6 @@ class RequestOrgAccessViewModel @Inject constructor(
                 isPullingLanguageOptions.value = true
                 try {
                     languageOptions.value = languageRepository.getLanguageOptions()
-                    logger.logDebug("invite language ${languageOptions.value}")
                 } catch (e: Exception) {
                     logger.logException(e)
                 } finally {
@@ -280,8 +279,6 @@ data class InviteDisplayInfo(
 ) {
     val avatarUrl: URL?
         get() = inviteInfo.inviterAvatarUrl
-    val isSvgAvatar: Boolean
-        get() = avatarUrl?.path?.endsWith(".svg") == true
     val displayName: String
         get() = inviteInfo.displayName
 }

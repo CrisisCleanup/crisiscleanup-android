@@ -1,6 +1,5 @@
 package com.crisiscleanup.core.network.retrofit
 
-import android.util.Log
 import com.crisiscleanup.core.common.event.UserPersistentInvite
 import com.crisiscleanup.core.common.isPast
 import com.crisiscleanup.core.model.data.CodeInviteAccept
@@ -50,7 +49,7 @@ private interface RegisterApi {
     ): NetworkInvitationInfoResult
 
     @WrapResponseHeader("invite")
-    @GET("persistent_invitations")
+    @GET("persistent_invitations/{code}")
     suspend fun persistentInvitationInfo(
         @Path("code") inviteCode: String,
     ): NetworkPersistentInvitationResult
@@ -136,7 +135,7 @@ class RegisterApiClient @Inject constructor(
                 return ExpiredNetworkOrgInvite
             }
 
-            val userDetails = getUserDetails(persistentInvite.id)
+            val userDetails = getUserDetails(invite.inviterUserId)
             return OrgUserInviteInfo(
                 displayName = userDetails.displayName,
                 inviterEmail = "",
@@ -216,6 +215,7 @@ class RegisterApiClient @Inject constructor(
             token = invite.invitationCode,
         )
         val response = networkApi.acceptPersistentInvitation(payload)
+        // TODO Parse response.detail even when response code is 400
         return when (response.detail) {
             "You have been added to the organization." -> JoinOrgResult.Success
             "User already a member of this organization." -> JoinOrgResult.Redundant
@@ -229,7 +229,6 @@ class RegisterApiClient @Inject constructor(
     ): Boolean {
         val invite =
             networkApi.inviteToOrganization(NetworkOrganizationInvite(emailAddress, organizationId))
-        Log.w("invite", "Invite $invite $emailAddress")
         return invite.invite?.inviteeEmail == emailAddress
     }
 

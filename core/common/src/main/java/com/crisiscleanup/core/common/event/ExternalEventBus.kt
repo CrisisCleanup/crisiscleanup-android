@@ -19,8 +19,8 @@ interface ExternalEventBus {
 
     val orgUserInvites: Flow<String>
 
-    val showOrgPersistentInvite: Flow<Boolean>
     val orgPersistentInvites: Flow<UserPersistentInvite>
+    val showOrgPersistentInvite: Flow<Boolean>
 
     fun onResetPassword(code: String)
 
@@ -45,7 +45,7 @@ class CrisisCleanupExternalEventBus @Inject constructor(
     override val orgUserInvites = MutableStateFlow("")
 
     override val orgPersistentInvites = MutableStateFlow(UserPersistentInvite(0, ""))
-    override val showOrgPersistentInvite = orgPersistentInvites.map { it.inviterUserId > 0 }
+    override val showOrgPersistentInvite = orgPersistentInvites.map { it.isValidInvite }
 
     override fun onResetPassword(code: String) {
         externalScope.launch {
@@ -90,4 +90,5 @@ class CrisisCleanupExternalEventBus @Inject constructor(
 data class UserPersistentInvite(
     val inviterUserId: Long,
     val inviteToken: String,
+    val isValidInvite: Boolean = inviterUserId > 0,
 )
