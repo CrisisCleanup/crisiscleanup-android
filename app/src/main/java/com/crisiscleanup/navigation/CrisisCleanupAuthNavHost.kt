@@ -73,7 +73,10 @@ fun CrisisCleanupAuthNavHost(
                     navController = navController,
                     nestedGraphs = {
                         navigateToVolunteerPasteInviteLink(navController, onBack)
-                        navigateToVolunteerRequestAccess(onBack)
+                        navigateToVolunteerRequestAccess(
+                            onBack,
+                            closeRequestAccess = navToLoginWithEmail,
+                        )
                         navigateToVolunteerScanQrCode(onBack)
                     },
                     onBack = onBack,
@@ -89,9 +92,11 @@ fun CrisisCleanupAuthNavHost(
                 )
                 requestAccessScreen(
                     onBack = onBack,
+                    closeRequestAccess = navToLoginWithEmail,
                 )
                 orgPersistentInviteScreen(
                     onBack = onBack,
+                    closeInvite = navToLoginWithEmail,
                 )
             },
             enableBackHandler = enableBackHandler,

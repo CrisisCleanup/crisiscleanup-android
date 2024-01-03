@@ -10,6 +10,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -34,25 +35,36 @@ import kotlin.time.Duration.Companion.days
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrgPersistentInviteRoute(
-    onBack: () -> Unit = {},
+    onBack: () -> Unit,
+    closeInvite: () -> Unit,
     viewModel: OrgPersistentInviteViewModel = hiltViewModel(),
 ) {
+    val isInviteAccepted by viewModel.isInviteAccepted.collectAsStateWithLifecycle()
+    val onClose = remember(onBack, closeInvite, isInviteAccepted, viewModel) {
+        {
+            if (isInviteAccepted) {
+                closeInvite()
+            } else {
+                onBack()
+            }
+        }
+    }
+
     BackHandler {
-        onBack()
+        onClose()
     }
 
     val t = LocalAppTranslator.current
 
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val inviteFailMessage by viewModel.inviteFailMessage.collectAsStateWithLifecycle()
-    val isInviteAccepted by viewModel.isInviteAccepted.collectAsStateWithLifecycle()
     val inviteDisplay by viewModel.inviteDisplay.collectAsStateWithLifecycle()
 
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
             TopAppBarBackAction(
                 title = t("actions.sign_up"),
-                onAction = onBack,
+                onAction = onClose,
             )
 
             if (inviteFailMessage.isNotBlank()) {

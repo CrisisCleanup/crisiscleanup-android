@@ -41,7 +41,7 @@ fun ResetPasswordRoute(
 ) {
     val isPasswordReset by viewModel.isPasswordReset.collectAsStateWithLifecycle()
 
-    val clearStateOnBack = remember(onBack, viewModel, isPasswordReset) {
+    val clearStateOnBack = remember(viewModel, isPasswordReset, onBack, closeResetPassword) {
         {
             viewModel.clearResetPassword()
 

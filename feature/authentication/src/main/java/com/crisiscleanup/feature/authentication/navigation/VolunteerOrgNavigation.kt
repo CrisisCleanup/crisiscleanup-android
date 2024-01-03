@@ -71,6 +71,7 @@ fun NavGraphBuilder.navigateToVolunteerPasteInviteLink(
 
 fun NavGraphBuilder.navigateToVolunteerRequestAccess(
     onBack: () -> Unit,
+    closeRequestAccess: () -> Unit,
 ) {
     composable(
         route = "$volunteerRequestAccessRoute?$showEmailInputArg={$showEmailInputArg}",
@@ -82,6 +83,7 @@ fun NavGraphBuilder.navigateToVolunteerRequestAccess(
     ) {
         RequestOrgAccessRoute(
             onBack = onBack,
+            closeRequestAccess = closeRequestAccess,
         )
     }
 }

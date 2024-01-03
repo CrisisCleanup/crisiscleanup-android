@@ -185,7 +185,7 @@ private fun LoadedContent(
             } else if (orgUserInviteCode.isNotBlank()) {
                 appState.navController.navigateToRequestAccess(orgUserInviteCode)
             } else if (orgPersistentInvite.isValidInvite) {
-                appState.navController.navigateToOrgPersistentInvite(orgPersistentInvite)
+                appState.navController.navigateToOrgPersistentInvite()
             }
         }
     } else {

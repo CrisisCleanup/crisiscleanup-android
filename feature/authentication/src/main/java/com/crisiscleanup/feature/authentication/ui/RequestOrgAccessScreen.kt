@@ -48,15 +48,23 @@ import java.net.URL
 @Composable
 fun RequestOrgAccessRoute(
     onBack: () -> Unit,
+    closeRequestAccess: () -> Unit,
     viewModel: RequestOrgAccessViewModel = hiltViewModel(),
 ) {
-    val clearStateOnBack = remember(onBack, viewModel) {
+    val isInviteRequested by viewModel.isInviteRequested.collectAsStateWithLifecycle()
+
+    val clearStateOnBack = remember(viewModel, isInviteRequested, onBack, closeRequestAccess) {
         {
             viewModel.clearInviteCode()
 
-            onBack()
+            if (isInviteRequested) {
+                closeRequestAccess()
+            } else {
+                onBack()
+            }
         }
     }
+
     // TODO Backing out does nothing when directed from paste invite link
     BackHandler {
         clearStateOnBack()
@@ -65,7 +73,6 @@ fun RequestOrgAccessRoute(
     val screenTitle by viewModel.screenTitle.collectAsStateWithLifecycle()
 
     val inviteInfoErrorMessage by viewModel.inviteInfoErrorMessage.collectAsStateWithLifecycle()
-    val isInviteRequested by viewModel.isInviteRequested.collectAsStateWithLifecycle()
 
     Column(Modifier.fillMaxSize()) {
         TopAppBarBackAction(
