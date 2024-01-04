@@ -26,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -75,6 +76,7 @@ import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.organizationmanage.InviteOrgState
 import com.crisiscleanup.feature.organizationmanage.InviteTeammateViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -169,11 +171,16 @@ fun InviteTeammateContent(
 
     var focusOnOrgName by remember { mutableStateOf(false) }
 
+    val scrollState = rememberScrollState()
+    var contentSize by remember { mutableStateOf(Size.Zero) }
     Column(
         Modifier
             .scrollFlingListener(closeKeyboard)
             .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(scrollState)
+            .onGloballyPositioned {
+                contentSize = it.size.toSize()
+            },
     ) {
         Text(
             t("~~Invite new user via email invitation link"),
@@ -268,6 +275,7 @@ fun InviteTeammateContent(
                 labelResId = 0,
                 label = emailLabel,
                 value = viewModel.inviteEmailAddresses,
+                keyboardType = KeyboardType.Email,
                 onValueChange = { viewModel.inviteEmailAddresses = it },
                 leadingIcon = {
                     Icon(
@@ -281,9 +289,18 @@ fun InviteTeammateContent(
             )
 
             if (isNewOrganization) {
+                val coroutineScope = rememberCoroutineScope()
                 // TODO Hide or show loading when orgs are being queried
                 if (!isOrganizationVisible) {
-                    NewOrganizationInput(isEditable)
+                    NewOrganizationInput(
+                        isEditable,
+                        onEndOfInput = {
+                            closeKeyboard()
+                            coroutineScope.launch {
+                                scrollState.animateScrollTo(contentSize.height.toInt())
+                            }
+                        },
+                    )
                 }
             } else {
                 Text(
@@ -427,9 +444,9 @@ private fun DropdownOrganizationItems(
 private fun NewOrganizationInput(
     isEditable: Boolean,
     viewModel: InviteTeammateViewModel = hiltViewModel(),
+    onEndOfInput: () -> Unit = {},
 ) {
     val t = LocalAppTranslator.current
-    val closeKeyboard = rememberCloseKeyboard(viewModel)
 
     val phoneLabel = t("invitationSignup.mobile_placeholder")
     val hasPhoneError = viewModel.phoneNumberError.isNotBlank()
@@ -478,7 +495,7 @@ private fun NewOrganizationInput(
         hasFocus = hasLastNameError,
         isError = hasLastNameError,
         imeAction = ImeAction.Done,
-        onEnter = closeKeyboard,
+        onEnter = onEndOfInput,
     )
 
     UserInfoErrorText(viewModel.selectedIncidentError)
