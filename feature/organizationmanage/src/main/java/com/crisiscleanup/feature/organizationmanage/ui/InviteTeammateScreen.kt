@@ -30,6 +30,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -158,6 +159,10 @@ fun InviteTeammateContent(
     val onDismissOrgOptions = remember(viewModel) {
         {
             dismissOrganizationQuery = organizationNameQuery
+        }
+    }
+    val onQueryFocusOut = remember(viewModel) {
+        {
             viewModel.onOrgQueryClose()
         }
     }
@@ -233,6 +238,7 @@ fun InviteTeammateContent(
                 organizations = matchingOrganizations,
                 onOrgSelect = onOrgSelect,
                 onDismissDropdown = onDismissOrgOptions,
+                onFocusOut = onQueryFocusOut,
             )
 
             if (inviteToAnotherOrg) {
@@ -358,6 +364,7 @@ private fun OrgQueryInput(
     organizations: List<OrganizationIdName>,
     onOrgSelect: (OrganizationIdName) -> Unit,
     onDismissDropdown: () -> Unit,
+    onFocusOut: () -> Unit,
 ) {
     val t = LocalAppTranslator.current
 
@@ -369,6 +376,11 @@ private fun OrgQueryInput(
                 .fillMaxWidth()
                 .onGloballyPositioned {
                     contentSize = it.size.toSize()
+                }
+                .onFocusChanged {
+                    if (!it.isFocused) {
+                        onFocusOut()
+                    }
                 },
             label = t("profileOrg.organization_name"),
             value = organizationNameQuery,

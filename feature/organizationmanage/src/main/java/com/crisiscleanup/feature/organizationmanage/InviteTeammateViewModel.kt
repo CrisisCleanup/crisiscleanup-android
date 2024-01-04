@@ -1,6 +1,7 @@
 package com.crisiscleanup.feature.organizationmanage
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
@@ -16,6 +17,7 @@ import com.crisiscleanup.core.common.log.CrisisCleanupLoggers.Onboarding
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.data.IncidentSelectManager
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.OrgVolunteerRepository
@@ -33,7 +35,6 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
@@ -47,7 +48,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class InviteTeammateViewModel @Inject constructor(
@@ -65,9 +65,9 @@ class InviteTeammateViewModel @Inject constructor(
 ) : ViewModel() {
     private val inviteUrl = "${settingsProvider.baseUrl}/mobile_app_user_invite"
 
-    val isValidatingAccount = MutableStateFlow(false)
+    private val isValidatingAccount = MutableStateFlow(false)
 
-    val accountData = accountDataRepository.accountData
+    private val accountData = accountDataRepository.accountData
         .shareIn(
             scope = viewModelScope,
             replay = 1,
@@ -84,7 +84,7 @@ class InviteTeammateViewModel @Inject constructor(
 
     val inviteToAnotherOrg = MutableStateFlow(false)
     private val affiliateOrganizationIds = MutableStateFlow<Set<Long>?>(null)
-    val selectedOtherOrg = MutableStateFlow(OrganizationIdName(0, ""))
+    private val selectedOtherOrg = MutableStateFlow(OrganizationIdName(0, ""))
     val organizationNameQuery = MutableStateFlow("")
     private val isSearchingLocalOrganizations = MutableStateFlow(false)
     private val isSearchingNetworkOrganizations = MutableStateFlow(false)
@@ -163,7 +163,7 @@ class InviteTeammateViewModel @Inject constructor(
         )
 
     private val qFlow = organizationNameQuery
-        .debounce(0.3.seconds)
+        .throttleLatest(300)
         .map(String::trim)
         .shareIn(
             scope = viewModelScope,
@@ -200,7 +200,7 @@ class InviteTeammateViewModel @Inject constructor(
 
     val incidents = MutableStateFlow(emptyList<Incident>())
     val incidentLookup = MutableStateFlow(emptyMap<Long, Incident>())
-    var selectedIncidentId by mutableStateOf(EmptyIncident.id)
+    var selectedIncidentId by mutableLongStateOf(EmptyIncident.id)
 
     // TODO Size QR codes relative to min screen dimension
     private val qrCodeSize = 512 + 256
@@ -479,6 +479,23 @@ class InviteTeammateViewModel @Inject constructor(
                 joinMyOrgInvite.value = it
             }
             .launchIn(viewModelScope)
+
+        inviteOrgState
+            .throttleLatest(300)
+            .onEach {
+                clearErrors()
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun clearErrors() {
+        emailAddressError = ""
+        phoneNumberError = ""
+        firstNameError = ""
+        lastNameError = ""
+        selectedIncidentError = ""
+
+        sendInviteErrorMessage.value = ""
     }
 
     private fun makeInviteUrl(userId: Long, invite: JoinOrgInvite): String {
@@ -528,11 +545,14 @@ class InviteTeammateViewModel @Inject constructor(
                 break
             }
         }
-        if (selectedOtherOrg.value.id != matchingOrg.id) {
+        val selectedOrgId = selectedOtherOrg.value.id
+        if ((selectedOrgId == 0L || selectedOrgId != matchingOrg.id) &&
+            matchingOrg.id == 0L
+        ) {
             matchingOrg = OrganizationIdName(0, q)
-            selectedOtherOrg.value = matchingOrg
-            organizationNameQuery.value = matchingOrg.name
         }
+        selectedOtherOrg.value = matchingOrg
+        organizationNameQuery.value = matchingOrg.name
     }
 
     private suspend fun inviteToOrgOrAffiliate(
@@ -579,7 +599,7 @@ class InviteTeammateViewModel @Inject constructor(
                 sendInvites()
             } catch (e: Exception) {
                 sendInviteErrorMessage.value =
-                    translator("~~Invites are broken. Sorry for the inconvenience. Please try again later.")
+                    translator("~~Invites are not working at the moment. Please try again later.")
                 logger.logException(e)
             } finally {
                 isSendingInvite.value = false
@@ -649,8 +669,9 @@ class InviteTeammateViewModel @Inject constructor(
         }
 
         var isSentToOrgOrAffiliate = false
+        var isInviteSuccessful = false
         if (inviteToAnotherOrg.value) {
-            if (inviteState.new && emailAddresses.size == 1) {
+            if (inviteState.new) {
                 val organizationName = q.trim()
                 val emailContact = emailAddresses[0]
                 val isRegisterNewOrganization = orgVolunteerRepository.createOrganization(
@@ -672,19 +693,28 @@ class InviteTeammateViewModel @Inject constructor(
                         text = translator("registerOrg.we_will_finalize_registration")
                             .replace("{email}", emailContact),
                     )
+
+                    isInviteSuccessful = true
                 }
             } else if (inviteState.affiliate) {
                 isSentToOrgOrAffiliate =
                     inviteToOrgOrAffiliate(emailAddresses, selectedOtherOrg.value.id)
+                isInviteSuccessful = isSentToOrgOrAffiliate
             } else if (inviteState.nonAffiliate) {
                 // TODO Finish when API supports a corresponding endpoint
             }
         } else {
             isSentToOrgOrAffiliate = inviteToOrgOrAffiliate(emailAddresses)
+            isInviteSuccessful = isSentToOrgOrAffiliate
         }
 
         if (isSentToOrgOrAffiliate) {
             onInviteSentToOrgOrAffiliate(emailAddresses)
+        }
+
+        if (!isInviteSuccessful) {
+            sendInviteErrorMessage.value =
+                translator("~~Invites are not working at the moment. Please try again later.")
         }
     }
 }
