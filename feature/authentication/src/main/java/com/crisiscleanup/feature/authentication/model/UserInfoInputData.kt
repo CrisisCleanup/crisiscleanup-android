@@ -28,11 +28,11 @@ class UserInfoInputData(
 
     val hasError: Boolean
         get() = emailAddressError.isNotBlank() ||
-                firstNameError.isNotBlank() ||
-                lastNameError.isNotBlank() ||
-                phoneError.isNotBlank() ||
-                passwordError.isNotBlank() ||
-                confirmPasswordError.isNotBlank()
+            firstNameError.isNotBlank() ||
+            lastNameError.isNotBlank() ||
+            phoneError.isNotBlank() ||
+            passwordError.isNotBlank() ||
+            confirmPasswordError.isNotBlank()
 
     fun clearErrors() {
         emailAddressError = ""

@@ -287,8 +287,8 @@ internal fun OrganizationsSearch(
         ) {
             derivedStateOf {
                 orgSuggestions.isNotEmpty() &&
-                        dismissSuggestionsQuery != orgQuery &&
-                        selectedOptionQuery != orgQuery
+                    dismissSuggestionsQuery != orgQuery &&
+                    selectedOptionQuery != orgQuery
             }
         }
         DropdownMenu(

@@ -80,10 +80,8 @@ fun OrgPersistentInviteRoute(
                     listItemModifier,
                     style = LocalFontStyles.current.header3,
                 )
-
             } else if (isInviteAccepted) {
                 RegisterSuccessView(title = viewModel.acceptedTitle, text = "")
-
             } else if (inviteDisplay != null) {
                 val inviteInfo = inviteDisplay!!.inviteInfo
                 if (inviteInfo.isExpiredInvite) {

@@ -191,8 +191,9 @@ class OrgPersistentInviteViewModel @Inject constructor(
                 } else {
                     var errorMessageTranslateKey = "persistentInvitations.join_org_error"
                     when (joinResult) {
-                        JoinOrgResult.Redundant -> errorMessageTranslateKey =
-                            "persistentInvitations.already_in_org_error"
+                        JoinOrgResult.Redundant ->
+                            errorMessageTranslateKey =
+                                "persistentInvitations.already_in_org_error"
 
                         else -> {
                             if (inviteDisplay.value?.inviteInfo?.expiration?.isPast == true) {
