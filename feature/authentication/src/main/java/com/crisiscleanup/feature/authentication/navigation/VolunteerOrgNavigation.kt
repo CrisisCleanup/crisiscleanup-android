@@ -61,7 +61,12 @@ fun NavGraphBuilder.navigateToVolunteerPasteInviteLink(
 ) {
     composable(route = RouteConstant.volunteerPasteInviteLinkRoute) {
         val navigateToRequestAccess =
-            remember(navController) { { code: String -> navController.navigateToRequestAccess(code) } }
+            remember(navController) {
+                { code: String ->
+                    navController.popBackStack()
+                    navController.navigateToRequestAccess(code)
+                }
+            }
         VolunteerPasteInviteLinkRoute(
             onBack = onBack,
             openOrgInvite = navigateToRequestAccess,
