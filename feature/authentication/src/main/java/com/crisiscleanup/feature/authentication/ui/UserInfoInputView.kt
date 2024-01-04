@@ -68,6 +68,7 @@ internal fun UserInfoInputView(
     languageOptions: List<LanguageIdName>,
     isEditable: Boolean,
     clearErrorVisuals: () -> Unit = {},
+    onEndOfInput: () -> Unit = {},
 ) {
     val t = LocalAppTranslator.current
     val closeKeyboard = rememberCloseKeyboard(Unit)
@@ -178,13 +179,14 @@ internal fun UserInfoInputView(
             onEnter = {
                 clearErrorVisuals()
                 closeKeyboard()
+                onEndOfInput()
             },
             imeAction = ImeAction.Done,
         )
 
         val selectedLanguage = t(infoData.language.name.ifBlank { "languages.en-us" })
         Box(Modifier.listItemBottomPadding()) {
-            var contentWidth by remember { mutableStateOf(Size.Zero) }
+            var contentSize by remember { mutableStateOf(Size.Zero) }
             var showDropdown by remember { mutableStateOf(false) }
             Row(
                 Modifier
@@ -197,7 +199,7 @@ internal fun UserInfoInputView(
                     )
                     .listItemPadding()
                     .onGloballyPositioned {
-                        contentWidth = it.size.toSize()
+                        contentSize = it.size.toSize()
                     },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -218,7 +220,7 @@ internal fun UserInfoInputView(
                     modifier = Modifier
                         .width(
                             with(LocalDensity.current) {
-                                contentWidth.width.toDp()
+                                contentSize.width.toDp()
                                     .minus(listItemDropdownMenuOffset.x.times(2))
                             },
                         ),

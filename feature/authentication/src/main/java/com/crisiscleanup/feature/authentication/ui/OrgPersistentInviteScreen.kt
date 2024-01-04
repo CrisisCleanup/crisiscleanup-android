@@ -10,8 +10,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.common.relativeTime
@@ -29,6 +35,7 @@ import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.authentication.InviteDisplayInfo
 import com.crisiscleanup.feature.authentication.OrgPersistentInviteViewModel
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlin.time.Duration.Companion.days
 
@@ -108,11 +115,16 @@ private fun PersistentInviteInfoInputView(
     val isEditable by viewModel.isEditable.collectAsStateWithLifecycle()
     val isJoiningOrg by viewModel.isJoiningOrg.collectAsStateWithLifecycle()
 
+    val scrollState = rememberScrollState()
+    var contentSize by remember { mutableStateOf(Size.Zero) }
     Column(
         Modifier
             .scrollFlingListener(closeKeyboard)
             .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(scrollState)
+            .onGloballyPositioned {
+                contentSize = it.size.toSize()
+            },
     ) {
         if (inviteDisplay.inviteInfo.expiration.minus(Clock.System.now()) < 1.days) {
             val expirationText = t("persistentInvitations.invite_expires_in_x_days")
@@ -150,11 +162,17 @@ private fun PersistentInviteInfoInputView(
             style = LocalFontStyles.current.header3,
         )
 
+        val coroutineScope = rememberCoroutineScope()
         val languageOptions by viewModel.languageOptions.collectAsStateWithLifecycle()
         UserInfoInputView(
             infoData = viewModel.userInfo,
             languageOptions = languageOptions,
             isEditable = isEditable,
+            onEndOfInput = {
+                coroutineScope.launch {
+                    scrollState.animateScrollTo(contentSize.height.toInt())
+                }
+            },
         )
 
         BusyButton(

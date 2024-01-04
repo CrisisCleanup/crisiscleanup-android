@@ -90,12 +90,12 @@ internal fun ColumnScope.WrongIncidentFlagView(
 
         item {
             Box(Modifier.fillMaxWidth()) {
-                var contentWidth by remember { mutableStateOf(Size.Zero) }
+                var contentSize by remember { mutableStateOf(Size.Zero) }
 
                 var dismissSuggestionsQuery by remember { mutableStateOf("dismissed") }
                 OutlinedClearableTextField(
                     modifier = listItemModifier.onGloballyPositioned {
-                        contentWidth = it.size.toSize()
+                        contentSize = it.size.toSize()
                     },
                     labelResId = 0,
                     label = translator("casesVue.incident"),
@@ -134,7 +134,7 @@ internal fun ColumnScope.WrongIncidentFlagView(
                 }
                 DropdownMenu(
                     modifier = Modifier
-                        .width(with(LocalDensity.current) { contentWidth.width.toDp() })
+                        .width(with(LocalDensity.current) { contentSize.width.toDp() })
                         // TODO Use inner window height - approximate keyboard height
                         .heightIn(max = 300.dp),
                     expanded = showDropdown,

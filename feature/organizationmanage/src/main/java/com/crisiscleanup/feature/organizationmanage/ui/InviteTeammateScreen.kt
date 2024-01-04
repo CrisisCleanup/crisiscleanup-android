@@ -345,13 +345,13 @@ private fun OrgQueryInput(
     val t = LocalAppTranslator.current
 
     Box(Modifier.fillMaxWidth()) {
-        var contentWidth by remember { mutableStateOf(Size.Zero) }
+        var contentSize by remember { mutableStateOf(Size.Zero) }
 
         OutlinedClearableTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .onGloballyPositioned {
-                    contentWidth = it.size.toSize()
+                    contentSize = it.size.toSize()
                 },
             label = t("profileOrg.organization_name"),
             value = organizationNameQuery,
@@ -382,7 +382,7 @@ private fun OrgQueryInput(
                     .sizeIn(maxHeight = maxHeight)
                     .width(
                         with(LocalDensity.current) {
-                            contentWidth.width
+                            contentSize.width
                                 .toDp()
                                 .minus(listItemDropdownMenuOffset.x.times(2))
                         },
@@ -491,7 +491,7 @@ private fun NewOrganizationInput(
             .listItemBottomPadding()
             .fillMaxWidth(),
     ) {
-        var contentWidth by remember { mutableStateOf(Size.Zero) }
+        var contentSize by remember { mutableStateOf(Size.Zero) }
         var showDropdown by remember { mutableStateOf(false) }
         Row(
             Modifier
@@ -504,7 +504,7 @@ private fun NewOrganizationInput(
                 )
                 .listItemPadding()
                 .onGloballyPositioned {
-                    contentWidth = it.size.toSize()
+                    contentSize = it.size.toSize()
                 },
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -525,7 +525,7 @@ private fun NewOrganizationInput(
                 modifier = Modifier
                     .width(
                         with(LocalDensity.current) {
-                            contentWidth.width.toDp().minus(listItemDropdownMenuOffset.x.times(2))
+                            contentSize.width.toDp().minus(listItemDropdownMenuOffset.x.times(2))
                         },
                     ),
                 expanded = showDropdown,

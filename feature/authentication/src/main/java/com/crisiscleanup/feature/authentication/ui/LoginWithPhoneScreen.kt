@@ -343,7 +343,7 @@ private fun ColumnScope.VerifyPhoneCodeScreen(
         )
 
         Box(Modifier.fillMaxWidth()) {
-            var contentWidth by remember { mutableStateOf(Size.Zero) }
+            var contentSize by remember { mutableStateOf(Size.Zero) }
             var showDropdown by remember { mutableStateOf(false) }
             Column(
                 Modifier
@@ -353,7 +353,7 @@ private fun ColumnScope.VerifyPhoneCodeScreen(
                     )
                     .fillMaxWidth()
                     .onGloballyPositioned {
-                        contentWidth = it.size.toSize()
+                        contentSize = it.size.toSize()
                     }
                     .then(listItemModifier),
             ) {
@@ -384,7 +384,7 @@ private fun ColumnScope.VerifyPhoneCodeScreen(
                 modifier = Modifier
                     .width(
                         with(LocalDensity.current) {
-                            contentWidth.width.toDp().minus(listItemDropdownMenuOffset.x.times(2))
+                            contentSize.width.toDp().minus(listItemDropdownMenuOffset.x.times(2))
                         },
                     ),
                 expanded = showDropdown,

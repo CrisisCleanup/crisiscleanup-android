@@ -15,13 +15,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
@@ -42,6 +48,7 @@ import com.crisiscleanup.core.designsystem.theme.primaryRedColor
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.authentication.RequestOrgAccessViewModel
+import kotlinx.coroutines.launch
 import java.net.URL
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -111,11 +118,16 @@ private fun RequestOrgUserInfoInputView(
 
     val clearErrorVisuals = remember(viewModel) { { viewModel.clearErrors() } }
 
+    val scrollState = rememberScrollState()
+    var contentSize by remember { mutableStateOf(Size.Zero) }
     Column(
         Modifier
             .scrollFlingListener(closeKeyboard)
             .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(scrollState)
+            .onGloballyPositioned {
+                contentSize = it.size.toSize()
+            },
     ) {
         if (viewModel.showEmailInput) {
             val requestInstructions = t("requestAccess.request_access_enter_email")
@@ -180,11 +192,17 @@ private fun RequestOrgUserInfoInputView(
             style = LocalFontStyles.current.header3,
         )
 
+        val coroutineScope = rememberCoroutineScope()
         val languageOptions by viewModel.languageOptions.collectAsStateWithLifecycle()
         UserInfoInputView(
             infoData = viewModel.userInfo,
             languageOptions = languageOptions,
             isEditable = isEditable,
+            onEndOfInput = {
+                coroutineScope.launch {
+                    scrollState.animateScrollTo(contentSize.height.toInt())
+                }
+            },
         )
 
         Text(

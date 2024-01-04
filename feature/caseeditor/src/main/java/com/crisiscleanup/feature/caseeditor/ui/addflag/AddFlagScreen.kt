@@ -181,7 +181,7 @@ private fun FlagsDropdown(
 ) {
     val translator = LocalAppTranslator.current
 
-    var contentWidth by remember { mutableStateOf(Size.Zero) }
+    var contentSize by remember { mutableStateOf(Size.Zero) }
 
     val selectedText = translator(selectedFlagFlow?.literal ?: "flag.choose_problem")
     Box(modifier) {
@@ -193,7 +193,7 @@ private fun FlagsDropdown(
                     enabled = isEditable,
                 )
                 .onGloballyPositioned {
-                    contentWidth = it.size.toSize()
+                    contentSize = it.size.toSize()
                 }
                 .then(listItemModifier),
             verticalAlignment = Alignment.CenterVertically,
@@ -212,7 +212,7 @@ private fun FlagsDropdown(
         }
 
         DropdownMenu(
-            modifier = Modifier.width(with(LocalDensity.current) { contentWidth.width.toDp() }),
+            modifier = Modifier.width(with(LocalDensity.current) { contentSize.width.toDp() }),
             expanded = showDropdown && isEditable,
             onDismissRequest = { showDropdown = false },
         ) {
@@ -251,7 +251,7 @@ internal fun OrganizationsSearch(
 
     var dismissSuggestionsQuery by remember { mutableStateOf("") }
 
-    var contentWidth by remember { mutableStateOf(Size.Zero) }
+    var contentSize by remember { mutableStateOf(Size.Zero) }
     Box(Modifier.fillMaxWidth()) {
         OutlinedClearableTextField(
             modifier = Modifier
@@ -259,7 +259,7 @@ internal fun OrganizationsSearch(
                 .listItemHorizontalPadding()
                 .listItemBottomPadding()
                 .onGloballyPositioned {
-                    contentWidth = it.size.toSize()
+                    contentSize = it.size.toSize()
                 },
             labelResId = 0,
             label = translator("profileOrg.organization_name"),
@@ -287,13 +287,13 @@ internal fun OrganizationsSearch(
         ) {
             derivedStateOf {
                 orgSuggestions.isNotEmpty() &&
-                    dismissSuggestionsQuery != orgQuery &&
-                    selectedOptionQuery != orgQuery
+                        dismissSuggestionsQuery != orgQuery &&
+                        selectedOptionQuery != orgQuery
             }
         }
         DropdownMenu(
             modifier = Modifier
-                .width(with(LocalDensity.current) { contentWidth.width.toDp() })
+                .width(with(LocalDensity.current) { contentSize.width.toDp() })
                 // TODO Use inner window height - approximate keyboard height
                 .heightIn(max = 300.dp),
             expanded = showDropdown,

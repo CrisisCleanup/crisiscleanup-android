@@ -457,12 +457,12 @@ private fun LazyListScope.contactSuggestionsItem(
             if (isEmail) "shareWorksite.search_emails" else "shareWorksite.search_phones"
         val keyboardType = if (isEmail) KeyboardType.Email else KeyboardType.Password
         Box(Modifier.fillMaxWidth()) {
-            var contentWidth by remember { mutableStateOf(Size.Zero) }
+            var contentSize by remember { mutableStateOf(Size.Zero) }
 
             var dismissSuggestionsQuery by remember { mutableStateOf("") }
             OutlinedClearableTextField(
                 modifier = listItemModifier.onGloballyPositioned {
-                    contentWidth = it.size.toSize()
+                    contentSize = it.size.toSize()
                 },
                 labelResId = 0,
                 label = translator(searchForHintTranslationKey),
@@ -493,7 +493,7 @@ private fun LazyListScope.contactSuggestionsItem(
             }
             DropdownMenu(
                 modifier = Modifier
-                    .width(with(LocalDensity.current) { contentWidth.width.toDp() })
+                    .width(with(LocalDensity.current) { contentSize.width.toDp() })
                     // TODO Use inner window height - approximate keyboard height
                     .heightIn(max = 300.dp),
                 expanded = showDropdown,

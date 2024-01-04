@@ -167,14 +167,14 @@ private fun PropertyFormResidentNameView(
     val focusName = (focusOnOpen && residentName.isEmpty()) || isNameError
     ErrorText(inputData.residentNameError)
     Box(Modifier.fillMaxWidth()) {
-        var contentWidth by remember { mutableStateOf(Size.Zero) }
+        var contentSize by remember { mutableStateOf(Size.Zero) }
 
         val nameLabel = translator("formLabels.name")
         OutlinedClearableTextField(
             modifier = listItemModifier
                 .testTag("propertyResidentNameTextField")
                 .onGloballyPositioned {
-                    contentWidth = it.size.toSize()
+                    contentSize = it.size.toSize()
                 },
             labelResId = 0,
             label = "$nameLabel *",
@@ -207,7 +207,7 @@ private fun PropertyFormResidentNameView(
             DropdownMenu(
                 modifier = Modifier
                     .testTag("propertyResidentNameDropdown")
-                    .width(with(LocalDensity.current) { contentWidth.width.toDp() }),
+                    .width(with(LocalDensity.current) { contentSize.width.toDp() }),
                 expanded = !hideDropdown,
                 onDismissRequest = onStopSuggestions,
                 offset = listItemDropdownMenuOffset,
