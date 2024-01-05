@@ -30,6 +30,7 @@ import com.crisiscleanup.core.network.model.profilePictureUrl
 import retrofit2.Retrofit
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Headers
 import retrofit2.http.POST
 import retrofit2.http.Path
 import java.net.URL
@@ -54,11 +55,13 @@ private interface RegisterApi {
         @Path("code") inviteCode: String,
     ): NetworkPersistentInvitationResult
 
+    @Headers("Cookie: ")
     @GET("users/{user}")
     suspend fun noAuthUser(
         @Path("user") userId: Long,
     ): NetworkUser
 
+    @Headers("Cookie: ")
     @GET("organizations/{organization}")
     suspend fun noAuthOrganization(
         @Path("organization") organizationId: Long,
