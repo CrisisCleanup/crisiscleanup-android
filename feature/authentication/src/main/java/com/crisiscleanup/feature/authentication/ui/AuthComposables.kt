@@ -80,7 +80,7 @@ fun LoginWithDifferentMethod(
         enabled = enabled,
     ) {
         val text = translator(
-            "~~Login using different method",
+            "loginForm.use_different_method",
             R.string.loginUsingDifferentMethod,
         )
         Row(
