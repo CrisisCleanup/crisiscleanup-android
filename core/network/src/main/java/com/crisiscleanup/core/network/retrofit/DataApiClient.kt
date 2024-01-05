@@ -17,6 +17,13 @@ private interface DataSourceApi {
     @GET("users/me")
     suspend fun getProfile(): NetworkAccountProfileResult
 
+    @Headers("Cookie: ")
+    @GET("users/me")
+    suspend fun getProfile(
+        @Header("Authorization")
+        accessToken: String,
+    ): NetworkUserProfile
+
     @TokenAuthenticationHeader
     @GET("organizations")
     suspend fun getOrganizations(
@@ -199,13 +206,6 @@ private interface DataSourceApi {
     suspend fun searchOrganizations(
         @Query("search") q: String,
     ): NetworkOrganizationsSearchResult
-
-    @Headers("Cookie: ")
-    @GET("/users/me")
-    suspend fun getProfile(
-        @Header("Authorization")
-        accessToken: String,
-    ): NetworkUserProfile
 }
 
 private val worksiteCoreDataFields = listOf(

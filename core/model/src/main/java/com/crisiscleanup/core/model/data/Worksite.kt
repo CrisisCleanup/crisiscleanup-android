@@ -11,7 +11,7 @@ enum class AutoContactFrequency(val literal: String) {
 }
 
 private val autoContactFrequencyMap =
-    AutoContactFrequency.values().map { it.literal to it }.toMap()
+    AutoContactFrequency.entries.associateBy { it.literal }
 
 data class Worksite(
     val id: Long,
