@@ -141,7 +141,7 @@ class LoginWithPhoneViewModel @Inject constructor(
     }
 
     fun onIncompleteCode() {
-        errorMessage = translator("~~Enter a full phone code.")
+        errorMessage = translator("loginWithPhone.please_enter_full_phone")
     }
 
     fun requestPhoneCode(phoneNumber: String) {
@@ -166,7 +166,7 @@ class LoginWithPhoneViewModel @Inject constructor(
                     // TODO Be more specific
                     // TODO Capture error and report to backend
                     errorMessage =
-                        translator("loginWithPhone.invalid_phone_unavailable_try_again")
+                        translator("loginWithPhone.please_enter_full_code")
                 }
             } finally {
                 isRequestingCode.value = false
@@ -300,7 +300,7 @@ class LoginWithPhoneViewModel @Inject constructor(
             } catch (e: Exception) {
                 // TODO Be more specific on the failure where possible
                 errorMessage =
-                    translator("~~Check the phone number and code is correct. If login continues to fail try again later or request a new code.")
+                    translator("loginWithPhone.check_number_try_again")
             } finally {
                 isVerifyingCode.value = false
             }

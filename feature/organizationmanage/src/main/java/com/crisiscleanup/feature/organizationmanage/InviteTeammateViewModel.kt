@@ -599,7 +599,7 @@ class InviteTeammateViewModel @Inject constructor(
                 sendInvites()
             } catch (e: Exception) {
                 sendInviteErrorMessage.value =
-                    translator("~~Invites are not working at the moment. Please try again later.")
+                    translator("inviteTeammates.invite_error")
                 logger.logException(e)
             } finally {
                 isSendingInvite.value = false
@@ -714,7 +714,7 @@ class InviteTeammateViewModel @Inject constructor(
 
         if (!isInviteSuccessful) {
             sendInviteErrorMessage.value =
-                translator("~~Invites are not working at the moment. Please try again later.")
+                translator("inviteTeammates.invite_error")
         }
     }
 }

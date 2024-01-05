@@ -138,7 +138,7 @@ class OrgPersistentInviteViewModel @Inject constructor(
                 } catch (e: Exception) {
                     logger.logException(e)
                     inviteFailMessage.value =
-                        translator("~~There are issues with invitations. Please try again later.")
+                        translator("persistentInvitations.invitation_error_try_again_later")
                 } finally {
                     isJoiningOrg.value = false
                 }
@@ -207,7 +207,7 @@ class OrgPersistentInviteViewModel @Inject constructor(
             } catch (e: Exception) {
                 logger.logException(e)
                 inviteFailMessage.value =
-                    translator("~~There are issues with invitations. Please try again later.")
+                    translator("persistentInvitations.invitation_error_try_again_later")
             } finally {
                 isJoiningOrg.value = false
             }

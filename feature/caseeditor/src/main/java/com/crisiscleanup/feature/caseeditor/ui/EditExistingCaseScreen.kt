@@ -818,7 +818,7 @@ private fun LazyListScope.propertyInfoItems(
                     Image(
                         modifier = Modifier.size(24.dp),
                         painter = painterResource(R.drawable.ic_jump_to_case_on_map),
-                        contentDescription = LocalAppTranslator.current.translate("~~Center Case on map"),
+                        contentDescription = LocalAppTranslator.current.translate("actions.jump_to_case"),
                     )
 
                     if (distanceAwayText.isNotBlank()) {
@@ -1121,7 +1121,7 @@ internal fun EditExistingCaseNotesView(
             ) {
                 Icon(
                     imageVector = CrisisCleanupIcons.CaretUp,
-                    contentDescription = t("~~Scroll to top"),
+                    contentDescription = t("actions.scroll_to_top"),
                 )
             }
         }
