@@ -85,45 +85,41 @@ internal fun CasesFilterRoute(
     onBack: () -> Unit = {},
     viewModel: CasesFilterViewModel = hiltViewModel(),
 ) {
-    val translator = viewModel.translator
-    CompositionLocalProvider(
-        LocalAppTranslator provides translator,
+    val translator = LocalAppTranslator.current
+    val filters by viewModel.casesFilters.collectAsStateWithLifecycle()
+    val updateFilters =
+        remember(viewModel) { { filters: CasesFilter -> viewModel.changeFilters(filters) } }
+
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(Color.White),
     ) {
-        val filters by viewModel.casesFilters.collectAsStateWithLifecycle()
-        val updateFilters =
-            remember(viewModel) { { filters: CasesFilter -> viewModel.changeFilters(filters) } }
+        TopAppBarBackAction(
+            title = translator("worksiteFilters.filters"),
+            onAction = onBack,
+            modifier = Modifier.testTag("workFilterBackBtn"),
+        )
 
-        Column(
-            Modifier
-                .fillMaxSize()
-                .background(Color.White),
-        ) {
-            TopAppBarBackAction(
-                title = translator("worksiteFilters.filters"),
-                onAction = onBack,
-                modifier = Modifier.testTag("workFilterBackBtn"),
-            )
+        FilterControls(
+            filters,
+            updateFilters = updateFilters,
+        )
 
-            FilterControls(
-                filters,
-                updateFilters = updateFilters,
-            )
-
-            BottomActionBar(
-                onBack = onBack,
-                filters = filters,
-            )
-        }
-
-        val closePermissionDialog =
-            remember(viewModel) { { viewModel.showExplainPermissionLocation = false } }
-        val explainPermission = viewModel.showExplainPermissionLocation
-        ExplainLocationPermissionDialog(
-            showDialog = explainPermission,
-            closeDialog = closePermissionDialog,
-            explanation = translator("worksiteFilters.location_required_to_filter_by_distance"),
+        BottomActionBar(
+            onBack = onBack,
+            filters = filters,
         )
     }
+
+    val closePermissionDialog =
+        remember(viewModel) { { viewModel.showExplainPermissionLocation = false } }
+    val explainPermission = viewModel.showExplainPermissionLocation
+    ExplainLocationPermissionDialog(
+        showDialog = explainPermission,
+        closeDialog = closePermissionDialog,
+        explanation = translator("worksiteFilters.location_required_to_filter_by_distance"),
+    )
 }
 
 private val collapsibleFilterSections = listOf(

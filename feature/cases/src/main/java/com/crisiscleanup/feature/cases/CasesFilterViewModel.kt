@@ -50,7 +50,7 @@ class CasesFilterViewModel @Inject constructor(
     accountDataRepository: AccountDataRepository,
     organizationsRepository: OrganizationsRepository,
     private val permissionManager: PermissionManager,
-    val translator: KeyResourceTranslator,
+    translator: KeyResourceTranslator,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.Cases) private val logger: AppLogger,
 ) : ViewModel() {
