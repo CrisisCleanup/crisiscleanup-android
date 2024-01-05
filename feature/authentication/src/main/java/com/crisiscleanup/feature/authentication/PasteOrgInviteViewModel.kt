@@ -69,7 +69,7 @@ class PasteOrgInviteViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 inviteCodeError.value =
-                    translator("~~Invites are not working at the moment. Please try again later.")
+                    translator("pasteInvite.invite_not_working_try_again")
                 logger.logException(e)
             } finally {
                 isVerifyingCode.value = false

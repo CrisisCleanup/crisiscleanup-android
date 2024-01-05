@@ -188,7 +188,7 @@ fun InviteTeammateContent(
             },
     ) {
         Text(
-            t("~~Invite new user via email invitation link"),
+            t("inviteTeammates.invite_new_user_via_email"),
             listItemModifier,
             style = LocalFontStyles.current.header4,
         )
@@ -513,7 +513,7 @@ private fun NewOrganizationInput(
     UserInfoErrorText(viewModel.selectedIncidentError)
     val incidentLookup by viewModel.incidentLookup.collectAsStateWithLifecycle()
     val selectedIncident = incidentLookup[viewModel.selectedIncidentId] ?: EmptyIncident
-    val selectIncidentHint = t("~~Select Incident")
+    val selectIncidentHint = t("actions.select_incident")
     val incidents by viewModel.incidents.collectAsStateWithLifecycle()
     Box(
         Modifier

@@ -264,7 +264,7 @@ class RequestOrgAccessViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 inviteInfoErrorMessage.value =
-                    translator("~~Invite is not working at the moment. Please try again alter.")
+                    translator("requestAccess.request_access_not_working")
                 logger.logException(e)
             } finally {
                 isRequestingInvite.value = false
