@@ -61,6 +61,7 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationRail
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationRailItem
 import com.crisiscleanup.core.designsystem.icon.Icon.DrawableResourceIcon
 import com.crisiscleanup.core.designsystem.icon.Icon.ImageVectorIcon
+import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.ui.AppLayoutArea
 import com.crisiscleanup.core.ui.LocalAppLayout
 import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
@@ -245,6 +246,7 @@ private fun NavigableContent(
     openAuthentication: () -> Unit,
 ) {
     val showNavigation = appState.isTopLevelRoute
+    val layoutBottomNav = appState.shouldShowBottomBar || LocalDimensions.current.isPortrait
     val isFullscreen = appState.isFullscreenRoute
     Scaffold(
         modifier = Modifier.semantics {
@@ -255,7 +257,7 @@ private fun NavigableContent(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
-            val showBottomBar = showNavigation && appState.shouldShowBottomBar
+            val showBottomBar = showNavigation && layoutBottomNav
             AnimatedVisibility(
                 visible = showBottomBar,
                 enter = slideIn { IntOffset.Zero },
@@ -292,7 +294,7 @@ private fun NavigableContent(
                     },
                 ),
         ) {
-            if (showNavigation && appState.shouldShowNavRail) {
+            if (showNavigation && !layoutBottomNav) {
                 CrisisCleanupNavRail(
                     destinations = appState.topLevelDestinations,
                     onNavigateToDestination = appState::navigateToTopLevelDestination,
