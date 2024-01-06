@@ -1,4 +1,4 @@
-package com.crisiscleanup.feature.cases.ui
+package com.crisiscleanup.core.selectincident
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -28,14 +28,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.domain.IncidentsData
 import com.crisiscleanup.core.model.data.Incident
-import com.crisiscleanup.feature.cases.SelectIncidentViewModel
 
 @Composable
 private fun WrapInDialog(
@@ -59,15 +56,14 @@ private fun WrapInDialog(
 
 @Composable
 fun SelectIncidentDialog(
+    rememberKey: Any,
     onBackClick: () -> Unit,
-    selectIncidentViewModel: SelectIncidentViewModel = hiltViewModel(),
+    incidentsData: IncidentsData,
+    selectedIncidentId: Long,
+    onSelectIncident: (Incident) -> Unit,
     padding: Dp = 16.dp,
     textPadding: Dp = 16.dp,
 ) {
-    val incidentsData by selectIncidentViewModel.incidentsData.collectAsStateWithLifecycle(
-        IncidentsData.Loading,
-    )
-
     WrapInDialog(onBackClick) {
         when (incidentsData) {
             IncidentsData.Loading -> {
@@ -79,15 +75,19 @@ fun SelectIncidentDialog(
             is IncidentsData.Incidents -> {
                 Column {
                     Text(
-                        modifier = Modifier.testTag("selectIncidentHeader").padding(textPadding),
+                        modifier = Modifier
+                            .testTag("selectIncidentHeader")
+                            .padding(textPadding),
                         text = LocalAppTranslator.current("nav.change_incident"),
                         style = LocalFontStyles.current.header3,
                     )
 
-                    val incidents = (incidentsData as IncidentsData.Incidents).incidents
+                    val incidents = incidentsData.incidents
                     IncidentSelectContent(
-                        selectIncidentViewModel,
-                        incidents,
+                        rememberKey = rememberKey,
+                        selectedIncidentId = selectedIncidentId,
+                        incidents = incidents,
+                        onSelectIncident = onSelectIncident,
                         onBackClick = onBackClick,
                         padding = padding,
                     )
@@ -106,23 +106,24 @@ fun SelectIncidentDialog(
 
 @Composable
 private fun ColumnScope.IncidentSelectContent(
-    selectIncidentViewModel: SelectIncidentViewModel,
+    rememberKey: Any,
+    selectedIncidentId: Long,
     incidents: List<Incident>,
+    onSelectIncident: (Incident) -> Unit,
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
     padding: Dp = 16.dp,
 ) {
     var enableInput by rememberSaveable { mutableStateOf(true) }
-    val onSelectIncident = remember(selectIncidentViewModel) {
+    val rememberOnSelectIncident = remember(rememberKey) {
         { incident: Incident ->
             if (enableInput) {
                 enableInput = false
-                selectIncidentViewModel.selectIncident(incident)
+                onSelectIncident(incident)
                 onBackClick()
             }
         }
     }
-    val selectedIncidentId by selectIncidentViewModel.incidentSelector.incidentId.collectAsStateWithLifecycle()
 
     Box(Modifier.weight(weight = 1f, fill = false)) {
         val listState = rememberLazyListState()
@@ -143,7 +144,7 @@ private fun ColumnScope.IncidentSelectContent(
                         .testTag("selectIncidentItem_$id")
                         .fillParentMaxWidth()
                         .clickable(enabled = enableInput) {
-                            onSelectIncident(incident)
+                            rememberOnSelectIncident(incident)
                         }
                         .padding(padding),
                     text = incident.name,

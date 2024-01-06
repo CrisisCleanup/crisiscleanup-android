@@ -1,6 +1,5 @@
 package com.crisiscleanup.ui
 
-import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.slideIn
@@ -21,7 +20,6 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -34,7 +32,6 @@ import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,18 +52,13 @@ import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import com.crisiscleanup.AuthState
 import com.crisiscleanup.MainActivityViewModel
-import com.crisiscleanup.core.common.NavigationObserver
 import com.crisiscleanup.core.common.NetworkMonitor
-import com.crisiscleanup.core.commoncase.ui.IncidentDropdownSelect
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupBackground
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationBar
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationBarItem
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationRail
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationRailItem
-import com.crisiscleanup.core.designsystem.component.TopAppBarDefault
-import com.crisiscleanup.core.designsystem.component.TruncatedAppBarText
-import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.icon.Icon.DrawableResourceIcon
 import com.crisiscleanup.core.designsystem.icon.Icon.ImageVectorIcon
 import com.crisiscleanup.core.ui.AppLayoutArea
@@ -76,7 +68,6 @@ import com.crisiscleanup.feature.authentication.navigation.navigateToMagicLinkLo
 import com.crisiscleanup.feature.authentication.navigation.navigateToOrgPersistentInvite
 import com.crisiscleanup.feature.authentication.navigation.navigateToPasswordReset
 import com.crisiscleanup.feature.authentication.navigation.navigateToRequestAccess
-import com.crisiscleanup.feature.cases.ui.SelectIncidentDialog
 import com.crisiscleanup.navigation.CrisisCleanupAuthNavHost
 import com.crisiscleanup.navigation.CrisisCleanupNavHost
 import com.crisiscleanup.navigation.TopLevelDestination
@@ -86,11 +77,9 @@ import com.crisiscleanup.feature.authentication.R as authenticationR
 fun CrisisCleanupApp(
     windowSizeClass: WindowSizeClass,
     networkMonitor: NetworkMonitor,
-    navigationObserver: NavigationObserver,
     appState: CrisisCleanupAppState = rememberCrisisCleanupAppState(
         networkMonitor = networkMonitor,
         windowSizeClass = windowSizeClass,
-        navigationObserver = navigationObserver,
     ),
     viewModel: MainActivityViewModel = hiltViewModel(),
 ) {
@@ -189,30 +178,10 @@ private fun LoadedContent(
             }
         }
     } else {
-        val accountData = (authState as AuthState.Authenticated).accountData
-        val profilePictureUri = accountData.profilePictureUri
-        val appHeaderBar = viewModel.appHeaderUiState
-        val appHeaderTitle by appHeaderBar.title.collectAsStateWithLifecycle()
-        val isHeaderLoading by viewModel.showHeaderLoading.collectAsState(false)
-
-        var showIncidentPicker by remember { mutableStateOf(false) }
-        val openIncidentsSelect = remember(viewModel) {
-            { showIncidentPicker = true }
-        }
-
-        val disasterIconResId by viewModel.disasterIconResId.collectAsStateWithLifecycle()
-
         NavigableContent(
             snackbarHostState,
             appState,
-            appHeaderTitle,
-            isHeaderLoading,
-            { openAuthentication = true },
-            profilePictureUri,
-            isAccountExpired,
-            disasterIconResId,
-            openIncidentsSelect,
-        )
+        ) { openAuthentication = true }
 
         if (
             isAccountExpired &&
@@ -221,11 +190,6 @@ private fun LoadedContent(
             ExpiredAccountAlert(snackbarHostState, translationCount) {
                 openAuthentication = true
             }
-        }
-
-        if (showIncidentPicker) {
-            val closeDialog = { showIncidentPicker = false }
-            SelectIncidentDialog(closeDialog)
         }
 
         if (showPasswordReset) {
@@ -278,16 +242,9 @@ private fun AuthenticateContent(
 private fun NavigableContent(
     snackbarHostState: SnackbarHostState,
     appState: CrisisCleanupAppState,
-    headerTitle: String = "",
-    isHeaderLoading: Boolean,
     openAuthentication: () -> Unit,
-    profilePictureUri: String,
-    isAccountExpired: Boolean,
-    @DrawableRes disasterIconResId: Int,
-    openIncidentsSelect: () -> Unit,
 ) {
     val showNavigation = appState.isTopLevelRoute
-    val showAppBar = appState.isMenuRoute
     val isFullscreen = appState.isFullscreenRoute
     Scaffold(
         modifier = Modifier.semantics {
@@ -297,30 +254,6 @@ private fun NavigableContent(
         contentColor = MaterialTheme.colorScheme.onBackground,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = {
-            AnimatedVisibility(
-                visible = showAppBar,
-                enter = slideIn { IntOffset.Zero },
-                exit = slideOut { IntOffset.Zero },
-            ) {
-                val title = headerTitle.ifBlank {
-                    appState.currentTopLevelDestination?.let { destination ->
-                        LocalAppTranslator.current(destination.titleTranslateKey)
-                    } ?: ""
-                }
-                val onOpenIncidents = if (appState.isMenuRoute) openIncidentsSelect else null
-                AppHeader(
-                    modifier = Modifier,
-                    title = title,
-                    isAppHeaderLoading = isHeaderLoading,
-                    profilePictureUri = profilePictureUri,
-                    isAccountExpired = isAccountExpired,
-                    openAuthentication = openAuthentication,
-                    disasterIconResId = disasterIconResId,
-                    onOpenIncidents = onOpenIncidents,
-                )
-            }
-        },
         bottomBar = {
             val showBottomBar = showNavigation && appState.shouldShowBottomBar
             AnimatedVisibility(
@@ -388,6 +321,7 @@ private fun NavigableContent(
                     CrisisCleanupNavHost(
                         navController = appState.navController,
                         onBack = appState::onBack,
+                        openAuthentication = openAuthentication,
                         modifier = Modifier.weight(1f),
                         startDestination = appState.lastTopLevelRoute(),
                     )
@@ -426,49 +360,6 @@ private fun ExpiredAccountAlert(
     }
 }
 
-@OptIn(
-    ExperimentalMaterial3Api::class,
-)
-@Composable
-private fun AppHeader(
-    modifier: Modifier = Modifier,
-    title: String = "",
-    isAppHeaderLoading: Boolean = false,
-    profilePictureUri: String = "",
-    isAccountExpired: Boolean = false,
-    openAuthentication: () -> Unit = {},
-    @DrawableRes disasterIconResId: Int = 0,
-    onOpenIncidents: (() -> Unit)? = null,
-) {
-    val t = LocalAppTranslator.current
-    val actionText = t("actions.account")
-    TopAppBarDefault(
-        modifier = modifier,
-        title = title,
-        profilePictureUri = profilePictureUri,
-        actionIcon = CrisisCleanupIcons.Account,
-        actionText = actionText,
-        isActionAttention = isAccountExpired,
-        onActionClick = openAuthentication,
-        onNavigationClick = null,
-        titleContent = @Composable {
-            // TODO Match height of visible part of app bar (not the entire app bar)
-            if (onOpenIncidents == null) {
-                TruncatedAppBarText(title = title)
-            } else {
-                IncidentDropdownSelect(
-                    modifier = Modifier.testTag("appIncidentSelector"),
-                    onOpenIncidents,
-                    disasterIconResId,
-                    title = title,
-                    contentDescription = t("nav.change_incident"),
-                    isLoading = isAppHeaderLoading,
-                )
-            }
-        },
-    )
-}
-
 @Composable
 private fun TopLevelDestination.Icon(isSelected: Boolean, description: String) {
     val icon = if (isSelected) {
@@ -498,6 +389,7 @@ private fun CrisisCleanupNavRail(
 ) {
     val translator = LocalAppTranslator.current
     CrisisCleanupNavigationRail(modifier = modifier) {
+        Spacer(Modifier.weight(1f))
         destinations.forEach { destination ->
             val title = translator(destination.titleTranslateKey)
             val selected = currentDestination.isTopLevelDestinationInHierarchy(destination)

@@ -75,8 +75,10 @@ import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
 import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
 import com.crisiscleanup.core.mapmarker.ui.rememberMapUiSettings
 import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteMapMark
+import com.crisiscleanup.core.selectincident.SelectIncidentDialog
 import com.crisiscleanup.core.ui.LocalAppLayout
 import com.crisiscleanup.feature.cases.CasesViewModel
 import com.crisiscleanup.feature.cases.R
@@ -117,7 +119,7 @@ internal fun CasesRoute(
         openTransferWorkType()
     }
 
-    val incidentsData by viewModel.incidentsData.collectAsStateWithLifecycle(IncidentsData.Loading)
+    val incidentsData by viewModel.incidentsData.collectAsStateWithLifecycle()
     val isIncidentLoading by viewModel.isIncidentLoading.collectAsState(true)
     val isLoadingData by viewModel.isLoadingData.collectAsState(true)
     if (incidentsData is IncidentsData.Incidents) {
@@ -216,7 +218,19 @@ internal fun CasesRoute(
 
         if (showChangeIncident) {
             val closeDialog = remember(viewModel) { { showChangeIncident = false } }
-            SelectIncidentDialog(closeDialog)
+            val selectedIncidentId by viewModel.incidentSelector.incidentId.collectAsStateWithLifecycle()
+            val setSelected = remember(viewModel) {
+                { incident: Incident ->
+                    viewModel.loadSelectIncidents.selectIncident(incident)
+                }
+            }
+            SelectIncidentDialog(
+                rememberKey = viewModel,
+                onBackClick = closeDialog,
+                incidentsData = incidentsData,
+                selectedIncidentId = selectedIncidentId,
+                onSelectIncident = setSelected,
+            )
         }
 
         val closePermissionDialog =

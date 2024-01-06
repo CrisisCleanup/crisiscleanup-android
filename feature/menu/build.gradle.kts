@@ -7,3 +7,9 @@ plugins {
 android {
     namespace = "com.crisiscleanup.feature.menu"
 }
+
+dependencies {
+    implementation(project(":core:commonassets"))
+    implementation(project(":core:commoncase"))
+    implementation(project(":core:selectincident"))
+}

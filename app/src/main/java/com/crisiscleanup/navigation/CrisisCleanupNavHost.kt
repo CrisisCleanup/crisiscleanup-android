@@ -52,6 +52,7 @@ import com.crisiscleanup.feature.userfeedback.navigation.userFeedbackScreen
 fun CrisisCleanupNavHost(
     navController: NavHostController,
     onBack: () -> Unit,
+    openAuthentication: () -> Unit = {},
     modifier: Modifier = Modifier,
     startDestination: String = casesGraphRoutePattern,
 ) {
@@ -134,6 +135,7 @@ fun CrisisCleanupNavHost(
         dashboardScreen()
         teamScreen()
         menuScreen(
+            openAuthentication = openAuthentication,
             openInviteTeammate = openInviteTeammate,
             openUserFeedback = openUserFeedback,
             openSyncLogs = openSyncLogs,

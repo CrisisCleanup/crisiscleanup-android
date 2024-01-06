@@ -14,7 +14,6 @@ import androidx.navigation.compose.ComposeNavigator
 import androidx.navigation.compose.composable
 import androidx.navigation.createGraph
 import androidx.navigation.testing.TestNavHostController
-import com.crisiscleanup.core.testing.util.TestNavigationObserver
 import com.crisiscleanup.core.testing.util.TestNetworkMonitor
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertFalse
@@ -41,8 +40,6 @@ class CrisisCleanupAppStateTest {
 
     // Create the test dependencies.
     private val networkMonitor = TestNetworkMonitor()
-
-    private val navigationObserver = TestNavigationObserver()
 
     // Subject under test.
     private lateinit var state: CrisisCleanupAppState
@@ -80,7 +77,6 @@ class CrisisCleanupAppStateTest {
             state = rememberCrisisCleanupAppState(
                 windowSizeClass = getCompactWindowClass(),
                 networkMonitor = networkMonitor,
-                navigationObserver = navigationObserver,
             )
         }
 

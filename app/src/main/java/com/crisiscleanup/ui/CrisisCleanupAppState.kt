@@ -3,7 +3,6 @@ package com.crisiscleanup.ui
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -23,7 +22,6 @@ import com.crisiscleanup.core.appnav.RouteConstant.teamRoute
 import com.crisiscleanup.core.appnav.RouteConstant.topLevelRoutes
 import com.crisiscleanup.core.appnav.RouteConstant.userFeedbackRoute
 import com.crisiscleanup.core.appnav.RouteConstant.viewImageRoute
-import com.crisiscleanup.core.common.NavigationObserver
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.ui.TrackDisposableJank
 import com.crisiscleanup.feature.cases.navigation.navigateToCases
@@ -44,12 +42,10 @@ import kotlinx.coroutines.flow.stateIn
 fun rememberCrisisCleanupAppState(
     windowSizeClass: WindowSizeClass,
     networkMonitor: NetworkMonitor,
-    navigationObserver: NavigationObserver,
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
     navController: NavHostController = rememberNavController(),
 ): CrisisCleanupAppState {
     NavigationTrackingSideEffect(navController)
-    NavigationObserverSideEffect(navController, navigationObserver)
     return remember(navController, coroutineScope, windowSizeClass, networkMonitor) {
         CrisisCleanupAppState(navController, coroutineScope, windowSizeClass, networkMonitor)
     }
@@ -172,24 +168,6 @@ private fun NavigationTrackingSideEffect(navController: NavHostController) {
     TrackDisposableJank(navController) { metricsHolder ->
         val listener = NavController.OnDestinationChangedListener { _, destination, _ ->
             metricsHolder.state?.putState("Navigation", destination.route.toString())
-        }
-
-        navController.addOnDestinationChangedListener(listener)
-
-        onDispose {
-            navController.removeOnDestinationChangedListener(listener)
-        }
-    }
-}
-
-@Composable
-private fun NavigationObserverSideEffect(
-    navController: NavHostController,
-    navigationObserver: NavigationObserver,
-) {
-    DisposableEffect(navController, navigationObserver) {
-        val listener = NavController.OnDestinationChangedListener { _, destination, arguments ->
-            navigationObserver.onRouteChange(destination.route, arguments)
         }
 
         navController.addOnDestinationChangedListener(listener)

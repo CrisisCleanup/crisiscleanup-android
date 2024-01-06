@@ -41,7 +41,7 @@ import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.data.util.IncidentDataPullReporter
 import com.crisiscleanup.core.data.util.IncidentDataPullStats
-import com.crisiscleanup.core.domain.LoadIncidentDataUseCase
+import com.crisiscleanup.core.domain.LoadSelectIncidents
 import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
@@ -97,8 +97,7 @@ class CasesViewModel @Inject constructor(
     incidentsRepository: IncidentsRepository,
     incidentBoundsProvider: IncidentBoundsProvider,
     private val worksitesRepository: WorksitesRepository,
-    private val incidentSelector: IncidentSelector,
-    loadIncidentDataUseCase: LoadIncidentDataUseCase,
+    val incidentSelector: IncidentSelector,
     dataPullReporter: IncidentDataPullReporter,
     private val mapCaseIconProvider: MapCaseIconProvider,
     private val worksiteInteractor: WorksiteInteractor,
@@ -123,7 +122,13 @@ class CasesViewModel @Inject constructor(
     @Logger(CrisisCleanupLoggers.Cases) private val logger: AppLogger,
     val appEnv: AppEnv,
 ) : ViewModel(), TrimMemoryListener {
-    val incidentsData = loadIncidentDataUseCase()
+    val loadSelectIncidents = LoadSelectIncidents(
+        incidentsRepository = incidentsRepository,
+        incidentSelector = incidentSelector,
+        appPreferencesRepository = appPreferencesRepository,
+        coroutineScope = viewModelScope,
+    )
+    val incidentsData = loadSelectIncidents.data
 
     val incidentId: Long
         get() = incidentSelector.incidentId.value
