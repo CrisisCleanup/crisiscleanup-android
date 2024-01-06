@@ -54,14 +54,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toSize
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -442,6 +444,7 @@ private fun ColumnScope.ExistingCaseContent(
     openPhoto: (ViewImageArgs) -> Unit = { _ -> },
     copyToClipboard: (String?) -> Unit = {},
 ) {
+    // TODO Page does not keep across first orientation change
     val pagerState = rememberPagerState(
         initialPage = 0,
         initialPageOffsetFraction = 0f,
@@ -896,38 +899,34 @@ internal fun EditExistingCasePhotosView(
 
     var showCameraMediaSelect by remember { mutableStateOf(false) }
 
-    val translator = LocalAppTranslator.current
+    val t = LocalAppTranslator.current
     val sectionTitleResIds = mapOf(
-        ImageCategory.Before to translator("caseForm.before_photos"),
-        ImageCategory.After to translator("caseForm.after_photos"),
+        ImageCategory.Before to t("caseForm.before_photos"),
+        ImageCategory.After to t("caseForm.after_photos"),
     )
-    // TODO Determine spacing and sizing based on available height.
-    //      This viewport has
-    //      - Top bar
-    //      - Tab bar
-    //      - Two rows of headers and items
-    //      - Bottom bar
-    //      - Optional snackbar which may wrap resulting in additional height
-    val twoRowHeight = 256.dp
-    val photoTwoRowModifier = Modifier
-        .height(twoRowHeight)
-        .listItemVerticalPadding()
-    val photoOneRowModifier = Modifier
-        .height(172.dp)
-        .listItemVerticalPadding()
-    val photoTwoRowGridCells = StaggeredGridCells.Adaptive(96.dp)
-    val photoOneRowGridCells = StaggeredGridCells.Fixed(1)
-    val isShortScreen = LocalConfiguration.current.screenHeightDp.dp < twoRowHeight.times(3)
+    var contentSize by remember { mutableStateOf(Size.Zero) }
+    val isShortScreen = contentSize.height.dp < 900.dp
     Column(
-        modifier = Modifier.fillMaxHeight(),
+        modifier = Modifier
+            .fillMaxHeight()
+            .onGloballyPositioned {
+                contentSize = it.size.toSize()
+            },
     ) {
         sectionTitleResIds.onEach { (imageCategory, sectionTitle) ->
             photos[imageCategory]?.let { rowPhotos ->
-                val isOneRow = isShortScreen || rowPhotos.size < 6
+                val title = if (isShortScreen) {
+                    sectionTitle.replace(" ", "\n")
+                } else {
+                    sectionTitle
+                }
                 PhotosSection(
-                    sectionTitle,
-                    if (isOneRow) photoOneRowModifier else photoTwoRowModifier,
-                    if (isOneRow) photoOneRowGridCells else photoTwoRowGridCells,
+                    title,
+                    Modifier
+                        .listItemVerticalPadding()
+                        .weight(0.45f),
+                    StaggeredGridCells.Fixed(1),
+                    isShortScreen,
                     photos = rowPhotos,
                     setEnableParentScroll = setEnablePagerScroll,
                     onAddPhoto = {

@@ -119,8 +119,9 @@ private fun AddMediaView(
 @Composable
 internal fun PhotosSection(
     title: String,
-    photoRowModifier: Modifier = Modifier,
+    modifier: Modifier = Modifier,
     photoRowGridCells: StaggeredGridCells = StaggeredGridCells.Fixed(1),
+    isInlineContent: Boolean = false,
     photos: List<CaseImage> = emptyList(),
     syncingWorksiteImage: Long = 0L,
     onAddPhoto: () -> Unit = {},
@@ -128,11 +129,13 @@ internal fun PhotosSection(
     setEnableParentScroll: (Boolean) -> Unit = {},
     addActionSize: Dp = 128.dp,
 ) {
-    Text(
-        title,
-        listItemModifier,
-        style = LocalFontStyles.current.header4,
-    )
+    if (!isInlineContent) {
+        Text(
+            title,
+            listItemModifier,
+            style = LocalFontStyles.current.header4,
+        )
+    }
 
     val gridState = rememberLazyStaggeredGridState()
     LaunchedEffect(gridState.isScrollInProgress) {
@@ -141,35 +144,50 @@ internal fun PhotosSection(
         }
     }
     // TODO Common styles
+    val inlineContentCount = if (isInlineContent) 1 else 0
     val itemSpacing = 4.dp
     LazyHorizontalStaggeredGrid(
-        modifier = photoRowModifier.touchDownConsumer { setEnableParentScroll(false) },
+        modifier = modifier.touchDownConsumer { setEnableParentScroll(false) },
         rows = photoRowGridCells,
         state = gridState,
         horizontalItemSpacing = itemSpacing,
         verticalArrangement = Arrangement.spacedBy(itemSpacing),
     ) {
-        val totalCount = 1 + photos.size + 1
+        val categoryTitleIndex = if (isInlineContent) 0 else -99
+        val addMediaIndex = if (isInlineContent) 1 else 0
+        val photoOffsetIndex = addMediaIndex + 1
+        val totalCount = inlineContentCount + 1 + photos.size + 1
         val endSpaceIndex = totalCount - 1
         items(
             totalCount,
             key = {
                 when (it) {
-                    0 -> "add-media"
+                    categoryTitleIndex -> "category-title"
+                    addMediaIndex -> "add-media"
                     endSpaceIndex -> "end-spacer"
-                    else -> photos[it - 1].imageUri
+                    else -> photos[it - photoOffsetIndex].imageUri
                 }
             },
             contentType = {
                 when (it) {
-                    0 -> "add-media"
+                    categoryTitleIndex -> "category-title"
+                    addMediaIndex -> "add-media"
                     endSpaceIndex -> "end-spacer"
                     else -> "photo-image"
                 }
             },
         ) { index ->
             when (index) {
-                0 -> {
+                categoryTitleIndex -> {
+                    // TODO Refactor duplicate code
+                    Text(
+                        title,
+                        listItemModifier,
+                        style = LocalFontStyles.current.header4,
+                    )
+                }
+
+                addMediaIndex -> {
                     AddMediaView(
                         Modifier
                             .padding(addMediaActionPadding)
@@ -183,7 +201,7 @@ internal fun PhotosSection(
                 }
 
                 else -> {
-                    val photoIndex = index - 1
+                    val photoIndex = index - photoOffsetIndex
                     val photo = photos[photoIndex]
                     Box {
                         AsyncImage(
