@@ -383,28 +383,62 @@ private fun TopLevelDestination.Icon(isSelected: Boolean, description: String) {
 }
 
 @Composable
+private fun NavItems(
+    destinations: List<TopLevelDestination>,
+    onNavigateToDestination: (TopLevelDestination) -> Unit,
+    currentDestination: NavDestination?,
+    itemContent: @Composable (
+        Boolean,
+        String,
+        () -> Unit,
+        @Composable () -> Unit,
+        @Composable () -> Unit,
+    ) -> Unit,
+) {
+    destinations.forEach { destination ->
+        val title = LocalAppTranslator.current(destination.titleTranslateKey)
+        val selected = currentDestination.isTopLevelDestinationInHierarchy(destination)
+        itemContent(
+            selected,
+            title,
+            { onNavigateToDestination(destination) },
+            { destination.Icon(selected, title) },
+            {
+                Text(
+                    title,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            },
+        )
+    }
+}
+
+@Composable
 private fun CrisisCleanupNavRail(
     destinations: List<TopLevelDestination>,
     onNavigateToDestination: (TopLevelDestination) -> Unit,
     currentDestination: NavDestination?,
     modifier: Modifier = Modifier,
 ) {
-    val translator = LocalAppTranslator.current
     CrisisCleanupNavigationRail(modifier = modifier) {
         Spacer(Modifier.weight(1f))
-        destinations.forEach { destination ->
-            val title = translator(destination.titleTranslateKey)
-            val selected = currentDestination.isTopLevelDestinationInHierarchy(destination)
+        NavItems(
+            destinations = destinations,
+            onNavigateToDestination = onNavigateToDestination,
+            currentDestination = currentDestination,
+        ) {
+                isSelected: Boolean,
+                title: String,
+                onClick: () -> Unit,
+                iconContent: @Composable () -> Unit,
+                labelContent: @Composable () -> Unit,
+            ->
             CrisisCleanupNavigationRailItem(
-                selected = selected,
-                onClick = { onNavigateToDestination(destination) },
-                icon = { destination.Icon(selected, title) },
-                label = {
-                    Text(
-                        title,
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                },
+                selected = isSelected,
+                onClick = onClick,
+                icon = iconContent,
+                label = labelContent,
+                modifier = Modifier.testTag("navItem_$title"),
             )
         }
     }
@@ -417,22 +451,24 @@ private fun CrisisCleanupBottomBar(
     currentDestination: NavDestination?,
     modifier: Modifier = Modifier,
 ) {
-    val translator = LocalAppTranslator.current
     CrisisCleanupNavigationBar(modifier = modifier) {
-        destinations.forEach { destination ->
-            val title = translator(destination.titleTranslateKey)
-            val selected = currentDestination.isTopLevelDestinationInHierarchy(destination)
+        NavItems(
+            destinations = destinations,
+            onNavigateToDestination = onNavigateToDestination,
+            currentDestination = currentDestination,
+        ) {
+                isSelected: Boolean,
+                title: String,
+                onClick: () -> Unit,
+                iconContent: @Composable () -> Unit,
+                labelContent: @Composable () -> Unit,
+            ->
             CrisisCleanupNavigationBarItem(
-                selected = selected,
-                onClick = { onNavigateToDestination(destination) },
-                icon = { destination.Icon(selected, title) },
+                selected = isSelected,
+                onClick = onClick,
+                icon = iconContent,
+                label = labelContent,
                 modifier = Modifier.testTag("navItem_$title"),
-                label = {
-                    Text(
-                        title,
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                },
             )
         }
     }
