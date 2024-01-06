@@ -68,7 +68,7 @@ import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
-class CaseEditorViewModel @Inject constructor(
+class CreateEditCaseViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     accountDataRepository: AccountDataRepository,
     incidentsRepository: IncidentsRepository,

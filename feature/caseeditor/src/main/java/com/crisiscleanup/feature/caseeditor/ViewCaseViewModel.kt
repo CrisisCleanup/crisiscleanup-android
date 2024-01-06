@@ -86,7 +86,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 
 @HiltViewModel
-class ExistingCaseViewModel @Inject constructor(
+class ViewCaseViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     accountDataRepository: AccountDataRepository,
     private val incidentsRepository: IncidentsRepository,
@@ -642,11 +642,6 @@ class ExistingCaseViewModel @Inject constructor(
         logger.logException(e)
 
         // TODO Show dialog save failed. Try again. If still fails seek help.
-    }
-
-    fun takeNoteAdded(): Boolean {
-        val noteCount = referenceWorksite.notes.size
-        return previousNoteCount.getAndSet(noteCount) + 1 == noteCount
     }
 
     fun toggleFavorite() {

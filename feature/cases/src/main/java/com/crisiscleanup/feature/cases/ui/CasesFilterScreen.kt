@@ -122,7 +122,6 @@ internal fun CasesFilterRoute(
                 )
             }
         }
-
     } else {
         Column(screenModifier) {
             TopBar(onBack)

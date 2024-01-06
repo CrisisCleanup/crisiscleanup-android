@@ -54,8 +54,8 @@ import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.designsystem.theme.primaryBlueOneTenthColor
 import com.crisiscleanup.core.ui.touchDownConsumer
-import com.crisiscleanup.feature.caseeditor.ExistingCaseViewModel
 import com.crisiscleanup.feature.caseeditor.R
+import com.crisiscleanup.feature.caseeditor.ViewCaseViewModel
 import com.crisiscleanup.feature.caseeditor.model.CaseImage
 
 private val addMediaActionPadding = 4.dp
@@ -240,7 +240,7 @@ internal fun PhotosSection(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun TakePhotoSelectImage(
-    viewModel: ExistingCaseViewModel = hiltViewModel(),
+    viewModel: ViewCaseViewModel = hiltViewModel(),
     showOptions: Boolean = false,
     closeOptions: () -> Unit = {},
 ) {

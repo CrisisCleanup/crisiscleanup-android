@@ -53,7 +53,9 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import com.crisiscleanup.AuthState
 import com.crisiscleanup.MainActivityViewModel
 import com.crisiscleanup.core.common.NetworkMonitor
+import com.crisiscleanup.core.designsystem.LayoutProvider
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
+import com.crisiscleanup.core.designsystem.LocalLayoutProvider
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupBackground
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationBar
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationBarItem
@@ -111,7 +113,15 @@ fun CrisisCleanupApp(
             } else if (authState is AuthState.Loading) {
                 // Splash screen should be showing
             } else {
-                CompositionLocalProvider(LocalAppTranslator provides translator) {
+                val layoutBottomNav =
+                    appState.shouldShowBottomBar || LocalDimensions.current.isPortrait
+                val layoutProvider = LayoutProvider(
+                    isBottomNav = layoutBottomNav,
+                )
+                CompositionLocalProvider(
+                    LocalAppTranslator provides translator,
+                    LocalLayoutProvider provides layoutProvider,
+                ) {
                     val endOfLife = viewModel.buildEndOfLife
                     val minSupportedAppVersion = viewModel.supportedApp
                     if (endOfLife?.isEndOfLife == true) {
@@ -246,7 +256,7 @@ private fun NavigableContent(
     openAuthentication: () -> Unit,
 ) {
     val showNavigation = appState.isTopLevelRoute
-    val layoutBottomNav = appState.shouldShowBottomBar || LocalDimensions.current.isPortrait
+    val layoutBottomNav = LocalLayoutProvider.current.isBottomNav
     val isFullscreen = appState.isFullscreenRoute
     Scaffold(
         modifier = Modifier.semantics {

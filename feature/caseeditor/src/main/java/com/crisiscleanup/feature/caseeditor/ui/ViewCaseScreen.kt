@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -35,13 +34,8 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -65,7 +59,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -73,40 +66,34 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.appnav.ViewImageArgs
-import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.filterNotBlankTrim
 import com.crisiscleanup.core.common.urlEncode
 import com.crisiscleanup.core.commoncase.model.addressQuery
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
+import com.crisiscleanup.core.designsystem.LocalLayoutProvider
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CardSurface
 import com.crisiscleanup.core.designsystem.component.CollapsibleIcon
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupFab
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationDefaults
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextArea
 import com.crisiscleanup.core.designsystem.component.LinkifyEmailText
 import com.crisiscleanup.core.designsystem.component.LinkifyLocationText
 import com.crisiscleanup.core.designsystem.component.LinkifyPhoneText
 import com.crisiscleanup.core.designsystem.component.TemporaryDialog
-import com.crisiscleanup.core.designsystem.component.TopBarBackAction
 import com.crisiscleanup.core.designsystem.component.WorkTypeAction
 import com.crisiscleanup.core.designsystem.component.WorkTypePrimaryAction
 import com.crisiscleanup.core.designsystem.component.actionEdgeSpace
 import com.crisiscleanup.core.designsystem.component.fabPlusSpaceHeight
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
-import com.crisiscleanup.core.designsystem.theme.cardContainerColor
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
-import com.crisiscleanup.core.designsystem.theme.neutralIconColor
 import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
-import com.crisiscleanup.core.designsystem.theme.primaryRedColor
 import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
 import com.crisiscleanup.core.mapmarker.ui.rememberMapUiSettings
 import com.crisiscleanup.core.model.data.EmptyWorksite
@@ -118,8 +105,8 @@ import com.crisiscleanup.core.model.data.WorksiteNote
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
 import com.crisiscleanup.core.ui.scrollFlingListener
-import com.crisiscleanup.feature.caseeditor.ExistingCaseViewModel
 import com.crisiscleanup.feature.caseeditor.R
+import com.crisiscleanup.feature.caseeditor.ViewCaseViewModel
 import com.crisiscleanup.feature.caseeditor.WorkTypeProfile
 import com.crisiscleanup.feature.caseeditor.model.CaseImage
 import com.crisiscleanup.feature.caseeditor.model.ImageCategory
@@ -149,7 +136,7 @@ private val flagColors = mapOf(
 
 @Composable
 internal fun EditExistingCaseRoute(
-    viewModel: ExistingCaseViewModel = hiltViewModel(),
+    viewModel: ViewCaseViewModel = hiltViewModel(),
     onBack: () -> Unit = {},
     onBackToCases: () -> Unit = {},
     onFullEdit: (ExistingWorksiteIdentifier) -> Unit = {},
@@ -188,80 +175,66 @@ internal fun EditExistingCaseRoute(
     val onCaseLongPress =
         remember(viewModel) { { copyToClipboard(viewModel.editableWorksite.value.caseNumber) } }
 
+    val isRailNav = !LocalLayoutProvider.current.isBottomNav
     Box(Modifier.fillMaxSize()) {
-        Column {
-            val title by viewModel.headerTitle.collectAsStateWithLifecycle()
-            val subTitle by viewModel.subTitle.collectAsStateWithLifecycle()
-            val worksite by viewModel.editableWorksite.collectAsStateWithLifecycle()
-            val isEmptyWorksite = worksite == EmptyWorksite
-            TopBar(
-                title,
-                subTitle,
-                isFavorite = worksite.isLocalFavorite,
-                isHighPriority = worksite.hasHighPriorityFlag,
-                onBack,
-                isEmptyWorksite,
-                toggleFavorite,
-                toggleHighPriority,
-                isEditable,
-                onCaseLongPress,
-            )
-
-            val translator: KeyResourceTranslator = viewModel
-            val tabTitles by viewModel.tabTitles.collectAsStateWithLifecycle()
-
-            val updatedAtText by viewModel.updatedAtText.collectAsStateWithLifecycle()
-            if (updatedAtText.isNotBlank()) {
-                Text(
-                    updatedAtText,
-                    Modifier
-                        .testTag("editCaseUpdatedAtText")
-                        .background(Color.White)
-                        .then(listItemModifier),
-                    style = MaterialTheme.typography.bodySmall,
+        val worksite by viewModel.editableWorksite.collectAsStateWithLifecycle()
+        Row(Modifier.fillMaxSize()) {
+            if (isRailNav) {
+                ViewCaseNav(
+                    worksite,
+                    isEditable,
+                    onFullEdit = onFullEdit,
+                    onCaseFlags = openAddFlag,
+                    onCaseShare = openShareCase,
+                    onCaseHistory = openCaseHistory,
                 )
             }
 
-            if (isEmptyWorksite) {
-                if (viewModel.worksiteIdArg == EmptyWorksite.id) {
-                    Text(
-                        translator("info.no_worksite_selected"),
-                        Modifier.listItemPadding(),
-                    )
-                } else {
-                    Box(Modifier.fillMaxSize()) {
-                        BusyIndicatorFloatingTopCenter(true)
-                    }
-                }
-            } else if (tabTitles.isNotEmpty()) {
-                val statusOptions by viewModel.statusOptions.collectAsStateWithLifecycle()
-                val caseEditor = CaseEditor(
-                    isEditable,
-                    statusOptions,
-                    false,
+            val title by viewModel.headerTitle.collectAsStateWithLifecycle()
+            val subTitle by viewModel.subTitle.collectAsStateWithLifecycle()
+            val isEmptyWorksite = worksite == EmptyWorksite
+
+            val tabTitles by viewModel.tabTitles.collectAsStateWithLifecycle()
+            val updatedAtText by viewModel.updatedAtText.collectAsStateWithLifecycle()
+
+            if (isRailNav) {
+                ListDetailContent(
+                    worksite = worksite,
+                    title = title,
+                    subTitle = subTitle,
+                    onBack = onBack,
+                    isEmptyWorksite = isEmptyWorksite,
+                    toggleFavorite = toggleFavorite,
+                    toggleHighPriority = toggleHighPriority,
+                    isEditable = isEditable,
+                    onCaseLongPress = onCaseLongPress,
+                    updatedAtText = updatedAtText,
+                    tabTitles = tabTitles,
+                    isBusy = isBusy,
+                    copyToClipboard = copyToClipboard,
+                    openPhoto = openPhoto,
                 )
-                CompositionLocalProvider(
-                    LocalCaseEditor provides caseEditor,
-                    LocalAppTranslator provides translator,
-                ) {
-                    ExistingCaseContent(
-                        tabTitles,
-                        worksite,
-                        isBusy,
-                        openPhoto,
-                        copyToClipboard,
-                    )
-                    val isKeyboardOpen = rememberIsKeyboardOpen()
-                    if (!isKeyboardOpen) {
-                        BottomActions(
-                            worksite,
-                            onFullEdit,
-                            onCaseFlags = openAddFlag,
-                            onCaseShare = openShareCase,
-                            onCaseHistory = openCaseHistory,
-                        )
-                    }
-                }
+            } else {
+                PortraitContent(
+                    worksite = worksite,
+                    title = title,
+                    subTitle = subTitle,
+                    onBack = onBack,
+                    isEmptyWorksite = isEmptyWorksite,
+                    toggleFavorite = toggleFavorite,
+                    toggleHighPriority = toggleHighPriority,
+                    isEditable = isEditable,
+                    onCaseLongPress = onCaseLongPress,
+                    updatedAtText = updatedAtText,
+                    tabTitles = tabTitles,
+                    isBusy = isBusy,
+                    copyToClipboard = copyToClipboard,
+                    onFullEdit = onFullEdit,
+                    openPhoto = openPhoto,
+                    openAddFlag = openAddFlag,
+                    openShareCase = openShareCase,
+                    openCaseHistory = openCaseHistory,
+                )
             }
         }
 
@@ -272,111 +245,192 @@ internal fun EditExistingCaseRoute(
     }
 }
 
-private fun getTopIconActionColor(
-    isActive: Boolean,
-    isEditable: Boolean,
-): Color {
-    var tint = if (isActive) {
-        primaryRedColor
+@Composable
+private fun NonWorksiteView(showEmpty: Boolean) {
+    if (showEmpty) {
+        Text(
+            LocalAppTranslator.current("info.no_worksite_selected"),
+            Modifier.listItemPadding(),
+        )
     } else {
-        neutralIconColor
+        Box(Modifier.fillMaxSize()) {
+            BusyIndicatorFloatingTopCenter(true)
+        }
     }
-    if (!isEditable) {
-        tint = tint.disabledAlpha()
-    }
-    return tint
 }
 
-@OptIn(
-    ExperimentalMaterial3Api::class,
-    ExperimentalFoundationApi::class,
-)
 @Composable
-private fun TopBar(
-    title: String,
-    subTitle: String = "",
-    isFavorite: Boolean = false,
-    isHighPriority: Boolean = false,
-    onBack: () -> Unit = {},
-    isLoading: Boolean = false,
-    toggleFavorite: () -> Unit = {},
-    toggleHighPriority: () -> Unit = {},
-    isEditable: Boolean = false,
-    onCaseLongPress: () -> Unit = {},
+fun ColumnScope.CaseContent(
+    worksite: Worksite,
+    isEditable: Boolean,
+    tabTitles: List<String>,
+    isBusy: Boolean,
+    copyToClipboard: (String?) -> Unit,
+    openPhoto: (ViewImageArgs) -> Unit,
+    viewModel: ViewCaseViewModel = hiltViewModel(),
+    nestedContent: @Composable ColumnScope.() -> Unit = {},
 ) {
-    val titleContent = @Composable {
-        Column(
-            modifier = Modifier.combinedClickable(
-                onClick = {},
-                onLongClick = onCaseLongPress,
-            ),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
-                title,
-                style = LocalFontStyles.current.header3,
-                modifier = Modifier.testTag("editCaseHeaderText"),
-            )
+    val statusOptions by viewModel.statusOptions.collectAsStateWithLifecycle()
+    val caseEditor = CaseEditor(
+        isEditable,
+        statusOptions,
+        false,
+    )
+    CompositionLocalProvider(
+        LocalCaseEditor provides caseEditor,
+        LocalAppTranslator provides viewModel,
+    ) {
+        ExistingCaseContent(
+            tabTitles,
+            worksite,
+            isBusy,
+            openPhoto,
+            copyToClipboard,
+        )
+        nestedContent()
+    }
+}
 
-            if (subTitle.isNotBlank()) {
-                Text(
-                    subTitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.testTag("editCaseSubHeaderText"),
+@Composable
+internal fun ViewCaseUpdatedAtView(
+    updatedAtText: String,
+    modifier: Modifier = Modifier,
+) {
+    if (updatedAtText.isNotBlank()) {
+        Text(
+            updatedAtText,
+            modifier.testTag("editCaseUpdatedAtText"),
+            style = MaterialTheme.typography.bodySmall,
+        )
+    }
+}
+
+@Composable
+private fun PortraitContent(
+    worksite: Worksite,
+    title: String,
+    subTitle: String,
+    onBack: () -> Unit,
+    isEmptyWorksite: Boolean,
+    toggleFavorite: () -> Unit,
+    toggleHighPriority: () -> Unit,
+    isEditable: Boolean,
+    onCaseLongPress: () -> Unit,
+    updatedAtText: String,
+    tabTitles: List<String>,
+    isBusy: Boolean,
+    copyToClipboard: (String?) -> Unit,
+    viewModel: ViewCaseViewModel = hiltViewModel(),
+    onFullEdit: (ExistingWorksiteIdentifier) -> Unit = {},
+    openPhoto: (ViewImageArgs) -> Unit = { _ -> },
+    openAddFlag: () -> Unit = {},
+    openShareCase: () -> Unit = {},
+    openCaseHistory: () -> Unit = {},
+) {
+    Column {
+        ViewCaseHeader(
+            title,
+            subTitle,
+            updatedAtText,
+            isFavorite = worksite.isLocalFavorite,
+            isHighPriority = worksite.hasHighPriorityFlag,
+            onBack,
+            isEmptyWorksite,
+            toggleFavorite,
+            toggleHighPriority,
+            isEditable,
+            onCaseLongPress,
+            isTopBar = true,
+        )
+
+        ViewCaseUpdatedAtView(
+            updatedAtText,
+            modifier = Modifier
+                .background(Color.White)
+                .then(listItemModifier),
+        )
+
+        if (isEmptyWorksite) {
+            NonWorksiteView(viewModel.worksiteIdArg == EmptyWorksite.id)
+        } else if (tabTitles.isNotEmpty()) {
+            CaseContent(
+                worksite = worksite,
+                isEditable = isEditable,
+                tabTitles = tabTitles,
+                isBusy = isBusy,
+                copyToClipboard = copyToClipboard,
+                openPhoto = openPhoto,
+            ) {
+                val isKeyboardOpen = rememberIsKeyboardOpen()
+                if (!isKeyboardOpen) {
+                    ViewCaseNav(
+                        worksite,
+                        isEditable,
+                        onFullEdit = onFullEdit,
+                        onCaseFlags = openAddFlag,
+                        onCaseShare = openShareCase,
+                        onCaseHistory = openCaseHistory,
+                        isBottomNav = true,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ListDetailContent(
+    worksite: Worksite,
+    title: String,
+    subTitle: String,
+    onBack: () -> Unit,
+    isEmptyWorksite: Boolean,
+    toggleFavorite: () -> Unit,
+    toggleHighPriority: () -> Unit,
+    isEditable: Boolean,
+    onCaseLongPress: () -> Unit,
+    updatedAtText: String,
+    tabTitles: List<String>,
+    isBusy: Boolean,
+    copyToClipboard: (String?) -> Unit,
+    viewModel: ViewCaseViewModel = hiltViewModel(),
+    openPhoto: (ViewImageArgs) -> Unit = { _ -> },
+) {
+    Row {
+        Column(Modifier.weight(0.3f)) {
+            ViewCaseHeader(
+                title,
+                subTitle,
+                updatedAtText,
+                isFavorite = worksite.isLocalFavorite,
+                isHighPriority = worksite.hasHighPriorityFlag,
+                onBack,
+                isEmptyWorksite,
+                toggleFavorite,
+                toggleHighPriority,
+                isEditable,
+                onCaseLongPress,
+            )
+        }
+        Column(
+            Modifier
+                .weight(0.7f)
+                .sizeIn(maxWidth = 480.dp),
+        ) {
+            if (isEmptyWorksite) {
+                NonWorksiteView(viewModel.worksiteIdArg == EmptyWorksite.id)
+            } else if (tabTitles.isNotEmpty()) {
+                CaseContent(
+                    worksite = worksite,
+                    isEditable = isEditable,
+                    tabTitles = tabTitles,
+                    isBusy = isBusy,
+                    copyToClipboard = copyToClipboard,
+                    openPhoto = openPhoto,
                 )
             }
         }
     }
-
-    val navigationContent = @Composable {
-        TopBarBackAction(action = onBack, modifier = Modifier.testTag("topBarBackAction"))
-    }
-    val actionsContent: (@Composable (RowScope.() -> Unit)) = if (isLoading) {
-        @Composable {}
-    } else {
-        @Composable {
-            val translator = LocalAppTranslator.current
-            val highPriorityTranslateKey = if (isHighPriority) {
-                "actions.unmark_high_priority"
-            } else {
-                "flag.flag_high_priority"
-            }
-            val highPriorityTint = getTopIconActionColor(isHighPriority, isEditable)
-            CrisisCleanupIconButton(
-                iconResId = R.drawable.ic_important_filled,
-                contentDescription = translator(highPriorityTranslateKey),
-                onClick = toggleHighPriority,
-                enabled = isEditable,
-                tint = highPriorityTint,
-                modifier = Modifier.testTag("editCaseHighPriorityToggleBtn"),
-            )
-
-            val iconResId = if (isFavorite) {
-                R.drawable.ic_heart_filled
-            } else {
-                R.drawable.ic_heart_outline
-            }
-            val favoriteDescription = if (isFavorite) {
-                translator("actions.not_member_of_my_org")
-            } else {
-                translator("actions.member_of_my_org")
-            }
-            val favoriteTint = getTopIconActionColor(isFavorite, isEditable)
-            CrisisCleanupIconButton(
-                iconResId = iconResId,
-                contentDescription = favoriteDescription,
-                onClick = toggleFavorite,
-                enabled = isEditable,
-                tint = favoriteTint,
-                modifier = Modifier.testTag("editCaseFavoriteToggleBtn"),
-            )
-        }
-    }
-    CenterAlignedTopAppBar(
-        title = titleContent,
-        navigationIcon = navigationContent,
-        actions = actionsContent,
-    )
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -461,82 +515,6 @@ private fun ColumnScope.ExistingCaseContent(
 }
 
 @Composable
-private fun BottomActions(
-    worksite: Worksite,
-    onFullEdit: (ExistingWorksiteIdentifier) -> Unit = {},
-    onCaseFlags: () -> Unit = {},
-    onCaseShare: () -> Unit = {},
-    onCaseHistory: () -> Unit = {},
-) {
-    val translator = LocalAppTranslator.current
-    val isEditable = LocalCaseEditor.current.isEditable
-    var contentColor = Color.Black
-    if (!isEditable) {
-        contentColor = contentColor.disabledAlpha()
-    }
-    NavigationBar(
-        containerColor = cardContainerColor,
-        contentColor = contentColor,
-        tonalElevation = 0.dp,
-    ) {
-        existingCaseActions.forEachIndexed { index, action ->
-            var label = translator(action.translationKey)
-            if (action.translationKey.isNotBlank()) {
-                if (label == action.translationKey && action.textResId != 0) {
-                    label = stringResource(action.textResId)
-                }
-            }
-            if (label.isBlank() && action.textResId != 0) {
-                label = stringResource(action.textResId)
-            }
-
-            NavigationBarItem(
-                modifier = Modifier.testTag("editCaseNavItem_$label"),
-                selected = false,
-                onClick = {
-                    when (index) {
-                        0 -> onCaseShare()
-                        1 -> onCaseFlags()
-                        2 -> onCaseHistory()
-                        3 -> onFullEdit(
-                            ExistingWorksiteIdentifier(
-                                worksite.incidentId,
-                                worksite.id,
-                            ),
-                        )
-                    }
-                },
-                icon = {
-                    if (action.iconResId != 0) {
-                        Icon(
-                            painter = painterResource(action.iconResId),
-                            contentDescription = label,
-                        )
-                    } else if (action.imageVector != null) {
-                        Icon(
-                            imageVector = action.imageVector,
-                            contentDescription = label,
-                        )
-                    }
-                },
-                label = {
-                    Text(
-                        label,
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                },
-                colors = NavigationBarItemDefaults.colors(
-                    unselectedIconColor = contentColor,
-                    unselectedTextColor = contentColor,
-                    indicatorColor = CrisisCleanupNavigationDefaults.navigationIndicatorColor(),
-                ),
-                enabled = isEditable,
-            )
-        }
-    }
-}
-
-@Composable
 internal fun PropertyInfoRow(
     image: ImageVector,
     text: String,
@@ -572,7 +550,7 @@ internal fun PropertyInfoRow(
 @Composable
 internal fun EditExistingCaseInfoView(
     worksite: Worksite,
-    viewModel: ExistingCaseViewModel = hiltViewModel(),
+    viewModel: ViewCaseViewModel = hiltViewModel(),
     copyToClipboard: (String?) -> Unit = {},
 ) {
     val mapMarkerIcon by viewModel.mapMarkerIcon.collectAsStateWithLifecycle()
@@ -909,7 +887,7 @@ private fun LazyListScope.workItems(
 
 @Composable
 internal fun EditExistingCasePhotosView(
-    viewModel: ExistingCaseViewModel = hiltViewModel(),
+    viewModel: ViewCaseViewModel = hiltViewModel(),
     setEnablePagerScroll: (Boolean) -> Unit = {},
     onPhotoSelect: (ViewImageArgs) -> Unit = { _ -> },
 ) {
@@ -983,7 +961,7 @@ internal fun EditExistingCasePhotosView(
 @Composable
 internal fun EditExistingCaseNotesView(
     worksite: Worksite,
-    viewModel: ExistingCaseViewModel = hiltViewModel(),
+    viewModel: ViewCaseViewModel = hiltViewModel(),
 ) {
     val isEditable = LocalCaseEditor.current.isEditable
     val t = LocalAppTranslator.current
@@ -1133,25 +1111,6 @@ data class IconTextAction(
     val imageVector: ImageVector? = null,
     @StringRes val textResId: Int = 0,
     val translationKey: String = "",
-)
-
-private val existingCaseActions = listOf(
-    IconTextAction(
-        iconResId = R.drawable.ic_share_small,
-        translationKey = "actions.share",
-    ),
-    IconTextAction(
-        iconResId = R.drawable.ic_flag_small,
-        translationKey = "nav.flag",
-    ),
-    IconTextAction(
-        iconResId = R.drawable.ic_history_small,
-        translationKey = "actions.history",
-    ),
-    IconTextAction(
-        iconResId = R.drawable.ic_edit_underscore_small,
-        translationKey = "actions.edit",
-    ),
 )
 
 @Composable

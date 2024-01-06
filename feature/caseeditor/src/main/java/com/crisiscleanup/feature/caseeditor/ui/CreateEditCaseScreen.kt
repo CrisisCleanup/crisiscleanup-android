@@ -48,8 +48,8 @@ import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseEditorUiState
-import com.crisiscleanup.feature.caseeditor.CaseEditorViewModel
 import com.crisiscleanup.feature.caseeditor.CasePropertyDataEditor
+import com.crisiscleanup.feature.caseeditor.CreateEditCaseViewModel
 import com.crisiscleanup.feature.caseeditor.WorksiteSection
 import com.crisiscleanup.feature.caseeditor.model.FormFieldsInputData
 import com.crisiscleanup.core.common.R as commonR
@@ -66,7 +66,7 @@ internal fun CaseEditorRoute(
     onEditSearchAddress: () -> Unit = {},
     onEditMoveLocationOnMap: () -> Unit = {},
     onBack: () -> Unit = {},
-    viewModel: CaseEditorViewModel = hiltViewModel(),
+    viewModel: CreateEditCaseViewModel = hiltViewModel(),
 ) {
     val changeWorksiteIncidentId by viewModel.changeWorksiteIncidentId.collectAsStateWithLifecycle()
     val changeExistingWorksite by viewModel.changeExistingWorksite.collectAsStateWithLifecycle()
@@ -124,7 +124,7 @@ internal fun CaseEditorRoute(
 @Composable
 internal fun ColumnScope.CaseEditorScreen(
     modifier: Modifier = Modifier,
-    viewModel: CaseEditorViewModel = hiltViewModel(),
+    viewModel: CreateEditCaseViewModel = hiltViewModel(),
     onNavigateCancel: () -> Unit = {},
     onEditSearchAddress: () -> Unit = {},
     onEditMoveLocationOnMap: () -> Unit = {},
@@ -172,7 +172,7 @@ internal fun ColumnScope.CaseEditorScreen(
 private fun ColumnScope.FullEditView(
     caseData: CaseEditorUiState.CaseData,
     modifier: Modifier = Modifier,
-    viewModel: CaseEditorViewModel = hiltViewModel(),
+    viewModel: CreateEditCaseViewModel = hiltViewModel(),
     onCancel: () -> Unit = {},
     onMoveLocation: () -> Unit = {},
     onSearchAddress: () -> Unit = {},
@@ -327,7 +327,7 @@ private fun ColumnScope.FullEditView(
 
 private fun LazyListScope.fullEditContent(
     caseData: CaseEditorUiState.CaseData,
-    viewModel: CaseEditorViewModel,
+    viewModel: CreateEditCaseViewModel,
     modifier: Modifier = Modifier,
     sectionTitles: List<String> = emptyList(),
     onMoveLocation: () -> Unit = {},
@@ -386,7 +386,7 @@ private fun LazyListScope.fullEditContent(
 }
 
 private fun LazyListScope.propertyLocationSection(
-    viewModel: CaseEditorViewModel,
+    viewModel: CreateEditCaseViewModel,
     propertyEditor: CasePropertyDataEditor,
     sectionTitle: String,
     onMoveLocation: () -> Unit = {},
@@ -444,7 +444,7 @@ private fun LazyListScope.propertyLocationSection(
 }
 
 private fun LazyListScope.formDataSection(
-    viewModel: CaseEditorViewModel,
+    viewModel: CreateEditCaseViewModel,
     inputData: FormFieldsInputData,
     sectionTitle: String,
     sectionIndex: Int,
@@ -510,7 +510,7 @@ private fun InvalidSaveDialog(
     onEditLocation: () -> Unit = {},
     onEditLocationAddress: () -> Unit = {},
     onEditFormData: (Int) -> Unit = {},
-    viewModel: CaseEditorViewModel = hiltViewModel(),
+    viewModel: CreateEditCaseViewModel = hiltViewModel(),
 ) {
     val promptInvalidSave by viewModel.showInvalidWorksiteSave.collectAsStateWithLifecycle()
     if (promptInvalidSave) {
