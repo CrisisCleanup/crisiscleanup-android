@@ -81,7 +81,7 @@ fun RequestOrgAccessRoute(
 
     val inviteInfoErrorMessage by viewModel.inviteInfoErrorMessage.collectAsStateWithLifecycle()
 
-    Column(Modifier.fillMaxSize()) {
+    Column {
         TopAppBarBackAction(
             title = screenTitle,
             onAction = clearStateOnBack,

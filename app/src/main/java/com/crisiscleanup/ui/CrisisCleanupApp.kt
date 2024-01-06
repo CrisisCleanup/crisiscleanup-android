@@ -87,7 +87,7 @@ fun CrisisCleanupApp(
     viewModel: MainActivityViewModel = hiltViewModel(),
 ) {
     CrisisCleanupBackground {
-        Box(Modifier.fillMaxSize()) {
+        Box {
             val snackbarHostState = remember { SnackbarHostState() }
 
             val isOffline by appState.isOffline.collectAsStateWithLifecycle()
@@ -316,7 +316,7 @@ private fun NavigableContent(
             }
 
             val isKeyboardOpen = rememberIsKeyboardOpen()
-            Column(Modifier.fillMaxSize()) {
+            Column {
                 val snackbarAreaHeight =
                     if (!showNavigation &&
                         snackbarHostState.currentSnackbarData != null &&

@@ -10,6 +10,7 @@ enum class TopLevelDestination(
     val unselectedIcon: Icon,
     val titleTranslateKey: String,
 ) {
+    // TODO Icon color should change selected vs unselected.
     CASES(
         selectedIcon = DrawableResourceIcon(CrisisCleanupIcons.Cases),
         unselectedIcon = DrawableResourceIcon(CrisisCleanupIcons.Cases),

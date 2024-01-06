@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
@@ -52,6 +51,9 @@ import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.WithHelpDialog
 import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
+import com.crisiscleanup.core.designsystem.component.listDetailDetailMaxWidth
+import com.crisiscleanup.core.designsystem.component.listDetailDetailWeight
+import com.crisiscleanup.core.designsystem.component.listDetailListWeight
 import com.crisiscleanup.core.designsystem.component.rememberFocusSectionSliderState
 import com.crisiscleanup.core.designsystem.component.rememberSectionContentIndexLookup
 import com.crisiscleanup.core.designsystem.component.roundedOutline
@@ -96,12 +98,11 @@ internal fun CasesFilterRoute(
         remember(viewModel) { { filters: CasesFilter -> viewModel.changeFilters(filters) } }
 
     val screenModifier = Modifier
-        .fillMaxSize()
         .background(Color.White)
 
     if (isListDetailLayout) {
         Row(screenModifier) {
-            Column(Modifier.weight(0.3f)) {
+            Column(Modifier.weight(listDetailListWeight)) {
                 TopBar(onBack)
 
                 Spacer(Modifier.weight(1f))
@@ -113,8 +114,8 @@ internal fun CasesFilterRoute(
             }
             Column(
                 Modifier
-                    .weight(0.7f)
-                    .sizeIn(maxWidth = 480.dp),
+                    .weight(listDetailDetailWeight)
+                    .sizeIn(maxWidth = listDetailDetailMaxWidth),
             ) {
                 FilterContent(
                     filters,

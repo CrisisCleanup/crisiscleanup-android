@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -23,14 +22,11 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.coerceAtMost
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
@@ -113,30 +109,6 @@ private fun AddressSummaryInColumn(
             }
         }
     }
-}
-
-// TODO Use common dimensions/sizes for all static map views
-@Composable
-internal fun getLayoutParameters(isMoveLocationMode: Boolean): Pair<Boolean, Modifier> {
-    val configuration = LocalConfiguration.current
-    val screenWidth = configuration.screenWidthDp.dp
-    val screenHeight = configuration.screenHeightDp.dp
-    val minScreenDimension = screenWidth.coerceAtMost(screenHeight)
-    // TODO Revisit for all screen sizes. Adjust map size as necessary
-    val isRowOriented = screenWidth > screenHeight.times(1.3f)
-
-    val mapWidth: Dp
-    val mapHeight: Dp
-    if (isMoveLocationMode) {
-        mapWidth = screenWidth
-        mapHeight = screenHeight
-    } else {
-        mapWidth = minScreenDimension
-        mapHeight = minScreenDimension.times(0.5f).coerceAtMost(240.dp)
-    }
-    val mapModifier = Modifier.sizeIn(maxWidth = mapWidth, maxHeight = mapHeight)
-
-    return Pair(isRowOriented, mapModifier)
 }
 
 @Composable

@@ -107,6 +107,8 @@ private fun NavItems(
     }
 }
 
+// TODO Icon color is not correct on first screen load
+//      Is correct when navigates back
 private fun navItemColor(isEditable: Boolean): Color {
     var contentColor = Color.Black
     if (!isEditable) {

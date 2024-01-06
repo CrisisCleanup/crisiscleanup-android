@@ -75,7 +75,7 @@ internal fun RootAuthScreen(
     val authState by viewModel.authState.collectAsStateWithLifecycle()
     when (authState) {
         is AuthState.Loading -> {
-            Box(Modifier.fillMaxSize()) {
+            Box {
                 CircularProgressIndicator(Modifier.align(Alignment.Center))
             }
         }

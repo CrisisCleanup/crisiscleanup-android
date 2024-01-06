@@ -67,7 +67,7 @@ fun LoginWithEmailRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     when (uiState) {
         is AuthenticateScreenUiState.Loading -> {
-            Box(Modifier.fillMaxSize()) {
+            Box {
                 CircularProgressIndicator(Modifier.align(Alignment.Center))
             }
         }

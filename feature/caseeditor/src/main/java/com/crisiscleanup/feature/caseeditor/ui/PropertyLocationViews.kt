@@ -5,14 +5,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.coerceAtMost
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
@@ -89,7 +92,9 @@ internal fun PropertyLocationView(
             )
         }
 
-        val (_, mapModifier) = getLayoutParameters(false)
+        val screenHeight = LocalConfiguration.current.screenHeightDp.dp
+        val mapHeight = screenHeight.times(0.5f).coerceAtMost(240.dp)
+        val mapModifier = Modifier.sizeIn(maxHeight = mapHeight)
         val cameraPositionState = rememberCameraPositionState()
         Box(mapModifier) {
             LocationMapView(

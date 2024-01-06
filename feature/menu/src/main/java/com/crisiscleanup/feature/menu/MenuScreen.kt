@@ -87,7 +87,7 @@ internal fun MenuScreen(
         }
     }
 
-    Box(Modifier.fillMaxSize()) {
+    Box {
         Column(Modifier.fillMaxWidth()) {
             TopBar(
                 modifier = Modifier,

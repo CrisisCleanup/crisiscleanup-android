@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -54,7 +53,7 @@ fun CaseEditCaseHistoryRoute(
         val historyEvents by viewModel.historyEvents.collectAsStateWithLifecycle()
         val hasEvents by viewModel.hasEvents.collectAsStateWithLifecycle()
 
-        Column(Modifier.fillMaxSize()) {
+        Column {
             TopAppBarBackAction(
                 title = viewModel.screenTitle,
                 onAction = onBack,

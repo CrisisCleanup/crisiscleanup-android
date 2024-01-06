@@ -308,7 +308,7 @@ internal fun NoCasesScreen(
     isLoading: Boolean = false,
     onRetryLoad: () -> Unit = {},
 ) {
-    Box(modifier.fillMaxSize()) {
+    Box {
         if (isLoading) {
             BusyIndicatorFloatingTopCenter(true)
         } else {

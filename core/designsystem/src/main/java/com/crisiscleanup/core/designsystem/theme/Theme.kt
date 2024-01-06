@@ -150,7 +150,7 @@ internal fun CrisisCleanupTheme(
     val dimensions = dimensions0.copy(
         isLandscape = isLandscape,
         isPortrait = !isLandscape,
-        isListDetailWidth = true,
+        isListDetailWidth = configuration.screenWidthDp >= 600,
     )
 
     CompositionLocalProvider(

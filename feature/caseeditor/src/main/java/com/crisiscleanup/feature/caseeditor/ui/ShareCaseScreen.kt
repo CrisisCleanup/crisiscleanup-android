@@ -115,7 +115,7 @@ fun CaseEditShareCaseRoute(
         CompositionLocalProvider(
             LocalAppTranslator provides translator,
         ) {
-            Column(Modifier.fillMaxSize()) {
+            Column {
                 val screenTitle = translator("actions.share")
                 if (isOnSecondStep) {
                     TopAppBarBackAction(

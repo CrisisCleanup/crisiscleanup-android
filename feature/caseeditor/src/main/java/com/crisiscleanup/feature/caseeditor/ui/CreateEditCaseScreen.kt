@@ -6,10 +6,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,11 +42,15 @@ import com.crisiscleanup.core.designsystem.component.FocusSectionSlider
 import com.crisiscleanup.core.designsystem.component.FormListSectionSeparator
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
+import com.crisiscleanup.core.designsystem.component.listDetailDetailMaxWidth
+import com.crisiscleanup.core.designsystem.component.listDetailDetailWeight
+import com.crisiscleanup.core.designsystem.component.listDetailListWeight
 import com.crisiscleanup.core.designsystem.component.rememberFocusSectionSliderState
 import com.crisiscleanup.core.designsystem.component.rememberSectionContentIndexLookup
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
@@ -57,9 +65,8 @@ import com.crisiscleanup.core.common.R as commonR
 private const val SectionHeaderContentType = "section-header-content-type"
 private const val SectionSeparatorContentType = "section-header-content-type"
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun CaseEditorRoute(
+internal fun CreateEditCaseRoute(
     changeNewIncidentCase: (Long) -> Unit = {},
     changeExistingIncidentCase: (ExistingWorksiteIdentifier) -> Unit = {},
     onOpenExistingCase: (ExistingWorksiteIdentifier) -> Unit = {},
@@ -88,48 +95,117 @@ internal fun CaseEditorRoute(
                 }
             }
 
-            val headerTitle by viewModel.headerTitle.collectAsStateWithLifecycle()
-            val onNavigateBack = remember(viewModel) {
-                {
-                    if (viewModel.onNavigateBack()) {
-                        onBack()
-                    }
-                }
+            CompositionLocalProvider(LocalAppTranslator provides viewModel) {
+                ArrangeLayout(
+                    onEditSearchAddress = onEditSearchAddress,
+                    onEditMoveLocationOnMap = onEditMoveLocationOnMap,
+                    onBack = onBack,
+                )
             }
-            val onNavigateCancel = remember(viewModel) {
-                {
-                    if (viewModel.onNavigateCancel()) {
-                        onBack()
-                    }
-                }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ArrangeLayout(
+    onEditSearchAddress: () -> Unit,
+    onEditMoveLocationOnMap: () -> Unit,
+    onBack: () -> Unit,
+    viewModel: CreateEditCaseViewModel = hiltViewModel(),
+) {
+    val headerTitle by viewModel.headerTitle.collectAsStateWithLifecycle()
+    val onNavigateBack = remember(viewModel) {
+        {
+            if (viewModel.onNavigateBack()) {
+                onBack()
             }
-            Column(Modifier.background(color = Color.White)) {
+        }
+    }
+    val onNavigateCancel = remember(viewModel) {
+        {
+            if (viewModel.onNavigateCancel()) {
+                onBack()
+            }
+        }
+    }
+
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val areEditorsReady by viewModel.areEditorsReady.collectAsStateWithLifecycle()
+    val isSaving by viewModel.isSavingWorksite.collectAsStateWithLifecycle()
+    var isCaseLoaded = false
+    var isEditable = false
+    (uiState as? CaseEditorUiState.CaseData)?.let { caseData ->
+        isCaseLoaded = true
+        isEditable = areEditorsReady && caseData.isNetworkLoadFinished && !isSaving
+    }
+
+    val isListDetailLayout = LocalDimensions.current.isListDetailWidth
+    val screenModifier = Modifier.background(color = Color.White)
+    if (isListDetailLayout) {
+        Row(screenModifier) {
+            Column(Modifier.weight(listDetailListWeight)) {
                 TopAppBarBackAction(
                     title = headerTitle,
                     onAction = onNavigateBack,
                 )
 
-                CompositionLocalProvider(LocalAppTranslator provides viewModel) {
-                    CaseEditorScreen(
-                        onNavigateCancel = onNavigateCancel,
-                        onEditSearchAddress = onEditSearchAddress,
-                        onEditMoveLocationOnMap = onEditMoveLocationOnMap,
+                Spacer(Modifier.weight(1f))
+
+                if (isCaseLoaded) {
+                    KeyboardSaveActionBar(
+                        enable = isEditable,
+                        isSaving = isSaving,
+                        onCancel = onNavigateCancel,
                     )
                 }
+            }
+            Column(
+                Modifier
+                    .weight(listDetailDetailWeight)
+                    .sizeIn(maxWidth = listDetailDetailMaxWidth),
+            ) {
+                CreateEditCaseContent(
+                    uiState,
+                    isEditable = isEditable,
+                    onEditSearchAddress = onEditSearchAddress,
+                    onEditMoveLocationOnMap = onEditMoveLocationOnMap,
+                )
+            }
+        }
+    } else {
+        Column(screenModifier) {
+            TopAppBarBackAction(
+                title = headerTitle,
+                onAction = onNavigateBack,
+            )
+
+            CreateEditCaseContent(
+                uiState,
+                isEditable = isEditable,
+                onEditSearchAddress = onEditSearchAddress,
+                onEditMoveLocationOnMap = onEditMoveLocationOnMap,
+            ) {
+                KeyboardSaveActionBar(
+                    enable = isEditable,
+                    isSaving = isSaving,
+                    onCancel = onNavigateCancel,
+                    horizontalLayout = true,
+                )
             }
         }
     }
 }
 
 @Composable
-internal fun ColumnScope.CaseEditorScreen(
+private fun ColumnScope.CreateEditCaseContent(
+    uiState: CaseEditorUiState,
+    isEditable: Boolean,
     modifier: Modifier = Modifier,
-    viewModel: CreateEditCaseViewModel = hiltViewModel(),
-    onNavigateCancel: () -> Unit = {},
     onEditSearchAddress: () -> Unit = {},
     onEditMoveLocationOnMap: () -> Unit = {},
+    bottomCaseContent: @Composable () -> Unit = {},
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     when (uiState) {
         is CaseEditorUiState.Loading -> {
             Box(
@@ -143,11 +219,13 @@ internal fun ColumnScope.CaseEditorScreen(
 
         is CaseEditorUiState.CaseData -> {
             FullEditView(
-                uiState as CaseEditorUiState.CaseData,
-                onCancel = onNavigateCancel,
+                uiState,
+                isEditable = isEditable,
                 onSearchAddress = onEditSearchAddress,
                 onMoveLocation = onEditMoveLocationOnMap,
             )
+
+            bottomCaseContent()
         }
 
         else -> {
@@ -171,9 +249,9 @@ internal fun ColumnScope.CaseEditorScreen(
 @Composable
 private fun ColumnScope.FullEditView(
     caseData: CaseEditorUiState.CaseData,
+    isEditable: Boolean,
     modifier: Modifier = Modifier,
     viewModel: CreateEditCaseViewModel = hiltViewModel(),
-    onCancel: () -> Unit = {},
     onMoveLocation: () -> Unit = {},
     onSearchAddress: () -> Unit = {},
 ) {
@@ -209,10 +287,6 @@ private fun ColumnScope.FullEditView(
         indexLookups,
         sectionCollapseStates,
     )
-
-    val areEditorsReady by viewModel.areEditorsReady.collectAsStateWithLifecycle()
-    val isSavingData by viewModel.isSavingWorksite.collectAsStateWithLifecycle()
-    val isEditable = areEditorsReady && caseData.isNetworkLoadFinished && !isSavingData
 
     val isSectionCollapsed =
         remember(viewModel) { { sectionIndex: Int -> sectionCollapseStates[sectionIndex] } }
@@ -263,23 +337,6 @@ private fun ColumnScope.FullEditView(
 
         val isLoadingWorksite by viewModel.isLoading.collectAsStateWithLifecycle()
         BusyIndicatorFloatingTopCenter(isLoadingWorksite)
-    }
-
-    val isKeyboardOpen = rememberIsKeyboardOpen()
-    if (!isKeyboardOpen) {
-        val claimAndSaveChanges = remember(viewModel) { { viewModel.saveChanges(true) } }
-        val saveChanges = remember(viewModel) { { viewModel.saveChanges(false) } }
-        val translator = LocalAppTranslator.current
-        SaveActionBar(
-            enable = isEditable,
-            isSaving = isSavingData,
-            onCancel = onCancel,
-            onClaimAndSave = claimAndSaveChanges,
-            onSave = saveChanges,
-            saveText = translator("actions.save"),
-            saveClaimText = translator("actions.save_claim"),
-            cancelText = translator("actions.cancel"),
-        )
     }
 
     val showBackChangesDialog by viewModel.promptUnsavedChanges
@@ -561,6 +618,34 @@ private fun InvalidSaveDialog(
 }
 
 @Composable
+private fun KeyboardSaveActionBar(
+    enable: Boolean,
+    isSaving: Boolean,
+    onCancel: () -> Unit,
+    horizontalLayout: Boolean = false,
+    viewModel: CreateEditCaseViewModel = hiltViewModel(),
+) {
+    val isKeyboardOpen = rememberIsKeyboardOpen()
+    if (!isKeyboardOpen) {
+        val claimAndSaveChanges = remember(viewModel) { { viewModel.saveChanges(true) } }
+        val saveChanges = remember(viewModel) { { viewModel.saveChanges(false) } }
+        val t = LocalAppTranslator.current
+        SaveActionBar(
+            enable = enable,
+            isSaving = isSaving,
+            onCancel = onCancel,
+            onClaimAndSave = claimAndSaveChanges,
+            onSave = saveChanges,
+            saveText = t("actions.save"),
+            saveClaimText = t("actions.save_claim"),
+            cancelText = t("actions.cancel"),
+            horizontalLayout = horizontalLayout,
+        )
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
 private fun SaveActionBar(
     enable: Boolean = false,
     isSaving: Boolean = false,
@@ -570,15 +655,19 @@ private fun SaveActionBar(
     saveText: String = "",
     saveClaimText: String = "",
     cancelText: String = "",
+    horizontalLayout: Boolean = false,
 ) {
     val dimensions = LocalDimensions.current
     val isSharpCorners = dimensions.isThinScreenWidth
-    Row(
+    val rowMaxItemCount = if (horizontalLayout) Int.MAX_VALUE else 1
+    FlowRow(
         modifier = Modifier.padding(
             horizontal = dimensions.edgePaddingFlexible,
             vertical = dimensions.edgePadding,
         ),
         horizontalArrangement = dimensions.itemInnerSpacingHorizontalFlexible,
+        verticalArrangement = listItemSpacedBy,
+        maxItemsInEachRow = rowMaxItemCount,
     ) {
         val style = LocalFontStyles.current.header5
         BusyButton(

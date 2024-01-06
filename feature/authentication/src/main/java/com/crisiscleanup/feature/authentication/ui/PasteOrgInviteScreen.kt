@@ -1,7 +1,6 @@
 package com.crisiscleanup.feature.authentication.ui
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -9,7 +8,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -44,7 +42,7 @@ fun VolunteerPasteInviteLinkRoute(
 
     val isVerifying by viewModel.isVerifyingCode.collectAsStateWithLifecycle()
 
-    Column(Modifier.fillMaxSize()) {
+    Column {
         TopAppBarBackAction(
             title = t("nav.invitation_link"),
             onAction = onBack,

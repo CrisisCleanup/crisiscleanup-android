@@ -88,6 +88,9 @@ import com.crisiscleanup.core.designsystem.component.WorkTypeAction
 import com.crisiscleanup.core.designsystem.component.WorkTypePrimaryAction
 import com.crisiscleanup.core.designsystem.component.actionEdgeSpace
 import com.crisiscleanup.core.designsystem.component.fabPlusSpaceHeight
+import com.crisiscleanup.core.designsystem.component.listDetailDetailMaxWidth
+import com.crisiscleanup.core.designsystem.component.listDetailDetailWeight
+import com.crisiscleanup.core.designsystem.component.listDetailListWeight
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
@@ -178,9 +181,9 @@ internal fun EditExistingCaseRoute(
         remember(viewModel) { { copyToClipboard(viewModel.editableWorksite.value.caseNumber) } }
 
     val isRailNav = !LocalLayoutProvider.current.isBottomNav
-    Box(Modifier.fillMaxSize()) {
+    Box {
         val worksite by viewModel.editableWorksite.collectAsStateWithLifecycle()
-        Row(Modifier.fillMaxSize()) {
+        Row {
             if (isRailNav) {
                 ViewCaseNav(
                     worksite,
@@ -255,7 +258,7 @@ private fun NonWorksiteView(showEmpty: Boolean) {
             Modifier.listItemPadding(),
         )
     } else {
-        Box(Modifier.fillMaxSize()) {
+        Box {
             BusyIndicatorFloatingTopCenter(true)
         }
     }
@@ -399,7 +402,7 @@ private fun ListDetailContent(
     openPhoto: (ViewImageArgs) -> Unit = { _ -> },
 ) {
     Row {
-        Column(Modifier.weight(0.3f)) {
+        Column(Modifier.weight(listDetailListWeight)) {
             ViewCaseHeader(
                 title,
                 subTitle,
@@ -416,8 +419,8 @@ private fun ListDetailContent(
         }
         Column(
             Modifier
-                .weight(0.7f)
-                .sizeIn(maxWidth = 480.dp),
+                .weight(listDetailDetailWeight)
+                .sizeIn(maxWidth = listDetailDetailMaxWidth),
         ) {
             if (isEmptyWorksite) {
                 NonWorksiteView(viewModel.worksiteIdArg == EmptyWorksite.id)
@@ -983,7 +986,7 @@ internal fun EditExistingCaseNotesView(
             listState.firstVisibleItemIndex > 0
         }
     }
-    ConstraintLayout(Modifier.fillMaxSize()) {
+    ConstraintLayout {
         val (noteContent, newNoteFab) = createRefs()
 
         val notes = worksite.notes
