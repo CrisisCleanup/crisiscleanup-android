@@ -308,7 +308,7 @@ internal fun NoCasesScreen(
     isLoading: Boolean = false,
     onRetryLoad: () -> Unit = {},
 ) {
-    Box {
+    Box(Modifier.fillMaxSize()) {
         if (isLoading) {
             BusyIndicatorFloatingTopCenter(true)
         } else {
@@ -333,7 +333,6 @@ internal fun NoCasesScreen(
 
 @Composable
 internal fun CasesScreen(
-    modifier: Modifier = Modifier,
     showDataProgress: Boolean = false,
     dataProgress: Float = 0f,
     onSelectIncident: () -> Unit = {},
@@ -364,7 +363,7 @@ internal fun CasesScreen(
     onSyncData: () -> Unit = {},
     hasIncidents: Boolean = false,
 ) {
-    Box(modifier.then(Modifier.fillMaxSize())) {
+    Box {
         if (isTableView) {
             CasesTableView(
                 isLoadingData = isLoadingData,
@@ -396,7 +395,7 @@ internal fun CasesScreen(
             )
         }
         CasesOverlayElements(
-            modifier,
+            Modifier,
             onSelectIncident,
             disasterResId,
             onCasesAction,
