@@ -6,13 +6,19 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.crisiscleanup.sandbox.RootRoute
+import com.crisiscleanup.sandbox.ui.BottomNavRoute
 import com.crisiscleanup.sandbox.ui.CheckboxesRoute
 
 const val rootRoute = "root"
 private const val checkboxesRoute = "checkboxes"
+private const val bottomNavRoute = "bottom-nav"
 
 fun NavController.navigateToCheckboxes() {
     this.navigate(checkboxesRoute)
+}
+
+fun NavController.navigateToBottomNav() {
+    this.navigate(bottomNavRoute)
 }
 
 @Composable
@@ -29,6 +35,10 @@ fun SandboxNavHost(
 
         composable(route = checkboxesRoute) {
             CheckboxesRoute()
+        }
+
+        composable(route = bottomNavRoute) {
+            BottomNavRoute()
         }
     }
 }

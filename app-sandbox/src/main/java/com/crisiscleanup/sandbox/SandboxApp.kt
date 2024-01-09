@@ -27,6 +27,7 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupBackground
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.sandbox.navigation.SandboxNavHost
+import com.crisiscleanup.sandbox.navigation.navigateToBottomNav
 import com.crisiscleanup.sandbox.navigation.navigateToCheckboxes
 
 @Composable
@@ -77,6 +78,9 @@ fun RootRoute(navController: NavController) {
         ) {
             CrisisCleanupTextButton(text = "Checkboxes") {
                 navController.navigateToCheckboxes()
+            }
+            CrisisCleanupTextButton(text = "Bottom nav") {
+                navController.navigateToBottomNav()
             }
         }
     }
