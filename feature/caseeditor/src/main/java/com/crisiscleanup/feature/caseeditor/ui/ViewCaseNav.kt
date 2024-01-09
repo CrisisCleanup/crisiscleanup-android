@@ -47,6 +47,7 @@ private val existingCaseActions = listOf(
 @Composable
 private fun NavItems(
     worksite: Worksite,
+    contentColor: Color,
     onFullEdit: (ExistingWorksiteIdentifier) -> Unit = {},
     onCaseFlags: () -> Unit = {},
     onCaseShare: () -> Unit = {},
@@ -89,11 +90,13 @@ private fun NavItems(
                     Icon(
                         painter = painterResource(action.iconResId),
                         contentDescription = label,
+                        tint = contentColor,
                     )
                 } else if (action.imageVector != null) {
                     Icon(
                         imageVector = action.imageVector,
                         contentDescription = label,
+                        tint = contentColor,
                     )
                 }
             },
@@ -107,8 +110,6 @@ private fun NavItems(
     }
 }
 
-// TODO Icon color is not correct on first screen load
-//      Is correct when navigates back
 private fun navItemColor(isEditable: Boolean): Color {
     var contentColor = Color.Black
     if (!isEditable) {
@@ -165,6 +166,7 @@ private fun RailNav(
         Spacer(Modifier.weight(1f))
         NavItems(
             worksite,
+            contentColor,
             onFullEdit = onFullEdit,
             onCaseFlags = onCaseFlags,
             onCaseShare = onCaseShare,
@@ -209,6 +211,7 @@ private fun BottomNav(
     ) {
         NavItems(
             worksite,
+            contentColor,
             onFullEdit = onFullEdit,
             onCaseFlags = onCaseFlags,
             onCaseShare = onCaseShare,
