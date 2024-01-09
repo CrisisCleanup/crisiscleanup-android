@@ -3,6 +3,9 @@ package com.crisiscleanup.sandbox
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,19 +16,25 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupBackground
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
+import com.crisiscleanup.sandbox.navigation.SandboxNavHost
+import com.crisiscleanup.sandbox.navigation.navigateToCheckboxes
 
 @Composable
 fun SandboxApp(
     windowSizeClass: WindowSizeClass,
+    appState: SandboxAppState = rememberAppState(
+        windowSizeClass = windowSizeClass,
+    ),
 ) {
     CrisisCleanupBackground {
         Box(Modifier.fillMaxSize()) {
@@ -47,30 +56,28 @@ fun SandboxApp(
                         .windowInsetsPadding(WindowInsets.safeDrawing),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Text("Show")
-
-                    Checkboxes()
+                    SandboxNavHost(
+                        appState.navController,
+                    )
                 }
             }
         }
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun Checkboxes() {
-    CrisisCleanupTextCheckbox(
-        text = "Checkbox text and everything in between wrapping",
-        //wrapText = true,
-    ) {
-        Text("Longer trailing content")
-    }
-    CrisisCleanupTextCheckbox(text = "Short") {
-        Text("Longer trailing content")
-    }
-    CrisisCleanupTextCheckbox(
-        text = "Short",
-        spaceTrailingContent = true,
-    ) {
-        Text("Longer trailing content")
+fun RootRoute(navController: NavController) {
+    Column {
+        Spacer(Modifier.weight(1f))
+        FlowRow(
+            horizontalArrangement = listItemSpacedBy,
+            verticalArrangement = listItemSpacedBy,
+            maxItemsInEachRow = 6,
+        ) {
+            CrisisCleanupTextButton(text = "Checkboxes") {
+                navController.navigateToCheckboxes()
+            }
+        }
     }
 }
