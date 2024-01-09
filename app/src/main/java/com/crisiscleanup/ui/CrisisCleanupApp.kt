@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -385,10 +386,17 @@ private fun TopLevelDestination.Icon(isSelected: Boolean, description: String) {
             contentDescription = description,
         )
 
-        is DrawableResourceIcon -> Icon(
-            painter = painterResource(id = icon.id),
-            contentDescription = description,
-        )
+        is DrawableResourceIcon -> {
+            var tint = LocalContentColor.current
+            if (isSelected) {
+                tint = Color.White
+            }
+            Icon(
+                painter = painterResource(id = icon.id),
+                contentDescription = description,
+                tint = tint,
+            )
+        }
     }
 }
 
