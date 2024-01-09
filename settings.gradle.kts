@@ -17,6 +17,7 @@ dependencyResolutionManagement {
 }
 rootProject.name = "crisiscleanup"
 include(":app")
+include(":app-sandbox")
 include(":core:addresssearch")
 include(":core:appnav")
 include(":core:common")
