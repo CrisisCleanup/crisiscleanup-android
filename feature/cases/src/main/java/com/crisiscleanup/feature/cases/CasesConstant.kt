@@ -6,5 +6,5 @@ object CasesConstant {
      *
      * The next zoom level markers are interactive and can trigger details/navigation.
      */
-    const val InteractiveZoomLevel = 9
+    const val InteractiveZoomLevel = 10
 }
