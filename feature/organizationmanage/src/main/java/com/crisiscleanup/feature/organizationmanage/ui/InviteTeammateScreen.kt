@@ -55,8 +55,12 @@ import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.RegisterSuccessView
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.actionHeight
+import com.crisiscleanup.core.designsystem.component.listDetailDetailMaxWidth
+import com.crisiscleanup.core.designsystem.component.listDetailDetailWeight
+import com.crisiscleanup.core.designsystem.component.listDetailListWeight
 import com.crisiscleanup.core.designsystem.component.roundedOutline
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemBottomPadding
 import com.crisiscleanup.core.designsystem.theme.listItemDropdownMenuOffset
@@ -106,7 +110,37 @@ fun InviteTeammateRoute(
                 text = viewModel.inviteSentText,
             )
         } else if (hasValidTokens) {
-            InviteTeammateContent()
+            val isListDetailLayout = LocalDimensions.current.isListDetailWidth
+
+            val inviteToAnotherOrg by viewModel.inviteToAnotherOrg.collectAsStateWithLifecycle()
+            val inviteOrgState by viewModel.inviteOrgState.collectAsStateWithLifecycle()
+
+            if (isListDetailLayout) {
+                Row {
+                    Column(
+                        Modifier
+                            .weight(listDetailDetailWeight)
+                            .sizeIn(maxWidth = listDetailDetailMaxWidth),
+                    ) {
+                        InviteTeammateContent(
+                            inviteToAnotherOrg,
+                            inviteOrgState,
+                        )
+                    }
+                    Column(
+                        Modifier
+                            .weight(listDetailListWeight),
+                    ) {
+                        QrCodeSection(inviteToAnotherOrg, inviteOrgState)
+                    }
+                }
+            } else {
+                InviteTeammateContent(
+                    inviteToAnotherOrg,
+                    inviteOrgState,
+                    showQrCode = true,
+                )
+            }
         } else {
             Text(
                 t("inviteTeammates.sign_in_to_invite"),
@@ -119,14 +153,16 @@ fun InviteTeammateRoute(
 
 @Composable
 fun InviteTeammateContent(
+    inviteToAnotherOrg: Boolean,
+    inviteOrgState: InviteOrgState,
     viewModel: InviteTeammateViewModel = hiltViewModel(),
+    showQrCode: Boolean = false,
 ) {
     val t = LocalAppTranslator.current
     val closeKeyboard = rememberCloseKeyboard(viewModel)
 
     val isEditable by viewModel.isEditable.collectAsStateWithLifecycle()
 
-    val inviteToAnotherOrg by viewModel.inviteToAnotherOrg.collectAsStateWithLifecycle()
     val inviteToMyOrgText by viewModel.myOrgInviteOptionText.collectAsStateWithLifecycle()
     val inviteToAnotherOrgText = viewModel.anotherOrgInviteOptionText
     val onChangeInvite = remember(viewModel) {
@@ -167,7 +203,6 @@ fun InviteTeammateContent(
         }
     }
 
-    val inviteOrgState by viewModel.inviteOrgState.collectAsStateWithLifecycle()
     val isNewOrganization = inviteOrgState.new
     val searchOrgStartSpace = 48.dp
 
@@ -332,7 +367,9 @@ fun InviteTeammateContent(
             indicateBusy = isSendingInvite,
         )
 
-        QrCodeSection(inviteToAnotherOrg, inviteOrgState)
+        if (showQrCode) {
+            QrCodeSection(inviteToAnotherOrg, inviteOrgState)
+        }
     }
 }
 
