@@ -10,7 +10,7 @@ import com.crisiscleanup.core.mapmarker.MapCaseDotProvider
 import com.crisiscleanup.core.mapmarker.model.TileCoordinates
 import com.crisiscleanup.core.mapmarker.tiler.BorderTile
 import com.crisiscleanup.core.mapmarker.tiler.squareBitmap
-import com.crisiscleanup.feature.cases.CasesConstant.InteractiveZoomLevel
+import com.crisiscleanup.feature.cases.CasesConstant.MapDotsZoomLevel
 import com.google.android.gms.maps.model.Tile
 import com.google.android.gms.maps.model.TileProvider
 import com.google.android.gms.maps.model.TileProvider.NO_TILE
@@ -43,11 +43,6 @@ interface CasesOverviewMapTileRenderer {
     fun setLocation(coordinates: Pair<Double, Double>?)
 
     fun enableTileBoundaries()
-
-    /**
-     * @return true when this zoom level renders tiles, false otherwise.
-     */
-    fun rendersAt(zoom: Float): Boolean
 }
 
 @Singleton
@@ -65,8 +60,7 @@ class CaseDotsMapTileRenderer @Inject constructor(
     private val tileSizeDp = 256f
     private val tileSizePx = resourceProvider.dpToPx(tileSizeDp).roundToInt()
 
-    // zoom 9 = 512x512 tiles
-    override var zoomThreshold = InteractiveZoomLevel
+    override var zoomThreshold = MapDotsZoomLevel
 
     private val tileCache = TileDataCache(1.5f)
     private var incidentIdCache = -1L
@@ -77,10 +71,6 @@ class CaseDotsMapTileRenderer @Inject constructor(
     private val borderTile = BorderTile(tileSizePx)
 
     private var locationCoordinates: Pair<Double, Double>? = null
-
-    override fun rendersAt(zoom: Float): Boolean =
-        // Lower zoom is far out, higher zoom is closer in
-        zoom < zoomThreshold + 1
 
     override fun setIncident(id: Long, worksitesCount: Int, clearCache: Boolean): Boolean {
         val isIncidentChanged = id != incidentIdCache

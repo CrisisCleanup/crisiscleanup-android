@@ -10,7 +10,7 @@ fun CheckboxesRoute() {
     Column {
         CrisisCleanupTextCheckbox(
             text = "Checkbox text and everything in between wrapping",
-            //wrapText = true,
+            // wrapText = true,
         ) {
             Text("Longer trailing content")
         }

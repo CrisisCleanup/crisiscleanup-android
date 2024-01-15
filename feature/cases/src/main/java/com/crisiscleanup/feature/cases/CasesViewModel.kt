@@ -53,6 +53,7 @@ import com.crisiscleanup.core.model.data.TableDataWorksite
 import com.crisiscleanup.core.model.data.TableWorksiteClaimAction
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteSortBy
+import com.crisiscleanup.feature.cases.CasesConstant.MapMarkersZoomLevel
 import com.crisiscleanup.feature.cases.map.CasesMapBoundsManager
 import com.crisiscleanup.feature.cases.map.CasesMapMarkerManager
 import com.crisiscleanup.feature.cases.map.CasesMapTileLayerManager
@@ -269,7 +270,7 @@ class CasesViewModel @Inject constructor(
             val skipMarkers = !isMapLoaded ||
                 wqs.isTableView ||
                 id == EmptyIncident.id ||
-                mapTileRenderer.rendersAt(wqs.zoom)
+                wqs.zoom < MapMarkersZoomLevel
 
             if (skipMarkers) {
                 emptyList()
