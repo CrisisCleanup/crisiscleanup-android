@@ -206,7 +206,8 @@ class CasesSearchViewModel @Inject constructor(
                     emptyList()
                 }
 
-                CasesSearchResults(q, false, options)
+                val isShort = localResults.isShortQ && networkResults.isShortQ
+                CasesSearchResults(q, isShort, options)
             } finally {
                 isCombiningResults.value = false
             }
