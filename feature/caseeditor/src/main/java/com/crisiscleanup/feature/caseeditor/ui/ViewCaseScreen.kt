@@ -65,6 +65,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.appnav.ViewImageArgs
 import com.crisiscleanup.core.common.filterNotBlankTrim
 import com.crisiscleanup.core.common.urlEncode
+import com.crisiscleanup.core.commoncase.com.crisiscleanup.core.commoncase.ui.ExplainWrongLocationDialog
 import com.crisiscleanup.core.commoncase.model.addressQuery
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
@@ -94,6 +95,7 @@ import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
+import com.crisiscleanup.core.designsystem.theme.neutralIconColor
 import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
 import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
 import com.crisiscleanup.core.mapmarker.ui.rememberMapUiSettings
@@ -525,27 +527,36 @@ internal fun PropertyInfoRow(
     isEmail: Boolean = false,
     isLocation: Boolean = false,
     locationQuery: String = "",
+    trailingContent: (@Composable () -> Unit)? = null,
 ) {
     Row(
         modifier,
-        verticalAlignment = Alignment.Top,
+        verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = listItemSpacedBy,
     ) {
         Icon(
             imageVector = image,
             contentDescription = text,
+            tint = neutralIconColor,
         )
 
         val style = MaterialTheme.typography.bodyLarge
-        if (isPhone) {
-            LinkifyPhoneText(text)
-        } else if (isEmail) {
-            LinkifyEmailText(text)
-        } else if (isLocation) {
-            LinkifyLocationText(text, locationQuery)
+        val innerModifier = if (trailingContent == null) {
+            Modifier
         } else {
-            Text(text, style = style)
+            Modifier.weight(1f)
         }
+        if (isPhone) {
+            LinkifyPhoneText(text, innerModifier)
+        } else if (isEmail) {
+            LinkifyEmailText(text, innerModifier)
+        } else if (isLocation) {
+            LinkifyLocationText(text, locationQuery, innerModifier)
+        } else {
+            Text(text, innerModifier, style = style)
+        }
+
+        trailingContent?.invoke()
     }
 }
 
@@ -756,9 +767,13 @@ private fun LazyListScope.propertyInfoItems(
                         )
                         .fillMaxWidth()
                         .padding(horizontal = edgeSpacing, vertical = edgeSpacingHalf),
-                    isLocation = !worksite.hasWrongLocationFlag,
+                    isLocation = true,
                     locationQuery = geoQuery.ifBlank { locationQuery },
-                )
+                ) {
+                    if (worksite.hasWrongLocationFlag) {
+                        ExplainWrongLocationDialog(worksite)
+                    }
+                }
 
                 Row(
                     Modifier
