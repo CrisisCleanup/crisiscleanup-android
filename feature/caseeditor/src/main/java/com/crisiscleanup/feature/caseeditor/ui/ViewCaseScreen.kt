@@ -31,9 +31,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
@@ -53,14 +50,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
@@ -80,6 +75,7 @@ import com.crisiscleanup.core.designsystem.component.CollapsibleIcon
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupFab
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextArea
+import com.crisiscleanup.core.designsystem.component.LeadingIconChip
 import com.crisiscleanup.core.designsystem.component.LinkifyEmailText
 import com.crisiscleanup.core.designsystem.component.LinkifyLocationText
 import com.crisiscleanup.core.designsystem.component.LinkifyPhoneText
@@ -679,39 +675,13 @@ private fun FlagChip(
             contentColor = contentColor.disabledAlpha()
         }
 
-        AssistChip(
-            leadingIcon = {
-                Box(
-                    modifier = Modifier
-                        .sizeIn(minWidth = 28.dp, minHeight = 40.dp)
-                        .clip(CircleShape)
-                        .clickable(
-                            enabled = isEditable,
-                            onClick = { removeFlag(flag) },
-                            role = Role.Button,
-                        ),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        imageVector = CrisisCleanupIcons.Clear,
-                        contentDescription = description,
-                        tint = contentColor,
-                    )
-                }
-            },
-            label = {
-                Text(
-                    text,
-                    Modifier.padding(end = 2.dp),
-                )
-            },
-            shape = CircleShape,
-            border = null,
-            colors = AssistChipDefaults.assistChipColors(
-                containerColor = color,
-                labelColor = contentColor,
-            ),
-            onClick = {},
+        LeadingIconChip(
+            text,
+            { removeFlag(flag) },
+            isEditable,
+            containerColor = color,
+            iconDescription = description,
+            contentTint = contentColor,
         )
     }
 }

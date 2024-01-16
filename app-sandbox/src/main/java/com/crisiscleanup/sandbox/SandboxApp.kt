@@ -27,8 +27,10 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupBackground
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.sandbox.navigation.SandboxNavHost
+import com.crisiscleanup.sandbox.navigation.chipsRoute
 import com.crisiscleanup.sandbox.navigation.navigateToBottomNav
 import com.crisiscleanup.sandbox.navigation.navigateToCheckboxes
+import com.crisiscleanup.sandbox.navigation.navigateToChips
 
 @Composable
 fun SandboxApp(
@@ -59,6 +61,7 @@ fun SandboxApp(
                 ) {
                     SandboxNavHost(
                         appState.navController,
+                        chipsRoute,
                     )
                 }
             }
@@ -76,11 +79,14 @@ fun RootRoute(navController: NavController) {
             verticalArrangement = listItemSpacedBy,
             maxItemsInEachRow = 6,
         ) {
+            CrisisCleanupTextButton(text = "Bottom nav") {
+                navController.navigateToBottomNav()
+            }
             CrisisCleanupTextButton(text = "Checkboxes") {
                 navController.navigateToCheckboxes()
             }
-            CrisisCleanupTextButton(text = "Bottom nav") {
-                navController.navigateToBottomNav()
+            CrisisCleanupTextButton(text = "Chips") {
+                navController.navigateToChips()
             }
         }
     }
