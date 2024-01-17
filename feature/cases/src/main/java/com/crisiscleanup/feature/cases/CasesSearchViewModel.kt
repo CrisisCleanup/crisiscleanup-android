@@ -2,11 +2,13 @@ package com.crisiscleanup.feature.cases
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.crisiscleanup.core.common.combine
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AppDataManagementRepository
@@ -20,7 +22,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -33,6 +34,7 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlinx.coroutines.flow.combine as kCombine
 
 @HiltViewModel
 class CasesSearchViewModel @Inject constructor(
@@ -93,7 +95,7 @@ class CasesSearchViewModel @Inject constructor(
         )
 
     val searchQuery = MutableStateFlow("")
-    private val incidentSearchQuery = combine(
+    private val incidentSearchQuery = kCombine(
         incidentSelector.incidentId,
         searchQuery
             .debounce(200)
@@ -108,10 +110,11 @@ class CasesSearchViewModel @Inject constructor(
         )
 
     private val networkSearchResults = incidentSearchQuery
-        .map { (incidentId, q) ->
+        .throttleLatest(150)
+        .mapLatest { (incidentId, q) ->
             if (incidentId != EmptyIncident.id) {
                 if (q.length < 3) {
-                    return@map CasesSearchResults(q)
+                    return@mapLatest CasesSearchResults(q)
                 }
 
                 isSearching.value = true
@@ -123,7 +126,7 @@ class CasesSearchViewModel @Inject constructor(
                             getIcon(summary.workType),
                         )
                     }
-                    return@map CasesSearchResults(q, false, options)
+                    return@mapLatest CasesSearchResults(q, false, options)
                 } catch (e: Exception) {
                     logger.logException(e)
                 } finally {
@@ -136,10 +139,11 @@ class CasesSearchViewModel @Inject constructor(
         .flowOn(ioDispatcher)
 
     private val localSearchResults = incidentSearchQuery
-        .map { (incidentId, q) ->
+        .throttleLatest(150)
+        .mapLatest { (incidentId, q) ->
             if (incidentId != EmptyIncident.id) {
                 if (q.length < 2) {
-                    return@map CasesSearchResults(q)
+                    return@mapLatest CasesSearchResults(q)
                 }
 
                 isSearchingLocal.value = true
@@ -152,7 +156,7 @@ class CasesSearchViewModel @Inject constructor(
                             listItemKey = if (summary.networkId > 0) summary.networkId else -summary.id,
                         )
                     }
-                    return@map CasesSearchResults(q, false, options)
+                    return@mapLatest CasesSearchResults(q, false, options)
                 } catch (e: Exception) {
                     logger.logException(e)
                 } finally {
@@ -166,22 +170,38 @@ class CasesSearchViewModel @Inject constructor(
 
     val searchResults = combine(
         incidentSearchQuery,
+        isSearchingLocal,
         localSearchResults,
+        isSearching,
         networkSearchResults,
-        ::Triple,
-    )
-        .filter { (incidentQ, localResults, networkResults) ->
+    ) {
+            incidentQ,
+            isSearchingLocally,
+            localResults,
+            isSearchingNetwork,
+            networkResults,
+        ->
+        Triple(
+            incidentQ,
+            Pair(isSearchingLocally, localResults),
+            Pair(isSearchingNetwork, networkResults),
+        )
+    }
+        .filter { (incidentQ, localState, networkState) ->
             val q = incidentQ.second
-            q == localResults.q || q == networkResults.q
+            q == localState.second.q || q == networkState.second.q
         }
-        .map { (incidentQ, localResults, networkResults) ->
+        .mapLatest { (incidentQ, localState, networkState) ->
             val q = incidentQ.second
             isCombiningResults.value = true
+            var isShortQ = false
             try {
-                val hasLocalResults = q == localResults.q
-                val hasNetworkResults = q == networkResults.q
+                val hasLocalResults = q == localState.second.q
+                val hasNetworkResults = q == networkState.second.q
+                val localResults = localState.second
+                val networkResults = networkState.second
                 val options = if (hasLocalResults && hasNetworkResults) {
-                    val localResultIdIndex = localResults.options.mapIndexed { index, option ->
+                    val localResultIdIndex = localState.second.options.mapIndexed { index, option ->
                         Pair(index, option)
                     }.associateBy { it.second.listItemKey }
 
@@ -197,17 +217,21 @@ class CasesSearchViewModel @Inject constructor(
                     }
                     combined.addAll(results)
 
+                    isShortQ = localResults.isShortQ && networkResults.isShortQ
                     combined
                 } else if (hasLocalResults) {
+                    isShortQ = localResults.isShortQ
                     localResults.options
                 } else if (hasNetworkResults) {
+                    isShortQ = networkResults.isShortQ
                     networkResults.options
                 } else {
                     emptyList()
                 }
 
-                val isShort = localResults.isShortQ && networkResults.isShortQ
-                CasesSearchResults(q, isShort, options)
+                val isSearching = hasLocalResults && localState.first ||
+                    hasNetworkResults && networkState.first
+                CasesSearchResults(q, isShortQ && !isSearching, options)
             } finally {
                 isCombiningResults.value = false
             }
