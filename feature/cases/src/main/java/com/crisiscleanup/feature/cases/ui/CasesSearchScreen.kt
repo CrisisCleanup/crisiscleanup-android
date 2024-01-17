@@ -56,6 +56,8 @@ internal fun CasesSearchRoute(
         val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
         val isNotLoading = !isLoading
 
+        val isSearching by viewModel.isSearching.collectAsStateWithLifecycle()
+
         val isSelectingResult by viewModel.isSelectingResult.collectAsStateWithLifecycle()
 
         BackHandler(isNotLoading) {
@@ -91,6 +93,7 @@ internal fun CasesSearchRoute(
                     emptyList(),
                     searchResults,
                     isLoading = isLoading,
+                    isSearching = isSearching,
                     isRecentsVisible = false,
                     Modifier
                         .weight(0.5f)
@@ -123,6 +126,7 @@ internal fun CasesSearchRoute(
                 recentCases,
                 searchResults,
                 isLoading = isLoading,
+                isSearching = isSearching,
                 isRecentsVisible = recentCases.isNotEmpty() && searchResults.q.isBlank(),
             )
         }
@@ -140,6 +144,7 @@ private fun SearchCasesView(
     recentCases: List<CaseSummaryResult>,
     searchResults: CasesSearchResults,
     isLoading: Boolean,
+    isSearching: Boolean,
     isRecentsVisible: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -160,6 +165,7 @@ private fun SearchCasesView(
                 searchResults,
                 closeKeyboard = closeKeyboard,
                 isEditable = isEditable,
+                isSearching = isSearching,
             )
         }
 
@@ -217,6 +223,7 @@ private fun ListCases(
     searchResults: CasesSearchResults,
     closeKeyboard: () -> Unit = {},
     isEditable: Boolean = false,
+    isSearching: Boolean = false,
 ) {
     val lazyListState = rememberLazyListState()
     LazyColumn(
@@ -239,14 +246,16 @@ private fun ListCases(
                     listCaseResults(options, onCaseSelect, isEditable = isEditable)
                 } else if (q.isNotBlank()) {
                     item {
-                        val t = LocalAppTranslator.current
-                        val message =
-                            if (isShortQ) {
-                                t("info.search_query_is_short")
-                            } else {
-                                t("info.no_search_results").replace("{search_string}", q)
-                            }
-                        Text(message, listItemModifier)
+                        if (!isSearching) {
+                            val t = LocalAppTranslator.current
+                            val message =
+                                if (isShortQ) {
+                                    t("info.search_query_is_short")
+                                } else {
+                                    t("info.no_search_results").replace("{search_string}", q)
+                                }
+                            Text(message, listItemModifier)
+                        }
                     }
                 }
             }

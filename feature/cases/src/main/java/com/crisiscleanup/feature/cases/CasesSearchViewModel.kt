@@ -47,17 +47,28 @@ class CasesSearchViewModel @Inject constructor(
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     private val isInitialLoading = MutableStateFlow(true)
-    private val isSearching = MutableStateFlow(false)
+    private val isSearchingNetwork = MutableStateFlow(false)
     private val isSearchingLocal = MutableStateFlow(false)
     private val isCombiningResults = MutableStateFlow(false)
     val isSelectingResult = MutableStateFlow(false)
+    val isSearching = kCombine(
+        isSearchingLocal,
+        isSearchingNetwork,
+        ::Pair,
+    )
+        .map { (b0, b1) -> b0 || b1 }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
     val isLoading = combine(
         isInitialLoading,
         isSearching,
-        isSearchingLocal,
         isCombiningResults,
         isSelectingResult,
-    ) { b0, b1, b2, b3, b4 -> b0 || b1 || b2 || b3 || b4 }
+    ) { b0, b1, b2, b3 -> b0 || b1 || b2 || b3 }
         .stateIn(
             scope = viewModelScope,
             initialValue = true,
@@ -117,7 +128,7 @@ class CasesSearchViewModel @Inject constructor(
                     return@mapLatest CasesSearchResults(q)
                 }
 
-                isSearching.value = true
+                isSearchingNetwork.value = true
                 try {
                     val results = searchWorksitesRepository.searchWorksites(incidentId, q)
                     val options = results.map { summary ->
@@ -131,7 +142,7 @@ class CasesSearchViewModel @Inject constructor(
                     logger.logException(e)
                 } finally {
                     // TODO Does this pattern work with cancellations?
-                    isSearching.value = false
+                    isSearchingNetwork.value = false
                 }
             }
             CasesSearchResults(q, false)
@@ -170,38 +181,36 @@ class CasesSearchViewModel @Inject constructor(
 
     val searchResults = combine(
         incidentSearchQuery,
-        isSearchingLocal,
-        localSearchResults,
         isSearching,
+        localSearchResults,
         networkSearchResults,
     ) {
             incidentQ,
-            isSearchingLocally,
+            searching,
             localResults,
-            isSearchingNetwork,
             networkResults,
         ->
         Triple(
             incidentQ,
-            Pair(isSearchingLocally, localResults),
-            Pair(isSearchingNetwork, networkResults),
+            searching,
+            Pair(localResults, networkResults),
         )
     }
-        .filter { (incidentQ, localState, networkState) ->
+        .filter { (incidentQ, _, searchResults) ->
             val q = incidentQ.second
-            q == localState.second.q || q == networkState.second.q
+            val (localResults, networkResults) = searchResults
+            q == localResults.q || q == networkResults.q
         }
-        .mapLatest { (incidentQ, localState, networkState) ->
+        .mapLatest { (incidentQ, searching, searchResults) ->
             val q = incidentQ.second
+            val (localResults, networkResults) = searchResults
             isCombiningResults.value = true
             var isShortQ = false
             try {
-                val hasLocalResults = q == localState.second.q
-                val hasNetworkResults = q == networkState.second.q
-                val localResults = localState.second
-                val networkResults = networkState.second
+                val hasLocalResults = q == localResults.q
+                val hasNetworkResults = q == networkResults.q
                 val options = if (hasLocalResults && hasNetworkResults) {
-                    val localResultIdIndex = localState.second.options.mapIndexed { index, option ->
+                    val localResultIdIndex = localResults.options.mapIndexed { index, option ->
                         Pair(index, option)
                     }.associateBy { it.second.listItemKey }
 
@@ -229,9 +238,7 @@ class CasesSearchViewModel @Inject constructor(
                     emptyList()
                 }
 
-                val isSearching = hasLocalResults && localState.first ||
-                    hasNetworkResults && networkState.first
-                CasesSearchResults(q, isShortQ && !isSearching, options)
+                CasesSearchResults(q, isShortQ && !searching, options)
             } finally {
                 isCombiningResults.value = false
             }
