@@ -1,5 +1,6 @@
 package com.crisiscleanup.feature.cases
 
+import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.combine
@@ -18,6 +19,7 @@ import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.WorkType
+import com.crisiscleanup.core.model.data.WorksiteSummary
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -160,13 +162,25 @@ class CasesSearchViewModel @Inject constructor(
                 isSearchingLocal.value = true
                 try {
                     val results = searchWorksitesRepository.getMatchingLocalWorksites(incidentId, q)
-                    val options = results.map { summary ->
-                        CaseSummaryResult(
-                            summary,
-                            getIcon(summary.workType),
-                            listItemKey = if (summary.networkId > 0) summary.networkId else -summary.id,
-                        )
+                    var options = results.map { summary -> summary.asCaseSummary(this::getIcon) }
+
+                    var leadingCaseSummary: CaseSummaryResult? = null
+                    if (options.isNotEmpty()) {
+                        searchWorksitesRepository.getWorksiteByCaseNumber(incidentId, q.trim())
+                            ?.let { caseNumberMatch ->
+                                if (options.first().summary.id != caseNumberMatch.id) {
+                                    leadingCaseSummary =
+                                        caseNumberMatch.asCaseSummary(this::getIcon)
+                                }
+                            }
                     }
+                    leadingCaseSummary?.let { option ->
+                        options = options
+                            .filter { it.summary.id != option.summary.id }
+                            .toMutableList()
+                            .also { it.add(0, option) }
+                    }
+
                     return@mapLatest CasesSearchResults(q, false, options)
                 } catch (e: Exception) {
                     logger.logException(e)
@@ -214,17 +228,35 @@ class CasesSearchViewModel @Inject constructor(
                         Pair(index, option)
                     }.associateBy { it.second.listItemKey }
 
-                    val results = localResults.options.toMutableList()
+                    val localOptions = localResults.options
+                    val qLower = q.trim().lowercase()
+                    val firstCaseNumberLower =
+                        localOptions.firstOrNull()?.summary?.caseNumber?.lowercase()
+                    val hasCaseNumberMatch = qLower == firstCaseNumberLower
+
                     val combined = mutableListOf<CaseSummaryResult>()
+                    val localCombined = mutableSetOf<Long>()
                     networkResults.options.forEach { networkResult ->
-                        val matchingLocal = localResultIdIndex[networkResult.listItemKey]
-                        if (matchingLocal == null) {
-                            combined.add(networkResult)
-                        } else {
-                            results[matchingLocal.first] = matchingLocal.second
+                        if (!hasCaseNumberMatch || networkResult.summary.caseNumber.lowercase() != qLower) {
+                            val matchingLocal = localResultIdIndex[networkResult.listItemKey]
+                            if (matchingLocal == null) {
+                                combined.add(networkResult)
+                            } else {
+                                combined.add(matchingLocal.second)
+                                localCombined.add(matchingLocal.second.summary.id)
+                            }
                         }
                     }
-                    combined.addAll(results)
+
+                    val caseNumberMatch = if (hasCaseNumberMatch) localOptions.first() else null
+                    val ignoreLocalId = caseNumberMatch?.summary?.id
+                    val localNotCombined = localOptions.filter {
+                        it.summary.id != ignoreLocalId &&
+                                !localCombined.contains(it.summary.id)
+                    }
+                    combined.addAll(localNotCombined)
+
+                    caseNumberMatch?.let { combined.add(0, it) }
 
                     isShortQ = localResults.isShortQ && networkResults.isShortQ
                     combined
@@ -302,3 +334,10 @@ data class CasesSearchResults(
     val isShortQ: Boolean = true,
     val options: List<CaseSummaryResult> = emptyList(),
 )
+
+private fun WorksiteSummary.asCaseSummary(getIcon: (WorkType?) -> Bitmap?) =
+    CaseSummaryResult(
+        this,
+        getIcon(workType),
+        listItemKey = if (networkId > 0) networkId else -id,
+    )

@@ -109,21 +109,19 @@ suspend fun WorksiteDaoPlus.getMatchingWorksites(
     }
 }
 
-private fun WorksiteEntity.asSummary(): WorksiteSummary {
-    return WorksiteSummary(
-        id,
-        networkId,
-        name,
-        address,
-        city,
-        state,
-        postalCode,
-        county,
-        caseNumber,
-        WorkType(
-            0,
-            statusLiteral = keyWorkTypeStatus,
-            workTypeLiteral = keyWorkTypeType,
-        ),
-    )
-}
+fun WorksiteEntity.asSummary() = WorksiteSummary(
+    id,
+    networkId,
+    name,
+    address,
+    city,
+    state,
+    postalCode,
+    county,
+    caseNumber,
+    WorkType(
+        0,
+        statusLiteral = keyWorkTypeStatus,
+        workTypeLiteral = keyWorkTypeType,
+    ),
+)

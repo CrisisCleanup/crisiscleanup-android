@@ -8,7 +8,9 @@ import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.radians
+import com.crisiscleanup.core.database.dao.WorksiteDao
 import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
+import com.crisiscleanup.core.database.dao.fts.asSummary
 import com.crisiscleanup.core.database.dao.fts.getMatchingWorksites
 import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.WorkType
@@ -33,11 +35,17 @@ interface SearchWorksitesRepository {
     ): Collection<WorksiteSummary>
 
     suspend fun getMatchingLocalWorksites(incidentId: Long, q: String): Collection<WorksiteSummary>
+
+    suspend fun getWorksiteByCaseNumber(
+        incidentId: Long,
+        caseNumber: String,
+    ): WorksiteSummary?
 }
 
 class MemoryCacheSearchWorksitesRepository @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val locationProvider: LocationProvider,
+    private val worksiteDao: WorksiteDao,
     private val worksiteDaoPlus: WorksiteDaoPlus,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
 ) : SearchWorksitesRepository {
@@ -206,6 +214,17 @@ class MemoryCacheSearchWorksitesRepository @Inject constructor(
 
     override suspend fun getMatchingLocalWorksites(incidentId: Long, q: String) =
         worksiteDaoPlus.getMatchingWorksites(incidentId, q)
+
+    override suspend fun getWorksiteByCaseNumber(
+        incidentId: Long,
+        caseNumber: String,
+    ): WorksiteSummary? {
+        if (caseNumber.isBlank()) {
+            return null
+        }
+
+        return worksiteDao.getWorksiteByCaseNumber(incidentId, caseNumber)?.asSummary()
+    }
 }
 
 private data class IncidentQuery(

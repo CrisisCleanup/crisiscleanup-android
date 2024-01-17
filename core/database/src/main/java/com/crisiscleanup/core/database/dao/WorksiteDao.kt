@@ -380,6 +380,18 @@ interface WorksiteDao {
     ): List<BoundedSyncedWorksiteIds>
 
     @Transaction
+    @Query(
+        """
+        SELECT * FROM worksites
+        WHERE incident_id=:incidentId AND (
+            case_number=UPPER(:caseNumber) OR
+            case_number=LOWER(:caseNumber)
+        )
+        """,
+    )
+    fun getWorksiteByCaseNumber(incidentId: Long, caseNumber: String): WorksiteEntity?
+
+    @Transaction
     @Query("SELECT * FROM worksites WHERE incident_id=:incidentId")
     fun getTableWorksites(incidentId: Long): List<PopulatedTableDataWorksite>
 
