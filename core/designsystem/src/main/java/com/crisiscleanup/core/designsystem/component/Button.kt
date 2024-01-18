@@ -81,10 +81,10 @@ val actionSmallSpace = 12.dp
 
 private val fabPlusSpaceHeight = 48.dp.plus(actionEdgeSpace.times(2))
 
-fun Modifier.actionHeight() = then(heightIn(min = 48.dp))
-fun Modifier.actionSize() = then(size(48.dp))
-fun Modifier.actionSmallSize() = then(size(44.dp))
-fun Modifier.fabPlusSpaceHeight() = then(size(fabPlusSpaceHeight))
+fun Modifier.actionHeight() = this.heightIn(min = 48.dp)
+fun Modifier.actionSize() = this.size(48.dp)
+fun Modifier.actionSmallSize() = this.size(44.dp)
+fun Modifier.fabPlusSpaceHeight() = this.size(fabPlusSpaceHeight)
 
 @Composable
 private fun primaryButtonColors() = ButtonDefaults.buttonColors(
