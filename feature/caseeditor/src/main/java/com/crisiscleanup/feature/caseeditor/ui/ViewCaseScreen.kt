@@ -50,7 +50,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -58,7 +57,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.toSize
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -491,17 +489,17 @@ private fun ColumnScope.ExistingCaseContent(
             userScrollEnabled = enablePagerScroll,
         ) { pagerIndex ->
             when (pagerIndex) {
-                0 -> EditExistingCaseInfoView(
+                0 -> CaseInfoView(
                     worksite,
                     copyToClipboard = copyToClipboard,
                 )
 
-                1 -> EditExistingCasePhotosView(
+                1 -> CasePhotosView(
                     setEnablePagerScroll = setEnablePagerScroll,
                     onPhotoSelect = openPhoto,
                 )
 
-                2 -> EditExistingCaseNotesView(worksite)
+                2 -> CaseNotesView(worksite)
             }
         }
         BusyIndicatorFloatingTopCenter(isLoading)
@@ -561,7 +559,7 @@ internal fun PropertyInfoRow(
 }
 
 @Composable
-internal fun EditExistingCaseInfoView(
+private fun CaseInfoView(
     worksite: Worksite,
     viewModel: ViewCaseViewModel = hiltViewModel(),
     copyToClipboard: (String?) -> Unit = {},
@@ -877,7 +875,7 @@ private fun LazyListScope.workItems(
 }
 
 @Composable
-internal fun EditExistingCasePhotosView(
+private fun CasePhotosView(
     viewModel: ViewCaseViewModel = hiltViewModel(),
     setEnablePagerScroll: (Boolean) -> Unit = {},
     onPhotoSelect: (ViewImageArgs) -> Unit = { _ -> },
@@ -892,13 +890,13 @@ internal fun EditExistingCasePhotosView(
         ImageCategory.Before to t("caseForm.before_photos"),
         ImageCategory.After to t("caseForm.after_photos"),
     )
-    var contentSize by remember { mutableStateOf(Size.Zero) }
-    val isShortScreen = contentSize.height.dp < 900.dp
+    var isShortScreen by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier
+            .sizeIn(maxHeight = 480.dp)
             .fillMaxHeight()
             .onGloballyPositioned {
-                contentSize = it.size.toSize()
+                isShortScreen = it.size.height.dp < 720.dp
             },
     ) {
         sectionTitleResIds.onEach { (imageCategory, sectionTitle) ->
@@ -946,7 +944,7 @@ internal fun EditExistingCasePhotosView(
 }
 
 @Composable
-internal fun EditExistingCaseNotesView(
+private fun CaseNotesView(
     worksite: Worksite,
     viewModel: ViewCaseViewModel = hiltViewModel(),
 ) {

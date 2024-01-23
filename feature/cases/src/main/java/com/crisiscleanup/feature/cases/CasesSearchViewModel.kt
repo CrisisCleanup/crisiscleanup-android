@@ -252,7 +252,7 @@ class CasesSearchViewModel @Inject constructor(
                     val ignoreLocalId = caseNumberMatch?.summary?.id
                     val localNotCombined = localOptions.filter {
                         it.summary.id != ignoreLocalId &&
-                                !localCombined.contains(it.summary.id)
+                            !localCombined.contains(it.summary.id)
                     }
                     combined.addAll(localNotCombined)
 

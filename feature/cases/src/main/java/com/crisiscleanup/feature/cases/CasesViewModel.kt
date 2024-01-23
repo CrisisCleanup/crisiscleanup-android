@@ -594,7 +594,7 @@ class CasesViewModel @Inject constructor(
         mapBoundsManager.restoreIncidentBounds()
     }
 
-    fun zoomToInteractive() = adjustMapZoom(mapTileRenderer.zoomThreshold + 1.1f)
+    fun zoomToInteractive() = adjustMapZoom(MapMarkersZoomLevel + 0.5f)
 
     private fun setMapToMyCoordinates() {
         viewModelScope.launch {
