@@ -22,10 +22,11 @@ import com.crisiscleanup.core.common.R as commonR
 
 @Composable
 fun CrisisCleanupLogoRow(
+    modifier: Modifier = Modifier,
     hideHeaderText: Boolean = false,
 ) {
     // TODO Adjust to other screen sizes as necessary
-    Box(Modifier.padding(top = 16.dp, start = 8.dp)) {
+    Box(modifier.padding(top = 16.dp, start = 8.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Start,
