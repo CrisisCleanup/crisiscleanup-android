@@ -78,7 +78,7 @@ class MenuViewModel @Inject constructor(
     ) { b0, b1, b2 -> b0 || b1 || b2 }
 
     val screenTitle = incidentSelector.incident
-        .map { it.name.ifBlank { translator("nav.menu") } }
+        .map { it.shortName.ifBlank { translator("nav.menu") } }
         .stateIn(
             scope = viewModelScope,
             initialValue = "",
