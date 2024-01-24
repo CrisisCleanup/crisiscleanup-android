@@ -8,16 +8,13 @@ import com.crisiscleanup.AndroidPermissionManager
 import com.crisiscleanup.AppVisualAlertManager
 import com.crisiscleanup.CrisisCleanupAppEnv
 import com.crisiscleanup.ZxingQrCodeGenerator
-import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.common.*
 import com.crisiscleanup.core.common.log.TagLogger
 import com.crisiscleanup.core.network.AuthInterceptorProvider
 import com.crisiscleanup.core.network.RetrofitInterceptorProvider
 import com.crisiscleanup.log.CrisisCleanupAppLogger
-import com.crisiscleanup.navigation.CrisisCleanupNavigationObserver
 import com.crisiscleanup.network.CrisisCleanupAuthInterceptorProvider
 import com.crisiscleanup.network.CrisisCleanupInterceptorProvider
-import com.crisiscleanup.ui.CrisisCleanupAppHeaderUiState
 import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.Binds
 import dagger.Module
@@ -48,14 +45,6 @@ interface AppModule {
     fun bindsCrisisCleanupInterceptorProvider(
         provider: CrisisCleanupInterceptorProvider,
     ): RetrofitInterceptorProvider
-
-    @Singleton
-    @Binds
-    fun bindsAppHeaderUiState(headerUiState: CrisisCleanupAppHeaderUiState): AppHeaderUiState
-
-    @Singleton
-    @Binds
-    fun bindsNavigationObserver(navigationObserver: CrisisCleanupNavigationObserver): NavigationObserver
 
     @Singleton
     @Binds

@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
@@ -28,6 +29,7 @@ import com.crisiscleanup.core.designsystem.component.LinkifyText
 import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.DayNightPreviews
+import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
@@ -65,7 +67,6 @@ fun RootAuthRoute(
 
 @Composable
 internal fun RootAuthScreen(
-    modifier: Modifier = Modifier,
     viewModel: RootAuthViewModel = hiltViewModel(),
     openLoginWithEmail: () -> Unit = {},
     openLoginWithPhone: () -> Unit = {},
@@ -75,7 +76,7 @@ internal fun RootAuthScreen(
     val authState by viewModel.authState.collectAsStateWithLifecycle()
     when (authState) {
         is AuthState.Loading -> {
-            Box(Modifier.fillMaxSize()) {
+            Box {
                 CircularProgressIndicator(Modifier.align(Alignment.Center))
             }
         }
@@ -84,13 +85,22 @@ internal fun RootAuthScreen(
             val isKeyboardOpen = rememberIsKeyboardOpen()
             val closeKeyboard = rememberCloseKeyboard(viewModel)
             val accountData = (authState as AuthState.Authenticated).accountData
-            Box(modifier) {
-                Column(
-                    Modifier
-                        .scrollFlingListener(closeKeyboard)
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState()),
-                ) {
+            val contentModifier = Modifier
+                .fillMaxSize()
+                .scrollFlingListener(closeKeyboard)
+                .verticalScroll(rememberScrollState())
+            if (LocalDimensions.current.isListDetailWidth) {
+                Row {
+                    Column(Modifier.weight(1f)) {
+                        AuthenticatedScreen(
+                            accountData,
+                            closeAuthentication,
+                        )
+                    }
+                    CrisisCleanupLogoRow(Modifier.weight(1f))
+                }
+            } else {
+                Column(contentModifier) {
                     AnimatedVisibility(visible = !isKeyboardOpen) {
                         CrisisCleanupLogoRow()
                     }
@@ -124,7 +134,7 @@ private fun AuthenticatedScreen(
     val t = LocalAppTranslator.current
 
     Text(
-        modifier = fillWidthPadded.testTag("authedProfileAccountInfo"),
+        modifier = fillWidthPadded.testTag("authedAccountInfoText"),
         text = t("info.account_is")
             .replace("{full_name}", accountData.fullName)
             .replace("{email_address}", accountData.emailAddress),
@@ -136,7 +146,7 @@ private fun AuthenticatedScreen(
     val isNotBusy by viewModel.isNotAuthenticating.collectAsStateWithLifecycle()
 
     BusyButton(
-        modifier = fillWidthPadded.testTag("authedProfileLogoutBtn"),
+        modifier = fillWidthPadded.testTag("authedLogoutAction"),
         onClick = viewModel::logout,
         enabled = isNotBusy,
         text = t("actions.logout"),
@@ -147,7 +157,7 @@ private fun AuthenticatedScreen(
         "actions.back",
         modifier = Modifier
             .listItemPadding()
-            .testTag("authedProfileDismissBtn"),
+            .testTag("authedCloseScreenAction"),
         arrangement = Arrangement.Start,
         enabled = isNotBusy,
         action = closeAuthentication,

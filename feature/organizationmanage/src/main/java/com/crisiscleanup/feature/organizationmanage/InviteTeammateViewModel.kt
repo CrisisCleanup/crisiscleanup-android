@@ -19,11 +19,14 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.data.IncidentSelectManager
+import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.IncidentsRepository
+import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.OrgVolunteerRepository
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.domain.IncidentsData
-import com.crisiscleanup.core.domain.LoadIncidentDataUseCase
+import com.crisiscleanup.core.domain.LoadSelectIncidents
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.IncidentOrganizationInviteInfo
@@ -53,11 +56,13 @@ import javax.inject.Inject
 class InviteTeammateViewModel @Inject constructor(
     settingsProvider: AppSettingsProvider,
     accountDataRepository: AccountDataRepository,
+    incidentsRepository: IncidentsRepository,
+    incidentSelector: IncidentSelector,
+    appPreferencesRepository: LocalAppPreferencesRepository,
     organizationsRepository: OrganizationsRepository,
     private val orgVolunteerRepository: OrgVolunteerRepository,
     private val inputValidator: InputValidator,
     qrCodeGenerator: QrCodeGenerator,
-    loadIncidentDataUseCase: LoadIncidentDataUseCase,
     incidentSelectManager: IncidentSelectManager,
     private val translator: KeyResourceTranslator,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
@@ -80,7 +85,13 @@ class InviteTeammateViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    private val incidentsData = loadIncidentDataUseCase()
+    private val loadSelectIncidents = LoadSelectIncidents(
+        incidentsRepository = incidentsRepository,
+        incidentSelector = incidentSelector,
+        appPreferencesRepository = appPreferencesRepository,
+        coroutineScope = viewModelScope,
+    )
+    private val incidentsData = loadSelectIncidents.data
 
     val inviteToAnotherOrg = MutableStateFlow(false)
     private val affiliateOrganizationIds = MutableStateFlow<Set<Long>?>(null)

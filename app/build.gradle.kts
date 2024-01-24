@@ -13,7 +13,7 @@ plugins {
 
 android {
     defaultConfig {
-        val buildVersion = 179
+        val buildVersion = 186
         applicationId = "com.crisiscleanup"
         versionCode = buildVersion
         versionName = "0.9.${buildVersion - 168}"
@@ -117,17 +117,12 @@ dependencies {
     implementation(project(":feature:team"))
     implementation(project(":feature:userfeedback"))
 
-    implementation(project(":core:appheader"))
     implementation(project(":core:appnav"))
     implementation(project(":core:common"))
-    implementation(project(":core:commonassets"))
-    implementation(project(":core:commoncase"))
     implementation(project(":core:data"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:model"))
     implementation(project(":core:network"))
-    implementation(project(":core:testerfeedbackapi"))
-    demoImplementation(project(":core:testerfeedback"))
     implementation(project(":core:ui"))
 
     implementation(project(":sync:work"))
@@ -164,8 +159,6 @@ dependencies {
 
     // For Firebase support
     implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.appdistribution.api)
-    demoImplementation(libs.firebase.appdistribution)
 
     implementation(libs.kotlinx.coroutines.playservices)
     implementation(libs.playservices.maps)

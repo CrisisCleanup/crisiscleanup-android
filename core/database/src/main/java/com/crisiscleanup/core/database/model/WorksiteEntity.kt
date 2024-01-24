@@ -77,6 +77,7 @@ data class WorksiteRootEntity(
         Index(value = ["incident_id", "svi"]),
         Index(value = ["incident_id", "updated_at"]),
         Index(value = ["incident_id", "created_at"]),
+        Index(value = ["incident_id", "case_number"]),
         Index(value = ["incident_id", "case_number_order", "case_number"]),
         Index(value = ["incident_id", "name", "county", "city", "case_number_order", "case_number"]),
         Index(value = ["incident_id", "city", "name", "case_number_order", "case_number"]),

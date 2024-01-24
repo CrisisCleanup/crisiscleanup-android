@@ -5,6 +5,7 @@ import androidx.room.Relation
 import com.crisiscleanup.core.common.radians
 import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.OrganizationLocationAreaBounds
+import com.crisiscleanup.core.model.data.WorksiteFormValue
 
 data class PopulatedTableDataWorksite(
     @Embedded
@@ -15,7 +16,6 @@ data class PopulatedTableDataWorksite(
     )
     val workTypeRequests: List<WorkTypeTransferRequestEntity>,
 
-    // For filtering
     @Relation(
         parentColumn = "id",
         entityColumn = "worksite_id",
@@ -29,7 +29,17 @@ data class PopulatedTableDataWorksite(
 )
 
 fun PopulatedTableDataWorksite.asExternalModel() = base.asExternalModel()
-    .copy(workTypeRequests = workTypeRequests.map(WorkTypeTransferRequestEntity::asExternalModel))
+    .copy(
+        workTypeRequests = workTypeRequests.map(WorkTypeTransferRequestEntity::asExternalModel),
+        formData = formData.associate {
+            it.fieldKey to WorksiteFormValue(
+                isBoolean = it.isBoolValue,
+                valueString = it.valueString,
+                valueBoolean = it.valueBool,
+            )
+        },
+        flags = flags.map(WorksiteFlagEntity::asExternalModel),
+    )
 
 fun List<PopulatedTableDataWorksite>.filter(
     filters: CasesFilter,

@@ -380,6 +380,18 @@ interface WorksiteDao {
     ): List<BoundedSyncedWorksiteIds>
 
     @Transaction
+    @Query(
+        """
+        SELECT * FROM worksites
+        WHERE incident_id=:incidentId AND (
+            case_number=UPPER(:caseNumber) OR
+            case_number=LOWER(:caseNumber)
+        )
+        """,
+    )
+    fun getWorksiteByCaseNumber(incidentId: Long, caseNumber: String): WorksiteEntity?
+
+    @Transaction
     @Query("SELECT * FROM worksites WHERE incident_id=:incidentId")
     fun getTableWorksites(incidentId: Long): List<PopulatedTableDataWorksite>
 
@@ -568,7 +580,7 @@ interface WorksiteDao {
     @Query("INSERT INTO worksite_text_fts_b(worksite_text_fts_b) VALUES ('rebuild')")
     fun rebuildWorksiteTextFts()
 
-    // TODO Is there a more efficient matching of incident and FTS?
+    // TODO Is it possible to filter by incident_id with FTS match more efficiently?
     @Transaction
     @Query(
         """
@@ -576,14 +588,13 @@ interface WorksiteDao {
         matchinfo(worksite_text_fts_b, 'pcnalx') AS match_info
         FROM worksite_text_fts_b f
         INNER JOIN worksites w ON f.docid=w.id
-        WHERE w.incident_id=:incidentId AND worksite_text_fts_b MATCH :query
+        WHERE worksite_text_fts_b MATCH :query
         LIMIT :limit
         """,
     )
     fun matchWorksiteTextTokens(
-        incidentId: Long,
         query: String,
-        limit: Int = 100,
+        limit: Int = 250,
     ): List<PopulatedWorksiteTextMatchInfo>
 
     @Transaction
@@ -596,5 +607,5 @@ interface WorksiteDao {
         LIMIT 1
         """,
     )
-    fun matchWorksiteTextTokens(query: String): List<Long>
+    fun matchSingleWorksiteTextTokens(query: String): List<Long>
 }

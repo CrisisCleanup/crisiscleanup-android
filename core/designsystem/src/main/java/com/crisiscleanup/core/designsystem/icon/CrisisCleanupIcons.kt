@@ -2,6 +2,7 @@ package com.crisiscleanup.core.designsystem.icon
 
 import androidx.annotation.DrawableRes
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -66,7 +67,7 @@ object CrisisCleanupIcons {
     val ExpandAll = icons.UnfoldMore
     val ExpandLess = icons.ExpandLess
     val ExpandMore = icons.ExpandMore
-    val Help = icons.HelpOutline
+    val Help = Icons.AutoMirrored.Filled.HelpOutline
     val Location = icons.LocationOn
     val Mail = icons.Mail
     val Minus = icons.Remove

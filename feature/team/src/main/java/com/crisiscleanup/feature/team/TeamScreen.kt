@@ -1,7 +1,6 @@
 package com.crisiscleanup.feature.team
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -26,7 +25,7 @@ internal fun TeamRoute(
 internal fun TeamScreen(
     modifier: Modifier = Modifier,
 ) {
-    Box(Modifier.fillMaxSize()) {
+    Box {
         Text(
             text = "Team",
             modifier = Modifier

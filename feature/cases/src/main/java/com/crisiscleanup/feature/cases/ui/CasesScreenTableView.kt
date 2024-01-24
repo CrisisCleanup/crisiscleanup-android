@@ -50,13 +50,13 @@ import com.crisiscleanup.core.common.PhoneNumberUtil
 import com.crisiscleanup.core.common.openDialer
 import com.crisiscleanup.core.common.openMaps
 import com.crisiscleanup.core.commonassets.R
+import com.crisiscleanup.core.commoncase.com.crisiscleanup.core.commoncase.ui.ExplainWrongLocationDialog
 import com.crisiscleanup.core.commoncase.model.addressQuery
 import com.crisiscleanup.core.commoncase.oneDecimalFormat
 import com.crisiscleanup.core.commoncase.ui.IncidentDropdownSelect
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupOutlinedButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.FormListSectionSeparator
@@ -65,7 +65,6 @@ import com.crisiscleanup.core.designsystem.component.WorkTypeAction
 import com.crisiscleanup.core.designsystem.component.WorkTypePrimaryAction
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
-import com.crisiscleanup.core.designsystem.theme.attentionBackgroundColor
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
@@ -117,10 +116,6 @@ internal fun BoxScope.CasesTableView(
             phoneNumberList = list
         }
     }
-
-    var isWrongLocationDialogVisible by remember { mutableStateOf(false) }
-    val showWrongLocationDialog = remember(viewModel) { { isWrongLocationDialogVisible = true } }
-    val hideWrongLocationDialog = remember(viewModel) { { isWrongLocationDialogVisible = false } }
 
     val claimActionErrorMessage by viewModel.changeClaimActionErrorMessage.collectAsStateWithLifecycle()
 
@@ -230,7 +225,6 @@ internal fun BoxScope.CasesTableView(
                     onOpenFlags = { onOpenFlags(worksite) },
                     isEditable = isEditable,
                     showPhoneNumbers = setPhoneNumberList,
-                    showWrongLocationDialog = showWrongLocationDialog,
                     isTurnOnRelease = isTurnOnRelease,
                     onWorksiteClaimAction = { claimAction: TableWorksiteClaimAction ->
                         onWorksiteClaimAction(worksite, claimAction)
@@ -248,20 +242,6 @@ internal fun BoxScope.CasesTableView(
         parsedNumbers = phoneNumberList,
         setPhoneNumbers = setPhoneNumberList,
     )
-
-    if (isWrongLocationDialogVisible) {
-        CrisisCleanupAlertDialog(
-            title = LocalAppTranslator.current("flag.worksite_wrong_location"),
-            text = LocalAppTranslator.current("flag.worksite_wrong_location_description"),
-            onDismissRequest = hideWrongLocationDialog,
-            confirmButton = {
-                CrisisCleanupTextButton(
-                    text = LocalAppTranslator.current("actions.ok"),
-                    onClick = hideWrongLocationDialog,
-                )
-            },
-        )
-    }
 
     var isClaimActionDialogVisible by remember(claimActionErrorMessage) { mutableStateOf(true) }
     if (claimActionErrorMessage.isNotBlank() && isClaimActionDialogVisible) {
@@ -358,7 +338,6 @@ private fun TableViewItem(
     onOpenFlags: () -> Unit = {},
     isEditable: Boolean = false,
     showPhoneNumbers: (List<ParsedPhoneNumber>) -> Unit = {},
-    showWrongLocationDialog: () -> Unit = {},
     isTurnOnRelease: Boolean = false,
     onWorksiteClaimAction: (TableWorksiteClaimAction) -> Unit = {},
     isChangingClaim: Boolean = false,
@@ -466,13 +445,7 @@ private fun TableViewItem(
                     .weight(1f),
             )
             if (worksite.hasWrongLocationFlag) {
-                CrisisCleanupIconButton(
-                    imageVector = CrisisCleanupIcons.Warning,
-                    contentDescription = translator("flag.worksite_wrong_location_description"),
-                    onClick = showWrongLocationDialog,
-                    tint = attentionBackgroundColor,
-                    modifier = Modifier.testTag("tableViewItemWorksiteWrongLocationDialogBtn"),
-                )
+                ExplainWrongLocationDialog(worksite)
             }
         }
 

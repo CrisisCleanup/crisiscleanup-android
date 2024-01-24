@@ -25,6 +25,9 @@ data class Dimensions(
      */
     val itemInnerPaddingHorizontalFlexible: Dp = 16.dp,
     val isThinScreenWidth: Boolean = false,
+    val isLandscape: Boolean = false,
+    val isPortrait: Boolean = true,
+    val isListDetailWidth: Boolean = false,
 ) {
     val itemInnerSpacingHorizontalFlexible: Arrangement.HorizontalOrVertical =
         Arrangement.spacedBy(itemInnerPaddingHorizontalFlexible)

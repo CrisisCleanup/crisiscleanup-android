@@ -41,7 +41,7 @@ fun VolunteerScanQrCodeRoute(
 ) {
     val t = LocalAppTranslator.current
 
-    Column(Modifier.fillMaxSize()) {
+    Column {
         TopAppBarBackAction(
             title = t("volunteerOrg.scan_qr_code"),
             onAction = onBack,

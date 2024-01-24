@@ -3,7 +3,6 @@ package com.crisiscleanup
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.crisiscleanup.core.appheader.AppHeaderUiState
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.KeyResourceTranslator
@@ -15,16 +14,12 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPuller
-import com.crisiscleanup.core.commonassets.R
-import com.crisiscleanup.core.commonassets.getDisasterIcon
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AppDataManagementRepository
-import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppMetricsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
-import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.model.data.AppMetricsData
 import com.crisiscleanup.core.model.data.AppOpenInstant
@@ -59,9 +54,6 @@ class MainActivityViewModel @Inject constructor(
     private val appMetricsRepository: LocalAppMetricsRepository,
     accountDataRepository: AccountDataRepository,
     incidentSelector: IncidentSelector,
-    val appHeaderUiState: AppHeaderUiState,
-    incidentsRepository: IncidentsRepository,
-    worksitesRepository: WorksitesRepository,
     appDataRepository: AppDataManagementRepository,
     accountDataRefresher: AccountDataRefresher,
     val translator: KeyResourceTranslator,
@@ -120,24 +112,6 @@ class MainActivityViewModel @Inject constructor(
         )
 
     val translationCount = translator.translationCount
-
-    val disasterIconResId = incidentSelector.incident.map { getDisasterIcon(it.disaster) }
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = R.drawable.ic_disaster_other,
-            started = SharingStarted.WhileSubscribed(),
-        )
-
-    private val isSyncingWorksitesFull = combine(
-        incidentSelector.incidentId,
-        worksitesRepository.syncWorksitesFullIncidentId,
-    ) { incidentId, syncingIncidentId -> incidentId == syncingIncidentId }
-
-    val showHeaderLoading = combine(
-        incidentsRepository.isLoading,
-        worksitesRepository.isLoading,
-        isSyncingWorksitesFull,
-    ) { b0, b1, b2 -> b0 || b1 || b2 }
 
     val buildEndOfLife: BuildEndOfLife?
         get() {

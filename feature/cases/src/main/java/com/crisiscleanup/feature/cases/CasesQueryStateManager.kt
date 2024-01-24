@@ -1,5 +1,6 @@
 package com.crisiscleanup.feature.cases
 
+import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.CasesFilterRepository
 import com.crisiscleanup.core.model.data.WorksiteSortBy
@@ -7,7 +8,6 @@ import com.crisiscleanup.feature.cases.model.CoordinateBoundsDefault
 import com.crisiscleanup.feature.cases.model.WorksiteQueryStateDefault
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
@@ -15,7 +15,7 @@ internal class CasesQueryStateManager(
     incidentSelector: IncidentSelector,
     filterRepository: CasesFilterRepository,
     coroutineScope: CoroutineScope,
-    mapChangeDebounceTimeout: Long = 50,
+    mapChangeDebounceTimeout: Long = 100,
 ) {
     val isTableView = MutableStateFlow(false)
 
@@ -39,14 +39,14 @@ internal class CasesQueryStateManager(
             .launchIn(coroutineScope)
 
         mapZoom
-            .debounce(mapChangeDebounceTimeout)
+            .throttleLatest(mapChangeDebounceTimeout)
             .onEach {
                 worksiteQueryState.value = worksiteQueryState.value.copy(zoom = it)
             }
             .launchIn(coroutineScope)
 
         mapBounds
-            .debounce(mapChangeDebounceTimeout)
+            .throttleLatest(mapChangeDebounceTimeout)
             .onEach {
                 worksiteQueryState.value = worksiteQueryState.value.copy(coordinateBounds = it)
             }

@@ -4,11 +4,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -49,10 +51,14 @@ import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.WithHelpDialog
 import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
+import com.crisiscleanup.core.designsystem.component.listDetailDetailMaxWidth
+import com.crisiscleanup.core.designsystem.component.listDetailDetailWeight
+import com.crisiscleanup.core.designsystem.component.listDetailListWeight
 import com.crisiscleanup.core.designsystem.component.rememberFocusSectionSliderState
 import com.crisiscleanup.core.designsystem.component.rememberSectionContentIndexLookup
 import com.crisiscleanup.core.designsystem.component.roundedOutline
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
@@ -79,51 +85,81 @@ private val dateFormatter = DateTimeFormatter
     .ofPattern("yyyy-MM-dd")
     .withZone(ZoneId.systemDefault())
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun CasesFilterRoute(
     onBack: () -> Unit = {},
     viewModel: CasesFilterViewModel = hiltViewModel(),
 ) {
-    val translator = viewModel.translator
-    CompositionLocalProvider(
-        LocalAppTranslator provides translator,
-    ) {
-        val filters by viewModel.casesFilters.collectAsStateWithLifecycle()
-        val updateFilters =
-            remember(viewModel) { { filters: CasesFilter -> viewModel.changeFilters(filters) } }
+    val isListDetailLayout = LocalDimensions.current.isListDetailWidth
 
-        Column(
-            Modifier
-                .fillMaxSize()
-                .background(Color.White),
-        ) {
-            TopAppBarBackAction(
-                title = translator("worksiteFilters.filters"),
-                onAction = onBack,
-                modifier = Modifier.testTag("workFilterBackBtn"),
-            )
+    val t = LocalAppTranslator.current
+    val filters by viewModel.casesFilters.collectAsStateWithLifecycle()
+    val updateFilters =
+        remember(viewModel) { { filters: CasesFilter -> viewModel.changeFilters(filters) } }
 
-            FilterControls(
+    val screenModifier = Modifier
+        .background(Color.White)
+
+    if (isListDetailLayout) {
+        Row(screenModifier) {
+            Column(Modifier.weight(listDetailListWeight)) {
+                TopBar(onBack)
+
+                Spacer(Modifier.weight(1f))
+
+                BottomActionBar(
+                    onBack = onBack,
+                    filters = filters,
+                )
+            }
+            Column(
+                Modifier
+                    .weight(listDetailDetailWeight)
+                    .sizeIn(maxWidth = listDetailDetailMaxWidth),
+            ) {
+                FilterContent(
+                    filters,
+                    updateFilters,
+                )
+            }
+        }
+    } else {
+        Column(screenModifier) {
+            TopBar(onBack)
+
+            FilterContent(
                 filters,
-                updateFilters = updateFilters,
+                updateFilters,
             )
 
             BottomActionBar(
                 onBack = onBack,
                 filters = filters,
+                horizontalLayout = true,
             )
         }
-
-        val closePermissionDialog =
-            remember(viewModel) { { viewModel.showExplainPermissionLocation = false } }
-        val explainPermission = viewModel.showExplainPermissionLocation
-        ExplainLocationPermissionDialog(
-            showDialog = explainPermission,
-            closeDialog = closePermissionDialog,
-            explanation = translator("worksiteFilters.location_required_to_filter_by_distance"),
-        )
     }
+
+    val closePermissionDialog =
+        remember(viewModel) { { viewModel.showExplainPermissionLocation = false } }
+    val explainPermission = viewModel.showExplainPermissionLocation
+    ExplainLocationPermissionDialog(
+        showDialog = explainPermission,
+        closeDialog = closePermissionDialog,
+        explanation = t("worksiteFilters.location_required_to_filter_by_distance"),
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TopBar(
+    onBack: () -> Unit,
+) {
+    TopAppBarBackAction(
+        title = LocalAppTranslator.current("worksiteFilters.filters"),
+        onAction = onBack,
+        modifier = Modifier.testTag("workFilterBackBtn"),
+    )
 }
 
 private val collapsibleFilterSections = listOf(
@@ -136,10 +172,10 @@ private val collapsibleFilterSections = listOf(
 )
 
 @Composable
-private fun ColumnScope.FilterControls(
+private fun ColumnScope.FilterContent(
     filters: CasesFilter,
+    updateFilters: (CasesFilter) -> Unit,
     viewModel: CasesFilterViewModel = hiltViewModel(),
-    updateFilters: (CasesFilter) -> Unit = {},
 ) {
     val translator = LocalAppTranslator.current
 
@@ -956,16 +992,21 @@ private fun LazyListScope.dateOptions(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun BottomActionBar(
     onBack: () -> Unit,
     filters: CasesFilter,
+    horizontalLayout: Boolean = false,
     viewModel: CasesFilterViewModel = hiltViewModel(),
 ) {
-    val translator = LocalAppTranslator.current
-    Row(
-        modifier = listItemModifier,
+    val t = LocalAppTranslator.current
+    val rowMaxItemCount = if (horizontalLayout) Int.MAX_VALUE else 1
+    FlowRow(
+        listItemModifier,
         horizontalArrangement = listItemSpacedBy,
+        verticalArrangement = listItemSpacedBy,
+        maxItemsInEachRow = rowMaxItemCount,
     ) {
         val filterCount = filters.changeCount
         val hasFilters = filterCount > 0
@@ -973,12 +1014,13 @@ fun BottomActionBar(
             Modifier
                 .testTag("filterClearFiltersBtn")
                 .weight(1f),
-            text = translator("actions.clear_filters"),
+            text = t("actions.clear_filters"),
             enabled = hasFilters,
             onClick = viewModel::clearFilters,
             colors = cancelButtonColors(),
         )
-        val applyFilters = translator("actions.apply_filters")
+
+        val applyFilters = t("actions.apply_filters")
         val applyText = if (hasFilters) "$applyFilters ($filterCount)" else applyFilters
         BusyButton(
             Modifier

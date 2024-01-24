@@ -3,9 +3,13 @@ package com.crisiscleanup.feature.caseeditor.ui
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
@@ -24,6 +28,10 @@ import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
+import com.crisiscleanup.core.designsystem.component.listDetailDetailMaxWidth
+import com.crisiscleanup.core.designsystem.component.listDetailDetailWeight
+import com.crisiscleanup.core.designsystem.component.listDetailListWeight
+import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
@@ -45,9 +53,9 @@ import com.google.maps.android.compose.rememberMarkerState
 
 @Composable
 internal fun EditCaseMapMoveLocationRoute(
-    viewModel: EditCaseLocationViewModel = hiltViewModel(),
     onBack: () -> Unit = {},
     openExistingCase: (ids: ExistingWorksiteIdentifier) -> Unit = { _ -> },
+    viewModel: EditCaseLocationViewModel = hiltViewModel(),
 ) {
     val editor = viewModel.editor
     val editDifferentWorksite by editor.editIncidentWorksite.collectAsStateWithLifecycle()
@@ -63,31 +71,90 @@ internal fun EditCaseMapMoveLocationRoute(
         val isEditable = !isCheckingOutOfBounds
 
         val isOnline by viewModel.isOnline.collectAsStateWithLifecycle()
-        EditCaseMapMoveLocationScreen(viewModel, editor, isOnline, onBack, isEditable)
+
+        val isListDetailLayout = LocalDimensions.current.isListDetailWidth
+
+        val t = LocalAppTranslator.current
+        val title = t("caseForm.select_on_map")
+
+        val locationQuery by editor.locationInputData.locationQuery.collectAsStateWithLifecycle()
+
+        val onUseMyLocation = remember(viewModel) { { editor.useMyLocation() } }
+
+        if (isListDetailLayout) {
+            ListDetailLayout(
+                title,
+                locationQuery,
+                viewModel,
+                editor,
+                isOnline,
+                onBack,
+                isEditable,
+                onUseMyLocation,
+            )
+        } else {
+            PortraitLayout(
+                title,
+                locationQuery,
+                viewModel,
+                editor,
+                isOnline,
+                onBack,
+                isEditable,
+                onUseMyLocation,
+            )
+        }
 
         LocationOutOfBoundsDialog(editor)
     }
 }
 
+@Composable
+private fun UseMyLocationAction(
+    isEditable: Boolean,
+    onUseMyLocation: () -> Unit,
+) {
+    val useMyLocationText = LocalAppTranslator.current("caseForm.use_my_location")
+    CompositionLocalProvider(
+        LocalTextStyle provides LocalFontStyles.current.header4,
+    ) {
+        CrisisCleanupIconTextButton(
+            modifier = Modifier
+                .listItemHeight()
+                .fillMaxWidth(),
+            iconResId = R.drawable.ic_use_my_location,
+            label = useMyLocationText,
+            onClick = onUseMyLocation,
+            enabled = isEditable,
+        )
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun EditCaseMapMoveLocationScreen(
+private fun PortraitLayout(
+    title: String,
+    locationQuery: String,
     viewModel: EditCaseBaseViewModel,
     editor: CaseLocationDataEditor,
     isOnline: Boolean,
     onBack: () -> Unit = {},
     isEditable: Boolean = false,
+    onUseMyLocation: () -> Unit = {},
 ) {
-    val translator = LocalAppTranslator.current
     Column {
         TopAppBarBackAction(
-            title = translator("caseForm.select_on_map"),
+            title = title,
             onAction = onBack,
         )
 
-        val locationQuery by editor.locationInputData.locationQuery.collectAsStateWithLifecycle()
         if (isOnline) {
-            FullAddressSearchInput(viewModel, editor, locationQuery, isEditable = isEditable)
+            FullAddressSearchInput(
+                viewModel,
+                editor,
+                locationQuery,
+                isEditable = isEditable,
+            )
         }
 
         if (locationQuery.isBlank()) {
@@ -95,25 +162,70 @@ private fun EditCaseMapMoveLocationScreen(
                 MoveMapUnderLocation(viewModel, editor, isEditable)
             }
 
-            val useMyLocation = remember(viewModel) { { editor.useMyLocation() } }
-            CompositionLocalProvider(
-                LocalTextStyle provides LocalFontStyles.current.header4,
-            ) {
-                CrisisCleanupIconTextButton(
-                    modifier = Modifier
-                        .listItemHeight()
-                        .fillMaxWidth(),
-                    iconResId = R.drawable.ic_use_my_location,
-                    label = translator("caseForm.use_my_location"),
-                    onClick = useMyLocation,
-                    enabled = isEditable,
-                )
-            }
+            UseMyLocationAction(
+                isEditable = isEditable,
+                onUseMyLocation = onUseMyLocation,
+            )
 
             SaveActionBar(viewModel, editor, onBack, isEditable)
         } else {
             editor.isMapLoaded = false
             AddressSearchResults(viewModel, editor, locationQuery, isEditable = isEditable)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ListDetailLayout(
+    title: String,
+    locationQuery: String,
+    viewModel: EditCaseBaseViewModel,
+    editor: CaseLocationDataEditor,
+    isOnline: Boolean,
+    onBack: () -> Unit = {},
+    isEditable: Boolean = false,
+    onUseMyLocation: () -> Unit = {},
+) {
+    Row {
+        Column(Modifier.weight(listDetailListWeight)) {
+            TopAppBarBackAction(
+                title = title,
+                onAction = onBack,
+            )
+
+            if (isOnline) {
+                FullAddressSearchInput(
+                    viewModel,
+                    editor,
+                    locationQuery,
+                    isEditable = isEditable,
+                )
+            }
+
+            Spacer(Modifier.weight(1f))
+
+            val isEditableListDetail = isEditable && locationQuery.isBlank()
+            UseMyLocationAction(
+                isEditable = isEditableListDetail,
+                onUseMyLocation = onUseMyLocation,
+            )
+
+            SaveActionBar(viewModel, editor, onBack, isEditableListDetail)
+        }
+        Column(
+            Modifier
+                .weight(listDetailDetailWeight)
+                .sizeIn(maxWidth = listDetailDetailMaxWidth),
+        ) {
+            if (locationQuery.isBlank()) {
+                Box(Modifier.weight(1f)) {
+                    MoveMapUnderLocation(viewModel, editor, isEditable)
+                }
+            } else {
+                editor.isMapLoaded = false
+                AddressSearchResults(viewModel, editor, locationQuery, isEditable = isEditable)
+            }
         }
     }
 }
@@ -198,12 +310,14 @@ private fun BoxScope.MoveMapUnderLocation(
     )
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SaveActionBar(
     viewModel: EditCaseBaseViewModel,
     editor: CaseLocationDataEditor,
     onBack: () -> Unit = {},
     isEditable: Boolean = false,
+    horizontalLayout: Boolean = false,
 ) {
     val translator = LocalAppTranslator.current
     val onSave = remember(viewModel) {
@@ -213,11 +327,14 @@ private fun SaveActionBar(
             }
         }
     }
-    Row(
+    val rowMaxItemCount = if (horizontalLayout) Int.MAX_VALUE else 1
+    FlowRow(
         modifier = Modifier
             // TODO Common dimensions
             .padding(16.dp),
         horizontalArrangement = listItemSpacedBy,
+        verticalArrangement = listItemSpacedBy,
+        maxItemsInEachRow = rowMaxItemCount,
     ) {
         BusyButton(
             Modifier.weight(1f),

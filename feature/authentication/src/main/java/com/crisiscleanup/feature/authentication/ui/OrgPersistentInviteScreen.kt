@@ -67,8 +67,8 @@ fun OrgPersistentInviteRoute(
     val inviteFailMessage by viewModel.inviteFailMessage.collectAsStateWithLifecycle()
     val inviteDisplay by viewModel.inviteDisplay.collectAsStateWithLifecycle()
 
-    Box(Modifier.fillMaxSize()) {
-        Column(Modifier.fillMaxSize()) {
+    Box {
+        Column {
             TopAppBarBackAction(
                 title = t("actions.sign_up"),
                 onAction = onClose,

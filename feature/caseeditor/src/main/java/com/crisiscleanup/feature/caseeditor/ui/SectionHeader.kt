@@ -26,7 +26,7 @@ import com.crisiscleanup.core.designsystem.theme.attentionBackgroundColor
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listRowItemStartPadding
-import com.crisiscleanup.feature.caseeditor.CaseEditorViewModel
+import com.crisiscleanup.feature.caseeditor.CreateEditCaseViewModel
 
 @Composable
 private fun CircleNumber(
@@ -60,7 +60,7 @@ private val headerTextStyle: TextStyle
 
 @Composable
 internal fun SectionHeaderCollapsible(
-    viewModel: CaseEditorViewModel,
+    viewModel: CreateEditCaseViewModel,
     modifier: Modifier = Modifier,
     sectionIndex: Int,
     sectionTitle: String,

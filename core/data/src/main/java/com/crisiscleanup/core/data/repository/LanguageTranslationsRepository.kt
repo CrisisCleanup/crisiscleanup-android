@@ -217,6 +217,18 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
     }
 
     override fun translate(phraseKey: String): String? {
-        return translations.value[phraseKey] ?: statusRepository.translateStatus(phraseKey)
+        translations.value[phraseKey]?.let {
+            return it
+        }
+
+        statusRepository.translateStatus(phraseKey)?.let { statusTranslated ->
+            return if (statusTranslated.contains(phraseKey)) {
+                translations.value[statusTranslated]
+            } else {
+                statusTranslated
+            }
+        }
+
+        return null
     }
 }

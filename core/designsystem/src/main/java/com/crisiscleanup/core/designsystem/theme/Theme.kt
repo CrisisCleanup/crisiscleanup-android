@@ -145,7 +145,13 @@ internal fun CrisisCleanupTheme(
     )
 
     val configuration = LocalConfiguration.current
-    val dimensions = if (configuration.screenWidthDp <= 360) w360Dimensions else Dimensions()
+    val dimensions0 = if (configuration.screenWidthDp <= 360) w360Dimensions else Dimensions()
+    val isLandscape = configuration.screenWidthDp > configuration.screenHeightDp
+    val dimensions = dimensions0.copy(
+        isLandscape = isLandscape,
+        isPortrait = !isLandscape,
+        isListDetailWidth = configuration.screenWidthDp >= 600,
+    )
 
     CompositionLocalProvider(
         LocalBackgroundTheme provides defaultBackgroundTheme,

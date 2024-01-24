@@ -25,7 +25,7 @@ import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.feature.caseeditor.ui.CaseEditCaseHistoryRoute
 import com.crisiscleanup.feature.caseeditor.ui.CaseEditShareCaseRoute
-import com.crisiscleanup.feature.caseeditor.ui.CaseEditorRoute
+import com.crisiscleanup.feature.caseeditor.ui.CreateEditCaseRoute
 import com.crisiscleanup.feature.caseeditor.ui.EditCaseAddressSearchRoute
 import com.crisiscleanup.feature.caseeditor.ui.EditCaseMapMoveLocationRoute
 import com.crisiscleanup.feature.caseeditor.ui.EditExistingCaseRoute
@@ -103,7 +103,7 @@ fun NavGraphBuilder.caseEditorScreen(
             remember(navController) { { navController.navigateToCaseEditSearchAddress() } }
         val onEditMoveLocationOnMap =
             remember(navController) { { navController.navigateToCaseEditLocationMapMove() } }
-        CaseEditorRoute(
+        CreateEditCaseRoute(
             onBack = onBackClick,
             changeNewIncidentCase = navToNewCase,
             changeExistingIncidentCase = navToChangedIncident,

@@ -79,7 +79,7 @@ suspend fun WorksiteDaoPlus.rebuildWorksiteTextFts(force: Boolean = false) =
             var rebuild = force
             if (!force) {
                 getRandomWorksiteCaseNumber()?.let { caseNumber ->
-                    val ftsMatch = matchWorksiteTextTokens(caseNumber.ftsSanitizeAsToken)
+                    val ftsMatch = matchSingleWorksiteTextTokens(caseNumber.ftsSanitizeAsToken)
                     rebuild = ftsMatch.isEmpty()
                 }
             }
@@ -96,7 +96,9 @@ suspend fun WorksiteDaoPlus.getMatchingWorksites(
 ): List<WorksiteSummary> = coroutineScope {
     db.withTransaction {
         val results = db.worksiteDao()
-            .matchWorksiteTextTokens(incidentId, q.ftsSanitize.ftsGlobEnds)
+            .matchWorksiteTextTokens(q.ftsSanitize.ftsGlobEnds)
+            // TODO Filter by incident in FTS query with same speed
+            .filter { it.entity.incidentId == incidentId }
 
         ensureActive()
 
@@ -107,21 +109,19 @@ suspend fun WorksiteDaoPlus.getMatchingWorksites(
     }
 }
 
-private fun WorksiteEntity.asSummary(): WorksiteSummary {
-    return WorksiteSummary(
-        id,
-        networkId,
-        name,
-        address,
-        city,
-        state,
-        postalCode,
-        county,
-        caseNumber,
-        WorkType(
-            0,
-            statusLiteral = keyWorkTypeStatus,
-            workTypeLiteral = keyWorkTypeType,
-        ),
-    )
-}
+fun WorksiteEntity.asSummary() = WorksiteSummary(
+    id,
+    networkId,
+    name,
+    address,
+    city,
+    state,
+    postalCode,
+    county,
+    caseNumber,
+    WorkType(
+        0,
+        statusLiteral = keyWorkTypeStatus,
+        workTypeLiteral = keyWorkTypeType,
+    ),
+)

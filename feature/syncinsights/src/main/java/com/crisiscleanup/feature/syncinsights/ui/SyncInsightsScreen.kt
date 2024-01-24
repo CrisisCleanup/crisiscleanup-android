@@ -33,7 +33,7 @@ internal fun SyncInsightsRoute(
     viewModel: SyncInsightsViewModel = hiltViewModel(),
     openCase: (Long, Long) -> Boolean = { _, _ -> false },
 ) {
-    Column(Modifier.fillMaxSize()) {
+    Column {
         val pendingSync by viewModel.worksitesPendingSync.collectAsStateWithLifecycle()
         val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle(false)
         Row(

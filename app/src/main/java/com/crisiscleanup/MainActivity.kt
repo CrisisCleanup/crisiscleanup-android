@@ -23,7 +23,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.metrics.performance.JankStats
 import com.crisiscleanup.MainActivityUiState.Loading
 import com.crisiscleanup.MainActivityUiState.Success
-import com.crisiscleanup.core.common.NavigationObserver
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.VisualAlertManager
@@ -60,9 +59,6 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     internal lateinit var networkMonitor: NetworkMonitor
-
-    @Inject
-    internal lateinit var navigationObserver: NavigationObserver
 
     @Inject
     internal lateinit var trimMemoryEventManager: TrimMemoryEventManager
@@ -140,7 +136,6 @@ class MainActivity : ComponentActivity() {
                 CrisisCleanupApp(
                     windowSizeClass = calculateWindowSizeClass(this),
                     networkMonitor = networkMonitor,
-                    navigationObserver = navigationObserver,
                 )
             }
         }

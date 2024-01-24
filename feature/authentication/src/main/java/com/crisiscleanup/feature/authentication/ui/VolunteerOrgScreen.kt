@@ -39,7 +39,7 @@ fun VolunteerOrgRoute(
     val t = LocalAppTranslator.current
     val closeKeyboard = rememberCloseKeyboard(onBack)
 
-    Column(Modifier.fillMaxSize()) {
+    Column {
         TopAppBarBackAction(
             title = t("actions.sign_up"),
             onAction = onBack,

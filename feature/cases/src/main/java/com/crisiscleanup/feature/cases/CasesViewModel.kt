@@ -41,7 +41,7 @@ import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.data.util.IncidentDataPullReporter
 import com.crisiscleanup.core.data.util.IncidentDataPullStats
-import com.crisiscleanup.core.domain.LoadIncidentDataUseCase
+import com.crisiscleanup.core.domain.LoadSelectIncidents
 import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
@@ -53,6 +53,7 @@ import com.crisiscleanup.core.model.data.TableDataWorksite
 import com.crisiscleanup.core.model.data.TableWorksiteClaimAction
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteSortBy
+import com.crisiscleanup.feature.cases.CasesConstant.MapMarkersZoomLevel
 import com.crisiscleanup.feature.cases.map.CasesMapBoundsManager
 import com.crisiscleanup.feature.cases.map.CasesMapMarkerManager
 import com.crisiscleanup.feature.cases.map.CasesMapTileLayerManager
@@ -97,8 +98,7 @@ class CasesViewModel @Inject constructor(
     incidentsRepository: IncidentsRepository,
     incidentBoundsProvider: IncidentBoundsProvider,
     private val worksitesRepository: WorksitesRepository,
-    private val incidentSelector: IncidentSelector,
-    loadIncidentDataUseCase: LoadIncidentDataUseCase,
+    val incidentSelector: IncidentSelector,
     dataPullReporter: IncidentDataPullReporter,
     private val mapCaseIconProvider: MapCaseIconProvider,
     private val worksiteInteractor: WorksiteInteractor,
@@ -123,7 +123,13 @@ class CasesViewModel @Inject constructor(
     @Logger(CrisisCleanupLoggers.Cases) private val logger: AppLogger,
     val appEnv: AppEnv,
 ) : ViewModel(), TrimMemoryListener {
-    val incidentsData = loadIncidentDataUseCase()
+    val loadSelectIncidents = LoadSelectIncidents(
+        incidentsRepository = incidentsRepository,
+        incidentSelector = incidentSelector,
+        appPreferencesRepository = appPreferencesRepository,
+        coroutineScope = viewModelScope,
+    )
+    val incidentsData = loadSelectIncidents.data
 
     val incidentId: Long
         get() = incidentSelector.incidentId.value
@@ -264,7 +270,7 @@ class CasesViewModel @Inject constructor(
             val skipMarkers = !isMapLoaded ||
                 wqs.isTableView ||
                 id == EmptyIncident.id ||
-                mapTileRenderer.rendersAt(wqs.zoom)
+                wqs.zoom < MapMarkersZoomLevel
 
             if (skipMarkers) {
                 emptyList()
@@ -588,7 +594,7 @@ class CasesViewModel @Inject constructor(
         mapBoundsManager.restoreIncidentBounds()
     }
 
-    fun zoomToInteractive() = adjustMapZoom(mapTileRenderer.zoomThreshold + 1.1f)
+    fun zoomToInteractive() = adjustMapZoom(MapMarkersZoomLevel + 0.5f)
 
     private fun setMapToMyCoordinates() {
         viewModelScope.launch {
