@@ -14,6 +14,7 @@ class CrisisCleanupNetworkException(
     val statusCode: Int,
     message: String,
     val errors: List<NetworkCrisisCleanupApiError>,
+    val body: String = "",
 ) : IOException(message)
 
 @Serializable

@@ -43,9 +43,11 @@ private fun Json.parseNetworkErrors(response: String): List<NetworkCrisisCleanup
     return errors
 }
 
-private fun Json.parseNetworkErrors(responseBody: ResponseBody): List<NetworkCrisisCleanupApiError> {
+private fun Json.parseNetworkErrors(responseBody: ResponseBody): Pair<String, List<NetworkCrisisCleanupApiError>> {
+    // TODO Large body can result in OOM. Parse in parts as necessary.
     val errorBody = responseBody.string()
-    return parseNetworkErrors(errorBody)
+    val errors = parseNetworkErrors(errorBody)
+    return Pair(errorBody, errors)
 }
 
 private val Request.pathsForLog: String
@@ -204,12 +206,13 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
                 getHeaderKey(request, RequestHeaderKey.ThrowClientError)?.let {
                     response.body?.let { responseBody ->
                         logger.logCapture("Code ${response.code} message ${response.message} paths ${request.pathsForLog}")
-                        val errors = json.parseNetworkErrors(responseBody)
+                        val (body, errors) = json.parseNetworkErrors(responseBody)
                         throw CrisisCleanupNetworkException(
                             request.url.toUrl().toString(),
                             response.code,
                             response.message,
                             errors,
+                            body,
                         )
                     }
                 }

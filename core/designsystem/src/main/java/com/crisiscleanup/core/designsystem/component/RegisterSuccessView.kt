@@ -51,7 +51,7 @@ fun RegisterSuccessView(
 
         Spacer(Modifier.weight(1f))
 
-        CrisisCleanupLogoRow(Modifier,true)
+        CrisisCleanupLogoRow(Modifier, true)
 
         Spacer(Modifier.weight(1f))
     }

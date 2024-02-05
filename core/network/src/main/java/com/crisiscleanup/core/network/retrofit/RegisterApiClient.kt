@@ -6,9 +6,12 @@ import com.crisiscleanup.core.model.data.CodeInviteAccept
 import com.crisiscleanup.core.model.data.ExpiredNetworkOrgInvite
 import com.crisiscleanup.core.model.data.IncidentOrganizationInviteInfo
 import com.crisiscleanup.core.model.data.InvitationRequest
+import com.crisiscleanup.core.model.data.InvitationRequestResult
 import com.crisiscleanup.core.model.data.JoinOrgResult
+import com.crisiscleanup.core.model.data.OrgInviteResult
 import com.crisiscleanup.core.model.data.OrgUserInviteInfo
 import com.crisiscleanup.core.network.CrisisCleanupRegisterApi
+import com.crisiscleanup.core.network.model.CrisisCleanupNetworkException
 import com.crisiscleanup.core.network.model.NetworkAcceptCodeInvite
 import com.crisiscleanup.core.network.model.NetworkAcceptPersistentInvite
 import com.crisiscleanup.core.network.model.NetworkAcceptedCodeInvitationRequest
@@ -26,6 +29,7 @@ import com.crisiscleanup.core.network.model.NetworkPersistentInvitation
 import com.crisiscleanup.core.network.model.NetworkPersistentInvitationResult
 import com.crisiscleanup.core.network.model.NetworkRegisterOrganizationResult
 import com.crisiscleanup.core.network.model.NetworkUser
+import com.crisiscleanup.core.network.model.condenseMessages
 import com.crisiscleanup.core.network.model.profilePictureUrl
 import retrofit2.Retrofit
 import retrofit2.http.Body
@@ -38,6 +42,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 private interface RegisterApi {
+    @ThrowClientErrorHeader
     @POST("invitation_requests")
     suspend fun requestInvitation(
         @Body invitationRequest: NetworkInvitationRequest,
@@ -79,6 +84,7 @@ private interface RegisterApi {
         @Body org: NetworkCreateOrgInvitation,
     ): NetworkPersistentInvitationResult
 
+    @ThrowClientErrorHeader
     @POST("persistent_invitations/accept")
     suspend fun acceptPersistentInvitation(
         @Body acceptInvite: NetworkAcceptPersistentInvite,
@@ -86,6 +92,7 @@ private interface RegisterApi {
 
     @TokenAuthenticationHeader
     @WrapResponseHeader("invite")
+    @ThrowClientErrorHeader
     @POST("invitations")
     suspend fun inviteToOrganization(
         @Body invite: NetworkOrganizationInvite,
@@ -105,7 +112,7 @@ class RegisterApiClient @Inject constructor(
 ) : CrisisCleanupRegisterApi {
     private val networkApi = retrofit.create(RegisterApi::class.java)
 
-    override suspend fun registerOrgVolunteer(invite: InvitationRequest): NetworkAcceptedInvitationRequest {
+    override suspend fun registerOrgVolunteer(invite: InvitationRequest): InvitationRequestResult? {
         val inviteRequest = NetworkInvitationRequest(
             firstName = invite.firstName,
             lastName = invite.lastName,
@@ -117,7 +124,21 @@ class RegisterApiClient @Inject constructor(
             requestedTo = invite.inviterEmailAddress,
             primaryLanguage = invite.languageId,
         )
-        return networkApi.requestInvitation(inviteRequest)
+        try {
+            val result = networkApi.requestInvitation(inviteRequest)
+            return InvitationRequestResult(
+                organizationName = result.requestedOrganization,
+                organizationRecipient = result.requestedTo,
+                isNewAccountRequest = true,
+            )
+        } catch (e: CrisisCleanupNetworkException) {
+            if (e.errors.condenseMessages.contains("already have an account")) {
+                return InvitationRequestResult("", "", false)
+            }
+        }
+
+        // TODO Be explicit in result
+        return null
     }
 
     private suspend fun getUserDetails(userId: Long): UserDetails {
@@ -217,22 +238,43 @@ class RegisterApiClient @Inject constructor(
             mobile = invite.mobile,
             token = invite.invitationCode,
         )
-        val response = networkApi.acceptPersistentInvitation(payload)
-        // TODO Parse response.detail even when response code is 400
-        return when (response.detail) {
-            "You have been added to the organization." -> JoinOrgResult.Success
-            "User already a member of this organization." -> JoinOrgResult.Redundant
-            else -> JoinOrgResult.Unknown
+        try {
+            val response = networkApi.acceptPersistentInvitation(payload)
+            return when (response.detail) {
+                "You have been added to the organization." -> JoinOrgResult.Success
+                "User already a member of this organization." -> JoinOrgResult.Redundant
+                else -> JoinOrgResult.Unknown
+            }
+        } catch (e: CrisisCleanupNetworkException) {
+            if (e.body.contains("User already a member of this organization.")) {
+                return JoinOrgResult.Redundant
+            }
         }
+        return JoinOrgResult.Unknown
     }
 
     override suspend fun inviteToOrganization(
         emailAddress: String,
         organizationId: Long?,
-    ): Boolean {
-        val invite =
-            networkApi.inviteToOrganization(NetworkOrganizationInvite(emailAddress, organizationId))
-        return invite.invite?.inviteeEmail == emailAddress
+    ): OrgInviteResult {
+        try {
+            val invite =
+                networkApi.inviteToOrganization(
+                    NetworkOrganizationInvite(
+                        emailAddress,
+                        organizationId,
+                    ),
+                )
+            if (invite.invite?.inviteeEmail == emailAddress) {
+                return OrgInviteResult.Invited
+            }
+        } catch (e: CrisisCleanupNetworkException) {
+            if (e.errors.condenseMessages.contains("is already a part of this organization")) {
+                return OrgInviteResult.Redundant
+            }
+        }
+
+        return OrgInviteResult.Unknown
     }
 
     override suspend fun registerOrganization(

@@ -167,7 +167,7 @@ private fun PortraitLayout(
                 onUseMyLocation = onUseMyLocation,
             )
 
-            SaveActionBar(viewModel, editor, onBack, isEditable)
+            SaveActionBar(viewModel, editor, onBack, isEditable, horizontalLayout = true)
         } else {
             editor.isMapLoaded = false
             AddressSearchResults(viewModel, editor, locationQuery, isEditable = isEditable)

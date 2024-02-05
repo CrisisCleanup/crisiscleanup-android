@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -75,6 +76,7 @@ internal fun FullAddressSearchInput(
         value = locationQuery,
         onValueChange = updateQuery,
         keyboardType = KeyboardType.Password,
+        keyboardCapitalization = KeyboardCapitalization.Words,
         isError = false,
         hasFocus = hasFocus,
         enabled = isEditable,
