@@ -34,11 +34,13 @@ import javax.inject.Singleton
 
 private fun Json.parseNetworkErrors(response: String): List<NetworkCrisisCleanupApiError> {
     var errors: List<NetworkCrisisCleanupApiError> = emptyList()
-    try {
-        val networkErrors = decodeFromString<NetworkErrors>(response)
-        errors = networkErrors.errors
-    } catch (e: Exception) {
-        // No errors or not formatted as expected
+    if (response.contains("errors")) {
+        try {
+            val networkErrors = decodeFromString<NetworkErrors>(response)
+            errors = networkErrors.errors
+        } catch (e: Exception) {
+            // No errors or not formatted as expected
+        }
     }
     return errors
 }
