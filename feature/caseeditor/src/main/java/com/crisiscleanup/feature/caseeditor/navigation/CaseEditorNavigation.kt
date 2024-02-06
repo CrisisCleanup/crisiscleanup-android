@@ -1,6 +1,5 @@
 package com.crisiscleanup.feature.caseeditor.navigation
 
-import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.remember
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
@@ -19,7 +18,10 @@ import com.crisiscleanup.core.appnav.RouteConstant.casesRoute
 import com.crisiscleanup.core.appnav.RouteConstant.viewCaseRoute
 import com.crisiscleanup.core.appnav.RouteConstant.viewCaseTransferWorkTypesRoute
 import com.crisiscleanup.core.appnav.ViewImageArgs
+import com.crisiscleanup.core.appnav.incidentIdArg
+import com.crisiscleanup.core.appnav.navigateToExistingCase
 import com.crisiscleanup.core.appnav.navigateToViewImage
+import com.crisiscleanup.core.appnav.worksiteIdArg
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
@@ -32,9 +34,6 @@ import com.crisiscleanup.feature.caseeditor.ui.EditExistingCaseRoute
 import com.crisiscleanup.feature.caseeditor.ui.TransferWorkTypesRoute
 import com.crisiscleanup.feature.caseeditor.ui.addflag.CaseEditAddFlagRoute
 
-@VisibleForTesting
-internal const val incidentIdArg = "incidentId"
-internal const val worksiteIdArg = "worksiteId"
 internal const val isFromCaseEditArg = "isFromCaseEdit"
 
 internal class CaseEditorArgs(val incidentId: Long, val worksiteId: Long?) {
@@ -68,10 +67,6 @@ fun NavController.navigateToCaseEditor(incidentId: Long, worksiteId: Long? = nul
     worksiteId?.let { routeParts.add("$worksiteIdArg=$worksiteId") }
     val route = routeParts.joinToString("&")
     this.navigate(route)
-}
-
-fun NavController.navigateToExistingCase(incidentId: Long, worksiteId: Long) {
-    this.navigate("$viewCaseRoute?$incidentIdArg=$incidentId&$worksiteIdArg=$worksiteId")
 }
 
 fun NavGraphBuilder.caseEditorScreen(
@@ -186,10 +181,7 @@ internal fun NavController.popRouteStartingWith(route: String) {
 }
 
 private fun NavController.popToWork() {
-    popBackStack()
-    while (currentBackStackEntry?.destination?.route?.let { it != casesRoute } == true) {
-        popBackStack()
-    }
+    popBackStack(casesRoute, false, saveState = false)
 }
 
 fun NavController.rerouteToNewCase(incidentId: Long) {
@@ -198,7 +190,8 @@ fun NavController.rerouteToNewCase(incidentId: Long) {
 }
 
 fun NavController.rerouteToCaseEdit(ids: ExistingWorksiteIdentifier) {
-    popRouteStartingWith(caseEditorRoute)
+    popToWork()
+    navigateToExistingCase(ids.incidentId, ids.worksiteId)
     navigateToCaseEditor(ids.incidentId, ids.worksiteId)
 }
 

@@ -82,7 +82,6 @@ import java.text.SimpleDateFormat
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 
 @HiltViewModel
@@ -213,8 +212,6 @@ class ViewCaseViewModel @Inject constructor(
         )
 
     val jumpToCaseOnMapOnBack = MutableStateFlow(false)
-
-    private val previousNoteCount = AtomicInteger(0)
 
     var addImageCategory by mutableStateOf(ImageCategory.Before)
 
