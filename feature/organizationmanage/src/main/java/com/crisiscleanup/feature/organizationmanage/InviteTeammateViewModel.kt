@@ -31,6 +31,7 @@ import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.IncidentOrganizationInviteInfo
 import com.crisiscleanup.core.model.data.JoinOrgInvite
+import com.crisiscleanup.core.model.data.OrgInviteResult
 import com.crisiscleanup.core.model.data.OrganizationIdName
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -569,22 +570,13 @@ class InviteTeammateViewModel @Inject constructor(
     private suspend fun inviteToOrgOrAffiliate(
         emailAddresses: List<String>,
         organizationId: Long? = null,
-    ): Boolean {
-        val notInvited = mutableListOf<String>()
+    ): List<InviteResult> {
+        val inviteResults = mutableListOf<InviteResult>()
         for (emailAddress in emailAddresses) {
-            val invited = orgVolunteerRepository.inviteToOrganization(emailAddress, organizationId)
-            if (!invited) {
-                notInvited.add(emailAddress)
-            }
+            val result = orgVolunteerRepository.inviteToOrganization(emailAddress, organizationId)
+            inviteResults.add(InviteResult(emailAddress, result))
         }
-
-        if (notInvited.isNotEmpty()) {
-            sendInviteErrorMessage.value =
-                translator("inviteTeammates.emails_not_invited_error")
-                    .replace("{email_addresses}", notInvited.joinToString("\n  "))
-            return false
-        }
-        return true
+        return inviteResults
     }
 
     private fun onInviteSent(title: String, text: String) {
@@ -679,7 +671,7 @@ class InviteTeammateViewModel @Inject constructor(
             }
         }
 
-        var isSentToOrgOrAffiliate = false
+        var inviteResults = emptyList<InviteResult>()
         var isInviteSuccessful = false
         if (inviteToAnotherOrg.value) {
             if (inviteState.new) {
@@ -708,24 +700,36 @@ class InviteTeammateViewModel @Inject constructor(
                     isInviteSuccessful = true
                 }
             } else if (inviteState.affiliate) {
-                isSentToOrgOrAffiliate =
-                    inviteToOrgOrAffiliate(emailAddresses, selectedOtherOrg.value.id)
-                isInviteSuccessful = isSentToOrgOrAffiliate
+                inviteResults = inviteToOrgOrAffiliate(emailAddresses, selectedOtherOrg.value.id)
+                isInviteSuccessful =
+                    inviteResults.any { it.inviteResult == OrgInviteResult.Invited }
             } else if (inviteState.nonAffiliate) {
                 // TODO Finish when API supports a corresponding endpoint
             }
         } else {
-            isSentToOrgOrAffiliate = inviteToOrgOrAffiliate(emailAddresses)
-            isInviteSuccessful = isSentToOrgOrAffiliate
+            inviteResults = inviteToOrgOrAffiliate(emailAddresses)
+            isInviteSuccessful = inviteResults.any { it.inviteResult == OrgInviteResult.Invited }
         }
 
-        if (isSentToOrgOrAffiliate) {
-            onInviteSentToOrgOrAffiliate(emailAddresses)
+        val invited = inviteResults
+            .filter { it.inviteResult == OrgInviteResult.Invited }
+            .map(InviteResult::emailAddress)
+        if (invited.isNotEmpty()) {
+            onInviteSentToOrgOrAffiliate(invited)
         }
 
         if (!isInviteSuccessful) {
+            val uninvited = inviteResults
+                .filter { it.inviteResult != OrgInviteResult.Invited }
+                .map(InviteResult::emailAddress)
+            var uninvitedMessage = ""
+            if (uninvited.isNotEmpty()) {
+                uninvitedMessage =
+                    translator("inviteTeammates.emails_not_invited_error")
+                        .replace("{email_addresses}", uninvited.joinToString(", "))
+            }
             sendInviteErrorMessage.value =
-                translator("inviteTeammates.invite_error")
+                uninvitedMessage.ifBlank { translator("inviteTeammates.invite_error") }
         }
     }
 }
@@ -748,4 +752,9 @@ data class InviteOrgState(
     val nonAffiliate: Boolean,
     val new: Boolean,
     val ownOrAffiliate: Boolean = own || affiliate,
+)
+
+private data class InviteResult(
+    val emailAddress: String,
+    val inviteResult: OrgInviteResult,
 )

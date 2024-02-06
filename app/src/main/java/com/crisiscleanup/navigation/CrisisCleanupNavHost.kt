@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.crisiscleanup.core.appnav.RouteConstant.casesGraphRoutePattern
+import com.crisiscleanup.core.appnav.navigateToExistingCase
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
@@ -21,7 +22,6 @@ import com.crisiscleanup.feature.caseeditor.navigation.existingCaseScreen
 import com.crisiscleanup.feature.caseeditor.navigation.existingCaseTransferWorkTypesScreen
 import com.crisiscleanup.feature.caseeditor.navigation.navigateToCaseAddFlag
 import com.crisiscleanup.feature.caseeditor.navigation.navigateToCaseEditor
-import com.crisiscleanup.feature.caseeditor.navigation.navigateToExistingCase
 import com.crisiscleanup.feature.caseeditor.navigation.navigateToTransferWorkType
 import com.crisiscleanup.feature.caseeditor.navigation.rerouteToCaseChange
 import com.crisiscleanup.feature.cases.navigation.casesFilterScreen
@@ -52,7 +52,7 @@ import com.crisiscleanup.feature.userfeedback.navigation.userFeedbackScreen
 fun CrisisCleanupNavHost(
     navController: NavHostController,
     onBack: () -> Unit,
-    openAuthentication: () -> Unit = {},
+    openAuthentication: () -> Unit,
     modifier: Modifier = Modifier,
     startDestination: String = casesGraphRoutePattern,
 ) {
@@ -77,14 +77,6 @@ fun CrisisCleanupNavHost(
                 else -> Log.w("cases-action", "New cases action $casesAction requires handling")
             }
             Unit
-        }
-    }
-
-    val replaceRouteOpenCase = remember(navController) {
-        { incidentId: Long, worksiteId: Long ->
-            navController.popBackStack()
-            viewCase(incidentId, worksiteId)
-            true
         }
     }
 

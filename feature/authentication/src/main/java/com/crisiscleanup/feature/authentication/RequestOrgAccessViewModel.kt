@@ -15,11 +15,11 @@ import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
-import com.crisiscleanup.core.data.repository.InvitationRequestResult
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
 import com.crisiscleanup.core.data.repository.OrgVolunteerRepository
 import com.crisiscleanup.core.model.data.CodeInviteAccept
 import com.crisiscleanup.core.model.data.InvitationRequest
+import com.crisiscleanup.core.model.data.InvitationRequestResult
 import com.crisiscleanup.core.model.data.JoinOrgResult
 import com.crisiscleanup.core.model.data.LanguageIdName
 import com.crisiscleanup.core.model.data.OrgUserInviteInfo
@@ -68,7 +68,7 @@ class RequestOrgAccessViewModel @Inject constructor(
 
     private val isRequestingInvite = MutableStateFlow(false)
 
-    val requestedOrg = MutableStateFlow<InvitationRequestResult?>(null)
+    private val requestedOrg = MutableStateFlow<InvitationRequestResult?>(null)
 
     val isInviteRequested = MutableStateFlow(false)
     var requestSentTitle by mutableStateOf("")
@@ -117,13 +117,18 @@ class RequestOrgAccessViewModel @Inject constructor(
         requestedOrg
             .onEach { result ->
                 result?.let {
-                    requestSentTitle = translator("requestAccess.request_sent")
-                    requestSentText = translator("requestAccess.request_sent_to_org")
-                        .replace("{organization}", result.organizationName)
-                        .replace("{requested_to}", result.organizationRecipient)
+                    if (it.isNewAccountRequest) {
+                        requestSentTitle = translator("requestAccess.request_sent")
+                        requestSentText = translator("requestAccess.request_sent_to_org")
+                            .replace("{organization}", result.organizationName)
+                            .replace("{requested_to}", result.organizationRecipient)
+                    } else {
+                        inviteInfoErrorMessage.value =
+                            translator("requestAccess.already_in_org_error")
+                    }
                 }
 
-                isInviteRequested.value = result != null
+                isInviteRequested.value = result?.isNewAccountRequest == true
             }
             .launchIn(viewModelScope)
 
@@ -219,7 +224,6 @@ class RequestOrgAccessViewModel @Inject constructor(
         viewModelScope.launch(ioDispatcher) {
             try {
                 if (showEmailInput) {
-                    // TODO Test
                     requestedOrg.value = orgVolunteerRepository.requestInvitation(
                         InvitationRequest(
                             firstName = userInfo.firstName,
@@ -248,9 +252,11 @@ class RequestOrgAccessViewModel @Inject constructor(
                     )
                     if (inviteResult == JoinOrgResult.Success) {
                         val inviteInfo = inviteDisplay.value?.inviteInfo
+                        val orgName = inviteInfo?.orgName ?: ""
                         requestedOrg.value = InvitationRequestResult(
-                            organizationName = inviteInfo?.orgName ?: "",
+                            organizationName = orgName,
                             organizationRecipient = inviteInfo?.inviterEmail ?: "",
+                            isNewAccountRequest = orgName.isNotBlank(),
                         )
                     } else {
                         var errorMessageTranslateKey = "requestAccess.join_org_error"

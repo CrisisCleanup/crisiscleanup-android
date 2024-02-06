@@ -7,8 +7,10 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.model.data.CodeInviteAccept
 import com.crisiscleanup.core.model.data.IncidentOrganizationInviteInfo
 import com.crisiscleanup.core.model.data.InvitationRequest
+import com.crisiscleanup.core.model.data.InvitationRequestResult
 import com.crisiscleanup.core.model.data.JoinOrgInvite
 import com.crisiscleanup.core.model.data.JoinOrgResult
+import com.crisiscleanup.core.model.data.OrgInviteResult
 import com.crisiscleanup.core.model.data.OrgUserInviteInfo
 import com.crisiscleanup.core.network.CrisisCleanupRegisterApi
 import kotlinx.datetime.Instant
@@ -23,7 +25,7 @@ interface OrgVolunteerRepository {
     suspend fun getOrganizationInvite(organizationId: Long, inviterUserId: Long): JoinOrgInvite
     suspend fun acceptPersistentInvitation(invite: CodeInviteAccept): JoinOrgResult
 
-    suspend fun inviteToOrganization(emailAddress: String, organizationId: Long?): Boolean
+    suspend fun inviteToOrganization(emailAddress: String, organizationId: Long?): OrgInviteResult
     suspend fun createOrganization(
         referer: String,
         invite: IncidentOrganizationInviteInfo,
@@ -37,11 +39,7 @@ class CrisisCleanupOrgVolunteerRepository @Inject constructor(
     override suspend fun requestInvitation(invite: InvitationRequest): InvitationRequestResult? {
         try {
             // TODO Handle cases where an invite was already sent to the user from the org
-            val result = registerApi.registerOrgVolunteer(invite)
-            return InvitationRequestResult(
-                organizationName = result.requestedOrganization,
-                organizationRecipient = result.requestedTo,
-            )
+            return registerApi.registerOrgVolunteer(invite)
         } catch (e: Exception) {
             logger.logException(e)
         }
@@ -107,13 +105,13 @@ class CrisisCleanupOrgVolunteerRepository @Inject constructor(
     override suspend fun inviteToOrganization(
         emailAddress: String,
         organizationId: Long?,
-    ): Boolean {
+    ): OrgInviteResult {
         try {
             return registerApi.inviteToOrganization(emailAddress, organizationId)
         } catch (e: Exception) {
             logger.logException(e)
         }
-        return false
+        return OrgInviteResult.Unknown
     }
 
     override suspend fun createOrganization(
@@ -128,8 +126,3 @@ class CrisisCleanupOrgVolunteerRepository @Inject constructor(
         return false
     }
 }
-
-data class InvitationRequestResult(
-    val organizationName: String,
-    val organizationRecipient: String,
-)

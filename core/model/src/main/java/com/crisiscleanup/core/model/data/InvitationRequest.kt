@@ -12,6 +12,12 @@ data class InvitationRequest(
     val inviterEmailAddress: String,
 )
 
+data class InvitationRequestResult(
+    val organizationName: String,
+    val organizationRecipient: String,
+    val isNewAccountRequest: Boolean,
+)
+
 data class IncidentOrganizationInviteInfo(
     val incidentId: Long,
     val organizationName: String,
@@ -32,3 +38,9 @@ data class CodeInviteAccept(
 
     val invitationCode: String,
 )
+
+enum class OrgInviteResult {
+    Invited,
+    Redundant,
+    Unknown,
+}

@@ -474,18 +474,23 @@ class CreateEditCaseViewModel @Inject constructor(
         inputData: LocationInputData,
         changeIncident: Incident,
         addressChangeWorksite: Worksite,
-    ) = with(worksiteProvider) {
+    ) {
+        // TODO Prevent user mutations when ongoing. Test.
+
         // Assume any address changes first before copying
         inputData.assumeLocationAddressChanges(addressChangeWorksite)
 
-        val copiedWorksite = copyChanges()
+        var copiedWorksite = copyChanges()
         if (copiedWorksite != EmptyWorksite) {
             if (copiedWorksite.isNew) {
+                notesFlagsEditor?.let {
+                    copiedWorksite = transferEditingNote(it.notesFlagsInputData, copiedWorksite)
+                }
                 worksiteProvider.updateIncidentChangeWorksite(copiedWorksite)
                 changeWorksiteIncidentId.value = changeIncident.id
                 incidentSelector.setIncident(changeIncident)
             } else {
-                takeIncidentChanged()
+                worksiteProvider.takeIncidentChanged()
 
                 saveChangeIncident = changeIncident
                 saveChanges(false, backOnSuccess = false)
@@ -646,6 +651,28 @@ class CreateEditCaseViewModel @Inject constructor(
         }
     }
 
+    private fun transferEditingNote(
+        notesInputData: NotesFlagsInputData,
+        worksite: Worksite,
+    ): Worksite {
+        var updatedWorksite = worksite
+
+        val editingNote = notesInputData.editingNote.trim()
+        var notes = worksite.notes
+        if (editingNote.isNotBlank() &&
+            (notes.isEmpty() || notes.first().note.trim() != editingNote)
+        ) {
+            notes = notes.toMutableList()
+                .also {
+                    val note = WorksiteNote.create().copy(note = editingNote)
+                    it.add(0, note)
+                }
+            updatedWorksite = updatedWorksite.copy(notes = notes)
+            notesInputData.editingNote = ""
+        }
+        return updatedWorksite
+    }
+
     private fun transferChanges(indicateInvalidSection: Boolean = false): Boolean {
         tryGetEditorState()?.let { editorState ->
             (workEditor as? EditableWorkDataEditor)?.let { workDataEditor ->
@@ -659,24 +686,10 @@ class CreateEditCaseViewModel @Inject constructor(
                         }
                         return false
                     }
+                }
 
-                    (dataWriter as? NotesFlagsInputData)?.let { notesInputData ->
-                        val editingNote = notesInputData.editingNote.trim()
-                        var notes = worksite!!.notes
-                        if (editingNote.isNotBlank() &&
-                            (notes.isEmpty() || notes.first().note.trim() != editingNote)
-                        ) {
-                            notes = notes.toMutableList()
-                                .also {
-                                    val note = WorksiteNote.create().copy(note = editingNote)
-                                    it.add(0, note)
-                                }
-                            worksite = worksite!!.copy(
-                                notes = notes,
-                            )
-                            notesInputData.editingNote = ""
-                        }
-                    }
+                notesFlagsEditor?.let {
+                    worksite = transferEditingNote(it.notesFlagsInputData, worksite!!)
                 }
 
                 val workTypeLookup = editorState.incident.workTypeLookup
