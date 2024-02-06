@@ -3,6 +3,7 @@ package com.crisiscleanup.core.data.repository
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
+import com.crisiscleanup.core.model.data.InitiatePhoneLoginResult
 import com.crisiscleanup.core.model.data.PasswordResetInitiation
 import com.crisiscleanup.core.network.CrisisCleanupAccountApi
 import kotlinx.datetime.Clock
@@ -10,7 +11,7 @@ import javax.inject.Inject
 
 interface AccountUpdateRepository {
     suspend fun initiateEmailMagicLink(emailAddress: String): Boolean
-    suspend fun initiatePhoneLogin(phoneNumber: String): Boolean
+    suspend fun initiatePhoneLogin(phoneNumber: String): InitiatePhoneLoginResult
     suspend fun initiatePasswordReset(emailAddress: String): PasswordResetInitiation
     suspend fun changePassword(password: String, token: String): Boolean
 }
@@ -28,13 +29,13 @@ class CrisisCleanupAccountUpdateRepository @Inject constructor(
         return false
     }
 
-    override suspend fun initiatePhoneLogin(phoneNumber: String): Boolean {
+    override suspend fun initiatePhoneLogin(phoneNumber: String): InitiatePhoneLoginResult {
         try {
             return accountApi.initiatePhoneLogin(phoneNumber)
         } catch (e: Exception) {
             logger.logException(e)
         }
-        return false
+        return InitiatePhoneLoginResult.Unknown
     }
 
     override suspend fun initiatePasswordReset(emailAddress: String): PasswordResetInitiation {

@@ -1,6 +1,8 @@
 package com.crisiscleanup.core.network.retrofit
 
+import com.crisiscleanup.core.model.data.InitiatePhoneLoginResult
 import com.crisiscleanup.core.network.CrisisCleanupAccountApi
+import com.crisiscleanup.core.network.model.CrisisCleanupNetworkException
 import com.crisiscleanup.core.network.model.InitiatePasswordResetResult
 import com.crisiscleanup.core.network.model.NetworkEmailPayload
 import com.crisiscleanup.core.network.model.NetworkMagicLinkResult
@@ -24,6 +26,7 @@ private interface AccountApi {
     ): NetworkMagicLinkResult
 
     @Headers("Cookie: ")
+    @ThrowClientErrorHeader
     @POST("otp")
     suspend fun initiatePhoneLogin(
         @Body phonePayload: NetworkPhonePayload,
@@ -55,9 +58,20 @@ class AccountApiClient @Inject constructor(
         NetworkEmailPayload(emailAddress),
     ).errors == null
 
-    override suspend fun initiatePhoneLogin(phoneNumber: String) = accountApi.initiatePhoneLogin(
-        NetworkPhonePayload(phoneNumber),
-    ).errors?.isNotEmpty() != true
+    override suspend fun initiatePhoneLogin(phoneNumber: String): InitiatePhoneLoginResult {
+        try {
+            val result = accountApi.initiatePhoneLogin(NetworkPhonePayload(phoneNumber))
+            if (result.errors?.isNotEmpty() != true) {
+                return InitiatePhoneLoginResult.Success
+            }
+        } catch (e: CrisisCleanupNetworkException) {
+            if (e.body.contains("Invalid phone number")) {
+                return InitiatePhoneLoginResult.PhoneNotRegistered
+            }
+        }
+
+        return InitiatePhoneLoginResult.Unknown
+    }
 
     override suspend fun initiatePasswordReset(emailAddress: String) =
         accountApi.initiatePasswordReset(
