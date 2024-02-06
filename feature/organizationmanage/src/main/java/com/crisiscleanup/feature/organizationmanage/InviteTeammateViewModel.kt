@@ -720,29 +720,16 @@ class InviteTeammateViewModel @Inject constructor(
 
         if (!isInviteSuccessful) {
             val uninvited = inviteResults
-                .filter { it.inviteResult == OrgInviteResult.Unknown }
-                .map(InviteResult::emailAddress)
-            val existing = inviteResults
-                .filter { it.inviteResult == OrgInviteResult.Redundant }
+                .filter { it.inviteResult != OrgInviteResult.Invited }
                 .map(InviteResult::emailAddress)
             var uninvitedMessage = ""
-            var existingMessage = ""
             if (uninvited.isNotEmpty()) {
                 uninvitedMessage =
                     translator("inviteTeammates.emails_not_invited_error")
                         .replace("{email_addresses}", uninvited.joinToString(", "))
             }
-            if (existing.isNotEmpty()) {
-                existingMessage =
-                    translator("~~{email_addresses} have accounts.")
-                        .replace("{email_addresses}", existing.joinToString(", "))
-            }
-
-            val errorMessage = listOf(uninvitedMessage, existingMessage)
-                .filter { it.isNotBlank() }
-                .joinToString("\n")
             sendInviteErrorMessage.value =
-                errorMessage.ifBlank { translator("inviteTeammates.invite_error") }
+                uninvitedMessage.ifBlank { translator("inviteTeammates.invite_error") }
         }
     }
 }
