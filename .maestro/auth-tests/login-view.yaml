@@ -12,10 +12,10 @@ tags:
 - assertVisible:
     id: ccuLogo
 - assertVisible:
-    id: loginHeaderText
+    id: loginEmailHeaderText
 - assertVisible:
     id: loginEmailTextField
 - assertVisible:
     id: loginPasswordTextField
 - assertVisible:
-    id: loginLoginBtn
+    id: loginLoginAction

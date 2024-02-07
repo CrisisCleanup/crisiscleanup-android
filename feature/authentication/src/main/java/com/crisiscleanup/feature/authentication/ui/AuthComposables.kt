@@ -16,6 +16,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupLogoRow
@@ -74,7 +75,9 @@ fun LoginWithDifferentMethod(
 ) {
     val translator = LocalAppTranslator.current
     TextButton(
-        modifier = modifier.padding(horizontal = 16.dp),
+        modifier = modifier
+            .testTag("loginWithDifferentMethodAction")
+            .padding(horizontal = 16.dp),
         onClick = onClick,
         shape = RoundedCornerShape(4.dp),
         enabled = enabled,

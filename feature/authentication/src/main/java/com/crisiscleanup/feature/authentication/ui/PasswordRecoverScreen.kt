@@ -73,7 +73,6 @@ fun PasswordRecoverRoute(
         TopAppBarBackAction(
             title = translator(titleKey),
             onAction = clearStateOnBack,
-            modifier = Modifier.testTag("passwordRecoverBackBtn"),
         )
 
         val isResetInitiated by viewModel.isPasswordResetInitiated.collectAsStateWithLifecycle()
@@ -115,7 +114,7 @@ private fun ForgotPasswordView(
 
     Text(
         translator("resetPassword.forgot_your_password_or_reset"),
-        listItemModifier,
+        listItemModifier.testTag("forgotPasswordText"),
         style = LocalFontStyles.current.header3,
     )
 
@@ -154,7 +153,7 @@ private fun ForgotPasswordView(
     )
 
     BusyButton(
-        modifier = fillWidthPadded.testTag("forgotPasswordBtn"),
+        modifier = fillWidthPadded.testTag("forgotPasswordAction"),
         onClick = viewModel::onInitiatePasswordReset,
         enabled = isEditable,
         text = translator("actions.reset_password"),
@@ -184,7 +183,7 @@ private fun MagicLinkView(
 
     Text(
         translator("actions.request_magic_link"),
-        listItemModifier,
+        listItemModifier.testTag("requestMagicLinkText"),
         style = LocalFontStyles.current.header3,
     )
 
@@ -223,7 +222,7 @@ private fun MagicLinkView(
     )
 
     BusyButton(
-        modifier = fillWidthPadded.testTag("emailMagicLinkBtn"),
+        modifier = fillWidthPadded.testTag("emailMagicLinkAction"),
         onClick = viewModel::onInitiateMagicLink,
         enabled = isEditable,
         text = translator("actions.submit"),

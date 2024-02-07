@@ -172,7 +172,7 @@ private fun LoginWithPhoneScreen(
     )
 
     BusyButton(
-        modifier = fillWidthPadded.testTag("phoneLoginBtn"),
+        modifier = fillWidthPadded.testTag("phoneLoginAction"),
         onClick = requestPhoneCode,
         enabled = isNotBusy,
         text = translator("loginForm.login_with_cell"),
@@ -184,7 +184,7 @@ private fun LoginWithPhoneScreen(
             "actions.back",
             modifier = Modifier
                 .listItemPadding()
-                .testTag("phoneLoginBackBtn"),
+                .testTag("phoneLoginBackAction"),
             arrangement = Arrangement.Start,
             enabled = isNotBusy,
             action = onBack,

@@ -8,8 +8,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
@@ -52,8 +50,6 @@ fun MagicLinkLoginRoute(
 
     Column {
         TopAppBarBackAction(
-            modifier = Modifier
-                .testTag("magicLinkLoginBackBtn"),
             title = translator("actions.login"),
             onAction = clearStateOnBack,
         )
