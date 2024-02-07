@@ -4,9 +4,7 @@ tags:
   - auth
   - screenshots
 ---
-- clearState
-- launchApp
 - extendedWaitUntil:
     visible:
-      id: loginHeaderText
-- takeScreenshot: AuthRoot
+      id: rootAuthLoginText
+- takeScreenshot: AuthRoot-${SCREENSHOT_KEY}

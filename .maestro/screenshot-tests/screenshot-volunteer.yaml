@@ -1,0 +1,11 @@
+name: Onboarding screenshots
+appId: ${MAESTRO_APP_ID}
+tags:
+  - onboarding
+  - volunteer
+  - screenshots
+---
+- extendedWaitUntil:
+    visible:
+      id: volunteerGetStartedText
+- takeScreenshot: VolunteerWithOrg-${SCREENSHOT_KEY}

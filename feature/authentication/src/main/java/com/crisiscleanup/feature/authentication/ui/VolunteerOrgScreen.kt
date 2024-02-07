@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
@@ -53,7 +54,8 @@ fun VolunteerOrgRoute(
             val getStartedInstruction = t("volunteerOrg.get_started_join_org")
             Text(
                 getStartedInstruction,
-                listItemModifier,
+                listItemModifier
+                    .testTag("volunteerGetStartedText"),
                 style = LocalFontStyles.current.header2,
             )
 
@@ -61,6 +63,7 @@ fun VolunteerOrgRoute(
                 instruction = t("volunteerOrg.click_inviation_link"),
                 actionText = t("volunteerOrg.paste_invitation_link"),
                 onAction = openPasteOrgInviteLink,
+                modifier = Modifier.testTag("volunteerPasteLinkAction"),
             )
 
             StaticOrTextView()
@@ -69,6 +72,7 @@ fun VolunteerOrgRoute(
                 instruction = t("volunteerOrg.if_you_know_email"),
                 actionText = t("volunteerOrg.request_access"),
                 onAction = openRequestOrgAccess,
+                modifier = Modifier.testTag("volunteerRequestAccessAction"),
             )
 
             StaticOrTextView()
@@ -78,6 +82,7 @@ fun VolunteerOrgRoute(
                 content = {
                     CrisisCleanupButton(
                         modifier = Modifier
+                            .testTag("volunteerScanQrCodeAction")
                             .fillMaxWidth()
                             .listItemVerticalPadding(),
                         onClick = openScanOrgQrCode,
@@ -95,6 +100,7 @@ fun VolunteerOrgRoute(
             Column(fillWidthPadded) {
                 Text(t("volunteerOrg.if_no_account"))
                 LinkifyText(
+                    modifier = Modifier.testTag("volunteerRegisterOrgAction"),
                     linkText = t("registerOrg.register_org"),
                     link = orgRegisterLink,
                 )
@@ -135,12 +141,14 @@ private fun InstructionTextAction(
     instruction: String,
     actionText: String,
     onAction: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     InstructionAction(instruction) {
         BusyButton(
             modifier = Modifier
                 .fillMaxWidth()
-                .listItemTopPadding(),
+                .listItemTopPadding()
+                .then(modifier),
             text = actionText,
             onClick = onAction,
         )

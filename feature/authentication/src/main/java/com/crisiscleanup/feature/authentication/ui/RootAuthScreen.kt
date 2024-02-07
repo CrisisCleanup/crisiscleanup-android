@@ -186,7 +186,7 @@ private fun NotAuthenticatedScreen(
         CrisisCleanupLogoRow()
 
         Text(
-            modifier = listItemModifier.testTag("loginHeaderText"),
+            modifier = listItemModifier.testTag("rootAuthLoginText"),
             text = t("actions.login", R.string.login),
             style = LocalFontStyles.current.header1,
         )
@@ -198,7 +198,7 @@ private fun NotAuthenticatedScreen(
             BusyButton(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .testTag("loginLoginWithEmailBtn"),
+                    .testTag("loginWithEmailAction"),
                 onClick = openLoginWithEmail,
                 text = t("loginForm.login_with_email", R.string.loginWithEmail),
             )
@@ -206,7 +206,7 @@ private fun NotAuthenticatedScreen(
             BusyButton(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .testTag("loginLoginWithPhoneBtn"),
+                    .testTag("loginWithPhoneAction"),
                 onClick = openLoginWithPhone,
                 text = t("loginForm.login_with_cell", R.string.loginWithPhone),
             )
@@ -215,7 +215,7 @@ private fun NotAuthenticatedScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .actionHeight()
-                    .testTag("loginVolunteerWithOrgBtn"),
+                    .testTag("rootAuthVolunteerWithOrgAction"),
                 onClick = openVolunteerOrg,
                 enabled = !hasAuthenticated,
                 text = t(
@@ -229,7 +229,7 @@ private fun NotAuthenticatedScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .actionHeight()
-                    .testTag("loginNeedHelpCleaningBtn"),
+                    .testTag("rootAuthNeedHelpAction"),
                 onClick = {
                     uriHandler.openUri(iNeedHelpCleaningLink)
                 },
@@ -243,13 +243,14 @@ private fun NotAuthenticatedScreen(
 
         Column(fillWidthPadded) {
             Text(
-                modifier = Modifier.testTag("loginReliefOrgAndGovText"),
+                modifier = Modifier.testTag("rootAuthReliefOrgAndGovText"),
                 text = t(
                     "publicNav.relief_orgs_only",
                     R.string.reliefOrgAndGovOnly,
                 ),
             )
             LinkifyText(
+                modifier = Modifier.testTag("rootAuthRegisterAction"),
                 linkText = t("actions.register"),
                 link = orgRegisterLink,
             )
