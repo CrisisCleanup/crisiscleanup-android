@@ -67,11 +67,13 @@ class LocalAppPreferencesDataSourceTest {
 
     @Test
     fun syncAttemptSuccessful() = runTest {
-        setupSyncAttempt({
-            subject.setSyncAttempt(true, 1582)
-            subject.setSyncAttempt(true, 19815)
-            subject.setSyncAttempt(false, 20158)
-        }) { attempts: List<SyncAttempt> ->
+        setupSyncAttempt(
+            {
+                subject.setSyncAttempt(true, 1582)
+                subject.setSyncAttempt(true, 19815)
+                subject.setSyncAttempt(false, 20158)
+            },
+        ) { attempts: List<SyncAttempt> ->
             val expecteds = listOf(
                 SyncAttempt(0, 0, 0),
                 SyncAttempt(1582, 1582, 0),
@@ -86,11 +88,13 @@ class LocalAppPreferencesDataSourceTest {
 
     @Test
     fun syncAttemptFail() = runTest {
-        setupSyncAttempt({
-            subject.setSyncAttempt(false, 1582)
-            subject.setSyncAttempt(false, 19815)
-            subject.setSyncAttempt(true, 20158)
-        }) { attempts: List<SyncAttempt> ->
+        setupSyncAttempt(
+            {
+                subject.setSyncAttempt(false, 1582)
+                subject.setSyncAttempt(false, 19815)
+                subject.setSyncAttempt(true, 20158)
+            },
+        ) { attempts: List<SyncAttempt> ->
             val expecteds = listOf(
                 SyncAttempt(0, 0, 0),
                 SyncAttempt(0, 1582, 1),

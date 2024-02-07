@@ -48,6 +48,7 @@ class AccountInfoDataSource @Inject constructor(
                     id = it.orgId,
                     name = it.orgName,
                 ),
+                hasAcceptedTerms = it.hasAcceptedTerms,
                 areTokensValid = refreshToken.isNotBlank(),
             )
         }
@@ -63,7 +64,7 @@ class AccountInfoDataSource @Inject constructor(
     }
 
     suspend fun clearAccount() {
-        setAccount("", "", 0, "", "", "", 0, "", emptyOrgData)
+        setAccount("", "", 0, "", "", "", 0, "", emptyOrgData, false)
     }
 
     suspend fun setAccount(
@@ -76,6 +77,7 @@ class AccountInfoDataSource @Inject constructor(
         expirySeconds: Long,
         profilePictureUri: String,
         org: OrgData,
+        hasAcceptedTerms: Boolean,
     ) {
         // TODO Atomic save
         saveAuthTokens(refreshToken, accessToken)
@@ -91,6 +93,7 @@ class AccountInfoDataSource @Inject constructor(
                 this.profilePictureUri = profilePictureUri
                 this.orgId = org.id
                 this.orgName = org.name
+                this.hasAcceptedTerms = hasAcceptedTerms
             }
         }
     }
@@ -109,12 +112,18 @@ class AccountInfoDataSource @Inject constructor(
         }
     }
 
-    suspend fun updateProfilePicture(
-        pictureUri: String,
-    ) {
+    suspend fun updateProfilePicture(pictureUri: String) {
         dataStore.updateData {
             it.copy {
                 profilePictureUri = pictureUri
+            }
+        }
+    }
+
+    suspend fun updateAcceptedTerms(isAccepted: Boolean) {
+        dataStore.updateData {
+            it.copy {
+                hasAcceptedTerms = isAccepted
             }
         }
     }

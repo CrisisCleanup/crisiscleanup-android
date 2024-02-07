@@ -14,6 +14,7 @@ option java_multiple_files = true;
 // - storing sets/maps of data
 message UserPreferences {
   bool should_hide_onboarding = 1;
+
   DarkThemeConfigProto dark_theme_config = 2;
 
   // General sync stats. Use for backoff in case of bad connection, errors, or other failures.
@@ -21,6 +22,7 @@ message UserPreferences {
 
   int64 selected_incident_id = 4;
 
+  // Deprecated since OAuth and other auth options was added
   int32 save_credentials_prompt_count = 5;
   bool disable_save_credentials_prompt = 6;
 

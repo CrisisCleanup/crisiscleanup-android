@@ -31,6 +31,7 @@ interface AccountDataRepository {
         expirySeconds: Long,
         profilePictureUri: String,
         org: OrgData,
+        hasAcceptedTerms: Boolean,
     )
 
     suspend fun updateAccountTokens(

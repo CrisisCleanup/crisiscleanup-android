@@ -71,6 +71,7 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
         expirySeconds: Long,
         profilePictureUri: String,
         org: OrgData,
+        hasAcceptedTerms: Boolean,
     ) {
         dataSource.setAccount(
             refreshToken,
@@ -82,6 +83,7 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
             expirySeconds,
             profilePictureUri,
             org,
+            hasAcceptedTerms,
         )
     }
 

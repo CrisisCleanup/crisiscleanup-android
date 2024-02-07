@@ -32,6 +32,8 @@ data class AccountData(
     val profilePictureUri: String,
     val org: OrgData,
 
+    val hasAcceptedTerms: Boolean,
+
     /**
      * Indicates the refresh token was still valid when last used
      *
@@ -51,7 +53,16 @@ data class AccountData(
 
 val emptyOrgData = OrgData(0, "")
 val emptyAccountData =
-    AccountData(0, Instant.fromEpochSeconds(0), "", "", "", emptyOrgData, true)
+    AccountData(
+        0,
+        Instant.fromEpochSeconds(0),
+        "",
+        "",
+        "",
+        emptyOrgData,
+        false,
+        areTokensValid = false,
+    )
 
 data class OrgData(
     val id: Long,

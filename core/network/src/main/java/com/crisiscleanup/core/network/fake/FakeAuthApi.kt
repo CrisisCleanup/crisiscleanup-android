@@ -7,6 +7,7 @@ import com.crisiscleanup.core.network.model.NetworkCodeAuthResult
 import com.crisiscleanup.core.network.model.NetworkOauthResult
 import com.crisiscleanup.core.network.model.NetworkPhoneOneTimePasswordResult
 import kotlinx.coroutines.delay
+import kotlinx.datetime.Clock
 import javax.inject.Inject
 
 class FakeAuthApi @Inject constructor() : CrisisCleanupAuthApi {
@@ -20,6 +21,8 @@ class FakeAuthApi @Inject constructor() : CrisisCleanupAuthApi {
                 firstName = "Demo",
                 lastName = "User",
                 files = emptyList(),
+                hasAcceptedTerms = true,
+                acceptedTermsTimestamp = Clock.System.now(),
             ),
         )
     }

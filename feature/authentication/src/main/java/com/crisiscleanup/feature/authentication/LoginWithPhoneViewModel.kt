@@ -290,6 +290,7 @@ class LoginWithPhoneViewModel @Inject constructor(
                                             id = accountProfile.organization.id,
                                             name = accountProfile.organization.name,
                                         ),
+                                        hasAcceptedTerms = accountProfile.hasAcceptedTerms,
                                     )
                                     isSuccessful = true
                                 }
