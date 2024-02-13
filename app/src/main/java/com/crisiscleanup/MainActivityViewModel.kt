@@ -1,11 +1,15 @@
 package com.crisiscleanup
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AppEnv
+import com.crisiscleanup.core.common.AppSettingsProvider
 import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.KeyResourceTranslator
+import com.crisiscleanup.core.common.event.AuthEventBus
 import com.crisiscleanup.core.common.event.ExternalEventBus
 import com.crisiscleanup.core.common.event.UserPersistentInvite
 import com.crisiscleanup.core.common.log.AppLogger
@@ -14,6 +18,7 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPuller
+import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
@@ -31,6 +36,8 @@ import com.crisiscleanup.core.model.data.UserData
 import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -40,9 +47,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
@@ -59,10 +68,12 @@ class MainActivityViewModel @Inject constructor(
     val translator: KeyResourceTranslator,
     private val syncPuller: SyncPuller,
     private val appVersionProvider: AppVersionProvider,
+    appSettingsProvider: AppSettingsProvider,
     private val appEnv: AppEnv,
     firebaseAnalytics: FirebaseAnalytics,
     externalEventBus: ExternalEventBus,
-    @Dispatcher(IO) ioDispatcher: CoroutineDispatcher,
+    private val authEventBus: AuthEventBus,
+    @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : ViewModel() {
     /**
@@ -92,12 +103,32 @@ class MainActivityViewModel @Inject constructor(
     /**
      * API account tokens need re-issuing
      */
-    var isAccountExpired = mutableStateOf(false)
+    var isAccountExpired by mutableStateOf(false)
+        private set
+
+    val termsOfServiceUrl = "${appSettingsProvider.baseUrl}/terms?view=plain"
+    var hasAcceptedTerms by mutableStateOf(false)
+        private set
+    val isFetchingTermsAcceptance = MutableStateFlow(false)
+    private val isUpdatingTermsAcceptance = MutableStateFlow(false)
+    val isLoadingTermsAcceptance = combine(
+        isFetchingTermsAcceptance,
+        isUpdatingTermsAcceptance,
+        ::Pair,
+    )
+        .map { (b0, b1) -> b0 || b1 }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
+            started = SharingStarted.WhileSubscribed(),
+        )
+    var acceptTermsErrorMessage by mutableStateOf("")
         private set
 
     val authState = accountDataRepository.accountData
         .map {
-            isAccountExpired.value = !it.areTokensValid
+            isAccountExpired = !it.areTokensValid
+            hasAcceptedTerms = it.hasAcceptedTerms
 
             if (it.hasAuthenticated) {
                 AuthState.Authenticated(it)
@@ -179,6 +210,22 @@ class MainActivityViewModel @Inject constructor(
         syncPuller.appPullLanguage()
         syncPuller.appPullStatuses()
 
+        accountDataRepository.accountData
+            .mapLatest { it.hasAcceptedTerms }
+            .filter { !it }
+            .throttleLatest(250)
+            .onEach {
+                withContext(ioDispatcher) {
+                    isFetchingTermsAcceptance.value = true
+                    try {
+                        accountDataRefresher.updateAcceptedTerms()
+                    } finally {
+                        isFetchingTermsAcceptance.value = false
+                    }
+                }
+            }
+            .launchIn(viewModelScope)
+
         val switchProductionApiManager = SwitchProductionApiManager(
             appMetricsRepository,
             appDataRepository,
@@ -204,6 +251,29 @@ class MainActivityViewModel @Inject constructor(
                 if (Clock.System.now() - previousOpen.date > 1.hours) {
                     appMetricsRepository.setAppOpen(appVersionProvider.versionCode)
                 }
+            }
+        }
+    }
+
+    fun onRejectTerms() {
+        acceptTermsErrorMessage = ""
+        authEventBus.onLogout()
+    }
+
+    fun onAcceptTerms() {
+        acceptTermsErrorMessage = ""
+
+        if (isUpdatingTermsAcceptance.value) {
+            return
+        }
+        isUpdatingTermsAcceptance.value = true
+        viewModelScope.launch(ioDispatcher) {
+            try {
+                delay(3000)
+                // TODO Attempt to accept terms. Set error message on failure.
+
+            } finally {
+                isUpdatingTermsAcceptance.value = false
             }
         }
     }

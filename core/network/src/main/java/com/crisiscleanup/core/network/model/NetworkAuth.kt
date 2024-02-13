@@ -30,9 +30,9 @@ data class NetworkAuthUserClaims(
     @SerialName("last_name")
     val lastName: String,
     @SerialName("accepted_terms")
-    val hasAcceptedTerms: Boolean,
+    val hasAcceptedTerms: Boolean?,
     @SerialName("accepted_terms_timestamp")
-    val acceptedTermsTimestamp: Instant,
+    val acceptedTermsTimestamp: Instant?,
     val files: List<NetworkFile>?,
 )
 

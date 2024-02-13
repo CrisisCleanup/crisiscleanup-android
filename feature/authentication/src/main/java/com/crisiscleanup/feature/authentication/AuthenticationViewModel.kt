@@ -180,7 +180,7 @@ class AuthenticationViewModel @Inject constructor(
                         expirySeconds = expirySeconds,
                         profilePictureUri = profilePicUri,
                         org = orgData,
-                        hasAcceptedTerms = claims.hasAcceptedTerms,
+                        hasAcceptedTerms = claims.hasAcceptedTerms == true,
                     )
 
                     isAuthenticateSuccessful.value = true

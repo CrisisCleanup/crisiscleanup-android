@@ -15,6 +15,10 @@ enum class RequestHeaderKey {
 class RequestHeaderKeysLookup(
     private val lookup: MutableMap<Int, Map<RequestHeaderKey, String>> = mutableMapOf(),
 ) {
+    private val nonConstantHeaderPaths = setOf("users/me")
+    private val nonConstantHeaderFirstPaths =
+        nonConstantHeaderPaths.map { it.split("/").first() }.toSet()
+
     private fun requestKey(request: Request): Int =
         request.url.hashCode() + 31 * request.method.hashCode()
 
@@ -22,11 +26,23 @@ class RequestHeaderKeysLookup(
         return lookup[requestKey(request)]
     }
 
+    private fun isSingleRequestEndpoint(request: Request): Boolean {
+        val pathSegments = request.url.pathSegments
+        pathSegments.firstOrNull()?.let { firstPath ->
+            if (nonConstantHeaderFirstPaths.contains(firstPath)) {
+                val fullPath = pathSegments.joinToString("/")
+                return !nonConstantHeaderPaths.contains(fullPath)
+            }
+        }
+        return true
+    }
+
     internal fun setHeaderKeys(request: Request, annotations: Array<out Annotation>) {
         val key = requestKey(request)
-        // Assume request headers are static/never change
         if (lookup.containsKey(key)) {
-            return
+            if (isSingleRequestEndpoint(request)) {
+                return
+            }
         }
 
         val requestKeys = mutableMapOf<RequestHeaderKey, String>()

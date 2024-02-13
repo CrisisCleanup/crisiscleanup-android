@@ -109,7 +109,7 @@ class CrisisCleanupAppState(
         MENU,
     )
 
-    private var priorTopLevelDestination: TopLevelDestination = CASES
+    private var priorTopLevelDestination: TopLevelDestination = MENU
 
     @Composable
     fun lastTopLevelRoute(): String {
