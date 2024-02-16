@@ -6,8 +6,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import com.crisiscleanup.core.appnav.RouteConstant
 import com.crisiscleanup.core.appnav.RouteConstant.authGraphRoutePattern
+import com.crisiscleanup.core.appnav.RouteConstant.authRoute
 import com.crisiscleanup.feature.authentication.navigation.authGraph
 import com.crisiscleanup.feature.authentication.navigation.emailLoginLinkScreen
 import com.crisiscleanup.feature.authentication.navigation.forgotPasswordScreen
@@ -28,10 +28,7 @@ import com.crisiscleanup.feature.authentication.navigation.resetPasswordScreen
 import com.crisiscleanup.feature.authentication.navigation.volunteerOrgScreen
 
 private fun NavController.popToAuth() {
-    popBackStack()
-    while (currentBackStackEntry?.destination?.route?.let { it != RouteConstant.authRoute } == true) {
-        popBackStack()
-    }
+    popBackStack(authRoute, false, saveState = false)
 }
 
 @Composable
@@ -43,6 +40,7 @@ fun CrisisCleanupAuthNavHost(
     modifier: Modifier = Modifier,
     startDestination: String = authGraphRoutePattern,
 ) {
+    val navToAuth = remember(navController) { { navController.popToAuth() } }
     val navToLoginWithEmail =
         remember(navController) {
             {
@@ -67,6 +65,7 @@ fun CrisisCleanupAuthNavHost(
             nestedGraphs = {
                 loginWithEmailScreen(
                     onBack = onBack,
+                    onAuthenticated = navToAuth,
                     closeAuthentication = closeAuthentication,
                     openForgotPassword = navToForgotPassword,
                     openEmailMagicLink = navToEmailMagicLink,
@@ -81,6 +80,7 @@ fun CrisisCleanupAuthNavHost(
                 )
                 loginWithPhoneScreen(
                     onBack = onBack,
+                    onAuthenticated = navToAuth,
                     closeAuthentication = closeAuthentication,
                 )
                 volunteerOrgScreen(
@@ -102,6 +102,7 @@ fun CrisisCleanupAuthNavHost(
                 )
                 magicLinkLoginScreen(
                     onBack = onBack,
+                    onAuthenticated = navToAuth,
                     closeAuthentication = closeAuthentication,
                 )
                 requestAccessScreen(

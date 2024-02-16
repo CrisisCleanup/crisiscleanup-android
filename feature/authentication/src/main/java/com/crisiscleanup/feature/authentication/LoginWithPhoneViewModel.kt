@@ -15,6 +15,7 @@ import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AccountUpdateRepository
+import com.crisiscleanup.core.model.data.InitiatePhoneLoginResult
 import com.crisiscleanup.core.model.data.OrgData
 import com.crisiscleanup.core.network.CrisisCleanupAuthApi
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
@@ -160,13 +161,20 @@ class LoginWithPhoneViewModel @Inject constructor(
         isRequestingCode.value = true
         viewModelScope.launch(ioDispatcher) {
             try {
-                if (accountUpdateRepository.initiatePhoneLogin(trimPhoneNumber)) {
-                    openPhoneCodeLogin = true
-                } else {
-                    // TODO Be more specific
-                    // TODO Capture error and report to backend
-                    errorMessage =
-                        translator("loginWithPhone.please_enter_full_code")
+                when (accountUpdateRepository.initiatePhoneLogin(trimPhoneNumber)) {
+                    InitiatePhoneLoginResult.Success -> {
+                        openPhoneCodeLogin = true
+                    }
+
+                    InitiatePhoneLoginResult.PhoneNotRegistered -> {
+                        errorMessage =
+                            translator("~~$phoneNumber is not registered. Enter a registered phone number and try again.")
+                    }
+
+                    else -> {
+                        errorMessage =
+                            translator("loginWithPhone.invalid_phone_unavailable_try_again")
+                    }
                 }
             } finally {
                 isRequestingCode.value = false
@@ -282,6 +290,7 @@ class LoginWithPhoneViewModel @Inject constructor(
                                             id = accountProfile.organization.id,
                                             name = accountProfile.organization.name,
                                         ),
+                                        hasAcceptedTerms = accountProfile.hasAcceptedTerms == true,
                                     )
                                     isSuccessful = true
                                 }

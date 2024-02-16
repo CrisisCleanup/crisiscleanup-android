@@ -413,4 +413,7 @@ class DataApiClient @Inject constructor(
 
     override suspend fun getProfile(accessToken: String) =
         networkApi.getProfile("Bearer $accessToken")
+
+    override suspend fun getProfileAcceptedTerms() =
+        networkApi.getProfile().hasAcceptedTerms == true
 }

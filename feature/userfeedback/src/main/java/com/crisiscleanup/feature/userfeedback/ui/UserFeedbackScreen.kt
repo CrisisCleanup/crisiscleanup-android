@@ -33,7 +33,6 @@ fun UserFeedbackRoute(
     onBack: () -> Unit = {},
     viewModel: UserFeedbackViewModel = hiltViewModel(),
 ) {
-    val context = LocalContext.current
     Column {
         TopAppBarBackAction(
             title = LocalAppTranslator.current("nav.feedback"),
@@ -60,7 +59,7 @@ fun UserFeedbackRoute(
 
             AndroidView(
                 modifier = Modifier.weight(1f),
-                factory = {
+                factory = { context ->
                     WebView(context).apply {
                         settings.javaScriptEnabled = true
                         loadUrl("file:///android_res/raw/user_feedback_form.html?accountCcid=$accountId")

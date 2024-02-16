@@ -19,6 +19,7 @@ fun NavController.navigateToMagicLinkLogin() {
 fun NavGraphBuilder.loginWithEmailScreen(
     nestedGraphs: NavGraphBuilder.() -> Unit,
     onBack: () -> Unit,
+    onAuthenticated: () -> Unit,
     closeAuthentication: () -> Unit,
     openForgotPassword: () -> Unit,
     openEmailMagicLink: () -> Unit,
@@ -26,6 +27,7 @@ fun NavGraphBuilder.loginWithEmailScreen(
     composable(route = loginWithEmailRoute) {
         LoginWithEmailRoute(
             onBack = onBack,
+            onAuthenticated = onAuthenticated,
             closeAuthentication = closeAuthentication,
             openForgotPassword = openForgotPassword,
             openEmailMagicLink = openEmailMagicLink,
@@ -36,11 +38,13 @@ fun NavGraphBuilder.loginWithEmailScreen(
 
 fun NavGraphBuilder.magicLinkLoginScreen(
     onBack: () -> Unit,
+    onAuthenticated: () -> Unit,
     closeAuthentication: () -> Unit,
 ) {
     composable(route = magicLinkLoginRoute) {
         MagicLinkLoginRoute(
             onBack = onBack,
+            onAuthenticated = onAuthenticated,
             closeAuthentication = closeAuthentication,
         )
     }

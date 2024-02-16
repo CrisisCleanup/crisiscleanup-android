@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.network.model
 
+import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -28,6 +29,10 @@ data class NetworkAuthUserClaims(
     val firstName: String,
     @SerialName("last_name")
     val lastName: String,
+    @SerialName("accepted_terms")
+    val hasAcceptedTerms: Boolean?,
+    @SerialName("accepted_terms_timestamp")
+    val acceptedTermsTimestamp: Instant?,
     val files: List<NetworkFile>?,
 )
 

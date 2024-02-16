@@ -13,4 +13,5 @@ message AccountInfo {
   int64 id = 7;
   int64 orgId = 8;
   string orgName = 9;
+  bool has_accepted_terms = 10;
 }

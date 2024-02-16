@@ -78,6 +78,7 @@ class MagicLinkLoginViewModel @Inject constructor(
                                         id = accountProfile.organization.id,
                                         name = accountProfile.organization.name,
                                     ),
+                                    hasAcceptedTerms = accountProfile.hasAcceptedTerms == true,
                                 )
 
                                 isAuthenticateSuccessful.value = true

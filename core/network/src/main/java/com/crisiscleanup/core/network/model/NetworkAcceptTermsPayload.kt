@@ -5,11 +5,9 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class NetworkAccountProfileResult(
-    val errors: List<NetworkCrisisCleanupApiError>? = null,
+data class NetworkAcceptTermsPayload(
     @SerialName("accepted_terms")
-    val hasAcceptedTerms: Boolean?,
+    val hasAcceptedTerms: Boolean,
     @SerialName("accepted_terms_timestamp")
-    val acceptedTermsTimestamp: Instant?,
-    val files: List<NetworkFile>?,
+    val acceptedTermsTimestamp: Instant,
 )

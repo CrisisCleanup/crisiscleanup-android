@@ -16,7 +16,7 @@ tags:
     id: loginPasswordTextField
 - inputText: ${MAESTRO_APP_PASSWORD}
 - tapOn:
-    id: loginLoginBtn
+    id: loginLoginAction
 - assertVisible:
     id: navItem_Work
 - assertVisible:

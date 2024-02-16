@@ -257,6 +257,7 @@ fun TopAppBarCancelAction(
     title,
     onAction,
     colors,
+    actionTestTag = "topNavCancelAction",
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -268,6 +269,7 @@ fun TopAppBarBackCaretAction(
     title: String = "",
     onAction: () -> Unit = {},
     colors: TopAppBarColors = TopAppBarDefaults.centerAlignedTopAppBarColors(),
+    actionTestTag: String = "topNavBackAction",
 ) {
     val titleContent = @Composable {
         TruncatedAppBarText(modifier, titleResId, title)
@@ -275,7 +277,7 @@ fun TopAppBarBackCaretAction(
     val navigationContent: (@Composable (() -> Unit)) =
         @Composable {
             TopBarNavAction(
-                modifier,
+                modifier.testTag(actionTestTag),
                 onAction,
                 text = LocalAppTranslator.current(navigationTranslateKey),
             )

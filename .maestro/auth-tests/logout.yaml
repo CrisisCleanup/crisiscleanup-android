@@ -23,4 +23,4 @@ onFlowStart:
 - assertVisible:
     id: ccuLogo
 - assertVisible:
-    id: loginHeaderText
+    id: loginEmailHeaderText

@@ -53,6 +53,7 @@ class AppPreferencesRepository @Inject constructor(
 
     private suspend fun onLogout() {
         preferencesDataSource.clearSyncData()
+        setShouldHideOnboarding(true)
     }
 
     override suspend fun setAnalytics(allowAll: Boolean) {

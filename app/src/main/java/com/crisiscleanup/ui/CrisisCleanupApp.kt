@@ -5,6 +5,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.slideIn
 import androidx.compose.animation.slideOut
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,15 +21,12 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -42,28 +40,20 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavDestination
-import androidx.navigation.NavDestination.Companion.hierarchy
 import com.crisiscleanup.AuthState
 import com.crisiscleanup.MainActivityViewModel
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.designsystem.LayoutProvider
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.LocalLayoutProvider
+import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupBackground
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationBar
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationBarItem
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationRail
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationRailItem
-import com.crisiscleanup.core.designsystem.icon.Icon.DrawableResourceIcon
-import com.crisiscleanup.core.designsystem.icon.Icon.ImageVectorIcon
 import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.ui.AppLayoutArea
 import com.crisiscleanup.core.ui.LocalAppLayout
@@ -74,7 +64,6 @@ import com.crisiscleanup.feature.authentication.navigation.navigateToPasswordRes
 import com.crisiscleanup.feature.authentication.navigation.navigateToRequestAccess
 import com.crisiscleanup.navigation.CrisisCleanupAuthNavHost
 import com.crisiscleanup.navigation.CrisisCleanupNavHost
-import com.crisiscleanup.navigation.TopLevelDestination
 import com.crisiscleanup.feature.authentication.R as authenticationR
 
 @Composable
@@ -147,14 +136,15 @@ fun CrisisCleanupApp(
 }
 
 @Composable
-private fun LoadedContent(
+private fun BoxScope.LoadedContent(
     snackbarHostState: SnackbarHostState,
     appState: CrisisCleanupAppState,
     viewModel: MainActivityViewModel,
     authState: AuthState,
     translationCount: Int = 0,
 ) {
-    val isAccountExpired by viewModel.isAccountExpired
+    val isAccountExpired = viewModel.isAccountExpired
+    val hasAcceptedTerms = viewModel.hasAcceptedTerms
 
     val isNotAuthenticatedState = authState !is AuthState.Authenticated
     var openAuthentication by rememberSaveable { mutableStateOf(isNotAuthenticatedState) }
@@ -189,6 +179,27 @@ private fun LoadedContent(
                 appState.navController.navigateToOrgPersistentInvite()
             }
         }
+    } else if (!hasAcceptedTerms) {
+        val isFetching by viewModel.isFetchingTermsAcceptance.collectAsStateWithLifecycle()
+        if (!isFetching) {
+            val isLoading by viewModel.isLoadingTermsAcceptance.collectAsStateWithLifecycle()
+            val setAcceptingTerms = remember(viewModel) {
+                { accept: Boolean ->
+                    viewModel.isAcceptingTerms = accept
+                }
+            }
+            AcceptTermsContent(
+                snackbarHostState,
+                viewModel.termsOfServiceUrl,
+                isLoading,
+                viewModel.isAcceptingTerms,
+                setAcceptingTerms,
+                onRejectTerms = viewModel::onRejectTerms,
+                onAcceptTerms = viewModel::onAcceptTerms,
+                errorMessage = viewModel.acceptTermsErrorMessage,
+            )
+        }
+        BusyIndicatorFloatingTopCenter(isFetching)
     } else {
         NavigableContent(
             snackbarHostState,
@@ -239,10 +250,48 @@ private fun AuthenticateContent(
                 .padding(padding)
                 .consumeWindowInsets(padding)
                 .windowInsetsPadding(
-                    WindowInsets.safeDrawing.only(
-                        WindowInsetsSides.Horizontal,
-                    ),
+                    WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
                 ),
+        )
+    }
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+private fun AcceptTermsContent(
+    snackbarHostState: SnackbarHostState,
+    termsOfServiceUrl: String,
+    isLoading: Boolean,
+    isAcceptingTerms: Boolean,
+    setAcceptingTerms: (Boolean) -> Unit,
+    onRejectTerms: () -> Unit = {},
+    onAcceptTerms: () -> Unit = {},
+    errorMessage: String = "",
+) {
+    Scaffold(
+        modifier = Modifier.semantics {
+            testTagsAsResourceId = true
+        },
+        containerColor = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onBackground,
+        contentWindowInsets = WindowInsets.systemBars,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+    ) { padding ->
+        AcceptTermsView(
+            termsOfServiceUrl,
+            isLoading,
+            isAcceptingTerms = isAcceptingTerms,
+            setAcceptingTerms = setAcceptingTerms,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .consumeWindowInsets(padding)
+                .windowInsetsPadding(
+                    WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
+                ),
+            onRejectTerms = onRejectTerms,
+            onAcceptTerms = onAcceptTerms,
+            errorMessage = errorMessage,
         )
     }
 }
@@ -274,11 +323,9 @@ private fun NavigableContent(
                 enter = slideIn { IntOffset.Zero },
                 exit = slideOut { IntOffset.Zero },
             ) {
-                CrisisCleanupBottomBar(
-                    destinations = appState.topLevelDestinations,
-                    onNavigateToDestination = appState::navigateToTopLevelDestination,
-                    currentDestination = appState.currentDestination,
-                    modifier = Modifier.testTag("CrisisCleanupBottomBar"),
+                AppNavigationBar(
+                    appState,
+                    Modifier.testTag("AppNavigationBottomBar"),
                 )
             }
 
@@ -306,13 +353,12 @@ private fun NavigableContent(
                 ),
         ) {
             if (showNavigation && !layoutBottomNav) {
-                CrisisCleanupNavRail(
-                    destinations = appState.topLevelDestinations,
-                    onNavigateToDestination = appState::navigateToTopLevelDestination,
-                    currentDestination = appState.currentDestination,
-                    modifier = Modifier
-                        .testTag("CrisisCleanupNavRail")
+                AppNavigationBar(
+                    appState,
+                    Modifier
+                        .testTag("AppNavigationSideRail")
                         .safeDrawingPadding(),
+                    true,
                 )
             }
 
@@ -372,127 +418,3 @@ private fun ExpiredAccountAlert(
         }
     }
 }
-
-@Composable
-private fun TopLevelDestination.Icon(isSelected: Boolean, description: String) {
-    val icon = if (isSelected) {
-        selectedIcon
-    } else {
-        unselectedIcon
-    }
-    when (icon) {
-        is ImageVectorIcon -> Icon(
-            imageVector = icon.imageVector,
-            contentDescription = description,
-        )
-
-        is DrawableResourceIcon -> {
-            var tint = LocalContentColor.current
-            if (isSelected) {
-                tint = Color.White
-            }
-            Icon(
-                painter = painterResource(id = icon.id),
-                contentDescription = description,
-                tint = tint,
-            )
-        }
-    }
-}
-
-@Composable
-private fun NavItems(
-    destinations: List<TopLevelDestination>,
-    onNavigateToDestination: (TopLevelDestination) -> Unit,
-    currentDestination: NavDestination?,
-    itemContent: @Composable (
-        Boolean,
-        String,
-        () -> Unit,
-        @Composable () -> Unit,
-        @Composable () -> Unit,
-    ) -> Unit,
-) {
-    destinations.forEach { destination ->
-        val title = LocalAppTranslator.current(destination.titleTranslateKey)
-        val selected = currentDestination.isTopLevelDestinationInHierarchy(destination)
-        itemContent(
-            selected,
-            title,
-            { onNavigateToDestination(destination) },
-            { destination.Icon(selected, title) },
-            {
-                Text(
-                    title,
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            },
-        )
-    }
-}
-
-@Composable
-private fun CrisisCleanupNavRail(
-    destinations: List<TopLevelDestination>,
-    onNavigateToDestination: (TopLevelDestination) -> Unit,
-    currentDestination: NavDestination?,
-    modifier: Modifier = Modifier,
-) {
-    CrisisCleanupNavigationRail(modifier = modifier) {
-        Spacer(Modifier.weight(1f))
-        NavItems(
-            destinations = destinations,
-            onNavigateToDestination = onNavigateToDestination,
-            currentDestination = currentDestination,
-        ) {
-                isSelected: Boolean,
-                title: String,
-                onClick: () -> Unit,
-                iconContent: @Composable () -> Unit,
-                labelContent: @Composable () -> Unit,
-            ->
-            CrisisCleanupNavigationRailItem(
-                selected = isSelected,
-                onClick = onClick,
-                icon = iconContent,
-                label = labelContent,
-                modifier = Modifier.testTag("navItem_$title"),
-            )
-        }
-    }
-}
-
-@Composable
-private fun CrisisCleanupBottomBar(
-    destinations: List<TopLevelDestination>,
-    onNavigateToDestination: (TopLevelDestination) -> Unit,
-    currentDestination: NavDestination?,
-    modifier: Modifier = Modifier,
-) {
-    CrisisCleanupNavigationBar(modifier = modifier) {
-        NavItems(
-            destinations = destinations,
-            onNavigateToDestination = onNavigateToDestination,
-            currentDestination = currentDestination,
-        ) {
-                isSelected: Boolean,
-                title: String,
-                onClick: () -> Unit,
-                iconContent: @Composable () -> Unit,
-                labelContent: @Composable () -> Unit,
-            ->
-            CrisisCleanupNavigationBarItem(
-                selected = isSelected,
-                onClick = onClick,
-                icon = iconContent,
-                label = labelContent,
-                modifier = Modifier.testTag("navItem_$title"),
-            )
-        }
-    }
-}
-
-private fun NavDestination?.isTopLevelDestinationInHierarchy(destination: TopLevelDestination) =
-    this?.hierarchy?.any {
-        it.route?.contains(destination.name, true) ?: false
-    } ?: false

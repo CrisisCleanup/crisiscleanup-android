@@ -49,4 +49,13 @@ class AccountDataRefresher @Inject constructor(
             organizationsRepository.syncOrganization(organizationId, force, true)
         }
     }
+
+    suspend fun updateAcceptedTerms() {
+        try {
+            val hasAcceptedTerms = networkDataSource.getProfileAcceptedTerms()
+            dataSource.updateAcceptedTerms(hasAcceptedTerms)
+        } catch (e: Exception) {
+            logger.logException(e)
+        }
+    }
 }

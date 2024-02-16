@@ -47,6 +47,7 @@ import com.crisiscleanup.feature.authentication.model.AuthenticationState
 fun LoginWithEmailRoute(
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
+    onAuthenticated: () -> Unit,
     closeAuthentication: () -> Unit = {},
     openForgotPassword: () -> Unit = {},
     openEmailMagicLink: () -> Unit = {},
@@ -61,6 +62,7 @@ fun LoginWithEmailRoute(
 
     val isAuthenticateSuccessful by viewModel.isAuthenticateSuccessful.collectAsStateWithLifecycle()
     if (isAuthenticateSuccessful) {
+        onAuthenticated()
         onCloseScreen()
     }
 
@@ -113,7 +115,7 @@ private fun LoginWithEmailScreen(
     val translateCount by translator.translationCount.collectAsStateWithLifecycle()
 
     Text(
-        modifier = listItemModifier.testTag("loginHeaderText"),
+        modifier = listItemModifier.testTag("loginEmailHeaderText"),
         text = translator("actions.login", R.string.login),
         style = LocalFontStyles.current.header1,
     )
@@ -169,6 +171,7 @@ private fun LoginWithEmailScreen(
         LinkAction(
             "actions.request_magic_link",
             Modifier
+                .testTag("loginRequestMagicLinkAction")
                 .actionHeight()
                 .listItemPadding(),
             enabled = isNotBusy,
@@ -178,6 +181,7 @@ private fun LoginWithEmailScreen(
         LinkAction(
             "invitationSignup.forgot_password",
             Modifier
+                .testTag("loginForgotPasswordAction")
                 .actionHeight()
                 .listItemPadding(),
             enabled = isNotBusy,
@@ -205,7 +209,7 @@ private fun LoginWithEmailScreen(
     }
 
     BusyButton(
-        modifier = fillWidthPadded.testTag("loginLoginBtn"),
+        modifier = fillWidthPadded.testTag("loginLoginAction"),
         onClick = viewModel::authenticateEmailPassword,
         enabled = isNotBusy,
         text = translator("actions.login", R.string.login),
@@ -217,7 +221,7 @@ private fun LoginWithEmailScreen(
             "actions.back",
             modifier = Modifier
                 .listItemPadding()
-                .testTag("emailLoginBackBtn"),
+                .testTag("emailLoginBackAction"),
             arrangement = Arrangement.Start,
             enabled = isNotBusy,
             action = onBack,

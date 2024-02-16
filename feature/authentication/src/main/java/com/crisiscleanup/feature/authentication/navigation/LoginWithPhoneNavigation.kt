@@ -12,11 +12,13 @@ fun NavController.navigateToLoginWithPhone() {
 
 fun NavGraphBuilder.loginWithPhoneScreen(
     onBack: () -> Unit,
+    onAuthenticated: () -> Unit,
     closeAuthentication: () -> Unit,
 ) {
     composable(route = RouteConstant.loginWithPhoneRoute) {
         LoginWithPhoneRoute(
             onBack = onBack,
+            onAuthenticated = onAuthenticated,
             closeAuthentication = closeAuthentication,
         )
     }

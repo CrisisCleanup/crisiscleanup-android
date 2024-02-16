@@ -126,3 +126,16 @@ fun LinkifyPhoneEmailText(
         Linkify.EMAIL_ADDRESSES or Linkify.PHONE_NUMBERS,
     )
 }
+
+@Composable
+fun LinkifyUrlText(
+    text: String,
+    modifier: Modifier = Modifier,
+    @StyleRes textStyleRes: Int = R.style.link_text_style,
+) = LinkifyText(text, modifier, textStyleRes) { textView ->
+    Linkify.addLinks(
+        textView,
+        // TODO WEB_URLS causes build errors
+        Linkify.ALL,
+    )
+}
