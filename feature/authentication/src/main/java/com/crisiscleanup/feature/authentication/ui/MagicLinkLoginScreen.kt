@@ -21,6 +21,7 @@ import com.crisiscleanup.feature.authentication.MagicLinkLoginViewModel
 @Composable
 fun MagicLinkLoginRoute(
     onBack: () -> Unit,
+    onAuthenticated: () -> Unit,
     closeAuthentication: () -> Unit = {},
     viewModel: MagicLinkLoginViewModel = hiltViewModel(),
 ) {
@@ -31,6 +32,7 @@ fun MagicLinkLoginRoute(
             viewModel.clearMagicLinkLogin()
 
             if (isAuthenticateSuccessful) {
+                onAuthenticated()
                 closeAuthentication()
             } else {
                 onBack()

@@ -40,6 +40,7 @@ fun CrisisCleanupAuthNavHost(
     modifier: Modifier = Modifier,
     startDestination: String = authGraphRoutePattern,
 ) {
+    val navToAuth = remember(navController) { { navController.popToAuth() } }
     val navToLoginWithEmail =
         remember(navController) {
             {
@@ -64,6 +65,7 @@ fun CrisisCleanupAuthNavHost(
             nestedGraphs = {
                 loginWithEmailScreen(
                     onBack = onBack,
+                    onAuthenticated = navToAuth,
                     closeAuthentication = closeAuthentication,
                     openForgotPassword = navToForgotPassword,
                     openEmailMagicLink = navToEmailMagicLink,
@@ -78,6 +80,7 @@ fun CrisisCleanupAuthNavHost(
                 )
                 loginWithPhoneScreen(
                     onBack = onBack,
+                    onAuthenticated = navToAuth,
                     closeAuthentication = closeAuthentication,
                 )
                 volunteerOrgScreen(
@@ -99,6 +102,7 @@ fun CrisisCleanupAuthNavHost(
                 )
                 magicLinkLoginScreen(
                     onBack = onBack,
+                    onAuthenticated = navToAuth,
                     closeAuthentication = closeAuthentication,
                 )
                 requestAccessScreen(

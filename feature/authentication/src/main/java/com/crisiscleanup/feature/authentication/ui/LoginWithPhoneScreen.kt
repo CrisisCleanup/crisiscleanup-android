@@ -72,6 +72,7 @@ import com.crisiscleanup.feature.authentication.model.AuthenticationState
 fun LoginWithPhoneRoute(
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
+    onAuthenticated: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
     viewModel: LoginWithPhoneViewModel = hiltViewModel(),
 ) {
@@ -84,6 +85,7 @@ fun LoginWithPhoneRoute(
 
     val isAuthenticateSuccessful by viewModel.isAuthenticateSuccessful.collectAsStateWithLifecycle()
     if (isAuthenticateSuccessful) {
+        onAuthenticated()
         onCloseScreen()
     }
 

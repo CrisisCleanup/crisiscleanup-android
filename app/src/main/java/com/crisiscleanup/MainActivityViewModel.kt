@@ -9,6 +9,7 @@ import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppSettingsProvider
 import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.KeyResourceTranslator
+import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.event.AuthEventBus
 import com.crisiscleanup.core.common.event.ExternalEventBus
 import com.crisiscleanup.core.common.event.UserPersistentInvite
@@ -22,6 +23,7 @@ import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.AccountUpdateRepository
 import com.crisiscleanup.core.data.repository.AppDataManagementRepository
 import com.crisiscleanup.core.data.repository.LocalAppMetricsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
@@ -36,7 +38,6 @@ import com.crisiscleanup.core.model.data.UserData
 import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -64,7 +65,8 @@ class MainActivityViewModel @Inject constructor(
     accountDataRepository: AccountDataRepository,
     incidentSelector: IncidentSelector,
     appDataRepository: AppDataManagementRepository,
-    accountDataRefresher: AccountDataRefresher,
+    private val accountDataRefresher: AccountDataRefresher,
+    private val accountUpdateRepository: AccountUpdateRepository,
     val translator: KeyResourceTranslator,
     private val syncPuller: SyncPuller,
     private val appVersionProvider: AppVersionProvider,
@@ -73,6 +75,7 @@ class MainActivityViewModel @Inject constructor(
     firebaseAnalytics: FirebaseAnalytics,
     externalEventBus: ExternalEventBus,
     private val authEventBus: AuthEventBus,
+    private val networkMonitor: NetworkMonitor,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : ViewModel() {
@@ -109,6 +112,7 @@ class MainActivityViewModel @Inject constructor(
     val termsOfServiceUrl = "${appSettingsProvider.baseUrl}/terms?view=plain"
     var hasAcceptedTerms by mutableStateOf(false)
         private set
+    var isAcceptingTerms by mutableStateOf(false)
     val isFetchingTermsAcceptance = MutableStateFlow(false)
     private val isUpdatingTermsAcceptance = MutableStateFlow(false)
     val isLoadingTermsAcceptance = combine(
@@ -215,6 +219,8 @@ class MainActivityViewModel @Inject constructor(
             .filter { !it }
             .throttleLatest(250)
             .onEach {
+                isAcceptingTerms = false
+
                 withContext(ioDispatcher) {
                     isFetchingTermsAcceptance.value = true
                     try {
@@ -263,15 +269,29 @@ class MainActivityViewModel @Inject constructor(
     fun onAcceptTerms() {
         acceptTermsErrorMessage = ""
 
+        if (!isAcceptingTerms) {
+            acceptTermsErrorMessage =
+                translator("~~You must check the box accepting the terms of service.")
+            return
+        }
+
         if (isUpdatingTermsAcceptance.value) {
             return
         }
         isUpdatingTermsAcceptance.value = true
         viewModelScope.launch(ioDispatcher) {
             try {
-                delay(3000)
-                // TODO Attempt to accept terms. Set error message on failure.
-
+                val isAccepted = accountUpdateRepository.acceptTerms()
+                if (isAccepted) {
+                    accountDataRefresher.updateAcceptedTerms()
+                } else {
+                    val errorMessage = if (networkMonitor.isOnline.first()) {
+                        translator("~~Something went wrong. Please try again later")
+                    } else {
+                        translator("~~Connect to the internet and try again.")
+                    }
+                    acceptTermsErrorMessage = errorMessage
+                }
             } finally {
                 isUpdatingTermsAcceptance.value = false
             }

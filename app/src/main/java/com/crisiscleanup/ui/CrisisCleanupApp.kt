@@ -183,10 +183,17 @@ private fun BoxScope.LoadedContent(
         val isFetching by viewModel.isFetchingTermsAcceptance.collectAsStateWithLifecycle()
         if (!isFetching) {
             val isLoading by viewModel.isLoadingTermsAcceptance.collectAsStateWithLifecycle()
+            val setAcceptingTerms = remember(viewModel) {
+                { accept: Boolean ->
+                    viewModel.isAcceptingTerms = accept
+                }
+            }
             AcceptTermsContent(
                 snackbarHostState,
                 viewModel.termsOfServiceUrl,
                 isLoading,
+                viewModel.isAcceptingTerms,
+                setAcceptingTerms,
                 onRejectTerms = viewModel::onRejectTerms,
                 onAcceptTerms = viewModel::onAcceptTerms,
                 errorMessage = viewModel.acceptTermsErrorMessage,
@@ -255,6 +262,8 @@ private fun AcceptTermsContent(
     snackbarHostState: SnackbarHostState,
     termsOfServiceUrl: String,
     isLoading: Boolean,
+    isAcceptingTerms: Boolean,
+    setAcceptingTerms: (Boolean) -> Unit,
     onRejectTerms: () -> Unit = {},
     onAcceptTerms: () -> Unit = {},
     errorMessage: String = "",
@@ -271,7 +280,9 @@ private fun AcceptTermsContent(
         AcceptTermsView(
             termsOfServiceUrl,
             isLoading,
-            Modifier
+            isAcceptingTerms = isAcceptingTerms,
+            setAcceptingTerms = setAcceptingTerms,
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .consumeWindowInsets(padding)

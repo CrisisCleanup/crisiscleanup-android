@@ -47,6 +47,7 @@ import com.crisiscleanup.feature.authentication.model.AuthenticationState
 fun LoginWithEmailRoute(
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
+    onAuthenticated: () -> Unit,
     closeAuthentication: () -> Unit = {},
     openForgotPassword: () -> Unit = {},
     openEmailMagicLink: () -> Unit = {},
@@ -61,6 +62,7 @@ fun LoginWithEmailRoute(
 
     val isAuthenticateSuccessful by viewModel.isAuthenticateSuccessful.collectAsStateWithLifecycle()
     if (isAuthenticateSuccessful) {
+        onAuthenticated()
         onCloseScreen()
     }
 

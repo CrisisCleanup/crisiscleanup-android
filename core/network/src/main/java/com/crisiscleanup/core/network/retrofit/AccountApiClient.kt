@@ -4,16 +4,20 @@ import com.crisiscleanup.core.model.data.InitiatePhoneLoginResult
 import com.crisiscleanup.core.network.CrisisCleanupAccountApi
 import com.crisiscleanup.core.network.model.CrisisCleanupNetworkException
 import com.crisiscleanup.core.network.model.InitiatePasswordResetResult
+import com.crisiscleanup.core.network.model.NetworkAcceptTermsPayload
+import com.crisiscleanup.core.network.model.NetworkAccountProfileResult
 import com.crisiscleanup.core.network.model.NetworkEmailPayload
 import com.crisiscleanup.core.network.model.NetworkMagicLinkResult
 import com.crisiscleanup.core.network.model.NetworkPasswordResetPayload
 import com.crisiscleanup.core.network.model.NetworkPasswordResetResult
 import com.crisiscleanup.core.network.model.NetworkPhoneCodeResult
 import com.crisiscleanup.core.network.model.NetworkPhonePayload
+import kotlinx.datetime.Instant
 import retrofit2.Retrofit
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Headers
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
 import javax.inject.Inject
@@ -47,6 +51,14 @@ private interface AccountApi {
     suspend fun resetPasswordStatus(
         @Path("token") token: String,
     ): NetworkPasswordResetResult
+
+    @TokenAuthenticationHeader
+    @ThrowClientErrorHeader
+    @PATCH("users/{userId}")
+    suspend fun acceptTerms(
+        @Path("userId") userId: Long,
+        @Body acceptTermsPayload: NetworkAcceptTermsPayload,
+    ): NetworkAccountProfileResult
 }
 
 class AccountApiClient @Inject constructor(
@@ -84,5 +96,11 @@ class AccountApiClient @Inject constructor(
             NetworkPasswordResetPayload(password, token),
         ).status
         return status.isNotBlank() && status != "invalid"
+    }
+
+    override suspend fun acceptTerms(userId: Long, timestamp: Instant): Boolean {
+        val payload = NetworkAcceptTermsPayload(true, timestamp)
+        val result = accountApi.acceptTerms(userId, payload)
+        return result.hasAcceptedTerms == true
     }
 }

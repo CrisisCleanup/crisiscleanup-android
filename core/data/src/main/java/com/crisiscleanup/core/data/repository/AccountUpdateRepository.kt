@@ -6,6 +6,7 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.model.data.InitiatePhoneLoginResult
 import com.crisiscleanup.core.model.data.PasswordResetInitiation
 import com.crisiscleanup.core.network.CrisisCleanupAccountApi
+import kotlinx.coroutines.flow.first
 import kotlinx.datetime.Clock
 import javax.inject.Inject
 
@@ -14,9 +15,11 @@ interface AccountUpdateRepository {
     suspend fun initiatePhoneLogin(phoneNumber: String): InitiatePhoneLoginResult
     suspend fun initiatePasswordReset(emailAddress: String): PasswordResetInitiation
     suspend fun changePassword(password: String, token: String): Boolean
+    suspend fun acceptTerms(): Boolean
 }
 
 class CrisisCleanupAccountUpdateRepository @Inject constructor(
+    private val accountDataRepository: AccountDataRepository,
     private val accountApi: CrisisCleanupAccountApi,
     @Logger(CrisisCleanupLoggers.Account) private val logger: AppLogger,
 ) : AccountUpdateRepository {
@@ -57,6 +60,16 @@ class CrisisCleanupAccountUpdateRepository @Inject constructor(
     override suspend fun changePassword(password: String, token: String): Boolean {
         try {
             return accountApi.changePassword(password, token)
+        } catch (e: Exception) {
+            logger.logException(e)
+        }
+        return false
+    }
+
+    override suspend fun acceptTerms(): Boolean {
+        try {
+            val userId = accountDataRepository.accountData.first().id
+            return accountApi.acceptTerms(userId)
         } catch (e: Exception) {
             logger.logException(e)
         }
