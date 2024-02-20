@@ -55,13 +55,13 @@ internal fun AcceptTermsView(
                 // TODO Common dimensions
                 Modifier
                     .padding(16.dp)
-                    .testTag("acceptTermsAgreeText"),
+                    .testTag("acceptTermsAgreeAgreementText"),
             )
 
             AndroidView(
                 modifier = Modifier
                     .weight(1f)
-                    .testTag("acceptTermsWebView"),
+                    .testTag("acceptTermsAgreement"),
                 factory = { context ->
                     WebView(context).apply {
                         settings.javaScriptEnabled = true
@@ -75,7 +75,7 @@ internal fun AcceptTermsView(
             if (errorMessage.isNotBlank()) {
                 Text(
                     errorMessage,
-                    listItemModifier,
+                    listItemModifier.testTag("acceptTermsErrorMessage"),
                     color = primaryRedColor,
                 )
             }
@@ -87,11 +87,15 @@ internal fun AcceptTermsView(
                 Checkbox(
                     checked = isAcceptingTerms,
                     onCheckedChange = setAcceptingTerms,
+                    modifier = Modifier.testTag("acceptTermsAcceptToggle"),
                     enabled = enable,
                 )
-                val acceptText = t("~~I accept the terms of service from {terms_url} ?")
+                val acceptText = t("~~I accept the terms of service from {terms_url}")
                     .replace("{terms_url}", termsOfServiceUrl)
-                LinkifyUrlText(acceptText)
+                LinkifyUrlText(
+                    acceptText,
+                    Modifier.testTag("acceptTermsAcceptText"),
+                )
             }
 
             FlowRow(
