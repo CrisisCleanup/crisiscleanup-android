@@ -286,7 +286,7 @@ class MainActivityViewModel @Inject constructor(
                     accountDataRefresher.updateAcceptedTerms()
                 } else {
                     val errorMessage = if (networkMonitor.isOnline.first()) {
-                        translator("~~Something went wrong. Please try again later")
+                        translator("~~Something went wrong. Please try again later.")
                     } else {
                         translator("~~Connect to the internet and try again.")
                     }
