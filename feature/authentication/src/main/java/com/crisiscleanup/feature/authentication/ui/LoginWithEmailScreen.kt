@@ -200,7 +200,7 @@ private fun LoginWithEmailScreen(
             }
         }
         BusyButton(
-            modifier = fillWidthPadded.testTag("loginLoginDebugBtn"),
+            modifier = fillWidthPadded.testTag("emailLoginDebugLoginAction"),
             onClick = rememberDebugAuthenticate,
             enabled = isNotBusy,
             text = "Login debug",
@@ -209,7 +209,7 @@ private fun LoginWithEmailScreen(
     }
 
     BusyButton(
-        modifier = fillWidthPadded.testTag("loginLoginAction"),
+        modifier = fillWidthPadded.testTag("emailLoginLoginAction"),
         onClick = viewModel::authenticateEmailPassword,
         enabled = isNotBusy,
         text = translator("actions.login", R.string.login),
