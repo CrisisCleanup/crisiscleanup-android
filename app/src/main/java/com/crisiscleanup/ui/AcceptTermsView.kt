@@ -51,7 +51,7 @@ internal fun AcceptTermsView(
     Box {
         Column(modifier) {
             Text(
-                t("~~Using the Crisis Cleanup mobile app requires agreement with the following terms."),
+                t("termsConditionsModal.must_agree_to_use_ccu"),
                 // TODO Common dimensions
                 Modifier
                     .padding(16.dp)
@@ -90,8 +90,9 @@ internal fun AcceptTermsView(
                     modifier = Modifier.testTag("acceptTermsAcceptToggle"),
                     enabled = enable,
                 )
-                val acceptText = t("~~I accept the terms of service from {terms_url}")
+                val acceptText = t("termsConditionsModal.accept_toc_privacy") //TODO: replace string {terms_url} and {privacy_url}, and render HTML. I embedded links in this localization.
                     .replace("{terms_url}", termsOfServiceUrl)
+                }
                 LinkifyUrlText(
                     acceptText,
                     Modifier.testTag("acceptTermsAcceptText"),
@@ -148,10 +149,10 @@ private fun ConfirmRejectTermsDialog(
 ) {
     val t = LocalAppTranslator.current
     CrisisCleanupAlertDialog(
-        title = t("~~Review decision"),
+        title = t("termsConditionsModal.are_you_sure"),
         textContent = {
             Text(
-                t("~~Rejecting the terms of service will log you out from the app. You will not be able to use the app unless you log back in and accept the terms of service."),
+                t("termsConditionsModal.if_reject_cannot_use"),
                 Modifier.testTag("rejectTermsConfirmText"),
             )
         },

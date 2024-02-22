@@ -168,7 +168,7 @@ class LoginWithPhoneViewModel @Inject constructor(
 
                     InitiatePhoneLoginResult.PhoneNotRegistered -> {
                         errorMessage =
-                            translator("~~$phoneNumber is not registered. Enter a registered phone number and try again.")
+                            translator("loginWithPhone.phone_number_not_registered") //TODO: Replace {phoneNumber} with $phoneNumber
                     }
 
                     else -> {
