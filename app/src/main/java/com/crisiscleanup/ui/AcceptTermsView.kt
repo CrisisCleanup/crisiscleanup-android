@@ -23,7 +23,7 @@ import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
-import com.crisiscleanup.core.designsystem.component.LinkifyUrlText
+import com.crisiscleanup.core.designsystem.component.LinkifyHtmlText
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
@@ -34,6 +34,7 @@ import com.crisiscleanup.core.designsystem.theme.primaryRedColor
 @Composable
 internal fun AcceptTermsView(
     termsOfServiceUrl: String,
+    privacyPolicyUrl: String,
     isLoading: Boolean,
     isAcceptingTerms: Boolean,
     setAcceptingTerms: (Boolean) -> Unit,
@@ -90,10 +91,10 @@ internal fun AcceptTermsView(
                     modifier = Modifier.testTag("acceptTermsAcceptToggle"),
                     enabled = enable,
                 )
-                val acceptText = t("termsConditionsModal.accept_toc_privacy") //TODO: replace string {terms_url} and {privacy_url}, and render HTML. I embedded links in this localization.
+                val acceptText = t("termsConditionsModal.accept_toc_privacy")
                     .replace("{terms_url}", termsOfServiceUrl)
-                }
-                LinkifyUrlText(
+                    .replace("{privacy_url}", privacyPolicyUrl)
+                LinkifyHtmlText(
                     acceptText,
                     Modifier.testTag("acceptTermsAcceptText"),
                 )

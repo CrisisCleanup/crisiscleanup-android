@@ -110,6 +110,7 @@ class MainActivityViewModel @Inject constructor(
         private set
 
     val termsOfServiceUrl = "${appSettingsProvider.baseUrl}/terms?view=plain"
+    val privacyPolicyUrl = "${appSettingsProvider.baseUrl}/privacy?view=plain"
     var hasAcceptedTerms by mutableStateOf(false)
         private set
     var isAcceptingTerms by mutableStateOf(false)

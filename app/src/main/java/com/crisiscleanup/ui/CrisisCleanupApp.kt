@@ -191,6 +191,7 @@ private fun BoxScope.LoadedContent(
             AcceptTermsContent(
                 snackbarHostState,
                 viewModel.termsOfServiceUrl,
+                viewModel.privacyPolicyUrl,
                 isLoading,
                 viewModel.isAcceptingTerms,
                 setAcceptingTerms,
@@ -261,6 +262,7 @@ private fun AuthenticateContent(
 private fun AcceptTermsContent(
     snackbarHostState: SnackbarHostState,
     termsOfServiceUrl: String,
+    privacyPolicyUrl: String,
     isLoading: Boolean,
     isAcceptingTerms: Boolean,
     setAcceptingTerms: (Boolean) -> Unit,
@@ -279,6 +281,7 @@ private fun AcceptTermsContent(
     ) { padding ->
         AcceptTermsView(
             termsOfServiceUrl,
+            privacyPolicyUrl,
             isLoading,
             isAcceptingTerms = isAcceptingTerms,
             setAcceptingTerms = setAcceptingTerms,
