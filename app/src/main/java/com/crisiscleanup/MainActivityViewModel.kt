@@ -110,6 +110,7 @@ class MainActivityViewModel @Inject constructor(
         private set
 
     val termsOfServiceUrl = "${appSettingsProvider.baseUrl}/terms?view=plain"
+    val privacyPolicyUrl = "${appSettingsProvider.baseUrl}/privacy?view=plain"
     var hasAcceptedTerms by mutableStateOf(false)
         private set
     var isAcceptingTerms by mutableStateOf(false)
@@ -271,7 +272,7 @@ class MainActivityViewModel @Inject constructor(
 
         if (!isAcceptingTerms) {
             acceptTermsErrorMessage =
-                translator("~~You must check the box accepting the terms of service.")
+                translator("termsConditionsModal.must_check_box")
             return
         }
 
@@ -286,9 +287,9 @@ class MainActivityViewModel @Inject constructor(
                     accountDataRefresher.updateAcceptedTerms()
                 } else {
                     val errorMessage = if (networkMonitor.isOnline.first()) {
-                        translator("~~Something went wrong. Please try again later.")
+                        translator("termsConditionsModal.online_but_error")
                     } else {
-                        translator("~~Connect to the internet and try again.")
+                        translator("termsConditionsModal.offline_error")
                     }
                     acceptTermsErrorMessage = errorMessage
                 }

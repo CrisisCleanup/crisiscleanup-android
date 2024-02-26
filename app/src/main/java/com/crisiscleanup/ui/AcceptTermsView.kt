@@ -23,7 +23,7 @@ import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
-import com.crisiscleanup.core.designsystem.component.LinkifyUrlText
+import com.crisiscleanup.core.designsystem.component.LinkifyHtmlText
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
@@ -34,6 +34,7 @@ import com.crisiscleanup.core.designsystem.theme.primaryRedColor
 @Composable
 internal fun AcceptTermsView(
     termsOfServiceUrl: String,
+    privacyPolicyUrl: String,
     isLoading: Boolean,
     isAcceptingTerms: Boolean,
     setAcceptingTerms: (Boolean) -> Unit,
@@ -51,7 +52,7 @@ internal fun AcceptTermsView(
     Box {
         Column(modifier) {
             Text(
-                t("~~Using the Crisis Cleanup mobile app requires agreement with the following terms."),
+                t("termsConditionsModal.must_agree_to_use_ccu"),
                 // TODO Common dimensions
                 Modifier
                     .padding(16.dp)
@@ -90,9 +91,10 @@ internal fun AcceptTermsView(
                     modifier = Modifier.testTag("acceptTermsAcceptToggle"),
                     enabled = enable,
                 )
-                val acceptText = t("~~I accept the terms of service from {terms_url}")
+                val acceptText = t("termsConditionsModal.accept_toc_privacy")
                     .replace("{terms_url}", termsOfServiceUrl)
-                LinkifyUrlText(
+                    .replace("{privacy_url}", privacyPolicyUrl)
+                LinkifyHtmlText(
                     acceptText,
                     Modifier.testTag("acceptTermsAcceptText"),
                 )
@@ -148,10 +150,10 @@ private fun ConfirmRejectTermsDialog(
 ) {
     val t = LocalAppTranslator.current
     CrisisCleanupAlertDialog(
-        title = t("~~Review decision"),
+        title = t("termsConditionsModal.are_you_sure"),
         textContent = {
             Text(
-                t("~~Rejecting the terms of service will log you out from the app. You will not be able to use the app unless you log back in and accept the terms of service."),
+                t("termsConditionsModal.if_reject_cannot_use"),
                 Modifier.testTag("rejectTermsConfirmText"),
             )
         },
