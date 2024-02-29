@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.network
 
+import com.crisiscleanup.core.network.model.NetworkAccountProfileResult
 import com.crisiscleanup.core.network.model.NetworkCaseHistoryEvent
 import com.crisiscleanup.core.network.model.NetworkCountResult
 import com.crisiscleanup.core.network.model.NetworkIncident
@@ -21,7 +22,7 @@ import com.crisiscleanup.core.network.model.NetworkWorksiteShort
 import kotlinx.datetime.Instant
 
 interface CrisisCleanupNetworkDataSource {
-    suspend fun getProfilePic(): String?
+    suspend fun getProfileData(): NetworkAccountProfileResult
 
     suspend fun getOrganizations(organizations: List<Long>): List<NetworkIncidentOrganization>
 
@@ -113,5 +114,4 @@ interface CrisisCleanupNetworkDataSource {
     suspend fun searchOrganizations(q: String): List<NetworkOrganizationShort>
 
     suspend fun getProfile(accessToken: String): NetworkUserProfile?
-    suspend fun getProfileAcceptedTerms(): Boolean
 }

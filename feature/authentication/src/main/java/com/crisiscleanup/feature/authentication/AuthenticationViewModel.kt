@@ -181,6 +181,7 @@ class AuthenticationViewModel @Inject constructor(
                         profilePictureUri = profilePicUri,
                         org = orgData,
                         hasAcceptedTerms = claims.hasAcceptedTerms == true,
+                        approvedIncidentIds = claims.approvedIncidents,
                     )
 
                     isAuthenticateSuccessful.value = true

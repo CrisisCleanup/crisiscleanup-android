@@ -45,6 +45,7 @@ class FakeAccountRepository : AccountDataRepository {
         profilePictureUri: String,
         org: OrgData,
         hasAcceptedTerms: Boolean,
+        approvedIncidentIds: Set<Long>,
     ) {
         setAccountTokens(refreshToken, accessToken)
         _accountData.tryEmit(
@@ -56,6 +57,7 @@ class FakeAccountRepository : AccountDataRepository {
                 profilePictureUri = profilePictureUri,
                 org = org,
                 hasAcceptedTerms = hasAcceptedTerms,
+                approvedIncidents = approvedIncidentIds,
             ),
         )
     }

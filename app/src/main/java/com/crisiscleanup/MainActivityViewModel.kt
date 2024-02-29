@@ -194,6 +194,7 @@ class MainActivityViewModel @Inject constructor(
                 sync(false)
                 syncPuller.appPullIncident(incidentSelector.incidentId.first())
                 accountDataRefresher.updateMyOrganization(true)
+                accountDataRefresher.updateApprovedIncidents()
             }
             .launchIn(viewModelScope)
 

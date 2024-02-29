@@ -50,6 +50,20 @@ class LocalAppPreferencesDataSource @Inject constructor(
             )
         }
 
+    suspend fun reset() {
+        userPreferences.updateData {
+            it.copy {
+                this.darkThemeConfig = DarkThemeConfigProto.DARK_THEME_CONFIG_UNSPECIFIED
+                shouldHideOnboarding = false
+                syncAttempt = SyncAttemptProto.newBuilder().build()
+                selectedIncidentId = 0L
+                languageKey = ""
+                tableViewSortBy = WorksiteSortBy.None.literal
+                allowAllAnalytics = false
+            }
+        }
+    }
+
     suspend fun setDarkThemeConfig(darkThemeConfig: DarkThemeConfig) {
         userPreferences.updateData {
             it.copy {

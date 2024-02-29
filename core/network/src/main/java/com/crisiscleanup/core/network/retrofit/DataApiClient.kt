@@ -241,7 +241,7 @@ class DataApiClient @Inject constructor(
 ) : CrisisCleanupNetworkDataSource {
     private val networkApi = retrofit.create(DataSourceApi::class.java)
 
-    override suspend fun getProfilePic() = networkApi.getProfile().files?.profilePictureUrl
+    override suspend fun getProfileData() = networkApi.getProfile()
 
     override suspend fun getOrganizations(organizations: List<Long>) =
         networkApi.getOrganizations(organizations.joinToString(",")).let {
@@ -413,7 +413,4 @@ class DataApiClient @Inject constructor(
 
     override suspend fun getProfile(accessToken: String) =
         networkApi.getProfile("Bearer $accessToken")
-
-    override suspend fun getProfileAcceptedTerms() =
-        networkApi.getProfile().hasAcceptedTerms == true
 }

@@ -7,6 +7,7 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.datastore.AccountInfoDataSource
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
+import com.crisiscleanup.core.network.model.profilePictureUrl
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -14,6 +15,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 
 @Singleton
@@ -25,22 +27,37 @@ class AccountDataRefresher @Inject constructor(
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.Auth) private val logger: AppLogger,
 ) {
-    private var profilePictureUpdateTime = Instant.fromEpochSeconds(0)
+    private var accountDataUpdateTime = Instant.fromEpochSeconds(0)
 
-    suspend fun updateProfilePicture() {
-        if (dataSource.refreshToken.isBlank() ||
-            profilePictureUpdateTime.plus(1.days) > Clock.System.now()
-        ) {
+    private suspend fun updateAccountData(
+        syncTag: String,
+        force: Boolean,
+        cacheTimeSpan: Duration = 1.days,
+    ) {
+        if (dataSource.refreshToken.isBlank()) {
+            return
+        }
+        if (!force && accountDataUpdateTime.plus(cacheTimeSpan) > Clock.System.now()) {
             return
         }
 
+        logger.logCapture("Syncing $syncTag")
         try {
-            networkDataSource.getProfilePic()?.let {
-                dataSource.updateProfilePicture(it)
+            val profile = networkDataSource.getProfileData()
+            if (profile.hasAcceptedTerms != null) {
+                dataSource.update(
+                    profile.files?.profilePictureUrl,
+                    profile.hasAcceptedTerms!!,
+                    profile.approvedIncidents!!,
+                )
             }
         } catch (e: Exception) {
             logger.logException(e)
         }
+    }
+
+    suspend fun updateProfilePicture() {
+        updateAccountData("profile pic", false)
     }
 
     suspend fun updateMyOrganization(force: Boolean) = withContext(ioDispatcher) {
@@ -51,11 +68,10 @@ class AccountDataRefresher @Inject constructor(
     }
 
     suspend fun updateAcceptedTerms() {
-        try {
-            val hasAcceptedTerms = networkDataSource.getProfileAcceptedTerms()
-            dataSource.updateAcceptedTerms(hasAcceptedTerms)
-        } catch (e: Exception) {
-            logger.logException(e)
-        }
+        updateAccountData("accept terms", true)
+    }
+
+    suspend fun updateApprovedIncidents(force: Boolean = false) {
+        updateAccountData("approved incidents", force)
     }
 }

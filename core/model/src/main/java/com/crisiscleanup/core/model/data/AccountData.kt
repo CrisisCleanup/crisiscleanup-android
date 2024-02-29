@@ -34,6 +34,8 @@ data class AccountData(
 
     val hasAcceptedTerms: Boolean,
 
+    val approvedIncidents: Set<Long>,
+
     /**
      * Indicates the refresh token was still valid when last used
      *
@@ -61,6 +63,7 @@ val emptyAccountData =
         "",
         emptyOrgData,
         false,
+        emptySet(),
         areTokensValid = false,
     )
 

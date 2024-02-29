@@ -49,6 +49,7 @@ class AccountInfoDataSource @Inject constructor(
                     name = it.orgName,
                 ),
                 hasAcceptedTerms = it.hasAcceptedTerms,
+                approvedIncidents = it.approvedIncidentsMap.keys,
                 areTokensValid = refreshToken.isNotBlank(),
             )
         }
@@ -64,7 +65,7 @@ class AccountInfoDataSource @Inject constructor(
     }
 
     suspend fun clearAccount() {
-        setAccount("", "", 0, "", "", "", 0, "", emptyOrgData, false)
+        setAccount("", "", 0, "", "", "", 0, "", emptyOrgData, false, emptySet())
     }
 
     suspend fun setAccount(
@@ -78,6 +79,7 @@ class AccountInfoDataSource @Inject constructor(
         profilePictureUri: String,
         org: OrgData,
         hasAcceptedTerms: Boolean,
+        approvedIncidentIds: Set<Long>,
     ) {
         // TODO Atomic save
         saveAuthTokens(refreshToken, accessToken)
@@ -91,9 +93,11 @@ class AccountInfoDataSource @Inject constructor(
                 this.lastName = lastName
                 this.expirySeconds = expirySeconds
                 this.profilePictureUri = profilePictureUri
-                this.orgId = org.id
-                this.orgName = org.name
+                orgId = org.id
+                orgName = org.name
                 this.hasAcceptedTerms = hasAcceptedTerms
+                this.approvedIncidents.clear()
+                approvedIncidentIds.forEach { id -> this.approvedIncidents[id] = true }
             }
         }
     }
@@ -112,18 +116,17 @@ class AccountInfoDataSource @Inject constructor(
         }
     }
 
-    suspend fun updateProfilePicture(pictureUri: String) {
+    suspend fun update(
+        pictureUri: String?,
+        isAcceptedTerms: Boolean,
+        incidentIds: Set<Long>,
+    ) {
         dataStore.updateData {
             it.copy {
-                profilePictureUri = pictureUri
-            }
-        }
-    }
-
-    suspend fun updateAcceptedTerms(isAccepted: Boolean) {
-        dataStore.updateData {
-            it.copy {
-                hasAcceptedTerms = isAccepted
+                pictureUri?.let { p -> profilePictureUri = p }
+                hasAcceptedTerms = isAcceptedTerms
+                this.approvedIncidents.clear()
+                incidentIds.forEach { id -> this.approvedIncidents[id] = true }
             }
         }
     }

@@ -53,6 +53,7 @@ class MenuViewModel @Inject constructor(
 
     val loadSelectIncidents = LoadSelectIncidents(
         incidentsRepository = incidentsRepository,
+        accountDataRepository = accountDataRepository,
         incidentSelector = incidentSelector,
         appPreferencesRepository = appPreferencesRepository,
         coroutineScope = viewModelScope,

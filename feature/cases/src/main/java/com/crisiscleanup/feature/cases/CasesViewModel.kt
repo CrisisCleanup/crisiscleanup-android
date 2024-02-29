@@ -125,6 +125,7 @@ class CasesViewModel @Inject constructor(
 ) : ViewModel(), TrimMemoryListener {
     val loadSelectIncidents = LoadSelectIncidents(
         incidentsRepository = incidentsRepository,
+        accountDataRepository = accountDataRepository,
         incidentSelector = incidentSelector,
         appPreferencesRepository = appPreferencesRepository,
         coroutineScope = viewModelScope,

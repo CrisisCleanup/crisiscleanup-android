@@ -52,8 +52,7 @@ class AppPreferencesRepository @Inject constructor(
         preferencesDataSource.setTableViewSortBy(sortBy)
 
     private suspend fun onLogout() {
-        preferencesDataSource.clearSyncData()
-        setShouldHideOnboarding(true)
+        preferencesDataSource.reset()
     }
 
     override suspend fun setAnalytics(allowAll: Boolean) {

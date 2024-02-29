@@ -18,4 +18,6 @@ interface CrisisCleanupAccountApi {
     ): Boolean
 
     suspend fun acceptTerms(userId: Long, timestamp: Instant = Clock.System.now()): Boolean
+
+    suspend fun requestRedeploy(organizationId: Long, incidentId: Long): Boolean
 }

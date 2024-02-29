@@ -9,9 +9,9 @@ class NetworkLanguageTest {
         val result = TestUtil.decodeResource<NetworkLanguagesResult>("/getLanguages.json")
         val expected = NetworkLanguagesResult(
             results = listOf(
-                NetworkLanguageDescription("en-US", "English (United States)"),
-                NetworkLanguageDescription("es-MX", "Spanish (Mexico)"),
-                NetworkLanguageDescription("cs", "Czech"),
+                NetworkLanguageDescription(2, "en-US", "English (United States)"),
+                NetworkLanguageDescription(7, "es-MX", "Spanish (Mexico)"),
+                NetworkLanguageDescription(8, "cs", "Czech"),
             ),
         )
         assertEquals(expected, result)
