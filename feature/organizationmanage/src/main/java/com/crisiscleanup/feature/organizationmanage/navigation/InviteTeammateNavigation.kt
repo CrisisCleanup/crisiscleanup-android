@@ -8,13 +8,13 @@ import com.crisiscleanup.core.appnav.RouteConstant
 import com.crisiscleanup.feature.organizationmanage.ui.InviteTeammateRoute
 
 fun NavController.navigateToInviteTeammate(navOptions: NavOptions? = null) {
-    this.navigate(RouteConstant.inviteTeammateRoute, navOptions)
+    this.navigate(RouteConstant.INVITE_TEAMMATE_ROUTE, navOptions)
 }
 
 fun NavGraphBuilder.inviteTeammateScreen(
     onBack: () -> Unit = {},
 ) {
-    composable(route = RouteConstant.inviteTeammateRoute) {
+    composable(route = RouteConstant.INVITE_TEAMMATE_ROUTE) {
         InviteTeammateRoute(onBack = onBack)
     }
 }

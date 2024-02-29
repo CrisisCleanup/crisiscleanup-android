@@ -47,13 +47,13 @@ import com.crisiscleanup.core.designsystem.component.ExplainLocationPermissionDi
 import com.crisiscleanup.core.designsystem.component.FocusSectionSlider
 import com.crisiscleanup.core.designsystem.component.FormListSectionSeparator
 import com.crisiscleanup.core.designsystem.component.HelpRow
+import com.crisiscleanup.core.designsystem.component.LIST_DETAIL_DETAIL_WEIGHT
+import com.crisiscleanup.core.designsystem.component.LIST_DETAIL_LIST_WEIGHT
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.WithHelpDialog
 import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
 import com.crisiscleanup.core.designsystem.component.listDetailDetailMaxWidth
-import com.crisiscleanup.core.designsystem.component.listDetailDetailWeight
-import com.crisiscleanup.core.designsystem.component.listDetailListWeight
 import com.crisiscleanup.core.designsystem.component.rememberFocusSectionSliderState
 import com.crisiscleanup.core.designsystem.component.rememberSectionContentIndexLookup
 import com.crisiscleanup.core.designsystem.component.roundedOutline
@@ -67,9 +67,9 @@ import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
+import com.crisiscleanup.core.model.data.CASES_FILTER_MAX_DAYS_AGO
+import com.crisiscleanup.core.model.data.CASES_FILTER_MIN_DAYS_AGO
 import com.crisiscleanup.core.model.data.CasesFilter
-import com.crisiscleanup.core.model.data.CasesFilterMaxDaysAgo
-import com.crisiscleanup.core.model.data.CasesFilterMinDaysAgo
 import com.crisiscleanup.core.model.data.WorkTypeStatus
 import com.crisiscleanup.core.model.data.WorksiteFlagType
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
@@ -102,7 +102,7 @@ internal fun CasesFilterRoute(
 
     if (isListDetailLayout) {
         Row(screenModifier) {
-            Column(Modifier.weight(listDetailListWeight)) {
+            Column(Modifier.weight(LIST_DETAIL_LIST_WEIGHT)) {
                 TopBar(onBack)
 
                 Spacer(Modifier.weight(1f))
@@ -114,7 +114,7 @@ internal fun CasesFilterRoute(
             }
             Column(
                 Modifier
-                    .weight(listDetailDetailWeight)
+                    .weight(LIST_DETAIL_DETAIL_WEIGHT)
                     .sizeIn(maxWidth = listDetailDetailMaxWidth),
             ) {
                 FilterContent(
@@ -480,7 +480,8 @@ private fun LazyListScope.sviSlider(
         helpTranslateKey = "svi.svi_more_info_link",
         isHelpHtml = true,
         currentValueDisplay = sviValueDisplay,
-        modifier = Modifier.testTag("filterSVISlider"), // Survivors Vulnerability Index (SVI)
+        // Survivors Vulnerability Index (SVI)
+        modifier = Modifier.testTag("filterSVISlider"),
     )
 }
 
@@ -491,8 +492,14 @@ private fun LazyListScope.daysUpdatedSlider(
     daysUpdatedDisplay: (Float) -> String = { "" },
 ) {
     rangeSliderItem(
-        translator("worksiteFilters.days_ago").replace("{days}", CasesFilterMinDaysAgo.toString()),
-        translator("worksiteFilters.days_ago").replace("{days}", CasesFilterMaxDaysAgo.toString()),
+        translator("worksiteFilters.days_ago").replace(
+            "{days}",
+            CASES_FILTER_MIN_DAYS_AGO.toString(),
+        ),
+        translator("worksiteFilters.days_ago").replace(
+            "{days}",
+            CASES_FILTER_MAX_DAYS_AGO.toString(),
+        ),
         labelTranslateKey = "worksiteFilters.updated",
         value = filters.daysAgoNormalized,
         onUpdate = { f: Float -> onUpdateFilter(filters.expandDaysAgo(f)) },

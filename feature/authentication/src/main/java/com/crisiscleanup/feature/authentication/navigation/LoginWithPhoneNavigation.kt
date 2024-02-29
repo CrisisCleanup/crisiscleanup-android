@@ -7,7 +7,7 @@ import com.crisiscleanup.core.appnav.RouteConstant
 import com.crisiscleanup.feature.authentication.ui.LoginWithPhoneRoute
 
 fun NavController.navigateToLoginWithPhone() {
-    navigate(RouteConstant.loginWithPhoneRoute)
+    navigate(RouteConstant.LOGIN_WITH_PHONE_ROUTE)
 }
 
 fun NavGraphBuilder.loginWithPhoneScreen(
@@ -15,7 +15,7 @@ fun NavGraphBuilder.loginWithPhoneScreen(
     onAuthenticated: () -> Unit,
     closeAuthentication: () -> Unit,
 ) {
-    composable(route = RouteConstant.loginWithPhoneRoute) {
+    composable(route = RouteConstant.LOGIN_WITH_PHONE_ROUTE) {
         LoginWithPhoneRoute(
             onBack = onBack,
             onAuthenticated = onAuthenticated,

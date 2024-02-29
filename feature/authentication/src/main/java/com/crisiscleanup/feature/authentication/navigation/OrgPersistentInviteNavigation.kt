@@ -3,11 +3,11 @@ package com.crisiscleanup.feature.authentication.navigation
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.crisiscleanup.core.appnav.RouteConstant.orgPersistentInviteRoute
+import com.crisiscleanup.core.appnav.RouteConstant.ORG_PERSISTENT_INVITE_ROUTE
 import com.crisiscleanup.feature.authentication.ui.OrgPersistentInviteRoute
 
 fun NavController.navigateToOrgPersistentInvite() {
-    navigate(orgPersistentInviteRoute)
+    navigate(ORG_PERSISTENT_INVITE_ROUTE)
 }
 
 fun NavGraphBuilder.orgPersistentInviteScreen(
@@ -15,7 +15,7 @@ fun NavGraphBuilder.orgPersistentInviteScreen(
     closeInvite: () -> Unit,
 ) {
     composable(
-        route = orgPersistentInviteRoute,
+        route = ORG_PERSISTENT_INVITE_ROUTE,
     ) {
         OrgPersistentInviteRoute(
             onBack = onBack,

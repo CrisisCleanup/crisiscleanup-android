@@ -3,10 +3,10 @@ package com.crisiscleanup.core.commoncase.model
 import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.model.data.IncidentFormField
 
-const val DetailsFormGroupKey = "property_info"
-const val WorkFormGroupKey = "work_info"
-const val HazardsFormGroupKey = "hazards_info"
-const val VolunteerReportFormGroupKey = "claim_status_report_info"
+const val DETAILS_FORM_GROUP_KEY = "property_info"
+const val WORK_FORM_GROUP_KEY = "work_info"
+const val HAZARDS_FORM_GROUP_KEY = "hazards_info"
+const val VOLUNTEER_REPORT_FORM_GROUP_KEY = "claim_status_report_info"
 
 data class FormFieldNode(
     val formField: IncidentFormField,

@@ -1,6 +1,17 @@
 package com.crisiscleanup.core.common.di
 
-import com.crisiscleanup.core.common.*
+import com.crisiscleanup.core.common.AndroidAppMemoryStats
+import com.crisiscleanup.core.common.AndroidAppVersionProvider
+import com.crisiscleanup.core.common.AndroidResourceProvider
+import com.crisiscleanup.core.common.AndroidResourceTranslator
+import com.crisiscleanup.core.common.AppMemoryStats
+import com.crisiscleanup.core.common.AppSettingsProvider
+import com.crisiscleanup.core.common.AppVersionProvider
+import com.crisiscleanup.core.common.ApplicationResourceProvider
+import com.crisiscleanup.core.common.CommonInputValidator
+import com.crisiscleanup.core.common.InputValidator
+import com.crisiscleanup.core.common.KeyResourceTranslator
+import com.crisiscleanup.core.common.SecretsAppSettingsProvider
 import com.crisiscleanup.core.common.event.CrisisCleanupExternalEventBus
 import com.crisiscleanup.core.common.event.CrisisCleanupTrimMemoryEventManager
 import com.crisiscleanup.core.common.event.ExternalEventBus

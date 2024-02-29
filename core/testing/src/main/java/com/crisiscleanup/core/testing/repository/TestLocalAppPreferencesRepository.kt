@@ -21,45 +21,46 @@ private val emptyUserData = UserData(
 )
 
 class TestLocalAppPreferencesRepository : LocalAppPreferencesRepository {
-    private val _userData = MutableSharedFlow<UserData>(replay = 1, onBufferOverflow = DROP_OLDEST)
+    private val userDataInternal =
+        MutableSharedFlow<UserData>(replay = 1, onBufferOverflow = DROP_OLDEST)
 
-    private val currentUserData get() = _userData.replayCache.firstOrNull() ?: emptyUserData
+    private val currentUserData get() = userDataInternal.replayCache.firstOrNull() ?: emptyUserData
 
-    override val userPreferences: Flow<UserData> = _userData.filterNotNull()
+    override val userPreferences: Flow<UserData> = userDataInternal.filterNotNull()
 
     override suspend fun setDarkThemeConfig(darkThemeConfig: DarkThemeConfig) {
         currentUserData.let { current ->
-            _userData.tryEmit(current.copy(darkThemeConfig = darkThemeConfig))
+            userDataInternal.tryEmit(current.copy(darkThemeConfig = darkThemeConfig))
         }
     }
 
     override suspend fun setShouldHideOnboarding(shouldHideOnboarding: Boolean) {
         currentUserData.let { current ->
-            _userData.tryEmit(current.copy(shouldHideOnboarding = shouldHideOnboarding))
+            userDataInternal.tryEmit(current.copy(shouldHideOnboarding = shouldHideOnboarding))
         }
     }
 
     override suspend fun setSelectedIncident(id: Long) {
         currentUserData.let { current ->
-            _userData.tryEmit(current.copy(selectedIncidentId = id))
+            userDataInternal.tryEmit(current.copy(selectedIncidentId = id))
         }
     }
 
     override suspend fun setLanguageKey(key: String) {
         currentUserData.let { current ->
-            _userData.tryEmit(current.copy(languageKey = key))
+            userDataInternal.tryEmit(current.copy(languageKey = key))
         }
     }
 
     override suspend fun setTableViewSortBy(sortBy: WorksiteSortBy) {
         currentUserData.let { current ->
-            _userData.tryEmit(current.copy(tableViewSortBy = sortBy))
+            userDataInternal.tryEmit(current.copy(tableViewSortBy = sortBy))
         }
     }
 
     override suspend fun setAnalytics(allowAll: Boolean) {
         currentUserData.let { current ->
-            _userData.tryEmit(current.copy(allowAllAnalytics = allowAll))
+            userDataInternal.tryEmit(current.copy(allowAllAnalytics = allowAll))
         }
     }
 }

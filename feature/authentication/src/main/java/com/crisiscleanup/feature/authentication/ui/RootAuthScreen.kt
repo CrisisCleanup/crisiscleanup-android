@@ -43,7 +43,7 @@ import com.crisiscleanup.feature.authentication.AuthenticationViewModel
 import com.crisiscleanup.feature.authentication.R
 import com.crisiscleanup.feature.authentication.RootAuthViewModel
 
-internal const val orgRegisterLink = "https://crisiscleanup.org/register"
+internal const val ORG_REGISTER_URL = "https://crisiscleanup.org/register"
 
 @Composable
 fun RootAuthRoute(
@@ -252,7 +252,7 @@ private fun NotAuthenticatedScreen(
             LinkifyText(
                 modifier = Modifier.testTag("rootAuthRegisterAction"),
                 linkText = t("actions.register"),
-                link = orgRegisterLink,
+                link = ORG_REGISTER_URL,
             )
         }
 

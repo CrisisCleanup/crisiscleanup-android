@@ -1,6 +1,6 @@
 package com.crisiscleanup.feature.caseeditor.model
 
-import com.crisiscleanup.core.commoncase.model.WorkFormGroupKey
+import com.crisiscleanup.core.commoncase.model.WORK_FORM_GROUP_KEY
 import com.crisiscleanup.core.model.data.IncidentFormField
 import com.crisiscleanup.core.model.data.WorkTypeStatus
 import com.crisiscleanup.core.network.model.DynamicValue
@@ -17,7 +17,7 @@ data class FieldDynamicValue(
     val key = field.fieldKey
     val childrenCount = childKeys.size
 
-    val isWorkTypeGroup = field.parentKey == WorkFormGroupKey
+    val isWorkTypeGroup = field.parentKey == WORK_FORM_GROUP_KEY
 }
 
 data class FieldEditProperties(

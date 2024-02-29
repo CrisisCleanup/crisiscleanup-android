@@ -14,7 +14,7 @@ import retrofit2.Retrofit
 import java.util.concurrent.TimeUnit
 import javax.inject.Qualifier
 
-private const val CrisisCleanupApiBaseUrl = BuildConfig.API_BASE_URL
+private const val CRISIS_CLEANUP_API_BASE_URL = BuildConfig.API_BASE_URL
 
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.VALUE_PARAMETER)
 @Qualifier
@@ -61,7 +61,7 @@ internal fun getCrisisCleanupApiBuilder(
     }
 
     return Retrofit.Builder()
-        .baseUrl(CrisisCleanupApiBaseUrl)
+        .baseUrl(CRISIS_CLEANUP_API_BASE_URL)
         .client(clientBuilder.build())
         .addConverterFactory(networkApiJson.converterFactory)
         .build()
@@ -80,7 +80,7 @@ internal fun getCrisisCleanupApiBuilder(
     }
 
     return Retrofit.Builder()
-        .baseUrl(CrisisCleanupApiBaseUrl)
+        .baseUrl(CRISIS_CLEANUP_API_BASE_URL)
         .client(clientBuilder.build())
         .addCallAdapterFactory(RequestHeaderCallAdapterFactory(headerKeysLookup))
         .addConverterFactory(networkApiJson.converterFactory)
@@ -98,7 +98,7 @@ internal fun getApiBuilder(
     }
 
     return Retrofit.Builder()
-        .baseUrl(CrisisCleanupApiBaseUrl)
+        .baseUrl(CRISIS_CLEANUP_API_BASE_URL)
         .client(clientBuilder.build())
         .build()
 }
@@ -115,7 +115,7 @@ internal fun getJsonApiBuilder(
     }
 
     return Retrofit.Builder()
-        .baseUrl(CrisisCleanupApiBaseUrl)
+        .baseUrl(CRISIS_CLEANUP_API_BASE_URL)
         .client(clientBuilder.build())
         .addConverterFactory(networkApiJson.converterFactory)
         .build()

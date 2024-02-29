@@ -5,12 +5,12 @@ import kotlinx.datetime.Instant
 /**
  * Build version of the app where worksite (related) entity models were last changed
  */
-private const val WorksitesStableModelBuildVersion = 156
+private const val WORKSITES_STABLE_MODEL_BUILD_VERSION = 156
 
 /**
  * Build version of the app where incident organization (related) entity models were last changed
  */
-const val IncidentOrganizationsStableModelBuildVersion = 127
+const val INCIDENT_ORGANIZATIONS_STABLE_MODEL_BUILD_VERSION = 127
 
 /**
  * Keeps track of incident data (worksites, organizations, ...) syncing
@@ -42,7 +42,7 @@ data class IncidentDataSyncStats(
     /**
      * App build version where the network data model was last changed
      */
-    private val stableModelVersion: Int = WorksitesStableModelBuildVersion,
+    private val stableModelVersion: Int = WORKSITES_STABLE_MODEL_BUILD_VERSION,
 ) {
     /**
      * TRUE if the underlying worksite model has changed since the incident was last synced

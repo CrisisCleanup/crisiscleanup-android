@@ -1,51 +1,50 @@
 package com.crisiscleanup.core.appnav
 
 object RouteConstant {
-    const val casesGraphRoutePattern = "cases_graph"
-    const val authGraphRoutePattern = "auth_graph"
+    const val CASES_GRAPH_ROUTE = "cases_graph"
+    const val AUTH_GRAPH_ROUTE = "auth_graph"
 
-    const val authRoute = "auth_route"
-    const val loginWithEmailRoute = "$authRoute/login_with_email"
-    const val loginWithPhoneRoute = "$authRoute/login_with_phone"
-    const val forgotPasswordRoute = "forgot_password_route"
-    const val emailLoginLinkRoute = "email_login_link_route"
-    const val authResetPasswordRoute = "$authRoute/auth_reset_password_route"
-    const val magicLinkLoginRoute = "$authRoute/magic_link_login"
+    const val AUTH_ROUTE = "auth_route"
+    const val LOGIN_WITH_EMAIL_ROUTE = "$AUTH_ROUTE/login_with_email"
+    const val LOGIN_WITH_PHONE_ROUTE = "$AUTH_ROUTE/login_with_phone"
+    const val FORGOT_PASSWORD_ROUTE = "forgot_password_route"
+    const val EMAIL_LOGIN_LINK_ROUTE = "email_login_link_route"
+    const val AUTH_RESET_PASSWORD_ROUTE = "$AUTH_ROUTE/auth_reset_password_route"
+    const val MAGIC_LINK_ROUTE = "$AUTH_ROUTE/magic_link_login"
 
-    const val requestAccessRoute = "$authRoute/request_access"
-    const val orgPersistentInviteRoute = "$authRoute/org_persistent_invite"
+    const val REQUEST_ACCESS_ROUTE = "$AUTH_ROUTE/request_access"
+    const val ORG_PERSISTENT_INVITE_ROUTE = "$AUTH_ROUTE/org_persistent_invite"
 
-    const val volunteerOrgRoute = "$authRoute/volunteer_org"
-    const val volunteerPasteInviteLinkRoute = "$volunteerOrgRoute/paste_invitation_link"
-    const val volunteerRequestAccessRoute = "$volunteerOrgRoute/request_access"
-    const val volunteerScanQrCodeRoute = "$volunteerOrgRoute/scan_qr_code"
+    const val VOLUNTEER_ORG_ROUTE = "$AUTH_ROUTE/volunteer_org"
+    const val VOLUNTEER_PASTE_INVITE_LINK_ROUTE = "$VOLUNTEER_ORG_ROUTE/paste_invitation_link"
+    const val VOLUNTEER_REQUEST_ACCESS_ROUTE = "$VOLUNTEER_ORG_ROUTE/request_access"
+    const val VOLUNTEER_SCAN_QR_CODE_ROUTE = "$VOLUNTEER_ORG_ROUTE/scan_qr_code"
 
-    // This cannot be used as the navHost startDestination
-    const val casesRoute = "cases_route"
-    const val dashboardRoute = "dashboard_route"
-    const val menuRoute = "menu_route"
-    const val teamRoute = "team_route"
-    val topLevelRoutes = setOf(casesRoute, menuRoute)
+    const val CASES_ROUTE = "cases_route"
+    const val DASHBOARD_ROUTE = "dashboard_route"
+    const val MENU_ROUTE = "menu_route"
+    const val TEAM_ROUTE = "team_route"
+    val topLevelRoutes = setOf(CASES_ROUTE, MENU_ROUTE)
 
-    const val inviteTeammateRoute = "invite_teammate"
-    const val userFeedbackRoute = "user_feedback_route"
+    const val INVITE_TEAMMATE_ROUTE = "invite_teammate"
+    const val USER_FEEDBACK_ROUTE = "user_feedback_route"
 
-    const val syncInsightsRoute = "sync_insights_route"
+    const val SYNC_INSIGHTS_ROUTE = "sync_insights_route"
 
-    const val casesSearchRoute = "cases_search"
-    const val casesFilterRoute = "cases_filter"
+    const val CASES_SEARCH_ROUTE = "cases_search"
+    const val CASES_FILTER_ROUTE = "cases_filter"
 
-    const val caseEditorRoute = "case_editor"
-    const val caseEditSearchAddressRoute = "$caseEditorRoute/edit_search_address"
-    const val caseEditMapMoveLocationRoute = "$caseEditorRoute/edit_map_move_location"
+    const val CASE_EDITOR_ROUTE = "case_editor"
+    const val CASE_EDITOR_SEARCH_ADDRESS_ROUTE = "$CASE_EDITOR_ROUTE/edit_search_address"
+    const val CASE_EDITOR_MAP_MOVE_LOCATION_ROUTE = "$CASE_EDITOR_ROUTE/edit_map_move_location"
 
-    const val viewCaseRoute = "view_case"
-    const val viewCaseTransferWorkTypesRoute = "$viewCaseRoute/transfer_work_types"
-    const val caseAddFlagRoute = "$viewCaseRoute/add_flag"
-    const val caseShareRoute = "$viewCaseRoute/share_case"
-    const val caseHistoryRoute = "$viewCaseRoute/case_history"
+    const val VIEW_CASE_ROUTE = "view_case"
+    const val VIEW_CASE_TRANSFER_WORK_TYPES_ROUTE = "$VIEW_CASE_ROUTE/transfer_work_types"
+    const val CASE_ADD_FLAG_ROUTE = "$VIEW_CASE_ROUTE/add_flag"
+    const val CASE_SHARE_ROUTE = "$VIEW_CASE_ROUTE/share_case"
+    const val CASE_HISTORY_ROUTE = "$VIEW_CASE_ROUTE/case_history"
 
-    const val viewImageRoute = "view_image"
+    const val VIEW_IMAGE_ROUTE = "view_image"
 
-    const val accountResetPasswordRoute = "account_reset_password_route"
+    const val ACCOUNT_RESET_PASSWORD_ROUTE = "account_reset_password_route"
 }

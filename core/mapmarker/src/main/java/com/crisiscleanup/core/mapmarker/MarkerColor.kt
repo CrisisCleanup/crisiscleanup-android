@@ -1,17 +1,17 @@
 package com.crisiscleanup.core.mapmarker
 
 import androidx.compose.ui.graphics.Color
-import com.crisiscleanup.core.designsystem.theme.statusCompletedColorCode
-import com.crisiscleanup.core.designsystem.theme.statusDoneByOthersNhwColorCode
-import com.crisiscleanup.core.designsystem.theme.statusDuplicateClaimedColorCode
-import com.crisiscleanup.core.designsystem.theme.statusDuplicateUnclaimedColorCode
-import com.crisiscleanup.core.designsystem.theme.statusInProgressColorCode
-import com.crisiscleanup.core.designsystem.theme.statusNeedsFollowUpColorCode
-import com.crisiscleanup.core.designsystem.theme.statusNotStartedColorCode
-import com.crisiscleanup.core.designsystem.theme.statusOutOfScopeRejectedColorCode
-import com.crisiscleanup.core.designsystem.theme.statusPartiallyCompletedColorCode
-import com.crisiscleanup.core.designsystem.theme.statusUnclaimedColorCode
-import com.crisiscleanup.core.designsystem.theme.statusUnknownColorCode
+import com.crisiscleanup.core.designsystem.theme.STATUS_COMPLETED_COLOR_CODE
+import com.crisiscleanup.core.designsystem.theme.STATUS_DONE_BY_OTHERS_NHW_COLOR_CODE
+import com.crisiscleanup.core.designsystem.theme.STATUS_DUPLICATE_CLAIMED_COLOR_CODE
+import com.crisiscleanup.core.designsystem.theme.STATUS_DUPLICATE_UNCLAIMED_COLOR_CODE
+import com.crisiscleanup.core.designsystem.theme.STATUS_IN_PROGRESS_COLOR_CODE
+import com.crisiscleanup.core.designsystem.theme.STATUS_NEEDS_FOLLOW_UP_COLOR_CODE
+import com.crisiscleanup.core.designsystem.theme.STATUS_NOT_STARTED_COLOR_CODE
+import com.crisiscleanup.core.designsystem.theme.STATUS_OUT_OF_SCOPE_REJECTED_COLOR_CODE
+import com.crisiscleanup.core.designsystem.theme.STATUS_PARTIALLY_COMPLETED_COLOR_CODE
+import com.crisiscleanup.core.designsystem.theme.STATUS_UNCLAIMED_COLOR_CODE
+import com.crisiscleanup.core.designsystem.theme.STATUS_UNKNOWN_COLOR_CODE
 import com.crisiscleanup.core.designsystem.theme.visitedCaseMarkerColorCode
 import com.crisiscleanup.core.model.data.CaseStatus.ClaimedNotStarted
 import com.crisiscleanup.core.model.data.CaseStatus.Completed
@@ -36,41 +36,41 @@ data class MapMarkerColor(
 )
 
 private val statusMapMarkerColors = mapOf(
-    Unknown to MapMarkerColor(statusUnknownColorCode),
-    Unclaimed to MapMarkerColor(statusUnclaimedColorCode),
-    ClaimedNotStarted to MapMarkerColor(statusNotStartedColorCode),
+    Unknown to MapMarkerColor(STATUS_UNKNOWN_COLOR_CODE),
+    Unclaimed to MapMarkerColor(STATUS_UNCLAIMED_COLOR_CODE),
+    ClaimedNotStarted to MapMarkerColor(STATUS_NOT_STARTED_COLOR_CODE),
     // Assigned
-    InProgress to MapMarkerColor(statusInProgressColorCode),
-    PartiallyCompleted to MapMarkerColor(statusPartiallyCompletedColorCode),
-    NeedsFollowUp to MapMarkerColor(statusNeedsFollowUpColorCode),
-    Completed to MapMarkerColor(statusCompletedColorCode),
-    DoneByOthersNhw to MapMarkerColor(statusDoneByOthersNhwColorCode),
+    InProgress to MapMarkerColor(STATUS_IN_PROGRESS_COLOR_CODE),
+    PartiallyCompleted to MapMarkerColor(STATUS_PARTIALLY_COMPLETED_COLOR_CODE),
+    NeedsFollowUp to MapMarkerColor(STATUS_NEEDS_FOLLOW_UP_COLOR_CODE),
+    Completed to MapMarkerColor(STATUS_COMPLETED_COLOR_CODE),
+    DoneByOthersNhw to MapMarkerColor(STATUS_DONE_BY_OTHERS_NHW_COLOR_CODE),
     // Unresponsive
-    OutOfScopeDu to MapMarkerColor(statusOutOfScopeRejectedColorCode),
-    Incomplete to MapMarkerColor(statusDoneByOthersNhwColorCode),
+    OutOfScopeDu to MapMarkerColor(STATUS_OUT_OF_SCOPE_REJECTED_COLOR_CODE),
+    Incomplete to MapMarkerColor(STATUS_DONE_BY_OTHERS_NHW_COLOR_CODE),
 )
 
 private val statusClaimMapMarkerColors = mapOf(
     WorkTypeStatusClaim(WorkTypeStatus.ClosedDuplicate, true) to MapMarkerColor(
-        statusDuplicateClaimedColorCode,
+        STATUS_DUPLICATE_CLAIMED_COLOR_CODE,
     ),
     WorkTypeStatusClaim(WorkTypeStatus.OpenPartiallyCompleted, false) to MapMarkerColor(
-        statusUnclaimedColorCode,
+        STATUS_UNCLAIMED_COLOR_CODE,
     ),
     WorkTypeStatusClaim(WorkTypeStatus.OpenNeedsFollowUp, false) to MapMarkerColor(
-        statusUnclaimedColorCode,
+        STATUS_UNCLAIMED_COLOR_CODE,
     ),
     WorkTypeStatusClaim(WorkTypeStatus.ClosedDuplicate, false) to MapMarkerColor(
-        statusDuplicateUnclaimedColorCode,
+        STATUS_DUPLICATE_UNCLAIMED_COLOR_CODE,
     ),
 )
 
-internal const val filteredOutMarkerAlpha = 0.2f
-private const val filteredOutMarkerStrokeAlpha = 1.0f
-private const val filteredOutMarkerFillAlpha = 0.25f
-private const val filteredOutDotStrokeAlpha = 0.5f
-private const val filteredOutDotFillAlpha = 0.1f
-private const val duplicateMarkerAlpha = 0.3f
+internal const val FILTERED_OUT_MARKER_ALPHA = 0.2f
+private const val FILTERED_OUT_MARKER_STROKE_ALPHA = 1.0f
+private const val FILTERED_OUT_MARKER_FILL_ALPHA = 0.25f
+private const val FILTERED_OUT_DOT_STROKE_ALPHA = 0.5f
+private const val FILTERED_OUT_DOT_FILL_ALPHA = 0.1f
+private const val DUPLICATE_MARKER_ALPHA = 0.3f
 
 internal fun getMapMarkerColors(
     statusClaim: WorkTypeStatusClaim,
@@ -87,12 +87,13 @@ internal fun getMapMarkerColors(
 
     if (isDuplicate) {
         colors = colors.copy(
-            fill = colors.fill.copy(alpha = duplicateMarkerAlpha),
-            stroke = colors.stroke.copy(alpha = duplicateMarkerAlpha),
+            fill = colors.fill.copy(alpha = DUPLICATE_MARKER_ALPHA),
+            stroke = colors.stroke.copy(alpha = DUPLICATE_MARKER_ALPHA),
         )
     } else if (isFilteredOut) {
-        val fillAlpha = if (isDot) filteredOutDotFillAlpha else filteredOutMarkerFillAlpha
-        val strokeAlpha = if (isDot) filteredOutDotStrokeAlpha else filteredOutMarkerStrokeAlpha
+        val fillAlpha = if (isDot) FILTERED_OUT_DOT_FILL_ALPHA else FILTERED_OUT_MARKER_FILL_ALPHA
+        val strokeAlpha =
+            if (isDot) FILTERED_OUT_DOT_STROKE_ALPHA else FILTERED_OUT_MARKER_STROKE_ALPHA
         colors = MapMarkerColor(0xFFFFFFFF, colors.fillLong)
             .let {
                 it.copy(

@@ -6,7 +6,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import com.crisiscleanup.core.appnav.RouteConstant.casesGraphRoutePattern
+import com.crisiscleanup.core.appnav.RouteConstant.CASES_GRAPH_ROUTE
 import com.crisiscleanup.core.appnav.navigateToExistingCase
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.model.data.EmptyIncident
@@ -54,7 +54,7 @@ fun CrisisCleanupNavHost(
     onBack: () -> Unit,
     openAuthentication: () -> Unit,
     modifier: Modifier = Modifier,
-    startDestination: String = casesGraphRoutePattern,
+    startDestination: String = CASES_GRAPH_ROUTE,
 ) {
     val createNewCase = remember(navController) {
         { incidentId: Long -> navController.navigateToCaseEditor(incidentId) }

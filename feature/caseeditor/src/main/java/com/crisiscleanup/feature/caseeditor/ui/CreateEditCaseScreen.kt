@@ -40,11 +40,11 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.FocusSectionSlider
 import com.crisiscleanup.core.designsystem.component.FormListSectionSeparator
+import com.crisiscleanup.core.designsystem.component.LIST_DETAIL_DETAIL_WEIGHT
+import com.crisiscleanup.core.designsystem.component.LIST_DETAIL_LIST_WEIGHT
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
 import com.crisiscleanup.core.designsystem.component.listDetailDetailMaxWidth
-import com.crisiscleanup.core.designsystem.component.listDetailDetailWeight
-import com.crisiscleanup.core.designsystem.component.listDetailListWeight
 import com.crisiscleanup.core.designsystem.component.rememberFocusSectionSliderState
 import com.crisiscleanup.core.designsystem.component.rememberSectionContentIndexLookup
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
@@ -62,8 +62,8 @@ import com.crisiscleanup.feature.caseeditor.WorksiteSection
 import com.crisiscleanup.feature.caseeditor.model.FormFieldsInputData
 import com.crisiscleanup.core.common.R as commonR
 
-private const val SectionHeaderContentType = "section-header-content-type"
-private const val SectionSeparatorContentType = "section-header-content-type"
+private const val SECTION_HEADER_CONTENT_TYPE = "section-header-content-type"
+private const val SECTION_HEADER_SEPARATOR_TYPE = "section-header-separator-type"
 
 @Composable
 internal fun CreateEditCaseRoute(
@@ -144,7 +144,7 @@ private fun ArrangeLayout(
     val screenModifier = Modifier.background(color = Color.White)
     if (isListDetailLayout) {
         Row(screenModifier) {
-            Column(Modifier.weight(listDetailListWeight)) {
+            Column(Modifier.weight(LIST_DETAIL_LIST_WEIGHT)) {
                 TopAppBarBackAction(
                     title = headerTitle,
                     onAction = onNavigateBack,
@@ -162,7 +162,7 @@ private fun ArrangeLayout(
             }
             Column(
                 Modifier
-                    .weight(listDetailDetailWeight)
+                    .weight(LIST_DETAIL_DETAIL_WEIGHT)
                     .sizeIn(maxWidth = listDetailDetailMaxWidth),
             ) {
                 CreateEditCaseContent(
@@ -422,7 +422,7 @@ private fun LazyListScope.fullEditContent(
         viewModel.formDataEditors.forEachIndexed { index, editor ->
             item(
                 key = "section-separator-$index",
-                contentType = SectionSeparatorContentType,
+                contentType = SECTION_HEADER_SEPARATOR_TYPE,
             ) {
                 FormListSectionSeparator()
             }
@@ -453,7 +453,7 @@ private fun LazyListScope.propertyLocationSection(
 ) {
     item(
         key = "section-header-0",
-        contentType = SectionHeaderContentType,
+        contentType = SECTION_HEADER_CONTENT_TYPE,
     ) {
         SectionHeaderCollapsible(
             viewModel,
@@ -510,7 +510,7 @@ private fun LazyListScope.formDataSection(
 ) {
     item(
         key = "section-header-$sectionIndex",
-        contentType = SectionHeaderContentType,
+        contentType = SECTION_HEADER_CONTENT_TYPE,
     ) {
         val toggle = remember(viewModel) { { toggleSectionCollapse(sectionIndex) } }
         SectionHeaderCollapsible(

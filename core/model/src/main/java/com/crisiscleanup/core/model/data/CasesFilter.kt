@@ -6,10 +6,11 @@ import kotlin.time.Duration.Companion.days
 const val DEFAULT_SVI = 0f
 private const val DEFAULT_FILTER_DISTANCE = 0f
 
-const val CasesFilterMinDaysAgo: Int = 3
-const val CasesFilterMaxDaysAgo: Int = 193
-private const val CASES_FILTER_ADD_DAYS_DELTA = CasesFilterMaxDaysAgo - CasesFilterMinDaysAgo
-private const val DEFAULT_DAYS_AGO = CasesFilterMaxDaysAgo
+const val CASES_FILTER_MIN_DAYS_AGO: Int = 3
+const val CASES_FILTER_MAX_DAYS_AGO: Int = 193
+private const val CASES_FILTER_ADD_DAYS_DELTA =
+    CASES_FILTER_MAX_DAYS_AGO - CASES_FILTER_MIN_DAYS_AGO
+private const val DEFAULT_DAYS_AGO = CASES_FILTER_MAX_DAYS_AGO
 
 data class CasesFilter(
     val svi: Float = DEFAULT_SVI,
@@ -40,7 +41,7 @@ data class CasesFilter(
 ) {
     companion object {
         fun determineDaysAgo(daysAgoNormalized: Float) =
-            CasesFilterMinDaysAgo + (daysAgoNormalized * CASES_FILTER_ADD_DAYS_DELTA).toInt()
+            CASES_FILTER_MIN_DAYS_AGO + (daysAgoNormalized * CASES_FILTER_ADD_DAYS_DELTA).toInt()
                 .coerceIn(0, CASES_FILTER_ADD_DAYS_DELTA)
     }
 
@@ -81,7 +82,7 @@ data class CasesFilter(
     }
 
     val daysAgoNormalized by lazy {
-        ((daysAgoUpdated.toFloat() - CasesFilterMinDaysAgo) / CASES_FILTER_ADD_DAYS_DELTA).coerceIn(
+        ((daysAgoUpdated.toFloat() - CASES_FILTER_MIN_DAYS_AGO) / CASES_FILTER_ADD_DAYS_DELTA).coerceIn(
             0f,
             1f,
         )

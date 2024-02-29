@@ -2,6 +2,7 @@ package com.crisiscleanup.core.mapmarker.model
 
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class CoordinateGridQueryTest {
     // TODO More comprehensive tests at multiple zoom levels
@@ -32,11 +33,17 @@ class CoordinateGridQueryTest {
         )
         val tileCoordinates = TileCoordinates(1, 1, 3)
 
+        val tolerance = 1e-9
         for (lat in -90 until 90 step 5) {
             for (lng in -180 until 180 step 5) {
                 val n = tileCoordinates.fromLatLng(lat.toDouble(), lng.toDouble())
                 val expected = expectedLookup[Pair(lat, lng)]
-                assertEquals(expected, n)
+                if (expected == null) {
+                    assertNull(n)
+                } else {
+                    assertEquals(expected.first, n!!.first, tolerance)
+                    assertEquals(expected.second, n.second, tolerance)
+                }
             }
         }
     }

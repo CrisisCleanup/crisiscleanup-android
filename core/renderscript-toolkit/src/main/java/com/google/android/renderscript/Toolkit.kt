@@ -1,10 +1,9 @@
 package com.google.android.renderscript
 
 import android.graphics.Bitmap
-import java.lang.IllegalArgumentException
 
 // This string is used for error messages.
-private const val externalName = "RenderScript Toolkit"
+private const val EXTERNAL_NAME = "RenderScript Toolkit"
 
 /**
  * A collection of high-performance graphic utility functions like blur and blend.
@@ -66,11 +65,11 @@ object Toolkit {
         restriction: Range2d? = null,
     ) {
         require(sourceArray.size >= sizeX * sizeY * 4) {
-            "$externalName blend. sourceArray is too small for the given dimensions. " +
+            "$EXTERNAL_NAME blend. sourceArray is too small for the given dimensions. " +
                 "$sizeX*$sizeY*4 < ${sourceArray.size}."
         }
         require(destArray.size >= sizeX * sizeY * 4) {
-            "$externalName blend. sourceArray is too small for the given dimensions. " +
+            "$EXTERNAL_NAME blend. sourceArray is too small for the given dimensions. " +
                 "$sizeX*$sizeY*4 < ${sourceArray.size}."
         }
         validateRestriction("blend", sizeX, sizeY, restriction)
@@ -113,7 +112,7 @@ object Toolkit {
             sourceBitmap.width == destBitmap.width &&
                 sourceBitmap.height == destBitmap.height,
         ) {
-            "$externalName blend. Source and destination bitmaps should be the same size. " +
+            "$EXTERNAL_NAME blend. Source and destination bitmaps should be the same size. " +
                 "${sourceBitmap.width}x${sourceBitmap.height} and " +
                 "${destBitmap.width}x${destBitmap.height} provided."
         }
@@ -166,14 +165,14 @@ object Toolkit {
         restriction: Range2d? = null,
     ): ByteArray {
         require(vectorSize == 1 || vectorSize == 4) {
-            "$externalName blur. The vectorSize should be 1 or 4. $vectorSize provided."
+            "$EXTERNAL_NAME blur. The vectorSize should be 1 or 4. $vectorSize provided."
         }
         require(inputArray.size >= sizeX * sizeY * vectorSize) {
-            "$externalName blur. inputArray is too small for the given dimensions. " +
+            "$EXTERNAL_NAME blur. inputArray is too small for the given dimensions. " +
                 "$sizeX*$sizeY*$vectorSize < ${inputArray.size}."
         }
         require(radius in 1..25) {
-            "$externalName blur. The radius should be between 1 and 25. $radius provided."
+            "$EXTERNAL_NAME blur. The radius should be between 1 and 25. $radius provided."
         }
         validateRestriction("blur", sizeX, sizeY, restriction)
 
@@ -220,7 +219,7 @@ object Toolkit {
     fun blur(inputBitmap: Bitmap, radius: Int = 5, restriction: Range2d? = null): Bitmap {
         validateBitmap("blur", inputBitmap)
         require(radius in 1..25) {
-            "$externalName blur. The radius should be between 1 and 25. $radius provided."
+            "$EXTERNAL_NAME blur. The radius should be between 1 and 25. $radius provided."
         }
         validateRestriction("blur", inputBitmap.width, inputBitmap.height, restriction)
 
@@ -336,22 +335,22 @@ object Toolkit {
         restriction: Range2d? = null,
     ): ByteArray {
         require(inputVectorSize in 1..4) {
-            "$externalName colorMatrix. The inputVectorSize should be between 1 and 4. " +
+            "$EXTERNAL_NAME colorMatrix. The inputVectorSize should be between 1 and 4. " +
                 "$inputVectorSize provided."
         }
         require(outputVectorSize in 1..4) {
-            "$externalName colorMatrix. The outputVectorSize should be between 1 and 4. " +
+            "$EXTERNAL_NAME colorMatrix. The outputVectorSize should be between 1 and 4. " +
                 "$outputVectorSize provided."
         }
         require(inputArray.size >= sizeX * sizeY * inputVectorSize) {
-            "$externalName colorMatrix. inputArray is too small for the given dimensions. " +
+            "$EXTERNAL_NAME colorMatrix. inputArray is too small for the given dimensions. " +
                 "$sizeX*$sizeY*$inputVectorSize < ${inputArray.size}."
         }
         require(matrix.size == 16) {
-            "$externalName colorMatrix. matrix should have 16 entries. ${matrix.size} provided."
+            "$EXTERNAL_NAME colorMatrix. matrix should have 16 entries. ${matrix.size} provided."
         }
         require(addVector.size == 4) {
-            "$externalName colorMatrix. addVector should have 4 entries. " +
+            "$EXTERNAL_NAME colorMatrix. addVector should have 4 entries. " +
                 "${addVector.size} provided."
         }
         validateRestriction("colorMatrix", sizeX, sizeY, restriction)
@@ -395,10 +394,10 @@ object Toolkit {
     ): Bitmap {
         validateBitmap("colorMatrix", inputBitmap)
         require(matrix.size == 16) {
-            "$externalName colorMatrix. matrix should have 16 entries. ${matrix.size} provided."
+            "$EXTERNAL_NAME colorMatrix. matrix should have 16 entries. ${matrix.size} provided."
         }
         require(addVector.size == 4) {
-            "$externalName colorMatrix. addVector should have 4 entries."
+            "$EXTERNAL_NAME colorMatrix. addVector should have 4 entries."
         }
         validateRestriction("colorMatrix", inputBitmap.width, inputBitmap.height, restriction)
 
@@ -457,15 +456,15 @@ object Toolkit {
         restriction: Range2d? = null,
     ): ByteArray {
         require(vectorSize in 1..4) {
-            "$externalName convolve. The vectorSize should be between 1 and 4. " +
+            "$EXTERNAL_NAME convolve. The vectorSize should be between 1 and 4. " +
                 "$vectorSize provided."
         }
         require(inputArray.size >= sizeX * sizeY * vectorSize) {
-            "$externalName convolve. inputArray is too small for the given dimensions. " +
+            "$EXTERNAL_NAME convolve. inputArray is too small for the given dimensions. " +
                 "$sizeX*$sizeY*$vectorSize < ${inputArray.size}."
         }
         require(coefficients.size == 9 || coefficients.size == 25) {
-            "$externalName convolve. Only 3x3 or 5x5 convolutions are supported. " +
+            "$EXTERNAL_NAME convolve. Only 3x3 or 5x5 convolutions are supported. " +
                 "${coefficients.size} coefficients provided."
         }
         validateRestriction("convolve", sizeX, sizeY, restriction)
@@ -515,7 +514,7 @@ object Toolkit {
     ): Bitmap {
         validateBitmap("convolve", inputBitmap)
         require(coefficients.size == 9 || coefficients.size == 25) {
-            "$externalName convolve. Only 3x3 or 5x5 convolutions are supported. " +
+            "$EXTERNAL_NAME convolve. Only 3x3 or 5x5 convolutions are supported. " +
                 "${coefficients.size} coefficients provided."
         }
         validateRestriction("convolve", inputBitmap, restriction)
@@ -561,11 +560,11 @@ object Toolkit {
         restriction: Range2d? = null,
     ): IntArray {
         require(vectorSize in 1..4) {
-            "$externalName histogram. The vectorSize should be between 1 and 4. " +
+            "$EXTERNAL_NAME histogram. The vectorSize should be between 1 and 4. " +
                 "$vectorSize provided."
         }
         require(inputArray.size >= sizeX * sizeY * vectorSize) {
-            "$externalName histogram. inputArray is too small for the given dimensions. " +
+            "$EXTERNAL_NAME histogram. inputArray is too small for the given dimensions. " +
                 "$sizeX*$sizeY*$vectorSize < ${inputArray.size}."
         }
         validateRestriction("histogram", sizeX, sizeY, restriction)
@@ -662,11 +661,11 @@ object Toolkit {
         restriction: Range2d? = null,
     ): IntArray {
         require(vectorSize in 1..4) {
-            "$externalName histogramDot. The vectorSize should be between 1 and 4. " +
+            "$EXTERNAL_NAME histogramDot. The vectorSize should be between 1 and 4. " +
                 "$vectorSize provided."
         }
         require(inputArray.size >= sizeX * sizeY * vectorSize) {
-            "$externalName histogramDot. inputArray is too small for the given dimensions. " +
+            "$EXTERNAL_NAME histogramDot. inputArray is too small for the given dimensions. " +
                 "$sizeX*$sizeY*$vectorSize < ${inputArray.size}."
         }
         validateHistogramDotCoefficients(coefficients, vectorSize)
@@ -771,7 +770,7 @@ object Toolkit {
         restriction: Range2d? = null,
     ): ByteArray {
         require(inputArray.size >= sizeX * sizeY * 4) {
-            "$externalName lut. inputArray is too small for the given dimensions. " +
+            "$EXTERNAL_NAME lut. inputArray is too small for the given dimensions. " +
                 "$sizeX*$sizeY*4 < ${inputArray.size}."
         }
         validateRestriction("lut", sizeX, sizeY, restriction)
@@ -872,14 +871,14 @@ object Toolkit {
         restriction: Range2d? = null,
     ): ByteArray {
         require(inputArray.size >= sizeX * sizeY * 4) {
-            "$externalName lut3d. inputArray is too small for the given dimensions. " +
+            "$EXTERNAL_NAME lut3d. inputArray is too small for the given dimensions. " +
                 "$sizeX*$sizeY*4 < ${inputArray.size}."
         }
         require(
             cube.sizeX >= 2 && cube.sizeY >= 2 && cube.sizeZ >= 2 &&
                 cube.sizeX <= 256 && cube.sizeY <= 256 && cube.sizeZ <= 256,
         ) {
-            "$externalName lut3d. The dimensions of the cube should be between 2 and 256. " +
+            "$EXTERNAL_NAME lut3d. The dimensions of the cube should be between 2 and 256. " +
                 "(${cube.sizeX}, ${cube.sizeY}, ${cube.sizeZ}) provided."
         }
         validateRestriction("lut3d", sizeX, sizeY, restriction)
@@ -978,10 +977,10 @@ object Toolkit {
         restriction: Range2d? = null,
     ): ByteArray {
         require(vectorSize in 1..4) {
-            "$externalName resize. The vectorSize should be between 1 and 4. $vectorSize provided."
+            "$EXTERNAL_NAME resize. The vectorSize should be between 1 and 4. $vectorSize provided."
         }
         require(inputArray.size >= inputSizeX * inputSizeY * vectorSize) {
-            "$externalName resize. inputArray is too small for the given dimensions. " +
+            "$EXTERNAL_NAME resize. inputArray is too small for the given dimensions. " +
                 "$inputSizeX*$inputSizeY*$vectorSize < ${inputArray.size}."
         }
         validateRestriction("resize", outputSizeX, outputSizeY, restriction)
@@ -1053,7 +1052,7 @@ object Toolkit {
      */
     fun yuvToRgb(inputArray: ByteArray, sizeX: Int, sizeY: Int, format: YuvFormat): ByteArray {
         require(sizeX % 2 == 0 && sizeY % 2 == 0) {
-            "$externalName yuvToRgb. Non-even dimensions are not supported. " +
+            "$EXTERNAL_NAME yuvToRgb. Non-even dimensions are not supported. " +
                 "$sizeX and $sizeY were provided."
         }
 
@@ -1079,7 +1078,7 @@ object Toolkit {
      */
     fun yuvToRgbBitmap(inputArray: ByteArray, sizeX: Int, sizeY: Int, format: YuvFormat): Bitmap {
         require(sizeX % 2 == 0 && sizeY % 2 == 0) {
-            "$externalName yuvToRgbBitmap. Non-even dimensions are not supported. " +
+            "$EXTERNAL_NAME yuvToRgbBitmap. Non-even dimensions are not supported. " +
                 "$sizeX and $sizeY were provided."
         }
 
@@ -1482,17 +1481,17 @@ internal fun validateBitmap(
             inputBitmap.config == Bitmap.Config.ARGB_8888 ||
                 inputBitmap.config == Bitmap.Config.ALPHA_8,
         ) {
-            "$externalName. $function supports only ARGB_8888 and ALPHA_8 bitmaps. " +
+            "$EXTERNAL_NAME. $function supports only ARGB_8888 and ALPHA_8 bitmaps. " +
                 "${inputBitmap.config} provided."
         }
     } else {
         require(inputBitmap.config == Bitmap.Config.ARGB_8888) {
-            "$externalName. $function supports only ARGB_8888. " +
+            "$EXTERNAL_NAME. $function supports only ARGB_8888. " +
                 "${inputBitmap.config} provided."
         }
     }
     require(inputBitmap.width * vectorSize(inputBitmap) == inputBitmap.rowBytes) {
-        "$externalName $function. Only bitmaps with rowSize equal to the width * vectorSize are " +
+        "$EXTERNAL_NAME $function. Only bitmaps with rowSize equal to the width * vectorSize are " +
             "currently supported. Provided were rowBytes=${inputBitmap.rowBytes}, " +
             "width={${inputBitmap.width}, and vectorSize=${vectorSize(inputBitmap)}."
     }
@@ -1506,19 +1505,19 @@ internal fun validateHistogramDotCoefficients(
     vectorSize: Int,
 ) {
     require(coefficients == null || coefficients.size == vectorSize) {
-        "$externalName histogramDot. The coefficients should be null or have $vectorSize values."
+        "$EXTERNAL_NAME histogramDot. The coefficients should be null or have $vectorSize values."
     }
     if (coefficients !== null) {
         var sum = 0f
         for (i in 0 until vectorSize) {
             require(coefficients[i] >= 0.0f) {
-                "$externalName histogramDot. Coefficients should not be negative. " +
+                "$EXTERNAL_NAME histogramDot. Coefficients should not be negative. " +
                     "Coefficient $i was ${coefficients[i]}."
             }
             sum += coefficients[i]
         }
         require(sum <= 1.0f) {
-            "$externalName histogramDot. Coefficients should add to 1 or less. Their sum is $sum."
+            "$EXTERNAL_NAME histogramDot. Coefficients should add to 1 or less. Their sum is $sum."
         }
     }
 }
@@ -1535,21 +1534,21 @@ internal fun validateRestriction(
 ) {
     if (restriction == null) return
     require(restriction.startX < sizeX && restriction.endX <= sizeX) {
-        "$externalName $tag. sizeX should be greater than restriction.startX and greater " +
+        "$EXTERNAL_NAME $tag. sizeX should be greater than restriction.startX and greater " +
             "or equal to restriction.endX. $sizeX, ${restriction.startX}, " +
             "and ${restriction.endX} were provided respectively."
     }
     require(restriction.startY < sizeY && restriction.endY <= sizeY) {
-        "$externalName $tag. sizeY should be greater than restriction.startY and greater " +
+        "$EXTERNAL_NAME $tag. sizeY should be greater than restriction.startY and greater " +
             "or equal to restriction.endY. $sizeY, ${restriction.startY}, " +
             "and ${restriction.endY} were provided respectively."
     }
     require(restriction.startX < restriction.endX) {
-        "$externalName $tag. Restriction startX should be less than endX. " +
+        "$EXTERNAL_NAME $tag. Restriction startX should be less than endX. " +
             "${restriction.startX} and ${restriction.endX} were provided respectively."
     }
     require(restriction.startY < restriction.endY) {
-        "$externalName $tag. Restriction startY should be less than endY. " +
+        "$EXTERNAL_NAME $tag. Restriction startY should be less than endY. " +
             "${restriction.startY} and ${restriction.endY} were provided respectively."
     }
 }
@@ -1559,7 +1558,7 @@ internal fun vectorSize(bitmap: Bitmap): Int {
         Bitmap.Config.ARGB_8888 -> 4
         Bitmap.Config.ALPHA_8 -> 1
         else -> throw IllegalArgumentException(
-            "$externalName. Only ARGB_8888 and ALPHA_8 Bitmap are supported.",
+            "$EXTERNAL_NAME. Only ARGB_8888 and ALPHA_8 Bitmap are supported.",
         )
     }
 }

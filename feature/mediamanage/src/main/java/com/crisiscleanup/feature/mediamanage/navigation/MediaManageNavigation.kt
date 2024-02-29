@@ -4,35 +4,35 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.crisiscleanup.core.appnav.RouteConstant.viewImageRoute
-import com.crisiscleanup.core.appnav.ViewImageArgs.Companion.encodedTitleArg
-import com.crisiscleanup.core.appnav.ViewImageArgs.Companion.encodedUriArg
-import com.crisiscleanup.core.appnav.ViewImageArgs.Companion.imageIdArg
-import com.crisiscleanup.core.appnav.ViewImageArgs.Companion.isNetworkImageArg
+import com.crisiscleanup.core.appnav.RouteConstant.VIEW_IMAGE_ROUTE
+import com.crisiscleanup.core.appnav.ViewImageArgs.Companion.ENCODED_TITLE_ARG
+import com.crisiscleanup.core.appnav.ViewImageArgs.Companion.ENCODED_URI_ARG
+import com.crisiscleanup.core.appnav.ViewImageArgs.Companion.IMAGE_ID_ARG
+import com.crisiscleanup.core.appnav.ViewImageArgs.Companion.IS_NETWORK_IMAGE_ARG
 import com.crisiscleanup.feature.mediamanage.ui.ViewImageRoute
 
 fun NavGraphBuilder.viewSingleImageScreen(
     onBack: () -> Unit,
 ) {
     val queryString = listOf(
-        "$imageIdArg={$imageIdArg}",
-        "$encodedUriArg={$encodedUriArg}",
-        "$isNetworkImageArg={$isNetworkImageArg}",
-        "$encodedTitleArg={$encodedTitleArg}",
+        "$IMAGE_ID_ARG={$IMAGE_ID_ARG}",
+        "$ENCODED_URI_ARG={$ENCODED_URI_ARG}",
+        "$IS_NETWORK_IMAGE_ARG={$IS_NETWORK_IMAGE_ARG}",
+        "$ENCODED_TITLE_ARG={$ENCODED_TITLE_ARG}",
     ).joinToString("&")
     composable(
-        route = "$viewImageRoute?$queryString",
+        route = "$VIEW_IMAGE_ROUTE?$queryString",
         arguments = listOf(
-            navArgument(imageIdArg) {
+            navArgument(IMAGE_ID_ARG) {
                 type = NavType.LongType
             },
-            navArgument(encodedUriArg) {
+            navArgument(ENCODED_URI_ARG) {
                 type = NavType.StringType
             },
-            navArgument(isNetworkImageArg) {
+            navArgument(IS_NETWORK_IMAGE_ARG) {
                 type = NavType.BoolType
             },
-            navArgument(encodedTitleArg) {
+            navArgument(ENCODED_TITLE_ARG) {
                 type = NavType.StringType
             },
         ),

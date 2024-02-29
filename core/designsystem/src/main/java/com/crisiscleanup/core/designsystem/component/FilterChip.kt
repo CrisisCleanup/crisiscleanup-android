@@ -59,7 +59,7 @@ fun CrisisCleanupFilterChip(
 private object ChipDefaults {
     // TODO: File bug
     // FilterChip default values aren't exposed via FilterChipDefaults
-    const val DisabledChipContainerAlpha = 0.12f
+    const val DISABLED_CHIP_CONTAINER_ALPHA = 0.12f
 
     @Composable
     fun filterChipColors(selected: Boolean): SelectableChipColors {
@@ -69,7 +69,7 @@ private object ChipDefaults {
             iconColor = colors.onBackground,
             disabledContainerColor = if (selected) {
                 colors.onBackground.copy(
-                    alpha = DisabledChipContainerAlpha,
+                    alpha = DISABLED_CHIP_CONTAINER_ALPHA,
                 )
             } else {
                 Color.Transparent

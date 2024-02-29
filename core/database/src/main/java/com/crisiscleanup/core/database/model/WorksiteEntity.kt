@@ -196,9 +196,6 @@ data class WorkTypeEntity(
 )
 
 fun WorkTypeEntity.asExternalModel() = WorkType(
-    /**
-     * Local ID not the network ID
-     */
     id = id,
     createdAt = createdAt,
     orgClaim = orgClaim,
@@ -274,9 +271,6 @@ data class WorksiteFlagEntity(
 )
 
 fun WorksiteFlagEntity.asExternalModel(translator: KeyTranslator? = null) = WorksiteFlag(
-    /**
-     * Local ID not the network ID
-     */
     id = id,
     action = action ?: "",
     createdAt = createdAt,
@@ -326,9 +320,6 @@ data class WorksiteNoteEntity(
 )
 
 fun WorksiteNoteEntity.asExternalModel() = WorksiteNote(
-    /**
-     * Local ID not the network ID
-     */
     id = id,
     createdAt = createdAt,
     isSurvivor = isSurvivor,

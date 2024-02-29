@@ -14,8 +14,8 @@ import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.common.sync.SyncResult
 import com.crisiscleanup.sync.R
+import com.crisiscleanup.sync.initializers.SYNC_MEDIA_NOTIFICATION_ID
 import com.crisiscleanup.sync.initializers.SyncMediaConstraints
-import com.crisiscleanup.sync.initializers.SyncMediaNotificationId
 import com.crisiscleanup.sync.initializers.channelNotificationManager
 import com.crisiscleanup.sync.initializers.syncForegroundInfo
 import dagger.assisted.Assisted
@@ -34,7 +34,7 @@ class SyncMediaWorker @AssistedInject constructor(
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
 ) : CoroutineWorker(appContext, workerParams) {
     override suspend fun getForegroundInfo() = appContext.syncForegroundInfo(
-        SyncMediaNotificationId,
+        SYNC_MEDIA_NOTIFICATION_ID,
         text = appContext.getString(R.string.sync_media_notification_text),
     )
 
@@ -57,7 +57,7 @@ class SyncMediaWorker @AssistedInject constructor(
                 .log("Media sync end. success=$isSyncSuccess")
                 .flush()
 
-            appContext.channelNotificationManager()?.cancel(SyncMediaNotificationId)
+            appContext.channelNotificationManager()?.cancel(SYNC_MEDIA_NOTIFICATION_ID)
 
             if (isSyncSuccess) {
                 Result.success()

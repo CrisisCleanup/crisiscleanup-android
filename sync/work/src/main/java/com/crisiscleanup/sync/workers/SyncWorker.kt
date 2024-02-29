@@ -14,8 +14,8 @@ import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.common.sync.SyncResult
+import com.crisiscleanup.sync.initializers.SYNC_NOTIFICATION_ID
 import com.crisiscleanup.sync.initializers.SyncConstraints
-import com.crisiscleanup.sync.initializers.SyncNotificationId
 import com.crisiscleanup.sync.initializers.channelNotificationManager
 import com.crisiscleanup.sync.initializers.syncForegroundInfo
 import dagger.assisted.Assisted
@@ -57,7 +57,7 @@ class SyncWorker @AssistedInject constructor(
                 .log("Sync end. success=$isSyncSuccess")
                 .flush()
 
-            appContext.channelNotificationManager()?.cancel(SyncNotificationId)
+            appContext.channelNotificationManager()?.cancel(SYNC_NOTIFICATION_ID)
 
             if (isSyncSuccess) {
                 Result.success()

@@ -1,12 +1,12 @@
 package com.crisiscleanup.core.appnav
 
 import androidx.navigation.NavController
-import com.crisiscleanup.core.appnav.RouteConstant.viewCaseRoute
+import com.crisiscleanup.core.appnav.RouteConstant.VIEW_CASE_ROUTE
 
-const val incidentIdArg = "incidentId"
-const val worksiteIdArg = "worksiteId"
+const val INCIDENT_ID_ARG = "incidentId"
+const val WORKSITE_ID_ARG = "worksiteId"
 
 fun NavController.navigateToExistingCase(incidentId: Long, worksiteId: Long) {
     // Must match composable route signature
-    this.navigate("${viewCaseRoute}?$incidentIdArg=$incidentId&$worksiteIdArg=$worksiteId")
+    this.navigate("${VIEW_CASE_ROUTE}?$INCIDENT_ID_ARG=$incidentId&$WORKSITE_ID_ARG=$worksiteId")
 }

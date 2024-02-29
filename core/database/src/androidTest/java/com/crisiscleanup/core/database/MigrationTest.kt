@@ -11,7 +11,7 @@ import java.io.IOException
 
 @RunWith(AndroidJUnit4::class)
 class MigrationTest {
-    private val TEST_DB = "migration-test"
+    private val testDbName = "migration-test"
 
     @get:Rule
     val helper = MigrationTestHelper(
@@ -23,7 +23,7 @@ class MigrationTest {
     @Throws(IOException::class)
     fun migrateAll() {
         // Create earliest version of the database.
-        helper.createDatabase(TEST_DB, 1).apply {
+        helper.createDatabase(testDbName, 1).apply {
             close()
         }
 
@@ -32,7 +32,7 @@ class MigrationTest {
         Room.databaseBuilder(
             InstrumentationRegistry.getInstrumentation().targetContext,
             CrisisCleanupDatabase::class.java,
-            TEST_DB,
+            testDbName,
         )
     }
 }

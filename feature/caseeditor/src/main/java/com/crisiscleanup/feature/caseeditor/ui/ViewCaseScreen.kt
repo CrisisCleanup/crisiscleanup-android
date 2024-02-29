@@ -74,6 +74,8 @@ import com.crisiscleanup.core.designsystem.component.CollapsibleIcon
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupFab
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextArea
+import com.crisiscleanup.core.designsystem.component.LIST_DETAIL_DETAIL_WEIGHT
+import com.crisiscleanup.core.designsystem.component.LIST_DETAIL_LIST_WEIGHT
 import com.crisiscleanup.core.designsystem.component.LeadingIconChip
 import com.crisiscleanup.core.designsystem.component.LinkifyEmailText
 import com.crisiscleanup.core.designsystem.component.LinkifyLocationText
@@ -84,8 +86,6 @@ import com.crisiscleanup.core.designsystem.component.WorkTypePrimaryAction
 import com.crisiscleanup.core.designsystem.component.actionEdgeSpace
 import com.crisiscleanup.core.designsystem.component.fabPlusSpaceHeight
 import com.crisiscleanup.core.designsystem.component.listDetailDetailMaxWidth
-import com.crisiscleanup.core.designsystem.component.listDetailDetailWeight
-import com.crisiscleanup.core.designsystem.component.listDetailListWeight
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
@@ -398,7 +398,7 @@ private fun ListDetailContent(
     openPhoto: (ViewImageArgs) -> Unit = { _ -> },
 ) {
     Row {
-        Column(Modifier.weight(listDetailListWeight)) {
+        Column(Modifier.weight(LIST_DETAIL_LIST_WEIGHT)) {
             ViewCaseHeader(
                 title,
                 subTitle,
@@ -415,7 +415,7 @@ private fun ListDetailContent(
         }
         Column(
             Modifier
-                .weight(listDetailDetailWeight)
+                .weight(LIST_DETAIL_DETAIL_WEIGHT)
                 .sizeIn(maxWidth = listDetailDetailMaxWidth),
         ) {
             if (isEmptyWorksite) {

@@ -5,7 +5,7 @@ import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.TagLogger
 import com.crisiscleanup.core.commoncase.model.FormFieldNode
-import com.crisiscleanup.core.commoncase.model.WorkFormGroupKey
+import com.crisiscleanup.core.commoncase.model.WORK_FORM_GROUP_KEY
 import com.crisiscleanup.core.commoncase.model.flatten
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
@@ -229,8 +229,8 @@ internal class CaseEditorDataLoader(
                         .associate { it.fieldKey to it.label }
 
                     val workTypeFormFields =
-                        formFields.firstOrNull { it.fieldKey == WorkFormGroupKey }
-                            ?.let { node -> node.children.filter { it.parentKey == WorkFormGroupKey } }
+                        formFields.firstOrNull { it.fieldKey == WORK_FORM_GROUP_KEY }
+                            ?.let { node -> node.children.filter { it.parentKey == WORK_FORM_GROUP_KEY } }
                             ?: emptyList()
 
                     workTypeGroupChildrenLookup.value = workTypeFormFields.associate {

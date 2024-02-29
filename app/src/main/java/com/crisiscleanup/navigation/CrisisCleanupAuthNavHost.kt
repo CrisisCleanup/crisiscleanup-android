@@ -6,8 +6,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import com.crisiscleanup.core.appnav.RouteConstant.authGraphRoutePattern
-import com.crisiscleanup.core.appnav.RouteConstant.authRoute
+import com.crisiscleanup.core.appnav.RouteConstant.AUTH_GRAPH_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.AUTH_ROUTE
 import com.crisiscleanup.feature.authentication.navigation.authGraph
 import com.crisiscleanup.feature.authentication.navigation.emailLoginLinkScreen
 import com.crisiscleanup.feature.authentication.navigation.forgotPasswordScreen
@@ -28,7 +28,7 @@ import com.crisiscleanup.feature.authentication.navigation.resetPasswordScreen
 import com.crisiscleanup.feature.authentication.navigation.volunteerOrgScreen
 
 private fun NavController.popToAuth() {
-    popBackStack(authRoute, false, saveState = false)
+    popBackStack(AUTH_ROUTE, false, saveState = false)
 }
 
 @Composable
@@ -38,7 +38,7 @@ fun CrisisCleanupAuthNavHost(
     closeAuthentication: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    startDestination: String = authGraphRoutePattern,
+    startDestination: String = AUTH_GRAPH_ROUTE,
 ) {
     val navToAuth = remember(navController) { { navController.popToAuth() } }
     val navToLoginWithEmail =

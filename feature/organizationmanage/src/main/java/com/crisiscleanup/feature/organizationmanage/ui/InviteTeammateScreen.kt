@@ -51,13 +51,13 @@ import com.crisiscleanup.core.designsystem.component.AnimatedBusyIndicator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupRadioButton
+import com.crisiscleanup.core.designsystem.component.LIST_DETAIL_DETAIL_WEIGHT
+import com.crisiscleanup.core.designsystem.component.LIST_DETAIL_LIST_WEIGHT
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.RegisterSuccessView
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.component.listDetailDetailMaxWidth
-import com.crisiscleanup.core.designsystem.component.listDetailDetailWeight
-import com.crisiscleanup.core.designsystem.component.listDetailListWeight
 import com.crisiscleanup.core.designsystem.component.roundedOutline
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalDimensions
@@ -119,7 +119,7 @@ fun InviteTeammateRoute(
                 Row {
                     Column(
                         Modifier
-                            .weight(listDetailDetailWeight)
+                            .weight(LIST_DETAIL_DETAIL_WEIGHT)
                             .sizeIn(maxWidth = listDetailDetailMaxWidth),
                     ) {
                         InviteTeammateContent(
@@ -129,7 +129,7 @@ fun InviteTeammateRoute(
                     }
                     Column(
                         Modifier
-                            .weight(listDetailListWeight),
+                            .weight(LIST_DETAIL_LIST_WEIGHT),
                     ) {
                         QrCodeSection(inviteToAnotherOrg, inviteOrgState)
                     }

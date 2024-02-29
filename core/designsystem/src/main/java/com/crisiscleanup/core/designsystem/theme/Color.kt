@@ -58,38 +58,38 @@ val navigationContainerColor = Color(0xFF2D2D2D)
 val unfocusedBorderColor = Color(0xFFDADADA)
 
 // Similar to FilledButtonTokens.class
-private const val disabledContainerOpacity = 0.12f
-private const val disabledOpacity = 0.38f
-fun Color.disabledAlpha() = copy(alpha = disabledOpacity)
-val disabledButtonContainerColor = md_theme_onSurface.copy(alpha = disabledContainerOpacity)
+private const val DISABLED_CONTAINER_OPACITY = 0.12f
+private const val DISABLED_OPACITY = 0.38f
+fun Color.disabledAlpha() = copy(alpha = DISABLED_OPACITY)
+val disabledButtonContainerColor = md_theme_onSurface.copy(alpha = DISABLED_CONTAINER_OPACITY)
 val disabledButtonContentColor = md_theme_onSurface.disabledAlpha()
 
 val cardContainerColor = Color.White
 
-const val statusUnknownColorCode = 0xFF000000
-const val statusUnclaimedColorCode = 0xFFD0021B
-const val statusNotStartedColorCode = 0xFFFAB92E
-const val statusInProgressColorCode = 0xFFF0F032
-const val statusPartiallyCompletedColorCode = 0xFF0054BB
-const val statusNeedsFollowUpColorCode = 0xFFEA51EB
-const val statusCompletedColorCode = 0xFF0fa355
-const val statusDoneByOthersNhwColorCode = 0xFF82D78C
-const val statusOutOfScopeRejectedColorCode = 0xFF1D1D1D
-const val statusUnresponsiveColorCode = 0xFF787878
-const val statusDuplicateUnclaimedColorCode = 0xFF7F7F7F
-const val statusDuplicateClaimedColorCode = 0xFF82D78C
-val statusUnknownColor = Color(statusUnknownColorCode)
-val statusUnclaimedColor = Color(statusUnclaimedColorCode)
-val statusNotStartedColor = Color(statusNotStartedColorCode)
-val statusInProgressColor = Color(statusInProgressColorCode)
-val statusPartiallyCompletedColor = Color(statusPartiallyCompletedColorCode)
-val statusNeedsFollowUpColor = Color(statusNeedsFollowUpColorCode)
-val statusCompletedColor = Color(statusCompletedColorCode)
-val statusDoneByOthersNhwDiColor = Color(statusDoneByOthersNhwColorCode)
-val statusOutOfScopeRejectedColor = Color(statusOutOfScopeRejectedColorCode)
-val statusUnresponsiveColor = Color(statusUnresponsiveColorCode)
+const val STATUS_UNKNOWN_COLOR_CODE = 0xFF000000
+const val STATUS_UNCLAIMED_COLOR_CODE = 0xFFD0021B
+const val STATUS_NOT_STARTED_COLOR_CODE = 0xFFFAB92E
+const val STATUS_IN_PROGRESS_COLOR_CODE = 0xFFF0F032
+const val STATUS_PARTIALLY_COMPLETED_COLOR_CODE = 0xFF0054BB
+const val STATUS_NEEDS_FOLLOW_UP_COLOR_CODE = 0xFFEA51EB
+const val STATUS_COMPLETED_COLOR_CODE = 0xFF0fa355
+const val STATUS_DONE_BY_OTHERS_NHW_COLOR_CODE = 0xFF82D78C
+const val STATUS_OUT_OF_SCOPE_REJECTED_COLOR_CODE = 0xFF1D1D1D
+const val STATUS_UNRESPONSIVE_COLOR_CODE = 0xFF787878
+const val STATUS_DUPLICATE_UNCLAIMED_COLOR_CODE = 0xFF7F7F7F
+const val STATUS_DUPLICATE_CLAIMED_COLOR_CODE = 0xFF82D78C
+val statusUnknownColor = Color(STATUS_UNKNOWN_COLOR_CODE)
+val statusUnclaimedColor = Color(STATUS_UNCLAIMED_COLOR_CODE)
+val statusNotStartedColor = Color(STATUS_NOT_STARTED_COLOR_CODE)
+val statusInProgressColor = Color(STATUS_IN_PROGRESS_COLOR_CODE)
+val statusPartiallyCompletedColor = Color(STATUS_PARTIALLY_COMPLETED_COLOR_CODE)
+val statusNeedsFollowUpColor = Color(STATUS_NEEDS_FOLLOW_UP_COLOR_CODE)
+val statusCompletedColor = Color(STATUS_COMPLETED_COLOR_CODE)
+val statusDoneByOthersNhwDiColor = Color(STATUS_DONE_BY_OTHERS_NHW_COLOR_CODE)
+val statusOutOfScopeRejectedColor = Color(STATUS_OUT_OF_SCOPE_REJECTED_COLOR_CODE)
+val statusUnresponsiveColor = Color(STATUS_UNRESPONSIVE_COLOR_CODE)
 
-val statusClosedColor = Color(statusDuplicateClaimedColorCode)
+val statusClosedColor = Color(STATUS_DUPLICATE_CLAIMED_COLOR_CODE)
 
 val visitedCaseMarkerColorCode = 0xFF681da8
 

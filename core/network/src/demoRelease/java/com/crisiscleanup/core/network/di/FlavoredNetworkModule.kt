@@ -9,7 +9,7 @@ import dagger.hilt.components.SingletonComponent
 
 @Module
 @InstallIn(SingletonComponent::class)
-interface DemoReleaseFlavoredNetworkModule {
+interface FlavoredNetworkModule {
     @Binds
     fun bindsEndOfLifeClient(apiClient: NoEndOfLifeClient): EndOfLifeClient
 }

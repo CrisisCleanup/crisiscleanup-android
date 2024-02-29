@@ -10,7 +10,7 @@ import com.crisiscleanup.core.mapmarker.MapCaseDotProvider
 import com.crisiscleanup.core.mapmarker.model.TileCoordinates
 import com.crisiscleanup.core.mapmarker.tiler.BorderTile
 import com.crisiscleanup.core.mapmarker.tiler.squareBitmap
-import com.crisiscleanup.feature.cases.CasesConstant.MapDotsZoomLevel
+import com.crisiscleanup.feature.cases.CasesConstant.MAP_DOTS_ZOOM_LEVEL
 import com.google.android.gms.maps.model.Tile
 import com.google.android.gms.maps.model.TileProvider
 import com.google.android.gms.maps.model.TileProvider.NO_TILE
@@ -60,7 +60,7 @@ class CaseDotsMapTileRenderer @Inject constructor(
     private val tileSizeDp = 256f
     private val tileSizePx = resourceProvider.dpToPx(tileSizeDp).roundToInt()
 
-    override var zoomThreshold = MapDotsZoomLevel
+    override var zoomThreshold = MAP_DOTS_ZOOM_LEVEL
 
     private val tileCache = TileDataCache(1.5f)
     private var incidentIdCache = -1L
