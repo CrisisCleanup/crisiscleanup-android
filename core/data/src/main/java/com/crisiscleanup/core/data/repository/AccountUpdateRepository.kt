@@ -16,7 +16,6 @@ interface AccountUpdateRepository {
     suspend fun initiatePasswordReset(emailAddress: String): PasswordResetInitiation
     suspend fun changePassword(password: String, token: String): Boolean
     suspend fun acceptTerms(): Boolean
-    suspend fun requestRedeploy(incidentId: Long): Boolean
 }
 
 class CrisisCleanupAccountUpdateRepository @Inject constructor(
@@ -71,16 +70,6 @@ class CrisisCleanupAccountUpdateRepository @Inject constructor(
         try {
             val userId = accountDataRepository.accountData.first().id
             return accountApi.acceptTerms(userId)
-        } catch (e: Exception) {
-            logger.logException(e)
-        }
-        return false
-    }
-
-    override suspend fun requestRedeploy(incidentId: Long): Boolean {
-        try {
-            val organizationId = accountDataRepository.accountData.first().org.id
-            return accountApi.requestRedeploy(organizationId, incidentId)
         } catch (e: Exception) {
             logger.logException(e)
         }

@@ -24,6 +24,7 @@ import com.crisiscleanup.core.data.repository.CrisisCleanupCasesFilterRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupDataManagementRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupLocalImageRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupOrgVolunteerRepository
+import com.crisiscleanup.core.data.repository.CrisisCleanupRequestRedeployRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupWorkTypeStatusRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupWorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.EndOfLifeRepository
@@ -43,6 +44,7 @@ import com.crisiscleanup.core.data.repository.OfflineFirstUsersRepository
 import com.crisiscleanup.core.data.repository.OfflineFirstWorksitesRepository
 import com.crisiscleanup.core.data.repository.OrgVolunteerRepository
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
+import com.crisiscleanup.core.data.repository.RequestRedeployRepository
 import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
 import com.crisiscleanup.core.data.repository.UsersRepository
 import com.crisiscleanup.core.data.repository.WorkTypeStatusRepository
@@ -184,6 +186,11 @@ interface DataModule {
     fun bindsOrgVolunteerRepository(
         repository: CrisisCleanupOrgVolunteerRepository,
     ): OrgVolunteerRepository
+
+    @Binds
+    fun bindsRequestRedeployRepository(
+        repository: CrisisCleanupRequestRedeployRepository,
+    ): RequestRedeployRepository
 }
 
 @Module

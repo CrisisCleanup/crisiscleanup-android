@@ -14,6 +14,7 @@ fun NavController.navigateToMenu(navOptions: NavOptions? = null) {
 fun NavGraphBuilder.menuScreen(
     openAuthentication: () -> Unit = {},
     openInviteTeammate: () -> Unit = {},
+    openRequestRedeploy: () -> Unit = {},
     openUserFeedback: () -> Unit = {},
     openSyncLogs: () -> Unit = {},
 ) {
@@ -21,6 +22,7 @@ fun NavGraphBuilder.menuScreen(
         MenuRoute(
             openAuthentication = openAuthentication,
             openInviteTeammate = openInviteTeammate,
+            openRequestRedeploy = openRequestRedeploy,
             openUserFeedback = openUserFeedback,
             openSyncLogs = openSyncLogs,
         )

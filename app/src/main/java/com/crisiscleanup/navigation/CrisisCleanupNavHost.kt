@@ -35,6 +35,8 @@ import com.crisiscleanup.feature.mediamanage.navigation.viewSingleImageScreen
 import com.crisiscleanup.feature.menu.navigation.menuScreen
 import com.crisiscleanup.feature.organizationmanage.navigation.inviteTeammateScreen
 import com.crisiscleanup.feature.organizationmanage.navigation.navigateToInviteTeammate
+import com.crisiscleanup.feature.organizationmanage.navigation.navigateToRequestRedeploy
+import com.crisiscleanup.feature.organizationmanage.navigation.requestRedeployScreen
 import com.crisiscleanup.feature.syncinsights.navigation.navigateToSyncInsights
 import com.crisiscleanup.feature.syncinsights.navigation.syncInsightsScreen
 import com.crisiscleanup.feature.team.navigation.teamScreen
@@ -89,6 +91,9 @@ fun CrisisCleanupNavHost(
     val openInviteTeammate =
         remember(navController) { { navController.navigateToInviteTeammate() } }
 
+    val openRequestRedeploy =
+        remember(navController) { { navController.navigateToRequestRedeploy() } }
+
     val openUserFeedback = remember(navController) { { navController.navigateToUserFeedback() } }
 
     val openSyncLogs = remember(navController) { { navController.navigateToSyncInsights() } }
@@ -129,11 +134,13 @@ fun CrisisCleanupNavHost(
         menuScreen(
             openAuthentication = openAuthentication,
             openInviteTeammate = openInviteTeammate,
+            openRequestRedeploy = openRequestRedeploy,
             openUserFeedback = openUserFeedback,
             openSyncLogs = openSyncLogs,
         )
         viewSingleImageScreen(onBack)
         inviteTeammateScreen(onBack)
+        requestRedeployScreen(onBack)
         userFeedbackScreen(onBack)
         syncInsightsScreen(viewCase)
 

@@ -11,6 +11,7 @@ import com.crisiscleanup.core.network.model.NetworkLanguagesResult
 import com.crisiscleanup.core.network.model.NetworkLocationsResult
 import com.crisiscleanup.core.network.model.NetworkOrganizationsResult
 import com.crisiscleanup.core.network.model.NetworkOrganizationsSearchResult
+import com.crisiscleanup.core.network.model.NetworkRedeployRequestsResult
 import com.crisiscleanup.core.network.model.NetworkUserProfile
 import com.crisiscleanup.core.network.model.NetworkUsersResult
 import com.crisiscleanup.core.network.model.NetworkWorkTypeRequestResult
@@ -226,6 +227,10 @@ private interface DataSourceApi {
     suspend fun searchOrganizations(
         @Query("search") q: String,
     ): NetworkOrganizationsSearchResult
+
+    @TokenAuthenticationHeader
+    @GET("/incident_requests")
+    suspend fun getRedeployRequests(): NetworkRedeployRequestsResult
 }
 
 private val worksiteCoreDataFields = listOf(

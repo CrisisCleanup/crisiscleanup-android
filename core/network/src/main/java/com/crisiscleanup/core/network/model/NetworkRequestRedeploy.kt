@@ -11,7 +11,7 @@ data class NetworkRequestRedeploy(
 )
 
 @Serializable
-data class NetworkRequestRedeployResult(
+data class NetworkIncidentRedeployRequest(
     val id: Long,
     val organization: Long,
     val incident: Long,
@@ -21,4 +21,11 @@ data class NetworkRequestRedeployResult(
     val organizationName: String,
     @SerialName("incident_name")
     val incidentName: String,
+)
+
+@Serializable
+data class NetworkRedeployRequestsResult(
+    val errors: List<NetworkCrisisCleanupApiError>? = null,
+    val count: Int? = null,
+    val results: List<NetworkIncidentRedeployRequest>? = null,
 )

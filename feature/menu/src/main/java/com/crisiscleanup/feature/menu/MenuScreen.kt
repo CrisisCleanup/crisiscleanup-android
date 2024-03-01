@@ -45,12 +45,14 @@ import com.crisiscleanup.core.selectincident.SelectIncidentDialog
 internal fun MenuRoute(
     openAuthentication: () -> Unit = {},
     openInviteTeammate: () -> Unit = {},
+    openRequestRedeploy: () -> Unit = {},
     openUserFeedback: () -> Unit = {},
     openSyncLogs: () -> Unit = {},
 ) {
     MenuScreen(
         openAuthentication = openAuthentication,
         openInviteTeammate = openInviteTeammate,
+        openRequestRedeploy = openRequestRedeploy,
         openUserFeedback = openUserFeedback,
         openSyncLogs = openSyncLogs,
     )
@@ -61,6 +63,7 @@ internal fun MenuScreen(
     viewModel: MenuViewModel = hiltViewModel(),
     openAuthentication: () -> Unit = {},
     openInviteTeammate: () -> Unit = {},
+    openRequestRedeploy: () -> Unit = {},
     openUserFeedback: () -> Unit = {},
     openSyncLogs: () -> Unit = {},
 ) {
@@ -116,6 +119,16 @@ internal fun MenuScreen(
                         .listItemPadding(),
                     text = t("usersVue.invite_new_user"),
                     onClick = openInviteTeammate,
+                )
+
+                CrisisCleanupOutlinedButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .listItemPadding()
+                        .actionHeight(),
+                    text = t("requestRedeploy.request_redeploy"),
+                    onClick = openRequestRedeploy,
+                    enabled = true,
                 )
 
                 CrisisCleanupOutlinedButton(

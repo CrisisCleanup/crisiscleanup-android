@@ -27,6 +27,7 @@ object RouteConstant {
     val topLevelRoutes = setOf(CASES_ROUTE, MENU_ROUTE)
 
     const val INVITE_TEAMMATE_ROUTE = "invite_teammate"
+    const val REQUEST_REDEPLOY_ROUTE = "request_redeploy"
     const val USER_FEEDBACK_ROUTE = "user_feedback_route"
 
     const val SYNC_INSIGHTS_ROUTE = "sync_insights_route"

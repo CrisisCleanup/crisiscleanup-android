@@ -29,7 +29,7 @@ class AccountDataRefresher @Inject constructor(
 ) {
     private var accountDataUpdateTime = Instant.fromEpochSeconds(0)
 
-    private suspend fun updateAccountData(
+    private suspend fun refreshAccountData(
         syncTag: String,
         force: Boolean,
         cacheTimeSpan: Duration = 1.days,
@@ -50,6 +50,8 @@ class AccountDataRefresher @Inject constructor(
                     profile.hasAcceptedTerms!!,
                     profile.approvedIncidents!!,
                 )
+
+                accountDataUpdateTime = Clock.System.now()
             }
         } catch (e: Exception) {
             logger.logException(e)
@@ -57,7 +59,7 @@ class AccountDataRefresher @Inject constructor(
     }
 
     suspend fun updateProfilePicture() {
-        updateAccountData("profile pic", false)
+        refreshAccountData("profile pic", false)
     }
 
     suspend fun updateMyOrganization(force: Boolean) = withContext(ioDispatcher) {
@@ -68,10 +70,10 @@ class AccountDataRefresher @Inject constructor(
     }
 
     suspend fun updateAcceptedTerms() {
-        updateAccountData("accept terms", true)
+        refreshAccountData("accept terms", true)
     }
 
     suspend fun updateApprovedIncidents(force: Boolean = false) {
-        updateAccountData("approved incidents", force)
+        refreshAccountData("approved incidents", force)
     }
 }
