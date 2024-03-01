@@ -218,7 +218,7 @@ class CreateEditCaseViewModel @Inject constructor(
             }
             .launchIn(viewModelScope)
 
-        caseEditors = dataLoader.uiState
+        caseEditors = dataLoader.viewState
             .filter {
                 it.asCaseData()?.isNetworkLoadFinished == true &&
                     editorSetInstant?.let { setInstant ->
@@ -342,7 +342,7 @@ class CreateEditCaseViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    val uiState = dataLoader.uiState
+    val viewState = dataLoader.viewState
 
     val editSections = dataLoader.editSections
 
@@ -468,7 +468,7 @@ class CreateEditCaseViewModel @Inject constructor(
         return InvalidWorksiteInfo()
     }
 
-    private fun tryGetEditorState() = uiState.value.asCaseData()
+    private fun tryGetEditorState() = viewState.value.asCaseData()
 
     private suspend fun onIncidentChange(
         inputData: LocationInputData,
@@ -751,8 +751,8 @@ class CreateEditCaseViewModel @Inject constructor(
     override fun onNavigateCancel() = onBackNavigate()
 }
 
-sealed interface CaseEditorUiState {
-    data object Loading : CaseEditorUiState
+sealed interface CaseEditorViewState {
+    data object Loading : CaseEditorViewState
 
     data class CaseData(
         val orgId: Long,
@@ -764,7 +764,7 @@ sealed interface CaseEditorUiState {
         val isNetworkLoadFinished: Boolean,
         val isLocalLoadFinished: Boolean,
         val isTranslationUpdated: Boolean,
-    ) : CaseEditorUiState {
+    ) : CaseEditorViewState {
         val isPendingSync = !isLocalLoadFinished ||
             localWorksite?.localChanges?.isLocalModified ?: false
     }
@@ -772,10 +772,10 @@ sealed interface CaseEditorUiState {
     data class Error(
         val errorResId: Int = 0,
         val errorMessage: String = "",
-    ) : CaseEditorUiState
+    ) : CaseEditorViewState
 }
 
-fun CaseEditorUiState.asCaseData() = this as? CaseEditorUiState.CaseData
+fun CaseEditorViewState.asCaseData() = this as? CaseEditorViewState.CaseData
 
 data class GroupSummaryFieldLookup(
     val fieldMap: Map<String, String>,

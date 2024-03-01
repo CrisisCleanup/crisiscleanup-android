@@ -49,8 +49,8 @@ import com.crisiscleanup.core.designsystem.component.TopBarBackAction
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
-import com.crisiscleanup.feature.mediamanage.ViewImageUiState
 import com.crisiscleanup.feature.mediamanage.ViewImageViewModel
+import com.crisiscleanup.feature.mediamanage.ViewImageViewState
 import kotlin.math.max
 import kotlin.math.min
 
@@ -100,8 +100,8 @@ private fun ViewImageScreen(
     isOverlayActions: Boolean = false,
     toggleActions: () -> Unit = {},
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isImageLoaded = uiState is ViewImageUiState.Image
+    val viewState by viewModel.viewState.collectAsStateWithLifecycle()
+    val isImageLoaded = viewState is ViewImageViewState.Image
     val overlayActions = isOverlayActions || !isImageLoaded
     (LocalContext.current as? Activity)?.window?.let { window ->
         with(WindowCompat.getInsetsController(window, window.decorView)) {
@@ -120,8 +120,8 @@ private fun ViewImageScreen(
             .background(color = Color.Black)
             .fillMaxSize(),
     ) {
-        when (uiState) {
-            ViewImageUiState.Loading -> {
+        when (viewState) {
+            ViewImageViewState.Loading -> {
                 BusyIndicatorFloatingTopCenter(
                     true,
                     // TODO Common styles
@@ -129,8 +129,8 @@ private fun ViewImageScreen(
                 )
             }
 
-            is ViewImageUiState.Image -> {
-                val imageData = uiState as ViewImageUiState.Image
+            is ViewImageViewState.Image -> {
+                val imageData = viewState as ViewImageViewState.Image
                 val imageRotation by viewModel.imageRotation.collectAsStateWithLifecycle()
                 DynamicImageView(imageData, imageRotation, toggleActions)
 
@@ -156,8 +156,8 @@ private fun ViewImageScreen(
             Column {
                 TopBar(onBack = onBack)
 
-                if (uiState is ViewImageUiState.Error) {
-                    val errorState = uiState as ViewImageUiState.Error
+                if (viewState is ViewImageViewState.Error) {
+                    val errorState = viewState as ViewImageViewState.Error
                     Text(
                         errorState.message,
                         listItemModifier.systemBarsPadding(),
@@ -227,7 +227,7 @@ private fun capPanOffset(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun DynamicImageView(
-    imageData: ViewImageUiState.Image,
+    imageData: ViewImageViewState.Image,
     rotationDegrees: Int = 0,
     toggleActions: () -> Unit = {},
 ) {

@@ -86,7 +86,7 @@ class MainActivityViewModel @Inject constructor(
      */
     private val initialAppOpen = AtomicReference<AppOpenInstant>(null)
 
-    val uiState = combine(
+    val viewState = combine(
         localAppPreferencesRepository.userPreferences,
         appMetricsRepository.metrics.distinctUntilChanged(),
         ::Pair,
@@ -96,10 +96,10 @@ class MainActivityViewModel @Inject constructor(
                 onAppOpen()
             }
 
-            MainActivityUiState.Success(preferences, metrics)
+            MainActivityViewState.Success(preferences, metrics)
         }.stateIn(
             scope = viewModelScope,
-            initialValue = MainActivityUiState.Loading,
+            initialValue = MainActivityViewState.Loading,
             started = SharingStarted.WhileSubscribed(5_000),
         )
 
@@ -152,7 +152,7 @@ class MainActivityViewModel @Inject constructor(
     val buildEndOfLife: BuildEndOfLife?
         get() {
             if (appEnv.isEarlybird) {
-                (uiState.value as? MainActivityUiState.Success)?.let {
+                (viewState.value as? MainActivityViewState.Success)?.let {
                     var eol = it.appMetrics.earlybirdEndOfLife
                     if (!eol.isEndOfLife) {
                         eol = EarlybirdEndOfLifeFallback
@@ -168,7 +168,7 @@ class MainActivityViewModel @Inject constructor(
     val supportedApp: MinSupportedAppVersion?
         get() {
             if (appEnv.isProduction) {
-                (uiState.value as? MainActivityUiState.Success)?.let {
+                (viewState.value as? MainActivityViewState.Success)?.let {
                     return it.appMetrics.minSupportedAppVersion
                 }
             }
@@ -240,8 +240,8 @@ class MainActivityViewModel @Inject constructor(
             logger,
             viewModelScope,
         )
-        uiState
-            .filter { it is MainActivityUiState.Success }
+        viewState
+            .filter { it is MainActivityViewState.Success }
             .onEach { switchProductionApiManager.switchToProduction() }
             .launchIn(viewModelScope)
         isSwitchingToProduction = switchProductionApiManager.isSwitchingToProduction
@@ -301,12 +301,12 @@ class MainActivityViewModel @Inject constructor(
     }
 }
 
-sealed interface MainActivityUiState {
-    data object Loading : MainActivityUiState
+sealed interface MainActivityViewState {
+    data object Loading : MainActivityViewState
     data class Success(
         val userData: UserData,
         val appMetrics: AppMetricsData,
-    ) : MainActivityUiState
+    ) : MainActivityViewState
 }
 
 sealed interface AuthState {

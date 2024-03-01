@@ -73,7 +73,6 @@ import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
 import com.crisiscleanup.core.designsystem.theme.neutralFontColor
 import com.crisiscleanup.core.designsystem.theme.optionItemHeight
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
-import com.crisiscleanup.core.designsystem.theme.primaryRedColor
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.OrganizationIdName
@@ -386,7 +385,7 @@ private fun UserInfoErrorText(
                     .listItemHorizontalPadding()
                     .listItemTopPadding(),
             ),
-            color = primaryRedColor,
+            color = MaterialTheme.colorScheme.error,
         )
     }
 }

@@ -56,18 +56,18 @@ class AuthenticationViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(),
     )
 
-    val uiState: StateFlow<AuthenticateScreenUiState> = accountDataRepository.accountData.map {
+    val viewState: StateFlow<AuthenticateScreenViewState> = accountDataRepository.accountData.map {
         if (loginInputData.emailAddress.isEmpty() && it.emailAddress.isNotEmpty()) {
             loginInputData.emailAddress = it.emailAddress
             loginInputData.password = ""
         }
 
-        AuthenticateScreenUiState.Ready(
+        AuthenticateScreenViewState.Ready(
             authenticationState = AuthenticationState(accountData = it),
         )
     }.stateIn(
         scope = viewModelScope,
-        initialValue = AuthenticateScreenUiState.Loading,
+        initialValue = AuthenticateScreenViewState.Loading,
         started = SharingStarted.WhileSubscribed(),
     )
 
@@ -220,7 +220,7 @@ class AuthenticationViewModel @Inject constructor(
     }
 }
 
-sealed interface AuthenticateScreenUiState {
-    data object Loading : AuthenticateScreenUiState
-    data class Ready(val authenticationState: AuthenticationState) : AuthenticateScreenUiState
+sealed interface AuthenticateScreenViewState {
+    data object Loading : AuthenticateScreenViewState
+    data class Ready(val authenticationState: AuthenticationState) : AuthenticateScreenViewState
 }

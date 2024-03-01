@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,7 +43,6 @@ import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemTopPadding
 import com.crisiscleanup.core.designsystem.theme.optionItemHeight
-import com.crisiscleanup.core.designsystem.theme.primaryRedColor
 import com.crisiscleanup.core.model.data.LanguageIdName
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.feature.authentication.model.UserInfoInputData
@@ -57,7 +57,7 @@ private fun UserInfoErrorText(
             Modifier
                 .listItemHorizontalPadding()
                 .listItemTopPadding(),
-            color = primaryRedColor,
+            color = MaterialTheme.colorScheme.error,
         )
     }
 }

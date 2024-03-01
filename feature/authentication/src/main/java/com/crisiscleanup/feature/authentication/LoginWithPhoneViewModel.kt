@@ -44,13 +44,13 @@ class LoginWithPhoneViewModel @Inject constructor(
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(Account) private val logger: AppLogger,
 ) : ViewModel() {
-    val uiState: StateFlow<AuthenticateScreenUiState> = accountDataRepository.accountData.map {
-        AuthenticateScreenUiState.Ready(
+    val viewState: StateFlow<AuthenticateScreenViewState> = accountDataRepository.accountData.map {
+        AuthenticateScreenViewState.Ready(
             authenticationState = AuthenticationState(accountData = it),
         )
     }.stateIn(
         scope = viewModelScope,
-        initialValue = AuthenticateScreenUiState.Loading,
+        initialValue = AuthenticateScreenViewState.Loading,
         started = SharingStarted.WhileSubscribed(),
     )
 

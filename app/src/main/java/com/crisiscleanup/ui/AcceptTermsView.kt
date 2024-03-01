@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,7 +29,6 @@ import com.crisiscleanup.core.designsystem.component.cancelButtonColors
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
-import com.crisiscleanup.core.designsystem.theme.primaryRedColor
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -77,7 +77,7 @@ internal fun AcceptTermsView(
                 Text(
                     errorMessage,
                     listItemModifier.testTag("acceptTermsErrorMessage"),
-                    color = primaryRedColor,
+                    color = MaterialTheme.colorScheme.error,
                 )
             }
 

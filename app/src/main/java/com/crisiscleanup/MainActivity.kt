@@ -21,8 +21,8 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.metrics.performance.JankStats
-import com.crisiscleanup.MainActivityUiState.Loading
-import com.crisiscleanup.MainActivityUiState.Success
+import com.crisiscleanup.MainActivityViewState.Loading
+import com.crisiscleanup.MainActivityViewState.Success
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.VisualAlertManager
@@ -104,7 +104,7 @@ class MainActivity : ComponentActivity() {
 
         lifecycleObservers.forEach { lifecycle.addObserver(it) }
 
-        var uiState: MainActivityUiState by mutableStateOf(Loading)
+        var viewState: MainActivityViewState by mutableStateOf(Loading)
         var authState: AuthState by mutableStateOf(AuthState.Loading)
 
         // TODO Splash screen is blank on emulator 32
@@ -112,7 +112,7 @@ class MainActivity : ComponentActivity() {
         // evaluated each time the app needs to be redrawn so it should be fast to avoid blocking
         // the UI.
         splashScreen.setKeepOnScreenCondition {
-            uiState is Loading || authState is AuthState.Loading
+            viewState is Loading || authState is AuthState.Loading
         }
 
         // Turn off the decor fitting system windows, which allows us to handle insets,
@@ -121,7 +121,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val systemUiController = rememberSystemUiController()
-            val darkTheme = shouldUseDarkTheme(uiState)
+            val darkTheme = shouldUseDarkTheme(viewState)
 
             // Update the dark content of the system bars to match the theme
             DisposableEffect(systemUiController, darkTheme) {
@@ -140,10 +140,10 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        // Update the uiState
+        // Update viewState
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect { uiState = it }
+                viewModel.viewState.collect { viewState = it }
             }
         }
 
@@ -216,15 +216,15 @@ class MainActivity : ComponentActivity() {
 }
 
 /**
- * Returns `true` if dark theme should be used, as a function of the [uiState] and the
+ * Returns `true` if dark theme should be used, as a function of the [viewState] and the
  * current system context.
  */
 @Composable
 private fun shouldUseDarkTheme(
-    uiState: MainActivityUiState,
-): Boolean = when (uiState) {
+    viewState: MainActivityViewState,
+): Boolean = when (viewState) {
     Loading -> isSystemInDarkTheme()
-    is Success -> when (uiState.userData.darkThemeConfig) {
+    is Success -> when (viewState.userData.darkThemeConfig) {
         DarkThemeConfig.FOLLOW_SYSTEM -> isSystemInDarkTheme()
         DarkThemeConfig.LIGHT -> false
         DarkThemeConfig.DARK -> true
