@@ -2,6 +2,7 @@ package com.crisiscleanup.feature.authentication
 
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.AppEnv
+import com.crisiscleanup.core.common.AppSettingsProvider
 import com.crisiscleanup.core.common.InputValidator
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.event.AuthEventBus
@@ -21,8 +22,8 @@ import com.crisiscleanup.core.network.model.NetworkAuthResult
 import com.crisiscleanup.core.network.model.NetworkAuthUserClaims
 import com.crisiscleanup.core.network.retrofit.AuthApiClient
 import com.crisiscleanup.core.testing.util.MainDispatcherRule
-import com.crisiscleanup.feature.authentication.AuthenticateScreenUiState.Loading
-import com.crisiscleanup.feature.authentication.AuthenticateScreenUiState.Ready
+import com.crisiscleanup.feature.authentication.AuthenticateScreenViewState.Loading
+import com.crisiscleanup.feature.authentication.AuthenticateScreenViewState.Ready
 import com.crisiscleanup.feature.authentication.model.AuthenticationState
 import com.crisiscleanup.feature.authentication.model.LoginInputData
 import io.mockk.MockKAnnotations
@@ -45,6 +46,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
 
 class AuthenticationViewModelTest {
@@ -78,6 +80,9 @@ class AuthenticationViewModelTest {
     @MockK
     lateinit var resProvider: AndroidResourceProvider
 
+    @MockK
+    lateinit var settingsProvider: AppSettingsProvider
+
     private lateinit var viewModel: AuthenticationViewModel
 
     // private val passwordCredentialsStream = MutableSharedFlow<PasswordCredentials>(0)
@@ -107,6 +112,8 @@ class AuthenticationViewModelTest {
                 expirySeconds = any(),
                 profilePictureUri = any(),
                 org = any(),
+                hasAcceptedTerms = any(),
+                approvedIncidentIds = any(),
                 refreshToken = any(),
             )
         } returns Unit
@@ -137,6 +144,11 @@ class AuthenticationViewModelTest {
         every {
             resProvider.getString(any())
         } returns "test-string"
+
+        // TODO Configure or delete
+//        every {
+//            settingsProvider.
+//        }
     }
 
     private val emptyLoginData = LoginInputData()
@@ -148,6 +160,8 @@ class AuthenticationViewModelTest {
         emailAddress = "email-address",
         profilePictureUri = "profile-picture-uri",
         org = OrgData(813, "org"),
+        hasAcceptedTerms = false,
+        approvedIncidents = setOf(153),
         areTokensValid = false,
     )
 
@@ -155,12 +169,10 @@ class AuthenticationViewModelTest {
         accountDataRepository,
         authApiClient,
         inputValidator,
-//        accessTokenDecoder,
         authEventBus,
-//        appPreferences,
         translator,
-//        resProvider,
         testAppEnv,
+        settingsProvider,
         UnconfinedTestDispatcher(),
         appLogger,
     )
@@ -177,7 +189,7 @@ class AuthenticationViewModelTest {
 
         viewModel = buildViewModel()
 
-        assertEquals(Loading, viewModel.uiState.value)
+        assertEquals(Loading, viewModel.viewState.value)
         assertTrue(viewModel.isNotAuthenticating.first())
     }
 
@@ -201,12 +213,12 @@ class AuthenticationViewModelTest {
             AuthenticationState(
                 accountData = emptyAccountData,
             ),
-            (viewModel.uiState.first() as Ready).authenticationState,
+            (viewModel.viewState.first() as Ready).authenticationState,
         )
         assertEquals(emptyLoginData, viewModel.loginInputData)
 
         // Auth state has been accessed. View model is "loaded".
-        assertNotEquals(Loading, viewModel.uiState.first())
+        assertNotEquals(Loading, viewModel.viewState.first())
 
         viewModel.loginInputData.apply {
             emailAddress = "email@address.com"
@@ -222,6 +234,9 @@ class AuthenticationViewModelTest {
                 email = "email@address.com",
                 firstName = "first-name",
                 lastName = "last-name",
+                approvedIncidents = setOf(53),
+                hasAcceptedTerms = true,
+                acceptedTermsTimestamp = Clock.System.now().minus(1.days),
                 files = null,
             ),
             organizations = NetworkAuthOrganization(
@@ -246,6 +261,8 @@ class AuthenticationViewModelTest {
                 expirySeconds = match { seconds -> abs(seconds - nowSeconds) < 864000L + 1000 },
                 profilePictureUri = "",
                 org = OrgData(813, "org"),
+                hasAcceptedTerms = true,
+                approvedIncidentIds = setOf(53),
             )
         }
 
@@ -279,7 +296,7 @@ class AuthenticationViewModelTest {
             AuthenticationState(
                 accountData = nonEmptyAccountData,
             ),
-            (viewModel.uiState.first() as Ready).authenticationState,
+            (viewModel.viewState.first() as Ready).authenticationState,
         )
 
         assertEquals(LoginInputData("email-address"), viewModel.loginInputData)
