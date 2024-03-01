@@ -1,12 +1,10 @@
 package com.crisiscleanup.feature.organizationmanage.ui
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -28,7 +26,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Size
@@ -53,12 +50,11 @@ import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCen
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupRadioButton
 import com.crisiscleanup.core.designsystem.component.LIST_DETAIL_DETAIL_WEIGHT
 import com.crisiscleanup.core.designsystem.component.LIST_DETAIL_LIST_WEIGHT
+import com.crisiscleanup.core.designsystem.component.ListOptionsDropdown
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.RegisterSuccessView
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
-import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.component.listDetailDetailMaxWidth
-import com.crisiscleanup.core.designsystem.component.roundedOutline
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
@@ -556,73 +552,27 @@ private fun NewOrganizationInput(
             .listItemBottomPadding()
             .fillMaxWidth(),
     ) {
-        var contentSize by remember { mutableStateOf(Size.Zero) }
         var showDropdown by remember { mutableStateOf(false) }
-        Row(
-            Modifier
-                .padding(16.dp)
-                .actionHeight()
-                .roundedOutline(radius = 3.dp)
-                .clickable(
-                    onClick = { showDropdown = !showDropdown },
-                    enabled = isEditable,
-                )
-                .listItemPadding()
-                .onGloballyPositioned {
-                    contentSize = it.size.toSize()
-                },
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(selectedIncident.name.ifBlank { selectIncidentHint })
-            Spacer(Modifier.weight(1f))
-            Icon(
-                imageVector = CrisisCleanupIcons.ExpandAll,
-                contentDescription = selectIncidentHint,
-            )
-        }
-
-        if (incidents.isNotEmpty()) {
-            val onSelect = { incident: Incident ->
+        val onSelect = remember(viewModel) {
+            { incident: Incident ->
                 viewModel.selectedIncidentId = incident.id
                 showDropdown = false
             }
-            DropdownMenu(
-                modifier = Modifier
-                    .width(
-                        with(LocalDensity.current) {
-                            contentSize.width.toDp().minus(listItemDropdownMenuOffset.x.times(2))
-                        },
-                    ),
-                expanded = showDropdown,
-                onDismissRequest = { showDropdown = false },
-                offset = listItemDropdownMenuOffset,
-            ) {
-                DropdownIncidentItems(
-                    incidents,
-                ) {
-                    onSelect(it)
-                }
-            }
         }
-    }
-}
-
-@Composable
-private fun DropdownIncidentItems(
-    incidents: List<Incident>,
-    onSelect: (Incident) -> Unit,
-) {
-    for (incident in incidents) {
-        key(incident.id) {
-            DropdownMenuItem(
-                modifier = Modifier.optionItemHeight(),
-                text = {
-                    Text(
-                        incident.name,
-                        style = LocalFontStyles.current.header4,
-                    )
-                },
-                onClick = { onSelect(incident) },
+        val onHideDropdown = remember(viewModel) { { showDropdown = false } }
+        ListOptionsDropdown(
+            text = selectedIncident.name.ifBlank { selectIncidentHint },
+            isEditable = isEditable,
+            onToggleDropdown = { showDropdown = !showDropdown },
+            modifier = Modifier.padding(16.dp),
+            dropdownIconContentDescription = selectIncidentHint,
+        ) { contentSize ->
+            IncidentsDropdown(
+                incidents,
+                contentSize,
+                showDropdown,
+                onSelect,
+                onHideDropdown,
             )
         }
     }

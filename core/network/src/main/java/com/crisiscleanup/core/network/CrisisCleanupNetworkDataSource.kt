@@ -114,4 +114,6 @@ interface CrisisCleanupNetworkDataSource {
     suspend fun searchOrganizations(q: String): List<NetworkOrganizationShort>
 
     suspend fun getProfile(accessToken: String): NetworkUserProfile?
+
+    suspend fun getRequestRedeployIncidentIds(): Set<Long>
 }

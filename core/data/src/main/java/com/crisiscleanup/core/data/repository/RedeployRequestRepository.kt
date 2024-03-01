@@ -21,7 +21,7 @@ class CrisisCleanupRequestRedeployRepository @Inject constructor(
 ) : RequestRedeployRepository {
     override suspend fun getRequestedIncidents(): Set<Long> {
         try {
-// return networkDataSource.
+            return networkDataSource.getRequestRedeployIncidentIds()
         } catch (e: Exception) {
             logger.logException(e)
         }

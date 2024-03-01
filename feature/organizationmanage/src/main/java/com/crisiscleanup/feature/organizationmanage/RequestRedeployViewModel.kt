@@ -15,6 +15,7 @@ import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.RequestRedeployRepository
+import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.Incident
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -36,6 +37,9 @@ class RequestRedeployViewModel @Inject constructor(
     @Logger(CrisisCleanupLoggers.Account) private val logger: AppLogger,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
+    var requestedIncidentIds by mutableStateOf(emptySet<Long>())
+        private set
+
     val viewState = combine(
         incidentsRepository.incidents,
         accountDataRepository.accountData,
@@ -55,7 +59,7 @@ class RequestRedeployViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    private val isRequestingRedeploy = MutableStateFlow(false)
+    val isRequestingRedeploy = MutableStateFlow(false)
     var isRedeployRequested by mutableStateOf(false)
         private set
     var redeployErrorMessage by mutableStateOf("")
@@ -71,10 +75,16 @@ class RequestRedeployViewModel @Inject constructor(
     init {
         viewModelScope.launch(ioDispatcher) {
             accountDataRefresher.updateApprovedIncidents(true)
+
+            requestedIncidentIds = requestRedeployRepository.getRequestedIncidents()
         }
     }
 
     fun requestRedeploy(incident: Incident) {
+        if (incident == EmptyIncident) {
+            return
+        }
+
         if (isRequestingRedeploy.value) {
             return
         }
@@ -109,8 +119,3 @@ sealed interface RequestRedeployViewState {
         val incidents: List<Incident>,
     ) : RequestRedeployViewState
 }
-
-internal data class RequestRedeployIncident(
-    val incident: Incident,
-    val isRequested: Boolean,
-)
