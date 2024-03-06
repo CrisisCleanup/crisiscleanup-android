@@ -5,7 +5,7 @@ import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.TagLogger
 import com.crisiscleanup.core.commoncase.model.FormFieldNode
-import com.crisiscleanup.core.commoncase.model.WorkFormGroupKey
+import com.crisiscleanup.core.commoncase.model.WORK_FORM_GROUP_KEY
 import com.crisiscleanup.core.commoncase.model.flatten
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
@@ -133,7 +133,7 @@ internal class CaseEditorDataLoader(
 
     private val workTypeStatusStream = workTypeStatusRepository.workTypeStatusOptions
 
-    private val _uiState = com.crisiscleanup.core.common.combine(
+    private val viewStateInternal = com.crisiscleanup.core.common.combine(
         dataLoadCountStream,
         organizationStream,
         workTypeStatusStream,
@@ -168,7 +168,7 @@ internal class CaseEditorDataLoader(
 
             if (organization.id <= 0) {
                 logger.logException(Exception("Organization $organization is not set when editing worksite $worksiteId"))
-                return@mapLatest CaseEditorUiState.Error(
+                return@mapLatest CaseEditorViewState.Error(
                     errorMessage = translate("info.organization_issue_log_out"),
                 )
             }
@@ -179,7 +179,7 @@ internal class CaseEditorDataLoader(
                 logger.logException(Exception("Incident $incidentIdIn is missing form fields when editing worksite $worksiteId"))
                 val errorMessage = translate("info.incident_loading")
                     .replace("{name}", incident.name)
-                return@mapLatest CaseEditorUiState.Error(
+                return@mapLatest CaseEditorViewState.Error(
                     errorMessage = errorMessage,
                 )
             }
@@ -188,7 +188,7 @@ internal class CaseEditorDataLoader(
                 logger.logException(Exception("Incident ${incident.id} ${incident.name} is lacking locations."))
                 val errorMessage = translate("info.current_incident_problem")
                     .replace("{name}", incident.name)
-                return@mapLatest CaseEditorUiState.Error(errorMessage = errorMessage)
+                return@mapLatest CaseEditorViewState.Error(errorMessage = errorMessage)
             }
 
             val (localWorksite, isPulled) = third
@@ -229,8 +229,8 @@ internal class CaseEditorDataLoader(
                         .associate { it.fieldKey to it.label }
 
                     val workTypeFormFields =
-                        formFields.firstOrNull { it.fieldKey == WorkFormGroupKey }
-                            ?.let { node -> node.children.filter { it.parentKey == WorkFormGroupKey } }
+                        formFields.firstOrNull { it.fieldKey == WORK_FORM_GROUP_KEY }
+                            ?.let { node -> node.children.filter { it.parentKey == WORK_FORM_GROUP_KEY } }
                             ?: emptyList()
 
                     workTypeGroupChildrenLookup.value = workTypeFormFields.associate {
@@ -351,7 +351,7 @@ internal class CaseEditorDataLoader(
             }
             val isTranslationUpdated =
                 editableWorksiteProvider.formFieldTranslationLookup.isNotEmpty()
-            CaseEditorUiState.CaseData(
+            CaseEditorViewState.CaseData(
                 organization.id,
                 isEditingAllowed,
                 workTypeStatuses,
@@ -364,7 +364,7 @@ internal class CaseEditorDataLoader(
             )
         }
 
-    val uiState: MutableStateFlow<CaseEditorUiState> = MutableStateFlow(CaseEditorUiState.Loading)
+    val viewState: MutableStateFlow<CaseEditorViewState> = MutableStateFlow(CaseEditorViewState.Loading)
 
     init {
         if (logDebug) {
@@ -429,8 +429,8 @@ internal class CaseEditorDataLoader(
             .flowOn(coroutineDispatcher)
             .launchIn(coroutineScope)
 
-        _uiState
-            .onEach { uiState.value = it }
+        viewStateInternal
+            .onEach { viewState.value = it }
             .launchIn(coroutineScope)
     }
 

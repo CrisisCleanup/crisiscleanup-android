@@ -8,20 +8,20 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.crisiscleanup.core.appnav.RouteConstant.caseAddFlagRoute
-import com.crisiscleanup.core.appnav.RouteConstant.caseEditMapMoveLocationRoute
-import com.crisiscleanup.core.appnav.RouteConstant.caseEditSearchAddressRoute
-import com.crisiscleanup.core.appnav.RouteConstant.caseEditorRoute
-import com.crisiscleanup.core.appnav.RouteConstant.caseHistoryRoute
-import com.crisiscleanup.core.appnav.RouteConstant.caseShareRoute
-import com.crisiscleanup.core.appnav.RouteConstant.casesRoute
-import com.crisiscleanup.core.appnav.RouteConstant.viewCaseRoute
-import com.crisiscleanup.core.appnav.RouteConstant.viewCaseTransferWorkTypesRoute
+import com.crisiscleanup.core.appnav.INCIDENT_ID_ARG
+import com.crisiscleanup.core.appnav.RouteConstant.CASES_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.CASE_ADD_FLAG_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.CASE_EDITOR_MAP_MOVE_LOCATION_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.CASE_EDITOR_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.CASE_EDITOR_SEARCH_ADDRESS_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.CASE_HISTORY_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.CASE_SHARE_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.VIEW_CASE_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.VIEW_CASE_TRANSFER_WORK_TYPES_ROUTE
 import com.crisiscleanup.core.appnav.ViewImageArgs
-import com.crisiscleanup.core.appnav.incidentIdArg
+import com.crisiscleanup.core.appnav.WORKSITE_ID_ARG
 import com.crisiscleanup.core.appnav.navigateToExistingCase
 import com.crisiscleanup.core.appnav.navigateToViewImage
-import com.crisiscleanup.core.appnav.worksiteIdArg
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
@@ -34,37 +34,37 @@ import com.crisiscleanup.feature.caseeditor.ui.EditExistingCaseRoute
 import com.crisiscleanup.feature.caseeditor.ui.TransferWorkTypesRoute
 import com.crisiscleanup.feature.caseeditor.ui.addflag.CaseEditAddFlagRoute
 
-internal const val isFromCaseEditArg = "isFromCaseEdit"
+internal const val IS_FROM_CASE_EDIT_ARG = "isFromCaseEdit"
 
 internal class CaseEditorArgs(val incidentId: Long, val worksiteId: Long?) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        checkNotNull(savedStateHandle[incidentIdArg]),
-        savedStateHandle.get<String>(worksiteIdArg)?.toLong(),
+        checkNotNull(savedStateHandle[INCIDENT_ID_ARG]),
+        savedStateHandle.get<String>(WORKSITE_ID_ARG)?.toLong(),
     )
 }
 
 internal class ExistingCaseArgs(val incidentId: Long, val worksiteId: Long) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        checkNotNull(savedStateHandle[incidentIdArg]),
-        checkNotNull(savedStateHandle[worksiteIdArg]),
+        checkNotNull(savedStateHandle[INCIDENT_ID_ARG]),
+        checkNotNull(savedStateHandle[WORKSITE_ID_ARG]),
     )
 }
 
 internal class CaseAddFlagArgs(val isFromCaseEdit: Boolean) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        checkNotNull(savedStateHandle.get<Boolean>(isFromCaseEditArg)),
+        checkNotNull(savedStateHandle.get<Boolean>(IS_FROM_CASE_EDIT_ARG)),
     )
 }
 
 internal class TransferWorkTypeArgs(val isFromCaseEdit: Boolean) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        checkNotNull(savedStateHandle.get<Boolean>(isFromCaseEditArg)),
+        checkNotNull(savedStateHandle.get<Boolean>(IS_FROM_CASE_EDIT_ARG)),
     )
 }
 
 fun NavController.navigateToCaseEditor(incidentId: Long, worksiteId: Long? = null) {
-    val routeParts = mutableListOf("$caseEditorRoute?$incidentIdArg=$incidentId")
-    worksiteId?.let { routeParts.add("$worksiteIdArg=$worksiteId") }
+    val routeParts = mutableListOf("$CASE_EDITOR_ROUTE?$INCIDENT_ID_ARG=$incidentId")
+    worksiteId?.let { routeParts.add("$WORKSITE_ID_ARG=$worksiteId") }
     val route = routeParts.joinToString("&")
     this.navigate(route)
 }
@@ -74,13 +74,13 @@ fun NavGraphBuilder.caseEditorScreen(
     onBackClick: () -> Unit,
 ) {
     composable(
-        route = "$caseEditorRoute?$incidentIdArg={$incidentIdArg}&$worksiteIdArg={$worksiteIdArg}",
+        route = "$CASE_EDITOR_ROUTE?$INCIDENT_ID_ARG={$INCIDENT_ID_ARG}&$WORKSITE_ID_ARG={$WORKSITE_ID_ARG}",
         arguments = listOf(
-            navArgument(incidentIdArg) {
+            navArgument(INCIDENT_ID_ARG) {
                 type = NavType.LongType
                 defaultValue = EmptyIncident.id
             },
-            navArgument(worksiteIdArg) {
+            navArgument(WORKSITE_ID_ARG) {
                 nullable = true
             },
         ),
@@ -109,28 +109,31 @@ fun NavGraphBuilder.caseEditorScreen(
     }
 }
 
-fun NavController.navigateToCaseEditSearchAddress() = this.navigate(caseEditSearchAddressRoute)
-fun NavController.navigateToCaseEditLocationMapMove() = this.navigate(caseEditMapMoveLocationRoute)
+fun NavController.navigateToCaseEditSearchAddress() =
+    this.navigate(CASE_EDITOR_SEARCH_ADDRESS_ROUTE)
+
+fun NavController.navigateToCaseEditLocationMapMove() =
+    this.navigate(CASE_EDITOR_MAP_MOVE_LOCATION_ROUTE)
 
 fun NavController.navigateToCaseAddFlag(isFromCaseEdit: Boolean) {
-    this.navigate("$caseAddFlagRoute?$isFromCaseEditArg=$isFromCaseEdit")
+    this.navigate("$CASE_ADD_FLAG_ROUTE?$IS_FROM_CASE_EDIT_ARG=$isFromCaseEdit")
 }
 
-fun NavController.navigateToCaseShare() = this.navigate(caseShareRoute)
-fun NavController.navigateToCaseHistory() = this.navigate(caseHistoryRoute)
+fun NavController.navigateToCaseShare() = this.navigate(CASE_SHARE_ROUTE)
+fun NavController.navigateToCaseHistory() = this.navigate(CASE_HISTORY_ROUTE)
 
 fun NavGraphBuilder.existingCaseScreen(
     navController: NavHostController,
     onBackClick: () -> Unit,
 ) {
     composable(
-        route = "$viewCaseRoute?$incidentIdArg={$incidentIdArg}&$worksiteIdArg={$worksiteIdArg}",
+        route = "$VIEW_CASE_ROUTE?$INCIDENT_ID_ARG={$INCIDENT_ID_ARG}&$WORKSITE_ID_ARG={$WORKSITE_ID_ARG}",
         arguments = listOf(
-            navArgument(incidentIdArg) {
+            navArgument(INCIDENT_ID_ARG) {
                 type = NavType.LongType
                 defaultValue = EmptyIncident.id
             },
-            navArgument(worksiteIdArg) {
+            navArgument(WORKSITE_ID_ARG) {
                 type = NavType.LongType
                 defaultValue = EmptyWorksite.id
             },
@@ -171,7 +174,7 @@ fun NavGraphBuilder.existingCaseScreen(
 }
 
 fun NavController.navigateToTransferWorkType(isFromCaseEdit: Boolean) =
-    this.navigate("$viewCaseTransferWorkTypesRoute?$isFromCaseEditArg=$isFromCaseEdit")
+    this.navigate("$VIEW_CASE_TRANSFER_WORK_TYPES_ROUTE?$IS_FROM_CASE_EDIT_ARG=$isFromCaseEdit")
 
 internal fun NavController.popRouteStartingWith(route: String) {
     popBackStack()
@@ -181,11 +184,11 @@ internal fun NavController.popRouteStartingWith(route: String) {
 }
 
 private fun NavController.popToWork() {
-    popBackStack(casesRoute, false, saveState = false)
+    popBackStack(CASES_ROUTE, false, saveState = false)
 }
 
 fun NavController.rerouteToNewCase(incidentId: Long) {
-    popRouteStartingWith(caseEditorRoute)
+    popRouteStartingWith(CASE_EDITOR_ROUTE)
     navigateToCaseEditor(incidentId)
 }
 
@@ -198,8 +201,8 @@ fun NavController.rerouteToCaseEdit(ids: ExistingWorksiteIdentifier) {
 fun NavController.rerouteToCaseChange(ids: ExistingWorksiteIdentifier) {
     popBackStack()
     while (currentBackStackEntry?.destination?.route?.let {
-            it.startsWith(caseEditorRoute) ||
-                it.startsWith(viewCaseRoute)
+            it.startsWith(CASE_EDITOR_ROUTE) ||
+                it.startsWith(VIEW_CASE_ROUTE)
         } == true
     ) {
         popBackStack()
@@ -212,7 +215,7 @@ fun NavGraphBuilder.caseEditSearchAddressScreen(
     navController: NavHostController,
     onBack: () -> Unit,
 ) {
-    composable(caseEditSearchAddressRoute) {
+    composable(CASE_EDITOR_SEARCH_ADDRESS_ROUTE) {
         val navToEditCase = remember(navController) {
             { ids: ExistingWorksiteIdentifier -> navController.rerouteToCaseEdit(ids) }
         }
@@ -226,7 +229,7 @@ fun NavGraphBuilder.caseEditSearchAddressScreen(
 fun NavGraphBuilder.caseEditMoveLocationOnMapScreen(
     onBackClick: () -> Unit,
 ) {
-    composable(caseEditMapMoveLocationRoute) {
+    composable(CASE_EDITOR_MAP_MOVE_LOCATION_ROUTE) {
         EditCaseMapMoveLocationRoute(onBack = onBackClick)
     }
 }
@@ -235,9 +238,9 @@ fun NavGraphBuilder.existingCaseTransferWorkTypesScreen(
     onBack: () -> Unit = {},
 ) {
     composable(
-        route = "$viewCaseTransferWorkTypesRoute?$isFromCaseEditArg={$isFromCaseEditArg}",
+        route = "$VIEW_CASE_TRANSFER_WORK_TYPES_ROUTE?$IS_FROM_CASE_EDIT_ARG={$IS_FROM_CASE_EDIT_ARG}",
         arguments = listOf(
-            navArgument(isFromCaseEditArg) {
+            navArgument(IS_FROM_CASE_EDIT_ARG) {
                 type = NavType.BoolType
                 defaultValue = false
             },
@@ -252,9 +255,9 @@ fun NavGraphBuilder.caseAddFlagScreen(
     rerouteIncidentChange: (ExistingWorksiteIdentifier) -> Unit = {},
 ) {
     composable(
-        route = "$caseAddFlagRoute?$isFromCaseEditArg={$isFromCaseEditArg}",
+        route = "$CASE_ADD_FLAG_ROUTE?$IS_FROM_CASE_EDIT_ARG={$IS_FROM_CASE_EDIT_ARG}",
         arguments = listOf(
-            navArgument(isFromCaseEditArg) {
+            navArgument(IS_FROM_CASE_EDIT_ARG) {
                 type = NavType.BoolType
                 defaultValue = false
             },
@@ -270,7 +273,7 @@ fun NavGraphBuilder.caseAddFlagScreen(
 fun NavGraphBuilder.caseShareScreen(
     onBack: () -> Unit = {},
 ) {
-    composable(route = caseShareRoute) {
+    composable(route = CASE_SHARE_ROUTE) {
         CaseEditShareCaseRoute(
             onBack = onBack,
         )
@@ -280,7 +283,7 @@ fun NavGraphBuilder.caseShareScreen(
 fun NavGraphBuilder.caseHistoryScreen(
     onBack: () -> Unit = {},
 ) {
-    composable(route = caseHistoryRoute) {
+    composable(route = CASE_HISTORY_ROUTE) {
         CaseEditCaseHistoryRoute(
             onBack = onBack,
         )

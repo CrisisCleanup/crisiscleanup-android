@@ -6,7 +6,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import com.crisiscleanup.core.appnav.RouteConstant.casesGraphRoutePattern
+import com.crisiscleanup.core.appnav.RouteConstant.CASES_GRAPH_ROUTE
 import com.crisiscleanup.core.appnav.navigateToExistingCase
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.model.data.EmptyIncident
@@ -35,6 +35,8 @@ import com.crisiscleanup.feature.mediamanage.navigation.viewSingleImageScreen
 import com.crisiscleanup.feature.menu.navigation.menuScreen
 import com.crisiscleanup.feature.organizationmanage.navigation.inviteTeammateScreen
 import com.crisiscleanup.feature.organizationmanage.navigation.navigateToInviteTeammate
+import com.crisiscleanup.feature.organizationmanage.navigation.navigateToRequestRedeploy
+import com.crisiscleanup.feature.organizationmanage.navigation.requestRedeployScreen
 import com.crisiscleanup.feature.syncinsights.navigation.navigateToSyncInsights
 import com.crisiscleanup.feature.syncinsights.navigation.syncInsightsScreen
 import com.crisiscleanup.feature.team.navigation.teamScreen
@@ -54,7 +56,7 @@ fun CrisisCleanupNavHost(
     onBack: () -> Unit,
     openAuthentication: () -> Unit,
     modifier: Modifier = Modifier,
-    startDestination: String = casesGraphRoutePattern,
+    startDestination: String = CASES_GRAPH_ROUTE,
 ) {
     val createNewCase = remember(navController) {
         { incidentId: Long -> navController.navigateToCaseEditor(incidentId) }
@@ -88,6 +90,9 @@ fun CrisisCleanupNavHost(
 
     val openInviteTeammate =
         remember(navController) { { navController.navigateToInviteTeammate() } }
+
+    val openRequestRedeploy =
+        remember(navController) { { navController.navigateToRequestRedeploy() } }
 
     val openUserFeedback = remember(navController) { { navController.navigateToUserFeedback() } }
 
@@ -129,11 +134,13 @@ fun CrisisCleanupNavHost(
         menuScreen(
             openAuthentication = openAuthentication,
             openInviteTeammate = openInviteTeammate,
+            openRequestRedeploy = openRequestRedeploy,
             openUserFeedback = openUserFeedback,
             openSyncLogs = openSyncLogs,
         )
         viewSingleImageScreen(onBack)
         inviteTeammateScreen(onBack)
+        requestRedeployScreen(onBack)
         userFeedbackScreen(onBack)
         syncInsightsScreen(viewCase)
 

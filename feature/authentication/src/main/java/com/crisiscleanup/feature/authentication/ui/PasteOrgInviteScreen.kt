@@ -2,6 +2,7 @@ package com.crisiscleanup.feature.authentication.ui
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -18,7 +19,6 @@ import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
-import com.crisiscleanup.core.designsystem.theme.primaryRedColor
 import com.crisiscleanup.feature.authentication.PasteOrgInviteViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,7 +57,7 @@ fun VolunteerPasteInviteLinkRoute(
             Text(
                 error,
                 listItemModifier,
-                color = primaryRedColor,
+                color = MaterialTheme.colorScheme.error,
             )
         }
 

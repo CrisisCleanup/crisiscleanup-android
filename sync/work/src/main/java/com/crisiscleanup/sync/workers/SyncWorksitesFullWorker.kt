@@ -22,8 +22,8 @@ import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.common.sync.SyncResult
 import com.crisiscleanup.core.data.WorksitesFullSyncer
 import com.crisiscleanup.sync.R
+import com.crisiscleanup.sync.initializers.SYNC_WORKSITES_FULL_NOTIFICATION_ID
 import com.crisiscleanup.sync.initializers.SyncConstraints
-import com.crisiscleanup.sync.initializers.SyncWorksitesFullNotificationId
 import com.crisiscleanup.sync.initializers.channelNotificationManager
 import com.crisiscleanup.sync.initializers.notificationBuilder
 import com.crisiscleanup.sync.initializers.progress
@@ -39,7 +39,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicBoolean
 
-private const val StopSyncingAction = "com.crisiscleanup.STOP_SYNCING"
+private const val STOP_SYNCING_ACTION = "com.crisiscleanup.STOP_SYNCING"
 
 @HiltWorker
 class SyncWorksitesFullWorker @AssistedInject constructor(
@@ -87,11 +87,11 @@ class SyncWorksitesFullWorker @AssistedInject constructor(
                         val stopSyncIntent = PendingIntent.getBroadcast(
                             appContext,
                             0,
-                            Intent(StopSyncingAction),
+                            Intent(STOP_SYNCING_ACTION),
                             PendingIntent.FLAG_IMMUTABLE,
                         )
                         appContext.channelNotificationManager()?.notify(
-                            SyncWorksitesFullNotificationId,
+                            SYNC_WORKSITES_FULL_NOTIFICATION_ID,
                             appContext.notificationBuilder(title, text)
                                 .progress(progress)
                                 .addAction(
@@ -109,7 +109,7 @@ class SyncWorksitesFullWorker @AssistedInject constructor(
     }
 
     override suspend fun getForegroundInfo() = appContext.syncForegroundInfo(
-        SyncWorksitesFullNotificationId,
+        SYNC_WORKSITES_FULL_NOTIFICATION_ID,
         text = appContext.getString(R.string.sync_worksites_full_notification_text),
     )
 
@@ -120,7 +120,7 @@ class SyncWorksitesFullWorker @AssistedInject constructor(
             syncLogger.log("Worksites full sync start")
 
             try {
-                appContext.registerReceiver(stopSyncingReceiver, IntentFilter(StopSyncingAction))
+                appContext.registerReceiver(stopSyncingReceiver, IntentFilter(STOP_SYNCING_ACTION))
 
                 isSyncing.set(true)
 
@@ -143,7 +143,7 @@ class SyncWorksitesFullWorker @AssistedInject constructor(
             } finally {
                 isSyncing.set(false)
                 appContext.unregisterReceiver(stopSyncingReceiver)
-                appContext.channelNotificationManager()?.cancel(SyncWorksitesFullNotificationId)
+                appContext.channelNotificationManager()?.cancel(SYNC_WORKSITES_FULL_NOTIFICATION_ID)
             }
         }
     }

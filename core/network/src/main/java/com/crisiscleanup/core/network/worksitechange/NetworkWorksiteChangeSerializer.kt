@@ -39,7 +39,7 @@ class NetworkWorksiteChangeSerializer @Inject constructor() : WorksiteChangeSeri
             WorkTypeTransfer(releaseReason, releaseWorkTypes),
         )
         val serializedChange = Json.encodeToString(change)
-        return Pair(WorksiteChangeModelVersion, serializedChange)
+        return Pair(WORKSITE_CHANGE_MODEL_VERSION, serializedChange)
     }
 }
 

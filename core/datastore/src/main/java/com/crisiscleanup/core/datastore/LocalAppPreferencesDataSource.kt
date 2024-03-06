@@ -2,6 +2,7 @@ package com.crisiscleanup.core.datastore
 
 import androidx.datastore.core.DataStore
 import com.crisiscleanup.core.model.data.DarkThemeConfig
+import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.SyncAttempt
 import com.crisiscleanup.core.model.data.UserData
 import com.crisiscleanup.core.model.data.WorksiteSortBy
@@ -49,6 +50,20 @@ class LocalAppPreferencesDataSource @Inject constructor(
                 allowAllAnalytics = it.allowAllAnalytics,
             )
         }
+
+    suspend fun reset() {
+        userPreferences.updateData {
+            it.copy {
+                this.darkThemeConfig = DarkThemeConfigProto.DARK_THEME_CONFIG_UNSPECIFIED
+                shouldHideOnboarding = false
+                syncAttempt = SyncAttemptProto.newBuilder().build()
+                selectedIncidentId = EmptyIncident.id
+                languageKey = ""
+                tableViewSortBy = WorksiteSortBy.None.literal
+                allowAllAnalytics = false
+            }
+        }
+    }
 
     suspend fun setDarkThemeConfig(darkThemeConfig: DarkThemeConfig) {
         userPreferences.updateData {

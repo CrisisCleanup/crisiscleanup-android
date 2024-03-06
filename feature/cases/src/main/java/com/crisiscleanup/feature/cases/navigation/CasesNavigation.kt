@@ -6,13 +6,13 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-import com.crisiscleanup.core.appnav.RouteConstant.casesGraphRoutePattern
-import com.crisiscleanup.core.appnav.RouteConstant.casesRoute
+import com.crisiscleanup.core.appnav.RouteConstant.CASES_GRAPH_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.CASES_ROUTE
 import com.crisiscleanup.feature.cases.ui.CasesAction
 import com.crisiscleanup.feature.cases.ui.CasesRoute
 
 fun NavController.navigateToCases(navOptions: NavOptions? = null) {
-    this.navigate(casesGraphRoutePattern, navOptions)
+    this.navigate(CASES_GRAPH_ROUTE, navOptions)
 }
 
 fun NavGraphBuilder.casesGraph(
@@ -25,10 +25,10 @@ fun NavGraphBuilder.casesGraph(
     caseTransferWorkType: () -> Unit = {},
 ) {
     navigation(
-        route = casesGraphRoutePattern,
-        startDestination = casesRoute,
+        route = CASES_GRAPH_ROUTE,
+        startDestination = CASES_ROUTE,
     ) {
-        composable(route = casesRoute) {
+        composable(route = CASES_ROUTE) {
             val rememberOnCasesAction = remember(onCasesAction) {
                 { casesAction: CasesAction ->
                     when (casesAction) {

@@ -4,15 +4,15 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
-import com.crisiscleanup.core.appnav.RouteConstant.teamRoute
+import com.crisiscleanup.core.appnav.RouteConstant.TEAM_ROUTE
 import com.crisiscleanup.feature.team.TeamRoute
 
 fun NavController.navigateToTeam(navOptions: NavOptions? = null) {
-    this.navigate(teamRoute, navOptions)
+    this.navigate(TEAM_ROUTE, navOptions)
 }
 
 fun NavGraphBuilder.teamScreen() {
-    composable(route = teamRoute) {
+    composable(route = TEAM_ROUTE) {
         TeamRoute()
     }
 }

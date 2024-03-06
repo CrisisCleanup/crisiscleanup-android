@@ -42,15 +42,15 @@ class GooglePlaceAddressSearchRepository @Inject constructor(
     private val geocoder = Geocoder(context)
 
     private val placesClientMutex = Mutex()
-    private var _placesClient: PlacesClient? = null
+    private var placesClientInternal: PlacesClient? = null
     private suspend fun placesClient(): PlacesClient {
         placesClientMutex.withLock {
-            if (_placesClient == null) {
+            if (placesClientInternal == null) {
                 Places.initialize(context, settingsProvider.mapsApiKey)
-                _placesClient = Places.createClient(context)
+                placesClientInternal = Places.createClient(context)
             }
         }
-        return _placesClient!!
+        return placesClientInternal!!
     }
 
     private val staleResultDuration = 1.hours

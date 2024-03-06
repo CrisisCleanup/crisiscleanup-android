@@ -15,7 +15,7 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.commoncase.model.FormFieldNode
-import com.crisiscleanup.core.commoncase.model.WorkFormGroupKey
+import com.crisiscleanup.core.commoncase.model.WORK_FORM_GROUP_KEY
 import com.crisiscleanup.core.commoncase.model.flatten
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRepository
@@ -82,9 +82,9 @@ class CasesFilterViewModel @Inject constructor(
                 )
                     .map(FormFieldNode::flatten)
 
-                return@map formFieldRootNode.firstOrNull { it.fieldKey == WorkFormGroupKey }
+                return@map formFieldRootNode.firstOrNull { it.fieldKey == WORK_FORM_GROUP_KEY }
                     ?.let { node ->
-                        node.children.filter { it.parentKey == WorkFormGroupKey }
+                        node.children.filter { it.parentKey == WORK_FORM_GROUP_KEY }
                             .map { it.formField.selectToggleWorkType }
                             .sortedBy { it }
                     }

@@ -8,13 +8,13 @@ import com.crisiscleanup.core.appnav.RouteConstant
 import com.crisiscleanup.feature.syncinsights.ui.SyncInsightsRoute
 
 fun NavController.navigateToSyncInsights(navOptions: NavOptions? = null) {
-    this.navigate(RouteConstant.syncInsightsRoute, navOptions)
+    this.navigate(RouteConstant.SYNC_INSIGHTS_ROUTE, navOptions)
 }
 
 fun NavGraphBuilder.syncInsightsScreen(
     openCase: (Long, Long) -> Boolean = { _, _ -> false },
 ) {
-    composable(route = RouteConstant.syncInsightsRoute) {
+    composable(route = RouteConstant.SYNC_INSIGHTS_ROUTE) {
         SyncInsightsRoute(openCase = openCase)
     }
 }

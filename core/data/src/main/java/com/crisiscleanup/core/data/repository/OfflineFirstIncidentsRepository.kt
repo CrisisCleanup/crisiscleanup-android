@@ -18,8 +18,8 @@ import com.crisiscleanup.core.database.dao.fts.getMatchingIncidents
 import com.crisiscleanup.core.database.model.PopulatedIncident
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
+import com.crisiscleanup.core.model.data.INCIDENT_ORGANIZATIONS_STABLE_MODEL_BUILD_VERSION
 import com.crisiscleanup.core.model.data.Incident
-import com.crisiscleanup.core.model.data.IncidentOrganizationsStableModelBuildVersion
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkIncident
 import com.crisiscleanup.core.network.model.NetworkIncidentLocation
@@ -185,7 +185,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
             incidentOrganizationDao.getSyncStats(incidentId)?.let {
                 if (it.targetCount > 0 &&
                     it.successfulSync?.let { date -> Clock.System.now() - date < 7.days } == true &&
-                    it.appBuildVersionCode >= IncidentOrganizationsStableModelBuildVersion
+                    it.appBuildVersionCode >= INCIDENT_ORGANIZATIONS_STABLE_MODEL_BUILD_VERSION
                 ) {
                     return
                 }

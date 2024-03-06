@@ -14,14 +14,14 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import androidx.tracing.trace
-import com.crisiscleanup.core.appnav.RouteConstant.casesGraphRoutePattern
-import com.crisiscleanup.core.appnav.RouteConstant.casesRoute
-import com.crisiscleanup.core.appnav.RouteConstant.dashboardRoute
-import com.crisiscleanup.core.appnav.RouteConstant.menuRoute
-import com.crisiscleanup.core.appnav.RouteConstant.teamRoute
+import com.crisiscleanup.core.appnav.RouteConstant.CASES_GRAPH_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.CASES_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.DASHBOARD_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.MENU_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.TEAM_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.USER_FEEDBACK_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.VIEW_IMAGE_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.topLevelRoutes
-import com.crisiscleanup.core.appnav.RouteConstant.userFeedbackRoute
-import com.crisiscleanup.core.appnav.RouteConstant.viewImageRoute
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.ui.TrackDisposableJank
 import com.crisiscleanup.feature.cases.navigation.navigateToCases
@@ -64,10 +64,10 @@ class CrisisCleanupAppState(
 
     val currentTopLevelDestination: TopLevelDestination?
         @Composable get() = when (currentDestination?.route) {
-            casesRoute -> CASES
-            dashboardRoute -> DASHBOARD
-            teamRoute -> TEAM
-            menuRoute -> MENU
+            CASES_ROUTE -> CASES
+            DASHBOARD_ROUTE -> DASHBOARD
+            TEAM_ROUTE -> TEAM
+            MENU_ROUTE -> MENU
             else -> null
         }
 
@@ -75,12 +75,12 @@ class CrisisCleanupAppState(
         @Composable get() = topLevelRoutes.contains(currentDestination?.route)
 
     val isMenuRoute: Boolean
-        @Composable get() = currentDestination?.route == menuRoute
+        @Composable get() = currentDestination?.route == MENU_ROUTE
 
     val isFullscreenRoute: Boolean
         @Composable get() {
             val route = currentDestination?.route ?: ""
-            return route.startsWith(viewImageRoute)
+            return route.startsWith(VIEW_IMAGE_ROUTE)
         }
 
     val shouldShowBottomBar: Boolean
@@ -98,7 +98,7 @@ class CrisisCleanupAppState(
         )
 
     val hideLoginAlert: Boolean
-        @Composable get() = currentDestination?.route == userFeedbackRoute
+        @Composable get() = currentDestination?.route == USER_FEEDBACK_ROUTE
 
     /**
      * Map of top level destinations to be used in the TopBar, BottomBar and NavRail. The key is the
@@ -114,10 +114,10 @@ class CrisisCleanupAppState(
     @Composable
     fun lastTopLevelRoute(): String {
         return when (priorTopLevelDestination) {
-            DASHBOARD -> dashboardRoute
-            TEAM -> teamRoute
-            MENU -> menuRoute
-            else -> casesGraphRoutePattern
+            DASHBOARD -> DASHBOARD_ROUTE
+            TEAM -> TEAM_ROUTE
+            MENU -> MENU_ROUTE
+            else -> CASES_GRAPH_ROUTE
         }
     }
 

@@ -53,7 +53,7 @@ import com.crisiscleanup.core.model.data.TableDataWorksite
 import com.crisiscleanup.core.model.data.TableWorksiteClaimAction
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteSortBy
-import com.crisiscleanup.feature.cases.CasesConstant.MapMarkersZoomLevel
+import com.crisiscleanup.feature.cases.CasesConstant.MAP_MARKERS_ZOOM_LEVEL
 import com.crisiscleanup.feature.cases.map.CasesMapBoundsManager
 import com.crisiscleanup.feature.cases.map.CasesMapMarkerManager
 import com.crisiscleanup.feature.cases.map.CasesMapTileLayerManager
@@ -125,6 +125,7 @@ class CasesViewModel @Inject constructor(
 ) : ViewModel(), TrimMemoryListener {
     val loadSelectIncidents = LoadSelectIncidents(
         incidentsRepository = incidentsRepository,
+        accountDataRepository = accountDataRepository,
         incidentSelector = incidentSelector,
         appPreferencesRepository = appPreferencesRepository,
         coroutineScope = viewModelScope,
@@ -270,7 +271,7 @@ class CasesViewModel @Inject constructor(
             val skipMarkers = !isMapLoaded ||
                 wqs.isTableView ||
                 id == EmptyIncident.id ||
-                wqs.zoom < MapMarkersZoomLevel
+                wqs.zoom < MAP_MARKERS_ZOOM_LEVEL
 
             if (skipMarkers) {
                 emptyList()
@@ -594,7 +595,7 @@ class CasesViewModel @Inject constructor(
         mapBoundsManager.restoreIncidentBounds()
     }
 
-    fun zoomToInteractive() = adjustMapZoom(MapMarkersZoomLevel + 0.5f)
+    fun zoomToInteractive() = adjustMapZoom(MAP_MARKERS_ZOOM_LEVEL + 0.5f)
 
     private fun setMapToMyCoordinates() {
         viewModelScope.launch {

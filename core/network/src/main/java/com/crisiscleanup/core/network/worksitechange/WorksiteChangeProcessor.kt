@@ -41,17 +41,17 @@ class WorksiteChangeProcessor(
     private val syncChangeResults = mutableListOf<WorksiteSyncResult.ChangeResult>()
 
     private val networkWorksiteMutex = Mutex()
-    private var _networkWorksite: NetworkWorksiteFull? = null
+    private var networkWorksiteCache: NetworkWorksiteFull? = null
     private suspend fun getNetworkWorksite(force: Boolean = false): NetworkWorksiteFull {
         networkWorksiteMutex.withLock {
-            if (force || _networkWorksite == null) {
+            if (force || networkWorksiteCache == null) {
                 if (networkWorksiteId <= 0) {
                     error("Attempted to query worksite when not yet created")
                 }
-                _networkWorksite = networkDataSource.getWorksite(networkWorksiteId)
+                networkWorksiteCache = networkDataSource.getWorksite(networkWorksiteId)
             }
         }
-        _networkWorksite?.let { return it }
+        networkWorksiteCache?.let { return it }
         ensureSyncConditions()
         throw WorksiteNotFoundException(networkWorksiteId)
     }
@@ -76,7 +76,7 @@ class WorksiteChangeProcessor(
                 flagIdMap = flagIdMap,
                 noteIdMap = noteIdMap,
                 workTypeIdMap = workTypeIdMap,
-                workTypeKeyMap = _networkWorksite?.newestWorkTypes
+                workTypeKeyMap = networkWorksiteCache?.newestWorkTypes
                     ?.associate { it.workType to it.id!! }
                     ?: emptyMap(),
                 workTypeRequestIdMap = workTypeRequestIdMap,
@@ -206,7 +206,7 @@ class WorksiteChangeProcessor(
         changeSet: WorksiteChangeSet,
     ): SyncChangeSetResult {
         var result = SyncChangeSetResult(isPartiallySynced, isFullySynced = false)
-        var worksite = _networkWorksite
+        var worksite = networkWorksiteCache
         try {
             if (isPartiallySynced) {
                 syncLogger.log("Partially synced. Skipping core.")
@@ -214,7 +214,7 @@ class WorksiteChangeProcessor(
                 changeSet.worksite?.let {
                     worksite = writeApiClient.saveWorksite(changeCreatedAt, changeSyncUuid, it)
                     networkWorksiteId = worksite!!.id
-                    _networkWorksite = worksite
+                    networkWorksiteCache = worksite
 
                     result = result.copy(isPartiallySynced = true)
 
@@ -222,7 +222,7 @@ class WorksiteChangeProcessor(
                 }
             }
 
-            if ((_networkWorksite?.id ?: -1) <= 0) {
+            if ((networkWorksiteCache?.id ?: -1) <= 0) {
                 throw WorksiteNotFoundException(networkWorksiteId)
             }
 

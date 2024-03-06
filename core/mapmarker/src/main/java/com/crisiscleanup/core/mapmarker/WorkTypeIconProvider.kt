@@ -101,7 +101,7 @@ class WorkTypeIconProvider @Inject constructor(
 
         plusDrawable = resourceProvider.getDrawable(R.drawable.ic_work_type_plus)
         plusDrawableTransparent = resourceProvider.getDrawable(R.drawable.ic_work_type_plus).also {
-            it.alpha = (255 * filteredOutMarkerAlpha).toInt()
+            it.alpha = (255 * FILTERED_OUT_MARKER_ALPHA).toInt()
         }
     }
 

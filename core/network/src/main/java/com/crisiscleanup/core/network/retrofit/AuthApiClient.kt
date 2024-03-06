@@ -57,10 +57,10 @@ class AuthApiClient @Inject constructor(
 
     private val refreshMutex = Mutex()
 
-    override suspend fun login(email: String, password: String): NetworkAuthResult =
+    override suspend fun login(email: String, password: String) =
         networkApi.login(NetworkAuthPayload(email, password))
 
-    override suspend fun oauthLogin(email: String, password: String): NetworkOauthResult =
+    override suspend fun oauthLogin(email: String, password: String) =
         networkApi.oauthLogin(NetworkOauthPayload(email, password))
 
     override suspend fun magicLinkLogin(token: String) = networkApi.magicLinkCodeAuth(token)

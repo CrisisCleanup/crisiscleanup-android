@@ -4,23 +4,25 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
-import com.crisiscleanup.core.appnav.RouteConstant.menuRoute
+import com.crisiscleanup.core.appnav.RouteConstant.MENU_ROUTE
 import com.crisiscleanup.feature.menu.MenuRoute
 
 fun NavController.navigateToMenu(navOptions: NavOptions? = null) {
-    this.navigate(menuRoute, navOptions)
+    this.navigate(MENU_ROUTE, navOptions)
 }
 
 fun NavGraphBuilder.menuScreen(
     openAuthentication: () -> Unit = {},
     openInviteTeammate: () -> Unit = {},
+    openRequestRedeploy: () -> Unit = {},
     openUserFeedback: () -> Unit = {},
     openSyncLogs: () -> Unit = {},
 ) {
-    composable(route = menuRoute) {
+    composable(route = MENU_ROUTE) {
         MenuRoute(
             openAuthentication = openAuthentication,
             openInviteTeammate = openInviteTeammate,
+            openRequestRedeploy = openRequestRedeploy,
             openUserFeedback = openUserFeedback,
             openSyncLogs = openSyncLogs,
         )

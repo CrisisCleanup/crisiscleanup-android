@@ -53,7 +53,7 @@ import com.crisiscleanup.core.model.data.WorkTypeStatus
 import com.crisiscleanup.core.network.model.DynamicValue
 import com.crisiscleanup.feature.caseeditor.model.FieldDynamicValue
 
-private const val FallbackRrule = "RRULE:FREQ=WEEKLY;BYDAY=MO;INTERVAL=1;BYHOUR=11"
+private const val FALLBACK_RRULE = "RRULE:FREQ=WEEKLY;BYDAY=MO;INTERVAL=1;BYHOUR=11"
 
 @Composable
 internal fun DynamicFormListItem(
@@ -536,7 +536,7 @@ private fun CronSelect(
         } else {
             null
         }
-    val defaultRrule = itemData.field.recurDefault.ifBlank { FallbackRrule }
+    val defaultRrule = itemData.field.recurDefault.ifBlank { FALLBACK_RRULE }
     val rRuleIn = itemData.dynamicValue.valueString
     val showFrequencyInput = isInputExpanded || (rRuleIn.isNotBlank() && defaultRrule != rRuleIn)
     CrisisCleanupTextCheckbox(

@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
  * 03 Photo change
  * 04 Explicit change flags
  */
-const val WorksiteChangeModelVersion = 4
+const val WORKSITE_CHANGE_MODEL_VERSION = 4
 
 @Serializable
 data class WorkTypeTransfer(

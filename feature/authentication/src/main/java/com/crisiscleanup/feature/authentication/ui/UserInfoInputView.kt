@@ -1,15 +1,12 @@
 package com.crisiscleanup.feature.authentication.ui
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -18,31 +15,23 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.toSize
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
+import com.crisiscleanup.core.designsystem.component.ListOptionsDropdown
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.OutlinedObfuscatingTextField
-import com.crisiscleanup.core.designsystem.component.actionHeight
-import com.crisiscleanup.core.designsystem.component.roundedOutline
-import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemBottomPadding
 import com.crisiscleanup.core.designsystem.theme.listItemDropdownMenuOffset
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
-import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemTopPadding
 import com.crisiscleanup.core.designsystem.theme.optionItemHeight
-import com.crisiscleanup.core.designsystem.theme.primaryRedColor
 import com.crisiscleanup.core.model.data.LanguageIdName
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.feature.authentication.model.UserInfoInputData
@@ -57,7 +46,7 @@ private fun UserInfoErrorText(
             Modifier
                 .listItemHorizontalPadding()
                 .listItemTopPadding(),
-            color = primaryRedColor,
+            color = MaterialTheme.colorScheme.error,
         )
     }
 }
@@ -186,52 +175,33 @@ internal fun UserInfoInputView(
 
         val selectedLanguage = t(infoData.language.name.ifBlank { "languages.en-us" })
         Box(Modifier.listItemBottomPadding()) {
-            var contentSize by remember { mutableStateOf(Size.Zero) }
             var showDropdown by remember { mutableStateOf(false) }
-            Row(
-                Modifier
-                    .padding(16.dp)
-                    .actionHeight()
-                    .roundedOutline(radius = 3.dp)
-                    .clickable(
-                        onClick = { showDropdown = !showDropdown },
-                        enabled = isEditable,
-                    )
-                    .listItemPadding()
-                    .onGloballyPositioned {
-                        contentSize = it.size.toSize()
-                    },
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(selectedLanguage)
-                Spacer(Modifier.weight(1f))
-                Icon(
-                    imageVector = CrisisCleanupIcons.ExpandAll,
-                    contentDescription = selectedLanguage,
-                )
-            }
-
-            if (languageOptions.isNotEmpty()) {
-                val onSelect = { language: LanguageIdName ->
-                    infoData.language = language
-                    showDropdown = false
-                }
-                DropdownMenu(
-                    modifier = Modifier
-                        .width(
-                            with(LocalDensity.current) {
-                                contentSize.width.toDp()
-                                    .minus(listItemDropdownMenuOffset.x.times(2))
-                            },
-                        ),
-                    expanded = showDropdown,
-                    onDismissRequest = { showDropdown = false },
-                    offset = listItemDropdownMenuOffset,
-                ) {
-                    DropdownLanguageItems(
-                        languageOptions,
+            val onToggleDropdown = remember(languageOptions) { { showDropdown = !showDropdown } }
+            ListOptionsDropdown(
+                selectedLanguage,
+                isEditable,
+                onToggleDropdown,
+                Modifier.padding(16.dp),
+                selectedLanguage,
+            ) { contentSize ->
+                if (languageOptions.isNotEmpty()) {
+                    val onSelect = { language: LanguageIdName ->
+                        infoData.language = language
+                        showDropdown = false
+                    }
+                    DropdownMenu(
+                        modifier = Modifier
+                            .width(
+                                with(LocalDensity.current) {
+                                    contentSize.width.toDp()
+                                        .minus(listItemDropdownMenuOffset.x.times(2))
+                                },
+                            ),
+                        expanded = showDropdown,
+                        onDismissRequest = { showDropdown = false },
+                        offset = listItemDropdownMenuOffset,
                     ) {
-                        onSelect(it)
+                        DropdownLanguageItems(languageOptions, onSelect)
                     }
                 }
             }

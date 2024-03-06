@@ -6,7 +6,7 @@ import com.crisiscleanup.core.commoncase.TransferWorkTypeProvider
 import com.crisiscleanup.core.commoncase.WorkTypeTransferType
 import com.crisiscleanup.core.commoncase.WorksiteProvider
 import com.crisiscleanup.core.commoncase.model.FormFieldNode
-import com.crisiscleanup.core.commoncase.model.WorkFormGroupKey
+import com.crisiscleanup.core.commoncase.model.WORK_FORM_GROUP_KEY
 import com.crisiscleanup.core.commoncase.model.flatten
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
@@ -197,8 +197,8 @@ class CasesTableViewDataLoader(
                     .associate { it.fieldKey to it.label }
 
                 val workTypeFormFields =
-                    formFields.firstOrNull { it.fieldKey == WorkFormGroupKey }
-                        ?.let { node -> node.children.filter { it.parentKey == WorkFormGroupKey } }
+                    formFields.firstOrNull { it.fieldKey == WORK_FORM_GROUP_KEY }
+                        ?.let { node -> node.children.filter { it.parentKey == WORK_FORM_GROUP_KEY } }
                         ?: emptyList()
 
                 val workTypeTranslationLookup = workTypeFormFields.associate {

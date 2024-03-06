@@ -59,8 +59,6 @@ class AppPreferencesRepositoryTest {
                 shouldHideOnboarding = false,
                 syncAttempt = SyncAttempt(0, 0, 0),
                 selectedIncidentId = 0,
-                saveCredentialsPromptCount = 0,
-                disableSaveCredentialsPrompt = false,
                 languageKey = "",
                 tableViewSortBy = WorksiteSortBy.None,
                 allowAllAnalytics = false,

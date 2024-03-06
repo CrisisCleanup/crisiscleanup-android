@@ -1,9 +1,9 @@
 package com.crisiscleanup.feature.caseeditor
 
-import com.crisiscleanup.core.commoncase.model.DetailsFormGroupKey
-import com.crisiscleanup.core.commoncase.model.HazardsFormGroupKey
-import com.crisiscleanup.core.commoncase.model.VolunteerReportFormGroupKey
-import com.crisiscleanup.core.commoncase.model.WorkFormGroupKey
+import com.crisiscleanup.core.commoncase.model.DETAILS_FORM_GROUP_KEY
+import com.crisiscleanup.core.commoncase.model.HAZARDS_FORM_GROUP_KEY
+import com.crisiscleanup.core.commoncase.model.VOLUNTEER_REPORT_FORM_GROUP_KEY
+import com.crisiscleanup.core.commoncase.model.WORK_FORM_GROUP_KEY
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.feature.caseeditor.model.FormFieldsInputData
 import com.crisiscleanup.feature.caseeditor.util.updateWorkTypeStatuses
@@ -52,7 +52,7 @@ internal val excludeDetailsFormFields = setOf("cross_street", "email")
 internal class EditableDetailsDataEditor(
     worksiteProvider: EditableWorksiteProvider,
 ) : EditableFormDataEditor(
-    DetailsFormGroupKey,
+    DETAILS_FORM_GROUP_KEY,
     worksiteProvider,
     excludeDetailsFormFields,
     autoManageGroups = true,
@@ -60,7 +60,7 @@ internal class EditableDetailsDataEditor(
 
 internal class EditableWorkDataEditor(
     worksiteProvider: EditableWorksiteProvider,
-) : EditableFormDataEditor(WorkFormGroupKey, worksiteProvider, isWorkInputData = true) {
+) : EditableFormDataEditor(WORK_FORM_GROUP_KEY, worksiteProvider, isWorkInputData = true) {
     fun transferWorkTypes(
         workTypeLookup: Map<String, String>,
         worksite: Worksite,
@@ -74,8 +74,8 @@ internal class EditableWorkDataEditor(
 
 internal class EditableHazardsDataEditor(
     worksiteProvider: EditableWorksiteProvider,
-) : EditableFormDataEditor(HazardsFormGroupKey, worksiteProvider)
+) : EditableFormDataEditor(HAZARDS_FORM_GROUP_KEY, worksiteProvider)
 
 internal class EditableVolunteerReportDataEditor(
     worksiteProvider: EditableWorksiteProvider,
-) : EditableFormDataEditor(VolunteerReportFormGroupKey, worksiteProvider)
+) : EditableFormDataEditor(VOLUNTEER_REPORT_FORM_GROUP_KEY, worksiteProvider)

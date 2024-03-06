@@ -1,6 +1,14 @@
 package com.crisiscleanup.core.mapmarker.di
 
-import com.crisiscleanup.core.mapmarker.*
+import com.crisiscleanup.core.mapmarker.CrisisCleanupDrawableResourceBitmapProvider
+import com.crisiscleanup.core.mapmarker.CrisisCleanupLocationBoundsConverter
+import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
+import com.crisiscleanup.core.mapmarker.InMemoryDotProvider
+import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
+import com.crisiscleanup.core.mapmarker.MapCaseDotProvider
+import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
+import com.crisiscleanup.core.mapmarker.MapsIncidentBoundsProvider
+import com.crisiscleanup.core.mapmarker.WorkTypeIconProvider
 import com.crisiscleanup.core.model.data.LocationBoundsConverter
 import dagger.Binds
 import dagger.Module

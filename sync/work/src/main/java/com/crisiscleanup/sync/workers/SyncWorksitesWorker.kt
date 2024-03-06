@@ -14,8 +14,8 @@ import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.common.sync.SyncResult
 import com.crisiscleanup.sync.R
+import com.crisiscleanup.sync.initializers.SYNC_WORKSITES_NOTIFICATION_ID
 import com.crisiscleanup.sync.initializers.SyncConstraints
-import com.crisiscleanup.sync.initializers.SyncWorksitesNotificationId
 import com.crisiscleanup.sync.initializers.channelNotificationManager
 import com.crisiscleanup.sync.initializers.syncForegroundInfo
 import dagger.assisted.Assisted
@@ -34,7 +34,7 @@ class SyncWorksitesWorker @AssistedInject constructor(
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
 ) : CoroutineWorker(appContext, workerParams) {
     override suspend fun getForegroundInfo() = appContext.syncForegroundInfo(
-        SyncWorksitesNotificationId,
+        SYNC_WORKSITES_NOTIFICATION_ID,
         text = appContext.getString(R.string.sync_cases_notification_text),
     )
 
@@ -58,7 +58,7 @@ class SyncWorksitesWorker @AssistedInject constructor(
                 .log("Worksites sync end. success=$isSyncSuccess")
                 .flush()
 
-            appContext.channelNotificationManager()?.cancel(SyncWorksitesNotificationId)
+            appContext.channelNotificationManager()?.cancel(SYNC_WORKSITES_NOTIFICATION_ID)
 
             if (isSyncSuccess) {
                 Result.success()

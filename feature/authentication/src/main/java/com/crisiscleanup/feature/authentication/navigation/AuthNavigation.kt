@@ -3,8 +3,8 @@ package com.crisiscleanup.feature.authentication.navigation
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-import com.crisiscleanup.core.appnav.RouteConstant.authGraphRoutePattern
-import com.crisiscleanup.core.appnav.RouteConstant.authRoute
+import com.crisiscleanup.core.appnav.RouteConstant.AUTH_GRAPH_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.AUTH_ROUTE
 import com.crisiscleanup.feature.authentication.ui.RootAuthRoute
 
 fun NavGraphBuilder.authGraph(
@@ -16,10 +16,10 @@ fun NavGraphBuilder.authGraph(
     closeAuthentication: () -> Unit = {},
 ) {
     navigation(
-        route = authGraphRoutePattern,
-        startDestination = authRoute,
+        route = AUTH_GRAPH_ROUTE,
+        startDestination = AUTH_ROUTE,
     ) {
-        composable(route = authRoute) {
+        composable(route = AUTH_ROUTE) {
             RootAuthRoute(
                 enableBackHandler = enableBackHandler,
                 openLoginWithEmail = openLoginWithEmail,

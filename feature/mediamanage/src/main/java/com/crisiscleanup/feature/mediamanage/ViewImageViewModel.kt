@@ -88,19 +88,19 @@ class ViewImageViewModel @Inject constructor(
 
             if (imageUrl.isBlank()) {
                 // TODO String res
-                return@flatMapLatest flowOf(ViewImageUiState.Error("Image not selected"))
+                return@flatMapLatest flowOf(ViewImageViewState.Error("Image not selected"))
             }
 
-            callbackFlow<ViewImageUiState> {
+            callbackFlow<ViewImageViewState> {
                 val request = ImageRequest.Builder(context)
                     .data(imageUrl)
                     .target(
                         onStart = {
-                            channel.trySend(ViewImageUiState.Loading)
+                            channel.trySend(ViewImageViewState.Loading)
                         },
                         onSuccess = { result ->
                             val bitmap = (result as BitmapDrawable).bitmap.asImageBitmap()
-                            channel.trySend(ViewImageUiState.Image(bitmap))
+                            channel.trySend(ViewImageViewState.Image(bitmap))
                         },
                         onError = {
                             val isTokenInvalid =
@@ -119,7 +119,7 @@ class ViewImageViewModel @Inject constructor(
                                     "worksiteImages.try_refreshing_open_image"
                                 }
                             val message = translate(messageKey)
-                            channel.trySend(ViewImageUiState.Error(message))
+                            channel.trySend(ViewImageViewState.Error(message))
                         },
                     )
                     .build()
@@ -138,7 +138,7 @@ class ViewImageViewModel @Inject constructor(
                         it?.let { parcel ->
                             val fileDescriptor = parcel.fileDescriptor
                             val bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor)
-                            return@mapLatest ViewImageUiState.Image(bitmap.asImageBitmap())
+                            return@mapLatest ViewImageViewState.Image(bitmap.asImageBitmap())
                         }
                     }
                 } catch (e: Exception) {
@@ -149,7 +149,7 @@ class ViewImageViewModel @Inject constructor(
             // TODO String res
             val message = "worksiteImages.unable_to_load"
             // TODO Delete entry in this case? Think it through
-            ViewImageUiState.Error(message)
+            ViewImageViewState.Error(message)
         }
 
     private val imageState = if (isNetworkImage) {
@@ -158,10 +158,10 @@ class ViewImageViewModel @Inject constructor(
         streamLocalImageState
     }
 
-    val uiState = imageState
+    val viewState = imageState
         .stateIn(
             scope = viewModelScope,
-            initialValue = ViewImageUiState.Loading,
+            initialValue = ViewImageViewState.Loading,
             started = SharingStarted.WhileSubscribed(),
         )
 
@@ -175,12 +175,12 @@ class ViewImageViewModel @Inject constructor(
         )
 
     val isImageDeletable = combine(
-        uiState,
+        viewState,
         isSyncing,
         isDeleting,
         ::Triple,
     ).map { (state, syncing, deleting) ->
-        state is ViewImageUiState.Image &&
+        state is ViewImageViewState.Image &&
             imageId > 0 &&
             !(syncing || deleting)
     }
@@ -244,13 +244,13 @@ class ViewImageViewModel @Inject constructor(
     }
 }
 
-sealed interface ViewImageUiState {
-    object Loading : ViewImageUiState
+sealed interface ViewImageViewState {
+    data object Loading : ViewImageViewState
     data class Image(
         val image: ImageBitmap,
-    ) : ViewImageUiState
+    ) : ViewImageViewState
 
     data class Error(
         val message: String,
-    ) : ViewImageUiState
+    ) : ViewImageViewState
 }

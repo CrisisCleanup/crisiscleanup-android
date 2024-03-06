@@ -316,27 +316,27 @@ class ViewCaseViewModel @Inject constructor(
 
     val isLoading = dataLoader.isLoading
 
-    private val uiState = dataLoader.uiState
+    private val viewState = dataLoader.viewState
 
     private val referenceWorksite: Worksite
-        get() = uiState.value.asCaseData()?.worksite ?: EmptyWorksite
+        get() = viewState.value.asCaseData()?.worksite ?: EmptyWorksite
 
     private val filesNotes = combine(
         editableWorksiteProvider.editableWorksite,
-        uiState,
+        viewState,
         ::Pair,
     )
-        .filter { (_, state) -> state is CaseEditorUiState.CaseData }
+        .filter { (_, state) -> state is CaseEditorViewState.CaseData }
         .mapLatest { (worksite, state) ->
             val fileImages = worksite.files.map(NetworkImage::asCaseImage)
-            val localImages = (state as CaseEditorUiState.CaseData).localWorksite
+            val localImages = (state as CaseEditorViewState.CaseData).localWorksite
                 ?.localImages
                 ?.map(WorksiteLocalImage::asCaseImage)
                 ?: emptyList()
             Triple(fileImages, localImages, worksite.notes)
         }
 
-    val statusOptions = uiState
+    val statusOptions = viewState
         .mapLatest {
             it.asCaseData()?.statusOptions ?: emptyList()
         }
@@ -346,7 +346,7 @@ class ViewCaseViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val caseData = uiState.map { it.asCaseData() }
+    val caseData = viewState.map { it.asCaseData() }
         .stateIn(
             scope = viewModelScope,
             initialValue = null,
@@ -408,26 +408,26 @@ class ViewCaseViewModel @Inject constructor(
         )
 
     val workTypeProfile = combine(
-        uiState,
+        viewState,
         editableWorksite,
         organizationLookup,
         ::Triple,
     )
         .filter {
-            it.first is CaseEditorUiState.CaseData &&
+            it.first is CaseEditorViewState.CaseData &&
                 !it.second.isNew &&
                 it.third.isNotEmpty()
         }
         .filter {
             val (viewModelState, _, orgLookup) = it
-            val stateData = viewModelState as CaseEditorUiState.CaseData
+            val stateData = viewModelState as CaseEditorViewState.CaseData
             val myOrg = orgLookup[stateData.orgId]
             myOrg != null
         }
         .mapLatest {
             val (viewModelState, worksite, orgLookup) = it
 
-            val stateData = viewModelState as CaseEditorUiState.CaseData
+            val stateData = viewModelState as CaseEditorViewState.CaseData
 
             val isTurnOnRelease = stateData.incident.turnOnRelease
             val myOrgId = stateData.orgId
@@ -593,10 +593,10 @@ class ViewCaseViewModel @Inject constructor(
         }
     }
 
-    private val uiStateCaseData: CaseEditorUiState.CaseData?
-        get() = uiState.value.asCaseData()
+    private val viewStateCaseData: CaseEditorViewState.CaseData?
+        get() = viewState.value.asCaseData()
     private val organizationId: Long?
-        get() = uiStateCaseData?.orgId
+        get() = viewStateCaseData?.orgId
 
     private fun saveWorksiteChange(
         startingWorksite: Worksite,

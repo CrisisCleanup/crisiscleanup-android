@@ -102,7 +102,7 @@ fun VolunteerOrgRoute(
                 LinkifyText(
                     modifier = Modifier.testTag("volunteerRegisterOrgAction"),
                     linkText = t("registerOrg.register_org"),
-                    link = orgRegisterLink,
+                    link = ORG_REGISTER_URL,
                 )
             }
         }

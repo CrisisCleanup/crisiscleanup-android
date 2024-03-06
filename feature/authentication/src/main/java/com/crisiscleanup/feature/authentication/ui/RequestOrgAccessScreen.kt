@@ -44,7 +44,6 @@ import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemTopPadding
-import com.crisiscleanup.core.designsystem.theme.primaryRedColor
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.authentication.RequestOrgAccessViewModel
@@ -145,7 +144,7 @@ private fun RequestOrgUserInfoInputView(
                     Modifier
                         .listItemHorizontalPadding()
                         .listItemTopPadding(),
-                    color = primaryRedColor,
+                    color = MaterialTheme.colorScheme.error,
                 )
             }
             OutlinedClearableTextField(

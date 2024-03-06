@@ -5,24 +5,24 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.crisiscleanup.core.appnav.RouteConstant.requestAccessRoute
+import com.crisiscleanup.core.appnav.RouteConstant.REQUEST_ACCESS_ROUTE
 import com.crisiscleanup.feature.authentication.ui.RequestOrgAccessRoute
 
-internal const val inviteCodeArg = "inviteCode"
-internal const val showEmailInputArg = "showEmailInput"
+internal const val INVITE_CODE_ARG = "inviteCode"
+internal const val SHOW_EMAIL_INPUT_ARG = "showEmailInput"
 
 internal class RequestOrgAccessArgs(
     val inviteCode: String?,
     val showEmailInput: Boolean? = false,
 ) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        savedStateHandle.get<String>(inviteCodeArg),
-        savedStateHandle[showEmailInputArg],
+        savedStateHandle.get<String>(INVITE_CODE_ARG),
+        savedStateHandle[SHOW_EMAIL_INPUT_ARG],
     )
 }
 
 fun NavController.navigateToRequestAccess(code: String) {
-    val route = "$requestAccessRoute?$inviteCodeArg=$code"
+    val route = "$REQUEST_ACCESS_ROUTE?$INVITE_CODE_ARG=$code"
     navigate(route)
 }
 
@@ -31,9 +31,9 @@ fun NavGraphBuilder.requestAccessScreen(
     closeRequestAccess: () -> Unit,
 ) {
     composable(
-        route = "$requestAccessRoute?$inviteCodeArg={$inviteCodeArg}",
+        route = "$REQUEST_ACCESS_ROUTE?$INVITE_CODE_ARG={$INVITE_CODE_ARG}",
         arguments = listOf(
-            navArgument(inviteCodeArg) {},
+            navArgument(INVITE_CODE_ARG) {},
         ),
     ) {
         RequestOrgAccessRoute(

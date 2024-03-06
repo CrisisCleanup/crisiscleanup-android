@@ -22,6 +22,7 @@ class NetworkAuthTest {
         assertEquals("demo@crisiscleanup.org", claims.email)
         assertEquals("Demo", claims.firstName)
         assertEquals("User", claims.lastName)
+        assertEquals(setOf(153L, 5, 1), claims.approvedIncidents)
 
         val files = claims.files
         assertEquals(1, files!!.size)

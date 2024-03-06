@@ -40,11 +40,11 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.FocusSectionSlider
 import com.crisiscleanup.core.designsystem.component.FormListSectionSeparator
+import com.crisiscleanup.core.designsystem.component.LIST_DETAIL_DETAIL_WEIGHT
+import com.crisiscleanup.core.designsystem.component.LIST_DETAIL_LIST_WEIGHT
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
 import com.crisiscleanup.core.designsystem.component.listDetailDetailMaxWidth
-import com.crisiscleanup.core.designsystem.component.listDetailDetailWeight
-import com.crisiscleanup.core.designsystem.component.listDetailListWeight
 import com.crisiscleanup.core.designsystem.component.rememberFocusSectionSliderState
 import com.crisiscleanup.core.designsystem.component.rememberSectionContentIndexLookup
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
@@ -55,15 +55,15 @@ import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
 import com.crisiscleanup.core.ui.scrollFlingListener
-import com.crisiscleanup.feature.caseeditor.CaseEditorUiState
+import com.crisiscleanup.feature.caseeditor.CaseEditorViewState
 import com.crisiscleanup.feature.caseeditor.CasePropertyDataEditor
 import com.crisiscleanup.feature.caseeditor.CreateEditCaseViewModel
 import com.crisiscleanup.feature.caseeditor.WorksiteSection
 import com.crisiscleanup.feature.caseeditor.model.FormFieldsInputData
 import com.crisiscleanup.core.common.R as commonR
 
-private const val SectionHeaderContentType = "section-header-content-type"
-private const val SectionSeparatorContentType = "section-header-content-type"
+private const val SECTION_HEADER_CONTENT_TYPE = "section-header-content-type"
+private const val SECTION_HEADER_SEPARATOR_TYPE = "section-header-separator-type"
 
 @Composable
 internal fun CreateEditCaseRoute(
@@ -130,12 +130,12 @@ private fun ArrangeLayout(
         }
     }
 
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val viewState by viewModel.viewState.collectAsStateWithLifecycle()
     val areEditorsReady by viewModel.areEditorsReady.collectAsStateWithLifecycle()
     val isSaving by viewModel.isSavingWorksite.collectAsStateWithLifecycle()
     var isCaseLoaded = false
     var isEditable = false
-    (uiState as? CaseEditorUiState.CaseData)?.let { caseData ->
+    (viewState as? CaseEditorViewState.CaseData)?.let { caseData ->
         isCaseLoaded = true
         isEditable = areEditorsReady && caseData.isNetworkLoadFinished && !isSaving
     }
@@ -144,7 +144,7 @@ private fun ArrangeLayout(
     val screenModifier = Modifier.background(color = Color.White)
     if (isListDetailLayout) {
         Row(screenModifier) {
-            Column(Modifier.weight(listDetailListWeight)) {
+            Column(Modifier.weight(LIST_DETAIL_LIST_WEIGHT)) {
                 TopAppBarBackAction(
                     title = headerTitle,
                     onAction = onNavigateBack,
@@ -162,11 +162,11 @@ private fun ArrangeLayout(
             }
             Column(
                 Modifier
-                    .weight(listDetailDetailWeight)
+                    .weight(LIST_DETAIL_DETAIL_WEIGHT)
                     .sizeIn(maxWidth = listDetailDetailMaxWidth),
             ) {
                 CreateEditCaseContent(
-                    uiState,
+                    viewState,
                     isEditable = isEditable,
                     onEditSearchAddress = onEditSearchAddress,
                     onEditMoveLocationOnMap = onEditMoveLocationOnMap,
@@ -181,7 +181,7 @@ private fun ArrangeLayout(
             )
 
             CreateEditCaseContent(
-                uiState,
+                viewState,
                 isEditable = isEditable,
                 onEditSearchAddress = onEditSearchAddress,
                 onEditMoveLocationOnMap = onEditMoveLocationOnMap,
@@ -199,15 +199,15 @@ private fun ArrangeLayout(
 
 @Composable
 private fun ColumnScope.CreateEditCaseContent(
-    uiState: CaseEditorUiState,
+    viewState: CaseEditorViewState,
     isEditable: Boolean,
     modifier: Modifier = Modifier,
     onEditSearchAddress: () -> Unit = {},
     onEditMoveLocationOnMap: () -> Unit = {},
     bottomCaseContent: @Composable () -> Unit = {},
 ) {
-    when (uiState) {
-        is CaseEditorUiState.Loading -> {
+    when (viewState) {
+        is CaseEditorViewState.Loading -> {
             Box(
                 modifier
                     .fillMaxWidth()
@@ -217,9 +217,9 @@ private fun ColumnScope.CreateEditCaseContent(
             }
         }
 
-        is CaseEditorUiState.CaseData -> {
+        is CaseEditorViewState.CaseData -> {
             FullEditView(
-                uiState,
+                viewState,
                 isEditable = isEditable,
                 onSearchAddress = onEditSearchAddress,
                 onMoveLocation = onEditMoveLocationOnMap,
@@ -229,7 +229,7 @@ private fun ColumnScope.CreateEditCaseContent(
         }
 
         else -> {
-            val errorData = uiState as CaseEditorUiState.Error
+            val errorData = viewState as CaseEditorViewState.Error
             val errorMessage = if (errorData.errorResId != 0) {
                 stringResource(errorData.errorResId)
             } else {
@@ -248,7 +248,7 @@ private fun ColumnScope.CreateEditCaseContent(
 
 @Composable
 private fun ColumnScope.FullEditView(
-    caseData: CaseEditorUiState.CaseData,
+    caseData: CaseEditorViewState.CaseData,
     isEditable: Boolean,
     modifier: Modifier = Modifier,
     viewModel: CreateEditCaseViewModel = hiltViewModel(),
@@ -383,7 +383,7 @@ private fun ColumnScope.FullEditView(
 }
 
 private fun LazyListScope.fullEditContent(
-    caseData: CaseEditorUiState.CaseData,
+    caseData: CaseEditorViewState.CaseData,
     viewModel: CreateEditCaseViewModel,
     modifier: Modifier = Modifier,
     sectionTitles: List<String> = emptyList(),
@@ -422,7 +422,7 @@ private fun LazyListScope.fullEditContent(
         viewModel.formDataEditors.forEachIndexed { index, editor ->
             item(
                 key = "section-separator-$index",
-                contentType = SectionSeparatorContentType,
+                contentType = SECTION_HEADER_SEPARATOR_TYPE,
             ) {
                 FormListSectionSeparator()
             }
@@ -453,7 +453,7 @@ private fun LazyListScope.propertyLocationSection(
 ) {
     item(
         key = "section-header-0",
-        contentType = SectionHeaderContentType,
+        contentType = SECTION_HEADER_CONTENT_TYPE,
     ) {
         SectionHeaderCollapsible(
             viewModel,
@@ -510,7 +510,7 @@ private fun LazyListScope.formDataSection(
 ) {
     item(
         key = "section-header-$sectionIndex",
-        contentType = SectionHeaderContentType,
+        contentType = SECTION_HEADER_CONTENT_TYPE,
     ) {
         val toggle = remember(viewModel) { { toggleSectionCollapse(sectionIndex) } }
         SectionHeaderCollapsible(

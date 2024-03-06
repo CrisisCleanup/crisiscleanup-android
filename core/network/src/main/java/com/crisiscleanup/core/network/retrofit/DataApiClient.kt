@@ -1,7 +1,28 @@
 package com.crisiscleanup.core.network.retrofit
 
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
-import com.crisiscleanup.core.network.model.*
+import com.crisiscleanup.core.network.model.NetworkAccountProfileResult
+import com.crisiscleanup.core.network.model.NetworkCaseHistoryResult
+import com.crisiscleanup.core.network.model.NetworkCountResult
+import com.crisiscleanup.core.network.model.NetworkIncidentResult
+import com.crisiscleanup.core.network.model.NetworkIncidentsResult
+import com.crisiscleanup.core.network.model.NetworkLanguageTranslationResult
+import com.crisiscleanup.core.network.model.NetworkLanguagesResult
+import com.crisiscleanup.core.network.model.NetworkLocationsResult
+import com.crisiscleanup.core.network.model.NetworkOrganizationsResult
+import com.crisiscleanup.core.network.model.NetworkOrganizationsSearchResult
+import com.crisiscleanup.core.network.model.NetworkRedeployRequestsResult
+import com.crisiscleanup.core.network.model.NetworkUserProfile
+import com.crisiscleanup.core.network.model.NetworkUsersResult
+import com.crisiscleanup.core.network.model.NetworkWorkTypeRequestResult
+import com.crisiscleanup.core.network.model.NetworkWorkTypeStatusResult
+import com.crisiscleanup.core.network.model.NetworkWorksiteLocationSearchResult
+import com.crisiscleanup.core.network.model.NetworkWorksitePage
+import com.crisiscleanup.core.network.model.NetworkWorksitesCoreDataResult
+import com.crisiscleanup.core.network.model.NetworkWorksitesFullResult
+import com.crisiscleanup.core.network.model.NetworkWorksitesPageResult
+import com.crisiscleanup.core.network.model.NetworkWorksitesShortResult
+import com.crisiscleanup.core.network.model.tryThrowException
 import kotlinx.datetime.Instant
 import retrofit2.Retrofit
 import retrofit2.http.GET
@@ -206,6 +227,10 @@ private interface DataSourceApi {
     suspend fun searchOrganizations(
         @Query("search") q: String,
     ): NetworkOrganizationsSearchResult
+
+    @TokenAuthenticationHeader
+    @GET("/incident_requests")
+    suspend fun getRedeployRequests(): NetworkRedeployRequestsResult
 }
 
 private val worksiteCoreDataFields = listOf(
@@ -241,7 +266,7 @@ class DataApiClient @Inject constructor(
 ) : CrisisCleanupNetworkDataSource {
     private val networkApi = retrofit.create(DataSourceApi::class.java)
 
-    override suspend fun getProfilePic() = networkApi.getProfile().files?.profilePictureUrl
+    override suspend fun getProfileData() = networkApi.getProfile()
 
     override suspend fun getOrganizations(organizations: List<Long>) =
         networkApi.getOrganizations(organizations.joinToString(",")).let {
@@ -414,6 +439,6 @@ class DataApiClient @Inject constructor(
     override suspend fun getProfile(accessToken: String) =
         networkApi.getProfile("Bearer $accessToken")
 
-    override suspend fun getProfileAcceptedTerms() =
-        networkApi.getProfile().hasAcceptedTerms == true
+    override suspend fun getRequestRedeployIncidentIds() =
+        networkApi.getRedeployRequests().results?.map { it.incident }?.toSet() ?: emptySet()
 }

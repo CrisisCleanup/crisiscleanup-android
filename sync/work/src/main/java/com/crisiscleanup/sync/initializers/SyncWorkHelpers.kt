@@ -16,23 +16,23 @@ import com.crisiscleanup.sync.workers.SyncWorksitesFullWorker
 import com.crisiscleanup.sync.workers.SyncWorksitesWorker
 import com.crisiscleanup.core.common.R as commonR
 
-internal const val SyncNotificationId = 0
-internal const val SyncMediaNotificationId = 1
-internal const val SyncWorksitesNotificationId = 2
-internal const val SyncWorksitesFullNotificationId = 3
-private const val SyncNotificationChannelID = "SyncNotificationChannel"
+internal const val SYNC_NOTIFICATION_ID = 0
+internal const val SYNC_MEDIA_NOTIFICATION_ID = 1
+internal const val SYNC_WORKSITES_NOTIFICATION_ID = 2
+internal const val SYNC_WORKSITES_FULL_NOTIFICATION_ID = 3
+private const val SYNC_NOTIFICATION_CHANNEL_ID = "SyncNotificationChannel"
 
 // These names should not be changed otherwise the app may have concurrent sync requests running
-internal const val SyncWorkName = "SyncWorkName"
-internal const val SyncMediaWorkName = "SyncMediaWorkName"
-internal const val SyncWorksitesWorkName = "SyncWorksitesWorkName"
-internal const val SyncWorksitesFullWorkName = "SyncWorksitesFullWorkName"
+internal const val SYNC_WORK_NAME = "SyncWorkName"
+internal const val SYNC_MEDIA_WORK_NAME = "SyncMediaWorkName"
+internal const val SYNC_WORKSITES_WORK_NAME = "SyncWorksitesWorkName"
+internal const val SYNC_WORKSITES_FULL_WORK_NAME = "SyncWorksitesFullWorkName"
 
 fun scheduleSync(context: Context) {
     WorkManager.getInstance(context).apply {
         // Run sync and ensure only one sync worker runs at any time
         enqueueUniqueWork(
-            SyncWorkName,
+            SYNC_WORK_NAME,
             ExistingWorkPolicy.APPEND_OR_REPLACE,
             SyncWorker.oneTimeSyncWork(),
         )
@@ -42,7 +42,7 @@ fun scheduleSync(context: Context) {
 fun scheduleSyncMedia(context: Context) {
     WorkManager.getInstance(context).apply {
         enqueueUniqueWork(
-            SyncMediaWorkName,
+            SYNC_MEDIA_WORK_NAME,
             ExistingWorkPolicy.KEEP,
             SyncMediaWorker.oneTimeSyncWork(),
         )
@@ -52,7 +52,7 @@ fun scheduleSyncMedia(context: Context) {
 fun scheduleSyncWorksites(context: Context) {
     WorkManager.getInstance(context).apply {
         enqueueUniqueWork(
-            SyncWorksitesWorkName,
+            SYNC_WORKSITES_WORK_NAME,
             ExistingWorkPolicy.KEEP,
             SyncWorksitesWorker.oneTimeSyncWork(),
         )
@@ -62,7 +62,7 @@ fun scheduleSyncWorksites(context: Context) {
 fun scheduleSyncWorksitesFull(context: Context) {
     WorkManager.getInstance(context).apply {
         enqueueUniqueWork(
-            SyncWorksitesFullWorkName,
+            SYNC_WORKSITES_FULL_WORK_NAME,
             ExistingWorkPolicy.REPLACE,
             SyncWorksitesFullWorker.oneTimeSyncWork(),
         )
@@ -85,7 +85,7 @@ internal val SyncMediaConstraints
  * run with a foreground service
  */
 internal fun Context.syncForegroundInfo(
-    id: Int = SyncNotificationId,
+    id: Int = SYNC_NOTIFICATION_ID,
     title: String = "",
     text: String = "",
 ): ForegroundInfo {
@@ -103,7 +103,7 @@ internal fun Context.channelNotificationManager(): NotificationManager? {
 
 private val Context.syncNotificationChannel: NotificationChannel
     get() = NotificationChannel(
-        SyncNotificationChannelID,
+        SYNC_NOTIFICATION_CHANNEL_ID,
         getString(R.string.sync_notification_channel_name),
         NotificationManager.IMPORTANCE_DEFAULT,
     ).apply {
@@ -116,7 +116,7 @@ internal fun Context.notificationBuilder(
 ): NotificationCompat.Builder {
     val contentTitle = title.ifBlank { getString(R.string.sync_notification_title) }
     val contentText = text.ifBlank { getString(R.string.sync_notification_text) }
-    return NotificationCompat.Builder(this, SyncNotificationChannelID)
+    return NotificationCompat.Builder(this, SYNC_NOTIFICATION_CHANNEL_ID)
         .setSmallIcon(commonR.drawable.ic_app_notification)
         .setContentTitle(contentTitle)
         .setContentText(contentText)

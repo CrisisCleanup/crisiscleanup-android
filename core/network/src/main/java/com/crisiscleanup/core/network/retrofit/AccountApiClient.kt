@@ -7,11 +7,13 @@ import com.crisiscleanup.core.network.model.InitiatePasswordResetResult
 import com.crisiscleanup.core.network.model.NetworkAcceptTermsPayload
 import com.crisiscleanup.core.network.model.NetworkAccountProfileResult
 import com.crisiscleanup.core.network.model.NetworkEmailPayload
+import com.crisiscleanup.core.network.model.NetworkIncidentRedeployRequest
 import com.crisiscleanup.core.network.model.NetworkMagicLinkResult
 import com.crisiscleanup.core.network.model.NetworkPasswordResetPayload
 import com.crisiscleanup.core.network.model.NetworkPasswordResetResult
 import com.crisiscleanup.core.network.model.NetworkPhoneCodeResult
 import com.crisiscleanup.core.network.model.NetworkPhonePayload
+import com.crisiscleanup.core.network.model.NetworkRequestRedeploy
 import kotlinx.datetime.Instant
 import retrofit2.Retrofit
 import retrofit2.http.Body
@@ -59,6 +61,12 @@ private interface AccountApi {
         @Path("userId") userId: Long,
         @Body acceptTermsPayload: NetworkAcceptTermsPayload,
     ): NetworkAccountProfileResult
+
+    @TokenAuthenticationHeader
+    @POST("incident_requests")
+    suspend fun requestRedeploy(
+        @Body redeployPayload: NetworkRequestRedeploy,
+    ): NetworkIncidentRedeployRequest?
 }
 
 class AccountApiClient @Inject constructor(
@@ -103,4 +111,12 @@ class AccountApiClient @Inject constructor(
         val result = accountApi.acceptTerms(userId, payload)
         return result.hasAcceptedTerms == true
     }
+
+    override suspend fun requestRedeploy(organizationId: Long, incidentId: Long) =
+        accountApi.requestRedeploy(
+            NetworkRequestRedeploy(
+                organizationId,
+                incidentId,
+            ),
+        )?.let { it.organization == organizationId && it.incident == incidentId } == true
 }

@@ -1,7 +1,7 @@
 package com.crisiscleanup.core.network.retrofit
 
-import kotlin.annotation.AnnotationRetention.*
-import kotlin.annotation.AnnotationTarget.*
+import kotlin.annotation.AnnotationRetention.RUNTIME
+import kotlin.annotation.AnnotationTarget.FUNCTION
 
 @Target(FUNCTION)
 @Retention(RUNTIME)

@@ -29,6 +29,8 @@ data class NetworkAuthUserClaims(
     val firstName: String,
     @SerialName("last_name")
     val lastName: String,
+    @SerialName("approved_incidents")
+    val approvedIncidents: Set<Long>,
     @SerialName("accepted_terms")
     val hasAcceptedTerms: Boolean?,
     @SerialName("accepted_terms_timestamp")

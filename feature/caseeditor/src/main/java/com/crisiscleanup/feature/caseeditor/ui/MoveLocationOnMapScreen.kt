@@ -26,11 +26,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
+import com.crisiscleanup.core.designsystem.component.LIST_DETAIL_DETAIL_WEIGHT
+import com.crisiscleanup.core.designsystem.component.LIST_DETAIL_LIST_WEIGHT
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
 import com.crisiscleanup.core.designsystem.component.listDetailDetailMaxWidth
-import com.crisiscleanup.core.designsystem.component.listDetailDetailWeight
-import com.crisiscleanup.core.designsystem.component.listDetailListWeight
 import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
@@ -188,7 +188,7 @@ private fun ListDetailLayout(
     onUseMyLocation: () -> Unit = {},
 ) {
     Row {
-        Column(Modifier.weight(listDetailListWeight)) {
+        Column(Modifier.weight(LIST_DETAIL_LIST_WEIGHT)) {
             TopAppBarBackAction(
                 title = title,
                 onAction = onBack,
@@ -215,7 +215,7 @@ private fun ListDetailLayout(
         }
         Column(
             Modifier
-                .weight(listDetailDetailWeight)
+                .weight(LIST_DETAIL_DETAIL_WEIGHT)
                 .sizeIn(maxWidth = listDetailDetailMaxWidth),
         ) {
             if (locationQuery.isBlank()) {

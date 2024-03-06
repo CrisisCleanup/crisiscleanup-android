@@ -62,7 +62,7 @@ import com.crisiscleanup.core.designsystem.theme.optionItemHeight
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
 import com.crisiscleanup.core.ui.scrollFlingListener
-import com.crisiscleanup.feature.authentication.AuthenticateScreenUiState
+import com.crisiscleanup.feature.authentication.AuthenticateScreenViewState
 import com.crisiscleanup.feature.authentication.LoginWithPhoneViewModel
 import com.crisiscleanup.feature.authentication.PhoneNumberAccount
 import com.crisiscleanup.feature.authentication.R
@@ -89,19 +89,19 @@ fun LoginWithPhoneRoute(
         onCloseScreen()
     }
 
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    when (uiState) {
-        is AuthenticateScreenUiState.Loading -> {
+    val viewState by viewModel.viewState.collectAsStateWithLifecycle()
+    when (viewState) {
+        is AuthenticateScreenViewState.Loading -> {
             Box {
                 CircularProgressIndicator(Modifier.align(Alignment.Center))
             }
         }
 
-        is AuthenticateScreenUiState.Ready -> {
+        is AuthenticateScreenViewState.Ready -> {
             val isKeyboardOpen = rememberIsKeyboardOpen()
             val closeKeyboard = rememberCloseKeyboard(viewModel)
 
-            val readyState = uiState as AuthenticateScreenUiState.Ready
+            val readyState = viewState as AuthenticateScreenViewState.Ready
             val authState = readyState.authenticationState
             Box(modifier) {
                 Column(

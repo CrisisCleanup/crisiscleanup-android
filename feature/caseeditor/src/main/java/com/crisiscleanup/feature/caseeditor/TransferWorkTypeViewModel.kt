@@ -15,7 +15,9 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.commoncase.TransferWorkTypeProvider
-import com.crisiscleanup.core.commoncase.WorkTypeTransferType.*
+import com.crisiscleanup.core.commoncase.WorkTypeTransferType.None
+import com.crisiscleanup.core.commoncase.WorkTypeTransferType.Release
+import com.crisiscleanup.core.commoncase.WorkTypeTransferType.Request
 import com.crisiscleanup.core.commoncase.WorksiteProvider
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
