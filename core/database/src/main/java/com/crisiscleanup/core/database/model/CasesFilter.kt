@@ -31,6 +31,7 @@ fun CasesFilter.passesFilter(
             if (workType.orgClaim == null) {
                 unclaimedCount++
             } else {
+                // TODO Review logic below and simplify or document
                 val orgClaim = workType.orgClaim
                 if (organizationAffiliates.contains(orgClaim)) {
                     assignedToMyTeamCount++

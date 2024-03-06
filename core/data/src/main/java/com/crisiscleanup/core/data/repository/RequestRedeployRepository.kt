@@ -4,7 +4,7 @@ import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.network.CrisisCleanupAccountApi
-import com.crisiscleanup.core.network.retrofit.DataApiClient
+import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
@@ -14,7 +14,7 @@ interface RequestRedeployRepository {
 }
 
 class CrisisCleanupRequestRedeployRepository @Inject constructor(
-    private val networkDataSource: DataApiClient,
+    private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val accountDataRepository: AccountDataRepository,
     private val accountApi: CrisisCleanupAccountApi,
     @Logger(CrisisCleanupLoggers.Account) private val logger: AppLogger,

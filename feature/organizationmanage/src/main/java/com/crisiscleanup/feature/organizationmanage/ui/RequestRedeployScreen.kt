@@ -23,6 +23,7 @@ import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.ListOptionsDropdown
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
+import com.crisiscleanup.core.designsystem.component.cancelButtonColors
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.model.data.EmptyIncident
@@ -65,50 +66,23 @@ fun RequestRedeployRoute(
                 val requestedIncidentIds = viewModel.requestedIncidentIds
                 val isRequestingRedeploy by viewModel.isRequestingRedeploy.collectAsStateWithLifecycle()
                 var selectedIncident by remember { mutableStateOf(EmptyIncident) }
-                val isIncidentEditable = remember(requestedIncidentIds) {
-                    { incident: Incident ->
-                        !requestedIncidentIds.contains(incident.id)
-                    }
-                }
-
-                Text(
-                    t("requestRedeploy.choose_an_incident"),
-                    listItemModifier,
-                )
-
-                if (errorMessage.isNotBlank()) {
-                    Text(
-                        errorMessage,
-                        listItemModifier,
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
-
-                val selectIncidentHint = t("actions.select_incident")
-                var showDropdown by remember { mutableStateOf(false) }
                 val onSelectIncident = remember(viewModel) {
                     { incident: Incident ->
                         selectedIncident = incident
-                        showDropdown = false
                     }
                 }
-                val onHideDropdown = remember(viewModel) { { showDropdown = false } }
-                ListOptionsDropdown(
-                    text = selectedIncident.name.ifBlank { selectIncidentHint },
-                    isEditable = isEditable,
-                    onToggleDropdown = { showDropdown = !showDropdown },
-                    modifier = Modifier.padding(16.dp),
-                    dropdownIconContentDescription = selectIncidentHint,
-                ) { contentSize ->
-                    IncidentsDropdown(
-                        incidents,
-                        contentSize,
-                        showDropdown,
-                        onSelectIncident,
-                        onHideDropdown,
-                        isEditable = isIncidentEditable,
-                    )
-                }
+                val selectIncidentHint = t("actions.select_incident")
+
+                RequestRedeployContent(
+                    isEditable,
+                    incidents,
+                    requestedIncidentIds,
+                    errorMessage,
+                    selectedIncident.name.ifBlank { selectIncidentHint },
+                    selectIncidentHint,
+                    onSelectIncident,
+                    rememberKey = viewModel,
+                )
 
                 Spacer(Modifier.weight(1f))
 
@@ -124,6 +98,7 @@ fun RequestRedeployRoute(
                         enabled = isEditable,
                         indicateBusy = false,
                         onClick = onBack,
+                        colors = cancelButtonColors(),
                     )
                     BusyButton(
                         Modifier
@@ -137,5 +112,63 @@ fun RequestRedeployRoute(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun RequestRedeployContent(
+    isEditable: Boolean,
+    incidents: List<Incident>,
+    requestedIncidentIds: Set<Long>,
+    errorMessage: String,
+    selectedIncidentText: String,
+    selectIncidentHint: String,
+    setSelectedIncident: (Incident) -> Unit,
+    rememberKey: Any,
+) {
+    val t = LocalAppTranslator.current
+
+    val isIncidentEditable = remember(requestedIncidentIds) {
+        { incident: Incident ->
+            !requestedIncidentIds.contains(incident.id)
+        }
+    }
+
+    Text(
+        t("requestRedeploy.choose_an_incident"),
+        listItemModifier,
+    )
+
+    if (errorMessage.isNotBlank()) {
+        Text(
+            errorMessage,
+            listItemModifier,
+            color = MaterialTheme.colorScheme.error,
+        )
+    }
+
+    var showDropdown by remember { mutableStateOf(false) }
+    val onSelectIncident = remember(rememberKey) {
+        { incident: Incident ->
+            setSelectedIncident(incident)
+            showDropdown = false
+        }
+    }
+    val onHideDropdown = remember(rememberKey) { { showDropdown = false } }
+    ListOptionsDropdown(
+        text = selectedIncidentText,
+        isEditable = isEditable,
+        onToggleDropdown = { showDropdown = !showDropdown },
+        modifier = Modifier.padding(16.dp),
+        dropdownIconContentDescription = selectIncidentHint,
+    ) { contentSize ->
+        IncidentsDropdown(
+            incidents,
+            contentSize,
+            showDropdown,
+            onSelectIncident,
+            onHideDropdown,
+            isEditable = isIncidentEditable,
+        )
     }
 }
