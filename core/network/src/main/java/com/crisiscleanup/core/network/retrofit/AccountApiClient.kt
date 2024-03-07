@@ -18,20 +18,17 @@ import kotlinx.datetime.Instant
 import retrofit2.Retrofit
 import retrofit2.http.Body
 import retrofit2.http.GET
-import retrofit2.http.Headers
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
 import javax.inject.Inject
 
 private interface AccountApi {
-    @Headers("Cookie: ")
     @POST("magic_link")
     suspend fun initiateMagicLink(
         @Body emailPayload: NetworkEmailPayload,
     ): NetworkMagicLinkResult
 
-    @Headers("Cookie: ")
     @ThrowClientErrorHeader
     @POST("otp")
     suspend fun initiatePhoneLogin(

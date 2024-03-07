@@ -13,7 +13,6 @@ import com.crisiscleanup.core.network.model.NetworkRefreshToken
 import kotlinx.coroutines.sync.Mutex
 import retrofit2.Retrofit
 import retrofit2.http.Body
-import retrofit2.http.Headers
 import retrofit2.http.POST
 import retrofit2.http.Path
 import javax.inject.Inject
@@ -29,22 +28,18 @@ private interface AuthApi {
     suspend fun oauthLogin(@Body body: NetworkOauthPayload): NetworkOauthResult
 
     @ThrowClientErrorHeader
-    @Headers("Cookie: ")
     @POST("magic_link/{code}/login")
     suspend fun magicLinkCodeAuth(@Path("code") token: String): NetworkCodeAuthResult
 
     @ThrowClientErrorHeader
-    @Headers("Cookie: ")
     @POST("otp/verify")
     suspend fun verifyPhoneCode(@Body body: NetworkPhoneCodePayload): NetworkPhoneOneTimePasswordResult
 
     @ThrowClientErrorHeader
-    @Headers("Cookie: ")
     @POST("otp/generate_token")
     suspend fun oneTimePasswordAuth(@Body body: NetworkOneTimePasswordPayload): NetworkCodeAuthResult
 
     @ThrowClientErrorHeader
-    @Headers("Cookie: ")
     @POST("api-mobile-refresh-token")
     suspend fun refreshAccountTokens(@Body body: NetworkRefreshToken): NetworkOauthResult
 }

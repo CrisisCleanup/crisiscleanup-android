@@ -27,22 +27,24 @@ import kotlinx.datetime.Instant
 import retrofit2.Retrofit
 import retrofit2.http.GET
 import retrofit2.http.Header
-import retrofit2.http.Headers
 import retrofit2.http.Path
 import retrofit2.http.Query
 import retrofit2.http.QueryMap
+import retrofit2.http.Tag
 import javax.inject.Inject
 
 private interface DataSourceApi {
     @TokenAuthenticationHeader
     @GET("users/me")
-    suspend fun getProfile(): NetworkAccountProfileResult
+    suspend fun getProfile(
+        @Tag endpointId: EndpointRequestId = EndpointRequestId.MyProfile,
+    ): NetworkAccountProfileResult
 
-    @Headers("Cookie: ")
     @GET("users/me")
     suspend fun getProfile(
         @Header("Authorization")
         accessToken: String,
+        @Tag endpointId: EndpointRequestId = EndpointRequestId.MyProfileNoAuth,
     ): NetworkUserProfile
 
     @TokenAuthenticationHeader
@@ -190,14 +192,14 @@ private interface DataSourceApi {
     ): NetworkWorkTypeRequestResult
 
     @TokenAuthenticationHeader
-    @GET("/organizations")
+    @GET("organizations")
     suspend fun getNearbyClaimingOrganizations(
         @Query("nearby_claimed")
         nearbyClaimed: String,
     ): NetworkOrganizationsResult
 
     @TokenAuthenticationHeader
-    @GET("/users")
+    @GET("users")
     suspend fun searchUsers(
         @Query("search")
         q: String,
@@ -216,20 +218,20 @@ private interface DataSourceApi {
     ): NetworkCaseHistoryResult
 
     @TokenAuthenticationHeader
-    @GET("/users")
+    @GET("users")
     suspend fun getUsers(
         @Query("id__in")
         ids: String,
     ): NetworkUsersResult
 
     @TokenAuthenticationHeader
-    @GET("/organizations")
+    @GET("organizations")
     suspend fun searchOrganizations(
         @Query("search") q: String,
     ): NetworkOrganizationsSearchResult
 
     @TokenAuthenticationHeader
-    @GET("/incident_requests")
+    @GET("incident_requests")
     suspend fun getRedeployRequests(): NetworkRedeployRequestsResult
 }
 

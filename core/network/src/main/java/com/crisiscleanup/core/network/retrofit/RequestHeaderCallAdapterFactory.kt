@@ -12,41 +12,49 @@ enum class RequestHeaderKey {
     ThrowClientError,
 }
 
-class RequestHeaderKeysLookup(
-    private val lookup: MutableMap<Int, Map<RequestHeaderKey, String>> = mutableMapOf(),
-) {
-    private val nonConstantHeaderPaths = setOf("users/me")
-    private val nonConstantHeaderFirstPaths =
-        nonConstantHeaderPaths.map { it.split("/").first() }.toSet()
+enum class EndpointRequestId {
+    MyProfile,
+    MyProfileNoAuth,
+}
 
-    private fun requestKey(request: Request): Int =
+class RequestHeaderKeysLookup(
+    /**
+     * Generic lookup for requests with distinct request method+URL
+     */
+    private val lookup: MutableMap<Int, Map<RequestHeaderKey, String>> = mutableMapOf(),
+    /**
+     * Lookup for requests with same request method+URL but different headers
+     */
+    private val requestIdLookup: MutableMap<EndpointRequestId, Map<RequestHeaderKey, String>> = mutableMapOf(),
+) {
+    private fun requestKey(request: Request) =
         request.url.hashCode() + 31 * request.method.hashCode()
 
     fun getHeaderKeys(request: Request): Map<RequestHeaderKey, String>? {
-        return lookup[requestKey(request)]
-    }
-
-    private fun isSingleRequestEndpoint(request: Request): Boolean {
-        val pathSegments = request.url.pathSegments
-        pathSegments.firstOrNull()?.let { firstPath ->
-            if (nonConstantHeaderFirstPaths.contains(firstPath)) {
-                val fullPath = pathSegments.joinToString("/")
-                return !nonConstantHeaderPaths.contains(fullPath)
-            }
-        }
-        return true
+        return request.tag(EndpointRequestId::class.java)?.let {
+            requestIdLookup[it]
+        } ?: lookup[requestKey(request)]
     }
 
     internal fun setHeaderKeys(request: Request, annotations: Array<out Annotation>) {
-        val key = requestKey(request)
-        if (lookup.containsKey(key)) {
-            if (isSingleRequestEndpoint(request)) {
+        var requestKey = 0
+        val requestId = request.tag(EndpointRequestId::class.java)
+        if (requestId == null) {
+            requestKey = requestKey(request)
+            if (lookup.containsKey(requestKey)) {
                 return
             }
+        } else if (requestIdLookup.containsKey(requestId)) {
+            return
         }
 
         val requestKeys = mutableMapOf<RequestHeaderKey, String>()
-        lookup[key] = requestKeys
+        if (requestId == null) {
+            lookup[requestKey] = requestKeys
+        } else {
+            requestIdLookup[requestId] = requestKeys
+        }
+
         annotations.forEach {
             when (it.annotationClass) {
                 TokenAuthenticationHeader::class ->
