@@ -25,6 +25,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
@@ -89,7 +90,7 @@ fun RequestOrgAccessRoute(
         if (inviteInfoErrorMessage.isNotBlank()) {
             Text(
                 inviteInfoErrorMessage,
-                listItemModifier,
+                listItemModifier.testTag("requestAccessInviteInfoError"),
                 style = LocalFontStyles.current.header3,
             )
         } else if (isInviteRequested) {
@@ -132,7 +133,7 @@ private fun RequestOrgUserInfoInputView(
             val requestInstructions = t("requestAccess.request_access_enter_email")
             Text(
                 requestInstructions,
-                listItemModifier,
+                listItemModifier.testTag("requestAccessByEmailInstructions"),
             )
 
             // TODO Set initial focus
@@ -143,12 +144,13 @@ private fun RequestOrgUserInfoInputView(
                     viewModel.emailAddressError,
                     Modifier
                         .listItemHorizontalPadding()
-                        .listItemTopPadding(),
+                        .listItemTopPadding()
+                        .testTag("requestAccessByEmailError"),
                     color = MaterialTheme.colorScheme.error,
                 )
             }
             OutlinedClearableTextField(
-                modifier = listItemModifier,
+                modifier = listItemModifier.testTag("requestAccessByEmailTextField"),
                 label = t("requestAccess.existing_member_email"),
                 value = viewModel.emailAddress,
                 onValueChange = { viewModel.emailAddress = it },
@@ -187,7 +189,7 @@ private fun RequestOrgUserInfoInputView(
 
         Text(
             t("requestAccess.complete_form_request_access"),
-            fillWidthPadded,
+            fillWidthPadded.testTag("requestAccessInputInstruction"),
             style = LocalFontStyles.current.header3,
         )
 
@@ -206,11 +208,11 @@ private fun RequestOrgUserInfoInputView(
 
         Text(
             t("requestAccess.request_will_be_sent"),
-            listItemModifier,
+            listItemModifier.testTag("requestAccessSubmitExplainer"),
         )
 
         BusyButton(
-            fillWidthPadded,
+            fillWidthPadded.testTag("requestAccessSubmitAction"),
             enabled = isEditable,
             text = t("actions.request_access"),
             indicateBusy = isLoading,
@@ -248,10 +250,12 @@ internal fun InviterAvatar(
         Column {
             Text(
                 displayName,
+                Modifier.testTag("inviterAvatarDisplayName"),
                 style = LocalFontStyles.current.header4,
             )
             Text(
                 inviteMessage,
+                Modifier.testTag("inviterAvatarMessage"),
                 style = MaterialTheme.typography.bodySmall,
             )
         }

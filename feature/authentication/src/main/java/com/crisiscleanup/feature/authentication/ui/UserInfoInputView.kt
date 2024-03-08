@@ -17,6 +17,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -39,13 +40,15 @@ import com.crisiscleanup.feature.authentication.model.UserInfoInputData
 @Composable
 private fun UserInfoErrorText(
     message: String,
+    testTagSuffix: String,
 ) {
     if (message.isNotBlank()) {
         Text(
             message,
             Modifier
                 .listItemHorizontalPadding()
-                .listItemTopPadding(),
+                .listItemTopPadding()
+                .testTag("userInfoError-$testTagSuffix"),
             color = MaterialTheme.colorScheme.error,
         )
     }
@@ -66,9 +69,9 @@ internal fun UserInfoInputView(
         // TODO Focus on top most error
 
         val hasEmailError = infoData.emailAddressError.isNotBlank()
-        UserInfoErrorText(infoData.emailAddressError)
+        UserInfoErrorText(infoData.emailAddressError, "email")
         OutlinedClearableTextField(
-            modifier = listItemModifier,
+            modifier = listItemModifier.testTag("userInfoEmailTextField"),
             label = t("requestAccess.your_email"),
             value = infoData.emailAddress,
             onValueChange = { infoData.emailAddress = it },
@@ -80,9 +83,9 @@ internal fun UserInfoInputView(
         )
 
         val hasFirstNameError = infoData.firstNameError.isNotBlank()
-        UserInfoErrorText(infoData.firstNameError)
+        UserInfoErrorText(infoData.firstNameError, "firstName")
         OutlinedClearableTextField(
-            modifier = listItemModifier,
+            modifier = listItemModifier.testTag("userInfoFirstNameTextField"),
             label = t("invitationSignup.first_name_placeholder"),
             value = infoData.firstName,
             onValueChange = { infoData.firstName = it },
@@ -95,9 +98,9 @@ internal fun UserInfoInputView(
         )
 
         val hasLastNameError = infoData.lastNameError.isNotBlank()
-        UserInfoErrorText(infoData.lastNameError)
+        UserInfoErrorText(infoData.lastNameError, "lastName")
         OutlinedClearableTextField(
-            modifier = listItemModifier,
+            modifier = listItemModifier.testTag("userInfoLastNameTextField"),
             label = t("invitationSignup.last_name_placeholder"),
             value = infoData.lastName,
             onValueChange = { infoData.lastName = it },
@@ -110,7 +113,7 @@ internal fun UserInfoInputView(
         )
 
         OutlinedClearableTextField(
-            modifier = listItemModifier,
+            modifier = listItemModifier.testTag("userInfoTitleTextField"),
             label = t("invitationSignup.title_placeholder"),
             value = infoData.title,
             onValueChange = { infoData.title = it },
@@ -123,9 +126,9 @@ internal fun UserInfoInputView(
         )
 
         val hasPhoneError = infoData.phoneError.isNotBlank()
-        UserInfoErrorText(infoData.phoneError)
+        UserInfoErrorText(infoData.phoneError, "phone")
         OutlinedClearableTextField(
-            modifier = listItemModifier,
+            modifier = listItemModifier.testTag("userInfoPhoneTextField"),
             label = t("invitationSignup.mobile_placeholder"),
             value = infoData.phone,
             onValueChange = { infoData.phone = it },
@@ -138,9 +141,9 @@ internal fun UserInfoInputView(
 
         var isObfuscatingPassword by rememberSaveable { mutableStateOf(true) }
         val hasPasswordError = infoData.passwordError.isNotBlank()
-        UserInfoErrorText(infoData.passwordError)
+        UserInfoErrorText(infoData.passwordError, "password")
         OutlinedObfuscatingTextField(
-            modifier = listItemModifier,
+            modifier = listItemModifier.testTag("userInfoPasswordTextField"),
             label = t("invitationSignup.pw1_placeholder"),
             value = infoData.password,
             onValueChange = { infoData.password = it },
@@ -154,9 +157,9 @@ internal fun UserInfoInputView(
 
         var isObfuscatingConfirmPassword by rememberSaveable { mutableStateOf(true) }
         val hasConfirmPasswordError = infoData.confirmPasswordError.isNotBlank()
-        UserInfoErrorText(infoData.confirmPasswordError)
+        UserInfoErrorText(infoData.confirmPasswordError, "confirmPassword")
         OutlinedObfuscatingTextField(
-            modifier = listItemModifier,
+            modifier = listItemModifier.testTag("userInfoConfirmPasswordTextField"),
             label = t("invitationSignup.pw2_placeholder"),
             value = infoData.confirmPassword,
             onValueChange = { infoData.confirmPassword = it },
@@ -193,10 +196,12 @@ internal fun UserInfoInputView(
                         modifier = Modifier
                             .width(
                                 with(LocalDensity.current) {
-                                    contentSize.width.toDp()
+                                    contentSize.width
+                                        .toDp()
                                         .minus(listItemDropdownMenuOffset.x.times(2))
                                 },
-                            ),
+                            )
+                            .testTag("userInputLanguageOptions"),
                         expanded = showDropdown,
                         onDismissRequest = { showDropdown = false },
                         offset = listItemDropdownMenuOffset,

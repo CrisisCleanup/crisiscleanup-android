@@ -27,7 +27,7 @@ fun OpenSettingsDialog(
             CrisisCleanupTextButton(
                 text = dismissText,
                 onClick = closeDialog,
-                modifier = Modifier.testTag("ccuAlertDialogDismissBtn"),
+                modifier = Modifier.testTag("openSettingsDialogDismissAction"),
             )
         },
         confirmButton = {
@@ -40,9 +40,10 @@ fun OpenSettingsDialog(
                     ContextCompat.startActivity(context, intent, null)
                     closeDialog()
                 },
-                modifier = Modifier.testTag("ccuAlertDialogConfirmBtn"),
+                modifier = Modifier.testTag("openSettingsDialogPositiveAction"),
             )
         },
+        dialogTestTag = "openSettingsDialog",
     )
 }
 

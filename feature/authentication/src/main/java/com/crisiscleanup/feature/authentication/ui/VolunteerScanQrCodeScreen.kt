@@ -45,7 +45,6 @@ fun VolunteerScanQrCodeRoute(
         TopAppBarBackAction(
             title = t("volunteerOrg.scan_qr_code"),
             onAction = onBack,
-            modifier = Modifier.testTag("passwordRecoverBackBtn"),
         )
 
         if (viewModel.hasCamera) {
@@ -54,12 +53,13 @@ fun VolunteerScanQrCodeRoute(
             } else {
                 Text(
                     t("info.camera_access_needed"),
-                    listItemModifier,
+                    listItemModifier.testTag("scanQrCodeCameraExplainer"),
                 )
                 CrisisCleanupButton(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .listItemPadding(),
+                        .listItemPadding()
+                        .testTag("scanQrCodeGrantCameraAccessAction"),
                     text = t("info.grant_camera_access"),
                     onClick = viewModel::requestCameraPermission,
                 )
@@ -77,7 +77,7 @@ fun VolunteerScanQrCodeRoute(
         } else {
             Text(
                 t("info.camera_not_found"),
-                listItemModifier,
+                listItemModifier.testTag("scanQrCodeCameraNotFound"),
             )
         }
     }
@@ -146,7 +146,9 @@ private fun CameraView(
 
     Box(
         contentAlignment = Alignment.BottomCenter,
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag("scanQrCodeCameraView"),
     ) {
         AndroidView(
             { previewView },
