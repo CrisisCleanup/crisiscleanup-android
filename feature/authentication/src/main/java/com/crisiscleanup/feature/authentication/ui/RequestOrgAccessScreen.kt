@@ -136,8 +136,6 @@ private fun RequestOrgUserInfoInputView(
                 listItemModifier.testTag("requestAccessByEmailInstructions"),
             )
 
-            // TODO Set initial focus
-
             val hasEmailError = viewModel.emailAddressError.isNotBlank()
             if (hasEmailError) {
                 Text(
@@ -149,6 +147,8 @@ private fun RequestOrgUserInfoInputView(
                     color = MaterialTheme.colorScheme.error,
                 )
             }
+            // TODO Initial focus isn't taking (on emulator)
+            val hasEmailFocus = viewModel.emailAddress.isBlank() || hasEmailError
             OutlinedClearableTextField(
                 modifier = listItemModifier.testTag("requestAccessByEmailTextField"),
                 label = t("requestAccess.existing_member_email"),
@@ -157,7 +157,7 @@ private fun RequestOrgUserInfoInputView(
                 keyboardType = KeyboardType.Email,
                 enabled = isEditable,
                 isError = hasEmailError,
-                hasFocus = hasEmailError,
+                hasFocus = hasEmailFocus,
                 onNext = clearErrorVisuals,
             )
         } else {
