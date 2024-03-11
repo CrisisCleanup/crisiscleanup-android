@@ -7,6 +7,9 @@ interface AppSettingsProvider {
     val baseUrl: String
     val mapsApiKey: String
 
+    val termsOfServiceUrl: String
+    val privacyPolicyUrl: String
+
     val debugEmail: String
     val debugPassword: String
 }
@@ -18,6 +21,9 @@ class SecretsAppSettingsProvider @Inject constructor() : AppSettingsProvider {
         get() = BuildConfig.BASE_URL
     override val mapsApiKey: String
         get() = BuildConfig.MAPS_API_KEY
+
+    override val termsOfServiceUrl = "$baseUrl/terms?view=plain"
+    override val privacyPolicyUrl = "$baseUrl/privacy?view=plain"
 
     override val debugEmail: String
         get() = BuildConfig.DEBUG_EMAIL_ADDRESS

@@ -182,13 +182,13 @@ internal fun MenuScreen(
                         t("publicNav.terms"),
                         Modifier
                             .listItemPadding()
-                            .clickable { uriHandler.openUri("https://crisiscleanup.org/terms") },
+                            .clickable { uriHandler.openUri(viewModel.termsOfServiceUrl) },
                     )
                     Text(
                         t("nav.privacy"),
                         Modifier
                             .listItemPadding()
-                            .clickable { uriHandler.openUri("https://crisiscleanup.org/privacy") },
+                            .clickable { uriHandler.openUri(viewModel.privacyPolicyUrl) },
                     )
                 }
             }

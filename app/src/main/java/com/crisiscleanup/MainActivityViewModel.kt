@@ -109,8 +109,8 @@ class MainActivityViewModel @Inject constructor(
     var isAccountExpired by mutableStateOf(false)
         private set
 
-    val termsOfServiceUrl = "${appSettingsProvider.baseUrl}/terms?view=plain"
-    val privacyPolicyUrl = "${appSettingsProvider.baseUrl}/privacy?view=plain"
+    val termsOfServiceUrl = appSettingsProvider.termsOfServiceUrl
+    val privacyPolicyUrl = appSettingsProvider.privacyPolicyUrl
     var hasAcceptedTerms by mutableStateOf(false)
         private set
     var isAcceptingTerms by mutableStateOf(false)

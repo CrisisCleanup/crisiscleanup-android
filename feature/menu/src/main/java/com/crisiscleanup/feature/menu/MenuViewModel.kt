@@ -3,6 +3,7 @@ package com.crisiscleanup.feature.menu
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AppEnv
+import com.crisiscleanup.core.common.AppSettingsProvider
 import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.DatabaseVersionProvider
 import com.crisiscleanup.core.common.KeyResourceTranslator
@@ -42,6 +43,7 @@ class MenuViewModel @Inject constructor(
     private val accountDataRefresher: AccountDataRefresher,
     private val appVersionProvider: AppVersionProvider,
     private val appPreferencesRepository: LocalAppPreferencesRepository,
+    appSettingsProvider: AppSettingsProvider,
     private val appEnv: AppEnv,
     private val syncPuller: SyncPuller,
     private val databaseVersionProvider: DatabaseVersionProvider,
@@ -50,6 +52,9 @@ class MenuViewModel @Inject constructor(
 ) : ViewModel() {
     val isDebuggable = appEnv.isDebuggable
     val isNotProduction = appEnv.isNotProduction
+
+    val termsOfServiceUrl = appSettingsProvider.termsOfServiceUrl
+    val privacyPolicyUrl = appSettingsProvider.privacyPolicyUrl
 
     val loadSelectIncidents = LoadSelectIncidents(
         incidentsRepository = incidentsRepository,
