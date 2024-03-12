@@ -3,6 +3,7 @@ package com.crisiscleanup.feature.menu
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -181,22 +182,17 @@ internal fun MenuScreen(
 
             // TODO Open in WebView?
             Row(
-                Modifier.fillMaxWidth(),
+                listItemModifier,
+                horizontalArrangement = Arrangement.Center,
             ) {
                 CrisisCleanupTextButton(
-                    Modifier
-                        .listItemPadding()
-                        .actionHeight()
-                        .weight(1f),
+                    Modifier.actionHeight(),
                     text = t("publicNav.terms"),
                 ) {
                     uriHandler.openUri(viewModel.termsOfServiceUrl)
                 }
                 CrisisCleanupTextButton(
-                    Modifier
-                        .listItemPadding()
-                        .actionHeight()
-                        .weight(1f),
+                    Modifier.actionHeight(),
                     text = t("nav.privacy"),
                 ) {
                     uriHandler.openUri(viewModel.privacyPolicyUrl)
