@@ -31,4 +31,6 @@ message UserPreferences {
   string table_view_sort_by = 8;
 
   bool allow_all_analytics = 9;
+
+  bool hide_getting_started_video = 10;
 }

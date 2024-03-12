@@ -18,6 +18,8 @@ interface LocalAppPreferencesRepository {
      */
     suspend fun setShouldHideOnboarding(shouldHideOnboarding: Boolean)
 
+    suspend fun setHideGettingStartedVideo(hide: Boolean)
+
     /**
      * Caches ID of selected incident.
      */

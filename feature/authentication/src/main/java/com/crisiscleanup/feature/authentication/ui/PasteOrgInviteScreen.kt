@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -50,19 +51,19 @@ fun VolunteerPasteInviteLinkRoute(
 
         Text(
             t("pasteInvite.paste_invitation_link_and_accept"),
-            listItemModifier,
+            listItemModifier.testTag("pasteOrgInviteText"),
         )
 
         if (error.isNotBlank()) {
             Text(
                 error,
-                listItemModifier,
+                listItemModifier.testTag("pasteOrgInviteError"),
                 color = MaterialTheme.colorScheme.error,
             )
         }
 
         OutlinedClearableTextField(
-            modifier = listItemModifier,
+            modifier = listItemModifier.testTag("pasteOrgInviteTextField"),
             label = t("pasteInvite.invite_link"),
             value = inviteLink,
             onValueChange = { inviteLink = it },
@@ -77,7 +78,7 @@ fun VolunteerPasteInviteLinkRoute(
         )
 
         BusyButton(
-            modifier = fillWidthPadded,
+            modifier = fillWidthPadded.testTag("pasteOrgInviteSubmitAction"),
             text = t("actions.accept_invite"),
             indicateBusy = isVerifying || isVerified,
         ) {

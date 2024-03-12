@@ -43,6 +43,9 @@ class AppPreferencesRepository @Inject constructor(
     override suspend fun setShouldHideOnboarding(shouldHideOnboarding: Boolean) =
         preferencesDataSource.setShouldHideOnboarding(shouldHideOnboarding)
 
+    override suspend fun setHideGettingStartedVideo(hide: Boolean) =
+        preferencesDataSource.setHideGettingStartedVideo(hide)
+
     override suspend fun setSelectedIncident(id: Long) =
         preferencesDataSource.setSelectedIncident(id)
 

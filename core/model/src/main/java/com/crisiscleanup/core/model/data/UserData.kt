@@ -17,4 +17,6 @@ data class UserData(
     val tableViewSortBy: WorksiteSortBy,
 
     val allowAllAnalytics: Boolean,
+
+    val hideGettingStartedVideo: Boolean,
 )

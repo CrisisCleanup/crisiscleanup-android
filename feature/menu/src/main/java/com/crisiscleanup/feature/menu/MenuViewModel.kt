@@ -3,6 +3,7 @@ package com.crisiscleanup.feature.menu
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AppEnv
+import com.crisiscleanup.core.common.AppSettingsProvider
 import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.DatabaseVersionProvider
 import com.crisiscleanup.core.common.KeyResourceTranslator
@@ -42,14 +43,19 @@ class MenuViewModel @Inject constructor(
     private val accountDataRefresher: AccountDataRefresher,
     private val appVersionProvider: AppVersionProvider,
     private val appPreferencesRepository: LocalAppPreferencesRepository,
+    appSettingsProvider: AppSettingsProvider,
     private val appEnv: AppEnv,
     private val syncPuller: SyncPuller,
     private val databaseVersionProvider: DatabaseVersionProvider,
     @ApplicationScope private val externalScope: CoroutineScope,
-    @Dispatcher(IO) ioDispatcher: CoroutineDispatcher,
+    @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     val isDebuggable = appEnv.isDebuggable
     val isNotProduction = appEnv.isNotProduction
+
+    val termsOfServiceUrl = appSettingsProvider.termsOfServiceUrl
+    val privacyPolicyUrl = appSettingsProvider.privacyPolicyUrl
+    val gettingStartedVideoUrl = appSettingsProvider.gettingStartedVideoUrl
 
     val loadSelectIncidents = LoadSelectIncidents(
         incidentsRepository = incidentsRepository,
@@ -115,6 +121,18 @@ class MenuViewModel @Inject constructor(
         it.allowAllAnalytics
     }
 
+    val menuItemVisibility = appPreferencesRepository.userPreferences.map {
+        MenuItemVisibility(
+            showOnboarding = !it.shouldHideOnboarding,
+            showGettingStartedVideo = !it.hideGettingStartedVideo,
+        )
+    }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = MenuItemVisibility(),
+            started = SharingStarted.WhileSubscribed(),
+        )
+
     init {
         externalScope.launch(ioDispatcher) {
             syncLogRepository.trimOldLogs()
@@ -148,4 +166,15 @@ class MenuViewModel @Inject constructor(
             syncPuller.scheduleSyncWorksitesFull()
         }
     }
+
+    fun showGettingStartedVideo(show: Boolean) {
+        viewModelScope.launch(ioDispatcher) {
+            appPreferencesRepository.setHideGettingStartedVideo(!show)
+        }
+    }
 }
+
+data class MenuItemVisibility(
+    val showOnboarding: Boolean = false,
+    val showGettingStartedVideo: Boolean = false,
+)

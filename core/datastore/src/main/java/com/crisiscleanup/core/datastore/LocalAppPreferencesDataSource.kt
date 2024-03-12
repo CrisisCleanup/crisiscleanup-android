@@ -48,6 +48,8 @@ class LocalAppPreferencesDataSource @Inject constructor(
                 tableViewSortBy = worksiteSortByFromLiteral(it.tableViewSortBy),
 
                 allowAllAnalytics = it.allowAllAnalytics,
+
+                hideGettingStartedVideo = it.hideGettingStartedVideo,
             )
         }
 
@@ -61,6 +63,7 @@ class LocalAppPreferencesDataSource @Inject constructor(
                 languageKey = ""
                 tableViewSortBy = WorksiteSortBy.None.literal
                 allowAllAnalytics = false
+                hideGettingStartedVideo = false
             }
         }
     }
@@ -137,6 +140,12 @@ class LocalAppPreferencesDataSource @Inject constructor(
     suspend fun setAnalytics(allowAll: Boolean) {
         userPreferences.updateData {
             it.copy { allowAllAnalytics = allowAll }
+        }
+    }
+
+    suspend fun setHideGettingStartedVideo(hide: Boolean) {
+        userPreferences.updateData {
+            it.copy { hideGettingStartedVideo = hide }
         }
     }
 }

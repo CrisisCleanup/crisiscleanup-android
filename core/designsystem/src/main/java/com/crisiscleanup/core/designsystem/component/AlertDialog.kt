@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
@@ -35,6 +36,7 @@ fun CrisisCleanupAlertDialog(
     // TODO Common dimensions
     shape: Shape = RoundedCornerShape(8.dp),
     onDismissRequest: () -> Unit = {},
+    dialogTestTag: String = "ccuAlertDialog",
     title: String = "",
     titleContent: @Composable () -> Unit = {},
     confirmButton: @Composable () -> Unit = { },
@@ -48,6 +50,7 @@ fun CrisisCleanupAlertDialog(
         @Composable {
             Text(
                 title,
+                Modifier.testTag("alertDialogTitle"),
                 style = LocalFontStyles.current.header3,
             )
         }
@@ -59,12 +62,16 @@ fun CrisisCleanupAlertDialog(
             if (text.isBlank()) {
                 textContent()
             } else {
-                Text(text)
+                Text(
+                    text,
+                    Modifier.testTag("alertDialogText"),
+                )
             }
         }
     }
 
     AlertDialog(
+        modifier = Modifier.testTag(dialogTestTag),
         tonalElevation = tonalElevation,
         textContentColor = textContentColor,
         shape = shape,

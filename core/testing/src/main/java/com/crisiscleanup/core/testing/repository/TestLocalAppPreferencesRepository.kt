@@ -18,6 +18,7 @@ private val emptyUserData = UserData(
     languageKey = "",
     tableViewSortBy = WorksiteSortBy.None,
     allowAllAnalytics = false,
+    hideGettingStartedVideo = false,
 )
 
 class TestLocalAppPreferencesRepository : LocalAppPreferencesRepository {
@@ -37,6 +38,12 @@ class TestLocalAppPreferencesRepository : LocalAppPreferencesRepository {
     override suspend fun setShouldHideOnboarding(shouldHideOnboarding: Boolean) {
         currentUserData.let { current ->
             userDataInternal.tryEmit(current.copy(shouldHideOnboarding = shouldHideOnboarding))
+        }
+    }
+
+    override suspend fun setHideGettingStartedVideo(hide: Boolean) {
+        currentUserData.let { current ->
+            userDataInternal.tryEmit(current.copy(hideGettingStartedVideo = hide))
         }
     }
 
