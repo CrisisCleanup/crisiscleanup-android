@@ -9,6 +9,7 @@ interface AppSettingsProvider {
 
     val termsOfServiceUrl: String
     val privacyPolicyUrl: String
+    val gettingStartedVideoUrl: String
 
     val debugEmail: String
     val debugPassword: String
@@ -24,6 +25,7 @@ class SecretsAppSettingsProvider @Inject constructor() : AppSettingsProvider {
 
     override val termsOfServiceUrl = "$baseUrl/terms?view=plain"
     override val privacyPolicyUrl = "$baseUrl/privacy?view=plain"
+    override val gettingStartedVideoUrl = BuildConfig.GETTING_STARTED_VIDEO_URL
 
     override val debugEmail: String
         get() = BuildConfig.DEBUG_EMAIL_ADDRESS

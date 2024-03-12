@@ -1,16 +1,19 @@
 package com.crisiscleanup.feature.menu
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -22,8 +25,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.commoncase.ui.IncidentDropdownSelect
@@ -34,10 +40,15 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.TopAppBarDefault
 import com.crisiscleanup.core.designsystem.component.TruncatedAppBarText
 import com.crisiscleanup.core.designsystem.component.actionHeight
+import com.crisiscleanup.core.designsystem.component.actionRoundCornerShape
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
+import com.crisiscleanup.core.designsystem.theme.cardContainerColor
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
+import com.crisiscleanup.core.designsystem.theme.neutralFontColor
+import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.selectincident.SelectIncidentDialog
 
@@ -90,126 +101,136 @@ internal fun MenuScreen(
         }
     }
 
-    Box {
-        Column(Modifier.fillMaxWidth()) {
-            TopBar(
-                modifier = Modifier,
-                title = screenTitle,
-                isAppHeaderLoading = isHeaderLoading,
-                profilePictureUri = profilePictureUri,
-                isAccountExpired = isAccountExpired,
-                openAuthentication = openAuthentication,
-                disasterIconResId = disasterIconResId,
-                onOpenIncidents = openIncidentsSelect,
+    val menuItemVisibility by viewModel.menuItemVisibility.collectAsStateWithLifecycle()
+
+    Column(Modifier.fillMaxWidth()) {
+        TopBar(
+            modifier = Modifier,
+            title = screenTitle,
+            isAppHeaderLoading = isHeaderLoading,
+            profilePictureUri = profilePictureUri,
+            isAccountExpired = isAccountExpired,
+            openAuthentication = openAuthentication,
+            disasterIconResId = disasterIconResId,
+            onOpenIncidents = openIncidentsSelect,
+        )
+
+        Column(
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
+        ) {
+            val hideGettingStartedVideo = remember(viewModel) {
+                { viewModel.showGettingStartedVideo(false) }
+            }
+            GettingStartedSection(
+                menuItemVisibility.showGettingStartedVideo,
+                hideGettingStartedVideo,
+                viewModel.gettingStartedVideoUrl,
+                viewModel.isNotProduction,
+                toggleGettingStartedSection = viewModel::showGettingStartedVideo,
             )
 
-            Column(
+            CrisisCleanupButton(
+                modifier = listItemModifier,
+                text = t("usersVue.invite_new_user"),
+                onClick = openInviteTeammate,
+            )
+
+            CrisisCleanupOutlinedButton(
+                modifier = listItemModifier.actionHeight(),
+                text = t("requestRedeploy.request_redeploy"),
+                onClick = openRequestRedeploy,
+                enabled = true,
+            )
+
+            CrisisCleanupOutlinedButton(
+                modifier = listItemModifier.actionHeight(),
+                text = t("info.give_app_feedback"),
+                onClick = openUserFeedback,
+                enabled = true,
+            )
+
+            Text(
+                viewModel.versionText,
+                listItemModifier,
+                color = neutralFontColor,
+            )
+
+            Row(
                 Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState()),
+                    .clickable(
+                        onClick = { shareAnalytics(!isSharingAnalytics) },
+                    )
+                    .then(listItemModifier),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    modifier = listItemModifier,
-                    text = viewModel.versionText,
+                    t("actions.share_analytics"),
+                    Modifier.weight(1f),
                 )
-
-                CrisisCleanupButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .listItemPadding(),
-                    text = t("usersVue.invite_new_user"),
-                    onClick = openInviteTeammate,
+                Switch(
+                    checked = isSharingAnalytics,
+                    onCheckedChange = shareAnalytics,
                 )
+            }
 
-                CrisisCleanupOutlinedButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .listItemPadding()
-                        .actionHeight(),
-                    text = t("requestRedeploy.request_redeploy"),
-                    onClick = openRequestRedeploy,
-                    enabled = true,
-                )
+            val uriHandler = LocalUriHandler.current
 
-                CrisisCleanupOutlinedButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .listItemPadding()
-                        .actionHeight(),
-                    text = t("info.give_app_feedback"),
-                    onClick = openUserFeedback,
-                    enabled = true,
-                )
+            Spacer(Modifier.weight(1f))
 
-                Row(
+            // TODO Open in WebView?
+            Row(
+                Modifier.fillMaxWidth(),
+            ) {
+                CrisisCleanupTextButton(
                     Modifier
-                        .clickable(
-                            onClick = { shareAnalytics(!isSharingAnalytics) },
-                        )
-                        .then(listItemModifier),
-                    verticalAlignment = Alignment.CenterVertically,
+                        .listItemPadding()
+                        .actionHeight()
+                        .weight(1f),
+                    text = t("publicNav.terms"),
                 ) {
-                    Text(
-                        t("actions.share_analytics"),
-                        Modifier.weight(1f),
-                    )
-                    Switch(
-                        checked = isSharingAnalytics,
-                        onCheckedChange = shareAnalytics,
-                    )
+                    uriHandler.openUri(viewModel.termsOfServiceUrl)
                 }
-
-                if (viewModel.isDebuggable) {
-                    MenuScreenNonProductionView()
-                }
-
-                if (viewModel.isNotProduction) {
-                    CrisisCleanupTextButton(
-                        onClick = openSyncLogs,
-                        text = "See sync logs",
-                    )
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                // TODO Open in WebView?
-                val uriHandler = LocalUriHandler.current
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
+                CrisisCleanupTextButton(
+                    Modifier
+                        .listItemPadding()
+                        .actionHeight()
+                        .weight(1f),
+                    text = t("nav.privacy"),
                 ) {
-                    Text(
-                        t("publicNav.terms"),
-                        Modifier
-                            .listItemPadding()
-                            .clickable { uriHandler.openUri(viewModel.termsOfServiceUrl) },
-                    )
-                    Text(
-                        t("nav.privacy"),
-                        Modifier
-                            .listItemPadding()
-                            .clickable { uriHandler.openUri(viewModel.privacyPolicyUrl) },
-                    )
+                    uriHandler.openUri(viewModel.privacyPolicyUrl)
                 }
             }
-        }
 
-        if (showIncidentPicker) {
-            val closeDialog = { showIncidentPicker = false }
-            val selectedIncidentId by viewModel.incidentSelector.incidentId.collectAsStateWithLifecycle()
-            val setSelected = remember(viewModel) {
-                { incident: Incident ->
-                    viewModel.loadSelectIncidents.selectIncident(incident)
-                }
+            if (viewModel.isDebuggable) {
+                MenuScreenNonProductionView()
             }
-            SelectIncidentDialog(
-                rememberKey = viewModel,
-                onBackClick = closeDialog,
-                incidentsData = incidentsData,
-                selectedIncidentId = selectedIncidentId,
-                onSelectIncident = setSelected,
-            )
+
+            if (viewModel.isNotProduction) {
+                CrisisCleanupTextButton(
+                    onClick = openSyncLogs,
+                    text = "See sync logs",
+                )
+            }
         }
+    }
+
+    if (showIncidentPicker) {
+        val closeDialog = { showIncidentPicker = false }
+        val selectedIncidentId by viewModel.incidentSelector.incidentId.collectAsStateWithLifecycle()
+        val setSelected = remember(viewModel) {
+            { incident: Incident ->
+                viewModel.loadSelectIncidents.selectIncident(incident)
+            }
+        }
+        SelectIncidentDialog(
+            rememberKey = viewModel,
+            onBackClick = closeDialog,
+            incidentsData = incidentsData,
+            selectedIncidentId = selectedIncidentId,
+            onSelectIncident = setSelected,
+        )
     }
 }
 
@@ -254,6 +275,74 @@ private fun TopBar(
             }
         },
     )
+}
+
+@Composable
+private fun GettingStartedSection(
+    showContent: Boolean,
+    hideGettingStartedVideo: () -> Unit,
+    gettingStartedUrl: String,
+    isNonProduction: Boolean = false,
+    toggleGettingStartedSection: (Boolean) -> Unit = { },
+) {
+    val t = LocalAppTranslator.current
+
+    if (showContent) {
+        val uriHandler = LocalUriHandler.current
+
+        Row(
+            listItemModifier,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                t("~~What can this app do?"),
+                style = LocalFontStyles.current.header2,
+            )
+            Spacer(Modifier.weight(1f))
+            Text(
+                text = t("actions.hide"),
+                modifier = Modifier
+                    .clickable(
+                        onClick = hideGettingStartedVideo,
+                    )
+                    .listItemPadding(),
+                style = LocalFontStyles.current.header4,
+                color = primaryBlueColor,
+            )
+        }
+
+        Card(
+            listItemModifier
+                .clickable { uriHandler.openUri(gettingStartedUrl) },
+            shape = actionRoundCornerShape,
+            colors = CardDefaults.cardColors(containerColor = cardContainerColor),
+        ) {
+            Image(
+                painterResource(id = R.drawable.getting_starting_video_thumbnail),
+                t("~~Getting started"),
+                Modifier.sizeIn(maxHeight = 128.dp),
+                contentScale = ContentScale.FillWidth,
+            )
+            Text(
+                t("~~Quick App Intro"),
+                // TODO Common dimensions
+                Modifier.padding(16.dp),
+                style = LocalFontStyles.current.header3,
+            )
+        }
+    } else if (isNonProduction) {
+        Text(
+            // Not shown on production. Translation is not necessary
+            text = t("show getting started section"),
+            modifier = Modifier
+                .clickable(
+                    onClick = { toggleGettingStartedSection(true) },
+                )
+                .then(listItemModifier),
+            style = LocalFontStyles.current.header4,
+            color = primaryBlueColor,
+        )
+    }
 }
 
 @Composable
