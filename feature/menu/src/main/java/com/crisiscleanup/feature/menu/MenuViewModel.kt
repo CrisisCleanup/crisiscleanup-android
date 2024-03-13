@@ -121,12 +121,13 @@ class MenuViewModel @Inject constructor(
         it.allowAllAnalytics
     }
 
-    val menuItemVisibility = appPreferencesRepository.userPreferences.map {
-        MenuItemVisibility(
-            showOnboarding = !it.shouldHideOnboarding,
-            showGettingStartedVideo = !it.hideGettingStartedVideo,
-        )
-    }
+    val menuItemVisibility = appPreferencesRepository.userPreferences
+        .map {
+            MenuItemVisibility(
+                showOnboarding = !it.shouldHideOnboarding,
+                showGettingStartedVideo = !it.hideGettingStartedVideo,
+            )
+        }
         .stateIn(
             scope = viewModelScope,
             initialValue = MenuItemVisibility(),
@@ -168,8 +169,12 @@ class MenuViewModel @Inject constructor(
     }
 
     fun showGettingStartedVideo(show: Boolean) {
+        val hide = !show
         viewModelScope.launch(ioDispatcher) {
-            appPreferencesRepository.setHideGettingStartedVideo(!show)
+            appPreferencesRepository.setHideGettingStartedVideo(hide)
+
+            // TODO Move to hide onboarding method when implemented
+            appPreferencesRepository.setShouldHideOnboarding(hide)
         }
     }
 }
