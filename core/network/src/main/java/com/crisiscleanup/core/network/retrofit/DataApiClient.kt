@@ -4,6 +4,7 @@ import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkAccountProfileResult
 import com.crisiscleanup.core.network.model.NetworkCaseHistoryResult
 import com.crisiscleanup.core.network.model.NetworkCountResult
+import com.crisiscleanup.core.network.model.NetworkFlagsFormDataResult
 import com.crisiscleanup.core.network.model.NetworkIncidentResult
 import com.crisiscleanup.core.network.model.NetworkIncidentsResult
 import com.crisiscleanup.core.network.model.NetworkLanguageTranslationResult
@@ -233,6 +234,14 @@ private interface DataSourceApi {
     @TokenAuthenticationHeader
     @GET("incident_requests")
     suspend fun getRedeployRequests(): NetworkRedeployRequestsResult
+
+    @TokenAuthenticationHeader
+    @GET("worksites_data_flags")
+    suspend fun getWorksitesFlagsFormData(
+        @Query("incident") incidentId: Long,
+        @Query("offset") offset: Long,
+        @Query("limit") limit: Long,
+    ): NetworkFlagsFormDataResult
 }
 
 private val worksiteCoreDataFields = listOf(
