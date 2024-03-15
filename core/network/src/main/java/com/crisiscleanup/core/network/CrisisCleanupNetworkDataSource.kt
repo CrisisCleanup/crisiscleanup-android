@@ -3,6 +3,7 @@ package com.crisiscleanup.core.network
 import com.crisiscleanup.core.network.model.NetworkAccountProfileResult
 import com.crisiscleanup.core.network.model.NetworkCaseHistoryEvent
 import com.crisiscleanup.core.network.model.NetworkCountResult
+import com.crisiscleanup.core.network.model.NetworkFlagsFormData
 import com.crisiscleanup.core.network.model.NetworkIncident
 import com.crisiscleanup.core.network.model.NetworkIncidentOrganization
 import com.crisiscleanup.core.network.model.NetworkLanguageDescription
@@ -75,6 +76,13 @@ interface CrisisCleanupNetworkDataSource {
         longitude: Double? = null,
         updatedAtAfter: Instant? = null,
     ): List<NetworkWorksitePage>
+
+    suspend fun getWorksitesFlagsFormDataPage(
+        incidentId: Long,
+        pageCount: Int,
+        pageOffset: Int? = null,
+        updatedAtAfter: Instant? = null,
+    ): List<NetworkFlagsFormData>
 
     suspend fun getLocationSearchWorksites(
         incidentId: Long,

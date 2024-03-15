@@ -2,60 +2,73 @@ package com.crisiscleanup.core.data
 
 import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.log.AppLogger
-import com.crisiscleanup.core.common.log.CrisisCleanupLoggers.Worksites
+import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
-import com.crisiscleanup.core.data.model.asEntity
+import com.crisiscleanup.core.data.model.asWorksiteEntity
 import com.crisiscleanup.core.data.util.IncidentDataPullStats
 import com.crisiscleanup.core.data.util.IncidentDataPullStatsUpdater
 import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
 import com.crisiscleanup.core.database.dao.WorksiteSyncStatDao
-import com.crisiscleanup.core.database.model.WorkTypeEntity
-import com.crisiscleanup.core.database.model.WorksiteEntity
-import com.crisiscleanup.core.database.model.WorksiteFlagEntity
+import com.crisiscleanup.core.database.model.IncidentWorksitesSecondarySyncStatsEntity
+import com.crisiscleanup.core.database.model.PopulatedIncidentSyncStats
+import com.crisiscleanup.core.database.model.WorksiteFormDataEntity
+import com.crisiscleanup.core.database.model.asExternalModel
+import com.crisiscleanup.core.database.model.asSecondaryWorksiteSyncStatsEntity
 import com.crisiscleanup.core.model.data.IncidentDataSyncStats
+import com.crisiscleanup.core.model.data.SyncAttempt
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
-import com.crisiscleanup.core.network.model.NetworkWorksiteFull
-import kotlinx.coroutines.CancellationException
+import com.crisiscleanup.core.network.model.KeyDynamicValuePair
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
+import kotlin.coroutines.cancellation.CancellationException
 
-interface WorksitesSyncer {
+interface WorksitesSecondaryDataSyncer {
     val dataPullStats: Flow<IncidentDataPullStats>
-
-    suspend fun networkWorksitesCount(
-        incidentId: Long,
-        updatedAfter: Instant? = null,
-    ): Int
 
     suspend fun sync(
         incidentId: Long,
-        syncStats: IncidentDataSyncStats,
+        syncStats: PopulatedIncidentSyncStats,
     )
 }
 
-// TODO Test coverage
-
-class IncidentWorksitesSyncer @Inject constructor(
+class IncidentWorksitesSecondaryDataSyncer @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val networkDataCache: WorksitesNetworkDataCache,
     private val worksiteDaoPlus: WorksiteDaoPlus,
     private val worksiteSyncStatDao: WorksiteSyncStatDao,
     private val deviceInspector: SyncCacheDeviceInspector,
     private val appVersionProvider: AppVersionProvider,
-    @Logger(Worksites) private val logger: AppLogger,
-) : WorksitesSyncer {
+    @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
+) : WorksitesSecondaryDataSyncer {
     override val dataPullStats = MutableStateFlow(IncidentDataPullStats())
 
-    override suspend fun networkWorksitesCount(incidentId: Long, updatedAfter: Instant?) =
+    private suspend fun networkWorksitesCount(incidentId: Long, updatedAfter: Instant?) =
         networkDataSource.getWorksitesCount(incidentId, updatedAfter)
 
-    override suspend fun sync(
+    private suspend fun getCleanSyncStats(incidentId: Long): IncidentDataSyncStats {
+        val worksitesCount = networkWorksitesCount(incidentId, null)
+        return IncidentDataSyncStats(
+            incidentId,
+            Clock.System.now(),
+            worksitesCount,
+            0,
+            SyncAttempt(0, 0, 0),
+            appVersionProvider.versionCode,
+        )
+    }
+
+    override suspend fun sync(incidentId: Long, syncStats: PopulatedIncidentSyncStats) {
+        syncSecondaryData(incidentId, syncStats.secondaryStats)
+    }
+
+    private suspend fun syncSecondaryData(
         incidentId: Long,
-        syncStats: IncidentDataSyncStats,
+        secondarySyncStats: IncidentWorksitesSecondarySyncStatsEntity?,
     ) {
         val statsUpdater = IncidentDataPullStatsUpdater(
             updatePullStats = { stats -> dataPullStats.value = stats },
@@ -63,13 +76,17 @@ class IncidentWorksitesSyncer @Inject constructor(
             it.beginPull(incidentId)
         }
         try {
-            saveWorksitesData(incidentId, syncStats, statsUpdater)
+            var syncStats = secondarySyncStats?.asExternalModel() ?: getCleanSyncStats(incidentId)
+            if (syncStats.isDataVersionOutdated) {
+                syncStats = getCleanSyncStats(incidentId)
+            }
+            saveSecondaryWorksitesData(incidentId, syncStats, statsUpdater)
         } finally {
             statsUpdater.endPull()
         }
     }
 
-    private suspend fun saveWorksitesData(
+    private suspend fun saveSecondaryWorksitesData(
         incidentId: Long,
         syncStats: IncidentDataSyncStats,
         statsUpdater: IncidentDataPullStatsUpdater,
@@ -94,10 +111,11 @@ class IncidentWorksitesSyncer @Inject constructor(
 
         var networkPullPage = 0
         var requestingCount = 0
-        val pageCount = if (deviceInspector.isLimitedDevice) 3000 else 10000
+        // TODO Review if these page counts are optimal for secondary data
+        val pageCount = if (deviceInspector.isLimitedDevice) 3000 else 5000
         try {
             while (requestingCount < syncCount) {
-                networkDataCache.saveWorksitesShort(
+                networkDataCache.saveWorksitesSecondaryData(
                     incidentId,
                     pageCount,
                     networkPullPage,
@@ -120,11 +138,13 @@ class IncidentWorksitesSyncer @Inject constructor(
             logger.logException(e)
         }
 
+        worksiteSyncStatDao.upsertSecondaryStats(syncStats.asSecondaryWorksiteSyncStatsEntity())
+
         var startSyncRequestTime: Instant? = null
         var dbSaveCount = 0
         var deleteCacheFiles = false
         for (dbSavePage in 0 until networkPullPage) {
-            val cachedData = networkDataCache.loadWorksitesShort(
+            val cachedData = networkDataCache.loadWorksitesSecondaryData(
                 incidentId,
                 dbSavePage,
                 syncCount,
@@ -138,19 +158,14 @@ class IncidentWorksitesSyncer @Inject constructor(
 
             val saveData = syncStats.pagedCount < dbSaveCount + pageCount || isDeltaPull
             if (saveData) {
-                with(cachedData.worksites) {
-                    val worksites = map { it.asEntity() }
-                    val flags = map {
-                        it.flags.filter { flag -> flag.invalidatedAt == null }
-                            .map(NetworkWorksiteFull.FlagShort::asEntity)
-                    }
-                    val workTypes = map {
-                        it.newestWorkTypes.map(NetworkWorksiteFull.WorkTypeShort::asEntity)
+                with(cachedData.secondaryData) {
+                    val worksitesIds = map { it.id }
+                    val formData = map {
+                        it.formData.map(KeyDynamicValuePair::asWorksiteEntity)
                     }
                     saveToDb(
-                        worksites,
-                        flags,
-                        workTypes,
+                        worksitesIds,
+                        formData,
                         cachedData.requestTime,
                         statsUpdater,
                     )
@@ -164,7 +179,7 @@ class IncidentWorksitesSyncer @Inject constructor(
 
             if (saveData) {
                 if (isSyncEnd) {
-                    worksiteSyncStatDao.updateStatsSuccessful(
+                    worksiteSyncStatDao.updateSecondaryStatsSuccessful(
                         incidentId,
                         syncStats.syncStart,
                         syncStats.dataCount,
@@ -174,7 +189,7 @@ class IncidentWorksitesSyncer @Inject constructor(
                         appVersionProvider.versionCode,
                     )
                 } else if (!isDeltaPull) {
-                    worksiteSyncStatDao.updateStatsPaged(
+                    worksiteSyncStatDao.updateSecondaryStatsPaged(
                         incidentId,
                         syncStats.syncStart,
                         dbSaveCount,
@@ -196,9 +211,8 @@ class IncidentWorksitesSyncer @Inject constructor(
     }
 
     private suspend fun saveToDb(
-        worksites: List<WorksiteEntity>,
-        flags: List<List<WorksiteFlagEntity>>,
-        workTypes: List<List<WorkTypeEntity>>,
+        worksiteIds: List<Long>,
+        formData: List<List<WorksiteFormDataEntity>>,
         syncStart: Instant,
         statsUpdater: IncidentDataPullStatsUpdater,
     ): Int = coroutineScope {
@@ -207,25 +221,19 @@ class IncidentWorksitesSyncer @Inject constructor(
         val dbOperationLimit = 500
         val limit = dbOperationLimit.coerceAtLeast(100)
         var pagedCount = 0
-        while (offset < worksites.size) {
-            val offsetEnd = (offset + limit).coerceAtMost(worksites.size)
-            val worksiteSubset = worksites.slice(offset until offsetEnd)
-            val workTypeSubset = workTypes.slice(offset until offsetEnd)
-            worksiteDaoPlus.syncWorksites(
-                worksiteSubset,
-                workTypeSubset,
-                syncStart,
+        while (offset < worksiteIds.size) {
+            val offsetEnd = (offset + limit).coerceAtMost(worksiteIds.size)
+            val worksiteIdsSubset = worksiteIds.slice(offset until offsetEnd)
+            val formDataSubset = formData.slice(offset until offsetEnd)
+            // Flags should have been saved by IncidentWorksitesSyncer
+            worksiteDaoPlus.syncFormData(
+                worksiteIdsSubset,
+                formDataSubset,
             )
 
-            val flagSubset = flags.slice(offset until offsetEnd)
-            worksiteDaoPlus.syncShortFlags(
-                worksiteSubset,
-                flagSubset,
-            )
+            statsUpdater.addSavedCount(worksiteIdsSubset.size)
 
-            statsUpdater.addSavedCount(worksiteSubset.size)
-
-            pagedCount += worksiteSubset.size
+            pagedCount += worksiteIdsSubset.size
 
             offset += limit
 

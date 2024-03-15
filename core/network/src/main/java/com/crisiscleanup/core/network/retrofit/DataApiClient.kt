@@ -4,6 +4,7 @@ import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkAccountProfileResult
 import com.crisiscleanup.core.network.model.NetworkCaseHistoryResult
 import com.crisiscleanup.core.network.model.NetworkCountResult
+import com.crisiscleanup.core.network.model.NetworkFlagsFormData
 import com.crisiscleanup.core.network.model.NetworkFlagsFormDataResult
 import com.crisiscleanup.core.network.model.NetworkIncidentResult
 import com.crisiscleanup.core.network.model.NetworkIncidentsResult
@@ -239,8 +240,9 @@ private interface DataSourceApi {
     @GET("worksites_data_flags")
     suspend fun getWorksitesFlagsFormData(
         @Query("incident") incidentId: Long,
-        @Query("offset") offset: Long,
-        @Query("limit") limit: Long,
+        @Query("limit") limit: Int,
+        @Query("offset") offset: Int?,
+        @Query("updated_at__gt") updatedAtAfter: Instant?,
     ): NetworkFlagsFormDataResult
 }
 
@@ -356,6 +358,22 @@ class DataApiClient @Inject constructor(
             pageCount,
             if ((pageOffset ?: 0) <= 1) null else pageOffset,
             centerCoordinates,
+            updatedAtAfter,
+        )
+        result.errors?.tryThrowException()
+        return result.results ?: emptyList()
+    }
+
+    override suspend fun getWorksitesFlagsFormDataPage(
+        incidentId: Long,
+        pageCount: Int,
+        pageOffset: Int?,
+        updatedAtAfter: Instant?,
+    ): List<NetworkFlagsFormData> {
+        val result = networkApi.getWorksitesFlagsFormData(
+            incidentId,
+            limit = pageCount,
+            offset = if ((pageOffset ?: 0) <= 1) null else pageOffset!! * pageCount,
             updatedAtAfter,
         )
         result.errors?.tryThrowException()

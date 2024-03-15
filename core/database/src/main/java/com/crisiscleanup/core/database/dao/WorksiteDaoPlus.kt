@@ -286,6 +286,33 @@ class WorksiteDaoPlus @Inject constructor(
         }
     }
 
+    suspend fun syncFormData(
+        networkWorksiteIds: List<Long>,
+        formDatas: List<List<WorksiteFormDataEntity>>,
+    ) {
+        throwSizeMismatch(networkWorksiteIds.size, formDatas.size, "form-data")
+
+        val worksiteIdsSet = networkWorksiteIds.toSet()
+        db.withTransaction {
+            val modifiedAtLookup = getWorksiteLocalModifiedAt(worksiteIdsSet)
+
+            val worksiteDao = db.worksiteDao()
+            val formDataDao = db.worksiteFormDataDao()
+            formDatas.forEachIndexed { i, formData ->
+                val networkWorksiteId = networkWorksiteIds[i]
+                val modifiedAt = modifiedAtLookup[networkWorksiteId]
+                val isLocallyModified = modifiedAt?.isLocallyModified ?: false
+                if (!isLocallyModified) {
+                    val worksiteId = worksiteDao.getWorksiteId(networkWorksiteId)
+                    val fieldKeys = formData.map(WorksiteFormDataEntity::fieldKey)
+                    formDataDao.deleteUnspecifiedKeys(worksiteId, fieldKeys)
+                    val updatedFormData = formData.map { it.copy(worksiteId = worksiteId) }
+                    formDataDao.upsert(updatedFormData)
+                }
+            }
+        }
+    }
+
     suspend fun syncWorksite(
         entities: WorksiteEntities,
         syncedAt: Instant,

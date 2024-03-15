@@ -130,7 +130,7 @@ class AuthenticationViewModelTest {
                 languageKey = EnglishLanguage.key,
                 tableViewSortBy = WorksiteSortBy.None,
                 allowAllAnalytics = false,
-                hideGettingStartedVideo = false
+                hideGettingStartedVideo = false,
             ),
         )
 

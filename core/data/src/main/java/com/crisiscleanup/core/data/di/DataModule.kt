@@ -5,10 +5,14 @@ import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.data.IncidentOrganizationsDataCache
 import com.crisiscleanup.core.data.IncidentOrganizationsDataFileCache
 import com.crisiscleanup.core.data.IncidentWorksitesFullSyncer
+import com.crisiscleanup.core.data.IncidentWorksitesSecondaryDataSyncer
 import com.crisiscleanup.core.data.IncidentWorksitesSyncer
+import com.crisiscleanup.core.data.SyncCacheDeviceInspector
 import com.crisiscleanup.core.data.WorksitesFullSyncer
 import com.crisiscleanup.core.data.WorksitesNetworkDataCache
 import com.crisiscleanup.core.data.WorksitesNetworkDataFileCache
+import com.crisiscleanup.core.data.WorksitesSecondaryDataSyncer
+import com.crisiscleanup.core.data.WorksitesSyncCacheDeviceInspector
 import com.crisiscleanup.core.data.WorksitesSyncer
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AccountUpdateRepository
@@ -197,15 +201,19 @@ interface DataModule {
 @InstallIn(SingletonComponent::class)
 interface DataInternalModule {
     @Binds
-    fun providesWorksitesNetworkDataCache(
-        cache: WorksitesNetworkDataFileCache,
-    ): WorksitesNetworkDataCache
+    fun bindsSyncCacheDeviceInspector(inspector: WorksitesSyncCacheDeviceInspector): SyncCacheDeviceInspector
 
     @Binds
-    fun providesWorksitesSyncer(syncer: IncidentWorksitesSyncer): WorksitesSyncer
+    fun bindsWorksitesNetworkDataCache(cache: WorksitesNetworkDataFileCache): WorksitesNetworkDataCache
 
     @Binds
-    fun providesWorksitesFullSyncer(syncer: IncidentWorksitesFullSyncer): WorksitesFullSyncer
+    fun bindsWorksitesSyncer(syncer: IncidentWorksitesSyncer): WorksitesSyncer
+
+    @Binds
+    fun bindsWorksitesFullSyncer(syncer: IncidentWorksitesFullSyncer): WorksitesFullSyncer
+
+    @Binds
+    fun bindsWorksitesSecondaryDataSyncer(syncer: IncidentWorksitesSecondaryDataSyncer): WorksitesSecondaryDataSyncer
 
     @Binds
     fun providesIncidentOrganizationsNetworkDataCache(

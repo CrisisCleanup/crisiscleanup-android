@@ -1,11 +1,11 @@
 package com.crisiscleanup.core.data
 
-import com.crisiscleanup.core.common.AppMemoryStats
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.log.AppLogger
-import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
+import com.crisiscleanup.core.common.log.CrisisCleanupLoggers.Worksites
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.data.model.asEntities
+import com.crisiscleanup.core.data.util.IncidentDataPullStats
 import com.crisiscleanup.core.database.dao.IncidentDao
 import com.crisiscleanup.core.database.dao.WorksiteDao
 import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
@@ -13,6 +13,7 @@ import com.crisiscleanup.core.database.dao.WorksiteSyncStatDao
 import com.crisiscleanup.core.database.model.BoundedSyncedWorksiteIds
 import com.crisiscleanup.core.database.model.CoordinateGridQuery
 import com.crisiscleanup.core.database.model.IncidentWorksitesFullSyncStatsEntity
+import com.crisiscleanup.core.database.model.PopulatedIncidentSyncStats
 import com.crisiscleanup.core.database.model.SwNeBounds
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import kotlinx.coroutines.coroutineScope
@@ -35,7 +36,7 @@ data class IncidentProgressPullStats(
 
 interface WorksitesFullSyncer {
     val fullPullStats: Flow<IncidentProgressPullStats>
-
+    val secondaryDataPullStats: Flow<IncidentDataPullStats>
     suspend fun sync(incidentId: Long)
 }
 
@@ -48,11 +49,13 @@ class IncidentWorksitesFullSyncer @Inject constructor(
     private val worksiteDao: WorksiteDao,
     private val worksiteDaoPlus: WorksiteDaoPlus,
     private val worksiteSyncStatDao: WorksiteSyncStatDao,
-    memoryStats: AppMemoryStats,
+    private val deviceInspector: SyncCacheDeviceInspector,
     private val locationProvider: LocationProvider,
-    @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
+    private val secondaryDataSyncer: WorksitesSecondaryDataSyncer,
+    @Logger(Worksites) private val logger: AppLogger,
 ) : WorksitesFullSyncer {
     override val fullPullStats = MutableStateFlow(IncidentProgressPullStats())
+    override val secondaryDataPullStats = secondaryDataSyncer.dataPullStats
 
     override suspend fun sync(incidentId: Long) {
         worksiteSyncStatDao.getIncidentSyncStats(incidentId)?.let { syncStats ->
@@ -65,28 +68,28 @@ class IncidentWorksitesFullSyncer @Inject constructor(
                     longitude = 999.0,
                     radius = 0.0,
                 )
-                saveWorksitesFull(syncStats.entity.targetCount, fullStats)
+                saveWorksitesFull(
+                    syncStats,
+                    fullStats,
+                )
             }
         }
     }
-
-    private val allWorksitesMemoryThreshold = 100
-    private val isCapableDevice = memoryStats.availableMemory >= allWorksitesMemoryThreshold
 
     // TODO Use connection strength to determine count
     private val fullSyncPageCount = 40
     private val idSyncPageCount = 20
 
     private suspend fun saveWorksitesFull(
-        initialSyncCount: Int,
-        syncStats: IncidentWorksitesFullSyncStatsEntity,
+        syncStats: PopulatedIncidentSyncStats,
+        fullStats: IncidentWorksitesFullSyncStatsEntity,
     ) = coroutineScope {
-        val incidentId = syncStats.incidentId
+        val incidentId = fullStats.incidentId
 
-        val locationQueryParameters = syncStats.asQueryParameters(locationProvider)
-        val pullAll = syncStats.syncedAt == null || locationQueryParameters.hasLocationChange
-        // TODO Adjust according to strength of network connection in real time
-        val syncPageCount = fullSyncPageCount * (if (isCapableDevice) 2 else 1)
+        val locationQueryParameters = fullStats.asQueryParameters(locationProvider)
+        val pullAll = fullStats.syncedAt == null || locationQueryParameters.hasLocationChange
+        val pageCountScale = if (deviceInspector.isLimitedDevice) 1 else 2
+        val syncPageCount = fullSyncPageCount * pageCountScale
         val largeIncidentWorksitesCount = syncPageCount * 15
 
         val worksiteCount = networkDataSource.getWorksitesCount(incidentId)
@@ -135,10 +138,12 @@ class IncidentWorksitesFullSyncer @Inject constructor(
                 }
                 if (pagedCount >= worksiteCount) {
                     worksiteSyncStatDao.upsert(
-                        syncStats.copy(syncedAt = syncStartedAt),
+                        fullStats.copy(syncedAt = syncStartedAt),
                     )
                 }
             } else {
+                secondaryDataSyncer.sync(incidentId, syncStats)
+
                 if (locationQueryParameters.hasLocation) {
                     val isSynced = saveWorksitesAroundLocation(
                         incidentId,
@@ -149,7 +154,7 @@ class IncidentWorksitesFullSyncer @Inject constructor(
                     }
                     if (isSynced) {
                         worksiteSyncStatDao.upsert(
-                            syncStats.copy(
+                            fullStats.copy(
                                 syncedAt = syncStartedAt,
                                 latitude = locationQueryParameters.latitude,
                                 longitude = locationQueryParameters.longitude,
