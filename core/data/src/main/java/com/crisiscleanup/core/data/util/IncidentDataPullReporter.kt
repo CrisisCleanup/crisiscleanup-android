@@ -11,6 +11,7 @@ import kotlin.time.Duration.Companion.seconds
 interface IncidentDataPullReporter {
     val incidentDataPullStats: Flow<IncidentDataPullStats>
     val incidentSecondaryDataPullStats: Flow<IncidentDataPullStats>
+    val onIncidentDataPullComplete: Flow<Long>
 }
 
 data class IncidentDataPullStats(

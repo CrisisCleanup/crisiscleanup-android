@@ -468,6 +468,12 @@ class CasesViewModel @Inject constructor(
         tableViewSort
             .onEach { qsm.tableViewSort.value = it }
             .launchIn(viewModelScope)
+
+        dataPullReporter.onIncidentDataPullComplete
+            .onEach {
+                filterRepository.reapplyFilters()
+            }
+            .launchIn(viewModelScope)
     }
 
     fun syncWorksitesDelta() {

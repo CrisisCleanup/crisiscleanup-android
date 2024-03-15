@@ -83,6 +83,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
 
     override val incidentDataPullStats = worksitesSyncer.dataPullStats
     override val incidentSecondaryDataPullStats = worksitesFullSyncer.secondaryDataPullStats
+    override val onIncidentDataPullComplete = worksitesFullSyncer.onFullDataPullComplete
 
     override val isDeterminingWorksitesCount = MutableStateFlow(false)
 

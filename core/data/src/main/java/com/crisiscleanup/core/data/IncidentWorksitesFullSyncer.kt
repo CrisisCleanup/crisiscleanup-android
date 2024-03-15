@@ -19,6 +19,7 @@ import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -37,6 +38,7 @@ data class IncidentProgressPullStats(
 interface WorksitesFullSyncer {
     val fullPullStats: Flow<IncidentProgressPullStats>
     val secondaryDataPullStats: Flow<IncidentDataPullStats>
+    val onFullDataPullComplete: Flow<Long>
     suspend fun sync(incidentId: Long)
 }
 
@@ -56,6 +58,7 @@ class IncidentWorksitesFullSyncer @Inject constructor(
 ) : WorksitesFullSyncer {
     override val fullPullStats = MutableStateFlow(IncidentProgressPullStats())
     override val secondaryDataPullStats = secondaryDataSyncer.dataPullStats
+    override val onFullDataPullComplete = MutableSharedFlow<Long>()
 
     override suspend fun sync(incidentId: Long) {
         worksiteSyncStatDao.getIncidentSyncStats(incidentId)?.let { syncStats ->
@@ -140,6 +143,8 @@ class IncidentWorksitesFullSyncer @Inject constructor(
                     worksiteSyncStatDao.upsert(
                         fullStats.copy(syncedAt = syncStartedAt),
                     )
+
+                    onFullDataPullComplete.emit(incidentId)
                 }
             } else {
                 secondaryDataSyncer.sync(incidentId, syncStats)
@@ -165,6 +170,8 @@ class IncidentWorksitesFullSyncer @Inject constructor(
                 } else {
                     // TODO Signal user to set sync center and radius
                 }
+
+                onFullDataPullComplete.emit(incidentId)
             }
         } else {
             // val newWorksitesCount = worksiteCount - initialSyncCount
