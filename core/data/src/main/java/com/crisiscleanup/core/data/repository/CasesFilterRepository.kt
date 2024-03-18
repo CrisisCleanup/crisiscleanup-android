@@ -16,16 +16,18 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import javax.inject.Inject
 import javax.inject.Singleton
 
 interface CasesFilterRepository {
     val casesFilters: CasesFilter
-    val casesFiltersLocation: StateFlow<Pair<CasesFilter, Boolean>>
+    val casesFiltersLocation: StateFlow<Triple<CasesFilter, Boolean, Long>>
     val filtersCount: Flow<Int>
 
     fun changeFilters(filters: CasesFilter)
     fun updateWorkTypeFilters(workTypes: Collection<String>)
+    fun reapplyFilters()
 }
 
 @Singleton
@@ -38,14 +40,17 @@ class CrisisCleanupCasesFilterRepository @Inject constructor(
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    private val applyFilterTimestamp = MutableStateFlow(0L)
+
     override val casesFiltersLocation = combine(
         dataSource.casesFilters,
         permissionManager.hasLocationPermission,
-        ::Pair,
+        applyFilterTimestamp,
+        ::Triple,
     )
         .stateIn(
             scope = externalScope,
-            initialValue = Pair(CasesFilter(), false),
+            initialValue = Triple(CasesFilter(), false, 0L),
             started = SharingStarted.WhileSubscribed(),
         )
     override val casesFilters: CasesFilter
@@ -63,5 +68,11 @@ class CrisisCleanupCasesFilterRepository @Inject constructor(
 
     override fun updateWorkTypeFilters(workTypes: Collection<String>) {
         // TODO Update work types removing non-matching
+    }
+
+    override fun reapplyFilters() {
+        if (casesFilters.changeCount > 0) {
+            applyFilterTimestamp.value = Clock.System.now().epochSeconds
+        }
     }
 }

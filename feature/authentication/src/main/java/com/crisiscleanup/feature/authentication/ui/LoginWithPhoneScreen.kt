@@ -146,7 +146,7 @@ private fun LoginWithPhoneScreen(
         style = LocalFontStyles.current.header1,
     )
 
-    ConditionalErrorMessage(viewModel.errorMessage)
+    ConditionalErrorMessage(viewModel.errorMessage, "phoneLogin")
 
     val isRequestingCode by viewModel.isRequestingCode.collectAsStateWithLifecycle()
     val isNotBusy = !isRequestingCode
@@ -226,7 +226,7 @@ private fun ColumnScope.VerifyPhoneCodeScreen(
         onAction = onBack,
     )
 
-    ConditionalErrorMessage(viewModel.errorMessage)
+    ConditionalErrorMessage(viewModel.errorMessage, "verifyPhoneCode")
 
     val singleCodes = viewModel.singleCodes.toList()
 

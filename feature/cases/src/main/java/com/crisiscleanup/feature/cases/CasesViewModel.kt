@@ -209,17 +209,35 @@ class CasesViewModel @Inject constructor(
 
     val isIncidentLoading = incidentsRepository.isLoading
 
-    val showDataProgress = dataPullReporter.incidentDataPullStats.map { it.isOngoing }
-    val dataProgress = dataPullReporter.incidentDataPullStats.map { it.progress }
+    val dataProgress = combine(
+        dataPullReporter.incidentDataPullStats,
+        dataPullReporter.incidentSecondaryDataPullStats,
+        ::Pair,
+    )
+        .map { (primary, secondary) ->
+            val showProgress = primary.isOngoing || secondary.isOngoing
+            val isSecondary = secondary.isOngoing
+            val progress = if (primary.isOngoing) primary.progress else secondary.progress
+            DataProgressMetrics(
+                isSecondary,
+                showProgress,
+                progress,
+            )
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = zeroDataProgress,
+            started = SharingStarted.WhileSubscribed(),
+        )
 
     /**
      * Incident or worksites data are currently saving/caching/loading
      */
     val isLoadingData = combine(
         isIncidentLoading,
-        showDataProgress,
+        dataProgress,
         worksitesRepository.isDeterminingWorksitesCount,
-    ) { b0, b1, b2 -> b0 || b1 || b2 }
+    ) { b0, progress, b2 -> b0 || progress.isLoadingPrimary || b2 }
 
     private var _mapCameraZoom = MutableStateFlow(MapViewCameraZoomDefault)
     val mapCameraZoom = _mapCameraZoom.asStateFlow()
@@ -449,6 +467,12 @@ class CasesViewModel @Inject constructor(
 
         tableViewSort
             .onEach { qsm.tableViewSort.value = it }
+            .launchIn(viewModelScope)
+
+        dataPullReporter.onIncidentDataPullComplete
+            .onEach {
+                filterRepository.reapplyFilters()
+            }
             .launchIn(viewModelScope)
     }
 
@@ -774,3 +798,12 @@ data class WorksiteDistance(
     val worksite = data.worksite
     val claimStatus = data.claimStatus
 }
+
+data class DataProgressMetrics(
+    val isSecondaryData: Boolean = false,
+    val showProgress: Boolean = false,
+    val progress: Float = 0.0f,
+    val isLoadingPrimary: Boolean = showProgress && !isSecondaryData,
+)
+
+val zeroDataProgress = DataProgressMetrics()

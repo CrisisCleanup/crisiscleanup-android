@@ -62,6 +62,7 @@ class AppPreferencesRepositoryTest {
                 languageKey = "",
                 tableViewSortBy = WorksiteSortBy.None,
                 allowAllAnalytics = false,
+                hideGettingStartedVideo = false,
             ),
             repository.userPreferences.first(),
         )

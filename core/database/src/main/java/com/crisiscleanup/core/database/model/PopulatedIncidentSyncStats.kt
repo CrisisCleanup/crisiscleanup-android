@@ -11,6 +11,11 @@ data class PopulatedIncidentSyncStats(
         entityColumn = "incident_id",
     )
     val fullStats: IncidentWorksitesFullSyncStatsEntity?,
+    @Relation(
+        parentColumn = "incident_id",
+        entityColumn = "incident_id",
+    )
+    val secondaryStats: IncidentWorksitesSecondarySyncStatsEntity?,
 ) {
     fun isShortSynced() = with(entity) {
         successfulSync != null && pagedCount >= targetCount

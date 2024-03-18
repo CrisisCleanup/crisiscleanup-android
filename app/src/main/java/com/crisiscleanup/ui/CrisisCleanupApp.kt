@@ -48,6 +48,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.AuthState
 import com.crisiscleanup.MainActivityViewModel
+import com.crisiscleanup.MainActivityViewState
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.designsystem.LayoutProvider
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
@@ -202,9 +203,16 @@ private fun BoxScope.LoadedContent(
         }
         BusyIndicatorFloatingTopCenter(isFetching)
     } else {
+        val mainViewState by viewModel.viewState.collectAsStateWithLifecycle()
+        val hideOnboarding =
+            (mainViewState as? MainActivityViewState.Success)?.userData?.shouldHideOnboarding
+                ?: true
+        val isOnboarding = !hideOnboarding
+
         NavigableContent(
             snackbarHostState,
             appState,
+            isOnboarding,
         ) { openAuthentication = true }
 
         if (
@@ -306,6 +314,7 @@ private fun AcceptTermsContent(
 private fun NavigableContent(
     snackbarHostState: SnackbarHostState,
     appState: CrisisCleanupAppState,
+    isOnboarding: Boolean,
     openAuthentication: () -> Unit,
 ) {
     val showNavigation = appState.isTopLevelRoute
@@ -385,7 +394,7 @@ private fun NavigableContent(
                         onBack = appState::onBack,
                         openAuthentication = openAuthentication,
                         modifier = Modifier.weight(1f),
-                        startDestination = appState.lastTopLevelRoute(),
+                        startDestination = appState.lastTopLevelRoute(isOnboarding),
                     )
                 }
 

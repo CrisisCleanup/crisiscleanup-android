@@ -62,6 +62,7 @@ import com.crisiscleanup.core.designsystem.component.actionRoundCornerShape
 import com.crisiscleanup.core.designsystem.component.actionSize
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
+import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContainerColor
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContentColor
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
@@ -81,8 +82,10 @@ import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.core.selectincident.SelectIncidentDialog
 import com.crisiscleanup.core.ui.LocalAppLayout
 import com.crisiscleanup.feature.cases.CasesViewModel
+import com.crisiscleanup.feature.cases.DataProgressMetrics
 import com.crisiscleanup.feature.cases.R
 import com.crisiscleanup.feature.cases.model.WorksiteGoogleMapMark
+import com.crisiscleanup.feature.cases.zeroDataProgress
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.CameraPosition
@@ -170,8 +173,7 @@ internal fun CasesRoute(
                 viewModel.onMapCameraChange(position, projection, activeChange)
             }
         }
-        val showDataProgress by viewModel.showDataProgress.collectAsStateWithLifecycle(false)
-        val dataProgress by viewModel.dataProgress.collectAsStateWithLifecycle(0f)
+        val dataProgressMetrics by viewModel.dataProgress.collectAsStateWithLifecycle()
         val onMapMarkerSelect = remember(viewModel) {
             { mark: WorksiteMapMark -> viewCase(viewModel.incidentId, mark.id) }
         }
@@ -185,8 +187,7 @@ internal fun CasesRoute(
         val isMyLocationEnabled = viewModel.isMyLocationEnabled
         val hasIncidents = (incidentsData as IncidentsData.Incidents).incidents.isNotEmpty()
         CasesScreen(
-            showDataProgress = showDataProgress,
-            dataProgress = dataProgress,
+            dataProgress = dataProgressMetrics,
             disasterResId = disasterResId,
             onSelectIncident = onIncidentSelect,
             onCasesAction = rememberOnCasesAction,
@@ -333,8 +334,7 @@ internal fun NoCasesScreen(
 
 @Composable
 internal fun CasesScreen(
-    showDataProgress: Boolean = false,
-    dataProgress: Float = 0f,
+    dataProgress: DataProgressMetrics = zeroDataProgress,
     onSelectIncident: () -> Unit = {},
     @DrawableRes disasterResId: Int = commonAssetsR.drawable.ic_disaster_other,
     onCasesAction: (CasesAction) -> Unit = {},
@@ -413,13 +413,17 @@ internal fun CasesScreen(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .fillMaxWidth(),
-            visible = showDataProgress,
+            visible = dataProgress.showProgress,
             enter = fadeIn(),
             exit = fadeOut(),
         ) {
+            var progressColor = primaryOrangeColor
+            if (dataProgress.isSecondaryData) {
+                progressColor = progressColor.disabledAlpha()
+            }
             LinearProgressIndicator(
-                progress = dataProgress,
-                color = primaryOrangeColor,
+                progress = { dataProgress.progress },
+                color = progressColor,
             )
         }
     }

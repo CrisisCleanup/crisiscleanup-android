@@ -62,6 +62,37 @@ data class IncidentWorksitesFullSyncStatsEntity(
     val radius: Double,
 )
 
+@Entity(
+    "incident_worksites_secondary_sync_stats",
+    foreignKeys = [
+        ForeignKey(
+            entity = WorksiteSyncStatsEntity::class,
+            parentColumns = ["incident_id"],
+            childColumns = ["incident_id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+)
+data class IncidentWorksitesSecondarySyncStatsEntity(
+    @PrimaryKey
+    @ColumnInfo("incident_id")
+    val incidentId: Long,
+    @ColumnInfo("sync_start", defaultValue = "0")
+    val syncStart: Instant,
+    @ColumnInfo("target_count")
+    val targetCount: Int,
+    @ColumnInfo("paged_count", defaultValue = "0")
+    val pagedCount: Int,
+    @ColumnInfo("successful_sync")
+    val successfulSync: Instant?,
+    @ColumnInfo("attempted_sync")
+    val attemptedSync: Instant?,
+    @ColumnInfo("attempted_counter")
+    val attemptedCounter: Int,
+    @ColumnInfo("app_build_version_code", defaultValue = "0")
+    val appBuildVersionCode: Long,
+)
+
 fun WorksiteSyncStatsEntity.asExternalModel() = IncidentDataSyncStats(
     incidentId = incidentId,
     syncStart = syncStart,
@@ -91,5 +122,38 @@ fun IncidentDataSyncStats.asWorksiteSyncStatsEntity() = WorksiteSyncStatsEntity(
         Instant.fromEpochSeconds(syncAttempt.attemptedSeconds)
     },
     attemptedCounter = syncAttempt.attemptedCounter,
+    appBuildVersionCode = appBuildVersionCode,
+)
+
+fun IncidentDataSyncStats.asSecondaryWorksiteSyncStatsEntity() =
+    IncidentWorksitesSecondarySyncStatsEntity(
+        incidentId = incidentId,
+        syncStart = syncStart,
+        targetCount = dataCount,
+        pagedCount = pagedCount,
+        successfulSync = if (syncAttempt.successfulSeconds <= 0) {
+            null
+        } else {
+            Instant.fromEpochSeconds(syncAttempt.successfulSeconds)
+        },
+        attemptedSync = if (syncAttempt.attemptedSeconds <= 0) {
+            null
+        } else {
+            Instant.fromEpochSeconds(syncAttempt.attemptedSeconds)
+        },
+        attemptedCounter = syncAttempt.attemptedCounter,
+        appBuildVersionCode = appBuildVersionCode,
+    )
+
+fun IncidentWorksitesSecondarySyncStatsEntity.asExternalModel() = IncidentDataSyncStats(
+    incidentId = incidentId,
+    syncStart = syncStart,
+    dataCount = targetCount,
+    pagedCount = pagedCount,
+    syncAttempt = SyncAttempt(
+        successfulSync?.epochSeconds ?: 0,
+        attemptedSync?.epochSeconds ?: 0,
+        attemptedCounter,
+    ),
     appBuildVersionCode = appBuildVersionCode,
 )

@@ -30,7 +30,7 @@ data class IncidentDataSyncStats(
     /**
      * Number of data (pages) pulled and saved locally during first sync
      *
-     * This is the same units as [dataCount].
+     * This has the same units as [dataCount].
      */
     val pagedCount: Int = 0,
     /**

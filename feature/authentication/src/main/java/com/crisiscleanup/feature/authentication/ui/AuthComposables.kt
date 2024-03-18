@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -20,6 +18,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupLogoRow
+import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.DayNightPreviews
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
@@ -29,10 +28,13 @@ import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.feature.authentication.R
 
 @Composable
-internal fun ConditionalErrorMessage(errorMessage: String) {
+internal fun ConditionalErrorMessage(
+    errorMessage: String,
+    testTagPrefix: String,
+) {
     if (errorMessage.isNotEmpty()) {
         Text(
-            modifier = fillWidthPadded,
+            modifier = fillWidthPadded.testTag("${testTagPrefix}Error"),
             text = errorMessage,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.error,
@@ -92,7 +94,7 @@ fun LoginWithDifferentMethod(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                Icons.AutoMirrored.Filled.ArrowBack,
+                CrisisCleanupIcons.ArrowBack2,
                 contentDescription = text,
                 tint = actionLinkColor,
                 modifier = Modifier

@@ -121,7 +121,7 @@ private fun LoginWithEmailScreen(
     )
 
     val authErrorMessage by viewModel.errorMessage
-    ConditionalErrorMessage(authErrorMessage)
+    ConditionalErrorMessage(authErrorMessage, "emailLogin")
 
     val isNotBusy by viewModel.isNotAuthenticating.collectAsStateWithLifecycle()
 

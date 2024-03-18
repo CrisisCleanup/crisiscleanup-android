@@ -109,10 +109,14 @@ class CrisisCleanupAppState(
         MENU,
     )
 
-    private var priorTopLevelDestination: TopLevelDestination = MENU
+    private var priorTopLevelDestination: TopLevelDestination? = null
 
     @Composable
-    fun lastTopLevelRoute(): String {
+    fun lastTopLevelRoute(isOnboarding: Boolean): String {
+        if (isOnboarding && priorTopLevelDestination == null) {
+            return MENU_ROUTE
+        }
+
         return when (priorTopLevelDestination) {
             DASHBOARD -> DASHBOARD_ROUTE
             TEAM -> TEAM_ROUTE
