@@ -28,10 +28,13 @@ import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.feature.authentication.R
 
 @Composable
-internal fun ConditionalErrorMessage(errorMessage: String) {
+internal fun ConditionalErrorMessage(
+    errorMessage: String,
+    testTagPrefix: String,
+) {
     if (errorMessage.isNotEmpty()) {
         Text(
-            modifier = fillWidthPadded,
+            modifier = fillWidthPadded.testTag("${testTagPrefix}Error"),
             text = errorMessage,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.error,

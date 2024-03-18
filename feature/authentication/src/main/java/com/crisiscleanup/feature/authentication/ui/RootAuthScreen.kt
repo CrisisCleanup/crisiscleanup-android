@@ -141,7 +141,7 @@ private fun AuthenticatedScreen(
     )
 
     val authErrorMessage by viewModel.errorMessage
-    ConditionalErrorMessage(authErrorMessage)
+    ConditionalErrorMessage(authErrorMessage, "authenticated")
 
     val isNotBusy by viewModel.isNotAuthenticating.collectAsStateWithLifecycle()
 
