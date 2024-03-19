@@ -291,7 +291,7 @@ private fun GettingStartedSection(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                t("~~What can this app do?"),
+                t("appMenu.training_video"),
                 style = LocalFontStyles.current.header2,
             )
             Spacer(Modifier.weight(1f))
@@ -315,12 +315,12 @@ private fun GettingStartedSection(
         ) {
             Image(
                 painterResource(id = R.drawable.getting_starting_video_thumbnail),
-                t("~~Getting started"),
+                t("appMenu.getting_started"),
                 Modifier.sizeIn(maxHeight = 128.dp),
                 contentScale = ContentScale.FillWidth,
             )
             Text(
-                t("~~Quick App Intro"),
+                t("appMenu.quick_app_intro"),
                 // TODO Common dimensions
                 Modifier.padding(16.dp),
                 style = LocalFontStyles.current.header3,

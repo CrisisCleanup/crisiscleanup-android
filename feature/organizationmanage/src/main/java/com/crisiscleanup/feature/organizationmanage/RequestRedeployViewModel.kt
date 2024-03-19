@@ -99,13 +99,13 @@ class RequestRedeployViewModel @Inject constructor(
                 } else {
                     // TODO More informative error state where possible
                     redeployErrorMessage =
-                        translator("~~Request redeploy of {incident_name} failed.")
+                        translator("info.redeploy_request_failed")
                             .replace("{incident_name}", incident.shortName)
                 }
             } catch (e: Exception) {
                 logger.logException(e)
                 redeployErrorMessage =
-                    translator("~~Request redeploy is not possible at this time. Please try again later.")
+                    translator("info.redeploy_request_failure")
             } finally {
                 isRequestingRedeploy.value = false
             }
