@@ -16,6 +16,7 @@ import com.crisiscleanup.sync.workers.SyncWorksitesFullWorker
 import com.crisiscleanup.sync.workers.SyncWorksitesWorker
 import com.crisiscleanup.core.common.R as commonR
 
+// TODO Move into notifications module
 internal const val SYNC_NOTIFICATION_ID = 0
 internal const val SYNC_MEDIA_NOTIFICATION_ID = 1
 internal const val SYNC_WORKSITES_NOTIFICATION_ID = 2
@@ -30,7 +31,6 @@ internal const val SYNC_WORKSITES_FULL_WORK_NAME = "SyncWorksitesFullWorkName"
 
 fun scheduleSync(context: Context) {
     WorkManager.getInstance(context).apply {
-        // Run sync and ensure only one sync worker runs at any time
         enqueueUniqueWork(
             SYNC_WORK_NAME,
             ExistingWorkPolicy.APPEND_OR_REPLACE,

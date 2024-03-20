@@ -12,6 +12,8 @@ android {
 }
 
 dependencies {
+    ksp(libs.hilt.ext.compiler)
+
     implementation(projects.core.common)
     implementation(projects.core.model)
     implementation(projects.core.data)
@@ -31,4 +33,6 @@ dependencies {
     androidTestImplementation(projects.core.testing)
 
     androidTestImplementation(libs.androidx.work.testing)
+    androidTestImplementation(libs.hilt.android.testing)
+
 }
