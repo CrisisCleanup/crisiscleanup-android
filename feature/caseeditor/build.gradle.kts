@@ -24,12 +24,12 @@ secrets {
 }
 
 dependencies {
-    implementation(project(":core:addresssearch"))
-    implementation(project(":core:commonassets"))
-    implementation(project(":core:commoncase"))
-    implementation(project(":core:designsystem"))
-    implementation(project(":core:mapmarker"))
-    implementation(project(":core:network"))
+    implementation(projects.core.addresssearch)
+    implementation(projects.core.commonassets)
+    implementation(projects.core.commoncase)
+    implementation(projects.core.designsystem)
+    implementation(projects.core.mapmarker)
+    implementation(projects.core.network)
 
     implementation(libs.apache.commons.text)
     implementation(libs.androidx.constraintlayout)
@@ -42,6 +42,6 @@ dependencies {
 
     androidTestImplementation(kotlin("test"))
 
-    testImplementation(project(":core:testing"))
+    testImplementation(projects.core.testing)
     testImplementation(libs.mockk.android)
 }

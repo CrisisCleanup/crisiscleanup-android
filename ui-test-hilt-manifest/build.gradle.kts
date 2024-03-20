@@ -1,13 +1,8 @@
 plugins {
-    id("nowinandroid.android.library")
-    kotlin("kapt")
-    id("dagger.hilt.android.plugin")
+    alias(libs.plugins.nowinandroid.android.library)
+    alias(libs.plugins.nowinandroid.android.hilt)
 }
 
-dependencies {
-    implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
-}
 android {
     namespace = "com.crisiscleanup.uitesthiltmanifest"
 }

@@ -12,12 +12,15 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url = uri("https://jitpack.io") }
     }
 }
+
 rootProject.name = "crisiscleanup"
-include(":app")
-include(":app-sandbox")
+
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
+//include(":app")
+//include(":app-sandbox")
 include(":core:addresssearch")
 include(":core:appnav")
 include(":core:common")
@@ -27,6 +30,7 @@ include(":core:data")
 include(":core:data-test")
 include(":core:database")
 include(":core:datastore")
+include(":core:datastore-proto")
 include(":core:datastore-test")
 include(":core:designsystem")
 include(":core:domain")
@@ -37,21 +41,17 @@ include(":core:renderscript-toolkit")
 include(":core:selectincident")
 include(":core:ui")
 include(":core:testing")
-include(":feature:authentication")
-include(":feature:caseeditor")
-include(":feature:cases")
-include(":feature:dashboard")
-include(":feature:mediamanage")
-include(":feature:menu")
-include(":feature:organizationmanage")
-include(":feature:syncinsights")
-include(":feature:team")
-include(":feature:userfeedback")
+//include(":feature:authentication")
+//include(":feature:caseeditor")
+//include(":feature:cases")
+//include(":feature:dashboard")
+//include(":feature:mediamanage")
+//include(":feature:menu")
+//include(":feature:organizationmanage")
+//include(":feature:syncinsights")
+//include(":feature:team")
+//include(":feature:userfeedback")
 include(":lint")
-include(":sync:work")
-include(":sync:sync-test")
-include(":ui-test-hilt-manifest")
-
-plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version ("0.4.0")
-}
+//include(":sync:work")
+//include(":sync:sync-test")
+//include(":ui-test-hilt-manifest")

@@ -1,7 +1,7 @@
 plugins {
-    id("nowinandroid.android.library")
-    id("nowinandroid.android.library.jacoco")
-    id("nowinandroid.android.hilt")
+    alias(libs.plugins.nowinandroid.android.library)
+    alias(libs.plugins.nowinandroid.android.hilt)
+    alias(libs.plugins.nowinandroid.android.library.jacoco)
 }
 
 android {
@@ -12,10 +12,10 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:common"))
-    implementation(project(":core:model"))
-    implementation(project(":core:data"))
-    implementation(project(":core:datastore"))
+    implementation(projects.core.common)
+    implementation(projects.core.model)
+    implementation(projects.core.data)
+    implementation(projects.core.datastore)
 
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.datetime)
@@ -26,10 +26,8 @@ dependencies {
     implementation(libs.androidx.work.ktx)
     implementation(libs.hilt.ext.work)
 
-    testImplementation(project(":core:testing"))
-    androidTestImplementation(project(":core:testing"))
-
-    kapt(libs.hilt.ext.compiler)
+    testImplementation(projects.core.testing)
+    androidTestImplementation(projects.core.testing)
 
     androidTestImplementation(libs.androidx.work.testing)
 }

@@ -1,7 +1,7 @@
 plugins {
-    id("nowinandroid.android.library")
-    id("nowinandroid.android.library.compose")
-    id("nowinandroid.android.hilt")
+    alias(libs.plugins.nowinandroid.android.library)
+    alias(libs.plugins.nowinandroid.android.library.compose)
+    alias(libs.plugins.nowinandroid.android.hilt)
 }
 
 android {
@@ -9,21 +9,21 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:common"))
-    implementation(project(":core:data"))
-    implementation(project(":core:model"))
+    implementation(projects.core.common)
+    implementation(projects.core.data)
+    implementation(projects.core.model)
 
+    api(kotlin("test"))
     api(libs.androidx.compose.ui.test)
-    api(libs.androidx.test.core)
-    api(libs.androidx.test.espresso.core)
-    api(libs.androidx.test.rules)
-    api(libs.androidx.test.runner)
-    api(libs.hilt.android.testing)
-    api(libs.junit4)
-    api(libs.kotlinx.coroutines.test)
-    api(libs.turbine)
 
     debugApi(libs.androidx.compose.ui.testManifest)
+
+    implementation(libs.androidx.test.rules)
+    implementation(libs.hilt.android.testing)
+    implementation(libs.kotlinx.coroutines.test)
+    implementation(libs.kotlinx.datetime)
+
+    api(libs.turbine)
 
     implementation(libs.kotlinx.datetime)
 }

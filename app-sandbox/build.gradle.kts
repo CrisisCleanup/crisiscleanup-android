@@ -36,16 +36,16 @@ android {
 }
 
 dependencies {
-    implementation(project(":feature:caseeditor"))
+    implementation(projects.feature.caseeditor)
 
-    implementation(project(":core:appnav"))
-    implementation(project(":core:common"))
-    implementation(project(":core:commoncase"))
-    implementation(project(":core:data"))
-    implementation(project(":core:designsystem"))
-    implementation(project(":core:network"))
-    implementation(project(":core:model"))
-    implementation(project(":core:ui"))
+    implementation(projects.core.appnav)
+    implementation(projects.core.common)
+    implementation(projects.core.commoncase)
+    implementation(projects.core.data)
+    implementation(projects.core.designsystem)
+    implementation(projects.core.network)
+    implementation(projects.core.model)
+    implementation(projects.core.ui)
 
     androidTestImplementation(libs.androidx.navigation.testing)
     androidTestImplementation(libs.accompanist.testharness)
