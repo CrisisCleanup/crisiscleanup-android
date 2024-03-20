@@ -1,5 +1,5 @@
 plugins {
-    id("nowinandroid.android.library")
+    alias(libs.plugins.nowinandroid.android.library)
 }
 
 android {

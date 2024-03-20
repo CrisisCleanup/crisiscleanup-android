@@ -125,17 +125,17 @@ dependencies {
     implementation(projects.core.network)
     implementation(projects.core.ui)
 
-    implementation(project(":sync:work"))
+    implementation(projects.sync.work)
 
     androidTestImplementation(projects.core.testing)
-    androidTestImplementation(project(":core:datastore-test"))
-    androidTestImplementation(project(":core:data-test"))
+    androidTestImplementation(projects.core.dataTest)
+    androidTestImplementation(projects.core.datastoreTest)
     androidTestImplementation(projects.core.network)
     androidTestImplementation(libs.androidx.navigation.testing)
     androidTestImplementation(libs.accompanist.testharness)
     androidTestImplementation(kotlin("test"))
     debugImplementation(libs.androidx.compose.ui.testManifest)
-    debugImplementation(project(":ui-test-hilt-manifest"))
+    debugImplementation(projects.uiTestHiltManifest)
 
     implementation(libs.kotlinx.serialization.json)
 

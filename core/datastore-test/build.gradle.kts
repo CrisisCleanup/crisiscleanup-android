@@ -12,4 +12,5 @@ dependencies {
     implementation(projects.core.testing)
 
     api(libs.androidx.dataStore.core)
+    implementation(libs.hilt.android.testing)
 }

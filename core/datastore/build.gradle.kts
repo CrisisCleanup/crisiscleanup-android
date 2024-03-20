@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.nowinandroid.android.library)
-    alias(libs.plugins.nowinandroid.android.hilt)
     alias(libs.plugins.nowinandroid.android.library.jacoco)
+    alias(libs.plugins.nowinandroid.android.hilt)
 }
 
 android {
@@ -24,7 +24,7 @@ dependencies {
     implementation(projects.core.common)
 
     testImplementation(projects.core.testing)
-    testImplementation(project(":core:datastore-test"))
+    testImplementation(projects.core.datastoreTest)
 
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.datetime)

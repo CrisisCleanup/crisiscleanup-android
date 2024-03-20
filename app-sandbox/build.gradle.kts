@@ -1,10 +1,10 @@
 import com.google.samples.apps.nowinandroid.NiaBuildType
 
 plugins {
-    id("nowinandroid.android.application")
-    id("nowinandroid.android.application.compose")
-    id("nowinandroid.android.application.flavors")
-    id("nowinandroid.android.hilt")
+    alias(libs.plugins.nowinandroid.android.application)
+    alias(libs.plugins.nowinandroid.android.application.compose)
+    alias(libs.plugins.nowinandroid.android.application.flavors)
+    alias(libs.plugins.nowinandroid.android.hilt)
 }
 
 android {
@@ -47,12 +47,6 @@ dependencies {
     implementation(projects.core.model)
     implementation(projects.core.ui)
 
-    androidTestImplementation(libs.androidx.navigation.testing)
-    androidTestImplementation(libs.accompanist.testharness)
-    androidTestImplementation(kotlin("test"))
-    debugImplementation(libs.androidx.compose.ui.testManifest)
-    debugImplementation(project(":ui-test-hilt-manifest"))
-
     implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.accompanist.systemuicontroller)
@@ -75,11 +69,6 @@ dependencies {
     implementation(libs.playservices.maps)
 }
 
-// androidx.test is forcing JUnit, 4.12. This forces it to use 4.13
-configurations.configureEach {
-    resolutionStrategy {
-        force(libs.junit4)
-        // Temporary workaround for https://issuetracker.google.com/174733673
-        force("org.objenesis:objenesis:2.6")
-    }
+dependencyGuard {
+    configuration("releaseRuntimeClasspath")
 }

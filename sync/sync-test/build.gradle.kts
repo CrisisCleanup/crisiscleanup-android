@@ -1,6 +1,6 @@
 plugins {
-    id("nowinandroid.android.library")
-    id("nowinandroid.android.hilt")
+    alias(libs.plugins.nowinandroid.android.library)
+    alias(libs.plugins.nowinandroid.android.hilt)
 }
 
 android {
@@ -8,7 +8,8 @@ android {
 }
 
 dependencies {
-    api(project(":sync:work"))
+    api(projects.sync.work)
     implementation(projects.core.data)
     implementation(projects.core.testing)
+    implementation(libs.hilt.android.testing)
 }
