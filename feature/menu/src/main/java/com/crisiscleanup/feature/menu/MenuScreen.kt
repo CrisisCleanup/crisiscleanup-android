@@ -316,7 +316,9 @@ private fun GettingStartedSection(
             Image(
                 painterResource(id = R.drawable.getting_starting_video_thumbnail),
                 t("appMenu.getting_started"),
-                Modifier.sizeIn(maxHeight = 128.dp),
+                Modifier
+                    .fillMaxSize()
+                    .sizeIn(maxHeight = 128.dp),
                 contentScale = ContentScale.FillWidth,
             )
             Text(
