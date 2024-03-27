@@ -205,7 +205,7 @@ class IncidentWorksitesSecondaryDataSyncer @Inject constructor(
 
         if (deleteCacheFiles) {
             for (deleteCachePage in 0 until networkPullPage) {
-                networkDataCache.deleteWorksitesShort(incidentId, deleteCachePage)
+                networkDataCache.deleteWorksitesSecondaryData(incidentId, deleteCachePage)
             }
         }
     }

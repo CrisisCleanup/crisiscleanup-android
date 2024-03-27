@@ -17,7 +17,7 @@ data class PopulatedIncidentSyncStats(
     )
     val secondaryStats: IncidentWorksitesSecondarySyncStatsEntity?,
 ) {
-    fun isShortSynced() = with(entity) {
+    val hasSyncedCore = with(entity) {
         successfulSync != null && pagedCount >= targetCount
     }
 }

@@ -62,7 +62,7 @@ class IncidentWorksitesFullSyncer @Inject constructor(
 
     override suspend fun sync(incidentId: Long) {
         worksiteSyncStatDao.getIncidentSyncStats(incidentId)?.let { syncStats ->
-            if (syncStats.isShortSynced()) {
+            if (syncStats.hasSyncedCore) {
                 val fullStats = syncStats.fullStats ?: IncidentWorksitesFullSyncStatsEntity(
                     syncStats.entity.incidentId,
                     syncedAt = null,
