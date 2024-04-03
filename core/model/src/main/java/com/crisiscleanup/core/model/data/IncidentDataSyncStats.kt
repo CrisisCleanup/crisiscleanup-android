@@ -5,7 +5,7 @@ import kotlinx.datetime.Instant
 /**
  * Build version of the app where worksite (related) entity models were last changed
  */
-private const val WORKSITES_STABLE_MODEL_BUILD_VERSION = 156
+private const val WORKSITES_STABLE_MODEL_BUILD_VERSION = 193
 
 /**
  * Build version of the app where incident organization (related) entity models were last changed

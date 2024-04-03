@@ -18,6 +18,9 @@ data class NetworkFlagsFormData(
     @SerialName("form_data")
     val formData: List<KeyDynamicValuePair>,
     val flags: List<NetworkFlag>,
+    val phone1: String?,
+    @SerialName("reported_by")
+    val reportedBy: Long?,
 ) {
     @Serializable
     data class NetworkFlag(

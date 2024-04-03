@@ -18,6 +18,7 @@ import com.crisiscleanup.core.model.data.IncidentDataSyncStats
 import com.crisiscleanup.core.model.data.SyncAttempt
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.KeyDynamicValuePair
+import com.crisiscleanup.core.network.model.NetworkFlagsFormData
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
@@ -159,14 +160,15 @@ class IncidentWorksitesSecondaryDataSyncer @Inject constructor(
             val saveData = syncStats.pagedCount < dbSaveCount + pageCount || isDeltaPull
             if (saveData) {
                 with(cachedData.secondaryData) {
-                    val worksitesIds = map { it.id }
+                    val worksitesIds = map(NetworkFlagsFormData::id)
                     val formData = map {
                         it.formData.map(KeyDynamicValuePair::asWorksiteEntity)
                     }
+                    val reportedBys = map(NetworkFlagsFormData::reportedBy)
                     saveToDb(
                         worksitesIds,
                         formData,
-                        cachedData.requestTime,
+                        reportedBys,
                         statsUpdater,
                     )
                 }
@@ -213,7 +215,7 @@ class IncidentWorksitesSecondaryDataSyncer @Inject constructor(
     private suspend fun saveToDb(
         worksiteIds: List<Long>,
         formData: List<List<WorksiteFormDataEntity>>,
-        syncStart: Instant,
+        reportedBys: List<Long?>,
         statsUpdater: IncidentDataPullStatsUpdater,
     ): Int = coroutineScope {
         var offset = 0
@@ -225,10 +227,12 @@ class IncidentWorksitesSecondaryDataSyncer @Inject constructor(
             val offsetEnd = (offset + limit).coerceAtMost(worksiteIds.size)
             val worksiteIdsSubset = worksiteIds.slice(offset until offsetEnd)
             val formDataSubset = formData.slice(offset until offsetEnd)
+            val reportedBysSubset = reportedBys.slice(offset until offsetEnd)
             // Flags should have been saved by IncidentWorksitesSyncer
-            worksiteDaoPlus.syncFormData(
+            worksiteDaoPlus.syncAdditionalData(
                 worksiteIdsSubset,
                 formDataSubset,
+                reportedBysSubset,
             )
 
             statsUpdater.addSavedCount(worksiteIdsSubset.size)
