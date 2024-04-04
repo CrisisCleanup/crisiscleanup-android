@@ -142,6 +142,10 @@ class MenuViewModel @Inject constructor(
         }
     }
 
+    suspend fun refreshIncidentsAsync() {
+        syncPuller.pullIncidents()
+    }
+
     fun shareAnalytics(share: Boolean) {
         viewModelScope.launch {
             appPreferencesRepository.setAnalytics(share)

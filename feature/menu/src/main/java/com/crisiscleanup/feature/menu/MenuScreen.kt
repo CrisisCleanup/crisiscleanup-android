@@ -226,6 +226,7 @@ internal fun MenuScreen(
             incidentsData = incidentsData,
             selectedIncidentId = selectedIncidentId,
             onSelectIncident = setSelected,
+            onRefreshIncidents = viewModel::refreshIncidentsAsync,
         )
     }
 }

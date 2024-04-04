@@ -25,6 +25,7 @@ import com.crisiscleanup.sync.SyncPull.executePlan
 import com.crisiscleanup.sync.initializers.scheduleSyncMedia
 import com.crisiscleanup.sync.initializers.scheduleSyncWorksites
 import com.crisiscleanup.sync.initializers.scheduleSyncWorksitesFull
+import com.crisiscleanup.sync.model.SyncPlan
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
@@ -210,6 +211,25 @@ class AppSyncer @Inject constructor(
                 }
             }
         }
+    }
+
+    override suspend fun pullIncidents() {
+        applicationScope.launch(ioDispatcher) {
+            try {
+                val plan = SyncPlan.Builder().setPullIncidents().build()
+                executePlan(
+                    plan,
+                    incidentsRepository,
+                    worksitesRepository,
+                    syncLogger,
+                )
+                syncLogger.log("Sync incidents pulled.")
+            } catch (e: Exception) {
+                syncLogger.log("Sync pull incidents fail. ${e.message}".trim())
+                appLogger.logException(e)
+            }
+        }
+            .join()
     }
 
     override fun stopPullIncident() {

@@ -67,6 +67,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.TileProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -275,6 +276,7 @@ class CasesViewModel @Inject constructor(
         logger,
     )
 
+    @OptIn(FlowPreview::class)
     val worksitesMapMarkers = combine(
         incidentWorksitesCount,
         qsm.worksiteQueryState,
@@ -486,6 +488,10 @@ class CasesViewModel @Inject constructor(
 
     fun refreshIncidentsData() {
         syncPuller.appPull(true, cancelOngoing = true)
+    }
+
+    suspend fun refreshIncidentsAsync() {
+        syncPuller.pullIncidents()
     }
 
     fun overviewMapTileProvider(): TileProvider {
