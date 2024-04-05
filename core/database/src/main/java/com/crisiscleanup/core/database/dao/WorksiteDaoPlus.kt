@@ -37,7 +37,7 @@ class WorksiteDaoPlus @Inject constructor(
 ) {
     private suspend fun getWorksiteLocalModifiedAt(
         networkWorksiteIds: Set<Long>,
-    ): Map<Long, WorksiteLocalModifiedAt> = db.withTransaction {
+    ) = db.withTransaction {
         val worksitesUpdatedAt = db.worksiteDao().getWorksitesLocalModifiedAt(
             networkWorksiteIds,
         )
@@ -137,7 +137,7 @@ class WorksiteDaoPlus @Inject constructor(
         files: List<NetworkFileEntity>? = null,
         // TODO Test coverage
         keepKeyWorkType: Boolean = false,
-    ): Boolean = db.withTransaction {
+    ) = db.withTransaction {
         val worksiteDao = db.worksiteDao()
 
         val isLocallyModified = modifiedAt?.isLocallyModified ?: false
@@ -286,11 +286,14 @@ class WorksiteDaoPlus @Inject constructor(
         }
     }
 
-    suspend fun syncFormData(
+    // TODO Write tests
+    suspend fun syncAdditionalData(
         networkWorksiteIds: List<Long>,
         formDatas: List<List<WorksiteFormDataEntity>>,
+        reportedBys: List<Long?>,
     ) {
         throwSizeMismatch(networkWorksiteIds.size, formDatas.size, "form-data")
+        throwSizeMismatch(networkWorksiteIds.size, reportedBys.size, "reported-bys")
 
         val worksiteIdsSet = networkWorksiteIds.toSet()
         db.withTransaction {
@@ -308,6 +311,9 @@ class WorksiteDaoPlus @Inject constructor(
                     formDataDao.deleteUnspecifiedKeys(worksiteId, fieldKeys)
                     val updatedFormData = formData.map { it.copy(worksiteId = worksiteId) }
                     formDataDao.upsert(updatedFormData)
+
+                    val reportedBy = reportedBys[i]
+                    worksiteDao.syncUpdateAdditionalData(worksiteId, reportedBy)
                 }
             }
         }
@@ -316,7 +322,7 @@ class WorksiteDaoPlus @Inject constructor(
     suspend fun syncWorksite(
         entities: WorksiteEntities,
         syncedAt: Instant,
-    ): Pair<Boolean, Long> = db.withTransaction {
+    ) = db.withTransaction {
         val core = entities.core
         val modifiedAtLookup = getWorksiteLocalModifiedAt(setOf(core.networkId))
         val modifiedAt = modifiedAtLookup[core.networkId]
@@ -343,7 +349,7 @@ class WorksiteDaoPlus @Inject constructor(
 
     suspend fun syncFillWorksite(
         entities: WorksiteEntities,
-    ): Boolean = db.withTransaction {
+    ) = db.withTransaction {
         val worksiteDao = db.worksiteDao()
         val (core, flags, formData, notes, workTypes, files) = entities
         val worksiteId = worksiteDao.getWorksiteId(core.networkId)
@@ -399,7 +405,7 @@ class WorksiteDaoPlus @Inject constructor(
     suspend fun syncNetworkWorksite(
         entities: WorksiteEntities,
         syncedAt: Instant,
-    ): Boolean = db.withTransaction {
+    ) = db.withTransaction {
         val (isSynced, _) = syncWorksite(entities, syncedAt)
         if (!isSynced) {
             syncFillWorksite(entities)
@@ -449,31 +455,29 @@ class WorksiteDaoPlus @Inject constructor(
         maxSyncTries: Int,
         syncLogger: SyncLogger,
         syncedAt: Instant = Clock.System.now(),
-    ): Boolean {
-        return db.withTransaction {
-            val flagChanges = db.worksiteFlagDao().getUnsyncedCount(worksiteId)
-            val noteChanges = db.worksiteNoteDao().getUnsyncedCount(worksiteId)
-            val workTypeChanges = db.workTypeDao().getUnsyncedCount(worksiteId)
-            val changes = db.worksiteChangeDao().getChangeCount(worksiteId, maxSyncTries)
-            val hasModification = flagChanges > 0 ||
-                noteChanges > 0 ||
-                workTypeChanges > 0 ||
-                changes > 0
-            return@withTransaction if (hasModification) {
-                syncLogger.log(
-                    "Pending changes on sync end",
-                    details = "flag: $flagChanges\nnote: $noteChanges\nwork type: $workTypeChanges\nchanges: $changes",
-                )
-                false
-            } else {
-                db.worksiteDao().setRootUnmodified(worksiteId, syncedAt)
-                db.workTypeTransferRequestDao().deleteUnsynced(worksiteId)
-                true
-            }
+    ) = db.withTransaction {
+        val flagChanges = db.worksiteFlagDao().getUnsyncedCount(worksiteId)
+        val noteChanges = db.worksiteNoteDao().getUnsyncedCount(worksiteId)
+        val workTypeChanges = db.workTypeDao().getUnsyncedCount(worksiteId)
+        val changes = db.worksiteChangeDao().getChangeCount(worksiteId, maxSyncTries)
+        val hasModification = flagChanges > 0 ||
+            noteChanges > 0 ||
+            workTypeChanges > 0 ||
+            changes > 0
+        return@withTransaction if (hasModification) {
+            syncLogger.log(
+                "Pending changes on sync end",
+                details = "flag: $flagChanges\nnote: $noteChanges\nwork type: $workTypeChanges\nchanges: $changes",
+            )
+            false
+        } else {
+            db.worksiteDao().setRootUnmodified(worksiteId, syncedAt)
+            db.workTypeTransferRequestDao().deleteUnsynced(worksiteId)
+            true
         }
     }
 
-    fun getUnsyncedChangeCount(worksiteId: Long, maxSyncTries: Int): List<Int> = listOf(
+    fun getUnsyncedChangeCount(worksiteId: Long, maxSyncTries: Int) = listOf(
         db.worksiteFlagDao().getUnsyncedCount(worksiteId),
         db.worksiteNoteDao().getUnsyncedCount(worksiteId),
         db.workTypeDao().getUnsyncedCount(worksiteId),
@@ -520,7 +524,7 @@ class WorksiteDaoPlus @Inject constructor(
         searchRadius: Float,
         count: Int,
         locationAreaBounds: OrganizationLocationAreaBounds,
-    ): List<PopulatedTableDataWorksite> = coroutineScope {
+    ) = coroutineScope {
         when (sortBy) {
             WorksiteSortBy.Nearest -> {
                 if (coordinates == null) {
@@ -558,7 +562,7 @@ class WorksiteDaoPlus @Inject constructor(
         organizationAffiliates: Set<Long>,
         coordinates: Pair<Double, Double>?,
         locationAreaBounds: OrganizationLocationAreaBounds,
-    ): List<PopulatedTableDataWorksite> = coroutineScope {
+    ) = coroutineScope {
         val queryCount = count.coerceAtLeast(100)
         var queryOffset = 0
 
@@ -623,7 +627,7 @@ class WorksiteDaoPlus @Inject constructor(
         organizationAffiliates: Set<Long>,
         coordinates: Pair<Double, Double>,
         locationAreaBounds: OrganizationLocationAreaBounds,
-    ): List<PopulatedTableDataWorksite> = coroutineScope {
+    ) = coroutineScope {
         val strideCount = 100
 
         val latitude = coordinates.first
@@ -749,70 +753,69 @@ class WorksiteDaoPlus @Inject constructor(
         organizationAffiliates: Set<Long>,
         coordinates: Pair<Double, Double>?,
         locationAreaBounds: OrganizationLocationAreaBounds,
-    ): IncidentIdWorksiteCount =
-        coroutineScope {
-            val stride = 2000
-            var offset = 0
-            var count = 0
-            val worksiteDao = db.worksiteDao()
-            val latRad = coordinates?.first?.radians
-            val lngRad = coordinates?.second?.radians
-            while (offset < totalCount) {
-                ensureActive()
+    ) = coroutineScope {
+        val stride = 2000
+        var offset = 0
+        var count = 0
+        val worksiteDao = db.worksiteDao()
+        val latRad = coordinates?.first?.radians
+        val lngRad = coordinates?.second?.radians
+        while (offset < totalCount) {
+            ensureActive()
 
-                val worksites: List<PopulatedFilterDataWorksite>
-                if (filters.hasSviFilter) {
-                    worksites = worksiteDao.getFilterWorksitesBySvi(
-                        incidentId,
-                        filters.svi,
-                        stride,
-                        offset,
-                    )
-                } else if (filters.hasUpdatedFilter) {
-                    worksites = worksiteDao.getFilterWorksitesByUpdatedAfter(
-                        incidentId,
-                        Clock.System.now().minus(filters.daysAgoUpdated.days),
-                        stride,
-                        offset,
-                    )
-                } else if (filters.updatedAt != null) {
-                    worksites = worksiteDao.getFilterWorksitesByUpdatedAt(
-                        incidentId,
-                        filters.updatedAt!!.first,
-                        filters.updatedAt!!.second,
-                        stride,
-                        offset,
-                    )
-                } else if (filters.createdAt != null) {
-                    worksites = worksiteDao.getFilterWorksitesByCreatedAt(
-                        incidentId,
-                        filters.createdAt!!.first,
-                        filters.createdAt!!.second,
-                        stride,
-                        offset,
-                    )
-                } else {
-                    worksites = worksiteDao.getFilterWorksites(incidentId, stride, offset)
-                }
-                if (worksites.isEmpty()) {
-                    break
-                }
-
-                ensureActive()
-
-                count += worksites.count {
-                    it.passesFilter(
-                        filters,
-                        organizationAffiliates,
-                        latRad,
-                        lngRad,
-                        locationAreaBounds,
-                    )
-                }
-
-                offset += stride
+            val worksites: List<PopulatedFilterDataWorksite>
+            if (filters.hasSviFilter) {
+                worksites = worksiteDao.getFilterWorksitesBySvi(
+                    incidentId,
+                    filters.svi,
+                    stride,
+                    offset,
+                )
+            } else if (filters.hasUpdatedFilter) {
+                worksites = worksiteDao.getFilterWorksitesByUpdatedAfter(
+                    incidentId,
+                    Clock.System.now().minus(filters.daysAgoUpdated.days),
+                    stride,
+                    offset,
+                )
+            } else if (filters.updatedAt != null) {
+                worksites = worksiteDao.getFilterWorksitesByUpdatedAt(
+                    incidentId,
+                    filters.updatedAt!!.first,
+                    filters.updatedAt!!.second,
+                    stride,
+                    offset,
+                )
+            } else if (filters.createdAt != null) {
+                worksites = worksiteDao.getFilterWorksitesByCreatedAt(
+                    incidentId,
+                    filters.createdAt!!.first,
+                    filters.createdAt!!.second,
+                    stride,
+                    offset,
+                )
+            } else {
+                worksites = worksiteDao.getFilterWorksites(incidentId, stride, offset)
+            }
+            if (worksites.isEmpty()) {
+                break
             }
 
-            IncidentIdWorksiteCount(incidentId, totalCount, count)
+            ensureActive()
+
+            count += worksites.count {
+                it.passesFilter(
+                    filters,
+                    organizationAffiliates,
+                    latRad,
+                    lngRad,
+                    locationAreaBounds,
+                )
+            }
+
+            offset += stride
         }
+
+        IncidentIdWorksiteCount(incidentId, totalCount, count)
+    }
 }

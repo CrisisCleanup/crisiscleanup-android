@@ -1,6 +1,6 @@
 plugins {
-    id("nowinandroid.android.library")
-    id("nowinandroid.android.library.compose")
+    alias(libs.plugins.nowinandroid.android.library)
+    alias(libs.plugins.nowinandroid.android.library.compose)
 }
 
 android {
@@ -8,6 +8,6 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:model"))
-    implementation(project(":core:designsystem"))
+    implementation(projects.core.model)
+    implementation(projects.core.designsystem)
 }

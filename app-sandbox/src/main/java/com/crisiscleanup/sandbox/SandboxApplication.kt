@@ -119,6 +119,8 @@ class AppSyncer @Inject constructor() : SyncPuller, SyncPusher {
 
     override fun scheduleSyncWorksitesFull() {}
 
+    override suspend fun pullIncidents() {}
+
     override fun appPullIncident(id: Long) {}
 
     override suspend fun syncPullIncidentAsync(id: Long) =

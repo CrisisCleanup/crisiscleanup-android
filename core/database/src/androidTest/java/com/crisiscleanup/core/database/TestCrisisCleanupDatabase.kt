@@ -17,6 +17,7 @@ import com.crisiscleanup.core.database.model.IncidentLocationEntity
 import com.crisiscleanup.core.database.model.IncidentOrganizationEntity
 import com.crisiscleanup.core.database.model.IncidentOrganizationSyncStatsEntity
 import com.crisiscleanup.core.database.model.IncidentWorksitesFullSyncStatsEntity
+import com.crisiscleanup.core.database.model.IncidentWorksitesSecondarySyncStatsEntity
 import com.crisiscleanup.core.database.model.LanguageTranslationEntity
 import com.crisiscleanup.core.database.model.LocationEntity
 import com.crisiscleanup.core.database.model.NetworkFileEntity
@@ -81,6 +82,7 @@ import kotlinx.datetime.Instant
         CaseHistoryEventAttrEntity::class,
         PersonOrganizationCrossRef::class,
         WorksiteTextFtsEntity::class,
+        IncidentWorksitesSecondarySyncStatsEntity::class,
     ],
     version = 1,
 )

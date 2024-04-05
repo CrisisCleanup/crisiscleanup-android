@@ -307,6 +307,20 @@ interface WorksiteDao {
     @Transaction
     @Query(
         """
+        UPDATE worksites
+        SET
+        reported_by = COALESCE(:reportedBy, reported_by)
+        WHERE id=:id
+        """,
+    )
+    fun syncUpdateAdditionalData(
+        id: Long,
+        reportedBy: Long?,
+    )
+
+    @Transaction
+    @Query(
+        """
         SELECT id
         FROM worksites_root
         WHERE is_local_modified<>0

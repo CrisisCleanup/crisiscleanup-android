@@ -6,7 +6,7 @@ import kotlin.test.assertNull
 
 class NetworkFlagsFormDataTest {
     @Test
-    fun getWorksitesCount() {
+    fun getFlagsFormDataSuccess() {
         val result =
             TestUtil.decodeResource<NetworkFlagsFormDataResult>("/getFlagsFormDataSuccess.json")
 
@@ -16,28 +16,28 @@ class NetworkFlagsFormDataTest {
         val entry = result.results!![2]
 
         val expected = NetworkFlagsFormData(
-            id = 220667,
-            caseNumber = "V2026",
+            id = 229138,
+            caseNumber = "VW2UVP",
             formData = listOf(
                 KeyDynamicValuePair(
-                    key = "cross_street",
-                    value = DynamicValue(valueString = "Easy St"),
-                ),
-                KeyDynamicValuePair(
-                    key = "time_to_call",
-                    value = DynamicValue(valueString = "anytime"),
-                ),
-                KeyDynamicValuePair(
-                    key = "older_than_60",
+                    key = "debris_info",
                     value = DynamicValue(valueString = "", isBoolean = true, valueBoolean = true),
                 ),
                 KeyDynamicValuePair(
-                    key = "special_needs",
-                    value = DynamicValue(valueString = "disabled"),
+                    key = "debris_description",
+                    value = DynamicValue(valueString = "shed has well and was damaged  "),
                 ),
                 KeyDynamicValuePair(
-                    key = "primary_language",
-                    value = DynamicValue(valueString = "formOptions.english"),
+                    key = "unsalvageable_structure",
+                    value = DynamicValue(valueString = "", isBoolean = true, valueBoolean = true),
+                ),
+                KeyDynamicValuePair(
+                    key = "vegitative_debris_removal",
+                    value = DynamicValue(valueString = "", isBoolean = true, valueBoolean = true),
+                ),
+                KeyDynamicValuePair(
+                    key = "habitable",
+                    value = DynamicValue(valueString = "formOptions.yes"),
                 ),
                 KeyDynamicValuePair(
                     key = "residence_type",
@@ -45,58 +45,20 @@ class NetworkFlagsFormDataTest {
                 ),
                 KeyDynamicValuePair(
                     key = "dwelling_type",
-                    value = DynamicValue(valueString = "formOptions.house"),
-                ),
-                KeyDynamicValuePair(
-                    key = "rent_or_own",
-                    value = DynamicValue(valueString = "formOptions.rent"),
-                ),
-                KeyDynamicValuePair(
-                    key = "insurance_home_rent",
-                    value = DynamicValue(valueString = "", isBoolean = true, valueBoolean = true),
-                ),
-                KeyDynamicValuePair(
-                    key = "water_status",
-                    value = DynamicValue(valueString = "formOptions.on"),
-                ),
-                KeyDynamicValuePair(
-                    key = "power_status",
-                    value = DynamicValue(valueString = "formOptions.off"),
-                ),
-                KeyDynamicValuePair(
-                    key = "tree_info",
-                    value = DynamicValue(valueString = "", isBoolean = true, valueBoolean = true),
-                ),
-                KeyDynamicValuePair(
-                    key = "num_wide_trees",
-                    value = DynamicValue(valueString = "formOptions.four"),
-                ),
-                KeyDynamicValuePair(
-                    key = "debris_info",
-                    value = DynamicValue(valueString = "", isBoolean = true, valueBoolean = true),
-                ),
-                KeyDynamicValuePair(
-                    key = "debris_description",
-                    value = DynamicValue(valueString = "carport gone as well as fences"),
-                ),
-                KeyDynamicValuePair(
-                    key = "habitable",
-                    value = DynamicValue(valueString = "formOptions.yes"),
-                ),
-                KeyDynamicValuePair(
-                    key = "debris_status",
-                    value = DynamicValue(valueString = "formOptions.piled_on_public_right_of_way"),
-                ),
-                KeyDynamicValuePair(
-                    key = "prepared_by",
-                    value = DynamicValue(valueString = "Mike DeLoach"),
+                    value = DynamicValue(valueString = "formOptions.mobile_home"),
                 ),
                 KeyDynamicValuePair(
                     key = "work_without_resident",
                     value = DynamicValue(valueString = "", isBoolean = true, valueBoolean = true),
                 ),
+                KeyDynamicValuePair(
+                    key = "tree_info",
+                    value = DynamicValue(valueString = "", isBoolean = true, valueBoolean = true),
+                ),
             ),
             flags = emptyList(),
+            phone1 = "1234567890",
+            reportedBy = 861,
         )
         assertEquals(expected, entry)
     }

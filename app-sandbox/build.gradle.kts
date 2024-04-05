@@ -1,10 +1,10 @@
 import com.google.samples.apps.nowinandroid.NiaBuildType
 
 plugins {
-    id("nowinandroid.android.application")
-    id("nowinandroid.android.application.compose")
-    id("nowinandroid.android.application.flavors")
-    id("nowinandroid.android.hilt")
+    alias(libs.plugins.nowinandroid.android.application)
+    alias(libs.plugins.nowinandroid.android.application.compose)
+    alias(libs.plugins.nowinandroid.android.application.flavors)
+    alias(libs.plugins.nowinandroid.android.hilt)
 }
 
 android {
@@ -36,22 +36,16 @@ android {
 }
 
 dependencies {
-    implementation(project(":feature:caseeditor"))
+    implementation(projects.feature.caseeditor)
 
-    implementation(project(":core:appnav"))
-    implementation(project(":core:common"))
-    implementation(project(":core:commoncase"))
-    implementation(project(":core:data"))
-    implementation(project(":core:designsystem"))
-    implementation(project(":core:network"))
-    implementation(project(":core:model"))
-    implementation(project(":core:ui"))
-
-    androidTestImplementation(libs.androidx.navigation.testing)
-    androidTestImplementation(libs.accompanist.testharness)
-    androidTestImplementation(kotlin("test"))
-    debugImplementation(libs.androidx.compose.ui.testManifest)
-    debugImplementation(project(":ui-test-hilt-manifest"))
+    implementation(projects.core.appnav)
+    implementation(projects.core.common)
+    implementation(projects.core.commoncase)
+    implementation(projects.core.data)
+    implementation(projects.core.designsystem)
+    implementation(projects.core.network)
+    implementation(projects.core.model)
+    implementation(projects.core.ui)
 
     implementation(libs.kotlinx.serialization.json)
 
@@ -75,11 +69,6 @@ dependencies {
     implementation(libs.playservices.maps)
 }
 
-// androidx.test is forcing JUnit, 4.12. This forces it to use 4.13
-configurations.configureEach {
-    resolutionStrategy {
-        force(libs.junit4)
-        // Temporary workaround for https://issuetracker.google.com/174733673
-        force("org.objenesis:objenesis:2.6")
-    }
+dependencyGuard {
+    configuration("releaseRuntimeClasspath")
 }

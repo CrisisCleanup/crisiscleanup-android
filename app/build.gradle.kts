@@ -13,7 +13,7 @@ plugins {
 
 android {
     defaultConfig {
-        val buildVersion = 192
+        val buildVersion = 193
         applicationId = "com.crisiscleanup"
         versionCode = buildVersion
         versionName = "0.9.${buildVersion - 168}"
@@ -106,36 +106,36 @@ androidComponents {
 }
 
 dependencies {
-    implementation(project(":feature:authentication"))
-    implementation(project(":feature:caseeditor"))
-    implementation(project(":feature:cases"))
-    implementation(project(":feature:dashboard"))
-    implementation(project(":feature:menu"))
-    implementation(project(":feature:mediamanage"))
-    implementation(project(":feature:organizationmanage"))
-    implementation(project(":feature:syncinsights"))
-    implementation(project(":feature:team"))
-    implementation(project(":feature:userfeedback"))
+    implementation(projects.feature.authentication)
+    implementation(projects.feature.caseeditor)
+    implementation(projects.feature.cases)
+    implementation(projects.feature.dashboard)
+    implementation(projects.feature.menu)
+    implementation(projects.feature.mediamanage)
+    implementation(projects.feature.organizationmanage)
+    implementation(projects.feature.syncinsights)
+    implementation(projects.feature.team)
+    implementation(projects.feature.userfeedback)
 
-    implementation(project(":core:appnav"))
-    implementation(project(":core:common"))
-    implementation(project(":core:data"))
-    implementation(project(":core:designsystem"))
-    implementation(project(":core:model"))
-    implementation(project(":core:network"))
-    implementation(project(":core:ui"))
+    implementation(projects.core.appnav)
+    implementation(projects.core.common)
+    implementation(projects.core.data)
+    implementation(projects.core.designsystem)
+    implementation(projects.core.model)
+    implementation(projects.core.network)
+    implementation(projects.core.ui)
 
-    implementation(project(":sync:work"))
+    implementation(projects.sync.work)
 
-    androidTestImplementation(project(":core:testing"))
-    androidTestImplementation(project(":core:datastore-test"))
-    androidTestImplementation(project(":core:data-test"))
-    androidTestImplementation(project(":core:network"))
+    androidTestImplementation(projects.core.testing)
+    androidTestImplementation(projects.core.dataTest)
+    androidTestImplementation(projects.core.datastoreTest)
+    androidTestImplementation(projects.core.network)
     androidTestImplementation(libs.androidx.navigation.testing)
     androidTestImplementation(libs.accompanist.testharness)
     androidTestImplementation(kotlin("test"))
     debugImplementation(libs.androidx.compose.ui.testManifest)
-    debugImplementation(project(":ui-test-hilt-manifest"))
+    debugImplementation(projects.uiTestHiltManifest)
 
     implementation(libs.kotlinx.serialization.json)
 

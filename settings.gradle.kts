@@ -12,10 +12,15 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // For RRule library (and possibly others)
         maven { url = uri("https://jitpack.io") }
     }
 }
+
 rootProject.name = "crisiscleanup"
+
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 include(":app")
 include(":app-sandbox")
 include(":core:addresssearch")
@@ -27,6 +32,7 @@ include(":core:data")
 include(":core:data-test")
 include(":core:database")
 include(":core:datastore")
+include(":core:datastore-proto")
 include(":core:datastore-test")
 include(":core:designsystem")
 include(":core:domain")
@@ -51,7 +57,3 @@ include(":lint")
 include(":sync:work")
 include(":sync:sync-test")
 include(":ui-test-hilt-manifest")
-
-plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version ("0.4.0")
-}

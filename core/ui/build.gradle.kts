@@ -1,7 +1,7 @@
 plugins {
-    id("nowinandroid.android.library")
-    id("nowinandroid.android.library.compose")
-    id("nowinandroid.android.library.jacoco")
+    alias(libs.plugins.nowinandroid.android.library)
+    alias(libs.plugins.nowinandroid.android.library.compose)
+    alias(libs.plugins.nowinandroid.android.library.jacoco)
 }
 
 android {
@@ -12,8 +12,8 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:designsystem"))
-    implementation(project(":core:model"))
+    implementation(projects.core.designsystem)
+    implementation(projects.core.model)
 
     implementation(libs.androidx.browser)
     implementation(libs.androidx.core.ktx)
@@ -33,5 +33,5 @@ dependencies {
     api(libs.androidx.metrics)
     api(libs.androidx.tracing.ktx)
 
-    androidTestImplementation(project(":core:testing"))
+    androidTestImplementation(projects.core.testing)
 }

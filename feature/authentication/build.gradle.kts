@@ -1,7 +1,7 @@
 plugins {
-    id("nowinandroid.android.feature")
-    id("nowinandroid.android.library.compose")
-    id("nowinandroid.android.library.jacoco")
+    alias(libs.plugins.nowinandroid.android.feature)
+    alias(libs.plugins.nowinandroid.android.library.compose)
+    alias(libs.plugins.nowinandroid.android.library.jacoco)
 }
 
 android {
@@ -9,10 +9,10 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:common"))
-    implementation(project(":core:datastore"))
-    implementation(project(":core:designsystem"))
-    implementation(project(":core:network"))
+    implementation(projects.core.common)
+    implementation(projects.core.datastore)
+    implementation(projects.core.designsystem)
+    implementation(projects.core.network)
 
     // Depending modules/apps likely need to compare ktx Instants
     api(libs.kotlinx.datetime)

@@ -1,7 +1,7 @@
 plugins {
-    id("nowinandroid.android.feature")
-    id("nowinandroid.android.library.compose")
-    id("nowinandroid.android.library.jacoco")
+    alias(libs.plugins.nowinandroid.android.feature)
+    alias(libs.plugins.nowinandroid.android.library.compose)
+    alias(libs.plugins.nowinandroid.android.library.jacoco)
 }
 
 android {
@@ -9,7 +9,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:commonassets"))
-    implementation(project(":core:commoncase"))
-    implementation(project(":core:selectincident"))
+    implementation(projects.core.commonassets)
+    implementation(projects.core.commoncase)
+    implementation(projects.core.selectincident)
 }

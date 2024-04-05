@@ -1,7 +1,6 @@
 plugins {
-    id("nowinandroid.android.library")
-    id("nowinandroid.android.library.jacoco")
-    kotlin("kapt")
+    alias(libs.plugins.nowinandroid.android.library)
+    alias(libs.plugins.nowinandroid.android.library.jacoco)
 }
 
 android {
@@ -9,15 +8,14 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:common"))
-    implementation(project(":core:data"))
-    implementation(project(":core:model"))
+    implementation(projects.core.common)
+    implementation(projects.core.data)
+    implementation(projects.core.model)
 
-    testImplementation(project(":core:testing"))
+    testImplementation(projects.core.testing)
 
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.datetime)
 
     implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
 }

@@ -9,8 +9,6 @@ import android.content.IntentFilter
 import androidx.hilt.work.HiltWorker
 import androidx.tracing.traceAsync
 import androidx.work.CoroutineWorker
-import androidx.work.Data
-import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkerParameters
@@ -42,7 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 private const val STOP_SYNCING_ACTION = "com.crisiscleanup.STOP_SYNCING"
 
 @HiltWorker
-class SyncWorksitesFullWorker @AssistedInject constructor(
+internal class SyncWorksitesFullWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted workerParams: WorkerParameters,
     worksitesFullSyncer: WorksitesFullSyncer,
@@ -149,17 +147,11 @@ class SyncWorksitesFullWorker @AssistedInject constructor(
     }
 
     companion object {
-        fun oneTimeSyncWork(): OneTimeWorkRequest {
-            val data = Data.Builder()
-                .putAll(SyncWorksitesFullWorker::class.delegatedData())
-                .build()
-
+        fun oneTimeSyncWork() = OneTimeWorkRequestBuilder<DelegatingWorker>()
+            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
             // TODO Research why battery level causes this work type to fail
-            return OneTimeWorkRequestBuilder<DelegatingWorker>()
-                .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-                .setConstraints(SyncConstraints)
-                .setInputData(data)
-                .build()
-        }
+            .setConstraints(SyncConstraints)
+            .setInputData(SyncWorksitesFullWorker::class.delegatedData())
+            .build()
     }
 }

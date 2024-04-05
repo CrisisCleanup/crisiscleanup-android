@@ -1,8 +1,8 @@
 plugins {
-    id("nowinandroid.android.library")
-    id("nowinandroid.android.library.compose")
-    id("nowinandroid.android.library.jacoco")
-    kotlin("kapt")
+    alias(libs.plugins.nowinandroid.android.library)
+    alias(libs.plugins.nowinandroid.android.library.compose)
+    alias(libs.plugins.nowinandroid.android.library.jacoco)
+    alias(libs.plugins.nowinandroid.android.hilt)
 }
 
 android {
@@ -10,11 +10,11 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:common"))
-    implementation(project(":core:data"))
-    implementation(project(":core:designsystem"))
-    implementation(project(":core:model"))
-    implementation(project(":core:renderscript-toolkit"))
+    implementation(projects.core.common)
+    implementation(projects.core.data)
+    implementation(projects.core.designsystem)
+    implementation(projects.core.model)
+    implementation(projects.core.renderscriptToolkit)
 
     implementation(libs.kotlinx.datetime)
 
@@ -28,5 +28,4 @@ dependencies {
     implementation(libs.android.material.material)
 
     implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
 }

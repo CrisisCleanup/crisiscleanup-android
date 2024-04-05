@@ -1,6 +1,6 @@
 plugins {
-    id("nowinandroid.android.library")
-    id("nowinandroid.android.library.compose")
+    alias(libs.plugins.nowinandroid.android.library)
+    alias(libs.plugins.nowinandroid.android.library.compose)
 }
 
 android {
@@ -8,11 +8,11 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:common"))
-    implementation(project(":core:commonassets"))
-    implementation(project(":core:designsystem"))
-    implementation(project(":core:model"))
-    implementation(project(":core:ui"))
+    implementation(projects.core.common)
+    implementation(projects.core.commonassets)
+    implementation(projects.core.designsystem)
+    implementation(projects.core.model)
+    implementation(projects.core.ui)
 
     implementation(libs.kotlinx.datetime)
 }

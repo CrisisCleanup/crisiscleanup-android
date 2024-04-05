@@ -1,7 +1,7 @@
 plugins {
-    id("nowinandroid.android.feature")
-    id("nowinandroid.android.library.compose")
-    id("nowinandroid.android.library.jacoco")
+    alias(libs.plugins.nowinandroid.android.feature)
+    alias(libs.plugins.nowinandroid.android.library.compose)
+    alias(libs.plugins.nowinandroid.android.library.jacoco)
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
@@ -14,10 +14,10 @@ secrets {
 }
 
 dependencies {
-    implementation(project(":core:commonassets"))
-    implementation(project(":core:commoncase"))
-    implementation(project(":core:mapmarker"))
-    implementation(project(":core:selectincident"))
+    implementation(projects.core.commonassets)
+    implementation(projects.core.commoncase)
+    implementation(projects.core.mapmarker)
+    implementation(projects.core.selectincident)
 
     implementation(libs.kotlinx.datetime)
 
