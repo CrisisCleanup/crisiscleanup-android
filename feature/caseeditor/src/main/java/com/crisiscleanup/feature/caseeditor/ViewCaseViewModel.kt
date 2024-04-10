@@ -1,13 +1,7 @@
 package com.crisiscleanup.feature.caseeditor
 
-import android.annotation.SuppressLint
-import android.content.ContentResolver
-import android.content.ContentValues
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Bundle
-import android.provider.MediaStore
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -18,7 +12,6 @@ import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.PermissionManager
-import com.crisiscleanup.core.common.PermissionStatus
 import com.crisiscleanup.core.common.cameraPermissionGranted
 import com.crisiscleanup.core.common.combineTrimText
 import com.crisiscleanup.core.common.haversineDistance
@@ -43,20 +36,17 @@ import com.crisiscleanup.core.data.repository.LocalImageRepository
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.WorkTypeStatusRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
+import com.crisiscleanup.core.data.repository.WorksiteImageRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
 import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
 import com.crisiscleanup.core.model.data.EmptyWorksite
-import com.crisiscleanup.core.model.data.NetworkImage
+import com.crisiscleanup.core.model.data.ImageCategory
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.WorkTypeRequest
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteFlag
-import com.crisiscleanup.core.model.data.WorksiteLocalImage
 import com.crisiscleanup.core.model.data.WorksiteNote
-import com.crisiscleanup.feature.caseeditor.model.CaseImage
-import com.crisiscleanup.feature.caseeditor.model.ImageCategory
-import com.crisiscleanup.feature.caseeditor.model.asCaseImage
 import com.crisiscleanup.feature.caseeditor.model.coordinates
 import com.crisiscleanup.feature.caseeditor.navigation.ExistingCaseArgs
 import com.google.android.gms.maps.model.BitmapDescriptor
@@ -78,9 +68,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toJavaInstant
-import java.text.SimpleDateFormat
 import java.time.format.DateTimeFormatter
-import java.util.Date
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
@@ -100,20 +88,20 @@ class ViewCaseViewModel @Inject constructor(
     accountDataRefresher: AccountDataRefresher,
     languageRefresher: LanguageRefresher,
     workTypeStatusRepository: WorkTypeStatusRepository,
-    private val localImageRepository: LocalImageRepository,
+    localImageRepository: LocalImageRepository,
     private val editableWorksiteProvider: EditableWorksiteProvider,
     val transferWorkTypeProvider: TransferWorkTypeProvider,
-    private val permissionManager: PermissionManager,
+    permissionManager: PermissionManager,
     private val translator: KeyResourceTranslator,
     private val worksiteChangeRepository: WorksiteChangeRepository,
+    private val worksiteImageRepository: WorksiteImageRepository,
     private val syncPusher: SyncPusher,
     packageManager: PackageManager,
-    private val contentResolver: ContentResolver,
     drawableResourceBitmapProvider: DrawableResourceBitmapProvider,
     appEnv: AppEnv,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-) : ViewModel(), KeyResourceTranslator {
+) : ViewModel(), KeyResourceTranslator, CaseCameraMediaManager {
     private val caseEditorArgs = ExistingCaseArgs(savedStateHandle)
     private val incidentIdArg = caseEditorArgs.incidentId
     val worksiteIdArg = caseEditorArgs.worksiteId
@@ -146,11 +134,19 @@ class ViewCaseViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
+    private val caseMediaManager = CaseMediaManager(
+        permissionManager,
+        localImageRepository,
+        worksiteImageRepository,
+        syncPusher,
+        viewModelScope,
+        ioDispatcher,
+    )
+
     private val isSavingWorksite = MutableStateFlow(false)
-    private val isSavingMedia = MutableStateFlow(false)
     val isSaving = combine(
         isSavingWorksite,
-        isSavingMedia,
+        caseMediaManager.isSavingMedia,
     ) { b0, b1 -> b0 || b1 }
         .stateIn(
             scope = viewModelScope,
@@ -158,12 +154,7 @@ class ViewCaseViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val syncingWorksiteImage = localImageRepository.syncingWorksiteImage
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = 0L,
-            started = SharingStarted.WhileSubscribed(),
-        )
+    val syncingWorksiteImage = caseMediaManager.syncingWorksiteImage
 
     private var isOrganizationsRefreshed = AtomicBoolean(false)
     private val organizationLookup = organizationsRepository.organizationLookup
@@ -215,26 +206,12 @@ class ViewCaseViewModel @Inject constructor(
 
     var addImageCategory by mutableStateOf(ImageCategory.Before)
 
-    val hasCamera = packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)
-    var showExplainPermissionCamera by mutableStateOf(false)
-    var isCameraPermissionGranted by mutableStateOf(false)
-    private val continueTakePhotoGate = AtomicBoolean(false)
+    override val hasCamera = packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)
+    override var showExplainPermissionCamera by mutableStateOf(false)
+    override var isCameraPermissionGranted by mutableStateOf(false)
 
-    val capturePhotoUri: Uri?
-        @SuppressLint("SimpleDateFormat")
-        get() {
-            val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-            val fileName = "CC_$timeStamp.jpg"
-            val contentValues = ContentValues().apply {
-                put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
-                put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-                put(MediaStore.MediaColumns.RELATIVE_PATH, "DCIM/CrisisCleanup")
-            }
-            return contentResolver.insert(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                contentValues,
-            )
-        }
+    override val capturePhotoUri: Uri?
+        get() = worksiteImageRepository.newPhotoUri
 
     val actionDescriptionMessage = MutableStateFlow("")
 
@@ -298,7 +275,7 @@ class ViewCaseViewModel @Inject constructor(
 
         permissionManager.permissionChanges.map {
             if (it == cameraPermissionGranted) {
-                continueTakePhotoGate.set(true)
+                caseMediaManager.continueTakePhotoGate.set(true)
                 isCameraPermissionGranted = true
             }
         }.launchIn(viewModelScope)
@@ -321,20 +298,10 @@ class ViewCaseViewModel @Inject constructor(
     private val referenceWorksite: Worksite
         get() = viewState.value.asCaseData()?.worksite ?: EmptyWorksite
 
-    private val filesNotes = combine(
+    private val filesNotes = processWorksiteFilesNotes(
         editableWorksiteProvider.editableWorksite,
         viewState,
-        ::Pair,
     )
-        .filter { (_, state) -> state is CaseEditorViewState.CaseData }
-        .mapLatest { (worksite, state) ->
-            val fileImages = worksite.files.map(NetworkImage::asCaseImage)
-            val localImages = (state as CaseEditorViewState.CaseData).localWorksite
-                ?.localImages
-                ?.map(WorksiteLocalImage::asCaseImage)
-                ?: emptyList()
-            Triple(fileImages, localImages, worksite.notes)
-        }
 
     val statusOptions = viewState
         .mapLatest {
@@ -549,17 +516,7 @@ class ViewCaseViewModel @Inject constructor(
         )
 
     // TODO Delete local image db entries where file no longer exists in cache
-    val beforeAfterPhotos = filesNotes
-        .mapLatest { (files, localFiles) ->
-            val beforeImages = localFiles.filterNot(CaseImage::isAfter).toMutableList()
-                .apply { addAll(files.filterNot(CaseImage::isAfter)) }
-            val afterImages = localFiles.filter(CaseImage::isAfter).toMutableList()
-                .apply { addAll(files.filter(CaseImage::isAfter)) }
-            mapOf(
-                ImageCategory.Before to beforeImages,
-                ImageCategory.After to afterImages,
-            )
-        }
+    val beforeAfterPhotos = organizeBeforeAfterPhotos(filesNotes)
         .stateIn(
             scope = viewModelScope,
             initialValue = emptyMap(),
@@ -799,84 +756,31 @@ class ViewCaseViewModel @Inject constructor(
         saveWorksiteChange(startingWorksite, changedWorksite)
     }
 
-    fun takePhoto(): Boolean {
-        when (permissionManager.requestCameraPermission()) {
-            PermissionStatus.Granted -> {
-                return true
-            }
-
-            PermissionStatus.ShowRationale -> {
-                showExplainPermissionCamera = true
-            }
-
-            PermissionStatus.Requesting,
-            PermissionStatus.Denied,
-            PermissionStatus.Undefined,
-            -> {
-                // Ignore these statuses as they're not important
-            }
-        }
-        return false
-    }
-
-    fun continueTakePhoto() = continueTakePhotoGate.getAndSet(false)
-
-    fun onMediaSelected(uri: Uri, isFileSelected: Boolean) {
-        if (isFileSelected) {
-            val flag = Intent.FLAG_GRANT_READ_URI_PERMISSION
-            contentResolver.takePersistableUriPermission(uri, flag)
-        }
-
-        isSavingMedia.value = true
-        viewModelScope.launch(ioDispatcher) {
-            var displayName = ""
-
-            val displayNameColumn = MediaStore.MediaColumns.DISPLAY_NAME
-            val projection = arrayOf(
-                displayNameColumn,
-            )
-            contentResolver.query(uri, projection, Bundle.EMPTY, null)?.let {
-                it.use { cursor ->
-                    with(cursor) {
-                        if (moveToFirst()) {
-                            displayName = getString(getColumnIndexOrThrow(displayNameColumn))
-                        }
-                    }
-                }
-            }
-
-            if (displayName.isNotBlank()) {
-                try {
-                    localImageRepository.save(
-                        WorksiteLocalImage(
-                            0,
-                            editableWorksite.value.id,
-                            documentId = displayName,
-                            uri = uri.toString(),
-                            tag = addImageCategory.literal,
-                        ),
-                    )
-
-                    syncPusher.scheduleSyncMedia()
-                } catch (e: Exception) {
-                    onSaveFail(e, true)
-                } finally {
-                    isSavingMedia.value = false
-                }
-            }
-        }
-    }
-
-    fun onMediaSelected(uris: List<Uri>) {
-        uris.forEach {
-            onMediaSelected(it, true)
-        }
-    }
-
     fun scheduleSync() {
         if (!isSyncing.value) {
             syncPusher.appPushWorksite(worksiteIdArg)
             syncPusher.scheduleSyncMedia()
+        }
+    }
+
+    // CaseCameraMediaManager
+
+    override fun takePhoto() = caseMediaManager.takePhoto { showExplainPermissionCamera = true }
+
+    override fun continueTakePhoto() = caseMediaManager.continueTakePhotoGate.getAndSet(false)
+
+    override fun onMediaSelected(uri: Uri, isFileSelected: Boolean) {
+        caseMediaManager.onMediaSelected(
+            editableWorksite.value.id,
+            addImageCategory.literal,
+            uri,
+            isFileSelected,
+        ) { e -> onSaveFail(e, true) }
+    }
+
+    override fun onMediaSelected(uris: List<Uri>) {
+        uris.forEach {
+            onMediaSelected(it, true)
         }
     }
 

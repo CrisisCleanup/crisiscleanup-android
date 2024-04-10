@@ -22,7 +22,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,6 +54,7 @@ import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.model.data.ImageCategory
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
 import com.crisiscleanup.core.ui.scrollFlingListener
@@ -272,6 +275,7 @@ private fun ColumnScope.FullEditView(
             2 to 10,
             3 to 13,
             4 to 16,
+            5 to 19,
         ),
     )
 
@@ -296,6 +300,11 @@ private fun ColumnScope.FullEditView(
         }
     }
     val togglePropertySection = remember(viewModel) { { toggleSectionCollapse(0) } }
+    val togglePhotosSection = remember(viewModel) {
+        {
+            toggleSectionCollapse(sectionCollapseStates.size - 1)
+        }
+    }
 
     Box(Modifier.weight(1f)) {
         val closeKeyboard = rememberCloseKeyboard(viewModel)
@@ -330,6 +339,8 @@ private fun ColumnScope.FullEditView(
                         togglePropertySection = togglePropertySection,
                         isSectionCollapsed = isSectionCollapsed,
                         toggleSection = toggleSectionCollapse,
+                        isPhotosCollapsed = sectionCollapseStates.last(),
+                        togglePhotosSection = togglePhotosSection,
                     )
                 }
             }
@@ -382,6 +393,15 @@ private fun ColumnScope.FullEditView(
     }
 }
 
+private fun LazyListScope.sectionSeparator(key: String) {
+    item(
+        key,
+        contentType = SECTION_HEADER_SEPARATOR_TYPE,
+    ) {
+        FormListSectionSeparator()
+    }
+}
+
 private fun LazyListScope.fullEditContent(
     caseData: CaseEditorViewState.CaseData,
     viewModel: CreateEditCaseViewModel,
@@ -393,6 +413,8 @@ private fun LazyListScope.fullEditContent(
     togglePropertySection: () -> Unit = {},
     isSectionCollapsed: (Int) -> Boolean = { false },
     toggleSection: (Int) -> Unit = {},
+    isPhotosCollapsed: Boolean = false,
+    togglePhotosSection: () -> Unit = {},
 ) {
     item(key = "incident-info") {
         val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
@@ -420,12 +442,7 @@ private fun LazyListScope.fullEditContent(
         }
 
         viewModel.formDataEditors.forEachIndexed { index, editor ->
-            item(
-                key = "section-separator-$index",
-                contentType = SECTION_HEADER_SEPARATOR_TYPE,
-            ) {
-                FormListSectionSeparator()
-            }
+            sectionSeparator("section-separator-$index")
 
             val sectionIndex = index + 1
             val sectionTitle =
@@ -439,6 +456,13 @@ private fun LazyListScope.fullEditContent(
                 toggleSection,
             )
         }
+
+        photosSection(
+            viewModel,
+            sectionTitles.last(),
+            isSectionCollapsed = isPhotosCollapsed,
+            togglePhotosSection = togglePhotosSection,
+        )
     }
 }
 
@@ -536,25 +560,77 @@ private fun LazyListScope.formDataSection(
     }
 }
 
+private fun LazyListScope.photosSection(
+    viewModel: CreateEditCaseViewModel,
+    sectionTitle: String,
+    isSectionCollapsed: Boolean = false,
+    togglePhotosSection: () -> Unit = {},
+) {
+    sectionSeparator("section-separator-photos")
+
+    item(
+        key = "section-header-photos",
+        contentType = SECTION_HEADER_CONTENT_TYPE,
+    ) {
+        val t = LocalAppTranslator.current
+        SectionHeaderCollapsible(
+            viewModel,
+            sectionIndex = 5,
+            sectionTitle = sectionTitle,
+            isCollapsed = isSectionCollapsed,
+            toggleCollapse = togglePhotosSection,
+        )
+    }
+    if (!isSectionCollapsed) {
+        item(key = "section-photos") {
+            var enablePagerScroll by remember { mutableStateOf(true) }
+            val setEnablePagerScroll = remember(viewModel) {
+                { b: Boolean -> enablePagerScroll = b }
+            }
+
+            val photos by viewModel.beforeAfterPhotos.collectAsStateWithLifecycle()
+            val syncingWorksiteImage by viewModel.syncingWorksiteImage.collectAsStateWithLifecycle()
+
+            val onUpdateImageCategory = remember(viewModel) {
+                { imageCategory: ImageCategory ->
+                    viewModel.addImageCategory = imageCategory
+                }
+            }
+
+            val viewHeaderTitle by viewModel.headerTitle.collectAsStateWithLifecycle()
+            CasePhotoImageView(
+                viewModel,
+                setEnablePagerScroll,
+                photos,
+                syncingWorksiteImage,
+                onUpdateImageCategory,
+                viewHeaderTitle,
+            ) {
+                // TODO Open for viewing and deleting. Including local
+            }
+        }
+    }
+}
+
 @Composable
 private fun PromptChangesDialog(
     onStay: () -> Unit = {},
     onAbort: () -> Unit = {},
 ) {
-    val translator = LocalAppTranslator.current
+    val t = LocalAppTranslator.current
     CrisisCleanupAlertDialog(
-        title = translator("caseForm.unsaved_changes"),
-        text = translator("caseForm.continue_edit_or_lose_changes"),
+        title = t("caseForm.unsaved_changes"),
+        text = t("caseForm.continue_edit_or_lose_changes"),
         onDismissRequest = onStay,
         dismissButton = {
             CrisisCleanupTextButton(
-                text = translator("caseForm.no"),
+                text = t("caseForm.no"),
                 onClick = onAbort,
             )
         },
         confirmButton = {
             CrisisCleanupTextButton(
-                text = translator("caseForm.yes"),
+                text = t("caseForm.yes"),
                 onClick = onStay,
             )
         },
@@ -573,25 +649,25 @@ private fun InvalidSaveDialog(
     if (promptInvalidSave) {
         val invalidInfo = viewModel.invalidWorksiteInfo.value
         if (invalidInfo.invalidSection != WorksiteSection.None) {
-            val translator = LocalAppTranslator.current
+            val t = LocalAppTranslator.current
             val message = invalidInfo.message.ifBlank {
-                translator("caseForm.missing_required_fields")
+                t("caseForm.missing_required_fields")
             }
             val onDismiss =
                 remember(viewModel) { { viewModel.showInvalidWorksiteSave.value = false } }
             CrisisCleanupAlertDialog(
-                title = translator("caseForm.missing_required_fields_title"),
+                title = t("caseForm.missing_required_fields_title"),
                 text = message,
                 onDismissRequest = onDismiss,
                 dismissButton = {
                     CrisisCleanupTextButton(
-                        text = translator("actions.cancel"),
+                        text = t("actions.cancel"),
                         onClick = onDismiss,
                     )
                 },
                 confirmButton = {
                     CrisisCleanupTextButton(
-                        text = translator("actions.fix"),
+                        text = t("actions.fix"),
                         onClick = {
                             when (val section = invalidInfo.invalidSection) {
                                 WorksiteSection.Property -> onEditPropertyData()

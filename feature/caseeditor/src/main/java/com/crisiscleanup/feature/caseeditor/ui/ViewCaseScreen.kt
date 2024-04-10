@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,7 +27,6 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Icon
@@ -52,7 +50,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
@@ -62,7 +59,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.appnav.ViewImageArgs
 import com.crisiscleanup.core.common.filterNotBlankTrim
-import com.crisiscleanup.core.common.urlEncode
 import com.crisiscleanup.core.commoncase.com.crisiscleanup.core.commoncase.ui.ExplainWrongLocationDialog
 import com.crisiscleanup.core.commoncase.model.addressQuery
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
@@ -92,12 +88,12 @@ import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
-import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
 import com.crisiscleanup.core.designsystem.theme.neutralIconColor
 import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
 import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
 import com.crisiscleanup.core.mapmarker.ui.rememberMapUiSettings
 import com.crisiscleanup.core.model.data.EmptyWorksite
+import com.crisiscleanup.core.model.data.ImageCategory
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteFlag
@@ -109,8 +105,6 @@ import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.R
 import com.crisiscleanup.feature.caseeditor.ViewCaseViewModel
 import com.crisiscleanup.feature.caseeditor.WorkTypeProfile
-import com.crisiscleanup.feature.caseeditor.model.CaseImage
-import com.crisiscleanup.feature.caseeditor.model.ImageCategory
 import com.crisiscleanup.feature.caseeditor.model.coordinates
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptor
@@ -883,63 +877,21 @@ private fun CasePhotosView(
     val photos by viewModel.beforeAfterPhotos.collectAsStateWithLifecycle()
     val syncingWorksiteImage by viewModel.syncingWorksiteImage.collectAsStateWithLifecycle()
 
-    var showCameraMediaSelect by remember { mutableStateOf(false) }
-
-    val t = LocalAppTranslator.current
-    val sectionTitleResIds = mapOf(
-        ImageCategory.Before to t("caseForm.before_photos"),
-        ImageCategory.After to t("caseForm.after_photos"),
-    )
-    var isShortScreen by remember { mutableStateOf(false) }
-    Column(
-        modifier = Modifier
-            .sizeIn(maxHeight = 480.dp)
-            .fillMaxHeight()
-            .onGloballyPositioned {
-                isShortScreen = it.size.height.dp < 720.dp
-            },
-    ) {
-        sectionTitleResIds.onEach { (imageCategory, sectionTitle) ->
-            photos[imageCategory]?.let { rowPhotos ->
-                val title = if (isShortScreen) {
-                    sectionTitle.replace(" ", "\n")
-                } else {
-                    sectionTitle
-                }
-                PhotosSection(
-                    title,
-                    Modifier
-                        .listItemVerticalPadding()
-                        .weight(0.45f),
-                    StaggeredGridCells.Fixed(1),
-                    isShortScreen,
-                    photos = rowPhotos,
-                    setEnableParentScroll = setEnablePagerScroll,
-                    onAddPhoto = {
-                        viewModel.addImageCategory = imageCategory
-                        showCameraMediaSelect = true
-                    },
-                    onPhotoSelect = { image: CaseImage ->
-                        with(image) {
-                            val viewImageArgs = ViewImageArgs(
-                                id,
-                                encodedUri = if (isNetworkImage) imageUri.urlEncode() else "",
-                                isNetworkImage,
-                                viewModel.headerTitle.value.urlEncode(),
-                            )
-                            onPhotoSelect(viewImageArgs)
-                        }
-                    },
-                    syncingWorksiteImage = syncingWorksiteImage,
-                )
-            }
+    val onUpdateImageCategory = remember(viewModel) {
+        { imageCategory: ImageCategory ->
+            viewModel.addImageCategory = imageCategory
         }
     }
 
-    val closeCameraMediaSelect = remember(viewModel) { { showCameraMediaSelect = false } }
-    TakePhotoSelectImage(
-        showOptions = showCameraMediaSelect,
-        closeOptions = closeCameraMediaSelect,
+    val viewHeaderTitle by viewModel.headerTitle.collectAsStateWithLifecycle()
+    CasePhotoImageView(
+        viewModel,
+        setEnablePagerScroll,
+        photos,
+        syncingWorksiteImage,
+        onUpdateImageCategory,
+        viewHeaderTitle,
+        onPhotoSelect,
     )
 }
 

@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -38,31 +40,106 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.crisiscleanup.core.appnav.ViewImageArgs
+import com.crisiscleanup.core.common.urlEncode
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.OpenSettingsDialog
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
+import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.designsystem.theme.primaryBlueOneTenthColor
+import com.crisiscleanup.core.model.data.CaseImage
+import com.crisiscleanup.core.model.data.ImageCategory
 import com.crisiscleanup.core.ui.touchDownConsumer
+import com.crisiscleanup.feature.caseeditor.CaseCameraMediaManager
 import com.crisiscleanup.feature.caseeditor.R
-import com.crisiscleanup.feature.caseeditor.ViewCaseViewModel
-import com.crisiscleanup.feature.caseeditor.model.CaseImage
 
 private val addMediaActionPadding = 4.dp
 private val mediaCornerRadius = 6.dp
 private val addMediaStrokeWidth = 2.dp
 private val addMediaStrokeDash = 6.dp
 private val addMediaStrokeGap = 6.dp
+
+@Composable
+internal fun CasePhotoImageView(
+    cameraMediaManager: CaseCameraMediaManager,
+    setEnablePagerScroll: (Boolean) -> Unit,
+    photos: Map<ImageCategory, List<CaseImage>>,
+    syncingWorksiteImage: Long,
+    onUpdateImageCategory: (ImageCategory) -> Unit,
+    viewHeaderTitle: String,
+    onPhotoSelect: (ViewImageArgs) -> Unit = { _ -> },
+) {
+    var showCameraMediaSelect by remember { mutableStateOf(false) }
+
+    val t = LocalAppTranslator.current
+    val sectionTitleResIds = mapOf(
+        ImageCategory.Before to t("caseForm.before_photos"),
+        ImageCategory.After to t("caseForm.after_photos"),
+    )
+    var isShortScreen by remember { mutableStateOf(false) }
+    Column(
+        modifier = Modifier
+            .sizeIn(maxHeight = 480.dp)
+            .fillMaxHeight()
+            .onGloballyPositioned {
+                isShortScreen = it.size.height.dp < 720.dp
+            },
+    ) {
+        sectionTitleResIds.onEach { (imageCategory, sectionTitle) ->
+            photos[imageCategory]?.let { rowPhotos ->
+                val title = if (isShortScreen) {
+                    sectionTitle.replace(" ", "\n")
+                } else {
+                    sectionTitle
+                }
+                PhotosSection(
+                    title,
+                    Modifier
+                        .listItemVerticalPadding()
+                        .weight(0.45f),
+                    StaggeredGridCells.Fixed(1),
+                    isShortScreen,
+                    photos = rowPhotos,
+                    setEnableParentScroll = setEnablePagerScroll,
+                    onAddPhoto = {
+                        onUpdateImageCategory(imageCategory)
+                        showCameraMediaSelect = true
+                    },
+                    onPhotoSelect = { image: CaseImage ->
+                        with(image) {
+                            val viewImageArgs = ViewImageArgs(
+                                id,
+                                encodedUri = if (isNetworkImage) imageUri.urlEncode() else "",
+                                isNetworkImage,
+                                viewHeaderTitle.urlEncode(),
+                            )
+                            onPhotoSelect(viewImageArgs)
+                        }
+                    },
+                    syncingWorksiteImage = syncingWorksiteImage,
+                )
+            }
+        }
+    }
+
+    val closeCameraMediaSelect = remember(cameraMediaManager) { { showCameraMediaSelect = false } }
+    TakePhotoSelectImage(
+        cameraMediaManager,
+        showCameraMediaSelect,
+        closeCameraMediaSelect,
+    )
+}
 
 @Composable
 private fun AddMediaView(
@@ -258,7 +335,7 @@ internal fun PhotosSection(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun TakePhotoSelectImage(
-    viewModel: ViewCaseViewModel = hiltViewModel(),
+    cameraMediaManager: CaseCameraMediaManager,
     showOptions: Boolean = false,
     closeOptions: () -> Unit = {},
 ) {
@@ -268,14 +345,14 @@ internal fun TakePhotoSelectImage(
         contract = ActivityResultContracts.TakePicture(),
     ) { isTaken ->
         if (isTaken) {
-            viewModel.onMediaSelected(cameraPhotoUri, false)
+            cameraMediaManager.onMediaSelected(cameraPhotoUri, false)
         }
         closeOptions()
     }
     val selectImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(),
     ) { uris: List<Uri> ->
-        viewModel.onMediaSelected(uris)
+        cameraMediaManager.onMediaSelected(uris)
         closeOptions()
     }
 
@@ -283,10 +360,10 @@ internal fun TakePhotoSelectImage(
         ModalBottomSheet(
             onDismissRequest = closeOptions,
         ) {
-            if (viewModel.hasCamera) {
-                val continueTakePhoto = remember(viewModel) {
+            if (cameraMediaManager.hasCamera) {
+                val continueTakePhoto = remember(cameraMediaManager) {
                     {
-                        val uri = viewModel.capturePhotoUri
+                        val uri = cameraMediaManager.capturePhotoUri
                         if (uri == null) {
                             // TODO Show error message
                         } else {
@@ -300,13 +377,13 @@ internal fun TakePhotoSelectImage(
                     listItemModifier,
                     text = translator("actions.take_photo"),
                     onClick = {
-                        if (viewModel.takePhoto()) {
+                        if (cameraMediaManager.takePhoto()) {
                             continueTakePhoto()
                         }
                     },
                 )
 
-                if (viewModel.isCameraPermissionGranted && viewModel.continueTakePhoto()) {
+                if (cameraMediaManager.isCameraPermissionGranted && cameraMediaManager.continueTakePhoto()) {
                     continueTakePhoto()
                 }
             }
@@ -324,9 +401,9 @@ internal fun TakePhotoSelectImage(
     }
 
     val closePermissionDialog =
-        remember(viewModel) { { viewModel.showExplainPermissionCamera = false } }
+        remember(cameraMediaManager) { { cameraMediaManager.showExplainPermissionCamera = false } }
     ExplainCameraPermissionDialog(
-        showDialog = viewModel.showExplainPermissionCamera,
+        showDialog = cameraMediaManager.showExplainPermissionCamera,
         closeDialog = closePermissionDialog,
         closeText = translator("actions.close"),
     )

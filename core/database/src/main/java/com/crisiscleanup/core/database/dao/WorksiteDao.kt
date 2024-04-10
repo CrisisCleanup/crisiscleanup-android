@@ -10,6 +10,7 @@ import com.crisiscleanup.core.database.model.BoundedSyncedWorksiteIds
 import com.crisiscleanup.core.database.model.PopulatedFilterDataWorksite
 import com.crisiscleanup.core.database.model.PopulatedLocalWorksite
 import com.crisiscleanup.core.database.model.PopulatedTableDataWorksite
+import com.crisiscleanup.core.database.model.PopulatedWorksiteFiles
 import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
 import com.crisiscleanup.core.database.model.WorksiteEntity
 import com.crisiscleanup.core.database.model.WorksiteLocalModifiedAt
@@ -38,6 +39,10 @@ interface WorksiteDao {
     @Transaction
     @Query("SELECT * FROM worksites WHERE id=:id")
     fun streamLocalWorksite(id: Long): Flow<PopulatedLocalWorksite?>
+
+    @Transaction
+    @Query("SELECT * FROM worksites WHERE id=:id")
+    fun streamWorksiteFiles(id: Long): Flow<PopulatedWorksiteFiles>
 
     @Transaction
     @Query(

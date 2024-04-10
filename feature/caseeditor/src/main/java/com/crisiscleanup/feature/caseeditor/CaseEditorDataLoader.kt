@@ -301,6 +301,7 @@ internal class CaseEditorDataLoader(
                                 }
                             },
                         )
+                        add(translate("caseForm.photos"))
                     }
                 }
 
@@ -364,7 +365,8 @@ internal class CaseEditorDataLoader(
             )
         }
 
-    val viewState: MutableStateFlow<CaseEditorViewState> = MutableStateFlow(CaseEditorViewState.Loading)
+    val viewState: MutableStateFlow<CaseEditorViewState> =
+        MutableStateFlow(CaseEditorViewState.Loading)
 
     init {
         if (logDebug) {

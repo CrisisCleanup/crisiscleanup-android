@@ -1,14 +1,11 @@
-package com.crisiscleanup.feature.caseeditor.model
-
-import com.crisiscleanup.core.model.data.NetworkImage
-import com.crisiscleanup.core.model.data.WorksiteLocalImage
+package com.crisiscleanup.core.model.data
 
 enum class ImageCategory(val literal: String) {
     Before("before"),
     After("after"),
 }
 
-private val imageCategoryLookup = ImageCategory.values().associateBy(ImageCategory::literal)
+private val imageCategoryLookup = ImageCategory.entries.associateBy(ImageCategory::literal)
 
 data class CaseImage(
     val id: Long,
