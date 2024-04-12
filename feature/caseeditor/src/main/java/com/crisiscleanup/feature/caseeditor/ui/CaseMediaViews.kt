@@ -84,6 +84,7 @@ internal fun CasePhotoImageView(
     setEnablePagerScroll: (Boolean) -> Unit,
     photos: Map<ImageCategory, List<CaseImage>>,
     syncingWorksiteImage: Long,
+    deletingImageIds: Set<Long>,
     onUpdateImageCategory: (ImageCategory) -> Unit,
     viewHeaderTitle: String,
     maxHeight: Dp = 480.dp,
@@ -97,9 +98,9 @@ internal fun CasePhotoImageView(
         ImageCategory.After to t("caseForm.after_photos"),
     )
     var isShortScreen by remember { mutableStateOf(false) }
-    val onDeletePhoto = remember(cameraMediaManager) {
-        { photoId: Long ->
-            cameraMediaManager.onDeletePhoto(photoId)
+    val onDeleteImage = remember(cameraMediaManager) {
+        { image: CaseImage ->
+            cameraMediaManager.onDeleteImage(image)
         }
     }
     Column(
@@ -125,12 +126,13 @@ internal fun CasePhotoImageView(
                     StaggeredGridCells.Fixed(1),
                     isShortScreen,
                     photos = rowPhotos,
+                    deletingImageIds = deletingImageIds,
                     setEnableParentScroll = setEnablePagerScroll,
                     onAddPhoto = {
                         onUpdateImageCategory(imageCategory)
                         showCameraMediaSelect = true
                     },
-                    onDeletePhoto = onDeletePhoto,
+                    onDeleteImage = onDeleteImage,
                     onPhotoSelect = { image: CaseImage ->
                         with(image) {
                             val viewImageArgs = ViewImageArgs(
@@ -239,8 +241,9 @@ internal fun PhotosSection(
     isInlineContent: Boolean = false,
     photos: List<CaseImage> = emptyList(),
     syncingWorksiteImage: Long = 0L,
+    deletingImageIds: Set<Long> = emptySet(),
     onAddPhoto: () -> Unit = {},
-    onDeletePhoto: (Long) -> Unit = {},
+    onDeleteImage: (CaseImage) -> Unit = {},
     onPhotoSelect: (CaseImage) -> Unit = {},
     setEnableParentScroll: (Boolean) -> Unit = {},
     addActionSize: Dp = 128.dp,
@@ -320,6 +323,7 @@ internal fun PhotosSection(
                     val photoIndex = index - photoOffsetIndex
                     val photo = photos[photoIndex]
                     val isSyncing = syncingWorksiteImage != 0L && syncingWorksiteImage == photo.id
+                    val isDeleting = deletingImageIds.contains(photo.id)
                     val halfWhite = Color.White.copy(alpha = 0.5f)
 
                     var contentSize by remember { mutableStateOf(Size.Zero) }
@@ -339,7 +343,8 @@ internal fun PhotosSection(
                             contentScale = ContentScale.Crop,
                         )
                         // TODO Common dimensions where defined
-                        if (isSyncing) {
+                        val isTransient = isSyncing || isDeleting
+                        if (isTransient) {
                             SurfaceIcon(
                                 CrisisCleanupIcons.CloudSync,
                                 Color.White.copy(alpha = 0.8f),
@@ -362,8 +367,8 @@ internal fun PhotosSection(
                             )
                         }
 
-                        if (!isSyncing) {
-                            val onDelete = remember(photo) { { onDeletePhoto(photo.id) } }
+                        if (!isTransient) {
+                            val onDelete = remember(photo) { { onDeleteImage(photo) } }
                             RowImageContextMenu(
                                 contentSize,
                                 halfWhite,

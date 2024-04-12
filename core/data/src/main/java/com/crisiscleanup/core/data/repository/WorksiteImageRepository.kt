@@ -45,6 +45,7 @@ interface WorksiteImageRepository {
         imageCategory: String,
     ): Boolean
 
+    fun deleteNewWorksiteImage(uri: String)
     suspend fun transferNewWorksiteImages(worksiteId: Long)
 }
 
@@ -143,6 +144,14 @@ class OfflineFirstWorksiteImageRepository @Inject constructor(
         }
 
         return false
+    }
+
+    override fun deleteNewWorksiteImage(uri: String) {
+        synchronized(newWorksiteImagesLock) {
+            newWorksiteImagesCache.remove(uri)?.let {
+                newWorksiteImagesFlow.value = newWorksiteImagesCache.values.toList()
+            }
+        }
     }
 
     override suspend fun transferNewWorksiteImages(worksiteId: Long) {

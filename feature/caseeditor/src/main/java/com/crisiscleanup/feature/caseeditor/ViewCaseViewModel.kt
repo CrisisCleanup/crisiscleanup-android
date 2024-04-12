@@ -40,6 +40,7 @@ import com.crisiscleanup.core.data.repository.WorksiteImageRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
 import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
+import com.crisiscleanup.core.model.data.CaseImage
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.ImageCategory
 import com.crisiscleanup.core.model.data.WorkType
@@ -56,6 +57,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
@@ -138,10 +140,13 @@ class ViewCaseViewModel @Inject constructor(
         permissionManager,
         localImageRepository,
         worksiteImageRepository,
+        worksiteChangeRepository,
         syncPusher,
         viewModelScope,
         ioDispatcher,
+        logger,
     )
+    val deletingImageIds: StateFlow<Set<Long>> = caseMediaManager.deletingImageIds
 
     private val isSavingWorksite = MutableStateFlow(false)
     val isSaving = combine(
@@ -784,9 +789,8 @@ class ViewCaseViewModel @Inject constructor(
         }
     }
 
-    override fun onDeletePhoto(id: Long) {
-        // TODO
-        logger.logDebug("Delete photo $id")
+    override fun onDeleteImage(image: CaseImage) {
+        caseMediaManager.deleteImage(image.id, image.isNetworkImage)
     }
 
     // KeyResourceTranslator

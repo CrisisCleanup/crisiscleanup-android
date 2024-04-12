@@ -876,6 +876,7 @@ private fun CasePhotosView(
 ) {
     val photos by viewModel.beforeAfterPhotos.collectAsStateWithLifecycle()
     val syncingWorksiteImage by viewModel.syncingWorksiteImage.collectAsStateWithLifecycle()
+    val deletingImageIds by viewModel.deletingImageIds.collectAsStateWithLifecycle()
 
     val onUpdateImageCategory = remember(viewModel) {
         { imageCategory: ImageCategory ->
@@ -889,6 +890,7 @@ private fun CasePhotosView(
         setEnablePagerScroll,
         photos,
         syncingWorksiteImage,
+        deletingImageIds,
         onUpdateImageCategory,
         viewHeaderTitle,
         onPhotoSelect = onPhotoSelect,

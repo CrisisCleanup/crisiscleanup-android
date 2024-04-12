@@ -3,9 +3,12 @@ package com.crisiscleanup.feature.caseeditor
 import android.net.Uri
 import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.PermissionStatus
+import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.data.repository.LocalImageRepository
+import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksiteImageRepository
+import com.crisiscleanup.core.model.data.CaseImage
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -25,19 +28,24 @@ internal interface CaseCameraMediaManager {
     fun onMediaSelected(uris: List<Uri>)
     fun takePhoto(): Boolean
     fun continueTakePhoto(): Boolean
-    fun onDeletePhoto(id: Long)
+    fun onDeleteImage(image: CaseImage)
 }
 
 internal class CaseMediaManager(
     private val permissionManager: PermissionManager,
-    localImageRepository: LocalImageRepository,
+    private val localImageRepository: LocalImageRepository,
     private val worksiteImageRepository: WorksiteImageRepository,
+    private val worksiteChangeRepository: WorksiteChangeRepository,
     private val syncPusher: SyncPusher,
     private val viewModelScope: CoroutineScope,
     private val ioDispatcher: CoroutineDispatcher,
+    private val logger: AppLogger,
 ) {
     val continueTakePhotoGate = AtomicBoolean(false)
     val isSavingMedia = MutableStateFlow(false)
+
+    private val deletingImageIdsCache = mutableSetOf<Long>()
+    val deletingImageIds = MutableStateFlow<Set<Long>>(emptySet())
 
     val syncingWorksiteImage = localImageRepository.syncingWorksiteImage
         .stateIn(
@@ -96,5 +104,41 @@ internal class CaseMediaManager(
                 isSavingMedia.value = false
             }
         }
+    }
+
+    fun deleteImage(
+        imageId: Long,
+        isNetworkImage: Boolean,
+    ): Boolean {
+        synchronized(deletingImageIdsCache) {
+            if (deletingImageIds.value.contains(imageId)) {
+                return false
+            }
+            deletingImageIdsCache.add(imageId)
+            deletingImageIds.value = deletingImageIdsCache
+        }
+
+        viewModelScope.launch(ioDispatcher) {
+            try {
+                if (isNetworkImage) {
+                    val worksiteId = worksiteChangeRepository.saveDeletePhoto(imageId)
+                    if (worksiteId > 0) {
+                        syncPusher.appPushWorksite(worksiteId)
+                    }
+                } else {
+                    localImageRepository.deleteLocalImage(imageId)
+                }
+            } catch (e: Exception) {
+                // TODO Show error
+                logger.logException(e)
+            } finally {
+                synchronized(deletingImageIdsCache) {
+                    deletingImageIdsCache.remove(imageId)
+                    deletingImageIds.value = deletingImageIdsCache
+                }
+            }
+        }
+
+        return true
     }
 }

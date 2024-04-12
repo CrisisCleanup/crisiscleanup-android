@@ -141,10 +141,13 @@ class CreateEditCaseViewModel @Inject constructor(
         permissionManager,
         localImageRepository,
         worksiteImageRepository,
+        worksiteChangeRepository,
         syncPusher,
         viewModelScope,
         ioDispatcher,
+        logger,
     )
+    val deletingImageIds: StateFlow<Set<Long>> = caseMediaManager.deletingImageIds
 
     val navigateBack = mutableStateOf(false)
     val promptUnsavedChanges = mutableStateOf(false)
@@ -860,9 +863,12 @@ class CreateEditCaseViewModel @Inject constructor(
         }
     }
 
-    override fun onDeletePhoto(id: Long) {
-        // TODO
-        logger.logDebug("Delete photo $id")
+    override fun onDeleteImage(image: CaseImage) {
+        if (isCreateWorksite) {
+            worksiteImageRepository.deleteNewWorksiteImage(image.imageUri)
+        } else {
+            caseMediaManager.deleteImage(image.id, image.isNetworkImage)
+        }
     }
 }
 

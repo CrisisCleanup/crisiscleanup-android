@@ -589,6 +589,7 @@ private fun LazyListScope.photosSection(
             }
 
             val photos by viewModel.beforeAfterPhotos.collectAsStateWithLifecycle()
+            val deletingImageIds by viewModel.deletingImageIds.collectAsStateWithLifecycle()
             val syncingWorksiteImage by viewModel.syncingWorksiteImage.collectAsStateWithLifecycle()
 
             val onUpdateImageCategory = remember(viewModel) {
