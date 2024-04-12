@@ -31,9 +31,6 @@ interface LocalImageDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertIgnore(image: WorksiteLocalImageEntity): Long
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insertIgnore(images: Collection<WorksiteLocalImageEntity>)
-
     @Transaction
     @Query("SELECT uri FROM worksite_local_images WHERE id=:id")
     fun streamLocalImageUri(id: Long): Flow<String?>

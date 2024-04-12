@@ -10,6 +10,7 @@ import com.crisiscleanup.core.model.data.asCaseImage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 
 internal fun processWorksiteFilesNotes(
@@ -49,3 +50,19 @@ internal data class CaseImagesNotes(
     val localImages: List<CaseImage>,
     val notes: List<WorksiteNote>,
 )
+
+internal fun Flow<List<CaseImage>>.mapToCategoryLookup() = map { images ->
+    val lookup = mutableMapOf(
+        ImageCategory.Before to mutableListOf<CaseImage>(),
+        ImageCategory.After to mutableListOf(),
+    )
+    images.forEach { image ->
+        val category = if (image.tag == ImageCategory.Before.literal) {
+            ImageCategory.Before
+        } else {
+            ImageCategory.After
+        }
+        lookup[category]!!.add(image)
+    }
+    lookup
+}

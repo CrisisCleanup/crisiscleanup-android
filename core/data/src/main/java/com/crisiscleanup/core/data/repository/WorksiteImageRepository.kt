@@ -10,7 +10,8 @@ import android.provider.MediaStore
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
-import com.crisiscleanup.core.database.dao.LocalImageDao
+import com.crisiscleanup.core.data.model.asEntity
+import com.crisiscleanup.core.database.dao.LocalImageDaoPlus
 import com.crisiscleanup.core.database.dao.WorksiteDao
 import com.crisiscleanup.core.database.model.PopulatedWorksiteFiles
 import com.crisiscleanup.core.database.model.toCaseImages
@@ -23,17 +24,19 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.mapLatest
 import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
 import javax.inject.Singleton
 
 interface WorksiteImageRepository {
     val newPhotoUri: Uri?
 
+    val hasNewWorksiteImages: Boolean
+
     fun setUriFileAccessPermissions(uri: Uri)
 
     fun clearNewWorksiteImages()
 
+    fun streamNewWorksiteImages(): Flow<List<CaseImage>>
     fun streamWorksiteImages(worksiteId: Long): Flow<List<CaseImage>>
 
     suspend fun queueWorksiteImage(
@@ -48,13 +51,14 @@ interface WorksiteImageRepository {
 @Singleton
 class OfflineFirstWorksiteImageRepository @Inject constructor(
     private val worksiteDao: WorksiteDao,
-    private val localImageDao: LocalImageDao,
+    private val localImageDaoPlus: LocalImageDaoPlus,
     private val localImageRepository: LocalImageRepository,
     private val contentResolver: ContentResolver,
     @Logger(CrisisCleanupLoggers.Media) private val logger: AppLogger,
 ) : WorksiteImageRepository {
     private val newWorksiteImagesFlow = MutableStateFlow(emptyList<WorksiteLocalImage>())
-    private val newWorksiteImagesLock = AtomicLong()
+    private var newWorksiteImagesCache = mutableMapOf<String, WorksiteLocalImage>()
+    private val newWorksiteImagesLock = Object()
 
     override val newPhotoUri: Uri?
         @SuppressLint("SimpleDateFormat")
@@ -72,6 +76,9 @@ class OfflineFirstWorksiteImageRepository @Inject constructor(
             )
         }
 
+    override val hasNewWorksiteImages: Boolean
+        get() = newWorksiteImagesCache.isNotEmpty()
+
     override fun setUriFileAccessPermissions(uri: Uri) {
         // TODO v29 fails to set access permission
         //      Must inform user file uploads will not work
@@ -85,20 +92,18 @@ class OfflineFirstWorksiteImageRepository @Inject constructor(
 
     override fun clearNewWorksiteImages() {
         synchronized(newWorksiteImagesLock) {
+            newWorksiteImagesCache = mutableMapOf()
             newWorksiteImagesFlow.value = emptyList()
         }
     }
 
-    override fun streamWorksiteImages(worksiteId: Long): Flow<List<CaseImage>> {
-        if (worksiteId == EmptyWorksite.id) {
-            return newWorksiteImagesFlow.mapLatest {
-                it.map(WorksiteLocalImage::asCaseImage)
-            }
-        }
-
-        return worksiteDao.streamWorksiteFiles(worksiteId)
-            .mapLatest(PopulatedWorksiteFiles::toCaseImages)
+    override fun streamNewWorksiteImages() = newWorksiteImagesFlow.mapLatest {
+        it.map(WorksiteLocalImage::asCaseImage)
     }
+
+    override fun streamWorksiteImages(worksiteId: Long) =
+        worksiteDao.streamWorksiteFiles(worksiteId)
+            .mapLatest(PopulatedWorksiteFiles::toCaseImages)
 
     override suspend fun queueWorksiteImage(
         worksiteId: Long,
@@ -128,38 +133,33 @@ class OfflineFirstWorksiteImageRepository @Inject constructor(
             )
             if (worksiteId == EmptyWorksite.id) {
                 synchronized(newWorksiteImagesLock) {
-                    newWorksiteImagesFlow.value =
-                        newWorksiteImagesFlow.value.toMutableList().apply {
-                            add(localWorksiteImage)
-                        }
+                    newWorksiteImagesCache[localWorksiteImage.uri] = localWorksiteImage
+                    newWorksiteImagesFlow.value = newWorksiteImagesCache.values.toList()
                 }
             } else {
                 localImageRepository.save(localWorksiteImage)
-                return true
             }
+            return true
         }
 
         return false
     }
 
     override suspend fun transferNewWorksiteImages(worksiteId: Long) {
-        var images: List<WorksiteLocalImage> = emptyList()
+        var images: List<WorksiteLocalImage>
         synchronized(newWorksiteImagesLock) {
-            if (newWorksiteImagesLock.get() == worksiteId) {
-                images = newWorksiteImagesFlow.value
-            }
+            images = newWorksiteImagesCache.values.toList()
         }
 
-        // TODO Save images as local images
-        logger.logDebug("Transfer images to local $images")
-//        val copyImages = images.map { it.copy(worksiteId = worksiteId) }
-//        val entityImages = copyImages.map(WorksiteLocalImage::asEntity)
-//        localImageDao.insertIgnore(entityImages)
+        try {
+            val copyImages = images.map { it.copy(worksiteId = worksiteId) }
+            val entityImages = copyImages.map(WorksiteLocalImage::asEntity)
+            // TODO Write test
+            localImageDaoPlus.upsertLocalImages(entityImages)
 
-        synchronized(newWorksiteImagesLock) {
-            if (newWorksiteImagesLock.compareAndSet(worksiteId, 0L)) {
-                newWorksiteImagesFlow.value = emptyList()
-            }
+            clearNewWorksiteImages()
+        } catch (e: Exception) {
+            logger.logException(e)
         }
     }
 }

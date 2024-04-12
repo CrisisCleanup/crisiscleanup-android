@@ -605,6 +605,7 @@ private fun LazyListScope.photosSection(
                 syncingWorksiteImage,
                 onUpdateImageCategory,
                 viewHeaderTitle,
+                360.dp,
             ) {
                 // TODO Open for viewing and deleting. Including local
             }

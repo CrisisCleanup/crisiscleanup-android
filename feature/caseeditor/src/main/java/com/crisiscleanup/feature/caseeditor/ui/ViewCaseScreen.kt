@@ -891,7 +891,7 @@ private fun CasePhotosView(
         syncingWorksiteImage,
         onUpdateImageCategory,
         viewHeaderTitle,
-        onPhotoSelect,
+        onPhotoSelect = onPhotoSelect,
     )
 }
 

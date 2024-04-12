@@ -37,6 +37,7 @@ import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
 import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
+import com.crisiscleanup.core.model.data.CaseImage
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.ImageCategory
@@ -64,7 +65,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -116,6 +116,10 @@ class CreateEditCaseViewModel @Inject constructor(
     private var worksiteIdArg = caseEditorArgs.worksiteId
     private val isCreateWorksite: Boolean
         get() = worksiteIdArg == null
+
+    private val hasNewWorksitePhotosImages: Boolean
+        get() = caseEditorArgs.worksiteId == null &&
+            worksiteImageRepository.hasNewWorksiteImages
 
     val headerTitle = MutableStateFlow("")
 
@@ -210,6 +214,10 @@ class CreateEditCaseViewModel @Inject constructor(
         changingIncidentWorksite = incidentChangeData?.worksite ?: EmptyWorksite
 
         editableWorksiteProvider.reset(incidentIdIn)
+
+        if (isCreateWorksite) {
+            worksiteImageRepository.clearNewWorksiteImages()
+        }
 
         dataLoader = CaseEditorDataLoader(
             isCreateWorksite,
@@ -405,23 +413,19 @@ class CreateEditCaseViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    private val filesNotes = processWorksiteFilesNotes(
-        editableWorksiteProvider.editableWorksite,
-        viewState,
-    )
-    val beforeAfterPhotos = viewState.flatMapLatest { state ->
-        state.asCaseData()?.let { caseData ->
-            caseData.localWorksite?.worksite?.let { worksite ->
-                if (worksite.isNew) {
-                    // TODO Local photos
-                }
-            }
-        }
+    private val photosLookup = if (isCreateWorksite) {
+        worksiteImageRepository.streamNewWorksiteImages().mapToCategoryLookup()
+    } else {
+        val filesNotes = processWorksiteFilesNotes(
+            editableWorksiteProvider.editableWorksite,
+            viewState,
+        )
         organizeBeforeAfterPhotos(filesNotes)
     }
+    val beforeAfterPhotos = photosLookup
         .stateIn(
             scope = viewModelScope,
-            initialValue = emptyMap(),
+            initialValue = emptyMap<ImageCategory, List<CaseImage>>(),
             started = SharingStarted.WhileSubscribed(),
         )
 
@@ -584,6 +588,13 @@ class CreateEditCaseViewModel @Inject constructor(
                 val isIncidentChange = saveIncidentId != EmptyIncident.id &&
                     saveIncidentId != worksite.incidentId
                 if (worksite == initialWorksite && !isIncidentChange) {
+                    if (hasNewWorksitePhotosImages) {
+                        propertyEditor?.propertyInputData?.let {
+                            setInvalidSection(0, it)
+                        }
+                        return@launch
+                    }
+
                     if (backOnSuccess) {
                         navigateBack.value = true
                     }
@@ -637,7 +648,7 @@ class CreateEditCaseViewModel @Inject constructor(
                 )
                 val worksiteId = worksiteIdArg!!
 
-                if (initialWorksite.isNew) {
+                if (hasNewWorksitePhotosImages) {
                     worksiteImageRepository.transferNewWorksiteImages(worksiteId)
                 }
 
@@ -658,9 +669,7 @@ class CreateEditCaseViewModel @Inject constructor(
                     navigateBack.value = true
                 }
             } catch (e: Exception) {
-                logger.logException(e)
-
-                // TODO Show dialog save failed. Try again. If still fails seek help.
+                onSaveFail(e)
             } finally {
                 synchronized(isSavingWorksite) {
                     isSavingWorksite.value = false
@@ -804,6 +813,11 @@ class CreateEditCaseViewModel @Inject constructor(
                 promptUnsavedChanges.value = true
                 return true
             }
+
+            if (hasNewWorksitePhotosImages) {
+                promptUnsavedChanges.value = true
+                return true
+            }
         }
 
         return false
@@ -831,18 +845,12 @@ class CreateEditCaseViewModel @Inject constructor(
 
     override fun onMediaSelected(uri: Uri, isFileSelected: Boolean) {
         tryGetEditorState()?.let { caseData ->
-            val worksite = caseData.worksite
-            if (worksite.isNew) {
-                logger.logDebug("Media selected $isFileSelected $uri")
-                // TODO Take proper action
-            } else {
-                caseMediaManager.onMediaSelected(
-                    worksite.id,
-                    addImageCategory.literal,
-                    uri,
-                    isFileSelected,
-                ) { e -> onSaveFail(e, true) }
-            }
+            caseMediaManager.onMediaSelected(
+                caseData.worksite.id,
+                addImageCategory.literal,
+                uri,
+                isFileSelected,
+            ) { e -> onSaveFail(e, true) }
         }
     }
 

@@ -6,6 +6,7 @@ import com.crisiscleanup.core.common.PermissionStatus
 import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.data.repository.LocalImageRepository
 import com.crisiscleanup.core.data.repository.WorksiteImageRepository
+import com.crisiscleanup.core.model.data.EmptyWorksite
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -85,7 +86,7 @@ internal class CaseMediaManager(
                     uri,
                     addImageCategory,
                 )
-                if (isQueued) {
+                if (isQueued && worksiteId != EmptyWorksite.id) {
                     syncPusher.scheduleSyncMedia()
                 }
             } catch (e: Exception) {

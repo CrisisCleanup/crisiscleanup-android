@@ -78,6 +78,7 @@ internal fun CasePhotoImageView(
     syncingWorksiteImage: Long,
     onUpdateImageCategory: (ImageCategory) -> Unit,
     viewHeaderTitle: String,
+    maxHeight: Dp = 480.dp,
     onPhotoSelect: (ViewImageArgs) -> Unit = { _ -> },
 ) {
     var showCameraMediaSelect by remember { mutableStateOf(false) }
@@ -90,7 +91,7 @@ internal fun CasePhotoImageView(
     var isShortScreen by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier
-            .sizeIn(maxHeight = 480.dp)
+            .sizeIn(maxHeight = maxHeight)
             .fillMaxHeight()
             .onGloballyPositioned {
                 isShortScreen = it.size.height.dp < 720.dp
@@ -293,7 +294,7 @@ internal fun PhotosSection(
                         )
                         // TODO Common dimensions
                         val translator = LocalAppTranslator.current
-                        if (syncingWorksiteImage == photo.id) {
+                        if (syncingWorksiteImage != 0L && syncingWorksiteImage == photo.id) {
                             Surface(
                                 modifier = Modifier
                                     .align(Alignment.Center)
