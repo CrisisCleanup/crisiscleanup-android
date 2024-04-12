@@ -784,6 +784,11 @@ class ViewCaseViewModel @Inject constructor(
         }
     }
 
+    override fun onDeletePhoto(id: Long) {
+        // TODO
+        logger.logDebug("Delete photo $id")
+    }
+
     // KeyResourceTranslator
 
     override val translationCount = translator.translationCount

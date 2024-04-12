@@ -7,10 +7,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
@@ -20,6 +22,8 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
@@ -36,9 +40,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -46,6 +52,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toSize
 import coil.compose.AsyncImage
 import com.crisiscleanup.core.appnav.ViewImageArgs
 import com.crisiscleanup.core.common.urlEncode
@@ -56,6 +63,7 @@ import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
+import com.crisiscleanup.core.designsystem.theme.optionItemHeight
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.designsystem.theme.primaryBlueOneTenthColor
 import com.crisiscleanup.core.model.data.CaseImage
@@ -89,6 +97,11 @@ internal fun CasePhotoImageView(
         ImageCategory.After to t("caseForm.after_photos"),
     )
     var isShortScreen by remember { mutableStateOf(false) }
+    val onDeletePhoto = remember(cameraMediaManager) {
+        { photoId: Long ->
+            cameraMediaManager.onDeletePhoto(photoId)
+        }
+    }
     Column(
         modifier = Modifier
             .sizeIn(maxHeight = maxHeight)
@@ -117,6 +130,7 @@ internal fun CasePhotoImageView(
                         onUpdateImageCategory(imageCategory)
                         showCameraMediaSelect = true
                     },
+                    onDeletePhoto = onDeletePhoto,
                     onPhotoSelect = { image: CaseImage ->
                         with(image) {
                             val viewImageArgs = ViewImageArgs(
@@ -195,6 +209,29 @@ private fun AddMediaView(
 }
 
 @Composable
+private fun SurfaceIcon(
+    imageVector: ImageVector,
+    color: Color,
+    modifier: Modifier = Modifier,
+    iconSize: Dp = 24.dp,
+    iconPadding: Dp = 16.dp,
+    contentDescription: String? = null,
+) {
+    Surface(
+        modifier = modifier.clip(CircleShape),
+        color = color,
+    ) {
+        Icon(
+            modifier = Modifier
+                .size(iconSize)
+                .padding(iconPadding),
+            imageVector = imageVector,
+            contentDescription = contentDescription,
+        )
+    }
+}
+
+@Composable
 internal fun PhotosSection(
     title: String,
     modifier: Modifier = Modifier,
@@ -203,6 +240,7 @@ internal fun PhotosSection(
     photos: List<CaseImage> = emptyList(),
     syncingWorksiteImage: Long = 0L,
     onAddPhoto: () -> Unit = {},
+    onDeletePhoto: (Long) -> Unit = {},
     onPhotoSelect: (CaseImage) -> Unit = {},
     setEnableParentScroll: (Boolean) -> Unit = {},
     addActionSize: Dp = 128.dp,
@@ -257,7 +295,6 @@ internal fun PhotosSection(
         ) { index ->
             when (index) {
                 categoryTitleIndex -> {
-                    // TODO Refactor duplicate code
                     Text(
                         title,
                         listItemModifier,
@@ -279,9 +316,18 @@ internal fun PhotosSection(
                 }
 
                 else -> {
+                    val t = LocalAppTranslator.current
                     val photoIndex = index - photoOffsetIndex
                     val photo = photos[photoIndex]
-                    Box {
+                    val isSyncing = syncingWorksiteImage != 0L && syncingWorksiteImage == photo.id
+                    val halfWhite = Color.White.copy(alpha = 0.5f)
+
+                    var contentSize by remember { mutableStateOf(Size.Zero) }
+                    Box(
+                        Modifier.onGloballyPositioned {
+                            contentSize = it.size.toSize()
+                        },
+                    ) {
                         AsyncImage(
                             model = photo.thumbnailUri.ifBlank { photo.imageUri },
                             modifier = Modifier
@@ -292,42 +338,98 @@ internal fun PhotosSection(
                             contentDescription = photo.title,
                             contentScale = ContentScale.Crop,
                         )
-                        // TODO Common dimensions
-                        val translator = LocalAppTranslator.current
-                        if (syncingWorksiteImage != 0L && syncingWorksiteImage == photo.id) {
-                            Surface(
-                                modifier = Modifier
+                        // TODO Common dimensions where defined
+                        if (isSyncing) {
+                            SurfaceIcon(
+                                CrisisCleanupIcons.CloudSync,
+                                Color.White.copy(alpha = 0.8f),
+                                Modifier
                                     .align(Alignment.Center)
                                     .clip(CircleShape),
-                                color = (Color.White.copy(alpha = 0.8f)),
-                            ) {
-                                Icon(
-                                    modifier = Modifier
-                                        .size(64.dp)
-                                        .padding(16.dp),
-                                    imageVector = CrisisCleanupIcons.CloudSync,
-                                    contentDescription = translator("info.is_syncing"),
-                                )
-                            }
+                                iconSize = 64.dp,
+                                contentDescription = t("info.is_syncing"),
+                            )
                         } else if (!photo.isNetworkImage) {
-                            Surface(
-                                modifier = Modifier
+                            SurfaceIcon(
+                                CrisisCleanupIcons.Cloud,
+                                halfWhite,
+                                Modifier
                                     .align(Alignment.TopEnd)
                                     .padding(8.dp)
-                                    .clip(CircleShape),
-                                color = (Color.White.copy(alpha = 0.5f)),
-                            ) {
-                                Icon(
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                        .padding(4.dp),
-                                    imageVector = CrisisCleanupIcons.Cloud,
-                                    contentDescription = translator("info.awaiting_cloud_sync"),
-                                )
-                            }
+                                    .padding(end = 36.dp),
+                                iconPadding = 4.dp,
+                                contentDescription = t("info.awaiting_cloud_sync"),
+                            )
+                        }
+
+                        if (!isSyncing) {
+                            val onDelete = remember(photo) { { onDeletePhoto(photo.id) } }
+                            RowImageContextMenu(
+                                contentSize,
+                                halfWhite,
+                                onDelete = onDelete,
+                            )
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun BoxScope.RowImageContextMenu(
+    contentSize: Size,
+    actionBackgroundColor: Color,
+    enabled: Boolean = true,
+    onDelete: () -> Unit = {},
+) {
+    val t = LocalAppTranslator.current
+    var showDropdown by remember { mutableStateOf(false) }
+    Box(
+        Modifier
+            .align(Alignment.TopEnd),
+    ) {
+        Box(
+            Modifier
+                .size(48.dp)
+                .offset(x = 4.dp, y = (-4).dp)
+                .clip(CircleShape)
+                .clickable(
+                    enabled = enabled,
+                    onClick = { showDropdown = !showDropdown },
+                ),
+        ) {
+            SurfaceIcon(
+                CrisisCleanupIcons.MoreVert,
+                actionBackgroundColor,
+                Modifier
+                    .align(Alignment.Center)
+                    .padding(8.dp),
+                iconPadding = 4.dp,
+                contentDescription = t("actions.show_more"),
+            )
+        }
+
+        if (showDropdown) {
+            DropdownMenu(
+                modifier = Modifier
+                    .width(
+                        with(LocalDensity.current) {
+                            contentSize.width.toDp()
+                        },
+                    ),
+                expanded = showDropdown,
+                onDismissRequest = { showDropdown = false },
+            ) {
+                DropdownMenuItem(
+                    modifier = Modifier.optionItemHeight(),
+                    text = { Text(t("actions.delete")) },
+                    onClick = {
+                        onDelete()
+                        showDropdown = false
+                    },
+                )
             }
         }
     }

@@ -25,6 +25,7 @@ internal interface CaseCameraMediaManager {
     fun onMediaSelected(uris: List<Uri>)
     fun takePhoto(): Boolean
     fun continueTakePhoto(): Boolean
+    fun onDeletePhoto(id: Long)
 }
 
 internal class CaseMediaManager(

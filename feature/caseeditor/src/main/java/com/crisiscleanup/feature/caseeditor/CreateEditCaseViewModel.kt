@@ -859,6 +859,11 @@ class CreateEditCaseViewModel @Inject constructor(
             onMediaSelected(it, true)
         }
     }
+
+    override fun onDeletePhoto(id: Long) {
+        // TODO
+        logger.logDebug("Delete photo $id")
+    }
 }
 
 sealed interface CaseEditorViewState {
