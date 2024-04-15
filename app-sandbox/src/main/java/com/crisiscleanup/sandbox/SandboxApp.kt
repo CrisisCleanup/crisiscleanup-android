@@ -26,11 +26,12 @@ import androidx.navigation.NavController
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupBackground
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
-import com.crisiscleanup.sandbox.navigation.CHIPS_ROUTE
+import com.crisiscleanup.sandbox.navigation.SINGLE_IMAGE_ROUTE
 import com.crisiscleanup.sandbox.navigation.SandboxNavHost
 import com.crisiscleanup.sandbox.navigation.navigateToBottomNav
 import com.crisiscleanup.sandbox.navigation.navigateToCheckboxes
 import com.crisiscleanup.sandbox.navigation.navigateToChips
+import com.crisiscleanup.sandbox.navigation.navigateToSingleImage
 
 @Composable
 fun SandboxApp(
@@ -61,7 +62,7 @@ fun SandboxApp(
                 ) {
                     SandboxNavHost(
                         appState.navController,
-                        CHIPS_ROUTE,
+                        SINGLE_IMAGE_ROUTE,
                     )
                 }
             }
@@ -87,6 +88,9 @@ fun RootRoute(navController: NavController) {
             }
             CrisisCleanupTextButton(text = "Chips") {
                 navController.navigateToChips()
+            }
+            CrisisCleanupTextButton(text = "Image") {
+                navController.navigateToSingleImage()
             }
         }
     }

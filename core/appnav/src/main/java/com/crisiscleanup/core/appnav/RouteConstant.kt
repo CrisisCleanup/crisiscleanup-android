@@ -46,6 +46,7 @@ object RouteConstant {
     const val CASE_HISTORY_ROUTE = "$VIEW_CASE_ROUTE/case_history"
 
     const val VIEW_IMAGE_ROUTE = "view_image"
+    const val WORKSITE_IMAGES_ROUTE = "worksite_images"
 
     const val ACCOUNT_RESET_PASSWORD_ROUTE = "account_reset_password_route"
 }

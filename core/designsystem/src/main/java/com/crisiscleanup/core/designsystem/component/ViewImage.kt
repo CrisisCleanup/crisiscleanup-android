@@ -135,10 +135,10 @@ fun ViewImageScreen(
                 )
 
                 if (viewState is ViewImageViewState.Error) {
-                    val errorState = viewState
                     Text(
-                        errorState.message,
+                        viewState.message,
                         listItemModifier.systemBarsPadding(),
+                        color = Color.White,
                     )
                 }
             }
