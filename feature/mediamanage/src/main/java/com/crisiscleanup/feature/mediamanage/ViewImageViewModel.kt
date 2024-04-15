@@ -111,7 +111,6 @@ class ViewImageViewModel @Inject constructor(
                             logger.logDebug("Failed to load image $isOffline $isTokenInvalid $imageId $imageUrl")
 
                             // TODO Test all three states show correctly
-                            // TODO String res
                             val messageKey =
                                 if (isOffline.value) {
                                     "worksiteImages.connect_to_download_photo"

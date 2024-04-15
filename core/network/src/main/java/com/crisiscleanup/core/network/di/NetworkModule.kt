@@ -141,37 +141,35 @@ object NetworkModule {
     fun imageLoader(
         @ApplicationContext application: Context,
         appEnv: AppEnv,
-    ): ImageLoader {
-        val callFactory = OkHttpClient.Builder()
-            .addInterceptor(
-                HttpLoggingInterceptor()
-                    .apply {
-                        if (BuildConfig.DEBUG) {
-                            setLevel(HttpLoggingInterceptor.Level.BODY)
-                        }
-                    },
-            )
-            .build()
-
-        return ImageLoader.Builder(application)
-            .callFactory(callFactory)
-            .components {
-                add(SvgDecoder.Factory())
-            }
-            .diskCache {
-                DiskCache.Builder()
-                    .directory(application.cacheDir.resolve("image_cache"))
-                    .maxSizePercent(0.02)
+    ) = ImageLoader.Builder(application)
+        .components {
+            add(SvgDecoder.Factory())
+        }
+        .diskCache {
+            DiskCache.Builder()
+                .directory(application.cacheDir.resolve("image_cache"))
+                .maxSizePercent(0.02)
+                .build()
+        }
+        // Assume most content images are versioned urls
+        // but some problematic images are fetching each time
+        .respectCacheHeaders(false)
+        .apply {
+            if (BuildConfig.DEBUG) {
+                val callFactory = OkHttpClient.Builder()
+                    .addInterceptor(
+                        HttpLoggingInterceptor()
+                            .apply {
+                                setLevel(HttpLoggingInterceptor.Level.BODY)
+                            },
+                    )
                     .build()
+                callFactory(callFactory)
             }
-            // Assume most content images are versioned urls
-            // but some problematic images are fetching each time
-            .respectCacheHeaders(false)
-            .apply {
-                if (appEnv.isNotProduction) {
-                    logger(DebugLogger())
-                }
+
+            if (appEnv.isNotProduction) {
+                logger(DebugLogger())
             }
-            .build()
-    }
+        }
+        .build()
 }
