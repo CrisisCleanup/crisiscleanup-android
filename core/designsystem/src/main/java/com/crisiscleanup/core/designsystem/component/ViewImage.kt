@@ -39,9 +39,6 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.cardContainerColor
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
@@ -78,16 +75,9 @@ fun ViewImageScreen(
 ) {
     val isImageLoaded = viewState is ViewImageViewState.Image
     val overlayActions = isOverlayActions || !isImageLoaded
-    (LocalContext.current as? Activity)?.window?.let { window ->
-        with(WindowCompat.getInsetsController(window, window.decorView)) {
-            systemBarsBehavior =
-                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            if (isFullscreenMode) {
-                hide(WindowInsetsCompat.Type.systemBars())
-            } else {
-                show(WindowInsetsCompat.Type.systemBars())
-            }
-        }
+
+    if (isFullscreenMode) {
+        ConfigureFullscreenView()
     }
 
     Box(

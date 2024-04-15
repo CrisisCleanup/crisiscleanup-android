@@ -1,6 +1,5 @@
 package com.crisiscleanup.feature.mediamanage.ui
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,26 +15,14 @@ internal fun ViewImageRoute(
     viewModel: ViewImageViewModel = hiltViewModel(),
     onBack: () -> Unit = {},
 ) {
-    var isFullscreenMode by remember { mutableStateOf(true) }
     var isOverlayActions by remember { mutableStateOf(true) }
     val toggleActions = remember(viewModel) { { isOverlayActions = !isOverlayActions } }
-
-    val onBackRestoreFullscreen = remember(viewModel) {
-        {
-            isFullscreenMode = false
-            onBack()
-        }
-    }
-
-    BackHandler {
-        onBackRestoreFullscreen()
-    }
 
     val isDeleted by viewModel.isDeleted.collectAsStateWithLifecycle()
     // TODO Deleting shows white screen temporarily.
     //      Design a better transition as photo displays over black screen with optional toolbar.
     if (isDeleted) {
-        onBackRestoreFullscreen()
+        onBack()
     } else {
         val screenTitle = viewModel.translate(viewModel.screenTitle)
         val viewState by viewModel.viewState.collectAsStateWithLifecycle()
@@ -45,9 +32,9 @@ internal fun ViewImageRoute(
             screenTitle,
             viewState,
             isDeletable,
-            onBack = onBackRestoreFullscreen,
+            onBack = onBack,
             onDeleteImage = viewModel::deleteImage,
-            isFullscreenMode = isFullscreenMode,
+            isFullscreenMode = true,
             isOverlayActions = isOverlayActions,
             toggleActions = toggleActions,
             imageRotation = imageRotation,
