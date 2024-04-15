@@ -604,6 +604,7 @@ private fun LazyListScope.photosSection(
                 setEnablePagerScroll,
                 photos,
                 syncingWorksiteImage,
+                deletingImageIds,
                 onUpdateImageCategory,
                 viewHeaderTitle,
                 360.dp,
