@@ -5,7 +5,6 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -24,10 +23,12 @@ import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.LocalImageRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
+import com.crisiscleanup.core.designsystem.component.ViewImageViewState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -49,6 +50,7 @@ import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 
+@OptIn(FlowPreview::class)
 @HiltViewModel
 class ViewImageViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -242,15 +244,4 @@ class ViewImageViewModel @Inject constructor(
     fun rotateImage(rotateClockwise: Boolean) {
         imageRotation.value = (imageRotation.value + (if (rotateClockwise) 90 else -90)) % 360
     }
-}
-
-sealed interface ViewImageViewState {
-    data object Loading : ViewImageViewState
-    data class Image(
-        val image: ImageBitmap,
-    ) : ViewImageViewState
-
-    data class Error(
-        val message: String,
-    ) : ViewImageViewState
 }
