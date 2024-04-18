@@ -609,7 +609,7 @@ private fun LazyListScope.photosSection(
                 viewHeaderTitle,
                 360.dp,
             ) {
-                // TODO Open for viewing and deleting. Including local
+                // TODO Open for viewing and deleting. Including new or local/network
             }
         }
     }

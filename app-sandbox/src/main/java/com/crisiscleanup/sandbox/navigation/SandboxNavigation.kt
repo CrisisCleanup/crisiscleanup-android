@@ -36,6 +36,7 @@ fun NavController.navigateToSingleImage() {
 @Composable
 fun SandboxNavHost(
     navController: NavHostController,
+    onBack: () -> Unit,
     startDestination: String = ROOT_ROUTE,
 ) {
     NavHost(
@@ -59,7 +60,7 @@ fun SandboxNavHost(
         }
 
         composable(SINGLE_IMAGE_ROUTE) {
-            SingleImageRoute()
+            SingleImageRoute(onBack)
         }
     }
 }

@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil.ImageLoader
 import coil.request.ImageRequest
+import coil.size.Precision
 import com.crisiscleanup.core.designsystem.component.ViewImageViewState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -26,9 +27,9 @@ class SingleImageViewModel @Inject constructor(
 ) : ViewModel() {
     val imageRotation = MutableStateFlow(0)
 
-    // Renew access if expired
+    // Replace with any hosted image
     private val imageUrl =
-        "https://cdn.crisiscleanup.org/20230830_144035-724b5cb26a714ff2b74b84ecc32b8f4c.jpg?Expires=1713207624&Signature=QkU-uPy0tDuc66HW~GCMoU1-TqpLNRouPxicJNwuZfDFJw5YMEHnKgASS3Bvsj4tsL1vvEN3BQvEGILhUBur4q98cGUqJP2yqLIu43~ncQFfqseGbX1JzOClqD6J58h0Ei6plTWMCCKF0Ajr~7JBH4jMBdI6EROCfY1dJ-OZhDhsHg4HlWRyrJ96vqUAiBugC5USAeJfl47CXMR37eRslXeoi6Ko-siMUPqcPu5LYBz~Bc4MeOEyaHi07Dbn73xU2sxvQDqGIhPEPQLhCBRo3f1d1izHy4FUVZYFULTCzH1Ac-UjHr9Rf8VywD93kgfKN6h4HgeewbDcsMpG5XH3tw__&Key-Pair-Id=K1ZA20TYD9PJA4"
+        "http://10.0.2.26:8080/rectangles/rectangle-1200-2800-128-90CAF91A237E-32-000.png"
 
     private val imageState =
         flowOf(imageUrl)
@@ -36,6 +37,8 @@ class SingleImageViewModel @Inject constructor(
                 callbackFlow {
                     val request = ImageRequest.Builder(context)
                         .data(imageUrl)
+                        .size(Int.MAX_VALUE)
+                        .precision(Precision.INEXACT)
                         .target(
                             onStart = {
                                 channel.trySend(ViewImageViewState.Loading)

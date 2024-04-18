@@ -57,11 +57,18 @@ fun SandboxApp(
                         .fillMaxSize()
                         .padding(padding)
                         .consumeWindowInsets(padding)
-                        .windowInsetsPadding(WindowInsets.safeDrawing),
+                        .windowInsetsPadding(
+                            if (appState.isFullscreenRoute) {
+                                WindowInsets(0, 0, 0, 0)
+                            } else {
+                                WindowInsets.safeDrawing
+                            },
+                        ),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     SandboxNavHost(
                         appState.navController,
+                        appState::onBack,
                         SINGLE_IMAGE_ROUTE,
                     )
                 }

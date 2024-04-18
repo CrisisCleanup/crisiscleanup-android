@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil.ImageLoader
 import coil.request.ImageRequest
+import coil.size.Precision
 import com.crisiscleanup.core.appnav.ViewImageArgs
 import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.NetworkMonitor
@@ -96,6 +97,8 @@ class ViewImageViewModel @Inject constructor(
             callbackFlow<ViewImageViewState> {
                 val request = ImageRequest.Builder(context)
                     .data(imageUrl)
+                    .size(Int.MAX_VALUE)
+                    .precision(Precision.INEXACT)
                     .target(
                         onStart = {
                             channel.trySend(ViewImageViewState.Loading)
