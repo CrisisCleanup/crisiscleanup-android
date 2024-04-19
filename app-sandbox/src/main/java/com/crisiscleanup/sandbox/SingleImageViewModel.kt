@@ -33,10 +33,10 @@ class SingleImageViewModel @Inject constructor(
 
     private val imageState =
         flowOf(imageUrl)
-            .flatMapLatest { imageUrl ->
+            .flatMapLatest { url ->
                 callbackFlow {
                     val request = ImageRequest.Builder(context)
-                        .data(imageUrl)
+                        .data(url)
                         .size(Int.MAX_VALUE)
                         .precision(Precision.INEXACT)
                         .target(
@@ -45,10 +45,10 @@ class SingleImageViewModel @Inject constructor(
                             },
                             onSuccess = { result ->
                                 val bitmap = (result as BitmapDrawable).bitmap.asImageBitmap()
-                                channel.trySend(ViewImageViewState.Image(bitmap))
+                                channel.trySend(ViewImageViewState.Image(url, bitmap))
                             },
                             onError = {
-                                val message = "Issue downloading image $imageUrl"
+                                val message = "Issue downloading image $url"
                                 channel.trySend(ViewImageViewState.Error(message))
                             },
                         )

@@ -9,6 +9,7 @@ import androidx.navigation.NavDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.crisiscleanup.sandbox.navigation.MULTI_IMAGE_ROUTE
 import com.crisiscleanup.sandbox.navigation.SINGLE_IMAGE_ROUTE
 import kotlinx.coroutines.CoroutineScope
 
@@ -37,9 +38,13 @@ class SandboxAppState(
         @Composable get() = navController
             .currentBackStackEntryAsState().value?.destination
 
+    private val fullscreenRoutes = setOf(
+        SINGLE_IMAGE_ROUTE,
+        MULTI_IMAGE_ROUTE,
+    )
     val isFullscreenRoute: Boolean
         @Composable get() {
             val route = currentDestination?.route ?: ""
-            return route.startsWith(SINGLE_IMAGE_ROUTE)
+            return fullscreenRoutes.contains(route)
         }
 }

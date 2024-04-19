@@ -105,7 +105,7 @@ class ViewImageViewModel @Inject constructor(
                         },
                         onSuccess = { result ->
                             val bitmap = (result as BitmapDrawable).bitmap.asImageBitmap()
-                            channel.trySend(ViewImageViewState.Image(bitmap))
+                            channel.trySend(ViewImageViewState.Image(imageUrl, bitmap))
                         },
                         onError = {
                             val isTokenInvalid =
@@ -142,7 +142,10 @@ class ViewImageViewModel @Inject constructor(
                         it?.let { parcel ->
                             val fileDescriptor = parcel.fileDescriptor
                             val bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor)
-                            return@mapLatest ViewImageViewState.Image(bitmap.asImageBitmap())
+                            return@mapLatest ViewImageViewState.Image(
+                                uriString!!,
+                                bitmap.asImageBitmap(),
+                            )
                         }
                     }
                 } catch (e: Exception) {

@@ -7,13 +7,21 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.calculateCentroid
+import androidx.compose.foundation.gestures.calculateCentroidSize
+import androidx.compose.foundation.gestures.calculatePan
+import androidx.compose.foundation.gestures.calculateRotation
+import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -34,20 +42,30 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
+import androidx.compose.ui.util.fastAny
+import androidx.compose.ui.util.fastForEach
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.cardContainerColor
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
+import kotlin.math.PI
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
 sealed interface ViewImageViewState {
+    data object None : ViewImageViewState
+
     data object Loading : ViewImageViewState
+
     data class Image(
+        val id: String,
         val image: ImageBitmap,
     ) : ViewImageViewState
 
@@ -70,7 +88,6 @@ fun ViewImageScreen(
     rotateImage: (Boolean) -> Unit = {},
 ) {
     val isImageLoaded = viewState is ViewImageViewState.Image
-    val overlayActions = isOverlayActions || !isImageLoaded
 
     if (isFullscreenMode) {
         ConfigureFullscreenView()
@@ -100,12 +117,12 @@ fun ViewImageScreen(
                         viewState,
                         contentSize,
                         imageRotation,
-                        toggleActions,
+                        onImageClick = toggleActions,
                     )
 
                     AnimatedVisibility(
                         modifier = Modifier.align(Alignment.BottomCenter),
-                        visible = overlayActions,
+                        visible = isOverlayActions,
                         enter = fadeIn(),
                         exit = fadeOut(),
                     ) {
@@ -117,36 +134,21 @@ fun ViewImageScreen(
             else -> {}
         }
 
-        AnimatedVisibility(
-            modifier = Modifier.align(Alignment.TopCenter),
-            visible = overlayActions,
-            enter = fadeIn(),
-            exit = fadeOut(),
-        ) {
-            // TODO Fill status bar space on OS29/30
-            Column {
-                TopBar(
-                    screenTitle,
-                    onBack = onBack,
-                    isDeletable = isDeletable,
-                    onDeleteImage = onDeleteImage,
-                )
-
-                if (viewState is ViewImageViewState.Error) {
-                    Text(
-                        viewState.message,
-                        listItemModifier.systemBarsPadding(),
-                        color = Color.White,
-                    )
-                }
-            }
-        }
+        val errorMessage = (viewState as? ViewImageViewState.Error)?.message
+        AnimatedImageTopBarError(
+            isOverlayActions || !isImageLoaded,
+            screenTitle,
+            onBack,
+            isDeletable,
+            onDeleteImage,
+            errorMessage,
+        )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TopBar(
+private fun ImageTopBar(
     screenTitle: String,
     isDeletable: Boolean,
     onBack: () -> Unit = {},
@@ -172,6 +174,41 @@ private fun TopBar(
     )
 }
 
+@Composable
+internal fun BoxScope.AnimatedImageTopBarError(
+    isVisible: Boolean,
+    screenTitle: String,
+    onBack: () -> Unit,
+    isDeletable: Boolean,
+    onDeleteImage: () -> Unit,
+    errorMessage: String?,
+) {
+    AnimatedVisibility(
+        modifier = Modifier.align(Alignment.TopCenter),
+        visible = isVisible,
+        enter = fadeIn(),
+        exit = fadeOut(),
+    ) {
+        // TODO Fill status bar space on OS29/30
+        Column {
+            ImageTopBar(
+                screenTitle,
+                onBack = onBack,
+                isDeletable = isDeletable,
+                onDeleteImage = onDeleteImage,
+            )
+
+            if (errorMessage?.isNotBlank() == true) {
+                Text(
+                    errorMessage,
+                    listItemModifier.systemBarsPadding(),
+                    color = Color.White,
+                )
+            }
+        }
+    }
+}
+
 private fun Float.snapToNearest(min: Float, max: Float) = if (this - min < max - this) min else max
 
 private fun capPanOffset(
@@ -192,11 +229,12 @@ private fun capPanOffset(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun DynamicImageView(
+internal fun DynamicImageView(
     imageData: ViewImageViewState.Image,
     fullSize: Size,
     rotationDegrees: Int = 0,
-    toggleActions: () -> Unit = {},
+    onImageClick: () -> Unit = {},
+    alwaysPan: Boolean = true,
 ) {
     val image = imageData.image
     val imageSize = Size(image.width.toFloat(), image.height.toFloat())
@@ -227,7 +265,7 @@ private fun DynamicImageView(
         modifier = Modifier
             .fillMaxSize()
             .combinedClickable(
-                onClick = toggleActions,
+                onClick = onImageClick,
                 onDoubleClick = {
                     with(imageScales) {
                         if (translation == Offset.Zero) {
@@ -244,18 +282,29 @@ private fun DynamicImageView(
                 },
             )
             .pointerInput(imageScales) {
-                // TODO Zoom about centroid
-                // TODO Determine velocity from pan and allow scroll drifting
-                detectTransformGestures { centroid, pan, zoom, _ ->
-                    scale = (scale * zoom).coerceIn(imageScales.minScale, imageScales.maxScale)
-                    translation = (translation + pan)
-                    val trueScale = scale * imageScales.fitScalePx
-                    translation = capPanOffset(
-                        orientedImageSize,
-                        trueScale,
-                        fullSize,
-                        translation,
-                    )
+                detectTransformGesturesTouchCountConsumer { touchCount, centroid, pan, zoom, _ ->
+                    val consumeGesture = alwaysPan || touchCount > 1 ||
+                        !(
+                            (scale == imageScales.fitScale || scale <= imageScales.minScale) &&
+                                zoom == 1f &&
+                                translation == Offset.Zero
+                            )
+
+                    if (consumeGesture) {
+                        // TODO Zoom about centroid
+                        // TODO Determine velocity from pan and allow scroll drifting
+                        scale = (scale * zoom).coerceIn(imageScales.minScale, imageScales.maxScale)
+                        translation = (translation + pan)
+                        val trueScale = scale * imageScales.fitScalePx
+                        translation = capPanOffset(
+                            orientedImageSize,
+                            trueScale,
+                            fullSize,
+                            translation,
+                        )
+                    }
+
+                    consumeGesture
                 }
             }
             .graphicsLayer(
@@ -271,8 +320,10 @@ private fun DynamicImageView(
 }
 
 @Composable
-private fun ImageActionBar(
+internal fun ImageActionBar(
     rotateImage: (Boolean) -> Unit,
+    showGridAction: Boolean = false,
+    onShowPhotos: () -> Unit = {},
 ) {
     Surface(
         modifier = listItemModifier,
@@ -283,6 +334,10 @@ private fun ImageActionBar(
         Row(
             horizontalArrangement = listItemSpacedBy,
         ) {
+            if (showGridAction) {
+                Box(Modifier.size(48.dp))
+            }
+
             Spacer(Modifier.weight(1f))
             CrisisCleanupIconButton(
                 imageVector = CrisisCleanupIcons.RotateCcw,
@@ -293,6 +348,13 @@ private fun ImageActionBar(
                 onClick = { rotateImage(true) },
             )
             Spacer(Modifier.weight(1f))
+
+            if (showGridAction) {
+                CrisisCleanupIconButton(
+                    imageVector = CrisisCleanupIcons.PhotoGrid,
+                    onClick = onShowPhotos,
+                )
+            }
         }
     }
 }
@@ -345,5 +407,82 @@ private data class RectangularScale(
 
             return RectangularScale(minScale, maxScale, fitScale, fillScale, fitScalePx)
         }
+    }
+}
+
+// Modified PointerInputScope.detectTransformGestures (2024-04)
+private suspend fun PointerInputScope.detectTransformGesturesTouchCountConsumer(
+    panZoomLock: Boolean = false,
+    onGestureConsumed: (
+        touchCount: Int,
+        centroid: Offset,
+        pan: Offset,
+        zoom: Float,
+        rotation: Float,
+    ) -> Boolean,
+) {
+    awaitEachGesture {
+        var rotation = 0f
+        var zoom = 1f
+        var pan = Offset.Zero
+        var pastTouchSlop = false
+        val touchSlop = viewConfiguration.touchSlop
+        var lockedToPanZoom = false
+
+        awaitFirstDown(requireUnconsumed = false)
+        do {
+            val event = awaitPointerEvent()
+            val canceled = event.changes.fastAny { it.isConsumed }
+            if (!canceled) {
+                val touchCount = event.changes.size
+                val zoomChange = event.calculateZoom()
+                val rotationChange = event.calculateRotation()
+                val panChange = event.calculatePan()
+
+                if (!pastTouchSlop) {
+                    zoom *= zoomChange
+                    rotation += rotationChange
+                    pan += panChange
+
+                    val centroidSize = event.calculateCentroidSize(useCurrent = false)
+                    val zoomMotion = abs(1 - zoom) * centroidSize
+                    val rotationMotion = abs(rotation * PI.toFloat() * centroidSize / 180f)
+                    val panMotion = pan.getDistance()
+
+                    if (zoomMotion > touchSlop ||
+                        rotationMotion > touchSlop ||
+                        panMotion > touchSlop
+                    ) {
+                        pastTouchSlop = true
+                        lockedToPanZoom = panZoomLock && rotationMotion < touchSlop
+                    }
+                }
+
+                if (pastTouchSlop) {
+                    val centroid = event.calculateCentroid(useCurrent = false)
+                    val effectiveRotation = if (lockedToPanZoom) 0f else rotationChange
+                    var consumeChanges = true
+                    if (effectiveRotation != 0f ||
+                        zoomChange != 1f ||
+                        panChange != Offset.Zero
+                    ) {
+                        consumeChanges = onGestureConsumed(
+                            touchCount,
+                            centroid,
+                            panChange,
+                            zoomChange,
+                            effectiveRotation,
+                        )
+                    }
+                    if (consumeChanges) {
+                        event.changes.fastForEach {
+                            if (it.positionChanged()) {
+                                it.consume()
+                            }
+                        }
+                    }
+                }
+            }
+        } while (!canceled && event.changes.fastAny { it.pressed })
     }
 }
