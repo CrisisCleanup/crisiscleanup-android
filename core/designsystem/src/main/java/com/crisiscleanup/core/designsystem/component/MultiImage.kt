@@ -17,6 +17,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -25,6 +26,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.toSize
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -37,10 +39,11 @@ fun MultiImageScreen(
     isFullscreenMode: Boolean = false,
     isOverlayActions: Boolean = false,
     toggleActions: () -> Unit = {},
+    pageToIndex: Int = -1,
     onImageIndexChange: (Int) -> Unit = {},
-    onDeleteImage: () -> Unit = {},
+    onDeleteImage: (String) -> Unit = {},
     imageRotation: Int = 0,
-    rotateImage: (Boolean) -> Unit = {},
+    rotateImage: (String, Boolean) -> Unit = { _, _ -> },
     showGridAction: Boolean = false,
     onShowPhotos: () -> Unit = {},
 ) {
@@ -73,13 +76,26 @@ fun MultiImageScreen(
             }
         }
 
+        val coroutineScope = rememberCoroutineScope()
+        LaunchedEffect(pageToIndex, pagerState) {
+            if (pageToIndex > 0) {
+                snapshotFlow { pagerState.pageCount }.collect { count ->
+                    if (pageToIndex in 1..<count) {
+                        coroutineScope.launch {
+                            pagerState.scrollToPage(pageToIndex)
+                        }
+                    }
+                }
+            }
+        }
+
         HorizontalPager(
             pagerState,
         ) { pagerIndex ->
             val isImageAtIndex = pagerIndex < imageIds.size &&
-                currentImageId == imageIds[pagerIndex]
+                    currentImageId == imageIds[pagerIndex]
             if (isImageAtIndex) {
-                CarouselImage(
+                LoadingImage(
                     contentSize,
                     viewState,
                     imageRotation,
@@ -97,15 +113,21 @@ fun MultiImageScreen(
         }
 
         val errorMessage = (viewState as? ViewImageViewState.Error)?.message
+        val deleteSpecificImage = remember(currentImageId) { { onDeleteImage(currentImageId) } }
         AnimatedImageTopBarError(
             isOverlayActions || !isImageLoaded,
             screenTitle,
             onBack,
             isDeletable,
-            onDeleteImage,
+            deleteSpecificImage,
             errorMessage,
         )
 
+        val rotateSpecificImage = remember(currentImageId) {
+            { rotateClockwise: Boolean ->
+                rotateImage(currentImageId, rotateClockwise)
+            }
+        }
         AnimatedVisibility(
             modifier = Modifier.align(Alignment.BottomCenter),
             visible = isOverlayActions || !isImageLoaded,
@@ -113,7 +135,7 @@ fun MultiImageScreen(
             exit = fadeOut(),
         ) {
             ImageActionBar(
-                rotateImage,
+                rotateSpecificImage,
                 showGridAction = showGridAction,
                 onShowPhotos = onShowPhotos,
             )
@@ -122,7 +144,7 @@ fun MultiImageScreen(
 }
 
 @Composable
-private fun BoxScope.CarouselImage(
+private fun BoxScope.LoadingImage(
     contentSize: Size,
     viewState: ViewImageViewState,
     imageRotation: Int = 0,

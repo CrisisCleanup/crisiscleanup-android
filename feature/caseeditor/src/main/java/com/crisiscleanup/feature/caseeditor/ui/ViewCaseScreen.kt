@@ -58,6 +58,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.appnav.ViewImageArgs
+import com.crisiscleanup.core.appnav.WorksiteImagesArgs
 import com.crisiscleanup.core.common.filterNotBlankTrim
 import com.crisiscleanup.core.commoncase.com.crisiscleanup.core.commoncase.ui.ExplainWrongLocationDialog
 import com.crisiscleanup.core.commoncase.model.addressQuery
@@ -136,7 +137,7 @@ internal fun EditExistingCaseRoute(
     onBackToCases: () -> Unit = {},
     onFullEdit: (ExistingWorksiteIdentifier) -> Unit = {},
     openTransferWorkType: () -> Unit = {},
-    openPhoto: (ViewImageArgs) -> Unit = { _ -> },
+    openPhoto: (WorksiteImagesArgs) -> Unit = { _ -> },
     openAddFlag: () -> Unit = {},
     openShareCase: () -> Unit = {},
     openCaseHistory: () -> Unit = {},
@@ -173,6 +174,11 @@ internal fun EditExistingCaseRoute(
     val isRailNav = !LocalLayoutProvider.current.isBottomNav
     Box {
         val worksite by viewModel.editableWorksite.collectAsStateWithLifecycle()
+        val openWorksiteImages = remember(worksite) {
+            { args: ViewImageArgs ->
+                openPhoto(args.toWorksiteImageArgs(worksite.id))
+            }
+        }
         Row {
             if (isRailNav) {
                 ViewCaseNav(
@@ -207,7 +213,7 @@ internal fun EditExistingCaseRoute(
                     tabTitles = tabTitles,
                     isBusy = isBusy,
                     copyToClipboard = copyToClipboard,
-                    openPhoto = openPhoto,
+                    openPhoto = openWorksiteImages,
                 )
             } else {
                 PortraitContent(
@@ -225,7 +231,7 @@ internal fun EditExistingCaseRoute(
                     isBusy = isBusy,
                     copyToClipboard = copyToClipboard,
                     onFullEdit = onFullEdit,
-                    openPhoto = openPhoto,
+                    openPhoto = openWorksiteImages,
                     openAddFlag = openAddFlag,
                     openShareCase = openShareCase,
                     openCaseHistory = openCaseHistory,

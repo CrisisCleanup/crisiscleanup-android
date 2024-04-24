@@ -13,7 +13,7 @@ import coil.ImageLoader
 import coil.request.ImageRequest
 import coil.size.Precision
 import com.crisiscleanup.core.appnav.ViewImageArgs
-import com.crisiscleanup.core.common.KeyTranslator
+import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
@@ -33,6 +33,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
@@ -60,17 +61,19 @@ class ViewImageViewModel @Inject constructor(
     private val localImageRepository: LocalImageRepository,
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val contentResolver: ContentResolver,
-    private val translator: KeyTranslator,
+    private val translator: KeyResourceTranslator,
     accountDataRepository: AccountDataRepository,
     private val syncPusher: SyncPusher,
     networkMonitor: NetworkMonitor,
     @Logger(CrisisCleanupLoggers.Media) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
-    private val caseEditorArgs = ViewImageArgs(savedStateHandle)
-    private val isNetworkImage = caseEditorArgs.isNetworkImage
-    private val imageId = caseEditorArgs.imageId
-    val screenTitle = caseEditorArgs.title
+    private val viewImageArgs = ViewImageArgs(savedStateHandle)
+    private val isNetworkImage = viewImageArgs.isNetworkImage
+    private val imageId = viewImageArgs.imageId
+
+    val screenTitle: String
+        get() = translate(viewImageArgs.title)
 
     private val isDeleting = MutableStateFlow(false)
     val isDeleted = MutableStateFlow(false)
@@ -87,73 +90,29 @@ class ViewImageViewModel @Inject constructor(
     private val streamNetworkImageState = localImageRepository.streamNetworkImageUrl(imageId)
         .flatMapLatest { url ->
             val isNotBlankUrl = url?.isNotBlank() == true
-            val imageUrl = if (isNotBlankUrl) url!! else caseEditorArgs.imageUri
+            val imageUrl = if (isNotBlankUrl) url!! else viewImageArgs.imageUri
 
             if (imageUrl.isBlank()) {
                 // TODO String res
                 return@flatMapLatest flowOf(ViewImageViewState.Error("Image not selected"))
             }
 
-            callbackFlow<ViewImageViewState> {
-                val request = ImageRequest.Builder(context)
-                    .data(imageUrl)
-                    .size(Int.MAX_VALUE)
-                    .precision(Precision.INEXACT)
-                    .target(
-                        onStart = {
-                            channel.trySend(ViewImageViewState.Loading)
-                        },
-                        onSuccess = { result ->
-                            val bitmap = (result as BitmapDrawable).bitmap.asImageBitmap()
-                            channel.trySend(ViewImageViewState.Image(imageUrl, bitmap))
-                        },
-                        onError = {
-                            val isTokenInvalid =
-                                accountDataRepository.refreshToken.isBlank()
-
-                            logger.logDebug("Failed to load image $isOffline $isTokenInvalid $imageId $imageUrl")
-
-                            // TODO Test all three states show correctly
-                            val messageKey =
-                                if (isOffline.value) {
-                                    "worksiteImages.connect_to_download_photo"
-                                } else if (isTokenInvalid) {
-                                    "worksiteImages.login_and_refresh_image"
-                                } else {
-                                    "worksiteImages.try_refreshing_open_image"
-                                }
-                            val message = translate(messageKey)
-                            channel.trySend(ViewImageViewState.Error(message))
-                        },
-                    )
-                    .build()
-                val disposable = imageLoader.enqueue(request)
-                awaitClose { disposable.job }
-            }
+            imageLoader.queueNetworkImage(
+                context,
+                imageUrl,
+                accountDataRepository,
+                isOffline,
+                this::translate,
+            )
         }
 
     private val streamLocalImageState = localImageRepository.streamLocalImageUri(imageId)
         .filter { it?.isNotEmpty() == true }
         .mapLatest { uriString ->
-            val uri = Uri.parse(uriString)
-            if (uri != null) {
-                try {
-                    contentResolver.openFileDescriptor(uri, "r").use {
-                        it?.let { parcel ->
-                            val fileDescriptor = parcel.fileDescriptor
-                            val bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor)
-                            return@mapLatest ViewImageViewState.Image(
-                                uriString!!,
-                                bitmap.asImageBitmap(),
-                            )
-                        }
-                    }
-                } catch (e: Exception) {
-                    logger.logException(e)
-                }
+            contentResolver.tryDecodeContentImage(uriString, logger)?.let {
+                return@mapLatest it
             }
 
-            // TODO String res
             val message = "worksiteImages.unable_to_load"
             // TODO Delete entry in this case? Think it through
             ViewImageViewState.Error(message)
@@ -222,7 +181,7 @@ class ViewImageViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    fun translate(key: String) = translator.translate(key) ?: key
+    private fun translate(key: String) = translator(key)
 
     fun deleteImage() {
         isDeleting.value = true
@@ -249,4 +208,70 @@ class ViewImageViewModel @Inject constructor(
     fun rotateImage(rotateClockwise: Boolean) {
         imageRotation.value = (imageRotation.value + (if (rotateClockwise) 90 else -90)) % 360
     }
+}
+
+fun ContentResolver.tryDecodeContentImage(
+    uriString: String?,
+    logger: AppLogger,
+): ViewImageViewState.Image? {
+    val uri = Uri.parse(uriString)
+    if (uri != null) {
+        try {
+            openFileDescriptor(uri, "r").use {
+                it?.let { parcel ->
+                    val fileDescriptor = parcel.fileDescriptor
+                    val bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor)
+                    return ViewImageViewState.Image(
+                        uriString!!,
+                        bitmap.asImageBitmap(),
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            logger.logException(e)
+        }
+    }
+
+    return null
+}
+
+internal fun ImageLoader.queueNetworkImage(
+    context: Context,
+    imageUrl: String,
+    accountDataRepository: AccountDataRepository,
+    isOffline: StateFlow<Boolean>,
+    translate: (String) -> String,
+) = callbackFlow {
+    val request = ImageRequest.Builder(context)
+        .data(imageUrl)
+        .size(Int.MAX_VALUE)
+        .precision(Precision.INEXACT)
+        .target(
+            onStart = {
+                channel.trySend(ViewImageViewState.Loading)
+            },
+            onSuccess = { result ->
+                val bitmap = (result as BitmapDrawable).bitmap.asImageBitmap()
+                channel.trySend(ViewImageViewState.Image(imageUrl, bitmap))
+            },
+            onError = {
+                val isTokenInvalid =
+                    accountDataRepository.refreshToken.isBlank()
+
+                // TODO Test all three states show correctly
+                val messageKey =
+                    if (isOffline.value) {
+                        "worksiteImages.connect_to_download_photo"
+                    } else if (isTokenInvalid) {
+                        "worksiteImages.login_and_refresh_image"
+                    } else {
+                        "worksiteImages.try_refreshing_open_image"
+                    }
+                val message = translate(messageKey)
+                channel.trySend(ViewImageViewState.Error(message))
+            },
+        )
+        .build()
+    val disposable = enqueue(request)
+    awaitClose { disposable.job }
 }

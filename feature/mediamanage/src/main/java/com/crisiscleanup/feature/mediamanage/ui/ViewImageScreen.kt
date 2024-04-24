@@ -25,12 +25,11 @@ internal fun ViewImageRoute(
     if (isDeleted) {
         onBack()
     } else {
-        val screenTitle = viewModel.translate(viewModel.screenTitle)
         val viewState by viewModel.viewState.collectAsStateWithLifecycle()
         val isDeletable by viewModel.isImageDeletable.collectAsStateWithLifecycle()
         val imageRotation by viewModel.imageRotation.collectAsStateWithLifecycle()
         ViewImageScreen(
-            screenTitle,
+            viewModel.screenTitle,
             viewState,
             isDeletable,
             onBack = onBack,

@@ -59,7 +59,7 @@ class MultiImageViewModel @Inject constructor(
             } else {
                 ""
             }
-            CarouselImageData(
+            UrlImagePagerData(
                 imageUrls,
                 carouselImageIndex,
                 imageUrl,
@@ -67,7 +67,7 @@ class MultiImageViewModel @Inject constructor(
         }
         .stateIn(
             scope = viewModelScope,
-            initialValue = CarouselImageData(),
+            initialValue = UrlImagePagerData(),
             started = SharingStarted.WhileSubscribed(),
         )
 
@@ -120,12 +120,12 @@ class MultiImageViewModel @Inject constructor(
         imageIndex.value = index.coerceIn(0, imageCount)
     }
 
-    fun rotateImage(rotateClockwise: Boolean) {
+    fun rotateImage(imageId: String, rotateClockwise: Boolean) {
         imageRotation.value = (imageRotation.value + (if (rotateClockwise) 90 else -90)) % 360
     }
 }
 
-data class CarouselImageData(
+data class UrlImagePagerData(
     val imageUrls: List<String> = emptyList(),
     val index: Int = 0,
     val imageUrl: String = "",

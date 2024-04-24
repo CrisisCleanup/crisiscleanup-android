@@ -16,7 +16,7 @@ data class CaseImage(
     val title: String = "",
     val category: ImageCategory = imageCategoryLookup[tag.lowercase()] ?: ImageCategory.Before,
     val isAfter: Boolean = category == ImageCategory.After,
-    val rotateDegrees: Int,
+    val rotateDegrees: Int = 0,
 )
 
 fun NetworkImage.asCaseImage() = CaseImage(
