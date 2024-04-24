@@ -70,7 +70,7 @@ import com.crisiscleanup.core.model.data.CaseImage
 import com.crisiscleanup.core.model.data.ImageCategory
 import com.crisiscleanup.core.ui.touchDownConsumer
 import com.crisiscleanup.feature.caseeditor.CaseCameraMediaManager
-import com.crisiscleanup.feature.caseeditor.R
+import com.crisiscleanup.core.common.R as commonR
 
 private val addMediaActionPadding = 4.dp
 private val mediaCornerRadius = 6.dp
@@ -338,7 +338,7 @@ internal fun PhotosSection(
                                 .fillMaxSize()
                                 .clip(RoundedCornerShape(mediaCornerRadius))
                                 .clickable { onPhotoSelect(photo) },
-                            placeholder = painterResource(R.drawable.cc_grayscale_pin),
+                            placeholder = painterResource(commonR.drawable.cc_grayscale_pin),
                             contentDescription = photo.title,
                             contentScale = ContentScale.Crop,
                         )

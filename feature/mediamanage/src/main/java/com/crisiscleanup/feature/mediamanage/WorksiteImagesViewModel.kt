@@ -116,6 +116,13 @@ class WorksiteImagesViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
+    val caseImageData = imagesData.mapLatest { it.images }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = emptyList(),
+            started = SharingStarted.WhileSubscribed(),
+        )
+
     private val streamNetworkImage = imagesData
         .filter { it.imageData.isNetworkImage }
         .flatMapLatest {
@@ -190,6 +197,11 @@ class WorksiteImagesViewModel @Inject constructor(
         imageIndex.value = index.coerceIn(0, imageCount)
     }
 
+    fun onOpenImage(index: Int) {
+        onChangeImageIndex(index)
+        selectedImageIndex = index
+    }
+
     fun rotateImage(imageId: String, rotateClockwise: Boolean) {
         // TODO Rotate individual
     }
@@ -205,15 +217,6 @@ data class CaseImagePagerData(
     val index: Int = 0,
     val imageData: CaseImage = caseImageNone,
     val imageCount: Int = images.size,
-)
-
-private val CaseImage.caseImageId: CaseImageId
-    get() = CaseImageId(id, imageUri, isNetworkImage)
-
-data class CaseImageId(
-    val id: Long = 0,
-    val uri: String = "",
-    val isNetworkImage: Boolean = false,
 )
 
 private val caseImageNone = CaseImage(
