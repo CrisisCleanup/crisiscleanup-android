@@ -136,6 +136,8 @@ class CreateEditCaseViewModel @Inject constructor(
     val invalidWorksiteInfo = mutableStateOf(InvalidWorksiteInfo())
 
     private val editingWorksite = editableWorksiteProvider.editableWorksite
+    val photosWorksiteId: Long
+        get() = editingWorksite.value.id
 
     private val caseMediaManager = CaseMediaManager(
         permissionManager,

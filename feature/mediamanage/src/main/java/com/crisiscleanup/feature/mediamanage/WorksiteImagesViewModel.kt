@@ -3,6 +3,7 @@ package com.crisiscleanup.feature.mediamanage
 import android.content.ContentResolver
 import android.content.Context
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
@@ -24,10 +25,10 @@ import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksiteImageRepository
 import com.crisiscleanup.core.designsystem.component.ViewImageViewState
 import com.crisiscleanup.core.model.data.CaseImage
+import com.crisiscleanup.core.model.data.EmptyWorksite
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -68,7 +69,9 @@ class WorksiteImagesViewModel @Inject constructor(
     private val isImageIndexSetGuard = AtomicBoolean(false)
 
     private val imageIndex = MutableStateFlow(-1)
-    val selectedImageIndex: Flow<Int> = imageIndex
+
+    // Decouple selected index to preserve initial matching index value
+    var selectedImageIndex by mutableIntStateOf(-1)
 
     private val isOffline = networkMonitor.isNotOnline
         .stateIn(
@@ -77,13 +80,22 @@ class WorksiteImagesViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
+    private val existingWorksiteImages = if (worksiteId > -1) {
+        worksiteImageRepository.streamWorksiteImages(worksiteId)
+    } else {
+        flowOf(emptyList())
+    }
     private val worksiteImages = combine(
         worksiteImageRepository.streamNewWorksiteImages(),
-        worksiteImageRepository.streamWorksiteImages(worksiteId),
+        existingWorksiteImages,
         ::Pair,
     )
         .mapLatest { (newImages, existingImages) ->
-            newImages.ifEmpty { existingImages }
+            if (worksiteId != EmptyWorksite.id) {
+                existingImages
+            } else {
+                newImages
+            }
         }
 
     private val imagesData = combine(
@@ -218,11 +230,14 @@ class WorksiteImagesViewModel @Inject constructor(
             if (it.isNotEmpty() && !isImageIndexSetGuard.getAndSet(true)) {
                 val matchImageId = worksiteImagesArgs.imageId
                 val matchImageUri = worksiteImagesArgs.imageUri
+                val encodedMatchImageUri = worksiteImagesArgs.encodedUri
                 it.forEachIndexed { index, caseImage ->
+                    val imageUri = caseImage.imageUri
                     if (caseImage.id > 0 && caseImage.id == matchImageId ||
-                        caseImage.imageUri.isNotBlank() && caseImage.imageUri == matchImageUri
+                        imageUri.isNotBlank() && (imageUri == matchImageUri || imageUri == encodedMatchImageUri)
                     ) {
                         imageIndex.value = index
+                        selectedImageIndex = index
                         return@forEachIndexed
                     }
                 }
@@ -244,6 +259,7 @@ class WorksiteImagesViewModel @Inject constructor(
 
     fun onOpenImage(index: Int) {
         onChangeImageIndex(index)
+        selectedImageIndex = imageIndex.value
     }
 
     private fun getMatchingImage(imageId: String): CaseImage? = imagesData.value.images
@@ -301,6 +317,7 @@ class WorksiteImagesViewModel @Inject constructor(
                         isDeletedImages = true
                     } else {
                         imageIndex.value = imageIndex.value.coerceIn(0, imageCount - 2)
+                        selectedImageIndex = imageIndex.value
                     }
                 } catch (e: Exception) {
                     // TODO Show error

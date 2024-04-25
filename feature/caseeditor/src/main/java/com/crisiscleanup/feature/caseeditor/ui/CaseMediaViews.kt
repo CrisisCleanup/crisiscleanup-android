@@ -137,7 +137,7 @@ internal fun CasePhotoImageView(
                         with(image) {
                             val viewImageArgs = ViewImageArgs(
                                 id,
-                                encodedUri = if (isNetworkImage) imageUri.urlEncode() else "",
+                                encodedUri = imageUri.urlEncode(),
                                 isNetworkImage,
                                 viewHeaderTitle.urlEncode(),
                             )

@@ -74,7 +74,6 @@ internal fun ViewWorksiteImagesRoute(
         val enableRotateActions by viewModel.enableRotate.collectAsStateWithLifecycle()
         val enableDeleteAction by viewModel.enableDelete.collectAsStateWithLifecycle()
         val isExistingImage = selectedImage.id > 0
-        val pagerIndex by viewModel.selectedImageIndex.collectAsStateWithLifecycle(-1)
         MultiImageScreen(
             screenTitle,
             viewState,
@@ -84,7 +83,7 @@ internal fun ViewWorksiteImagesRoute(
             isFullscreenMode = !showPhotosGrid,
             isOverlayActions = isOverlayActions,
             toggleActions = toggleActions,
-            pageToIndex = pagerIndex,
+            pageToIndex = viewModel.selectedImageIndex,
             onImageIndexChange = viewModel::onChangeImageIndex,
             onDeleteImage = viewModel::deleteImage,
             showRotateActions = isExistingImage,

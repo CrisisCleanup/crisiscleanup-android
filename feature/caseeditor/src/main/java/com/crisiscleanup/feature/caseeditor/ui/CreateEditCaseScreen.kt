@@ -34,6 +34,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.appnav.ViewImageArgs
+import com.crisiscleanup.core.appnav.WorksiteImagesArgs
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
@@ -76,6 +78,7 @@ internal fun CreateEditCaseRoute(
     onEditSearchAddress: () -> Unit = {},
     onEditMoveLocationOnMap: () -> Unit = {},
     onBack: () -> Unit = {},
+    openPhoto: (WorksiteImagesArgs) -> Unit = { _ -> },
     viewModel: CreateEditCaseViewModel = hiltViewModel(),
 ) {
     val changeWorksiteIncidentId by viewModel.changeWorksiteIncidentId.collectAsStateWithLifecycle()
@@ -103,6 +106,7 @@ internal fun CreateEditCaseRoute(
                     onEditSearchAddress = onEditSearchAddress,
                     onEditMoveLocationOnMap = onEditMoveLocationOnMap,
                     onBack = onBack,
+                    openPhoto = openPhoto,
                 )
             }
         }
@@ -115,6 +119,7 @@ private fun ArrangeLayout(
     onEditSearchAddress: () -> Unit,
     onEditMoveLocationOnMap: () -> Unit,
     onBack: () -> Unit,
+    openPhoto: (WorksiteImagesArgs) -> Unit = { _ -> },
     viewModel: CreateEditCaseViewModel = hiltViewModel(),
 ) {
     val headerTitle by viewModel.headerTitle.collectAsStateWithLifecycle()
@@ -173,6 +178,7 @@ private fun ArrangeLayout(
                     isEditable = isEditable,
                     onEditSearchAddress = onEditSearchAddress,
                     onEditMoveLocationOnMap = onEditMoveLocationOnMap,
+                    openPhoto = openPhoto,
                 )
             }
         }
@@ -188,6 +194,7 @@ private fun ArrangeLayout(
                 isEditable = isEditable,
                 onEditSearchAddress = onEditSearchAddress,
                 onEditMoveLocationOnMap = onEditMoveLocationOnMap,
+                openPhoto = openPhoto,
             ) {
                 KeyboardSaveActionBar(
                     enable = isEditable,
@@ -207,6 +214,7 @@ private fun ColumnScope.CreateEditCaseContent(
     modifier: Modifier = Modifier,
     onEditSearchAddress: () -> Unit = {},
     onEditMoveLocationOnMap: () -> Unit = {},
+    openPhoto: (WorksiteImagesArgs) -> Unit = { _ -> },
     bottomCaseContent: @Composable () -> Unit = {},
 ) {
     when (viewState) {
@@ -226,6 +234,7 @@ private fun ColumnScope.CreateEditCaseContent(
                 isEditable = isEditable,
                 onSearchAddress = onEditSearchAddress,
                 onMoveLocation = onEditMoveLocationOnMap,
+                openPhoto = openPhoto,
             )
 
             bottomCaseContent()
@@ -257,6 +266,7 @@ private fun ColumnScope.FullEditView(
     viewModel: CreateEditCaseViewModel = hiltViewModel(),
     onMoveLocation: () -> Unit = {},
     onSearchAddress: () -> Unit = {},
+    openPhoto: (WorksiteImagesArgs) -> Unit = { _ -> },
 ) {
     val editSections by viewModel.editSections.collectAsStateWithLifecycle()
     val sectionCollapseStates = remember(viewModel) {
@@ -335,6 +345,7 @@ private fun ColumnScope.FullEditView(
                         editSections,
                         onMoveLocation = onMoveLocation,
                         onSearchAddress = onSearchAddress,
+                        onOpenPhoto = openPhoto,
                         isPropertySectionCollapsed = sectionCollapseStates[0],
                         togglePropertySection = togglePropertySection,
                         isSectionCollapsed = isSectionCollapsed,
@@ -409,6 +420,7 @@ private fun LazyListScope.fullEditContent(
     sectionTitles: List<String> = emptyList(),
     onMoveLocation: () -> Unit = {},
     onSearchAddress: () -> Unit = {},
+    onOpenPhoto: (WorksiteImagesArgs) -> Unit = { _ -> },
     isPropertySectionCollapsed: Boolean = false,
     togglePropertySection: () -> Unit = {},
     isSectionCollapsed: (Int) -> Boolean = { false },
@@ -462,6 +474,7 @@ private fun LazyListScope.fullEditContent(
             sectionTitles.last(),
             isSectionCollapsed = isPhotosCollapsed,
             togglePhotosSection = togglePhotosSection,
+            onOpenPhoto = onOpenPhoto,
         )
     }
 }
@@ -565,6 +578,7 @@ private fun LazyListScope.photosSection(
     sectionTitle: String,
     isSectionCollapsed: Boolean = false,
     togglePhotosSection: () -> Unit = {},
+    onOpenPhoto: (WorksiteImagesArgs) -> Unit = { _ -> },
 ) {
     sectionSeparator("section-separator-photos")
 
@@ -599,6 +613,12 @@ private fun LazyListScope.photosSection(
             }
 
             val viewHeaderTitle by viewModel.headerTitle.collectAsStateWithLifecycle()
+            val openWorksitePhotos = remember(viewModel, onOpenPhoto) {
+                { imageArgs: ViewImageArgs ->
+                    val worksiteId = viewModel.photosWorksiteId
+                    onOpenPhoto(imageArgs.toWorksiteImageArgs(worksiteId))
+                }
+            }
             CasePhotoImageView(
                 viewModel,
                 setEnablePagerScroll,
@@ -608,9 +628,8 @@ private fun LazyListScope.photosSection(
                 onUpdateImageCategory,
                 viewHeaderTitle,
                 360.dp,
-            ) {
-                // TODO Open for viewing and deleting. Including new or local/network
-            }
+                openWorksitePhotos,
+            )
         }
     }
 }
