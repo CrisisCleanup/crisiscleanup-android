@@ -80,12 +80,10 @@ fun MultiImageScreen(
 
         val coroutineScope = rememberCoroutineScope()
         LaunchedEffect(pageToIndex, pagerState) {
-            if (pageToIndex > 0) {
-                snapshotFlow { pagerState.pageCount }.collect { count ->
-                    if (pageToIndex in 1..<count) {
-                        coroutineScope.launch {
-                            pagerState.scrollToPage(pageToIndex)
-                        }
+            snapshotFlow { pagerState.pageCount }.collect { count ->
+                if (pageToIndex in 0..<count) {
+                    coroutineScope.launch {
+                        pagerState.scrollToPage(pageToIndex)
                     }
                 }
             }

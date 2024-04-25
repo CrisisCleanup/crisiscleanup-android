@@ -3,7 +3,6 @@ package com.crisiscleanup.feature.mediamanage
 import android.content.ContentResolver
 import android.content.Context
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
@@ -28,6 +27,7 @@ import com.crisiscleanup.core.model.data.CaseImage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -48,7 +48,7 @@ class WorksiteImagesViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     @ApplicationContext context: Context,
     imageLoader: ImageLoader,
-    private val worksiteImageRepository: WorksiteImageRepository,
+    worksiteImageRepository: WorksiteImageRepository,
     private val localImageRepository: LocalImageRepository,
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val contentResolver: ContentResolver,
@@ -66,10 +66,9 @@ class WorksiteImagesViewModel @Inject constructor(
         get() = translate(worksiteImagesArgs.title)
 
     private val isImageIndexSetGuard = AtomicBoolean(false)
-    private val imageIndex = MutableStateFlow(-1)
 
-    var selectedImageIndex by mutableIntStateOf(0)
-        private set
+    private val imageIndex = MutableStateFlow(-1)
+    val selectedImageIndex: Flow<Int> = imageIndex
 
     private val isOffline = networkMonitor.isNotOnline
         .stateIn(
@@ -180,14 +179,39 @@ class WorksiteImagesViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
+    private val rotatingImages = mutableSetOf<String>()
+    private val rotatingImagesFlow = MutableStateFlow<Set<String>>(emptySet())
+
+    val enableRotate = combine(
+        selectedImageData,
+        rotatingImagesFlow,
+        ::Pair,
+    )
+        .map { (image, rotating) ->
+            !rotating.contains(image.imageUri)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    private val deletingImages = mutableSetOf<String>()
+    private val deletingImagesFlow = MutableStateFlow<Set<String>>(emptySet())
     var isDeletedImages by mutableStateOf(false)
         private set
-
-    private val rotatingImages = mutableSetOf<String>()
-
-    // TODO Disable rotation if selected image is currently rotating
-    //      Requires observable rotatingImages
-    val enableRotation = MutableStateFlow(true)
+    val enableDelete = combine(
+        selectedImageData,
+        deletingImagesFlow,
+        ::Pair,
+    ).map { (image, deleting) ->
+        !deleting.contains(image.imageUri)
+    }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
+            started = SharingStarted.WhileSubscribed(),
+        )
 
     init {
         worksiteImages.onEach {
@@ -199,7 +223,6 @@ class WorksiteImagesViewModel @Inject constructor(
                         caseImage.imageUri.isNotBlank() && caseImage.imageUri == matchImageUri
                     ) {
                         imageIndex.value = index
-                        selectedImageIndex = index
                         return@forEachIndexed
                     }
                 }
@@ -221,39 +244,73 @@ class WorksiteImagesViewModel @Inject constructor(
 
     fun onOpenImage(index: Int) {
         onChangeImageIndex(index)
-        selectedImageIndex = index
     }
 
-    fun rotateImage(imageId: String, rotateClockwise: Boolean) {
-        imagesData.value.images
-            .firstOrNull { it.imageUri == imageId }
-            ?.let { matchingImage ->
-                synchronized(rotatingImages) {
-                    if (rotatingImages.contains(imageId)) {
-                        return
-                    }
-                    rotatingImages.add(imageId)
-                }
+    private fun getMatchingImage(imageId: String): CaseImage? = imagesData.value.images
+        .firstOrNull { it.imageUri == imageId }
 
-                viewModelScope.launch(ioDispatcher) {
-                    try {
-                        val deltaRotation = if (rotateClockwise) 90 else -90
-                        val rotation = (matchingImage.rotateDegrees + deltaRotation) % 360
-                        localImageRepository.setImageRotation(
-                            matchingImage.id,
-                            matchingImage.isNetworkImage,
-                            rotation,
-                        )
-                    } finally {
-                        rotatingImages.remove(imageId)
-                    }
+    fun rotateImage(imageId: String, rotateClockwise: Boolean) {
+        getMatchingImage(imageId)?.let { matchingImage ->
+            synchronized(rotatingImages) {
+                if (rotatingImages.contains(imageId)) {
+                    return
+                }
+                rotatingImages.add(imageId)
+                rotatingImagesFlow.value = rotatingImages.toSet()
+            }
+
+            viewModelScope.launch(ioDispatcher) {
+                try {
+                    val deltaRotation = if (rotateClockwise) 90 else -90
+                    val rotation = (matchingImage.rotateDegrees + deltaRotation) % 360
+                    localImageRepository.setImageRotation(
+                        matchingImage.id,
+                        matchingImage.isNetworkImage,
+                        rotation,
+                    )
+                } finally {
+                    rotatingImages.remove(imageId)
+                    rotatingImagesFlow.value = rotatingImages.toSet()
                 }
             }
+        }
     }
 
     fun deleteImage(imageId: String) {
-        // TODO Find and delete
-        //      Update isDeletedImages
+        getMatchingImage(imageId)?.let { matchingImage ->
+            synchronized(deletingImages) {
+                if (deletingImages.contains(imageId)) {
+                    return
+                }
+                deletingImages.add(imageId)
+                deletingImagesFlow.value = deletingImages.toSet()
+            }
+
+            viewModelScope.launch(ioDispatcher) {
+                val imageCount = imagesData.value.images.size
+                try {
+                    if (matchingImage.isNetworkImage) {
+                        val worksiteId = worksiteChangeRepository.saveDeletePhoto(matchingImage.id)
+                        if (worksiteId > 0) {
+                            syncPusher.appPushWorksite(worksiteId)
+                        }
+                    } else {
+                        localImageRepository.deleteLocalImage(matchingImage.id)
+                    }
+                    if (imageCount == 1) {
+                        isDeletedImages = true
+                    } else {
+                        imageIndex.value = imageIndex.value.coerceIn(0, imageCount - 2)
+                    }
+                } catch (e: Exception) {
+                    // TODO Show error
+                    logger.logException(e)
+                } finally {
+                    deletingImages.remove(imageId)
+                    deletingImagesFlow.value = deletingImages.toSet()
+                }
+            }
+        }
     }
 }
 

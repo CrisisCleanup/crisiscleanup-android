@@ -63,7 +63,6 @@ internal fun ViewWorksiteImagesRoute(
     var isOverlayActions by rememberSaveable { mutableStateOf(true) }
     val toggleActions = remember(viewModel) { { isOverlayActions = !isOverlayActions } }
 
-    // TODO If loaded and no images left (due to deletion) back out
     if (viewModel.isDeletedImages) {
         onBack()
     } else {
@@ -72,20 +71,23 @@ internal fun ViewWorksiteImagesRoute(
         val imageIds by viewModel.imageIds.collectAsStateWithLifecycle()
         val viewState by viewModel.viewState.collectAsStateWithLifecycle()
         val selectedImage by viewModel.selectedImageData.collectAsStateWithLifecycle()
-        val enableRotateActions by viewModel.enableRotation.collectAsStateWithLifecycle()
+        val enableRotateActions by viewModel.enableRotate.collectAsStateWithLifecycle()
+        val enableDeleteAction by viewModel.enableDelete.collectAsStateWithLifecycle()
+        val isExistingImage = selectedImage.id > 0
+        val pagerIndex by viewModel.selectedImageIndex.collectAsStateWithLifecycle(-1)
         MultiImageScreen(
             screenTitle,
             viewState,
             imageIds,
-            // TODO After carousel is working
-            isDeletable = false,
+            isDeletable = enableDeleteAction,
             onBack = hidePhotosGridOnBack,
             isFullscreenMode = !showPhotosGrid,
             isOverlayActions = isOverlayActions,
             toggleActions = toggleActions,
-            pageToIndex = viewModel.selectedImageIndex,
+            pageToIndex = pagerIndex,
             onImageIndexChange = viewModel::onChangeImageIndex,
-            showRotateActions = selectedImage.id > 0,
+            onDeleteImage = viewModel::deleteImage,
+            showRotateActions = isExistingImage,
             enableRotateActions = enableRotateActions,
             imageRotation = selectedImage.rotateDegrees,
             rotateImage = viewModel::rotateImage,
