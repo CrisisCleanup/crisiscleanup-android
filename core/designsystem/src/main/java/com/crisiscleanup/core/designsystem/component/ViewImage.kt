@@ -126,7 +126,11 @@ fun ViewImageScreen(
                         enter = fadeIn(),
                         exit = fadeOut(),
                     ) {
-                        ImageActionBar(rotateImage)
+                        ImageActionBar(
+                            showRotateActions = true,
+                            enableRotateActions = true,
+                            rotateImage = rotateImage,
+                        )
                     }
                 }
             }
@@ -321,6 +325,8 @@ internal fun DynamicImageView(
 
 @Composable
 internal fun ImageActionBar(
+    showRotateActions: Boolean,
+    enableRotateActions: Boolean = true,
     rotateImage: (Boolean) -> Unit,
     showGridAction: Boolean = false,
     onShowPhotos: () -> Unit = {},
@@ -334,20 +340,26 @@ internal fun ImageActionBar(
         Row(
             horizontalArrangement = listItemSpacedBy,
         ) {
-            if (showGridAction) {
-                Box(Modifier.size(48.dp))
-            }
+            if (showRotateActions) {
+                if (showGridAction) {
+                    Box(Modifier.size(48.dp))
+                }
 
-            Spacer(Modifier.weight(1f))
-            CrisisCleanupIconButton(
-                imageVector = CrisisCleanupIcons.RotateCcw,
-                onClick = { rotateImage(false) },
-            )
-            CrisisCleanupIconButton(
-                imageVector = CrisisCleanupIcons.RotateClockwise,
-                onClick = { rotateImage(true) },
-            )
-            Spacer(Modifier.weight(1f))
+                Spacer(Modifier.weight(1f))
+                CrisisCleanupIconButton(
+                    imageVector = CrisisCleanupIcons.RotateCcw,
+                    onClick = { rotateImage(false) },
+                    enabled = enableRotateActions,
+                )
+                CrisisCleanupIconButton(
+                    imageVector = CrisisCleanupIcons.RotateClockwise,
+                    onClick = { rotateImage(true) },
+                    enabled = enableRotateActions,
+                )
+                Spacer(Modifier.weight(1f))
+            } else {
+                Spacer(Modifier.weight(1f))
+            }
 
             if (showGridAction) {
                 CrisisCleanupIconButton(

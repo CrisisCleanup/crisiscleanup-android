@@ -69,9 +69,10 @@ internal fun ViewWorksiteImagesRoute(
     } else {
         val screenTitle = viewModel.screenTitle
 
-        // TODO Multi images screen
         val imageIds by viewModel.imageIds.collectAsStateWithLifecycle()
         val viewState by viewModel.viewState.collectAsStateWithLifecycle()
+        val selectedImage by viewModel.selectedImageData.collectAsStateWithLifecycle()
+        val enableRotateActions by viewModel.enableRotation.collectAsStateWithLifecycle()
         MultiImageScreen(
             screenTitle,
             viewState,
@@ -84,8 +85,9 @@ internal fun ViewWorksiteImagesRoute(
             toggleActions = toggleActions,
             pageToIndex = viewModel.selectedImageIndex,
             onImageIndexChange = viewModel::onChangeImageIndex,
-            // TODO After carousel is working
-            imageRotation = 0,
+            showRotateActions = selectedImage.id > 0,
+            enableRotateActions = enableRotateActions,
+            imageRotation = selectedImage.rotateDegrees,
             rotateImage = viewModel::rotateImage,
             showGridAction = imageIds.size > 1,
             onShowPhotos = {
@@ -115,24 +117,23 @@ internal fun ViewWorksiteImagesRoute(
                     actions = {},
                 )
 
-                val imageData by viewModel.caseImageData.collectAsStateWithLifecycle()
+                val caseImages by viewModel.caseImages.collectAsStateWithLifecycle()
                 val itemSpacing = 1.dp
                 val density = LocalDensity.current
                 val itemSize = remember(contentSize) {
                     with(density) {
                         val minSize = min(contentSize.width, contentSize.height)
-                        val size = if (minSize > 1) (minSize * 0.49f).toDp() else 128.dp
-                        size.coerceIn(64.dp, 256.dp)
+                        val size = if (minSize > 1) (minSize * 0.33f).toDp() else 128.dp
+                        size.coerceIn(64.dp, 128.dp)
                     }
                 }
                 LazyVerticalGrid(
-                    // TODO Common dimensions
                     columns = GridCells.Adaptive(minSize = itemSize),
                     horizontalArrangement = Arrangement.spacedBy(itemSpacing),
                     verticalArrangement = Arrangement.spacedBy(itemSpacing),
                 ) {
-                    items(imageData.size) { index ->
-                        val image = imageData[index]
+                    items(caseImages.size) { index ->
+                        val image = caseImages[index]
                         AsyncImage(
                             model = image.thumbnailUri.ifBlank { image.imageUri },
                             modifier = Modifier

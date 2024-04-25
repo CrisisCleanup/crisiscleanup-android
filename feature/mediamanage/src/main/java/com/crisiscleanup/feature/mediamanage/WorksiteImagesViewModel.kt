@@ -20,6 +20,7 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.LocalImageRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksiteImageRepository
 import com.crisiscleanup.core.designsystem.component.ViewImageViewState
@@ -38,6 +39,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
@@ -47,6 +49,7 @@ class WorksiteImagesViewModel @Inject constructor(
     @ApplicationContext context: Context,
     imageLoader: ImageLoader,
     private val worksiteImageRepository: WorksiteImageRepository,
+    private val localImageRepository: LocalImageRepository,
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val contentResolver: ContentResolver,
     private val translator: KeyResourceTranslator,
@@ -116,10 +119,24 @@ class WorksiteImagesViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val caseImageData = imagesData.mapLatest { it.images }
+    val caseImages = imagesData.mapLatest { it.images }
         .stateIn(
             scope = viewModelScope,
             initialValue = emptyList(),
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    val selectedImageData = imagesData.mapLatest {
+        val index = it.index.coerceIn(0, it.imageCount)
+        if (index >= 0 && index < it.images.size) {
+            it.images[index]
+        } else {
+            caseImageNone
+        }
+    }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = caseImageNone,
             started = SharingStarted.WhileSubscribed(),
         )
 
@@ -166,9 +183,14 @@ class WorksiteImagesViewModel @Inject constructor(
     var isDeletedImages by mutableStateOf(false)
         private set
 
+    private val rotatingImages = mutableSetOf<String>()
+
+    // TODO Disable rotation if selected image is currently rotating
+    //      Requires observable rotatingImages
+    val enableRotation = MutableStateFlow(true)
+
     init {
         worksiteImages.onEach {
-            logger.logDebug("${it.size} ${isImageIndexSetGuard.get()}")
             if (it.isNotEmpty() && !isImageIndexSetGuard.getAndSet(true)) {
                 val matchImageId = worksiteImagesArgs.imageId
                 val matchImageUri = worksiteImagesArgs.imageUri
@@ -203,7 +225,30 @@ class WorksiteImagesViewModel @Inject constructor(
     }
 
     fun rotateImage(imageId: String, rotateClockwise: Boolean) {
-        // TODO Rotate individual
+        imagesData.value.images
+            .firstOrNull { it.imageUri == imageId }
+            ?.let { matchingImage ->
+                synchronized(rotatingImages) {
+                    if (rotatingImages.contains(imageId)) {
+                        return
+                    }
+                    rotatingImages.add(imageId)
+                }
+
+                viewModelScope.launch(ioDispatcher) {
+                    try {
+                        val deltaRotation = if (rotateClockwise) 90 else -90
+                        val rotation = (matchingImage.rotateDegrees + deltaRotation) % 360
+                        localImageRepository.setImageRotation(
+                            matchingImage.id,
+                            matchingImage.isNetworkImage,
+                            rotation,
+                        )
+                    } finally {
+                        rotatingImages.remove(imageId)
+                    }
+                }
+            }
     }
 
     fun deleteImage(imageId: String) {

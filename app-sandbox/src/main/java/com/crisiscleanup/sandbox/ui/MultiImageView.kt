@@ -72,6 +72,8 @@ private fun MultiImageView(
         isOverlayActions = isOverlayActions,
         toggleActions = toggleActions,
         onImageIndexChange = viewModel::onChangeImageIndex,
+        showRotateActions = true,
+        enableRotateActions = true,
         imageRotation = imageRotation,
         rotateImage = viewModel::rotateImage,
         showGridAction = imagesData.imageCount > 1,

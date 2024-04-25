@@ -42,6 +42,8 @@ fun MultiImageScreen(
     pageToIndex: Int = -1,
     onImageIndexChange: (Int) -> Unit = {},
     onDeleteImage: (String) -> Unit = {},
+    showRotateActions: Boolean = false,
+    enableRotateActions: Boolean = false,
     imageRotation: Int = 0,
     rotateImage: (String, Boolean) -> Unit = { _, _ -> },
     showGridAction: Boolean = false,
@@ -93,7 +95,7 @@ fun MultiImageScreen(
             pagerState,
         ) { pagerIndex ->
             val isImageAtIndex = pagerIndex < imageIds.size &&
-                    currentImageId == imageIds[pagerIndex]
+                currentImageId == imageIds[pagerIndex]
             if (isImageAtIndex) {
                 LoadingImage(
                     contentSize,
@@ -135,7 +137,9 @@ fun MultiImageScreen(
             exit = fadeOut(),
         ) {
             ImageActionBar(
-                rotateSpecificImage,
+                showRotateActions = showRotateActions,
+                enableRotateActions = enableRotateActions,
+                rotateImage = rotateSpecificImage,
                 showGridAction = showGridAction,
                 onShowPhotos = onShowPhotos,
             )
