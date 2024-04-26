@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonOutline
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material.icons.filled.Remove
@@ -79,6 +80,7 @@ object CrisisCleanupIcons {
     val Person = icons.Person
     val Phone = icons.Phone
     val PhotoGrid = icons.PhotoLibrary
+    val Play = icons.PlayArrow
     val QrCode = icons.QrCode
     val QuestionMark = icons.QuestionMark
     val RotateClockwise = icons.Rotate90DegreesCw

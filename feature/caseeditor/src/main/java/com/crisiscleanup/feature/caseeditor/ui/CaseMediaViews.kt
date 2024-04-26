@@ -324,6 +324,7 @@ internal fun PhotosSection(
                     val photo = photos[photoIndex]
                     val isSyncing = syncingWorksiteImage != 0L && syncingWorksiteImage == photo.id
                     val isDeleting = deletingImageIds.contains(photo.id)
+                    // TODO Common dimensions
                     val halfWhite = Color.White.copy(alpha = 0.5f)
 
                     var contentSize by remember { mutableStateOf(Size.Zero) }
@@ -348,9 +349,7 @@ internal fun PhotosSection(
                             SurfaceIcon(
                                 CrisisCleanupIcons.CloudSync,
                                 Color.White.copy(alpha = 0.8f),
-                                Modifier
-                                    .align(Alignment.Center)
-                                    .clip(CircleShape),
+                                Modifier.align(Alignment.Center),
                                 iconSize = 64.dp,
                                 contentDescription = t("info.is_syncing"),
                             )
