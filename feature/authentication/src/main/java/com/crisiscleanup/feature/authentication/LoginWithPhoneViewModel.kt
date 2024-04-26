@@ -45,9 +45,7 @@ class LoginWithPhoneViewModel @Inject constructor(
     @Logger(Account) private val logger: AppLogger,
 ) : ViewModel() {
     val viewState: StateFlow<AuthenticateScreenViewState> = accountDataRepository.accountData.map {
-        AuthenticateScreenViewState.Ready(
-            authenticationState = AuthenticationState(accountData = it),
-        )
+        AuthenticateScreenViewState.Ready(AuthenticationState(it))
     }.stateIn(
         scope = viewModelScope,
         initialValue = AuthenticateScreenViewState.Loading,
@@ -94,7 +92,7 @@ class LoginWithPhoneViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val singleCodes = mutableStateListOf("", "", "", "", "", "")
+    var phoneCode by mutableStateOf("")
 
     val isRequestingCode = MutableStateFlow(false)
     var openPhoneCodeLogin by mutableStateOf(false)
@@ -114,7 +112,8 @@ class LoginWithPhoneViewModel @Inject constructor(
 
     private var oneTimePasswordId = 0L
     var accountOptions = mutableStateListOf<PhoneNumberAccount>()
-    val isSelectAccount = MutableStateFlow(true)
+    var isSelectAccount by mutableStateOf(false)
+        private set
     val selectedAccount = MutableStateFlow(PhoneNumberAccountNone)
 
     /**
@@ -136,7 +135,7 @@ class LoginWithPhoneViewModel @Inject constructor(
     }
 
     private fun clearAccountSelect() {
-        isSelectAccount.value = false
+        isSelectAccount = false
         selectedAccount.value = PhoneNumberAccountNone
         accountOptions.clear()
     }
@@ -159,6 +158,9 @@ class LoginWithPhoneViewModel @Inject constructor(
             return
         }
         isRequestingCode.value = true
+
+        phoneCode = ""
+
         viewModelScope.launch(ioDispatcher) {
             try {
                 when (accountUpdateRepository.initiatePhoneLogin(trimPhoneNumber)) {
@@ -206,7 +208,7 @@ class LoginWithPhoneViewModel @Inject constructor(
     fun authenticate(code: String) {
         val selectedUserId = selectedAccount.value.userId
         if (
-            isSelectAccount.value &&
+            isSelectAccount &&
             selectedUserId == 0L
         ) {
             errorMessage = translator("loginWithPhone.select_account")
@@ -218,7 +220,7 @@ class LoginWithPhoneViewModel @Inject constructor(
             accountOptions.find { it.userId == selectedUserId } == null
         ) {
             selectedAccount.value = PhoneNumberAccountNone
-            isSelectAccount.value = true
+            isSelectAccount = true
             errorMessage = translator("loginWithPhone.select_account")
             return
         }
@@ -238,17 +240,18 @@ class LoginWithPhoneViewModel @Inject constructor(
                         errorMessage = translator("loginWithPhone.no_account_error")
                         return@launch
                     } else {
+                        errorMessage = ""
+
                         oneTimePasswordId = result.otpId
 
-                        // TODO Test associated accounts
                         accountOptions.clear()
                         if (result.associatedAccounts.size > 1) {
                             accountOptions.addAll(result.associatedAccounts)
                             selectedAccount.value = PhoneNumberAccountNone
-                            isSelectAccount.value = true
+                            isSelectAccount = true
                         } else {
                             selectedAccount.value = result.associatedAccounts.first()
-                            isSelectAccount.value = false
+                            isSelectAccount = false
                         }
                     }
                 }
@@ -302,6 +305,7 @@ class LoginWithPhoneViewModel @Inject constructor(
                 }
 
                 if (!isSuccessful &&
+                    !isSelectAccount &&
                     errorMessage.isBlank()
                 ) {
                     errorMessage = translator("loginWithPhone.login_failed_try_again")

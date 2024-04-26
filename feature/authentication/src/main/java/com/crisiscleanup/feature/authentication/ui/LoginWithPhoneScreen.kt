@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -20,7 +21,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -30,15 +30,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -46,8 +44,8 @@ import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupLogoRow
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
-import com.crisiscleanup.core.designsystem.component.SingleLineTextField
 import com.crisiscleanup.core.designsystem.component.TopAppBarCancelAction
+import com.crisiscleanup.core.designsystem.component.roundedOutline
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
@@ -56,9 +54,10 @@ import com.crisiscleanup.core.designsystem.theme.listItemDropdownMenuOffset
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
-import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
+import com.crisiscleanup.core.designsystem.theme.listItemTopPadding
 import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
 import com.crisiscleanup.core.designsystem.theme.optionItemHeight
+import com.crisiscleanup.core.designsystem.theme.primaryRedColor
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
 import com.crisiscleanup.core.ui.scrollFlingListener
@@ -209,110 +208,67 @@ private fun ColumnScope.VerifyPhoneCodeScreen(
         onBack()
     }
 
-    val translator = LocalAppTranslator.current
+    val t = LocalAppTranslator.current
 
     val isExchangingCode by viewModel.isExchangingCode.collectAsStateWithLifecycle()
     val isNotBusy = !isExchangingCode
 
-    val isSelectAccount by viewModel.isSelectAccount.collectAsStateWithLifecycle()
-    val isNotSelectAccount = !isSelectAccount
+    val isNotSelectAccount = !viewModel.isSelectAccount
 
     val closeKeyboard = rememberCloseKeyboard(viewModel)
 
     TopAppBarCancelAction(
         modifier = Modifier
             .testTag("verifyPhoneCodeBackBtn"),
-        title = translator("actions.login"),
+        title = t("actions.login"),
         onAction = onBack,
     )
 
     ConditionalErrorMessage(viewModel.errorMessage, "verifyPhoneCode")
 
-    val singleCodes = viewModel.singleCodes.toList()
-
     val obfuscatedPhoneNumber by viewModel.obfuscatedPhoneNumber.collectAsStateWithLifecycle()
-    Column(listItemModifier) {
+    val codeSize = 6
+    Column(
+        Modifier
+            .listItemHorizontalPadding()
+            .listItemTopPadding(),
+    ) {
         Text(
-            translator("loginWithPhone.enter_x_digit_code")
-                .replace("{codeCount}", "${singleCodes.size}"),
+            t("loginWithPhone.enter_x_digit_code")
+                // TODO Configure replacing text/number
+                .replace("{codeCount}", "$codeSize"),
         )
         Text(obfuscatedPhoneNumber)
     }
 
-    var focusIndex = remember(viewModel) {
-        if (singleCodes.all { it.isBlank() }) {
-            0
-        } else {
-            -1
-        }
-    }
-    val focusManager = LocalFocusManager.current
+    var focusPhoneCode by remember { mutableStateOf(false) }
     val submitCode = remember(viewModel) {
         {
-            val codes = viewModel.singleCodes.toList()
-            val fullCode = codes
-                .map { it.trim() }
-                .filter { it.isNotBlank() }
-                .map { it[it.length - 1] }
-                .joinToString("")
-
-            if (fullCode.length == codes.size) {
-                viewModel.authenticate(fullCode)
+            val enteredCode = viewModel.phoneCode.trim()
+            // Give room for future changes
+            if (enteredCode.length >= codeSize - 1) {
+                viewModel.authenticate(enteredCode)
+                focusPhoneCode = false
                 closeKeyboard()
             } else {
                 viewModel.onIncompleteCode()
-
-                codes.forEachIndexed { i, code ->
-                    if (code.isBlank()) {
-                        // TODO Not working as expected.
-                        //      Likely needs more complicated focus measures.
-                        focusIndex = i
-                        return@forEachIndexed
-                    }
-                }
+                focusPhoneCode = true
             }
         }
     }
-    Row(
-        listItemModifier,
-        horizontalArrangement = listItemSpacedBy,
-    ) {
-        singleCodes.forEachIndexed { i: Int, code: String ->
-            val isLastCode = i >= singleCodes.size - 1
-            val onEnter = if (isLastCode) submitCode else null
-            SingleLineTextField(
-                modifier = Modifier.weight(1f),
-                value = code,
-                onValueChange = { s ->
-                    // TODO Set entire code if length matches and code is blank
-
-                    val updated = if (s.isBlank()) "" else s.last().toString()
-                    viewModel.singleCodes[i] = updated
-
-                    if (updated.isNotBlank()) {
-                        val focusDirection =
-                            if (isLastCode) FocusDirection.Down else FocusDirection.Next
-                        focusManager.moveFocus(focusDirection)
-
-                        if (
-                            isLastCode &&
-                            singleCodes.filter { it.isNotBlank() }.size >= singleCodes.size - 1
-                        ) {
-                            closeKeyboard()
-                        }
-                    }
-                },
-                enabled = isNotBusy && isNotSelectAccount,
-                isError = false,
-                drawOutline = true,
-                keyboardType = KeyboardType.Number,
-                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-                hasFocus = i == focusIndex,
-                imeAction = if (isLastCode) ImeAction.Done else ImeAction.Next,
-                onEnter = onEnter,
-            )
-        }
-    }
+    val updatePhoneCode = remember(viewModel) { { s: String -> viewModel.phoneCode = s.trim() } }
+    OutlinedClearableTextField(
+        modifier = listItemModifier.testTag("loginPhoneCodeTextField"),
+        label = t("~~Phone login code"),
+        value = viewModel.phoneCode.trim(),
+        onValueChange = updatePhoneCode,
+        keyboardType = KeyboardType.Number,
+        enabled = isNotBusy && isNotSelectAccount,
+        isError = false,
+        hasFocus = focusPhoneCode,
+        imeAction = ImeAction.Done,
+        onEnter = submitCode,
+    )
 
     val phoneNumber by viewModel.phoneNumberNumbers.collectAsStateWithLifecycle()
     val requestPhoneCode = remember(phoneNumber, viewModel) {
@@ -333,12 +289,12 @@ private fun ColumnScope.VerifyPhoneCodeScreen(
     val accountOptions = viewModel.accountOptions.toList()
     if (accountOptions.size > 1) {
         Text(
-            translator("loginWithPhone.phone_associated_multiple_users"),
+            t("loginWithPhone.phone_associated_multiple_users"),
             modifier = listItemModifier,
         )
 
         Text(
-            translator("actions.select_account"),
+            t("actions.select_account"),
             modifier = Modifier
                 .listItemHorizontalPadding(),
             style = LocalFontStyles.current.header4,
@@ -361,18 +317,30 @@ private fun ColumnScope.VerifyPhoneCodeScreen(
             ) {
                 val selectedOption by viewModel.selectedAccount.collectAsStateWithLifecycle()
                 Row(
-                    Modifier.listItemVerticalPadding(),
+                    Modifier
+                        .listItemVerticalPadding()
+                        .roundedOutline()
+                        // TODO Common dimensions
+                        .padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(selectedOption.accountDisplay.ifBlank { translator("actions.select_account") })
-                    Spacer(modifier = Modifier.weight(1f))
+                    val optionTextColor = if (selectedOption.accountDisplay.isBlank()) {
+                        primaryRedColor
+                    } else {
+                        LocalContentColor.current
+                    }
+                    Text(
+                        selectedOption.accountDisplay.ifBlank { t("actions.select_account") },
+                        Modifier.weight(1f),
+                        color = optionTextColor,
+                    )
                     var tint = LocalContentColor.current
                     if (!isNotBusy) {
                         tint = tint.disabledAlpha()
                     }
                     Icon(
                         imageVector = CrisisCleanupIcons.UnfoldMore,
-                        contentDescription = translator("actions.select_account"),
+                        contentDescription = t("actions.select_account"),
                         tint = tint,
                     )
                 }
@@ -417,7 +385,7 @@ private fun ColumnScope.VerifyPhoneCodeScreen(
         modifier = fillWidthPadded.testTag("verifyPhoneCodeBtn"),
         onClick = submitCode,
         enabled = isNotBusy,
-        text = translator("actions.submit"),
+        text = t("actions.submit"),
         indicateBusy = isExchangingCode,
     )
 }
