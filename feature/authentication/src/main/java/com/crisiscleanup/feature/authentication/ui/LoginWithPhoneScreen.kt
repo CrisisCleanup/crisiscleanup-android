@@ -172,6 +172,18 @@ private fun LoginWithPhoneScreen(
         onEnter = requestPhoneCode,
     )
 
+    // TODO Hide if device does not have a SIM/phone number
+    LinkAction(
+        "~~Use phone's number",
+        modifier = Modifier
+            .listItemPadding()
+            .testTag("phoneLoginRequestPhoneNumber"),
+        arrangement = Arrangement.End,
+        enabled = true,
+    ) {
+        viewModel.requestPhoneNumber()
+    }
+
     BusyButton(
         modifier = fillWidthPadded.testTag("phoneLoginAction"),
         onClick = requestPhoneCode,

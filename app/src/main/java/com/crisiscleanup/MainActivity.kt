@@ -26,6 +26,7 @@ import com.crisiscleanup.MainActivityViewState.Loading
 import com.crisiscleanup.MainActivityViewState.Success
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.PermissionManager
+import com.crisiscleanup.core.common.PhoneNumberPicker
 import com.crisiscleanup.core.common.VisualAlertManager
 import com.crisiscleanup.core.common.event.AuthEventBus
 import com.crisiscleanup.core.common.event.TrimMemoryEventManager
@@ -94,6 +95,9 @@ class MainActivity : ComponentActivity() {
     @Inject
     internal lateinit var languageTranslationsRepository: LanguageTranslationsRepository
 
+    @Inject
+    lateinit var phoneNumberPicker: PhoneNumberPicker
+
     private val lifecycleObservers = mutableListOf<LifecycleObserver>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -103,6 +107,7 @@ class MainActivity : ComponentActivity() {
         MapsInitializer.initialize(this, Renderer.LATEST) {}
 
         (permissionManager as? DefaultLifecycleObserver)?.let { lifecycleObservers.add(it) }
+        (phoneNumberPicker as? DefaultLifecycleObserver)?.let { lifecycleObservers.add(it) }
 
         lifecycleObservers.forEach { lifecycle.addObserver(it) }
 

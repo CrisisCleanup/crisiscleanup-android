@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.KeyResourceTranslator
+import com.crisiscleanup.core.common.PhoneNumberPicker
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers.Account
 import com.crisiscleanup.core.common.log.Logger
@@ -27,7 +28,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -40,6 +43,7 @@ class LoginWithPhoneViewModel @Inject constructor(
     private val dataApi: CrisisCleanupNetworkDataSource,
     private val accountUpdateRepository: AccountUpdateRepository,
     private val accountDataRepository: AccountDataRepository,
+    private val phoneNumberPicker: PhoneNumberPicker,
     private val translator: KeyResourceTranslator,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(Account) private val logger: AppLogger,
@@ -123,6 +127,22 @@ class LoginWithPhoneViewModel @Inject constructor(
         private set
 
     val isAuthenticateSuccessful = MutableStateFlow(false)
+
+    init {
+        phoneNumberPicker.phoneNumbers
+            .onEach {
+                if (it.isNotBlank() && phoneNumberInput.value.isBlank()) {
+                    phoneNumberInput.value = it
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    fun requestPhoneNumber() {
+        if (phoneNumberInput.value.isBlank()) {
+            phoneNumberPicker.requestPhoneNumber()
+        }
+    }
 
     fun onCloseScreen() {
         phoneNumberInput.value = ""

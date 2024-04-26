@@ -152,6 +152,8 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.window.manager)
     implementation(libs.androidx.profileinstaller)
+    implementation(libs.playservices.auth)
+    implementation(libs.playservices.auth.phone)
     implementation(libs.playservices.location)
     implementation(libs.zxing)
 

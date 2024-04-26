@@ -23,6 +23,7 @@ import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.DayNightPreviews
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.actionLinkColor
+import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.feature.authentication.R
@@ -64,7 +65,7 @@ internal fun LinkAction(
                 )
                 .then(modifier),
             style = LocalFontStyles.current.header4,
-            color = primaryBlueColor,
+            color = if (enabled) primaryBlueColor else primaryBlueColor.disabledAlpha(),
         )
     }
 }

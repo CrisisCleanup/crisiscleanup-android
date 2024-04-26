@@ -5,12 +5,14 @@ import android.content.Context
 import android.content.pm.PackageManager
 import com.crisiscleanup.AndroidLocationProvider
 import com.crisiscleanup.AndroidPermissionManager
+import com.crisiscleanup.AndroidPhoneNumberPicker
 import com.crisiscleanup.AppVisualAlertManager
 import com.crisiscleanup.CrisisCleanupAppEnv
 import com.crisiscleanup.ZxingQrCodeGenerator
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.PermissionManager
+import com.crisiscleanup.core.common.PhoneNumberPicker
 import com.crisiscleanup.core.common.QrCodeGenerator
 import com.crisiscleanup.core.common.VisualAlertManager
 import com.crisiscleanup.core.common.log.TagLogger
@@ -62,6 +64,10 @@ interface AppModule {
 
     @Binds
     fun bindsQrCodeGenerator(generator: ZxingQrCodeGenerator): QrCodeGenerator
+
+    @Singleton
+    @Binds
+    fun bindsPhoneNumberPicker(picker: AndroidPhoneNumberPicker): PhoneNumberPicker
 }
 
 @Module
