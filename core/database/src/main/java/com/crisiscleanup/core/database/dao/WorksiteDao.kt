@@ -411,6 +411,16 @@ interface WorksiteDao {
     fun getWorksiteByCaseNumber(incidentId: Long, caseNumber: String): WorksiteEntity?
 
     @Transaction
+    @Query(
+        """
+        SELECT * FROM worksites
+        WHERE incident_id=:incidentId AND case_number_order=:query
+        LIMIT 1
+        """,
+    )
+    fun getWorksiteByTrailingCaseNumber(incidentId: Long, query: String): WorksiteEntity?
+
+    @Transaction
     @Query("SELECT * FROM worksites WHERE incident_id=:incidentId")
     fun getTableWorksites(incidentId: Long): List<PopulatedTableDataWorksite>
 

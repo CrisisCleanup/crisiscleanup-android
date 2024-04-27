@@ -22,6 +22,7 @@ import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.WorksiteSummary
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.debounce
@@ -108,6 +109,8 @@ class CasesSearchViewModel @Inject constructor(
         )
 
     val searchQuery = MutableStateFlow("")
+
+    @OptIn(FlowPreview::class)
     private val incidentSearchQuery = kCombine(
         incidentSelector.incidentId,
         searchQuery
@@ -122,8 +125,9 @@ class CasesSearchViewModel @Inject constructor(
             replay = 0,
         )
 
+    private val throttleDelayMillis = 150L
     private val networkSearchResults = incidentSearchQuery
-        .throttleLatest(150)
+        .throttleLatest(throttleDelayMillis)
         .mapLatest { (incidentId, q) ->
             if (incidentId != EmptyIncident.id) {
                 if (q.length < 3) {
@@ -151,8 +155,9 @@ class CasesSearchViewModel @Inject constructor(
         }
         .flowOn(ioDispatcher)
 
+    private val numericRegex = """^\d+$""".toRegex(RegexOption.IGNORE_CASE)
     private val localSearchResults = incidentSearchQuery
-        .throttleLatest(150)
+        .throttleLatest(throttleDelayMillis)
         .mapLatest { (incidentId, q) ->
             if (incidentId != EmptyIncident.id) {
                 if (q.length < 2) {
@@ -166,7 +171,7 @@ class CasesSearchViewModel @Inject constructor(
 
                     var leadingCaseSummary: CaseSummaryResult? = null
                     if (options.isNotEmpty()) {
-                        searchWorksitesRepository.getWorksiteByCaseNumber(incidentId, q.trim())
+                        searchWorksitesRepository.getWorksiteByCaseNumber(incidentId, q)
                             ?.let { caseNumberMatch ->
                                 if (options.first().summary.id != caseNumberMatch.id) {
                                     leadingCaseSummary =
@@ -174,6 +179,16 @@ class CasesSearchViewModel @Inject constructor(
                                 }
                             }
                     }
+
+                    if (leadingCaseSummary == null) {
+                        numericRegex.matchEntire(q)?.let {
+                            searchWorksitesRepository.getWorksiteByTrailingCaseNumber(incidentId, q)
+                                ?.let { trailingMatch ->
+                                    leadingCaseSummary = trailingMatch.asCaseSummary(this::getIcon)
+                                }
+                        }
+                    }
+
                     leadingCaseSummary?.let { option ->
                         options = options
                             .filter { it.summary.id != option.summary.id }
@@ -232,7 +247,8 @@ class CasesSearchViewModel @Inject constructor(
                     val qLower = q.trim().lowercase()
                     val firstCaseNumberLower =
                         localOptions.firstOrNull()?.summary?.caseNumber?.lowercase()
-                    val hasCaseNumberMatch = qLower == firstCaseNumberLower
+                    val hasCaseNumberMatch = qLower == firstCaseNumberLower ||
+                        firstCaseNumberLower?.endsWith(qLower) == true
 
                     val combined = mutableListOf<CaseSummaryResult>()
                     val localCombined = mutableSetOf<Long>()
