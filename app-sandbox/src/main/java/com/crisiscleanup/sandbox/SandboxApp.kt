@@ -1,6 +1,5 @@
 package com.crisiscleanup.sandbox
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -21,7 +20,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupBackground
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
@@ -50,8 +48,6 @@ fun SandboxApp(
                 contentColor = MaterialTheme.colorScheme.onBackground,
                 contentWindowInsets = WindowInsets(0, 0, 0, 0),
                 snackbarHost = { SnackbarHost(snackbarHostState) },
-                topBar = {},
-                bottomBar = {},
             ) { padding ->
                 Column(
                     Modifier
@@ -65,7 +61,6 @@ fun SandboxApp(
                                 WindowInsets.safeDrawing
                             },
                         ),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     SandboxNavHost(
                         appState.navController,

@@ -336,6 +336,7 @@ internal fun PhotosSection(
                         AsyncImage(
                             model = photo.thumbnailUri.ifBlank { photo.imageUri },
                             modifier = Modifier
+                                .sizeIn(minWidth = 96.dp)
                                 .fillMaxSize()
                                 .clip(RoundedCornerShape(mediaCornerRadius))
                                 .clickable { onPhotoSelect(photo) },
