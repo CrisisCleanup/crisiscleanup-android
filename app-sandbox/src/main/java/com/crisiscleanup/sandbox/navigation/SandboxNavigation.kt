@@ -9,11 +9,15 @@ import com.crisiscleanup.sandbox.RootRoute
 import com.crisiscleanup.sandbox.ui.BottomNavRoute
 import com.crisiscleanup.sandbox.ui.CheckboxesRoute
 import com.crisiscleanup.sandbox.ui.ChipsRoute
+import com.crisiscleanup.sandbox.ui.MultiImageRoute
+import com.crisiscleanup.sandbox.ui.SingleImageRoute
 
 const val ROOT_ROUTE = "root"
 private const val CHECKBOXES_ROUTE = "checkboxes"
-const val CHIPS_ROUTE = "chips"
+private const val CHIPS_ROUTE = "chips"
 private const val BOTTOM_NAV_ROUTE = "bottom-nav"
+const val SINGLE_IMAGE_ROUTE = "single-image"
+const val MULTI_IMAGE_ROUTE = "multi-image"
 
 fun NavController.navigateToBottomNav() {
     this.navigate(BOTTOM_NAV_ROUTE)
@@ -27,29 +31,46 @@ fun NavController.navigateToChips() {
     this.navigate(CHIPS_ROUTE)
 }
 
+fun NavController.navigateToSingleImage() {
+    this.navigate(SINGLE_IMAGE_ROUTE)
+}
+
+fun NavController.navigateToMultiImage() {
+    this.navigate(MULTI_IMAGE_ROUTE)
+}
+
 @Composable
 fun SandboxNavHost(
     navController: NavHostController,
+    onBack: () -> Unit,
     startDestination: String = ROOT_ROUTE,
 ) {
     NavHost(
         navController = navController,
         startDestination = startDestination,
     ) {
-        composable(route = ROOT_ROUTE) {
+        composable(ROOT_ROUTE) {
             RootRoute(navController)
         }
 
-        composable(route = CHECKBOXES_ROUTE) {
+        composable(CHECKBOXES_ROUTE) {
             CheckboxesRoute()
         }
 
-        composable(route = BOTTOM_NAV_ROUTE) {
+        composable(BOTTOM_NAV_ROUTE) {
             BottomNavRoute()
         }
 
-        composable(route = CHIPS_ROUTE) {
+        composable(CHIPS_ROUTE) {
             ChipsRoute()
+        }
+
+        composable(SINGLE_IMAGE_ROUTE) {
+            SingleImageRoute(onBack)
+        }
+
+        composable(MULTI_IMAGE_ROUTE) {
+            MultiImageRoute(onBack)
         }
     }
 }

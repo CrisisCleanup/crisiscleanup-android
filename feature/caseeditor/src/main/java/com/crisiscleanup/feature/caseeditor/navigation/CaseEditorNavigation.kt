@@ -18,10 +18,10 @@ import com.crisiscleanup.core.appnav.RouteConstant.CASE_HISTORY_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.CASE_SHARE_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.VIEW_CASE_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.VIEW_CASE_TRANSFER_WORK_TYPES_ROUTE
-import com.crisiscleanup.core.appnav.ViewImageArgs
 import com.crisiscleanup.core.appnav.WORKSITE_ID_ARG
+import com.crisiscleanup.core.appnav.WorksiteImagesArgs
 import com.crisiscleanup.core.appnav.navigateToExistingCase
-import com.crisiscleanup.core.appnav.navigateToViewImage
+import com.crisiscleanup.core.appnav.navigateToWorksiteImages
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
@@ -98,6 +98,9 @@ fun NavGraphBuilder.caseEditorScreen(
             remember(navController) { { navController.navigateToCaseEditSearchAddress() } }
         val onEditMoveLocationOnMap =
             remember(navController) { { navController.navigateToCaseEditLocationMapMove() } }
+        val navToWorksiteImages = remember(navController) {
+            { args: WorksiteImagesArgs -> navController.navigateToWorksiteImages(args) }
+        }
         CreateEditCaseRoute(
             onBack = onBackClick,
             changeNewIncidentCase = navToNewCase,
@@ -105,6 +108,7 @@ fun NavGraphBuilder.caseEditorScreen(
             onOpenExistingCase = navToEditCase,
             onEditSearchAddress = onEditSearchAddress,
             onEditMoveLocationOnMap = onEditMoveLocationOnMap,
+            openPhoto = navToWorksiteImages,
         )
     }
 }
@@ -153,8 +157,8 @@ fun NavGraphBuilder.existingCaseScreen(
                 navController.navigateToTransferWorkType(true)
             }
         }
-        val navToViewImage = remember(navController) {
-            { args: ViewImageArgs -> navController.navigateToViewImage(args) }
+        val navToWorksiteImages = remember(navController) {
+            { args: WorksiteImagesArgs -> navController.navigateToWorksiteImages(args) }
         }
         val navToCaseAddFlag =
             remember(navController) { { navController.navigateToCaseAddFlag(true) } }
@@ -165,7 +169,7 @@ fun NavGraphBuilder.existingCaseScreen(
             onBackToCases = navBackToCases,
             onFullEdit = navToEditCase,
             openTransferWorkType = navToTransferWorkType,
-            openPhoto = navToViewImage,
+            openPhoto = navToWorksiteImages,
             openAddFlag = navToCaseAddFlag,
             openShareCase = navToCaseShare,
             openCaseHistory = navToCaseHistory,

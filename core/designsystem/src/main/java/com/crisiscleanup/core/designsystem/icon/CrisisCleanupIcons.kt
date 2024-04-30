@@ -19,7 +19,6 @@ import androidx.compose.material.icons.filled.Directions
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Mail
@@ -29,6 +28,8 @@ import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonOutline
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material.icons.filled.Remove
@@ -78,6 +79,8 @@ object CrisisCleanupIcons {
     val MyLocation = icons.MyLocation
     val Person = icons.Person
     val Phone = icons.Phone
+    val PhotoGrid = icons.PhotoLibrary
+    val Play = icons.PlayArrow
     val QrCode = icons.QrCode
     val QuestionMark = icons.QuestionMark
     val RotateClockwise = icons.Rotate90DegreesCw

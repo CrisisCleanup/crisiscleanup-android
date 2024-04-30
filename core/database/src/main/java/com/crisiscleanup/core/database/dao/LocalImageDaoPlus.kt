@@ -42,6 +42,10 @@ class LocalImageDaoPlus @Inject constructor(
         }
     }
 
+    suspend fun upsertLocalImages(images: List<WorksiteLocalImageEntity>) = db.withTransaction {
+        images.forEach { upsertLocalImage(it) }
+    }
+
     suspend fun saveUploadedFile(
         worksiteId: Long,
         localImage: PopulatedLocalImageDescription,

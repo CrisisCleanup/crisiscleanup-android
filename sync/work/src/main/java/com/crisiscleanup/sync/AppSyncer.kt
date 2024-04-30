@@ -383,7 +383,7 @@ class AppSyncer @Inject constructor(
         pushJob?.cancel()
     }
 
-    override fun appPushWorksite(worksiteId: Long) {
+    override fun appPushWorksite(worksiteId: Long, scheduleMediaSync: Boolean) {
         applicationScope.launch(ioDispatcher) {
             onSyncPreconditions(false)?.let {
                 return@launch
@@ -391,6 +391,10 @@ class AppSyncer @Inject constructor(
 
             if (worksiteChangeRepository.trySyncWorksite(worksiteId)) {
                 worksiteChangeRepository.syncUnattemptedWorksite(worksiteId)
+
+                if (scheduleMediaSync) {
+                    scheduleSyncMedia()
+                }
             }
         }
     }

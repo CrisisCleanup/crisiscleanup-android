@@ -1,6 +1,10 @@
 package com.crisiscleanup.feature.caseeditor
 
+import android.content.pm.PackageManager
+import android.net.Uri
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.addresssearch.AddressSearchRepository
@@ -10,6 +14,7 @@ import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.PermissionManager
+import com.crisiscleanup.core.common.cameraPermissionGranted
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -23,15 +28,19 @@ import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
+import com.crisiscleanup.core.data.repository.LocalImageRepository
 import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
 import com.crisiscleanup.core.data.repository.WorkTypeStatusRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
+import com.crisiscleanup.core.data.repository.WorksiteImageRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
 import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
+import com.crisiscleanup.core.model.data.CaseImage
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
+import com.crisiscleanup.core.model.data.ImageCategory
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.LocalWorksite
 import com.crisiscleanup.core.model.data.WorkTypeStatus
@@ -58,6 +67,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
@@ -82,8 +92,11 @@ class CreateEditCaseViewModel @Inject constructor(
     private val incidentSelector: IncidentSelector,
     private val translator: KeyResourceTranslator,
     private val worksiteChangeRepository: WorksiteChangeRepository,
+    localImageRepository: LocalImageRepository,
+    private val worksiteImageRepository: WorksiteImageRepository,
     private val syncPusher: SyncPusher,
     networkMonitor: NetworkMonitor,
+    packageManager: PackageManager,
     appEnv: AppEnv,
     @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
@@ -98,11 +111,15 @@ class CreateEditCaseViewModel @Inject constructor(
     addressSearchRepository: AddressSearchRepository,
     drawableResourceBitmapProvider: DrawableResourceBitmapProvider,
     @Dispatcher(Default) coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
-) : EditCaseBaseViewModel(editableWorksiteProvider, translator, logger) {
+) : EditCaseBaseViewModel(editableWorksiteProvider, translator, logger), CaseCameraMediaManager {
     private val caseEditorArgs = CaseEditorArgs(savedStateHandle)
     private var worksiteIdArg = caseEditorArgs.worksiteId
     private val isCreateWorksite: Boolean
         get() = worksiteIdArg == null
+
+    private val hasNewWorksitePhotosImages: Boolean
+        get() = caseEditorArgs.worksiteId == null &&
+            worksiteImageRepository.hasNewWorksiteImages
 
     val headerTitle = MutableStateFlow("")
 
@@ -119,6 +136,20 @@ class CreateEditCaseViewModel @Inject constructor(
     val invalidWorksiteInfo = mutableStateOf(InvalidWorksiteInfo())
 
     private val editingWorksite = editableWorksiteProvider.editableWorksite
+    val photosWorksiteId: Long
+        get() = editingWorksite.value.id
+
+    private val caseMediaManager = CaseMediaManager(
+        permissionManager,
+        localImageRepository,
+        worksiteImageRepository,
+        worksiteChangeRepository,
+        syncPusher,
+        viewModelScope,
+        ioDispatcher,
+        logger,
+    )
+    val deletingImageIds: StateFlow<Set<Long>> = caseMediaManager.deletingImageIds
 
     val navigateBack = mutableStateOf(false)
     val promptUnsavedChanges = mutableStateOf(false)
@@ -168,6 +199,17 @@ class CreateEditCaseViewModel @Inject constructor(
     val focusScrollToSection = MutableStateFlow(Triple(0, 0, 0))
     private var onSetMyLocationJob: Job? = null
 
+    val syncingWorksiteImage = caseMediaManager.syncingWorksiteImage
+
+    var addImageCategory by mutableStateOf(ImageCategory.Before)
+
+    override val hasCamera = packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)
+    override var showExplainPermissionCamera by mutableStateOf(false)
+    override var isCameraPermissionGranted by mutableStateOf(false)
+
+    override val capturePhotoUri: Uri?
+        get() = worksiteImageRepository.newPhotoUri
+
     init {
         updateHeaderTitle()
 
@@ -177,6 +219,10 @@ class CreateEditCaseViewModel @Inject constructor(
         changingIncidentWorksite = incidentChangeData?.worksite ?: EmptyWorksite
 
         editableWorksiteProvider.reset(incidentIdIn)
+
+        if (isCreateWorksite) {
+            worksiteImageRepository.clearNewWorksiteImages()
+        }
 
         dataLoader = CaseEditorDataLoader(
             isCreateWorksite,
@@ -340,6 +386,13 @@ class CreateEditCaseViewModel @Inject constructor(
                 }
             }
             .launchIn(viewModelScope)
+
+        permissionManager.permissionChanges.map {
+            if (it == cameraPermissionGranted) {
+                caseMediaManager.continueTakePhotoGate.set(true)
+                isCameraPermissionGranted = true
+            }
+        }.launchIn(viewModelScope)
     }
 
     val viewState = dataLoader.viewState
@@ -365,10 +418,26 @@ class CreateEditCaseViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
+    private val photosLookup = if (isCreateWorksite) {
+        worksiteImageRepository.streamNewWorksiteImages().mapToCategoryLookup()
+    } else {
+        val filesNotes = processWorksiteFilesNotes(
+            editableWorksiteProvider.editableWorksite,
+            viewState,
+        )
+        organizeBeforeAfterPhotos(filesNotes)
+    }
+    val beforeAfterPhotos = photosLookup
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = emptyMap<ImageCategory, List<CaseImage>>(),
+            started = SharingStarted.WhileSubscribed(),
+        )
+
     fun scheduleSync() {
         val worksite = editingWorksite.value
         if (!(worksite.isNew || isSyncing.value)) {
-            syncPusher.appPushWorksite(worksite.id)
+            syncPusher.appPushWorksite(worksite.id, true)
         }
     }
 
@@ -524,6 +593,13 @@ class CreateEditCaseViewModel @Inject constructor(
                 val isIncidentChange = saveIncidentId != EmptyIncident.id &&
                     saveIncidentId != worksite.incidentId
                 if (worksite == initialWorksite && !isIncidentChange) {
+                    if (hasNewWorksitePhotosImages) {
+                        propertyEditor?.propertyInputData?.let {
+                            setInvalidSection(0, it)
+                        }
+                        return@launch
+                    }
+
                     if (backOnSuccess) {
                         navigateBack.value = true
                     }
@@ -577,6 +653,10 @@ class CreateEditCaseViewModel @Inject constructor(
                 )
                 val worksiteId = worksiteIdArg!!
 
+                if (hasNewWorksitePhotosImages) {
+                    worksiteImageRepository.transferNewWorksiteImages(worksiteId)
+                }
+
                 worksiteProvider.setEditedLocation(worksite.coordinates)
                 if (isIncidentChange) {
                     incidentSelector.setIncident(saveChangeIncident)
@@ -585,7 +665,7 @@ class CreateEditCaseViewModel @Inject constructor(
                     dataLoader.reloadData(worksiteId)
                 }
 
-                syncPusher.appPushWorksite(worksiteId)
+                syncPusher.appPushWorksite(worksiteId, true)
 
                 if (isIncidentChange) {
                     changeExistingWorksite.value =
@@ -594,15 +674,22 @@ class CreateEditCaseViewModel @Inject constructor(
                     navigateBack.value = true
                 }
             } catch (e: Exception) {
-                logger.logException(e)
-
-                // TODO Show dialog save failed. Try again. If still fails seek help.
+                onSaveFail(e)
             } finally {
                 synchronized(isSavingWorksite) {
                     isSavingWorksite.value = false
                 }
             }
         }
+    }
+
+    private fun onSaveFail(
+        e: Exception,
+        isMediaSave: Boolean = false,
+    ) {
+        logger.logException(e)
+
+        // TODO Show dialog save failed. Try again. If still fails seek help.
     }
 
     fun abandonChanges() {
@@ -731,6 +818,11 @@ class CreateEditCaseViewModel @Inject constructor(
                 promptUnsavedChanges.value = true
                 return true
             }
+
+            if (hasNewWorksitePhotosImages) {
+                promptUnsavedChanges.value = true
+                return true
+            }
         }
 
         return false
@@ -749,6 +841,37 @@ class CreateEditCaseViewModel @Inject constructor(
     override fun onNavigateBack() = onBackNavigate(true)
 
     override fun onNavigateCancel() = onBackNavigate()
+
+    // CaseCameraMediaManager
+
+    override fun takePhoto() = caseMediaManager.takePhoto { showExplainPermissionCamera = true }
+
+    override fun continueTakePhoto() = caseMediaManager.continueTakePhotoGate.getAndSet(false)
+
+    override fun onMediaSelected(uri: Uri, isFileSelected: Boolean) {
+        tryGetEditorState()?.let { caseData ->
+            caseMediaManager.onMediaSelected(
+                caseData.worksite.id,
+                addImageCategory.literal,
+                uri,
+                isFileSelected,
+            ) { e -> onSaveFail(e, true) }
+        }
+    }
+
+    override fun onMediaSelected(uris: List<Uri>) {
+        uris.forEach {
+            onMediaSelected(it, true)
+        }
+    }
+
+    override fun onDeleteImage(image: CaseImage) {
+        if (isCreateWorksite) {
+            worksiteImageRepository.deleteNewWorksiteImage(image.imageUri)
+        } else {
+            caseMediaManager.deleteImage(image.id, image.isNetworkImage)
+        }
+    }
 }
 
 sealed interface CaseEditorViewState {

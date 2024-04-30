@@ -36,6 +36,7 @@ import com.crisiscleanup.core.network.CrisisCleanupWriteApi
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
@@ -100,6 +101,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
+    @OptIn(FlowPreview::class)
     override fun streamIncidentWorksitesCount(incidentIdStream: Flow<Long>) = combine(
         incidentIdStream,
         incidentIdStream.flatMapLatest { worksiteDao.streamWorksitesCount(it) },

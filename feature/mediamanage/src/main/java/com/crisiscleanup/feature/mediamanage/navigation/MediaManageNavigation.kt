@@ -5,11 +5,14 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.crisiscleanup.core.appnav.RouteConstant.VIEW_IMAGE_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.WORKSITE_IMAGES_ROUTE
 import com.crisiscleanup.core.appnav.ViewImageArgs.Companion.ENCODED_TITLE_ARG
 import com.crisiscleanup.core.appnav.ViewImageArgs.Companion.ENCODED_URI_ARG
 import com.crisiscleanup.core.appnav.ViewImageArgs.Companion.IMAGE_ID_ARG
 import com.crisiscleanup.core.appnav.ViewImageArgs.Companion.IS_NETWORK_IMAGE_ARG
+import com.crisiscleanup.core.appnav.WorksiteImagesArgs.Companion.WORKSITE_ID_ARG
 import com.crisiscleanup.feature.mediamanage.ui.ViewImageRoute
+import com.crisiscleanup.feature.mediamanage.ui.ViewWorksiteImagesRoute
 
 fun NavGraphBuilder.viewSingleImageScreen(
     onBack: () -> Unit,
@@ -38,5 +41,39 @@ fun NavGraphBuilder.viewSingleImageScreen(
         ),
     ) {
         ViewImageRoute(onBack = onBack)
+    }
+}
+
+fun NavGraphBuilder.viewWorksiteImagesScreen(
+    onBack: () -> Unit,
+) {
+    val queryString = listOf(
+        "$WORKSITE_ID_ARG={$WORKSITE_ID_ARG}",
+        "$IMAGE_ID_ARG={$IMAGE_ID_ARG}",
+        "$ENCODED_URI_ARG={$ENCODED_URI_ARG}",
+        "$IS_NETWORK_IMAGE_ARG={$IS_NETWORK_IMAGE_ARG}",
+        "$ENCODED_TITLE_ARG={$ENCODED_TITLE_ARG}",
+    ).joinToString("&")
+    composable(
+        route = "$WORKSITE_IMAGES_ROUTE?$queryString",
+        arguments = listOf(
+            navArgument(WORKSITE_ID_ARG) {
+                type = NavType.LongType
+            },
+            navArgument(IMAGE_ID_ARG) {
+                type = NavType.LongType
+            },
+            navArgument(ENCODED_URI_ARG) {
+                type = NavType.StringType
+            },
+            navArgument(IS_NETWORK_IMAGE_ARG) {
+                type = NavType.BoolType
+            },
+            navArgument(ENCODED_TITLE_ARG) {
+                type = NavType.StringType
+            },
+        ),
+    ) {
+        ViewWorksiteImagesRoute(onBack = onBack)
     }
 }

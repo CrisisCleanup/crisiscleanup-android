@@ -21,6 +21,7 @@ import com.crisiscleanup.core.appnav.RouteConstant.MENU_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.TEAM_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.USER_FEEDBACK_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.VIEW_IMAGE_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.WORKSITE_IMAGES_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.topLevelRoutes
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.ui.TrackDisposableJank
@@ -77,10 +78,19 @@ class CrisisCleanupAppState(
     val isMenuRoute: Boolean
         @Composable get() = currentDestination?.route == MENU_ROUTE
 
+    private val fullscreenRoutes = setOf(
+        WORKSITE_IMAGES_ROUTE,
+        VIEW_IMAGE_ROUTE,
+    )
     val isFullscreenRoute: Boolean
         @Composable get() {
             val route = currentDestination?.route ?: ""
-            return route.startsWith(VIEW_IMAGE_ROUTE)
+            for (fullscreenRoute in fullscreenRoutes) {
+                if (route.startsWith(fullscreenRoute)) {
+                    return true
+                }
+            }
+            return false
         }
 
     val shouldShowBottomBar: Boolean

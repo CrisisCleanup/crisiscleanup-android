@@ -143,7 +143,7 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
                     authEventBus.onTokensRefreshed()
                     return true
                 }
-            } catch (e: NetworkAuthException) {
+            } catch (e: NetworkSingleErrorException) {
                 if (invalidRefreshTokenErrorMessages.contains(e.message)) {
                     accountDataRepository.clearAccountTokens()
                 }
@@ -258,18 +258,18 @@ class CrisisCleanupAuthInterceptorProvider @Inject constructor() : AuthIntercept
             if (response.code in 400..499) {
                 response.body?.let { responseBody ->
                     val errorBody = responseBody.string()
-                    var authErrorMessage = ""
+                    var singleErrorMessage = ""
                     try {
                         val singleError = json.decodeFromString<SingleNetworkError>(errorBody)
-                        authErrorMessage = singleError.error
+                        singleErrorMessage = singleError.error
                     } catch (e: Exception) {
                         Log.w(
                             "network-error",
                             "Network auth error format not parsed $errorBody",
                         )
                     }
-                    if (authErrorMessage.isNotBlank()) {
-                        throw NetworkAuthException(authErrorMessage)
+                    if (singleErrorMessage.isNotBlank()) {
+                        throw NetworkSingleErrorException(singleErrorMessage)
                     } else {
                         throw CrisisCleanupNetworkException(
                             request.url.toUrl().toString(),
@@ -285,4 +285,4 @@ class CrisisCleanupAuthInterceptorProvider @Inject constructor() : AuthIntercept
     }
 }
 
-private class NetworkAuthException(message: String) : IOException(message)
+private class NetworkSingleErrorException(message: String) : IOException(message)

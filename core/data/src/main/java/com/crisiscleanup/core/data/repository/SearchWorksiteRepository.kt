@@ -40,6 +40,11 @@ interface SearchWorksitesRepository {
         incidentId: Long,
         caseNumber: String,
     ): WorksiteSummary?
+
+    suspend fun getWorksiteByTrailingCaseNumber(
+        incidentId: Long,
+        number: String,
+    ): WorksiteSummary?
 }
 
 class MemoryCacheSearchWorksitesRepository @Inject constructor(
@@ -225,6 +230,11 @@ class MemoryCacheSearchWorksitesRepository @Inject constructor(
 
         return worksiteDao.getWorksiteByCaseNumber(incidentId, caseNumber)?.asSummary()
     }
+
+    override suspend fun getWorksiteByTrailingCaseNumber(
+        incidentId: Long,
+        number: String,
+    ) = worksiteDao.getWorksiteByTrailingCaseNumber(incidentId, number)?.asSummary()
 }
 
 private data class IncidentQuery(

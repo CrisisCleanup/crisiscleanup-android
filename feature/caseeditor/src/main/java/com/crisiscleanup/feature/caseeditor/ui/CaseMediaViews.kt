@@ -7,17 +7,23 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
@@ -34,35 +40,123 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.unit.toSize
 import coil.compose.AsyncImage
+import com.crisiscleanup.core.appnav.ViewImageArgs
+import com.crisiscleanup.core.common.urlEncode
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.OpenSettingsDialog
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
+import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
+import com.crisiscleanup.core.designsystem.theme.optionItemHeight
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.designsystem.theme.primaryBlueOneTenthColor
+import com.crisiscleanup.core.model.data.CaseImage
+import com.crisiscleanup.core.model.data.ImageCategory
 import com.crisiscleanup.core.ui.touchDownConsumer
-import com.crisiscleanup.feature.caseeditor.R
-import com.crisiscleanup.feature.caseeditor.ViewCaseViewModel
-import com.crisiscleanup.feature.caseeditor.model.CaseImage
+import com.crisiscleanup.feature.caseeditor.CaseCameraMediaManager
+import com.crisiscleanup.core.common.R as commonR
 
 private val addMediaActionPadding = 4.dp
 private val mediaCornerRadius = 6.dp
 private val addMediaStrokeWidth = 2.dp
 private val addMediaStrokeDash = 6.dp
 private val addMediaStrokeGap = 6.dp
+
+@Composable
+internal fun CasePhotoImageView(
+    cameraMediaManager: CaseCameraMediaManager,
+    setEnablePagerScroll: (Boolean) -> Unit,
+    photos: Map<ImageCategory, List<CaseImage>>,
+    syncingWorksiteImage: Long,
+    deletingImageIds: Set<Long>,
+    onUpdateImageCategory: (ImageCategory) -> Unit,
+    viewHeaderTitle: String,
+    maxHeight: Dp = 480.dp,
+    onPhotoSelect: (ViewImageArgs) -> Unit = { _ -> },
+) {
+    var showCameraMediaSelect by remember { mutableStateOf(false) }
+
+    val t = LocalAppTranslator.current
+    val sectionTitleResIds = mapOf(
+        ImageCategory.Before to t("caseForm.before_photos"),
+        ImageCategory.After to t("caseForm.after_photos"),
+    )
+    var isShortScreen by remember { mutableStateOf(false) }
+    val onDeleteImage = remember(cameraMediaManager) {
+        { image: CaseImage ->
+            cameraMediaManager.onDeleteImage(image)
+        }
+    }
+    Column(
+        modifier = Modifier
+            .sizeIn(maxHeight = maxHeight)
+            .fillMaxHeight()
+            .onGloballyPositioned {
+                isShortScreen = it.size.height.dp < 720.dp
+            },
+    ) {
+        sectionTitleResIds.onEach { (imageCategory, sectionTitle) ->
+            photos[imageCategory]?.let { rowPhotos ->
+                val title = if (isShortScreen) {
+                    sectionTitle.replace(" ", "\n")
+                } else {
+                    sectionTitle
+                }
+                PhotosSection(
+                    title,
+                    Modifier
+                        .listItemVerticalPadding()
+                        .weight(0.45f),
+                    StaggeredGridCells.Fixed(1),
+                    isShortScreen,
+                    photos = rowPhotos,
+                    deletingImageIds = deletingImageIds,
+                    setEnableParentScroll = setEnablePagerScroll,
+                    onAddPhoto = {
+                        onUpdateImageCategory(imageCategory)
+                        showCameraMediaSelect = true
+                    },
+                    onDeleteImage = onDeleteImage,
+                    onPhotoSelect = { image: CaseImage ->
+                        with(image) {
+                            val viewImageArgs = ViewImageArgs(
+                                id,
+                                encodedUri = imageUri.urlEncode(),
+                                isNetworkImage,
+                                viewHeaderTitle.urlEncode(),
+                            )
+                            onPhotoSelect(viewImageArgs)
+                        }
+                    },
+                    syncingWorksiteImage = syncingWorksiteImage,
+                )
+            }
+        }
+    }
+
+    val closeCameraMediaSelect = remember(cameraMediaManager) { { showCameraMediaSelect = false } }
+    TakePhotoSelectImage(
+        cameraMediaManager,
+        showCameraMediaSelect,
+        closeCameraMediaSelect,
+    )
+}
 
 @Composable
 private fun AddMediaView(
@@ -117,6 +211,29 @@ private fun AddMediaView(
 }
 
 @Composable
+private fun SurfaceIcon(
+    imageVector: ImageVector,
+    color: Color,
+    modifier: Modifier = Modifier,
+    iconSize: Dp = 24.dp,
+    iconPadding: Dp = 16.dp,
+    contentDescription: String? = null,
+) {
+    Surface(
+        modifier = modifier.clip(CircleShape),
+        color = color,
+    ) {
+        Icon(
+            modifier = Modifier
+                .size(iconSize)
+                .padding(iconPadding),
+            imageVector = imageVector,
+            contentDescription = contentDescription,
+        )
+    }
+}
+
+@Composable
 internal fun PhotosSection(
     title: String,
     modifier: Modifier = Modifier,
@@ -124,7 +241,9 @@ internal fun PhotosSection(
     isInlineContent: Boolean = false,
     photos: List<CaseImage> = emptyList(),
     syncingWorksiteImage: Long = 0L,
+    deletingImageIds: Set<Long> = emptySet(),
     onAddPhoto: () -> Unit = {},
+    onDeleteImage: (CaseImage) -> Unit = {},
     onPhotoSelect: (CaseImage) -> Unit = {},
     setEnableParentScroll: (Boolean) -> Unit = {},
     addActionSize: Dp = 128.dp,
@@ -179,7 +298,6 @@ internal fun PhotosSection(
         ) { index ->
             when (index) {
                 categoryTitleIndex -> {
-                    // TODO Refactor duplicate code
                     Text(
                         title,
                         listItemModifier,
@@ -201,52 +319,61 @@ internal fun PhotosSection(
                 }
 
                 else -> {
+                    val t = LocalAppTranslator.current
                     val photoIndex = index - photoOffsetIndex
                     val photo = photos[photoIndex]
-                    Box {
+                    val isSyncing = syncingWorksiteImage != 0L && syncingWorksiteImage == photo.id
+                    val isDeleting = deletingImageIds.contains(photo.id)
+                    // TODO Common dimensions
+                    val halfWhite = Color.White.copy(alpha = 0.5f)
+
+                    var contentSize by remember { mutableStateOf(Size.Zero) }
+                    Box(
+                        Modifier.onGloballyPositioned {
+                            contentSize = it.size.toSize()
+                        },
+                    ) {
                         AsyncImage(
                             model = photo.thumbnailUri.ifBlank { photo.imageUri },
                             modifier = Modifier
+                                .sizeIn(minWidth = 96.dp)
                                 .fillMaxSize()
                                 .clip(RoundedCornerShape(mediaCornerRadius))
                                 .clickable { onPhotoSelect(photo) },
-                            placeholder = painterResource(R.drawable.cc_grayscale_pin),
+                            placeholder = painterResource(commonR.drawable.cc_grayscale_pin),
                             contentDescription = photo.title,
                             contentScale = ContentScale.Crop,
                         )
-                        // TODO Common dimensions
-                        val translator = LocalAppTranslator.current
-                        if (syncingWorksiteImage == photo.id) {
-                            Surface(
-                                modifier = Modifier
-                                    .align(Alignment.Center)
-                                    .clip(CircleShape),
-                                color = (Color.White.copy(alpha = 0.8f)),
-                            ) {
-                                Icon(
-                                    modifier = Modifier
-                                        .size(64.dp)
-                                        .padding(16.dp),
-                                    imageVector = CrisisCleanupIcons.CloudSync,
-                                    contentDescription = translator("info.is_syncing"),
-                                )
-                            }
+                        // TODO Common dimensions where defined
+                        val isTransient = isSyncing || isDeleting
+                        if (isTransient) {
+                            SurfaceIcon(
+                                CrisisCleanupIcons.CloudSync,
+                                Color.White.copy(alpha = 0.8f),
+                                Modifier.align(Alignment.Center),
+                                iconSize = 64.dp,
+                                contentDescription = t("info.is_syncing"),
+                            )
                         } else if (!photo.isNetworkImage) {
-                            Surface(
-                                modifier = Modifier
+                            SurfaceIcon(
+                                CrisisCleanupIcons.Cloud,
+                                halfWhite,
+                                Modifier
                                     .align(Alignment.TopEnd)
                                     .padding(8.dp)
-                                    .clip(CircleShape),
-                                color = (Color.White.copy(alpha = 0.5f)),
-                            ) {
-                                Icon(
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                        .padding(4.dp),
-                                    imageVector = CrisisCleanupIcons.Cloud,
-                                    contentDescription = translator("info.awaiting_cloud_sync"),
-                                )
-                            }
+                                    .padding(end = 36.dp),
+                                iconPadding = 4.dp,
+                                contentDescription = t("info.awaiting_cloud_sync"),
+                            )
+                        }
+
+                        if (!isTransient) {
+                            val onDelete = remember(photo) { { onDeleteImage(photo) } }
+                            RowImageContextMenu(
+                                contentSize,
+                                halfWhite,
+                                onDelete = onDelete,
+                            )
                         }
                     }
                 }
@@ -255,10 +382,68 @@ internal fun PhotosSection(
     }
 }
 
+@Composable
+private fun BoxScope.RowImageContextMenu(
+    contentSize: Size,
+    actionBackgroundColor: Color,
+    enabled: Boolean = true,
+    onDelete: () -> Unit = {},
+) {
+    val t = LocalAppTranslator.current
+    var showDropdown by remember { mutableStateOf(false) }
+    Box(
+        Modifier
+            .align(Alignment.TopEnd),
+    ) {
+        Box(
+            Modifier
+                .size(48.dp)
+                .offset(x = 4.dp, y = (-4).dp)
+                .clip(CircleShape)
+                .clickable(
+                    enabled = enabled,
+                    onClick = { showDropdown = !showDropdown },
+                ),
+        ) {
+            SurfaceIcon(
+                CrisisCleanupIcons.MoreVert,
+                actionBackgroundColor,
+                Modifier
+                    .align(Alignment.Center)
+                    .padding(8.dp),
+                iconPadding = 4.dp,
+                contentDescription = t("actions.show_more"),
+            )
+        }
+
+        if (showDropdown) {
+            DropdownMenu(
+                modifier = Modifier
+                    .width(
+                        with(LocalDensity.current) {
+                            contentSize.width.toDp()
+                        },
+                    ),
+                expanded = showDropdown,
+                onDismissRequest = { showDropdown = false },
+            ) {
+                DropdownMenuItem(
+                    modifier = Modifier.optionItemHeight(),
+                    text = { Text(t("actions.delete")) },
+                    onClick = {
+                        onDelete()
+                        showDropdown = false
+                    },
+                )
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun TakePhotoSelectImage(
-    viewModel: ViewCaseViewModel = hiltViewModel(),
+    cameraMediaManager: CaseCameraMediaManager,
     showOptions: Boolean = false,
     closeOptions: () -> Unit = {},
 ) {
@@ -268,14 +453,14 @@ internal fun TakePhotoSelectImage(
         contract = ActivityResultContracts.TakePicture(),
     ) { isTaken ->
         if (isTaken) {
-            viewModel.onMediaSelected(cameraPhotoUri, false)
+            cameraMediaManager.onMediaSelected(cameraPhotoUri, false)
         }
         closeOptions()
     }
     val selectImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(),
     ) { uris: List<Uri> ->
-        viewModel.onMediaSelected(uris)
+        cameraMediaManager.onMediaSelected(uris)
         closeOptions()
     }
 
@@ -283,10 +468,10 @@ internal fun TakePhotoSelectImage(
         ModalBottomSheet(
             onDismissRequest = closeOptions,
         ) {
-            if (viewModel.hasCamera) {
-                val continueTakePhoto = remember(viewModel) {
+            if (cameraMediaManager.hasCamera) {
+                val continueTakePhoto = remember(cameraMediaManager) {
                     {
-                        val uri = viewModel.capturePhotoUri
+                        val uri = cameraMediaManager.capturePhotoUri
                         if (uri == null) {
                             // TODO Show error message
                         } else {
@@ -300,13 +485,13 @@ internal fun TakePhotoSelectImage(
                     listItemModifier,
                     text = translator("actions.take_photo"),
                     onClick = {
-                        if (viewModel.takePhoto()) {
+                        if (cameraMediaManager.takePhoto()) {
                             continueTakePhoto()
                         }
                     },
                 )
 
-                if (viewModel.isCameraPermissionGranted && viewModel.continueTakePhoto()) {
+                if (cameraMediaManager.isCameraPermissionGranted && cameraMediaManager.continueTakePhoto()) {
                     continueTakePhoto()
                 }
             }
@@ -324,9 +509,9 @@ internal fun TakePhotoSelectImage(
     }
 
     val closePermissionDialog =
-        remember(viewModel) { { viewModel.showExplainPermissionCamera = false } }
+        remember(cameraMediaManager) { { cameraMediaManager.showExplainPermissionCamera = false } }
     ExplainCameraPermissionDialog(
-        showDialog = viewModel.showExplainPermissionCamera,
+        showDialog = cameraMediaManager.showExplainPermissionCamera,
         closeDialog = closePermissionDialog,
         closeText = translator("actions.close"),
     )

@@ -358,7 +358,7 @@ private fun NavigableContent(
                 .consumeWindowInsets(padding)
                 .windowInsetsPadding(
                     if (isFullscreen) {
-                        WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)
+                        WindowInsets(0, 0, 0, 0)
                     } else {
                         WindowInsets.safeDrawing
                     },

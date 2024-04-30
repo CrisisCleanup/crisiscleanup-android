@@ -45,6 +45,7 @@ import com.crisiscleanup.core.data.repository.OfflineFirstLanguageTranslationsRe
 import com.crisiscleanup.core.data.repository.OfflineFirstLocationsRepository
 import com.crisiscleanup.core.data.repository.OfflineFirstOrganizationsRepository
 import com.crisiscleanup.core.data.repository.OfflineFirstUsersRepository
+import com.crisiscleanup.core.data.repository.OfflineFirstWorksiteImageRepository
 import com.crisiscleanup.core.data.repository.OfflineFirstWorksitesRepository
 import com.crisiscleanup.core.data.repository.OrgVolunteerRepository
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
@@ -53,6 +54,7 @@ import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
 import com.crisiscleanup.core.data.repository.UsersRepository
 import com.crisiscleanup.core.data.repository.WorkTypeStatusRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
+import com.crisiscleanup.core.data.repository.WorksiteImageRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.data.util.ConnectivityManagerNetworkMonitor
 import com.crisiscleanup.core.data.util.IncidentDataPullReporter
@@ -195,6 +197,11 @@ interface DataModule {
     fun bindsRequestRedeployRepository(
         repository: CrisisCleanupRequestRedeployRepository,
     ): RequestRedeployRepository
+
+    @Binds
+    fun bindsWorksiteImageRepository(
+        repository: OfflineFirstWorksiteImageRepository,
+    ): WorksiteImageRepository
 }
 
 @Module

@@ -32,6 +32,7 @@ import com.crisiscleanup.feature.cases.navigation.navigateToCasesSearch
 import com.crisiscleanup.feature.cases.ui.CasesAction
 import com.crisiscleanup.feature.dashboard.navigation.dashboardScreen
 import com.crisiscleanup.feature.mediamanage.navigation.viewSingleImageScreen
+import com.crisiscleanup.feature.mediamanage.navigation.viewWorksiteImagesScreen
 import com.crisiscleanup.feature.menu.navigation.menuScreen
 import com.crisiscleanup.feature.organizationmanage.navigation.inviteTeammateScreen
 import com.crisiscleanup.feature.organizationmanage.navigation.navigateToInviteTeammate
@@ -139,6 +140,7 @@ fun CrisisCleanupNavHost(
             openSyncLogs = openSyncLogs,
         )
         viewSingleImageScreen(onBack)
+        viewWorksiteImagesScreen(onBack)
         inviteTeammateScreen(onBack)
         requestRedeployScreen(onBack)
         userFeedbackScreen(onBack)

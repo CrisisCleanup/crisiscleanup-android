@@ -10,6 +10,7 @@ import com.crisiscleanup.core.database.model.BoundedSyncedWorksiteIds
 import com.crisiscleanup.core.database.model.PopulatedFilterDataWorksite
 import com.crisiscleanup.core.database.model.PopulatedLocalWorksite
 import com.crisiscleanup.core.database.model.PopulatedTableDataWorksite
+import com.crisiscleanup.core.database.model.PopulatedWorksiteFiles
 import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
 import com.crisiscleanup.core.database.model.WorksiteEntity
 import com.crisiscleanup.core.database.model.WorksiteLocalModifiedAt
@@ -38,6 +39,10 @@ interface WorksiteDao {
     @Transaction
     @Query("SELECT * FROM worksites WHERE id=:id")
     fun streamLocalWorksite(id: Long): Flow<PopulatedLocalWorksite?>
+
+    @Transaction
+    @Query("SELECT * FROM worksites WHERE id=:id")
+    fun streamWorksiteFiles(id: Long): Flow<PopulatedWorksiteFiles>
 
     @Transaction
     @Query(
@@ -404,6 +409,16 @@ interface WorksiteDao {
         """,
     )
     fun getWorksiteByCaseNumber(incidentId: Long, caseNumber: String): WorksiteEntity?
+
+    @Transaction
+    @Query(
+        """
+        SELECT * FROM worksites
+        WHERE incident_id=:incidentId AND case_number_order=:query
+        LIMIT 1
+        """,
+    )
+    fun getWorksiteByTrailingCaseNumber(incidentId: Long, query: String): WorksiteEntity?
 
     @Transaction
     @Query("SELECT * FROM worksites WHERE incident_id=:incidentId")

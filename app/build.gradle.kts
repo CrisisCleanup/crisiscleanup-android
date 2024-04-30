@@ -13,7 +13,7 @@ plugins {
 
 android {
     defaultConfig {
-        val buildVersion = 193
+        val buildVersion = 198
         applicationId = "com.crisiscleanup"
         versionCode = buildVersion
         versionName = "0.9.${buildVersion - 168}"
@@ -46,6 +46,11 @@ android {
             )
 
             buildConfigField("Boolean", "IS_RELEASE_BUILD", "true")
+
+            // TODO Review proper syntax
+            ndk {
+                debugSymbolLevel = "SYMBOL_TABLE"
+            }
 
             // To publish on the Play store a private signing key is required, but to allow anyone
             // who clones the code to sign and run the release variant, use the debug signing key.
@@ -152,6 +157,8 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.window.manager)
     implementation(libs.androidx.profileinstaller)
+    implementation(libs.playservices.auth)
+    implementation(libs.playservices.auth.phone)
     implementation(libs.playservices.location)
     implementation(libs.zxing)
 

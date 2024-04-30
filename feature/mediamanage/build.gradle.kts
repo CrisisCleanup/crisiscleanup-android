@@ -9,6 +9,9 @@ android {
 }
 
 dependencies {
+    implementation(projects.core.data)
+    implementation(projects.core.designsystem)
+
     implementation(libs.coil.kt)
     implementation(libs.coil.kt.compose)
 }

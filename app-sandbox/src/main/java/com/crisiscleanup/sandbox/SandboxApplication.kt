@@ -5,8 +5,6 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
-import coil.ImageLoader
-import coil.ImageLoaderFactory
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.PermissionManager
@@ -31,17 +29,11 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.MutableStateFlow
 import okhttp3.Interceptor
 import javax.inject.Inject
-import javax.inject.Provider
 import javax.inject.Singleton
 import kotlin.coroutines.cancellation.CancellationException
 
 @HiltAndroidApp
-class SandboxApplication : Application(), ImageLoaderFactory {
-    @Inject
-    lateinit var imageLoader: Provider<ImageLoader>
-
-    override fun newImageLoader(): ImageLoader = imageLoader.get()
-}
+class SandboxApplication : Application()
 
 @Singleton
 class SandboxAppEnv @Inject constructor() : AppEnv {
@@ -138,7 +130,7 @@ class AppSyncer @Inject constructor() : SyncPuller, SyncPusher {
 
     override suspend fun syncPullStatuses() = SyncResult.NotAttempted("")
 
-    override fun appPushWorksite(worksiteId: Long) {}
+    override fun appPushWorksite(worksiteId: Long, scheduleMediaSync: Boolean) {}
 
     override suspend fun syncPushWorksitesAsync() = CompletableDeferred(SyncResult.NotAttempted(""))
 
