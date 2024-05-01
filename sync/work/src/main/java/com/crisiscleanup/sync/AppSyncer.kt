@@ -12,6 +12,7 @@ import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.common.sync.SyncResult
+import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
@@ -42,6 +43,7 @@ import javax.inject.Singleton
 @Singleton
 class AppSyncer @Inject constructor(
     private val accountDataRepository: AccountDataRepository,
+    private val accountDataRefresher: AccountDataRefresher,
     private val incidentsRepository: IncidentsRepository,
     private val worksitesRepository: WorksitesRepository,
     private val languageRepository: LanguageTranslationsRepository,
@@ -119,6 +121,7 @@ class AppSyncer @Inject constructor(
         try {
             executePlan(
                 plan,
+                accountDataRefresher,
                 incidentsRepository,
                 worksitesRepository,
                 syncLogger,
@@ -219,6 +222,7 @@ class AppSyncer @Inject constructor(
                 val plan = SyncPlan.Builder().setPullIncidents().build()
                 executePlan(
                     plan,
+                    accountDataRefresher,
                     incidentsRepository,
                     worksitesRepository,
                     syncLogger,
