@@ -80,23 +80,11 @@ class WorksiteImagesViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    private val existingWorksiteImages = if (worksiteId > -1) {
-        worksiteImageRepository.streamWorksiteImages(worksiteId)
+    private val worksiteImages = if (worksiteId == EmptyWorksite.id) {
+        worksiteImageRepository.streamNewWorksiteImages()
     } else {
-        flowOf(emptyList())
+        worksiteImageRepository.streamWorksiteImages(worksiteId)
     }
-    private val worksiteImages = combine(
-        worksiteImageRepository.streamNewWorksiteImages(),
-        existingWorksiteImages,
-        ::Pair,
-    )
-        .mapLatest { (newImages, existingImages) ->
-            if (worksiteId != EmptyWorksite.id) {
-                existingImages
-            } else {
-                newImages
-            }
-        }
 
     private val imagesData = combine(
         imageIndex,

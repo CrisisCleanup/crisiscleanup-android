@@ -421,11 +421,11 @@ class CreateEditCaseViewModel @Inject constructor(
     private val photosLookup = if (isCreateWorksite) {
         worksiteImageRepository.streamNewWorksiteImages().mapToCategoryLookup()
     } else {
-        val filesNotes = processWorksiteFilesNotes(
+        processWorksiteFilesNotes(
             editableWorksiteProvider.editableWorksite,
             viewState,
         )
-        organizeBeforeAfterPhotos(filesNotes)
+            .organizeBeforeAfterPhotos()
     }
     val beforeAfterPhotos = photosLookup
         .stateIn(

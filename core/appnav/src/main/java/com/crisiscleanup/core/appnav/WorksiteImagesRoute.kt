@@ -5,14 +5,12 @@ import androidx.navigation.NavController
 import com.crisiscleanup.core.appnav.ViewImageArgs.Companion.ENCODED_TITLE_ARG
 import com.crisiscleanup.core.appnav.ViewImageArgs.Companion.ENCODED_URI_ARG
 import com.crisiscleanup.core.appnav.ViewImageArgs.Companion.IMAGE_ID_ARG
-import com.crisiscleanup.core.appnav.ViewImageArgs.Companion.IS_NETWORK_IMAGE_ARG
 import com.crisiscleanup.core.common.urlDecode
 
 class WorksiteImagesArgs(
     val worksiteId: Long,
     val imageId: Long,
     val encodedUri: String = "",
-    val isNetworkImage: Boolean,
     val encodedTitle: String,
 ) {
     val imageUri = encodedUri.urlDecode()
@@ -25,7 +23,6 @@ class WorksiteImagesArgs(
             "$WORKSITE_ID_ARG=${args.worksiteId}",
             "$IMAGE_ID_ARG=${args.imageId}",
             "$ENCODED_URI_ARG=${args.encodedUri}",
-            "$IS_NETWORK_IMAGE_ARG=${args.isNetworkImage}",
             "$ENCODED_TITLE_ARG=${args.encodedTitle}",
         ).joinToString("&")
     }
@@ -34,7 +31,6 @@ class WorksiteImagesArgs(
         checkNotNull(savedStateHandle[WORKSITE_ID_ARG]),
         checkNotNull(savedStateHandle[IMAGE_ID_ARG]),
         checkNotNull(savedStateHandle[ENCODED_URI_ARG]),
-        checkNotNull(savedStateHandle[IS_NETWORK_IMAGE_ARG]),
         checkNotNull(savedStateHandle[ENCODED_TITLE_ARG]),
     )
 }

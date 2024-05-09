@@ -12,7 +12,7 @@ import com.crisiscleanup.core.appnav.ViewImageArgs.Companion.IMAGE_ID_ARG
 import com.crisiscleanup.core.appnav.ViewImageArgs.Companion.IS_NETWORK_IMAGE_ARG
 import com.crisiscleanup.core.appnav.WorksiteImagesArgs.Companion.WORKSITE_ID_ARG
 import com.crisiscleanup.feature.mediamanage.ui.ViewImageRoute
-import com.crisiscleanup.feature.mediamanage.ui.ViewWorksiteImagesRoute
+import com.crisiscleanup.feature.mediamanage.ui.WorksiteImagesRoute
 
 fun NavGraphBuilder.viewSingleImageScreen(
     onBack: () -> Unit,
@@ -66,14 +66,11 @@ fun NavGraphBuilder.viewWorksiteImagesScreen(
             navArgument(ENCODED_URI_ARG) {
                 type = NavType.StringType
             },
-            navArgument(IS_NETWORK_IMAGE_ARG) {
-                type = NavType.BoolType
-            },
             navArgument(ENCODED_TITLE_ARG) {
                 type = NavType.StringType
             },
         ),
     ) {
-        ViewWorksiteImagesRoute(onBack = onBack)
+        WorksiteImagesRoute(onBack = onBack)
     }
 }
