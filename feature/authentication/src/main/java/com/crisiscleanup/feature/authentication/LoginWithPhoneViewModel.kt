@@ -316,6 +316,7 @@ class LoginWithPhoneViewModel @Inject constructor(
                                         ),
                                         hasAcceptedTerms = accountProfile.hasAcceptedTerms == true,
                                         approvedIncidentIds = accountProfile.approvedIncidents,
+                                        activeRoles = accountProfile.activeRoles,
                                     )
                                     isSuccessful = true
                                 }

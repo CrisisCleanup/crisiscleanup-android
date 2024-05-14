@@ -16,4 +16,6 @@ message AccountInfo {
   bool has_accepted_terms = 10;
   // Treat as set
   map<int64, bool> approved_incidents = 11;
+  // Treat as set
+  map<int32, bool> active_roles = 12;
 }

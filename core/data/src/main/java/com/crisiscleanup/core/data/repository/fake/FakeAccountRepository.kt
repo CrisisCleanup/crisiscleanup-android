@@ -46,6 +46,7 @@ class FakeAccountRepository : AccountDataRepository {
         org: OrgData,
         hasAcceptedTerms: Boolean,
         approvedIncidentIds: Set<Long>,
+        activeRoles: Set<Int>,
     ) {
         setAccountTokens(refreshToken, accessToken)
         _accountData.tryEmit(

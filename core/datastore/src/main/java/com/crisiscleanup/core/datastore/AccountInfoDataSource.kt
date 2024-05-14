@@ -50,6 +50,7 @@ class AccountInfoDataSource @Inject constructor(
                 ),
                 hasAcceptedTerms = it.hasAcceptedTerms,
                 approvedIncidents = it.approvedIncidentsMap.keys,
+                isCrisisCleanupAdmin = it.activeRolesMap.keys.contains(1),
                 areTokensValid = refreshToken.isNotBlank(),
             )
         }
@@ -65,8 +66,10 @@ class AccountInfoDataSource @Inject constructor(
     }
 
     suspend fun clearAccount() {
-        setAccount("", "", 0, "", "", "", 0, "", emptyOrgData, false, emptySet())
+        setAccount("", "", 0, "", "", "", 0, "", emptyOrgData, false, emptySet(), emptySet())
     }
+
+    private fun isAdminRole(roles: Set<Int>) = roles.contains(1)
 
     suspend fun setAccount(
         refreshToken: String,
@@ -80,6 +83,7 @@ class AccountInfoDataSource @Inject constructor(
         org: OrgData,
         hasAcceptedTerms: Boolean,
         approvedIncidentIds: Set<Long>,
+        activeRoles: Set<Int>,
     ) {
         // TODO Atomic save
         saveAuthTokens(refreshToken, accessToken)
@@ -96,8 +100,10 @@ class AccountInfoDataSource @Inject constructor(
                 orgId = org.id
                 orgName = org.name
                 this.hasAcceptedTerms = hasAcceptedTerms
-                this.approvedIncidents.clear()
-                approvedIncidentIds.forEach { id -> this.approvedIncidents[id] = true }
+                approvedIncidents.clear()
+                approvedIncidentIds.forEach { id -> approvedIncidents[id] = true }
+                this.activeRoles.clear()
+                activeRoles.forEach { roleId -> this.activeRoles[roleId] = true }
             }
         }
     }
@@ -120,13 +126,16 @@ class AccountInfoDataSource @Inject constructor(
         pictureUri: String?,
         isAcceptedTerms: Boolean,
         incidentIds: Set<Long>,
+        activeRoles: Set<Int>,
     ) {
         dataStore.updateData {
             it.copy {
                 pictureUri?.let { p -> profilePictureUri = p }
                 hasAcceptedTerms = isAcceptedTerms
-                this.approvedIncidents.clear()
-                incidentIds.forEach { id -> this.approvedIncidents[id] = true }
+                approvedIncidents.clear()
+                incidentIds.forEach { id -> approvedIncidents[id] = true }
+                this.activeRoles.clear()
+                activeRoles.forEach { roleId -> this.activeRoles[roleId] = true }
             }
         }
     }

@@ -33,6 +33,7 @@ interface AccountDataRepository {
         org: OrgData,
         hasAcceptedTerms: Boolean,
         approvedIncidentIds: Set<Long>,
+        activeRoles: Set<Int>,
     )
 
     suspend fun updateAccountTokens(

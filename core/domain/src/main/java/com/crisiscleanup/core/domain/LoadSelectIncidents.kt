@@ -28,7 +28,11 @@ class LoadSelectIncidents(
         ::Pair,
     )
         .mapLatest { (incidents, accountData) ->
-            incidents.filter { accountData.approvedIncidents.contains(it.id) }
+            if (accountData.isCrisisCleanupAdmin) {
+                incidents
+            } else {
+                incidents.filter { accountData.approvedIncidents.contains(it.id) }
+            }
         }
         .map { incidents ->
             var selectedId = incidentSelector.incidentId.first()

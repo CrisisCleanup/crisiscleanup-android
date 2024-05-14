@@ -182,6 +182,7 @@ class AuthenticationViewModel @Inject constructor(
                         org = orgData,
                         hasAcceptedTerms = claims.hasAcceptedTerms == true,
                         approvedIncidentIds = claims.approvedIncidents,
+                        activeRoles = claims.activeRoles,
                     )
 
                     isAuthenticateSuccessful.value = true

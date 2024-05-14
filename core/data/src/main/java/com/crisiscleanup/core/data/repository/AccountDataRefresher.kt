@@ -49,6 +49,7 @@ class AccountDataRefresher @Inject constructor(
                     profile.files?.profilePictureUrl,
                     profile.hasAcceptedTerms!!,
                     profile.approvedIncidents!!,
+                    profile.activeRoles,
                 )
 
                 accountDataUpdateTime = Clock.System.now()
