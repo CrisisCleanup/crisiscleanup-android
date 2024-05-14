@@ -74,4 +74,6 @@ interface CrisisCleanupWriteApi {
         shareMessage: String,
         noClaimReason: String?,
     )
+
+    suspend fun requestRedeploy(organizationId: Long, incidentId: Long): Boolean
 }

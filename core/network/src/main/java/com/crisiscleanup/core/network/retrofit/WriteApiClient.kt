@@ -8,8 +8,10 @@ import com.crisiscleanup.core.network.model.NetworkFilePush
 import com.crisiscleanup.core.network.model.NetworkFileUpload
 import com.crisiscleanup.core.network.model.NetworkFlag
 import com.crisiscleanup.core.network.model.NetworkFlagId
+import com.crisiscleanup.core.network.model.NetworkIncidentRedeployRequest
 import com.crisiscleanup.core.network.model.NetworkNote
 import com.crisiscleanup.core.network.model.NetworkNoteNote
+import com.crisiscleanup.core.network.model.NetworkRequestRedeploy
 import com.crisiscleanup.core.network.model.NetworkShareDetails
 import com.crisiscleanup.core.network.model.NetworkType
 import com.crisiscleanup.core.network.model.NetworkWorkType
@@ -172,6 +174,12 @@ private interface DataChangeApi {
         @Path("worksiteId") worksiteId: Long,
         @Body shareDetails: NetworkShareDetails,
     ): Response<Unit>
+
+    @TokenAuthenticationHeader
+    @POST("incident_requests")
+    suspend fun requestRedeploy(
+        @Body redeployPayload: NetworkRequestRedeploy,
+    ): NetworkIncidentRedeployRequest?
 }
 
 interface FileUploadApi {
@@ -188,7 +196,7 @@ class WriteApiClient @Inject constructor(
     @RetrofitConfiguration(RetrofitConfigurations.CrisisCleanup) retrofit: Retrofit,
     @RetrofitConfiguration(RetrofitConfigurations.Basic) basicRetrofit: Retrofit,
 ) : CrisisCleanupWriteApi {
-    private val changeWorksiteApi = retrofit.create(DataChangeApi::class.java)
+    private val writeApi = retrofit.create(DataChangeApi::class.java)
     private val fileUploadApi = basicRetrofit.create(FileUploadApi::class.java)
 
     override suspend fun saveWorksite(
@@ -197,52 +205,52 @@ class WriteApiClient @Inject constructor(
         worksite: NetworkWorksitePush,
     ): NetworkWorksiteFull {
         return if (worksite.id == null) {
-            changeWorksiteApi.newWorksite(modifiedAt, syncUuid, worksite)
+            writeApi.newWorksite(modifiedAt, syncUuid, worksite)
         } else {
-            changeWorksiteApi.updateWorksite(modifiedAt, syncUuid, worksite.id, worksite)
+            writeApi.updateWorksite(modifiedAt, syncUuid, worksite.id, worksite)
         }
     }
 
     override suspend fun favoriteWorksite(createdAt: Instant, worksiteId: Long) =
-        changeWorksiteApi.favorite(createdAt, worksiteId, networkTypeFavorite)
+        writeApi.favorite(createdAt, worksiteId, networkTypeFavorite)
 
     override suspend fun unfavoriteWorksite(
         createdAt: Instant,
         worksiteId: Long,
         favoriteId: Long,
     ) {
-        changeWorksiteApi.unfavorite(createdAt, worksiteId, NetworkFavoriteId(favoriteId))
+        writeApi.unfavorite(createdAt, worksiteId, NetworkFavoriteId(favoriteId))
     }
 
     override suspend fun addFlag(createdAt: Instant, worksiteId: Long, flag: NetworkFlag) =
-        changeWorksiteApi.addFlag(createdAt, worksiteId, flag)
+        writeApi.addFlag(createdAt, worksiteId, flag)
 
     override suspend fun deleteFlag(createdAt: Instant, worksiteId: Long, flagId: Long) {
-        changeWorksiteApi.deleteFlag(createdAt, worksiteId, NetworkFlagId(flagId))
+        writeApi.deleteFlag(createdAt, worksiteId, NetworkFlagId(flagId))
     }
 
     override suspend fun addNote(createdAt: Instant, worksiteId: Long, note: String) =
-        changeWorksiteApi.addNote(createdAt, worksiteId, NetworkNoteNote(note, createdAt))
+        writeApi.addNote(createdAt, worksiteId, NetworkNoteNote(note, createdAt))
 
     override suspend fun updateWorkTypeStatus(
         createdAt: Instant,
         workTypeId: Long,
         status: String,
     ) =
-        changeWorksiteApi.updateWorkTypeStatus(createdAt, workTypeId, NetworkWorkTypeStatus(status))
+        writeApi.updateWorkTypeStatus(createdAt, workTypeId, NetworkWorkTypeStatus(status))
 
     override suspend fun claimWorkTypes(
         createdAt: Instant,
         worksiteId: Long,
         workTypes: Collection<String>,
     ) =
-        changeWorksiteApi.claimWorkTypes(createdAt, worksiteId, NetworkWorkTypeTypes(workTypes))
+        writeApi.claimWorkTypes(createdAt, worksiteId, NetworkWorkTypeTypes(workTypes))
 
     override suspend fun unclaimWorkTypes(
         createdAt: Instant,
         worksiteId: Long,
         workTypes: Collection<String>,
-    ) = changeWorksiteApi.unclaimWorkTypes(createdAt, worksiteId, NetworkWorkTypeTypes(workTypes))
+    ) = writeApi.unclaimWorkTypes(createdAt, worksiteId, NetworkWorkTypeTypes(workTypes))
 
     override suspend fun requestWorkTypes(
         createdAt: Instant,
@@ -250,7 +258,7 @@ class WriteApiClient @Inject constructor(
         workTypes: List<String>,
         reason: String,
     ) {
-        changeWorksiteApi.requestWorkTypes(
+        writeApi.requestWorkTypes(
             createdAt,
             worksiteId,
             NetworkWorkTypeChangeRequest(workTypes, reason),
@@ -263,7 +271,7 @@ class WriteApiClient @Inject constructor(
         workTypes: List<String>,
         reason: String,
     ) {
-        changeWorksiteApi.releaseWorkTypes(
+        writeApi.releaseWorkTypes(
             createdAt,
             worksiteId,
             NetworkWorkTypeChangeRelease(workTypes, reason),
@@ -271,11 +279,11 @@ class WriteApiClient @Inject constructor(
     }
 
     override suspend fun deleteFile(worksiteId: Long, file: Long) {
-        changeWorksiteApi.deleteFile(worksiteId, NetworkFilePush(file))
+        writeApi.deleteFile(worksiteId, NetworkFilePush(file))
     }
 
     override suspend fun startFileUpload(fileName: String, contentType: String) =
-        changeWorksiteApi.startFileUpload(fileName, contentType)
+        writeApi.startFileUpload(fileName, contentType)
 
     override suspend fun uploadFile(
         url: String,
@@ -291,7 +299,7 @@ class WriteApiClient @Inject constructor(
     }
 
     override suspend fun addFileToWorksite(worksiteId: Long, file: Long, tag: String) =
-        changeWorksiteApi.addUploadedFile(worksiteId, NetworkFilePush(file, tag))
+        writeApi.addUploadedFile(worksiteId, NetworkFilePush(file, tag))
 
     override suspend fun shareWorksite(
         worksiteId: Long,
@@ -300,7 +308,7 @@ class WriteApiClient @Inject constructor(
         shareMessage: String,
         noClaimReason: String?,
     ) {
-        changeWorksiteApi.shareWorksite(
+        writeApi.shareWorksite(
             worksiteId,
             NetworkShareDetails(
                 emails,
@@ -310,4 +318,12 @@ class WriteApiClient @Inject constructor(
             ),
         )
     }
+
+    override suspend fun requestRedeploy(organizationId: Long, incidentId: Long) =
+        writeApi.requestRedeploy(
+            NetworkRequestRedeploy(
+                organizationId,
+                incidentId,
+            ),
+        )?.let { it.organization == organizationId && it.incident == incidentId } == true
 }
