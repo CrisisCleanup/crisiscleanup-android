@@ -273,8 +273,10 @@ class WorksiteImagesViewModel @Inject constructor(
                         rotation,
                     )
                 } finally {
-                    rotatingImages.remove(imageId)
-                    rotatingImagesFlow.value = rotatingImages.toSet()
+                    synchronized(rotatingImages) {
+                        rotatingImages.remove(imageId)
+                        rotatingImagesFlow.value = rotatingImages.toSet()
+                    }
                 }
             }
         }
@@ -311,8 +313,10 @@ class WorksiteImagesViewModel @Inject constructor(
                     // TODO Show error
                     logger.logException(e)
                 } finally {
-                    deletingImages.remove(imageId)
-                    deletingImagesFlow.value = deletingImages.toSet()
+                    synchronized(deletingImages) {
+                        deletingImages.remove(imageId)
+                        deletingImagesFlow.value = deletingImages.toSet()
+                    }
                 }
             }
         }
