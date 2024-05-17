@@ -478,8 +478,8 @@ class CasesViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    fun syncWorksitesDelta() {
-        syncPuller.appPullIncidentWorksitesDelta()
+    fun syncWorksitesDelta(forceRefreshAll: Boolean = false) {
+        syncPuller.appPullIncidentWorksitesDelta(forceRefreshAll)
     }
 
     private suspend fun setTileRendererLocation() {

@@ -120,7 +120,7 @@ class AppSyncer @Inject constructor() : SyncPuller, SyncPusher {
 
     override fun stopPullIncident() {}
 
-    override fun appPullIncidentWorksitesDelta() {}
+    override fun appPullIncidentWorksitesDelta(forceRefreshAll: Boolean) {}
 
     override fun appPullLanguage() {}
 

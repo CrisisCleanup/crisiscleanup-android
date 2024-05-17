@@ -146,7 +146,7 @@ class AppSyncer @Inject constructor(
 
     private var incidentDeltaJob: Job? = null
 
-    override fun appPullIncidentWorksitesDelta() {
+    override fun appPullIncidentWorksitesDelta(forceRefreshAll: Boolean) {
         incidentDeltaJob?.cancel()
         incidentDeltaJob = applicationScope.launch(ioDispatcher) {
             val incidentId = appPreferences.userData.first().selectedIncidentId
@@ -157,7 +157,8 @@ class AppSyncer @Inject constructor(
                         try {
                             worksitesRepository.refreshWorksites(
                                 incidentId,
-                                forceQueryDeltas = true,
+                                forceQueryDeltas = !forceRefreshAll,
+                                forceRefreshAll = forceRefreshAll,
                             )
                         } catch (e: Exception) {
                             if (e !is CancellationException) {
