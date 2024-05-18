@@ -161,12 +161,13 @@ class LoginWithPhoneViewModel @Inject constructor(
     }
 
     fun onIncompleteCode() {
-        errorMessage = translator("loginWithPhone.please_enter_full_phone")
+        errorMessage = translator("loginWithPhone.please_enter_full_code")
     }
 
     fun requestPhoneCode(phoneNumber: String) {
         resetVisualState()
         clearAccountSelect()
+        oneTimePasswordId = 0
 
         val trimPhoneNumber = phoneNumber.trim()
         if (numberRegex.matchEntire(trimPhoneNumber) == null) {
