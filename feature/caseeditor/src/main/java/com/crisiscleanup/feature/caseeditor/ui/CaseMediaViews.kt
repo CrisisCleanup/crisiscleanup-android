@@ -181,12 +181,12 @@ private fun AddMediaView(
     )
     Surface(
         modifier = modifier.drawBehind {
-                drawRoundRect(
-                    color = contentColor,
-                    cornerRadius = CornerRadius(cornerRadius),
-                    style = borderStroke,
-                )
-            },
+            drawRoundRect(
+                color = contentColor,
+                cornerRadius = CornerRadius(cornerRadius),
+                style = borderStroke,
+            )
+        },
         color = backgroundColor,
         shape = RoundedCornerShape(mediaCornerRadius),
     ) {
@@ -421,10 +421,10 @@ private fun BoxScope.RowImageContextMenu(
         if (showDropdown) {
             DropdownMenu(
                 modifier = Modifier.width(
-                        with(LocalDensity.current) {
-                            contentSize.width.toDp()
-                        },
-                    ),
+                    with(LocalDensity.current) {
+                        contentSize.width.toDp()
+                    },
+                ),
                 expanded = showDropdown,
                 onDismissRequest = { showDropdown = false },
             ) {
