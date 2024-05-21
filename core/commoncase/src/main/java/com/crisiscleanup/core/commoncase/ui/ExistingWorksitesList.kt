@@ -32,6 +32,7 @@ private fun CaseView(
         with(caseSummary) {
             icon?.let {
                 Image(
+                    // TODO Cache image bitmap, prepareToDraw() as well
                     bitmap = it.asImageBitmap(),
                     contentDescription = summary.workType?.workTypeLiteral,
                 )

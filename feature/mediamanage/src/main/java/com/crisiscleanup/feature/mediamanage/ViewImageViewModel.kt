@@ -11,7 +11,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil.ImageLoader
 import coil.request.ImageRequest
-import coil.size.Precision
 import com.crisiscleanup.core.appnav.ViewImageArgs
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.NetworkMonitor
@@ -220,10 +219,11 @@ fun ContentResolver.tryDecodeContentImage(
             openFileDescriptor(uri, "r").use {
                 it?.let { parcel ->
                     val fileDescriptor = parcel.fileDescriptor
-                    val bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor)
+                    val bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor).asImageBitmap()
+                    bitmap.prepareToDraw()
                     return ViewImageViewState.Image(
                         uriString!!,
-                        bitmap.asImageBitmap(),
+                        bitmap,
                     )
                 }
             }
@@ -244,14 +244,13 @@ internal fun ImageLoader.queueNetworkImage(
 ) = callbackFlow {
     val request = ImageRequest.Builder(context)
         .data(imageUrl)
-        .size(Int.MAX_VALUE)
-        .precision(Precision.INEXACT)
         .target(
             onStart = {
                 channel.trySend(ViewImageViewState.Loading)
             },
             onSuccess = { result ->
                 val bitmap = (result as BitmapDrawable).bitmap.asImageBitmap()
+                bitmap.prepareToDraw()
                 channel.trySend(ViewImageViewState.Image(imageUrl, bitmap))
             },
             onError = {
