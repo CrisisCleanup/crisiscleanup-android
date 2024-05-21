@@ -80,23 +80,11 @@ class WorksiteImagesViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    private val existingWorksiteImages = if (worksiteId > -1) {
-        worksiteImageRepository.streamWorksiteImages(worksiteId)
+    private val worksiteImages = if (worksiteId == EmptyWorksite.id) {
+        worksiteImageRepository.streamNewWorksiteImages()
     } else {
-        flowOf(emptyList())
+        worksiteImageRepository.streamWorksiteImages(worksiteId)
     }
-    private val worksiteImages = combine(
-        worksiteImageRepository.streamNewWorksiteImages(),
-        existingWorksiteImages,
-        ::Pair,
-    )
-        .mapLatest { (newImages, existingImages) ->
-            if (worksiteId != EmptyWorksite.id) {
-                existingImages
-            } else {
-                newImages
-            }
-        }
 
     private val imagesData = combine(
         imageIndex,
@@ -285,8 +273,10 @@ class WorksiteImagesViewModel @Inject constructor(
                         rotation,
                     )
                 } finally {
-                    rotatingImages.remove(imageId)
-                    rotatingImagesFlow.value = rotatingImages.toSet()
+                    synchronized(rotatingImages) {
+                        rotatingImages.remove(imageId)
+                        rotatingImagesFlow.value = rotatingImages.toSet()
+                    }
                 }
             }
         }
@@ -323,8 +313,10 @@ class WorksiteImagesViewModel @Inject constructor(
                     // TODO Show error
                     logger.logException(e)
                 } finally {
-                    deletingImages.remove(imageId)
-                    deletingImagesFlow.value = deletingImages.toSet()
+                    synchronized(deletingImages) {
+                        deletingImages.remove(imageId)
+                        deletingImagesFlow.value = deletingImages.toSet()
+                    }
                 }
             }
         }

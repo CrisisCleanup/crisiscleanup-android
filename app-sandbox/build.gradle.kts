@@ -70,5 +70,5 @@ dependencies {
 }
 
 dependencyGuard {
-    configuration("releaseRuntimeClasspath")
+    configuration("prodReleaseRuntimeClasspath")
 }

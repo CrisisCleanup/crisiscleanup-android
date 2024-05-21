@@ -521,7 +521,7 @@ class ViewCaseViewModel @Inject constructor(
         )
 
     // TODO Delete local image db entries where file no longer exists in cache
-    val beforeAfterPhotos = organizeBeforeAfterPhotos(filesNotes)
+    val beforeAfterPhotos = filesNotes.organizeBeforeAfterPhotos()
         .stateIn(
             scope = viewModelScope,
             initialValue = emptyMap(),

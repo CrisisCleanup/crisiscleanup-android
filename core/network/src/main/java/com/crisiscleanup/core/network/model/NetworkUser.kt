@@ -31,6 +31,8 @@ data class NetworkUserProfile(
     val acceptedTermsTimestamp: Instant?,
     val files: List<NetworkFile>?,
     val organization: NetworkOrganizationShort,
+    @SerialName("active_roles")
+    val activeRoles: Set<Int>,
 ) {
     val profilePicUrl: String?
         get() = files?.profilePictureUrl

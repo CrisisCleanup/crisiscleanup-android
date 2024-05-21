@@ -36,6 +36,8 @@ data class NetworkAuthUserClaims(
     @SerialName("accepted_terms_timestamp")
     val acceptedTermsTimestamp: Instant?,
     val files: List<NetworkFile>?,
+    @SerialName("active_roles")
+    val activeRoles: Set<Int>,
 )
 
 @Serializable

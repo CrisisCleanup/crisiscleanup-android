@@ -35,6 +35,7 @@ data class AccountData(
     val hasAcceptedTerms: Boolean,
 
     val approvedIncidents: Set<Long>,
+    val isCrisisCleanupAdmin: Boolean,
 
     /**
      * Indicates the refresh token was still valid when last used
@@ -65,6 +66,7 @@ val emptyAccountData =
         false,
         emptySet(),
         areTokensValid = false,
+        isCrisisCleanupAdmin = false,
     )
 
 data class OrgData(

@@ -1,6 +1,7 @@
 package com.crisiscleanup.sync
 
 import com.crisiscleanup.core.common.sync.SyncLogger
+import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
@@ -44,11 +45,13 @@ internal object SyncPull {
 
     suspend fun executePlan(
         plan: SyncPlan,
+        accountDataRefresher: AccountDataRefresher,
         incidentsRepository: IncidentsRepository,
         worksitesRepository: WorksitesRepository,
         syncLogger: SyncLogger,
-    ): Boolean = coroutineScope {
+    ) = coroutineScope {
         if (plan.pullIncidents) {
+            accountDataRefresher.updateApprovedIncidents(true)
             incidentsRepository.pullIncidents()
 
             syncLogger.log("Incidents pulled")

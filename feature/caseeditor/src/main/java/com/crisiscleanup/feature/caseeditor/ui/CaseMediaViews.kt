@@ -180,14 +180,13 @@ private fun AddMediaView(
         pathEffect = PathEffect.dashPathEffect(floatArrayOf(strokeDash, strokeGap), 0f),
     )
     Surface(
-        modifier = modifier
-            .drawBehind {
-                drawRoundRect(
-                    color = contentColor,
-                    cornerRadius = CornerRadius(cornerRadius),
-                    style = borderStroke,
-                )
-            },
+        modifier = modifier.drawBehind {
+            drawRoundRect(
+                color = contentColor,
+                cornerRadius = CornerRadius(cornerRadius),
+                style = borderStroke,
+            )
+        },
         color = backgroundColor,
         shape = RoundedCornerShape(mediaCornerRadius),
     ) {
@@ -339,7 +338,11 @@ internal fun PhotosSection(
                                 .sizeIn(minWidth = 96.dp)
                                 .fillMaxSize()
                                 .clip(RoundedCornerShape(mediaCornerRadius))
-                                .clickable { onPhotoSelect(photo) },
+                                .clickable {
+                                    if (!isDeleting) {
+                                        onPhotoSelect(photo)
+                                    }
+                                },
                             placeholder = painterResource(commonR.drawable.cc_grayscale_pin),
                             contentDescription = photo.title,
                             contentScale = ContentScale.Crop,
@@ -392,8 +395,7 @@ private fun BoxScope.RowImageContextMenu(
     val t = LocalAppTranslator.current
     var showDropdown by remember { mutableStateOf(false) }
     Box(
-        Modifier
-            .align(Alignment.TopEnd),
+        Modifier.align(Alignment.TopEnd),
     ) {
         Box(
             Modifier
@@ -418,12 +420,11 @@ private fun BoxScope.RowImageContextMenu(
 
         if (showDropdown) {
             DropdownMenu(
-                modifier = Modifier
-                    .width(
-                        with(LocalDensity.current) {
-                            contentSize.width.toDp()
-                        },
-                    ),
+                modifier = Modifier.width(
+                    with(LocalDensity.current) {
+                        contentSize.width.toDp()
+                    },
+                ),
                 expanded = showDropdown,
                 onDismissRequest = { showDropdown = false },
             ) {

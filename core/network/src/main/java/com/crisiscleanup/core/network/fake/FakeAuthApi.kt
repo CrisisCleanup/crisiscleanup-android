@@ -24,6 +24,7 @@ class FakeAuthApi @Inject constructor() : CrisisCleanupAuthApi {
                 hasAcceptedTerms = true,
                 acceptedTermsTimestamp = Clock.System.now(),
                 approvedIncidents = setOf(1),
+                activeRoles = setOf(53),
             ),
         )
     }

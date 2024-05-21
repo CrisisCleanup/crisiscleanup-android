@@ -168,11 +168,8 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onNewIntent(intent: Intent?) {
-        var isConsumed = false
-        intent?.let {
-            isConsumed = intentProcessor.processMainIntent(it)
-        }
+    override fun onNewIntent(intent: Intent) {
+        val isConsumed = intentProcessor.processMainIntent(intent)
         if (!isConsumed) {
             logUnprocessedExternalUri(intent)
             super.onNewIntent(intent)

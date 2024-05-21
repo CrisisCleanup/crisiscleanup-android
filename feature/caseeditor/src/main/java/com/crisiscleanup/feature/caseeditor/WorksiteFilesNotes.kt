@@ -31,19 +31,16 @@ internal fun processWorksiteFilesNotes(
         CaseImagesNotes(fileImages, localImages, worksite.notes)
     }
 
-internal fun organizeBeforeAfterPhotos(
-    filesNotes: Flow<CaseImagesNotes>,
-) = filesNotes
-    .mapLatest { (files, localFiles) ->
-        val beforeImages = localFiles.filterNot(CaseImage::isAfter).toMutableList()
-            .apply { addAll(files.filterNot(CaseImage::isAfter)) }
-        val afterImages = localFiles.filter(CaseImage::isAfter).toMutableList()
-            .apply { addAll(files.filter(CaseImage::isAfter)) }
-        mapOf(
-            ImageCategory.Before to beforeImages,
-            ImageCategory.After to afterImages,
-        )
-    }
+internal fun Flow<CaseImagesNotes>.organizeBeforeAfterPhotos() = mapLatest { (files, localFiles) ->
+    val beforeImages = localFiles.filterNot(CaseImage::isAfter).toMutableList()
+        .apply { addAll(files.filterNot(CaseImage::isAfter)) }
+    val afterImages = localFiles.filter(CaseImage::isAfter).toMutableList()
+        .apply { addAll(files.filter(CaseImage::isAfter)) }
+    mapOf(
+        ImageCategory.Before to beforeImages,
+        ImageCategory.After to afterImages,
+    )
+}
 
 internal data class CaseImagesNotes(
     val networkImages: List<CaseImage>,

@@ -16,7 +16,7 @@ interface SyncPuller {
     suspend fun syncPullIncidentAsync(id: Long): Deferred<SyncResult>
     fun stopPullIncident()
 
-    fun appPullIncidentWorksitesDelta()
+    fun appPullIncidentWorksitesDelta(forceRefreshAll: Boolean = false)
 
     fun appPullLanguage()
     suspend fun syncPullLanguage(): SyncResult

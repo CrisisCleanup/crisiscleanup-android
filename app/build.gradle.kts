@@ -13,7 +13,7 @@ plugins {
 
 android {
     defaultConfig {
-        val buildVersion = 198
+        val buildVersion = 201
         applicationId = "com.crisiscleanup"
         versionCode = buildVersion
         versionName = "0.9.${buildVersion - 168}"
@@ -171,11 +171,6 @@ dependencies {
     implementation(libs.playservices.maps)
 }
 
-// androidx.test is forcing JUnit, 4.12. This forces it to use 4.13
-configurations.configureEach {
-    resolutionStrategy {
-        force(libs.junit4)
-        // Temporary workaround for https://issuetracker.google.com/174733673
-        force("org.objenesis:objenesis:2.6")
-    }
+dependencyGuard {
+    configuration("prodReleaseRuntimeClasspath")
 }

@@ -6,8 +6,9 @@ import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -186,6 +187,17 @@ internal fun CasesRoute(
         val editedWorksiteLocation = viewModel.editedWorksiteLocation
         val isMyLocationEnabled = viewModel.isMyLocationEnabled
         val hasIncidents = (incidentsData as IncidentsData.Incidents).incidents.isNotEmpty()
+
+        val onSyncDataDelta = remember(viewModel) {
+            {
+                viewModel.syncWorksitesDelta(false)
+            }
+        }
+        val onSyncDataFull = remember(viewModel) {
+            {
+                viewModel.syncWorksitesDelta(true)
+            }
+        }
         CasesScreen(
             dataProgress = dataProgressMetrics,
             disasterResId = disasterResId,
@@ -213,7 +225,8 @@ internal fun CasesRoute(
             editedWorksiteLocation = editedWorksiteLocation,
             isMyLocationEnabled = isMyLocationEnabled,
             onTableItemSelect = onTableItemSelect,
-            onSyncData = viewModel::syncWorksitesDelta,
+            onSyncDataDelta = onSyncDataDelta,
+            onSyncDataFull = onSyncDataFull,
             hasIncidents = hasIncidents,
         )
 
@@ -361,7 +374,8 @@ internal fun CasesScreen(
     editedWorksiteLocation: LatLng? = null,
     isMyLocationEnabled: Boolean = false,
     onTableItemSelect: (Worksite) -> Unit = {},
-    onSyncData: () -> Unit = {},
+    onSyncDataDelta: () -> Unit = {},
+    onSyncDataFull: () -> Unit = {},
     hasIncidents: Boolean = false,
 ) {
     Box {
@@ -374,7 +388,8 @@ internal fun CasesScreen(
                 onCasesAction = onCasesAction,
                 filtersCount = filtersCount,
                 onTableItemSelect = onTableItemSelect,
-                onSyncData = onSyncData,
+                onSyncDataDelta = onSyncDataDelta,
+                onSyncDataFull = onSyncDataFull,
                 hasIncidents = hasIncidents,
             )
         } else {
@@ -406,7 +421,8 @@ internal fun CasesScreen(
             casesCountMapText,
             filtersCount,
             disableTableViewActions = isTableDataTransient,
-            onSyncData = onSyncData,
+            onSyncDataDelta = onSyncDataDelta,
+            onSyncDataFull = onSyncDataFull,
             hasIncidents = hasIncidents,
         )
 
@@ -570,7 +586,8 @@ private fun CasesOverlayElements(
     casesCountText: String = "",
     filtersCount: Int = 0,
     disableTableViewActions: Boolean = false,
-    onSyncData: () -> Unit = {},
+    onSyncDataDelta: () -> Unit = {},
+    onSyncDataFull: () -> Unit = {},
     hasIncidents: Boolean = false,
 ) {
     val translator = LocalAppTranslator.current
@@ -634,7 +651,8 @@ private fun CasesOverlayElements(
                     start.linkTo(disasterAction.end)
                     end.linkTo(actionBar.start)
                 },
-                onSyncData,
+                onSyncDataDelta = onSyncDataDelta,
+                onSyncDataFull = onSyncDataFull,
             )
 
             CrisisCleanupFab(
@@ -703,12 +721,14 @@ private fun CasesOverlayElements(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun CasesCountView(
     countText: String,
     isLoadingData: Boolean,
     modifier: Modifier = Modifier,
-    onSyncData: () -> Unit = {},
+    onSyncDataDelta: () -> Unit = {},
+    onSyncDataFull: () -> Unit = {},
 ) {
     // TODO Common dimensions of elements
     Surface(
@@ -720,9 +740,10 @@ private fun CasesCountView(
     ) {
         Row(
             Modifier
-                .clickable(
-                    onClick = onSyncData,
+                .combinedClickable(
                     enabled = !isLoadingData,
+                    onClick = onSyncDataDelta,
+                    onLongClick = onSyncDataFull,
                 )
                 .padding(horizontal = 12.dp, vertical = 9.dp),
             horizontalArrangement = listItemSpacedBy,

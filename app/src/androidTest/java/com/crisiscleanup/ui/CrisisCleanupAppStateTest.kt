@@ -50,14 +50,12 @@ class CrisisCleanupAppStateTest {
 
         composeTestRule.setContent {
             val navController = rememberTestNavController()
-            state = remember(navController) {
-                CrisisCleanupAppState(
-                    windowSizeClass = getCompactWindowClass(),
-                    navController = navController,
-                    networkMonitor = networkMonitor,
-                    coroutineScope = backgroundScope,
-                )
-            }
+            state = rememberCrisisCleanupAppState(
+                windowSizeClass = getCompactWindowClass(),
+                navController = navController,
+                networkMonitor = networkMonitor,
+                coroutineScope = backgroundScope,
+            )
 
             // Update currentDestination whenever it changes
             currentDestination = state.currentDestination?.route

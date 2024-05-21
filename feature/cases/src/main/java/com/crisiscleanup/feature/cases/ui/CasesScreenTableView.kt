@@ -4,8 +4,10 @@ import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -81,6 +83,7 @@ import com.crisiscleanup.feature.cases.CasesViewModel
 import com.crisiscleanup.feature.cases.WorksiteDistance
 import kotlinx.coroutines.delay
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun BoxScope.CasesTableView(
     viewModel: CasesViewModel = hiltViewModel(),
@@ -91,7 +94,8 @@ internal fun BoxScope.CasesTableView(
     onCasesAction: (CasesAction) -> Unit = {},
     filtersCount: Int = 0,
     onTableItemSelect: (Worksite) -> Unit = {},
-    onSyncData: () -> Unit = {},
+    onSyncDataDelta: () -> Unit = {},
+    onSyncDataFull: () -> Unit = {},
     hasIncidents: Boolean = false,
 ) {
     val countText by viewModel.casesCountTableText.collectAsStateWithLifecycle()
@@ -167,8 +171,9 @@ internal fun BoxScope.CasesTableView(
             ) {
                 Text(
                     countText,
-                    Modifier.clickable(
-                        onClick = onSyncData,
+                    Modifier.combinedClickable(
+                        onClick = onSyncDataDelta,
+                        onLongClick = onSyncDataFull,
                         enabled = !isLoadingData,
                     ),
                     style = LocalFontStyles.current.header4,

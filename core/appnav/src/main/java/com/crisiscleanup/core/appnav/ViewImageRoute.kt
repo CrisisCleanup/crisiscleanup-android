@@ -39,7 +39,6 @@ class ViewImageArgs(
         worksiteId = worksiteId,
         imageId = imageId,
         encodedUri = encodedUri,
-        isNetworkImage = isNetworkImage,
         encodedTitle = encodedTitle,
     )
 }

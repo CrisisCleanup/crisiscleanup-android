@@ -42,7 +42,7 @@ import com.crisiscleanup.core.common.R as commonR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun ViewWorksiteImagesRoute(
+internal fun WorksiteImagesRoute(
     viewModel: WorksiteImagesViewModel = hiltViewModel(),
     onBack: () -> Unit = {},
 ) {

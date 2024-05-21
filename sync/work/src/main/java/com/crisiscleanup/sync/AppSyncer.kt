@@ -12,6 +12,7 @@ import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.common.sync.SyncResult
+import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
@@ -42,6 +43,7 @@ import javax.inject.Singleton
 @Singleton
 class AppSyncer @Inject constructor(
     private val accountDataRepository: AccountDataRepository,
+    private val accountDataRefresher: AccountDataRefresher,
     private val incidentsRepository: IncidentsRepository,
     private val worksitesRepository: WorksitesRepository,
     private val languageRepository: LanguageTranslationsRepository,
@@ -119,6 +121,7 @@ class AppSyncer @Inject constructor(
         try {
             executePlan(
                 plan,
+                accountDataRefresher,
                 incidentsRepository,
                 worksitesRepository,
                 syncLogger,
@@ -143,7 +146,7 @@ class AppSyncer @Inject constructor(
 
     private var incidentDeltaJob: Job? = null
 
-    override fun appPullIncidentWorksitesDelta() {
+    override fun appPullIncidentWorksitesDelta(forceRefreshAll: Boolean) {
         incidentDeltaJob?.cancel()
         incidentDeltaJob = applicationScope.launch(ioDispatcher) {
             val incidentId = appPreferences.userData.first().selectedIncidentId
@@ -154,7 +157,8 @@ class AppSyncer @Inject constructor(
                         try {
                             worksitesRepository.refreshWorksites(
                                 incidentId,
-                                forceQueryDeltas = true,
+                                forceQueryDeltas = !forceRefreshAll,
+                                forceRefreshAll = forceRefreshAll,
                             )
                         } catch (e: Exception) {
                             if (e !is CancellationException) {
@@ -219,6 +223,7 @@ class AppSyncer @Inject constructor(
                 val plan = SyncPlan.Builder().setPullIncidents().build()
                 executePlan(
                     plan,
+                    accountDataRefresher,
                     incidentsRepository,
                     worksitesRepository,
                     syncLogger,

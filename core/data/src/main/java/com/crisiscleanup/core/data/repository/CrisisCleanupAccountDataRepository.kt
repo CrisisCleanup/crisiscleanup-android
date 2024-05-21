@@ -73,6 +73,7 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
         org: OrgData,
         hasAcceptedTerms: Boolean,
         approvedIncidentIds: Set<Long>,
+        activeRoles: Set<Int>,
     ) {
         dataSource.setAccount(
             refreshToken,
@@ -86,6 +87,7 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
             org,
             hasAcceptedTerms,
             approvedIncidentIds,
+            activeRoles,
         )
     }
 
