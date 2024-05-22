@@ -342,7 +342,7 @@ private fun GettingStartedSection(
                             .size(64.dp)
                             .padding(8.dp),
                         imageVector = CrisisCleanupIcons.Play,
-                        contentDescription = t("~~Play getting started video"),
+                        contentDescription = t("dashboard.play_getting_started_video"),
                     )
                 }
             }

@@ -174,7 +174,7 @@ private fun LoginWithPhoneScreen(
 
     // TODO Hide if device does not have a SIM/phone number
     LinkAction(
-        "~~Use phone's number",
+        t("loginWithPhone.use_phones_number"),
         modifier = Modifier
             .listItemPadding()
             .testTag("phoneLoginRequestPhoneNumber"),
@@ -271,7 +271,7 @@ private fun ColumnScope.VerifyPhoneCodeScreen(
     val updatePhoneCode = remember(viewModel) { { s: String -> viewModel.phoneCode = s.trim() } }
     OutlinedClearableTextField(
         modifier = listItemModifier.testTag("loginPhoneCodeTextField"),
-        label = t("~~Phone login code"),
+        label = t("loginWithPhone.phone_login_code"),
         value = viewModel.phoneCode.trim(),
         onValueChange = updatePhoneCode,
         keyboardType = KeyboardType.Number,
