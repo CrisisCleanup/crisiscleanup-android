@@ -195,6 +195,10 @@ class MainActivityViewModel @Inject constructor(
                 syncPuller.appPullIncident(incidentSelector.incidentId.first())
                 accountDataRefresher.updateMyOrganization(true)
                 accountDataRefresher.updateApprovedIncidents()
+
+                if (!it.hasAcceptedTerms && !it.areTokensValid) {
+                    authEventBus.onLogout()
+                }
             }
             .launchIn(viewModelScope)
 
