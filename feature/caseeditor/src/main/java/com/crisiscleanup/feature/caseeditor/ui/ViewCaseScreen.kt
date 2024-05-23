@@ -584,7 +584,8 @@ private fun CaseInfoView(
 
     val distanceAwayText by viewModel.distanceAwayText.collectAsStateWithLifecycle()
 
-    LazyColumn {
+    val listState = rememberLazyListState()
+    LazyColumn(state = listState) {
         item(key = "incident-info") {
             val caseData by viewModel.caseData.collectAsStateWithLifecycle()
             caseData?.let { caseState ->
@@ -597,6 +598,10 @@ private fun CaseInfoView(
                     isSyncing = isSyncing,
                     scheduleSync = scheduleSync,
                 )
+
+                LaunchedEffect(Unit) {
+                    listState.scrollToItem(0)
+                }
             }
         }
 
