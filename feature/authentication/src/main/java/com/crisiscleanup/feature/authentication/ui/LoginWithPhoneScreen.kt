@@ -137,11 +137,11 @@ private fun LoginWithPhoneScreen(
     onBack: () -> Unit = {},
     viewModel: LoginWithPhoneViewModel = hiltViewModel(),
 ) {
-    val translator = LocalAppTranslator.current
+    val t = LocalAppTranslator.current
 
     Text(
         modifier = listItemModifier.testTag("phoneLoginHeaderText"),
-        text = translator("actions.login", R.string.login),
+        text = t("actions.login", R.string.login),
         style = LocalFontStyles.current.header1,
     )
 
@@ -161,7 +161,7 @@ private fun LoginWithPhoneScreen(
     }
     OutlinedClearableTextField(
         modifier = fillWidthPadded.testTag("loginPhoneTextField"),
-        label = translator("loginWithPhone.enter_cell"),
+        label = t("loginWithPhone.enter_cell"),
         value = phoneNumber,
         onValueChange = updateEmailInput,
         keyboardType = KeyboardType.Phone,
@@ -188,7 +188,7 @@ private fun LoginWithPhoneScreen(
         modifier = fillWidthPadded.testTag("phoneLoginAction"),
         onClick = requestPhoneCode,
         enabled = isNotBusy,
-        text = translator("loginForm.login_with_cell"),
+        text = t("loginForm.login_with_cell"),
         indicateBusy = isRequestingCode,
     )
 
