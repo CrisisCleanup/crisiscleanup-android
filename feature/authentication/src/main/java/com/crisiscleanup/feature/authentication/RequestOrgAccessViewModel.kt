@@ -135,7 +135,7 @@ class RequestOrgAccessViewModel @Inject constructor(
         languageOptions
             .onEach {
                 if (it.isNotEmpty() && userInfo.language.name.isBlank()) {
-                    userInfo.language = it.first()
+                    userInfo.language = languageRepository.getRecommendedLanguage(it)
                 }
             }
             .launchIn(viewModelScope)
