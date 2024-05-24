@@ -211,18 +211,29 @@ class LocationInputData(
         referenceWorksite = referenceWorksite.copy(
             latitude = worksite.latitude,
             longitude = worksite.longitude,
-            address = worksite.address,
-            city = worksite.city,
-            county = worksite.county,
-            postalCode = worksite.postalCode,
-            state = worksite.state,
         )
         coordinates.value = LatLng(worksite.latitude, worksite.longitude)
-        streetAddress = worksite.address
-        zipCode = worksite.postalCode
-        city = worksite.city
-        county = worksite.county
-        state = worksite.state
+
+        if (
+            worksite.address.isNotBlank() ||
+            worksite.city.isNotBlank() ||
+            worksite.county.isNotBlank() ||
+            worksite.postalCode.isNotBlank() ||
+            worksite.state.isNotBlank()
+        ) {
+            referenceWorksite = referenceWorksite.copy(
+                address = worksite.address,
+                city = worksite.city,
+                county = worksite.county,
+                postalCode = worksite.postalCode,
+                state = worksite.state,
+            )
+            streetAddress = worksite.address
+            zipCode = worksite.postalCode
+            city = worksite.city
+            county = worksite.county
+            state = worksite.state
+        }
 
         if (isIncompleteAddress) {
             isEditingAddress = true
