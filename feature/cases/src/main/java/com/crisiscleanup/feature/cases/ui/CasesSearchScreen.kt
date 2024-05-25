@@ -13,7 +13,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -48,6 +50,14 @@ internal fun CasesSearchRoute(
     openCase: (Long, Long) -> Boolean = { _, _ -> false },
     viewModel: CasesSearchViewModel = hiltViewModel(),
 ) {
+    // Guard due to navigation animations
+    var onBackCount by remember { mutableIntStateOf(0) }
+    val onSingleBack = {
+        if (onBackCount++ == 0) {
+            onBackClick()
+        }
+    }
+
     val selectedWorksite by viewModel.selectedWorksite.collectAsStateWithLifecycle()
     if (selectedWorksite.second != EmptyWorksite.id) {
         openCase(selectedWorksite.first, selectedWorksite.second)
@@ -85,7 +95,7 @@ internal fun CasesSearchRoute(
         if (isListDetailLayout) {
             Row {
                 SearchCasesView(
-                    onBackClick,
+                    onSingleBack,
                     q,
                     updateQuery,
                     isEditable,
@@ -119,7 +129,7 @@ internal fun CasesSearchRoute(
             }
         } else {
             SearchCasesView(
-                onBackClick,
+                onSingleBack,
                 q,
                 updateQuery,
                 isEditable,
