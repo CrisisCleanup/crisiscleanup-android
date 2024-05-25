@@ -52,6 +52,8 @@ interface LanguageTranslationsRepository : KeyTranslator {
     fun setLanguageFromSystem()
 
     suspend fun getLanguageOptions(): List<LanguageIdName>
+
+    fun getRecommendedLanguage(languageOptions: List<LanguageIdName>): LanguageIdName
 }
 
 @Singleton
@@ -214,6 +216,26 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
         }
 
         return emptyList()
+    }
+
+    override fun getRecommendedLanguage(languageOptions: List<LanguageIdName>): LanguageIdName {
+        val systemLocale = Locale.getDefault().toLanguageTag()
+        val languageLookup = languageOptions
+            .associateBy {
+                it.name.split(".").last()
+            }
+        val localeLower = systemLocale.lowercase()
+        languageLookup[localeLower]?.let {
+            return it
+        }
+
+        languageOptions.firstOrNull {
+            it.name.contains("en-us")
+        }?.let {
+            return it
+        }
+
+        return languageOptions.first()
     }
 
     override fun translate(phraseKey: String): String? {

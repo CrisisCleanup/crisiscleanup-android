@@ -13,7 +13,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -48,6 +50,14 @@ internal fun CasesSearchRoute(
     openCase: (Long, Long) -> Boolean = { _, _ -> false },
     viewModel: CasesSearchViewModel = hiltViewModel(),
 ) {
+    // Guard due to navigation animations
+    var onBackCount by remember { mutableIntStateOf(0) }
+    val onSingleBack = {
+        if (onBackCount++ == 0) {
+            onBackClick()
+        }
+    }
+
     val selectedWorksite by viewModel.selectedWorksite.collectAsStateWithLifecycle()
     if (selectedWorksite.second != EmptyWorksite.id) {
         openCase(selectedWorksite.first, selectedWorksite.second)
@@ -78,16 +88,18 @@ internal fun CasesSearchRoute(
         val recentCases by viewModel.recentWorksites.collectAsStateWithLifecycle()
         val searchResults by viewModel.searchResults.collectAsStateWithLifecycle()
 
-        val closeKeyboard = rememberCloseKeyboard(viewModel)
+        val focusOnSearchInput = viewModel.focusOnSearchInput
 
+        val closeKeyboard = rememberCloseKeyboard(viewModel)
         val isEditable = !isSelectingResult
         if (isListDetailLayout) {
             Row {
                 SearchCasesView(
-                    onBackClick,
+                    onSingleBack,
                     q,
                     updateQuery,
                     isEditable,
+                    hasFocus = focusOnSearchInput,
                     closeKeyboard,
                     onCaseSelect,
                     emptyList(),
@@ -117,10 +129,11 @@ internal fun CasesSearchRoute(
             }
         } else {
             SearchCasesView(
-                onBackClick,
+                onSingleBack,
                 q,
                 updateQuery,
                 isEditable,
+                hasFocus = focusOnSearchInput,
                 closeKeyboard,
                 onCaseSelect,
                 recentCases,
@@ -139,6 +152,7 @@ private fun SearchCasesView(
     q: String,
     updateQuery: (String) -> Unit,
     isEditable: Boolean,
+    hasFocus: Boolean,
     closeKeyboard: () -> Unit,
     onCaseSelect: (CaseSummaryResult) -> Unit,
     recentCases: List<CaseSummaryResult>,
@@ -155,6 +169,7 @@ private fun SearchCasesView(
                 q,
                 updateQuery,
                 isEditable,
+                hasFocus = hasFocus,
                 closeKeyboard,
             )
 
@@ -179,6 +194,7 @@ private fun SearchBar(
     q: String,
     updateQuery: (String) -> Unit,
     isEditable: Boolean,
+    hasFocus: Boolean,
     closeKeyboard: () -> Unit,
 ) {
     val t = LocalAppTranslator.current
@@ -210,6 +226,7 @@ private fun SearchBar(
             enabled = isEditable,
             imeAction = ImeAction.Done,
             onEnter = closeKeyboard,
+            hasFocus = hasFocus,
             isError = false,
         )
     }

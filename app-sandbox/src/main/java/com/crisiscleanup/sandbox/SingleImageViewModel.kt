@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil.ImageLoader
 import coil.request.ImageRequest
-import coil.size.Precision
 import com.crisiscleanup.core.designsystem.component.ViewImageViewState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -37,14 +36,13 @@ class SingleImageViewModel @Inject constructor(
                 callbackFlow {
                     val request = ImageRequest.Builder(context)
                         .data(url)
-                        .size(Int.MAX_VALUE)
-                        .precision(Precision.INEXACT)
                         .target(
                             onStart = {
                                 channel.trySend(ViewImageViewState.Loading)
                             },
                             onSuccess = { result ->
                                 val bitmap = (result as BitmapDrawable).bitmap.asImageBitmap()
+                                bitmap.prepareToDraw()
                                 channel.trySend(ViewImageViewState.Image(url, bitmap))
                             },
                             onError = {

@@ -6,12 +6,12 @@ import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.core.graphics.scale
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil.ImageLoader
 import coil.request.ImageRequest
-import coil.size.Precision
 import com.crisiscleanup.core.appnav.ViewImageArgs
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.NetworkMonitor
@@ -51,6 +51,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
+import kotlin.math.ceil
+import kotlin.math.ln
+import kotlin.math.max
+import kotlin.math.pow
+import kotlin.math.roundToInt
 
 @OptIn(FlowPreview::class)
 @HiltViewModel
@@ -220,10 +225,31 @@ fun ContentResolver.tryDecodeContentImage(
             openFileDescriptor(uri, "r").use {
                 it?.let { parcel ->
                     val fileDescriptor = parcel.fileDescriptor
-                    val bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor)
+                    var bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor)
+
+                    val maxDimension = max(bitmap.width, bitmap.height)
+                    // TODO Review max length
+                    val maxDimensionLength = 3840.0
+                    if (maxDimension > maxDimensionLength) {
+                        val scale = maxDimension / maxDimensionLength
+                        val scalePow2 = ceil(ln(scale) / ln(2.0))
+                        if (scalePow2 > 0) {
+                            val actualScale = 1.0 / 2.0.pow(scalePow2)
+                            val scaleWidth = (actualScale * bitmap.width).roundToInt()
+                            val scaleHeight = (actualScale * bitmap.height).roundToInt()
+                            bitmap = bitmap.scale(
+                                scaleWidth,
+                                scaleHeight,
+                                false,
+                            )
+                        }
+                    }
+
+                    val imageBitmap = bitmap.asImageBitmap()
+                    imageBitmap.prepareToDraw()
                     return ViewImageViewState.Image(
                         uriString!!,
-                        bitmap.asImageBitmap(),
+                        imageBitmap,
                     )
                 }
             }
@@ -244,14 +270,13 @@ internal fun ImageLoader.queueNetworkImage(
 ) = callbackFlow {
     val request = ImageRequest.Builder(context)
         .data(imageUrl)
-        .size(Int.MAX_VALUE)
-        .precision(Precision.INEXACT)
         .target(
             onStart = {
                 channel.trySend(ViewImageViewState.Loading)
             },
             onSuccess = { result ->
                 val bitmap = (result as BitmapDrawable).bitmap.asImageBitmap()
+                bitmap.prepareToDraw()
                 channel.trySend(ViewImageViewState.Image(imageUrl, bitmap))
             },
             onError = {

@@ -137,11 +137,11 @@ private fun LoginWithPhoneScreen(
     onBack: () -> Unit = {},
     viewModel: LoginWithPhoneViewModel = hiltViewModel(),
 ) {
-    val translator = LocalAppTranslator.current
+    val t = LocalAppTranslator.current
 
     Text(
         modifier = listItemModifier.testTag("phoneLoginHeaderText"),
-        text = translator("actions.login", R.string.login),
+        text = t("actions.login", R.string.login),
         style = LocalFontStyles.current.header1,
     )
 
@@ -161,7 +161,7 @@ private fun LoginWithPhoneScreen(
     }
     OutlinedClearableTextField(
         modifier = fillWidthPadded.testTag("loginPhoneTextField"),
-        label = translator("loginWithPhone.enter_cell"),
+        label = t("loginWithPhone.enter_cell"),
         value = phoneNumber,
         onValueChange = updateEmailInput,
         keyboardType = KeyboardType.Phone,
@@ -174,7 +174,7 @@ private fun LoginWithPhoneScreen(
 
     // TODO Hide if device does not have a SIM/phone number
     LinkAction(
-        "~~Use phone's number",
+        t("loginWithPhone.use_phones_number"),
         modifier = Modifier
             .listItemPadding()
             .testTag("phoneLoginRequestPhoneNumber"),
@@ -188,7 +188,7 @@ private fun LoginWithPhoneScreen(
         modifier = fillWidthPadded.testTag("phoneLoginAction"),
         onClick = requestPhoneCode,
         enabled = isNotBusy,
-        text = translator("loginForm.login_with_cell"),
+        text = t("loginForm.login_with_cell"),
         indicateBusy = isRequestingCode,
     )
 
@@ -271,7 +271,7 @@ private fun ColumnScope.VerifyPhoneCodeScreen(
     val updatePhoneCode = remember(viewModel) { { s: String -> viewModel.phoneCode = s.trim() } }
     OutlinedClearableTextField(
         modifier = listItemModifier.testTag("loginPhoneCodeTextField"),
-        label = t("~~Phone login code"),
+        label = t("loginWithPhone.phone_login_code"),
         value = viewModel.phoneCode.trim(),
         onValueChange = updatePhoneCode,
         keyboardType = KeyboardType.Number,

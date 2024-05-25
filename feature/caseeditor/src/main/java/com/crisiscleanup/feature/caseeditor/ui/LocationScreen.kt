@@ -358,7 +358,6 @@ private fun LocationAddressFormView(
         keyboardCapitalization = KeyboardCapitalization.Words,
         isError = isStateError,
         hasFocus = focusState,
-        imeAction = ImeAction.Done,
         onEnter = onStateEnd,
         enabled = isEditable,
     )
