@@ -1,6 +1,9 @@
 package com.crisiscleanup.feature.cases
 
 import android.graphics.Bitmap
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.combine
@@ -31,14 +34,18 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.flow.combine as kCombine
 
+@OptIn(FlowPreview::class)
 @HiltViewModel
 class CasesSearchViewModel @Inject constructor(
     private val incidentSelector: IncidentSelector,
@@ -297,10 +304,21 @@ class CasesSearchViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
+    var focusOnSearchInput by mutableStateOf(false)
+        private set
+
     init {
         viewModelScope.launch(ioDispatcher) {
             databaseManagementRepository.rebuildFts()
         }
+
+        recentWorksites
+            .debounce(0.6.seconds)
+            .filter { it.isEmpty() }
+            .onEach {
+                focusOnSearchInput = true
+            }
+            .launchIn(viewModelScope)
     }
 
     private fun getIcon(workType: WorkType?) = workType?.let {

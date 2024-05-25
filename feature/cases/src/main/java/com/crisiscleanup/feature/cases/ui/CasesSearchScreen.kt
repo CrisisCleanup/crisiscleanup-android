@@ -78,8 +78,9 @@ internal fun CasesSearchRoute(
         val recentCases by viewModel.recentWorksites.collectAsStateWithLifecycle()
         val searchResults by viewModel.searchResults.collectAsStateWithLifecycle()
 
-        val closeKeyboard = rememberCloseKeyboard(viewModel)
+        val focusOnSearchInput = viewModel.focusOnSearchInput
 
+        val closeKeyboard = rememberCloseKeyboard(viewModel)
         val isEditable = !isSelectingResult
         if (isListDetailLayout) {
             Row {
@@ -88,6 +89,7 @@ internal fun CasesSearchRoute(
                     q,
                     updateQuery,
                     isEditable,
+                    hasFocus = focusOnSearchInput,
                     closeKeyboard,
                     onCaseSelect,
                     emptyList(),
@@ -121,6 +123,7 @@ internal fun CasesSearchRoute(
                 q,
                 updateQuery,
                 isEditable,
+                hasFocus = focusOnSearchInput,
                 closeKeyboard,
                 onCaseSelect,
                 recentCases,
@@ -139,6 +142,7 @@ private fun SearchCasesView(
     q: String,
     updateQuery: (String) -> Unit,
     isEditable: Boolean,
+    hasFocus: Boolean,
     closeKeyboard: () -> Unit,
     onCaseSelect: (CaseSummaryResult) -> Unit,
     recentCases: List<CaseSummaryResult>,
@@ -155,6 +159,7 @@ private fun SearchCasesView(
                 q,
                 updateQuery,
                 isEditable,
+                hasFocus = hasFocus,
                 closeKeyboard,
             )
 
@@ -179,6 +184,7 @@ private fun SearchBar(
     q: String,
     updateQuery: (String) -> Unit,
     isEditable: Boolean,
+    hasFocus: Boolean,
     closeKeyboard: () -> Unit,
 ) {
     val t = LocalAppTranslator.current
@@ -210,6 +216,7 @@ private fun SearchBar(
             enabled = isEditable,
             imeAction = ImeAction.Done,
             onEnter = closeKeyboard,
+            hasFocus = hasFocus,
             isError = false,
         )
     }
