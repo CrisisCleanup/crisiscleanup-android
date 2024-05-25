@@ -2,6 +2,9 @@ package com.crisiscleanup.core.database.dao
 
 import androidx.room.withTransaction
 import com.crisiscleanup.core.common.haversineDistance
+import com.crisiscleanup.core.common.log.AppLogger
+import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
+import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.radians
 import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
@@ -34,6 +37,7 @@ import kotlin.time.Duration.Companion.days
 class WorksiteDaoPlus @Inject constructor(
     internal val db: CrisisCleanupDatabase,
     private val syncLogger: SyncLogger,
+    @Logger(CrisisCleanupLoggers.Worksites) private val appLogger: AppLogger,
 ) {
     private suspend fun getWorksiteLocalModifiedAt(
         networkWorksiteIds: Set<Long>,
@@ -307,13 +311,20 @@ class WorksiteDaoPlus @Inject constructor(
                 val isLocallyModified = modifiedAt?.isLocallyModified ?: false
                 if (!isLocallyModified) {
                     val worksiteId = worksiteDao.getWorksiteId(networkWorksiteId)
-                    val fieldKeys = formData.map(WorksiteFormDataEntity::fieldKey)
-                    formDataDao.deleteUnspecifiedKeys(worksiteId, fieldKeys)
-                    val updatedFormData = formData.map { it.copy(worksiteId = worksiteId) }
-                    formDataDao.upsert(updatedFormData)
+                    if (worksiteId > 0) {
+                        val fieldKeys = formData.map(WorksiteFormDataEntity::fieldKey)
+                        formDataDao.deleteUnspecifiedKeys(worksiteId, fieldKeys)
+                        val updatedFormData = formData.map { it.copy(worksiteId = worksiteId) }
+                        formDataDao.upsert(updatedFormData)
 
-                    val reportedBy = reportedBys[i]
-                    worksiteDao.syncUpdateAdditionalData(worksiteId, reportedBy)
+                        val reportedBy = reportedBys[i]
+                        worksiteDao.syncUpdateAdditionalData(worksiteId, reportedBy)
+                    } else {
+                        val unexpectedMessage =
+                            "Case $networkWorksiteId not locally found when syncing additional data."
+                        syncLogger.log(unexpectedMessage)
+                        appLogger.logException(Exception(unexpectedMessage))
+                    }
                 }
             }
         }

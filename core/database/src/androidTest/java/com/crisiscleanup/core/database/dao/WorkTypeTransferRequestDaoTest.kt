@@ -23,6 +23,7 @@ class WorkTypeTransferRequestDaoTest {
     private lateinit var requestDaoPlus: WorkTypeTransferRequestDaoPlus
 
     private val syncLogger = TestUtil.testSyncLogger()
+    private val appLogger = TestUtil.testAppLogger()
 
     private val createdAtA = now.plus((-9999).seconds)
     private val updatedAtA = createdAtA.plus((451).seconds)
@@ -31,7 +32,7 @@ class WorkTypeTransferRequestDaoTest {
     fun createDb() {
         db = TestUtil.getTestDatabase()
         worksiteDao = db.worksiteDao()
-        worksiteDaoPlus = WorksiteDaoPlus(db, syncLogger)
+        worksiteDaoPlus = WorksiteDaoPlus(db, syncLogger, appLogger)
         requestDao = db.workTypeTransferRequestDao()
         requestDaoPlus = WorkTypeTransferRequestDaoPlus(db)
     }

@@ -33,7 +33,7 @@ class WorksiteSyncFillTest {
     fun createDb() {
         db = TestUtil.getTestDatabase()
         worksiteDao = db.worksiteDao()
-        worksiteDaoPlus = WorksiteDaoPlus(db, TestUtil.testSyncLogger())
+        worksiteDaoPlus = WorksiteDaoPlus(db, TestUtil.testSyncLogger(), TestUtil.testAppLogger())
         flagDao = db.worksiteFlagDao()
         formDataDao = db.worksiteFormDataDao()
         noteDao = db.worksiteNoteDao()
