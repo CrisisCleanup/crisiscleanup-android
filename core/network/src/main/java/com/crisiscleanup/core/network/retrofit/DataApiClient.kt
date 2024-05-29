@@ -10,6 +10,7 @@ import com.crisiscleanup.core.network.model.NetworkIncidentResult
 import com.crisiscleanup.core.network.model.NetworkIncidentsResult
 import com.crisiscleanup.core.network.model.NetworkLanguageTranslationResult
 import com.crisiscleanup.core.network.model.NetworkLanguagesResult
+import com.crisiscleanup.core.network.model.NetworkListsResult
 import com.crisiscleanup.core.network.model.NetworkLocationsResult
 import com.crisiscleanup.core.network.model.NetworkOrganizationsResult
 import com.crisiscleanup.core.network.model.NetworkOrganizationsSearchResult
@@ -244,6 +245,13 @@ private interface DataSourceApi {
         @Query("offset") offset: Int?,
         @Query("updated_at__gt") updatedAtAfter: Instant?,
     ): NetworkFlagsFormDataResult
+
+    @TokenAuthenticationHeader
+    @GET("lists")
+    suspend fun getLists(
+        @Query("limit") limit: Int,
+        @Query("offset") offset: Int?,
+    ): NetworkListsResult
 }
 
 private val worksiteCoreDataFields = listOf(
@@ -470,4 +478,6 @@ class DataApiClient @Inject constructor(
 
     override suspend fun getRequestRedeployIncidentIds() =
         networkApi.getRedeployRequests().results?.map { it.incident }?.toSet() ?: emptySet()
+
+    override suspend fun getLists(limit: Int, offset: Int?) = networkApi.getLists(limit, offset)
 }

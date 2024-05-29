@@ -8,6 +8,7 @@ import com.crisiscleanup.core.network.model.NetworkIncident
 import com.crisiscleanup.core.network.model.NetworkIncidentOrganization
 import com.crisiscleanup.core.network.model.NetworkLanguageDescription
 import com.crisiscleanup.core.network.model.NetworkLanguageTranslation
+import com.crisiscleanup.core.network.model.NetworkListsResult
 import com.crisiscleanup.core.network.model.NetworkLocation
 import com.crisiscleanup.core.network.model.NetworkOrganizationShort
 import com.crisiscleanup.core.network.model.NetworkOrganizationsResult
@@ -124,4 +125,9 @@ interface CrisisCleanupNetworkDataSource {
     suspend fun getProfile(accessToken: String): NetworkUserProfile?
 
     suspend fun getRequestRedeployIncidentIds(): Set<Long>
+
+    suspend fun getLists(
+        limit: Int = 100,
+        offset: Int? = null,
+    ): NetworkListsResult
 }

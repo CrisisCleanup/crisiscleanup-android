@@ -2,11 +2,13 @@ package com.crisiscleanup.core.data.di
 
 import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.NetworkMonitor
+import com.crisiscleanup.core.data.AccountListsSyncer
 import com.crisiscleanup.core.data.IncidentOrganizationsDataCache
 import com.crisiscleanup.core.data.IncidentOrganizationsDataFileCache
 import com.crisiscleanup.core.data.IncidentWorksitesFullSyncer
 import com.crisiscleanup.core.data.IncidentWorksitesSecondaryDataSyncer
 import com.crisiscleanup.core.data.IncidentWorksitesSyncer
+import com.crisiscleanup.core.data.ListsSyncer
 import com.crisiscleanup.core.data.SyncCacheDeviceInspector
 import com.crisiscleanup.core.data.WorksitesFullSyncer
 import com.crisiscleanup.core.data.WorksitesNetworkDataCache
@@ -226,4 +228,7 @@ interface DataInternalModule {
     fun providesIncidentOrganizationsNetworkDataCache(
         cache: IncidentOrganizationsDataFileCache,
     ): IncidentOrganizationsDataCache
+
+    @Binds
+    fun bindsListsSyncer(syncer: AccountListsSyncer): ListsSyncer
 }

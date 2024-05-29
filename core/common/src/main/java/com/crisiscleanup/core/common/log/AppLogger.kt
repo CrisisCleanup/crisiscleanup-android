@@ -27,6 +27,7 @@ enum class CrisisCleanupLoggers {
     Cases,
     Incidents,
     Language,
+    Lists,
     Media,
     Navigation,
     Network,
