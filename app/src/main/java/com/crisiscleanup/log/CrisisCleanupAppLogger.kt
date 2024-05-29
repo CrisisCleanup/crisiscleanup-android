@@ -41,4 +41,8 @@ class CrisisCleanupAppLogger @Inject constructor(
             crashlytics.log(message)
         }
     }
+
+    override fun setAccountId(id: String) {
+        crashlytics.setUserId(id)
+    }
 }

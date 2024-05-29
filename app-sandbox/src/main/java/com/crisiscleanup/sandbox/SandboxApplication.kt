@@ -69,6 +69,8 @@ class AppLogger @Inject constructor() : TagLogger {
     override fun logCapture(message: String) {
         Log.w(tag, message)
     }
+
+    override fun setAccountId(id: String) {}
 }
 
 @Singleton
