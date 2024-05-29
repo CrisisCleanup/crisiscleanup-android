@@ -1,3 +1,4 @@
+import com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsExtension
 import com.google.samples.apps.nowinandroid.NiaBuildType
 
 plugins {
@@ -9,11 +10,12 @@ plugins {
     id("jacoco")
     id("nowinandroid.android.application.firebase")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+    id("com.google.firebase.crashlytics")
 }
 
 android {
     defaultConfig {
-        val buildVersion = 204
+        val buildVersion = 208
         applicationId = "com.crisiscleanup"
         versionCode = buildVersion
         versionName = "0.9.${buildVersion - 168}"
@@ -50,6 +52,14 @@ android {
             // TODO Review proper syntax
             ndk {
                 debugSymbolLevel = "SYMBOL_TABLE"
+            }
+
+            configure<CrashlyticsExtension> {
+                // Enable processing and uploading of native symbols to Firebase servers.
+                // By default, this is disabled to improve build speeds.
+                // This flag must be enabled to see properly-symbolicated native
+                // stack traces in the Crashlytics dashboard.
+                nativeSymbolUploadEnabled = true
             }
 
             // To publish on the Play store a private signing key is required, but to allow anyone
@@ -166,6 +176,9 @@ dependencies {
 
     // For Firebase support
     implementation(platform(libs.firebase.bom))
+    // Crashlytics configuration
+    implementation(libs.firebase.crashlytics.ndk)
+    implementation(libs.firebase.analytics)
 
     implementation(libs.kotlinx.coroutines.playservices)
     implementation(libs.playservices.maps)

@@ -28,3 +28,8 @@
 # Android Studio Hedgehog require the following rules
 -dontwarn io.grpc.internal.DnsNameResolverProvider
 -dontwarn io.grpc.internal.PickFirstLoadBalancerProvider
+
+# Preserve information for crash reports
+-keepattributes SourceFile,LineNumberTable        # Keep file names and line numbers.
+-renamesourcefileattribute SourceFile
+-keep public class * extends java.lang.Exception  # Optional: Keep custom exceptions.
