@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.database.dao
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
@@ -18,8 +19,8 @@ interface SyncLogDao {
     fun streamLogCount(): Flow<Int>
 
     @Transaction
-    @Query("SELECT * FROM sync_logs ORDER BY log_time DESC LIMIT :limit OFFSET :offset")
-    fun getSyncLogs(limit: Int = 20, offset: Int = 0): List<PopulatedSyncLog>
+    @Query("SELECT * FROM sync_logs ORDER BY log_time DESC")
+    fun pageSyncLogs(): PagingSource<Int, PopulatedSyncLog>
 
     @Insert
     fun insertSyncLogs(logs: Collection<SyncLogEntity>)

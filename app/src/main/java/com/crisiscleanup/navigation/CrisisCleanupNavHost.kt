@@ -30,6 +30,8 @@ import com.crisiscleanup.feature.cases.navigation.casesSearchScreen
 import com.crisiscleanup.feature.cases.navigation.navigateToCasesFilter
 import com.crisiscleanup.feature.cases.navigation.navigateToCasesSearch
 import com.crisiscleanup.feature.cases.ui.CasesAction
+import com.crisiscleanup.feature.crisiscleanuplists.navigation.listsScreen
+import com.crisiscleanup.feature.crisiscleanuplists.navigation.navigateToLists
 import com.crisiscleanup.feature.dashboard.navigation.dashboardScreen
 import com.crisiscleanup.feature.mediamanage.navigation.viewSingleImageScreen
 import com.crisiscleanup.feature.mediamanage.navigation.viewWorksiteImagesScreen
@@ -97,6 +99,8 @@ fun CrisisCleanupNavHost(
 
     val openUserFeedback = remember(navController) { { navController.navigateToUserFeedback() } }
 
+    val openLists = remember(navController) { { navController.navigateToLists() } }
+
     val openSyncLogs = remember(navController) { { navController.navigateToSyncInsights() } }
 
     val navToCaseAddFlagNonEditing =
@@ -134,6 +138,7 @@ fun CrisisCleanupNavHost(
         teamScreen()
         menuScreen(
             openAuthentication = openAuthentication,
+            openLists = openLists,
             openInviteTeammate = openInviteTeammate,
             openRequestRedeploy = openRequestRedeploy,
             openUserFeedback = openUserFeedback,
@@ -144,6 +149,7 @@ fun CrisisCleanupNavHost(
         inviteTeammateScreen(onBack)
         requestRedeployScreen(onBack)
         userFeedbackScreen(onBack)
+        listsScreen(onBack)
         syncInsightsScreen(viewCase)
 
         resetPasswordScreen(

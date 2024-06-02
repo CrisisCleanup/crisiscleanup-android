@@ -28,6 +28,7 @@ import com.crisiscleanup.core.data.repository.CrisisCleanupAccountDataRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupAccountUpdateRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupCasesFilterRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupDataManagementRepository
+import com.crisiscleanup.core.data.repository.CrisisCleanupListsRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupLocalImageRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupOrgVolunteerRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupRequestRedeployRepository
@@ -36,6 +37,7 @@ import com.crisiscleanup.core.data.repository.CrisisCleanupWorksiteChangeReposit
 import com.crisiscleanup.core.data.repository.EndOfLifeRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
+import com.crisiscleanup.core.data.repository.ListsRepository
 import com.crisiscleanup.core.data.repository.LocalAppMetricsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.LocalImageRepository
@@ -204,6 +206,11 @@ interface DataModule {
     fun bindsWorksiteImageRepository(
         repository: OfflineFirstWorksiteImageRepository,
     ): WorksiteImageRepository
+
+    @Binds
+    fun bindsListRepository(
+        repository: CrisisCleanupListsRepository,
+    ): ListsRepository
 }
 
 @Module

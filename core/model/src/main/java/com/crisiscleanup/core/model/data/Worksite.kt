@@ -140,7 +140,7 @@ enum class WorksiteFlagType(val literal: String) {
     WrongIncident("flag.worksite_wrong_incident"),
 }
 
-private val flagLiteralLookup = WorksiteFlagType.values().associateBy(WorksiteFlagType::literal)
+private val flagLiteralLookup = WorksiteFlagType.entries.associateBy(WorksiteFlagType::literal)
 
 fun flagFromLiteral(literal: String) = flagLiteralLookup[literal]
 
@@ -235,6 +235,6 @@ enum class WorksiteSortBy(val literal: String, val translateKey: String) {
     CountyParish("county-parish", "worksiteFilters.sort_by_county"),
 }
 
-private val sortByLookup = WorksiteSortBy.values().associateBy(WorksiteSortBy::literal)
+private val sortByLookup = WorksiteSortBy.entries.associateBy(WorksiteSortBy::literal)
 
 fun worksiteSortByFromLiteral(literal: String) = sortByLookup[literal] ?: WorksiteSortBy.None

@@ -32,6 +32,8 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.datetime)
+    implementation(libs.androidx.paging.common)
+    implementation(libs.room.paging)
 
     androidTestImplementation(projects.core.testing)
     androidTestImplementation(libs.room.testing)

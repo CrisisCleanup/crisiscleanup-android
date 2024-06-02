@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.crisiscleanup.feature.syncinsights"
+    namespace = "com.crisiscleanup.feature.crisiscleanuplists"
 }
 
 dependencies {

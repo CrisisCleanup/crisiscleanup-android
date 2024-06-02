@@ -66,6 +66,7 @@ internal fun MenuRoute(
     openInviteTeammate: () -> Unit = {},
     openRequestRedeploy: () -> Unit = {},
     openUserFeedback: () -> Unit = {},
+    openLists: () -> Unit = {},
     openSyncLogs: () -> Unit = {},
 ) {
     MenuScreen(
@@ -73,6 +74,7 @@ internal fun MenuRoute(
         openInviteTeammate = openInviteTeammate,
         openRequestRedeploy = openRequestRedeploy,
         openUserFeedback = openUserFeedback,
+        openLists = openLists,
         openSyncLogs = openSyncLogs,
     )
 }
@@ -84,6 +86,7 @@ internal fun MenuScreen(
     openInviteTeammate: () -> Unit = {},
     openRequestRedeploy: () -> Unit = {},
     openUserFeedback: () -> Unit = {},
+    openLists: () -> Unit = {},
     openSyncLogs: () -> Unit = {},
 ) {
     val t = LocalAppTranslator.current
@@ -137,6 +140,13 @@ internal fun MenuScreen(
                 viewModel.gettingStartedVideoUrl,
                 viewModel.isNotProduction,
                 toggleGettingStartedSection = viewModel::showGettingStartedVideo,
+            )
+
+            CrisisCleanupOutlinedButton(
+                modifier = listItemModifier.actionHeight(),
+                text = t("~~Lists"),
+                onClick = openLists,
+                enabled = true,
             )
 
             CrisisCleanupButton(

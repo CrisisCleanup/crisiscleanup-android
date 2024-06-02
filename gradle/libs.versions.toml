@@ -25,6 +25,7 @@ androidxLifecycle = "2.7.0"
 androidxMacroBenchmark = "1.2.4"
 androidxMetrics = "1.0.0-beta01"
 androidxNavigation = "2.7.7"
+androidxPaging = "3.3.0"
 androidxProfileinstaller = "1.3.1"
 androidxStartup = "1.1.1"
 androidxSecurityCrypto = "1.1.0-alpha06"
@@ -119,6 +120,9 @@ androidx-lifecycle-viewModelCompose = { group = "androidx.lifecycle", name = "li
 androidx-metrics = { group = "androidx.metrics", name = "metrics-performance", version.ref = "androidxMetrics" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "androidxNavigation" }
 androidx-navigation-testing = { group = "androidx.navigation", name = "navigation-testing", version.ref = "androidxNavigation" }
+androidx-paging-common = { group = "androidx.paging", name = "paging-common", version.ref = "androidxPaging" }
+androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "androidxPaging" }
+androidx-paging-runtime-ktx = { group = "androidx.paging", name = "paging-runtime-ktx", version.ref = "androidxPaging" }
 androidx-profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "androidxProfileinstaller" }
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "androidxSecurityCrypto" }
 androidx-startup = { group = "androidx.startup", name = "startup-runtime", version.ref = "androidxStartup" }
@@ -175,6 +179,7 @@ retrofit-core = { group = "com.squareup.retrofit2", name = "retrofit", version.r
 retrofit-kotlin-serialization = { group = "com.jakewharton.retrofit", name = "retrofit2-kotlinx-serialization-converter", version.ref = "retrofitKotlinxSerializationJson" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+room-paging = { group = "androidx.room", name = "room-paging", version.ref = "room" }
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
 timeago = { group = "com.github.marlonlom", name = "timeago", version.ref = "timeAgo" }

@@ -125,6 +125,7 @@ dependencies {
     implementation(projects.feature.caseeditor)
     implementation(projects.feature.cases)
     implementation(projects.feature.dashboard)
+    implementation(projects.feature.lists)
     implementation(projects.feature.menu)
     implementation(projects.feature.mediamanage)
     implementation(projects.feature.organizationmanage)
