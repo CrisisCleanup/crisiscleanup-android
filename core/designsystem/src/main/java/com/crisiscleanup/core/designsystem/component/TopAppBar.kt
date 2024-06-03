@@ -270,6 +270,7 @@ fun TopAppBarBackCaretAction(
     onAction: () -> Unit = {},
     colors: TopAppBarColors = TopAppBarDefaults.centerAlignedTopAppBarColors(),
     actionTestTag: String = "topNavBackAction",
+    actions: @Composable RowScope.() -> Unit = {},
 ) {
     val titleContent = @Composable {
         TruncatedAppBarText(modifier, titleResId, title)
@@ -285,7 +286,7 @@ fun TopAppBarBackCaretAction(
     CenterAlignedTopAppBar(
         title = titleContent,
         navigationIcon = navigationContent,
-        actions = { },
+        actions = actions,
         colors = colors,
         modifier = modifier,
     )

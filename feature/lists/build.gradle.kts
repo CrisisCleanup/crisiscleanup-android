@@ -10,6 +10,8 @@ android {
 
 dependencies {
     implementation(projects.core.data)
+    implementation(projects.core.commonassets)
+    implementation(projects.core.commoncase)
 
     implementation(libs.androidx.paging.compose)
     implementation(libs.androidx.paging.runtime.ktx)

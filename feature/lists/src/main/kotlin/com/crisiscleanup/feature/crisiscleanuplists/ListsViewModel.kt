@@ -31,6 +31,8 @@ class ListsViewModel @Inject constructor(
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.Lists) private val logger: AppLogger,
 ) : ViewModel() {
+    val currentIncident = incidentSelector.incident
+
     val incidentLists = incidentSelector.incident
         .filter { it != EmptyIncident }
         .flatMapLatest {

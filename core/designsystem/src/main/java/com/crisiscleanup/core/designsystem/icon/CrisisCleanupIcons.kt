@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Directions
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Mail
@@ -71,6 +72,7 @@ object CrisisCleanupIcons {
     val ExpandLess = icons.ExpandLess
     val ExpandMore = icons.ExpandMore
     val Help = Icons.AutoMirrored.Filled.HelpOutline
+    val Info = icons.Info
     val Location = icons.LocationOn
     val Mail = icons.Mail
     val Minus = icons.Remove
