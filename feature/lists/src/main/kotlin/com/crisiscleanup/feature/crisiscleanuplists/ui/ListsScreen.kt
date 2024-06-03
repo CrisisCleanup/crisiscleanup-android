@@ -60,7 +60,9 @@ import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
 import com.crisiscleanup.core.model.data.CrisisCleanupList
 import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.model.data.EmptyList
 import com.crisiscleanup.core.model.data.Incident
+import com.crisiscleanup.core.model.data.ListModel
 import com.crisiscleanup.feature.crisiscleanuplists.ListsViewModel
 import com.crisiscleanup.feature.crisiscleanuplists.model.ListIcon
 import kotlinx.coroutines.launch
@@ -153,6 +155,22 @@ fun ListsRoute(
             }
         }
 
+        var explainSupportList by remember { mutableStateOf(EmptyList) }
+        val filterOnOpenList = remember(onOpenList) {
+            { list: CrisisCleanupList ->
+                when (list.model) {
+                    ListModel.None,
+                    ListModel.File,
+                    ListModel.OrganizationIncidentTeam,
+                    ->
+                        explainSupportList = list
+
+                    else ->
+                        onOpenList(list)
+                }
+            }
+        }
+
         Box(
             Modifier
                 .weight(1f)
@@ -163,12 +181,12 @@ fun ListsRoute(
                     0 -> IncidentListsView(
                         incidentLists,
                         currentIncident,
-                        onOpenList,
+                        filterOnOpenList,
                     )
 
                     1 -> AllListsView(
                         allLists,
-                        onOpenList,
+                        filterOnOpenList,
                     )
                 }
             }
@@ -181,6 +199,23 @@ fun ListsRoute(
                     .align(Alignment.TopCenter)
                     .alpha(pullProgress),
                 state = pullRefreshState,
+            )
+        }
+
+        if (explainSupportList != EmptyList) {
+            val dismissExplanation = { explainSupportList = EmptyList }
+            // TODO Different title and message for list type none
+            CrisisCleanupAlertDialog(
+                title = t("~~Unsupported list"),
+                text = t("~~{list_name} list is not yet supported on this app.")
+                    .replace("{list_name}", explainSupportList.name),
+                onDismissRequest = dismissExplanation,
+                confirmButton = {
+                    CrisisCleanupTextButton(
+                        text = t("actions.ok"),
+                        onClick = dismissExplanation,
+                    )
+                },
             )
         }
     }
