@@ -32,6 +32,7 @@ import com.crisiscleanup.feature.cases.navigation.navigateToCasesSearch
 import com.crisiscleanup.feature.cases.ui.CasesAction
 import com.crisiscleanup.feature.crisiscleanuplists.navigation.listsScreen
 import com.crisiscleanup.feature.crisiscleanuplists.navigation.navigateToLists
+import com.crisiscleanup.feature.crisiscleanuplists.navigation.viewListScreen
 import com.crisiscleanup.feature.dashboard.navigation.dashboardScreen
 import com.crisiscleanup.feature.mediamanage.navigation.viewSingleImageScreen
 import com.crisiscleanup.feature.mediamanage.navigation.viewWorksiteImagesScreen
@@ -149,7 +150,8 @@ fun CrisisCleanupNavHost(
         inviteTeammateScreen(onBack)
         requestRedeployScreen(onBack)
         userFeedbackScreen(onBack)
-        listsScreen(onBack)
+        listsScreen(navController, onBack)
+        viewListScreen(onBack)
         syncInsightsScreen(viewCase)
 
         resetPasswordScreen(

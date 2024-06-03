@@ -70,7 +70,7 @@ import kotlin.math.min
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun ListsRoute(
+internal fun ListsRoute(
     onBack: () -> Unit = {},
     onOpenList: (CrisisCleanupList) -> Unit = {},
     viewModel: ListsViewModel = hiltViewModel(),
