@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarMonth
@@ -15,7 +16,9 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Directions
+import androidx.compose.material.icons.filled.Domain
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -26,6 +29,7 @@ import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.filled.Nature
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonOutline
 import androidx.compose.material.icons.filled.Phone
@@ -71,14 +75,18 @@ object CrisisCleanupIcons {
     val ExpandAll = icons.UnfoldMore
     val ExpandLess = icons.ExpandLess
     val ExpandMore = icons.ExpandMore
+    val File = icons.Description
     val Help = Icons.AutoMirrored.Filled.HelpOutline
+    val Incident = icons.Nature
     val Info = icons.Info
+    val List = Icons.AutoMirrored.Filled.List
     val Location = icons.LocationOn
     val Mail = icons.Mail
     val Minus = icons.Remove
     val Menu = icons.Menu
     val MoreVert = icons.MoreVert
     val MyLocation = icons.MyLocation
+    val Organization = icons.Domain
     val Person = icons.Person
     val Phone = icons.Phone
     val PhotoGrid = icons.PhotoLibrary

@@ -1,14 +1,18 @@
 package com.crisiscleanup.feature.crisiscleanuplists.ui
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
@@ -28,11 +32,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
+import com.crisiscleanup.core.common.relativeTime
 import com.crisiscleanup.core.commonassets.getDisasterIcon
 import com.crisiscleanup.core.commoncase.ui.IncidentHeaderView
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
@@ -41,14 +49,20 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackCaretAction
+import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.icon.Icon
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
+import com.crisiscleanup.core.designsystem.theme.listItemCenterSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
+import com.crisiscleanup.core.designsystem.theme.listItemPadding
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
 import com.crisiscleanup.core.model.data.CrisisCleanupList
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.feature.crisiscleanuplists.ListsViewModel
+import com.crisiscleanup.feature.crisiscleanuplists.model.ListIcon
 import kotlinx.coroutines.launch
 import kotlin.math.min
 
@@ -56,6 +70,7 @@ import kotlin.math.min
 @Composable
 fun ListsRoute(
     onBack: () -> Unit = {},
+    onOpenList: (CrisisCleanupList) -> Unit = {},
     viewModel: ListsViewModel = hiltViewModel(),
 ) {
     val t = LocalAppTranslator.current
@@ -148,10 +163,12 @@ fun ListsRoute(
                     0 -> IncidentListsView(
                         incidentLists,
                         currentIncident,
+                        onOpenList,
                     )
 
                     1 -> AllListsView(
                         allLists,
+                        onOpenList,
                     )
                 }
             }
@@ -191,6 +208,7 @@ fun ListsRoute(
 private fun IncidentListsView(
     incidentLists: List<CrisisCleanupList>,
     incident: Incident,
+    onOpenList: (CrisisCleanupList) -> Unit = {},
 ) {
     val t = LocalAppTranslator.current
 
@@ -222,8 +240,20 @@ private fun IncidentListsView(
                 )
             }
         } else {
-            item {
-                Text("${incidentLists.size} lists")
+            items(
+                incidentLists.size,
+                key = { incidentLists[it].id },
+                contentType = { "list-item" },
+            ) { index ->
+                val list = incidentLists[index]
+                ListItemSummaryView(
+                    list,
+                    Modifier
+                        .clickable {
+                            onOpenList(list)
+                        }
+                        .then(listItemModifier),
+                )
             }
         }
     }
@@ -231,15 +261,104 @@ private fun IncidentListsView(
 
 @Composable
 private fun AllListsView(
-    allLists: LazyPagingItems<CrisisCleanupList>,
+    pagingLists: LazyPagingItems<CrisisCleanupList>,
+    onOpenList: (CrisisCleanupList) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
     LazyColumn(
         Modifier.fillMaxSize(),
         state = listState,
     ) {
-        item {
-            Text("${allLists.itemCount} lists")
+
+        items(
+            pagingLists.itemCount,
+            key = pagingLists.itemKey { it.id },
+            contentType = { "list-item" },
+        ) { index ->
+            val list = pagingLists[index]
+            if (list == null) {
+                Text(
+                    "$index",
+                    Modifier.listItemPadding(),
+                )
+            } else {
+                ListItemSummaryView(
+                    list,
+                    Modifier
+                        .clickable {
+                            onOpenList(list)
+                        }
+                        .then(listItemModifier),
+                    true,
+                )
+            }
+        }
+
+        if (pagingLists.loadState.append is LoadState.Loading) {
+            item(
+                contentType = { "loading" },
+            ) {
+                // TODO Loading indicator
+            }
+        }
+    }
+}
+
+@Composable
+private fun ListItemSummaryView(
+    list: CrisisCleanupList,
+    modifier: Modifier = Modifier,
+    showIncident: Boolean = false,
+) {
+    Column(
+        modifier.actionHeight(),
+        verticalArrangement = listItemCenterSpacedByHalf,
+    ) {
+        Row(horizontalArrangement = listItemSpacedByHalf) {
+            val icon = list.ListIcon
+            val contentDescription = list.model.literal
+            when (icon) {
+                is Icon.ImageVectorIcon -> Icon(
+                    imageVector = icon.imageVector,
+                    contentDescription = contentDescription,
+                )
+
+                is Icon.DrawableResourceIcon -> {
+                    Icon(
+                        painter = painterResource(icon.id),
+                        contentDescription = contentDescription,
+                    )
+                }
+            }
+
+            Text(
+                "${list.name} (${list.objectIds.size})",
+                style = LocalFontStyles.current.header3,
+            )
+            Spacer(Modifier.weight(1f))
+            Text(list.updatedAt.relativeTime)
+        }
+
+        val incidentName = list.incident?.shortName ?: ""
+        val description = list.description.trim()
+        if (incidentName.isNotBlank() || description.isNotBlank()) {
+            Row {
+                if (description.isNotBlank()) {
+                    Text(
+                        list.description,
+                        Modifier.weight(1f),
+                    )
+                }
+
+                if (showIncident) {
+                    if (description.isBlank()) {
+                        Spacer(Modifier.weight(1f))
+                    }
+                    list.incident?.shortName?.let { incidentName ->
+                        Text(incidentName)
+                    }
+                }
+            }
         }
     }
 }
