@@ -37,3 +37,9 @@ data class NetworkList(
     @SerialName("invalidate_at")
     val invalidateAt: Instant?,
 )
+
+@Serializable
+data class NetworkListResult(
+    val errors: List<NetworkCrisisCleanupApiError>? = null,
+    val list: NetworkList? = null,
+)

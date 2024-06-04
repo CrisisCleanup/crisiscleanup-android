@@ -4,14 +4,18 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.KeyResourceTranslator
+import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
+import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.repository.ListsRepository
 import com.crisiscleanup.core.model.data.CrisisCleanupList
 import com.crisiscleanup.core.model.data.EmptyList
 import com.crisiscleanup.feature.crisiscleanuplists.navigation.ViewListArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -19,6 +23,7 @@ class ViewListViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     listsRepository: ListsRepository,
     translator: KeyResourceTranslator,
+    @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     private val viewListArgs = ViewListArgs(savedStateHandle)
 
@@ -54,7 +59,9 @@ class ViewListViewModel @Inject constructor(
         )
 
     init {
-        // TODO Load list data or show error
+        viewModelScope.launch(ioDispatcher) {
+            listsRepository.refreshList(listId)
+        }
     }
 }
 

@@ -14,25 +14,27 @@ class ListDaoPlus @Inject constructor(
     ) = db.withTransaction {
         val listDao = db.listDao()
 
-        for (l in upsertLists) {
-            val insertId = listDao.insertIgnoreList(l)
+        for (list in upsertLists) {
+            val insertId = listDao.insertIgnoreList(list)
             if (insertId < 0) {
                 // TODO Do not update where local changes exist and were made after updatedAt
-                listDao.syncUpdateList(
-                    networkId = l.networkId,
-                    updatedBy = l.updatedBy,
-                    updatedAt = l.updatedAt,
-                    parent = l.parent,
-                    name = l.name,
-                    description = l.description ?: "",
-                    listOrder = l.listOrder,
-                    tags = l.tags ?: "",
-                    model = l.model,
-                    objectIds = l.objectIds,
-                    shared = l.shared,
-                    permissions = l.permissions,
-                    incident = l.incidentId,
-                )
+                with(list) {
+                    listDao.syncUpdateList(
+                        networkId = networkId,
+                        updatedBy = updatedBy,
+                        updatedAt = updatedAt,
+                        parent = parent,
+                        name = name,
+                        description = description ?: "",
+                        listOrder = listOrder,
+                        tags = tags ?: "",
+                        model = model,
+                        objectIds = objectIds,
+                        shared = shared,
+                        permissions = permissions,
+                        incident = incidentId,
+                    )
+                }
             }
         }
 

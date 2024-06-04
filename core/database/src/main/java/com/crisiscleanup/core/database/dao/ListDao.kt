@@ -22,6 +22,10 @@ interface ListDao {
     fun streamList(id: Long): Flow<PopulatedList?>
 
     @Transaction
+    @Query("SELECT * FROM lists WHERE id=:id")
+    fun getList(id: Long): ListEntity?
+
+    @Transaction
     @Query(
         """
         SELECT *

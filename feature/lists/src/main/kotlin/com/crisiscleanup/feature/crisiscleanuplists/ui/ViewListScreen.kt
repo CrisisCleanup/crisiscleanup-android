@@ -3,7 +3,6 @@ package com.crisiscleanup.feature.crisiscleanuplists.ui
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -18,7 +17,6 @@ import com.crisiscleanup.core.commonassets.getDisasterIcon
 import com.crisiscleanup.core.commoncase.ui.IncidentHeaderView
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
-import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.model.data.CrisisCleanupList
@@ -77,12 +75,6 @@ private fun ListDetailsView(
         horizontalArrangement = listItemSpacedByHalf,
     ) {
         ListIcon(list)
-
-        Text(
-            list.name,
-            style = LocalFontStyles.current.header3,
-        )
-        Spacer(Modifier.weight(1f))
         Text(list.updatedAt.relativeTime)
     }
 

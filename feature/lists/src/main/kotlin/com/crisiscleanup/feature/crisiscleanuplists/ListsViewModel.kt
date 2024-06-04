@@ -3,9 +3,6 @@ package com.crisiscleanup.feature.crisiscleanuplists
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
-import com.crisiscleanup.core.common.log.AppLogger
-import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
-import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.IncidentSelector
@@ -29,7 +26,6 @@ class ListsViewModel @Inject constructor(
     private val listDataRefresher: ListDataRefresher,
     private val listsRepository: ListsRepository,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
-    @Logger(CrisisCleanupLoggers.Lists) private val logger: AppLogger,
 ) : ViewModel() {
     val currentIncident = incidentSelector.incident
 
