@@ -18,6 +18,10 @@ interface ListDao {
     fun streamIncidentLists(incidentId: Long): Flow<List<PopulatedList>>
 
     @Transaction
+    @Query("SELECT * FROM lists WHERE id=:id")
+    fun streamList(id: Long): Flow<PopulatedList?>
+
+    @Transaction
     @Query(
         """
         SELECT *

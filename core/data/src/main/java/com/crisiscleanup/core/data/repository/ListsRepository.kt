@@ -11,6 +11,7 @@ import com.crisiscleanup.core.database.dao.ListDaoPlus
 import com.crisiscleanup.core.database.model.PopulatedList
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.CrisisCleanupList
+import com.crisiscleanup.core.model.data.EmptyList
 import com.crisiscleanup.core.network.model.NetworkList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -20,6 +21,8 @@ interface ListsRepository {
     fun streamIncidentLists(incidentId: Long): Flow<List<CrisisCleanupList>>
 
     fun pageLists(): Flow<PagingData<CrisisCleanupList>>
+
+    fun streamList(listId: Long): Flow<CrisisCleanupList>
 
     suspend fun syncLists(lists: List<NetworkList>)
 }
@@ -41,6 +44,9 @@ class CrisisCleanupListsRepository @Inject constructor(
     override fun pageLists() = listPager.flow.map {
         it.map(PopulatedList::asExternalModel)
     }
+
+    override fun streamList(listId: Long) =
+        listDao.streamList(listId).map { it?.asExternalModel() ?: EmptyList }
 
     override suspend fun syncLists(lists: List<NetworkList>) {
         val (validLists, invalidLists) = lists.split {

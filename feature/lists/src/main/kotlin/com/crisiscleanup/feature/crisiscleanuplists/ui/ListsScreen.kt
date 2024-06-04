@@ -340,6 +340,27 @@ private fun AllListsView(
 }
 
 @Composable
+internal fun ListIcon(
+    list: CrisisCleanupList,
+) {
+    val icon = list.ListIcon
+    val contentDescription = list.model.literal
+    when (icon) {
+        is Icon.ImageVectorIcon -> Icon(
+            imageVector = icon.imageVector,
+            contentDescription = contentDescription,
+        )
+
+        is Icon.DrawableResourceIcon -> {
+            Icon(
+                painter = painterResource(icon.id),
+                contentDescription = contentDescription,
+            )
+        }
+    }
+}
+
+@Composable
 private fun ListItemSummaryView(
     list: CrisisCleanupList,
     modifier: Modifier = Modifier,
@@ -350,21 +371,7 @@ private fun ListItemSummaryView(
         verticalArrangement = listItemCenterSpacedByHalf,
     ) {
         Row(horizontalArrangement = listItemSpacedByHalf) {
-            val icon = list.ListIcon
-            val contentDescription = list.model.literal
-            when (icon) {
-                is Icon.ImageVectorIcon -> Icon(
-                    imageVector = icon.imageVector,
-                    contentDescription = contentDescription,
-                )
-
-                is Icon.DrawableResourceIcon -> {
-                    Icon(
-                        painter = painterResource(icon.id),
-                        contentDescription = contentDescription,
-                    )
-                }
-            }
+            ListIcon(list)
 
             Text(
                 "${list.name} (${list.objectIds.size})",
@@ -380,7 +387,7 @@ private fun ListItemSummaryView(
             Row {
                 if (description.isNotBlank()) {
                     Text(
-                        list.description,
+                        description,
                         Modifier.weight(1f),
                     )
                 }
