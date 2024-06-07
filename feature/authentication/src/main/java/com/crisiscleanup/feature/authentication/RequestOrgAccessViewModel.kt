@@ -118,10 +118,16 @@ class RequestOrgAccessViewModel @Inject constructor(
             .onEach { result ->
                 result?.let {
                     if (it.isNewAccountRequest) {
-                        requestSentTitle = translator("requestAccess.request_sent")
-                        requestSentText = translator("requestAccess.request_sent_to_org")
-                            .replace("{organization}", result.organizationName)
-                            .replace("{requested_to}", result.organizationRecipient)
+                        if (showEmailInput) {
+                            requestSentTitle = translator("requestAccess.request_sent")
+                            requestSentText = translator("requestAccess.request_sent_to_org")
+                                .replace("{organization}", result.organizationName)
+                                .replace("{requested_to}", result.organizationRecipient)
+                        } else {
+                            requestSentTitle = translator("info.success")
+                            requestSentText =
+                                translator("invitationSignup.success_accept_invitation")
+                        }
                     } else {
                         inviteInfoErrorMessage.value =
                             translator("requestAccess.already_in_org_error")
