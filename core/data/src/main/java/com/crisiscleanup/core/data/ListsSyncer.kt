@@ -71,6 +71,5 @@ class AccountListsSyncer @Inject constructor(
         } finally {
             syncGuard.set(false)
         }
-
     }
 }

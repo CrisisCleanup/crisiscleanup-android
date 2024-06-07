@@ -5,6 +5,7 @@ import kotlinx.datetime.Instant
 data class CrisisCleanupList(
     val id: Long,
     val updatedAt: Instant,
+    val networkId: Long,
     val parentNetworkId: Long?,
     val name: String,
     val description: String,
@@ -20,6 +21,7 @@ data class CrisisCleanupList(
 val EmptyList = CrisisCleanupList(
     id = 0,
     updatedAt = Instant.fromEpochSeconds(0),
+    networkId = 0,
     parentNetworkId = null,
     name = "",
     description = "",

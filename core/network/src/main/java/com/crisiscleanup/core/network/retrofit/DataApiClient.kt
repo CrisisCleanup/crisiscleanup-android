@@ -496,4 +496,17 @@ class DataApiClient @Inject constructor(
         result.errors?.tryThrowException()
         return result.list
     }
+
+    override suspend fun getLists(ids: List<Long>): List<NetworkList?> {
+        val networkLists = mutableListOf<NetworkList?>()
+        for (id in ids) {
+            var list: NetworkList? = null
+            try {
+                list = getList(id)
+            } catch (_: Exception) {
+            }
+            networkLists.add(list)
+        }
+        return networkLists
+    }
 }

@@ -3,7 +3,11 @@ package com.crisiscleanup.core.data.repository
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
+import com.crisiscleanup.core.data.model.PersonContactEntities
+import com.crisiscleanup.core.data.model.asEntities
 import com.crisiscleanup.core.data.model.asExternalModel
+import com.crisiscleanup.core.database.dao.IncidentOrganizationDaoPlus
+import com.crisiscleanup.core.database.dao.PersonContactDaoPlus
 import com.crisiscleanup.core.model.data.PersonContact
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkPersonContact
@@ -15,10 +19,14 @@ interface UsersRepository {
         organization: Long,
         limit: Int = 10,
     ): List<PersonContact>
+
+    suspend fun queryUpdateUsers(userIds: Collection<Long>)
 }
 
 class OfflineFirstUsersRepository @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,
+    private val personContactDaoPlus: PersonContactDaoPlus,
+    private val incidentOrganizationDaoPlus: IncidentOrganizationDaoPlus,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : UsersRepository {
     override suspend fun getMatchingUsers(
@@ -33,5 +41,22 @@ class OfflineFirstUsersRepository @Inject constructor(
             logger.logException(e)
         }
         return emptyList()
+    }
+
+    override suspend fun queryUpdateUsers(userIds: Collection<Long>) {
+        try {
+            val networkUsers = networkDataSource.getUsers(userIds)
+            val entities = networkUsers.mapNotNull(NetworkPersonContact::asEntities)
+
+            val organizations = entities.map(PersonContactEntities::organization)
+            val affiliates = entities.map(PersonContactEntities::organizationAffiliates)
+            incidentOrganizationDaoPlus.saveMissing(organizations, affiliates)
+
+            val persons = entities.map(PersonContactEntities::personContact)
+            val personOrganizations = entities.map(PersonContactEntities::personToOrganization)
+            personContactDaoPlus.savePersons(persons, personOrganizations)
+        } catch (e: Exception) {
+            logger.logException(e)
+        }
     }
 }

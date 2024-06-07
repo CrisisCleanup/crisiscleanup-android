@@ -13,6 +13,7 @@ import com.crisiscleanup.feature.crisiscleanuplists.navigation.ViewListArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -33,12 +34,17 @@ class ViewListViewModel @Inject constructor(
         .map { list ->
             if (list == EmptyList) {
                 val listNotFound =
-                    translator("~~List was not found. Go back and try selecting the list again.")
+                    translator("~~List was not found. It is likely deleted.")
                 return@map ViewListViewState.Error(listNotFound)
             }
 
-            ViewListViewState.Success(list)
+            val lookup = listsRepository.getListObjectData(list)
+            val objectData = list.objectIds.map { id ->
+                lookup[id]
+            }
+            ViewListViewState.Success(list, objectData)
         }
+        .flowOn(ioDispatcher)
         .stateIn(
             scope = viewModelScope,
             initialValue = ViewListViewState.Loading,
@@ -70,6 +76,7 @@ sealed interface ViewListViewState {
 
     data class Success(
         val list: CrisisCleanupList,
+        val objectData: List<Any?>,
     ) : ViewListViewState
 
     data class Error(

@@ -25,6 +25,7 @@ fun PopulatedList.asExternalModel() = with(entity) {
     CrisisCleanupList(
         id = id,
         updatedAt = updatedAt,
+        networkId = networkId,
         parentNetworkId = parent,
         name = name,
         description = description ?: "",

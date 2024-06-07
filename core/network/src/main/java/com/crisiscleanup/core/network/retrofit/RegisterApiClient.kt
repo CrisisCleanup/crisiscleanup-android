@@ -64,9 +64,9 @@ private interface RegisterApi {
         @Path("user") userId: Long,
     ): NetworkUser
 
-    @GET("organizations/{organization}")
+    @GET("organizations/{organizationId}")
     suspend fun noAuthOrganization(
-        @Path("organization") organizationId: Long,
+        @Path("organizationId") organizationId: Long,
     ): NetworkOrganizationShort
 
     @POST("invitations/accept")

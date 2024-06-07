@@ -80,7 +80,7 @@ internal fun ListsRoute(
     val incidentLists by viewModel.incidentLists.collectAsStateWithLifecycle()
     val allLists = viewModel.allLists.collectAsLazyPagingItems()
 
-    val tabTitles = remember(incidentLists, allLists) {
+    val tabTitles = remember(incidentLists, allLists.itemCount) {
         val incidentText = t("~~Incident")
         val allText = t("~~All")
         val listCount = allLists.itemCount
@@ -304,7 +304,6 @@ private fun AllListsView(
         Modifier.fillMaxSize(),
         state = listState,
     ) {
-
         items(
             pagingLists.itemCount,
             key = pagingLists.itemKey { it.id },
@@ -361,7 +360,7 @@ internal fun ListIcon(
 }
 
 @Composable
-private fun ListItemSummaryView(
+internal fun ListItemSummaryView(
     list: CrisisCleanupList,
     modifier: Modifier = Modifier,
     showIncident: Boolean = false,

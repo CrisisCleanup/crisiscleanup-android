@@ -37,7 +37,7 @@ class ListsViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = emptyList(),
-            started = SharingStarted.WhileSubscribed(1_000),
+            started = SharingStarted.WhileSubscribed(3_000),
         )
 
     val isRefreshingData = MutableStateFlow(false)

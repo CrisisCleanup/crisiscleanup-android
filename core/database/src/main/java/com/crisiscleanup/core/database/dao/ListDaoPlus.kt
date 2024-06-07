@@ -38,6 +38,6 @@ class ListDaoPlus @Inject constructor(
             }
         }
 
-        listDao.deleteLists(deleteNetworkIds)
+        listDao.deleteListsByNetworkIds(deleteNetworkIds)
     }
 }

@@ -133,4 +133,6 @@ interface CrisisCleanupNetworkDataSource {
     ): NetworkListsResult
 
     suspend fun getList(id: Long): NetworkList?
+
+    suspend fun getLists(ids: List<Long>): List<NetworkList?>
 }

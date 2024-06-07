@@ -26,6 +26,10 @@ interface ListDao {
     fun getList(id: Long): ListEntity?
 
     @Transaction
+    @Query("SELECT * FROM lists WHERE network_id IN(:ids)")
+    fun getListsByNetworkIds(ids: Collection<Long>): List<PopulatedList>
+
+    @Transaction
     @Query(
         """
         SELECT *
@@ -36,8 +40,12 @@ interface ListDao {
     fun pageLists(): PagingSource<Int, PopulatedList>
 
     @Transaction
+    @Query("DELETE FROM lists WHERE id=:id")
+    fun deleteList(id: Long)
+
+    @Transaction
     @Query("DELETE FROM lists WHERE network_id IN(:networkIds)")
-    fun deleteLists(networkIds: Set<Long>)
+    fun deleteListsByNetworkIds(networkIds: Set<Long>)
 
     @Transaction
     @Insert(onConflict = OnConflictStrategy.IGNORE)
