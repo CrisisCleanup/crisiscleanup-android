@@ -131,6 +131,7 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
 
     private suspend fun onLogout() {
         dataSource.clearAccount()
+        logger.setAccountId("")
     }
 
     // For dev
