@@ -14,7 +14,14 @@ import kotlinx.datetime.Instant
 @Dao
 interface ListDao {
     @Transaction
-    @Query("SELECT * FROM lists WHERE incident_id=:incidentId")
+    @Query(
+        """
+        SELECT *
+        FROM lists
+        WHERE incident_id=:incidentId
+        ORDER BY updated_at DESC
+        """,
+    )
     fun streamIncidentLists(incidentId: Long): Flow<List<PopulatedList>>
 
     @Transaction
@@ -67,7 +74,7 @@ interface ListDao {
         shared      = :shared,
         permissions = :permissions,
         incident_id = :incident
-        WHERE network_id=:networkId AND local_global_uuid=""
+        WHERE network_id=:networkId AND local_global_uuid=''
         """,
     )
     fun syncUpdateList(

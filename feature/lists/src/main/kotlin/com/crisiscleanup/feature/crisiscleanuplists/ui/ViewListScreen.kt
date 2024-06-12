@@ -29,7 +29,7 @@ import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.LinkifyEmailText
 import com.crisiscleanup.core.designsystem.component.LinkifyPhoneText
-import com.crisiscleanup.core.designsystem.component.PhoneNumbersDialog
+import com.crisiscleanup.core.designsystem.component.PhoneCallDialog
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.WorksiteAddressButton
 import com.crisiscleanup.core.designsystem.component.WorksiteAddressView
@@ -136,7 +136,7 @@ private fun ListDetailsView(
             }
         }
         val clearPhoneNumbers = remember(rememberKey) { { setPhoneNumberList(emptyList()) } }
-        PhoneNumbersDialog(
+        PhoneCallDialog(
             parsedNumbers = phoneNumberList,
             onCloseDialog = clearPhoneNumbers,
         )

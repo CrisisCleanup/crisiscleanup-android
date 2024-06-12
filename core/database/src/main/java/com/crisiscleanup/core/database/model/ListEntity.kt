@@ -22,7 +22,10 @@ import kotlinx.datetime.Instant
             value = ["updated_at"],
             orders = [Order.DESC],
         ),
-        Index(value = ["model"]),
+        Index(
+            value = ["model", "updated_at"],
+            orders = [Order.DESC, Order.DESC],
+        ),
         Index(value = ["parent", "list_order"]),
     ],
     foreignKeys = [

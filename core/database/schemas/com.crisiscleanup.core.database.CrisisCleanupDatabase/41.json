@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 41,
-    "identityHash": "af880eea87bbc76fc30f4d0bfed8632b",
+    "identityHash": "23e4bda629525238defdb9a682b03d81",
     "entities": [
       {
         "tableName": "work_type_statuses",
@@ -2952,13 +2952,17 @@
             "createSql": "CREATE INDEX IF NOT EXISTS `index_lists_updated_at` ON `${TABLE_NAME}` (`updated_at` DESC)"
           },
           {
-            "name": "index_lists_model",
+            "name": "index_lists_model_updated_at",
             "unique": false,
             "columnNames": [
-              "model"
+              "model",
+              "updated_at"
             ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_lists_model` ON `${TABLE_NAME}` (`model`)"
+            "orders": [
+              "DESC",
+              "DESC"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_lists_model_updated_at` ON `${TABLE_NAME}` (`model` DESC, `updated_at` DESC)"
           },
           {
             "name": "index_lists_parent_list_order",
@@ -2989,7 +2993,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'af880eea87bbc76fc30f4d0bfed8632b')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '23e4bda629525238defdb9a682b03d81')"
     ]
   }
 }

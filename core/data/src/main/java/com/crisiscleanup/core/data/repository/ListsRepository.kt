@@ -18,7 +18,6 @@ import com.crisiscleanup.core.database.dao.ListDaoPlus
 import com.crisiscleanup.core.database.dao.PersonContactDao
 import com.crisiscleanup.core.database.dao.WorksiteDao
 import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
-import com.crisiscleanup.core.database.model.ListEntity
 import com.crisiscleanup.core.database.model.PopulatedIncident
 import com.crisiscleanup.core.database.model.PopulatedIncidentOrganization
 import com.crisiscleanup.core.database.model.PopulatedList
@@ -95,24 +94,6 @@ class CrisisCleanupListsRepository @Inject constructor(
         listDaoPlus.syncUpdateLists(listEntities, invalidNetworkIds)
     }
 
-    private fun syncUpdateList(list: ListEntity) = with(list) {
-        listDao.syncUpdateList(
-            networkId = networkId,
-            updatedBy = updatedBy,
-            updatedAt = updatedAt,
-            parent = parent,
-            name = name,
-            description = description ?: "",
-            listOrder = listOrder,
-            tags = tags ?: "",
-            model = model,
-            objectIds = objectIds,
-            shared = shared,
-            permissions = permissions,
-            incident = incidentId,
-        )
-    }
-
     override suspend fun refreshList(id: Long) {
         listDao.getList(id)?.let { cachedList ->
             if (cachedList.networkId > 0) {
@@ -121,7 +102,25 @@ class CrisisCleanupListsRepository @Inject constructor(
                 try {
                     networkDataSource.getList(cachedList.networkId)
                         ?.asEntity()
-                        ?.let { syncUpdateList(it) }
+                        ?.let {
+                            with(it) {
+                                listDao.syncUpdateList(
+                                    networkId = networkId,
+                                    updatedBy = updatedBy,
+                                    updatedAt = updatedAt,
+                                    parent = parent,
+                                    name = name,
+                                    description = description ?: "",
+                                    listOrder = listOrder,
+                                    tags = tags ?: "",
+                                    model = model,
+                                    objectIds = objectIds,
+                                    shared = shared,
+                                    permissions = permissions,
+                                    incident = incidentId,
+                                )
+                            }
+                        }
                 } catch (e: Exception) {
                     (e as? CrisisCleanupNetworkException)?.statusCode?.let { code ->
                         if (code == 404) {
