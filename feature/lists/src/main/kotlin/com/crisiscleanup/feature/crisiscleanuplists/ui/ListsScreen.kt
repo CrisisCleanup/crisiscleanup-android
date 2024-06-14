@@ -270,7 +270,7 @@ private fun IncidentListsView(
         if (incidentLists.isEmpty()) {
             item(key = "static-text") {
                 Text(
-                    t("No lists have been created for this Incident."),
+                    t("~~No lists have been created for this Incident."),
                     listItemModifier,
                 )
             }
@@ -380,7 +380,7 @@ internal fun ListItemSummaryView(
             Text(list.updatedAt.relativeTime)
         }
 
-        val incidentName = list.incident?.shortName ?: ""
+        val incidentName = if (showIncident) list.incident?.shortName ?: "" else ""
         val description = list.description.trim()
         if (incidentName.isNotBlank() || description.isNotBlank()) {
             Row {
@@ -395,7 +395,7 @@ internal fun ListItemSummaryView(
                     if (description.isBlank()) {
                         Spacer(Modifier.weight(1f))
                     }
-                    list.incident?.shortName?.let { incidentName ->
+                    if (incidentName.isNotBlank()) {
                         Text(incidentName)
                     }
                 }

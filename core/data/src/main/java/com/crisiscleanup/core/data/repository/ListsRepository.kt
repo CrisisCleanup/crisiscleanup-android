@@ -199,8 +199,9 @@ class CrisisCleanupListsRepository @Inject constructor(
 
                 var contactLookup = getContactLookup()
                 if (contactLookup.size != objectIds.size) {
+                    val userIds = objectIds.filter { !contactLookup.containsKey(it) }
                     try {
-                        usersRepository.queryUpdateUsers(objectIds)
+                        usersRepository.queryUpdateUsers(userIds)
                         contactLookup = getContactLookup()
                     } catch (e: Exception) {
                         logger.logException(e)

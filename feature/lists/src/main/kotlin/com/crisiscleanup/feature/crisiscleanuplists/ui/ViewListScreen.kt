@@ -98,31 +98,6 @@ private fun ListDetailsView(
 ) {
     val t = LocalAppTranslator.current
 
-    list.incident?.let { incident ->
-        IncidentHeaderView(
-            Modifier,
-            incident.shortName,
-            getDisasterIcon(incident.disaster),
-            isSyncing = false,
-        )
-    }
-
-    Row(
-        listItemModifier,
-        horizontalArrangement = listItemSpacedByHalf,
-    ) {
-        ListIcon(list)
-        Text(list.updatedAt.relativeTime)
-    }
-
-    val description = list.description.trim()
-    if (description.isNotBlank()) {
-        Text(
-            description,
-            listItemModifier,
-        )
-    }
-
     if (objectData.isEmpty()) {
         Text(
             t("~~This list is not supported by the app or has no items."),
@@ -141,8 +116,34 @@ private fun ListDetailsView(
             onCloseDialog = clearPhoneNumbers,
         )
 
-        // TODO Load individual items
         LazyColumn {
+            item {
+                list.incident?.let { incident ->
+                    IncidentHeaderView(
+                        Modifier,
+                        incident.shortName,
+                        getDisasterIcon(incident.disaster),
+                        isSyncing = false,
+                    )
+                }
+
+                Row(
+                    listItemModifier,
+                    horizontalArrangement = listItemSpacedByHalf,
+                ) {
+                    ListIcon(list)
+                    Text(list.updatedAt.relativeTime)
+                }
+
+                val description = list.description.trim()
+                if (description.isNotBlank()) {
+                    Text(
+                        description,
+                        listItemModifier,
+                    )
+                }
+            }
+
             when (list.model) {
                 ListModel.Incident -> {
                     incidentItems(objectData)
@@ -169,7 +170,11 @@ private fun ListDetailsView(
                     )
                 }
 
-                else -> {}
+                else -> {
+                    item {
+                        Text(t("~~This list is not supported by the app."))
+                    }
+                }
             }
         }
     }
@@ -228,6 +233,7 @@ private fun LazyListScope.listItems(
                         onOpenList(list)
                     }
                     .then(listItemModifier),
+                true,
             )
         }
     }
