@@ -12,11 +12,10 @@ object PhoneNumberUtil {
     private val twoPhoneNumbersRegex = """^(\d{10,11})\D+(\d{10,11})$""".toRegex()
 
     fun getPhoneNumbers(possiblePhoneNumbers: List<String?>) = possiblePhoneNumbers
-        .filter { s -> s?.isNotBlank() == true }
-        .map { s -> s!! }
+        .filter { it?.isNotBlank() == true }
+        .map { it!! }
         .map { phoneIn ->
             val filtered = phoneIn.trim()
-                .trim()
             val cleaned = filtered.replace(bracketsDashRegex, "")
                 .replace(letterRegex, " ")
                 .replace(twoPlusSpacesRegex, "  ")

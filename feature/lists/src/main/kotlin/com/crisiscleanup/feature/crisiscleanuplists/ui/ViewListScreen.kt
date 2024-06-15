@@ -42,6 +42,7 @@ import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.model.data.CrisisCleanupList
+import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.IncidentOrganization
 import com.crisiscleanup.core.model.data.ListModel
@@ -305,7 +306,7 @@ private fun LazyListScope.worksiteItems(
         contentType = { worksites[it]?.id ?: "missing-item" },
     ) {
         val worksite = worksites[it]
-        if (worksite == null) {
+        if (worksite == null || worksite == EmptyWorksite) {
             MissingItem()
         } else {
             val (fullAddress, geoQuery, locationQuery) = worksite.addressQuery
