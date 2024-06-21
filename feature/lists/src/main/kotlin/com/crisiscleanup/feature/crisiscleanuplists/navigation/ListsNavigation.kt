@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.crisiscleanup.core.appnav.RouteConstant.LISTS_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.VIEW_LIST_ROUTE
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.model.data.CrisisCleanupList
 import com.crisiscleanup.core.model.data.EmptyList
 import com.crisiscleanup.feature.crisiscleanuplists.ui.ListsRoute
@@ -53,6 +54,7 @@ fun NavGraphBuilder.listsScreen(
 fun NavGraphBuilder.viewListScreen(
     onBack: () -> Unit,
     openList: (Long) -> Unit,
+    openWorksite: (ExistingWorksiteIdentifier) -> Unit,
 ) {
     composable(
         route = "$VIEW_LIST_ROUTE?$LIST_ID_ARG={$LIST_ID_ARG}",
@@ -66,6 +68,7 @@ fun NavGraphBuilder.viewListScreen(
         ViewListRoute(
             onBack = onBack,
             onOpenList = openList,
+            onOpenWorksite = openWorksite,
         )
     }
 }

@@ -25,8 +25,12 @@ import com.crisiscleanup.core.commonassets.getDisasterIcon
 import com.crisiscleanup.core.commoncase.model.addressQuery
 import com.crisiscleanup.core.commoncase.ui.ExplainWrongLocationDialog
 import com.crisiscleanup.core.commoncase.ui.IncidentHeaderView
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.LinkifyEmailText
 import com.crisiscleanup.core.designsystem.component.LinkifyPhoneText
 import com.crisiscleanup.core.designsystem.component.PhoneCallDialog
@@ -42,6 +46,7 @@ import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.model.data.CrisisCleanupList
+import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.IncidentOrganization
@@ -56,11 +61,24 @@ import com.crisiscleanup.feature.crisiscleanuplists.ViewListViewState
 internal fun ViewListRoute(
     onBack: () -> Unit = {},
     onOpenList: (Long) -> Unit = {},
+    onOpenWorksite: (ExistingWorksiteIdentifier) -> Unit,
     viewModel: ViewListViewModel = hiltViewModel(),
 ) {
+    val t = LocalAppTranslator.current
+
     val screenTitle by viewModel.screenTitle.collectAsStateWithLifecycle()
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
 
+    val isConfirmingOpenWorksite = viewModel.isConfirmingOpenWorksite
+    val openWorksiteId = viewModel.openWorksiteId
+    if (openWorksiteId != ExistingWorksiteIdentifierNone) {
+        onOpenWorksite(openWorksiteId)
+        viewModel.openWorksiteId = ExistingWorksiteIdentifierNone
+    }
+
+    val openWorksiteError = viewModel.openWorksiteError
+
+    val showLoading = viewState is ViewListViewState.Loading || isConfirmingOpenWorksite
     Box(Modifier.fillMaxSize()) {
         Column {
             TopAppBarBackAction(
@@ -77,6 +95,7 @@ internal fun ViewListRoute(
                         list,
                         objectData,
                         onOpenList,
+                        viewModel::onOpenWorksite,
                         rememberKey = viewModel,
                     )
                 }
@@ -89,7 +108,22 @@ internal fun ViewListRoute(
             }
         }
 
-        BusyIndicatorFloatingTopCenter(viewState is ViewListViewState.Loading)
+        BusyIndicatorFloatingTopCenter(showLoading)
+
+        if (openWorksiteError.isNotBlank()) {
+            val closeDialog = remember(viewModel) { { viewModel.openWorksiteError = "" } }
+            CrisisCleanupAlertDialog(
+                title = t("info.error"),
+                text = openWorksiteError,
+                onDismissRequest = closeDialog,
+                confirmButton = {
+                    CrisisCleanupTextButton(
+                        text = t("actions.close"),
+                        onClick = closeDialog,
+                    )
+                },
+            )
+        }
     }
 }
 
@@ -98,6 +132,7 @@ private fun ListDetailsView(
     list: CrisisCleanupList,
     objectData: List<Any?>,
     onOpenList: (Long) -> Unit,
+    onOpenWorksite: (Worksite) -> Unit,
     rememberKey: Any,
 ) {
     val t = LocalAppTranslator.current
@@ -175,10 +210,11 @@ private fun ListDetailsView(
                 }
 
                 ListModel.Worksite -> {
-                    // TODO Open to Case
                     worksiteItems(
+                        list.incident?.id ?: EmptyIncident.id,
                         objectData,
                         setPhoneNumberList,
+                        onOpenWorksite,
                     )
                 }
 
@@ -194,10 +230,15 @@ private fun ListDetailsView(
 
 @Composable
 private fun MissingItem() {
-    Text(
-        LocalAppTranslator.current("~~Missing list data."),
-        listItemModifier,
-    )
+    Box(
+        listItemModifier.actionHeight(),
+        contentAlignment = Alignment.CenterStart,
+    ) {
+        Text(
+            LocalAppTranslator.current("~~Missing list data."),
+            listItemModifier.actionHeight(),
+        )
+    }
 }
 
 private fun LazyListScope.incidentItems(
@@ -306,6 +347,7 @@ private fun LazyListScope.userItems(
 }
 
 private fun LazyListScope.worksiteItems(
+    incidentId: Long,
     listData: List<Any?>,
     showPhoneNumbers: (List<ParsedPhoneNumber>) -> Unit,
     onOpenWorksite: (Worksite) -> Unit = {},
@@ -319,6 +361,16 @@ private fun LazyListScope.worksiteItems(
         val worksite = worksites[it]
         if (worksite == null || worksite == EmptyWorksite) {
             MissingItem()
+        } else if (worksite.incidentId != incidentId) {
+            Box(
+                listItemModifier.actionHeight(),
+                contentAlignment = Alignment.CenterStart,
+            ) {
+                Text(
+                    LocalAppTranslator.current("~~Case {case_number} is not under this Incident.")
+                        .replace("{case_number}", worksite.caseNumber),
+                )
+            }
         } else {
             val (fullAddress, geoQuery, locationQuery) = worksite.addressQuery
 

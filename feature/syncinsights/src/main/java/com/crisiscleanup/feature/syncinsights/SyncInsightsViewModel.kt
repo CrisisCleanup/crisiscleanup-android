@@ -11,6 +11,8 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPusher
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
 import com.crisiscleanup.core.data.repository.SyncLogRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
@@ -49,7 +51,7 @@ class SyncInsightsViewModel @Inject constructor(
         it.isNotEmpty()
     }
 
-    val openWorksiteId = mutableStateOf(Pair(0L, 0L))
+    val openWorksiteId = mutableStateOf(ExistingWorksiteIdentifierNone)
 
     val syncLogs = syncLogRepository.pageLogs()
         .flowOn(ioDispatcher)
@@ -78,7 +80,10 @@ class SyncInsightsViewModel @Inject constructor(
                             logger.logDebug("Worksite $localWorksite")
                             logger.logDebug("Unsynced $unsyncedCounts")
                             openWorksiteId.value =
-                                Pair(localWorksite!!.worksite.incidentId, worksiteId)
+                                ExistingWorksiteIdentifier(
+                                    localWorksite!!.worksite.incidentId,
+                                    worksiteId,
+                                )
                         }
                     }
                 } catch (e: Exception) {

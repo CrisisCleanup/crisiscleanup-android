@@ -1,14 +1,24 @@
 package com.crisiscleanup.feature.crisiscleanuplists
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.KeyResourceTranslator
+import com.crisiscleanup.core.common.log.AppLogger
+import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
+import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
 import com.crisiscleanup.core.data.repository.ListsRepository
 import com.crisiscleanup.core.model.data.CrisisCleanupList
 import com.crisiscleanup.core.model.data.EmptyList
+import com.crisiscleanup.core.model.data.EmptyWorksite
+import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.feature.crisiscleanuplists.navigation.ViewListArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -23,7 +33,8 @@ import javax.inject.Inject
 class ViewListViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     listsRepository: ListsRepository,
-    translator: KeyResourceTranslator,
+    private val translator: KeyResourceTranslator,
+    @Logger(CrisisCleanupLoggers.Lists) private val logger: AppLogger,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     private val viewListArgs = ViewListArgs(savedStateHandle)
@@ -64,9 +75,48 @@ class ViewListViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(3_000),
         )
 
+    var isConfirmingOpenWorksite by mutableStateOf(false)
+        private set
+    var openWorksiteId by mutableStateOf(ExistingWorksiteIdentifierNone)
+    var openWorksiteError by mutableStateOf("")
+
     init {
         viewModelScope.launch(ioDispatcher) {
             listsRepository.refreshList(listId)
+        }
+    }
+
+    fun onOpenWorksite(worksite: Worksite) {
+        if (worksite == EmptyWorksite) {
+            return
+        }
+
+        if (isConfirmingOpenWorksite) {
+            return
+        }
+        isConfirmingOpenWorksite = true
+
+        viewModelScope.launch(ioDispatcher) {
+            try {
+                (viewState.value as? ViewListViewState.Success)?.list.let { list ->
+                    if (list?.incident?.id == worksite.incidentId) {
+                        openWorksiteId = ExistingWorksiteIdentifier(
+                            incidentId = worksite.incidentId,
+                            worksiteId = worksite.id,
+                        )
+                    } else {
+                        openWorksiteError =
+                            translator("~~Case {case_number} does not belong in Incident {incident_name}")
+                                .replace("{case_number}", worksite.caseNumber)
+                                .replace("{incident_name}", list?.incident?.shortName ?: "")
+                                .trim()
+                    }
+                }
+            } catch (e: Exception) {
+                logger.logException(e)
+            } finally {
+                isConfirmingOpenWorksite = false
+            }
         }
     }
 }

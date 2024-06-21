@@ -23,6 +23,7 @@ import com.crisiscleanup.feature.caseeditor.navigation.existingCaseTransferWorkT
 import com.crisiscleanup.feature.caseeditor.navigation.navigateToCaseAddFlag
 import com.crisiscleanup.feature.caseeditor.navigation.navigateToCaseEditor
 import com.crisiscleanup.feature.caseeditor.navigation.navigateToTransferWorkType
+import com.crisiscleanup.feature.caseeditor.navigation.navigateToViewCase
 import com.crisiscleanup.feature.caseeditor.navigation.rerouteToCaseChange
 import com.crisiscleanup.feature.cases.navigation.casesFilterScreen
 import com.crisiscleanup.feature.cases.navigation.casesGraph
@@ -89,6 +90,12 @@ fun CrisisCleanupNavHost(
 
     val replaceRouteViewCase = remember(navController) {
         { ids: ExistingWorksiteIdentifier -> navController.rerouteToCaseChange(ids) }
+    }
+
+    val openViewCase = remember(navController) {
+        { ids: ExistingWorksiteIdentifier ->
+            navController.navigateToViewCase(ids.incidentId, ids.worksiteId)
+        }
     }
 
     val openFilterCases = remember(navController) { { navController.navigateToCasesFilter() } }
@@ -160,6 +167,7 @@ fun CrisisCleanupNavHost(
         viewListScreen(
             onBack,
             openList = openList,
+            openWorksite = openViewCase,
         )
         syncInsightsScreen(viewCase)
 

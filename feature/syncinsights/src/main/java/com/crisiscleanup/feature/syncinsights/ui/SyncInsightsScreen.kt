@@ -22,12 +22,14 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.crisiscleanup.core.common.relativeTime
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemBottomPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemTopPadding
+import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.SyncLog
 import com.crisiscleanup.feature.syncinsights.SyncInsightsViewModel
 
@@ -61,9 +63,9 @@ internal fun SyncInsightsRoute(
         val listState = rememberLazyListState()
 
         val openWorksiteId by viewModel.openWorksiteId
-        if (openWorksiteId.second != 0L) {
-            openCase(openWorksiteId.first, openWorksiteId.second)
-            viewModel.openWorksiteId.value = Pair(0, 0)
+        if (openWorksiteId.worksiteId != EmptyWorksite.id) {
+            openCase(openWorksiteId.incidentId, openWorksiteId.worksiteId)
+            viewModel.openWorksiteId.value = ExistingWorksiteIdentifierNone
         }
 
         LazyColumn(

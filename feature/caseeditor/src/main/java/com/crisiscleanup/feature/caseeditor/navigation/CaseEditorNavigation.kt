@@ -62,6 +62,11 @@ internal class TransferWorkTypeArgs(val isFromCaseEdit: Boolean) {
     )
 }
 
+fun NavController.navigateToViewCase(incidentId: Long, worksiteId: Long) {
+    val route = "$VIEW_CASE_ROUTE?$INCIDENT_ID_ARG=$incidentId&$WORKSITE_ID_ARG=$worksiteId"
+    this.navigate(route)
+}
+
 fun NavController.navigateToCaseEditor(incidentId: Long, worksiteId: Long? = null) {
     val routeParts = mutableListOf("$CASE_EDITOR_ROUTE?$INCIDENT_ID_ARG=$incidentId")
     worksiteId?.let { routeParts.add("$WORKSITE_ID_ARG=$worksiteId") }
