@@ -12,10 +12,16 @@ import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
+import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.ListsRepository
+import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
+import com.crisiscleanup.core.domain.LoadSelectIncidents
 import com.crisiscleanup.core.model.data.CrisisCleanupList
+import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyList
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.Worksite
@@ -33,6 +39,10 @@ import javax.inject.Inject
 class ViewListViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     listsRepository: ListsRepository,
+    private val incidentsRepository: IncidentsRepository,
+    accountDataRepository: AccountDataRepository,
+    private val incidentSelector: IncidentSelector,
+    appPreferencesRepository: LocalAppPreferencesRepository,
     private val translator: KeyResourceTranslator,
     @Logger(CrisisCleanupLoggers.Lists) private val logger: AppLogger,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
@@ -40,6 +50,14 @@ class ViewListViewModel @Inject constructor(
     private val viewListArgs = ViewListArgs(savedStateHandle)
 
     private val listId = viewListArgs.listId
+
+    private val loadSelectIncidents = LoadSelectIncidents(
+        incidentsRepository = incidentsRepository,
+        accountDataRepository = accountDataRepository,
+        incidentSelector = incidentSelector,
+        appPreferencesRepository = appPreferencesRepository,
+        coroutineScope = viewModelScope,
+    )
 
     val viewState = listsRepository.streamList(listId)
         .map { list ->
@@ -80,18 +98,57 @@ class ViewListViewModel @Inject constructor(
     var openWorksiteId by mutableStateOf(ExistingWorksiteIdentifierNone)
     var openWorksiteError by mutableStateOf("")
 
+    var isChangingIncident by mutableStateOf(false)
+        private set
+    private var openWorksiteChangeIncident = EmptyIncident
+    private var pendingOpenWorksite = EmptyWorksite
+    var changeIncidentConfirmMessage by mutableStateOf("")
+
     init {
         viewModelScope.launch(ioDispatcher) {
             listsRepository.refreshList(listId)
         }
     }
 
-    fun onOpenWorksite(worksite: Worksite) {
-        if (worksite == EmptyWorksite) {
+    fun onConfirmChangeIncident() {
+        if (isChangingIncident) {
             return
         }
 
-        if (isConfirmingOpenWorksite) {
+        val changeIncident = openWorksiteChangeIncident
+        val changeWorksite = pendingOpenWorksite
+        try {
+            if (changeIncident == EmptyIncident ||
+                changeWorksite == EmptyWorksite
+            ) {
+                return
+            }
+        } finally {
+            clearChangeIncident()
+        }
+
+        isChangingIncident = true
+        viewModelScope.launch(ioDispatcher) {
+            try {
+                loadSelectIncidents.persistIncident(changeIncident)
+                openWorksiteId = ExistingWorksiteIdentifier(changeIncident.id, changeWorksite.id)
+            } finally {
+                isChangingIncident = false
+            }
+        }
+    }
+
+    fun clearChangeIncident() {
+        openWorksiteChangeIncident = EmptyIncident
+        pendingOpenWorksite = EmptyWorksite
+        changeIncidentConfirmMessage = ""
+    }
+
+    fun onOpenWorksite(worksite: Worksite) {
+        if (worksite == EmptyWorksite ||
+            isConfirmingOpenWorksite ||
+            isChangingIncident
+        ) {
             return
         }
         isConfirmingOpenWorksite = true
@@ -99,11 +156,29 @@ class ViewListViewModel @Inject constructor(
         viewModelScope.launch(ioDispatcher) {
             try {
                 (viewState.value as? ViewListViewState.Success)?.list.let { list ->
-                    if (list?.incident?.id == worksite.incidentId) {
-                        openWorksiteId = ExistingWorksiteIdentifier(
-                            incidentId = worksite.incidentId,
+                    val targetIncidentId = worksite.incidentId
+                    if (list?.incident?.id == targetIncidentId) {
+                        val targetWorksiteId = ExistingWorksiteIdentifier(
+                            incidentId = targetIncidentId,
                             worksiteId = worksite.id,
                         )
+                        if (targetIncidentId == incidentSelector.incident.value.id) {
+                            openWorksiteId = targetWorksiteId
+                        } else {
+                            val cachedIncident = incidentsRepository.getIncident(targetIncidentId)
+                            if (cachedIncident == null) {
+                                openWorksiteError =
+                                    translator("~~This incident needs downloading.")
+                            } else {
+                                openWorksiteChangeIncident = cachedIncident
+                                pendingOpenWorksite = worksite
+                                changeIncidentConfirmMessage =
+                                    translator("Would you like to change to {incident_name} and open Case {case_number}?")
+                                        .replace("{incident_name}", cachedIncident.shortName)
+                                        .replace("{case_number}", worksite.caseNumber)
+
+                            }
+                        }
                     } else {
                         openWorksiteError =
                             translator("~~Case {case_number} does not belong in Incident {incident_name}")

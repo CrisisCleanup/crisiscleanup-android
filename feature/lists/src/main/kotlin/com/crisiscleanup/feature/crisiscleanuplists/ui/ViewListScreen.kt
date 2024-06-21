@@ -76,9 +76,12 @@ internal fun ViewListRoute(
         viewModel.openWorksiteId = ExistingWorksiteIdentifierNone
     }
 
-    val openWorksiteError = viewModel.openWorksiteError
+    val isChangingIncident = viewModel.isChangingIncident
 
-    val showLoading = viewState is ViewListViewState.Loading || isConfirmingOpenWorksite
+    val indicateLoading = viewState is ViewListViewState.Loading ||
+            isConfirmingOpenWorksite ||
+            isChangingIncident
+
     Box(Modifier.fillMaxSize()) {
         Column {
             TopAppBarBackAction(
@@ -108,8 +111,9 @@ internal fun ViewListRoute(
             }
         }
 
-        BusyIndicatorFloatingTopCenter(showLoading)
+        BusyIndicatorFloatingTopCenter(indicateLoading)
 
+        val openWorksiteError = viewModel.openWorksiteError
         if (openWorksiteError.isNotBlank()) {
             val closeDialog = remember(viewModel) { { viewModel.openWorksiteError = "" } }
             CrisisCleanupAlertDialog(
@@ -119,6 +123,28 @@ internal fun ViewListRoute(
                 confirmButton = {
                     CrisisCleanupTextButton(
                         text = t("actions.close"),
+                        onClick = closeDialog,
+                    )
+                },
+            )
+        }
+
+        val changeIncidentConfirmMessage = viewModel.changeIncidentConfirmMessage
+        if (changeIncidentConfirmMessage.isNotBlank()) {
+            val closeDialog = viewModel::clearChangeIncident
+            CrisisCleanupAlertDialog(
+                title = t("~~Confirm change Incident"),
+                text = changeIncidentConfirmMessage,
+                onDismissRequest = closeDialog,
+                confirmButton = {
+                    CrisisCleanupTextButton(
+                        text = t("actions.continue"),
+                        onClick = viewModel::onConfirmChangeIncident,
+                    )
+                },
+                dismissButton = {
+                    CrisisCleanupTextButton(
+                        text = t("actions.cancel"),
                         onClick = closeDialog,
                     )
                 },

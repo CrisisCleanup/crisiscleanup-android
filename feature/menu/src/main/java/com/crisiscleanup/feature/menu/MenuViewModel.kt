@@ -14,7 +14,6 @@ import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.commonassets.R
 import com.crisiscleanup.core.commonassets.getDisasterIcon
 import com.crisiscleanup.core.data.IncidentSelector
-import com.crisiscleanup.core.data.ListsSyncer
 import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupAccountDataRepository
@@ -50,7 +49,6 @@ class MenuViewModel @Inject constructor(
     private val databaseVersionProvider: DatabaseVersionProvider,
     @ApplicationScope private val externalScope: CoroutineScope,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
-    private val listsSyncer: ListsSyncer,
 ) : ViewModel() {
     val isDebuggable = appEnv.isDebuggable
     val isNotProduction = appEnv.isNotProduction

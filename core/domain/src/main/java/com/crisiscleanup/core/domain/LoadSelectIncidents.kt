@@ -64,11 +64,16 @@ class LoadSelectIncidents(
         coroutineScope.launch {
             (data.first() as? IncidentsData.Incidents)?.let { incidentsData ->
                 incidentsData.incidents.find { it.id == incident.id }?.let { matchingIncident ->
-                    appPreferencesRepository.setSelectedIncident(matchingIncident.id)
-
-                    incidentSelector.setIncident(matchingIncident)
+                    persistIncident(matchingIncident)
                 }
             }
+        }
+    }
+
+    suspend fun persistIncident(incident: Incident) {
+        if (incident != EmptyIncident) {
+            appPreferencesRepository.setSelectedIncident(incident.id)
+            incidentSelector.setIncident(incident)
         }
     }
 }
