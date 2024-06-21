@@ -32,6 +32,7 @@ import com.crisiscleanup.feature.cases.navigation.navigateToCasesSearch
 import com.crisiscleanup.feature.cases.ui.CasesAction
 import com.crisiscleanup.feature.crisiscleanuplists.navigation.listsScreen
 import com.crisiscleanup.feature.crisiscleanuplists.navigation.navigateToLists
+import com.crisiscleanup.feature.crisiscleanuplists.navigation.navigateToViewList
 import com.crisiscleanup.feature.crisiscleanuplists.navigation.viewListScreen
 import com.crisiscleanup.feature.dashboard.navigation.dashboardScreen
 import com.crisiscleanup.feature.mediamanage.navigation.viewSingleImageScreen
@@ -101,6 +102,11 @@ fun CrisisCleanupNavHost(
     val openUserFeedback = remember(navController) { { navController.navigateToUserFeedback() } }
 
     val openLists = remember(navController) { { navController.navigateToLists() } }
+    val openList = remember(navController) {
+        { listId: Long ->
+            navController.navigateToViewList(listId)
+        }
+    }
 
     val openSyncLogs = remember(navController) { { navController.navigateToSyncInsights() } }
 
@@ -151,7 +157,10 @@ fun CrisisCleanupNavHost(
         requestRedeployScreen(onBack)
         userFeedbackScreen(onBack)
         listsScreen(navController, onBack)
-        viewListScreen(onBack)
+        viewListScreen(
+            onBack,
+            openList = openList,
+        )
         syncInsightsScreen(viewCase)
 
         resetPasswordScreen(

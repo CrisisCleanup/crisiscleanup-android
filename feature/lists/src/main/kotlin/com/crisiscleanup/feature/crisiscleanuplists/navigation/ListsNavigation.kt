@@ -52,6 +52,7 @@ fun NavGraphBuilder.listsScreen(
 
 fun NavGraphBuilder.viewListScreen(
     onBack: () -> Unit,
+    openList: (Long) -> Unit,
 ) {
     composable(
         route = "$VIEW_LIST_ROUTE?$LIST_ID_ARG={$LIST_ID_ARG}",
@@ -64,6 +65,7 @@ fun NavGraphBuilder.viewListScreen(
     ) {
         ViewListRoute(
             onBack = onBack,
+            onOpenList = openList,
         )
     }
 }

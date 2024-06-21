@@ -55,6 +55,7 @@ import com.crisiscleanup.feature.crisiscleanuplists.ViewListViewState
 @Composable
 internal fun ViewListRoute(
     onBack: () -> Unit = {},
+    onOpenList: (Long) -> Unit = {},
     viewModel: ViewListViewModel = hiltViewModel(),
 ) {
     val screenTitle by viewModel.screenTitle.collectAsStateWithLifecycle()
@@ -75,6 +76,7 @@ internal fun ViewListRoute(
                     ListDetailsView(
                         list,
                         objectData,
+                        onOpenList,
                         rememberKey = viewModel,
                     )
                 }
@@ -95,6 +97,7 @@ internal fun ViewListRoute(
 private fun ListDetailsView(
     list: CrisisCleanupList,
     objectData: List<Any?>,
+    onOpenList: (Long) -> Unit,
     rememberKey: Any,
 ) {
     val t = LocalAppTranslator.current
@@ -116,6 +119,12 @@ private fun ListDetailsView(
             parsedNumbers = phoneNumberList,
             onCloseDialog = clearPhoneNumbers,
         )
+
+        val openList = remember(rememberKey) {
+            { list: CrisisCleanupList ->
+                onOpenList(list.id)
+            }
+        }
 
         LazyColumn {
             item {
@@ -151,8 +160,10 @@ private fun ListDetailsView(
                 }
 
                 ListModel.List -> {
-                    // TODO Open to List
-                    listItems(objectData)
+                    listItems(
+                        objectData,
+                        openList,
+                    )
                 }
 
                 ListModel.Organization -> {
