@@ -49,11 +49,11 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackCaretAction
-import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.icon.Icon
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemCenterSpacedByHalf
+import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
@@ -251,6 +251,7 @@ private fun IncidentListsView(
     LazyColumn(
         Modifier.fillMaxSize(),
         state = listState,
+        verticalArrangement = listItemSpacedByHalf,
     ) {
         if (incident != EmptyIncident) {
             item(key = "incident-info") {
@@ -303,6 +304,7 @@ private fun AllListsView(
     LazyColumn(
         Modifier.fillMaxSize(),
         state = listState,
+        verticalArrangement = listItemSpacedByHalf,
     ) {
         items(
             pagingLists.itemCount,
@@ -366,7 +368,7 @@ internal fun ListItemSummaryView(
     showIncident: Boolean = false,
 ) {
     Column(
-        modifier.actionHeight(),
+        modifier.listItemHeight(),
         verticalArrangement = listItemCenterSpacedByHalf,
     ) {
         Row(horizontalArrangement = listItemSpacedByHalf) {

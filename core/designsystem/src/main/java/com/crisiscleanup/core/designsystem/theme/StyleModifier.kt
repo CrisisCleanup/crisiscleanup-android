@@ -22,7 +22,7 @@ val listItemModifier = Modifier
 val listItemHorizontalPadding = PaddingValues(horizontal = 16.dp)
 val listItemSpacedBy = Arrangement.spacedBy(16.dp)
 val listItemCenterSpacedByHalf = Arrangement.spacedBy(
-    space = 8.dp,
+    8.dp,
     alignment = Alignment.CenterVertically,
 )
 val listItemSpacedByHalf = Arrangement.spacedBy(8.dp)

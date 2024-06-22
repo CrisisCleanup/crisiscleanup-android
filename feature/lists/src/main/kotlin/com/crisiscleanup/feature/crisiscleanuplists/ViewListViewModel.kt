@@ -24,6 +24,7 @@ import com.crisiscleanup.core.model.data.CrisisCleanupList
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyList
 import com.crisiscleanup.core.model.data.EmptyWorksite
+import com.crisiscleanup.core.model.data.ListModel
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.feature.crisiscleanuplists.navigation.ViewListArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -69,7 +70,11 @@ class ViewListViewModel @Inject constructor(
             }
 
             val lookup = listsRepository.getListObjectData(list)
-            val objectData = list.objectIds.map { id ->
+            var objectIds = list.objectIds
+            if (list.model == ListModel.List) {
+                objectIds = objectIds.filter { it != list.networkId }
+            }
+            val objectData = objectIds.map { id ->
                 lookup[id]
             }
             ViewListViewState.Success(list, objectData)

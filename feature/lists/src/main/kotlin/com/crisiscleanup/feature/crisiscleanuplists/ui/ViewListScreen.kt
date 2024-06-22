@@ -39,9 +39,9 @@ import com.crisiscleanup.core.designsystem.component.WorksiteAddressButton
 import com.crisiscleanup.core.designsystem.component.WorksiteAddressView
 import com.crisiscleanup.core.designsystem.component.WorksiteCallButton
 import com.crisiscleanup.core.designsystem.component.WorksiteNameView
-import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemCenterSpacedByHalf
+import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
@@ -187,7 +187,7 @@ private fun ListDetailsView(
             }
         }
 
-        LazyColumn {
+        LazyColumn(verticalArrangement = listItemCenterSpacedByHalf) {
             item {
                 list.incident?.let { incident ->
                     IncidentHeaderView(
@@ -257,12 +257,11 @@ private fun ListDetailsView(
 @Composable
 private fun MissingItem() {
     Box(
-        listItemModifier.actionHeight(),
+        listItemModifier.listItemHeight(),
         contentAlignment = Alignment.CenterStart,
     ) {
         Text(
             LocalAppTranslator.current("~~Missing list data."),
-            listItemModifier.actionHeight(),
         )
     }
 }
@@ -334,7 +333,7 @@ private fun LazyListScope.organizationItems(
             Text(
                 organization.name,
                 listItemModifier
-                    .actionHeight()
+                    .listItemHeight()
                     .wrapContentHeight(align = Alignment.CenterVertically),
             )
         }
@@ -356,8 +355,7 @@ private fun LazyListScope.userItems(
             MissingItem()
         } else {
             Column(
-                listItemModifier
-                    .actionHeight(),
+                listItemModifier.listItemHeight(),
                 verticalArrangement = listItemCenterSpacedByHalf,
             ) {
                 Text(contact.fullName)
@@ -389,7 +387,7 @@ private fun LazyListScope.worksiteItems(
             MissingItem()
         } else if (worksite.incidentId != incidentId) {
             Box(
-                listItemModifier.actionHeight(),
+                listItemModifier.listItemHeight(),
                 contentAlignment = Alignment.CenterStart,
             ) {
                 Text(
@@ -403,10 +401,7 @@ private fun LazyListScope.worksiteItems(
             Column(
                 Modifier
                     .clickable(onClick = { onOpenWorksite(worksite) })
-                    .then(
-                        listItemModifier
-                            .actionHeight(),
-                    ),
+                    .then(listItemModifier.listItemHeight()),
                 verticalArrangement = listItemCenterSpacedByHalf,
             ) {
                 Text(
