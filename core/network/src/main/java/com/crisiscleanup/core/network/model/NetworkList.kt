@@ -30,7 +30,7 @@ data class NetworkList(
     val tags: String?,
     val model: String,
     @SerialName("object_ids")
-    val objectIds: List<Long>,
+    val objectIds: List<Long>?,
     val shared: String,
     val permissions: String,
     val incident: Long?,

@@ -59,6 +59,7 @@ class CrisisCleanupListsRepository @Inject constructor(
     private val listDaoPlus: ListDaoPlus,
     private val incidentDao: IncidentDao,
     private val organizationDao: IncidentOrganizationDao,
+    private val incidentsRepository: IncidentsRepository,
     private val organizationDaoPlus: IncidentOrganizationDaoPlus,
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val personContactDao: PersonContactDao,
@@ -135,6 +136,10 @@ class CrisisCleanupListsRepository @Inject constructor(
     }
 
     override suspend fun getListObjectData(list: CrisisCleanupList): Map<Long, Any> {
+        if (list.incidentId > 0 && list.incident == null) {
+            incidentsRepository.pullIncident(list.incidentId)
+        }
+
         val objectIds = list.objectIds.toSet()
 
         when (list.model) {
@@ -218,7 +223,6 @@ class CrisisCleanupListsRepository @Inject constructor(
 
                 var networkWorksiteLookup = getNetworkWorksiteLookup()
                 if (networkWorksiteLookup.size != objectIds.size) {
-                    // TODO Validate incident exists locally as well
                     val worksiteIds = objectIds.filter { !networkWorksiteLookup.containsKey(it) }
                     try {
                         val syncedAt = Clock.System.now()

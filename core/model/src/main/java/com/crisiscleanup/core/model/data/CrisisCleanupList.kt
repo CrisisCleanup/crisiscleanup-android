@@ -15,6 +15,7 @@ data class CrisisCleanupList(
     val objectIds: List<Long>,
     val shared: ListShare,
     val permission: ListPermission,
+    val incidentId: Long,
     val incident: IncidentIdNameType?,
 )
 
@@ -31,6 +32,7 @@ val EmptyList = CrisisCleanupList(
     objectIds = emptyList(),
     shared = ListShare.Private,
     permission = ListPermission.Read,
+    incidentId = EmptyIncident.id,
     incident = IncidentIdNameType(id = EmptyIncident.id, "", "", ""),
 )
 

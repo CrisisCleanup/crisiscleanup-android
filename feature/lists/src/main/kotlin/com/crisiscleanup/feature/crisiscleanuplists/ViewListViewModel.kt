@@ -31,6 +31,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -60,11 +61,11 @@ class ViewListViewModel @Inject constructor(
     )
 
     val viewState = listsRepository.streamList(listId)
-        .map { list ->
+        .mapLatest { list ->
             if (list == EmptyList) {
                 val listNotFound =
                     translator("~~List was not found. It is likely deleted.")
-                return@map ViewListViewState.Error(listNotFound)
+                return@mapLatest ViewListViewState.Error(listNotFound)
             }
 
             val lookup = listsRepository.getListObjectData(list)

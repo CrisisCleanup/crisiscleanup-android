@@ -3,6 +3,7 @@ package com.crisiscleanup.core.database.model
 import androidx.room.Embedded
 import androidx.room.Relation
 import com.crisiscleanup.core.model.data.CrisisCleanupList
+import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyList
 import com.crisiscleanup.core.model.data.IncidentIdNameType
 import com.crisiscleanup.core.model.data.listModelFromLiteral
@@ -35,6 +36,7 @@ fun PopulatedList.asExternalModel() = with(entity) {
         objectIds = numericObjectIds,
         shared = listShareFromLiteral(shared),
         permission = listPermissionFromLiteral(permissions),
+        incidentId = incidentId ?: EmptyIncident.id,
         incident = incident?.let {
             IncidentIdNameType(
                 id = incident.id,
