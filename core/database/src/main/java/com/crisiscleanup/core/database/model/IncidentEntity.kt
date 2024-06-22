@@ -28,6 +28,8 @@ data class IncidentEntity(
     val name: String,
     @ColumnInfo("short_name", defaultValue = "")
     val shortName: String,
+    @ColumnInfo("case_label", defaultValue = "")
+    val caseLabel: String,
     @ColumnInfo("incident_type", defaultValue = "")
     val type: String,
     // Comma delimited phone numbers if defined

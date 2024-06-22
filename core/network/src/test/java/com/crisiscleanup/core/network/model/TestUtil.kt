@@ -1,7 +1,6 @@
 package com.crisiscleanup.core.network.model
 
 import kotlinx.datetime.Instant
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 object TestUtil {
@@ -19,6 +18,7 @@ internal fun fillNetworkIncident(
     startAt: String,
     name: String,
     shortName: String,
+    caseLabel: String,
     incidentType: String,
     locations: List<NetworkIncidentLocation>,
     activePhone: List<String>? = null,
@@ -27,7 +27,9 @@ internal fun fillNetworkIncident(
 ) = NetworkIncident(
     id,
     Instant.parse(startAt),
-    name, shortName,
+    name,
+    shortName,
+    caseLabel,
     locations,
     incidentType,
     activePhone,

@@ -108,7 +108,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         IncidentWorksitesSecondarySyncStatsEntity::class,
         ListEntity::class,
     ],
-    version = 41,
+    version = 42,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
@@ -150,6 +150,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         AutoMigration(from = 38, to = 39),
         AutoMigration(from = 39, to = 40),
         AutoMigration(from = 40, to = 41),
+        AutoMigration(from = 41, to = 42),
     ],
     exportSchema = true,
 )

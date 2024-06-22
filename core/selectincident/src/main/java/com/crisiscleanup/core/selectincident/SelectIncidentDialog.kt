@@ -167,7 +167,7 @@ private fun ColumnScope.IncidentSelectContent(
                             rememberOnSelectIncident(incident)
                         }
                         .padding(padding),
-                    text = incident.name,
+                    text = incident.displayLabel,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = fontWeight,
                 )

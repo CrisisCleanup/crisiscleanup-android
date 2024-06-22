@@ -130,6 +130,7 @@ class IncidentDaoTest {
             activePhoneNumber = phoneNumber,
             name = "",
             shortName = "",
+            caseLabel = "",
             type = "",
         )
 
@@ -158,6 +159,7 @@ class IncidentDaoTest {
         // Assert
         fun expectedIncident(id: Long, phoneNumbers: List<String>) = Incident(
             id,
+            "",
             "",
             "",
             emptyList(),
@@ -267,4 +269,11 @@ class IncidentDaoTest {
 fun testIncidentEntity(
     id: Long,
     startAtSeconds: Long,
-) = IncidentEntity(id, Instant.fromEpochSeconds(startAtSeconds), "", "", "")
+) = IncidentEntity(
+    id,
+    Instant.fromEpochSeconds(startAtSeconds),
+    "",
+    "",
+    "",
+    "",
+)

@@ -3,7 +3,6 @@ package com.crisiscleanup.core.network.model.util
 import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError
 import com.crisiscleanup.core.network.model.NetworkIncident
 import kotlinx.datetime.Instant
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.junit.Test
@@ -106,11 +105,12 @@ class IterableStringSerializerTest {
     }
 
     private fun makeExpectedNetworkIncident(expectedPhoneNumber: String?) =
-        """{"id":0,"start_at":"2023-02-06T16:13:20Z","name":"","short_name":"","locations":[],"incident_type":"","active_phone_number":$expectedPhoneNumber,"turn_on_release":false,"is_archived":null,"form_fields":[]}"""
+        """{"id":0,"start_at":"2023-02-06T16:13:20Z","name":"","short_name":"","case_label":"","locations":[],"incident_type":"","active_phone_number":$expectedPhoneNumber,"turn_on_release":false,"is_archived":null,"form_fields":[]}"""
 
     private fun testNetworkIncident(phoneNumbers: List<String>?) = NetworkIncident(
         0,
         testInstant,
+        "",
         "",
         "",
         emptyList(),

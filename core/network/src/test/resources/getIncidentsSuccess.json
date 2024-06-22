@@ -8,6 +8,7 @@
       "name": "Small Tornado (Fake)",
       "start_at": "2019-09-25T00:00:00Z",
       "short_name": "chippewa_dunn_wi_tornado",
+      "case_label": "A",
       "locations": [
         {
           "tag": null,
@@ -29,6 +30,7 @@
       "name": "Another Tornado (Fake)",
       "start_at": "2022-07-20T16:28:51Z",
       "short_name": "another_tornado",
+      "case_label": "B",
       "locations": [
         {
           "tag": null,
@@ -59,6 +61,7 @@
       "name": "Pandemic (Fake)",
       "start_at": "2021-03-10T02:33:48Z",
       "short_name": "covid_19_response",
+      "case_label": "C",
       "locations": [
         {
           "tag": null,
@@ -80,6 +83,7 @@
       "name": "Big Hurricane (Fake)",
       "start_at": "2017-08-24T00:00:00Z",
       "short_name": "hurricane_harvey",
+      "case_label": "d",
       "locations": [
         {
           "tag": null,
@@ -101,6 +105,7 @@
       "name": "Medium Storm (Fake)",
       "start_at": "2019-07-22T00:00:00Z",
       "short_name": "n_wi_derecho_jul_2019",
+      "case_label": "fg",
       "locations": [
         {
           "tag": null,
