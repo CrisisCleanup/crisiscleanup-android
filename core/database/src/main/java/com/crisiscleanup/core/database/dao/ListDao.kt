@@ -25,6 +25,10 @@ interface ListDao {
     fun streamIncidentLists(incidentId: Long): Flow<List<PopulatedList>>
 
     @Transaction
+    @Query("SELECT COUNT(*) FROM lists WHERE incident_id=:incidentId")
+    fun getIncidentListCount(incidentId: Long): Int
+
+    @Transaction
     @Query("SELECT * FROM lists WHERE id=:id")
     fun streamList(id: Long): Flow<PopulatedList?>
 

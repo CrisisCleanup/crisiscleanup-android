@@ -109,6 +109,7 @@ class ViewListViewModel @Inject constructor(
     private var openWorksiteChangeIncident = EmptyIncident
     private var pendingOpenWorksite = EmptyWorksite
     var changeIncidentConfirmMessage by mutableStateOf("")
+        private set
 
     init {
         viewModelScope.launch(ioDispatcher) {
@@ -179,10 +180,9 @@ class ViewListViewModel @Inject constructor(
                                 openWorksiteChangeIncident = cachedIncident
                                 pendingOpenWorksite = worksite
                                 changeIncidentConfirmMessage =
-                                    translator("Would you like to change to {incident_name} and open Case {case_number}?")
+                                    translator("~~Would you like to change to {incident_name} and open Case {case_number}?")
                                         .replace("{incident_name}", cachedIncident.shortName)
                                         .replace("{case_number}", worksite.caseNumber)
-
                             }
                         }
                     } else {

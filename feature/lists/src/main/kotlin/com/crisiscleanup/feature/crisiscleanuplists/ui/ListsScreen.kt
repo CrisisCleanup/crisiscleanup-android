@@ -68,7 +68,10 @@ import com.crisiscleanup.feature.crisiscleanuplists.model.ListIcon
 import kotlinx.coroutines.launch
 import kotlin.math.min
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(
+    ExperimentalMaterial3Api::class,
+    ExperimentalFoundationApi::class,
+)
 @Composable
 internal fun ListsRoute(
     onBack: () -> Unit = {},
@@ -123,6 +126,14 @@ internal fun ListsRoute(
             initialPage = 0,
             initialPageOffsetFraction = 0f,
         ) { tabTitles.size }
+
+        val openAllListsTab by viewModel.openAllListsTab.collectAsStateWithLifecycle(false)
+        LaunchedEffect(openAllListsTab) {
+            if (openAllListsTab) {
+                pagerState.scrollToPage(1)
+            }
+        }
+
         val selectedTabIndex = pagerState.currentPage
         val coroutine = rememberCoroutineScope()
         TabRow(
@@ -223,7 +234,7 @@ internal fun ListsRoute(
     if (showReadOnlyDescription) {
         val readOnlyTitle = t("~~Lists are read-only")
         val readOnlyDescription =
-            t("~~Lists (in this app) are currently read-only. Manage lists using Crisis Cleanup on the browser.")
+            t("~~Lists (in this app) are currently read-only. Manage lists using Crisis Cleanup in a web browser.")
         CrisisCleanupAlertDialog(
             onDismissRequest = { showReadOnlyDescription = false },
             title = readOnlyTitle,

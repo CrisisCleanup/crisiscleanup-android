@@ -43,6 +43,8 @@ import javax.inject.Inject
 interface ListsRepository {
     fun streamIncidentLists(incidentId: Long): Flow<List<CrisisCleanupList>>
 
+    fun getIncidentListCount(incidentId: Long): Int
+
     fun pageLists(): Flow<PagingData<CrisisCleanupList>>
 
     fun streamList(listId: Long): Flow<CrisisCleanupList>
@@ -77,6 +79,8 @@ class CrisisCleanupListsRepository @Inject constructor(
 
     override fun streamIncidentLists(incidentId: Long) =
         listDao.streamIncidentLists(incidentId).map { it.map(PopulatedList::asExternalModel) }
+
+    override fun getIncidentListCount(incidentId: Long) = listDao.getIncidentListCount(incidentId)
 
     override fun pageLists() = listPager.flow.map {
         it.map(PopulatedList::asExternalModel)

@@ -13,9 +13,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -46,6 +49,25 @@ class ListsViewModel @Inject constructor(
         .flowOn(ioDispatcher)
         .cachedIn(viewModelScope)
 
+    private val isListsRefreshed = MutableStateFlow(false)
+
+    val openAllListsTab = combine(
+        isListsRefreshed,
+        incidentSelector.incidentId,
+        ::Pair,
+    )
+        .filter { (isRefreshed, incidentId) ->
+            isRefreshed && incidentId != EmptyIncident.id
+        }
+        .map { (_, incidentId) ->
+            if (listsRepository.getIncidentListCount(incidentId) == 0) {
+                return@map true
+            }
+            false
+        }
+        .distinctUntilChanged()
+        .flowOn(ioDispatcher)
+
     init {
         refreshLists()
     }
@@ -59,6 +81,8 @@ class ListsViewModel @Inject constructor(
         viewModelScope.launch(ioDispatcher) {
             try {
                 listDataRefresher.refreshListData(force)
+
+                isListsRefreshed.value = true
             } finally {
                 isRefreshingData.value = false
             }
