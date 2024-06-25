@@ -79,8 +79,8 @@ internal fun ViewListRoute(
     val isChangingIncident = viewModel.isChangingIncident
 
     val indicateLoading = viewState is ViewListViewState.Loading ||
-            isConfirmingOpenWorksite ||
-            isChangingIncident
+        isConfirmingOpenWorksite ||
+        isChangingIncident
 
     Box(Modifier.fillMaxSize()) {
         Column {
