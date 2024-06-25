@@ -130,7 +130,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
             }
             val queryFields: List<String>
             val pullAfter: Instant?
-            val recentTimestamp = Clock.System.now() - 120.days
+            val recentTimestamp = Clock.System.now() - 180.days
             if (pullAll) {
                 queryFields = incidentsQueryFields
                 pullAfter = null
