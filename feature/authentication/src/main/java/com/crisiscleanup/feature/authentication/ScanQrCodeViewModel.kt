@@ -18,6 +18,7 @@ import com.crisiscleanup.core.common.event.ExternalEventBus
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers.Onboarding
 import com.crisiscleanup.core.common.log.Logger
+import com.crisiscleanup.core.common.queryParamMap
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
@@ -89,15 +90,7 @@ class ScanQrCodeViewModel @Inject constructor(
             val url = Uri.parse(payload)
             url.path?.split("/")?.lastOrNull()?.let { lastPath ->
                 if (lastPath == "mobile_app_user_invite") {
-                    val params = mutableMapOf<String, String>()
-                    for (key in url.queryParameterNames) {
-                        url.getQueryParameter(key)?.let { value ->
-                            params[key] = value
-                        }
-                    }
-                    if (params.isNotEmpty()) {
-                        externalEventBus.onOrgPersistentInvite(params)
-                    }
+                    externalEventBus.onOrgPersistentInvite(url.queryParamMap)
                 }
             }
         } catch (e: Exception) {

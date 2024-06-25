@@ -6,6 +6,7 @@ import com.crisiscleanup.core.common.event.ExternalEventBus
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
+import com.crisiscleanup.core.common.queryParamMap
 import javax.inject.Inject
 
 class ExternalIntentProcessor @Inject constructor(
@@ -46,6 +47,8 @@ class ExternalIntentProcessor @Inject constructor(
             if (code.isNotBlank()) {
                 externalEventBus.onOrgUserInvite(code)
             }
+        } else if (urlPath.startsWith("/mobile_app_user_invite")) {
+            externalEventBus.onOrgPersistentInvite(url.queryParamMap)
         } else {
             return false
         }
