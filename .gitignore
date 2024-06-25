@@ -293,3 +293,5 @@ core/database/schemas/com.crisiscleanup.core.database.TestCrisisCleanupDatabase
 .crashlytics
 
 app/dependencies
+
+.kotlin
