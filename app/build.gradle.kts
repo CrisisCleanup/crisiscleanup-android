@@ -15,7 +15,7 @@ plugins {
 
 android {
     defaultConfig {
-        val buildVersion = 209
+        val buildVersion = 211
         applicationId = "com.crisiscleanup"
         versionCode = buildVersion
         versionName = "0.9.${buildVersion - 168}"
