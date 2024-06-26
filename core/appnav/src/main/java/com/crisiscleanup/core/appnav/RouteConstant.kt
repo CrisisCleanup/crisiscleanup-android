@@ -49,4 +49,7 @@ object RouteConstant {
     const val WORKSITE_IMAGES_ROUTE = "worksite_images"
 
     const val ACCOUNT_RESET_PASSWORD_ROUTE = "account_reset_password_route"
+
+    const val LISTS_ROUTE = "crisis_cleanup_lists"
+    const val VIEW_LIST_ROUTE = "view_list"
 }

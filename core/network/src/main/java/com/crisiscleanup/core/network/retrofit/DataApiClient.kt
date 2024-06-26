@@ -10,6 +10,9 @@ import com.crisiscleanup.core.network.model.NetworkIncidentResult
 import com.crisiscleanup.core.network.model.NetworkIncidentsResult
 import com.crisiscleanup.core.network.model.NetworkLanguageTranslationResult
 import com.crisiscleanup.core.network.model.NetworkLanguagesResult
+import com.crisiscleanup.core.network.model.NetworkList
+import com.crisiscleanup.core.network.model.NetworkListResult
+import com.crisiscleanup.core.network.model.NetworkListsResult
 import com.crisiscleanup.core.network.model.NetworkLocationsResult
 import com.crisiscleanup.core.network.model.NetworkOrganizationsResult
 import com.crisiscleanup.core.network.model.NetworkOrganizationsSearchResult
@@ -244,6 +247,21 @@ private interface DataSourceApi {
         @Query("offset") offset: Int?,
         @Query("updated_at__gt") updatedAtAfter: Instant?,
     ): NetworkFlagsFormDataResult
+
+    @TokenAuthenticationHeader
+    @GET("lists")
+    suspend fun getLists(
+        @Query("limit") limit: Int,
+        @Query("offset") offset: Int?,
+    ): NetworkListsResult
+
+    @TokenAuthenticationHeader
+    @WrapResponseHeader("list")
+    @ThrowClientErrorHeader
+    @GET("lists/{listId}")
+    suspend fun getList(
+        @Path("listId") id: Long,
+    ): NetworkListResult
 }
 
 private val worksiteCoreDataFields = listOf(
@@ -470,4 +488,25 @@ class DataApiClient @Inject constructor(
 
     override suspend fun getRequestRedeployIncidentIds() =
         networkApi.getRedeployRequests().results?.map { it.incident }?.toSet() ?: emptySet()
+
+    override suspend fun getLists(limit: Int, offset: Int?) = networkApi.getLists(limit, offset)
+
+    override suspend fun getList(id: Long): NetworkList? {
+        val result = networkApi.getList(id)
+        result.errors?.tryThrowException()
+        return result.list
+    }
+
+    override suspend fun getLists(ids: List<Long>): List<NetworkList?> {
+        val networkLists = mutableListOf<NetworkList?>()
+        for (id in ids) {
+            var list: NetworkList? = null
+            try {
+                list = getList(id)
+            } catch (_: Exception) {
+            }
+            networkLists.add(list)
+        }
+        return networkLists
+    }
 }

@@ -16,6 +16,7 @@ import com.crisiscleanup.core.database.model.IncidentWorksitesFullSyncStatsEntit
 import com.crisiscleanup.core.database.model.PopulatedIncidentSyncStats
 import com.crisiscleanup.core.database.model.SwNeBounds
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
+import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
@@ -260,7 +261,7 @@ class IncidentWorksitesFullSyncer @Inject constructor(
                     queryCount + (worksites.size * 0.5f).toInt(),
                     approximateTotalCount,
                 )
-                val entities = worksites.map { it.asEntities() }
+                val entities = worksites.map(NetworkWorksiteFull::asEntities)
                 worksiteDaoPlus.syncWorksites(entities, syncStartedAt)
                 queryCount += worksites.size
 

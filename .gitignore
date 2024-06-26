@@ -289,3 +289,9 @@ core/database/schemas/com.crisiscleanup.core.database.TestCrisisCleanupDatabase
 # Direnv
 !.envrc
 .envrc.local
+
+.crashlytics
+
+app/dependencies
+
+.kotlin

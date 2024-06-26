@@ -15,6 +15,7 @@ import com.crisiscleanup.core.database.dao.CaseHistoryDao
 import com.crisiscleanup.core.database.dao.IncidentDao
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDao
 import com.crisiscleanup.core.database.dao.LanguageDao
+import com.crisiscleanup.core.database.dao.ListDao
 import com.crisiscleanup.core.database.dao.LocalImageDao
 import com.crisiscleanup.core.database.dao.LocationDao
 import com.crisiscleanup.core.database.dao.NetworkFileDao
@@ -44,6 +45,7 @@ import com.crisiscleanup.core.database.model.IncidentOrganizationSyncStatsEntity
 import com.crisiscleanup.core.database.model.IncidentWorksitesFullSyncStatsEntity
 import com.crisiscleanup.core.database.model.IncidentWorksitesSecondarySyncStatsEntity
 import com.crisiscleanup.core.database.model.LanguageTranslationEntity
+import com.crisiscleanup.core.database.model.ListEntity
 import com.crisiscleanup.core.database.model.LocationEntity
 import com.crisiscleanup.core.database.model.NetworkFileEntity
 import com.crisiscleanup.core.database.model.NetworkFileLocalImageEntity
@@ -104,8 +106,9 @@ import com.crisiscleanup.core.database.util.InstantConverter
         PersonOrganizationCrossRef::class,
         WorksiteTextFtsEntity::class,
         IncidentWorksitesSecondarySyncStatsEntity::class,
+        ListEntity::class,
     ],
-    version = 40,
+    version = 42,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
@@ -146,6 +149,8 @@ import com.crisiscleanup.core.database.util.InstantConverter
         AutoMigration(from = 37, to = 38),
         AutoMigration(from = 38, to = 39),
         AutoMigration(from = 39, to = 40),
+        AutoMigration(from = 40, to = 41),
+        AutoMigration(from = 41, to = 42),
     ],
     exportSchema = true,
 )
@@ -182,4 +187,5 @@ abstract class CrisisCleanupDatabase :
     abstract fun networkFileDao(): NetworkFileDao
     abstract fun localImageDao(): LocalImageDao
     abstract fun caseHistoryDao(): CaseHistoryDao
+    abstract fun listDao(): ListDao
 }

@@ -34,4 +34,8 @@ interface PersonContactDao {
     @Transaction
     @Query("SELECT * FROM person_contacts WHERE id=:id")
     fun getContact(id: Long): PopulatedPersonContactOrganization?
+
+    @Transaction
+    @Query("SELECT * FROM person_contacts WHERE id IN(:ids)")
+    fun getContacts(ids: Collection<Long>): List<PopulatedPersonContactOrganization>
 }

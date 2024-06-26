@@ -40,7 +40,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -48,13 +47,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.common.ParsedPhoneNumber
-import com.crisiscleanup.core.common.PhoneNumberUtil
-import com.crisiscleanup.core.common.openDialer
-import com.crisiscleanup.core.common.openMaps
 import com.crisiscleanup.core.commonassets.R
-import com.crisiscleanup.core.commoncase.com.crisiscleanup.core.commoncase.ui.ExplainWrongLocationDialog
 import com.crisiscleanup.core.commoncase.model.addressQuery
 import com.crisiscleanup.core.commoncase.oneDecimalFormat
+import com.crisiscleanup.core.commoncase.ui.ExplainWrongLocationDialog
 import com.crisiscleanup.core.commoncase.ui.IncidentDropdownSelect
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
@@ -62,9 +58,13 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupOutlinedButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.FormListSectionSeparator
-import com.crisiscleanup.core.designsystem.component.LinkifyPhoneText
+import com.crisiscleanup.core.designsystem.component.PhoneCallDialog
 import com.crisiscleanup.core.designsystem.component.WorkTypeAction
 import com.crisiscleanup.core.designsystem.component.WorkTypePrimaryAction
+import com.crisiscleanup.core.designsystem.component.WorksiteAddressButton
+import com.crisiscleanup.core.designsystem.component.WorksiteAddressView
+import com.crisiscleanup.core.designsystem.component.WorksiteCallButton
+import com.crisiscleanup.core.designsystem.component.WorksiteNameView
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
@@ -73,7 +73,6 @@ import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
 import com.crisiscleanup.core.designsystem.theme.listRowItemStartPadding
-import com.crisiscleanup.core.designsystem.theme.neutralIconColor
 import com.crisiscleanup.core.designsystem.theme.optionItemHeight
 import com.crisiscleanup.core.model.data.TableWorksiteClaimAction
 import com.crisiscleanup.core.model.data.TableWorksiteClaimStatus
@@ -243,9 +242,10 @@ internal fun BoxScope.CasesTableView(
 
     BusyIndicatorFloatingTopCenter(isTableDataTransient)
 
-    PhoneNumbersDialog(
-        parsedNumbers = phoneNumberList,
-        setPhoneNumbers = setPhoneNumberList,
+    val clearPhoneNumbers = remember(viewModel) { { setPhoneNumberList(emptyList()) } }
+    PhoneCallDialog(
+        phoneNumberList,
+        clearPhoneNumbers,
     )
 
     var isClaimActionDialogVisible by remember(claimActionErrorMessage) { mutableStateOf(true) }
@@ -417,38 +417,9 @@ private fun TableViewItem(
             }
         }
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = listItemSpacedBy,
-        ) {
-            Icon(
-                imageVector = CrisisCleanupIcons.Person,
-                contentDescription = translator("formLabels.name"),
-                tint = neutralIconColor,
-                modifier = Modifier.testTag("tableViewItemPersonIcon"),
-            )
-            Text(
-                worksite.name,
-                modifier = Modifier.testTag("tableViewItemWorksiteName"),
-            )
-        }
+        WorksiteNameView(worksite.name)
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = listItemSpacedBy,
-        ) {
-            Icon(
-                imageVector = CrisisCleanupIcons.Location,
-                contentDescription = translator("casesVue.full_address"),
-                tint = neutralIconColor,
-                modifier = Modifier.testTag("tableViewItemLocationIcon"),
-            )
-            Text(
-                fullAddress,
-                Modifier
-                    .testTag("tableViewItemWorksiteFullAddress")
-                    .weight(1f),
-            )
+        WorksiteAddressView(fullAddress) {
             if (worksite.hasWrongLocationFlag) {
                 ExplainWrongLocationDialog(worksite)
             }
@@ -458,39 +429,18 @@ private fun TableViewItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = listItemSpacedBy,
         ) {
-            val context = LocalContext.current
-            CrisisCleanupOutlinedButton(
-                onClick = {
-                    val parsedNumbers =
-                        PhoneNumberUtil.getPhoneNumbers(listOf(worksite.phone1, worksite.phone2))
-                    if (parsedNumbers.size == 1 && parsedNumbers.first().parsedNumbers.size == 1) {
-                        context.openDialer(parsedNumbers.first().parsedNumbers.first())
-                    } else {
-                        showPhoneNumbers(parsedNumbers)
-                    }
-                },
-                enabled = isEditable && (worksite.phone1.isNotBlank() || worksite.phone2.isNotBlank()),
-            ) {
-                Icon(
-                    imageVector = CrisisCleanupIcons.Phone,
-                    contentDescription = translator("nav.phone"),
-                    modifier = Modifier.testTag("tableViewItemPhoneBtn"),
-                )
-            }
+            WorksiteCallButton(
+                phone1 = worksite.phone1,
+                phone2 = worksite.phone2,
+                enable = isEditable,
+                onShowPhoneNumbers = showPhoneNumbers,
+            )
 
-            CrisisCleanupOutlinedButton(
-                onClick = {
-                    val query = geoQuery.ifBlank { locationQuery }
-                    context.openMaps(query)
-                },
-                enabled = isEditable && geoQuery.isNotBlank(),
-            ) {
-                Icon(
-                    imageVector = CrisisCleanupIcons.Directions,
-                    contentDescription = translator("caseView.directions"),
-                    modifier = Modifier.testTag("tableViewItemDirectionsBtn"),
-                )
-            }
+            WorksiteAddressButton(
+                geoQuery = geoQuery,
+                locationQuery = locationQuery,
+                isEditable = isEditable,
+            )
 
             // TODO Implement add to team when team management is in play
 
@@ -541,45 +491,6 @@ private fun TableViewItem(
                             .testTag("tableViewItemRequestedText")
                             .listItemVerticalPadding(),
                     )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun PhoneNumbersDialog(
-    parsedNumbers: List<ParsedPhoneNumber>,
-    setPhoneNumbers: (List<ParsedPhoneNumber>) -> Unit,
-) {
-    if (parsedNumbers.flatMap(ParsedPhoneNumber::parsedNumbers).isNotEmpty()) {
-        val dismissDialog = { setPhoneNumbers(emptyList()) }
-        CrisisCleanupAlertDialog(
-            title = LocalAppTranslator.current("workType.phone"),
-            onDismissRequest = dismissDialog,
-            confirmButton = {
-                CrisisCleanupTextButton(
-                    text = LocalAppTranslator.current("actions.close"),
-                    onClick = dismissDialog,
-                    modifier = Modifier.testTag("tableViewItemPhoneDialogCloseBtn"),
-                )
-            },
-        ) {
-            Column {
-                for (parsedNumber in parsedNumbers) {
-                    if (parsedNumber.parsedNumbers.isNotEmpty()) {
-                        for (phoneNumber in parsedNumber.parsedNumbers) {
-                            LinkifyPhoneText(
-                                text = phoneNumber,
-                                modifier = listItemModifier.testTag("tableViewItemPhoneDialogLinkifyPhoneText"),
-                            )
-                        }
-                    } else {
-                        Text(
-                            parsedNumber.source,
-                            modifier = listItemModifier.testTag("tableViewItemPhoneDialogPhoneSourceText"),
-                        )
-                    }
                 }
             }
         }

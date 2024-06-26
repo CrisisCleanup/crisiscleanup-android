@@ -2,6 +2,7 @@ package com.crisiscleanup.core.database.dao
 
 import com.crisiscleanup.core.database.TestCrisisCleanupDatabase
 import com.crisiscleanup.core.database.TestUtil
+import com.crisiscleanup.core.database.TestUtil.testAppLogger
 import com.crisiscleanup.core.database.TestUtil.testSyncLogger
 import com.crisiscleanup.core.database.WorksiteTestUtil
 import com.crisiscleanup.core.database.model.WorkTypeEntity
@@ -22,6 +23,7 @@ class WorkTypeDaoTest {
     private lateinit var workTypeDaoPlus: WorkTypeDaoPlus
 
     private val syncLogger = testSyncLogger()
+    private val appLogger = testAppLogger()
 
     private val now = Clock.System.now()
     private val updatedA = now.plus((-9999).seconds)
@@ -30,7 +32,7 @@ class WorkTypeDaoTest {
     fun createDb() {
         db = TestUtil.getTestDatabase()
         worksiteDao = db.worksiteDao()
-        worksiteDaoPlus = WorksiteDaoPlus(db, syncLogger)
+        worksiteDaoPlus = WorksiteDaoPlus(db, syncLogger, appLogger)
         workTypeDao = db.workTypeDao()
         workTypeDaoPlus = WorkTypeDaoPlus(db)
     }

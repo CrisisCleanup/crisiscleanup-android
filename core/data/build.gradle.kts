@@ -25,6 +25,7 @@ dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.compose.runtime)
+    implementation(libs.androidx.paging.common)
 
     implementation(libs.kotlinx.datetime)
     implementation(libs.kotlinx.coroutines.android)

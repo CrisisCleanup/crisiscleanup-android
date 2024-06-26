@@ -2,11 +2,13 @@ package com.crisiscleanup.core.data.di
 
 import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.NetworkMonitor
+import com.crisiscleanup.core.data.AccountListsSyncer
 import com.crisiscleanup.core.data.IncidentOrganizationsDataCache
 import com.crisiscleanup.core.data.IncidentOrganizationsDataFileCache
 import com.crisiscleanup.core.data.IncidentWorksitesFullSyncer
 import com.crisiscleanup.core.data.IncidentWorksitesSecondaryDataSyncer
 import com.crisiscleanup.core.data.IncidentWorksitesSyncer
+import com.crisiscleanup.core.data.ListsSyncer
 import com.crisiscleanup.core.data.SyncCacheDeviceInspector
 import com.crisiscleanup.core.data.WorksitesFullSyncer
 import com.crisiscleanup.core.data.WorksitesNetworkDataCache
@@ -26,6 +28,7 @@ import com.crisiscleanup.core.data.repository.CrisisCleanupAccountDataRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupAccountUpdateRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupCasesFilterRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupDataManagementRepository
+import com.crisiscleanup.core.data.repository.CrisisCleanupListsRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupLocalImageRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupOrgVolunteerRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupRequestRedeployRepository
@@ -34,6 +37,7 @@ import com.crisiscleanup.core.data.repository.CrisisCleanupWorksiteChangeReposit
 import com.crisiscleanup.core.data.repository.EndOfLifeRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
+import com.crisiscleanup.core.data.repository.ListsRepository
 import com.crisiscleanup.core.data.repository.LocalAppMetricsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.LocalImageRepository
@@ -202,6 +206,11 @@ interface DataModule {
     fun bindsWorksiteImageRepository(
         repository: OfflineFirstWorksiteImageRepository,
     ): WorksiteImageRepository
+
+    @Binds
+    fun bindsListRepository(
+        repository: CrisisCleanupListsRepository,
+    ): ListsRepository
 }
 
 @Module
@@ -226,4 +235,7 @@ interface DataInternalModule {
     fun providesIncidentOrganizationsNetworkDataCache(
         cache: IncidentOrganizationsDataFileCache,
     ): IncidentOrganizationsDataCache
+
+    @Binds
+    fun bindsListsSyncer(syncer: AccountListsSyncer): ListsSyncer
 }

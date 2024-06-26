@@ -191,13 +191,17 @@ class MainActivityViewModel @Inject constructor(
     init {
         accountDataRepository.accountData
             .onEach {
-                sync(false)
-                syncPuller.appPullIncident(incidentSelector.incidentId.first())
-                accountDataRefresher.updateMyOrganization(true)
-                accountDataRefresher.updateApprovedIncidents()
+                if (it.areTokensValid) {
+                    sync(false)
+                    syncPuller.appPullIncident(incidentSelector.incidentId.first())
+                    accountDataRefresher.updateMyOrganization(true)
+                    accountDataRefresher.updateApprovedIncidents()
 
-                if (!it.hasAcceptedTerms && !it.areTokensValid) {
-                    authEventBus.onLogout()
+                    logger.setAccountId(it.id.toString())
+                } else {
+                    if (!it.hasAcceptedTerms) {
+                        authEventBus.onLogout()
+                    }
                 }
             }
             .launchIn(viewModelScope)

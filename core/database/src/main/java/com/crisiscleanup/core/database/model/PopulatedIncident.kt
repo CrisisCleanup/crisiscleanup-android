@@ -27,6 +27,7 @@ fun PopulatedIncident.asExternalModel() = with(entity) {
         id = id,
         name = name,
         shortName = shortName,
+        caseLabel = caseLabel,
         activePhoneNumbers = activePhoneNumber?.split(",")?.map { it.trim() }
             ?.filter(String::isNotEmpty)
             ?: emptyList(),

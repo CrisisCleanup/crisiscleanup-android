@@ -16,6 +16,7 @@ fun NavGraphBuilder.menuScreen(
     openInviteTeammate: () -> Unit = {},
     openRequestRedeploy: () -> Unit = {},
     openUserFeedback: () -> Unit = {},
+    openLists: () -> Unit = {},
     openSyncLogs: () -> Unit = {},
 ) {
     composable(route = MENU_ROUTE) {
@@ -24,6 +25,7 @@ fun NavGraphBuilder.menuScreen(
             openInviteTeammate = openInviteTeammate,
             openRequestRedeploy = openRequestRedeploy,
             openUserFeedback = openUserFeedback,
+            openLists = openLists,
             openSyncLogs = openSyncLogs,
         )
     }

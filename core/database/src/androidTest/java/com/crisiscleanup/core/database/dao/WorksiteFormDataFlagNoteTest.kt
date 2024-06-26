@@ -30,6 +30,7 @@ class WorksiteFormDataFlagNoteTest {
     private lateinit var testWorksiteDao: TestWorksiteDao
 
     private val syncLogger = testSyncLogger()
+    private val appLogger = TestUtil.testAppLogger()
 
     private suspend fun insertWorksites(
         worksites: List<WorksiteEntity>,
@@ -44,7 +45,7 @@ class WorksiteFormDataFlagNoteTest {
     fun createDb() {
         db = TestUtil.getTestDatabase()
         worksiteDao = db.worksiteDao()
-        worksiteDaoPlus = WorksiteDaoPlus(db, syncLogger)
+        worksiteDaoPlus = WorksiteDaoPlus(db, syncLogger, appLogger)
         testWorksiteDao = db.testWorksiteDao()
     }
 

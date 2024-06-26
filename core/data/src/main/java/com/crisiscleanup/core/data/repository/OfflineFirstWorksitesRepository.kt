@@ -312,6 +312,14 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         return worksiteDaoPlus.syncNetworkWorksite(entities, syncedAt)
     }
 
+    override suspend fun syncNetworkWorksite(networkWorksiteId: Long) {
+        val syncedAt = Clock.System.now()
+        // TODO Sync related data including secondary, work type requests, ...
+        dataSource.getWorksite(networkWorksiteId)?.let { networkWorksite ->
+            syncNetworkWorksite(networkWorksite, syncedAt)
+        }
+    }
+
     override suspend fun pullWorkTypeRequests(networkWorksiteId: Long) {
         try {
             val workTypeRequests = dataSource.getWorkTypeRequests(networkWorksiteId)

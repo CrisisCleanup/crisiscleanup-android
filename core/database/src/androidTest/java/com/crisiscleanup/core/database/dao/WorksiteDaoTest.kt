@@ -2,6 +2,7 @@ package com.crisiscleanup.core.database.dao
 
 import com.crisiscleanup.core.database.TestCrisisCleanupDatabase
 import com.crisiscleanup.core.database.TestUtil
+import com.crisiscleanup.core.database.TestUtil.testAppLogger
 import com.crisiscleanup.core.database.TestUtil.testSyncLogger
 import com.crisiscleanup.core.database.TestWorksiteDao
 import com.crisiscleanup.core.database.WorksiteTestUtil
@@ -26,12 +27,13 @@ class WorksiteDaoTest {
     private lateinit var worksiteDaoPlus: WorksiteDaoPlus
 
     private val syncLogger = testSyncLogger()
+    private val appLogger = testAppLogger()
 
     @Before
     fun createDb() {
         db = TestUtil.getTestDatabase()
         worksiteDao = db.testWorksiteDao()
-        worksiteDaoPlus = WorksiteDaoPlus(db, syncLogger)
+        worksiteDaoPlus = WorksiteDaoPlus(db, syncLogger, appLogger)
     }
 
     @Before
@@ -353,6 +355,13 @@ class WorksiteDaoTest {
     }
 
     // TODO Sync existing worksite where the incident changes. Change back as well?
+
+    // Deterministic result for getWorksiteId when unknown worksite ID is provided
+    @Test
+    fun getNonExistingWorksiteId() = runTest {
+        val worksiteId = db.worksiteDao().getWorksiteId(62525)
+        assertEquals(0, worksiteId)
+    }
 }
 
 fun testWorksiteEntity(

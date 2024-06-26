@@ -421,11 +421,13 @@ class ViewCaseViewModel @Inject constructor(
                 }
                 val workTypeLookup = stateData.incident.workTypeLookup
                 val summaryJobTypes = worksite.formData
+                    ?.asSequence()
                     ?.filter { formValue -> workTypeLookup[formValue.key] == workTypeLiteral }
                     ?.filter { formValue -> formValue.value.isBooleanTrue }
                     ?.map { formValue -> translate("formLabels.${formValue.key}") }
                     ?.filter { jobName -> jobName != name }
                     ?.filter(String::isNotBlank)
+                    ?.toList()
                     ?: emptyList()
                 val summary = listOf(
                     summaryJobTypes.combineTrimText(),

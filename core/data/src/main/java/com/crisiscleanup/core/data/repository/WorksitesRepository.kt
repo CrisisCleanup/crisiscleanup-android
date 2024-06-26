@@ -71,6 +71,8 @@ interface WorksitesRepository {
         syncedAt: Instant = Clock.System.now(),
     ): Boolean
 
+    suspend fun syncNetworkWorksite(networkWorksiteId: Long)
+
     suspend fun pullWorkTypeRequests(networkWorksiteId: Long)
 
     suspend fun setRecentWorksite(

@@ -65,4 +65,7 @@ object DaoModule {
 
     @Provides
     fun caseHistoryDao(db: CrisisCleanupDatabase) = db.caseHistoryDao()
+
+    @Provides
+    fun listDao(db: CrisisCleanupDatabase) = db.listDao()
 }

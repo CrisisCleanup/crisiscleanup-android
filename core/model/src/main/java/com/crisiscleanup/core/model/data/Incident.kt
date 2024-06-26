@@ -4,12 +4,14 @@ data class Incident(
     val id: Long,
     val name: String,
     val shortName: String,
+    val caseLabel: String,
     val locations: List<IncidentLocation>,
     val activePhoneNumbers: List<String>,
     val formFields: List<IncidentFormField>,
     val turnOnRelease: Boolean,
     val disasterLiteral: String = "",
     val disaster: Disaster = disasterFromLiteral(disasterLiteral),
+    val displayLabel: String = if (caseLabel.isBlank()) name else "$caseLabel: $name",
 ) {
     val formFieldLookup: Map<String, IncidentFormField> by lazy {
         formFields.associateBy { it.fieldKey }
@@ -27,6 +29,7 @@ data class Incident(
 
 val EmptyIncident = Incident(
     -1,
+    "",
     "",
     "",
     emptyList(),
@@ -73,4 +76,5 @@ data class IncidentIdNameType(
     val name: String,
     val shortName: String,
     val disasterLiteral: String,
+    val disaster: Disaster = disasterFromLiteral(disasterLiteral),
 )

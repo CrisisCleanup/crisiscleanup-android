@@ -11,22 +11,27 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
+import com.crisiscleanup.core.common.relativeTime
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemBottomPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemTopPadding
+import com.crisiscleanup.core.model.data.EmptyWorksite
+import com.crisiscleanup.core.model.data.SyncLog
 import com.crisiscleanup.feature.syncinsights.SyncInsightsViewModel
-import com.crisiscleanup.feature.syncinsights.SyncLogItem
 
 @Composable
 internal fun SyncInsightsRoute(
@@ -54,20 +59,13 @@ internal fun SyncInsightsRoute(
             }
         }
 
-        val logs by viewModel.syncLogs.collectAsStateWithLifecycle()
+        val pagingLogs = viewModel.syncLogs.collectAsLazyPagingItems()
         val listState = rememberLazyListState()
 
-        val listBlockPosition by remember {
-            derivedStateOf {
-                listState.firstVisibleItemIndex / viewModel.listBlockSize
-            }
-        }
-        viewModel.onListBlockPosition(listBlockPosition)
-
         val openWorksiteId by viewModel.openWorksiteId
-        if (openWorksiteId.second != 0L) {
-            openCase(openWorksiteId.first, openWorksiteId.second)
-            viewModel.openWorksiteId.value = Pair(0, 0)
+        if (openWorksiteId.worksiteId != EmptyWorksite.id) {
+            openCase(openWorksiteId.incidentId, openWorksiteId.worksiteId)
+            viewModel.openWorksiteId.value = ExistingWorksiteIdentifierNone
         }
 
         LazyColumn(
@@ -108,24 +106,25 @@ internal fun SyncInsightsRoute(
             }
 
             items(
-                logs.count,
-                key = { it },
+                pagingLogs.itemCount,
+                key = pagingLogs.itemKey { it.id },
                 contentType = {
-                    if (logs.getLog(it)?.isContinuingLogType == true) {
+                    if (pagingLogs.isContinuingLogType(it)) {
                         "detail-log-item"
                     } else {
                         "one-line-log-item"
                     }
                 },
             ) { index ->
-                val log = logs.getLog(index)
+                val log = pagingLogs[index]
                 if (log == null) {
                     Text(
                         "$index",
                         Modifier.listItemPadding(),
                     )
                 } else {
-                    val modifier = if (log.isContinuingLogType) {
+                    val isContinuingLogType = pagingLogs.isContinuingLogType(index)
+                    val modifier = if (isContinuingLogType) {
                         Modifier
                             .padding(start = 16.dp)
                             .listItemBottomPadding()
@@ -134,20 +133,33 @@ internal fun SyncInsightsRoute(
                             .listItemPadding()
                             .listItemTopPadding()
                     }
-                    Column(modifier.clickable { viewModel.onExpandLog(log.syncLog) }) {
-                        SyncLogDetail(log)
+                    Column(modifier.clickable { viewModel.onExpandLog(log) }) {
+                        SyncLogDetail(log, isContinuingLogType)
                     }
+                }
+            }
+
+            if (pagingLogs.loadState.append is LoadState.Loading) {
+                item(
+                    contentType = { "loading" },
+                ) {
+                    // TODO Loading indicator
                 }
             }
         }
     }
 }
 
+private fun LazyPagingItems<SyncLog>.isContinuingLogType(index: Int): Boolean {
+    return index in 1..<itemCount && get(index - 1)!!.logType == get(index)!!.logType
+}
+
 @Composable
-private fun SyncLogDetail(log: SyncLogItem) = with(log.syncLog) {
-    if (!log.isContinuingLogType) {
+private fun SyncLogDetail(log: SyncLog, isContinuingLogType: Boolean) = with(log) {
+    if (!isContinuingLogType) {
+        val logTypeText = "$logType ${log.logTime.relativeTime}".trim()
         Text(
-            "$logType ${log.relativeTime}",
+            logTypeText,
             style = LocalFontStyles.current.header5,
         )
     }

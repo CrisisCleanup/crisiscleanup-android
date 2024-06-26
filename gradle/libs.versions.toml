@@ -2,50 +2,51 @@
 accompanist = "0.32.0"
 androidDesugarJdkLibs = "2.0.4"
 # AGP and tools should be updated together
-androidGradlePlugin = "8.3.2"
-androidTools = "31.3.2"
+androidGradlePlugin = "8.4.2"
+androidTools = "31.5.0"
 androidMapsUtil = "2.3.0"
 androidMapsUtilKtx = "3.4.0"
-androidMaterial = "1.11.0"
+androidMaterial = "1.12.0"
 androidxActivity = "1.9.0"
-androidxAppCompat = "1.6.1"
+androidxAppCompat = "1.7.0"
 androidxBrowser = "1.8.0"
-androidxCamera = "1.3.3"
-androidxComposeBom = "2024.04.01"
+androidxCamera = "1.3.4"
+androidxComposeBom = "2024.06.00"
 androidxComposeCompiler = "1.5.12"
 androidxComposeMaterial3 = "1.2.1"
 androidxComposeRuntimeTracing = "1.0.0-beta01"
 androidxConstraintLayout = "1.1.0-alpha13"
-androidxCore = "1.13.0"
+androidxCore = "1.13.1"
 androidxCoreSplashscreen = "1.0.1"
-androidxDataStore = "1.1.0"
-androidxEspresso = "3.5.1"
+androidxDataStore = "1.1.1"
+androidxEspresso = "3.6.0"
 androidxHiltNavigationCompose = "1.2.0"
-androidxLifecycle = "2.7.0"
+androidxLifecycle = "2.8.2"
 androidxMacroBenchmark = "1.2.4"
 androidxMetrics = "1.0.0-beta01"
 androidxNavigation = "2.7.7"
+androidxPaging = "3.3.0"
 androidxProfileinstaller = "1.3.1"
 androidxStartup = "1.1.1"
 androidxSecurityCrypto = "1.1.0-alpha06"
-androidxTestCore = "1.5.0"
-androidxTestExt = "1.1.5"
-androidxTestRules = "1.5.0"
-androidxTestRunner = "1.5.2"
+androidxTestCore = "1.6.0"
+androidxTestExt = "1.2.0"
+androidxTestRules = "1.6.0"
+androidxTestRunner = "1.6.0"
 androidxTracing = "1.2.0"
 androidxUiAutomator = "2.3.0"
-androidxWindowManager = "1.2.0"
+androidxWindowManager = "1.3.0"
 androidxWork = "2.9.0"
 apacheCommonsText = "1.10.0"
 coil = "2.6.0"
-dependencyGuard = "0.4.3"
-firebaseBom = "32.8.1"
-firebaseCrashlyticsPlugin = "2.9.9"
+dependencyGuard = "0.5.0"
+firebaseBom = "33.1.1"
+firebaseCrashlyticsPlugin = "3.0.2"
 firebasePerfPlugin = "1.4.2"
-gmsPlugin = "4.4.1"
+gmsPlugin = "4.4.2"
 googleMapsCompose = "2.9.1"
-googlePlaces = "3.4.0"
-hilt = "2.51"
+googlePlaces = "3.5.0"
+hilt = "2.51.1"
 hiltExt = "1.2.0"
 jacoco = "0.8.12"
 junit4 = "4.13.2"
@@ -61,11 +62,11 @@ mockk = "1.13.5"
 moduleGraph = "2.5.0"
 okhttp = "4.12.0"
 philJayRrule = "1.0.3"
-playServicesAuth = "21.1.0"
-playServicesAuthPhone = "18.0.2"
-playServicesLocation = "21.2.0"
+playServicesAuth = "21.2.0"
+playServicesAuthPhone = "18.1.0"
+playServicesLocation = "21.3.0"
 playServicesMaps = "18.2.0"
-protobuf = "3.25.2"
+protobuf = "4.26.0"
 protobufPlugin = "0.9.4"
 retrofit = "2.9.0"
 retrofitKotlinxSerializationJson = "1.0.0"
@@ -73,7 +74,7 @@ room = "2.6.1"
 secrets = "2.0.1"
 timeAgo = "4.0.3"
 truth = "1.4.2"
-turbine = "1.0.0"
+turbine = "1.1.0"
 zxing = "3.5.2"
 
 [libraries]
@@ -119,6 +120,9 @@ androidx-lifecycle-viewModelCompose = { group = "androidx.lifecycle", name = "li
 androidx-metrics = { group = "androidx.metrics", name = "metrics-performance", version.ref = "androidxMetrics" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "androidxNavigation" }
 androidx-navigation-testing = { group = "androidx.navigation", name = "navigation-testing", version.ref = "androidxNavigation" }
+androidx-paging-common = { group = "androidx.paging", name = "paging-common", version.ref = "androidxPaging" }
+androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "androidxPaging" }
+androidx-paging-runtime-ktx = { group = "androidx.paging", name = "paging-runtime-ktx", version.ref = "androidxPaging" }
 androidx-profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "androidxProfileinstaller" }
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "androidxSecurityCrypto" }
 androidx-startup = { group = "androidx.startup", name = "startup-runtime", version.ref = "androidxStartup" }
@@ -139,6 +143,7 @@ coil-kt-svg = { group = "io.coil-kt", name = "coil-svg", version.ref = "coil" }
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics-ktx" }
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics-ktx" }
+firebase-crashlytics-ndk = { module = "com.google.firebase:firebase-crashlytics-ndk" }
 firebase-performance = { group = "com.google.firebase", name = "firebase-perf-ktx" }
 google-maps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "googleMapsCompose" }
 google-places = { group = "com.google.android.libraries.places", name = "places", version.ref = "googlePlaces" }
@@ -174,6 +179,7 @@ retrofit-core = { group = "com.squareup.retrofit2", name = "retrofit", version.r
 retrofit-kotlin-serialization = { group = "com.jakewharton.retrofit", name = "retrofit2-kotlinx-serialization-converter", version.ref = "retrofitKotlinxSerializationJson" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+room-paging = { group = "androidx.room", name = "room-paging", version.ref = "room" }
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
 timeago = { group = "com.github.marlonlom", name = "timeago", version.ref = "timeAgo" }

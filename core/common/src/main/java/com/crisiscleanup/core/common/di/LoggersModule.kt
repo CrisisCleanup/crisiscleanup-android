@@ -41,6 +41,34 @@ object LoggersModule {
     }
 
     @Provides
+    @Logger(CrisisCleanupLoggers.Incidents)
+    fun providesIncidentsLogger(logger: TagLogger): AppLogger {
+        logger.tag = "incidents"
+        return logger
+    }
+
+    @Provides
+    @Logger(CrisisCleanupLoggers.Language)
+    fun providesLanguageLogger(logger: TagLogger): AppLogger {
+        logger.tag = "language"
+        return logger
+    }
+
+    @Provides
+    @Logger(CrisisCleanupLoggers.Lists)
+    fun providesListsLogger(logger: TagLogger): AppLogger {
+        logger.tag = "lists"
+        return logger
+    }
+
+    @Provides
+    @Logger(CrisisCleanupLoggers.Media)
+    fun providesMediaLogger(logger: TagLogger): AppLogger {
+        logger.tag = "media"
+        return logger
+    }
+
+    @Provides
     @Logger(CrisisCleanupLoggers.Navigation)
     fun providesNavLogger(logger: TagLogger): AppLogger {
         logger.tag = "navigation"
@@ -76,30 +104,9 @@ object LoggersModule {
     }
 
     @Provides
-    @Logger(CrisisCleanupLoggers.Incidents)
-    fun providesIncidentsLogger(logger: TagLogger): AppLogger {
-        logger.tag = "incidents"
-        return logger
-    }
-
-    @Provides
     @Logger(CrisisCleanupLoggers.Worksites)
     fun providesWorksitesLogger(logger: TagLogger): AppLogger {
         logger.tag = "worksites"
-        return logger
-    }
-
-    @Provides
-    @Logger(CrisisCleanupLoggers.Language)
-    fun providesLanguageLogger(logger: TagLogger): AppLogger {
-        logger.tag = "language"
-        return logger
-    }
-
-    @Provides
-    @Logger(CrisisCleanupLoggers.Media)
-    fun providesMediaLogger(logger: TagLogger): AppLogger {
-        logger.tag = "media"
         return logger
     }
 }

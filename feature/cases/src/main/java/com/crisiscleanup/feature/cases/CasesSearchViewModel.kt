@@ -342,14 +342,26 @@ class CasesSearchViewModel @Inject constructor(
             isSelectingResult.value = true
             try {
                 val incidentId = incidentSelector.incidentId.value
-                val worksiteId = with(result) {
+                var worksiteId = with(result) {
                     if (summary.id > 0) {
                         summary.id
                     } else {
                         worksitesRepository.getLocalId(networkWorksiteId)
                     }
                 }
-                selectedWorksite.value = Pair(incidentId, worksiteId)
+
+                if (worksiteId <= 0) {
+                    with(result) {
+                        worksitesRepository.syncNetworkWorksite(networkWorksiteId)
+                        worksiteId = worksitesRepository.getLocalId(networkWorksiteId)
+                    }
+                }
+
+                if (worksiteId > 0) {
+                    selectedWorksite.value = Pair(incidentId, worksiteId)
+                } else {
+                    // TODO Inform wait for data to cache
+                }
             } catch (e: Exception) {
                 logger.logException(e)
             } finally {

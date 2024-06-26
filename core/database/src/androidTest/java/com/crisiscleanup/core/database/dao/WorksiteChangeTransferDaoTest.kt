@@ -125,7 +125,7 @@ class WorksiteChangeTransferDaoTest {
     fun createDb() {
         db = TestUtil.getTestDatabase()
         worksiteDao = db.worksiteDao()
-        worksiteDaoPlus = WorksiteDaoPlus(db, syncLogger)
+        worksiteDaoPlus = WorksiteDaoPlus(db, syncLogger, appLogger)
         worksiteChangeDaoPlus = WorksiteChangeDaoPlus(
             db,
             uuidGenerator,
@@ -165,7 +165,6 @@ class WorksiteChangeTransferDaoTest {
                 isSurvivor = false,
                 note = "note",
             ),
-
         )
         db.workTypeDao().insertIgnoreWorkType(
             WorkTypeEntity(

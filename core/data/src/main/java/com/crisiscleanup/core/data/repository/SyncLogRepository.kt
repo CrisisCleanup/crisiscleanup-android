@@ -1,6 +1,11 @@
 package com.crisiscleanup.core.data.repository
 
 import android.util.Log
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.map
+import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
@@ -17,6 +22,7 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -26,37 +32,51 @@ import javax.inject.Inject
 interface SyncLogRepository {
     fun streamLogCount(): Flow<Int>
 
-    fun getLogs(limit: Int, offset: Int): List<SyncLog>
+    fun pageLogs(): Flow<PagingData<SyncLog>>
 
     fun trimOldLogs()
 }
 
 class PagingSyncLogRepository @Inject constructor(
     private val syncLogDao: SyncLogDao,
+    private val appEnv: AppEnv,
     @ApplicationScope private val coroutineScope: CoroutineScope,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : SyncLogger, SyncLogRepository {
     private val logEntriesMutex = Mutex()
     private var logEntries = mutableListOf<SyncLog>()
 
+    private val syncLogPager = Pager(
+        config = PagingConfig(pageSize = 30),
+        pagingSourceFactory = {
+            syncLogDao.pageSyncLogs()
+        },
+    )
+
     override var type = ""
 
     override fun log(message: String, details: String, type: String): SyncLogger {
-        // TODO Enable logging only if dev mode/sync logging is enabled
-        logEntries.add(
-            SyncLog(
-                0,
-                Clock.System.now(),
-                logType = type.ifEmpty { this.type },
-                message = message,
-                details = details,
-            ),
-        )
+        // TODO Log if sync logging is enabled
+        if (appEnv.isNotProduction) {
+            logEntries.add(
+                SyncLog(
+                    0,
+                    Clock.System.now(),
+                    logType = type.ifEmpty { this.type },
+                    message = message,
+                    details = details,
+                ),
+            )
+        }
         return this
     }
 
     override fun clear(): SyncLogger {
-        logEntries = mutableListOf()
+        coroutineScope.launch(ioDispatcher) {
+            logEntriesMutex.withLock {
+                logEntries = mutableListOf()
+            }
+        }
         return this
     }
 
@@ -79,8 +99,9 @@ class PagingSyncLogRepository @Inject constructor(
 
     override fun streamLogCount() = syncLogDao.streamLogCount()
 
-    override fun getLogs(limit: Int, offset: Int) =
-        syncLogDao.getSyncLogs(limit, offset).map(PopulatedSyncLog::asExternalModel)
+    override fun pageLogs() = syncLogPager.flow.map {
+        it.map(PopulatedSyncLog::asExternalModel)
+    }
 
     override fun trimOldLogs() = syncLogDao.trimOldSyncLogs()
 }

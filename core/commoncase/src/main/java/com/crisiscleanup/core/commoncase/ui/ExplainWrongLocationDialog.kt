@@ -1,4 +1,4 @@
-package com.crisiscleanup.core.commoncase.com.crisiscleanup.core.commoncase.ui
+package com.crisiscleanup.core.commoncase.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue

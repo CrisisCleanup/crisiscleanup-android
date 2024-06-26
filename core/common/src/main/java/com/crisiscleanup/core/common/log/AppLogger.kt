@@ -8,6 +8,8 @@ interface AppLogger {
     fun logException(e: Exception)
 
     fun logCapture(message: String)
+
+    fun setAccountId(id: String)
 }
 
 interface TagLogger : AppLogger {
@@ -25,6 +27,7 @@ enum class CrisisCleanupLoggers {
     Cases,
     Incidents,
     Language,
+    Lists,
     Media,
     Navigation,
     Network,

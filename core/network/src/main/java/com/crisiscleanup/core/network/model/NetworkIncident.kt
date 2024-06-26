@@ -35,6 +35,8 @@ data class NetworkIncident(
     val name: String,
     @SerialName("short_name")
     val shortName: String,
+    @SerialName("case_label")
+    val caseLabel: String,
     val locations: List<NetworkIncidentLocation>,
     @SerialName("incident_type")
     val type: String,

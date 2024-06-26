@@ -3,13 +3,10 @@ package com.crisiscleanup.core.data.repository
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers.Cases
 import com.crisiscleanup.core.common.log.Logger
-import com.crisiscleanup.core.data.model.PersonContactEntities
 import com.crisiscleanup.core.data.model.asEntities
 import com.crisiscleanup.core.database.dao.CaseHistoryDao
 import com.crisiscleanup.core.database.dao.CaseHistoryDaoPlus
-import com.crisiscleanup.core.database.dao.IncidentOrganizationDaoPlus
 import com.crisiscleanup.core.database.dao.PersonContactDao
-import com.crisiscleanup.core.database.dao.PersonContactDaoPlus
 import com.crisiscleanup.core.database.dao.WorksiteDao
 import com.crisiscleanup.core.database.model.PopulatedCaseHistoryEvent
 import com.crisiscleanup.core.database.model.asExternalModel
@@ -17,7 +14,6 @@ import com.crisiscleanup.core.model.data.CaseHistoryEvent
 import com.crisiscleanup.core.model.data.CaseHistoryUserEvents
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
-import com.crisiscleanup.core.network.model.NetworkPersonContact
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
@@ -43,8 +39,7 @@ class OfflineFirstCaseHistoryRepository @Inject constructor(
     private val worksiteDao: WorksiteDao,
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val caseHistoryDaoPlus: CaseHistoryDaoPlus,
-    private val personContactDaoPlus: PersonContactDaoPlus,
-    private val incidentOrganizationDaoPlus: IncidentOrganizationDaoPlus,
+    private val usersRepository: UsersRepository,
     private val translator: LanguageTranslationsRepository,
     @Logger(Cases) private val logger: AppLogger,
 ) : CaseHistoryRepository {
@@ -89,7 +84,7 @@ class OfflineFirstCaseHistoryRepository @Inject constructor(
         ensureActive()
 
         val userIds = userEventMap.keys
-        queryUpdateUsers(userIds)
+        usersRepository.queryUpdateUsers(userIds)
 
         ensureActive()
 
@@ -115,23 +110,6 @@ class OfflineFirstCaseHistoryRepository @Inject constructor(
 
         sortingData.sortedByDescending { it.second }
             .map { it.first }
-    }
-
-    private suspend fun queryUpdateUsers(userIds: Collection<Long>) {
-        try {
-            val networkUsers = networkDataSource.getUsers(userIds)
-            val entities = networkUsers.mapNotNull(NetworkPersonContact::asEntities)
-
-            val organizations = entities.map(PersonContactEntities::organization)
-            val affiliates = entities.map(PersonContactEntities::organizationAffiliates)
-            incidentOrganizationDaoPlus.saveMissing(organizations, affiliates)
-
-            val persons = entities.map(PersonContactEntities::personContact)
-            val personOrganizations = entities.map(PersonContactEntities::personToOrganization)
-            personContactDaoPlus.savePersons(persons, personOrganizations)
-        } catch (e: Exception) {
-            logger.logException(e)
-        }
     }
 
     override suspend fun refreshEvents(worksiteId: Long): Int {
