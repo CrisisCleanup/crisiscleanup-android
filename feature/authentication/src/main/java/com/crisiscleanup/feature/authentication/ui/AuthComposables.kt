@@ -14,6 +14,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
@@ -49,6 +50,7 @@ internal fun LinkAction(
     modifier: Modifier = Modifier,
     arrangement: Arrangement.Horizontal = Arrangement.End,
     enabled: Boolean = false,
+    color: Color = primaryBlueColor,
     action: () -> Unit = {},
 ) {
     val translator = LocalAppTranslator.current
@@ -65,7 +67,7 @@ internal fun LinkAction(
                 )
                 .then(modifier),
             style = LocalFontStyles.current.header4,
-            color = if (enabled) primaryBlueColor else primaryBlueColor.disabledAlpha(),
+            color = if (enabled) color else color.disabledAlpha(),
         )
     }
 }

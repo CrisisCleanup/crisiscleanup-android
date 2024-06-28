@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.PhoneNumberPicker
 import com.crisiscleanup.core.common.log.AppLogger
@@ -45,6 +46,7 @@ class LoginWithPhoneViewModel @Inject constructor(
     private val accountDataRepository: AccountDataRepository,
     private val phoneNumberPicker: PhoneNumberPicker,
     private val translator: KeyResourceTranslator,
+    appEnv: AppEnv,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(Account) private val logger: AppLogger,
 ) : ViewModel() {
@@ -127,6 +129,9 @@ class LoginWithPhoneViewModel @Inject constructor(
         private set
 
     val isAuthenticateSuccessful = MutableStateFlow(false)
+
+    // For UI testing
+    val showMultiPhoneToggle = appEnv.isNotProduction
 
     init {
         phoneNumberPicker.phoneNumbers
@@ -341,6 +346,27 @@ class LoginWithPhoneViewModel @Inject constructor(
             } finally {
                 isVerifyingCode.value = false
             }
+        }
+    }
+
+    fun toggleMultiPhone() {
+        if (showMultiPhoneToggle) {
+            accountOptions.addAll(
+                listOf(
+                    PhoneNumberAccount(
+                        7357_132621,
+                        "Dev Stew",
+                        "Hurris",
+                    ),
+                    PhoneNumberAccount(
+                        7357_532958,
+                        "Dev Hou",
+                        "Tornas",
+                    ),
+                ),
+            )
+            selectedAccount.value = PhoneNumberAccountNone
+            isSelectAccount = true
         }
     }
 }

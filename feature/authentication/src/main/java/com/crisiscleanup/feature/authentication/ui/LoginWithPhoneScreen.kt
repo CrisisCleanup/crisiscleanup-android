@@ -57,6 +57,7 @@ import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemTopPadding
 import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
 import com.crisiscleanup.core.designsystem.theme.optionItemHeight
+import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
 import com.crisiscleanup.core.designsystem.theme.primaryRedColor
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
@@ -298,6 +299,20 @@ private fun ColumnScope.VerifyPhoneCodeScreen(
         action = requestPhoneCode,
     )
 
+    if (viewModel.showMultiPhoneToggle) {
+        LinkAction(
+            "Toggle account select",
+            modifier = Modifier
+                .padding(16.dp)
+                .testTag("phoneLoginToggleAccountSelect"),
+            arrangement = Arrangement.End,
+            enabled = true,
+            color = primaryOrangeColor,
+        ) {
+            viewModel.toggleMultiPhone()
+        }
+    }
+
     val accountOptions = viewModel.accountOptions.toList()
     if (accountOptions.size > 1) {
         Text(
@@ -371,6 +386,7 @@ private fun ColumnScope.VerifyPhoneCodeScreen(
                     ),
                 expanded = showDropdown,
                 onDismissRequest = { showDropdown = false },
+                offset = listItemDropdownMenuOffset,
             ) {
                 for (option in accountOptions) {
                     key(option.userId) {
