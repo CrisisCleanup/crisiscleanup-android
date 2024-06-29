@@ -340,9 +340,15 @@ class LoginWithPhoneViewModel @Inject constructor(
 
                 isAuthenticateSuccessful.value = isSuccessful
             } catch (e: Exception) {
+                // TODO Improve error messaging code structure
+                //      There is a complex message when code length is different than expected
+                val messageKey = if (e.message == "Invalid phone number or OTP.") {
+                    "loginWithPhone.login_failed_try_again"
+                } else {
+                    "loginWithPhone.check_number_try_again"
+                }
                 // TODO Be more specific on the failure where possible
-                errorMessage =
-                    translator("loginWithPhone.check_number_try_again")
+                errorMessage = translator(messageKey)
             } finally {
                 isVerifyingCode.value = false
             }
