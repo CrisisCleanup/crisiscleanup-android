@@ -36,6 +36,7 @@ val primaryBlueColor = Color(0xFF009BFF)
 val primaryBlueOneTenthColor = primaryBlueColor.copy(alpha = 0.1f)
 val primaryRedColor = Color(0xFFED4747)
 val primaryOrangeColor = Color(0xFFF79820)
+val devActionColor = Color(0xFFF50057)
 internal val crisisCleanupYellow100 = Color(0xFFFFDC68)
 internal val crisisCleanupYellow100HalfTransparent = crisisCleanupYellow100.copy(alpha = 0.5f)
 val survivorNoteColor = crisisCleanupYellow100HalfTransparent

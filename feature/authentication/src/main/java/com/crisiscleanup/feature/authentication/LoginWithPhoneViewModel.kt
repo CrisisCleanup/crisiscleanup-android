@@ -131,7 +131,7 @@ class LoginWithPhoneViewModel @Inject constructor(
     val isAuthenticateSuccessful = MutableStateFlow(false)
 
     // For UI testing
-    val showMultiPhoneToggle = appEnv.isNotProduction
+    val showMultiPhoneToggle = appEnv.isDebuggable
 
     init {
         phoneNumberPicker.phoneNumbers

@@ -48,6 +48,7 @@ import com.crisiscleanup.core.designsystem.component.TopAppBarCancelAction
 import com.crisiscleanup.core.designsystem.component.roundedOutline
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
+import com.crisiscleanup.core.designsystem.theme.devActionColor
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.designsystem.theme.listItemDropdownMenuOffset
@@ -57,7 +58,6 @@ import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemTopPadding
 import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
 import com.crisiscleanup.core.designsystem.theme.optionItemHeight
-import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
 import com.crisiscleanup.core.designsystem.theme.primaryRedColor
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
@@ -305,7 +305,7 @@ private fun ColumnScope.VerifyPhoneCodeScreen(
                 .testTag("phoneLoginToggleAccountSelect"),
             arrangement = Arrangement.End,
             enabled = true,
-            color = primaryOrangeColor,
+            color = devActionColor,
         ) {
             viewModel.toggleMultiPhone()
         }
