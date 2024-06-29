@@ -153,7 +153,7 @@ private fun LoginWithPhoneScreen(
 
     val phoneNumber by viewModel.phoneNumberInput.collectAsStateWithLifecycle()
     val focusPhone = phoneNumber.isEmpty()
-    val updateEmailInput =
+    val updatePhoneInput =
         remember(viewModel) { { s: String -> viewModel.phoneNumberInput.value = s } }
     val requestPhoneCode = remember(viewModel, phoneNumber) {
         {
@@ -161,10 +161,10 @@ private fun LoginWithPhoneScreen(
         }
     }
     OutlinedClearableTextField(
-        modifier = fillWidthPadded.testTag("loginPhoneTextField"),
+        modifier = fillWidthPadded.testTag("phoneLoginTextField"),
         label = t("loginWithPhone.enter_cell"),
         value = phoneNumber,
-        onValueChange = updateEmailInput,
+        onValueChange = updatePhoneInput,
         keyboardType = KeyboardType.Phone,
         enabled = isNotBusy,
         isError = false,
@@ -181,9 +181,8 @@ private fun LoginWithPhoneScreen(
             .testTag("phoneLoginRequestPhoneNumber"),
         arrangement = Arrangement.End,
         enabled = true,
-    ) {
-        viewModel.requestPhoneNumber()
-    }
+        action = viewModel::requestPhoneNumber,
+    )
 
     BusyButton(
         modifier = fillWidthPadded.testTag("phoneLoginAction"),
@@ -231,8 +230,6 @@ private fun ColumnScope.VerifyPhoneCodeScreen(
     val closeKeyboard = rememberCloseKeyboard(viewModel)
 
     TopAppBarCancelAction(
-        modifier = Modifier
-            .testTag("verifyPhoneCodeBackBtn"),
         title = t("actions.login"),
         onAction = onBack,
     )
@@ -250,6 +247,7 @@ private fun ColumnScope.VerifyPhoneCodeScreen(
             t("loginWithPhone.enter_x_digit_code")
                 // TODO Configure replacing text/number
                 .replace("{codeCount}", "$codeSize"),
+            Modifier.testTag("verifyPhoneCodeInstruction"),
         )
         Text(obfuscatedPhoneNumber)
     }
@@ -271,7 +269,7 @@ private fun ColumnScope.VerifyPhoneCodeScreen(
     }
     val updatePhoneCode = remember(viewModel) { { s: String -> viewModel.phoneCode = s.trim() } }
     OutlinedClearableTextField(
-        modifier = listItemModifier.testTag("loginPhoneCodeTextField"),
+        modifier = listItemModifier.testTag("phoneLoginCodeTextField"),
         label = t("loginWithPhone.phone_login_code"),
         value = viewModel.phoneCode.trim(),
         onValueChange = updatePhoneCode,
@@ -348,7 +346,8 @@ private fun ColumnScope.VerifyPhoneCodeScreen(
                         .listItemVerticalPadding()
                         .roundedOutline()
                         // TODO Common dimensions
-                        .padding(8.dp),
+                        .padding(8.dp)
+                        .testTag("phoneLoginAccountSelect"),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     val optionTextColor = if (selectedOption.accountDisplay.isBlank()) {
@@ -410,7 +409,7 @@ private fun ColumnScope.VerifyPhoneCodeScreen(
     Spacer(Modifier.weight(1f))
 
     BusyButton(
-        modifier = fillWidthPadded.testTag("verifyPhoneCodeBtn"),
+        modifier = fillWidthPadded.testTag("verifyPhoneCodeAction"),
         onClick = submitCode,
         enabled = isNotBusy,
         text = t("actions.submit"),
