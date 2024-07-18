@@ -144,7 +144,7 @@ internal fun MenuScreen(
 
             CrisisCleanupOutlinedButton(
                 modifier = listItemModifier.actionHeight(),
-                text = t("~~Lists"),
+                text = t("list.lists"),
                 onClick = openLists,
                 enabled = true,
             )

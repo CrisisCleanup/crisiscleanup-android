@@ -84,8 +84,8 @@ internal fun ListsRoute(
     val allLists = viewModel.allLists.collectAsLazyPagingItems()
 
     val tabTitles = remember(incidentLists, allLists.itemCount) {
-        val incidentText = t("~~Incident")
-        val allText = t("~~All")
+        val incidentText = t("list.incident")
+        val allText = t("actions.all")
         val listCount = allLists.itemCount
         listOf(
             if (incidentLists.isEmpty()) incidentText else "$incidentText (${incidentLists.size})",
@@ -101,7 +101,7 @@ internal fun ListsRoute(
 
     Column {
         TopAppBarBackCaretAction(
-            title = t("~~Lists"),
+            title = t("list.lists"),
             onAction = onBack,
             actions = {
                 CrisisCleanupIconButton(
@@ -217,8 +217,8 @@ internal fun ListsRoute(
             val dismissExplanation = { explainSupportList = EmptyList }
             // TODO Different title and message for list type none
             CrisisCleanupAlertDialog(
-                title = t("~~Unsupported list"),
-                text = t("~~{list_name} list is not yet supported on this app.")
+                title = t("list.unsupported_list_title"),
+                text = t("list.unsupported_list_explanation")
                     .replace("{list_name}", explainSupportList.name),
                 onDismissRequest = dismissExplanation,
                 confirmButton = {
@@ -232,9 +232,9 @@ internal fun ListsRoute(
     }
 
     if (showReadOnlyDescription) {
-        val readOnlyTitle = t("~~Lists are read-only")
+        val readOnlyTitle = t("list.list_read_only")
         val readOnlyDescription =
-            t("~~Lists (in this app) are currently read-only. Manage lists using Crisis Cleanup in a web browser.")
+            t("list.read_only_in_app_manage_on_web")
         CrisisCleanupAlertDialog(
             onDismissRequest = { showReadOnlyDescription = false },
             title = readOnlyTitle,
@@ -282,7 +282,7 @@ private fun IncidentListsView(
         if (incidentLists.isEmpty()) {
             item(key = "static-text") {
                 Text(
-                    t("~~No lists have been created for this Incident."),
+                    t("list.no_lists_for_this_incident"),
                     listItemModifier,
                 )
             }

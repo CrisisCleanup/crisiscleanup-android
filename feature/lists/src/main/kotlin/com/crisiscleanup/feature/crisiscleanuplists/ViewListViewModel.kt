@@ -65,7 +65,7 @@ class ViewListViewModel @Inject constructor(
         .mapLatest { list ->
             if (list == EmptyList) {
                 val listNotFound =
-                    translator("~~List was not found. It is likely deleted.")
+                    translator("list.not_found_deleted")
                 return@mapLatest ViewListViewState.Error(listNotFound)
             }
 
@@ -91,7 +91,7 @@ class ViewListViewModel @Inject constructor(
             return@map list.name
         }
 
-        translator("~~List")
+        translator("list.list")
     }
         .stateIn(
             scope = viewModelScope,
@@ -175,19 +175,19 @@ class ViewListViewModel @Inject constructor(
                             val cachedIncident = incidentsRepository.getIncident(targetIncidentId)
                             if (cachedIncident == null) {
                                 openWorksiteError =
-                                    translator("~~This incident needs downloading.")
+                                    translator("list.incident_not_downloaded_error")
                             } else {
                                 openWorksiteChangeIncident = cachedIncident
                                 pendingOpenWorksite = worksite
                                 changeIncidentConfirmMessage =
-                                    translator("~~Would you like to change to {incident_name} and open Case {case_number}?")
+                                    translator("list.change_incident_confirm")
                                         .replace("{incident_name}", cachedIncident.shortName)
                                         .replace("{case_number}", worksite.caseNumber)
                             }
                         }
                     } else {
                         openWorksiteError =
-                            translator("~~Case {case_number} does not belong in Incident {incident_name}")
+                            translator("list.case_number_not_in_this_incident")
                                 .replace("{case_number}", worksite.caseNumber)
                                 .replace("{incident_name}", list?.incident?.shortName ?: "")
                                 .trim()
