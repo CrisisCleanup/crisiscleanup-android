@@ -133,7 +133,7 @@ internal fun ViewListRoute(
         if (changeIncidentConfirmMessage.isNotBlank()) {
             val closeDialog = viewModel::clearChangeIncident
             CrisisCleanupAlertDialog(
-                title = t("~~Confirm change Incident"),
+                title = t("list.confirm_change_incident"),
                 text = changeIncidentConfirmMessage,
                 onDismissRequest = closeDialog,
                 confirmButton = {
@@ -165,7 +165,8 @@ private fun ListDetailsView(
 
     if (objectData.isEmpty()) {
         Text(
-            t("~~This list is not supported by the app or has no items."),
+            t("list.unsupported_list_explanation")
+                .replace("{list_name}", list.name),
             listItemModifier,
         )
     } else {
@@ -238,6 +239,7 @@ private fun ListDetailsView(
                 ListModel.Worksite -> {
                     worksiteItems(
                         list.incident?.id ?: EmptyIncident.id,
+                        list.incident?.shortName ?: "",
                         objectData,
                         setPhoneNumberList,
                         onOpenWorksite,
@@ -246,7 +248,7 @@ private fun ListDetailsView(
 
                 else -> {
                     item {
-                        Text(t("~~This list is not supported by the app."))
+                        Text(t("list.not_supported_by_app"))
                     }
                 }
             }
@@ -261,7 +263,7 @@ private fun MissingItem() {
         contentAlignment = Alignment.CenterStart,
     ) {
         Text(
-            LocalAppTranslator.current("~~Missing list data."),
+            LocalAppTranslator.current("list.missing_list_data"),
         )
     }
 }
@@ -372,6 +374,7 @@ private fun LazyListScope.userItems(
 
 private fun LazyListScope.worksiteItems(
     incidentId: Long,
+    incidentName: String,
     listData: List<Any?>,
     showPhoneNumbers: (List<ParsedPhoneNumber>) -> Unit,
     onOpenWorksite: (Worksite) -> Unit = {},
@@ -391,8 +394,9 @@ private fun LazyListScope.worksiteItems(
                 contentAlignment = Alignment.CenterStart,
             ) {
                 Text(
-                    LocalAppTranslator.current("~~Case {case_number} is not under this Incident.")
-                        .replace("{case_number}", worksite.caseNumber),
+                    LocalAppTranslator.current("list.cannot_access_case_wrong_incident")
+                        .replace("{case_number}", worksite.caseNumber)
+                        .replace("{incident_name}", incidentName),
                 )
             }
         } else {
