@@ -3,7 +3,7 @@ accompanist = "0.32.0"
 androidDesugarJdkLibs = "2.0.4"
 # AGP and tools should be updated together
 androidGradlePlugin = "8.4.2"
-androidTools = "31.5.0"
+androidTools = "31.5.1"
 androidMapsUtil = "2.3.0"
 androidMapsUtilKtx = "3.4.0"
 androidMaterial = "1.12.0"
@@ -12,16 +12,15 @@ androidxAppCompat = "1.7.0"
 androidxBrowser = "1.8.0"
 androidxCamera = "1.3.4"
 androidxComposeBom = "2024.06.00"
-androidxComposeCompiler = "1.5.12"
 androidxComposeMaterial3 = "1.2.1"
 androidxComposeRuntimeTracing = "1.0.0-beta01"
 androidxConstraintLayout = "1.1.0-alpha13"
 androidxCore = "1.13.1"
 androidxCoreSplashscreen = "1.0.1"
 androidxDataStore = "1.1.1"
-androidxEspresso = "3.6.0"
+androidxEspresso = "3.6.1"
 androidxHiltNavigationCompose = "1.2.0"
-androidxLifecycle = "2.8.2"
+androidxLifecycle = "2.8.3"
 androidxMacroBenchmark = "1.2.4"
 androidxMetrics = "1.0.0-beta01"
 androidxNavigation = "2.7.7"
@@ -29,10 +28,10 @@ androidxPaging = "3.3.0"
 androidxProfileinstaller = "1.3.1"
 androidxStartup = "1.1.1"
 androidxSecurityCrypto = "1.1.0-alpha06"
-androidxTestCore = "1.6.0"
-androidxTestExt = "1.2.0"
-androidxTestRules = "1.6.0"
-androidxTestRunner = "1.6.0"
+androidxTestCore = "1.6.1"
+androidxTestExt = "1.2.1"
+androidxTestRules = "1.6.1"
+androidxTestRunner = "1.6.1"
 androidxTracing = "1.2.0"
 androidxUiAutomator = "2.3.0"
 androidxWindowManager = "1.3.0"
@@ -40,7 +39,7 @@ androidxWork = "2.9.0"
 apacheCommonsText = "1.10.0"
 coil = "2.6.0"
 dependencyGuard = "0.5.0"
-firebaseBom = "33.1.1"
+firebaseBom = "33.1.2"
 firebaseCrashlyticsPlugin = "3.0.2"
 firebasePerfPlugin = "1.4.2"
 gmsPlugin = "4.4.2"
@@ -51,12 +50,12 @@ hiltExt = "1.2.0"
 jacoco = "0.8.12"
 junit4 = "4.13.2"
 jwtDecode = "2.0.1"
-kotlin = "1.9.23"
+kotlin = "2.0.0"
 kotlinxCoroutines = "1.8.0"
 kotlinxCoroutinesPlayServices = "1.8.0"
 kotlinxDatetime = "0.5.0"
 kotlinxSerializationJson = "1.6.3"
-ksp = "1.9.23-1.0.20"
+ksp = "2.0.0-1.0.21"
 mlkitBarcodeScanning = "17.2.0"
 mockk = "1.13.5"
 moduleGraph = "2.5.0"
@@ -65,7 +64,7 @@ philJayRrule = "1.0.3"
 playServicesAuth = "21.2.0"
 playServicesAuthPhone = "18.1.0"
 playServicesLocation = "21.3.0"
-playServicesMaps = "18.2.0"
+playServicesMaps = "19.0.0"
 protobuf = "4.26.0"
 protobufPlugin = "0.9.4"
 retrofit = "2.9.0"
@@ -150,6 +149,7 @@ google-places = { group = "com.google.android.libraries.places", name = "places"
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
+hilt-core = { group = "com.google.dagger", name = "hilt-core", version.ref = "hilt" }
 hilt-ext-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hiltExt" }
 hilt-ext-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltExt" }
 junit4 = { group = "junit", name = "junit", version.ref = "junit4" }
@@ -190,18 +190,19 @@ zxing = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
 # Dependencies of the included build-logic
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
 android-tools-common = { group = "com.android.tools", name = "common", version.ref = "androidTools" }
+compose-gradlePlugin = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
 firebase-crashlytics-gradlePlugin = { group = "com.google.firebase", name = "firebase-crashlytics-gradle", version.ref = "firebaseCrashlyticsPlugin" }
 firebase-performance-gradlePlugin = { group = "com.google.firebase", name = "perf-plugin", version.ref = "firebasePerfPlugin" }
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 room-gradlePlugin = { group = "androidx.room", name = "room-gradle-plugin", version.ref = "room" }
-work-testing = { group = "androidx.work", name = "work-testing", version = "2.9.0" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
 android-test = { id = "com.android.test", version.ref = "androidGradlePlugin" }
 baselineprofile = { id = "androidx.baselineprofile", version.ref = "androidxMacroBenchmark" }
+compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 dependencyGuard = { id = "com.dropbox.dependency-guard", version.ref = "dependencyGuard" }
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin" }
 firebase-perf = { id = "com.google.firebase.firebase-perf", version.ref = "firebasePerfPlugin" }
@@ -222,11 +223,11 @@ nowinandroid-android-application-firebase = { id = "nowinandroid.android.applica
 nowinandroid-android-application-flavors = { id = "nowinandroid.android.application.flavors", version = "unspecified" }
 nowinandroid-android-application-jacoco = { id = "nowinandroid.android.application.jacoco", version = "unspecified" }
 nowinandroid-android-feature = { id = "nowinandroid.android.feature", version = "unspecified" }
-nowinandroid-android-hilt = { id = "nowinandroid.android.hilt", version = "unspecified" }
 nowinandroid-android-library = { id = "nowinandroid.android.library", version = "unspecified" }
 nowinandroid-android-library-compose = { id = "nowinandroid.android.library.compose", version = "unspecified" }
 nowinandroid-android-library-jacoco = { id = "nowinandroid.android.library.jacoco", version = "unspecified" }
 nowinandroid-android-lint = { id = "nowinandroid.android.lint", version = "unspecified" }
 nowinandroid-android-room = { id = "nowinandroid.android.room", version = "unspecified" }
 nowinandroid-android-test = { id = "nowinandroid.android.test", version = "unspecified" }
+nowinandroid-hilt = { id = "nowinandroid.hilt", version = "unspecified" }
 nowinandroid-jvm-library = { id = "nowinandroid.jvm.library", version = "unspecified" }

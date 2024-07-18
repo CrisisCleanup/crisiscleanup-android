@@ -27,13 +27,9 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
         with(target) {
             pluginManager.apply {
                 apply("nowinandroid.android.library")
-                apply("nowinandroid.android.hilt")
+                apply("nowinandroid.hilt")
             }
             extensions.configure<LibraryExtension> {
-                defaultConfig {
-                    testInstrumentationRunner =
-                        "com.crisiscleanup.core.testing.CrisisCleanupTestRunner"
-                }
                 testOptions.animationsDisabled = true
                 configureGradleManagedDevices(this)
             }

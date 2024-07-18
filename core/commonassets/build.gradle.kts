@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.nowinandroid.android.library)
-    alias(libs.plugins.nowinandroid.android.library.compose)
 }
 
 android {
