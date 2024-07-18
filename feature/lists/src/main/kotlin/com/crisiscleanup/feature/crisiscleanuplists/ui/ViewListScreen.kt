@@ -165,8 +165,8 @@ private fun ListDetailsView(
 
     if (objectData.isEmpty()) {
         Text(
-            t("list.unsupported_list_explanation"),
-            .replace("{list_name}", explainSupportList.name),
+            t("list.unsupported_list_explanation")
+                .replace("{list_name}", list.name),
             listItemModifier,
         )
     } else {
@@ -239,6 +239,7 @@ private fun ListDetailsView(
                 ListModel.Worksite -> {
                     worksiteItems(
                         list.incident?.id ?: EmptyIncident.id,
+                        list.incident?.shortName ?: "",
                         objectData,
                         setPhoneNumberList,
                         onOpenWorksite,
@@ -373,6 +374,7 @@ private fun LazyListScope.userItems(
 
 private fun LazyListScope.worksiteItems(
     incidentId: Long,
+    incidentName: String,
     listData: List<Any?>,
     showPhoneNumbers: (List<ParsedPhoneNumber>) -> Unit,
     onOpenWorksite: (Worksite) -> Unit = {},
@@ -393,8 +395,8 @@ private fun LazyListScope.worksiteItems(
             ) {
                 Text(
                     LocalAppTranslator.current("list.cannot_access_case_wrong_incident")
-                        .replace("{case_number}", worksite.caseNumber),
-                        .replace("{incident_name}", incident.shortName),
+                        .replace("{case_number}", worksite.caseNumber)
+                        .replace("{incident_name}", incidentName),
                 )
             }
         } else {
