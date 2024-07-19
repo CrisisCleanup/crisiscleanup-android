@@ -33,6 +33,7 @@ enum class CrisisCleanupLoggers {
     Network,
     Onboarding,
     Sync,
+    Team,
     Token,
     Worksites,
 }
