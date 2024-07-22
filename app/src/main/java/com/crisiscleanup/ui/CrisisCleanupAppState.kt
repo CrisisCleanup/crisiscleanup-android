@@ -116,6 +116,7 @@ class CrisisCleanupAppState(
      */
     val topLevelDestinations: List<TopLevelDestination> = listOf(
         CASES,
+        TEAM,
         MENU,
     )
 
