@@ -2,6 +2,7 @@ package com.crisiscleanup.core.datastore
 
 import androidx.datastore.core.DataStore
 import com.crisiscleanup.core.common.AppEnv
+import com.crisiscleanup.core.common.svgAvatarUrl
 import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.model.data.OrgData
 import com.crisiscleanup.core.model.data.emptyOrgData
@@ -25,12 +26,7 @@ class AccountInfoDataSource @Inject constructor(
             if (fullName.isEmpty()) {
                 ""
             } else {
-                // TODO Common function
-                val whiteSpaceRegex = "\\s+".toRegex()
-                "https://api.dicebear.com/9.x/pixel-art/svg?seed=$fullName".replace(
-                    whiteSpaceRegex,
-                    "-",
-                )
+                fullName.svgAvatarUrl
             }
     }
 

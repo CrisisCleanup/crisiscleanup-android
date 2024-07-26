@@ -16,6 +16,7 @@ import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 fun AvatarIcon(
     avatarUri: String?,
     contentDescription: String,
+    errorIcon: ImageVector = CrisisCleanupIcons.MissingAvatar,
     fallbackIcon: ImageVector = CrisisCleanupIcons.Account,
     placeholderIcon: ImageVector = CrisisCleanupIcons.Account,
 ) {
@@ -28,13 +29,15 @@ fun AvatarIcon(
                 .decoderFactory(SvgDecoder.Factory())
                 .build()
         }
+        val errorPainter = rememberVectorPainter(errorIcon)
         val fallbackIconPainter = rememberVectorPainter(fallbackIcon)
         val placeholderIconPainter = rememberVectorPainter(placeholderIcon)
         AsyncImage(
             model = model,
             contentDescription = contentDescription,
-            fallback = fallbackIconPainter,
             contentScale = ContentScale.FillBounds,
+            error = errorPainter,
+            fallback = fallbackIconPainter,
             placeholder = placeholderIconPainter,
         )
     } else {

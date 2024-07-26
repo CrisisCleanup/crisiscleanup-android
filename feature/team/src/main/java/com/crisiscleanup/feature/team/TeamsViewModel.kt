@@ -9,6 +9,7 @@ import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.common.svgAvatarUrl
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRepository
@@ -121,13 +122,10 @@ class TeamViewModel @Inject constructor(
         }
         .debounce(1.seconds)
         .mapLatest { (state, additional) ->
-            val whiteSpaceRegex = "\\s+".toRegex()
             fun getProfilePictureUri(contact: PersonContact): String {
                 var pictureUri = contact.profilePictureUri
                 if (pictureUri.isBlank() && contact.fullName.isNotBlank()) {
-                    // TODO Common function
-                    val seed = contact.fullName.replace(whiteSpaceRegex, "-")
-                    pictureUri = "https://api.dicebear.com/9.x/pixel-art/svg?seed=$seed"
+                    pictureUri = contact.fullName.svgAvatarUrl
                 }
                 return pictureUri
             }
