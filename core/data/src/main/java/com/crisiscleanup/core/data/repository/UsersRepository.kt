@@ -7,7 +7,9 @@ import com.crisiscleanup.core.data.model.PersonContactEntities
 import com.crisiscleanup.core.data.model.asEntities
 import com.crisiscleanup.core.data.model.asExternalModel
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDaoPlus
+import com.crisiscleanup.core.database.dao.PersonContactDao
 import com.crisiscleanup.core.database.dao.PersonContactDaoPlus
+import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.PersonContact
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkPersonContact
@@ -21,10 +23,13 @@ interface UsersRepository {
     ): List<PersonContact>
 
     suspend fun queryUpdateUsers(userIds: Collection<Long>)
+
+    suspend fun getUsers(userIds: Collection<Long>): List<PersonContact>
 }
 
 class OfflineFirstUsersRepository @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,
+    private val personContactDao: PersonContactDao,
     private val personContactDaoPlus: PersonContactDaoPlus,
     private val incidentOrganizationDaoPlus: IncidentOrganizationDaoPlus,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
@@ -59,4 +64,8 @@ class OfflineFirstUsersRepository @Inject constructor(
             logger.logException(e)
         }
     }
+
+    override suspend fun getUsers(userIds: Collection<Long>) =
+        personContactDao.getContacts(userIds)
+            .map { it.entity.asExternalModel() }
 }

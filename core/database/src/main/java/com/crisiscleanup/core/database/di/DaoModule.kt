@@ -68,4 +68,7 @@ object DaoModule {
 
     @Provides
     fun listDao(db: CrisisCleanupDatabase) = db.listDao()
+
+    @Provides
+    fun teamDao(db: CrisisCleanupDatabase) = db.teamDao()
 }

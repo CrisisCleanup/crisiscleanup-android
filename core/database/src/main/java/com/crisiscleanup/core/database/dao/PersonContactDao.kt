@@ -1,6 +1,8 @@
 package com.crisiscleanup.core.database.dao
 
 import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
@@ -38,4 +40,7 @@ interface PersonContactDao {
     @Transaction
     @Query("SELECT * FROM person_contacts WHERE id IN(:ids)")
     fun getContacts(ids: Collection<Long>): List<PopulatedPersonContactOrganization>
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insertIgnore(contacts: List<PersonContactEntity>)
 }

@@ -17,6 +17,8 @@ data class PersonContactEntity(
     val lastName: String,
     val email: String,
     val mobile: String,
+    @ColumnInfo(defaultValue = "")
+    val profilePictureUri: String,
 )
 
 fun PersonContactEntity.asExternalModel() = PersonContact(
@@ -25,6 +27,7 @@ fun PersonContactEntity.asExternalModel() = PersonContact(
     lastName = lastName,
     email = email,
     mobile = mobile,
+    profilePictureUri = profilePictureUri,
 )
 
 @Entity(

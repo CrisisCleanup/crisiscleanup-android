@@ -17,6 +17,7 @@ import com.crisiscleanup.core.network.model.NetworkLocationsResult
 import com.crisiscleanup.core.network.model.NetworkOrganizationsResult
 import com.crisiscleanup.core.network.model.NetworkOrganizationsSearchResult
 import com.crisiscleanup.core.network.model.NetworkRedeployRequestsResult
+import com.crisiscleanup.core.network.model.NetworkTeamResult
 import com.crisiscleanup.core.network.model.NetworkUserProfile
 import com.crisiscleanup.core.network.model.NetworkUsersResult
 import com.crisiscleanup.core.network.model.NetworkWorkTypeRequestResult
@@ -262,6 +263,17 @@ private interface DataSourceApi {
     suspend fun getList(
         @Path("listId") id: Long,
     ): NetworkListResult
+
+    @TokenAuthenticationHeader
+    @GET("teams")
+    suspend fun getTeams(
+        @Query("incident")
+        incidentId: Long?,
+        @Query("limit")
+        limit: Int,
+        @Query("offset")
+        offset: Int,
+    ): NetworkTeamResult
 }
 
 private val worksiteCoreDataFields = listOf(
@@ -509,4 +521,7 @@ class DataApiClient @Inject constructor(
         }
         return networkLists
     }
+
+    override suspend fun getTeams(incidentId: Long?, limit: Int, offset: Int) =
+        networkApi.getTeams(incidentId, limit, offset)
 }

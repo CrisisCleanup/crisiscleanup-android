@@ -63,7 +63,7 @@ val closedWorkTypeStatuses = listOf(
     WorkTypeStatus.ClosedRejected,
 )
 
-private val literalStatusLookup = WorkTypeStatus.values().associateBy(WorkTypeStatus::literal)
+private val literalStatusLookup = WorkTypeStatus.entries.associateBy(WorkTypeStatus::literal)
 fun statusFromLiteral(literal: String) =
     literalStatusLookup[literal] ?: WorkTypeStatus.Unknown
 

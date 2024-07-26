@@ -130,6 +130,7 @@ class CrisisCleanupAppState(
 
         return when (priorTopLevelDestination) {
             DASHBOARD -> DASHBOARD_ROUTE
+            CASES -> CASES_GRAPH_ROUTE
             TEAM -> TEAM_ROUTE
             MENU -> MENU_ROUTE
             else -> CASES_GRAPH_ROUTE

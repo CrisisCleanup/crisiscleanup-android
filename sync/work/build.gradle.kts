@@ -15,7 +15,6 @@ dependencies {
     ksp(libs.hilt.ext.compiler)
 
     implementation(projects.core.common)
-    implementation(projects.core.model)
     implementation(projects.core.data)
     implementation(projects.core.datastore)
 

@@ -19,8 +19,8 @@ data class NetworkPersonContact(
     val lastName: String,
     val email: String,
     val mobile: String,
-    // Provided from /users.
-    // Not provided from /organizations
+    val files: List<NetworkFile>? = null,
+    // Provided from /users. Not provided from /organizations.
     val organization: ContactOrganization? = null,
 ) {
     @Serializable

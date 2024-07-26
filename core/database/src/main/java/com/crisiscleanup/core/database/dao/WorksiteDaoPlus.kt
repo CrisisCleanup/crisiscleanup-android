@@ -12,6 +12,7 @@ import com.crisiscleanup.core.database.model.BoundedSyncedWorksiteIds
 import com.crisiscleanup.core.database.model.CoordinateGridQuery
 import com.crisiscleanup.core.database.model.NetworkFileEntity
 import com.crisiscleanup.core.database.model.PopulatedFilterDataWorksite
+import com.crisiscleanup.core.database.model.PopulatedLocalModifiedAt
 import com.crisiscleanup.core.database.model.PopulatedTableDataWorksite
 import com.crisiscleanup.core.database.model.SwNeBounds
 import com.crisiscleanup.core.database.model.WorkTypeEntity
@@ -19,7 +20,6 @@ import com.crisiscleanup.core.database.model.WorksiteEntities
 import com.crisiscleanup.core.database.model.WorksiteEntity
 import com.crisiscleanup.core.database.model.WorksiteFlagEntity
 import com.crisiscleanup.core.database.model.WorksiteFormDataEntity
-import com.crisiscleanup.core.database.model.WorksiteLocalModifiedAt
 import com.crisiscleanup.core.database.model.WorksiteNetworkFileCrossRef
 import com.crisiscleanup.core.database.model.WorksiteNoteEntity
 import com.crisiscleanup.core.database.model.filter
@@ -39,13 +39,11 @@ class WorksiteDaoPlus @Inject constructor(
     private val syncLogger: SyncLogger,
     @Logger(CrisisCleanupLoggers.Worksites) private val appLogger: AppLogger,
 ) {
-    private suspend fun getWorksiteLocalModifiedAt(
-        networkWorksiteIds: Set<Long>,
-    ) = db.withTransaction {
-        val worksitesUpdatedAt = db.worksiteDao().getWorksitesLocalModifiedAt(
-            networkWorksiteIds,
+    private suspend fun getWorksiteLocalModifiedAt(networkIds: Set<Long>) = db.withTransaction {
+        val worksitesModifiedAt = db.worksiteDao().getWorksitesLocalModifiedAt(
+            networkIds,
         )
-        return@withTransaction worksitesUpdatedAt.associateBy { it.networkId }
+        worksitesModifiedAt.associateBy(PopulatedLocalModifiedAt::networkId)
     }
 
     /**
@@ -132,7 +130,7 @@ class WorksiteDaoPlus @Inject constructor(
 
     private suspend fun syncWorksite(
         worksite: WorksiteEntity,
-        modifiedAt: WorksiteLocalModifiedAt?,
+        modifiedAt: PopulatedLocalModifiedAt?,
         workTypes: List<WorkTypeEntity>,
         syncedAt: Instant,
         formData: List<WorksiteFormDataEntity>? = null,
@@ -224,7 +222,7 @@ class WorksiteDaoPlus @Inject constructor(
             syncLogger.log("Skip sync overwriting locally modified worksite ${worksite.id} (${worksite.networkId})")
         }
 
-        return@withTransaction false
+        false
     }
 
     private fun throwSizeMismatch(worksitesSize: Int, size: Int, dataName: String) {

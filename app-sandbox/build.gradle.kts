@@ -44,7 +44,6 @@ dependencies {
     implementation(projects.core.data)
     implementation(projects.core.designsystem)
     implementation(projects.core.network)
-    implementation(projects.core.model)
     implementation(projects.core.ui)
 
     implementation(libs.kotlinx.serialization.json)

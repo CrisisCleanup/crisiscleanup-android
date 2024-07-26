@@ -9,4 +9,6 @@ android {
 }
 
 dependencies {
+    implementation(projects.core.appComponent)
+    implementation(projects.core.selectincident)
 }

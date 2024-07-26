@@ -8,13 +8,13 @@ import androidx.room.Update
 import com.crisiscleanup.core.database.dao.fts.PopulatedWorksiteTextMatchInfo
 import com.crisiscleanup.core.database.model.BoundedSyncedWorksiteIds
 import com.crisiscleanup.core.database.model.PopulatedFilterDataWorksite
+import com.crisiscleanup.core.database.model.PopulatedLocalModifiedAt
 import com.crisiscleanup.core.database.model.PopulatedLocalWorksite
 import com.crisiscleanup.core.database.model.PopulatedTableDataWorksite
 import com.crisiscleanup.core.database.model.PopulatedWorksite
 import com.crisiscleanup.core.database.model.PopulatedWorksiteFiles
 import com.crisiscleanup.core.database.model.PopulatedWorksiteMapVisual
 import com.crisiscleanup.core.database.model.WorksiteEntity
-import com.crisiscleanup.core.database.model.WorksiteLocalModifiedAt
 import com.crisiscleanup.core.database.model.WorksiteRootEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Instant
@@ -54,12 +54,10 @@ interface WorksiteDao {
         """
         SELECT id, network_id, local_modified_at, is_local_modified
         FROM worksites_root
-        WHERE network_id IN (:worksiteIds)
+        WHERE network_id IN (:networkIds)
         """,
     )
-    fun getWorksitesLocalModifiedAt(
-        worksiteIds: Collection<Long>,
-    ): List<WorksiteLocalModifiedAt>
+    fun getWorksitesLocalModifiedAt(networkIds: Collection<Long>): List<PopulatedLocalModifiedAt>
 
     @Transaction
     @Query(

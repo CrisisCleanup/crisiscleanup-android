@@ -9,7 +9,6 @@ android {
 }
 
 dependencies {
-    implementation(projects.core.commonassets)
-    implementation(projects.core.commoncase)
+    implementation(projects.core.appComponent)
     implementation(projects.core.selectincident)
 }
