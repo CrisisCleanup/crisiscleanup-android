@@ -53,16 +53,18 @@ class OfflineFirstUsersRepository @Inject constructor(
 
     override suspend fun queryUpdateUsers(userIds: Collection<Long>) {
         try {
-            val networkUsers = networkDataSource.getUsers(userIds)
-            val entities = networkUsers.mapNotNull(NetworkPersonContact::asEntities)
+            for (subset in userIds.chunked(100)) {
+                val networkUsers = networkDataSource.getUsers(subset)
+                val entities = networkUsers.mapNotNull(NetworkPersonContact::asEntities)
 
-            val organizations = entities.map(PersonContactEntities::organization)
-            val affiliates = entities.map(PersonContactEntities::organizationAffiliates)
-            incidentOrganizationDaoPlus.saveMissing(organizations, affiliates)
+                val organizations = entities.map(PersonContactEntities::organization)
+                val affiliates = entities.map(PersonContactEntities::organizationAffiliates)
+                incidentOrganizationDaoPlus.saveMissing(organizations, affiliates)
 
-            val persons = entities.map(PersonContactEntities::personContact)
-            val personOrganizations = entities.map(PersonContactEntities::personToOrganization)
-            personContactDaoPlus.savePersons(persons, personOrganizations)
+                val persons = entities.map(PersonContactEntities::personContact)
+                val personOrganizations = entities.map(PersonContactEntities::personToOrganization)
+                personContactDaoPlus.savePersons(persons, personOrganizations)
+            }
         } catch (e: Exception) {
             logger.logException(e)
         }

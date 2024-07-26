@@ -3,10 +3,13 @@ package com.crisiscleanup.feature.team
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
@@ -19,15 +22,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.appcomponent.ui.AppTopBar
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
+import com.crisiscleanup.core.designsystem.component.AvatarIcon
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CardSurface
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
+import com.crisiscleanup.core.designsystem.theme.listItemBottomPadding
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
@@ -71,6 +78,7 @@ private fun TeamsScreen(
 
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
 
+    val profilePictureLookup by viewModel.profilePictureLookup.collectAsStateWithLifecycle()
 
     val pullRefreshState = rememberPullToRefreshState()
     if (pullRefreshState.isRefreshing) {
@@ -127,7 +135,10 @@ private fun TeamsScreen(
                             key = { it.id },
                             contentType = { "team-item" },
                         ) {
-                            TeamView(it)
+                            TeamView(
+                                it,
+                                profilePictureLookup,
+                            )
                         }
                     }
 
@@ -176,8 +187,15 @@ private fun TeamsScreen(
                             key = { it.id },
                             contentType = { "team-item" },
                         ) {
-                            TeamView(it)
+                            TeamView(
+                                it,
+                                profilePictureLookup,
+                            )
                         }
+                    }
+
+                    item {
+                        Spacer(Modifier.listItemBottomPadding())
                     }
                 }
             }
@@ -214,7 +232,10 @@ private fun TeamsScreen(
 @Composable
 internal fun TeamView(
     team: CleanupTeam,
+    profilePictureLookup: Map<Long, String>,
 ) {
+    val t = LocalAppTranslator.current
+
     CardSurface {
         Column(
             listItemModifier,
@@ -227,11 +248,51 @@ internal fun TeamView(
                     style = LocalFontStyles.current.header4,
                 )
             }
+
+            val caseCount = team.caseCount
             Row(horizontalArrangement = listItemSpacedBy) {
-                // TODO Cases statistics
+                val caseCountTranslateKey =
+                    if (caseCount == 1) "~~1 Case" else "~~{case_count} Cases"
+                Text(
+                    t(caseCountTranslateKey)
+                        .replace("{case_count}", "$caseCount"),
+                )
+
+                if (caseCount > 0) {
+                    // TODO Completion percentage
+                }
             }
-            Row(horizontalArrangement = listItemSpacedByHalf) {
-                // TODO Avatars and equipment
+
+            val memberCount = team.members.size
+            // TODO Or has equipment
+            if (memberCount > 0) {
+                Row(horizontalArrangement = listItemSpacedByHalf) {
+                    team.members.forEachIndexed { i, contact ->
+                        if (i > 2) {
+                            return@forEachIndexed
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                // TODO Common dimensions
+                                .size(36.dp)
+                                .clip(CircleShape),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            AvatarIcon(
+                                profilePictureLookup[contact.id],
+                                contact.fullName,
+                            )
+                        }
+                    }
+
+                    if (memberCount > 2) {
+                        // TODO Rounded text
+                        Text("+${memberCount - 3}")
+                    }
+
+                    // TODO equipment, and count
+                }
             }
         }
     }

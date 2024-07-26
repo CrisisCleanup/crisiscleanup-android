@@ -25,8 +25,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -35,7 +33,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
@@ -350,24 +347,11 @@ fun TopAppBarDefault(
                 onClick = onActionClick,
                 modifier = Modifier.testTag("topBarAvatarIconBtn"),
             ) {
-                if (profilePictureUri.isEmpty()) {
-                    Icon(
-                        imageVector = actionIcon,
-                        contentDescription = actionText,
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
-                } else {
-                    val fallbackPainter = rememberVectorPainter(actionIcon)
-                    val placeholderPainter = rememberVectorPainter(CrisisCleanupIcons.Account)
-                    // TODO Show error as necessary
-                    AsyncImage(
-                        model = profilePictureUri,
-                        contentDescription = actionText,
-                        fallback = fallbackPainter,
-                        contentScale = ContentScale.FillBounds,
-                        placeholder = placeholderPainter,
-                    )
-                }
+                AvatarIcon(
+                    profilePictureUri,
+                    actionText,
+                    fallbackIcon = actionIcon,
+                )
             }
         }
     }
@@ -438,7 +422,7 @@ private fun CrisisCleanupTopAppBarImagePreview() {
         navIcon = CrisisCleanupIcons.Search,
         actionIcon = CrisisCleanupIcons.MoreVert,
         actionText = "action",
-        profilePictureUri = "https://avatars.dicebear.com/api/bottts/Demo User.svg",
+        profilePictureUri = "https://profile-picture.svg",
         isActionAttention = true,
     )
 }

@@ -25,7 +25,12 @@ class AccountInfoDataSource @Inject constructor(
             if (fullName.isEmpty()) {
                 ""
             } else {
-                "https://avatars.dicebear.com/api/bottts/$fullName.svg"
+                // TODO Common function
+                val whiteSpaceRegex = "\\s+".toRegex()
+                "https://api.dicebear.com/9.x/pixel-art/svg?seed=$fullName".replace(
+                    whiteSpaceRegex,
+                    "-",
+                )
             }
     }
 
