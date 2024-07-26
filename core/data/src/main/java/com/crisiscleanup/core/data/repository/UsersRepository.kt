@@ -24,7 +24,10 @@ interface UsersRepository {
 
     suspend fun queryUpdateUsers(userIds: Collection<Long>)
 
-    suspend fun getUsers(userIds: Collection<Long>): List<PersonContact>
+    suspend fun getUserProfiles(
+        userIds: Collection<Long>,
+        updateProfilePics: Boolean = false,
+    ): List<PersonContact>
 }
 
 class OfflineFirstUsersRepository @Inject constructor(
@@ -65,7 +68,19 @@ class OfflineFirstUsersRepository @Inject constructor(
         }
     }
 
-    override suspend fun getUsers(userIds: Collection<Long>) =
-        personContactDao.getContacts(userIds)
-            .map { it.entity.asExternalModel() }
+    override suspend fun getUserProfiles(
+        userIds: Collection<Long>,
+        updateProfilePics: Boolean,
+    ): List<PersonContact> {
+        var profiles = personContactDao.getContacts(userIds)
+
+        if (updateProfilePics &&
+            profiles.any { it.entity.profilePictureUri.isBlank() }
+        ) {
+            queryUpdateUsers(userIds)
+            profiles = personContactDao.getContacts(userIds)
+        }
+
+        return profiles.map { it.entity.asExternalModel() }
+    }
 }

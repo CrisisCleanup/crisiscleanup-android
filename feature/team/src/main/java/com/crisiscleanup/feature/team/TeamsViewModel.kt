@@ -12,12 +12,12 @@ import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.IncidentTeams
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.TeamsRepository
 import com.crisiscleanup.core.data.repository.UsersRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
-import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.EmptyIncident
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -25,6 +25,11 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
@@ -41,7 +46,7 @@ class TeamViewModel @Inject constructor(
     val incidentSelector: IncidentSelector,
     accountDataRepository: AccountDataRepository,
     appPreferencesRepository: LocalAppPreferencesRepository,
-    teamsRepository: TeamsRepository,
+    private val teamsRepository: TeamsRepository,
     usersRepository: UsersRepository,
     private val syncPuller: SyncPuller,
     translator: KeyResourceTranslator,
@@ -61,20 +66,27 @@ class TeamViewModel @Inject constructor(
     val incidentsData = appTopBarDataProvider.incidentsData
     val loadSelectIncidents = appTopBarDataProvider.loadSelectIncidents
 
-    val isSyncingTeams = incidentSelector.incidentId.mapLatest {
-        if (it != EmptyIncident.id) {
-            teamsRepository.syncTeams(it)
-            return@mapLatest false
+    val viewState = incidentSelector.incidentId
+        .flatMapLatest { incidentId ->
+            if (incidentId == EmptyIncident.id) {
+                return@flatMapLatest flowOf(TeamsViewState.Loading)
+            }
+
+            teamsRepository.streamIncidentTeams(incidentId).mapLatest { teams ->
+                TeamsViewState.Success(
+                    incidentId,
+                    teams,
+                )
+            }
         }
-        true
-    }
         .stateIn(
             scope = viewModelScope,
-            initialValue = true,
+            initialValue = TeamsViewState.Loading,
             started = SharingStarted.WhileSubscribed(3_000),
         )
 
-    val isLoading = isSyncingTeams
+    val isLoading = viewState.map { it == TeamsViewState.Loading }
+
     // TODO Get my teams, not my teams in this incident
 
     private val profilePictureLookup = ConcurrentHashMap<Long, String>()
@@ -88,9 +100,8 @@ class TeamViewModel @Inject constructor(
                 .onEach { ids ->
                     val missingProfilePictures = ids.filter { !profilePictureLookup.contains(it) }
                     if (missingProfilePictures.isNotEmpty()) {
-                        usersRepository.queryUpdateUsers(missingProfilePictures)
                         val userProfiles =
-                            usersRepository.getUsers(missingProfilePictures)
+                            usersRepository.getUserProfiles(missingProfilePictures, true)
                         for (profile in userProfiles) {
                             profilePictureLookup[profile.id] = profile.profilePictureUri
                         }
@@ -100,9 +111,19 @@ class TeamViewModel @Inject constructor(
                     }
                 }
         }
+
+        viewModelScope.launch(ioDispatcher) {
+            incidentSelector.incidentId.filter { it != EmptyIncident.id }
+                .distinctUntilChanged()
+                .onEach {
+                    if (it != EmptyIncident.id) {
+                        teamsRepository.syncTeams(it)
+                    }
+                }
+        }
     }
 
-    suspend fun refreshIncidentsAsync() {
+    suspend fun refreshIncidents() {
         syncPuller.pullIncidents()
     }
 
@@ -116,11 +137,16 @@ class TeamViewModel @Inject constructor(
             pendingProfileUserIdsFlow.value = pendingProfileUserIds.keys.toSet()
         }
     }
+
+    suspend fun refreshTeams() {
+        teamsRepository.syncTeams(incidentSelector.incidentId.value)
+    }
 }
 
 sealed interface TeamsViewState {
     data object Loading : TeamsViewState
     data class Success(
-        val teams: List<CleanupTeam>,
+        val incidentId: Long,
+        val teams: IncidentTeams,
     ) : TeamsViewState
 }

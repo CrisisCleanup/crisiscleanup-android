@@ -103,7 +103,6 @@ private fun MenuScreen(
 
     Column(Modifier.fillMaxWidth()) {
         AppTopBar(
-            modifier = Modifier,
             dataProvider = viewModel.appTopBarDataProvider,
             openAuthentication = openAuthentication,
             onOpenIncidents = openIncidentsSelect,

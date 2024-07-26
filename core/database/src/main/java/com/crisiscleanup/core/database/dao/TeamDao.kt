@@ -24,6 +24,7 @@ interface TeamDao {
         SELECT *
         FROM teams
         WHERE incident_id=:incidentId
+        ORDER BY name
         """,
     )
     fun streamTeams(incidentId: Long): Flow<List<PopulatedTeam>>

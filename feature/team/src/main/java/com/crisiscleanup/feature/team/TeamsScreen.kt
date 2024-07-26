@@ -2,20 +2,37 @@ package com.crisiscleanup.feature.team
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.appcomponent.ui.AppTopBar
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
+import com.crisiscleanup.core.designsystem.component.CardSurface
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
+import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
+import com.crisiscleanup.core.designsystem.theme.listItemTopPadding
 import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.selectincident.SelectIncidentDialog
@@ -23,18 +40,27 @@ import com.crisiscleanup.core.selectincident.SelectIncidentDialog
 @Composable
 internal fun TeamsRoute(
     openAuthentication: () -> Unit = {},
+    openCreateTeam: () -> Unit = {},
+    openTeamFilters: () -> Unit = {},
 ) {
     TeamsScreen(
         openAuthentication = openAuthentication,
+        openCreateTeam = openCreateTeam,
+        openTeamFilters = openTeamFilters,
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TeamsScreen(
     viewModel: TeamViewModel = hiltViewModel(),
     openAuthentication: () -> Unit = {},
+    openCreateTeam: () -> Unit = {},
+    openTeamFilters: () -> Unit = {},
 ) {
-    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val t = LocalAppTranslator.current
+
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle(true)
 
     val incidentsData by viewModel.incidentsData.collectAsStateWithLifecycle()
 
@@ -43,29 +69,127 @@ private fun TeamsScreen(
         { showIncidentPicker = true }
     }
 
-    val t = LocalAppTranslator.current
+    val viewState by viewModel.viewState.collectAsStateWithLifecycle()
+
+
+    val pullRefreshState = rememberPullToRefreshState()
+    if (pullRefreshState.isRefreshing) {
+        LaunchedEffect(true) {
+            viewModel.refreshTeams()
+            pullRefreshState.endRefresh()
+        }
+    }
+
     Box {
         Column {
             AppTopBar(
-                modifier = Modifier,
                 dataProvider = viewModel.appTopBarDataProvider,
                 openAuthentication = openAuthentication,
                 onOpenIncidents = openIncidentsSelect,
             )
 
-            Text(
-                text = t("~~My Teams"),
-                modifier = listItemModifier,
-                style = LocalFontStyles.current.header1,
-            )
+            if (viewState is TeamsViewState.Success) {
+                val successState = viewState as TeamsViewState.Success
+                val incidentTeams = successState.teams
+                val listState = rememberLazyListState()
+                LazyColumn(
+                    modifier = Modifier
+                        .nestedScroll(pullRefreshState.nestedScrollConnection)
+                        .fillMaxHeight(),
+                    state = listState,
+                    verticalArrangement = listItemSpacedBy,
+                ) {
+                    item(
+                        key = "my-teams",
+                        contentType = "title-text-item",
+                    ) {
+                        Text(
+                            text = t("~~My Teams"),
+                            modifier = listItemModifier,
+                            style = LocalFontStyles.current.header1,
+                        )
+                    }
 
-            // TODO List teams
+                    if (incidentTeams.myTeams.isEmpty()) {
+                        item(
+                            key = "not-in-teams",
+                            contentType = "subtitle-text-item",
+                        ) {
+                            Text(
+                                text = t("~~You don't have a team yet"),
+                                modifier = Modifier.listItemHorizontalPadding(),
+                                style = LocalFontStyles.current.header2,
+                            )
+                        }
+                    } else {
+                        items(
+                            incidentTeams.myTeams,
+                            key = { it.id },
+                            contentType = { "team-item" },
+                        ) {
+                            TeamView(it)
+                        }
+                    }
 
-            // TODO Create team action
+                    item(
+                        key = "create-team",
+                        contentType = "primary-action",
+                    ) {
+                        CrisisCleanupButton(
+                            modifier = listItemModifier,
+                            text = t("~~Create team"),
+                            onClick = openCreateTeam,
+                            enabled = false,
+                        )
+                    }
 
-            // TODO All (other) teams
+                    if (incidentTeams.otherTeams.isEmpty()) {
+                        item(
+                            key = "no-other-team",
+                            contentType = "subtitle-text-item",
+                        ) {
+                            Text(
+                                text = t("~~No other teams"),
+                                modifier = Modifier.listItemHorizontalPadding()
+                                    .listItemTopPadding(),
+                                style = LocalFontStyles.current.header2,
+                            )
+                        }
+                    } else {
+                        item(
+                            key = "join-team",
+                            contentType = "subtitle-text-item",
+                        ) {
+                            Text(
+                                text = t("~~Join a team"),
+                                modifier = Modifier.listItemHorizontalPadding()
+                                    .listItemTopPadding(),
+                                style = LocalFontStyles.current.header2,
+                            )
+                        }
+
+                        // TODO Search and filter
+
+                        // TODO All (other) teams
+                        items(
+                            incidentTeams.otherTeams,
+                            key = { it.id },
+                            contentType = { "team-item" },
+                        ) {
+                            TeamView(it)
+                        }
+                    }
+                }
+            }
         }
+
         BusyIndicatorFloatingTopCenter(isLoading)
+
+        PullToRefreshContainer(
+            modifier = Modifier
+                .align(Alignment.TopCenter),
+            state = pullRefreshState,
+        )
     }
 
     if (showIncidentPicker) {
@@ -82,7 +206,7 @@ private fun TeamsScreen(
             incidentsData = incidentsData,
             selectedIncidentId = selectedIncidentId,
             onSelectIncident = setSelected,
-            onRefreshIncidents = viewModel::refreshIncidentsAsync,
+            onRefreshIncidents = viewModel::refreshIncidents,
         )
     }
 }
@@ -91,4 +215,24 @@ private fun TeamsScreen(
 internal fun TeamView(
     team: CleanupTeam,
 ) {
+    CardSurface {
+        Column(
+            listItemModifier,
+            verticalArrangement = listItemSpacedByHalf,
+        ) {
+            Row(horizontalArrangement = listItemSpacedBy) {
+                Text(
+                    team.name,
+                    Modifier.weight(1f),
+                    style = LocalFontStyles.current.header4,
+                )
+            }
+            Row(horizontalArrangement = listItemSpacedBy) {
+                // TODO Cases statistics
+            }
+            Row(horizontalArrangement = listItemSpacedByHalf) {
+                // TODO Avatars and equipment
+            }
+        }
+    }
 }
