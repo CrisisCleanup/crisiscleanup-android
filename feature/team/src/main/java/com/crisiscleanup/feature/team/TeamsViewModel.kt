@@ -77,10 +77,12 @@ class TeamViewModel @Inject constructor(
                 return@flatMapLatest flowOf(TeamsViewState.Loading)
             }
 
-            fun parseProfiles(teams: List<CleanupTeam>): Pair<
-                    Map<Long, PersonContact>,
-                    Collection<Long>,
-                    > {
+            fun parseProfiles(
+                teams: List<CleanupTeam>,
+            ): Pair<
+                Map<Long, PersonContact>,
+                Collection<Long>,
+                > {
                 val profileLookup = teams.flatMap(CleanupTeam::members)
                     .filter { it.profilePictureUri.isNotBlank() }
                     .associateBy(PersonContact::id)

@@ -5,7 +5,13 @@ data class CleanupTeam(
     val name: String,
     val notes: String,
     val caseCount: Int,
-    val caseCompleteCount: Int,
+    private val caseCompleteCount: Int,
+    val caseCompletePercentage: Int =
+        if (caseCount > 0) {
+            (caseCompleteCount.toFloat() / caseCount * 100).toInt()
+        } else {
+            0
+        },
     val incidentId: Long,
     val memberIds: List<Long>,
     val members: List<PersonContact>,

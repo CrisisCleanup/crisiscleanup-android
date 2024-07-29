@@ -43,6 +43,7 @@ import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.listItemTopPadding
 import com.crisiscleanup.core.designsystem.theme.neutralBackgroundColor
+import com.crisiscleanup.core.designsystem.theme.neutralFontColor
 import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.selectincident.SelectIncidentDialog
@@ -184,7 +185,6 @@ private fun TeamsScreen(
 
                         // TODO Search and filter
 
-                        // TODO All (other) teams
                         items(
                             incidentTeams.otherTeams,
                             key = { it.id },
@@ -261,8 +261,12 @@ internal fun TeamView(
                         .replace("{case_count}", "$caseCount"),
                 )
 
-                if (caseCount > 0) {
-                    // TODO Completion percentage
+                if (team.caseCompletePercentage > 0) {
+                    Text(
+                        t("~~{percent_complete}% cases completed")
+                            .replace("{percent_complete}", "${team.caseCompletePercentage}"),
+                        color = neutralFontColor,
+                    )
                 }
             }
 
@@ -289,7 +293,6 @@ internal fun TeamView(
                     }
 
                     if (memberCount > 2) {
-                        // TODO Rounded text
                         Box(
                             modifier = Modifier
                                 .size(LocalDimensions.current.avatarCircleRadius)
