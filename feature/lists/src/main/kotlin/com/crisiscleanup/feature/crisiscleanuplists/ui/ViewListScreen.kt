@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,12 +41,14 @@ import com.crisiscleanup.core.designsystem.component.WorksiteAddressButton
 import com.crisiscleanup.core.designsystem.component.WorksiteAddressView
 import com.crisiscleanup.core.designsystem.component.WorksiteCallButton
 import com.crisiscleanup.core.designsystem.component.WorksiteNameView
+import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemCenterSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
+import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
 import com.crisiscleanup.core.model.data.CrisisCleanupList
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
@@ -97,6 +101,7 @@ internal fun ViewListRoute(
                     ListDetailsView(
                         list,
                         objectData,
+                        successState.invalidDataCount,
                         onOpenList,
                         viewModel::onOpenWorksite,
                         rememberKey = viewModel,
@@ -104,7 +109,10 @@ internal fun ViewListRoute(
                 }
 
                 is ViewListViewState.Error -> {
-                    Text((viewState as ViewListViewState.Error).message)
+                    Text(
+                        (viewState as ViewListViewState.Error).message,
+                        listItemModifier,
+                    )
                 }
 
                 else -> {}
@@ -154,9 +162,36 @@ internal fun ViewListRoute(
 }
 
 @Composable
+private fun InvalidItemsDescription(
+    count: Int,
+) {
+    if (count > 0) {
+        val t = LocalAppTranslator.current
+
+        val invalidDataMessage = t("list.missing_list_data")
+            .replace("{item_count}", "$count")
+        Row(
+            listItemModifier,
+            horizontalArrangement = listItemSpacedByHalf,
+        ) {
+            Icon(
+                CrisisCleanupIcons.Warning,
+                null,
+                tint = primaryOrangeColor,
+            )
+            Text(
+                invalidDataMessage,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+    }
+}
+
+@Composable
 private fun ListDetailsView(
     list: CrisisCleanupList,
     objectData: List<Any?>,
+    invalidDataCount: Int,
     onOpenList: (Long) -> Unit,
     onOpenWorksite: (Worksite) -> Unit,
     rememberKey: Any,
@@ -164,6 +199,8 @@ private fun ListDetailsView(
     val t = LocalAppTranslator.current
 
     if (objectData.isEmpty()) {
+        InvalidItemsDescription(invalidDataCount)
+
         Text(
             t("list.unsupported_list_explanation")
                 .replace("{list_name}", list.name),
@@ -207,6 +244,8 @@ private fun ListDetailsView(
                     Text(list.updatedAt.relativeTime)
                 }
 
+                InvalidItemsDescription(invalidDataCount)
+
                 val description = list.description.trim()
                 if (description.isNotBlank()) {
                     Text(
@@ -248,7 +287,10 @@ private fun ListDetailsView(
 
                 else -> {
                     item {
-                        Text(t("list.not_supported_by_app"))
+                        Text(
+                            t("list.not_supported_by_app"),
+                            listItemModifier,
+                        )
                     }
                 }
             }

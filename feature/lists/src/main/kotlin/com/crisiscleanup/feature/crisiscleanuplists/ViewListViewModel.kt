@@ -64,8 +64,7 @@ class ViewListViewModel @Inject constructor(
     val viewState = listsRepository.streamList(listId)
         .mapLatest { list ->
             if (list == EmptyList) {
-                val listNotFound =
-                    translator("list.not_found_deleted")
+                val listNotFound = translator("list.not_found_deleted")
                 return@mapLatest ViewListViewState.Error(listNotFound)
             }
 
@@ -77,7 +76,9 @@ class ViewListViewModel @Inject constructor(
             val objectData = objectIds.map { id ->
                 lookup[id]
             }
-            ViewListViewState.Success(list, objectData)
+            val validObjectData = objectData.filterNotNull()
+            val invalidDataCount = objectData.size - validObjectData.size
+            ViewListViewState.Success(list, validObjectData, invalidDataCount)
         }
         .flowOn(ioDispatcher)
         .stateIn(
@@ -208,6 +209,7 @@ sealed interface ViewListViewState {
     data class Success(
         val list: CrisisCleanupList,
         val objectData: List<Any?>,
+        val invalidDataCount: Int,
     ) : ViewListViewState
 
     data class Error(
