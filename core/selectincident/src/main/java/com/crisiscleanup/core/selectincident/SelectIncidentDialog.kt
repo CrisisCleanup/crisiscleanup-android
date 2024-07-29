@@ -22,6 +22,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -38,6 +39,7 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.domain.IncidentsData
 import com.crisiscleanup.core.model.data.Incident
+import kotlinx.coroutines.launch
 
 @Composable
 private fun WrapInDialog(
@@ -134,11 +136,16 @@ private fun ColumnScope.IncidentSelectContent(
         }
     }
 
+    val listState = rememberLazyListState()
     val pullRefreshState = rememberPullToRefreshState()
+    val coroutineScope = rememberCoroutineScope()
     if (pullRefreshState.isRefreshing) {
         LaunchedEffect(true) {
             onRefreshIncidents()
             pullRefreshState.endRefresh()
+            coroutineScope.launch {
+                listState.animateScrollToItem(0)
+            }
         }
     }
     Box(
@@ -146,7 +153,6 @@ private fun ColumnScope.IncidentSelectContent(
             .weight(weight = 1f, fill = false)
             .nestedScroll(pullRefreshState.nestedScrollConnection),
     ) {
-        val listState = rememberLazyListState()
         LazyColumn(
             state = listState,
             modifier = modifier,
