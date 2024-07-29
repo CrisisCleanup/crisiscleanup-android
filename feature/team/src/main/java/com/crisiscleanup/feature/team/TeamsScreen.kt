@@ -1,5 +1,6 @@
 package com.crisiscleanup.feature.team
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,7 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.appcomponent.ui.AppTopBar
@@ -33,13 +33,16 @@ import com.crisiscleanup.core.designsystem.component.AvatarIcon
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CardSurface
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
+import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemBottomPadding
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
+import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.listItemTopPadding
+import com.crisiscleanup.core.designsystem.theme.neutralBackgroundColor
 import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.selectincident.SelectIncidentDialog
@@ -147,7 +150,7 @@ private fun TeamsScreen(
                         contentType = "primary-action",
                     ) {
                         CrisisCleanupButton(
-                            modifier = listItemModifier,
+                            modifier = Modifier.listItemPadding(),
                             text = t("~~Create team"),
                             onClick = openCreateTeam,
                             enabled = false,
@@ -274,8 +277,7 @@ internal fun TeamView(
 
                         Box(
                             modifier = Modifier
-                                // TODO Common dimensions
-                                .size(36.dp)
+                                .size(LocalDimensions.current.avatarCircleRadius)
                                 .clip(CircleShape),
                             contentAlignment = Alignment.Center,
                         ) {
@@ -288,7 +290,15 @@ internal fun TeamView(
 
                     if (memberCount > 2) {
                         // TODO Rounded text
-                        Text("+${memberCount - 3}")
+                        Box(
+                            modifier = Modifier
+                                .size(LocalDimensions.current.avatarCircleRadius)
+                                .clip(CircleShape)
+                                .background(neutralBackgroundColor),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text("+${memberCount - 3}")
+                        }
                     }
 
                     // TODO equipment, and count

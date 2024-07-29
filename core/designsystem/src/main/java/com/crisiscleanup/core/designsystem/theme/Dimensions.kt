@@ -24,6 +24,7 @@ data class Dimensions(
      * Space between row items on varying screen sizes
      */
     val itemInnerPaddingHorizontalFlexible: Dp = 16.dp,
+    val avatarCircleRadius: Dp = 32.dp,
     val isThinScreenWidth: Boolean = false,
     val isLandscape: Boolean = false,
     val isPortrait: Boolean = true,
