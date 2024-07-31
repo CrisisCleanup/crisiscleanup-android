@@ -1,6 +1,7 @@
-package com.crisiscleanup.feature.team
+package com.crisiscleanup.feature.team.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -47,15 +48,19 @@ import com.crisiscleanup.core.designsystem.theme.neutralFontColor
 import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.selectincident.SelectIncidentDialog
+import com.crisiscleanup.feature.team.TeamsViewModel
+import com.crisiscleanup.feature.team.TeamsViewState
 
 @Composable
 internal fun TeamsRoute(
     openAuthentication: () -> Unit = {},
+    openViewTeam: (Long) -> Unit = {},
     openCreateTeam: () -> Unit = {},
     openTeamFilters: () -> Unit = {},
 ) {
     TeamsScreen(
         openAuthentication = openAuthentication,
+        openViewTeam = openViewTeam,
         openCreateTeam = openCreateTeam,
         openTeamFilters = openTeamFilters,
     )
@@ -64,8 +69,9 @@ internal fun TeamsRoute(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TeamsScreen(
-    viewModel: TeamViewModel = hiltViewModel(),
+    viewModel: TeamsViewModel = hiltViewModel(),
     openAuthentication: () -> Unit = {},
+    openViewTeam: (Long) -> Unit = {},
     openCreateTeam: () -> Unit = {},
     openTeamFilters: () -> Unit = {},
 ) {
@@ -142,6 +148,7 @@ private fun TeamsScreen(
                             TeamView(
                                 it,
                                 profilePictureLookup,
+                                openViewTeam,
                             )
                         }
                     }
@@ -193,6 +200,7 @@ private fun TeamsScreen(
                             TeamView(
                                 it,
                                 profilePictureLookup,
+                                openViewTeam,
                             )
                         }
                     }
@@ -236,12 +244,15 @@ private fun TeamsScreen(
 internal fun TeamView(
     team: CleanupTeam,
     profilePictureLookup: Map<Long, String>,
+    openViewTeam: (Long) -> Unit = {},
 ) {
     val t = LocalAppTranslator.current
 
     CardSurface {
         Column(
-            listItemModifier,
+            Modifier
+                .clickable(onClick = { openViewTeam(team.id) })
+                .then(listItemModifier),
             verticalArrangement = listItemSpacedByHalf,
         ) {
             Row(horizontalArrangement = listItemSpacedBy) {

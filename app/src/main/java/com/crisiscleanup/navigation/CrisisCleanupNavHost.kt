@@ -45,7 +45,9 @@ import com.crisiscleanup.feature.organizationmanage.navigation.navigateToRequest
 import com.crisiscleanup.feature.organizationmanage.navigation.requestRedeployScreen
 import com.crisiscleanup.feature.syncinsights.navigation.navigateToSyncInsights
 import com.crisiscleanup.feature.syncinsights.navigation.syncInsightsScreen
-import com.crisiscleanup.feature.team.navigation.teamScreen
+import com.crisiscleanup.feature.team.navigation.navigateToViewTeam
+import com.crisiscleanup.feature.team.navigation.teamsScreen
+import com.crisiscleanup.feature.team.navigation.viewTeamScreen
 import com.crisiscleanup.feature.userfeedback.navigation.navigateToUserFeedback
 import com.crisiscleanup.feature.userfeedback.navigation.userFeedbackScreen
 
@@ -123,6 +125,12 @@ fun CrisisCleanupNavHost(
     val navToTransferWorkTypeNonEditing =
         remember(navController) { { navController.navigateToTransferWorkType(false) } }
 
+    val openViewTeam = remember(navController) {
+        { teamId: Long ->
+            navController.navigateToViewTeam(teamId)
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -149,7 +157,13 @@ fun CrisisCleanupNavHost(
             caseTransferWorkType = navToTransferWorkTypeNonEditing,
         )
         dashboardScreen()
-        teamScreen()
+        teamsScreen(
+            nestedGraphs = {
+                viewTeamScreen(onBack)
+            },
+            openAuthentication = openAuthentication,
+            openViewTeam = openViewTeam,
+        )
         menuScreen(
             openAuthentication = openAuthentication,
             openLists = openLists,

@@ -52,4 +52,6 @@ object RouteConstant {
 
     const val LISTS_ROUTE = "crisis_cleanup_lists"
     const val VIEW_LIST_ROUTE = "view_list"
+
+    const val VIEW_TEAM_ROUTE = "view_team"
 }

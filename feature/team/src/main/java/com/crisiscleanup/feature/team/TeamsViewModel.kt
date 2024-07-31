@@ -44,7 +44,7 @@ import kotlin.time.Duration.Companion.seconds
 
 @OptIn(FlowPreview::class)
 @HiltViewModel
-class TeamViewModel @Inject constructor(
+class TeamsViewModel @Inject constructor(
     incidentsRepository: IncidentsRepository,
     worksitesRepository: WorksitesRepository,
     val incidentSelector: IncidentSelector,
