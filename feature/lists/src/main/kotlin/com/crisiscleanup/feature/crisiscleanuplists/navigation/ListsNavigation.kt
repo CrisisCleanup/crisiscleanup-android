@@ -5,7 +5,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
-import androidx.navigation.NavOptions
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
@@ -25,8 +24,8 @@ internal class ViewListArgs(val listId: Long) {
     )
 }
 
-fun NavController.navigateToLists(navOptions: NavOptions? = null) {
-    this.navigate(LISTS_ROUTE, navOptions)
+fun NavController.navigateToLists() {
+    this.navigate(LISTS_ROUTE)
 }
 
 fun NavController.navigateToViewList(listId: Long) {

@@ -90,9 +90,7 @@ fun CrisisCleanupNavHost(
         }
     }
 
-    val replaceRouteViewCase = remember(navController) {
-        { ids: ExistingWorksiteIdentifier -> navController.rerouteToCaseChange(ids) }
-    }
+    val replaceRouteViewCase = navController::rerouteToCaseChange
 
     val openViewCase = remember(navController) {
         { ids: ExistingWorksiteIdentifier ->
@@ -100,36 +98,22 @@ fun CrisisCleanupNavHost(
         }
     }
 
-    val openFilterCases = remember(navController) { { navController.navigateToCasesFilter() } }
+    val openFilterCases = navController::navigateToCasesFilter
 
-    val openInviteTeammate =
-        remember(navController) { { navController.navigateToInviteTeammate() } }
+    val openInviteTeammate = navController::navigateToInviteTeammate
 
-    val openRequestRedeploy =
-        remember(navController) { { navController.navigateToRequestRedeploy() } }
+    val openRequestRedeploy = navController::navigateToRequestRedeploy
 
-    val openUserFeedback = remember(navController) { { navController.navigateToUserFeedback() } }
+    val openUserFeedback = navController::navigateToUserFeedback
 
-    val openLists = remember(navController) { { navController.navigateToLists() } }
-    val openList = remember(navController) {
-        { listId: Long ->
-            navController.navigateToViewList(listId)
-        }
-    }
-
-    val openSyncLogs = remember(navController) { { navController.navigateToSyncInsights() } }
+    val openLists = navController::navigateToLists
+    val openList = navController::navigateToViewList
 
     val navToCaseAddFlagNonEditing =
         remember(navController) { { navController.navigateToCaseAddFlag(false) } }
 
     val navToTransferWorkTypeNonEditing =
         remember(navController) { { navController.navigateToTransferWorkType(false) } }
-
-    val openViewTeam = remember(navController) {
-        { teamId: Long ->
-            navController.navigateToViewTeam(teamId)
-        }
-    }
 
     NavHost(
         navController = navController,
@@ -162,7 +146,7 @@ fun CrisisCleanupNavHost(
                 viewTeamScreen(onBack)
             },
             openAuthentication = openAuthentication,
-            openViewTeam = openViewTeam,
+            openViewTeam = navController::navigateToViewTeam,
         )
         menuScreen(
             openAuthentication = openAuthentication,
@@ -170,7 +154,7 @@ fun CrisisCleanupNavHost(
             openInviteTeammate = openInviteTeammate,
             openRequestRedeploy = openRequestRedeploy,
             openUserFeedback = openUserFeedback,
-            openSyncLogs = openSyncLogs,
+            openSyncLogs = navController::navigateToSyncInsights,
         )
         viewSingleImageScreen(onBack)
         viewWorksiteImagesScreen(onBack)

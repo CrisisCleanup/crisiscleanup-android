@@ -37,12 +37,9 @@ fun NavGraphBuilder.volunteerOrgScreen(
     onBack: () -> Unit,
 ) {
     composable(route = RouteConstant.VOLUNTEER_ORG_ROUTE) {
-        val navToPasteOrgInviteLink =
-            remember(navController) { { navController.navigateToVolunteerPasteInviteLink() } }
-        val navToRequestOrgAccess =
-            remember(navController) { { navController.navigateToVolunteerRequestAccess() } }
-        val navToScanOrgQrCode =
-            remember(navController) { { navController.navigateToVolunteerScanQrCode() } }
+        val navToPasteOrgInviteLink = navController::navigateToVolunteerPasteInviteLink
+        val navToRequestOrgAccess = navController::navigateToVolunteerRequestAccess
+        val navToScanOrgQrCode = navController::navigateToVolunteerScanQrCode
 
         VolunteerOrgRoute(
             onBack = onBack,

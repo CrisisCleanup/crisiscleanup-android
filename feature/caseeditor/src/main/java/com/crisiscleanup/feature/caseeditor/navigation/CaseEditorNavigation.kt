@@ -19,7 +19,6 @@ import com.crisiscleanup.core.appnav.RouteConstant.CASE_SHARE_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.VIEW_CASE_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.VIEW_CASE_TRANSFER_WORK_TYPES_ROUTE
 import com.crisiscleanup.core.appnav.WORKSITE_ID_ARG
-import com.crisiscleanup.core.appnav.WorksiteImagesArgs
 import com.crisiscleanup.core.appnav.navigateToExistingCase
 import com.crisiscleanup.core.appnav.navigateToWorksiteImages
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
@@ -90,22 +89,12 @@ fun NavGraphBuilder.caseEditorScreen(
             },
         ),
     ) {
-        val navToNewCase = remember(navController) {
-            { incidentId: Long -> navController.rerouteToNewCase(incidentId) }
-        }
-        val navToChangedIncident = remember(navController) {
-            { ids: ExistingWorksiteIdentifier -> navController.rerouteToCaseChange(ids) }
-        }
-        val navToEditCase = remember(navController) {
-            { ids: ExistingWorksiteIdentifier -> navController.rerouteToCaseEdit(ids) }
-        }
-        val onEditSearchAddress =
-            remember(navController) { { navController.navigateToCaseEditSearchAddress() } }
-        val onEditMoveLocationOnMap =
-            remember(navController) { { navController.navigateToCaseEditLocationMapMove() } }
-        val navToWorksiteImages = remember(navController) {
-            { args: WorksiteImagesArgs -> navController.navigateToWorksiteImages(args) }
-        }
+        val navToNewCase = navController::rerouteToNewCase
+        val navToChangedIncident = navController::rerouteToCaseChange
+        val navToEditCase = navController::rerouteToCaseEdit
+        val onEditSearchAddress = navController::navigateToCaseEditSearchAddress
+        val onEditMoveLocationOnMap = navController::navigateToCaseEditLocationMapMove
+        val navToWorksiteImages = navController::navigateToWorksiteImages
         CreateEditCaseRoute(
             onBack = onBackClick,
             changeNewIncidentCase = navToNewCase,
@@ -148,7 +137,7 @@ fun NavGraphBuilder.existingCaseScreen(
             },
         ),
     ) {
-        val navBackToCases = remember(navController) { { navController.popToWork() } }
+        val navBackToCases = navController::popToWork
         val navToEditCase = remember(navController) {
             { ids: ExistingWorksiteIdentifier ->
                 navController.navigateToCaseEditor(
@@ -162,13 +151,11 @@ fun NavGraphBuilder.existingCaseScreen(
                 navController.navigateToTransferWorkType(true)
             }
         }
-        val navToWorksiteImages = remember(navController) {
-            { args: WorksiteImagesArgs -> navController.navigateToWorksiteImages(args) }
-        }
+        val navToWorksiteImages = navController::navigateToWorksiteImages
         val navToCaseAddFlag =
             remember(navController) { { navController.navigateToCaseAddFlag(true) } }
-        val navToCaseShare = remember(navController) { { navController.navigateToCaseShare() } }
-        val navToCaseHistory = remember(navController) { { navController.navigateToCaseHistory() } }
+        val navToCaseShare = navController::navigateToCaseShare
+        val navToCaseHistory = navController::navigateToCaseHistory
         EditExistingCaseRoute(
             onBack = onBackClick,
             onBackToCases = navBackToCases,
@@ -225,12 +212,9 @@ fun NavGraphBuilder.caseEditSearchAddressScreen(
     onBack: () -> Unit,
 ) {
     composable(CASE_EDITOR_SEARCH_ADDRESS_ROUTE) {
-        val navToEditCase = remember(navController) {
-            { ids: ExistingWorksiteIdentifier -> navController.rerouteToCaseEdit(ids) }
-        }
         EditCaseAddressSearchRoute(
             onBack = onBack,
-            openExistingCase = navToEditCase,
+            openExistingCase = navController::rerouteToCaseEdit,
         )
     }
 }
