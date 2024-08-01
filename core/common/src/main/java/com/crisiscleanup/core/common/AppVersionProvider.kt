@@ -35,12 +35,11 @@ class AndroidAppVersionProvider @Inject constructor(
             context.packageManager.getPackageInfo(context.packageName, 0)
         }
 
-    override val version: Pair<Long, String>
-        get() {
-            val code = packageInfo.longVersionCode
-            val name = packageInfo.versionName
-            return Pair(code, name)
-        }
+    override val version: Pair<Long, String> by lazy {
+        val code = packageInfo.longVersionCode
+        val name = packageInfo.versionName
+        Pair(code, name)
+    }
 
     override val versionCode: Long
         get() = version.first
