@@ -56,3 +56,34 @@ data class PersonOrganizationCrossRef(
     @ColumnInfo("organization_id")
     val organizationId: Long,
 )
+
+@Entity(
+    "person_to_equipment",
+    primaryKeys = ["id", "equipment_id"],
+    foreignKeys = [
+        ForeignKey(
+            entity = PersonContactEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+        ForeignKey(
+            entity = EquipmentEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["equipment_id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+    indices = [
+        Index(
+            value = ["equipment_id", "id"],
+            name = "idx_equipment_to_person",
+        ),
+    ],
+)
+data class PersonEquipmentCrossRef(
+    @ColumnInfo("id")
+    val id: Long,
+    @ColumnInfo("equipment_id")
+    val equipmentId: Long,
+)

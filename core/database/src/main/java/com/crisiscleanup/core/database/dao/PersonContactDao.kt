@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
 import com.crisiscleanup.core.database.model.PersonContactEntity
+import com.crisiscleanup.core.database.model.PersonEquipmentCrossRef
 import com.crisiscleanup.core.database.model.PersonOrganizationCrossRef
 import com.crisiscleanup.core.database.model.PopulatedPersonContactOrganization
 
@@ -43,4 +44,16 @@ interface PersonContactDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertIgnore(contacts: List<PersonContactEntity>)
+
+    @Transaction
+    @Query(
+        """
+        DELETE FROM person_to_equipment
+        WHERE id=:personId AND equipment_id NOT IN(:equipmentIds)
+        """,
+    )
+    fun deleteUnspecifiedEquipment(personId: Long, equipmentIds: Collection<Long>)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insertIgnore(personEquipments: Collection<PersonEquipmentCrossRef>)
 }

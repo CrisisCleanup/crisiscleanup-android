@@ -14,6 +14,7 @@ import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.common.sync.SyncResult
 import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.EquipmentRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
 import com.crisiscleanup.core.data.repository.WorkTypeStatusRepository
@@ -49,6 +50,7 @@ class AppSyncer @Inject constructor(
     private val languageRepository: LanguageTranslationsRepository,
     private val statusRepository: WorkTypeStatusRepository,
     private val worksiteChangeRepository: WorksiteChangeRepository,
+    private val equipmentRepository: EquipmentRepository,
     private val appPreferences: LocalAppPreferencesDataSource,
     @Logger(CrisisCleanupLoggers.Sync) private val appLogger: AppLogger,
     private val syncLogger: SyncLogger,
@@ -379,6 +381,25 @@ class AppSyncer @Inject constructor(
             SyncResult.Success("Statuses pulled")
         } catch (e: Exception) {
             SyncResult.Error(e.message ?: "Statuses pull fail")
+        }
+    }
+
+    override fun appPullEquipment(force: Boolean) {
+        applicationScope.launch(ioDispatcher) {
+            equipmentRepository.saveEquipment(force)
+        }
+    }
+
+    override suspend fun syncPullEquipment(): SyncResult {
+        if (isNotOnline()) {
+            return SyncResult.NotAttempted("not-online")
+        }
+
+        return try {
+            equipmentRepository.saveEquipment()
+            SyncResult.Success("Equipment pulled")
+        } catch (e: Exception) {
+            SyncResult.Error(e.message ?: "Equipment pull fail")
         }
     }
 

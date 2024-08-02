@@ -14,6 +14,7 @@ import com.crisiscleanup.core.model.data.closedWorkTypeStatuses
 import com.crisiscleanup.core.model.data.statusFromLiteral
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkTeam
+import com.crisiscleanup.core.network.model.NetworkUserEquipment
 import com.crisiscleanup.core.network.model.tryThrowException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -64,16 +65,33 @@ class CrisisCleanupTeamsRepository @Inject constructor(
                 incidentId = incidentId,
                 name = networkTeam.name,
                 notes = networkTeam.notes ?: "",
-                color = "",
+                color = networkTeam.color,
                 caseCount = networkTeam.assignedWork?.size ?: 0,
                 completeCount = completeCount,
             )
         }
         val teamMemberLookup = mutableMapOf<Long, List<Long>>()
+        val teamEquipmentLookup = mutableMapOf<Long, Set<Long>>()
+        val memberEquipmentLookup = mutableMapOf<Long, MutableSet<Long>>()
         networkTeams.forEach { networkTeam ->
             teamMemberLookup[networkTeam.id] = networkTeam.users ?: emptyList()
+
+            teamEquipmentLookup[networkTeam.id] =
+                networkTeam.userEquipment.flatMap(NetworkUserEquipment::equipmentIds).toSet()
+            networkTeam.userEquipment.forEach { userEquipment ->
+                if (!memberEquipmentLookup.contains(userEquipment.userId)) {
+                    memberEquipmentLookup[userEquipment.userId] = mutableSetOf()
+                }
+                memberEquipmentLookup[userEquipment.userId]!!.addAll(userEquipment.equipmentIds)
+            }
         }
-        teamDaoPlus.syncTeams(teamEntities, teamMemberLookup, syncedAt)
+        teamDaoPlus.syncTeams(
+            teamEntities,
+            teamMemberLookup,
+            teamEquipmentLookup,
+            memberEquipmentLookup,
+            syncedAt,
+        )
     }
 
     override suspend fun syncTeams(incidentId: Long) {
