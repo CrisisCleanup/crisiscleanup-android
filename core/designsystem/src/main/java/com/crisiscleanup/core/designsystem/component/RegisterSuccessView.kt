@@ -24,6 +24,8 @@ import com.crisiscleanup.core.designsystem.theme.statusClosedColor
 fun RegisterSuccessView(
     title: String,
     text: String,
+    actionText: String = "",
+    onAction: () -> Unit = {},
 ) {
     Column(
         Modifier.fillMaxSize(),
@@ -51,6 +53,14 @@ fun RegisterSuccessView(
             textAlign = TextAlign.Center,
         )
 
+        if (actionText.isNotBlank()) {
+            CrisisCleanupButton(
+                modifier = listItemModifier,
+                text = actionText,
+                onClick = onAction,
+            )
+        }
+
         Spacer(Modifier.weight(1f))
 
         CrisisCleanupLogoRow(Modifier, true)
@@ -67,6 +77,7 @@ private fun RegisterSuccessViewPreview() {
         RegisterSuccessView(
             title = "Success title",
             text = "Very long overflowing message spilling over the extremities",
+            actionText = "Login",
         )
     }
 }
