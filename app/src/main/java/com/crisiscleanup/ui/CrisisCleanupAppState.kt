@@ -133,7 +133,7 @@ class CrisisCleanupAppState(
             CASES -> CASES_GRAPH_ROUTE
             TEAM -> TEAM_ROUTE
             MENU -> MENU_ROUTE
-            else -> TEAM_ROUTE
+            else -> CASES_GRAPH_ROUTE
         }
     }
 
