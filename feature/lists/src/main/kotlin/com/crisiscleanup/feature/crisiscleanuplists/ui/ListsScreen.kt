@@ -41,7 +41,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.crisiscleanup.core.common.relativeTime
-import com.crisiscleanup.core.commonassets.getDisasterIcon
+import com.crisiscleanup.core.commonassets.ui.getDisasterIcon
 import com.crisiscleanup.core.commoncase.ui.IncidentHeaderView
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter

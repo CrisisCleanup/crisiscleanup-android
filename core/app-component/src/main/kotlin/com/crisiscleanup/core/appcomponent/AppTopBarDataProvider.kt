@@ -1,7 +1,7 @@
 package com.crisiscleanup.core.appcomponent
 
 import com.crisiscleanup.core.common.KeyResourceTranslator
-import com.crisiscleanup.core.commonassets.getDisasterIcon
+import com.crisiscleanup.core.commonassets.ui.getDisasterIcon
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository

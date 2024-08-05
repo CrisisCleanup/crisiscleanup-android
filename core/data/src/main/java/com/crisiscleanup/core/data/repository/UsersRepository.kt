@@ -76,7 +76,6 @@ class OfflineFirstUsersRepository @Inject constructor(
     ): List<PersonContact> {
         var profiles = personContactDao.getContacts(userIds)
 
-        // TODO Query update as profile pictures expire
         if (updateProfilePics &&
             profiles.any { it.entity.profilePictureUri.isBlank() }
         ) {

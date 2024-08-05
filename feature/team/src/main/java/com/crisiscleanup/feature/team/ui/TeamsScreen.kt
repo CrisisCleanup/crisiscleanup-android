@@ -29,6 +29,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.appcomponent.ui.AppTopBar
+import com.crisiscleanup.core.commoncase.ui.EquipmentIcon
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.AvatarIcon
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
@@ -241,6 +242,19 @@ private fun TeamsScreen(
 }
 
 @Composable
+private fun CirclePlusNumber(count: Int) {
+    Box(
+        modifier = Modifier
+            .size(LocalDimensions.current.avatarCircleRadius)
+            .clip(CircleShape)
+            .background(neutralBackgroundColor),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text("+$count")
+    }
+}
+
+@Composable
 internal fun TeamView(
     team: CleanupTeam,
     profilePictureLookup: Map<Long, String>,
@@ -282,8 +296,8 @@ internal fun TeamView(
             }
 
             val memberCount = team.members.size
-            // TODO Or has equipment
-            if (memberCount > 0) {
+            val equipmentCount = team.equipment.size
+            if (memberCount > 0 || equipmentCount > 0) {
                 Row(horizontalArrangement = listItemSpacedByHalf) {
                     team.members.forEachIndexed { i, contact ->
                         if (i > 2) {
@@ -304,18 +318,29 @@ internal fun TeamView(
                     }
 
                     if (memberCount > 2) {
+                        CirclePlusNumber(memberCount - 3)
+                    }
+
+                    Spacer(Modifier.weight(1f))
+
+                    team.equipment.forEachIndexed { i, equipment ->
+                        if (i > 2) {
+                            return@forEachIndexed
+                        }
+
                         Box(
                             modifier = Modifier
                                 .size(LocalDimensions.current.avatarCircleRadius)
-                                .clip(CircleShape)
-                                .background(neutralBackgroundColor),
+                                .clip(CircleShape),
                             contentAlignment = Alignment.Center,
                         ) {
-                            Text("+${memberCount - 3}")
+                            EquipmentIcon(equipment)
                         }
                     }
 
-                    // TODO equipment, and count
+                    if (equipmentCount > 2) {
+                        CirclePlusNumber(equipmentCount - 3)
+                    }
                 }
             }
         }

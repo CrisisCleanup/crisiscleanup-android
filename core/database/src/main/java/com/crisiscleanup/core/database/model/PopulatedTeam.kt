@@ -4,6 +4,7 @@ import androidx.room.Embedded
 import androidx.room.Junction
 import androidx.room.Relation
 import com.crisiscleanup.core.model.data.CleanupTeam
+import com.crisiscleanup.core.model.data.equipmentFromLiteral
 
 data class PopulatedTeam(
     @Embedded
@@ -48,6 +49,6 @@ fun PopulatedTeam.asExternalModel() = with(entity) {
         caseCompleteCount = completeCount,
         memberIds = memberIdRefs.map(TeamMemberCrossRef::contactId),
         members = members.map(PersonContactEntity::asExternalModel),
-        equipment = emptyList(),
+        equipment = equipments.map { equipmentFromLiteral(it.nameKey) },
     )
 }
