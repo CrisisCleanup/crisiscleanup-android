@@ -23,7 +23,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.common.ParsedPhoneNumber
 import com.crisiscleanup.core.common.relativeTime
-import com.crisiscleanup.core.commonassets.getDisasterIcon
+import com.crisiscleanup.core.commonassets.ui.getDisasterIcon
 import com.crisiscleanup.core.commoncase.model.addressQuery
 import com.crisiscleanup.core.commoncase.ui.ExplainWrongLocationDialog
 import com.crisiscleanup.core.commoncase.ui.IncidentHeaderView

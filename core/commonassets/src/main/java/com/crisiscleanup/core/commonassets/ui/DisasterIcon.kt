@@ -1,4 +1,4 @@
-package com.crisiscleanup.core.commonassets
+package com.crisiscleanup.core.commonassets.ui
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.padding
@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.crisiscleanup.core.commonassets.R
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContainerColor
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContentColor
 import com.crisiscleanup.core.model.data.Disaster

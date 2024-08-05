@@ -27,7 +27,7 @@ import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.radians
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.common.throttleLatest
-import com.crisiscleanup.core.commonassets.getDisasterIcon
+import com.crisiscleanup.core.commonassets.ui.getDisasterIcon
 import com.crisiscleanup.core.commoncase.TransferWorkTypeProvider
 import com.crisiscleanup.core.commoncase.WorksiteProvider
 import com.crisiscleanup.core.data.IncidentSelector
