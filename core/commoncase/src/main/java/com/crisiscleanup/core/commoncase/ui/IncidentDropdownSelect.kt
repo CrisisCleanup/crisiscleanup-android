@@ -17,7 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import com.crisiscleanup.core.commonassets.DisasterIcon
+import com.crisiscleanup.core.commonassets.ui.DisasterIcon
 import com.crisiscleanup.core.designsystem.component.TruncatedAppBarText
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha

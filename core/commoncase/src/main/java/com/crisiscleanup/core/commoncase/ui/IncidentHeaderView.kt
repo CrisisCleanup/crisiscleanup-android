@@ -13,8 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.crisiscleanup.core.commonassets.DisasterIcon
 import com.crisiscleanup.core.commonassets.R
+import com.crisiscleanup.core.commonassets.ui.DisasterIcon
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
