@@ -94,9 +94,13 @@ fun RequestOrgAccessRoute(
                 style = LocalFontStyles.current.header3,
             )
         } else if (isInviteRequested) {
+            val actionText =
+                if (viewModel.showEmailInput) "" else LocalAppTranslator.current("actions.login")
             RegisterSuccessView(
                 title = viewModel.requestSentTitle,
                 text = viewModel.requestSentText,
+                actionText = actionText,
+                onAction = clearStateOnBack,
             )
         } else {
             RequestOrgUserInfoInputView()

@@ -67,7 +67,7 @@ class CrisisCleanupAppState(
         @Composable get() = when (currentDestination?.route) {
             CASES_ROUTE -> CASES
             DASHBOARD_ROUTE -> DASHBOARD
-            TEAM_ROUTE -> TEAM
+            // TEAM_ROUTE -> TEAM
             MENU_ROUTE -> MENU
             else -> null
         }
@@ -116,7 +116,7 @@ class CrisisCleanupAppState(
      */
     val topLevelDestinations: List<TopLevelDestination> = listOf(
         CASES,
-        TEAM,
+        // TEAM,
         MENU,
     )
 
@@ -133,7 +133,7 @@ class CrisisCleanupAppState(
             CASES -> CASES_GRAPH_ROUTE
             TEAM -> TEAM_ROUTE
             MENU -> MENU_ROUTE
-            else -> TEAM_ROUTE
+            else -> CASES_GRAPH_ROUTE
         }
     }
 
