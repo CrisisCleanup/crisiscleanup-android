@@ -17,6 +17,7 @@ import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.DayNightPreviews
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
+import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.statusClosedColor
 
@@ -55,7 +56,7 @@ fun RegisterSuccessView(
 
         if (actionText.isNotBlank()) {
             CrisisCleanupButton(
-                modifier = listItemModifier,
+                modifier = fillWidthPadded,
                 text = actionText,
                 onClick = onAction,
             )
