@@ -14,6 +14,8 @@ dependencies {
     implementation(projects.core.designsystem)
     implementation(projects.core.network)
 
+    testImplementation(projects.core.testing)
+
     // Depending modules/apps likely need to compare ktx Instants
     api(libs.kotlinx.datetime)
 

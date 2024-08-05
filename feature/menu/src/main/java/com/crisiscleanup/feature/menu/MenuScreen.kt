@@ -1,6 +1,5 @@
 package com.crisiscleanup.feature.menu
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,13 +17,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,18 +32,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.crisiscleanup.core.commoncase.ui.IncidentDropdownSelect
+import com.crisiscleanup.core.appcomponent.ui.AppTopBar
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupOutlinedButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
-import com.crisiscleanup.core.designsystem.component.TopAppBarDefault
-import com.crisiscleanup.core.designsystem.component.TruncatedAppBarText
 import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.component.actionRoundCornerShape
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
@@ -80,7 +74,7 @@ internal fun MenuRoute(
 }
 
 @Composable
-internal fun MenuScreen(
+private fun MenuScreen(
     viewModel: MenuViewModel = hiltViewModel(),
     openAuthentication: () -> Unit = {},
     openInviteTeammate: () -> Unit = {},
@@ -91,19 +85,12 @@ internal fun MenuScreen(
 ) {
     val t = LocalAppTranslator.current
 
-    val screenTitle by viewModel.screenTitle.collectAsStateWithLifecycle()
-    val isHeaderLoading by viewModel.showHeaderLoading.collectAsState(false)
-
     val incidentsData by viewModel.incidentsData.collectAsStateWithLifecycle()
-    val disasterIconResId by viewModel.disasterIconResId.collectAsStateWithLifecycle()
 
     var showIncidentPicker by remember { mutableStateOf(false) }
     val openIncidentsSelect = remember(viewModel) {
         { showIncidentPicker = true }
     }
-
-    val isAccountExpired by viewModel.isAccountExpired.collectAsStateWithLifecycle()
-    val profilePictureUri by viewModel.profilePictureUri.collectAsStateWithLifecycle()
 
     val isSharingAnalytics by viewModel.isSharingAnalytics.collectAsStateWithLifecycle(false)
     val shareAnalytics = remember(viewModel) {
@@ -115,14 +102,9 @@ internal fun MenuScreen(
     val menuItemVisibility by viewModel.menuItemVisibility.collectAsStateWithLifecycle()
 
     Column(Modifier.fillMaxWidth()) {
-        TopBar(
-            modifier = Modifier,
-            title = screenTitle,
-            isAppHeaderLoading = isHeaderLoading,
-            profilePictureUri = profilePictureUri,
-            isAccountExpired = isAccountExpired,
+        AppTopBar(
+            dataProvider = viewModel.appTopBarDataProvider,
             openAuthentication = openAuthentication,
-            disasterIconResId = disasterIconResId,
             onOpenIncidents = openIncidentsSelect,
         )
 
@@ -246,49 +228,6 @@ internal fun MenuScreen(
             onRefreshIncidents = viewModel::refreshIncidentsAsync,
         )
     }
-}
-
-@OptIn(
-    ExperimentalMaterial3Api::class,
-)
-@Composable
-private fun TopBar(
-    modifier: Modifier = Modifier,
-    title: String = "",
-    isAppHeaderLoading: Boolean = false,
-    profilePictureUri: String = "",
-    isAccountExpired: Boolean = false,
-    openAuthentication: () -> Unit = {},
-    @DrawableRes disasterIconResId: Int = 0,
-    onOpenIncidents: (() -> Unit)? = null,
-) {
-    val t = LocalAppTranslator.current
-    val actionText = t("actions.account")
-    TopAppBarDefault(
-        modifier = modifier,
-        title = title,
-        profilePictureUri = profilePictureUri,
-        actionIcon = CrisisCleanupIcons.Account,
-        actionText = actionText,
-        isActionAttention = isAccountExpired,
-        onActionClick = openAuthentication,
-        onNavigationClick = null,
-        titleContent = @Composable {
-            // TODO Match height of visible part of app bar (not the entire app bar)
-            if (onOpenIncidents == null) {
-                TruncatedAppBarText(title = title)
-            } else {
-                IncidentDropdownSelect(
-                    modifier = Modifier.testTag("appIncidentSelector"),
-                    onOpenIncidents,
-                    disasterIconResId,
-                    title = title,
-                    contentDescription = t("nav.change_incident"),
-                    isLoading = isAppHeaderLoading,
-                )
-            }
-        },
-    )
 }
 
 @Composable

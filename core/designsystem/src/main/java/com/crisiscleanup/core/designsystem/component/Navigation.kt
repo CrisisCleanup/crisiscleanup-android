@@ -57,7 +57,7 @@ fun RowScope.CrisisCleanupNavigationBarItem(
         alwaysShowLabel = alwaysShowLabel,
         colors = NavigationBarItemDefaults.colors(
             selectedIconColor = selectedColor,
-            unselectedIconColor = unselectedColor,
+            unselectedIconColor = selectedColor,
             selectedTextColor = selectedColor,
             unselectedTextColor = unselectedColor,
             indicatorColor = CrisisCleanupNavigationDefaults.navigationIndicatorColor(),

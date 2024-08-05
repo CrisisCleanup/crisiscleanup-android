@@ -7,5 +7,9 @@ interface AppEnv {
     val isEarlybird: Boolean
 
     val apiEnvironment: String
-    fun runInNonProd(block: () -> Unit)
+    fun runInNonProd(block: () -> Unit) {
+        if (isNotProduction) {
+            block()
+        }
+    }
 }

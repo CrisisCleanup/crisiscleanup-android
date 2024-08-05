@@ -171,8 +171,6 @@ internal fun ListsRoute(
             { list: CrisisCleanupList ->
                 when (list.model) {
                     ListModel.None,
-                    ListModel.File,
-                    ListModel.OrganizationIncidentTeam,
                     ->
                         explainSupportList = list
 
@@ -311,12 +309,23 @@ private fun AllListsView(
     pagingLists: LazyPagingItems<CrisisCleanupList>,
     onOpenList: (CrisisCleanupList) -> Unit = {},
 ) {
+    val t = LocalAppTranslator.current
+
     val listState = rememberLazyListState()
     LazyColumn(
         Modifier.fillMaxSize(),
         state = listState,
         verticalArrangement = listItemSpacedByHalf,
     ) {
+        if (pagingLists.itemCount == 0) {
+            item {
+                Text(
+                    t("~~Create new lists using Crisis Cleanup in the browser."),
+                    listItemModifier,
+                )
+            }
+        }
+
         items(
             pagingLists.itemCount,
             key = pagingLists.itemKey { it.id },

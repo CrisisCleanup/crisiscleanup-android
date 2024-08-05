@@ -40,7 +40,7 @@ fun CrisisCleanupAuthNavHost(
     modifier: Modifier = Modifier,
     startDestination: String = AUTH_GRAPH_ROUTE,
 ) {
-    val navToAuth = remember(navController) { { navController.popToAuth() } }
+    val navToAuth = navController::popToAuth
     val navToLoginWithEmail =
         remember(navController) {
             {
@@ -48,13 +48,10 @@ fun CrisisCleanupAuthNavHost(
                 navController.navigateToLoginWithEmail()
             }
         }
-    val navToLoginWithPhone =
-        remember(navController) { { navController.navigateToLoginWithPhone() } }
-    val navToVolunteerOrg = remember(navController) { { navController.navigateToVolunteerOrg() } }
-    val navToForgotPassword =
-        remember(navController) { { navController.navigateToForgotPassword() } }
-    val navToEmailMagicLink =
-        remember(navController) { { navController.navigateToEmailLoginLink() } }
+    val navToLoginWithPhone = navController::navigateToLoginWithPhone
+    val navToVolunteerOrg = navController::navigateToVolunteerOrg
+    val navToForgotPassword = navController::navigateToForgotPassword
+    val navToEmailMagicLink = navController::navigateToEmailLoginLink
 
     NavHost(
         navController = navController,

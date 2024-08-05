@@ -45,7 +45,9 @@ import com.crisiscleanup.feature.organizationmanage.navigation.navigateToRequest
 import com.crisiscleanup.feature.organizationmanage.navigation.requestRedeployScreen
 import com.crisiscleanup.feature.syncinsights.navigation.navigateToSyncInsights
 import com.crisiscleanup.feature.syncinsights.navigation.syncInsightsScreen
-import com.crisiscleanup.feature.team.navigation.teamScreen
+import com.crisiscleanup.feature.team.navigation.navigateToViewTeam
+import com.crisiscleanup.feature.team.navigation.teamsScreen
+import com.crisiscleanup.feature.team.navigation.viewTeamScreen
 import com.crisiscleanup.feature.userfeedback.navigation.navigateToUserFeedback
 import com.crisiscleanup.feature.userfeedback.navigation.userFeedbackScreen
 
@@ -88,9 +90,7 @@ fun CrisisCleanupNavHost(
         }
     }
 
-    val replaceRouteViewCase = remember(navController) {
-        { ids: ExistingWorksiteIdentifier -> navController.rerouteToCaseChange(ids) }
-    }
+    val replaceRouteViewCase = navController::rerouteToCaseChange
 
     val openViewCase = remember(navController) {
         { ids: ExistingWorksiteIdentifier ->
@@ -98,24 +98,16 @@ fun CrisisCleanupNavHost(
         }
     }
 
-    val openFilterCases = remember(navController) { { navController.navigateToCasesFilter() } }
+    val openFilterCases = navController::navigateToCasesFilter
 
-    val openInviteTeammate =
-        remember(navController) { { navController.navigateToInviteTeammate() } }
+    val openInviteTeammate = navController::navigateToInviteTeammate
 
-    val openRequestRedeploy =
-        remember(navController) { { navController.navigateToRequestRedeploy() } }
+    val openRequestRedeploy = navController::navigateToRequestRedeploy
 
-    val openUserFeedback = remember(navController) { { navController.navigateToUserFeedback() } }
+    val openUserFeedback = navController::navigateToUserFeedback
 
-    val openLists = remember(navController) { { navController.navigateToLists() } }
-    val openList = remember(navController) {
-        { listId: Long ->
-            navController.navigateToViewList(listId)
-        }
-    }
-
-    val openSyncLogs = remember(navController) { { navController.navigateToSyncInsights() } }
+    val openLists = navController::navigateToLists
+    val openList = navController::navigateToViewList
 
     val navToCaseAddFlagNonEditing =
         remember(navController) { { navController.navigateToCaseAddFlag(false) } }
@@ -149,14 +141,20 @@ fun CrisisCleanupNavHost(
             caseTransferWorkType = navToTransferWorkTypeNonEditing,
         )
         dashboardScreen()
-        teamScreen()
+        teamsScreen(
+            nestedGraphs = {
+                viewTeamScreen(onBack)
+            },
+            openAuthentication = openAuthentication,
+            openViewTeam = navController::navigateToViewTeam,
+        )
         menuScreen(
             openAuthentication = openAuthentication,
             openLists = openLists,
             openInviteTeammate = openInviteTeammate,
             openRequestRedeploy = openRequestRedeploy,
             openUserFeedback = openUserFeedback,
-            openSyncLogs = openSyncLogs,
+            openSyncLogs = navController::navigateToSyncInsights,
         )
         viewSingleImageScreen(onBack)
         viewWorksiteImagesScreen(onBack)

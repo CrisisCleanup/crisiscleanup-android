@@ -44,6 +44,7 @@ data class ListEntity(
     val networkId: Long,
     @ColumnInfo("local_global_uuid", defaultValue = "")
     val localGlobalUuid: String,
+
     @ColumnInfo("created_by")
     val createdBy: Long?,
     @ColumnInfo("updated_by")

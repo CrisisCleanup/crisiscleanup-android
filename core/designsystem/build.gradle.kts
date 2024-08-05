@@ -25,6 +25,7 @@ dependencies {
     api(libs.androidx.compose.ui.util)
 
     implementation(libs.coil.kt.compose)
+    implementation(libs.coil.kt.svg)
 
     androidTestImplementation(projects.core.testing)
 }

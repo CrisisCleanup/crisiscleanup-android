@@ -34,7 +34,7 @@ fun rememberMetricsStateHolder(): Holder {
  */
 @Composable
 fun TrackJank(
-    vararg keys: Any?,
+    vararg keys: Any,
     reportMetric: suspend CoroutineScope.(state: Holder) -> Unit,
 ) {
     val metrics = rememberMetricsStateHolder()
@@ -49,7 +49,7 @@ fun TrackJank(
  */
 @Composable
 fun TrackDisposableJank(
-    vararg keys: Any?,
+    vararg keys: Any,
     reportMetric: DisposableEffectScope.(state: Holder) -> DisposableEffectResult,
 ) {
     val metrics = rememberMetricsStateHolder()

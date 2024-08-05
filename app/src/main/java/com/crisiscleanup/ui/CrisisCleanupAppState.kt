@@ -28,7 +28,7 @@ import com.crisiscleanup.core.ui.TrackDisposableJank
 import com.crisiscleanup.feature.cases.navigation.navigateToCases
 import com.crisiscleanup.feature.dashboard.navigation.navigateToDashboard
 import com.crisiscleanup.feature.menu.navigation.navigateToMenu
-import com.crisiscleanup.feature.team.navigation.navigateToTeam
+import com.crisiscleanup.feature.team.navigation.navigateToTeams
 import com.crisiscleanup.navigation.TopLevelDestination
 import com.crisiscleanup.navigation.TopLevelDestination.CASES
 import com.crisiscleanup.navigation.TopLevelDestination.DASHBOARD
@@ -67,7 +67,7 @@ class CrisisCleanupAppState(
         @Composable get() = when (currentDestination?.route) {
             CASES_ROUTE -> CASES
             DASHBOARD_ROUTE -> DASHBOARD
-            TEAM_ROUTE -> TEAM
+            // TEAM_ROUTE -> TEAM
             MENU_ROUTE -> MENU
             else -> null
         }
@@ -116,6 +116,7 @@ class CrisisCleanupAppState(
      */
     val topLevelDestinations: List<TopLevelDestination> = listOf(
         CASES,
+        // TEAM,
         MENU,
     )
 
@@ -129,6 +130,7 @@ class CrisisCleanupAppState(
 
         return when (priorTopLevelDestination) {
             DASHBOARD -> DASHBOARD_ROUTE
+            CASES -> CASES_GRAPH_ROUTE
             TEAM -> TEAM_ROUTE
             MENU -> MENU_ROUTE
             else -> CASES_GRAPH_ROUTE
@@ -163,7 +165,7 @@ class CrisisCleanupAppState(
             when (topLevelDestination) {
                 CASES -> navController.navigateToCases(topLevelNavOptions)
                 DASHBOARD -> navController.navigateToDashboard(topLevelNavOptions)
-                TEAM -> navController.navigateToTeam(topLevelNavOptions)
+                TEAM -> navController.navigateToTeams(topLevelNavOptions)
                 MENU -> navController.navigateToMenu(topLevelNavOptions)
             }
         }

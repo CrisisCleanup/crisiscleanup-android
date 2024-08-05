@@ -309,6 +309,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
             }
         }
 
+        // TODO Review syncedAt and set to when syncing started as changes could be made during sync session and result in inconsistent sync data state
         val isFullySynced = worksiteDaoPlus.onSyncEnd(worksiteId, MAX_SYNC_TRIES, syncLogger)
         if (isFullySynced) {
             syncLogger.clear()

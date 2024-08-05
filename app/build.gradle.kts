@@ -2,20 +2,18 @@ import com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsExtension
 import com.google.samples.apps.nowinandroid.NiaBuildType
 
 plugins {
-    id("nowinandroid.android.application")
-    id("nowinandroid.android.application.compose")
-    id("nowinandroid.android.application.flavors")
-    id("nowinandroid.android.application.jacoco")
-    id("nowinandroid.android.hilt")
-    id("jacoco")
-    id("nowinandroid.android.application.firebase")
+    alias(libs.plugins.nowinandroid.android.application)
+    alias(libs.plugins.nowinandroid.android.application.compose)
+    alias(libs.plugins.nowinandroid.android.application.flavors)
+    alias(libs.plugins.nowinandroid.android.application.jacoco)
+    alias(libs.plugins.nowinandroid.android.application.firebase)
+    alias(libs.plugins.nowinandroid.hilt)
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
-    id("com.google.firebase.crashlytics")
 }
 
 android {
     defaultConfig {
-        val buildVersion = 211
+        val buildVersion = 214
         applicationId = "com.crisiscleanup"
         versionCode = buildVersion
         versionName = "0.9.${buildVersion - 168}"
@@ -137,7 +135,6 @@ dependencies {
     implementation(projects.core.common)
     implementation(projects.core.data)
     implementation(projects.core.designsystem)
-    implementation(projects.core.model)
     implementation(projects.core.network)
     implementation(projects.core.ui)
 

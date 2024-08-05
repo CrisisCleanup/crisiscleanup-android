@@ -173,6 +173,7 @@ fun parseCaseNumberOrder(caseNumber: String): Long {
         Index(value = ["worksite_id", "network_id"]),
         Index(value = ["status", "worksite_id"]),
         Index(value = ["claimed_by", "worksite_id"]),
+        Index(value = ["network_id"]),
     ],
 )
 data class WorkTypeEntity(

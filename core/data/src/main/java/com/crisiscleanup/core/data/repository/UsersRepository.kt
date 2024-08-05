@@ -7,7 +7,9 @@ import com.crisiscleanup.core.data.model.PersonContactEntities
 import com.crisiscleanup.core.data.model.asEntities
 import com.crisiscleanup.core.data.model.asExternalModel
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDaoPlus
+import com.crisiscleanup.core.database.dao.PersonContactDao
 import com.crisiscleanup.core.database.dao.PersonContactDaoPlus
+import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.PersonContact
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkPersonContact
@@ -21,10 +23,16 @@ interface UsersRepository {
     ): List<PersonContact>
 
     suspend fun queryUpdateUsers(userIds: Collection<Long>)
+
+    suspend fun getUserProfiles(
+        userIds: Collection<Long>,
+        updateProfilePics: Boolean = false,
+    ): List<PersonContact>
 }
 
 class OfflineFirstUsersRepository @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,
+    private val personContactDao: PersonContactDao,
     private val personContactDaoPlus: PersonContactDaoPlus,
     private val incidentOrganizationDaoPlus: IncidentOrganizationDaoPlus,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
@@ -45,18 +53,37 @@ class OfflineFirstUsersRepository @Inject constructor(
 
     override suspend fun queryUpdateUsers(userIds: Collection<Long>) {
         try {
-            val networkUsers = networkDataSource.getUsers(userIds)
-            val entities = networkUsers.mapNotNull(NetworkPersonContact::asEntities)
+            for (subset in userIds.chunked(100)) {
+                val networkUsers = networkDataSource.getUsers(subset)
+                val entities = networkUsers.mapNotNull(NetworkPersonContact::asEntities)
 
-            val organizations = entities.map(PersonContactEntities::organization)
-            val affiliates = entities.map(PersonContactEntities::organizationAffiliates)
-            incidentOrganizationDaoPlus.saveMissing(organizations, affiliates)
+                val organizations = entities.map(PersonContactEntities::organization)
+                val affiliates = entities.map(PersonContactEntities::organizationAffiliates)
+                incidentOrganizationDaoPlus.saveMissing(organizations, affiliates)
 
-            val persons = entities.map(PersonContactEntities::personContact)
-            val personOrganizations = entities.map(PersonContactEntities::personToOrganization)
-            personContactDaoPlus.savePersons(persons, personOrganizations)
+                val persons = entities.map(PersonContactEntities::personContact)
+                val personOrganizations = entities.map(PersonContactEntities::personToOrganization)
+                personContactDaoPlus.savePersons(persons, personOrganizations)
+            }
         } catch (e: Exception) {
             logger.logException(e)
         }
+    }
+
+    override suspend fun getUserProfiles(
+        userIds: Collection<Long>,
+        updateProfilePics: Boolean,
+    ): List<PersonContact> {
+        var profiles = personContactDao.getContacts(userIds)
+
+        // TODO Query update as profile pictures expire
+        if (updateProfilePics &&
+            profiles.any { it.entity.profilePictureUri.isBlank() }
+        ) {
+            queryUpdateUsers(userIds)
+            profiles = personContactDao.getContacts(userIds)
+        }
+
+        return profiles.map { it.entity.asExternalModel() }
     }
 }

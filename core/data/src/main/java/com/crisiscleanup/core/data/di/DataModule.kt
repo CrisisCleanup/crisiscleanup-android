@@ -32,6 +32,7 @@ import com.crisiscleanup.core.data.repository.CrisisCleanupListsRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupLocalImageRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupOrgVolunteerRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupRequestRedeployRepository
+import com.crisiscleanup.core.data.repository.CrisisCleanupTeamsRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupWorkTypeStatusRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupWorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.EndOfLifeRepository
@@ -55,6 +56,7 @@ import com.crisiscleanup.core.data.repository.OrgVolunteerRepository
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.RequestRedeployRepository
 import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
+import com.crisiscleanup.core.data.repository.TeamsRepository
 import com.crisiscleanup.core.data.repository.UsersRepository
 import com.crisiscleanup.core.data.repository.WorkTypeStatusRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
@@ -166,9 +168,7 @@ interface DataModule {
     ): AppDataManagementRepository
 
     @Binds
-    fun bindsUsersRepository(
-        repository: OfflineFirstUsersRepository,
-    ): UsersRepository
+    fun bindsUsersRepository(repository: OfflineFirstUsersRepository): UsersRepository
 
     @Singleton
     @Binds
@@ -188,9 +188,7 @@ interface DataModule {
     ): AccountUpdateRepository
 
     @Binds
-    fun bindsEndOfLifeRepository(
-        repository: AppEndOfLifeRepository,
-    ): EndOfLifeRepository
+    fun bindsEndOfLifeRepository(repository: AppEndOfLifeRepository): EndOfLifeRepository
 
     @Binds
     fun bindsOrgVolunteerRepository(
@@ -208,9 +206,10 @@ interface DataModule {
     ): WorksiteImageRepository
 
     @Binds
-    fun bindsListRepository(
-        repository: CrisisCleanupListsRepository,
-    ): ListsRepository
+    fun bindsListRepository(repository: CrisisCleanupListsRepository): ListsRepository
+
+    @Binds
+    fun bindsTeamsRepository(repository: CrisisCleanupTeamsRepository): TeamsRepository
 }
 
 @Module

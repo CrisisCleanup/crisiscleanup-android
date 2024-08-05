@@ -14,10 +14,7 @@ class PersonContactDaoPlus @Inject constructor(
         personOrganizations: List<PersonOrganizationCrossRef>,
     ) = db.withTransaction {
         val contactDao = db.personContactDao()
-        val newContacts = contacts.filter {
-            contactDao.getContact(it.id) == null
-        }
-        contactDao.upsert(newContacts)
+        contactDao.upsert(contacts)
 
         contactDao.upsertPersonOrganizations(personOrganizations)
     }

@@ -25,10 +25,4 @@ class CrisisCleanupAppEnv @Inject constructor(
                 else -> "Local?"
             }
         }
-
-    override fun runInNonProd(block: () -> Unit) {
-        if (isNotProduction) {
-            block()
-        }
-    }
 }

@@ -115,6 +115,7 @@ class AuthenticationViewModelTest {
                 hasAcceptedTerms = any(),
                 approvedIncidentIds = any(),
                 refreshToken = any(),
+                activeRoles = any(),
             )
         } returns Unit
 
@@ -164,6 +165,7 @@ class AuthenticationViewModelTest {
         hasAcceptedTerms = false,
         approvedIncidents = setOf(153),
         areTokensValid = false,
+        isCrisisCleanupAdmin = false,
     )
 
     private fun buildViewModel() = AuthenticationViewModel(
@@ -239,6 +241,7 @@ class AuthenticationViewModelTest {
                 hasAcceptedTerms = true,
                 acceptedTermsTimestamp = Clock.System.now().minus(1.days),
                 files = null,
+                activeRoles = emptySet(),
             ),
             organizations = NetworkAuthOrganization(
                 id = 813,
@@ -264,6 +267,7 @@ class AuthenticationViewModelTest {
                 org = OrgData(813, "org"),
                 hasAcceptedTerms = true,
                 approvedIncidentIds = setOf(53),
+                activeRoles = emptySet(),
             )
         }
 

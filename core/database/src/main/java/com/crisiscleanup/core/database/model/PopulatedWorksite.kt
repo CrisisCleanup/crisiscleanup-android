@@ -72,17 +72,6 @@ fun PopulatedWorksite.asExternalModel(): Worksite {
     }
 }
 
-data class WorksiteLocalModifiedAt(
-    @ColumnInfo("id")
-    val id: Long,
-    @ColumnInfo("network_id")
-    val networkId: Long,
-    @ColumnInfo("local_modified_at")
-    val localModifiedAt: Instant,
-    @ColumnInfo("is_local_modified")
-    val isLocallyModified: Boolean,
-)
-
 data class PopulatedWorksiteMapVisual(
     val id: Long,
     val latitude: Double,

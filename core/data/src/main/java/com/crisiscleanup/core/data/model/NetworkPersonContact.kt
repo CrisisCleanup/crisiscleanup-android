@@ -5,6 +5,7 @@ import com.crisiscleanup.core.database.model.PersonContactEntity
 import com.crisiscleanup.core.database.model.PersonOrganizationCrossRef
 import com.crisiscleanup.core.model.data.PersonContact
 import com.crisiscleanup.core.network.model.NetworkPersonContact
+import com.crisiscleanup.core.network.model.profilePictureUrl
 
 fun NetworkPersonContact.asEntity() = PersonContactEntity(
     id = id,
@@ -12,6 +13,7 @@ fun NetworkPersonContact.asEntity() = PersonContactEntity(
     lastName = lastName,
     email = email,
     mobile = mobile,
+    profilePictureUri = files?.profilePictureUrl ?: "",
 )
 
 fun NetworkPersonContact.asExternalModel() = PersonContact(
@@ -20,6 +22,7 @@ fun NetworkPersonContact.asExternalModel() = PersonContact(
     lastName = lastName,
     email = email,
     mobile = mobile,
+    profilePictureUri = files?.profilePictureUrl ?: "",
 )
 
 fun NetworkPersonContact.asEntities() = organization?.let {

@@ -22,6 +22,7 @@ import com.crisiscleanup.core.database.dao.NetworkFileDao
 import com.crisiscleanup.core.database.dao.PersonContactDao
 import com.crisiscleanup.core.database.dao.RecentWorksiteDao
 import com.crisiscleanup.core.database.dao.SyncLogDao
+import com.crisiscleanup.core.database.dao.TeamDao
 import com.crisiscleanup.core.database.dao.WorkTypeDao
 import com.crisiscleanup.core.database.dao.WorkTypeStatusDao
 import com.crisiscleanup.core.database.dao.WorkTypeTransferRequestDao
@@ -55,6 +56,9 @@ import com.crisiscleanup.core.database.model.PersonContactEntity
 import com.crisiscleanup.core.database.model.PersonOrganizationCrossRef
 import com.crisiscleanup.core.database.model.RecentWorksiteEntity
 import com.crisiscleanup.core.database.model.SyncLogEntity
+import com.crisiscleanup.core.database.model.TeamEntity
+import com.crisiscleanup.core.database.model.TeamMemberCrossRef
+import com.crisiscleanup.core.database.model.TeamRootEntity
 import com.crisiscleanup.core.database.model.WorkTypeEntity
 import com.crisiscleanup.core.database.model.WorkTypeStatusEntity
 import com.crisiscleanup.core.database.model.WorkTypeTransferRequestEntity
@@ -107,8 +111,11 @@ import com.crisiscleanup.core.database.util.InstantConverter
         WorksiteTextFtsEntity::class,
         IncidentWorksitesSecondarySyncStatsEntity::class,
         ListEntity::class,
+        TeamRootEntity::class,
+        TeamEntity::class,
+        TeamMemberCrossRef::class,
     ],
-    version = 42,
+    version = 43,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
@@ -151,6 +158,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         AutoMigration(from = 39, to = 40),
         AutoMigration(from = 40, to = 41),
         AutoMigration(from = 41, to = 42),
+        AutoMigration(from = 42, to = 43),
     ],
     exportSchema = true,
 )
@@ -188,4 +196,5 @@ abstract class CrisisCleanupDatabase :
     abstract fun localImageDao(): LocalImageDao
     abstract fun caseHistoryDao(): CaseHistoryDao
     abstract fun listDao(): ListDao
+    abstract fun teamDao(): TeamDao
 }

@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.nowinandroid.android.application)
     alias(libs.plugins.nowinandroid.android.application.compose)
     alias(libs.plugins.nowinandroid.android.application.flavors)
-    alias(libs.plugins.nowinandroid.android.hilt)
+    alias(libs.plugins.nowinandroid.hilt)
 }
 
 android {
@@ -44,7 +44,6 @@ dependencies {
     implementation(projects.core.data)
     implementation(projects.core.designsystem)
     implementation(projects.core.network)
-    implementation(projects.core.model)
     implementation(projects.core.ui)
 
     implementation(libs.kotlinx.serialization.json)

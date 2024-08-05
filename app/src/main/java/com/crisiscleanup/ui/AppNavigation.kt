@@ -1,23 +1,29 @@
 package com.crisiscleanup.ui
 
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationBar
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationBarItem
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationDefaults
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationRail
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupNavigationRailItem
 import com.crisiscleanup.core.designsystem.icon.Icon
+import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.navigation.TopLevelDestination
 
 @Composable
@@ -55,17 +61,19 @@ private fun NavItems(
     itemContent: @Composable (
         Boolean,
         String,
+        Boolean,
         () -> Unit,
         @Composable () -> Unit,
         @Composable () -> Unit,
     ) -> Unit,
 ) {
-    destinations.forEach { destination ->
+    destinations.forEachIndexed { i, destination ->
         val title = LocalAppTranslator.current(destination.titleTranslateKey)
         val selected = currentDestination.isTopLevelDestinationInHierarchy(destination)
         itemContent(
             selected,
             title,
+            i == destinations.size - 1,
             { onNavigateToDestination(destination) },
             { destination.Icon(selected, title) },
             {
@@ -134,6 +142,7 @@ private fun CrisisCleanupNavRail(
         ) {
                 isSelected: Boolean,
                 title: String,
+                isLastItem: Boolean,
                 onClick: () -> Unit,
                 iconContent: @Composable () -> Unit,
                 labelContent: @Composable () -> Unit,
@@ -143,8 +152,18 @@ private fun CrisisCleanupNavRail(
                 onClick = onClick,
                 icon = iconContent,
                 label = labelContent,
-                modifier = Modifier.testTag("navItem_$title"),
+                modifier = Modifier.weight(1f)
+                    .testTag("navItem_$title"),
             )
+
+            if (!isLastItem) {
+                HorizontalDivider(
+                    Modifier.sizeIn(maxWidth = 36.dp),
+                    thickness = 1.dp,
+                    color = CrisisCleanupNavigationDefaults.navigationSelectedItemColor()
+                        .disabledAlpha(),
+                )
+            }
         }
     }
 }
@@ -164,6 +183,7 @@ private fun CrisisCleanupBottomBar(
         ) {
                 isSelected: Boolean,
                 title: String,
+                isLastItem: Boolean,
                 onClick: () -> Unit,
                 iconContent: @Composable () -> Unit,
                 labelContent: @Composable () -> Unit,
@@ -175,6 +195,15 @@ private fun CrisisCleanupBottomBar(
                 label = labelContent,
                 modifier = Modifier.testTag("navItem_$title"),
             )
+
+            if (!isLastItem) {
+                VerticalDivider(
+                    Modifier.sizeIn(maxHeight = 36.dp),
+                    thickness = 1.dp,
+                    color = CrisisCleanupNavigationDefaults.navigationSelectedItemColor()
+                        .disabledAlpha(),
+                )
+            }
         }
     }
 }

@@ -32,6 +32,9 @@ import com.crisiscleanup.core.database.model.PopulatedLocalWorksite
 import com.crisiscleanup.core.database.model.PopulatedWorksite
 import com.crisiscleanup.core.database.model.RecentWorksiteEntity
 import com.crisiscleanup.core.database.model.SyncLogEntity
+import com.crisiscleanup.core.database.model.TeamEntity
+import com.crisiscleanup.core.database.model.TeamMemberCrossRef
+import com.crisiscleanup.core.database.model.TeamRootEntity
 import com.crisiscleanup.core.database.model.WorkTypeEntity
 import com.crisiscleanup.core.database.model.WorkTypeStatusEntity
 import com.crisiscleanup.core.database.model.WorkTypeTransferRequestEntity
@@ -85,6 +88,9 @@ import kotlinx.datetime.Instant
         WorksiteTextFtsEntity::class,
         IncidentWorksitesSecondarySyncStatsEntity::class,
         ListEntity::class,
+        TeamRootEntity::class,
+        TeamEntity::class,
+        TeamMemberCrossRef::class,
     ],
     version = 1,
 )
