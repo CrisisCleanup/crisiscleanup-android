@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.nowinandroid.android.application.flavors)
     alias(libs.plugins.nowinandroid.android.application.jacoco)
     alias(libs.plugins.nowinandroid.android.application.firebase)
+    alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.nowinandroid.hilt)
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
@@ -53,6 +54,7 @@ android {
             }
 
             configure<CrashlyticsExtension> {
+                mappingFileUploadEnabled = true
                 // Enable processing and uploading of native symbols to Firebase servers.
                 // By default, this is disabled to improve build speeds.
                 // This flag must be enabled to see properly-symbolicated native
