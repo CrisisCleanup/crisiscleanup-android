@@ -25,6 +25,7 @@ data class NetworkAuthUserClaims(
     // UPDATE NetworkAuthTest in conjunction with changes here
     val id: Long,
     val email: String,
+    val mobile: String,
     @SerialName("first_name")
     val firstName: String,
     @SerialName("last_name")

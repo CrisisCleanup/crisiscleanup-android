@@ -26,6 +26,7 @@ interface AccountDataRepository {
         accessToken: String,
         id: Long,
         email: String,
+        phone: String,
         firstName: String,
         lastName: String,
         expirySeconds: Long,
