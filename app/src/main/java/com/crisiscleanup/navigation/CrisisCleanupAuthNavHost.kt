@@ -52,6 +52,12 @@ fun CrisisCleanupAuthNavHost(
     val navToVolunteerOrg = navController::navigateToVolunteerOrg
     val navToForgotPassword = navController::navigateToForgotPassword
     val navToEmailMagicLink = navController::navigateToEmailLoginLink
+    val navToLoginWithPhoneClearStack = remember(navController) {
+        {
+            navController.popToAuth()
+            navController.navigateToLoginWithPhone()
+        }
+    }
 
     NavHost(
         navController = navController,
@@ -66,6 +72,7 @@ fun CrisisCleanupAuthNavHost(
                     closeAuthentication = closeAuthentication,
                     openForgotPassword = navToForgotPassword,
                     openEmailMagicLink = navToEmailMagicLink,
+                    openPhoneLogin = navToLoginWithPhoneClearStack,
                     nestedGraphs = {
                         forgotPasswordScreen(
                             onBack = onBack,

@@ -51,6 +51,7 @@ fun LoginWithEmailRoute(
     closeAuthentication: () -> Unit = {},
     openForgotPassword: () -> Unit = {},
     openEmailMagicLink: () -> Unit = {},
+    openPhoneLogin: () -> Unit = {},
     viewModel: AuthenticationViewModel = hiltViewModel(),
 ) {
     val onCloseScreen = remember(viewModel, closeAuthentication) {
@@ -95,6 +96,7 @@ fun LoginWithEmailRoute(
                         onBack = onBack,
                         openForgotPassword = openForgotPassword,
                         openEmailMagicLink = openEmailMagicLink,
+                        openPhoneLogin = openPhoneLogin,
                     )
                     Spacer(modifier = Modifier.weight(1f))
                 }
@@ -109,6 +111,7 @@ private fun LoginWithEmailScreen(
     onBack: () -> Unit = {},
     openForgotPassword: () -> Unit = {},
     openEmailMagicLink: () -> Unit = {},
+    openPhoneLogin: () -> Unit = {},
     viewModel: AuthenticationViewModel = hiltViewModel(),
 ) {
     val translator = LocalAppTranslator.current
@@ -171,19 +174,29 @@ private fun LoginWithEmailScreen(
         LinkAction(
             "actions.request_magic_link",
             Modifier
-                .testTag("loginRequestMagicLinkAction")
+                .listItemPadding()
                 .actionHeight()
-                .listItemPadding(),
+                .testTag("loginRequestMagicLinkAction"),
             enabled = isNotBusy,
             action = openEmailMagicLink,
         )
 
         LinkAction(
+            "loginForm.login_with_cell",
+            Modifier
+                .listItemPadding()
+                .actionHeight()
+                .testTag("phoneLoginAction"),
+            enabled = isNotBusy,
+            action = openPhoneLogin,
+        )
+
+        LinkAction(
             "invitationSignup.forgot_password",
             Modifier
-                .testTag("loginForgotPasswordAction")
+                .listItemPadding()
                 .actionHeight()
-                .listItemPadding(),
+                .testTag("loginForgotPasswordAction"),
             enabled = isNotBusy,
             action = openForgotPassword,
         )
