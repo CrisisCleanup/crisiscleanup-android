@@ -6,8 +6,11 @@ import com.crisiscleanup.core.appcomponent.AppTopBarDataProvider
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppSettingsProvider
 import com.crisiscleanup.core.common.AppVersionProvider
+import com.crisiscleanup.core.common.CrisisCleanupTutorialDirectors.Menu
 import com.crisiscleanup.core.common.DatabaseVersionProvider
 import com.crisiscleanup.core.common.KeyResourceTranslator
+import com.crisiscleanup.core.common.TutorialDirector
+import com.crisiscleanup.core.common.Tutorials
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
@@ -42,6 +45,7 @@ class MenuViewModel @Inject constructor(
     appSettingsProvider: AppSettingsProvider,
     private val appEnv: AppEnv,
     private val syncPuller: SyncPuller,
+    @Tutorials(Menu) val menuTutorialDirector: TutorialDirector,
     private val databaseVersionProvider: DatabaseVersionProvider,
     translator: KeyResourceTranslator,
     @ApplicationScope private val externalScope: CoroutineScope,

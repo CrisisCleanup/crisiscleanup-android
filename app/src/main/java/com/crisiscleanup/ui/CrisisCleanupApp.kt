@@ -39,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
@@ -50,6 +51,7 @@ import com.crisiscleanup.AuthState
 import com.crisiscleanup.MainActivityViewModel
 import com.crisiscleanup.MainActivityViewState
 import com.crisiscleanup.core.common.NetworkMonitor
+import com.crisiscleanup.core.common.TutorialStep
 import com.crisiscleanup.core.designsystem.LayoutProvider
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.LocalLayoutProvider
@@ -57,8 +59,10 @@ import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCen
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupBackground
 import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.ui.AppLayoutArea
+import com.crisiscleanup.core.ui.LayoutSizePosition
 import com.crisiscleanup.core.ui.LocalAppLayout
 import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
+import com.crisiscleanup.core.ui.sizePosition
 import com.crisiscleanup.feature.authentication.navigation.navigateToMagicLinkLogin
 import com.crisiscleanup.feature.authentication.navigation.navigateToOrgPersistentInvite
 import com.crisiscleanup.feature.authentication.navigation.navigateToPasswordReset
@@ -209,10 +213,14 @@ private fun BoxScope.LoadedContent(
                 ?: true
         val isOnboarding = !hideOnboarding
 
+        val menuTutorialStep by viewModel.menuTutorialStep.collectAsStateWithLifecycle()
+
         NavigableContent(
             snackbarHostState,
             appState,
             isOnboarding,
+            menuTutorialStep,
+            viewModel::onMenuTutorialNext,
         ) { openAuthentication = true }
 
         if (
@@ -315,11 +323,19 @@ private fun NavigableContent(
     snackbarHostState: SnackbarHostState,
     appState: CrisisCleanupAppState,
     isOnboarding: Boolean,
+    menuTutorialStep: TutorialStep,
+    advanceMenuTutorial: () -> Unit,
     openAuthentication: () -> Unit,
 ) {
     val showNavigation = appState.isTopLevelRoute
     val layoutBottomNav = LocalLayoutProvider.current.isBottomNav
     val isFullscreen = appState.isFullscreenRoute
+
+    var navBarSizePosition by remember { mutableStateOf(LayoutSizePosition()) }
+    val navBarSizePositionModifier = Modifier.onGloballyPositioned { coordinates ->
+        navBarSizePosition = coordinates.sizePosition
+    }
+
     Scaffold(
         modifier = Modifier.semantics {
             testTagsAsResourceId = true
@@ -337,7 +353,7 @@ private fun NavigableContent(
             ) {
                 AppNavigationBar(
                     appState,
-                    Modifier.testTag("AppNavigationBottomBar"),
+                    navBarSizePositionModifier.testTag("AppNavigationBottomBar"),
                 )
             }
 
@@ -367,9 +383,9 @@ private fun NavigableContent(
             if (showNavigation && !layoutBottomNav) {
                 AppNavigationBar(
                     appState,
-                    Modifier
-                        .testTag("AppNavigationSideRail")
-                        .safeDrawingPadding(),
+                    navBarSizePositionModifier
+                        .safeDrawingPadding()
+                        .testTag("AppNavigationSideRail"),
                     true,
                 )
             }
@@ -406,6 +422,14 @@ private fun NavigableContent(
             }
         }
     }
+
+    if (menuTutorialStep != TutorialStep.End) {
+        TutorialOverlay(
+            tutorialStep = menuTutorialStep,
+            onNextStep = advanceMenuTutorial,
+            navBarSizePosition = navBarSizePosition,
+        )
+    }
 }
 
 @Composable
@@ -430,3 +454,4 @@ private fun ExpiredAccountAlert(
         }
     }
 }
+

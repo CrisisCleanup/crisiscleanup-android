@@ -8,8 +8,11 @@ import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppSettingsProvider
 import com.crisiscleanup.core.common.AppVersionProvider
+import com.crisiscleanup.core.common.CrisisCleanupTutorialDirectors.Menu
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.NetworkMonitor
+import com.crisiscleanup.core.common.TutorialDirector
+import com.crisiscleanup.core.common.Tutorials
 import com.crisiscleanup.core.common.event.AuthEventBus
 import com.crisiscleanup.core.common.event.ExternalEventBus
 import com.crisiscleanup.core.common.event.UserPersistentInvite
@@ -67,6 +70,7 @@ class MainActivityViewModel @Inject constructor(
     appDataRepository: AppDataManagementRepository,
     private val accountDataRefresher: AccountDataRefresher,
     private val accountUpdateRepository: AccountUpdateRepository,
+    @Tutorials(Menu) private val menuTutorialDirector: TutorialDirector,
     val translator: KeyResourceTranslator,
     private val syncPuller: SyncPuller,
     private val appVersionProvider: AppVersionProvider,
@@ -188,6 +192,8 @@ class MainActivityViewModel @Inject constructor(
     val isSwitchingToProduction: StateFlow<Boolean>
     val productionSwitchMessage: StateFlow<String>
 
+    val menuTutorialStep = menuTutorialDirector.tutorialStep
+
     init {
         accountDataRepository.accountData
             .onEach {
@@ -306,6 +312,18 @@ class MainActivityViewModel @Inject constructor(
                 isUpdatingTermsAcceptance.value = false
             }
         }
+    }
+
+    fun startMenuTutorial() {
+        menuTutorialDirector.startTutorial()
+    }
+
+    fun onMenuTutorialNext() {
+        menuTutorialDirector.onNextStep()
+    }
+
+    fun closeMenuTutorial() {
+        menuTutorialDirector.skipTutorial()
     }
 }
 

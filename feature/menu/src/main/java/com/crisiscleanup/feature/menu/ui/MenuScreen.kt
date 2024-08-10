@@ -1,4 +1,4 @@
-package com.crisiscleanup.feature.menu
+package com.crisiscleanup.feature.menu.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -53,6 +53,8 @@ import com.crisiscleanup.core.designsystem.theme.neutralFontColor
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.selectincident.SelectIncidentDialog
+import com.crisiscleanup.feature.menu.MenuViewModel
+import com.crisiscleanup.feature.menu.R
 
 @Composable
 internal fun MenuRoute(
@@ -113,12 +115,41 @@ private fun MenuScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
         ) {
+            Row(
+                listItemModifier,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = t("~~Open tutorial"),
+                    modifier = Modifier
+                        .clickable(
+                            onClick = viewModel.menuTutorialDirector::startTutorial,
+                        )
+                        .listItemPadding(),
+                    style = LocalFontStyles.current.header3,
+                    color = primaryBlueColor,
+                )
+                Spacer(Modifier.weight(1f))
+                Text(
+                    text = t("actions.done"),
+                    modifier = Modifier
+                        .clickable(
+                            onClick = {
+                                // TODO Move to bottom of screen
+                            },
+                        )
+                        .listItemPadding(),
+                    style = LocalFontStyles.current.header4,
+                    color = primaryBlueColor,
+                )
+            }
+
             val hideGettingStartedVideo = remember(viewModel) {
                 { viewModel.showGettingStartedVideo(false) }
             }
             GettingStartedSection(
                 menuItemVisibility.showGettingStartedVideo,
-                hideGettingStartedVideo,
+                hideGettingStartedVideo = hideGettingStartedVideo,
                 viewModel.gettingStartedVideoUrl,
                 viewModel.isNotProduction,
                 toggleGettingStartedSection = viewModel::showGettingStartedVideo,
