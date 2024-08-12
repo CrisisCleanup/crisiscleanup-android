@@ -122,7 +122,7 @@ private fun TeamsScreen(
                         contentType = "title-text-item",
                     ) {
                         Text(
-                            text = t("~~My Teams"),
+                            text = t("teams.my_teams"),
                             modifier = listItemModifier,
                             style = LocalFontStyles.current.header1,
                         )
@@ -134,7 +134,7 @@ private fun TeamsScreen(
                             contentType = "subtitle-text-item",
                         ) {
                             Text(
-                                text = t("~~You don't have a team yet"),
+                                text = t("teams.no_team_yet"),
                                 modifier = Modifier.listItemHorizontalPadding(),
                                 style = LocalFontStyles.current.header2,
                             )
@@ -159,7 +159,7 @@ private fun TeamsScreen(
                     ) {
                         CrisisCleanupButton(
                             modifier = Modifier.listItemPadding(),
-                            text = t("~~Create team"),
+                            text = t("teams.create_new_team"),
                             onClick = openCreateTeam,
                             enabled = false,
                         )
@@ -171,7 +171,7 @@ private fun TeamsScreen(
                             contentType = "subtitle-text-item",
                         ) {
                             Text(
-                                text = t("~~No other teams"),
+                                text = t("teams.no_other_teams"),
                                 modifier = Modifier.listItemHorizontalPadding()
                                     .listItemTopPadding(),
                                 style = LocalFontStyles.current.header2,
@@ -183,7 +183,7 @@ private fun TeamsScreen(
                             contentType = "subtitle-text-item",
                         ) {
                             Text(
-                                text = t("~~Join a team"),
+                                text = t("teams.join_team"),
                                 modifier = Modifier.listItemHorizontalPadding()
                                     .listItemTopPadding(),
                                 style = LocalFontStyles.current.header2,
@@ -266,7 +266,7 @@ internal fun TeamView(
             val caseCount = team.caseCount
             Row(horizontalArrangement = listItemSpacedBy) {
                 val caseCountTranslateKey =
-                    if (caseCount == 1) "~~1 Case" else "~~{case_count} Cases"
+                    if (caseCount == 1) "teams.one_case" else "teams.case_count_cases"
                 Text(
                     t(caseCountTranslateKey)
                         .replace("{case_count}", "$caseCount"),
@@ -274,7 +274,7 @@ internal fun TeamView(
 
                 if (team.caseCompletePercentage > 0) {
                     Text(
-                        t("~~{percent_complete}% cases completed")
+                        t("teams.percent_complete_cases_completed")
                             .replace("{percent_complete}", "${team.caseCompletePercentage}"),
                         color = neutralFontColor,
                     )

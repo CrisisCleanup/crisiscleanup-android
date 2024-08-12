@@ -320,7 +320,7 @@ private fun AllListsView(
         if (pagingLists.itemCount == 0) {
             item {
                 Text(
-                    t("~~Create new lists using Crisis Cleanup in the browser."),
+                    t("list.create_new_in_browser"),
                     listItemModifier,
                 )
             }
