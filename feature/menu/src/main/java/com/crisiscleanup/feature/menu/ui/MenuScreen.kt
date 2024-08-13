@@ -102,6 +102,7 @@ private fun MenuScreen(
     }
 
     val menuItemVisibility by viewModel.menuItemVisibility.collectAsStateWithLifecycle()
+    val isMenuTutorialDone by viewModel.isMenuTutorialDone.collectAsStateWithLifecycle(true)
 
     Column(Modifier.fillMaxWidth()) {
         AppTopBar(
@@ -115,32 +116,12 @@ private fun MenuScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
         ) {
-            Row(
-                listItemModifier,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = t("~~Open tutorial"),
-                    modifier = Modifier
-                        .clickable(
-                            onClick = viewModel.menuTutorialDirector::startTutorial,
-                        )
-                        .listItemPadding(),
-                    style = LocalFontStyles.current.header3,
-                    color = primaryBlueColor,
-                )
-                Spacer(Modifier.weight(1f))
-                Text(
-                    text = t("actions.done"),
-                    modifier = Modifier
-                        .clickable(
-                            onClick = {
-                                // TODO Move to bottom of screen
-                            },
-                        )
-                        .listItemPadding(),
-                    style = LocalFontStyles.current.header4,
-                    color = primaryBlueColor,
+            if (!isMenuTutorialDone) {
+                MenuTutorial(
+                    false,
+                    viewModel.menuTutorialDirector::startTutorial,
+                    viewModel::setMenuTutorialDone,
+                    viewModel.isNotProduction,
                 )
             }
 
@@ -181,6 +162,17 @@ private fun MenuScreen(
                 onClick = openUserFeedback,
                 enabled = true,
             )
+
+            if (isMenuTutorialDone) {
+                val unsetMenuTutorialDone =
+                    remember(viewModel) { { viewModel.setMenuTutorialDone(false) } }
+                MenuTutorial(
+                    true,
+                    viewModel.menuTutorialDirector::startTutorial,
+                    unsetMenuTutorialDone,
+                    viewModel.isNotProduction,
+                )
+            }
 
             Text(
                 viewModel.versionText,
@@ -258,6 +250,45 @@ private fun MenuScreen(
             onSelectIncident = setSelected,
             onRefreshIncidents = viewModel::refreshIncidentsAsync,
         )
+    }
+}
+
+@Composable
+private fun MenuTutorial(
+    isTutorialDone: Boolean,
+    onStartTutorial: () -> Unit,
+    onTutorialDone: () -> Unit,
+    isNonProduction: Boolean = false,
+) {
+    val t = LocalAppTranslator.current
+
+    Row(
+        listItemModifier,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = t("~~Open tutorial"),
+            modifier = Modifier
+                .clickable(
+                    onClick = onStartTutorial,
+                ),
+            style = LocalFontStyles.current.header3,
+            color = primaryBlueColor,
+        )
+
+        if (!isTutorialDone || isNonProduction) {
+            Spacer(Modifier.weight(1f))
+            Text(
+                text = t("actions.done"),
+                modifier = Modifier
+                    .clickable(
+                        onClick = onTutorialDone,
+                    )
+                    .listItemPadding(),
+                style = LocalFontStyles.current.header4,
+                color = primaryBlueColor,
+            )
+        }
     }
 }
 

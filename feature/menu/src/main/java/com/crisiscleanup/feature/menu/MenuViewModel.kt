@@ -97,6 +97,10 @@ class MenuViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
+    val isMenuTutorialDone = appPreferencesRepository.userPreferences.map {
+        it.isMenuTutorialDone
+    }
+
     init {
         externalScope.launch(ioDispatcher) {
             syncLogRepository.trimOldLogs()
@@ -142,6 +146,12 @@ class MenuViewModel @Inject constructor(
 
             // TODO Move to hide onboarding method when implemented
             appPreferencesRepository.setShouldHideOnboarding(hide)
+        }
+    }
+
+    fun setMenuTutorialDone(isDone: Boolean = true) {
+        viewModelScope.launch(ioDispatcher) {
+            appPreferencesRepository.setMenuTutorialDone(isDone)
         }
     }
 }

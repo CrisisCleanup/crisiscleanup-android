@@ -33,4 +33,5 @@ message UserPreferences {
   bool allow_all_analytics = 9;
 
   bool hide_getting_started_video = 10;
+  bool is_menu_tutorial_done = 11;
 }

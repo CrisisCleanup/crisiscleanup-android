@@ -17,7 +17,7 @@ class MenuTutorialDirector @Inject constructor() : TutorialDirector {
         tutorialStep.value = TutorialStep.End
     }
 
-    override fun onNextStep() {
+    override fun onNextStep(): Boolean {
         val nextStep = when (tutorialStep.value) {
             TutorialStep.MenuStart,
             TutorialStep.AppNavBar,
@@ -28,5 +28,6 @@ class MenuTutorialDirector @Inject constructor() : TutorialDirector {
             else -> TutorialStep.End
         }
         tutorialStep.value = nextStep
+        return nextStep != TutorialStep.End
     }
 }

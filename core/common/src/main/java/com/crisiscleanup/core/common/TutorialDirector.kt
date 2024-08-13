@@ -8,7 +8,12 @@ interface TutorialDirector {
     val tutorialStep: StateFlow<TutorialStep>
 
     fun startTutorial()
-    fun onNextStep()
+
+    /**
+     * @return TRUE when there is a next step or FALSE when the tutorial is over
+     */
+    fun onNextStep(): Boolean
+
     fun skipTutorial()
 }
 

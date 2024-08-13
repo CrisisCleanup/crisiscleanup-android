@@ -19,4 +19,5 @@ data class UserData(
     val allowAllAnalytics: Boolean,
 
     val hideGettingStartedVideo: Boolean,
+    val isMenuTutorialDone: Boolean,
 )

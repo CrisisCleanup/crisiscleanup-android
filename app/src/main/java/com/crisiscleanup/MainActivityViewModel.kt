@@ -63,7 +63,7 @@ import kotlin.time.Duration.Companion.hours
 
 @HiltViewModel
 class MainActivityViewModel @Inject constructor(
-    localAppPreferencesRepository: LocalAppPreferencesRepository,
+    private val appPreferencesRepository: LocalAppPreferencesRepository,
     private val appMetricsRepository: LocalAppMetricsRepository,
     accountDataRepository: AccountDataRepository,
     incidentSelector: IncidentSelector,
@@ -91,7 +91,7 @@ class MainActivityViewModel @Inject constructor(
     private val initialAppOpen = AtomicReference<AppOpenInstant>(null)
 
     val viewState = combine(
-        localAppPreferencesRepository.userPreferences,
+        appPreferencesRepository.userPreferences,
         appMetricsRepository.metrics.distinctUntilChanged(),
         ::Pair,
     )
@@ -222,7 +222,7 @@ class MainActivityViewModel @Inject constructor(
             .flowOn(ioDispatcher)
             .launchIn(viewModelScope)
 
-        localAppPreferencesRepository.userPreferences.onEach {
+        appPreferencesRepository.userPreferences.onEach {
             firebaseAnalytics.setAnalyticsCollectionEnabled(it.allowAllAnalytics)
         }
             .launchIn(viewModelScope)
@@ -314,12 +314,13 @@ class MainActivityViewModel @Inject constructor(
         }
     }
 
-    fun startMenuTutorial() {
-        menuTutorialDirector.startTutorial()
-    }
-
     fun onMenuTutorialNext() {
-        menuTutorialDirector.onNextStep()
+        val hasNextStep = menuTutorialDirector.onNextStep()
+        if (!hasNextStep) {
+            viewModelScope.launch(ioDispatcher) {
+                appPreferencesRepository.setMenuTutorialDone(true)
+            }
+        }
     }
 
     fun closeMenuTutorial() {
