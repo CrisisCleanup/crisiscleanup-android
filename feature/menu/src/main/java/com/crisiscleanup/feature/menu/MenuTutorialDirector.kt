@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 
 class MenuTutorialDirector @Inject constructor() : TutorialDirector {
-    private val stepFLow = MutableStateFlow(TutorialStep.IncidentSelect)
+    private val stepFLow = MutableStateFlow(TutorialStep.MenuStart)
     override val tutorialStep = stepFLow
 
     override fun startTutorial() {
