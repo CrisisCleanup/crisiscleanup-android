@@ -60,55 +60,62 @@ fun RequestRedeployRoute(
         } else {
             (viewState as? RequestRedeployViewState.Ready)?.let { readyState ->
                 val incidents = readyState.incidents
-                val isTransient by viewModel.isTransient.collectAsStateWithLifecycle(true)
-                val isEditable = !isTransient
-                val errorMessage = viewModel.redeployErrorMessage
-                val requestedIncidentIds = viewModel.requestedIncidentIds
-                val isRequestingRedeploy by viewModel.isRequestingRedeploy.collectAsStateWithLifecycle()
-                var selectedIncident by remember { mutableStateOf(EmptyIncident) }
-                val onSelectIncident = remember(viewModel) {
-                    { incident: Incident ->
-                        selectedIncident = incident
+                if (incidents.isEmpty()) {
+                    Text(
+                        t("~~There are no Incidents left for deploying."),
+                        listItemModifier,
+                    )
+                } else {
+                    val isTransient by viewModel.isTransient.collectAsStateWithLifecycle(true)
+                    val isEditable = !isTransient
+                    val errorMessage = viewModel.redeployErrorMessage
+                    val requestedIncidentIds = viewModel.requestedIncidentIds
+                    val isRequestingRedeploy by viewModel.isRequestingRedeploy.collectAsStateWithLifecycle()
+                    var selectedIncident by remember { mutableStateOf(EmptyIncident) }
+                    val onSelectIncident = remember(viewModel) {
+                        { incident: Incident ->
+                            selectedIncident = incident
+                        }
                     }
-                }
-                val selectIncidentHint = t("actions.select_incident")
+                    val selectIncidentHint = t("actions.select_incident")
 
-                RequestRedeployContent(
-                    isEditable,
-                    incidents,
-                    requestedIncidentIds,
-                    errorMessage,
-                    selectedIncident.name.ifBlank { selectIncidentHint },
-                    selectIncidentHint,
-                    onSelectIncident,
-                    rememberKey = viewModel,
-                )
-
-                Spacer(Modifier.weight(1f))
-
-                Row(
-                    listItemModifier,
-                    horizontalArrangement = listItemSpacedBy,
-                ) {
-                    BusyButton(
-                        Modifier
-                            .testTag("requestRedeployCancelAction")
-                            .weight(1f),
-                        text = t("actions.cancel"),
-                        enabled = isEditable,
-                        indicateBusy = false,
-                        onClick = onBack,
-                        colors = cancelButtonColors(),
+                    RequestRedeployContent(
+                        isEditable,
+                        incidents,
+                        requestedIncidentIds,
+                        errorMessage,
+                        selectedIncident.name.ifBlank { selectIncidentHint },
+                        selectIncidentHint,
+                        onSelectIncident,
+                        rememberKey = viewModel,
                     )
-                    BusyButton(
-                        Modifier
-                            .testTag("requestRedeploySubmitAction")
-                            .weight(1f),
-                        text = t("actions.submit"),
-                        enabled = isEditable && selectedIncident != EmptyIncident,
-                        indicateBusy = isRequestingRedeploy,
-                        onClick = { viewModel.requestRedeploy(selectedIncident) },
-                    )
+
+                    Spacer(Modifier.weight(1f))
+
+                    Row(
+                        listItemModifier,
+                        horizontalArrangement = listItemSpacedBy,
+                    ) {
+                        BusyButton(
+                            Modifier
+                                .testTag("requestRedeployCancelAction")
+                                .weight(1f),
+                            text = t("actions.cancel"),
+                            enabled = isEditable,
+                            indicateBusy = false,
+                            onClick = onBack,
+                            colors = cancelButtonColors(),
+                        )
+                        BusyButton(
+                            Modifier
+                                .testTag("requestRedeploySubmitAction")
+                                .weight(1f),
+                            text = t("actions.submit"),
+                            enabled = isEditable && selectedIncident != EmptyIncident,
+                            indicateBusy = isRequestingRedeploy,
+                            onClick = { viewModel.requestRedeploy(selectedIncident) },
+                        )
+                    }
                 }
             }
         }
