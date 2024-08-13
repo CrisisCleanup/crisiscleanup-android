@@ -38,6 +38,7 @@ import com.crisiscleanup.core.model.data.EarlybirdEndOfLifeFallback
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.MinSupportedAppVersion
 import com.crisiscleanup.core.model.data.UserData
+import com.crisiscleanup.core.ui.TutorialViewTracker
 import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -71,6 +72,7 @@ class MainActivityViewModel @Inject constructor(
     private val accountDataRefresher: AccountDataRefresher,
     private val accountUpdateRepository: AccountUpdateRepository,
     @Tutorials(Menu) private val menuTutorialDirector: TutorialDirector,
+    val tutorialViewTracker: TutorialViewTracker,
     val translator: KeyResourceTranslator,
     private val syncPuller: SyncPuller,
     private val appVersionProvider: AppVersionProvider,
@@ -314,17 +316,22 @@ class MainActivityViewModel @Inject constructor(
         }
     }
 
+    private fun setMenuTutorialDone() {
+        viewModelScope.launch(ioDispatcher) {
+            appPreferencesRepository.setMenuTutorialDone(true)
+        }
+    }
+
     fun onMenuTutorialNext() {
         val hasNextStep = menuTutorialDirector.onNextStep()
         if (!hasNextStep) {
-            viewModelScope.launch(ioDispatcher) {
-                appPreferencesRepository.setMenuTutorialDone(true)
-            }
+            setMenuTutorialDone()
         }
     }
 
     fun closeMenuTutorial() {
         menuTutorialDirector.skipTutorial()
+        setMenuTutorialDone()
     }
 }
 

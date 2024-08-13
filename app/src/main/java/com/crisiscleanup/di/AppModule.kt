@@ -8,6 +8,7 @@ import com.crisiscleanup.AndroidPermissionManager
 import com.crisiscleanup.AndroidPhoneNumberPicker
 import com.crisiscleanup.AppVisualAlertManager
 import com.crisiscleanup.CrisisCleanupAppEnv
+import com.crisiscleanup.CrisisCleanupTutorialViewTracker
 import com.crisiscleanup.ZxingQrCodeGenerator
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.LocationProvider
@@ -18,6 +19,7 @@ import com.crisiscleanup.core.common.VisualAlertManager
 import com.crisiscleanup.core.common.log.TagLogger
 import com.crisiscleanup.core.network.AuthInterceptorProvider
 import com.crisiscleanup.core.network.RetrofitInterceptorProvider
+import com.crisiscleanup.core.ui.TutorialViewTracker
 import com.crisiscleanup.log.CrisisCleanupAppLogger
 import com.crisiscleanup.network.CrisisCleanupAuthInterceptorProvider
 import com.crisiscleanup.network.CrisisCleanupInterceptorProvider
@@ -68,6 +70,9 @@ interface AppModule {
     @Singleton
     @Binds
     fun bindsPhoneNumberPicker(picker: AndroidPhoneNumberPicker): PhoneNumberPicker
+
+    @Binds
+    fun bindsTutorialViewTracker(tracker: CrisisCleanupTutorialViewTracker): TutorialViewTracker
 }
 
 @Module

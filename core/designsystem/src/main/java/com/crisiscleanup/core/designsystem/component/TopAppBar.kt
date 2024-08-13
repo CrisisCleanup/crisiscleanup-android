@@ -313,6 +313,7 @@ private fun AvatarAttentionBadge(
 @Composable
 fun TopAppBarDefault(
     modifier: Modifier = Modifier,
+    accountToggleModifier: Modifier = Modifier,
     @StringRes titleResId: Int = 0,
     title: String = "",
     navIcon: ImageVector? = null,
@@ -345,7 +346,7 @@ fun TopAppBarDefault(
         AvatarAttentionBadge(isActionAttention) {
             IconButton(
                 onClick = onActionClick,
-                modifier = Modifier.testTag("topBarAvatarIconBtn"),
+                modifier = accountToggleModifier.testTag("topBarAvatarIconBtn"),
             ) {
                 AvatarIcon(
                     profilePictureUri,

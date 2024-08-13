@@ -36,6 +36,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -58,6 +59,7 @@ import com.crisiscleanup.core.designsystem.LocalLayoutProvider
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupBackground
 import com.crisiscleanup.core.designsystem.theme.LocalDimensions
+import com.crisiscleanup.core.model.data.TutorialViewId
 import com.crisiscleanup.core.ui.AppLayoutArea
 import com.crisiscleanup.core.ui.LayoutSizePosition
 import com.crisiscleanup.core.ui.LocalAppLayout
@@ -220,6 +222,7 @@ private fun BoxScope.LoadedContent(
             appState,
             isOnboarding,
             menuTutorialStep,
+            viewModel.tutorialViewTracker.viewSizePositionLookup,
             viewModel::onMenuTutorialNext,
         ) { openAuthentication = true }
 
@@ -324,6 +327,7 @@ private fun NavigableContent(
     appState: CrisisCleanupAppState,
     isOnboarding: Boolean,
     menuTutorialStep: TutorialStep,
+    tutorialViewLookup: SnapshotStateMap<TutorialViewId, LayoutSizePosition>,
     advanceMenuTutorial: () -> Unit,
     openAuthentication: () -> Unit,
 ) {
@@ -331,9 +335,8 @@ private fun NavigableContent(
     val layoutBottomNav = LocalLayoutProvider.current.isBottomNav
     val isFullscreen = appState.isFullscreenRoute
 
-    var navBarSizePosition by remember { mutableStateOf(LayoutSizePosition()) }
     val navBarSizePositionModifier = Modifier.onGloballyPositioned { coordinates ->
-        navBarSizePosition = coordinates.sizePosition
+        tutorialViewLookup[TutorialViewId.AppNavBar] = coordinates.sizePosition
     }
 
     Scaffold(
@@ -427,7 +430,7 @@ private fun NavigableContent(
         TutorialOverlay(
             tutorialStep = menuTutorialStep,
             onNextStep = advanceMenuTutorial,
-            navBarSizePosition = navBarSizePosition,
+            tutorialViewLookup = tutorialViewLookup,
         )
     }
 }

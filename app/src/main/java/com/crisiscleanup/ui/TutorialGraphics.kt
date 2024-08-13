@@ -4,6 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -24,18 +25,21 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.sp
 import com.crisiscleanup.core.common.TutorialStep
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
+import com.crisiscleanup.core.model.data.TutorialViewId
 import com.crisiscleanup.core.ui.LayoutSizePosition
 
 @Composable
 internal fun TutorialOverlay(
     tutorialStep: TutorialStep,
     onNextStep: () -> Unit,
-    navBarSizePosition: LayoutSizePosition,
+    tutorialViewLookup: SnapshotStateMap<TutorialViewId, LayoutSizePosition>,
 ) {
     val t = LocalAppTranslator.current
     val textMeasurer = rememberTextMeasurer()
 
     val stepForwardText = t("~~(Press anywhere on screen to continue tutorial)")
+
+    val navBarSizePosition = tutorialViewLookup[TutorialViewId.AppNavBar] ?: LayoutSizePosition()
 
     // TODO Test recomposing/caching
     // TODO Animate/morph between steps

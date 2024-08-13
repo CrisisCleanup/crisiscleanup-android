@@ -133,6 +133,7 @@ class AuthenticationViewModelTest {
                 tableViewSortBy = WorksiteSortBy.None,
                 allowAllAnalytics = false,
                 hideGettingStartedVideo = false,
+                isMenuTutorialDone = false,
             ),
         )
 

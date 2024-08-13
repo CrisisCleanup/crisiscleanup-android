@@ -23,6 +23,7 @@ import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.SyncLogRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
+import com.crisiscleanup.core.ui.TutorialViewTracker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -46,6 +47,7 @@ class MenuViewModel @Inject constructor(
     private val appEnv: AppEnv,
     private val syncPuller: SyncPuller,
     @Tutorials(Menu) val menuTutorialDirector: TutorialDirector,
+    val tutorialViewTracker: TutorialViewTracker,
     private val databaseVersionProvider: DatabaseVersionProvider,
     translator: KeyResourceTranslator,
     @ApplicationScope private val externalScope: CoroutineScope,
