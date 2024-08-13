@@ -95,10 +95,60 @@ internal fun TutorialOverlay(
                 )
             }
 
+            TutorialStep.AccountInfo -> {
+                drawStepForwardText(
+                    textMeasurer,
+                    stepForwardText,
+                    spotlightAboveStepForwardOffset(isHorizontalBar),
+                )
+
+                val viewSizePosition =
+                    tutorialViewLookup[TutorialViewId.AccountToggle] ?: LayoutSizePosition()
+                val viewSizeOffset = getAppBarSpotlightSizeOffset(viewSizePosition)
+                val stepInstruction = t("~~Open account information")
+                menuTutorialAccountToggle(
+                    textMeasurer,
+                    isHorizontalBar,
+                    viewSizeOffset,
+                    stepInstruction,
+                )
+            }
+
+            TutorialStep.IncidentSelect -> {
+                drawStepForwardText(
+                    textMeasurer,
+                    stepForwardText,
+                    spotlightAboveStepForwardOffset(isHorizontalBar),
+                )
+
+                val viewSizePosition = tutorialViewLookup[TutorialViewId.IncidentSelectDropdown]
+                    ?: LayoutSizePosition()
+                val viewSizeOffset = getAppBarSpotlightSizeOffset(viewSizePosition, 1.2f)
+                val stepInstruction = t("~~Select and change Incidents")
+                menuTutorialSelectIncident(
+                    textMeasurer,
+                    viewSizeOffset,
+                    stepInstruction,
+                )
+            }
+
             else -> {}
         }
     }
 }
+
+private fun DrawScope.spotlightAboveStepForwardOffset(isHorizontalBar: Boolean) =
+    if (isHorizontalBar) {
+        Offset(
+            32f,
+            size.height * 0.6f,
+        )
+    } else {
+        Offset(
+            size.width * 0.3f,
+            size.height * 0.6f,
+        )
+    }
 
 private fun DrawScope.drawStepForwardText(
     textMeasurer: TextMeasurer,
@@ -115,6 +165,28 @@ private fun DrawScope.drawStepForwardText(
         ),
         overflow = TextOverflow.Visible,
     )
+}
+
+private data class SizeOffset(
+    val size: Size = Size.Zero,
+    val topLeft: Offset = Offset.Zero,
+)
+
+private fun getNavBarSpotlightSizeOffset(
+    isHorizontalBar: Boolean,
+    navBarSizePosition: LayoutSizePosition,
+): SizeOffset {
+    val navBarSize = navBarSizePosition.size
+    val spotlightWidth = navBarSize.width * 0.85f
+    val spotlightHeight = navBarSize.height * (if (isHorizontalBar) 0.5f else 0.95f)
+    val spotlightSize = Size(spotlightWidth, spotlightHeight)
+    val verticalOffset = if (isHorizontalBar) -64 else 0
+    val navBarPosition = navBarSizePosition.position
+    val spotlightTopLeft = Offset(
+        navBarPosition.x + (navBarSize.width - spotlightSize.width) * 0.5f,
+        navBarPosition.y + (navBarSize.height - spotlightSize.height) * 0.5f + verticalOffset,
+    )
+    return SizeOffset(spotlightSize, spotlightTopLeft)
 }
 
 private fun DrawScope.menuTutorialAppNav(
@@ -183,25 +255,120 @@ private fun DrawScope.menuTutorialAppNav(
     )
 }
 
-private data class SizeOffset(
-    val size: Size = Size.Zero,
-    val topLeft: Offset = Offset.Zero,
-)
-
-private fun getNavBarSpotlightSizeOffset(
-    isHorizontalBar: Boolean,
-    navBarSizePosition: LayoutSizePosition,
+private fun getAppBarSpotlightSizeOffset(
+    accountToggleSizePosition: LayoutSizePosition,
+    heightScale: Float = 1.1f,
 ): SizeOffset {
-    val navBarSize = navBarSizePosition.size
-    val spotlightWidth = navBarSize.width * 0.85f
-    val spotlightHeight = navBarSize.height * (if (isHorizontalBar) 0.5f else 0.95f)
+    val size = accountToggleSizePosition.size
+    val spotlightWidth = size.width * 1.1f
+    val spotlightHeight = size.height * heightScale
     val spotlightSize = Size(spotlightWidth, spotlightHeight)
-    val horizontalOffset = 0
-    val verticalOffset = if (isHorizontalBar) -64 else 0
-    val navBarPosition = navBarSizePosition.position
+    val position = accountToggleSizePosition.position
     val spotlightTopLeft = Offset(
-        navBarPosition.x + (navBarSize.width - spotlightSize.width) * 0.5f + horizontalOffset,
-        navBarPosition.y + (navBarSize.height - spotlightSize.height) * 0.5f + verticalOffset,
+        position.x - (spotlightWidth - size.width) * 0.5f,
+        position.y - (spotlightHeight - size.height) * 0.5f,
     )
     return SizeOffset(spotlightSize, spotlightTopLeft)
+}
+
+private fun DrawScope.menuTutorialAccountToggle(
+    textMeasurer: TextMeasurer,
+    isHorizontalBar: Boolean,
+    sizeOffset: SizeOffset,
+    stepInstruction: String,
+) {
+    val instructionOffset = Offset(
+        size.width * (if (isHorizontalBar) 0.1f else 0.3f),
+        size.height * 0.4f,
+    )
+    val instructionStyle = TextStyle(
+        fontSize = 32.sp,
+        color = Color.White,
+    )
+
+    drawText(
+        textMeasurer = textMeasurer,
+        text = stepInstruction,
+        topLeft = instructionOffset,
+        style = instructionStyle,
+        overflow = TextOverflow.Visible,
+    )
+
+    val instructionConstraints = Constraints(
+        maxWidth = (size.width - instructionOffset.x).toInt(),
+    )
+    val textLayout = textMeasurer.measure(
+        stepInstruction,
+        instructionStyle,
+        overflow = TextOverflow.Visible,
+        constraints = instructionConstraints,
+    )
+    val textSize = textLayout.size
+
+    val lineStartX =
+        if (isHorizontalBar) size.width * 0.5f else instructionOffset.x + textSize.width + 32
+    val lineStartY = instructionOffset.y + (if (isHorizontalBar) -16 else 0)
+    val lineStart = Offset(lineStartX, lineStartY)
+    val lineEnd = Offset(sizeOffset.topLeft.x, sizeOffset.topLeft.y + sizeOffset.size.height)
+    drawLine(
+        Color.White,
+        lineStart,
+        lineEnd,
+        strokeWidth = 16f,
+        cap = StrokeCap.Round,
+    )
+
+    drawRoundRect(
+        color = Color.White,
+        topLeft = sizeOffset.topLeft,
+        size = sizeOffset.size,
+        cornerRadius = CornerRadius(sizeOffset.size.height * 0.5f),
+        blendMode = BlendMode.Clear,
+    )
+}
+
+private fun DrawScope.menuTutorialSelectIncident(
+    textMeasurer: TextMeasurer,
+    sizeOffset: SizeOffset,
+    stepInstruction: String,
+) {
+    val instructionOffset = Offset(
+        size.width * 0.1f,
+        size.height * 0.4f,
+    )
+    val instructionStyle = TextStyle(
+        fontSize = 32.sp,
+        color = Color.White,
+    )
+
+    drawText(
+        textMeasurer = textMeasurer,
+        text = stepInstruction,
+        topLeft = instructionOffset,
+        style = instructionStyle,
+        overflow = TextOverflow.Visible,
+    )
+
+    val lineStartX = size.width * 0.2f
+    val lineStartY = instructionOffset.y - 16
+    val lineStart = Offset(lineStartX, lineStartY)
+    val lineEnd = Offset(
+        sizeOffset.topLeft.x + sizeOffset.size.width * 0.5f,
+        sizeOffset.topLeft.y + sizeOffset.size.height + 32f,
+    )
+    drawLine(
+        Color.White,
+        lineStart,
+        lineEnd,
+        strokeWidth = 16f,
+        cap = StrokeCap.Round,
+    )
+
+    drawRoundRect(
+        color = Color.White,
+        topLeft = sizeOffset.topLeft,
+        size = sizeOffset.size,
+        cornerRadius = CornerRadius(sizeOffset.size.height * 0.5f),
+        blendMode = BlendMode.Clear,
+    )
 }
