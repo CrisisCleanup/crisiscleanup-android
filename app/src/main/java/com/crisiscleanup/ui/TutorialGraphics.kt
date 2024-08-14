@@ -22,6 +22,7 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.sp
 import com.crisiscleanup.core.common.TutorialStep
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
@@ -65,23 +66,30 @@ internal fun TutorialOverlay(
             TutorialStep.InviteTeammates,
             TutorialStep.ProvideAppFeedback,
             -> {
-                // TODO This requires a bit of testing to guarantee the view is centered...
-                val viewSizePosition =
-                    tutorialViewLookup[TutorialViewId.InviteTeammate] ?: LayoutSizePosition()
+                val viewId = if (tutorialStep == TutorialStep.ProvideAppFeedback) {
+                    TutorialViewId.ProvideFeedback
+                } else {
+                    TutorialViewId.InviteTeammate
+                }
+                val viewSizePosition = tutorialViewLookup[viewId] ?: LayoutSizePosition()
                 drawStepForwardText(
                     textMeasurer,
                     stepForwardText,
                     spotlightStepForwardOffset(isHorizontalBar, viewSizePosition),
                 )
 
-//                val viewSizeOffset = getDynamicSpotlightSizeOffset(viewSizePosition)
-//                val stepInstruction = t("~~Invite teammates to Crisis Cleanup")
-//                menuTutorialDynamicContent(
-//                    textMeasurer,
-//                    isHorizontalBar,
-//                    viewSizeOffset,
-//                    stepInstruction,
-//                )
+                val viewSizeOffset = getDynamicSpotlightSizeOffset(viewSizePosition)
+                val instructionKey = if (viewId == TutorialViewId.ProvideFeedback) {
+                    "~~Let us know of any issues with this app"
+                } else {
+                    "~~Invite teammates to Crisis Cleanup"
+                }
+                val stepInstruction = t(instructionKey)
+                menuTutorialDynamicContent(
+                    textMeasurer,
+                    viewSizeOffset,
+                    stepInstruction,
+                )
             }
 
             TutorialStep.AppNavBar,
@@ -98,7 +106,7 @@ internal fun TutorialOverlay(
                     )
                 } else {
                     Offset(
-                        size.width * 0.3f,
+                        navBarSizeOffset.topLeft.x + size.width * 0.2f,
                         size.height * 0.3f,
                     )
                 }
@@ -118,14 +126,15 @@ internal fun TutorialOverlay(
             }
 
             TutorialStep.AccountInfo -> {
+                val viewSizePosition =
+                    tutorialViewLookup[TutorialViewId.AccountToggle] ?: LayoutSizePosition()
+
                 drawStepForwardText(
                     textMeasurer,
                     stepForwardText,
                     spotlightAboveStepForwardOffset(isHorizontalBar),
                 )
 
-                val viewSizePosition =
-                    tutorialViewLookup[TutorialViewId.AccountToggle] ?: LayoutSizePosition()
                 val viewSizeOffset = getAppBarSpotlightSizeOffset(viewSizePosition)
                 val stepInstruction = t("~~Open account information")
                 menuTutorialAccountToggle(
@@ -137,14 +146,15 @@ internal fun TutorialOverlay(
             }
 
             TutorialStep.IncidentSelect -> {
+                val viewSizePosition = tutorialViewLookup[TutorialViewId.IncidentSelectDropdown]
+                    ?: LayoutSizePosition()
+
                 drawStepForwardText(
                     textMeasurer,
                     stepForwardText,
-                    spotlightAboveStepForwardOffset(isHorizontalBar),
+                    spotlightAboveStepForwardOffset(isHorizontalBar, viewSizePosition),
                 )
 
-                val viewSizePosition = tutorialViewLookup[TutorialViewId.IncidentSelectDropdown]
-                    ?: LayoutSizePosition()
                 val viewSizeOffset = getAppBarSpotlightSizeOffset(viewSizePosition, 1.2f)
                 val stepInstruction = t("~~Select and change Incidents")
                 menuTutorialSelectIncident(
@@ -165,26 +175,114 @@ private fun DrawScope.spotlightStepForwardOffset(
 ): Offset {
     val center = viewSizePosition.position.y + viewSizePosition.size.height * 0.5f
     val y = size.height * (if (center > size.height * 0.5f) {
-        0.3f
+        0.2f
     } else {
-        0.7f
+        0.8f
     })
-    val x = if (isHorizontalBar) 32f else size.width * 0.3f
+    val x = viewSizePosition.position.x + if (isHorizontalBar) {
+        32f
+    } else {
+        viewSizePosition.size.width * 0.2f
+    }
     return Offset(x, y)
 }
 
-private fun DrawScope.spotlightAboveStepForwardOffset(isHorizontalBar: Boolean) =
-    if (isHorizontalBar) {
-        Offset(
-            32f,
-            size.height * 0.6f,
-        )
-    } else {
-        Offset(
-            size.width * 0.3f,
-            size.height * 0.6f,
-        )
-    }
+private fun getDynamicSpotlightSizeOffset(
+    sizePosition: LayoutSizePosition,
+): SizeOffset {
+    val size = sizePosition.size
+    val spotlightWidth = size.width * 1f
+    val spotlightHeight = size.height * 1.2f
+    val spotlightSize = Size(spotlightWidth, spotlightHeight)
+    val position = sizePosition.position
+    val spotlightTopLeft = Offset(
+        position.x + (size.width - spotlightWidth) * 0.5f,
+        position.y + (size.height - spotlightHeight) * 0.5f,
+    )
+    return SizeOffset(spotlightSize, spotlightTopLeft)
+}
+
+private fun DrawScope.menuTutorialDynamicContent(
+    textMeasurer: TextMeasurer,
+    sizeOffset: SizeOffset,
+    stepInstruction: String,
+) {
+    val center = sizeOffset.topLeft.y + sizeOffset.size.height * 0.5f
+    val isSpotlightCenterAbove = center < size.height * 0.5f
+
+    val instructionOffset = Offset(
+        sizeOffset.topLeft.x + sizeOffset.size.width * 0.1f,
+        size.height * (if (isSpotlightCenterAbove) 0.6f else 0.35f),
+    )
+    val instructionStyle = TextStyle(
+        fontSize = 32.sp,
+        color = Color.White,
+    )
+
+    drawText(
+        textMeasurer = textMeasurer,
+        text = stepInstruction,
+        topLeft = instructionOffset,
+        style = instructionStyle,
+        overflow = TextOverflow.Visible,
+    )
+
+    val lineX = size.width * 0.5f
+    val lineStartY =
+        instructionOffset.y + (if (isSpotlightCenterAbove) {
+            -16f
+        } else {
+            val instructionConstraints = Constraints(
+                maxWidth = (size.width - instructionOffset.x).toInt(),
+            )
+            val textLayout = textMeasurer.measure(
+                stepInstruction,
+                instructionStyle,
+                overflow = TextOverflow.Visible,
+                constraints = instructionConstraints,
+            )
+            val textSize = textLayout.size
+
+            textSize.height.toFloat() + 16f
+        })
+    val lineStart = Offset(lineX, lineStartY)
+    val lineEndY =
+        sizeOffset.topLeft.y + (if (isSpotlightCenterAbove) sizeOffset.size.height + 32f else -32f)
+    val lineEnd = Offset(lineX, lineEndY)
+    drawLine(
+        Color.White,
+        lineStart,
+        lineEnd,
+        strokeWidth = 16f,
+        cap = StrokeCap.Round,
+    )
+
+    drawRoundRect(
+        color = Color.White,
+        topLeft = sizeOffset.topLeft,
+        size = sizeOffset.size,
+        cornerRadius = CornerRadius(sizeOffset.size.height * 0.5f),
+        blendMode = BlendMode.Clear,
+    )
+}
+
+private fun DrawScope.spotlightAboveStepForwardOffset(
+    isHorizontalBar: Boolean,
+    viewSizePosition: LayoutSizePosition? = null,
+): Offset {
+    val referencePosition = viewSizePosition ?: LayoutSizePosition(
+        IntSize(size.width.toInt(), 0),
+        Offset(if (isHorizontalBar) 0f else 32f, 0f),
+    )
+    val x = referencePosition.position.x +
+            if (isHorizontalBar) {
+                32f
+            } else {
+                referencePosition.size.width * 0.2f
+            }
+    val y = size.height * 0.6f
+    return Offset(x, y)
+}
 
 private fun DrawScope.drawStepForwardText(
     textMeasurer: TextMeasurer,

@@ -12,9 +12,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -23,6 +23,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -110,6 +112,9 @@ private fun MenuScreen(
     val isMenuTutorialDone by viewModel.isMenuTutorialDone.collectAsStateWithLifecycle(true)
     val tutorialViewLookup = viewModel.tutorialViewTracker.viewSizePositionLookup
 
+    val isGettingStartedVisible =
+        menuItemVisibility.showGettingStartedVideo || viewModel.isNotProduction
+
     val tutorialStep by viewModel.menuTutorialDirector.tutorialStep.collectAsStateWithLifecycle()
     val incidentDropdownModifier = Modifier.onGloballyPositioned { coordinates ->
         tutorialViewLookup[TutorialViewId.IncidentSelectDropdown] = coordinates.sizePosition
@@ -124,7 +129,7 @@ private fun MenuScreen(
         tutorialViewLookup[TutorialViewId.ProvideFeedback] = coordinates.sizePosition
     }
 
-    Column(Modifier.fillMaxWidth()) {
+    Column {
         AppTopBar(
             incidentDropdownModifier = incidentDropdownModifier,
             accountToggleModifier = accountToggleModifier,
@@ -133,21 +138,47 @@ private fun MenuScreen(
             onOpenIncidents = openIncidentsSelect,
         )
 
-        val scrollState = rememberScrollState()
+        val lazyListState = rememberLazyListState()
+        val firstVisibleItemIndex by remember {
+            derivedStateOf {
+                lazyListState.layoutInfo.visibleItemsInfo[0].index
+            }
+        }
+        val lastVisibleItemIndex by remember {
+            derivedStateOf {
+                lazyListState.layoutInfo.visibleItemsInfo.last().index
+            }
+        }
+        val focusItemScrollOffset = (-72 * LocalDensity.current.density).toInt()
         LaunchedEffect(tutorialStep) {
-            // TODO How to guarantee centering the view?
+            fun getListItemIndex(itemIndex: Int): Int {
+                var listItemIndex = itemIndex
+                if (!isMenuTutorialDone) {
+                    listItemIndex += 1
+                }
+                if (isGettingStartedVisible) {
+                    listItemIndex += 1
+                }
+                return listItemIndex
+            }
             when (tutorialStep) {
                 TutorialStep.MenuStart,
                 TutorialStep.InviteTeammates,
                 -> {
-                    tutorialViewLookup[TutorialViewId.InviteTeammate]?.let { sizePosition ->
-                        scrollState.scrollTo(sizePosition.position.y.toInt() - 300)
+                    val listItemIndex = getListItemIndex(2)
+                    if (firstVisibleItemIndex > listItemIndex - 2 ||
+                        lastVisibleItemIndex < listItemIndex + 2
+                    ) {
+                        lazyListState.scrollToItem(listItemIndex, focusItemScrollOffset)
                     }
                 }
 
                 TutorialStep.ProvideAppFeedback -> {
-                    tutorialViewLookup[TutorialViewId.ProvideFeedback]?.let { sizePosition ->
-                        scrollState.scrollTo(sizePosition.position.y.toInt() - 300)
+                    val listItemIndex = getListItemIndex(4)
+                    if (firstVisibleItemIndex > listItemIndex - 2 ||
+                        lastVisibleItemIndex < listItemIndex + 2
+                    ) {
+                        lazyListState.scrollToItem(listItemIndex, focusItemScrollOffset)
                     }
                 }
 
@@ -155,130 +186,164 @@ private fun MenuScreen(
             }
         }
 
-        Column(
-            Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState),
+        LazyColumn(
+            Modifier.fillMaxSize(),
+            state = lazyListState,
         ) {
             if (!isMenuTutorialDone) {
-                MenuTutorial(
-                    false,
-                    viewModel.menuTutorialDirector::startTutorial,
-                    viewModel::setMenuTutorialDone,
-                    viewModel.isNotProduction,
+                item {
+                    MenuTutorial(
+                        false,
+                        viewModel.menuTutorialDirector::startTutorial,
+                        viewModel::setMenuTutorialDone,
+                        viewModel.isNotProduction,
+                    )
+                }
+            }
+
+            if (isGettingStartedVisible) {
+                item {
+                    val hideGettingStartedVideo = remember(viewModel) {
+                        { viewModel.showGettingStartedVideo(false) }
+                    }
+                    GettingStartedSection(
+                        menuItemVisibility.showGettingStartedVideo,
+                        hideGettingStartedVideo = hideGettingStartedVideo,
+                        viewModel.gettingStartedVideoUrl,
+                        viewModel.isNotProduction,
+                        toggleGettingStartedSection = viewModel::showGettingStartedVideo,
+                    )
+                }
+            }
+
+            item(
+                key = "lists-item",
+                contentType = "outline-button",
+            ) {
+                CrisisCleanupOutlinedButton(
+                    modifier = listItemModifier.actionHeight(),
+                    text = t("list.lists"),
+                    onClick = openLists,
+                    enabled = true,
                 )
             }
 
-            val hideGettingStartedVideo = remember(viewModel) {
-                { viewModel.showGettingStartedVideo(false) }
+            item(
+                key = "invite-teammate-item",
+                contentType = "primary-button",
+            ) {
+                CrisisCleanupButton(
+                    modifier = inviteTeammateModifier
+                        .fillMaxWidth()
+                        .listItemPadding(),
+                    text = t("usersVue.invite_new_user"),
+                    onClick = openInviteTeammate,
+                )
             }
-            GettingStartedSection(
-                menuItemVisibility.showGettingStartedVideo,
-                hideGettingStartedVideo = hideGettingStartedVideo,
-                viewModel.gettingStartedVideoUrl,
-                viewModel.isNotProduction,
-                toggleGettingStartedSection = viewModel::showGettingStartedVideo,
-            )
 
-            CrisisCleanupOutlinedButton(
-                modifier = listItemModifier.actionHeight(),
-                text = t("list.lists"),
-                onClick = openLists,
-                enabled = true,
-            )
+            item(
+                key = "redeploy-item",
+                contentType = "outline-button",
+            ) {
+                CrisisCleanupOutlinedButton(
+                    modifier = listItemModifier.actionHeight(),
+                    text = t("requestRedeploy.request_redeploy"),
+                    onClick = openRequestRedeploy,
+                    enabled = true,
+                )
+            }
 
-            CrisisCleanupButton(
-                modifier = inviteTeammateModifier
-                    .fillMaxWidth()
-                    .listItemPadding(),
-                text = t("usersVue.invite_new_user"),
-                onClick = openInviteTeammate,
-            )
-
-            CrisisCleanupOutlinedButton(
-                modifier = listItemModifier.actionHeight(),
-                text = t("requestRedeploy.request_redeploy"),
-                onClick = openRequestRedeploy,
-                enabled = true,
-            )
-
-            CrisisCleanupOutlinedButton(
-                modifier = provideFeedbackModifier
-                    .fillMaxWidth()
-                    .listItemPadding()
-                    .actionHeight(),
-                text = t("info.give_app_feedback"),
-                onClick = openUserFeedback,
-                enabled = true,
-            )
+            item(
+                key = "feedback-item",
+                contentType = "outline-button",
+            ) {
+                CrisisCleanupOutlinedButton(
+                    modifier = provideFeedbackModifier
+                        .fillMaxWidth()
+                        .listItemPadding()
+                        .actionHeight(),
+                    text = t("info.give_app_feedback"),
+                    onClick = openUserFeedback,
+                    enabled = true,
+                )
+            }
 
             if (isMenuTutorialDone) {
-                val unsetMenuTutorialDone =
-                    remember(viewModel) { { viewModel.setMenuTutorialDone(false) } }
-                MenuTutorial(
-                    true,
-                    viewModel.menuTutorialDirector::startTutorial,
-                    unsetMenuTutorialDone,
-                    viewModel.isNotProduction,
-                )
-            }
-
-            Text(
-                viewModel.versionText,
-                listItemModifier,
-                color = neutralFontColor,
-            )
-
-            Row(
-                Modifier
-                    .clickable(
-                        onClick = { shareAnalytics(!isSharingAnalytics) },
+                item {
+                    val unsetMenuTutorialDone =
+                        remember(viewModel) { { viewModel.setMenuTutorialDone(false) } }
+                    MenuTutorial(
+                        true,
+                        viewModel.menuTutorialDirector::startTutorial,
+                        unsetMenuTutorialDone,
+                        viewModel.isNotProduction,
                     )
-                    .then(listItemModifier),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
+                }
+            }
+
+            item {
                 Text(
-                    t("actions.share_analytics"),
-                    Modifier.weight(1f),
-                )
-                Switch(
-                    checked = isSharingAnalytics,
-                    onCheckedChange = shareAnalytics,
+                    viewModel.versionText,
+                    listItemModifier,
+                    color = neutralFontColor,
                 )
             }
 
-            val uriHandler = LocalUriHandler.current
-
-            Spacer(Modifier.weight(1f))
+            item {
+                Row(
+                    Modifier
+                        .clickable(
+                            onClick = { shareAnalytics(!isSharingAnalytics) },
+                        )
+                        .then(listItemModifier),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        t("actions.share_analytics"),
+                        Modifier.weight(1f),
+                    )
+                    Switch(
+                        checked = isSharingAnalytics,
+                        onCheckedChange = shareAnalytics,
+                    )
+                }
+            }
 
             // TODO Open in WebView?
-            Row(
-                listItemModifier,
-                horizontalArrangement = Arrangement.Center,
-            ) {
-                CrisisCleanupTextButton(
-                    Modifier.actionHeight(),
-                    text = t("publicNav.terms"),
+            item {
+                val uriHandler = LocalUriHandler.current
+                Row(
+                    listItemModifier,
+                    horizontalArrangement = Arrangement.Center,
                 ) {
-                    uriHandler.openUri(viewModel.termsOfServiceUrl)
-                }
-                CrisisCleanupTextButton(
-                    Modifier.actionHeight(),
-                    text = t("nav.privacy"),
-                ) {
-                    uriHandler.openUri(viewModel.privacyPolicyUrl)
+                    CrisisCleanupTextButton(
+                        Modifier.actionHeight(),
+                        text = t("publicNav.terms"),
+                    ) {
+                        uriHandler.openUri(viewModel.termsOfServiceUrl)
+                    }
+                    CrisisCleanupTextButton(
+                        Modifier.actionHeight(),
+                        text = t("nav.privacy"),
+                    ) {
+                        uriHandler.openUri(viewModel.privacyPolicyUrl)
+                    }
                 }
             }
 
             if (viewModel.isDebuggable) {
-                MenuScreenNonProductionView()
+                item {
+                    MenuScreenNonProductionView()
+                }
             }
 
             if (viewModel.isNotProduction) {
-                CrisisCleanupTextButton(
-                    onClick = openSyncLogs,
-                    text = "See sync logs",
-                )
+                item {
+                    CrisisCleanupTextButton(
+                        onClick = openSyncLogs,
+                        text = "See sync logs",
+                    )
+                }
             }
         }
     }
