@@ -19,6 +19,7 @@ interface TutorialDirector {
 
 enum class TutorialStep {
     MenuStart,
+    InviteTeammates,
     AppNavBar,
     AccountInfo,
     ProvideAppFeedback,

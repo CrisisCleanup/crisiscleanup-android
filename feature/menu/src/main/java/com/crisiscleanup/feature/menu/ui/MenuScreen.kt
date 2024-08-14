@@ -22,6 +22,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.appcomponent.ui.AppTopBar
+import com.crisiscleanup.core.common.TutorialStep
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupOutlinedButton
@@ -108,12 +110,18 @@ private fun MenuScreen(
     val isMenuTutorialDone by viewModel.isMenuTutorialDone.collectAsStateWithLifecycle(true)
     val tutorialViewLookup = viewModel.tutorialViewTracker.viewSizePositionLookup
 
+    val tutorialStep by viewModel.menuTutorialDirector.tutorialStep.collectAsStateWithLifecycle()
     val incidentDropdownModifier = Modifier.onGloballyPositioned { coordinates ->
         tutorialViewLookup[TutorialViewId.IncidentSelectDropdown] = coordinates.sizePosition
     }
-
     val accountToggleModifier = Modifier.onGloballyPositioned { coordinates ->
         tutorialViewLookup[TutorialViewId.AccountToggle] = coordinates.sizePosition
+    }
+    val inviteTeammateModifier = Modifier.onGloballyPositioned { coordinates ->
+        tutorialViewLookup[TutorialViewId.InviteTeammate] = coordinates.sizePosition
+    }
+    val provideFeedbackModifier = Modifier.onGloballyPositioned { coordinates ->
+        tutorialViewLookup[TutorialViewId.ProvideFeedback] = coordinates.sizePosition
     }
 
     Column(Modifier.fillMaxWidth()) {
@@ -125,10 +133,32 @@ private fun MenuScreen(
             onOpenIncidents = openIncidentsSelect,
         )
 
+        val scrollState = rememberScrollState()
+        LaunchedEffect(tutorialStep) {
+            // TODO How to guarantee centering the view?
+            when (tutorialStep) {
+                TutorialStep.MenuStart,
+                TutorialStep.InviteTeammates,
+                -> {
+                    tutorialViewLookup[TutorialViewId.InviteTeammate]?.let { sizePosition ->
+                        scrollState.scrollTo(sizePosition.position.y.toInt() - 300)
+                    }
+                }
+
+                TutorialStep.ProvideAppFeedback -> {
+                    tutorialViewLookup[TutorialViewId.ProvideFeedback]?.let { sizePosition ->
+                        scrollState.scrollTo(sizePosition.position.y.toInt() - 300)
+                    }
+                }
+
+                else -> {}
+            }
+        }
+
         Column(
             Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(scrollState),
         ) {
             if (!isMenuTutorialDone) {
                 MenuTutorial(
@@ -158,7 +188,9 @@ private fun MenuScreen(
             )
 
             CrisisCleanupButton(
-                modifier = listItemModifier,
+                modifier = inviteTeammateModifier
+                    .fillMaxWidth()
+                    .listItemPadding(),
                 text = t("usersVue.invite_new_user"),
                 onClick = openInviteTeammate,
             )
@@ -171,7 +203,10 @@ private fun MenuScreen(
             )
 
             CrisisCleanupOutlinedButton(
-                modifier = listItemModifier.actionHeight(),
+                modifier = provideFeedbackModifier
+                    .fillMaxWidth()
+                    .listItemPadding()
+                    .actionHeight(),
                 text = t("info.give_app_feedback"),
                 onClick = openUserFeedback,
                 enabled = true,
@@ -293,7 +328,7 @@ private fun MenuTutorial(
         if (!isTutorialDone || isNonProduction) {
             Spacer(Modifier.weight(1f))
             Text(
-                text = t("actions.done"),
+                text = if (!isTutorialDone) t("actions.done") else "Reset",
                 modifier = Modifier
                     .clickable(
                         onClick = onTutorialDone,

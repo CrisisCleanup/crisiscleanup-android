@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 
 class MenuTutorialDirector @Inject constructor() : TutorialDirector {
-    private val stepFLow = MutableStateFlow(TutorialStep.MenuStart)
+    private val stepFLow = MutableStateFlow(TutorialStep.End)
     override val tutorialStep = stepFLow
 
     override fun startTutorial() {
@@ -20,10 +20,14 @@ class MenuTutorialDirector @Inject constructor() : TutorialDirector {
     override fun onNextStep(): Boolean {
         val nextStep = when (tutorialStep.value) {
             TutorialStep.MenuStart,
-            TutorialStep.AppNavBar,
-            -> TutorialStep.AccountInfo
+            TutorialStep.InviteTeammates,
+            -> TutorialStep.AppNavBar
+
+            TutorialStep.AppNavBar -> TutorialStep.AccountInfo
 
             TutorialStep.AccountInfo -> TutorialStep.IncidentSelect
+
+            TutorialStep.IncidentSelect -> TutorialStep.ProvideAppFeedback
 
             else -> TutorialStep.End
         }

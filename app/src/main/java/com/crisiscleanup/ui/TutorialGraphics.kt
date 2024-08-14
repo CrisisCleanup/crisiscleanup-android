@@ -62,6 +62,28 @@ internal fun TutorialOverlay(
         val isHorizontalBar = navBarSize.width > size.width * 0.5f
         when (tutorialStep) {
             TutorialStep.MenuStart,
+            TutorialStep.InviteTeammates,
+            TutorialStep.ProvideAppFeedback,
+            -> {
+                // TODO This requires a bit of testing to guarantee the view is centered...
+                val viewSizePosition =
+                    tutorialViewLookup[TutorialViewId.InviteTeammate] ?: LayoutSizePosition()
+                drawStepForwardText(
+                    textMeasurer,
+                    stepForwardText,
+                    spotlightStepForwardOffset(isHorizontalBar, viewSizePosition),
+                )
+
+//                val viewSizeOffset = getDynamicSpotlightSizeOffset(viewSizePosition)
+//                val stepInstruction = t("~~Invite teammates to Crisis Cleanup")
+//                menuTutorialDynamicContent(
+//                    textMeasurer,
+//                    isHorizontalBar,
+//                    viewSizeOffset,
+//                    stepInstruction,
+//                )
+            }
+
             TutorialStep.AppNavBar,
             -> {
                 val navBarSizeOffset = getNavBarSpotlightSizeOffset(
@@ -135,6 +157,20 @@ internal fun TutorialOverlay(
             else -> {}
         }
     }
+}
+
+private fun DrawScope.spotlightStepForwardOffset(
+    isHorizontalBar: Boolean,
+    viewSizePosition: LayoutSizePosition,
+): Offset {
+    val center = viewSizePosition.position.y + viewSizePosition.size.height * 0.5f
+    val y = size.height * (if (center > size.height * 0.5f) {
+        0.3f
+    } else {
+        0.7f
+    })
+    val x = if (isHorizontalBar) 32f else size.width * 0.3f
+    return Offset(x, y)
 }
 
 private fun DrawScope.spotlightAboveStepForwardOffset(isHorizontalBar: Boolean) =
