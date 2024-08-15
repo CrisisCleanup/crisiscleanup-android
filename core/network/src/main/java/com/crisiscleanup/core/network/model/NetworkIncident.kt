@@ -104,11 +104,11 @@ data class NetworkIncidentFormField(
 data class NetworkIncidentsListResult(
     val errors: List<NetworkCrisisCleanupApiError>? = null,
     val count: Int? = null,
-    val results: List<NetworkShortIncident>? = null,
+    val results: List<NetworkIncidentShort>? = null,
 )
 
 @Serializable
-data class NetworkShortIncident(
+data class NetworkIncidentShort(
     val id: Long,
     val name: String,
     @SerialName("short_name")

@@ -6,6 +6,7 @@ import com.crisiscleanup.core.network.model.NetworkCountResult
 import com.crisiscleanup.core.network.model.NetworkFlagsFormData
 import com.crisiscleanup.core.network.model.NetworkIncident
 import com.crisiscleanup.core.network.model.NetworkIncidentOrganization
+import com.crisiscleanup.core.network.model.NetworkIncidentShort
 import com.crisiscleanup.core.network.model.NetworkLanguageDescription
 import com.crisiscleanup.core.network.model.NetworkLanguageTranslation
 import com.crisiscleanup.core.network.model.NetworkList
@@ -14,7 +15,6 @@ import com.crisiscleanup.core.network.model.NetworkLocation
 import com.crisiscleanup.core.network.model.NetworkOrganizationShort
 import com.crisiscleanup.core.network.model.NetworkOrganizationsResult
 import com.crisiscleanup.core.network.model.NetworkPersonContact
-import com.crisiscleanup.core.network.model.NetworkShortIncident
 import com.crisiscleanup.core.network.model.NetworkTeamResult
 import com.crisiscleanup.core.network.model.NetworkUserProfile
 import com.crisiscleanup.core.network.model.NetworkWorkTypeRequest
@@ -44,7 +44,7 @@ interface CrisisCleanupNetworkDataSource {
         fields: List<String> = listOf("id", "name", "short_name", "incident_type"),
         limit: Int = 250,
         ordering: String = "-start_at",
-    ): List<NetworkShortIncident>
+    ): List<NetworkIncidentShort>
 
     suspend fun getIncidentLocations(
         locationIds: List<Long>,
