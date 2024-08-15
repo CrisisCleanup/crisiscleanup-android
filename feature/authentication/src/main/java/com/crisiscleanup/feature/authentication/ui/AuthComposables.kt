@@ -2,6 +2,7 @@ package com.crisiscleanup.feature.authentication.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -58,17 +59,21 @@ internal fun LinkAction(
         Modifier.fillMaxWidth(),
         horizontalArrangement = arrangement,
     ) {
-        Text(
-            text = translator(textTranslateKey),
+        Box(
             modifier = Modifier
                 .clickable(
                     enabled = enabled,
                     onClick = action,
                 )
                 .then(modifier),
-            style = LocalFontStyles.current.header4,
-            color = if (enabled) color else color.disabledAlpha(),
-        )
+        ) {
+            Text(
+                text = translator(textTranslateKey),
+                modifier = Modifier.align(Alignment.CenterEnd),
+                style = LocalFontStyles.current.header4,
+                color = if (enabled) color else color.disabledAlpha(),
+            )
+        }
     }
 }
 

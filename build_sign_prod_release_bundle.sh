@@ -52,48 +52,24 @@ fi
 $GRADLEW clean
 $GRADLEW bundleProdRelease
 
-# Copy build (and related) to build dir
 APP_OUT=$DIR/app/build/outputs
 if [[ -z "$DIST_DIR" ]]; then
   DIST_DIR=$DIR/app/build
 fi
 
 DIST_AAB=$DIST_DIR/app-prod-release.aab
-MAPPING_FILE_NAME=prod-release-aab-mapping.txt
 cp $APP_OUT/bundle/prodRelease/app-prod-release.aab $DIST_AAB
-cp $APP_OUT/mapping/prodRelease/mapping.txt $DIST_DIR/$MAPPING_FILE_NAME
 
 # Sign app bundle
 jarsigner -verbose -storepass $CRISIS_CLEANUP_ANDROID_KEYSTORE_PW -keystore $CRISIS_CLEANUP_ANDROID_KEYSTORE_PATH $DIST_AAB $CRISIS_CLEANUP_ANDROID_KEYSTORE_KEY_ALIAS -keypass $CRISIS_CLEANUP_ANDROID_KEYSTORE_KEY_PW
 
 # Most likely successful
-if [[ -f "$DIST_AAB" && -f "$DIST_DIR/$MAPPING_FILE_NAME" ]]; then
+if [[ -f "$DIST_AAB" ]]; then
   GREEN='\033[0;32m'
   NC='\033[0m'
   dirPathLength=${#DIR}
   bundleRelativePath=${DIST_AAB:dirPathLength}
-  echo -e "\n${GREEN}Signed bundle at${NC} .$bundleRelativePath. Mapping $MAPPING_FILE_NAME is copied to same area.\n"
-else
-  messageExit "Something went wrong during build/signing"
-fi
-
-$GRADLEW bundleAussieRelease
-
-DIST_AAB=$DIST_DIR/app-aussie-release.aab
-MAPPING_FILE_NAME=aussie-release-aab-mapping.txt
-cp $APP_OUT/bundle/aussieRelease/app-aussie-release.aab $DIST_AAB
-cp $APP_OUT/mapping/aussieRelease/mapping.txt $DIST_DIR/$MAPPING_FILE_NAME
-
-# Sign app bundle
-jarsigner -verbose -storepass $CRISIS_CLEANUP_ANDROID_KEYSTORE_PW -keystore $CRISIS_CLEANUP_ANDROID_KEYSTORE_PATH $DIST_AAB $CRISIS_CLEANUP_ANDROID_KEYSTORE_KEY_ALIAS -keypass $CRISIS_CLEANUP_ANDROID_KEYSTORE_KEY_PW
-
-# Most likely successful
-if [[ -f "$DIST_AAB" && -f "$DIST_DIR/$MAPPING_FILE_NAME" ]]; then
-  GREEN='\033[0;32m'
-  NC='\033[0m'
-  dirPathLength=${#DIR}
-  bundleRelativePath=${DIST_AAB:dirPathLength}
-  echo -e "\n${GREEN}Signed bundle at${NC} .$bundleRelativePath. Mapping $MAPPING_FILE_NAME is copied to same area.\n"
+  echo -e "\n${GREEN}Signed bundle at${NC} .$bundleRelativePath.\n"
 else
   messageExit "Something went wrong during build/signing"
 fi

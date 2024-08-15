@@ -5,7 +5,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 import com.crisiscleanup.core.appnav.RouteConstant.MENU_ROUTE
-import com.crisiscleanup.feature.menu.MenuRoute
+import com.crisiscleanup.feature.menu.ui.MenuRoute
 
 fun NavController.navigateToMenu(navOptions: NavOptions? = null) {
     this.navigate(MENU_ROUTE, navOptions)

@@ -7,13 +7,14 @@ plugins {
     alias(libs.plugins.nowinandroid.android.application.flavors)
     alias(libs.plugins.nowinandroid.android.application.jacoco)
     alias(libs.plugins.nowinandroid.android.application.firebase)
+    alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.nowinandroid.hilt)
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
     defaultConfig {
-        val buildVersion = 214
+        val buildVersion = 222
         applicationId = "com.crisiscleanup"
         versionCode = buildVersion
         versionName = "0.9.${buildVersion - 168}"
@@ -42,6 +43,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
                 "proguard-playservices.pro",
+                "proguard-retrofit2.pro",
                 "proguard-crashlytics.pro",
             )
 
@@ -53,6 +55,7 @@ android {
             }
 
             configure<CrashlyticsExtension> {
+                mappingFileUploadEnabled = true
                 // Enable processing and uploading of native symbols to Firebase servers.
                 // By default, this is disabled to improve build speeds.
                 // This flag must be enabled to see properly-symbolicated native

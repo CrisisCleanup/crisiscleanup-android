@@ -175,6 +175,7 @@ class AuthenticationViewModel @Inject constructor(
                         accessToken = accessToken,
                         id = claims.id,
                         email = claims.email,
+                        phone = claims.mobile,
                         firstName = claims.firstName,
                         lastName = claims.lastName,
                         expirySeconds = expirySeconds,

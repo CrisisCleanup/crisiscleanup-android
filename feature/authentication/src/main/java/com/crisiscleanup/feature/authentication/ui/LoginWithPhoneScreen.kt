@@ -45,6 +45,7 @@ import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupLogoRow
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.TopAppBarCancelAction
+import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.component.roundedOutline
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
@@ -173,13 +174,13 @@ private fun LoginWithPhoneScreen(
         onEnter = requestPhoneCode,
     )
 
-    // TODO Hide if device does not have a SIM/phone number
+    // TODO Hide if device does not have a SIM/phone number and account number is blank
     LinkAction(
         t("loginWithPhone.use_phones_number"),
         modifier = Modifier
             .listItemPadding()
+            .actionHeight()
             .testTag("phoneLoginRequestPhoneNumber"),
-        arrangement = Arrangement.End,
         enabled = true,
         action = viewModel::requestPhoneNumber,
     )
@@ -197,6 +198,7 @@ private fun LoginWithPhoneScreen(
             "actions.back",
             modifier = Modifier
                 .listItemPadding()
+                .actionHeight()
                 .testTag("phoneLoginBackAction"),
             arrangement = Arrangement.Start,
             enabled = isNotBusy,

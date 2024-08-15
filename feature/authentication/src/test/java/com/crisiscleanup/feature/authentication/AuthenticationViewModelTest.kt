@@ -107,6 +107,7 @@ class AuthenticationViewModelTest {
                 id = any(),
                 accessToken = any(),
                 email = any(),
+                phone = any(),
                 firstName = any(),
                 lastName = any(),
                 expirySeconds = any(),
@@ -132,6 +133,7 @@ class AuthenticationViewModelTest {
                 tableViewSortBy = WorksiteSortBy.None,
                 allowAllAnalytics = false,
                 hideGettingStartedVideo = false,
+                isMenuTutorialDone = false,
             ),
         )
 
@@ -235,6 +237,7 @@ class AuthenticationViewModelTest {
             claims = NetworkAuthUserClaims(
                 id = 534,
                 email = "email@address.com",
+                mobile = "9876543210",
                 firstName = "first-name",
                 lastName = "last-name",
                 approvedIncidents = setOf(53),
@@ -260,6 +263,7 @@ class AuthenticationViewModelTest {
                 refreshToken = "refresh-token",
                 accessToken = "access-token",
                 email = "email@address.com",
+                phone = "9876543210",
                 firstName = "first-name",
                 lastName = "last-name",
                 expirySeconds = match { seconds -> abs(seconds - nowSeconds) < 864000L + 1000 },

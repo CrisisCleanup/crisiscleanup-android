@@ -19,6 +19,7 @@ data class NetworkUser(
 data class NetworkUserProfile(
     val id: Long,
     val email: String,
+    val mobile: String,
     @SerialName("first_name")
     val firstName: String,
     @SerialName("last_name")

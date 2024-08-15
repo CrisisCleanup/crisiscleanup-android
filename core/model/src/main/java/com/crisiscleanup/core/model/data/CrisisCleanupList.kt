@@ -33,7 +33,7 @@ val EmptyList = CrisisCleanupList(
     shared = ListShare.Private,
     permission = ListPermission.Read,
     incidentId = EmptyIncident.id,
-    incident = IncidentIdNameType(id = EmptyIncident.id, "", "", ""),
+    incident = EmptyIncidentIdNameType,
 )
 
 enum class ListModel(val literal: String) {

@@ -18,6 +18,7 @@ class FakeAuthApi @Inject constructor() : CrisisCleanupAuthApi {
             claims = NetworkAuthUserClaims(
                 id = 1,
                 email = "demo@crisiscleanup.org",
+                mobile = "1234567890",
                 firstName = "Demo",
                 lastName = "User",
                 files = emptyList(),

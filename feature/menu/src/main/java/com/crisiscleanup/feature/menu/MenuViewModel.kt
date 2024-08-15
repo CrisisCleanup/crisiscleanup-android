@@ -6,8 +6,11 @@ import com.crisiscleanup.core.appcomponent.AppTopBarDataProvider
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppSettingsProvider
 import com.crisiscleanup.core.common.AppVersionProvider
+import com.crisiscleanup.core.common.CrisisCleanupTutorialDirectors.Menu
 import com.crisiscleanup.core.common.DatabaseVersionProvider
 import com.crisiscleanup.core.common.KeyResourceTranslator
+import com.crisiscleanup.core.common.TutorialDirector
+import com.crisiscleanup.core.common.Tutorials
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
@@ -20,6 +23,7 @@ import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.SyncLogRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
+import com.crisiscleanup.core.ui.TutorialViewTracker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -42,6 +46,8 @@ class MenuViewModel @Inject constructor(
     appSettingsProvider: AppSettingsProvider,
     private val appEnv: AppEnv,
     private val syncPuller: SyncPuller,
+    @Tutorials(Menu) val menuTutorialDirector: TutorialDirector,
+    val tutorialViewTracker: TutorialViewTracker,
     private val databaseVersionProvider: DatabaseVersionProvider,
     translator: KeyResourceTranslator,
     @ApplicationScope private val externalScope: CoroutineScope,
@@ -93,6 +99,10 @@ class MenuViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
+    val isMenuTutorialDone = appPreferencesRepository.userPreferences.map {
+        it.isMenuTutorialDone
+    }
+
     init {
         externalScope.launch(ioDispatcher) {
             syncLogRepository.trimOldLogs()
@@ -138,6 +148,12 @@ class MenuViewModel @Inject constructor(
 
             // TODO Move to hide onboarding method when implemented
             appPreferencesRepository.setShouldHideOnboarding(hide)
+        }
+    }
+
+    fun setMenuTutorialDone(isDone: Boolean = true) {
+        viewModelScope.launch(ioDispatcher) {
+            appPreferencesRepository.setMenuTutorialDone(isDone)
         }
     }
 }

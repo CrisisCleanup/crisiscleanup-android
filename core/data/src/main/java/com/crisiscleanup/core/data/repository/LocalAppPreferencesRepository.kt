@@ -20,6 +20,8 @@ interface LocalAppPreferencesRepository {
 
     suspend fun setHideGettingStartedVideo(hide: Boolean)
 
+    suspend fun setMenuTutorialDone(isDone: Boolean)
+
     /**
      * Caches ID of selected incident.
      */

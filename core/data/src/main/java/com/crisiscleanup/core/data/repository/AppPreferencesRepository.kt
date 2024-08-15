@@ -46,6 +46,9 @@ class AppPreferencesRepository @Inject constructor(
     override suspend fun setHideGettingStartedVideo(hide: Boolean) =
         preferencesDataSource.setHideGettingStartedVideo(hide)
 
+    override suspend fun setMenuTutorialDone(isDone: Boolean) =
+        preferencesDataSource.setMenuTutorialDone(isDone)
+
     override suspend fun setSelectedIncident(id: Long) =
         preferencesDataSource.setSelectedIncident(id)
 

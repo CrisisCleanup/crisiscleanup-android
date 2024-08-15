@@ -18,6 +18,8 @@ import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 @Composable
 fun AppTopBar(
     modifier: Modifier = Modifier,
+    incidentDropdownModifier: Modifier = Modifier,
+    accountToggleModifier: Modifier = Modifier,
     dataProvider: AppTopBarDataProvider,
     openAuthentication: () -> Unit = {},
     onOpenIncidents: (() -> Unit)? = null,
@@ -32,6 +34,8 @@ fun AppTopBar(
 
     AppTopBar(
         modifier = modifier,
+        incidentDropdownModifier = incidentDropdownModifier,
+        accountToggleModifier = accountToggleModifier,
         title = screenTitle,
         isAppHeaderLoading = isHeaderLoading,
         profilePictureUri = profilePictureUri,
@@ -48,6 +52,8 @@ fun AppTopBar(
 @Composable
 internal fun AppTopBar(
     modifier: Modifier = Modifier,
+    incidentDropdownModifier: Modifier = Modifier,
+    accountToggleModifier: Modifier = Modifier,
     title: String = "",
     isAppHeaderLoading: Boolean = false,
     profilePictureUri: String = "",
@@ -60,6 +66,7 @@ internal fun AppTopBar(
     val actionText = t("actions.account")
     TopAppBarDefault(
         modifier = modifier,
+        accountToggleModifier = accountToggleModifier,
         title = title,
         profilePictureUri = profilePictureUri,
         actionIcon = CrisisCleanupIcons.Account,
@@ -73,7 +80,7 @@ internal fun AppTopBar(
                 TruncatedAppBarText(title = title)
             } else {
                 IncidentDropdownSelect(
-                    modifier = Modifier.testTag("appIncidentSelector"),
+                    modifier = incidentDropdownModifier.testTag("appIncidentSelector"),
                     onOpenIncidents,
                     disasterIconResId,
                     title = title,

@@ -19,6 +19,7 @@ private val emptyUserData = UserData(
     tableViewSortBy = WorksiteSortBy.None,
     allowAllAnalytics = false,
     hideGettingStartedVideo = false,
+    isMenuTutorialDone = false,
 )
 
 class TestLocalAppPreferencesRepository : LocalAppPreferencesRepository {
@@ -44,6 +45,12 @@ class TestLocalAppPreferencesRepository : LocalAppPreferencesRepository {
     override suspend fun setHideGettingStartedVideo(hide: Boolean) {
         currentUserData.let { current ->
             userDataInternal.tryEmit(current.copy(hideGettingStartedVideo = hide))
+        }
+    }
+
+    override suspend fun setMenuTutorialDone(isDone: Boolean) {
+        currentUserData.let { current ->
+            userDataInternal.tryEmit(current.copy(isMenuTutorialDone = isDone))
         }
     }
 

@@ -14,6 +14,7 @@ import com.crisiscleanup.core.network.model.NetworkLocation
 import com.crisiscleanup.core.network.model.NetworkOrganizationShort
 import com.crisiscleanup.core.network.model.NetworkOrganizationsResult
 import com.crisiscleanup.core.network.model.NetworkPersonContact
+import com.crisiscleanup.core.network.model.NetworkShortIncident
 import com.crisiscleanup.core.network.model.NetworkTeamResult
 import com.crisiscleanup.core.network.model.NetworkUserProfile
 import com.crisiscleanup.core.network.model.NetworkWorkTypeRequest
@@ -38,6 +39,12 @@ interface CrisisCleanupNetworkDataSource {
         ordering: String = "-start_at",
         after: Instant? = null,
     ): List<NetworkIncident>
+
+    suspend fun getIncidentsList(
+        fields: List<String> = listOf("id", "name", "short_name", "incident_type"),
+        limit: Int = 250,
+        ordering: String = "-start_at",
+    ): List<NetworkShortIncident>
 
     suspend fun getIncidentLocations(
         locationIds: List<Long>,

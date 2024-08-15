@@ -23,6 +23,7 @@ fun NavGraphBuilder.loginWithEmailScreen(
     closeAuthentication: () -> Unit,
     openForgotPassword: () -> Unit,
     openEmailMagicLink: () -> Unit,
+    openPhoneLogin: () -> Unit,
 ) {
     composable(route = LOGIN_WITH_EMAIL_ROUTE) {
         LoginWithEmailRoute(
@@ -31,6 +32,7 @@ fun NavGraphBuilder.loginWithEmailScreen(
             closeAuthentication = closeAuthentication,
             openForgotPassword = openForgotPassword,
             openEmailMagicLink = openEmailMagicLink,
+            openPhoneLogin = openPhoneLogin,
         )
     }
     nestedGraphs()

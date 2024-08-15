@@ -20,6 +20,7 @@ import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.core.model.data.INCIDENT_ORGANIZATIONS_STABLE_MODEL_BUILD_VERSION
 import com.crisiscleanup.core.model.data.Incident
+import com.crisiscleanup.core.model.data.IncidentIdNameType
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkIncident
 import com.crisiscleanup.core.network.model.NetworkIncidentLocation
@@ -81,6 +82,23 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     override suspend fun getIncidents(startAt: Instant) = withContext(ioDispatcher) {
         incidentDao.getIncidents(startAt.toEpochMilliseconds())
             .map(PopulatedIncident::asExternalModel)
+    }
+
+    override suspend fun getIncidentsList(): List<IncidentIdNameType> {
+        try {
+            return networkDataSource.getIncidentsList()
+                .map {
+                    IncidentIdNameType(
+                        it.id,
+                        it.name,
+                        it.shortName,
+                        disasterLiteral = it.type,
+                    )
+                }
+        } catch (e: Exception) {
+            logger.logException(e)
+        }
+        return emptyList()
     }
 
     override fun streamIncident(id: Long) =

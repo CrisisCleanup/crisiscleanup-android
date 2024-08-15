@@ -32,6 +32,7 @@ fun ListOptionsDropdown(
     Row(
         modifier
             .actionHeight()
+            // TODO Common dimensions
             .roundedOutline(radius = 3.dp)
             .clickable(
                 onClick = onToggleDropdown,

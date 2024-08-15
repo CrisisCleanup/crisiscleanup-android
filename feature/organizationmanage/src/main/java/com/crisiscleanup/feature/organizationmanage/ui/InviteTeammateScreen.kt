@@ -547,32 +547,58 @@ private fun NewOrganizationInput(
     val selectedIncident = incidentLookup[viewModel.selectedIncidentId] ?: EmptyIncident
     val selectIncidentHint = t("actions.select_incident")
     val incidents by viewModel.incidents.collectAsStateWithLifecycle()
-    Box(
-        Modifier
-            .listItemBottomPadding()
-            .fillMaxWidth(),
-    ) {
-        var showDropdown by remember { mutableStateOf(false) }
-        val onSelect = remember(viewModel) {
-            { incident: Incident ->
-                viewModel.selectedIncidentId = incident.id
-                showDropdown = false
+    if (incidents.isNotEmpty()) {
+        Box(
+            Modifier
+                .listItemBottomPadding()
+                .fillMaxWidth(),
+        ) {
+            var showDropdown by remember { mutableStateOf(false) }
+            val onSelect = remember(viewModel) {
+                { incident: Incident ->
+                    viewModel.selectedIncidentId = incident.id
+                    showDropdown = false
+                }
+            }
+            val onHideDropdown = remember(viewModel) { { showDropdown = false } }
+            ListOptionsDropdown(
+                text = selectedIncident.name.ifBlank { selectIncidentHint },
+                isEditable = isEditable,
+                onToggleDropdown = { showDropdown = !showDropdown },
+                modifier = Modifier.padding(16.dp),
+                dropdownIconContentDescription = selectIncidentHint,
+            ) { contentSize ->
+                IncidentsDropdown(
+                    contentSize,
+                    showDropdown,
+                    onHideDropdown,
+                ) {
+                    IncidentOptions(
+                        incidents,
+                        onSelect,
+                    )
+                }
             }
         }
-        val onHideDropdown = remember(viewModel) { { showDropdown = false } }
-        ListOptionsDropdown(
-            text = selectedIncident.name.ifBlank { selectIncidentHint },
-            isEditable = isEditable,
-            onToggleDropdown = { showDropdown = !showDropdown },
-            modifier = Modifier.padding(16.dp),
-            dropdownIconContentDescription = selectIncidentHint,
-        ) { contentSize ->
-            IncidentsDropdown(
-                incidents,
-                contentSize,
-                showDropdown,
-                onSelect,
-                onHideDropdown,
+    }
+}
+
+@Composable
+private fun IncidentOptions(
+    incidents: List<Incident>,
+    onSelect: (Incident) -> Unit,
+) {
+    for (incident in incidents) {
+        key(incident.id) {
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        incident.name,
+                        style = LocalFontStyles.current.header4,
+                    )
+                },
+                onClick = { onSelect(incident) },
+                modifier = Modifier.optionItemHeight(),
             )
         }
     }

@@ -65,23 +65,26 @@ class MagicLinkLoginViewModel @Inject constructor(
                             } else {
                                 val expirySeconds =
                                     Clock.System.now().plus(expiresIn.seconds).epochSeconds
-                                accountDataRepository.setAccount(
-                                    refreshToken = refreshToken,
-                                    accessToken = accessToken,
-                                    id = accountProfile.id,
-                                    email = accountProfile.email,
-                                    firstName = accountProfile.firstName,
-                                    lastName = accountProfile.lastName,
-                                    expirySeconds = expirySeconds,
-                                    profilePictureUri = accountProfile.profilePicUrl ?: "",
-                                    org = OrgData(
-                                        id = accountProfile.organization.id,
-                                        name = accountProfile.organization.name,
-                                    ),
-                                    hasAcceptedTerms = accountProfile.hasAcceptedTerms == true,
-                                    approvedIncidentIds = accountProfile.approvedIncidents,
-                                    activeRoles = accountProfile.activeRoles,
-                                )
+                                with(accountProfile) {
+                                    accountDataRepository.setAccount(
+                                        refreshToken = refreshToken,
+                                        accessToken = accessToken,
+                                        id = id,
+                                        email = email,
+                                        phone = mobile,
+                                        firstName = firstName,
+                                        lastName = lastName,
+                                        expirySeconds = expirySeconds,
+                                        profilePictureUri = profilePicUrl ?: "",
+                                        org = OrgData(
+                                            id = organization.id,
+                                            name = organization.name,
+                                        ),
+                                        hasAcceptedTerms = hasAcceptedTerms == true,
+                                        approvedIncidentIds = approvedIncidents,
+                                        activeRoles = activeRoles,
+                                    )
+                                }
 
                                 isAuthenticateSuccessful.value = true
                             }
