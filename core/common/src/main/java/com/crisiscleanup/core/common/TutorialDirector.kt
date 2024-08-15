@@ -24,7 +24,7 @@ enum class TutorialStep {
     AccountInfo,
     ProvideAppFeedback,
     IncidentSelect,
-    End
+    End,
 }
 
 @Qualifier
@@ -32,5 +32,5 @@ enum class TutorialStep {
 annotation class Tutorials(val director: CrisisCleanupTutorialDirectors)
 
 enum class CrisisCleanupTutorialDirectors {
-    Menu
+    Menu,
 }

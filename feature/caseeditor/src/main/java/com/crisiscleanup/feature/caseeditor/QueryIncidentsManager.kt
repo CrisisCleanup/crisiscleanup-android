@@ -5,6 +5,7 @@ import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.IncidentIdNameType
+import com.crisiscleanup.core.model.data.idNameType
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,12 +43,9 @@ class QueryIncidentsManager(
         private set
 
     private val allIncidentsShort = allIncidents.mapLatest {
-        val all = it.map { incident ->
-            with(incident) {
-                IncidentIdNameType(id, name, shortName, disasterLiteral)
-            }
-        }
+        val all = it.map(Incident::idNameType)
 
+        // TODO Redesign and separate state
         isLoadingAll.value = false
 
         all

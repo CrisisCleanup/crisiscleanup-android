@@ -11,8 +11,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class CrisisCleanupTutorialViewTracker @Inject constructor(
-) : TutorialViewTracker {
+class CrisisCleanupTutorialViewTracker @Inject constructor() : TutorialViewTracker {
     override val viewSizePositionLookup =
         SnapshotStateMap<TutorialViewId, LayoutSizePosition>().also {
             it[AppNavBar] = LayoutSizePosition()

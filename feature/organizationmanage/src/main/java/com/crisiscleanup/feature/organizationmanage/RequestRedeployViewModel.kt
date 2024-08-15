@@ -15,13 +15,14 @@ import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.RequestRedeployRepository
-import com.crisiscleanup.core.model.data.EmptyIncident
-import com.crisiscleanup.core.model.data.Incident
+import com.crisiscleanup.core.model.data.EmptyIncidentIdNameType
+import com.crisiscleanup.core.model.data.IncidentIdNameType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -29,7 +30,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RequestRedeployViewModel @Inject constructor(
-    incidentsRepository: IncidentsRepository,
+    private val incidentsRepository: IncidentsRepository,
     accountDataRepository: AccountDataRepository,
     accountDataRefresher: AccountDataRefresher,
     private val requestRedeployRepository: RequestRedeployRepository,
@@ -37,21 +38,18 @@ class RequestRedeployViewModel @Inject constructor(
     @Logger(CrisisCleanupLoggers.Account) private val logger: AppLogger,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
-    var requestedIncidentIds by mutableStateOf(emptySet<Long>())
-        private set
-
+    private val requestedIncidentsStream = MutableStateFlow<Set<Long>>(emptySet())
+    private val incidentsStream = MutableStateFlow<List<IncidentIdNameType>?>(null)
     val viewState = combine(
-        incidentsRepository.incidents,
+        incidentsStream,
         accountDataRepository.accountData,
-        ::Pair,
+        requestedIncidentsStream,
+        ::Triple,
     )
-        .mapLatest { (incidents, accountData) ->
-            val approvedIncidents = accountData.approvedIncidents
-            val incidentOptions = incidents
-                .filter { !approvedIncidents.contains(it.id) }
-                .toList()
-                .sortedByDescending(Incident::id)
-            RequestRedeployViewState.Ready(incidentOptions)
+        .filter { (incidents, _, _) -> incidents != null }
+        .mapLatest { (incidents, accountData, requestedIds) ->
+            val approvedIds = accountData.approvedIncidents
+            RequestRedeployViewState.Ready(incidents!!, approvedIds, requestedIds)
         }
         .stateIn(
             scope = viewModelScope,
@@ -76,12 +74,14 @@ class RequestRedeployViewModel @Inject constructor(
         viewModelScope.launch(ioDispatcher) {
             accountDataRefresher.updateApprovedIncidents(true)
 
-            requestedIncidentIds = requestRedeployRepository.getRequestedIncidents()
+            requestedIncidentsStream.value = requestRedeployRepository.getRequestedIncidents()
+
+            incidentsStream.value = incidentsRepository.getIncidentsList()
         }
     }
 
-    fun requestRedeploy(incident: Incident) {
-        if (incident == EmptyIncident) {
+    fun requestRedeploy(incident: IncidentIdNameType) {
+        if (incident == EmptyIncidentIdNameType) {
             return
         }
 
@@ -116,6 +116,8 @@ class RequestRedeployViewModel @Inject constructor(
 sealed interface RequestRedeployViewState {
     data object Loading : RequestRedeployViewState
     data class Ready(
-        val incidents: List<Incident>,
+        val incidents: List<IncidentIdNameType>,
+        val approvedIncidentIds: Set<Long>,
+        val requestedIncidentIds: Set<Long>,
     ) : RequestRedeployViewState
 }

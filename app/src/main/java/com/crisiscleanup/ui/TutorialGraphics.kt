@@ -174,11 +174,13 @@ private fun DrawScope.spotlightStepForwardOffset(
     viewSizePosition: LayoutSizePosition,
 ): Offset {
     val center = viewSizePosition.position.y + viewSizePosition.size.height * 0.5f
-    val y = size.height * (if (center > size.height * 0.5f) {
-        0.2f
-    } else {
-        0.8f
-    })
+    val y = size.height * (
+        if (center > size.height * 0.5f) {
+            0.2f
+        } else {
+            0.8f
+        }
+        )
     val x = viewSizePosition.position.x + if (isHorizontalBar) {
         32f
     } else {
@@ -229,22 +231,24 @@ private fun DrawScope.menuTutorialDynamicContent(
 
     val lineX = size.width * 0.5f
     val lineStartY =
-        instructionOffset.y + (if (isSpotlightCenterAbove) {
-            -16f
-        } else {
-            val instructionConstraints = Constraints(
-                maxWidth = (size.width - instructionOffset.x).toInt(),
-            )
-            val textLayout = textMeasurer.measure(
-                stepInstruction,
-                instructionStyle,
-                overflow = TextOverflow.Visible,
-                constraints = instructionConstraints,
-            )
-            val textSize = textLayout.size
+        instructionOffset.y + (
+            if (isSpotlightCenterAbove) {
+                -16f
+            } else {
+                val instructionConstraints = Constraints(
+                    maxWidth = (size.width - instructionOffset.x).toInt(),
+                )
+                val textLayout = textMeasurer.measure(
+                    stepInstruction,
+                    instructionStyle,
+                    overflow = TextOverflow.Visible,
+                    constraints = instructionConstraints,
+                )
+                val textSize = textLayout.size
 
-            textSize.height.toFloat() + 16f
-        })
+                textSize.height.toFloat() + 16f
+            }
+            )
     val lineStart = Offset(lineX, lineStartY)
     val lineEndY =
         sizeOffset.topLeft.y + (if (isSpotlightCenterAbove) sizeOffset.size.height + 32f else -32f)
@@ -275,11 +279,11 @@ private fun DrawScope.spotlightAboveStepForwardOffset(
         Offset(if (isHorizontalBar) 0f else 32f, 0f),
     )
     val x = referencePosition.position.x +
-            if (isHorizontalBar) {
-                32f
-            } else {
-                referencePosition.size.width * 0.2f
-            }
+        if (isHorizontalBar) {
+            32f
+        } else {
+            referencePosition.size.width * 0.2f
+        }
     val y = size.height * 0.6f
     return Offset(x, y)
 }

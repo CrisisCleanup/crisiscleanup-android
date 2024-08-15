@@ -12,7 +12,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-interface DataModule {
+interface MenuModule {
     @Singleton
     @Binds
     @Tutorials(CrisisCleanupTutorialDirectors.Menu)

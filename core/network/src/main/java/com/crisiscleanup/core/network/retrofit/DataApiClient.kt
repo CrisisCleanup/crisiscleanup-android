@@ -7,6 +7,7 @@ import com.crisiscleanup.core.network.model.NetworkCountResult
 import com.crisiscleanup.core.network.model.NetworkFlagsFormData
 import com.crisiscleanup.core.network.model.NetworkFlagsFormDataResult
 import com.crisiscleanup.core.network.model.NetworkIncidentResult
+import com.crisiscleanup.core.network.model.NetworkIncidentsListResult
 import com.crisiscleanup.core.network.model.NetworkIncidentsResult
 import com.crisiscleanup.core.network.model.NetworkLanguageTranslationResult
 import com.crisiscleanup.core.network.model.NetworkLanguagesResult
@@ -75,6 +76,16 @@ private interface DataSourceApi {
         @Query("start_at__gt")
         after: Instant?,
     ): NetworkIncidentsResult
+
+    @GET("incidents_list")
+    suspend fun getIncidentsList(
+        @Query("fields")
+        fields: String,
+        @Query("limit")
+        limit: Int,
+        @Query("sort")
+        ordering: String,
+    ): NetworkIncidentsListResult
 
     @TokenAuthenticationHeader
     @GET("locations")
@@ -325,6 +336,16 @@ class DataApiClient @Inject constructor(
         ordering: String,
         after: Instant?,
     ) = networkApi.getIncidents(fields.joinToString(","), limit, ordering, after)
+        .let {
+            it.errors?.tryThrowException()
+            it.results ?: emptyList()
+        }
+
+    override suspend fun getIncidentsList(
+        fields: List<String>,
+        limit: Int,
+        ordering: String,
+    ) = networkApi.getIncidentsList(fields.joinToString(","), limit, ordering)
         .let {
             it.errors?.tryThrowException()
             it.results ?: emptyList()

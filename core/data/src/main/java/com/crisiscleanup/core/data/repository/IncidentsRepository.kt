@@ -18,6 +18,7 @@ interface IncidentsRepository {
 
     suspend fun getIncident(id: Long, loadFormFields: Boolean = false): Incident?
     suspend fun getIncidents(startAt: Instant): List<Incident>
+    suspend fun getIncidentsList(): List<IncidentIdNameType>
 
     fun streamIncident(id: Long): Flow<Incident?>
 

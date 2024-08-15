@@ -78,3 +78,13 @@ data class IncidentIdNameType(
     val disasterLiteral: String,
     val disaster: Disaster = disasterFromLiteral(disasterLiteral),
 )
+
+val Incident.idNameType: IncidentIdNameType
+    get() = IncidentIdNameType(
+        id,
+        name,
+        shortName,
+        disasterLiteral,
+    )
+
+val EmptyIncidentIdNameType = EmptyIncident.idNameType

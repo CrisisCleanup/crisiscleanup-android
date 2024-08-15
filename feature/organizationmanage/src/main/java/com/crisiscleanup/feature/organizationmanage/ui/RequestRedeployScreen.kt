@@ -4,15 +4,20 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -24,10 +29,15 @@ import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCen
 import com.crisiscleanup.core.designsystem.component.ListOptionsDropdown
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
+import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
+import com.crisiscleanup.core.designsystem.theme.green600
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
-import com.crisiscleanup.core.model.data.EmptyIncident
-import com.crisiscleanup.core.model.data.Incident
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
+import com.crisiscleanup.core.designsystem.theme.optionItemHeight
+import com.crisiscleanup.core.model.data.EmptyIncidentIdNameType
+import com.crisiscleanup.core.model.data.IncidentIdNameType
 import com.crisiscleanup.feature.organizationmanage.RequestRedeployViewModel
 import com.crisiscleanup.feature.organizationmanage.RequestRedeployViewState
 
@@ -49,7 +59,7 @@ fun RequestRedeployRoute(
         )
 
         if (isLoading) {
-            Box {
+            Box(Modifier.fillMaxSize()) {
                 BusyIndicatorFloatingTopCenter(true)
             }
         } else if (isRedeployRequested) {
@@ -69,11 +79,12 @@ fun RequestRedeployRoute(
                     val isTransient by viewModel.isTransient.collectAsStateWithLifecycle(true)
                     val isEditable = !isTransient
                     val errorMessage = viewModel.redeployErrorMessage
-                    val requestedIncidentIds = viewModel.requestedIncidentIds
+                    val requestedIncidentIds = readyState.requestedIncidentIds
+                    val approvedIncidentIds = readyState.approvedIncidentIds
                     val isRequestingRedeploy by viewModel.isRequestingRedeploy.collectAsStateWithLifecycle()
-                    var selectedIncident by remember { mutableStateOf(EmptyIncident) }
+                    var selectedIncident by remember { mutableStateOf(EmptyIncidentIdNameType) }
                     val onSelectIncident = remember(viewModel) {
-                        { incident: Incident ->
+                        { incident: IncidentIdNameType ->
                             selectedIncident = incident
                         }
                     }
@@ -83,6 +94,7 @@ fun RequestRedeployRoute(
                         isEditable,
                         incidents,
                         requestedIncidentIds,
+                        approvedIncidentIds,
                         errorMessage,
                         selectedIncident.name.ifBlank { selectIncidentHint },
                         selectIncidentHint,
@@ -111,7 +123,7 @@ fun RequestRedeployRoute(
                                 .testTag("requestRedeploySubmitAction")
                                 .weight(1f),
                             text = t("actions.submit"),
-                            enabled = isEditable && selectedIncident != EmptyIncident,
+                            enabled = isEditable && selectedIncident != EmptyIncidentIdNameType,
                             indicateBusy = isRequestingRedeploy,
                             onClick = { viewModel.requestRedeploy(selectedIncident) },
                         )
@@ -125,21 +137,16 @@ fun RequestRedeployRoute(
 @Composable
 private fun RequestRedeployContent(
     isEditable: Boolean,
-    incidents: List<Incident>,
+    incidents: List<IncidentIdNameType>,
     requestedIncidentIds: Set<Long>,
+    approvedIncidentIds: Set<Long>,
     errorMessage: String,
     selectedIncidentText: String,
     selectIncidentHint: String,
-    setSelectedIncident: (Incident) -> Unit,
+    setSelectedIncident: (IncidentIdNameType) -> Unit,
     rememberKey: Any,
 ) {
     val t = LocalAppTranslator.current
-
-    val isIncidentEditable = remember(requestedIncidentIds) {
-        { incident: Incident ->
-            !requestedIncidentIds.contains(incident.id)
-        }
-    }
 
     Text(
         t("requestRedeploy.choose_an_incident"),
@@ -154,28 +161,81 @@ private fun RequestRedeployContent(
         )
     }
 
-    var showDropdown by remember { mutableStateOf(false) }
-    val onSelectIncident = remember(rememberKey) {
-        { incident: Incident ->
-            setSelectedIncident(incident)
-            showDropdown = false
+    if (incidents.isNotEmpty()) {
+        var showDropdown by remember { mutableStateOf(false) }
+        val onSelectIncident = remember(rememberKey) {
+            { incident: IncidentIdNameType ->
+                setSelectedIncident(incident)
+                showDropdown = false
+            }
+        }
+        val onHideDropdown = remember(rememberKey) { { showDropdown = false } }
+        ListOptionsDropdown(
+            text = selectedIncidentText,
+            isEditable = isEditable,
+            onToggleDropdown = { showDropdown = !showDropdown },
+            modifier = Modifier.padding(16.dp),
+            dropdownIconContentDescription = selectIncidentHint,
+        ) { contentSize ->
+            IncidentsDropdown(
+                contentSize,
+                showDropdown,
+                onHideDropdown,
+            ) {
+                IncidentOptions(
+                    incidents,
+                    approvedIncidentIds,
+                    requestedIncidentIds,
+                    onSelectIncident,
+                )
+            }
         }
     }
-    val onHideDropdown = remember(rememberKey) { { showDropdown = false } }
-    ListOptionsDropdown(
-        text = selectedIncidentText,
-        isEditable = isEditable,
-        onToggleDropdown = { showDropdown = !showDropdown },
-        modifier = Modifier.padding(16.dp),
-        dropdownIconContentDescription = selectIncidentHint,
-    ) { contentSize ->
-        IncidentsDropdown(
-            incidents,
-            contentSize,
-            showDropdown,
-            onSelectIncident,
-            onHideDropdown,
-            isEditable = isIncidentEditable,
-        )
+}
+
+@Composable
+private fun IncidentOptions(
+    incidents: List<IncidentIdNameType>,
+    approvedIds: Set<Long>,
+    requestedIds: Set<Long>,
+    onSelect: (IncidentIdNameType) -> Unit,
+) {
+    val t = LocalAppTranslator.current
+    for (incident in incidents) {
+        key(incident.id) {
+            val isApproved = approvedIds.contains(incident.id)
+            val isRequested = requestedIds.contains(incident.id)
+            DropdownMenuItem(
+                text = {
+                    Row(
+                        horizontalArrangement = listItemSpacedByHalf,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            incident.name,
+                            Modifier.weight(1f),
+                            style = LocalFontStyles.current.header4,
+                        )
+                        if (isApproved) {
+                            Icon(
+                                CrisisCleanupIcons.Check,
+                                contentDescription = t("~~{incident_name} is already approved")
+                                    .replace("{incident_name}", incident.shortName),
+                                tint = green600,
+                            )
+                        } else if (isRequested) {
+                            Icon(
+                                CrisisCleanupIcons.PendingRequestRedeploy,
+                                contentDescription = t("~~{incident_name} is already awaiting redeploy")
+                                    .replace("{incident_name}", incident.shortName),
+                            )
+                        }
+                    }
+                },
+                onClick = { onSelect(incident) },
+                modifier = Modifier.optionItemHeight(),
+                enabled = !(isApproved || isRequested),
+            )
+        }
     }
 }
