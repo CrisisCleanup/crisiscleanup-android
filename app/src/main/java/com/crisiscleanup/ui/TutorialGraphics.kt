@@ -38,7 +38,7 @@ internal fun TutorialOverlay(
     val t = LocalAppTranslator.current
     val textMeasurer = rememberTextMeasurer()
 
-    val stepForwardText = t("~~(Press anywhere on screen to continue tutorial)")
+    val stepForwardText = t("tutorial.press_anywhere_continue")
 
     val navBarSizePosition = tutorialViewLookup[TutorialViewId.AppNavBar] ?: LayoutSizePosition()
 
@@ -80,9 +80,9 @@ internal fun TutorialOverlay(
 
                 val viewSizeOffset = getDynamicSpotlightSizeOffset(viewSizePosition)
                 val instructionKey = if (viewId == TutorialViewId.ProvideFeedback) {
-                    "~~Let us know of any issues with this app"
+                    t("tutorial.report_issues")
                 } else {
-                    "~~Invite teammates to Crisis Cleanup"
+                    t("tutorial.invite_teammates")
                 }
                 val stepInstruction = t(instructionKey)
                 menuTutorialDynamicContent(
@@ -116,7 +116,7 @@ internal fun TutorialOverlay(
                     stepForwardOffset,
                 )
 
-                val stepInstruction = t("~~Use the navigation tabs to start Working")
+                val stepInstruction = t("tutorial.use_nav_to_work")
                 menuTutorialAppNav(
                     textMeasurer,
                     isHorizontalBar,
@@ -136,7 +136,7 @@ internal fun TutorialOverlay(
                 )
 
                 val viewSizeOffset = getAppBarSpotlightSizeOffset(viewSizePosition)
-                val stepInstruction = t("~~Open account information")
+                val stepInstruction = t("tutorial.open_profile")
                 menuTutorialAccountToggle(
                     textMeasurer,
                     isHorizontalBar,
@@ -156,7 +156,7 @@ internal fun TutorialOverlay(
                 )
 
                 val viewSizeOffset = getAppBarSpotlightSizeOffset(viewSizePosition, 1.2f)
-                val stepInstruction = t("~~Select and change Incidents")
+                val stepInstruction = t("tutorial.select_change_incidents")
                 menuTutorialSelectIncident(
                     textMeasurer,
                     viewSizeOffset,
