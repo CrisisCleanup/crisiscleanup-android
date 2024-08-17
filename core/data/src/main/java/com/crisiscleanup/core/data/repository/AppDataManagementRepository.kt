@@ -11,10 +11,12 @@ import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.database.dao.IncidentDaoPlus
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDaoPlus
+import com.crisiscleanup.core.database.dao.TeamDaoPlus
 import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
 import com.crisiscleanup.core.database.dao.WorksiteSyncStatDao
 import com.crisiscleanup.core.database.dao.fts.rebuildIncidentFts
 import com.crisiscleanup.core.database.dao.fts.rebuildOrganizationFts
+import com.crisiscleanup.core.database.dao.fts.rebuildTeamFts
 import com.crisiscleanup.core.database.dao.fts.rebuildWorksiteTextFts
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -53,6 +55,7 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
     private val incidentDaoPlus: IncidentDaoPlus,
     private val organizationDaoPlus: IncidentOrganizationDaoPlus,
     private val worksiteDaoPlus: WorksiteDaoPlus,
+    private val teamDaoPlus: TeamDaoPlus,
     private val accountDataRepository: AccountDataRepository,
     private val syncPuller: SyncPuller,
     private val databaseOperator: DatabaseOperator,
@@ -79,6 +82,7 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
         incidentDaoPlus.rebuildIncidentFts()
         organizationDaoPlus.rebuildOrganizationFts()
         worksiteDaoPlus.rebuildWorksiteTextFts()
+        teamDaoPlus.rebuildTeamFts()
     }
 
     override fun clearAppData() {

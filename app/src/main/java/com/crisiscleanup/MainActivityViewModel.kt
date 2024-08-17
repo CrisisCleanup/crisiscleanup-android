@@ -232,6 +232,7 @@ class MainActivityViewModel @Inject constructor(
 
         syncPuller.appPullLanguage()
         syncPuller.appPullStatuses()
+        syncPuller.appPullEquipment()
 
         accountDataRepository.accountData
             .mapLatest { it.hasAcceptedTerms }

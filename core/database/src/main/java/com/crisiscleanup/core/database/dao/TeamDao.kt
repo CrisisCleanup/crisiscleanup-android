@@ -2,12 +2,15 @@ package com.crisiscleanup.core.database.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
+import com.crisiscleanup.core.database.dao.fts.PopulatedTeamMatchInfo
 import com.crisiscleanup.core.database.model.PopulatedLocalModifiedAt
 import com.crisiscleanup.core.database.model.PopulatedTeam
 import com.crisiscleanup.core.database.model.TeamEntity
+import com.crisiscleanup.core.database.model.TeamEquipmentCrossRef
 import com.crisiscleanup.core.database.model.TeamMemberCrossRef
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Instant
@@ -135,4 +138,36 @@ interface TeamDao {
 
     @Upsert
     fun upsert(teamMembers: Collection<TeamMemberCrossRef>)
+
+    @Transaction
+    @Query(
+        """
+        DELETE FROM team_to_equipment
+        WHERE team_id=:teamId AND equipment_id NOT IN(:equipmentIds)
+        """,
+    )
+    fun deleteUnspecifiedEquipment(teamId: Long, equipmentIds: Collection<Long>)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insertIgnore(teamEquipments: Collection<TeamEquipmentCrossRef>)
+
+    @Transaction
+    @Query("SELECT name FROM teams ORDER BY RANDOM() LIMIT 1")
+    fun getRandomTeamName(): String?
+
+    @Transaction
+    @Query("INSERT INTO team_fts(team_fts) VALUES ('rebuild')")
+    fun rebuildTeamFts()
+
+    @Transaction
+    @Query(
+        """
+        SELECT t.*,
+        matchinfo(team_fts, 'pcnalx') AS match_info
+        FROM team_fts f
+        INNER JOIN teams t ON f.docid=t.id
+        WHERE team_fts MATCH :query
+        """,
+    )
+    fun matchTeamTokens(query: String): List<PopulatedTeamMatchInfo>
 }

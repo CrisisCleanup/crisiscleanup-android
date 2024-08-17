@@ -23,6 +23,9 @@ interface SyncPuller {
 
     fun appPullStatuses()
     suspend fun syncPullStatuses(): SyncResult
+
+    fun appPullEquipment(force: Boolean = false)
+    suspend fun syncPullEquipment(): SyncResult
 }
 
 interface SyncPusher {

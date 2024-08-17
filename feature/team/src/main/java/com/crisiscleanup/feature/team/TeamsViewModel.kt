@@ -13,6 +13,7 @@ import com.crisiscleanup.core.common.svgAvatarUrl
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.EquipmentRepository
 import com.crisiscleanup.core.data.repository.IncidentTeams
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
@@ -38,6 +39,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
@@ -52,9 +54,10 @@ class TeamsViewModel @Inject constructor(
     appPreferencesRepository: LocalAppPreferencesRepository,
     private val teamsRepository: TeamsRepository,
     usersRepository: UsersRepository,
+    private val equipmentRepository: EquipmentRepository,
     private val syncPuller: SyncPuller,
     translator: KeyResourceTranslator,
-    @Dispatcher(CrisisCleanupDispatchers.IO) ioDispatcher: CoroutineDispatcher,
+    @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.Team) private val logger: AppLogger,
 ) : ViewModel() {
     val appTopBarDataProvider = AppTopBarDataProvider(
@@ -174,13 +177,18 @@ class TeamsViewModel @Inject constructor(
                 }
             }
             .launchIn(viewModelScope)
+
+        viewModelScope.launch(ioDispatcher) {
+            equipmentRepository.saveEquipment()
+        }
     }
 
     suspend fun refreshIncidentsAsync() {
         syncPuller.pullIncidents()
     }
 
-    suspend fun refreshTeams() {
+    suspend fun refreshTeams() = viewModelScope.launch(ioDispatcher) {
+        equipmentRepository.saveEquipment(true)
         teamsRepository.syncTeams(incidentSelector.incidentId.value)
     }
 }

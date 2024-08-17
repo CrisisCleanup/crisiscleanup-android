@@ -7,9 +7,11 @@ import androidx.room.Transaction
 import androidx.room.TypeConverters
 import com.crisiscleanup.core.database.dao.fts.IncidentFtsEntity
 import com.crisiscleanup.core.database.dao.fts.IncidentOrganizationFtsEntity
+import com.crisiscleanup.core.database.dao.fts.TeamFtsEntity
 import com.crisiscleanup.core.database.dao.fts.WorksiteTextFtsEntity
 import com.crisiscleanup.core.database.model.CaseHistoryEventAttrEntity
 import com.crisiscleanup.core.database.model.CaseHistoryEventEntity
+import com.crisiscleanup.core.database.model.EquipmentEntity
 import com.crisiscleanup.core.database.model.IncidentEntity
 import com.crisiscleanup.core.database.model.IncidentFormFieldEntity
 import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
@@ -26,6 +28,7 @@ import com.crisiscleanup.core.database.model.NetworkFileLocalImageEntity
 import com.crisiscleanup.core.database.model.OrganizationAffiliateEntity
 import com.crisiscleanup.core.database.model.OrganizationPrimaryContactCrossRef
 import com.crisiscleanup.core.database.model.PersonContactEntity
+import com.crisiscleanup.core.database.model.PersonEquipmentCrossRef
 import com.crisiscleanup.core.database.model.PersonOrganizationCrossRef
 import com.crisiscleanup.core.database.model.PopulatedIdNetworkId
 import com.crisiscleanup.core.database.model.PopulatedLocalWorksite
@@ -33,6 +36,7 @@ import com.crisiscleanup.core.database.model.PopulatedWorksite
 import com.crisiscleanup.core.database.model.RecentWorksiteEntity
 import com.crisiscleanup.core.database.model.SyncLogEntity
 import com.crisiscleanup.core.database.model.TeamEntity
+import com.crisiscleanup.core.database.model.TeamEquipmentCrossRef
 import com.crisiscleanup.core.database.model.TeamMemberCrossRef
 import com.crisiscleanup.core.database.model.TeamRootEntity
 import com.crisiscleanup.core.database.model.WorkTypeEntity
@@ -91,6 +95,10 @@ import kotlinx.datetime.Instant
         TeamRootEntity::class,
         TeamEntity::class,
         TeamMemberCrossRef::class,
+        EquipmentEntity::class,
+        TeamEquipmentCrossRef::class,
+        PersonEquipmentCrossRef::class,
+        TeamFtsEntity::class,
     ],
     version = 1,
 )

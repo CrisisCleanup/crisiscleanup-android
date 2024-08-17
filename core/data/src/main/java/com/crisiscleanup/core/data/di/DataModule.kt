@@ -28,6 +28,7 @@ import com.crisiscleanup.core.data.repository.CrisisCleanupAccountDataRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupAccountUpdateRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupCasesFilterRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupDataManagementRepository
+import com.crisiscleanup.core.data.repository.CrisisCleanupEquipmentRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupListsRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupLocalImageRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupOrgVolunteerRepository
@@ -37,6 +38,7 @@ import com.crisiscleanup.core.data.repository.CrisisCleanupTeamsRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupWorkTypeStatusRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupWorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.EndOfLifeRepository
+import com.crisiscleanup.core.data.repository.EquipmentRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
 import com.crisiscleanup.core.data.repository.ListsRepository
@@ -217,6 +219,11 @@ interface DataModule {
     fun bindsShareLocationRepository(
         repository: CrisisCleanupShareLocationRepository,
     ): ShareLocationRepository
+
+    @Binds
+    fun bindsEquipmentRepository(
+        repository: CrisisCleanupEquipmentRepository,
+    ): EquipmentRepository
 }
 
 @Module

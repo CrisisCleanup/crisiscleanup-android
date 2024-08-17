@@ -4,6 +4,7 @@ import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkAccountProfileResult
 import com.crisiscleanup.core.network.model.NetworkCaseHistoryResult
 import com.crisiscleanup.core.network.model.NetworkCountResult
+import com.crisiscleanup.core.network.model.NetworkEquipmentListResult
 import com.crisiscleanup.core.network.model.NetworkFlagsFormData
 import com.crisiscleanup.core.network.model.NetworkFlagsFormDataResult
 import com.crisiscleanup.core.network.model.NetworkIncidentResult
@@ -18,7 +19,7 @@ import com.crisiscleanup.core.network.model.NetworkLocationsResult
 import com.crisiscleanup.core.network.model.NetworkOrganizationsResult
 import com.crisiscleanup.core.network.model.NetworkOrganizationsSearchResult
 import com.crisiscleanup.core.network.model.NetworkRedeployRequestsResult
-import com.crisiscleanup.core.network.model.NetworkTeamResult
+import com.crisiscleanup.core.network.model.NetworkTeamsResult
 import com.crisiscleanup.core.network.model.NetworkUserProfile
 import com.crisiscleanup.core.network.model.NetworkUsersResult
 import com.crisiscleanup.core.network.model.NetworkWorkTypeRequestResult
@@ -300,7 +301,16 @@ private interface DataSourceApi {
         limit: Int,
         @Query("offset")
         offset: Int,
-    ): NetworkTeamResult
+    ): NetworkTeamsResult
+
+    @TokenAuthenticationHeader
+    @GET("equipment")
+    suspend fun getEquipment(
+        @Query("limit")
+        limit: Int,
+        @Query("offset")
+        offset: Int,
+    ): NetworkEquipmentListResult
 }
 
 private val worksiteCoreDataFields = listOf(
@@ -572,4 +582,10 @@ class DataApiClient @Inject constructor(
 
     override suspend fun getTeams(incidentId: Long?, limit: Int, offset: Int) =
         networkApi.getTeams(incidentId, limit, offset)
+
+    override suspend fun getEquipmentList(limit: Int, offset: Int): NetworkEquipmentListResult {
+        val result = networkApi.getEquipment(limit, offset)
+        result.errors?.tryThrowException()
+        return result
+    }
 }

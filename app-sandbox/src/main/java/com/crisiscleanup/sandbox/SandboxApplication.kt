@@ -132,6 +132,10 @@ class AppSyncer @Inject constructor() : SyncPuller, SyncPusher {
 
     override suspend fun syncPullStatuses() = SyncResult.NotAttempted("")
 
+    override fun appPullEquipment(force: Boolean) {}
+
+    override suspend fun syncPullEquipment() = SyncResult.NotAttempted("")
+
     override fun appPushWorksite(worksiteId: Long, scheduleMediaSync: Boolean) {}
 
     override suspend fun syncPushWorksitesAsync() = CompletableDeferred(SyncResult.NotAttempted(""))

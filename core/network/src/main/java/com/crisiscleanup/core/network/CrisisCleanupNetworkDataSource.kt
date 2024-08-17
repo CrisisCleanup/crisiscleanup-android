@@ -3,6 +3,7 @@ package com.crisiscleanup.core.network
 import com.crisiscleanup.core.network.model.NetworkAccountProfileResult
 import com.crisiscleanup.core.network.model.NetworkCaseHistoryEvent
 import com.crisiscleanup.core.network.model.NetworkCountResult
+import com.crisiscleanup.core.network.model.NetworkEquipmentListResult
 import com.crisiscleanup.core.network.model.NetworkFlagsFormData
 import com.crisiscleanup.core.network.model.NetworkIncident
 import com.crisiscleanup.core.network.model.NetworkIncidentOrganization
@@ -15,7 +16,7 @@ import com.crisiscleanup.core.network.model.NetworkLocation
 import com.crisiscleanup.core.network.model.NetworkOrganizationShort
 import com.crisiscleanup.core.network.model.NetworkOrganizationsResult
 import com.crisiscleanup.core.network.model.NetworkPersonContact
-import com.crisiscleanup.core.network.model.NetworkTeamResult
+import com.crisiscleanup.core.network.model.NetworkTeamsResult
 import com.crisiscleanup.core.network.model.NetworkUserProfile
 import com.crisiscleanup.core.network.model.NetworkWorkTypeRequest
 import com.crisiscleanup.core.network.model.NetworkWorkTypeStatusResult
@@ -155,5 +156,7 @@ interface CrisisCleanupNetworkDataSource {
         incidentId: Long? = null,
         limit: Int = 0,
         offset: Int = 0,
-    ): NetworkTeamResult
+    ): NetworkTeamsResult
+
+    suspend fun getEquipmentList(limit: Int, offset: Int): NetworkEquipmentListResult
 }

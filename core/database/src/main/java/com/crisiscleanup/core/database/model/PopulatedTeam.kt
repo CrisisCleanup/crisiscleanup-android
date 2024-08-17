@@ -25,7 +25,17 @@ data class PopulatedTeam(
     val members: List<PersonContactEntity>,
 
     // TODO Worksites/work types
-    // TODO Equipments
+
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "id",
+        associateBy = Junction(
+            value = TeamEquipmentCrossRef::class,
+            parentColumn = "team_id",
+            entityColumn = "equipment_id",
+        ),
+    )
+    val equipments: List<EquipmentEntity>,
 )
 
 fun PopulatedTeam.asExternalModel() = with(entity) {
