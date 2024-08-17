@@ -114,3 +114,34 @@ data class TeamMemberCrossRef(
     @ColumnInfo("contact_id")
     val contactId: Long,
 )
+
+@Entity(
+    "team_to_equipment",
+    primaryKeys = ["team_id", "equipment_id"],
+    foreignKeys = [
+        ForeignKey(
+            entity = TeamEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["team_id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+        ForeignKey(
+            entity = EquipmentEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["equipment_id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+    indices = [
+        Index(
+            value = ["equipment_id", "team_id"],
+            name = "idx_equipment_to_team",
+        ),
+    ],
+)
+data class TeamEquipmentCrossRef(
+    @ColumnInfo("team_id")
+    val teamId: Long,
+    @ColumnInfo("equipment_id")
+    val equipmentId: Long,
+)
