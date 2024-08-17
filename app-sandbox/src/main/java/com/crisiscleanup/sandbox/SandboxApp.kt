@@ -24,7 +24,6 @@ import androidx.navigation.NavController
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupBackground
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
-import com.crisiscleanup.sandbox.navigation.MULTI_IMAGE_ROUTE
 import com.crisiscleanup.sandbox.navigation.SandboxNavHost
 import com.crisiscleanup.sandbox.navigation.navigateToBottomNav
 import com.crisiscleanup.sandbox.navigation.navigateToCheckboxes
@@ -65,7 +64,6 @@ fun SandboxApp(
                     SandboxNavHost(
                         appState.navController,
                         appState::onBack,
-                        MULTI_IMAGE_ROUTE,
                     )
                 }
             }
