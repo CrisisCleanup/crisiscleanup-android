@@ -72,7 +72,7 @@ fun RequestRedeployRoute(
                 val incidents = readyState.incidents
                 if (incidents.isEmpty()) {
                     Text(
-                        t("~~There are no Incidents left for deploying."),
+                        t("requestRedeploy.system_thinks_access_all_incidents"),
                         listItemModifier,
                     )
                 } else {
@@ -219,14 +219,14 @@ private fun IncidentOptions(
                         if (isApproved) {
                             Icon(
                                 CrisisCleanupIcons.Check,
-                                contentDescription = t("~~{incident_name} is already approved")
+                                contentDescription = t("requestRedeploy.you_already_have_access_to_incident_name")
                                     .replace("{incident_name}", incident.shortName),
                                 tint = green600,
                             )
                         } else if (isRequested) {
                             Icon(
                                 CrisisCleanupIcons.PendingRequestRedeploy,
-                                contentDescription = t("~~{incident_name} is already awaiting redeploy")
+                                contentDescription = t("requestRedeploy.existing_request_pending_name")
                                     .replace("{incident_name}", incident.shortName),
                             )
                         }

@@ -379,7 +379,7 @@ private fun MenuTutorial(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = t("~~Open tutorial"),
+            text = t("tutorial.open_tutorial"),
             modifier = Modifier
                 .clickable(
                     onClick = onStartTutorial,
