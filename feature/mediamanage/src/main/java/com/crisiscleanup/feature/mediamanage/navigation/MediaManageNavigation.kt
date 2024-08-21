@@ -71,6 +71,6 @@ fun NavGraphBuilder.viewWorksiteImagesScreen(
             },
         ),
     ) {
-        WorksiteImagesRoute(onBack = onBack)
+        WorksiteImagesRoute(onBack)
     }
 }

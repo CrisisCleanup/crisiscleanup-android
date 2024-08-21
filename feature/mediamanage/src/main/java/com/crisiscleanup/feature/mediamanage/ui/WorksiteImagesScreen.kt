@@ -43,8 +43,8 @@ import com.crisiscleanup.core.common.R as commonR
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun WorksiteImagesRoute(
-    viewModel: WorksiteImagesViewModel = hiltViewModel(),
     onBack: () -> Unit = {},
+    viewModel: WorksiteImagesViewModel = hiltViewModel(),
 ) {
     var showPhotosGrid by rememberSaveable { mutableStateOf(false) }
     val hidePhotosGridOnBack = remember(viewModel) {

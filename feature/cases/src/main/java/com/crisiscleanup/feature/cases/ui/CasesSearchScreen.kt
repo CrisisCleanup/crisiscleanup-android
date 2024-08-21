@@ -13,9 +13,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -46,18 +44,10 @@ import com.crisiscleanup.feature.cases.CasesSearchViewModel
 
 @Composable
 internal fun CasesSearchRoute(
-    onBackClick: () -> Unit = {},
+    onBack: () -> Unit = {},
     openCase: (Long, Long) -> Boolean = { _, _ -> false },
     viewModel: CasesSearchViewModel = hiltViewModel(),
 ) {
-    // Guard due to navigation animations
-    var onBackCount by remember { mutableIntStateOf(0) }
-    val onSingleBack = {
-        if (onBackCount++ == 0) {
-            onBackClick()
-        }
-    }
-
     val selectedWorksite by viewModel.selectedWorksite.collectAsStateWithLifecycle()
     if (selectedWorksite.second != EmptyWorksite.id) {
         openCase(selectedWorksite.first, selectedWorksite.second)
@@ -72,7 +62,7 @@ internal fun CasesSearchRoute(
 
         BackHandler(isNotLoading) {
             if (viewModel.onBack()) {
-                onBackClick()
+                onBack()
             }
         }
 
@@ -95,7 +85,7 @@ internal fun CasesSearchRoute(
         if (isListDetailLayout) {
             Row {
                 SearchCasesView(
-                    onSingleBack,
+                    onBack,
                     q,
                     updateQuery,
                     isEditable,
@@ -129,7 +119,7 @@ internal fun CasesSearchRoute(
             }
         } else {
             SearchCasesView(
-                onSingleBack,
+                onBack,
                 q,
                 updateQuery,
                 isEditable,
@@ -148,7 +138,7 @@ internal fun CasesSearchRoute(
 
 @Composable
 private fun SearchCasesView(
-    onBackClick: () -> Unit,
+    onBack: () -> Unit,
     q: String,
     updateQuery: (String) -> Unit,
     isEditable: Boolean,
@@ -165,7 +155,7 @@ private fun SearchCasesView(
     Box(modifier) {
         Column {
             SearchBar(
-                onBackClick,
+                onBack,
                 q,
                 updateQuery,
                 isEditable,
