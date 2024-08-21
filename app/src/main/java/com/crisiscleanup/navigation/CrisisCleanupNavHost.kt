@@ -11,6 +11,7 @@ import com.crisiscleanup.core.appnav.RouteConstant.CASES_GRAPH_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.CASES_SEARCH_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.CASE_ADD_FLAG_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.CASE_EDITOR_MAP_MOVE_LOCATION_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.CASE_EDITOR_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.CASE_EDITOR_SEARCH_ADDRESS_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.CASE_HISTORY_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.CASE_SHARE_ROUTE
@@ -136,6 +137,14 @@ fun CrisisCleanupNavHost(
         }
     }
 
+    val caseEditorOnBack = remember(onBack, navController) {
+        {
+            if (navController.startsWithRoute(CASE_EDITOR_ROUTE)) {
+                onBack()
+            }
+        }
+    }
+
     val searchAddressOnBack = remember(onBack, navController) {
         {
             if (navController.matchesRoute(CASE_EDITOR_SEARCH_ADDRESS_ROUTE)) {
@@ -200,7 +209,7 @@ fun CrisisCleanupNavHost(
             nestedGraphs = {
                 casesSearchScreen(searchCasesOnBack, viewCase)
                 casesFilterScreen(onBack)
-                caseEditorScreen(navController, onBack)
+                caseEditorScreen(navController, caseEditorOnBack)
                 caseEditSearchAddressScreen(navController, searchAddressOnBack)
                 caseEditMoveLocationOnMapScreen(moveLocationOnBack)
                 existingCaseScreen(navController, onBack)
