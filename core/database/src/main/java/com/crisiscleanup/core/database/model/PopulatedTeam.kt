@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.database.model
 
+import android.graphics.Color
 import androidx.room.Embedded
 import androidx.room.Junction
 import androidx.room.Relation
@@ -40,9 +41,16 @@ data class PopulatedTeam(
 )
 
 fun PopulatedTeam.asExternalModel() = with(entity) {
+    var colorInt = Color.TRANSPARENT
+    try {
+        colorInt = Color.parseColor(color)
+    } catch (e: Exception) {
+        // Keep default color
+    }
     CleanupTeam(
         id = id,
         name = name,
+        colorInt = colorInt,
         notes = notes,
         incidentId = incidentId,
         caseCount = caseCount,

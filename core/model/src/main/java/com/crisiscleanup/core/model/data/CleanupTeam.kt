@@ -3,6 +3,7 @@ package com.crisiscleanup.core.model.data
 data class CleanupTeam(
     val id: Long,
     val name: String,
+    val colorInt: Int,
     val notes: String,
     val caseCount: Int,
     private val caseCompleteCount: Int,

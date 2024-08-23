@@ -25,7 +25,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.appcomponent.ui.AppTopBar
@@ -245,6 +247,7 @@ private fun TeamsScreen(
 private fun CirclePlusNumber(count: Int) {
     Box(
         modifier = Modifier
+            // TODO Rename/use another radius
             .size(LocalDimensions.current.avatarCircleRadius)
             .clip(CircleShape)
             .background(neutralBackgroundColor),
@@ -269,7 +272,18 @@ internal fun TeamView(
                 .then(listItemModifier),
             verticalArrangement = listItemSpacedByHalf,
         ) {
-            Row(horizontalArrangement = listItemSpacedBy) {
+            Row(
+                horizontalArrangement = listItemSpacedByHalf,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(
+                    modifier = Modifier
+                        // TODO Common dimensions
+                        .size(16.dp)
+                        .clip(CircleShape)
+                        .background(Color(team.colorInt)),
+                )
+
                 Text(
                     team.name,
                     Modifier.weight(1f),
