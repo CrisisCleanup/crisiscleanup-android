@@ -222,7 +222,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
         try {
             synchronized(_syncingWorksiteIds) {
                 if (_syncingWorksiteIds.contains(worksiteId)) {
-                    syncLogger.log("Not syncing. Currently being synced.")
+                    syncLogger.log("Worksite $worksiteId sync in progress.")
                     return false
                 }
                 _syncingWorksiteIds.add(worksiteId)
@@ -260,7 +260,8 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
     }
 
     private suspend fun syncWorksite(worksiteId: Long) {
-        syncLogger.type = "syncing-worksite-$worksiteId-${Clock.System.now().epochSeconds}"
+        val syncStart = Clock.System.now()
+        syncLogger.type = "syncing-worksite-$worksiteId-${syncStart.epochSeconds}"
 
         var syncException: Exception? = null
 
@@ -295,9 +296,10 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
         // TODO There is a possibility all changes have been synced but there is still unsynced accessory data.
         //      Try to sync in isolation, create a new change, or create notice with options to take action.
 
-        // These fetches are split from the save later because WorksiteDaoPlus.onSyncEnd]
+        // These fetches are split from the save(s) below because WorksiteDaoPlus.onSyncEnd
         // must run first as the [worksite_root.is_local_modified] value matters.
         var incidentId = 0L
+        val networkPullAt = Clock.System.now()
         var syncNetworkWorksite: NetworkWorksiteFull? = null
         val networkWorksiteId = worksiteDao.getWorksiteNetworkId(worksiteId)
         if (networkWorksiteId > 0) {
@@ -309,8 +311,12 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
             }
         }
 
-        // TODO Review syncedAt and set to when syncing started as changes could be made during sync session and result in inconsistent sync data state
-        val isFullySynced = worksiteDaoPlus.onSyncEnd(worksiteId, MAX_SYNC_TRIES, syncLogger)
+        val isFullySynced = worksiteDaoPlus.onSyncEnd(
+            worksiteId,
+            MAX_SYNC_TRIES,
+            syncLogger,
+            syncStart,
+        )
         if (isFullySynced) {
             syncLogger.clear()
                 .log("Worksite fully synced.")
@@ -320,7 +326,7 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
         }
 
         if (syncNetworkWorksite != null && incidentId > 0) {
-            worksitesRepository.syncNetworkWorksite(syncNetworkWorksite)
+            worksitesRepository.syncNetworkWorksite(syncNetworkWorksite, networkPullAt)
         }
 
         syncException?.let { throw it }

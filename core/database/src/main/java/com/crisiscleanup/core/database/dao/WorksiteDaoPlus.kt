@@ -333,8 +333,9 @@ class WorksiteDaoPlus @Inject constructor(
         syncedAt: Instant,
     ) = db.withTransaction {
         val core = entities.core
-        val modifiedAtLookup = getWorksiteLocalModifiedAt(setOf(core.networkId))
-        val modifiedAt = modifiedAtLookup[core.networkId]
+        val networkId = core.networkId
+        val modifiedAtLookup = getWorksiteLocalModifiedAt(setOf(networkId))
+        val modifiedAt = modifiedAtLookup[networkId]
         val isUpdated = syncWorksite(
             core,
             modifiedAt,
@@ -349,7 +350,7 @@ class WorksiteDaoPlus @Inject constructor(
 
         val worksiteId =
             if (isUpdated) {
-                db.worksiteDao().getWorksiteId(core.networkId)
+                db.worksiteDao().getWorksiteId(networkId)
             } else {
                 -1
             }

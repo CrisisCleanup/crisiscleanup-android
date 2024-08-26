@@ -2,11 +2,14 @@ package com.crisiscleanup.feature.caseeditor
 
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.LocationProvider
+import com.crisiscleanup.core.common.combine
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.TagLogger
 import com.crisiscleanup.core.commoncase.model.FormFieldNode
 import com.crisiscleanup.core.commoncase.model.WORK_FORM_GROUP_KEY
 import com.crisiscleanup.core.commoncase.model.flatten
+import com.crisiscleanup.core.data.IncidentRefresher
+import com.crisiscleanup.core.data.LanguageRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
@@ -37,6 +40,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.time.Duration.Companion.seconds
 
 internal class CaseEditorDataLoader(
     private val isCreateWorksite: Boolean,
@@ -89,7 +93,7 @@ internal class CaseEditorDataLoader(
         .stateIn(
             scope = coroutineScope,
             initialValue = null,
-            started = SharingStarted.WhileSubscribed(3_000),
+            started = SharingStarted.WhileSubscribed(3.seconds.inWholeMilliseconds),
         )
 
     private val incidentDataStream = incidentsRepository.streamIncident(incidentIdIn)
@@ -107,7 +111,7 @@ internal class CaseEditorDataLoader(
         .stateIn(
             scope = coroutineScope,
             initialValue = null,
-            started = SharingStarted.WhileSubscribed(3_000),
+            started = SharingStarted.WhileSubscribed(3.seconds.inWholeMilliseconds),
         )
 
     private val worksiteIdStream = MutableStateFlow(worksiteIdIn)
@@ -125,7 +129,7 @@ internal class CaseEditorDataLoader(
         .stateIn(
             scope = coroutineScope,
             initialValue = null,
-            started = SharingStarted.WhileSubscribed(3_000),
+            started = SharingStarted.WhileSubscribed(3.seconds.inWholeMilliseconds),
         )
 
     private val isInitiallySynced = AtomicBoolean(false)
@@ -133,7 +137,7 @@ internal class CaseEditorDataLoader(
 
     private val workTypeStatusStream = workTypeStatusRepository.workTypeStatusOptions
 
-    private val viewStateInternal = com.crisiscleanup.core.common.combine(
+    private val viewStateInternal = combine(
         dataLoadCountStream,
         organizationStream,
         workTypeStatusStream,

@@ -251,6 +251,7 @@ class MainActivityViewModel @Inject constructor(
             }
             .launchIn(viewModelScope)
 
+        // TODO Remove when no longer applicable
         val switchProductionApiManager = SwitchProductionApiManager(
             appMetricsRepository,
             appDataRepository,
