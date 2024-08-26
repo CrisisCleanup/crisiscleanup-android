@@ -28,6 +28,9 @@ import com.crisiscleanup.core.common.utcTimeZone
 import com.crisiscleanup.core.commoncase.TransferWorkTypeProvider
 import com.crisiscleanup.core.commoncase.WorkTypeTransferType
 import com.crisiscleanup.core.commoncase.oneDecimalFormat
+import com.crisiscleanup.core.data.IncidentRefresher
+import com.crisiscleanup.core.data.LanguageRefresher
+import com.crisiscleanup.core.data.OrganizationRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
@@ -105,9 +108,9 @@ class ViewCaseViewModel @Inject constructor(
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel(), KeyResourceTranslator, CaseCameraMediaManager {
-    private val caseEditorArgs = ExistingCaseArgs(savedStateHandle)
-    private val incidentIdArg = caseEditorArgs.incidentId
-    val worksiteIdArg = caseEditorArgs.worksiteId
+    private val existingCaseArgs = ExistingCaseArgs(savedStateHandle)
+    private val incidentIdArg = existingCaseArgs.incidentId
+    val worksiteIdArg = existingCaseArgs.worksiteId
 
     val headerTitle = MutableStateFlow("")
 
@@ -319,7 +322,7 @@ class ViewCaseViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val caseData = viewState.map { it.asCaseData() }
+    val caseData = viewState.map(CaseEditorViewState::asCaseData)
         .stateIn(
             scope = viewModelScope,
             initialValue = null,

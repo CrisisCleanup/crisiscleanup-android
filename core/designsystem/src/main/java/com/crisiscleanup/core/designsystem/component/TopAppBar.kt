@@ -223,6 +223,14 @@ fun TopBarBackAction(
     )
 }
 
+@Composable
+fun TopBarBackAction(onBack: () -> Unit) {
+    TopBarBackAction(
+        action = onBack,
+        modifier = Modifier.testTag("topBarBackAction"),
+    )
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopAppBarBackAction(

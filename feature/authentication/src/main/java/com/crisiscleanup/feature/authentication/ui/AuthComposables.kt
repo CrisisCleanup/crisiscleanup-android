@@ -54,7 +54,7 @@ internal fun LinkAction(
     color: Color = primaryBlueColor,
     action: () -> Unit = {},
 ) {
-    val translator = LocalAppTranslator.current
+    val t = LocalAppTranslator.current
     Row(
         Modifier.fillMaxWidth(),
         horizontalArrangement = arrangement,
@@ -68,7 +68,7 @@ internal fun LinkAction(
                 .then(modifier),
         ) {
             Text(
-                text = translator(textTranslateKey),
+                text = t(textTranslateKey),
                 modifier = Modifier.align(Alignment.CenterEnd),
                 style = LocalFontStyles.current.header4,
                 color = if (enabled) color else color.disabledAlpha(),
@@ -83,7 +83,7 @@ fun LoginWithDifferentMethod(
     onClick: () -> Unit,
     enabled: Boolean = false,
 ) {
-    val translator = LocalAppTranslator.current
+    val t = LocalAppTranslator.current
     TextButton(
         modifier = modifier
             .testTag("loginWithDifferentMethodAction")
@@ -92,7 +92,7 @@ fun LoginWithDifferentMethod(
         shape = RoundedCornerShape(4.dp),
         enabled = enabled,
     ) {
-        val text = translator(
+        val text = t(
             "loginForm.use_different_method",
             R.string.loginUsingDifferentMethod,
         )

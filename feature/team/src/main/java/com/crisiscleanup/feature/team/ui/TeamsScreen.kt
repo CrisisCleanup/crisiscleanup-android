@@ -57,7 +57,7 @@ import com.crisiscleanup.feature.team.TeamsViewState
 @Composable
 internal fun TeamsRoute(
     openAuthentication: () -> Unit = {},
-    openViewTeam: (Long) -> Unit = {},
+    openViewTeam: (Long, Long) -> Unit = { _, _ -> },
     openCreateTeam: () -> Unit = {},
     openTeamFilters: () -> Unit = {},
 ) {
@@ -74,7 +74,7 @@ internal fun TeamsRoute(
 private fun TeamsScreen(
     viewModel: TeamsViewModel = hiltViewModel(),
     openAuthentication: () -> Unit = {},
-    openViewTeam: (Long) -> Unit = {},
+    openViewTeam: (Long, Long) -> Unit = { _, _ -> },
     openCreateTeam: () -> Unit = {},
     openTeamFilters: () -> Unit = {},
 ) {
@@ -127,7 +127,7 @@ private fun TeamsScreen(
                         Text(
                             text = t("teams.my_teams"),
                             modifier = listItemModifier,
-                            style = LocalFontStyles.current.header1,
+                            style = LocalFontStyles.current.header2,
                         )
                     }
 
@@ -258,17 +258,43 @@ private fun CirclePlusNumber(count: Int) {
 }
 
 @Composable
+internal fun TeamColorView(
+    colorInt: Int,
+) {
+    Box(
+        modifier = Modifier
+            // TODO Common dimensions
+            .size(16.dp)
+            .clip(CircleShape)
+            .background(Color(colorInt)),
+    )
+}
+
+@Composable
+internal fun TeamCaseCompleteView(
+    team: CleanupTeam,
+) {
+    if (team.caseCompletePercentage > 0) {
+        Text(
+            LocalAppTranslator.current("teams.percent_complete_cases_completed")
+                .replace("{percent_complete}", "${team.caseCompletePercentage}"),
+            color = neutralFontColor,
+        )
+    }
+}
+
+@Composable
 internal fun TeamView(
     team: CleanupTeam,
     profilePictureLookup: Map<Long, String>,
-    openViewTeam: (Long) -> Unit = {},
+    openViewTeam: (Long, Long) -> Unit = { _, _ -> },
 ) {
     val t = LocalAppTranslator.current
 
     CardSurface {
         Column(
             Modifier
-                .clickable(onClick = { openViewTeam(team.id) })
+                .clickable(onClick = { openViewTeam(team.incidentId, team.id) })
                 .then(listItemModifier),
             verticalArrangement = listItemSpacedByHalf,
         ) {
@@ -276,13 +302,7 @@ internal fun TeamView(
                 horizontalArrangement = listItemSpacedByHalf,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Box(
-                    modifier = Modifier
-                        // TODO Common dimensions
-                        .size(16.dp)
-                        .clip(CircleShape)
-                        .background(Color(team.colorInt)),
-                )
+                TeamColorView(team.colorInt)
 
                 Text(
                     team.name,
@@ -300,13 +320,7 @@ internal fun TeamView(
                         .replace("{case_count}", "$caseCount"),
                 )
 
-                if (team.caseCompletePercentage > 0) {
-                    Text(
-                        t("teams.percent_complete_cases_completed")
-                            .replace("{percent_complete}", "${team.caseCompletePercentage}"),
-                        color = neutralFontColor,
-                    )
-                }
+                TeamCaseCompleteView(team)
             }
 
             val memberCount = team.members.size

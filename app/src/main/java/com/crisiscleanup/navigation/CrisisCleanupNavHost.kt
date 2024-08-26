@@ -16,6 +16,7 @@ import com.crisiscleanup.core.appnav.RouteConstant.CASE_EDITOR_SEARCH_ADDRESS_RO
 import com.crisiscleanup.core.appnav.RouteConstant.CASE_HISTORY_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.CASE_SHARE_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.VIEW_CASE_TRANSFER_WORK_TYPES_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.VIEW_TEAM_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.WORKSITE_IMAGES_ROUTE
 import com.crisiscleanup.core.appnav.navigateToExistingCase
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
@@ -200,6 +201,14 @@ fun CrisisCleanupNavHost(
         }
     }
 
+    val viewTeamOnBack = remember(onBack, navController) {
+        {
+            if (navController.startsWithRoute(VIEW_TEAM_ROUTE)) {
+                onBack()
+            }
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -228,7 +237,7 @@ fun CrisisCleanupNavHost(
         dashboardScreen()
         teamsScreen(
             nestedGraphs = {
-                viewTeamScreen(onBack)
+                viewTeamScreen(viewTeamOnBack)
             },
             openAuthentication = openAuthentication,
             openViewTeam = navController::navigateToViewTeam,

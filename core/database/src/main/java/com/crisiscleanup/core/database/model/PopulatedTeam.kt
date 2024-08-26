@@ -1,9 +1,9 @@
 package com.crisiscleanup.core.database.model
 
-import android.graphics.Color
 import androidx.room.Embedded
 import androidx.room.Junction
 import androidx.room.Relation
+import com.crisiscleanup.core.common.hexColorToIntColor
 import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.equipmentFromLiteral
 
@@ -41,16 +41,11 @@ data class PopulatedTeam(
 )
 
 fun PopulatedTeam.asExternalModel() = with(entity) {
-    var colorInt = Color.TRANSPARENT
-    try {
-        colorInt = Color.parseColor(color)
-    } catch (e: Exception) {
-        // Keep default color
-    }
     CleanupTeam(
         id = id,
+        networkId = networkId,
         name = name,
-        colorInt = colorInt,
+        colorInt = color.hexColorToIntColor(),
         notes = notes,
         incidentId = incidentId,
         caseCount = caseCount,

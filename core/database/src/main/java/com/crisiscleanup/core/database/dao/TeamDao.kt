@@ -8,6 +8,7 @@ import androidx.room.Transaction
 import androidx.room.Upsert
 import com.crisiscleanup.core.database.dao.fts.PopulatedTeamMatchInfo
 import com.crisiscleanup.core.database.model.PopulatedLocalModifiedAt
+import com.crisiscleanup.core.database.model.PopulatedLocalTeam
 import com.crisiscleanup.core.database.model.PopulatedTeam
 import com.crisiscleanup.core.database.model.TeamEntity
 import com.crisiscleanup.core.database.model.TeamEquipmentCrossRef
@@ -22,6 +23,14 @@ interface TeamDao {
     fun getTeamId(networkId: Long): Long
 
     @Transaction
+    @Query("SELECT network_id FROM teams_root WHERE id=:id")
+    fun getTeamNetworkId(id: Long): Long
+
+    @Transaction
+    @Query("SELECT incident_id FROM teams_root WHERE id=:id")
+    fun getIncidentId(id: Long): Long
+
+    @Transaction
     @Query(
         """
         SELECT *
@@ -31,6 +40,10 @@ interface TeamDao {
         """,
     )
     fun streamTeams(incidentId: Long): Flow<List<PopulatedTeam>>
+
+    @Transaction
+    @Query("SELECT * FROM teams WHERE id=:id")
+    fun streamLocalTeam(id: Long): Flow<PopulatedLocalTeam?>
 
     @Transaction
     @Query(
@@ -94,7 +107,7 @@ interface TeamDao {
               local_modified_at=:expectedLocalModifiedAt
         """,
     )
-    fun syncUpdateWorksiteRoot(
+    fun syncUpdateTeamRoot(
         id: Long,
         expectedLocalModifiedAt: Instant,
         syncedAt: Instant,

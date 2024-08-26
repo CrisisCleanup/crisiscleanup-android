@@ -34,6 +34,7 @@ import com.crisiscleanup.core.data.repository.CrisisCleanupLocalImageRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupOrgVolunteerRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupRequestRedeployRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupShareLocationRepository
+import com.crisiscleanup.core.data.repository.CrisisCleanupTeamChangeRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupTeamsRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupWorkTypeStatusRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupWorksiteChangeRepository
@@ -60,6 +61,7 @@ import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.RequestRedeployRepository
 import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
 import com.crisiscleanup.core.data.repository.ShareLocationRepository
+import com.crisiscleanup.core.data.repository.TeamChangeRepository
 import com.crisiscleanup.core.data.repository.TeamsRepository
 import com.crisiscleanup.core.data.repository.UsersRepository
 import com.crisiscleanup.core.data.repository.WorkTypeStatusRepository
@@ -224,6 +226,12 @@ interface DataModule {
     fun bindsEquipmentRepository(
         repository: CrisisCleanupEquipmentRepository,
     ): EquipmentRepository
+
+    @Singleton
+    @Binds
+    fun bindsTeamChangeRepository(
+        repository: CrisisCleanupTeamChangeRepository,
+    ): TeamChangeRepository
 }
 
 @Module

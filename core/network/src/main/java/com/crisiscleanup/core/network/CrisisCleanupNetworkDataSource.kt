@@ -16,6 +16,7 @@ import com.crisiscleanup.core.network.model.NetworkLocation
 import com.crisiscleanup.core.network.model.NetworkOrganizationShort
 import com.crisiscleanup.core.network.model.NetworkOrganizationsResult
 import com.crisiscleanup.core.network.model.NetworkPersonContact
+import com.crisiscleanup.core.network.model.NetworkTeam
 import com.crisiscleanup.core.network.model.NetworkTeamsResult
 import com.crisiscleanup.core.network.model.NetworkUserProfile
 import com.crisiscleanup.core.network.model.NetworkWorkTypeRequest
@@ -159,4 +160,6 @@ interface CrisisCleanupNetworkDataSource {
     ): NetworkTeamsResult
 
     suspend fun getEquipmentList(limit: Int, offset: Int): NetworkEquipmentListResult
+
+    suspend fun getTeam(id: Long): NetworkTeam?
 }

@@ -114,14 +114,6 @@ private fun HeaderSubTitle(
 }
 
 @Composable
-private fun HeaderBack(onBack: () -> Unit) {
-    TopBarBackAction(
-        action = onBack,
-        modifier = Modifier.testTag("topBarBackAction"),
-    )
-}
-
-@Composable
 internal fun ColumnScope.ViewCaseHeader(
     title: String,
     subTitle: String = "",
@@ -196,7 +188,7 @@ private fun TopBarHeader(
         }
     }
 
-    val navigationContent = @Composable { HeaderBack(onBack) }
+    val navigationContent = @Composable { TopBarBackAction(onBack) }
 
     val actionsContent: (@Composable (RowScope.() -> Unit)) = if (isLoading) {
         @Composable {}
@@ -249,7 +241,7 @@ private fun ColumnScope.SideHeader(
         )
     }
 
-    val navigationContent = @Composable { HeaderBack(onBack) }
+    val navigationContent = @Composable { TopBarBackAction(onBack) }
 
     CenterAlignedTopAppBar(
         title = titleContent,

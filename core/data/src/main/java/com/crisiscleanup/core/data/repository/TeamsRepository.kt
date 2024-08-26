@@ -4,20 +4,19 @@ import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.split
+import com.crisiscleanup.core.data.model.asEntity
 import com.crisiscleanup.core.database.dao.TeamDao
 import com.crisiscleanup.core.database.dao.TeamDaoPlus
 import com.crisiscleanup.core.database.model.PopulatedTeam
-import com.crisiscleanup.core.database.model.TeamEntity
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.CleanupTeam
-import com.crisiscleanup.core.model.data.closedWorkTypeStatuses
-import com.crisiscleanup.core.model.data.statusFromLiteral
+import com.crisiscleanup.core.model.data.LocalTeam
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkTeam
 import com.crisiscleanup.core.network.model.NetworkUserEquipment
-import com.crisiscleanup.core.network.model.tryThrowException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -25,6 +24,13 @@ import javax.inject.Inject
 
 interface TeamsRepository {
     suspend fun streamIncidentTeams(incidentId: Long): Flow<IncidentTeams>
+
+    fun streamLocalTeam(teamId: Long): Flow<LocalTeam?>
+
+    suspend fun syncNetworkTeam(
+        team: NetworkTeam,
+        syncedAt: Instant = Clock.System.now(),
+    ): Boolean
 
     suspend fun syncTeams(incidentId: Long)
 }
@@ -50,26 +56,16 @@ class CrisisCleanupTeamsRepository @Inject constructor(
             }
     }
 
+    override fun streamLocalTeam(teamId: Long): Flow<LocalTeam?> =
+        teamDao.streamLocalTeam(teamId).map {
+            it?.asExternalModel()
+        }
+
     private suspend fun syncTeams(
-        incidentId: Long,
         networkTeams: List<NetworkTeam>,
         syncedAt: Instant,
     ) {
-        val teamEntities = networkTeams.map { networkTeam ->
-            val workTypes = networkTeam.assignedWork ?: emptyList()
-            val workTypeStatuses = workTypes.map { statusFromLiteral(it.status) }
-            val completeCount = workTypeStatuses.filter { closedWorkTypeStatuses.contains(it) }.size
-            TeamEntity(
-                id = 0,
-                networkId = networkTeam.id,
-                incidentId = incidentId,
-                name = networkTeam.name,
-                notes = networkTeam.notes ?: "",
-                color = networkTeam.color,
-                caseCount = networkTeam.assignedWork?.size ?: 0,
-                completeCount = completeCount,
-            )
-        }
+        val teamEntities = networkTeams.map(NetworkTeam::asEntity)
         val teamMemberLookup = mutableMapOf<Long, List<Long>>()
         val teamEquipmentLookup = mutableMapOf<Long, Set<Long>>()
         val memberEquipmentLookup = mutableMapOf<Long, MutableSet<Long>>()
@@ -102,14 +98,13 @@ class CrisisCleanupTeamsRepository @Inject constructor(
         try {
             while (teamOffset < queryLimit) {
                 val teamsResult = networkDataSource.getTeams(incidentId, teamLimit, teamOffset)
-                teamsResult.errors?.tryThrowException()
 
                 if ((teamsResult.results?.size ?: 0) == 0) {
                     break
                 }
 
                 val teams = teamsResult.results!!
-                syncTeams(incidentId, teams, syncedAt)
+                syncTeams(teams, syncedAt)
 
                 teamOffset += teams.size
                 if (teamOffset >= queryLimit.coerceAtMost(teamsResult.count ?: 0)) {
@@ -119,6 +114,24 @@ class CrisisCleanupTeamsRepository @Inject constructor(
         } catch (e: Exception) {
             logger.logException(e)
         }
+    }
+
+    override suspend fun syncNetworkTeam(
+        team: NetworkTeam,
+        syncedAt: Instant,
+    ): Boolean {
+        val teamMembers = team.users ?: emptyList()
+        val teamEquipment = team.userEquipment.flatMap(NetworkUserEquipment::equipmentIds).toSet()
+        val memberEquipmentLookup = team.userEquipment.associate { userEquipment ->
+            userEquipment.userId to userEquipment.equipmentIds
+        }
+        return teamDaoPlus.syncTeam(
+            team.asEntity(),
+            teamMembers,
+            teamEquipment,
+            memberEquipmentLookup,
+            syncedAt,
+        )
     }
 }
 

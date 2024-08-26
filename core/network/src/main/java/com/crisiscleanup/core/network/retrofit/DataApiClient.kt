@@ -19,6 +19,7 @@ import com.crisiscleanup.core.network.model.NetworkLocationsResult
 import com.crisiscleanup.core.network.model.NetworkOrganizationsResult
 import com.crisiscleanup.core.network.model.NetworkOrganizationsSearchResult
 import com.crisiscleanup.core.network.model.NetworkRedeployRequestsResult
+import com.crisiscleanup.core.network.model.NetworkTeamResult
 import com.crisiscleanup.core.network.model.NetworkTeamsResult
 import com.crisiscleanup.core.network.model.NetworkUserProfile
 import com.crisiscleanup.core.network.model.NetworkUsersResult
@@ -311,6 +312,14 @@ private interface DataSourceApi {
         @Query("offset")
         offset: Int,
     ): NetworkEquipmentListResult
+
+    @TokenAuthenticationHeader
+    @WrapResponseHeader("team")
+    @GET("teams/{teamId}")
+    suspend fun getTeam(
+        @Query("teamId")
+        teamId: Long?,
+    ): NetworkTeamResult
 }
 
 private val worksiteCoreDataFields = listOf(
@@ -582,10 +591,13 @@ class DataApiClient @Inject constructor(
 
     override suspend fun getTeams(incidentId: Long?, limit: Int, offset: Int) =
         networkApi.getTeams(incidentId, limit, offset)
+            .apply { errors?.tryThrowException() }
 
-    override suspend fun getEquipmentList(limit: Int, offset: Int): NetworkEquipmentListResult {
-        val result = networkApi.getEquipment(limit, offset)
-        result.errors?.tryThrowException()
-        return result
-    }
+    override suspend fun getEquipmentList(limit: Int, offset: Int) =
+        networkApi.getEquipment(limit, offset)
+            .apply { errors?.tryThrowException() }
+
+    override suspend fun getTeam(id: Long) = networkApi.getTeam(id)
+        .apply { errors?.tryThrowException() }
+        .team
 }
