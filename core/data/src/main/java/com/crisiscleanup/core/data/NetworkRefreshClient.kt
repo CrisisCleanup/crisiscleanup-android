@@ -1,4 +1,4 @@
-package com.crisiscleanup.feature.caseeditor
+package com.crisiscleanup.core.data
 
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.data.repository.AccountDataRefresher
@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Duration.Companion.hours
@@ -45,15 +44,16 @@ class LanguageRefresher @Inject constructor(
     private val languageRepository: LanguageTranslationsRepository,
     private val networkMonitor: NetworkMonitor,
 ) {
-    private var lastLoadInstant = AtomicReference(Instant.fromEpochSeconds(0))
+    private var lastRefresh = Instant.fromEpochSeconds(0)
 
     suspend fun pullLanguages() {
-        if (networkMonitor.isOnline.first()) {
-            val now = Clock.System.now()
-            if (now - lastLoadInstant.get() > 6.hours) {
-                languageRepository.loadLanguages()
-                lastLoadInstant.set(now)
-            }
+        val now = Clock.System.now()
+        if (networkMonitor.isOnline.first() &&
+            now - lastRefresh > 6.hours
+        ) {
+            lastRefresh = now
+
+            languageRepository.loadLanguages()
         }
     }
 }
@@ -61,19 +61,23 @@ class LanguageRefresher @Inject constructor(
 @Singleton
 class OrganizationRefresher @Inject constructor(
     private val accountDataRefresher: AccountDataRefresher,
+    private val networkMonitor: NetworkMonitor,
 ) {
     private var incidentIdPull = EmptyIncident.id
-    private var pullTime = Instant.fromEpochSeconds(0)
+    private var lastRefresh = Instant.fromEpochSeconds(0)
 
     suspend fun pullOrganization(incidentId: Long) {
-        if (incidentIdPull == incidentId &&
-            Clock.System.now() - pullTime < 1.hours
+        val now = Clock.System.now()
+        if (networkMonitor.isOnline.first() &&
+            (
+                incidentIdPull != incidentId ||
+                    now - lastRefresh > 1.hours
+                )
         ) {
-            return
-        }
-        incidentIdPull = EmptyIncident.id
-        pullTime = Clock.System.now()
+            incidentIdPull = incidentId
+            lastRefresh = now
 
-        accountDataRefresher.updateMyOrganization(true)
+            accountDataRefresher.updateMyOrganization(true)
+        }
     }
 }

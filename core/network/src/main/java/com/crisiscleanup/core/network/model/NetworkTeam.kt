@@ -31,3 +31,9 @@ data class NetworkUserEquipment(
     @SerialName("equipment_ids")
     val equipmentIds: Set<Long>,
 )
+
+@Serializable
+data class NetworkTeamResult(
+    val errors: List<NetworkCrisisCleanupApiError>? = null,
+    val team: NetworkTeam? = null,
+)

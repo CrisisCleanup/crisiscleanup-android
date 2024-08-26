@@ -119,6 +119,31 @@ class TeamDaoPlus @Inject constructor(
         teamDao.insertIgnore(teamEquipments)
     }
 
+    suspend fun syncTeam(
+        team: TeamEntity,
+        members: List<Long>,
+        equipment: Set<Long>,
+        memberEquipmentLookup: Map<Long, Set<Long>>,
+        syncedAt: Instant,
+    ) = db.withTransaction {
+        val networkId = team.networkId
+        val modifiedAtLookup = getTeamLocalModifiedAt(setOf(networkId))
+        val modifiedAt = modifiedAtLookup[networkId]
+        val isUpdated = syncTeam(
+            team,
+            modifiedAt,
+            members,
+            equipment,
+            syncedAt,
+        )
+
+        if (isUpdated) {
+            syncMemberEquipment(memberEquipmentLookup)
+        }
+
+        return@withTransaction isUpdated
+    }
+
     private suspend fun syncTeam(
         team: TeamEntity,
         modifiedAt: PopulatedLocalModifiedAt?,
@@ -148,10 +173,10 @@ class TeamDaoPlus @Inject constructor(
                     networkId = team.networkId,
                 ) == 0
             ) {
-                throw Exception("Worksite has been changed since local modified state was fetched")
+                throw Exception("Team has been changed since local modified state was fetched")
             }
 
-            teamDao.syncUpdateWorksiteRoot(
+            teamDao.syncUpdateTeamRoot(
                 id = modifiedAt.id,
                 expectedLocalModifiedAt = modifiedAt.localModifiedAt,
                 syncedAt = syncedAt,
@@ -180,7 +205,7 @@ class TeamDaoPlus @Inject constructor(
             return@withTransaction true
         } else {
             // Resolving changes at this point is not worth the complexity.
-            // Defer to worksite (snapshot) changes resolving successfully and completely.
+            // Defer to team (snapshot) changes resolving successfully and completely.
             syncLogger.log("Skip sync overwriting locally modified team ${team.id} (${team.networkId})")
         }
 
