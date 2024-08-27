@@ -8,6 +8,7 @@ import com.crisiscleanup.core.data.model.asEntity
 import com.crisiscleanup.core.database.dao.TeamDao
 import com.crisiscleanup.core.database.dao.TeamDaoPlus
 import com.crisiscleanup.core.database.model.PopulatedTeam
+import com.crisiscleanup.core.database.model.PopulatedTeamMemberEquipment
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.LocalTeam
@@ -15,8 +16,8 @@ import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkTeam
 import com.crisiscleanup.core.network.model.NetworkUserEquipment
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -56,9 +57,24 @@ class CrisisCleanupTeamsRepository @Inject constructor(
             }
     }
 
-    override fun streamLocalTeam(teamId: Long): Flow<LocalTeam?> =
-        teamDao.streamLocalTeam(teamId).map {
-            it?.asExternalModel()
+    override fun streamLocalTeam(teamId: Long): Flow<LocalTeam?> = combine(
+        teamDao.streamLocalTeam(teamId),
+        teamDao.streamTeamMemberEquipment(teamId),
+        ::Pair,
+    )
+        .mapLatest { (team, teamMemberEquipment) ->
+            val memberEquipment =
+                teamMemberEquipment.map(PopulatedTeamMemberEquipment::asExternalModel)
+                    .sortedWith { a, b ->
+                        val nameCompare = a.userName.compareTo(b.userName, true)
+                        if (nameCompare == 0) {
+                            val equipmentCompare =
+                                a.equipmentData.equipment.compareTo(b.equipmentData.equipment)
+                            return@sortedWith equipmentCompare
+                        }
+                        nameCompare
+                    }
+            team?.asExternalModel(memberEquipment)
         }
 
     private suspend fun syncTeams(
