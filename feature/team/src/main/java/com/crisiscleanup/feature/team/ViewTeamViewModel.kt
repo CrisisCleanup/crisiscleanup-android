@@ -25,19 +25,25 @@ import com.crisiscleanup.core.data.repository.TeamsRepository
 import com.crisiscleanup.core.data.repository.UsersRepository
 import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.EmptyCleanupTeam
+import com.crisiscleanup.core.model.data.PersonContact
 import com.crisiscleanup.feature.team.navigation.ViewTeamArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
@@ -127,10 +133,6 @@ class ViewTeamViewModel @Inject constructor(
         viewModelScope.launch(ioDispatcher) {
             organizationRefresher.pullOrganization(incidentIdArg)
         }
-
-        viewModelScope.launch(ioDispatcher) {
-            // TODO Query and/or set user profile pictures
-        }
     }
 
     val isLoading = dataLoader.isLoading
@@ -145,6 +147,25 @@ class ViewTeamViewModel @Inject constructor(
             scope = viewModelScope,
             initialValue = null,
             started = SharingStarted.WhileSubscribed(),
+        )
+
+    @OptIn(FlowPreview::class)
+    private val userProfileLookup = teamData.mapNotNull { it?.team?.memberIds }
+        .debounce(1.seconds)
+        .distinctUntilChanged()
+        .map {
+            withContext(ioDispatcher) {
+                val userProfiles = usersRepository.getUserProfiles(it, true)
+                userProfiles.associateBy(PersonContact::id)
+            }
+        }
+
+    val profilePictureLookup = userProfileLookup
+        .mapLatest(::buildProfilePicLookup)
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = emptyMap(),
+            started = SharingStarted.WhileSubscribed(3.seconds.inWholeMilliseconds),
         )
 
     private fun updateHeaderTitle(teamName: String = "") {
