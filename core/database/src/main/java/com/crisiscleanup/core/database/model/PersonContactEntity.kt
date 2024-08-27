@@ -30,6 +30,10 @@ fun PersonContactEntity.asExternalModel() = PersonContact(
     profilePictureUri = profilePictureUri,
 )
 
+fun Collection<PersonContactEntity>.asExternalModelSorted() =
+    map(PersonContactEntity::asExternalModel)
+        .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, PersonContact::fullName))
+
 @Entity(
     "person_to_organization",
     primaryKeys = ["id", "organization_id"],

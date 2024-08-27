@@ -65,6 +65,8 @@ private fun ViewTeamScreen(
     val title = viewModel.headerTitle
 
     val team by viewModel.editableTeam.collectAsStateWithLifecycle()
+    val profilePictureLookup by viewModel.profilePictureLookup.collectAsStateWithLifecycle()
+
     Box {
         Column {
             CenterAlignedTopAppBar(
@@ -74,8 +76,9 @@ private fun ViewTeamScreen(
             )
 
             ViewTeamContent(
-                team = team,
-                // TODO Is saving instead?
+                team,
+                profilePictureLookup,
+                // TODO isSaving instead?
                 isBusy = isBusy,
                 isEditable = isEditable,
             )
@@ -135,6 +138,7 @@ private fun EditSectionHeader(
 @Composable
 private fun ViewTeamContent(
     team: CleanupTeam,
+    profilePictureLookup: Map<Long, String>,
     isBusy: Boolean,
     isEditable: Boolean,
     onEditTeamMembers: () -> Unit = {},
@@ -180,8 +184,7 @@ private fun ViewTeamContent(
                         contentAlignment = Alignment.Center,
                     ) {
                         AvatarIcon(
-                            // TODO Use correct profile picture
-                            it.profilePictureUri,
+                            profilePictureLookup[it.id] ?: it.profilePictureUri,
                             it.fullName,
                         )
                     }

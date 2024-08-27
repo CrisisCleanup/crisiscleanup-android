@@ -61,7 +61,7 @@ fun PopulatedLocalTeam.asExternalModel(): LocalTeam {
                 caseCompleteCount = completeCount,
                 incidentId = incidentId,
                 memberIds = memberIdRefs.map(TeamMemberCrossRef::contactId),
-                members = members.map(PersonContactEntity::asExternalModel),
+                members = members.asExternalModelSorted(),
                 equipment = equipments.map { equipmentFromLiteral(it.nameKey) },
             ),
             LocalChange(
