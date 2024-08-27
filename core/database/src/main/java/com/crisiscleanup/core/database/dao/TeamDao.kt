@@ -10,6 +10,7 @@ import com.crisiscleanup.core.database.dao.fts.PopulatedTeamMatchInfo
 import com.crisiscleanup.core.database.model.PopulatedLocalModifiedAt
 import com.crisiscleanup.core.database.model.PopulatedLocalTeam
 import com.crisiscleanup.core.database.model.PopulatedTeam
+import com.crisiscleanup.core.database.model.PopulatedTeamMemberEquipment
 import com.crisiscleanup.core.database.model.TeamEntity
 import com.crisiscleanup.core.database.model.TeamEquipmentCrossRef
 import com.crisiscleanup.core.database.model.TeamMemberCrossRef
@@ -44,6 +45,19 @@ interface TeamDao {
     @Transaction
     @Query("SELECT * FROM teams WHERE id=:id")
     fun streamLocalTeam(id: Long): Flow<PopulatedLocalTeam?>
+
+    @Transaction
+    @Query(
+        """
+        SELECT p.id as userId, p.first_name as userFirstName, p.last_name as userLastName,
+        e.id as equipmentId, e.name_t as equipmentKey
+        FROM person_contacts p INNER JOIN team_to_primary_contact t2p ON t2p.contact_id=p.id
+        INNER JOIN person_to_equipment p2e ON p.id=p2e.id
+        INNER JOIN cleanup_equipment e on p2e.equipment_id=e.id
+        WHERE t2p.team_id=:id
+        """,
+    )
+    fun streamTeamMemberEquipment(id: Long): Flow<List<PopulatedTeamMemberEquipment>>
 
     @Transaction
     @Query(

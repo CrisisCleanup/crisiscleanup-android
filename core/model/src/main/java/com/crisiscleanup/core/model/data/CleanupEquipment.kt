@@ -1,19 +1,19 @@
 package com.crisiscleanup.core.model.data
 
 enum class CleanupEquipment(val literal: String) {
-    Unknown("unknown"),
     Chainsaw("equipment.chainsaw"),
-    Van("equipment.van"),
-    Bus("equipment.bus"),
     Pump("equipment.pump"),
     Compressor("equipment.compressor"),
-    Trailer("equipment.trailer"),
     Backhoe("equipment.backhoe"),
-    SkidSteer("equipment.skid_steer"),
     Bulldozer("equipment.bulldozer"),
-    Excavator("equipment.excavator"),
+    Bus("equipment.bus"),
     DumpTruck("equipment.dump_truck"),
+    Excavator("equipment.excavator"),
+    SkidSteer("equipment.skid_steer"),
+    Trailer("equipment.trailer"),
+    Van("equipment.van"),
     Forklift("equipment.forklift"),
+    Unknown("unknown"),
 }
 
 private val literalEquipmentLookup = CleanupEquipment.entries.associateBy(CleanupEquipment::literal)
@@ -26,4 +26,10 @@ data class EquipmentData(
     val equipment: CleanupEquipment = equipmentFromLiteral(nameKey),
     val listOrder: Long?,
     val selectedCount: Int,
+)
+
+data class MemberEquipment(
+    val userId: Long,
+    val userName: String,
+    val equipmentData: EquipmentData,
 )

@@ -5,9 +5,10 @@ import androidx.room.Junction
 import androidx.room.Relation
 import com.crisiscleanup.core.common.hexColorToIntColor
 import com.crisiscleanup.core.model.data.CleanupTeam
+import com.crisiscleanup.core.model.data.EquipmentData
 import com.crisiscleanup.core.model.data.LocalChange
 import com.crisiscleanup.core.model.data.LocalTeam
-import com.crisiscleanup.core.model.data.equipmentFromLiteral
+import com.crisiscleanup.core.model.data.MemberEquipment
 
 data class PopulatedLocalTeam(
     @Embedded
@@ -34,21 +35,9 @@ data class PopulatedLocalTeam(
     val members: List<PersonContactEntity>,
 
     // TODO Worksites/work types
-
-    // TODO Look up latest equipment of members?
-    @Relation(
-        parentColumn = "id",
-        entityColumn = "id",
-        associateBy = Junction(
-            value = TeamEquipmentCrossRef::class,
-            parentColumn = "team_id",
-            entityColumn = "equipment_id",
-        ),
-    )
-    val equipments: List<EquipmentEntity>,
 )
 
-fun PopulatedLocalTeam.asExternalModel(): LocalTeam {
+fun PopulatedLocalTeam.asExternalModel(memberEquipment: List<MemberEquipment>): LocalTeam {
     return with(entity) {
         LocalTeam(
             CleanupTeam(
@@ -62,7 +51,7 @@ fun PopulatedLocalTeam.asExternalModel(): LocalTeam {
                 incidentId = incidentId,
                 memberIds = memberIdRefs.map(TeamMemberCrossRef::contactId),
                 members = members.asExternalModelSorted(),
-                equipment = equipments.map { equipmentFromLiteral(it.nameKey) },
+                memberEquipment = memberEquipment,
             ),
             LocalChange(
                 isLocalModified = root.isLocalModified,
@@ -72,3 +61,22 @@ fun PopulatedLocalTeam.asExternalModel(): LocalTeam {
         )
     }
 }
+
+data class PopulatedTeamMemberEquipment(
+    val userId: Long,
+    val userFirstName: String,
+    val userLastName: String,
+    val equipmentId: Long,
+    val equipmentKey: String,
+)
+
+fun PopulatedTeamMemberEquipment.asExternalModel() = MemberEquipment(
+    userId = userId,
+    userName = "$userFirstName $userLastName".trim(),
+    equipmentData = EquipmentData(
+        id = equipmentId,
+        nameKey = equipmentKey,
+        listOrder = null,
+        selectedCount = 0,
+    ),
+)
