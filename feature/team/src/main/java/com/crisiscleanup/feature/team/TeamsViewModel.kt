@@ -127,27 +127,13 @@ class TeamsViewModel @Inject constructor(
         }
         .debounce(1.seconds)
         .mapLatest { (state, additional) ->
-            fun getProfilePictureUri(contact: PersonContact): String {
-                var pictureUri = contact.profilePictureUri
-                if (pictureUri.isBlank() && contact.fullName.isNotBlank()) {
-                    pictureUri = contact.fullName.svgAvatarUrl
-                }
-                return pictureUri
-            }
-
-            val lookup = mutableMapOf<Long, String>()
-            for (entry in (state as TeamsViewState.Success).profileLookup) {
-                lookup[entry.key] = getProfilePictureUri(entry.value)
-            }
-            for (entry in additional) {
-                lookup[entry.key] = getProfilePictureUri(entry.value)
-            }
-            lookup
+            val profileLookup = (state as TeamsViewState.Success).profileLookup
+            buildProfilePicLookup(profileLookup, additional)
         }
         .stateIn(
             scope = viewModelScope,
             initialValue = emptyMap(),
-            started = SharingStarted.WhileSubscribed(3_000),
+            started = SharingStarted.WhileSubscribed(3.seconds.inWholeMilliseconds),
         )
 
     val isLoading = viewState.map { it == TeamsViewState.Loading }
@@ -191,6 +177,28 @@ class TeamsViewModel @Inject constructor(
         equipmentRepository.saveEquipment(true)
         teamsRepository.syncTeams(incidentSelector.incidentId.value)
     }
+}
+
+internal fun buildProfilePicLookup(
+    profileLookup: Map<Long, PersonContact>,
+    additionalLookup: Map<Long, PersonContact> = emptyMap(),
+): Map<Long, String> {
+    fun getProfilePictureUri(contact: PersonContact): String {
+        var pictureUri = contact.profilePictureUri
+        if (pictureUri.isBlank() && contact.fullName.isNotBlank()) {
+            pictureUri = contact.fullName.svgAvatarUrl
+        }
+        return pictureUri
+    }
+
+    val lookup = mutableMapOf<Long, String>()
+    for (entry in profileLookup) {
+        lookup[entry.key] = getProfilePictureUri(entry.value)
+    }
+    for (entry in additionalLookup) {
+        lookup[entry.key] = getProfilePictureUri(entry.value)
+    }
+    return lookup
 }
 
 sealed interface TeamsViewState {

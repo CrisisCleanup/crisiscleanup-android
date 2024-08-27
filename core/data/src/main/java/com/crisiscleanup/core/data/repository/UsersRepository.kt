@@ -26,7 +26,7 @@ interface UsersRepository {
 
     suspend fun getUserProfiles(
         userIds: Collection<Long>,
-        updateProfilePics: Boolean = false,
+        forceUpdateProfiles: Boolean = false,
     ): List<PersonContact>
 }
 
@@ -72,11 +72,12 @@ class OfflineFirstUsersRepository @Inject constructor(
 
     override suspend fun getUserProfiles(
         userIds: Collection<Long>,
-        updateProfilePics: Boolean,
+        forceUpdateProfiles: Boolean,
     ): List<PersonContact> {
         var profiles = personContactDao.getContacts(userIds)
 
-        if (updateProfilePics &&
+        if (forceUpdateProfiles ||
+            userIds.size != profiles.size ||
             profiles.any { it.entity.profilePictureUri.isBlank() }
         ) {
             queryUpdateUsers(userIds)
