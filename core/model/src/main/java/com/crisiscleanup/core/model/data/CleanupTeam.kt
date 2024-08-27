@@ -18,7 +18,8 @@ data class CleanupTeam(
     val incidentId: Long,
     val memberIds: List<Long>,
     val members: List<PersonContact>,
-    val equipment: List<CleanupEquipment>,
+    val equipment: List<CleanupEquipment> = emptyList(),
+    val memberEquipment: List<MemberEquipment> = emptyList(),
 )
 
 val EmptyCleanupTeam = CleanupTeam(
