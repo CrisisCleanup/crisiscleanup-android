@@ -15,7 +15,7 @@ fun Context.openDialer(phoneNumber: String): Boolean {
 }
 
 fun Context.openSms(phoneNumber: String): Boolean {
-    val intent = Intent(Intent.ACTION_SENDTO, Uri.fromParts("smsmto", phoneNumber, null))
+    val intent = Intent(Intent.ACTION_VIEW, Uri.fromParts("sms", phoneNumber, null))
     if (intent.resolveActivity(packageManager) != null) {
         startActivity(intent)
         return true
