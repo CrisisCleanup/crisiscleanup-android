@@ -54,10 +54,9 @@ import com.crisiscleanup.core.commoncase.ui.ExplainWrongLocationDialog
 import com.crisiscleanup.core.commoncase.ui.IncidentDropdownSelect
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupOutlinedButton
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.FormListSectionSeparator
+import com.crisiscleanup.core.designsystem.component.HelpDialog
 import com.crisiscleanup.core.designsystem.component.PhoneCallDialog
 import com.crisiscleanup.core.designsystem.component.WorkTypeAction
 import com.crisiscleanup.core.designsystem.component.WorkTypePrimaryAction
@@ -252,16 +251,10 @@ internal fun BoxScope.CasesTableView(
     if (claimActionErrorMessage.isNotBlank() && isClaimActionDialogVisible) {
         val dismissDialog =
             remember(claimActionErrorMessage) { { isClaimActionDialogVisible = false } }
-        CrisisCleanupAlertDialog(
+        HelpDialog(
             title = LocalAppTranslator.current("info.error"),
             text = claimActionErrorMessage,
-            onDismissRequest = dismissDialog,
-            confirmButton = {
-                CrisisCleanupTextButton(
-                    text = LocalAppTranslator.current("actions.ok"),
-                    onClick = dismissDialog,
-                )
-            },
+            onClose = dismissDialog,
         )
     }
 }

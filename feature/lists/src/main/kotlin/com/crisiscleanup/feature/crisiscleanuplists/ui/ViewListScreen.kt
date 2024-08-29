@@ -33,6 +33,7 @@ import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
+import com.crisiscleanup.core.designsystem.component.HelpDialog
 import com.crisiscleanup.core.designsystem.component.LinkifyEmailText
 import com.crisiscleanup.core.designsystem.component.LinkifyPhoneText
 import com.crisiscleanup.core.designsystem.component.PhoneCallDialog
@@ -124,16 +125,11 @@ internal fun ViewListRoute(
         val openWorksiteError = viewModel.openWorksiteError
         if (openWorksiteError.isNotBlank()) {
             val closeDialog = remember(viewModel) { { viewModel.openWorksiteError = "" } }
-            CrisisCleanupAlertDialog(
+            HelpDialog(
                 title = t("info.error"),
                 text = openWorksiteError,
-                onDismissRequest = closeDialog,
-                confirmButton = {
-                    CrisisCleanupTextButton(
-                        text = t("actions.close"),
-                        onClick = closeDialog,
-                    )
-                },
+                onClose = closeDialog,
+                closeButtonText = t("actions.close"),
             )
         }
 

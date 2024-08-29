@@ -11,6 +11,7 @@ import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.CrisisCleanupTutorialDirectors.Menu
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.NetworkMonitor
+import com.crisiscleanup.core.common.ReplaySubscribed3
 import com.crisiscleanup.core.common.TutorialDirector
 import com.crisiscleanup.core.common.Tutorials
 import com.crisiscleanup.core.common.event.AccountEventBus
@@ -44,7 +45,6 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -106,7 +106,7 @@ class MainActivityViewModel @Inject constructor(
         }.stateIn(
             scope = viewModelScope,
             initialValue = MainActivityViewState.Loading,
-            started = SharingStarted.WhileSubscribed(5_000),
+            started = ReplaySubscribed3,
         )
 
     /**
@@ -131,7 +131,7 @@ class MainActivityViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = false,
-            started = SharingStarted.WhileSubscribed(),
+            started = ReplaySubscribed3,
         )
     var acceptTermsErrorMessage by mutableStateOf("")
         private set
@@ -150,7 +150,7 @@ class MainActivityViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = AuthState.Loading,
-            started = SharingStarted.WhileSubscribed(),
+            started = ReplaySubscribed3,
         )
 
     val buildEndOfLife: BuildEndOfLife?
@@ -186,7 +186,7 @@ class MainActivityViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = UserPersistentInvite(0, ""),
-            started = SharingStarted.WhileSubscribed(),
+            started = ReplaySubscribed3,
         )
     var showInactiveOrganization by mutableStateOf(false)
         private set

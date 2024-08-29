@@ -45,9 +45,8 @@ import com.crisiscleanup.core.commonassets.ui.getDisasterIcon
 import com.crisiscleanup.core.commoncase.ui.IncidentHeaderView
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
+import com.crisiscleanup.core.designsystem.component.HelpDialog
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackCaretAction
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.icon.Icon
@@ -214,17 +213,11 @@ internal fun ListsRoute(
         if (explainSupportList != EmptyList) {
             val dismissExplanation = { explainSupportList = EmptyList }
             // TODO Different title and message for list type none
-            CrisisCleanupAlertDialog(
+            HelpDialog(
                 title = t("list.unsupported_list_title"),
                 text = t("list.unsupported_list_explanation")
                     .replace("{list_name}", explainSupportList.name),
-                onDismissRequest = dismissExplanation,
-                confirmButton = {
-                    CrisisCleanupTextButton(
-                        text = t("actions.ok"),
-                        onClick = dismissExplanation,
-                    )
-                },
+                onClose = dismissExplanation,
             )
         }
     }
@@ -233,17 +226,10 @@ internal fun ListsRoute(
         val readOnlyTitle = t("list.list_read_only")
         val readOnlyDescription =
             t("list.read_only_in_app_manage_on_web")
-        CrisisCleanupAlertDialog(
-            onDismissRequest = { showReadOnlyDescription = false },
+        HelpDialog(
             title = readOnlyTitle,
             text = readOnlyDescription,
-            confirmButton = {
-                CrisisCleanupTextButton(
-                    text = t("actions.ok"),
-                ) {
-                    showReadOnlyDescription = false
-                }
-            },
+            onClose = { showReadOnlyDescription = false },
         )
     }
 }

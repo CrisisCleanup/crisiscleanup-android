@@ -199,7 +199,7 @@ private fun TopBarNavAction(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         CompositionLocalProvider(LocalContentColor provides primaryBlueColor) {
-            val actionText = text.ifEmpty { if (textResId != 0) stringResource(textResId) else "" }
+            val actionText = text.ifBlank { if (textResId != 0) stringResource(textResId) else "" }
             image?.let {
                 Icon(
                     imageVector = image,

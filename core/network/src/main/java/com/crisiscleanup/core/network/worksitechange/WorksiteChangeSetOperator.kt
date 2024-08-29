@@ -170,7 +170,7 @@ internal fun NetworkWorksiteFull.getCoreChange(
         name = name.change(coreA.name, coreB.name),
         phone1 = phone1.change(coreA.phone1, coreB.phone1),
         phone2 = baseChange(phone2, coreA.phone2, coreB.phone2) ?: "",
-        plusCode = baseChange(plusCode, coreA.plusCode, coreB.plusCode)?.ifEmpty { null },
+        plusCode = baseChange(plusCode, coreA.plusCode, coreB.plusCode)?.ifBlank { null },
         postalCode = baseChange(postalCode, coreA.postalCode, coreB.postalCode),
         reportedBy = reportedBy,
         state = state.change(coreA.state, coreB.state),

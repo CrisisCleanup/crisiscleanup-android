@@ -6,9 +6,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
+import com.crisiscleanup.core.designsystem.component.HelpDialog
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.attentionBackgroundColor
 
@@ -31,16 +30,10 @@ fun ExplainWrongLocationDialog(
 
     if (isWrongLocationDialogVisible) {
         val t = LocalAppTranslator.current
-        CrisisCleanupAlertDialog(
+        HelpDialog(
             title = t("flag.worksite_wrong_location"),
             text = t("flag.worksite_wrong_location_description"),
-            onDismissRequest = hideWrongLocationDialog,
-            confirmButton = {
-                CrisisCleanupTextButton(
-                    text = t("actions.ok"),
-                    onClick = hideWrongLocationDialog,
-                )
-            },
+            onClose = hideWrongLocationDialog,
         )
     }
 }

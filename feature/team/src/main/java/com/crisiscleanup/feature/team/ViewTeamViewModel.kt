@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.KeyResourceTranslator
+import com.crisiscleanup.core.common.ReplaySubscribed3
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -32,7 +33,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -51,7 +51,7 @@ import kotlin.time.Duration.Companion.seconds
 class ViewTeamViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     accountDataRepository: AccountDataRepository,
-    private val incidentsRepository: IncidentsRepository,
+    incidentsRepository: IncidentsRepository,
     incidentRefresher: IncidentRefresher,
     accountDataRefresher: AccountDataRefresher,
     organizationRefresher: OrganizationRefresher,
@@ -82,7 +82,7 @@ class ViewTeamViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = false,
-            started = SharingStarted.WhileSubscribed(3.seconds.inWholeMilliseconds),
+            started = ReplaySubscribed3,
         )
 
     private val isSavingTeam = MutableStateFlow(false)
@@ -90,10 +90,17 @@ class ViewTeamViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = false,
-            started = SharingStarted.WhileSubscribed(),
+            started = ReplaySubscribed3,
         )
 
     val editableTeam = editableTeamProvider.editableTeam
+
+    val accountId = accountDataRepository.accountData.map { it.id }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = 0L,
+            started = ReplaySubscribed3,
+        )
 
     init {
         updateHeaderTitle()
@@ -133,6 +140,8 @@ class ViewTeamViewModel @Inject constructor(
         viewModelScope.launch(ioDispatcher) {
             organizationRefresher.pullOrganization(incidentIdArg)
         }
+
+        // TODO Query for missing team members once by comparing memberIds and members in team
     }
 
     val isLoading = dataLoader.isLoading
@@ -146,7 +155,15 @@ class ViewTeamViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = null,
-            started = SharingStarted.WhileSubscribed(),
+            started = ReplaySubscribed3,
+        )
+
+    val isPendingSync = teamData
+        .mapNotNull { it?.isPendingSync }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
+            started = ReplaySubscribed3,
         )
 
     @OptIn(FlowPreview::class)
@@ -165,7 +182,7 @@ class ViewTeamViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = emptyMap(),
-            started = SharingStarted.WhileSubscribed(3.seconds.inWholeMilliseconds),
+            started = ReplaySubscribed3,
         )
 
     private fun updateHeaderTitle(teamName: String = "") {

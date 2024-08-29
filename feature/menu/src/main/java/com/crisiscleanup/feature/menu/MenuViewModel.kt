@@ -9,6 +9,7 @@ import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.CrisisCleanupTutorialDirectors.Menu
 import com.crisiscleanup.core.common.DatabaseVersionProvider
 import com.crisiscleanup.core.common.KeyResourceTranslator
+import com.crisiscleanup.core.common.ReplaySubscribed3
 import com.crisiscleanup.core.common.TutorialDirector
 import com.crisiscleanup.core.common.Tutorials
 import com.crisiscleanup.core.common.di.ApplicationScope
@@ -27,7 +28,6 @@ import com.crisiscleanup.core.ui.TutorialViewTracker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -108,7 +108,7 @@ class MenuViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = MenuItemVisibility(),
-            started = SharingStarted.WhileSubscribed(),
+            started = ReplaySubscribed3,
         )
 
     val isMenuTutorialDone = appPreferencesRepository.userPreferences.map {

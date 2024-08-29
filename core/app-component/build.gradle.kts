@@ -14,7 +14,6 @@ android {
 dependencies {
     lintPublish(projects.lint)
 
-    implementation(projects.core.common)
     implementation(projects.core.commonassets)
     implementation(projects.core.commoncase)
     implementation(projects.core.data)

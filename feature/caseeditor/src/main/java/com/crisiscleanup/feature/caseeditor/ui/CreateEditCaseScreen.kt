@@ -245,7 +245,7 @@ private fun ColumnScope.CreateEditCaseContent(
             val errorMessage = if (errorData.errorResId != 0) {
                 stringResource(errorData.errorResId)
             } else {
-                errorData.errorMessage.ifEmpty { stringResource(commonR.string.unexpected_error) }
+                errorData.errorMessage.ifBlank { stringResource(commonR.string.unexpected_error) }
             }
             Box(modifier.weight(1f)) {
                 Text(
