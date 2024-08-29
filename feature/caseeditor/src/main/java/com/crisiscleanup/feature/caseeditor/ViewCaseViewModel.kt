@@ -12,6 +12,7 @@ import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.PermissionManager
+import com.crisiscleanup.core.common.ReplaySubscribed3
 import com.crisiscleanup.core.common.cameraPermissionGranted
 import com.crisiscleanup.core.common.combineTrimText
 import com.crisiscleanup.core.common.haversineDistance
@@ -59,7 +60,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
@@ -136,7 +136,7 @@ class ViewCaseViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = false,
-            started = SharingStarted.WhileSubscribed(),
+            started = ReplaySubscribed3,
         )
 
     private val caseMediaManager = CaseMediaManager(
@@ -159,7 +159,7 @@ class ViewCaseViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = false,
-            started = SharingStarted.WhileSubscribed(),
+            started = ReplaySubscribed3,
         )
 
     val syncingWorksiteImage = caseMediaManager.syncingWorksiteImage
@@ -169,7 +169,7 @@ class ViewCaseViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = emptyMap(),
-            started = SharingStarted.WhileSubscribed(),
+            started = ReplaySubscribed3,
         )
 
     val editableWorksite = editableWorksiteProvider.editableWorksite
@@ -183,7 +183,7 @@ class ViewCaseViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = "",
-            started = SharingStarted.WhileSubscribed(),
+            started = ReplaySubscribed3,
         )
 
     val distanceAwayText = editableWorksite.map { worksite ->
@@ -207,7 +207,7 @@ class ViewCaseViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = "",
-            started = SharingStarted.WhileSubscribed(),
+            started = ReplaySubscribed3,
         )
 
     val jumpToCaseOnMapOnBack = MutableStateFlow(false)
@@ -318,14 +318,14 @@ class ViewCaseViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = emptyList(),
-            started = SharingStarted.WhileSubscribed(),
+            started = ReplaySubscribed3,
         )
 
     val caseData = viewState.map(CaseEditorViewState::asCaseData)
         .stateIn(
             scope = viewModelScope,
             initialValue = null,
-            started = SharingStarted.WhileSubscribed(),
+            started = ReplaySubscribed3,
         )
 
     val otherNotes = editableWorksiteProvider.editableWorksite.flatMapLatest {
@@ -334,7 +334,7 @@ class ViewCaseViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = emptyList(),
-            started = SharingStarted.WhileSubscribed(),
+            started = ReplaySubscribed3,
         )
 
     val tabTitles = combine(
@@ -364,7 +364,7 @@ class ViewCaseViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = emptyList(),
-            started = SharingStarted.WhileSubscribed(3_000),
+            started = ReplaySubscribed3,
         )
 
     val subTitle = editableWorksite.mapLatest {
@@ -379,7 +379,7 @@ class ViewCaseViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = "",
-            started = SharingStarted.WhileSubscribed(),
+            started = ReplaySubscribed3,
         )
 
     val workTypeProfile = combine(
@@ -522,7 +522,7 @@ class ViewCaseViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = null,
-            started = SharingStarted.WhileSubscribed(),
+            started = ReplaySubscribed3,
         )
 
     // TODO Delete local image db entries where file no longer exists in cache
@@ -530,7 +530,7 @@ class ViewCaseViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = emptyMap(),
-            started = SharingStarted.WhileSubscribed(),
+            started = ReplaySubscribed3,
         )
 
     private fun updateHeaderTitle(caseNumber: String = "") {

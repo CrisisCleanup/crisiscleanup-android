@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.KeyResourceTranslator
+import com.crisiscleanup.core.common.ReplaySubscribed3
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -20,7 +21,6 @@ import com.crisiscleanup.core.model.data.IncidentIdNameType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.mapLatest
@@ -54,7 +54,7 @@ class RequestRedeployViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = RequestRedeployViewState.Loading,
-            started = SharingStarted.WhileSubscribed(),
+            started = ReplaySubscribed3,
         )
 
     val isRequestingRedeploy = MutableStateFlow(false)

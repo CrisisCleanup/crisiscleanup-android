@@ -141,7 +141,7 @@ internal fun FrequencyDailyWeeklyViews(
     updateFrequency: (String) -> Unit = {},
 ) {
     val translator = LocalAppTranslator.current
-    val rRuleString = rRuleIn.ifEmpty { defaultRrule }
+    val rRuleString = rRuleIn.ifBlank { defaultRrule }
     // TODO Test invalid string. Possibly parse manually if invalid?
     val rRule = RRule(rRuleString)
 

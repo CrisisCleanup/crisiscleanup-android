@@ -39,7 +39,6 @@ dependencies {
     implementation(projects.feature.caseeditor)
 
     implementation(projects.core.appnav)
-    implementation(projects.core.common)
     implementation(projects.core.commoncase)
     implementation(projects.core.data)
     implementation(projects.core.designsystem)
