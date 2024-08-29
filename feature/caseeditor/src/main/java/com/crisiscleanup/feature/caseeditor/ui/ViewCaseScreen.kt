@@ -590,13 +590,12 @@ private fun CaseInfoView(
             val caseData by viewModel.caseData.collectAsStateWithLifecycle()
             caseData?.let { caseState ->
                 val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
-                val scheduleSync = remember(viewModel) { { viewModel.scheduleSync() } }
                 CaseIncidentView(
                     Modifier,
                     caseState.incident,
                     caseState.isPendingSync,
                     isSyncing = isSyncing,
-                    scheduleSync = scheduleSync,
+                    scheduleSync = viewModel::scheduleSync,
                 )
 
                 LaunchedEffect(Unit) {

@@ -41,6 +41,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.common.openDialer
 import com.crisiscleanup.core.common.openEmail
 import com.crisiscleanup.core.common.openSms
+import com.crisiscleanup.core.commoncase.ui.SyncStatusView
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.AvatarIcon
 import com.crisiscleanup.core.designsystem.component.CardSurface
@@ -108,8 +109,9 @@ private fun ViewTeamScreen(
                 // TODO isSaving instead?
                 isBusy = isBusy,
                 isEditable = isEditable,
-                isPendingSync = isPendingSync,
                 isSyncing = isSyncing,
+                isPendingSync = isPendingSync,
+                scheduleSync = viewModel::scheduleSync,
             )
         }
     }
@@ -171,8 +173,9 @@ private fun ViewTeamContent(
     profilePictureLookup: Map<Long, String>,
     isBusy: Boolean,
     isEditable: Boolean,
-    isPendingSync: Boolean,
     isSyncing: Boolean,
+    isPendingSync: Boolean,
+    scheduleSync: () -> Unit,
     onEditTeamMembers: () -> Unit = {},
 ) {
     val t = LocalAppTranslator.current
@@ -185,8 +188,9 @@ private fun ViewTeamContent(
         item {
             TeamHeader(
                 team,
-                isPendingSync = isPendingSync,
                 isSyncing = isSyncing,
+                isPendingSync = isPendingSync,
+                scheduleSync = scheduleSync,
             )
         }
 
@@ -240,8 +244,9 @@ private fun ViewTeamContent(
 @Composable
 private fun TeamHeader(
     team: CleanupTeam,
-    isPendingSync: Boolean = false,
     isSyncing: Boolean = false,
+    isPendingSync: Boolean = false,
+    scheduleSync: () -> Unit,
 ) {
     val t = LocalAppTranslator.current
     Column(
@@ -261,7 +266,13 @@ private fun TeamHeader(
                 style = LocalFontStyles.current.header2,
             )
 
-            // TODO Show if syncing or pending sync
+            Spacer(Modifier.weight(1f))
+
+            SyncStatusView(
+                isSyncing = isSyncing,
+                isPendingSync = isPendingSync,
+                scheduleSync = scheduleSync,
+            )
         }
 
         val openCaseCount = team.openCaseCount
