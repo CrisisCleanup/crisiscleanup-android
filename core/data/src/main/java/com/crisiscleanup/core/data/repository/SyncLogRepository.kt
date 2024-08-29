@@ -62,7 +62,7 @@ class PagingSyncLogRepository @Inject constructor(
                 SyncLog(
                     0,
                     Clock.System.now(),
-                    logType = type.ifEmpty { this.type },
+                    logType = type.ifBlank { this.type },
                     message = message,
                     details = details,
                 ),

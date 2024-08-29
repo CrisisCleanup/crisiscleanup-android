@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Directions
 import androidx.compose.material.icons.filled.Domain
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Info
@@ -41,6 +42,7 @@ import androidx.compose.material.icons.filled.Rotate90DegreesCcw
 import androidx.compose.material.icons.filled.Rotate90DegreesCw
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.SentimentNeutral
+import androidx.compose.material.icons.filled.Sms
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -73,6 +75,7 @@ object CrisisCleanupIcons {
     val Delete = icons.Delete
     val Directions = icons.Directions
     val Edit = icons.Edit
+    val Email = icons.Email
     val ExpandAll = icons.UnfoldMore
     val ExpandLess = icons.ExpandLess
     val ExpandMore = icons.ExpandMore
@@ -98,6 +101,7 @@ object CrisisCleanupIcons {
     val RotateClockwise = icons.Rotate90DegreesCw
     val RotateCcw = icons.Rotate90DegreesCcw
     val Search = Icons.Rounded.Search
+    val Sms = icons.Sms
     val Team = R.drawable.ic_team
     val UnfoldMore = icons.UnfoldMore
     val Visibility = icons.Visibility

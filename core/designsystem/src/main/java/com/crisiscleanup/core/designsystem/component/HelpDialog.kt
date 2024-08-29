@@ -51,6 +51,7 @@ fun HelpAction(
 fun HelpDialog(
     title: String,
     text: String,
+    closeButtonText: String = "",
     onClose: () -> Unit = {},
     hasHtml: Boolean = false,
 ) {
@@ -66,7 +67,7 @@ fun HelpDialog(
         onDismissRequest = onClose,
         confirmButton = {
             CrisisCleanupTextButton(
-                text = LocalAppTranslator.current("actions.ok"),
+                text = closeButtonText.ifBlank { LocalAppTranslator.current("actions.ok") },
                 onClick = onClose,
             )
         },

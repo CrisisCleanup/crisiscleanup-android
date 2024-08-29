@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.appcomponent.AppTopBarDataProvider
 import com.crisiscleanup.core.common.KeyResourceTranslator
+import com.crisiscleanup.core.common.ReplaySubscribed3
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -27,7 +28,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -114,7 +114,7 @@ class TeamsViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = TeamsViewState.Loading,
-            started = SharingStarted.WhileSubscribed(3_000),
+            started = ReplaySubscribed3,
         )
 
     val profilePictureLookup = combine(
@@ -133,7 +133,7 @@ class TeamsViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = emptyMap(),
-            started = SharingStarted.WhileSubscribed(3.seconds.inWholeMilliseconds),
+            started = ReplaySubscribed3,
         )
 
     val isLoading = viewState.map { it == TeamsViewState.Loading }

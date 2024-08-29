@@ -86,7 +86,7 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
         )
 
     private val languageTranslations = appPreferences.userPreferences.flatMapLatest {
-        val key = it.languageKey.ifEmpty { EnglishLanguage.key }
+        val key = it.languageKey.ifBlank { EnglishLanguage.key }
         languageDao.streamLanguageTranslations(key)
             .mapLatest { translation -> translation?.asExternalModel() }
     }

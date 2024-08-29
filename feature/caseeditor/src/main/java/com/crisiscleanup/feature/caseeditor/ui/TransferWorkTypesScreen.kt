@@ -23,10 +23,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.commoncase.WorkTypeTransferType
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextArea
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
+import com.crisiscleanup.core.designsystem.component.HelpDialog
 import com.crisiscleanup.core.designsystem.component.LinkifyHtmlText
 import com.crisiscleanup.core.designsystem.component.LinkifyPhoneEmailText
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
@@ -110,15 +109,10 @@ internal fun TransferWorkTypesRoute(
                 showErrorMessage = false
                 viewModel.clearErrorMessage()
             }
-            CrisisCleanupAlertDialog(
+            HelpDialog(
+                title = "",
                 text = errorMessage,
-                onDismissRequest = closeDialog,
-                confirmButton = {
-                    CrisisCleanupTextButton(
-                        text = LocalAppTranslator.current("actions.ok"),
-                        onClick = closeDialog,
-                    )
-                },
+                onClose = closeDialog,
             )
         }
     } else {
