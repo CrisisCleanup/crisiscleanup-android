@@ -193,6 +193,10 @@ class ViewTeamViewModel @Inject constructor(
         }
     }
 
+    fun scheduleSync() {
+        // TODO
+    }
+
     private fun saveTeamChange(
         startingTeam: CleanupTeam,
         changedTeam: CleanupTeam,
