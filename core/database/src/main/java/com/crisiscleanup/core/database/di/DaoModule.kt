@@ -74,4 +74,7 @@ object DaoModule {
 
     @Provides
     fun equipmentDao(db: CrisisCleanupDatabase) = db.equipmentDao()
+
+    @Provides
+    fun userRoleDao(db: CrisisCleanupDatabase) = db.userRoleDao()
 }

@@ -24,6 +24,7 @@ import com.crisiscleanup.core.database.dao.PersonContactDao
 import com.crisiscleanup.core.database.dao.RecentWorksiteDao
 import com.crisiscleanup.core.database.dao.SyncLogDao
 import com.crisiscleanup.core.database.dao.TeamDao
+import com.crisiscleanup.core.database.dao.UserRoleDao
 import com.crisiscleanup.core.database.dao.WorkTypeDao
 import com.crisiscleanup.core.database.dao.WorkTypeStatusDao
 import com.crisiscleanup.core.database.dao.WorkTypeTransferRequestDao
@@ -64,6 +65,7 @@ import com.crisiscleanup.core.database.model.TeamEntity
 import com.crisiscleanup.core.database.model.TeamEquipmentCrossRef
 import com.crisiscleanup.core.database.model.TeamMemberCrossRef
 import com.crisiscleanup.core.database.model.TeamRootEntity
+import com.crisiscleanup.core.database.model.UserRoleEntity
 import com.crisiscleanup.core.database.model.WorkTypeEntity
 import com.crisiscleanup.core.database.model.WorkTypeStatusEntity
 import com.crisiscleanup.core.database.model.WorkTypeTransferRequestEntity
@@ -123,8 +125,9 @@ import com.crisiscleanup.core.database.util.InstantConverter
         TeamEquipmentCrossRef::class,
         PersonEquipmentCrossRef::class,
         TeamFtsEntity::class,
+        UserRoleEntity::class,
     ],
-    version = 44,
+    version = 45,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
@@ -169,6 +172,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         AutoMigration(from = 41, to = 42),
         AutoMigration(from = 42, to = 43),
         AutoMigration(from = 43, to = 44),
+        AutoMigration(from = 44, to = 45),
     ],
     exportSchema = true,
 )
@@ -208,4 +212,5 @@ abstract class CrisisCleanupDatabase :
     abstract fun listDao(): ListDao
     abstract fun teamDao(): TeamDao
     abstract fun equipmentDao(): EquipmentDao
+    abstract fun userRoleDao(): UserRoleDao
 }

@@ -62,6 +62,7 @@ import com.crisiscleanup.core.designsystem.theme.optionItemHeight
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.PersonContact
+import com.crisiscleanup.core.model.data.UserRole
 import com.crisiscleanup.feature.team.ViewTeamViewModel
 
 @Composable
@@ -90,6 +91,7 @@ private fun ViewTeamScreen(
     val accountId by viewModel.accountId.collectAsStateWithLifecycle()
     val team by viewModel.editableTeam.collectAsStateWithLifecycle()
     val profilePictureLookup by viewModel.profilePictureLookup.collectAsStateWithLifecycle()
+    val userRoleLookup by viewModel.userRoleLookup.collectAsStateWithLifecycle()
 
     val isPendingSync by viewModel.isPendingSync.collectAsStateWithLifecycle()
     val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
@@ -106,6 +108,7 @@ private fun ViewTeamScreen(
                 accountId,
                 team,
                 profilePictureLookup,
+                userRoleLookup,
                 // TODO isSaving instead?
                 isBusy = isBusy,
                 isEditable = isEditable,
@@ -171,6 +174,7 @@ private fun ViewTeamContent(
     accountId: Long,
     team: CleanupTeam,
     profilePictureLookup: Map<Long, String>,
+    userRoleLookup: Map<Int, UserRole>,
     isBusy: Boolean,
     isEditable: Boolean,
     isSyncing: Boolean,
@@ -215,6 +219,7 @@ private fun ViewTeamContent(
             TeamMemberCardView(
                 it,
                 profilePictureLookup,
+                userRoleLookup,
                 it.id != accountId,
             ) { message ->
                 errorMessage = message
@@ -280,12 +285,16 @@ private fun TeamHeader(
             horizontalArrangement = listItemSpacedByHalf,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            val caseCountTranslateKey =
-                if (openCaseCount == 1) "~~{case_count} Open Case" else "~~{case_count} Open Cases"
-            Text(
-                t(caseCountTranslateKey)
-                    .replace("{case_count}", "$openCaseCount"),
-            )
+            if (team.caseCount == 0) {
+                Text(t("~~0 Cases"))
+            } else {
+                val caseCountTranslateKey =
+                    if (openCaseCount == 1) "~~{case_count} Open Case" else "~~{case_count} Open Cases"
+                Text(
+                    t(caseCountTranslateKey)
+                        .replace("{case_count}", "$openCaseCount"),
+                )
+            }
 
             TeamCaseCompleteView(team)
         }
@@ -296,6 +305,7 @@ private fun TeamHeader(
 private fun TeamMemberCardView(
     person: PersonContact,
     profilePictureLookup: Map<Long, String>,
+    userRoleLookup: Map<Int, UserRole>,
     showActions: Boolean,
     onActionError: (String) -> Unit = {},
 ) {
@@ -310,7 +320,11 @@ private fun TeamMemberCardView(
                     contentSize = it.size.toSize()
                 },
             horizontalArrangement = listItemSpacedByHalf,
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = if (person.activeRoles.isEmpty()) {
+                Alignment.CenterVertically
+            } else {
+                Alignment.Top
+            },
         ) {
             Box(
                 modifier = Modifier
@@ -332,7 +346,15 @@ private fun TeamMemberCardView(
                     person.fullName,
                     style = LocalFontStyles.current.header4,
                 )
-                // TODO List translated roles
+                for (userRoleCode in person.activeRoles) {
+                    val role = userRoleLookup[userRoleCode]?.name ?: ""
+                    if (role.isNotBlank()) {
+                        Text(
+                            role,
+                            style = LocalFontStyles.current.helpTextStyle,
+                        )
+                    }
+                }
             }
 
             if (showActions) {
@@ -363,12 +385,22 @@ private fun TeamMemberCardView(
                 }
                 val emailAddress = person.email.trim()
                 if (emailAddress.isNotBlank()) {
-                    if (hasPhone) {
-                        TeamMemberOverflowMenu(contentSize) { context.openEmail(emailAddress) }
-                    } else {
-                        if (!context.openEmail(emailAddress)) {
-                            onActionError(t("~~This device does not support sending emails."))
+                    val openEmailOrError = remember(emailAddress) {
+                        {
+                            if (!context.openEmail(emailAddress)) {
+                                onActionError(t("~~This device does not support sending emails."))
+                            }
                         }
+                    }
+                    if (hasPhone) {
+                        TeamMemberOverflowMenu(contentSize, openEmailOrError)
+                    } else {
+                        CrisisCleanupIconButton(
+                            imageVector = CrisisCleanupIcons.Email,
+                            onClick = openEmailOrError,
+                            tint = neutralIconColor,
+                            contentDescription = t("actions.chat"),
+                        )
                     }
                 }
             }
