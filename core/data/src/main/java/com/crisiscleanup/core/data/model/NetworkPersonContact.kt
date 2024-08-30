@@ -14,6 +14,7 @@ fun NetworkPersonContact.asEntity() = PersonContactEntity(
     email = email,
     mobile = mobile,
     profilePictureUri = files?.profilePictureUrl ?: "",
+    activeRoles = activeRoles.joinToString(","),
 )
 
 fun NetworkPersonContact.asExternalModel() = PersonContact(
@@ -23,6 +24,7 @@ fun NetworkPersonContact.asExternalModel() = PersonContact(
     email = email,
     mobile = mobile,
     profilePictureUri = files?.profilePictureUrl ?: "",
+    activeRoles = activeRoles,
 )
 
 fun NetworkPersonContact.asEntities() = organization?.let {

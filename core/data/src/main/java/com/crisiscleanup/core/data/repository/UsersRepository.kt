@@ -9,13 +9,20 @@ import com.crisiscleanup.core.data.model.asExternalModel
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDaoPlus
 import com.crisiscleanup.core.database.dao.PersonContactDao
 import com.crisiscleanup.core.database.dao.PersonContactDaoPlus
+import com.crisiscleanup.core.database.dao.UserRoleDao
+import com.crisiscleanup.core.database.model.UserRoleEntity
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.PersonContact
+import com.crisiscleanup.core.model.data.UserRole
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkPersonContact
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.mapLatest
 import javax.inject.Inject
 
 interface UsersRepository {
+    val streamUserRoleLookup: Flow<Map<Int, UserRole>>
+
     suspend fun getMatchingUsers(
         q: String,
         organization: Long,
@@ -28,6 +35,8 @@ interface UsersRepository {
         userIds: Collection<Long>,
         forceUpdateProfiles: Boolean = false,
     ): List<PersonContact>
+
+    suspend fun loadUserRoles()
 }
 
 class OfflineFirstUsersRepository @Inject constructor(
@@ -35,8 +44,21 @@ class OfflineFirstUsersRepository @Inject constructor(
     private val personContactDao: PersonContactDao,
     private val personContactDaoPlus: PersonContactDaoPlus,
     private val incidentOrganizationDaoPlus: IncidentOrganizationDaoPlus,
+    private val userRoleDao: UserRoleDao,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : UsersRepository {
+    override val streamUserRoleLookup = userRoleDao.streamUserRoles()
+        .mapLatest { roles ->
+            roles.associate {
+                it.id to UserRole(
+                    it.id,
+                    nameKey = it.nameKey,
+                    descriptionKey = it.descriptionKey,
+                    level = it.level,
+                )
+            }
+        }
+
     override suspend fun getMatchingUsers(
         q: String,
         organization: Long,
@@ -85,5 +107,24 @@ class OfflineFirstUsersRepository @Inject constructor(
         }
 
         return profiles.map { it.entity.asExternalModel() }
+    }
+
+    override suspend fun loadUserRoles() {
+        try {
+            val userRoles = networkDataSource.getNetworkUserRoles()
+            val entities = userRoles.map {
+                with(it) {
+                    UserRoleEntity(
+                        id = id,
+                        nameKey = nameKey,
+                        descriptionKey = descriptionKey,
+                        level = level,
+                    )
+                }
+            }
+            userRoleDao.upsertRoles(entities)
+        } catch (e: Exception) {
+            logger.logException(e)
+        }
     }
 }

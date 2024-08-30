@@ -22,6 +22,8 @@ data class NetworkPersonContact(
     val files: List<NetworkFile>? = null,
     // Provided from /users. Not provided from /organizations.
     val organization: ContactOrganization? = null,
+    @SerialName("active_roles")
+    val activeRoles: List<Int> = emptyList(),
 ) {
     @Serializable
     data class ContactOrganization(

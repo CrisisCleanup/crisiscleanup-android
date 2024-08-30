@@ -7,6 +7,7 @@ data class PersonContact(
     val email: String,
     val mobile: String,
     val profilePictureUri: String,
+    val activeRoles: List<Int>,
 ) {
     val fullName = "$firstName $lastName".trim()
 }

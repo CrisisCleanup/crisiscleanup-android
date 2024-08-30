@@ -22,6 +22,7 @@ import com.crisiscleanup.core.network.model.NetworkRedeployRequestsResult
 import com.crisiscleanup.core.network.model.NetworkTeamResult
 import com.crisiscleanup.core.network.model.NetworkTeamsResult
 import com.crisiscleanup.core.network.model.NetworkUserProfile
+import com.crisiscleanup.core.network.model.NetworkUserRolesResult
 import com.crisiscleanup.core.network.model.NetworkUsersResult
 import com.crisiscleanup.core.network.model.NetworkWorkTypeRequestResult
 import com.crisiscleanup.core.network.model.NetworkWorkTypeStatusResult
@@ -320,6 +321,10 @@ private interface DataSourceApi {
         @Query("teamId")
         teamId: Long?,
     ): NetworkTeamResult
+
+    @TokenAuthenticationHeader
+    @GET("roles")
+    suspend fun getUserRoles(): NetworkUserRolesResult
 }
 
 private val worksiteCoreDataFields = listOf(
@@ -600,4 +605,8 @@ class DataApiClient @Inject constructor(
     override suspend fun getTeam(id: Long) = networkApi.getTeam(id)
         .apply { errors?.tryThrowException() }
         .team
+
+    override suspend fun getNetworkUserRoles() = networkApi.getUserRoles()
+        .also { it.errors?.tryThrowException() }
+        .results ?: emptyList()
 }

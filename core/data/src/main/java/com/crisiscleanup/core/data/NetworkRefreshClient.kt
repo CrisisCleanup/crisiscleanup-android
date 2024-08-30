@@ -4,6 +4,7 @@ import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
+import com.crisiscleanup.core.data.repository.UsersRepository
 import com.crisiscleanup.core.model.data.EmptyIncident
 import kotlinx.coroutines.flow.first
 import kotlinx.datetime.Clock
@@ -78,6 +79,25 @@ class OrganizationRefresher @Inject constructor(
             lastRefresh = now
 
             accountDataRefresher.updateMyOrganization(true)
+        }
+    }
+}
+
+@Singleton
+class UserRoleRefresher @Inject constructor(
+    private val usersRepository: UsersRepository,
+    private val networkMonitor: NetworkMonitor,
+) {
+    private var lastRefresh = Instant.fromEpochSeconds(0)
+
+    suspend fun pullRoles() {
+        val now = Clock.System.now()
+        if (networkMonitor.isOnline.first() &&
+            now - lastRefresh > 6.hours
+        ) {
+            lastRefresh = now
+
+            usersRepository.loadUserRoles()
         }
     }
 }

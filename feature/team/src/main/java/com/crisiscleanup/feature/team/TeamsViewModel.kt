@@ -34,13 +34,13 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
@@ -142,16 +142,15 @@ class TeamsViewModel @Inject constructor(
         viewState
             .debounce(1.seconds)
             .onEach { state ->
-                withContext(ioDispatcher) {
-                    (state as? TeamsViewState.Success)?.missingProfileUserIds?.let { ids ->
-                        if (ids.isNotEmpty()) {
-                            val userProfiles = usersRepository.getUserProfiles(ids, true)
-                            additionalUserProfileLookup.value =
-                                userProfiles.associateBy(PersonContact::id)
-                        }
+                (state as? TeamsViewState.Success)?.missingProfileUserIds?.let { ids ->
+                    if (ids.isNotEmpty()) {
+                        val userProfiles = usersRepository.getUserProfiles(ids)
+                        additionalUserProfileLookup.value =
+                            userProfiles.associateBy(PersonContact::id)
                     }
                 }
             }
+            .flowOn(ioDispatcher)
             .launchIn(viewModelScope)
 
         incidentSelector.incidentId.filter { it != EmptyIncident.id }

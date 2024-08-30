@@ -2,22 +2,30 @@ package com.crisiscleanup.feature.team
 
 import android.graphics.Color
 import com.crisiscleanup.core.common.AppEnv
+import com.crisiscleanup.core.common.KeyTranslator
+import com.crisiscleanup.core.common.ReplaySubscribed3
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.TagLogger
 import com.crisiscleanup.core.data.IncidentRefresher
 import com.crisiscleanup.core.data.LanguageRefresher
+import com.crisiscleanup.core.data.UserRoleRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.TeamChangeRepository
 import com.crisiscleanup.core.data.repository.TeamsRepository
+import com.crisiscleanup.core.data.repository.UsersRepository
 import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.EmptyCleanupTeam
 import com.crisiscleanup.core.model.data.LocalTeam
+import com.crisiscleanup.core.model.data.PersonContact
+import com.crisiscleanup.core.model.data.UserRole
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
@@ -25,7 +33,9 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -39,10 +49,12 @@ internal class TeamEditorDataLoader(
     accountDataRepository: AccountDataRepository,
     incidentsRepository: IncidentsRepository,
     incidentRefresher: IncidentRefresher,
+    userRoleRefresher: UserRoleRefresher,
     teamsRepository: TeamsRepository,
     teamChangeRepository: TeamChangeRepository,
     languageRefresher: LanguageRefresher,
-    translate: (String) -> String,
+    usersRepository: UsersRepository,
+    translator: KeyTranslator,
     private val editableTeamProvider: EditableTeamProvider,
     coroutineScope: CoroutineScope,
     coroutineDispatcher: CoroutineDispatcher,
@@ -130,7 +142,8 @@ internal class TeamEditorDataLoader(
             if (organization.id <= 0) {
                 logger.logException(Exception("Organization $organization is not set when editing team $teamId"))
                 return@mapLatest TeamEditorViewState.Error(
-                    errorMessage = translate("info.organization_issue_log_out"),
+                    errorMessage = translator.translate("info.organization_issue_log_out")
+                        ?: "info.organization_issue_log_out",
                 )
             }
 
@@ -167,6 +180,57 @@ internal class TeamEditorDataLoader(
 
     val viewState: MutableStateFlow<TeamEditorViewState> =
         MutableStateFlow(TeamEditorViewState.Loading)
+
+    private val teamData = viewState.map(TeamEditorViewState::asTeamData)
+        .stateIn(
+            scope = coroutineScope,
+            initialValue = null,
+            started = ReplaySubscribed3,
+        )
+
+    val isPendingSync = teamData
+        .mapNotNull { it?.isPendingSync }
+        .stateIn(
+            scope = coroutineScope,
+            initialValue = false,
+            started = ReplaySubscribed3,
+        )
+
+    @OptIn(FlowPreview::class)
+    private val userProfileLookup = teamData.mapNotNull { it?.team?.memberIds }
+        .debounce(1.seconds)
+        .distinctUntilChanged()
+        .map {
+            val userProfiles = usersRepository.getUserProfiles(it, true)
+            userProfiles.associateBy(PersonContact::id)
+        }
+        .flowOn(coroutineDispatcher)
+
+    val profilePictureLookup = userProfileLookup
+        .mapLatest(::buildProfilePicLookup)
+        .stateIn(
+            scope = coroutineScope,
+            initialValue = emptyMap(),
+            started = ReplaySubscribed3,
+        )
+
+    val userRoleLookup = usersRepository.streamUserRoleLookup
+        .mapLatest { lookup ->
+            val updated = mutableMapOf<Int, UserRole>()
+            for (entry in lookup) {
+                val role = entry.value
+                updated[entry.key] = role.copy(
+                    name = translator.translate(role.nameKey) ?: role.nameKey,
+                    description = translator.translate(role.descriptionKey) ?: role.descriptionKey,
+                )
+            }
+            updated
+        }
+        .stateIn(
+            scope = coroutineScope,
+            initialValue = emptyMap(),
+            started = ReplaySubscribed3,
+        )
 
     init {
         if (logDebug) {
@@ -208,7 +272,9 @@ internal class TeamEditorDataLoader(
                             (networkId > 0 || localTeam.localChanges.isLocalModified)
                         ) {
                             isRefreshingTeam.value = true
-                            teamChangeRepository.trySyncTeam(team.id)
+                            if (teamChangeRepository.trySyncTeam(team.id)) {
+                                // TODO Query for missing team members comparing memberIds and members
+                            }
                         }
                     } finally {
                         isRefreshingTeam.value = false
@@ -222,6 +288,10 @@ internal class TeamEditorDataLoader(
         viewStateInternal
             .onEach { viewState.value = it }
             .launchIn(coroutineScope)
+
+        coroutineScope.launch(coroutineDispatcher) {
+            userRoleRefresher.pullRoles()
+        }
     }
 
     fun reloadData(teamId: Long) {
