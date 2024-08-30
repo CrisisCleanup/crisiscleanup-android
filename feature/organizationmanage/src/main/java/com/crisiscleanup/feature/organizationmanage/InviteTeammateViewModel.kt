@@ -45,6 +45,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -418,12 +419,11 @@ class InviteTeammateViewModel @Inject constructor(
         incidentsData
             .filter { it is IncidentsData.Incidents }
             .onEach {
-                withContext(ioDispatcher) {
-                    val incidents = (it as IncidentsData.Incidents).incidents
-                    this@InviteTeammateViewModel.incidents.value = incidents
-                    incidentLookup.value = incidents.associateBy(Incident::id)
-                }
+                val incidents = (it as IncidentsData.Incidents).incidents
+                this@InviteTeammateViewModel.incidents.value = incidents
+                incidentLookup.value = incidents.associateBy(Incident::id)
             }
+            .flowOn(ioDispatcher)
             .launchIn(viewModelScope)
 
         incidentSelectManager.incidentId
@@ -453,16 +453,15 @@ class InviteTeammateViewModel @Inject constructor(
         qFlow
             .filter { it.length > 1 }
             .onEach { q ->
-                withContext(ioDispatcher) {
-                    // TODO Review loading pattern and fix as necessary
-                    isSearchingNetworkOrganizations.value = true
-                    try {
-                        organizationsRepository.searchOrganizations(q)
-                    } finally {
-                        isSearchingNetworkOrganizations.value = false
-                    }
+                // TODO Review loading pattern and fix as necessary
+                isSearchingNetworkOrganizations.value = true
+                try {
+                    organizationsRepository.searchOrganizations(q)
+                } finally {
+                    isSearchingNetworkOrganizations.value = false
                 }
             }
+            .flowOn(ioDispatcher)
             .launchIn(viewModelScope)
 
         organizationNameQuery
@@ -476,28 +475,27 @@ class InviteTeammateViewModel @Inject constructor(
         accountData
             .filter { it.hasAuthenticated }
             .map { data ->
-                withContext(ioDispatcher) {
-                    isCreatingMyOrgPersistentInvitation.value = true
-                    try {
-                        val orgId = data.org.id
+                isCreatingMyOrgPersistentInvitation.value = true
+                try {
+                    val orgId = data.org.id
 
-                        joinMyOrgInvite.value?.let { invite ->
-                            if (invite.orgId == orgId &&
-                                !invite.isExpired
-                            ) {
-                                return@withContext invite
-                            }
+                    joinMyOrgInvite.value?.let { invite ->
+                        if (invite.orgId == orgId &&
+                            !invite.isExpired
+                        ) {
+                            return@map invite
                         }
-
-                        orgVolunteerRepository.getOrganizationInvite(orgId, data.id)
-                    } finally {
-                        isCreatingMyOrgPersistentInvitation.value = false
                     }
+
+                    orgVolunteerRepository.getOrganizationInvite(orgId, data.id)
+                } finally {
+                    isCreatingMyOrgPersistentInvitation.value = false
                 }
             }
             .onEach {
                 joinMyOrgInvite.value = it
             }
+            .flowOn(ioDispatcher)
             .launchIn(viewModelScope)
 
         inviteOrgState

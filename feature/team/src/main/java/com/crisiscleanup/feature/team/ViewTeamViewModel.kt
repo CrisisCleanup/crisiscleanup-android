@@ -18,6 +18,7 @@ import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.data.IncidentRefresher
 import com.crisiscleanup.core.data.LanguageRefresher
 import com.crisiscleanup.core.data.OrganizationRefresher
+import com.crisiscleanup.core.data.UserRoleRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
@@ -25,27 +26,19 @@ import com.crisiscleanup.core.data.repository.TeamChangeRepository
 import com.crisiscleanup.core.data.repository.TeamsRepository
 import com.crisiscleanup.core.data.repository.UsersRepository
 import com.crisiscleanup.core.model.data.CleanupTeam
-import com.crisiscleanup.core.model.data.EmptyCleanupTeam
-import com.crisiscleanup.core.model.data.PersonContact
 import com.crisiscleanup.feature.team.navigation.ViewTeamArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class ViewTeamViewModel @Inject constructor(
@@ -55,6 +48,7 @@ class ViewTeamViewModel @Inject constructor(
     incidentRefresher: IncidentRefresher,
     accountDataRefresher: AccountDataRefresher,
     organizationRefresher: OrganizationRefresher,
+    userRoleRefresher: UserRoleRefresher,
     teamsRepository: TeamsRepository,
     private val teamChangeRepository: TeamChangeRepository,
     private val editableTeamProvider: EditableTeamProvider,
@@ -65,10 +59,10 @@ class ViewTeamViewModel @Inject constructor(
     appEnv: AppEnv,
     @Logger(CrisisCleanupLoggers.Team) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-) : ViewModel(), KeyResourceTranslator {
+) : ViewModel() {
     private val viewTeamArgs = ViewTeamArgs(savedStateHandle)
     private val incidentIdArg = viewTeamArgs.incidentId
-    val teamIdArg = viewTeamArgs.teamId
+    private val teamIdArg = viewTeamArgs.teamId
 
     var headerTitle by mutableStateOf("")
         private set
@@ -114,10 +108,12 @@ class ViewTeamViewModel @Inject constructor(
             accountDataRepository,
             incidentsRepository,
             incidentRefresher,
+            userRoleRefresher,
             teamsRepository,
             teamChangeRepository,
             languageRefresher,
-            { key -> translate(key) },
+            usersRepository,
+            translator,
             editableTeamProvider,
             viewModelScope,
             ioDispatcher,
@@ -133,6 +129,8 @@ class ViewTeamViewModel @Inject constructor(
             }
             .launchIn(viewModelScope)
 
+        // TODO Are below necessary or leftover from copy-paste?
+
         viewModelScope.launch(ioDispatcher) {
             accountDataRefresher.updateMyOrganization(false)
         }
@@ -140,54 +138,18 @@ class ViewTeamViewModel @Inject constructor(
         viewModelScope.launch(ioDispatcher) {
             organizationRefresher.pullOrganization(incidentIdArg)
         }
-
-        // TODO Query for missing team members once by comparing memberIds and members in team
     }
 
     val isLoading = dataLoader.isLoading
 
-    private val viewState = dataLoader.viewState
-
-    private val referenceTeam: CleanupTeam
-        get() = viewState.value.asTeamData()?.team ?: EmptyCleanupTeam
-
-    val teamData = viewState.map(TeamEditorViewState::asTeamData)
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = null,
-            started = ReplaySubscribed3,
-        )
-
-    val isPendingSync = teamData
-        .mapNotNull { it?.isPendingSync }
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = false,
-            started = ReplaySubscribed3,
-        )
-
-    @OptIn(FlowPreview::class)
-    private val userProfileLookup = teamData.mapNotNull { it?.team?.memberIds }
-        .debounce(1.seconds)
-        .distinctUntilChanged()
-        .map {
-            withContext(ioDispatcher) {
-                val userProfiles = usersRepository.getUserProfiles(it, true)
-                userProfiles.associateBy(PersonContact::id)
-            }
-        }
-
-    val profilePictureLookup = userProfileLookup
-        .mapLatest(::buildProfilePicLookup)
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = emptyMap(),
-            started = ReplaySubscribed3,
-        )
+    val viewState = dataLoader.viewState
+    val isPendingSync = dataLoader.isPendingSync
+    val profilePictureLookup = dataLoader.profilePictureLookup
+    val userRoleLookup = dataLoader.userRoleLookup
 
     private fun updateHeaderTitle(teamName: String = "") {
         headerTitle = if (teamName.isEmpty()) {
-            translate("nav.organization_teams")
+            translator.translate("nav.organization_teams") ?: "nav.organization_teams"
         } else {
             ""
         }
@@ -204,13 +166,4 @@ class ViewTeamViewModel @Inject constructor(
     ) {
         // TODO As necessary
     }
-
-    // KeyResourceTranslator
-
-    override val translationCount = translator.translationCount
-
-    override fun translate(phraseKey: String) = translate(phraseKey, 0)
-
-    override fun translate(phraseKey: String, fallbackResId: Int) =
-        translator.translate(phraseKey, fallbackResId)
 }

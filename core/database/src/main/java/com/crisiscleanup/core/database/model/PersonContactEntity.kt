@@ -19,6 +19,8 @@ data class PersonContactEntity(
     val mobile: String,
     @ColumnInfo(defaultValue = "")
     val profilePictureUri: String,
+    @ColumnInfo(defaultValue = "")
+    val activeRoles: String,
 )
 
 fun PersonContactEntity.asExternalModel() = PersonContact(
@@ -28,6 +30,8 @@ fun PersonContactEntity.asExternalModel() = PersonContact(
     email = email,
     mobile = mobile,
     profilePictureUri = profilePictureUri,
+    activeRoles = activeRoles.split(",")
+        .mapNotNull { it.toIntOrNull() },
 )
 
 fun Collection<PersonContactEntity>.asExternalModelSorted() =
