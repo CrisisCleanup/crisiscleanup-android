@@ -182,6 +182,7 @@ private fun ViewTeamContent(
     isPendingSync: Boolean,
     scheduleSync: () -> Unit,
     onEditTeamMembers: () -> Unit = {},
+    onEditCases: () -> Unit = {},
 ) {
     val t = LocalAppTranslator.current
 
@@ -200,12 +201,13 @@ private fun ViewTeamContent(
         }
 
         item(
-            // TODO Key and type
+            key = "team-member-header",
+            contentType = "header-item",
         ) {
-            val teamMemberSectionTitle = t("~~Team Members ({team_size})")
-                .replace("{team_size}", "${team.members.count()}")
+            val sectionTitle = t("~~Team Members ({team_size})")
+                .replace("{team_size}", "${team.members.size}")
             EditSectionHeader(
-                teamMemberSectionTitle,
+                sectionTitle,
                 enabled = isEditable,
                 showEditAction = true,
                 action = onEditTeamMembers,
@@ -227,7 +229,23 @@ private fun ViewTeamContent(
             }
         }
 
-        // TODO Assigned Cases
+        item(
+            key = "work-header",
+            contentType = "header-item",
+        ) {
+            val sectionTitle = t("~~Assigned Cases ({case_count})")
+                .replace("{case_count}", "${team.worksites.size}")
+            EditSectionHeader(
+                sectionTitle,
+                enabled = isEditable,
+                showEditAction = true,
+                action = onEditCases,
+            )
+        }
+
+        // TODO Notify if there are missing work types and loading is done
+
+        // TODO List cases
 
         // TODO Assets
 

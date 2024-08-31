@@ -9,6 +9,7 @@ import com.crisiscleanup.core.model.data.EquipmentData
 import com.crisiscleanup.core.model.data.LocalChange
 import com.crisiscleanup.core.model.data.LocalTeam
 import com.crisiscleanup.core.model.data.MemberEquipment
+import com.crisiscleanup.core.model.data.Worksite
 
 data class PopulatedLocalTeam(
     @Embedded
@@ -18,6 +19,7 @@ data class PopulatedLocalTeam(
         entityColumn = "id",
     )
     val root: TeamRootEntity,
+
     @Relation(
         parentColumn = "id",
         entityColumn = "team_id",
@@ -34,10 +36,25 @@ data class PopulatedLocalTeam(
     )
     val members: List<PersonContactEntity>,
 
-    // TODO Worksites/work types
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "network_id",
+        associateBy = Junction(
+            value = TeamWorkEntity::class,
+            parentColumn = "id",
+            entityColumn = "work_type_network_id",
+        ),
+    )
+    val workTypes: List<WorkTypeEntity>,
 )
 
-fun PopulatedLocalTeam.asExternalModel(memberEquipment: List<MemberEquipment>): LocalTeam {
+fun PopulatedLocalTeam.asExternalModel(
+    memberEquipment: List<MemberEquipment>,
+    worksites: List<Worksite>,
+    workIdLookup: Map<Long, Long>,
+): LocalTeam {
+    val workTypeIds = workTypes.map(WorkTypeEntity::id)
+    val missingWorkTypeIds = workTypeIds.filter { !workIdLookup.contains(it) }
     return with(entity) {
         LocalTeam(
             CleanupTeam(
@@ -52,6 +69,9 @@ fun PopulatedLocalTeam.asExternalModel(memberEquipment: List<MemberEquipment>): 
                 memberIds = memberIdRefs.map(TeamMemberCrossRef::contactId),
                 members = members.asExternalModelSorted(),
                 memberEquipment = memberEquipment,
+                workTypeIds = workTypeIds,
+                worksites = worksites,
+                missingWorkTypeCount = missingWorkTypeIds.size,
             ),
             LocalChange(
                 isLocalModified = root.isLocalModified,

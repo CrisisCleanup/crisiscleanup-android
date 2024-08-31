@@ -14,6 +14,7 @@ import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.TeamChangeRepository
 import com.crisiscleanup.core.data.repository.TeamsRepository
 import com.crisiscleanup.core.data.repository.UsersRepository
+import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.EmptyCleanupTeam
 import com.crisiscleanup.core.model.data.LocalTeam
@@ -49,6 +50,7 @@ internal class TeamEditorDataLoader(
     accountDataRepository: AccountDataRepository,
     incidentsRepository: IncidentsRepository,
     incidentRefresher: IncidentRefresher,
+    worksitesRepository: WorksitesRepository,
     userRoleRefresher: UserRoleRefresher,
     teamsRepository: TeamsRepository,
     teamChangeRepository: TeamChangeRepository,

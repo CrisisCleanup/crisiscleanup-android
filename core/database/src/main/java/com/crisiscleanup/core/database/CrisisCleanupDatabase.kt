@@ -65,6 +65,7 @@ import com.crisiscleanup.core.database.model.TeamEntity
 import com.crisiscleanup.core.database.model.TeamEquipmentCrossRef
 import com.crisiscleanup.core.database.model.TeamMemberCrossRef
 import com.crisiscleanup.core.database.model.TeamRootEntity
+import com.crisiscleanup.core.database.model.TeamWorkEntity
 import com.crisiscleanup.core.database.model.UserRoleEntity
 import com.crisiscleanup.core.database.model.WorkTypeEntity
 import com.crisiscleanup.core.database.model.WorkTypeStatusEntity
@@ -126,8 +127,9 @@ import com.crisiscleanup.core.database.util.InstantConverter
         PersonEquipmentCrossRef::class,
         TeamFtsEntity::class,
         UserRoleEntity::class,
+        TeamWorkEntity::class,
     ],
-    version = 45,
+    version = 46,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
@@ -173,6 +175,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         AutoMigration(from = 42, to = 43),
         AutoMigration(from = 43, to = 44),
         AutoMigration(from = 44, to = 45),
+        AutoMigration(from = 45, to = 46),
     ],
     exportSchema = true,
 )
