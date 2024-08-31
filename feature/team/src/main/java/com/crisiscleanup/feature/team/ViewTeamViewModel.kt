@@ -8,12 +8,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.KeyResourceTranslator
+import com.crisiscleanup.core.common.LocationProvider
+import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.ReplaySubscribed3
+import com.crisiscleanup.core.common.haversineDistance
+import com.crisiscleanup.core.common.kmToMiles
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.common.radians
 import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.data.IncidentRefresher
 import com.crisiscleanup.core.data.LanguageRefresher
@@ -27,15 +32,19 @@ import com.crisiscleanup.core.data.repository.TeamsRepository
 import com.crisiscleanup.core.data.repository.UsersRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.model.data.CleanupTeam
+import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.feature.team.navigation.ViewTeamArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -56,6 +65,8 @@ class ViewTeamViewModel @Inject constructor(
     private val editableTeamProvider: EditableTeamProvider,
     usersRepository: UsersRepository,
     private val syncPusher: SyncPusher,
+    permissionManager: PermissionManager,
+    locationProvider: LocationProvider,
     languageRefresher: LanguageRefresher,
     private val translator: KeyResourceTranslator,
     appEnv: AppEnv,
@@ -150,6 +161,48 @@ class ViewTeamViewModel @Inject constructor(
     val profilePictureLookup = dataLoader.profilePictureLookup
     val userRoleLookup = dataLoader.userRoleLookup
 
+    private val deviceLocation = permissionManager.hasLocationPermission
+        .map {
+            if (it) {
+                locationProvider.getLocation()
+            } else {
+                null
+            }
+        }
+        .flowOn(ioDispatcher)
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = null,
+            started = ReplaySubscribed3,
+        )
+    val worksites = combine(
+        dataLoader.teamStream.mapNotNull { it?.team?.worksites },
+        deviceLocation,
+        ::Pair,
+    )
+        .mapLatest { (worksites, location) ->
+            worksites.map { worksite ->
+                with(worksite) {
+                    val distance = location?.let {
+                        val (latitudeRad, longitudeRad) = it
+                        haversineDistance(
+                            latitudeRad,
+                            longitudeRad,
+                            latitude.radians,
+                            longitude.radians,
+                        ).kmToMiles
+                    }
+                        ?: -1.0
+                    WorksiteDistance(worksite, distance)
+                }
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = emptyList(),
+            started = ReplaySubscribed3,
+        )
+
     private fun updateHeaderTitle(teamName: String = "") {
         headerTitle = if (teamName.isEmpty()) {
             translator.translate("nav.organization_teams") ?: "nav.organization_teams"
@@ -170,3 +223,8 @@ class ViewTeamViewModel @Inject constructor(
         // TODO As necessary
     }
 }
+
+data class WorksiteDistance(
+    val worksite: Worksite,
+    val distanceMiles: Double = -1.0,
+)
