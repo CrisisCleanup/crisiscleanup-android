@@ -320,6 +320,15 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         }
     }
 
+    override suspend fun syncNetworkWorksites(networkIds: List<Long>) {
+        val syncedAt = Clock.System.now()
+        dataSource.getWorksites(networkIds)?.let { networkWorksites ->
+            for (networkWorksite in networkWorksites) {
+                syncNetworkWorksite(networkWorksite, syncedAt)
+            }
+        }
+    }
+
     override suspend fun pullWorkTypeRequests(networkWorksiteId: Long) {
         try {
             val workTypeRequests = dataSource.getWorkTypeRequests(networkWorksiteId)
