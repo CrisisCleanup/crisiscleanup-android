@@ -26,6 +26,7 @@ import com.crisiscleanup.core.network.model.NetworkUserRolesResult
 import com.crisiscleanup.core.network.model.NetworkUsersResult
 import com.crisiscleanup.core.network.model.NetworkWorkTypeRequestResult
 import com.crisiscleanup.core.network.model.NetworkWorkTypeStatusResult
+import com.crisiscleanup.core.network.model.NetworkWorkTypesResult
 import com.crisiscleanup.core.network.model.NetworkWorksiteLocationSearchResult
 import com.crisiscleanup.core.network.model.NetworkWorksitePage
 import com.crisiscleanup.core.network.model.NetworkWorksitesCoreDataResult
@@ -318,13 +319,19 @@ private interface DataSourceApi {
     @WrapResponseHeader("team")
     @GET("teams/{teamId}")
     suspend fun getTeam(
-        @Query("teamId")
+        @Path("teamId")
         teamId: Long?,
     ): NetworkTeamResult
 
     @TokenAuthenticationHeader
     @GET("roles")
     suspend fun getUserRoles(): NetworkUserRolesResult
+
+    @TokenAuthenticationHeader
+    @GET("worksite_work_types")
+    suspend fun getWorkTypes(
+        @Query("id__in") ids: String,
+    ): NetworkWorkTypesResult
 }
 
 private val worksiteCoreDataFields = listOf(
@@ -363,9 +370,12 @@ class DataApiClient @Inject constructor(
     override suspend fun getProfileData() = networkApi.getProfile()
 
     override suspend fun getOrganizations(organizations: List<Long>) =
-        networkApi.getOrganizations(organizations.joinToString(",")).let {
-            it.errors?.tryThrowException()
-            it.results ?: emptyList()
+        if (organizations.isEmpty()) {
+            emptyList()
+        } else {
+            networkApi.getOrganizations(organizations.joinToString(","))
+                .also { it.errors?.tryThrowException() }
+                .results ?: emptyList()
         }
 
     override suspend fun getStatuses() = networkApi.getStatuses()
@@ -403,11 +413,13 @@ class DataApiClient @Inject constructor(
         }
 
     override suspend fun getIncidentLocations(locationIds: List<Long>) =
-        networkApi.getLocations(locationIds.joinToString(","), locationIds.size)
-            .let {
-                it.errors?.tryThrowException()
-                it.results ?: emptyList()
-            }
+        if (locationIds.isEmpty()) {
+            emptyList()
+        } else {
+            networkApi.getLocations(locationIds.joinToString(","), locationIds.size)
+                .also { it.errors?.tryThrowException() }
+                .results ?: emptyList()
+        }
 
     override suspend fun getIncident(id: Long, fields: List<String>) =
         networkApi.getIncident(id, fields.joinToString(","))
@@ -428,10 +440,13 @@ class DataApiClient @Inject constructor(
             .apply { errors?.tryThrowException() }
             .results
 
-    override suspend fun getWorksites(worksiteIds: Collection<Long>) =
+    override suspend fun getWorksites(worksiteIds: Collection<Long>) = if (worksiteIds.isEmpty()) {
+        emptyList()
+    } else {
         networkApi.getWorksites(worksiteIds.joinToString(","))
             .apply { errors?.tryThrowException() }
             .results
+    }
 
     override suspend fun getWorksite(id: Long) = getWorksites(listOf(id))?.firstOrNull()
 
@@ -552,17 +567,16 @@ class DataApiClient @Inject constructor(
             }
 
     override suspend fun getCaseHistory(worksiteId: Long) = networkApi.getCaseHistory(worksiteId)
-        .let {
-            it.errors?.tryThrowException()
-            it.events ?: emptyList()
-        }
+        .also { it.errors?.tryThrowException() }
+        .events ?: emptyList()
 
-    override suspend fun getUsers(ids: Collection<Long>) =
+    override suspend fun getUsers(ids: Collection<Long>) = if (ids.isEmpty()) {
+        emptyList()
+    } else {
         networkApi.getUsers(ids.joinToString(","))
-            .let {
-                it.errors?.tryThrowException()
-                it.results ?: emptyList()
-            }
+            .also { it.errors?.tryThrowException() }
+            .results ?: emptyList()
+    }
 
     override suspend fun searchOrganizations(q: String) =
         networkApi.searchOrganizations(q).results ?: emptyList()
@@ -575,11 +589,9 @@ class DataApiClient @Inject constructor(
 
     override suspend fun getLists(limit: Int, offset: Int?) = networkApi.getLists(limit, offset)
 
-    override suspend fun getList(id: Long): NetworkList? {
-        val result = networkApi.getList(id)
-        result.errors?.tryThrowException()
-        return result.list
-    }
+    override suspend fun getList(id: Long) = networkApi.getList(id)
+        .also { it.errors?.tryThrowException() }
+        .list
 
     override suspend fun getLists(ids: List<Long>): List<NetworkList?> {
         val networkLists = mutableListOf<NetworkList?>()
@@ -609,4 +621,14 @@ class DataApiClient @Inject constructor(
     override suspend fun getNetworkUserRoles() = networkApi.getUserRoles()
         .also { it.errors?.tryThrowException() }
         .results ?: emptyList()
+
+    override suspend fun getWorkTypeWorksiteLookup(workTypeIds: List<Long>) =
+        if (workTypeIds.isEmpty()) {
+            emptyMap()
+        } else {
+            networkApi.getWorkTypes(workTypeIds.joinToString(","))
+                .also { it.errors?.tryThrowException() }
+                .results?.associate { it.id to it.worksiteId }
+                ?: emptyMap()
+        }
 }

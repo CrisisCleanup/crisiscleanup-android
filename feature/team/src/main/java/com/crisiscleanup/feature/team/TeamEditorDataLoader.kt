@@ -201,8 +201,8 @@ internal class TeamEditorDataLoader(
         .debounce(1.seconds)
         .distinctUntilChanged()
         .map {
-            val userProfiles = usersRepository.getUserProfiles(it, true)
-            userProfiles.associateBy(PersonContact::id)
+            usersRepository.getUserProfiles(it, true)
+                .associateBy(PersonContact::id)
         }
         .flowOn(coroutineDispatcher)
 
@@ -272,9 +272,7 @@ internal class TeamEditorDataLoader(
                             (networkId > 0 || localTeam.localChanges.isLocalModified)
                         ) {
                             isRefreshingTeam.value = true
-                            if (teamChangeRepository.trySyncTeam(team.id)) {
-                                // TODO Query for missing team members comparing memberIds and members
-                            }
+                            teamChangeRepository.trySyncTeam(team.id)
                         }
                     } finally {
                         isRefreshingTeam.value = false

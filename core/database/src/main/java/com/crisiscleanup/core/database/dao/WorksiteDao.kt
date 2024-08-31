@@ -10,6 +10,7 @@ import com.crisiscleanup.core.database.model.BoundedSyncedWorksiteIds
 import com.crisiscleanup.core.database.model.PopulatedFilterDataWorksite
 import com.crisiscleanup.core.database.model.PopulatedLocalModifiedAt
 import com.crisiscleanup.core.database.model.PopulatedLocalWorksite
+import com.crisiscleanup.core.database.model.PopulatedNetworkIdWorksiteId
 import com.crisiscleanup.core.database.model.PopulatedTableDataWorksite
 import com.crisiscleanup.core.database.model.PopulatedWorksite
 import com.crisiscleanup.core.database.model.PopulatedWorksiteFiles
@@ -40,6 +41,16 @@ interface WorksiteDao {
     @Transaction
     @Query("SELECT * FROM worksites WHERE network_id IN(:networkIds)")
     fun getWorksitesByNetworkId(networkIds: Collection<Long>): List<PopulatedWorksite>
+
+    @Transaction
+    @Query(
+        """
+        SELECT network_id, worksite_id
+        FROM work_types
+        WHERE network_id IN(:networkIds)
+        """,
+    )
+    fun getWorkTypeWorksites(networkIds: Collection<Long>): List<PopulatedNetworkIdWorksiteId>
 
     @Transaction
     @Query("SELECT * FROM worksites WHERE id=:id")
