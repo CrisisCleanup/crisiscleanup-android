@@ -137,3 +137,10 @@ fun PopulatedWorksiteMapVisual.asExternalModel(isFilteredOut: Boolean = false) =
     isDuplicate = flags.any { it.reasonT == duplicateFlagLiteral },
     isFilteredOut = isFilteredOut,
 )
+
+data class PopulatedNetworkIdWorksiteId(
+    @ColumnInfo("network_id")
+    val networkId: Long,
+    @ColumnInfo("worksite_id")
+    val worksiteId: Long,
+)

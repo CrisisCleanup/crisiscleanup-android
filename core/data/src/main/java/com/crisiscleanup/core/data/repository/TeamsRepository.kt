@@ -7,6 +7,7 @@ import com.crisiscleanup.core.common.split
 import com.crisiscleanup.core.data.model.asEntity
 import com.crisiscleanup.core.database.dao.TeamDao
 import com.crisiscleanup.core.database.dao.TeamDaoPlus
+import com.crisiscleanup.core.database.dao.WorksiteDao
 import com.crisiscleanup.core.database.model.PopulatedTeam
 import com.crisiscleanup.core.database.model.PopulatedTeamMemberEquipment
 import com.crisiscleanup.core.database.model.asExternalModel
@@ -15,6 +16,7 @@ import com.crisiscleanup.core.model.data.LocalTeam
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkTeam
 import com.crisiscleanup.core.network.model.NetworkUserEquipment
+import com.crisiscleanup.core.network.model.NetworkWorkType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
@@ -38,9 +40,11 @@ interface TeamsRepository {
 
 class CrisisCleanupTeamsRepository @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,
+    private val worksiteDao: WorksiteDao,
     private val teamDao: TeamDao,
     private val teamDaoPlus: TeamDaoPlus,
     private val accountDataRepository: AccountDataRepository,
+    private val worksitesRepository: WorksitesRepository,
     @Logger(CrisisCleanupLoggers.Team) private val logger: AppLogger,
 ) : TeamsRepository {
 
@@ -141,6 +145,9 @@ class CrisisCleanupTeamsRepository @Inject constructor(
         val memberEquipmentLookup = team.userEquipment.associate { userEquipment ->
             userEquipment.userId to userEquipment.equipmentIds
         }
+
+        team.assignedWork?.let { pullMissingWorksites(it) }
+
         return teamDaoPlus.syncTeam(
             team.asEntity(),
             teamMembers,
@@ -148,6 +155,22 @@ class CrisisCleanupTeamsRepository @Inject constructor(
             memberEquipmentLookup,
             syncedAt,
         )
+    }
+
+    private suspend fun pullMissingWorksites(workTypes: List<NetworkWorkType>) {
+        try {
+            val workTypeNetworkIds = workTypes.mapNotNull { it.id }
+            val idLookup = worksiteDao.getWorkTypeWorksites(workTypeNetworkIds)
+                .associate { it.networkId to it.worksiteId }
+            val missingWorkTypeIds = workTypeNetworkIds.filter { !idLookup.contains(it) }
+            val worksiteIds = networkDataSource.getWorkTypeWorksiteLookup(missingWorkTypeIds)
+            for (entry in worksiteIds) {
+                val worksiteId = entry.value
+                worksitesRepository.syncNetworkWorksite(worksiteId)
+            }
+        } catch (e: Exception) {
+            logger.logException(e)
+        }
     }
 }
 
