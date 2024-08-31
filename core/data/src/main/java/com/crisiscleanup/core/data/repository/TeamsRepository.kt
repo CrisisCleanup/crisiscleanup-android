@@ -10,6 +10,7 @@ import com.crisiscleanup.core.database.dao.TeamDaoPlus
 import com.crisiscleanup.core.database.dao.WorksiteDao
 import com.crisiscleanup.core.database.model.PopulatedTeam
 import com.crisiscleanup.core.database.model.PopulatedTeamMemberEquipment
+import com.crisiscleanup.core.database.model.PopulatedWorksite
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.LocalTeam
@@ -64,9 +65,10 @@ class CrisisCleanupTeamsRepository @Inject constructor(
     override fun streamLocalTeam(teamId: Long): Flow<LocalTeam?> = combine(
         teamDao.streamLocalTeam(teamId),
         teamDao.streamTeamMemberEquipment(teamId),
-        ::Pair,
+        teamDao.streamTeamWorksites(teamId),
+        ::Triple,
     )
-        .mapLatest { (team, teamMemberEquipment) ->
+        .mapLatest { (team, teamMemberEquipment, teamWorksites) ->
             val memberEquipment =
                 teamMemberEquipment.map(PopulatedTeamMemberEquipment::asExternalModel)
                     .sortedWith { a, b ->
@@ -78,7 +80,15 @@ class CrisisCleanupTeamsRepository @Inject constructor(
                         }
                         nameCompare
                     }
-            team?.asExternalModel(memberEquipment)
+            val worksites = teamWorksites.map(PopulatedWorksite::asExternalModel)
+            val workIdLookup = worksites
+                .flatMap { worksite ->
+                    worksite.workTypes.map {
+                        Pair(it.id, worksite.id)
+                    }
+                }
+                .associate { it.first to it.second }
+            team?.asExternalModel(memberEquipment, worksites, workIdLookup)
         }
 
     private suspend fun syncTeams(
@@ -88,12 +98,18 @@ class CrisisCleanupTeamsRepository @Inject constructor(
         val teamEntities = networkTeams.map(NetworkTeam::asEntity)
         val teamMemberLookup = mutableMapOf<Long, List<Long>>()
         val teamEquipmentLookup = mutableMapOf<Long, Set<Long>>()
+        val teamWorkTypeLookup = mutableMapOf<Long, List<Long>>()
         val memberEquipmentLookup = mutableMapOf<Long, MutableSet<Long>>()
         networkTeams.forEach { networkTeam ->
-            teamMemberLookup[networkTeam.id] = networkTeam.users ?: emptyList()
+            val teamId = networkTeam.id
+            teamMemberLookup[teamId] = networkTeam.users ?: emptyList()
 
-            teamEquipmentLookup[networkTeam.id] =
+            teamEquipmentLookup[teamId] =
                 networkTeam.userEquipment.flatMap(NetworkUserEquipment::equipmentIds).toSet()
+
+            teamWorkTypeLookup[teamId] =
+                networkTeam.assignedWork?.mapNotNull(NetworkWorkType::id) ?: emptyList()
+
             networkTeam.userEquipment.forEach { userEquipment ->
                 if (!memberEquipmentLookup.contains(userEquipment.userId)) {
                     memberEquipmentLookup[userEquipment.userId] = mutableSetOf()
@@ -105,6 +121,7 @@ class CrisisCleanupTeamsRepository @Inject constructor(
             teamEntities,
             teamMemberLookup,
             teamEquipmentLookup,
+            teamWorkTypeLookup,
             memberEquipmentLookup,
             syncedAt,
         )
@@ -142,6 +159,7 @@ class CrisisCleanupTeamsRepository @Inject constructor(
     ): Boolean {
         val teamMembers = team.users ?: emptyList()
         val teamEquipment = team.userEquipment.flatMap(NetworkUserEquipment::equipmentIds).toSet()
+        val teamWork = team.assignedWork?.mapNotNull(NetworkWorkType::id) ?: emptyList()
         val memberEquipmentLookup = team.userEquipment.associate { userEquipment ->
             userEquipment.userId to userEquipment.equipmentIds
         }
@@ -152,6 +170,7 @@ class CrisisCleanupTeamsRepository @Inject constructor(
             team.asEntity(),
             teamMembers,
             teamEquipment,
+            teamWork,
             memberEquipmentLookup,
             syncedAt,
         )
