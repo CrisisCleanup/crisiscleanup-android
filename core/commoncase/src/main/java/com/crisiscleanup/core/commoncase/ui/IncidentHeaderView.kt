@@ -2,6 +2,7 @@ package com.crisiscleanup.core.commoncase.ui
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -9,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.commonassets.R
 import com.crisiscleanup.core.commonassets.ui.DisasterIcon
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
@@ -46,6 +48,8 @@ fun IncidentHeaderView(
             isSyncing = isSyncing,
             isPendingSync = isPendingSync,
             scheduleSync = scheduleSync,
+            // minimumInteractiveComponentSize > IconButtonTokens.StateLayerSize
+            modifier = Modifier.size(48.dp),
         )
     }
 }
