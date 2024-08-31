@@ -20,6 +20,9 @@ data class CleanupTeam(
     val members: List<PersonContact>,
     val equipment: List<CleanupEquipment> = emptyList(),
     val memberEquipment: List<MemberEquipment> = emptyList(),
+    private val workTypeIds: List<Long> = emptyList(),
+    val worksites: List<Worksite> = emptyList(),
+    val missingWorkTypeCount: Int = 0,
 )
 
 val EmptyCleanupTeam = CleanupTeam(

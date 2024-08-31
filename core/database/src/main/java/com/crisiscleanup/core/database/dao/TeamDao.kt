@@ -11,9 +11,11 @@ import com.crisiscleanup.core.database.model.PopulatedLocalModifiedAt
 import com.crisiscleanup.core.database.model.PopulatedLocalTeam
 import com.crisiscleanup.core.database.model.PopulatedTeam
 import com.crisiscleanup.core.database.model.PopulatedTeamMemberEquipment
+import com.crisiscleanup.core.database.model.PopulatedWorksite
 import com.crisiscleanup.core.database.model.TeamEntity
 import com.crisiscleanup.core.database.model.TeamEquipmentCrossRef
 import com.crisiscleanup.core.database.model.TeamMemberCrossRef
+import com.crisiscleanup.core.database.model.TeamWorkEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Instant
 
@@ -58,6 +60,18 @@ interface TeamDao {
         """,
     )
     fun streamTeamMemberEquipment(id: Long): Flow<List<PopulatedTeamMemberEquipment>>
+
+    @Transaction
+    @Query(
+        """
+        SELECT * FROM worksites WHERE id IN (
+        SELECT wt.worksite_id
+        FROM team_work tw INNER JOIN work_types wt ON tw.work_type_network_id=wt.network_id
+        WHERE tw.id=:id
+        )
+        """,
+    )
+    fun streamTeamWorksites(id: Long): Flow<List<PopulatedWorksite>>
 
     @Transaction
     @Query(
@@ -164,7 +178,7 @@ interface TeamDao {
     fun deleteUnspecifiedMembers(teamId: Long, memberIds: Collection<Long>)
 
     @Upsert
-    fun upsert(teamMembers: Collection<TeamMemberCrossRef>)
+    fun upsertMembers(teamMembers: Collection<TeamMemberCrossRef>)
 
     @Transaction
     @Query(
@@ -176,7 +190,19 @@ interface TeamDao {
     fun deleteUnspecifiedEquipment(teamId: Long, equipmentIds: Collection<Long>)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insertIgnore(teamEquipments: Collection<TeamEquipmentCrossRef>)
+    fun insertIgnoreEquipment(teamEquipments: Collection<TeamEquipmentCrossRef>)
+
+    @Transaction
+    @Query(
+        """
+        DELETE FROM team_work
+        WHERE id=:teamId AND work_type_network_id NOT IN(:workTypeNetworkIds)
+        """,
+    )
+    fun deleteUnspecifiedWork(teamId: Long, workTypeNetworkIds: Collection<Long>)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insertIgnoreWork(teamWork: Collection<TeamWorkEntity>)
 
     @Transaction
     @Query("SELECT name FROM teams ORDER BY RANDOM() LIMIT 1")

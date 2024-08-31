@@ -13,6 +13,7 @@ import com.crisiscleanup.core.database.model.PopulatedLocalModifiedAt
 import com.crisiscleanup.core.database.model.TeamEntity
 import com.crisiscleanup.core.database.model.TeamEquipmentCrossRef
 import com.crisiscleanup.core.database.model.TeamMemberCrossRef
+import com.crisiscleanup.core.database.model.TeamWorkEntity
 import kotlinx.datetime.Instant
 import javax.inject.Inject
 
@@ -49,6 +50,7 @@ class TeamDaoPlus @Inject constructor(
         teams: List<TeamEntity>,
         teamMemberLookup: Map<Long, List<Long>>,
         teamEquipmentLookup: Map<Long, Set<Long>>,
+        teamWorkTypeLookup: Map<Long, Collection<Long>>,
         memberEquipmentLookup: Map<Long, Set<Long>>,
         syncedAt: Instant,
     ) {
@@ -60,12 +62,14 @@ class TeamDaoPlus @Inject constructor(
                 val networkId = team.networkId
                 val teamMembers = teamMemberLookup[networkId] ?: emptyList()
                 val teamEquipment = teamEquipmentLookup[networkId] ?: emptySet()
+                val teamWork = teamWorkTypeLookup[networkId] ?: emptyList()
                 val modifiedAt = modifiedAtLookup[networkId]
                 syncTeam(
                     team,
                     modifiedAt,
                     teamMembers,
                     teamEquipment,
+                    teamWork,
                     syncedAt,
                 )
             }
@@ -101,7 +105,7 @@ class TeamDaoPlus @Inject constructor(
                 contactId = it,
             )
         }
-        teamDao.upsert(teamMembersRefs)
+        teamDao.upsertMembers(teamMembersRefs)
     }
 
     private suspend fun syncEquipment(
@@ -117,13 +121,30 @@ class TeamDaoPlus @Inject constructor(
                 equipmentId = it,
             )
         }
-        teamDao.insertIgnore(teamEquipments)
+        teamDao.insertIgnoreEquipment(teamEquipments)
+    }
+
+    private suspend fun syncWorkTypes(
+        teamId: Long,
+        workTypeNetworkIds: Collection<Long>,
+    ) = db.withTransaction {
+        val teamDao = db.teamDao()
+        teamDao.deleteUnspecifiedWork(teamId, workTypeNetworkIds)
+
+        val teamWork = workTypeNetworkIds.map {
+            TeamWorkEntity(
+                id = teamId,
+                workTypeNetworkId = it,
+            )
+        }
+        teamDao.insertIgnoreWork(teamWork)
     }
 
     suspend fun syncTeam(
         team: TeamEntity,
         members: List<Long>,
         equipment: Set<Long>,
+        workTypes: Collection<Long>,
         memberEquipmentLookup: Map<Long, Set<Long>>,
         syncedAt: Instant,
     ) = db.withTransaction {
@@ -135,6 +156,7 @@ class TeamDaoPlus @Inject constructor(
             modifiedAt,
             members,
             equipment,
+            workTypes,
             syncedAt,
         )
 
@@ -150,6 +172,7 @@ class TeamDaoPlus @Inject constructor(
         modifiedAt: PopulatedLocalModifiedAt?,
         members: List<Long>,
         equipment: Set<Long>,
+        workTypeNetworkIds: Collection<Long>,
         syncedAt: Instant,
     ) = db.withTransaction {
         val teamDao = db.teamDao()
@@ -202,6 +225,7 @@ class TeamDaoPlus @Inject constructor(
 
             syncMembers(teamId, members)
             syncEquipment(teamId, equipment)
+            syncWorkTypes(teamId, workTypeNetworkIds)
 
             return@withTransaction true
         } else {

@@ -26,8 +26,6 @@ data class PopulatedTeam(
     )
     val members: List<PersonContactEntity>,
 
-    // TODO Worksites/work types
-
     @Relation(
         parentColumn = "id",
         entityColumn = "id",

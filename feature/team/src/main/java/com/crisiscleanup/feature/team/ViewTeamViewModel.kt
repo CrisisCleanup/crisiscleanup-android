@@ -25,6 +25,7 @@ import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.TeamChangeRepository
 import com.crisiscleanup.core.data.repository.TeamsRepository
 import com.crisiscleanup.core.data.repository.UsersRepository
+import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.feature.team.navigation.ViewTeamArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -46,6 +47,7 @@ class ViewTeamViewModel @Inject constructor(
     accountDataRepository: AccountDataRepository,
     incidentsRepository: IncidentsRepository,
     incidentRefresher: IncidentRefresher,
+    worksitesRepository: WorksitesRepository,
     accountDataRefresher: AccountDataRefresher,
     organizationRefresher: OrganizationRefresher,
     userRoleRefresher: UserRoleRefresher,
@@ -108,6 +110,7 @@ class ViewTeamViewModel @Inject constructor(
             accountDataRepository,
             incidentsRepository,
             incidentRefresher,
+            worksitesRepository,
             userRoleRefresher,
             teamsRepository,
             teamChangeRepository,

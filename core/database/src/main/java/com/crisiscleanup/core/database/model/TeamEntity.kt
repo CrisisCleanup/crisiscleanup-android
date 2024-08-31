@@ -145,3 +145,27 @@ data class TeamEquipmentCrossRef(
     @ColumnInfo("equipment_id")
     val equipmentId: Long,
 )
+
+@Entity(
+    "team_work",
+    primaryKeys = ["id", "work_type_network_id"],
+    foreignKeys = [
+        ForeignKey(
+            entity = TeamEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+    indices = [
+        Index(
+            value = ["work_type_network_id", "id"],
+            name = "idx_work_to_team",
+        ),
+    ],
+)
+data class TeamWorkEntity(
+    val id: Long,
+    @ColumnInfo("work_type_network_id")
+    val workTypeNetworkId: Long,
+)
