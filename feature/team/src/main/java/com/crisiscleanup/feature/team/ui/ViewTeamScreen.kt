@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
@@ -44,6 +45,7 @@ import com.crisiscleanup.core.common.openSms
 import com.crisiscleanup.core.commoncase.ui.SyncStatusView
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.AvatarIcon
+import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CardSurface
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.HelpDialog
@@ -109,14 +111,14 @@ private fun ViewTeamScreen(
                 team,
                 profilePictureLookup,
                 userRoleLookup,
-                // TODO isSaving instead?
-                isBusy = isBusy,
                 isEditable = isEditable,
                 isSyncing = isSyncing,
                 isPendingSync = isPendingSync,
                 scheduleSync = viewModel::scheduleSync,
             )
         }
+
+        BusyIndicatorFloatingTopCenter(isBusy)
     }
 }
 
@@ -175,7 +177,6 @@ private fun ViewTeamContent(
     team: CleanupTeam,
     profilePictureLookup: Map<Long, String>,
     userRoleLookup: Map<Int, UserRole>,
-    isBusy: Boolean,
     isEditable: Boolean,
     isSyncing: Boolean,
     isPendingSync: Boolean,
@@ -254,10 +255,18 @@ private fun TeamHeader(
     scheduleSync: () -> Unit,
 ) {
     val t = LocalAppTranslator.current
+    val modifier = if (isSyncing || !isPendingSync) {
+        fillWidthPadded
+    } else {
+        Modifier.fillMaxWidth()
+            // TODO Common dimensions
+            .padding(vertical = 16.dp)
+            .padding(start = 16.dp)
+    }
     Column(
         // TODO Common colors
         Modifier.background(Color.White)
-            .then(fillWidthPadded),
+            .then(modifier),
         verticalArrangement = listItemSpacedByHalf,
     ) {
         Row(
