@@ -139,7 +139,7 @@ private fun TeamsScreen(
                             Text(
                                 text = t("teams.no_team_yet"),
                                 modifier = Modifier.listItemHorizontalPadding(),
-                                style = LocalFontStyles.current.header2,
+                                style = LocalFontStyles.current.header3,
                             )
                         }
                     } else {
@@ -177,7 +177,7 @@ private fun TeamsScreen(
                                 text = t("teams.no_other_teams"),
                                 modifier = Modifier.listItemHorizontalPadding()
                                     .listItemTopPadding(),
-                                style = LocalFontStyles.current.header2,
+                                style = LocalFontStyles.current.header3,
                             )
                         }
                     } else {
