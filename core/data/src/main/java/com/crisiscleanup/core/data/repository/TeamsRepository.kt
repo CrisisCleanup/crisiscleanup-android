@@ -146,7 +146,7 @@ class CrisisCleanupTeamsRepository @Inject constructor(
             userEquipment.userId to userEquipment.equipmentIds
         }
 
-        team.assignedWork?.let { pullMissingWorksites(it) }
+        team.assignedWork?.let { pullWorksites(it) }
 
         return teamDaoPlus.syncTeam(
             team.asEntity(),
@@ -157,17 +157,21 @@ class CrisisCleanupTeamsRepository @Inject constructor(
         )
     }
 
-    private suspend fun pullMissingWorksites(workTypes: List<NetworkWorkType>) {
+    private suspend fun pullWorksites(
+        workTypes: List<NetworkWorkType>,
+        filterLocal: Boolean = false,
+    ) {
         try {
             val workTypeNetworkIds = workTypes.mapNotNull { it.id }
-            val idLookup = worksiteDao.getWorkTypeWorksites(workTypeNetworkIds)
-                .associate { it.networkId to it.worksiteId }
-            val missingWorkTypeIds = workTypeNetworkIds.filter { !idLookup.contains(it) }
-            val worksiteIds = networkDataSource.getWorkTypeWorksiteLookup(missingWorkTypeIds)
-            for (entry in worksiteIds) {
-                val worksiteId = entry.value
-                worksitesRepository.syncNetworkWorksite(worksiteId)
+            var queryWorkTypeIds = workTypeNetworkIds
+            if (filterLocal) {
+                val idLookup = worksiteDao.getWorkTypeWorksites(workTypeNetworkIds)
+                    .associate { it.networkId to it.worksiteId }
+                queryWorkTypeIds = workTypeNetworkIds.filter { !idLookup.contains(it) }
             }
+            val worksiteIds = networkDataSource.getWorkTypeWorksiteLookup(queryWorkTypeIds)
+                .map { it.value }
+            worksitesRepository.syncNetworkWorksites(worksiteIds)
         } catch (e: Exception) {
             logger.logException(e)
         }
