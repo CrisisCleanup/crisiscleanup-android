@@ -39,9 +39,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.common.ParsedPhoneNumber
 import com.crisiscleanup.core.common.openDialer
 import com.crisiscleanup.core.common.openEmail
 import com.crisiscleanup.core.common.openSms
+import com.crisiscleanup.core.commoncase.ui.CaseTableItem
 import com.crisiscleanup.core.commoncase.ui.SyncStatusView
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.AvatarIcon
@@ -49,6 +51,7 @@ import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCen
 import com.crisiscleanup.core.designsystem.component.CardSurface
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.HelpDialog
+import com.crisiscleanup.core.designsystem.component.PhoneCallDialog
 import com.crisiscleanup.core.designsystem.component.TopBarBackAction
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalDimensions
@@ -56,6 +59,7 @@ import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.designsystem.theme.listItemBottomPadding
+import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.listRowItemStartPadding
@@ -66,13 +70,18 @@ import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.PersonContact
 import com.crisiscleanup.core.model.data.UserRole
 import com.crisiscleanup.feature.team.ViewTeamViewModel
+import com.crisiscleanup.feature.team.WorksiteDistance
 
 @Composable
 fun ViewTeamRoute(
     onBack: () -> Unit,
+    onViewCase: () -> Unit = {},
+    onOpenFlags: () -> Unit = {},
 ) {
     ViewTeamScreen(
         onBack,
+        onViewCase,
+        onOpenFlags,
     )
 }
 
@@ -80,6 +89,8 @@ fun ViewTeamRoute(
 @Composable
 private fun ViewTeamScreen(
     onBack: () -> Unit,
+    onViewCase: () -> Unit = {},
+    onOpenFlags: () -> Unit = {},
     viewModel: ViewTeamViewModel = hiltViewModel(),
 ) {
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
@@ -92,11 +103,19 @@ private fun ViewTeamScreen(
 
     val accountId by viewModel.accountId.collectAsStateWithLifecycle()
     val team by viewModel.editableTeam.collectAsStateWithLifecycle()
+    val worksites by viewModel.worksites.collectAsStateWithLifecycle()
     val profilePictureLookup by viewModel.profilePictureLookup.collectAsStateWithLifecycle()
     val userRoleLookup by viewModel.userRoleLookup.collectAsStateWithLifecycle()
 
     val isPendingSync by viewModel.isPendingSync.collectAsStateWithLifecycle()
     val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
+
+    var phoneNumberList by remember { mutableStateOf(emptyList<ParsedPhoneNumber>()) }
+    val setPhoneNumberList = remember(viewModel) {
+        { list: List<ParsedPhoneNumber> ->
+            phoneNumberList = list
+        }
+    }
 
     Box {
         Column {
@@ -111,14 +130,24 @@ private fun ViewTeamScreen(
                 team,
                 profilePictureLookup,
                 userRoleLookup,
+                worksites,
                 isEditable = isEditable,
                 isSyncing = isSyncing,
                 isPendingSync = isPendingSync,
                 scheduleSync = viewModel::scheduleSync,
+                onViewCase = onViewCase,
+                onOpenFlags = onOpenFlags,
+                showPhoneNumbers = setPhoneNumberList,
             )
         }
 
         BusyIndicatorFloatingTopCenter(isBusy)
+
+        val clearPhoneNumbers = remember(viewModel) { { setPhoneNumberList(emptyList()) } }
+        PhoneCallDialog(
+            phoneNumberList,
+            clearPhoneNumbers,
+        )
     }
 }
 
@@ -177,12 +206,16 @@ private fun ViewTeamContent(
     team: CleanupTeam,
     profilePictureLookup: Map<Long, String>,
     userRoleLookup: Map<Int, UserRole>,
+    worksites: List<WorksiteDistance>,
     isEditable: Boolean,
     isSyncing: Boolean,
     isPendingSync: Boolean,
     scheduleSync: () -> Unit,
     onEditTeamMembers: () -> Unit = {},
     onEditCases: () -> Unit = {},
+    onViewCase: () -> Unit = {},
+    onOpenFlags: () -> Unit = {},
+    showPhoneNumbers: (List<ParsedPhoneNumber>) -> Unit = {},
 ) {
     val t = LocalAppTranslator.current
 
@@ -216,7 +249,7 @@ private fun ViewTeamContent(
 
         items(
             team.members,
-            key = { it.id },
+            key = { "member-${it.id}" },
             contentType = { "member-item" },
         ) {
             TeamMemberCardView(
@@ -234,7 +267,7 @@ private fun ViewTeamContent(
             contentType = "header-item",
         ) {
             val sectionTitle = t("~~Assigned Cases ({case_count})")
-                .replace("{case_count}", "${team.worksites.size}")
+                .replace("{case_count}", "${worksites.size}")
             EditSectionHeader(
                 sectionTitle,
                 enabled = isEditable,
@@ -243,9 +276,23 @@ private fun ViewTeamContent(
             )
         }
 
-        // TODO Notify if there are missing work types and loading is done
+        if (team.missingWorkTypeCount > 0) {
+            // TODO Notify if there are missing work types and loading is done
+        }
 
-        // TODO List cases
+        items(
+            worksites,
+            key = { "worksite-${it.worksite.id}" },
+            contentType = { "worksite-item" },
+        ) {
+            TeamWorksiteView(
+                it,
+                onViewCase = onViewCase,
+                onOpenFlags = onOpenFlags,
+                isEditable = isEditable,
+                showPhoneNumbers = showPhoneNumbers,
+            )
+        }
 
         // TODO Assets
 
@@ -471,6 +518,32 @@ private fun TeamMemberOverflowMenu(
                     },
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun TeamWorksiteView(
+    worksiteDistance: WorksiteDistance,
+    onViewCase: () -> Unit = {},
+    onOpenFlags: () -> Unit = {},
+    isEditable: Boolean = false,
+    showPhoneNumbers: (List<ParsedPhoneNumber>) -> Unit = {},
+) {
+    val worksite = worksiteDistance.worksite
+    val distance = worksiteDistance.distanceMiles
+
+    CardSurface {
+        CaseTableItem(
+            worksite,
+            distance,
+            listItemModifier,
+            onViewCase = onViewCase,
+            onOpenFlags = onOpenFlags,
+            isEditable = isEditable,
+            showPhoneNumbers = showPhoneNumbers,
+        ) {
+            // TODO Unassign Case from team
         }
     }
 }
