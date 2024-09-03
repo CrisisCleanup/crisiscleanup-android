@@ -339,6 +339,9 @@ private fun TableViewItem(
         onOpenFlags = onOpenFlags,
         isEditable = isEditable,
         showPhoneNumbers = showPhoneNumbers,
+        onAssignToTeam = {
+            // TODO open team assign
+        },
     ) {
         Spacer(modifier = Modifier.weight(1f))
 
