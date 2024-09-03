@@ -1,5 +1,6 @@
 package com.crisiscleanup.feature.team.navigation
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -33,6 +34,11 @@ fun NavController.navigateToViewTeam(incidentId: Long, teamId: Long) {
     this.navigate(route)
 }
 
+fun NavController.navigateToAssignCaseTeam(worksiteId: Long) {
+    // TODO Determine if team parameter should be passed
+    Log.w("team", "Assign Case $worksiteId to team not yet implemented")
+}
+
 fun NavGraphBuilder.teamsScreen(
     nestedGraphs: NavGraphBuilder.() -> Unit,
     openAuthentication: () -> Unit,
@@ -50,6 +56,9 @@ fun NavGraphBuilder.teamsScreen(
 
 fun NavGraphBuilder.viewTeamScreen(
     onBack: () -> Unit = {},
+    viewCase: (Long, Long) -> Boolean = { _, _ -> false },
+    openAddFlag: () -> Unit = {},
+    openAssignCaseTeam: (Long) -> Unit = {},
 ) {
     composable(
         route = "$VIEW_TEAM_ROUTE?$INCIDENT_ID_ARG={$INCIDENT_ID_ARG}&$TEAM_ID_ARG={$TEAM_ID_ARG}",
@@ -64,6 +73,11 @@ fun NavGraphBuilder.viewTeamScreen(
             },
         ),
     ) {
-        ViewTeamRoute(onBack = onBack)
+        ViewTeamRoute(
+            onBack = onBack,
+            onViewCase = viewCase,
+            onOpenFlags = openAddFlag,
+            onAssignCaseTeam = openAssignCaseTeam,
+        )
     }
 }

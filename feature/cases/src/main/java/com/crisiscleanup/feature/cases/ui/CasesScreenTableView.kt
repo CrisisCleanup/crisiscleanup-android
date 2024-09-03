@@ -78,6 +78,7 @@ internal fun BoxScope.CasesTableView(
     onCasesAction: (CasesAction) -> Unit = {},
     filtersCount: Int = 0,
     onTableItemSelect: (Worksite) -> Unit = {},
+    onAssignCaseTeam: (Long) -> Unit = {},
     onSyncDataDelta: () -> Unit = {},
     onSyncDataFull: () -> Unit = {},
     hasIncidents: Boolean = false,
@@ -212,6 +213,7 @@ internal fun BoxScope.CasesTableView(
                     it,
                     onViewCase = { onTableItemSelect(worksite) },
                     onOpenFlags = { onOpenFlags(worksite) },
+                    onAssignTeam = { onAssignCaseTeam(worksite.id) },
                     isEditable = isEditable,
                     showPhoneNumbers = setPhoneNumberList,
                     isTurnOnRelease = isTurnOnRelease,
@@ -320,6 +322,7 @@ private fun TableViewItem(
     worksiteDistance: WorksiteDistance,
     onViewCase: () -> Unit = {},
     onOpenFlags: () -> Unit = {},
+    onAssignTeam: (Long) -> Unit = {},
     isEditable: Boolean = false,
     showPhoneNumbers: (List<ParsedPhoneNumber>) -> Unit = {},
     isTurnOnRelease: Boolean = false,
@@ -339,9 +342,8 @@ private fun TableViewItem(
         onOpenFlags = onOpenFlags,
         isEditable = isEditable,
         showPhoneNumbers = showPhoneNumbers,
-        onAssignToTeam = {
-            // TODO open team assign
-        },
+        // TODO Profile recompose
+        onAssignToTeam = { onAssignTeam(worksite.id) },
     ) {
         Spacer(modifier = Modifier.weight(1f))
 
