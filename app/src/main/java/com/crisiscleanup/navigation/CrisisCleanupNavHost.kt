@@ -56,6 +56,7 @@ import com.crisiscleanup.feature.organizationmanage.navigation.navigateToRequest
 import com.crisiscleanup.feature.organizationmanage.navigation.requestRedeployScreen
 import com.crisiscleanup.feature.syncinsights.navigation.navigateToSyncInsights
 import com.crisiscleanup.feature.syncinsights.navigation.syncInsightsScreen
+import com.crisiscleanup.feature.team.navigation.navigateToAssignCaseTeam
 import com.crisiscleanup.feature.team.navigation.navigateToViewTeam
 import com.crisiscleanup.feature.team.navigation.teamsScreen
 import com.crisiscleanup.feature.team.navigation.viewTeamScreen
@@ -209,6 +210,12 @@ fun CrisisCleanupNavHost(
         }
     }
 
+    val navToAssignCaseTeam = remember(navController) {
+        { worksiteId: Long ->
+            navController.navigateToAssignCaseTeam(worksiteId)
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -233,11 +240,17 @@ fun CrisisCleanupNavHost(
             viewCase = viewCase,
             caseAddFlag = navToCaseAddFlagNonEditing,
             caseTransferWorkType = navToTransferWorkTypeNonEditing,
+            openAssignCaseTeam = navToAssignCaseTeam,
         )
         dashboardScreen()
         teamsScreen(
             nestedGraphs = {
-                viewTeamScreen(viewTeamOnBack)
+                viewTeamScreen(
+                    viewTeamOnBack,
+                    viewCase = viewCase,
+                    openAddFlag = navToCaseAddFlagNonEditing,
+                    openAssignCaseTeam = navToAssignCaseTeam,
+                )
             },
             openAuthentication = openAuthentication,
             openViewTeam = navController::navigateToViewTeam,

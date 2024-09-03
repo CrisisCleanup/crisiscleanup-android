@@ -28,8 +28,10 @@ import com.crisiscleanup.core.common.radians
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.commonassets.ui.getDisasterIcon
+import com.crisiscleanup.core.commoncase.CaseFlagsNavigationState
 import com.crisiscleanup.core.commoncase.TransferWorkTypeProvider
 import com.crisiscleanup.core.commoncase.WorksiteProvider
+import com.crisiscleanup.core.commoncase.reset
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.WorksiteInteractor
 import com.crisiscleanup.core.data.repository.AccountDataRepository
@@ -177,15 +179,27 @@ class CasesViewModel @Inject constructor(
         translator,
         logger,
     )
-    val isLoadingTableViewData = tableViewDataLoader.isLoading
+
+    private val flagsNavigationState = CaseFlagsNavigationState(
+        worksiteChangeRepository,
+        worksitesRepository,
+        worksiteProvider,
+        viewModelScope,
+        ioDispatcher,
+    )
+    val openWorksiteAddFlagCounter = flagsNavigationState.openWorksiteAddFlagCounter
+
+    val isLoadingTableViewData = combine(
+        tableViewDataLoader.isLoading,
+        flagsNavigationState.isLoadingFlagsWorksite,
+        ::Pair,
+    )
+        .map { (b0, b1) -> b0 || b1 }
         .stateIn(
             scope = viewModelScope,
             initialValue = false,
             started = SharingStarted.WhileSubscribed(),
         )
-
-    val openWorksiteAddFlagCounter = MutableStateFlow(0)
-    private val openWorksiteAddFlag = AtomicBoolean(false)
 
     val worksitesChangingClaimAction = tableViewDataLoader.worksitesChangingClaimAction
     val changeClaimActionErrorMessage = MutableStateFlow("")
@@ -437,6 +451,12 @@ class CasesViewModel @Inject constructor(
         viewModelScope.launch {
             setTileRendererLocation()
         }
+
+        incidentSelector.incidentId
+            .onEach {
+                worksiteProvider.reset(it)
+            }
+            .launchIn(viewModelScope)
 
         combine(
             incidentWorksitesCount,
@@ -758,14 +778,9 @@ class CasesViewModel @Inject constructor(
         }
     }
 
-    fun onOpenCaseFlags(worksite: Worksite) {
-        viewModelScope.launch(ioDispatcher) {
-            if (tableViewDataLoader.loadWorksiteForAddFlags(worksite)) {
-                openWorksiteAddFlag.set(true)
-                openWorksiteAddFlagCounter.value++
-            }
-        }
-    }
+    fun onOpenCaseFlags(worksite: Worksite) = flagsNavigationState.onOpenCaseFlags(worksite)
+
+    fun takeOpenWorksiteAddFlag() = flagsNavigationState.takeOpenWorksiteAddFlag()
 
     fun onWorksiteClaimAction(
         worksite: Worksite,
@@ -783,8 +798,6 @@ class CasesViewModel @Inject constructor(
             }
         }
     }
-
-    fun takeOpenWorksiteAddFlag() = openWorksiteAddFlag.getAndSet(false)
 
     // TrimMemoryListener
 

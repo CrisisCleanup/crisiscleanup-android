@@ -20,6 +20,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -70,20 +71,30 @@ import com.crisiscleanup.core.designsystem.theme.optionItemHeight
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.PersonContact
+import com.crisiscleanup.core.model.data.TeamWorksiteIds
 import com.crisiscleanup.core.model.data.UserRole
+import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.feature.team.ViewTeamViewModel
 import com.crisiscleanup.feature.team.WorksiteDistance
 
 @Composable
 fun ViewTeamRoute(
     onBack: () -> Unit,
-    onViewCase: () -> Unit = {},
+    onViewCase: (Long, Long) -> Boolean = { _, _ -> false },
     onOpenFlags: () -> Unit = {},
+    onAssignCaseTeam: (Long) -> Unit = {},
+    viewModel: ViewTeamViewModel = hiltViewModel(),
 ) {
+    val openAddFlagCounter by viewModel.openWorksiteAddFlagCounter.collectAsStateWithLifecycle()
+    LaunchedEffect(openAddFlagCounter) {
+        if (viewModel.takeOpenWorksiteAddFlag()) {
+            onOpenFlags()
+        }
+    }
     ViewTeamScreen(
         onBack,
         onViewCase,
-        onOpenFlags,
+        onAssignCaseTeam,
     )
 }
 
@@ -91,15 +102,16 @@ fun ViewTeamRoute(
 @Composable
 private fun ViewTeamScreen(
     onBack: () -> Unit,
-    onViewCase: () -> Unit = {},
-    onOpenFlags: () -> Unit = {},
+    onViewCase: (Long, Long) -> Boolean = { _, _ -> false },
+    onAssignCaseTeam: (Long) -> Unit = {},
     viewModel: ViewTeamViewModel = hiltViewModel(),
 ) {
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val isSaving by viewModel.isSaving.collectAsStateWithLifecycle()
+    val isPendingCaseAction by viewModel.isPendingCaseAction.collectAsStateWithLifecycle()
     val isBusy = isLoading || isSaving
 
-    val isEditable = !isBusy
+    val isEditable = !(isBusy || isPendingCaseAction)
 
     val title = viewModel.headerTitle
 
@@ -116,6 +128,17 @@ private fun ViewTeamScreen(
     val setPhoneNumberList = remember(viewModel) {
         { list: List<ParsedPhoneNumber> ->
             phoneNumberList = list
+        }
+    }
+
+    val onCaseSelect = remember(viewModel) {
+        { worksite: Worksite ->
+            onViewCase(worksite.incidentId, worksite.id)
+        }
+    }
+    val assignCaseTeam = remember(viewModel) {
+        { worksite: Worksite ->
+            onAssignCaseTeam(worksite.id)
         }
     }
 
@@ -137,9 +160,11 @@ private fun ViewTeamScreen(
                 isSyncing = isSyncing,
                 isPendingSync = isPendingSync,
                 scheduleSync = viewModel::scheduleSync,
-                onViewCase = onViewCase,
-                onOpenFlags = onOpenFlags,
+                onViewCase = onCaseSelect,
+                onOpenFlags = viewModel::onOpenCaseFlags,
+                onAssignCaseTeam = assignCaseTeam,
                 showPhoneNumbers = setPhoneNumberList,
+                onGroupUnassign = viewModel::onGroupUnassign,
             )
         }
 
@@ -215,9 +240,11 @@ private fun ViewTeamContent(
     scheduleSync: () -> Unit,
     onEditTeamMembers: () -> Unit = {},
     onEditCases: () -> Unit = {},
-    onViewCase: () -> Unit = {},
-    onOpenFlags: () -> Unit = {},
+    onViewCase: (Worksite) -> Boolean = { _ -> false },
+    onOpenFlags: (Worksite) -> Unit = {},
+    onAssignCaseTeam: (Worksite) -> Unit = {},
     showPhoneNumbers: (List<ParsedPhoneNumber>) -> Unit = {},
+    onGroupUnassign: (CleanupTeam, Worksite) -> Unit = { _, _ -> },
 ) {
     val t = LocalAppTranslator.current
 
@@ -288,11 +315,16 @@ private fun ViewTeamContent(
             contentType = { "worksite-item" },
         ) {
             TeamWorksiteView(
+                team,
                 it,
                 onViewCase = onViewCase,
                 onOpenFlags = onOpenFlags,
                 isEditable = isEditable,
+                // TODO Set and consider assigning/unassigning team Worksites
+                // transientTeamWorksiteAssignments = ,
                 showPhoneNumbers = showPhoneNumbers,
+                onAssignTeam = onAssignCaseTeam,
+                onGroupUnassign = onGroupUnassign,
             )
         }
 
@@ -526,31 +558,36 @@ private fun TeamMemberOverflowMenu(
 
 @Composable
 private fun TeamWorksiteView(
+    team: CleanupTeam,
     worksiteDistance: WorksiteDistance,
-    onViewCase: () -> Unit = {},
-    onOpenFlags: () -> Unit = {},
+    onViewCase: (Worksite) -> Boolean = { _ -> false },
+    onOpenFlags: (Worksite) -> Unit = {},
     isEditable: Boolean = false,
+    transientTeamWorksiteAssignments: Set<TeamWorksiteIds> = emptySet(),
     showPhoneNumbers: (List<ParsedPhoneNumber>) -> Unit = {},
-    onGroupUnassign: () -> Unit = {},
+    onAssignTeam: (Worksite) -> Unit = {},
+    onGroupUnassign: (CleanupTeam, Worksite) -> Unit = { _, _ -> },
 ) {
     val worksite = worksiteDistance.worksite
     val distance = worksiteDistance.distanceMiles
+    val teamWorksite = TeamWorksiteIds(team.id, worksite.id)
 
     CardSurface {
         CaseTableItem(
             worksite,
             distance,
             listItemModifier,
-            onViewCase = onViewCase,
-            onOpenFlags = onOpenFlags,
+            onViewCase = { onViewCase(worksite) },
+            onOpenFlags = { onOpenFlags(worksite) },
+            onAssignToTeam = { onAssignTeam(worksite) },
             isEditable = isEditable,
             showPhoneNumbers = showPhoneNumbers,
         ) {
             Spacer(Modifier.weight(1f))
 
             CrisisCleanupOutlinedButton(
-                onClick = onGroupUnassign,
-                enabled = isEditable,
+                onClick = { onGroupUnassign(team, worksite) },
+                enabled = isEditable && !transientTeamWorksiteAssignments.contains(teamWorksite),
                 contentPadding = tableItemContentPadding,
             ) {
                 Text(

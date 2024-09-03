@@ -44,3 +44,8 @@ data class PersonEquipment(
     val equipment: CleanupEquipment,
     val count: Int = 1,
 )
+
+data class TeamWorksiteIds(
+    val teamId: Long,
+    val worksiteId: Long,
+)

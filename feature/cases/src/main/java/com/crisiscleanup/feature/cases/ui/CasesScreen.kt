@@ -110,6 +110,7 @@ internal fun CasesRoute(
     viewCase: (Long, Long) -> Boolean = { _, _ -> false },
     openAddFlag: () -> Unit = {},
     openTransferWorkType: () -> Unit = {},
+    onAssignCaseTeam: (Long) -> Unit = {},
 ) {
     val openAddFlagCounter by viewModel.openWorksiteAddFlagCounter.collectAsStateWithLifecycle()
     LaunchedEffect(openAddFlagCounter) {
@@ -225,6 +226,7 @@ internal fun CasesRoute(
             editedWorksiteLocation = editedWorksiteLocation,
             isMyLocationEnabled = isMyLocationEnabled,
             onTableItemSelect = onTableItemSelect,
+            onAssignCaseTeam = onAssignCaseTeam,
             onSyncDataDelta = onSyncDataDelta,
             onSyncDataFull = onSyncDataFull,
             hasIncidents = hasIncidents,
@@ -373,6 +375,7 @@ internal fun CasesScreen(
     editedWorksiteLocation: LatLng? = null,
     isMyLocationEnabled: Boolean = false,
     onTableItemSelect: (Worksite) -> Unit = {},
+    onAssignCaseTeam: (Long) -> Unit = {},
     onSyncDataDelta: () -> Unit = {},
     onSyncDataFull: () -> Unit = {},
     hasIncidents: Boolean = false,
@@ -387,6 +390,7 @@ internal fun CasesScreen(
                 onCasesAction = onCasesAction,
                 filtersCount = filtersCount,
                 onTableItemSelect = onTableItemSelect,
+                onAssignCaseTeam = onAssignCaseTeam,
                 onSyncDataDelta = onSyncDataDelta,
                 onSyncDataFull = onSyncDataFull,
                 hasIncidents = hasIncidents,

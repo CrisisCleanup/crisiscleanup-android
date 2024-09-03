@@ -23,7 +23,5 @@ class MemoryWorksiteProvider @Inject constructor() : WorksiteProvider {
 interface WorksiteProviderModule {
     @Binds
     @Singleton
-    fun bindsWorksiteProvider(
-        provider: MemoryWorksiteProvider,
-    ): WorksiteProvider
+    fun bindsWorksiteProvider(provider: MemoryWorksiteProvider): WorksiteProvider
 }

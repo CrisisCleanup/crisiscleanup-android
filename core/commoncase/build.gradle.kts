@@ -10,6 +10,7 @@ android {
 dependencies {
     api(projects.core.common)
     implementation(projects.core.commonassets)
+    implementation(projects.core.data)
     implementation(projects.core.designsystem)
     implementation(projects.core.model)
     implementation(projects.core.ui)
