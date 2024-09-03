@@ -20,6 +20,8 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.radians
 import com.crisiscleanup.core.common.sync.SyncPusher
+import com.crisiscleanup.core.commoncase.CaseFlagsNavigationState
+import com.crisiscleanup.core.commoncase.WorksiteProvider
 import com.crisiscleanup.core.data.IncidentRefresher
 import com.crisiscleanup.core.data.LanguageRefresher
 import com.crisiscleanup.core.data.OrganizationRefresher
@@ -30,8 +32,10 @@ import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.TeamChangeRepository
 import com.crisiscleanup.core.data.repository.TeamsRepository
 import com.crisiscleanup.core.data.repository.UsersRepository
+import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.model.data.CleanupTeam
+import com.crisiscleanup.core.model.data.TeamWorksiteIds
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.feature.team.navigation.ViewTeamArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -57,6 +61,7 @@ class ViewTeamViewModel @Inject constructor(
     incidentsRepository: IncidentsRepository,
     incidentRefresher: IncidentRefresher,
     worksitesRepository: WorksitesRepository,
+    worksiteChangeRepository: WorksiteChangeRepository,
     accountDataRefresher: AccountDataRefresher,
     organizationRefresher: OrganizationRefresher,
     userRoleRefresher: UserRoleRefresher,
@@ -64,6 +69,7 @@ class ViewTeamViewModel @Inject constructor(
     private val teamChangeRepository: TeamChangeRepository,
     private val editableTeamProvider: EditableTeamProvider,
     usersRepository: UsersRepository,
+    worksiteProvider: WorksiteProvider,
     private val syncPusher: SyncPusher,
     permissionManager: PermissionManager,
     locationProvider: LocationProvider,
@@ -106,6 +112,24 @@ class ViewTeamViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = 0L,
+            started = ReplaySubscribed3,
+        )
+
+    private val flagsNavigationState = CaseFlagsNavigationState(
+        worksiteChangeRepository,
+        worksitesRepository,
+        worksiteProvider,
+        viewModelScope,
+        ioDispatcher,
+    )
+    val openWorksiteAddFlagCounter = flagsNavigationState.openWorksiteAddFlagCounter
+
+    // TODO Consider group assign and unassign
+    val isPendingCaseAction = flagsNavigationState.isLoadingFlagsWorksite
+        .map { b0 -> b0 }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
             started = ReplaySubscribed3,
         )
 
@@ -209,6 +233,16 @@ class ViewTeamViewModel @Inject constructor(
         } else {
             ""
         }
+    }
+
+    fun onOpenCaseFlags(worksite: Worksite) = flagsNavigationState.onOpenCaseFlags(worksite)
+
+    fun takeOpenWorksiteAddFlag() = flagsNavigationState.takeOpenWorksiteAddFlag()
+
+    fun onGroupUnassign(team: CleanupTeam, worksite: Worksite) {
+        // TODO Change team unassign all assigned work
+        val teamWorksite = TeamWorksiteIds(team.id, worksite.id)
+        logger.logDebug("Unassign work ${worksite.workTypes} from Team $teamWorksite")
     }
 
     fun scheduleSync() {

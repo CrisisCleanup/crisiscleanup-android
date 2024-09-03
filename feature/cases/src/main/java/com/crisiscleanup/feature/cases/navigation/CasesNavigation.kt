@@ -23,6 +23,7 @@ fun NavGraphBuilder.casesGraph(
     viewCase: (Long, Long) -> Boolean = { _, _ -> false },
     caseAddFlag: () -> Unit = {},
     caseTransferWorkType: () -> Unit = {},
+    openAssignCaseTeam: (Long) -> Unit = {},
 ) {
     navigation(
         route = CASES_GRAPH_ROUTE,
@@ -46,6 +47,7 @@ fun NavGraphBuilder.casesGraph(
                 viewCase = viewCase,
                 openAddFlag = caseAddFlag,
                 openTransferWorkType = caseTransferWorkType,
+                onAssignCaseTeam = openAssignCaseTeam,
             )
         }
 
