@@ -3,6 +3,9 @@ package com.crisiscleanup.core.commoncase.ui
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -27,12 +30,15 @@ import com.crisiscleanup.core.commoncase.R
 import com.crisiscleanup.core.commoncase.model.addressQuery
 import com.crisiscleanup.core.commoncase.oneDecimalFormat
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.WorksiteAddressButton
 import com.crisiscleanup.core.designsystem.component.WorksiteAddressView
 import com.crisiscleanup.core.designsystem.component.WorksiteCallButton
 import com.crisiscleanup.core.designsystem.component.WorksiteNameView
+import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
+import com.crisiscleanup.core.designsystem.theme.listItemCenterSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.model.data.Worksite
 
@@ -101,14 +107,42 @@ private fun CaseFlagNumber(
 }
 
 @Composable
+private fun WorksiteAssignTeamButton(
+    isEditable: Boolean,
+    onAssignToTeam: () -> Unit,
+) {
+    CrisisCleanupButton(
+        onClick = onAssignToTeam,
+        enabled = isEditable,
+    ) {
+        Icon(
+            imageVector = CrisisCleanupIcons.AssignToTeam,
+            contentDescription = LocalAppTranslator.current("~~Assign Case to team"),
+            modifier = Modifier.testTag("assignCaseToTeamAction"),
+        )
+    }
+}
+
+val tableItemContentPadding = PaddingValues(
+    // TODO Common dimensions
+    horizontal = 16.dp,
+    vertical = 8.dp,
+)
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
 fun CaseTableItem(
     worksite: Worksite,
     distance: Double,
     modifier: Modifier = Modifier,
     onViewCase: () -> Unit = {},
     onOpenFlags: () -> Unit = {},
+    // TODO Add to team opens team select screen/dialog
+    onAssignToTeam: () -> Unit = {},
     isEditable: Boolean = false,
     showPhoneNumbers: (List<ParsedPhoneNumber>) -> Unit = {},
+    buttonContentPadding: PaddingValues = tableItemContentPadding,
+    contentRowContent: @Composable () -> Unit = {},
     bottomRowTrailingContent: @Composable RowScope.() -> Unit = {},
 ) {
     val (fullAddress, geoQuery, locationQuery) = worksite.addressQuery
@@ -129,6 +163,8 @@ fun CaseTableItem(
             onOpenFlags,
         )
 
+        contentRowContent()
+
         WorksiteNameView(worksite.name)
 
         WorksiteAddressView(fullAddress) {
@@ -137,14 +173,15 @@ fun CaseTableItem(
             }
         }
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
+        FlowRow(
+            verticalArrangement = listItemCenterSpacedByHalf,
             horizontalArrangement = listItemSpacedBy,
         ) {
             WorksiteCallButton(
                 phone1 = worksite.phone1,
                 phone2 = worksite.phone2,
                 enable = isEditable,
+                contentPadding = buttonContentPadding,
                 onShowPhoneNumbers = showPhoneNumbers,
             )
 
@@ -152,9 +189,13 @@ fun CaseTableItem(
                 geoQuery = geoQuery,
                 locationQuery = locationQuery,
                 isEditable = isEditable,
+                contentPadding = buttonContentPadding,
             )
 
-            // TODO Add to team opens team select screen/dialog
+            WorksiteAssignTeamButton(
+                isEditable,
+                onAssignToTeam,
+            )
 
             bottomRowTrailingContent()
         }

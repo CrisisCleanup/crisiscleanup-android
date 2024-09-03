@@ -1,6 +1,8 @@
 package com.crisiscleanup.core.designsystem.component
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -66,6 +68,7 @@ fun WorksiteCallButton(
     phone1: String,
     phone2: String,
     enable: Boolean,
+    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
     onShowPhoneNumbers: (List<ParsedPhoneNumber>) -> Unit,
 ) {
     val context = LocalContext.current
@@ -80,6 +83,7 @@ fun WorksiteCallButton(
             }
         },
         enabled = enableCall,
+        contentPadding = contentPadding,
     ) {
         Icon(
             imageVector = CrisisCleanupIcons.Phone,
@@ -94,6 +98,7 @@ fun WorksiteAddressButton(
     geoQuery: String,
     locationQuery: String,
     isEditable: Boolean,
+    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
 ) {
     val context = LocalContext.current
     CrisisCleanupOutlinedButton(
@@ -102,6 +107,7 @@ fun WorksiteAddressButton(
             context.openMaps(query)
         },
         enabled = isEditable && geoQuery.isNotBlank(),
+        contentPadding = contentPadding,
     ) {
         Icon(
             imageVector = CrisisCleanupIcons.Directions,

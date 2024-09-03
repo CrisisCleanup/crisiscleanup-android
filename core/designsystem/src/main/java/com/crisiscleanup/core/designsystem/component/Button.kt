@@ -2,6 +2,7 @@ package com.crisiscleanup.core.designsystem.component
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -207,6 +208,7 @@ fun CrisisCleanupOutlinedButton(
     borderColor: Color = LocalContentColor.current,
     fontWeight: FontWeight? = null,
     style: TextStyle = LocalFontStyles.current.header4,
+    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
     trailingContent: (@Composable () -> Unit)? = null,
 ) {
     val border = BorderStroke(
@@ -220,6 +222,7 @@ fun CrisisCleanupOutlinedButton(
         enabled = enabled,
         shape = roundedRectangleButtonShape(),
         border = border,
+        contentPadding = contentPadding,
     ) {
         if (buttonText.isNotBlank()) {
             Text(

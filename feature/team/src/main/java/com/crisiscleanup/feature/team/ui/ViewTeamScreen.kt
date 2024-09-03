@@ -45,11 +45,13 @@ import com.crisiscleanup.core.common.openEmail
 import com.crisiscleanup.core.common.openSms
 import com.crisiscleanup.core.commoncase.ui.CaseTableItem
 import com.crisiscleanup.core.commoncase.ui.SyncStatusView
+import com.crisiscleanup.core.commoncase.ui.tableItemContentPadding
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.AvatarIcon
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CardSurface
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupOutlinedButton
 import com.crisiscleanup.core.designsystem.component.HelpDialog
 import com.crisiscleanup.core.designsystem.component.PhoneCallDialog
 import com.crisiscleanup.core.designsystem.component.TopBarBackAction
@@ -529,6 +531,7 @@ private fun TeamWorksiteView(
     onOpenFlags: () -> Unit = {},
     isEditable: Boolean = false,
     showPhoneNumbers: (List<ParsedPhoneNumber>) -> Unit = {},
+    onGroupUnassign: () -> Unit = {},
 ) {
     val worksite = worksiteDistance.worksite
     val distance = worksiteDistance.distanceMiles
@@ -543,7 +546,17 @@ private fun TeamWorksiteView(
             isEditable = isEditable,
             showPhoneNumbers = showPhoneNumbers,
         ) {
-            // TODO Unassign Case from team
+            Spacer(Modifier.weight(1f))
+
+            CrisisCleanupOutlinedButton(
+                onClick = onGroupUnassign,
+                enabled = isEditable,
+                contentPadding = tableItemContentPadding,
+            ) {
+                Text(
+                    LocalAppTranslator.current("~~Unassign"),
+                )
+            }
         }
     }
 }
