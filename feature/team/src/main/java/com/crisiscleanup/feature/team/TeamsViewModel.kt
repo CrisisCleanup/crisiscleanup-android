@@ -1,5 +1,6 @@
 package com.crisiscleanup.feature.team
 
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.appcomponent.AppTopBarDataProvider
@@ -41,6 +42,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
@@ -138,6 +140,9 @@ class TeamsViewModel @Inject constructor(
 
     val isLoading = viewState.map { it == TeamsViewState.Loading }
 
+    val teamCaseCount = SnapshotStateMap<Long, Int>()
+    private val teamCaseCountQuery = ConcurrentHashMap<Long, Boolean>()
+
     init {
         viewState
             .debounce(1.seconds)
@@ -175,6 +180,36 @@ class TeamsViewModel @Inject constructor(
     suspend fun refreshTeams() = viewModelScope.launch(ioDispatcher) {
         equipmentRepository.saveEquipment(true)
         teamsRepository.syncTeams(incidentSelector.incidentId.value)
+    }
+
+    fun queryTeamCaseCount(team: CleanupTeam) {
+        val teamId = team.id
+        if (teamCaseCount.contains(teamId)) {
+            return
+        }
+
+        synchronized(teamCaseCountQuery) {
+            if (teamCaseCountQuery.contains(teamId)) {
+                return
+            }
+            teamCaseCountQuery[teamId] = true
+        }
+        viewModelScope.launch(ioDispatcher) {
+            try {
+                val workTypeNetworkIds = team.workTypeNetworkIds
+                val caseCount = teamsRepository.getWorkTypeWorksiteLookup(workTypeNetworkIds)
+                    .map { it.value }
+                    .toSet()
+                    .size
+                teamCaseCount[teamId] = caseCount
+
+                synchronized(teamCaseCountQuery) {
+                    teamCaseCountQuery.remove(teamId)
+                }
+            } catch (e: Exception) {
+                logger.logException(e)
+            }
+        }
     }
 }
 
