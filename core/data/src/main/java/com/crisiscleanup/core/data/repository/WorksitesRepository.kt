@@ -73,7 +73,7 @@ interface WorksitesRepository {
 
     suspend fun syncNetworkWorksite(networkWorksiteId: Long)
 
-    suspend fun syncNetworkWorksites(networkIds: List<Long>)
+    suspend fun syncNetworkWorksites(networkIds: Collection<Long>)
 
     suspend fun pullWorkTypeRequests(networkWorksiteId: Long)
 

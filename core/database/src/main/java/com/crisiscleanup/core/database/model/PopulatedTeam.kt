@@ -29,6 +29,12 @@ data class PopulatedTeam(
     @Relation(
         parentColumn = "id",
         entityColumn = "id",
+    )
+    val workTypes: List<TeamWorkEntity>,
+
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "id",
         associateBy = Junction(
             value = TeamEquipmentCrossRef::class,
             parentColumn = "team_id",
@@ -46,10 +52,13 @@ fun PopulatedTeam.asExternalModel() = with(entity) {
         colorInt = color.hexColorToIntColor(),
         notes = notes,
         incidentId = incidentId,
+        // TODO Review this value as it should be Case not Work type count
         caseCount = caseCount,
-        caseCompleteCount = completeCount,
+        // TODO Use Case complete count not work type complete count
+        caseCompleteCount = 0,
         memberIds = memberIdRefs.map(TeamMemberCrossRef::contactId),
         members = members.asExternalModelSorted(),
+        workTypeNetworkIds = workTypes.map(TeamWorkEntity::workTypeNetworkId),
         equipment = equipments.map { equipmentFromLiteral(it.nameKey) },
     )
 }

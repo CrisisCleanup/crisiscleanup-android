@@ -112,6 +112,12 @@ private fun TeamsScreen(
             if (viewState is TeamsViewState.Success) {
                 val successState = viewState as TeamsViewState.Success
                 val incidentTeams = successState.teams
+                val queryTeamInfo = remember(viewModel) {
+                    { team: CleanupTeam ->
+                        viewModel.queryTeamCaseCount(team)
+                    }
+                }
+                val teamCaseCount = viewModel.teamCaseCount
                 val listState = rememberLazyListState()
                 LazyColumn(
                     modifier = Modifier
@@ -148,8 +154,10 @@ private fun TeamsScreen(
                             key = { it.id },
                             contentType = { "team-item" },
                         ) {
+                            queryTeamInfo(it)
                             TeamView(
                                 it,
+                                teamCaseCount[it.id],
                                 profilePictureLookup,
                                 openViewTeam,
                             )
@@ -200,8 +208,10 @@ private fun TeamsScreen(
                             key = { it.id },
                             contentType = { "team-item" },
                         ) {
+                            queryTeamInfo(it)
                             TeamView(
                                 it,
+                                teamCaseCount[it.id],
                                 profilePictureLookup,
                                 openViewTeam,
                             )
@@ -286,6 +296,7 @@ internal fun TeamCaseCompleteView(
 @Composable
 internal fun TeamView(
     team: CleanupTeam,
+    caseCount: Int?,
     profilePictureLookup: Map<Long, String>,
     openViewTeam: (Long, Long) -> Unit = { _, _ -> },
 ) {
@@ -311,16 +322,17 @@ internal fun TeamView(
                 )
             }
 
-            val caseCount = team.caseCount
-            Row(horizontalArrangement = listItemSpacedBy) {
-                val caseCountTranslateKey =
-                    if (caseCount == 1) "teams.one_case" else "teams.case_count_cases"
-                Text(
-                    t(caseCountTranslateKey)
-                        .replace("{case_count}", "$caseCount"),
-                )
+            caseCount?.let {
+                Row(horizontalArrangement = listItemSpacedBy) {
+                    val caseCountTranslateKey =
+                        if (it == 1) "teams.one_case" else "teams.case_count_cases"
+                    Text(
+                        t(caseCountTranslateKey)
+                            .replace("{case_count}", "$it"),
+                    )
 
-                TeamCaseCompleteView(team)
+                    TeamCaseCompleteView(team)
+                }
             }
 
             val memberCount = team.members.size

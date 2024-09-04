@@ -6,6 +6,7 @@ data class CleanupTeam(
     val name: String,
     val colorInt: Int,
     val notes: String,
+    // TODO Count, open count, and complete percentage need to be re-evaluated using Worksites not WorkTypes
     val caseCount: Int,
     private val caseCompleteCount: Int,
     val openCaseCount: Int = caseCount - caseCompleteCount,
@@ -20,7 +21,7 @@ data class CleanupTeam(
     val members: List<PersonContact>,
     val equipment: List<CleanupEquipment> = emptyList(),
     val memberEquipment: List<MemberEquipment> = emptyList(),
-    private val workTypeIds: List<Long> = emptyList(),
+    val workTypeNetworkIds: List<Long> = emptyList(),
     val worksites: List<Worksite> = emptyList(),
     val missingWorkTypeCount: Int = 0,
 )

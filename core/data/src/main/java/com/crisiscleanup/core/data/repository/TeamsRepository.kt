@@ -31,6 +31,8 @@ interface TeamsRepository {
 
     fun streamLocalTeam(teamId: Long): Flow<LocalTeam?>
 
+    suspend fun getWorkTypeWorksiteLookup(workTypeNetworkIds: Collection<Long>): Map<Long, Long>
+
     suspend fun syncNetworkTeam(
         team: NetworkTeam,
         syncedAt: Instant = Clock.System.now(),
@@ -90,6 +92,25 @@ class CrisisCleanupTeamsRepository @Inject constructor(
                 .associate { it.first to it.second }
             team?.asExternalModel(memberEquipment, worksites, workIdLookup)
         }
+
+    override suspend fun getWorkTypeWorksiteLookup(workTypeNetworkIds: Collection<Long>): Map<Long, Long> {
+        try {
+            val idLookup = worksiteDao.getWorkTypeWorksites(workTypeNetworkIds)
+                .associate { it.networkId to it.worksiteId }
+                .toMutableMap()
+            val queryWorkTypeIds = workTypeNetworkIds.filter { !idLookup.contains(it) }
+            val networkIdLookup = networkDataSource.getWorkTypeWorksiteLookup(queryWorkTypeIds)
+            val missingWorksiteIds = networkIdLookup.map { it.value }.toSet()
+            for (entry in networkIdLookup) {
+                idLookup[entry.key] = entry.value
+            }
+            worksitesRepository.syncNetworkWorksites(missingWorksiteIds)
+            return idLookup
+        } catch (e: Exception) {
+            logger.logException(e)
+        }
+        return emptyMap()
+    }
 
     private suspend fun syncTeams(
         networkTeams: List<NetworkTeam>,
