@@ -16,7 +16,8 @@ fun NetworkTeam.asEntity(): TeamEntity {
         name = name,
         notes = notes ?: "",
         color = color,
-        caseCount = assignedWork?.size ?: 0,
-        completeCount = completeCount,
+        // TODO Case count not work count. Update when Worksite ID is included in assigned Work.
+        caseCount = 0,
+        completeCount = 0,
     )
 }
