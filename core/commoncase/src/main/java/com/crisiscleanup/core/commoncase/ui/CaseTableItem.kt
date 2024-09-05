@@ -42,12 +42,15 @@ import com.crisiscleanup.core.designsystem.theme.listItemCenterSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.model.data.Worksite
 
+val caseItemTopRowHorizontalContentOffset = (-14).dp
+
 @Composable
-private fun CaseFlagNumber(
+private fun FlagCaseNumberDistance(
     worksite: Worksite,
     distance: Double,
     isEditable: Boolean,
     onOpenFlags: () -> Unit,
+    innerContent: (@Composable () -> Unit)? = null,
 ) {
     val t = LocalAppTranslator.current
 
@@ -64,7 +67,8 @@ private fun CaseFlagNumber(
                 .clickable(
                     onClick = onOpenFlags,
                     enabled = isEditable,
-                ),
+                )
+                .testTag("caseItemFlagAction"),
             contentAlignment = Alignment.Center,
         ) {
             val tint = LocalContentColor.current
@@ -72,16 +76,17 @@ private fun CaseFlagNumber(
                 painterResource(R.drawable.ic_flag_filled_small),
                 contentDescription = t("nav.flag"),
                 tint = if (isEditable) tint else tint.disabledAlpha(),
-                modifier = Modifier.testTag("tableViewItemFlagIcon"),
             )
         }
         Text(
             worksite.caseNumber,
             modifier = Modifier
-                .testTag("tableViewItemCaseNumText")
-                .offset(x = (-14).dp),
+                .testTag("caseItemCaseNumberText")
+                .offset(x = caseItemTopRowHorizontalContentOffset),
             style = LocalFontStyles.current.header3,
         )
+
+        innerContent?.invoke()
 
         Spacer(modifier = Modifier.weight(1f))
 
@@ -91,7 +96,7 @@ private fun CaseFlagNumber(
                 Text(
                     distanceText,
                     modifier = Modifier
-                        .testTag("tableViewItemMilesAwayText")
+                        .testTag("caseItemDistanceText")
                         .padding(end = 4.dp),
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Bold,
@@ -99,7 +104,7 @@ private fun CaseFlagNumber(
                 Text(
                     t("caseView.miles_abbrv"),
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.testTag("tableViewItemMilesAbbrev"),
+                    modifier = Modifier.testTag("caseItemMilesAbbr"),
                 )
             }
         }
@@ -142,7 +147,8 @@ fun CaseTableItem(
     isEditable: Boolean = false,
     showPhoneNumbers: (List<ParsedPhoneNumber>) -> Unit = {},
     buttonContentPadding: PaddingValues = tableItemContentPadding,
-    contentRowContent: @Composable () -> Unit = {},
+    upperContent: @Composable () -> Unit = {},
+    isUpperContentAtTop: Boolean = false,
     bottomRowTrailingContent: @Composable RowScope.() -> Unit = {},
 ) {
     val (fullAddress, geoQuery, locationQuery) = worksite.addressQuery
@@ -156,14 +162,17 @@ fun CaseTableItem(
             .then(modifier),
         verticalArrangement = listItemSpacedBy,
     ) {
-        CaseFlagNumber(
+        FlagCaseNumberDistance(
             worksite,
             distance,
             isEditable,
             onOpenFlags,
+            if (isUpperContentAtTop) upperContent else null,
         )
 
-        contentRowContent()
+        if (!isUpperContentAtTop) {
+            upperContent()
+        }
 
         WorksiteNameView(worksite.name)
 
