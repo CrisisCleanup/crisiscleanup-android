@@ -3,6 +3,8 @@ package com.crisiscleanup.feature.team
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -34,6 +36,7 @@ import com.crisiscleanup.core.data.repository.TeamsRepository
 import com.crisiscleanup.core.data.repository.UsersRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
+import com.crisiscleanup.core.mapmarker.WorkTypeChipIconProvider
 import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.TeamWorksiteIds
 import com.crisiscleanup.core.model.data.Worksite
@@ -44,6 +47,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -70,6 +74,7 @@ class ViewTeamViewModel @Inject constructor(
     private val editableTeamProvider: EditableTeamProvider,
     usersRepository: UsersRepository,
     worksiteProvider: WorksiteProvider,
+    workTypeChipIconProvider: WorkTypeChipIconProvider,
     private val syncPusher: SyncPusher,
     permissionManager: PermissionManager,
     locationProvider: LocationProvider,
@@ -133,6 +138,9 @@ class ViewTeamViewModel @Inject constructor(
             started = ReplaySubscribed3,
         )
 
+    var worksiteWorkTypeIconLookup by mutableStateOf(emptyMap<Long, List<ImageBitmap>>())
+        private set
+
     init {
         updateHeaderTitle()
 
@@ -160,11 +168,27 @@ class ViewTeamViewModel @Inject constructor(
         )
 
         dataLoader.teamStream
+            .filterNotNull()
             .onEach {
-                it?.let { cachedTeam ->
-                    updateHeaderTitle(cachedTeam.team.name)
+                updateHeaderTitle(it.team.name)
+            }
+            .launchIn(viewModelScope)
+
+        dataLoader.teamStream
+            .mapNotNull { it?.team?.worksites }
+            .onEach { worksites ->
+                worksiteWorkTypeIconLookup = worksites.associate { worksite ->
+                    val workTypeIcons = worksite.workTypes.mapNotNull {
+                        workTypeChipIconProvider.getIconBitmap(
+                            it.statusClaim,
+                            it.workType,
+                        )
+                            ?.asImageBitmap()
+                    }
+                    worksite.id to workTypeIcons
                 }
             }
+            .flowOn(ioDispatcher)
             .launchIn(viewModelScope)
 
         // TODO Are below necessary or leftover from copy-paste?
@@ -180,7 +204,6 @@ class ViewTeamViewModel @Inject constructor(
 
     val isLoading = dataLoader.isLoading
 
-    val viewState = dataLoader.viewState
     val isPendingSync = dataLoader.isPendingSync
     val profilePictureLookup = dataLoader.profilePictureLookup
     val userRoleLookup = dataLoader.userRoleLookup

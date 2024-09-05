@@ -74,16 +74,24 @@ private const val DUPLICATE_MARKER_ALPHA = 0.3f
 
 internal fun getMapMarkerColors(
     statusClaim: WorkTypeStatusClaim,
-    isDuplicate: Boolean,
-    isFilteredOut: Boolean,
-    isVisited: Boolean,
-    isDot: Boolean,
 ): MapMarkerColor {
     var colors = statusClaimMapMarkerColors[statusClaim]
     if (colors == null) {
         val status = statusClaimToStatus[statusClaim]
         colors = statusMapMarkerColors[status] ?: statusMapMarkerColors[Unknown]!!
     }
+
+    return colors
+}
+
+internal fun getMapMarkerColors(
+    statusClaim: WorkTypeStatusClaim,
+    isDuplicate: Boolean,
+    isFilteredOut: Boolean,
+    isVisited: Boolean,
+    isDot: Boolean,
+): MapMarkerColor {
+    var colors = getMapMarkerColors(statusClaim)
 
     if (isDuplicate) {
         colors = colors.copy(

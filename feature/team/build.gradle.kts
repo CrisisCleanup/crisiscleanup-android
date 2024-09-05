@@ -11,6 +11,7 @@ android {
 dependencies {
     implementation(projects.core.appComponent)
     implementation(projects.core.commoncase)
+    implementation(projects.core.mapmarker)
     implementation(projects.core.selectincident)
 
     implementation(libs.coil.kt.svg)

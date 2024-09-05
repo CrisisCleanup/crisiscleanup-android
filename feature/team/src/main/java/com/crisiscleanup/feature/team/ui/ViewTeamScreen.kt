@@ -1,12 +1,16 @@
 package com.crisiscleanup.feature.team.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
@@ -32,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -46,6 +51,7 @@ import com.crisiscleanup.core.common.openEmail
 import com.crisiscleanup.core.common.openSms
 import com.crisiscleanup.core.commoncase.ui.CaseTableItem
 import com.crisiscleanup.core.commoncase.ui.SyncStatusView
+import com.crisiscleanup.core.commoncase.ui.caseItemTopRowHorizontalContentOffset
 import com.crisiscleanup.core.commoncase.ui.tableItemContentPadding
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.AvatarIcon
@@ -62,6 +68,7 @@ import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.designsystem.theme.listItemBottomPadding
+import com.crisiscleanup.core.designsystem.theme.listItemCenterSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
@@ -156,6 +163,7 @@ private fun ViewTeamScreen(
                 profilePictureLookup,
                 userRoleLookup,
                 worksites,
+                viewModel.worksiteWorkTypeIconLookup,
                 isEditable = isEditable,
                 isSyncing = isSyncing,
                 isPendingSync = isPendingSync,
@@ -234,6 +242,7 @@ private fun ViewTeamContent(
     profilePictureLookup: Map<Long, String>,
     userRoleLookup: Map<Int, UserRole>,
     worksites: List<WorksiteDistance>,
+    worksiteWorkTypeIconLookup: Map<Long, List<ImageBitmap>>,
     isEditable: Boolean,
     isSyncing: Boolean,
     isPendingSync: Boolean,
@@ -317,6 +326,7 @@ private fun ViewTeamContent(
             TeamWorksiteView(
                 team,
                 it,
+                worksiteWorkTypeIconLookup[it.worksite.id] ?: emptyList(),
                 onViewCase = onViewCase,
                 onOpenFlags = onOpenFlags,
                 isEditable = isEditable,
@@ -558,10 +568,12 @@ private fun TeamMemberOverflowMenu(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TeamWorksiteView(
     team: CleanupTeam,
     worksiteDistance: WorksiteDistance,
+    workTypeIcons: List<ImageBitmap>,
     onViewCase: (Worksite) -> Boolean = { _ -> false },
     onOpenFlags: (Worksite) -> Unit = {},
     isEditable: Boolean = false,
@@ -574,6 +586,21 @@ private fun TeamWorksiteView(
     val distance = worksiteDistance.distanceMiles
     val teamWorksite = TeamWorksiteIds(team.id, worksite.id)
 
+    val workTypesRow = @Composable {
+        FlowRow(
+            Modifier.offset(x = caseItemTopRowHorizontalContentOffset),
+            verticalArrangement = listItemCenterSpacedByHalf,
+            horizontalArrangement = listItemSpacedByHalf,
+        ) {
+            workTypeIcons.forEach {
+                Image(
+                    it,
+                    // TODO Content descriptions
+                    contentDescription = null,
+                )
+            }
+        }
+    }
     CardSurface {
         CaseTableItem(
             worksite,
@@ -584,6 +611,9 @@ private fun TeamWorksiteView(
             onAssignToTeam = { onAssignTeam(worksite) },
             isEditable = isEditable,
             showPhoneNumbers = showPhoneNumbers,
+            upperContent = workTypesRow,
+            // TODO Adjust to view width
+            isUpperContentAtTop = workTypeIcons.size < 6,
         ) {
             Spacer(Modifier.weight(1f))
 
