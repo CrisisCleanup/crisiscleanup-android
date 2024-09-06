@@ -51,10 +51,8 @@ fun PopulatedTeam.asExternalModel() = with(entity) {
         name = name,
         colorInt = color.hexColorToIntColor(),
         notes = notes,
-        // TODO Review this value as it should be Case not Work type count
         caseCount = caseCount,
-        // TODO Use Case complete count not work type complete count
-        caseCompleteCount = 0,
+        caseCompleteCount = completeCount,
         incidentId = incidentId,
         memberIds = memberIdRefs.map(TeamMemberCrossRef::contactId),
         members = members.asExternalModelSorted(),

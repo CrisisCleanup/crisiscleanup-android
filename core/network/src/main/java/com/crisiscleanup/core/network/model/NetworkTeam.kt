@@ -18,10 +18,19 @@ data class NetworkTeam(
     val incident: Long,
     val users: List<Long>?,
     @SerialName("assigned_work_types")
-    val assignedWork: List<NetworkWorkType>?,
+    val assignedWork: List<NetworkTeamWork>?,
     @SerialName("user_equipment_map")
     val userEquipment: List<NetworkUserEquipment>,
     val color: String,
+)
+
+@Serializable
+data class NetworkTeamWork(
+    val id: Long,
+    val status: String,
+    @SerialName("work_type")
+    val workType: String,
+    val worksite: Long,
 )
 
 @Serializable

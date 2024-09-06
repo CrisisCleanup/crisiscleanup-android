@@ -165,6 +165,4 @@ interface CrisisCleanupNetworkDataSource {
     suspend fun getTeam(id: Long): NetworkTeam?
 
     suspend fun getNetworkUserRoles(): List<NetworkUserRole>
-
-    suspend fun getWorkTypeWorksiteLookup(workTypeIds: List<Long>): Map<Long, Long>
 }

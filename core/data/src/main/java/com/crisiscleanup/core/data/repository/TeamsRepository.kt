@@ -7,7 +7,7 @@ import com.crisiscleanup.core.common.split
 import com.crisiscleanup.core.data.model.asEntity
 import com.crisiscleanup.core.database.dao.TeamDao
 import com.crisiscleanup.core.database.dao.TeamDaoPlus
-import com.crisiscleanup.core.database.dao.WorksiteDao
+import com.crisiscleanup.core.database.dao.WorksiteWorkTypeIds
 import com.crisiscleanup.core.database.model.PopulatedTeam
 import com.crisiscleanup.core.database.model.PopulatedTeamMemberEquipment
 import com.crisiscleanup.core.database.model.PopulatedWorksite
@@ -16,8 +16,8 @@ import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.LocalTeam
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkTeam
+import com.crisiscleanup.core.network.model.NetworkTeamWork
 import com.crisiscleanup.core.network.model.NetworkUserEquipment
-import com.crisiscleanup.core.network.model.NetworkWorkType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
@@ -31,8 +31,6 @@ interface TeamsRepository {
 
     fun streamLocalTeam(teamId: Long): Flow<LocalTeam?>
 
-    suspend fun getWorkTypeWorksiteLookup(workTypeNetworkIds: Collection<Long>): Map<Long, Long>
-
     suspend fun syncNetworkTeam(
         team: NetworkTeam,
         syncedAt: Instant = Clock.System.now(),
@@ -43,7 +41,6 @@ interface TeamsRepository {
 
 class CrisisCleanupTeamsRepository @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,
-    private val worksiteDao: WorksiteDao,
     private val teamDao: TeamDao,
     private val teamDaoPlus: TeamDaoPlus,
     private val accountDataRepository: AccountDataRepository,
@@ -93,25 +90,6 @@ class CrisisCleanupTeamsRepository @Inject constructor(
             team?.asExternalModel(memberEquipment, worksites, workIdLookup)
         }
 
-    override suspend fun getWorkTypeWorksiteLookup(workTypeNetworkIds: Collection<Long>): Map<Long, Long> {
-        try {
-            val idLookup = worksiteDao.getWorkTypeWorksites(workTypeNetworkIds)
-                .associate { it.networkId to it.worksiteId }
-                .toMutableMap()
-            val queryWorkTypeIds = workTypeNetworkIds.filter { !idLookup.contains(it) }
-            val networkIdLookup = networkDataSource.getWorkTypeWorksiteLookup(queryWorkTypeIds)
-            val missingWorksiteIds = networkIdLookup.map { it.value }.toSet()
-            for (entry in networkIdLookup) {
-                idLookup[entry.key] = entry.value
-            }
-            worksitesRepository.syncNetworkWorksites(missingWorksiteIds)
-            return idLookup
-        } catch (e: Exception) {
-            logger.logException(e)
-        }
-        return emptyMap()
-    }
-
     private suspend fun syncTeams(
         networkTeams: List<NetworkTeam>,
         syncedAt: Instant,
@@ -119,7 +97,7 @@ class CrisisCleanupTeamsRepository @Inject constructor(
         val teamEntities = networkTeams.map(NetworkTeam::asEntity)
         val teamMemberLookup = mutableMapOf<Long, List<Long>>()
         val teamEquipmentLookup = mutableMapOf<Long, Set<Long>>()
-        val teamWorkTypeLookup = mutableMapOf<Long, List<Long>>()
+        val teamWorkLookup = mutableMapOf<Long, List<WorksiteWorkTypeIds>>()
         val memberEquipmentLookup = mutableMapOf<Long, MutableSet<Long>>()
         networkTeams.forEach { networkTeam ->
             val teamId = networkTeam.id
@@ -128,8 +106,7 @@ class CrisisCleanupTeamsRepository @Inject constructor(
             teamEquipmentLookup[teamId] =
                 networkTeam.userEquipment.flatMap(NetworkUserEquipment::equipmentIds).toSet()
 
-            teamWorkTypeLookup[teamId] =
-                networkTeam.assignedWork?.mapNotNull(NetworkWorkType::id) ?: emptyList()
+            teamWorkLookup[teamId] = networkTeam.assignedWork?.mapWorkIds() ?: emptyList()
 
             networkTeam.userEquipment.forEach { userEquipment ->
                 if (!memberEquipmentLookup.contains(userEquipment.userId)) {
@@ -142,7 +119,7 @@ class CrisisCleanupTeamsRepository @Inject constructor(
             teamEntities,
             teamMemberLookup,
             teamEquipmentLookup,
-            teamWorkTypeLookup,
+            teamWorkLookup,
             memberEquipmentLookup,
             syncedAt,
         )
@@ -180,7 +157,7 @@ class CrisisCleanupTeamsRepository @Inject constructor(
     ): Boolean {
         val teamMembers = team.users ?: emptyList()
         val teamEquipment = team.userEquipment.flatMap(NetworkUserEquipment::equipmentIds).toSet()
-        val teamWork = team.assignedWork?.mapNotNull(NetworkWorkType::id) ?: emptyList()
+        val teamWork = team.assignedWork?.mapWorkIds() ?: emptyList()
         val memberEquipmentLookup = team.userEquipment.associate { userEquipment ->
             userEquipment.userId to userEquipment.equipmentIds
         }
@@ -198,19 +175,10 @@ class CrisisCleanupTeamsRepository @Inject constructor(
     }
 
     private suspend fun pullWorksites(
-        workTypes: List<NetworkWorkType>,
-        filterLocal: Boolean = false,
+        workTypes: List<NetworkTeamWork>,
     ) {
         try {
-            val workTypeNetworkIds = workTypes.mapNotNull { it.id }
-            var queryWorkTypeIds = workTypeNetworkIds
-            if (filterLocal) {
-                val idLookup = worksiteDao.getWorkTypeWorksites(workTypeNetworkIds)
-                    .associate { it.networkId to it.worksiteId }
-                queryWorkTypeIds = workTypeNetworkIds.filter { !idLookup.contains(it) }
-            }
-            val worksiteIds = networkDataSource.getWorkTypeWorksiteLookup(queryWorkTypeIds)
-                .map { it.value }
+            val worksiteIds = workTypes.map(NetworkTeamWork::worksite).toSet()
             worksitesRepository.syncNetworkWorksites(worksiteIds)
         } catch (e: Exception) {
             logger.logException(e)
@@ -222,3 +190,10 @@ data class IncidentTeams(
     val myTeams: List<CleanupTeam>,
     val otherTeams: List<CleanupTeam>,
 )
+
+fun List<NetworkTeamWork>.mapWorkIds() = map {
+    WorksiteWorkTypeIds(
+        worksiteId = it.worksite,
+        workTypeNetworkId = it.id,
+    )
+}

@@ -26,7 +26,6 @@ import com.crisiscleanup.core.network.model.NetworkUserRolesResult
 import com.crisiscleanup.core.network.model.NetworkUsersResult
 import com.crisiscleanup.core.network.model.NetworkWorkTypeRequestResult
 import com.crisiscleanup.core.network.model.NetworkWorkTypeStatusResult
-import com.crisiscleanup.core.network.model.NetworkWorkTypesResult
 import com.crisiscleanup.core.network.model.NetworkWorksiteLocationSearchResult
 import com.crisiscleanup.core.network.model.NetworkWorksitePage
 import com.crisiscleanup.core.network.model.NetworkWorksitesCoreDataResult
@@ -326,12 +325,6 @@ private interface DataSourceApi {
     @TokenAuthenticationHeader
     @GET("roles")
     suspend fun getUserRoles(): NetworkUserRolesResult
-
-    @TokenAuthenticationHeader
-    @GET("worksite_work_types")
-    suspend fun getWorkTypes(
-        @Query("id__in") ids: String,
-    ): NetworkWorkTypesResult
 }
 
 private val worksiteCoreDataFields = listOf(
@@ -621,14 +614,4 @@ class DataApiClient @Inject constructor(
     override suspend fun getNetworkUserRoles() = networkApi.getUserRoles()
         .also { it.errors?.tryThrowException() }
         .results ?: emptyList()
-
-    override suspend fun getWorkTypeWorksiteLookup(workTypeIds: List<Long>) =
-        if (workTypeIds.isEmpty()) {
-            emptyMap()
-        } else {
-            networkApi.getWorkTypes(workTypeIds.joinToString(","))
-                .also { it.errors?.tryThrowException() }
-                .results?.associate { it.id to it.worksiteId }
-                ?: emptyMap()
-        }
 }
