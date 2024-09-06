@@ -127,6 +127,7 @@ private fun ViewTeamScreen(
     val worksites by viewModel.worksites.collectAsStateWithLifecycle()
     val profilePictureLookup by viewModel.profilePictureLookup.collectAsStateWithLifecycle()
     val userRoleLookup by viewModel.userRoleLookup.collectAsStateWithLifecycle()
+    val worksiteWorkTypeIconLookup by viewModel.worksiteWorkTypeIconLookup.collectAsStateWithLifecycle()
 
     val isPendingSync by viewModel.isPendingSync.collectAsStateWithLifecycle()
     val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
@@ -163,7 +164,7 @@ private fun ViewTeamScreen(
                 profilePictureLookup,
                 userRoleLookup,
                 worksites,
-                viewModel.worksiteWorkTypeIconLookup,
+                worksiteWorkTypeIconLookup,
                 isEditable = isEditable,
                 isSyncing = isSyncing,
                 isPendingSync = isPendingSync,
