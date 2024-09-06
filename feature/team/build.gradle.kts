@@ -10,6 +10,7 @@ android {
 
 dependencies {
     implementation(projects.core.appComponent)
+    implementation(projects.core.commonassets)
     implementation(projects.core.commoncase)
     implementation(projects.core.mapmarker)
     implementation(projects.core.selectincident)

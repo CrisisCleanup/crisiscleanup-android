@@ -22,6 +22,7 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,6 +41,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
@@ -49,6 +51,7 @@ import com.crisiscleanup.core.common.ParsedPhoneNumber
 import com.crisiscleanup.core.common.openDialer
 import com.crisiscleanup.core.common.openEmail
 import com.crisiscleanup.core.common.openSms
+import com.crisiscleanup.core.commonassets.ui.getEquipmentIcon
 import com.crisiscleanup.core.commoncase.ui.CaseTableItem
 import com.crisiscleanup.core.commoncase.ui.SyncStatusView
 import com.crisiscleanup.core.commoncase.ui.caseItemTopRowHorizontalContentOffset
@@ -77,6 +80,7 @@ import com.crisiscleanup.core.designsystem.theme.neutralIconColor
 import com.crisiscleanup.core.designsystem.theme.optionItemHeight
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.model.data.CleanupTeam
+import com.crisiscleanup.core.model.data.MemberEquipment
 import com.crisiscleanup.core.model.data.PersonContact
 import com.crisiscleanup.core.model.data.TeamWorksiteIds
 import com.crisiscleanup.core.model.data.UserRole
@@ -250,6 +254,7 @@ private fun ViewTeamContent(
     scheduleSync: () -> Unit,
     onEditTeamMembers: () -> Unit = {},
     onEditCases: () -> Unit = {},
+    onEditEquipment: () -> Unit = {},
     onViewCase: (Worksite) -> Boolean = { _ -> false },
     onOpenFlags: (Worksite) -> Unit = {},
     onAssignCaseTeam: (Worksite) -> Unit = {},
@@ -339,7 +344,27 @@ private fun ViewTeamContent(
             )
         }
 
-        // TODO Assets
+        item(
+            key = "equipment-header",
+            contentType = "header-item",
+        ) {
+            val sectionTitle = t("~~Assets ({asset_count})")
+                .replace("{asset_count}", "${team.memberEquipment.size}")
+            EditSectionHeader(
+                sectionTitle,
+                enabled = isEditable,
+                showEditAction = true,
+                action = onEditEquipment,
+            )
+        }
+
+        items(
+            team.memberEquipment,
+            key = { "equipment-${it.userId}-${it.equipmentData.id}" },
+            contentType = { "equipment-item" },
+        ) {
+            TeamMemberEquipmentView(it)
+        }
 
         // TODO Statistics
 
@@ -624,6 +649,35 @@ private fun TeamWorksiteView(
                 Text(
                     LocalAppTranslator.current("~~Unassign"),
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TeamMemberEquipmentView(
+    memberEquipment: MemberEquipment,
+) {
+    val t = LocalAppTranslator.current
+    val equipmentName = t(memberEquipment.equipmentData.equipment.literal)
+    CardSurface {
+        Row(
+            listItemModifier,
+            horizontalArrangement = listItemSpacedByHalf,
+            verticalAlignment = Alignment.Top,
+        ) {
+            Icon(
+                painterResource(getEquipmentIcon(memberEquipment.equipmentData.equipment)),
+                equipmentName,
+                tint = neutralIconColor,
+            )
+
+            Column {
+                Text(
+                    equipmentName,
+                    style = LocalFontStyles.current.header4,
+                )
+                Text(memberEquipment.userName)
             }
         }
     }
