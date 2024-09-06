@@ -34,17 +34,3 @@ data class NetworkWorkTypeTypes(
     @SerialName("work_types")
     val workTypes: Collection<String>,
 )
-
-@Serializable
-data class NetworkWorkTypesResult(
-    val errors: List<NetworkCrisisCleanupApiError>? = null,
-    val count: Int? = null,
-    val results: List<NetworkWorkTypeIds>? = null,
-)
-
-@Serializable
-data class NetworkWorkTypeIds(
-    val id: Long,
-    @SerialName("worksite")
-    val worksiteId: Long,
-)

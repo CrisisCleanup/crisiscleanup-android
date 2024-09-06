@@ -398,7 +398,6 @@ private fun TeamHeader(
             )
         }
 
-        /* TODO Revisit these Case metrics when backend data is updated
         val openCaseCount = team.openCaseCount
         Row(
             horizontalArrangement = listItemSpacedByHalf,
@@ -417,7 +416,6 @@ private fun TeamHeader(
 
             TeamCaseCompleteView(team)
         }
-         */
     }
 }
 

@@ -4,11 +4,20 @@ import com.crisiscleanup.core.database.model.TeamEntity
 import com.crisiscleanup.core.model.data.closedWorkTypeStatuses
 import com.crisiscleanup.core.model.data.statusFromLiteral
 import com.crisiscleanup.core.network.model.NetworkTeam
+import com.crisiscleanup.core.network.model.NetworkTeamWork
 
 fun NetworkTeam.asEntity(): TeamEntity {
     val workTypes = assignedWork ?: emptyList()
-    val workTypeStatuses = workTypes.map { statusFromLiteral(it.status) }
-    val completeCount = workTypeStatuses.filter { closedWorkTypeStatuses.contains(it) }.size
+    val distinctWorksites = workTypes.map(NetworkTeamWork::worksite).toSet()
+    val openWorksites = workTypes.mapNotNull {
+        val status = statusFromLiteral(it.status)
+        if (closedWorkTypeStatuses.contains(status)) {
+            null
+        } else {
+            it.worksite
+        }
+    }
+    val completeCount = distinctWorksites.size - openWorksites.size
     return TeamEntity(
         id = 0,
         networkId = id,
@@ -16,8 +25,7 @@ fun NetworkTeam.asEntity(): TeamEntity {
         name = name,
         notes = notes ?: "",
         color = color,
-        // TODO Case count not work count. Update when Worksite ID is included in assigned Work.
-        caseCount = 0,
-        completeCount = 0,
+        caseCount = distinctWorksites.size,
+        completeCount = completeCount,
     )
 }

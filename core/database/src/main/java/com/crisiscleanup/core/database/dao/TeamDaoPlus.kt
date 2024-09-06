@@ -50,7 +50,7 @@ class TeamDaoPlus @Inject constructor(
         teams: List<TeamEntity>,
         teamMemberLookup: Map<Long, List<Long>>,
         teamEquipmentLookup: Map<Long, Set<Long>>,
-        teamWorkTypeLookup: Map<Long, Collection<Long>>,
+        teamWorkLookup: Map<Long, Collection<WorksiteWorkTypeIds>>,
         memberEquipmentLookup: Map<Long, Set<Long>>,
         syncedAt: Instant,
     ) {
@@ -62,7 +62,7 @@ class TeamDaoPlus @Inject constructor(
                 val networkId = team.networkId
                 val teamMembers = teamMemberLookup[networkId] ?: emptyList()
                 val teamEquipment = teamEquipmentLookup[networkId] ?: emptySet()
-                val teamWork = teamWorkTypeLookup[networkId] ?: emptyList()
+                val teamWork = teamWorkLookup[networkId] ?: emptyList()
                 val modifiedAt = modifiedAtLookup[networkId]
                 syncTeam(
                     team,
@@ -126,15 +126,16 @@ class TeamDaoPlus @Inject constructor(
 
     private suspend fun syncWorkTypes(
         teamId: Long,
-        workTypeNetworkIds: Collection<Long>,
+        workIds: Collection<WorksiteWorkTypeIds>,
     ) = db.withTransaction {
         val teamDao = db.teamDao()
-        teamDao.deleteUnspecifiedWork(teamId, workTypeNetworkIds)
+        teamDao.deleteUnspecifiedWork(teamId, workIds.map(WorksiteWorkTypeIds::workTypeNetworkId))
 
-        val teamWork = workTypeNetworkIds.map {
+        val teamWork = workIds.map {
             TeamWorkEntity(
                 id = teamId,
-                workTypeNetworkId = it,
+                worksiteId = it.worksiteId,
+                workTypeNetworkId = it.workTypeNetworkId,
             )
         }
         teamDao.insertIgnoreWork(teamWork)
@@ -144,7 +145,7 @@ class TeamDaoPlus @Inject constructor(
         team: TeamEntity,
         members: List<Long>,
         equipment: Set<Long>,
-        workTypes: Collection<Long>,
+        workIds: Collection<WorksiteWorkTypeIds>,
         memberEquipmentLookup: Map<Long, Set<Long>>,
         syncedAt: Instant,
     ) = db.withTransaction {
@@ -156,7 +157,7 @@ class TeamDaoPlus @Inject constructor(
             modifiedAt,
             members,
             equipment,
-            workTypes,
+            workIds,
             syncedAt,
         )
 
@@ -172,7 +173,7 @@ class TeamDaoPlus @Inject constructor(
         modifiedAt: PopulatedLocalModifiedAt?,
         members: List<Long>,
         equipment: Set<Long>,
-        workTypeNetworkIds: Collection<Long>,
+        workIds: Collection<WorksiteWorkTypeIds>,
         syncedAt: Instant,
     ) = db.withTransaction {
         val teamDao = db.teamDao()
@@ -225,7 +226,7 @@ class TeamDaoPlus @Inject constructor(
 
             syncMembers(teamId, members)
             syncEquipment(teamId, equipment)
-            syncWorkTypes(teamId, workTypeNetworkIds)
+            syncWorkTypes(teamId, workIds)
 
             return@withTransaction true
         } else {
@@ -237,3 +238,8 @@ class TeamDaoPlus @Inject constructor(
         false
     }
 }
+
+data class WorksiteWorkTypeIds(
+    val worksiteId: Long,
+    val workTypeNetworkId: Long,
+)
