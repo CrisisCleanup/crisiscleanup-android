@@ -3,7 +3,6 @@ package com.crisiscleanup.feature.team
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -22,6 +21,7 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.radians
 import com.crisiscleanup.core.common.sync.SyncPusher
+import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.commoncase.CaseFlagsNavigationState
 import com.crisiscleanup.core.commoncase.WorksiteProvider
 import com.crisiscleanup.core.data.IncidentRefresher
@@ -57,6 +57,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class ViewTeamViewModel @Inject constructor(
@@ -138,9 +139,6 @@ class ViewTeamViewModel @Inject constructor(
             started = ReplaySubscribed3,
         )
 
-    var worksiteWorkTypeIconLookup by mutableStateOf(emptyMap<Long, List<ImageBitmap>>())
-        private set
-
     init {
         updateHeaderTitle()
 
@@ -174,23 +172,6 @@ class ViewTeamViewModel @Inject constructor(
             }
             .launchIn(viewModelScope)
 
-        dataLoader.teamStream
-            .mapNotNull { it?.team?.worksites }
-            .onEach { worksites ->
-                worksiteWorkTypeIconLookup = worksites.associate { worksite ->
-                    val workTypeIcons = worksite.workTypes.mapNotNull {
-                        workTypeChipIconProvider.getIconBitmap(
-                            it.statusClaim,
-                            it.workType,
-                        )
-                            ?.asImageBitmap()
-                    }
-                    worksite.id to workTypeIcons
-                }
-            }
-            .flowOn(ioDispatcher)
-            .launchIn(viewModelScope)
-
         // TODO Are below necessary or leftover from copy-paste?
 
         viewModelScope.launch(ioDispatcher) {
@@ -207,6 +188,28 @@ class ViewTeamViewModel @Inject constructor(
     val isPendingSync = dataLoader.isPendingSync
     val profilePictureLookup = dataLoader.profilePictureLookup
     val userRoleLookup = dataLoader.userRoleLookup
+
+    val worksiteWorkTypeIconLookup = dataLoader.teamStream
+        .mapNotNull { it?.team?.worksites }
+        .throttleLatest(1.seconds.inWholeMilliseconds)
+        .mapLatest { worksites ->
+            worksites.associate { worksite ->
+                val workTypeIcons = worksite.workTypes.mapNotNull {
+                    workTypeChipIconProvider.getIconBitmap(
+                        it.statusClaim,
+                        it.workType,
+                    )
+                        ?.asImageBitmap()
+                }
+                worksite.id to workTypeIcons
+            }
+        }
+        .flowOn(ioDispatcher)
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = emptyMap(),
+            started = ReplaySubscribed3,
+        )
 
     private val deviceLocation = permissionManager.hasLocationPermission
         .map {
