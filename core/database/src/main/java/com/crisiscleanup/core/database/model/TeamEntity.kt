@@ -82,6 +82,10 @@ data class TeamEntity(
     val caseCount: Int,
     @ColumnInfo("case_complete_count")
     val completeCount: Int,
+    @ColumnInfo("work_count", defaultValue = "0")
+    val workCount: Int,
+    @ColumnInfo("work_complete_count", defaultValue = "0")
+    val workCompleteCount: Int,
 )
 
 @Entity(
