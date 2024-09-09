@@ -8,7 +8,7 @@ import com.crisiscleanup.core.appnav.RouteConstant.CASES_SEARCH_ROUTE
 import com.crisiscleanup.feature.cases.ui.CasesSearchRoute
 
 fun NavController.navigateToCasesSearch(navOptions: NavOptions? = null) {
-    this.navigate(CASES_SEARCH_ROUTE, navOptions)
+    navigate(CASES_SEARCH_ROUTE, navOptions)
 }
 
 fun NavGraphBuilder.casesSearchScreen(

@@ -7,7 +7,7 @@ import com.crisiscleanup.core.appnav.RouteConstant
 import com.crisiscleanup.feature.cases.ui.CasesFilterRoute
 
 fun NavController.navigateToCasesFilter() {
-    this.navigate(RouteConstant.CASES_FILTER_ROUTE)
+    navigate(RouteConstant.CASES_FILTER_ROUTE)
 }
 
 fun NavGraphBuilder.casesFilterScreen(

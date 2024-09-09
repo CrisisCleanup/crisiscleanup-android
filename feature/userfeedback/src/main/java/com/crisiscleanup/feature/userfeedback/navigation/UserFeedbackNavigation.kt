@@ -7,7 +7,7 @@ import com.crisiscleanup.core.appnav.RouteConstant.USER_FEEDBACK_ROUTE
 import com.crisiscleanup.feature.userfeedback.ui.UserFeedbackRoute
 
 fun NavController.navigateToUserFeedback() {
-    this.navigate(USER_FEEDBACK_ROUTE)
+    navigate(USER_FEEDBACK_ROUTE)
 }
 
 fun NavGraphBuilder.userFeedbackScreen(

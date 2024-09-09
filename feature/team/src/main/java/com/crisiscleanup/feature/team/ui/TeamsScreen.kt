@@ -164,7 +164,6 @@ private fun TeamsScreen(
                             modifier = Modifier.listItemPadding(),
                             text = t("teams.create_new_team"),
                             onClick = openCreateTeam,
-                            enabled = false,
                         )
                     }
 

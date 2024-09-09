@@ -37,5 +37,5 @@ class WorksiteImagesArgs(
 
 fun NavController.navigateToWorksiteImages(args: WorksiteImagesArgs) {
     val queryString = WorksiteImagesArgs.queryString(args)
-    this.navigate("${RouteConstant.WORKSITE_IMAGES_ROUTE}?$queryString")
+    navigate("${RouteConstant.WORKSITE_IMAGES_ROUTE}?$queryString")
 }

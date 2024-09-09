@@ -8,5 +8,5 @@ const val WORKSITE_ID_ARG = "worksiteId"
 
 fun NavController.navigateToExistingCase(incidentId: Long, worksiteId: Long) {
     // Must match composable route signature
-    this.navigate("${VIEW_CASE_ROUTE}?$INCIDENT_ID_ARG=$incidentId&$WORKSITE_ID_ARG=$worksiteId")
+    navigate("${VIEW_CASE_ROUTE}?$INCIDENT_ID_ARG=$incidentId&$WORKSITE_ID_ARG=$worksiteId")
 }

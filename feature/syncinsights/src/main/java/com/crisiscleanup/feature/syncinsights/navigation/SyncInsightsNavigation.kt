@@ -8,7 +8,7 @@ import com.crisiscleanup.core.appnav.RouteConstant
 import com.crisiscleanup.feature.syncinsights.ui.SyncInsightsRoute
 
 fun NavController.navigateToSyncInsights(navOptions: NavOptions? = null) {
-    this.navigate(RouteConstant.SYNC_INSIGHTS_ROUTE, navOptions)
+    navigate(RouteConstant.SYNC_INSIGHTS_ROUTE, navOptions)
 }
 
 fun NavGraphBuilder.syncInsightsScreen(

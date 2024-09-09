@@ -7,7 +7,7 @@ import com.crisiscleanup.core.appnav.RouteConstant.INVITE_TEAMMATE_ROUTE
 import com.crisiscleanup.feature.organizationmanage.ui.InviteTeammateRoute
 
 fun NavController.navigateToInviteTeammate() {
-    this.navigate(INVITE_TEAMMATE_ROUTE)
+    navigate(INVITE_TEAMMATE_ROUTE)
 }
 
 fun NavGraphBuilder.inviteTeammateScreen(

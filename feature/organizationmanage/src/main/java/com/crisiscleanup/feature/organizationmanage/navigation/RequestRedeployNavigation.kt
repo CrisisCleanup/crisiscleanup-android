@@ -7,7 +7,7 @@ import com.crisiscleanup.core.appnav.RouteConstant.REQUEST_REDEPLOY_ROUTE
 import com.crisiscleanup.feature.organizationmanage.ui.RequestRedeployRoute
 
 fun NavController.navigateToRequestRedeploy() {
-    this.navigate(REQUEST_REDEPLOY_ROUTE)
+    navigate(REQUEST_REDEPLOY_ROUTE)
 }
 
 fun NavGraphBuilder.requestRedeployScreen(

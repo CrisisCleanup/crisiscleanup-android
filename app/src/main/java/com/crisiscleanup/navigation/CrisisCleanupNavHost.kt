@@ -15,6 +15,7 @@ import com.crisiscleanup.core.appnav.RouteConstant.CASE_EDITOR_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.CASE_EDITOR_SEARCH_ADDRESS_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.CASE_HISTORY_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.CASE_SHARE_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.TEAM_EDITOR_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.VIEW_CASE_TRANSFER_WORK_TYPES_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.VIEW_TEAM_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.WORKSITE_IMAGES_ROUTE
@@ -57,7 +58,9 @@ import com.crisiscleanup.feature.organizationmanage.navigation.requestRedeploySc
 import com.crisiscleanup.feature.syncinsights.navigation.navigateToSyncInsights
 import com.crisiscleanup.feature.syncinsights.navigation.syncInsightsScreen
 import com.crisiscleanup.feature.team.navigation.navigateToAssignCaseTeam
+import com.crisiscleanup.feature.team.navigation.navigateToTeamEditor
 import com.crisiscleanup.feature.team.navigation.navigateToViewTeam
+import com.crisiscleanup.feature.team.navigation.teamEditorScreen
 import com.crisiscleanup.feature.team.navigation.teamsScreen
 import com.crisiscleanup.feature.team.navigation.viewTeamScreen
 import com.crisiscleanup.feature.userfeedback.navigation.navigateToUserFeedback
@@ -216,6 +219,14 @@ fun CrisisCleanupNavHost(
         }
     }
 
+    val teamEditorOnBack = remember(onBack, navController) {
+        {
+            if (navController.startsWithRoute(TEAM_EDITOR_ROUTE)) {
+                onBack()
+            }
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -251,9 +262,13 @@ fun CrisisCleanupNavHost(
                     openAddFlag = navToCaseAddFlagNonEditing,
                     openAssignCaseTeam = navToAssignCaseTeam,
                 )
+                teamEditorScreen(
+                    teamEditorOnBack,
+                )
             },
             openAuthentication = openAuthentication,
             openViewTeam = navController::navigateToViewTeam,
+            openCreateTeam = navController::navigateToTeamEditor,
         )
         menuScreen(
             openAuthentication = openAuthentication,

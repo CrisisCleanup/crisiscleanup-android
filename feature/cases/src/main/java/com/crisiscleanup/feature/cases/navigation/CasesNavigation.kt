@@ -12,7 +12,7 @@ import com.crisiscleanup.feature.cases.ui.CasesAction
 import com.crisiscleanup.feature.cases.ui.CasesRoute
 
 fun NavController.navigateToCases(navOptions: NavOptions? = null) {
-    this.navigate(CASES_GRAPH_ROUTE, navOptions)
+    navigate(CASES_GRAPH_ROUTE, navOptions)
 }
 
 fun NavGraphBuilder.casesGraph(
