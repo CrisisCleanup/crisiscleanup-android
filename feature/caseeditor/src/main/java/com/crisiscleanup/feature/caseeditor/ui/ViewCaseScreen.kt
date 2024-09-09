@@ -84,6 +84,7 @@ import com.crisiscleanup.core.designsystem.component.actionEdgeSpace
 import com.crisiscleanup.core.designsystem.component.fabPlusSpaceHeight
 import com.crisiscleanup.core.designsystem.component.listDetailDetailMaxWidth
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
@@ -455,8 +456,7 @@ private fun ColumnScope.ExistingCaseContent(
         indicator = @Composable { tabPositions ->
             SecondaryIndicator(
                 Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
-                // TODO Common dimensions
-                height = 2.dp,
+                height = LocalDimensions.current.tabIndicatorHeight,
                 color = primaryOrangeColor,
             )
         },
