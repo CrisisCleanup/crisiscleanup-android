@@ -99,6 +99,9 @@ private val activityDateFormatter =
 @Composable
 fun ViewTeamRoute(
     onBack: () -> Unit,
+    onEditTeamMembers: (Long) -> Unit = {},
+    onEditCases: (Long) -> Unit = {},
+    onEditEquipment: (Long) -> Unit = {},
     onViewCase: (Long, Long) -> Boolean = { _, _ -> false },
     onOpenFlags: () -> Unit = {},
     onAssignCaseTeam: (Long) -> Unit = {},
@@ -112,6 +115,9 @@ fun ViewTeamRoute(
     }
     ViewTeamScreen(
         onBack,
+        onEditTeamMembers,
+        onEditCases,
+        onEditEquipment,
         onViewCase,
         onAssignCaseTeam,
     )
@@ -121,6 +127,9 @@ fun ViewTeamRoute(
 @Composable
 private fun ViewTeamScreen(
     onBack: () -> Unit,
+    onEditTeamMembers: (Long) -> Unit = {},
+    onEditCases: (Long) -> Unit = {},
+    onEditEquipment: (Long) -> Unit = {},
     onViewCase: (Long, Long) -> Boolean = { _, _ -> false },
     onAssignCaseTeam: (Long) -> Unit = {},
     viewModel: ViewTeamViewModel = hiltViewModel(),
@@ -156,6 +165,9 @@ private fun ViewTeamScreen(
             onViewCase(worksite.incidentId, worksite.id)
         }
     }
+    val openEditMembers = remember(team.id) { { onEditTeamMembers(team.id) } }
+    val openEditCases = remember(team.id) { { onEditCases(team.id) } }
+    val openEditEquipment = remember(team.id) { { onEditEquipment(team.id) } }
     val assignCaseTeam = remember(viewModel) {
         { worksite: Worksite ->
             onAssignCaseTeam(worksite.id)
@@ -182,6 +194,9 @@ private fun ViewTeamScreen(
                 isSyncing = isSyncing,
                 isPendingSync = isPendingSync,
                 scheduleSync = viewModel::scheduleSync,
+                onEditTeamMembers = openEditMembers,
+                onEditCases = openEditCases,
+                onEditEquipment = openEditEquipment,
                 onViewCase = onCaseSelect,
                 onOpenFlags = viewModel::onOpenCaseFlags,
                 onAssignCaseTeam = assignCaseTeam,
