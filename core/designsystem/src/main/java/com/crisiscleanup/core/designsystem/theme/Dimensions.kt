@@ -29,6 +29,7 @@ data class Dimensions(
     val isLandscape: Boolean = false,
     val isPortrait: Boolean = true,
     val isListDetailWidth: Boolean = false,
+    val tabIndicatorHeight: Dp = 2.dp,
 ) {
     val itemInnerSpacingHorizontalFlexible: Arrangement.HorizontalOrVertical =
         Arrangement.spacedBy(itemInnerPaddingHorizontalFlexible)
