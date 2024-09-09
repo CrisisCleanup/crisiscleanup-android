@@ -25,11 +25,11 @@ internal class ViewListArgs(val listId: Long) {
 }
 
 fun NavController.navigateToLists() {
-    this.navigate(LISTS_ROUTE)
+    navigate(LISTS_ROUTE)
 }
 
 fun NavController.navigateToViewList(listId: Long) {
-    this.navigate("${VIEW_LIST_ROUTE}?$LIST_ID_ARG=$listId")
+    navigate("${VIEW_LIST_ROUTE}?$LIST_ID_ARG=$listId")
 }
 
 fun NavGraphBuilder.listsScreen(

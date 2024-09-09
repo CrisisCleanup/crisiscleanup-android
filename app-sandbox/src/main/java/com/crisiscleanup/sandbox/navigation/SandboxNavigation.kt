@@ -20,23 +20,23 @@ const val SINGLE_IMAGE_ROUTE = "single-image"
 const val MULTI_IMAGE_ROUTE = "multi-image"
 
 fun NavController.navigateToBottomNav() {
-    this.navigate(BOTTOM_NAV_ROUTE)
+    navigate(BOTTOM_NAV_ROUTE)
 }
 
 fun NavController.navigateToCheckboxes() {
-    this.navigate(CHECKBOXES_ROUTE)
+    navigate(CHECKBOXES_ROUTE)
 }
 
 fun NavController.navigateToChips() {
-    this.navigate(CHIPS_ROUTE)
+    navigate(CHIPS_ROUTE)
 }
 
 fun NavController.navigateToSingleImage() {
-    this.navigate(SINGLE_IMAGE_ROUTE)
+    navigate(SINGLE_IMAGE_ROUTE)
 }
 
 fun NavController.navigateToMultiImage() {
-    this.navigate(MULTI_IMAGE_ROUTE)
+    navigate(MULTI_IMAGE_ROUTE)
 }
 
 @Composable

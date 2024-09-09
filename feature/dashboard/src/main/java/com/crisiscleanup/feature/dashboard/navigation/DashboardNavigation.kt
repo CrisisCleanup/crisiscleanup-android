@@ -8,7 +8,7 @@ import com.crisiscleanup.core.appnav.RouteConstant.DASHBOARD_ROUTE
 import com.crisiscleanup.feature.dashboard.DashboardRoute
 
 fun NavController.navigateToDashboard(navOptions: NavOptions? = null) {
-    this.navigate(DASHBOARD_ROUTE, navOptions)
+    navigate(DASHBOARD_ROUTE, navOptions)
 }
 
 fun NavGraphBuilder.dashboardScreen() {
