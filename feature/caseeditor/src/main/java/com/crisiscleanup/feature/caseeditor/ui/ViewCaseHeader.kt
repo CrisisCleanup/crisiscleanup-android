@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,8 +16,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
+import com.crisiscleanup.core.designsystem.component.HeaderSubTitle
+import com.crisiscleanup.core.designsystem.component.HeaderTitle
 import com.crisiscleanup.core.designsystem.component.TopBarBackAction
-import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
@@ -85,32 +84,6 @@ private fun HeaderActions(
         tint = favoriteTint,
         modifier = Modifier.testTag("editCaseFavoriteToggleBtn"),
     )
-}
-
-@Composable
-private fun HeaderTitle(
-    title: String,
-    modifier: Modifier = Modifier,
-) {
-    Text(
-        title,
-        style = LocalFontStyles.current.header3,
-        modifier = modifier.testTag("editCaseHeaderText"),
-    )
-}
-
-@Composable
-private fun HeaderSubTitle(
-    subTitle: String,
-    modifier: Modifier = Modifier,
-) {
-    if (subTitle.isNotBlank()) {
-        Text(
-            subTitle,
-            style = MaterialTheme.typography.bodySmall,
-            modifier = modifier.testTag("editCaseSubHeaderText"),
-        )
-    }
 }
 
 @Composable
@@ -183,8 +156,14 @@ private fun TopBarHeader(
             ),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            HeaderTitle(title)
-            HeaderSubTitle(subTitle)
+            HeaderTitle(
+                title,
+                Modifier.testTag("viewCaseHeaderTitle"),
+            )
+            HeaderSubTitle(
+                subTitle,
+                Modifier.testTag("viewCaseHeaderSubTitle"),
+            )
         }
     }
 
@@ -237,7 +216,7 @@ private fun ColumnScope.SideHeader(
                     onClick = {},
                     onLongClick = onCaseLongPress,
                 )
-                .testTag("editCaseHeaderText"),
+                .testTag("viewCaseHeaderTitle"),
         )
     }
 
@@ -249,7 +228,10 @@ private fun ColumnScope.SideHeader(
         actions = {},
     )
 
-    HeaderSubTitle(subTitle, listItemModifier)
+    HeaderSubTitle(
+        subTitle,
+        listItemModifier.testTag("viewCaseHeaderSubTitle"),
+    )
 
     ViewCaseUpdatedAtView(updatedAtText, listItemModifier)
 

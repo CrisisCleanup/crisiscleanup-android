@@ -47,7 +47,7 @@ fun NavController.navigateToViewTeam(incidentId: Long, teamId: Long) {
 
 fun NavController.navigateToTeamEditor(
     teamId: Long = EmptyCleanupTeam.id,
-    editorStep: TeamEditorStep = TeamEditorStep.None,
+    editorStep: TeamEditorStep = TeamEditorStep.Name,
 ) {
     val route = "$TEAM_EDITOR_ROUTE?$TEAM_ID_ARG=$teamId&$TEAM_EDITOR_STEP=${editorStep.literal}"
     navigate(route)
