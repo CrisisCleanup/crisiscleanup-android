@@ -57,6 +57,7 @@ import com.crisiscleanup.feature.organizationmanage.navigation.navigateToRequest
 import com.crisiscleanup.feature.organizationmanage.navigation.requestRedeployScreen
 import com.crisiscleanup.feature.syncinsights.navigation.navigateToSyncInsights
 import com.crisiscleanup.feature.syncinsights.navigation.syncInsightsScreen
+import com.crisiscleanup.feature.team.model.TeamEditorStep
 import com.crisiscleanup.feature.team.navigation.navigateToAssignCaseTeam
 import com.crisiscleanup.feature.team.navigation.navigateToTeamEditor
 import com.crisiscleanup.feature.team.navigation.navigateToViewTeam
@@ -219,6 +220,22 @@ fun CrisisCleanupNavHost(
         }
     }
 
+    val navToEditTeamMembers = remember(navController) {
+        { teamId: Long ->
+            navController.navigateToTeamEditor(teamId, TeamEditorStep.Members)
+        }
+    }
+    val navToEditTeamCases = remember(navController) {
+        { teamId: Long ->
+            navController.navigateToTeamEditor(teamId, TeamEditorStep.Cases)
+        }
+    }
+    val navToEditTeamEquipment = remember(navController) {
+        { teamId: Long ->
+            navController.navigateToTeamEditor(teamId, TeamEditorStep.Equipment)
+        }
+    }
+
     val teamEditorOnBack = remember(onBack, navController) {
         {
             if (navController.startsWithRoute(TEAM_EDITOR_ROUTE)) {
@@ -258,6 +275,9 @@ fun CrisisCleanupNavHost(
             nestedGraphs = {
                 viewTeamScreen(
                     viewTeamOnBack,
+                    editTeamMembers = navToEditTeamMembers,
+                    editCases = navToEditTeamCases,
+                    editEquipment = navToEditTeamEquipment,
                     viewCase = viewCase,
                     openAddFlag = navToCaseAddFlagNonEditing,
                     openAssignCaseTeam = navToAssignCaseTeam,
