@@ -5,5 +5,6 @@ enum class TeamEditorStep(val literal: String) {
     Name("name"),
     Members("members"),
     Cases("cases"),
+    Equipment("equipment"),
     Review("review"),
 }

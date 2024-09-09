@@ -20,12 +20,19 @@ import com.crisiscleanup.feature.team.ui.ViewTeamRoute
 
 private const val INCIDENT_ID_ARG = "incidentId"
 private const val TEAM_ID_ARG = "teamId"
-private const val TEAM_EDITOR_STEP = "initialEditorStep"
+private const val TEAM_EDITOR_STEP = "teamEditorStep"
 
 internal class ViewTeamArgs(val incidentId: Long, val teamId: Long) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         checkNotNull(savedStateHandle[INCIDENT_ID_ARG]),
         checkNotNull(savedStateHandle[TEAM_ID_ARG]),
+    )
+}
+
+internal class TeamEditorArgs(val teamId: Long, val editorStep: String) {
+    constructor(savedStateHandle: SavedStateHandle) : this(
+        checkNotNull(savedStateHandle[TEAM_ID_ARG]),
+        checkNotNull(savedStateHandle[TEAM_EDITOR_STEP]),
     )
 }
 
@@ -70,6 +77,9 @@ fun NavGraphBuilder.teamsScreen(
 
 fun NavGraphBuilder.viewTeamScreen(
     onBack: () -> Unit = {},
+    editTeamMembers: (Long) -> Unit = {},
+    editCases: (Long) -> Unit = {},
+    editEquipment: (Long) -> Unit = {},
     viewCase: (Long, Long) -> Boolean = { _, _ -> false },
     openAddFlag: () -> Unit = {},
     openAssignCaseTeam: (Long) -> Unit = {},
@@ -89,6 +99,9 @@ fun NavGraphBuilder.viewTeamScreen(
     ) {
         ViewTeamRoute(
             onBack = onBack,
+            onEditTeamMembers = editTeamMembers,
+            onEditCases = editCases,
+            onEditEquipment = editEquipment,
             onViewCase = viewCase,
             onOpenFlags = openAddFlag,
             onAssignCaseTeam = openAssignCaseTeam,
