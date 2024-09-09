@@ -63,14 +63,14 @@ internal class TransferWorkTypeArgs(val isFromCaseEdit: Boolean) {
 
 fun NavController.navigateToViewCase(incidentId: Long, worksiteId: Long) {
     val route = "$VIEW_CASE_ROUTE?$INCIDENT_ID_ARG=$incidentId&$WORKSITE_ID_ARG=$worksiteId"
-    this.navigate(route)
+    navigate(route)
 }
 
 fun NavController.navigateToCaseEditor(incidentId: Long, worksiteId: Long? = null) {
     val routeParts = mutableListOf("$CASE_EDITOR_ROUTE?$INCIDENT_ID_ARG=$incidentId")
     worksiteId?.let { routeParts.add("$WORKSITE_ID_ARG=$worksiteId") }
     val route = routeParts.joinToString("&")
-    this.navigate(route)
+    navigate(route)
 }
 
 fun NavGraphBuilder.caseEditorScreen(
@@ -108,17 +108,17 @@ fun NavGraphBuilder.caseEditorScreen(
 }
 
 fun NavController.navigateToCaseEditSearchAddress() =
-    this.navigate(CASE_EDITOR_SEARCH_ADDRESS_ROUTE)
+    navigate(CASE_EDITOR_SEARCH_ADDRESS_ROUTE)
 
 fun NavController.navigateToCaseEditLocationMapMove() =
-    this.navigate(CASE_EDITOR_MAP_MOVE_LOCATION_ROUTE)
+    navigate(CASE_EDITOR_MAP_MOVE_LOCATION_ROUTE)
 
 fun NavController.navigateToCaseAddFlag(isFromCaseEdit: Boolean) {
-    this.navigate("$CASE_ADD_FLAG_ROUTE?$IS_FROM_CASE_EDIT_ARG=$isFromCaseEdit")
+    navigate("$CASE_ADD_FLAG_ROUTE?$IS_FROM_CASE_EDIT_ARG=$isFromCaseEdit")
 }
 
-fun NavController.navigateToCaseShare() = this.navigate(CASE_SHARE_ROUTE)
-fun NavController.navigateToCaseHistory() = this.navigate(CASE_HISTORY_ROUTE)
+fun NavController.navigateToCaseShare() = navigate(CASE_SHARE_ROUTE)
+fun NavController.navigateToCaseHistory() = navigate(CASE_HISTORY_ROUTE)
 
 fun NavGraphBuilder.existingCaseScreen(
     navController: NavHostController,
@@ -170,7 +170,7 @@ fun NavGraphBuilder.existingCaseScreen(
 }
 
 fun NavController.navigateToTransferWorkType(isFromCaseEdit: Boolean) =
-    this.navigate("$VIEW_CASE_TRANSFER_WORK_TYPES_ROUTE?$IS_FROM_CASE_EDIT_ARG=$isFromCaseEdit")
+    navigate("$VIEW_CASE_TRANSFER_WORK_TYPES_ROUTE?$IS_FROM_CASE_EDIT_ARG=$isFromCaseEdit")
 
 internal fun NavController.popRouteStartingWith(route: String) {
     popBackStack()

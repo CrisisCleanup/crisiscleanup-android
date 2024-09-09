@@ -54,4 +54,5 @@ object RouteConstant {
     const val VIEW_LIST_ROUTE = "view_list"
 
     const val VIEW_TEAM_ROUTE = "view_team"
+    const val TEAM_EDITOR_ROUTE = "team_editor"
 }

@@ -45,5 +45,5 @@ class ViewImageArgs(
 
 fun NavController.navigateToViewImage(viewImageArgs: ViewImageArgs) {
     val queryString = ViewImageArgs.queryString(viewImageArgs)
-    this.navigate("$VIEW_IMAGE_ROUTE?$queryString")
+    navigate("$VIEW_IMAGE_ROUTE?$queryString")
 }
