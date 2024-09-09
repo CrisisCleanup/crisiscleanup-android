@@ -21,6 +21,7 @@ data class CrisisCleanupTypography(
     val header3: TextStyle,
     val header4: TextStyle,
     val header5: TextStyle,
+    val titleStatistics: TextStyle,
 )
 
 val CrisisCleanupTypographyDefault = CrisisCleanupTypography(
@@ -79,6 +80,13 @@ val CrisisCleanupTypographyDefault = CrisisCleanupTypography(
         letterSpacing = 0.sp,
         lineHeight = 16.sp,
         fontSize = 14.sp,
+    ),
+    titleStatistics = TextStyle(
+        fontFamily = NunitoSans,
+        fontWeight = FontWeight.W900,
+        letterSpacing = 0.sp,
+        lineHeight = 16.sp,
+        fontSize = 65.sp,
     ),
 )
 

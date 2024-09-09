@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -51,6 +52,7 @@ import com.crisiscleanup.core.common.ParsedPhoneNumber
 import com.crisiscleanup.core.common.openDialer
 import com.crisiscleanup.core.common.openEmail
 import com.crisiscleanup.core.common.openSms
+import com.crisiscleanup.core.common.utcTimeZone
 import com.crisiscleanup.core.commonassets.ui.getEquipmentIcon
 import com.crisiscleanup.core.commoncase.ui.CaseTableItem
 import com.crisiscleanup.core.commoncase.ui.SyncStatusView
@@ -76,6 +78,7 @@ import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.listRowItemStartPadding
+import com.crisiscleanup.core.designsystem.theme.neutralFontColor
 import com.crisiscleanup.core.designsystem.theme.neutralIconColor
 import com.crisiscleanup.core.designsystem.theme.optionItemHeight
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
@@ -87,6 +90,11 @@ import com.crisiscleanup.core.model.data.UserRole
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.feature.team.ViewTeamViewModel
 import com.crisiscleanup.feature.team.WorksiteDistance
+import kotlinx.datetime.toJavaInstant
+import java.time.format.DateTimeFormatter
+
+private val activityDateFormatter =
+    DateTimeFormatter.ofPattern("MMM d yyyy").utcTimeZone
 
 @Composable
 fun ViewTeamRoute(
@@ -156,6 +164,7 @@ private fun ViewTeamScreen(
 
     Box {
         Column {
+            // TODO Animate team name to title on scroll up when team name is defined
             CenterAlignedTopAppBar(
                 title = { Text(title) },
                 navigationIcon = { TopBarBackAction(onBack) },
@@ -366,7 +375,23 @@ private fun ViewTeamContent(
             TeamMemberEquipmentView(it)
         }
 
-        // TODO Statistics
+        item(
+            key = "statistics-header",
+            contentType = "header-item",
+        ) {
+            val sectionTitle = t("~~Statistics")
+            EditSectionHeader(
+                sectionTitle,
+                enabled = isEditable,
+                action = onEditEquipment,
+            )
+        }
+
+        item(
+            key = "statistics-view",
+        ) {
+            TeamStatisticsView(team)
+        }
 
         item {
             Spacer(Modifier.listItemBottomPadding())
@@ -424,7 +449,7 @@ private fun TeamHeader(
             )
         }
 
-        val openCaseCount = team.openCaseCount
+        val openCaseCount = team.caseOpenCount
         Row(
             horizontalArrangement = listItemSpacedByHalf,
             verticalAlignment = Alignment.CenterVertically,
@@ -678,6 +703,91 @@ private fun TeamMemberEquipmentView(
                     style = LocalFontStyles.current.header4,
                 )
                 Text(memberEquipment.userName)
+            }
+        }
+    }
+}
+
+@Composable
+private fun TeamStatisticsView(
+    team: CleanupTeam,
+) {
+    val t = LocalAppTranslator.current
+
+    CardSurface {
+        Row(
+            fillWidthPadded,
+            horizontalArrangement = listItemSpacedBy,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    "${team.workCompletePercentage}%",
+                    style = LocalFontStyles.current.titleStatistics,
+                )
+                Text(
+                    t("~~Completion rate"),
+                    style = LocalFontStyles.current.header4,
+                )
+            }
+            Column(
+                Modifier.weight(1f),
+                verticalArrangement = listItemSpacedByHalf,
+            ) {
+                Text(
+                    t("~~{case_count} case(s) closed")
+                        .replace("{case_count}", "${team.caseCompleteCount}"),
+                )
+                Text(
+                    t("~~{case_count} open case(s)")
+                        .replace("{case_count}", "${team.caseOpenCount}"),
+                )
+                Text(
+                    t("~~{case_count} overdue case(s)")
+                        .replace("{case_count}", "${team.caseOpenCount}"),
+                )
+            }
+        }
+    }
+
+    Spacer(Modifier.height(4.dp))
+
+    val dateStyle = LocalFontStyles.current.header3
+    CardSurface {
+        Row(
+            fillWidthPadded,
+            horizontalArrangement = listItemSpacedBy,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            team.firstActivityDate?.let { firstActivity ->
+                Column(
+                    Modifier.weight(1f),
+                    verticalArrangement = listItemSpacedByHalf,
+                ) {
+                    Text(
+                        activityDateFormatter.format(firstActivity.toJavaInstant()),
+                        style = dateStyle,
+                    )
+                    Text(
+                        t("~~First Activity"),
+                        color = neutralFontColor,
+                    )
+                }
+            }
+            team.lastActivityDate?.let { lastActivity ->
+                Column(
+                    Modifier.weight(1f),
+                    verticalArrangement = listItemSpacedByHalf,
+                ) {
+                    Text(
+                        activityDateFormatter.format(lastActivity.toJavaInstant()),
+                        style = dateStyle,
+                    )
+                    Text(
+                        t("~~Last Activity"),
+                        color = neutralFontColor,
+                    )
+                }
             }
         }
     }

@@ -10,10 +10,13 @@ android {
 
 dependencies {
     implementation(projects.core.appComponent)
+    implementation(projects.core.common)
     implementation(projects.core.commonassets)
     implementation(projects.core.commoncase)
     implementation(projects.core.mapmarker)
     implementation(projects.core.selectincident)
+
+    implementation(libs.kotlinx.datetime)
 
     implementation(libs.coil.kt.svg)
 }

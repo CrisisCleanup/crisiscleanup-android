@@ -9,15 +9,15 @@ import com.crisiscleanup.core.network.model.NetworkTeamWork
 fun NetworkTeam.asEntity(): TeamEntity {
     val workTypes = assignedWork ?: emptyList()
     val distinctWorksites = workTypes.map(NetworkTeamWork::worksite).toSet()
-    val openWorksites = workTypes.mapNotNull {
+    val closedWorkTypes = workTypes.filter {
         val status = statusFromLiteral(it.status)
-        if (closedWorkTypeStatuses.contains(status)) {
-            null
-        } else {
-            it.worksite
-        }
+        closedWorkTypeStatuses.contains(status)
     }
-    val completeCount = distinctWorksites.size - openWorksites.size
+    val closedWorksites = closedWorkTypes.map(NetworkTeamWork::worksite).toSet()
+    val completeCount = closedWorksites.size
+
+    val workCount = workTypes.size
+    val closedWorkCount = closedWorkTypes.size
     return TeamEntity(
         id = 0,
         networkId = id,
@@ -27,5 +27,7 @@ fun NetworkTeam.asEntity(): TeamEntity {
         color = color,
         caseCount = distinctWorksites.size,
         completeCount = completeCount,
+        workCount = workCount,
+        workCompleteCount = closedWorkCount,
     )
 }

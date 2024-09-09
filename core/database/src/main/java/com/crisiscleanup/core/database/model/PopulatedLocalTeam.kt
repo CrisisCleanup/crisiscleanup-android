@@ -10,6 +10,8 @@ import com.crisiscleanup.core.model.data.LocalChange
 import com.crisiscleanup.core.model.data.LocalTeam
 import com.crisiscleanup.core.model.data.MemberEquipment
 import com.crisiscleanup.core.model.data.Worksite
+import com.crisiscleanup.core.model.data.closedWorkTypeStatuses
+import com.crisiscleanup.core.model.data.statusFromLiteral
 
 data class PopulatedLocalTeam(
     @Embedded
@@ -55,6 +57,15 @@ fun PopulatedLocalTeam.asExternalModel(
 ): LocalTeam {
     val workTypeIds = workTypes.map(WorkTypeEntity::id)
     val missingWorkTypeIds = workTypeIds.filter { !workIdLookup.contains(it) }
+    val caseOverdueCount = workTypes
+        .filter {
+            val status = statusFromLiteral(it.status)
+            it.orgClaim != null && !closedWorkTypeStatuses.contains(status)
+            // TODO Must be claimed for more than n days
+        }
+        .map(WorkTypeEntity::worksiteId)
+        .toSet()
+        .size
     return with(entity) {
         LocalTeam(
             CleanupTeam(
@@ -65,6 +76,9 @@ fun PopulatedLocalTeam.asExternalModel(
                 notes = notes,
                 caseCount = caseCount,
                 caseCompleteCount = completeCount,
+                caseOverdueCount = caseOverdueCount,
+                workCount = workCount,
+                workCompleteCount = workCompleteCount,
                 incidentId = incidentId,
                 memberIds = memberIdRefs.map(TeamMemberCrossRef::contactId),
                 members = members.asExternalModelSorted(),
