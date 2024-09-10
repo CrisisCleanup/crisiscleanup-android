@@ -107,7 +107,7 @@ class ViewCaseViewModel @Inject constructor(
     appEnv: AppEnv,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-) : ViewModel(), KeyResourceTranslator, CaseCameraMediaManager {
+) : ViewModel(), KeyResourceTranslator, CaseCameraMediaManager, EditableWorksiteDataGuarder {
     private val existingCaseArgs = ExistingCaseArgs(savedStateHandle)
     private val incidentIdArg = existingCaseArgs.incidentId
     val worksiteIdArg = existingCaseArgs.worksiteId
@@ -245,6 +245,7 @@ class ViewCaseViewModel @Inject constructor(
             workTypeStatusRepository,
             { key -> translate(key) },
             editableWorksiteProvider,
+            this,
             viewModelScope,
             ioDispatcher,
             appEnv,
@@ -810,6 +811,10 @@ class ViewCaseViewModel @Inject constructor(
     override fun onDeleteImage(image: CaseImage) {
         caseMediaManager.deleteImage(image.id, image.isNetworkImage)
     }
+
+    // EditableWorksiteDataGuarder
+
+    override val isEditableWorksiteOpen = true
 
     // KeyResourceTranslator
 

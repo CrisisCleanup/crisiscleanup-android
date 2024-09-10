@@ -113,7 +113,10 @@ class CreateEditCaseViewModel @Inject constructor(
     addressSearchRepository: AddressSearchRepository,
     drawableResourceBitmapProvider: DrawableResourceBitmapProvider,
     @Dispatcher(Default) coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
-) : EditCaseBaseViewModel(editableWorksiteProvider, translator, logger), CaseCameraMediaManager {
+) : EditCaseBaseViewModel(editableWorksiteProvider, translator, logger),
+    CaseCameraMediaManager,
+    EditableWorksiteDataGuarder {
+
     private val caseEditorArgs = CaseEditorArgs(savedStateHandle)
     private var worksiteIdArg = caseEditorArgs.worksiteId
     private val isCreateWorksite: Boolean
@@ -242,6 +245,7 @@ class CreateEditCaseViewModel @Inject constructor(
             workTypeStatusRepository,
             { key -> translate(key) },
             editableWorksiteProvider,
+            this,
             viewModelScope,
             ioDispatcher,
             appEnv,
@@ -269,9 +273,7 @@ class CreateEditCaseViewModel @Inject constructor(
         caseEditors = dataLoader.viewState
             .filter {
                 it.asCaseData()?.isNetworkLoadFinished == true &&
-                    editorSetInstant?.let { setInstant ->
-                        Clock.System.now().minus(setInstant) < editorSetWindow
-                    } ?: true
+                    isEditableWorksiteOpen
             }
             .mapLatest {
                 editorSetInstant = Clock.System.now()
@@ -874,6 +876,11 @@ class CreateEditCaseViewModel @Inject constructor(
             caseMediaManager.deleteImage(image.id, image.isNetworkImage)
         }
     }
+
+    // EditableWorksiteDataGuarder
+
+    override val isEditableWorksiteOpen: Boolean
+        get() = editorSetInstant?.let { Clock.System.now() - it < editorSetWindow } ?: true
 }
 
 sealed interface CaseEditorViewState {

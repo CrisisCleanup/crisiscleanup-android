@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
@@ -65,7 +66,7 @@ class CreateEditTeamViewModel @Inject constructor(
     appEnv: AppEnv,
     @Logger(CrisisCleanupLoggers.Team) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-) : ViewModel(), KeyTranslator {
+) : ViewModel(), EditableTeamDataGuarder, KeyTranslator {
     private val teamEditorArgs = TeamEditorArgs(savedStateHandle)
     private val incidentIdArg = teamEditorArgs.incidentId
     private val teamIdArg = teamEditorArgs.teamId
@@ -129,7 +130,6 @@ class CreateEditTeamViewModel @Inject constructor(
             accountDataRepository,
             incidentsRepository,
             incidentRefresher,
-            worksitesRepository,
             userRoleRefresher,
             teamsRepository,
             teamChangeRepository,
@@ -137,6 +137,7 @@ class CreateEditTeamViewModel @Inject constructor(
             usersRepository,
             translator,
             editableTeamProvider,
+            this,
             workTypeChipIconProvider,
             permissionManager,
             locationProvider,
@@ -172,6 +173,11 @@ class CreateEditTeamViewModel @Inject constructor(
         headerTitle = translate(titleKey)
         headerSubTitle = teamName
     }
+
+    // EditableTeamDataGuarder
+
+    override val isEditableTeamOpen: Boolean
+        get() = editorSetInstant?.let { Clock.System.now() - it < editorSetWindow } ?: true
 
     // KeyTranslator
 
