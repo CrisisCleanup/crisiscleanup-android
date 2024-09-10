@@ -75,7 +75,7 @@ class ViewTeamViewModel @Inject constructor(
     appEnv: AppEnv,
     @Logger(CrisisCleanupLoggers.Team) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-) : ViewModel() {
+) : ViewModel(), EditableTeamDataGuarder {
     private val viewTeamArgs = ViewTeamArgs(savedStateHandle)
     val incidentIdArg = viewTeamArgs.incidentId
     private val teamIdArg = viewTeamArgs.teamId
@@ -142,7 +142,6 @@ class ViewTeamViewModel @Inject constructor(
             accountDataRepository,
             incidentsRepository,
             incidentRefresher,
-            worksitesRepository,
             userRoleRefresher,
             teamsRepository,
             teamChangeRepository,
@@ -150,6 +149,7 @@ class ViewTeamViewModel @Inject constructor(
             usersRepository,
             translator,
             editableTeamProvider,
+            this,
             workTypeChipIconProvider,
             permissionManager,
             locationProvider,
@@ -215,6 +215,10 @@ class ViewTeamViewModel @Inject constructor(
     ) {
         // TODO As necessary
     }
+
+    // EditableTeamDataGuarder
+
+    override val isEditableTeamOpen = true
 }
 
 data class WorksiteDistance(
