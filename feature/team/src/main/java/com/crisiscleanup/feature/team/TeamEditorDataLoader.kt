@@ -1,11 +1,18 @@
 package com.crisiscleanup.feature.team
 
 import android.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.KeyTranslator
+import com.crisiscleanup.core.common.LocationProvider
+import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.ReplaySubscribed3
+import com.crisiscleanup.core.common.haversineDistance
+import com.crisiscleanup.core.common.kmToMiles
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.TagLogger
+import com.crisiscleanup.core.common.radians
+import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.data.IncidentRefresher
 import com.crisiscleanup.core.data.LanguageRefresher
 import com.crisiscleanup.core.data.UserRoleRefresher
@@ -15,6 +22,7 @@ import com.crisiscleanup.core.data.repository.TeamChangeRepository
 import com.crisiscleanup.core.data.repository.TeamsRepository
 import com.crisiscleanup.core.data.repository.UsersRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
+import com.crisiscleanup.core.mapmarker.WorkTypeChipIconProvider
 import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.EmptyCleanupTeam
 import com.crisiscleanup.core.model.data.LocalTeam
@@ -58,6 +66,9 @@ internal class TeamEditorDataLoader(
     usersRepository: UsersRepository,
     translator: KeyTranslator,
     private val editableTeamProvider: EditableTeamProvider,
+    workTypeChipIconProvider: WorkTypeChipIconProvider,
+    permissionManager: PermissionManager,
+    locationProvider: LocationProvider,
     coroutineScope: CoroutineScope,
     coroutineDispatcher: CoroutineDispatcher,
     appEnv: AppEnv,
@@ -180,6 +191,48 @@ internal class TeamEditorDataLoader(
             )
         }
 
+    private val deviceLocation = permissionManager.hasLocationPermission
+        .map {
+            if (it) {
+                locationProvider.getLocation()
+            } else {
+                null
+            }
+        }
+        .flowOn(coroutineDispatcher)
+        .stateIn(
+            scope = coroutineScope,
+            initialValue = null,
+            started = ReplaySubscribed3,
+        )
+    val worksiteDistances = combine(
+        teamStream.mapNotNull { it?.team?.worksites },
+        deviceLocation,
+        ::Pair,
+    )
+        .mapLatest { (worksites, location) ->
+            worksites.map { worksite ->
+                with(worksite) {
+                    val distance = location?.let {
+                        val (latitudeRad, longitudeRad) = it
+                        haversineDistance(
+                            latitudeRad,
+                            longitudeRad,
+                            latitude.radians,
+                            longitude.radians,
+                        ).kmToMiles
+                    }
+                        ?: -1.0
+                    WorksiteDistance(worksite, distance)
+                }
+            }
+        }
+        .stateIn(
+            scope = coroutineScope,
+            initialValue = emptyList(),
+            started = ReplaySubscribed3,
+        )
+
     val viewState: MutableStateFlow<TeamEditorViewState> =
         MutableStateFlow(TeamEditorViewState.Loading)
 
@@ -228,6 +281,28 @@ internal class TeamEditorDataLoader(
             }
             updated
         }
+        .stateIn(
+            scope = coroutineScope,
+            initialValue = emptyMap(),
+            started = ReplaySubscribed3,
+        )
+
+    val worksiteWorkTypeIconLookup = teamStream
+        .mapNotNull { it?.team?.worksites }
+        .throttleLatest(1.seconds.inWholeMilliseconds)
+        .mapLatest { worksites ->
+            worksites.associate { worksite ->
+                val workTypeIcons = worksite.workTypes.mapNotNull {
+                    workTypeChipIconProvider.getIconBitmap(
+                        it.statusClaim,
+                        it.workType,
+                    )
+                        ?.asImageBitmap()
+                }
+                worksite.id to workTypeIcons
+            }
+        }
+        .flowOn(coroutineDispatcher)
         .stateIn(
             scope = coroutineScope,
             initialValue = emptyMap(),

@@ -3,7 +3,6 @@ package com.crisiscleanup.feature.team
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,16 +11,12 @@ import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.ReplaySubscribed3
-import com.crisiscleanup.core.common.haversineDistance
-import com.crisiscleanup.core.common.kmToMiles
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
-import com.crisiscleanup.core.common.radians
 import com.crisiscleanup.core.common.sync.SyncPusher
-import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.commoncase.CaseFlagsNavigationState
 import com.crisiscleanup.core.commoncase.WorksiteProvider
 import com.crisiscleanup.core.data.IncidentRefresher
@@ -46,18 +41,14 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class ViewTeamViewModel @Inject constructor(
@@ -76,17 +67,17 @@ class ViewTeamViewModel @Inject constructor(
     usersRepository: UsersRepository,
     worksiteProvider: WorksiteProvider,
     workTypeChipIconProvider: WorkTypeChipIconProvider,
-    private val syncPusher: SyncPusher,
     permissionManager: PermissionManager,
     locationProvider: LocationProvider,
     languageRefresher: LanguageRefresher,
+    private val syncPusher: SyncPusher,
     private val translator: KeyResourceTranslator,
     appEnv: AppEnv,
     @Logger(CrisisCleanupLoggers.Team) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
     private val viewTeamArgs = ViewTeamArgs(savedStateHandle)
-    private val incidentIdArg = viewTeamArgs.incidentId
+    val incidentIdArg = viewTeamArgs.incidentId
     private val teamIdArg = viewTeamArgs.teamId
 
     var headerTitle by mutableStateOf("")
@@ -159,6 +150,9 @@ class ViewTeamViewModel @Inject constructor(
             usersRepository,
             translator,
             editableTeamProvider,
+            workTypeChipIconProvider,
+            permissionManager,
+            locationProvider,
             viewModelScope,
             ioDispatcher,
             appEnv,
@@ -189,69 +183,8 @@ class ViewTeamViewModel @Inject constructor(
     val profilePictureLookup = dataLoader.profilePictureLookup
     val userRoleLookup = dataLoader.userRoleLookup
 
-    val worksiteWorkTypeIconLookup = dataLoader.teamStream
-        .mapNotNull { it?.team?.worksites }
-        .throttleLatest(1.seconds.inWholeMilliseconds)
-        .mapLatest { worksites ->
-            worksites.associate { worksite ->
-                val workTypeIcons = worksite.workTypes.mapNotNull {
-                    workTypeChipIconProvider.getIconBitmap(
-                        it.statusClaim,
-                        it.workType,
-                    )
-                        ?.asImageBitmap()
-                }
-                worksite.id to workTypeIcons
-            }
-        }
-        .flowOn(ioDispatcher)
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = emptyMap(),
-            started = ReplaySubscribed3,
-        )
-
-    private val deviceLocation = permissionManager.hasLocationPermission
-        .map {
-            if (it) {
-                locationProvider.getLocation()
-            } else {
-                null
-            }
-        }
-        .flowOn(ioDispatcher)
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = null,
-            started = ReplaySubscribed3,
-        )
-    val worksites = combine(
-        dataLoader.teamStream.mapNotNull { it?.team?.worksites },
-        deviceLocation,
-        ::Pair,
-    )
-        .mapLatest { (worksites, location) ->
-            worksites.map { worksite ->
-                with(worksite) {
-                    val distance = location?.let {
-                        val (latitudeRad, longitudeRad) = it
-                        haversineDistance(
-                            latitudeRad,
-                            longitudeRad,
-                            latitude.radians,
-                            longitude.radians,
-                        ).kmToMiles
-                    }
-                        ?: -1.0
-                    WorksiteDistance(worksite, distance)
-                }
-            }
-        }
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = emptyList(),
-            started = ReplaySubscribed3,
-        )
+    val worksiteWorkTypeIconLookup = dataLoader.worksiteWorkTypeIconLookup
+    val worksiteDistances = dataLoader.worksiteDistances
 
     private fun updateHeaderTitle(teamName: String = "") {
         headerTitle = if (teamName.isEmpty()) {
