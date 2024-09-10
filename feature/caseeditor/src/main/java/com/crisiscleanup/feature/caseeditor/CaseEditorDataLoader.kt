@@ -42,6 +42,11 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.time.Duration.Companion.seconds
 
+// TODO Refactor or redesign data loading so this state is not necessary
+internal interface EditableWorksiteDataGuarder {
+    val isEditableWorksiteOpen: Boolean
+}
+
 internal class CaseEditorDataLoader(
     private val isCreateWorksite: Boolean,
     incidentIdIn: Long,
@@ -58,6 +63,7 @@ internal class CaseEditorDataLoader(
     workTypeStatusRepository: WorkTypeStatusRepository,
     translate: (String) -> String,
     private val editableWorksiteProvider: EditableWorksiteProvider,
+    val editableWorksiteDataGuarder: EditableWorksiteDataGuarder,
     coroutineScope: CoroutineScope,
     coroutineDispatcher: CoroutineDispatcher,
     appEnv: AppEnv,
@@ -332,8 +338,10 @@ internal class CaseEditorDataLoader(
                     )
                 }
 
-                if (!isStale || loadedWorksite != null) {
-                    editableWorksite.value = worksiteState
+                if (editableWorksiteDataGuarder.isEditableWorksiteOpen) {
+                    if (!isStale || loadedWorksite != null) {
+                        editableWorksite.value = worksiteState
+                    }
                 }
                 incidentBounds = bounds
             }

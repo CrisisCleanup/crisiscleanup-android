@@ -21,7 +21,6 @@ import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.TeamChangeRepository
 import com.crisiscleanup.core.data.repository.TeamsRepository
 import com.crisiscleanup.core.data.repository.UsersRepository
-import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.WorkTypeChipIconProvider
 import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.EmptyCleanupTeam
@@ -51,6 +50,11 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.time.Duration.Companion.seconds
 
+// TODO Refactor or redesign data loading so this state is not necessary
+internal interface EditableTeamDataGuarder {
+    val isEditableTeamOpen: Boolean
+}
+
 internal class TeamEditorDataLoader(
     private val isCreateTeam: Boolean,
     incidentIdIn: Long,
@@ -58,7 +62,6 @@ internal class TeamEditorDataLoader(
     accountDataRepository: AccountDataRepository,
     incidentsRepository: IncidentsRepository,
     incidentRefresher: IncidentRefresher,
-    worksitesRepository: WorksitesRepository,
     userRoleRefresher: UserRoleRefresher,
     teamsRepository: TeamsRepository,
     teamChangeRepository: TeamChangeRepository,
@@ -66,6 +69,7 @@ internal class TeamEditorDataLoader(
     usersRepository: UsersRepository,
     translator: KeyTranslator,
     private val editableTeamProvider: EditableTeamProvider,
+    editableTeamDataGuarder: EditableTeamDataGuarder,
     workTypeChipIconProvider: WorkTypeChipIconProvider,
     permissionManager: PermissionManager,
     locationProvider: LocationProvider,
@@ -169,8 +173,10 @@ internal class TeamEditorDataLoader(
             with(editableTeamProvider) {
                 this.incident = incident
 
-                if (!isStale || loadedTeam != null) {
-                    editableTeam.value = teamState
+                if (editableTeamDataGuarder.isEditableTeamOpen) {
+                    if (!isStale || loadedTeam != null) {
+                        editableTeam.value = teamState
+                    }
                 }
             }
 
