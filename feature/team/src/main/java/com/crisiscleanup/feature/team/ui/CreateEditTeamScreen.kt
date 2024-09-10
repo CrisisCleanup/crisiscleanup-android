@@ -55,8 +55,8 @@ private fun CreateEditTeamView(
 
     Column {
         TeamEditorHeader(
-            title = viewModel.screenTitle,
-            subTitle = viewModel.screenSubTitle,
+            title = viewModel.headerTitle,
+            subTitle = viewModel.headerSubTitle,
             onCancel = onBack,
         )
 

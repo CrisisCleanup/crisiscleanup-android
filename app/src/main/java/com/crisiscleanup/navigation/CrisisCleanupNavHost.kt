@@ -221,18 +221,18 @@ fun CrisisCleanupNavHost(
     }
 
     val navToEditTeamMembers = remember(navController) {
-        { teamId: Long ->
-            navController.navigateToTeamEditor(teamId, TeamEditorStep.Members)
+        { incidentId: Long, teamId: Long ->
+            navController.navigateToTeamEditor(incidentId, teamId, TeamEditorStep.Members)
         }
     }
     val navToEditTeamCases = remember(navController) {
-        { teamId: Long ->
-            navController.navigateToTeamEditor(teamId, TeamEditorStep.Cases)
+        { incidentId: Long, teamId: Long ->
+            navController.navigateToTeamEditor(incidentId, teamId, TeamEditorStep.Cases)
         }
     }
     val navToEditTeamEquipment = remember(navController) {
-        { teamId: Long ->
-            navController.navigateToTeamEditor(teamId, TeamEditorStep.Equipment)
+        { incidentId: Long, teamId: Long ->
+            navController.navigateToTeamEditor(incidentId, teamId, TeamEditorStep.Equipment)
         }
     }
 

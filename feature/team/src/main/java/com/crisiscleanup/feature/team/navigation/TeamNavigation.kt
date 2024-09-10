@@ -29,8 +29,13 @@ internal class ViewTeamArgs(val incidentId: Long, val teamId: Long) {
     )
 }
 
-internal class TeamEditorArgs(val teamId: Long, val editorStep: String) {
+internal class TeamEditorArgs(
+    val incidentId: Long,
+    val teamId: Long,
+    val editorStep: String,
+) {
     constructor(savedStateHandle: SavedStateHandle) : this(
+        checkNotNull(savedStateHandle[INCIDENT_ID_ARG]),
         checkNotNull(savedStateHandle[TEAM_ID_ARG]),
         checkNotNull(savedStateHandle[TEAM_EDITOR_STEP]),
     )
@@ -46,10 +51,16 @@ fun NavController.navigateToViewTeam(incidentId: Long, teamId: Long) {
 }
 
 fun NavController.navigateToTeamEditor(
+    incidentId: Long = EmptyIncident.id,
     teamId: Long = EmptyCleanupTeam.id,
     editorStep: TeamEditorStep = TeamEditorStep.Name,
 ) {
-    val route = "$TEAM_EDITOR_ROUTE?$TEAM_ID_ARG=$teamId&$TEAM_EDITOR_STEP=${editorStep.literal}"
+    val args = listOf(
+        "$INCIDENT_ID_ARG=$incidentId",
+        "$TEAM_ID_ARG=$teamId",
+        "$TEAM_EDITOR_STEP=${editorStep.literal}",
+    ).joinToString(",")
+    val route = "$TEAM_EDITOR_ROUTE?$args"
     navigate(route)
 }
 
@@ -77,9 +88,9 @@ fun NavGraphBuilder.teamsScreen(
 
 fun NavGraphBuilder.viewTeamScreen(
     onBack: () -> Unit = {},
-    editTeamMembers: (Long) -> Unit = {},
-    editCases: (Long) -> Unit = {},
-    editEquipment: (Long) -> Unit = {},
+    editTeamMembers: (Long, Long) -> Unit = { _, _ -> },
+    editCases: (Long, Long) -> Unit = { _, _ -> },
+    editEquipment: (Long, Long) -> Unit = { _, _ -> },
     viewCase: (Long, Long) -> Boolean = { _, _ -> false },
     openAddFlag: () -> Unit = {},
     openAssignCaseTeam: (Long) -> Unit = {},
@@ -112,9 +123,18 @@ fun NavGraphBuilder.viewTeamScreen(
 fun NavGraphBuilder.teamEditorScreen(
     onBack: () -> Unit,
 ) {
+    val args = listOf(
+        "$INCIDENT_ID_ARG={$INCIDENT_ID_ARG}",
+        "$TEAM_ID_ARG={$TEAM_ID_ARG}",
+        "$TEAM_EDITOR_STEP={$TEAM_EDITOR_STEP}",
+    ).joinToString(",")
     composable(
-        route = "$TEAM_EDITOR_ROUTE?$TEAM_ID_ARG={$TEAM_ID_ARG}&$TEAM_EDITOR_STEP={$TEAM_EDITOR_STEP}",
+        route = "$TEAM_EDITOR_ROUTE?$args",
         arguments = listOf(
+            navArgument(INCIDENT_ID_ARG) {
+                type = NavType.LongType
+                defaultValue = EmptyIncident.id
+            },
             navArgument(TEAM_ID_ARG) {
                 type = NavType.LongType
                 defaultValue = EmptyCleanupTeam.id

@@ -99,9 +99,9 @@ private val activityDateFormatter =
 @Composable
 fun ViewTeamRoute(
     onBack: () -> Unit,
-    onEditTeamMembers: (Long) -> Unit = {},
-    onEditCases: (Long) -> Unit = {},
-    onEditEquipment: (Long) -> Unit = {},
+    onEditTeamMembers: (Long, Long) -> Unit = { _, _ -> },
+    onEditCases: (Long, Long) -> Unit = { _, _ -> },
+    onEditEquipment: (Long, Long) -> Unit = { _, _ -> },
     onViewCase: (Long, Long) -> Boolean = { _, _ -> false },
     onOpenFlags: () -> Unit = {},
     onAssignCaseTeam: (Long) -> Unit = {},
@@ -127,9 +127,9 @@ fun ViewTeamRoute(
 @Composable
 private fun ViewTeamScreen(
     onBack: () -> Unit,
-    onEditTeamMembers: (Long) -> Unit = {},
-    onEditCases: (Long) -> Unit = {},
-    onEditEquipment: (Long) -> Unit = {},
+    onEditTeamMembers: (Long, Long) -> Unit = { _, _ -> },
+    onEditCases: (Long, Long) -> Unit = { _, _ -> },
+    onEditEquipment: (Long, Long) -> Unit = { _, _ -> },
     onViewCase: (Long, Long) -> Boolean = { _, _ -> false },
     onAssignCaseTeam: (Long) -> Unit = {},
     viewModel: ViewTeamViewModel = hiltViewModel(),
@@ -145,7 +145,7 @@ private fun ViewTeamScreen(
 
     val accountId by viewModel.accountId.collectAsStateWithLifecycle()
     val team by viewModel.editableTeam.collectAsStateWithLifecycle()
-    val worksites by viewModel.worksites.collectAsStateWithLifecycle()
+    val worksites by viewModel.worksiteDistances.collectAsStateWithLifecycle()
     val profilePictureLookup by viewModel.profilePictureLookup.collectAsStateWithLifecycle()
     val userRoleLookup by viewModel.userRoleLookup.collectAsStateWithLifecycle()
     val worksiteWorkTypeIconLookup by viewModel.worksiteWorkTypeIconLookup.collectAsStateWithLifecycle()
@@ -160,14 +160,16 @@ private fun ViewTeamScreen(
         }
     }
 
+    val incidentId = viewModel.incidentIdArg
+
     val onCaseSelect = remember(viewModel) {
         { worksite: Worksite ->
-            onViewCase(worksite.incidentId, worksite.id)
+            onViewCase(incidentId, worksite.id)
         }
     }
-    val openEditMembers = remember(team.id) { { onEditTeamMembers(team.id) } }
-    val openEditCases = remember(team.id) { { onEditCases(team.id) } }
-    val openEditEquipment = remember(team.id) { { onEditEquipment(team.id) } }
+    val openEditMembers = remember(team.id) { { onEditTeamMembers(incidentId, team.id) } }
+    val openEditCases = remember(team.id) { { onEditCases(incidentId, team.id) } }
+    val openEditEquipment = remember(team.id) { { onEditEquipment(incidentId, team.id) } }
     val assignCaseTeam = remember(viewModel) {
         { worksite: Worksite ->
             onAssignCaseTeam(worksite.id)
