@@ -28,6 +28,7 @@ import com.crisiscleanup.core.data.repository.UsersRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.WorkTypeChipIconProvider
 import com.crisiscleanup.core.model.data.EmptyCleanupTeam
+import com.crisiscleanup.core.model.data.PersonContact
 import com.crisiscleanup.feature.team.model.TeamEditorStep
 import com.crisiscleanup.feature.team.model.stepFromLiteral
 import com.crisiscleanup.feature.team.navigation.TeamEditorArgs
@@ -128,6 +129,16 @@ class CreateEditTeamViewModel @Inject constructor(
 
     var editingTeamName by mutableStateOf("")
         private set
+    val editingTeamMembers = MutableStateFlow(emptyList<PersonContact>())
+    val teamMemberIds = editingTeamMembers
+        .mapLatest {
+            it.map(PersonContact::id).toSet()
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = emptySet(),
+            started = ReplaySubscribed3,
+        )
 
     init {
         updateHeaderTitles()
@@ -173,7 +184,10 @@ class CreateEditTeamViewModel @Inject constructor(
             .mapLatest {
                 editorSetInstant = Clock.System.now()
 
-                editingTeamName = it.asTeamData()?.team?.name ?: ""
+                it.asTeamData()?.team?.let { team ->
+                    editingTeamName = team.name
+                    editingTeamMembers.value = team.members
+                }
             }
             .launchIn(viewModelScope)
     }
@@ -203,6 +217,14 @@ class CreateEditTeamViewModel @Inject constructor(
 
     fun onSuggestTeamName() {
         editingTeamName = teamNameGenerator.generateName()
+    }
+
+    fun onAddTeamMember(person: PersonContact) {
+        if (!teamMemberIds.value.contains(person.id)) {
+            editingTeamMembers.value = editingTeamMembers.value.toMutableList().also {
+                it.add(person)
+            }
+        }
     }
 
     fun saveChanges(

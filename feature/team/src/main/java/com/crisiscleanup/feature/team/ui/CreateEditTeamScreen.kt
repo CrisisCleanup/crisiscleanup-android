@@ -21,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,6 +49,8 @@ import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
 import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.EmptyCleanupTeam
+import com.crisiscleanup.core.model.data.PersonContact
+import com.crisiscleanup.core.model.data.UserRole
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.feature.team.CreateEditTeamViewModel
 import kotlinx.coroutines.launch
@@ -71,6 +74,14 @@ private fun CreateEditTeamView(
 
     val editingTeam by viewModel.editingTeam.collectAsStateWithLifecycle()
 
+    val editingTeamMembers by viewModel.editingTeamMembers.collectAsStateWithLifecycle()
+    val profilePictureLookup by viewModel.profilePictureLookup.collectAsStateWithLifecycle()
+    val userRoleLookup by viewModel.userRoleLookup.collectAsStateWithLifecycle()
+
+    var showJoinTeamQrCode by rememberSaveable { mutableStateOf(false) }
+
+    val teamMemberIds by viewModel.teamMemberIds.collectAsStateWithLifecycle()
+
     Column {
         TeamEditorHeader(
             title = viewModel.headerTitle,
@@ -86,13 +97,24 @@ private fun CreateEditTeamView(
                     tabState.startingIndex,
                     isEditable = isEditable,
                     teamName = viewModel.editingTeamName,
+                    teamMembers = editingTeamMembers,
+                    teamMemberIds = teamMemberIds,
                     onTeamNameChange = viewModel::onTeamNameChange,
                     onSuggestName = viewModel::onSuggestTeamName,
+                    onAddTeamMember = viewModel::onAddTeamMember,
+                    profilePictureLookup = profilePictureLookup,
+                    userRoleLookup = userRoleLookup,
+                    onToggleJoinTeamQrCode = { showJoinTeamQrCode = !showJoinTeamQrCode },
                 )
             }
 
             BusyIndicatorFloatingTopCenter(isLoading)
         }
+    }
+
+    if (showJoinTeamQrCode) {
+        val hideJoinTeamQrCode = { { showJoinTeamQrCode = false } }
+        // TODO QR code UI
     }
 }
 
@@ -134,8 +156,14 @@ private fun CreateEditTeamContent(
     initialPage: Int,
     isEditable: Boolean,
     teamName: String,
+    teamMembers: List<PersonContact>,
+    teamMemberIds: Set<Long>,
     onTeamNameChange: (String) -> Unit,
     onSuggestName: () -> Unit,
+    onAddTeamMember: (PersonContact) -> Unit,
+    profilePictureLookup: Map<Long, String>,
+    userRoleLookup: Map<Int, UserRole>,
+    onToggleJoinTeamQrCode: () -> Unit = {},
 ) {
     // TODO Page does not keep across first orientation change
     val pagerState = rememberPagerState(
@@ -192,7 +220,16 @@ private fun CreateEditTeamContent(
                     onSuggestName,
                 )
 
-                1 -> EditTeamMembersView(team)
+                1 -> EditTeamMembersView(
+                    teamMembers,
+                    teamMemberIds,
+                    onAddTeamMember,
+                    isEditable,
+                    profilePictureLookup,
+                    userRoleLookup,
+                    onToggleQrCode = onToggleJoinTeamQrCode,
+                )
+
                 2 -> EditTeamCasesView(team)
                 3 -> EditTeamEquipmentView(team)
                 4 -> ReviewChangesView(team)
@@ -274,13 +311,6 @@ private fun EditTeamNameView(
 
         Modifier.weight(1f)
     }
-}
-
-@Composable
-private fun EditTeamMembersView(
-    team: CleanupTeam,
-) {
-    Text("Edit members ${team.members.size}")
 }
 
 @Composable
