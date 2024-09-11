@@ -47,6 +47,7 @@ import com.crisiscleanup.core.designsystem.theme.listItemTopPadding
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
 import com.crisiscleanup.core.model.data.CleanupTeam
+import com.crisiscleanup.core.model.data.EmptyCleanupTeam
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.feature.team.CreateEditTeamViewModel
 import kotlinx.coroutines.launch
@@ -185,7 +186,8 @@ private fun CreateEditTeamContent(
                 0 -> EditTeamNameView(
                     team.colorInt,
                     teamName,
-                    isEditable,
+                    isEditable = isEditable,
+                    hasFocus = team.id == EmptyCleanupTeam.id,
                     onTeamNameChange,
                     onSuggestName,
                 )
@@ -214,6 +216,7 @@ private fun EditTeamNameView(
     teamColorInt: Int,
     name: String,
     isEditable: Boolean,
+    hasFocus: Boolean,
     onTeamNameChange: (String) -> Unit,
     onSuggestName: () -> Unit,
 ) {
@@ -237,6 +240,7 @@ private fun EditTeamNameView(
             label = t("~~Team name"),
             value = name,
             onValueChange = { onTeamNameChange(it) },
+            hasFocus = hasFocus,
             keyboardType = KeyboardType.Password,
             enabled = isEditable,
             isError = false,
