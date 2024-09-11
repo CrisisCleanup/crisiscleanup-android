@@ -31,13 +31,17 @@ import com.crisiscleanup.core.model.data.EmptyCleanupTeam
 import com.crisiscleanup.feature.team.model.TeamEditorStep
 import com.crisiscleanup.feature.team.model.stepFromLiteral
 import com.crisiscleanup.feature.team.navigation.TeamEditorArgs
+import com.crisiscleanup.feature.team.util.NameGenerator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.datetime.Clock
@@ -45,6 +49,7 @@ import kotlinx.datetime.Instant
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
+@OptIn(FlowPreview::class)
 @HiltViewModel
 class CreateEditTeamViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -61,6 +66,7 @@ class CreateEditTeamViewModel @Inject constructor(
     permissionManager: PermissionManager,
     locationProvider: LocationProvider,
     languageRefresher: LanguageRefresher,
+    private val teamNameGenerator: NameGenerator,
     private val syncPusher: SyncPusher,
     private val translator: KeyTranslator,
     appEnv: AppEnv,
@@ -96,6 +102,8 @@ class CreateEditTeamViewModel @Inject constructor(
             started = ReplaySubscribed3,
         )
 
+    val editingTeam = editableTeamProvider.editableTeam
+
     private val dataLoader: TeamEditorDataLoader
 
     /**
@@ -116,6 +124,9 @@ class CreateEditTeamViewModel @Inject constructor(
     var headerTitle by mutableStateOf("")
         private set
     var headerSubTitle by mutableStateOf("")
+        private set
+
+    var editingTeamName by mutableStateOf("")
         private set
 
     init {
@@ -153,6 +164,18 @@ class CreateEditTeamViewModel @Inject constructor(
                 updateHeaderTitles(it.team.name)
             }
             .launchIn(viewModelScope)
+
+        dataLoader.viewState
+            .filter {
+                it.asTeamData()?.isNetworkLoadFinished == true &&
+                        isEditableTeamOpen
+            }
+            .mapLatest {
+                editorSetInstant = Clock.System.now()
+
+                editingTeamName = it.asTeamData()?.team?.name ?: ""
+            }
+            .launchIn(viewModelScope)
     }
 
     val isLoading = dataLoader.isLoading
@@ -172,6 +195,21 @@ class CreateEditTeamViewModel @Inject constructor(
         }
         headerTitle = translate(titleKey)
         headerSubTitle = teamName
+    }
+
+    fun onTeamNameChange(name: String) {
+        editingTeamName = name
+    }
+
+    fun onSuggestTeamName() {
+        editingTeamName = teamNameGenerator.generateName()
+    }
+
+    fun saveChanges(
+        claimUnclaimed: Boolean,
+        backOnSuccess: Boolean = true,
+    ) {
+        // TODO Require name if blank
     }
 
     // EditableTeamDataGuarder
