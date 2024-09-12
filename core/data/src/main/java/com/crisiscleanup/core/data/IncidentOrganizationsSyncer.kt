@@ -106,13 +106,15 @@ class IncidentOrganizationsSyncer @Inject constructor(
                 syncCount,
             ) ?: break
 
-            val (organizations, primaryContacts) = cachedData.organizations.asEntities(
+            val entities = cachedData.organizations.asEntities(
                 getContacts = true,
                 getReferences = false,
             )
+            val organizations = entities.organizations
             incidentOrganizationDaoPlus.saveOrganizations(
                 organizations,
-                primaryContacts,
+                entities.primaryContacts,
+                entities.organizationIncidentLookup,
             )
 
             statsUpdater.addSavedCount((organizations.size * 0.5).toInt())

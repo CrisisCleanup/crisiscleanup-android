@@ -17,8 +17,13 @@
       "user_count": 1,
       "facebook": "https://www.test.com/BrevardCountyGovt",
       "twitter": "https://twitter.com/BrevardCo_FL",
-      "approved_incidents": [
+      "incidents": [
+        694,
         255,
+        254
+      ],
+      "approved_incidents": [
+        694,
         255,
         254
       ],
@@ -64,6 +69,23 @@
       "user_count": 197,
       "facebook": null,
       "twitter": null,
+      "incidents": [
+        102,
+        155,
+        98,
+        61,
+        95,
+        41,
+        42,
+        208,
+        230,
+        210,
+        254,
+        225,
+        255,
+        213,
+        255
+      ],
       "approved_incidents": [
         102,
         155,

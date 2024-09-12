@@ -72,3 +72,30 @@ data class OrganizationAffiliateEntity(
     @ColumnInfo("affiliate_id")
     val affiliateId: Long,
 )
+
+@Entity(
+    "organization_to_incident",
+    primaryKeys = ["id", "incident_id"],
+    foreignKeys = [
+        ForeignKey(
+            entity = IncidentOrganizationEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+        ForeignKey(
+            entity = IncidentEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["incident_id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+    indices = [
+        Index(value = ["incident_id", "id"]),
+    ],
+)
+data class OrganizationIncidentCrossRef(
+    val id: Long,
+    @ColumnInfo("incident_id")
+    val incidentId: Long,
+)

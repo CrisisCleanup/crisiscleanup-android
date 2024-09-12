@@ -10,6 +10,7 @@ import com.crisiscleanup.core.database.dao.fts.PopulatedOrganizationIdNameMatchI
 import com.crisiscleanup.core.database.model.IncidentOrganizationEntity
 import com.crisiscleanup.core.database.model.IncidentOrganizationSyncStatsEntity
 import com.crisiscleanup.core.database.model.OrganizationAffiliateEntity
+import com.crisiscleanup.core.database.model.OrganizationIncidentCrossRef
 import com.crisiscleanup.core.database.model.OrganizationPrimaryContactCrossRef
 import com.crisiscleanup.core.database.model.PopulatedIncidentOrganization
 import com.crisiscleanup.core.database.model.PopulatedOrganizationLocationIds
@@ -69,6 +70,18 @@ interface IncidentOrganizationDao {
     @Transaction
     @Query("SELECT primary_location, secondary_location FROM incident_organizations WHERE id=:orgId")
     fun streamLocationIds(orgId: Long): Flow<PopulatedOrganizationLocationIds?>
+
+    @Transaction
+    @Query(
+        """
+        DELETE FROM organization_to_incident
+        WHERE id=:organizationId AND incident_id NOT IN(:incidentIds)
+        """,
+    )
+    fun deleteUnspecifiedOrganizationIncidents(organizationId: Long, incidentIds: Collection<Long>)
+
+    @Upsert
+    fun upsertOrganizationIncidents(organizationIncidents: Collection<OrganizationIncidentCrossRef>)
 
     @Transaction
     @Query("SELECT name FROM incident_organizations ORDER BY RANDOM() LIMIT 1")

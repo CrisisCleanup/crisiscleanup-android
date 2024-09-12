@@ -2,6 +2,7 @@ package com.crisiscleanup.core.data.model
 
 import com.crisiscleanup.core.database.model.IncidentOrganizationEntity
 import com.crisiscleanup.core.database.model.OrganizationAffiliateEntity
+import com.crisiscleanup.core.database.model.OrganizationIncidentCrossRef
 import com.crisiscleanup.core.database.model.OrganizationPrimaryContactCrossRef
 import com.crisiscleanup.core.database.model.PersonContactEntity
 import com.crisiscleanup.core.network.model.NetworkIncidentOrganization
@@ -20,6 +21,9 @@ fun NetworkIncidentOrganization.primaryContactCrossReferences() =
 fun NetworkIncidentOrganization.affiliateOrganizationCrossReferences() =
     affiliates.map { OrganizationAffiliateEntity(id, it) }
 
+fun NetworkIncidentOrganization.incidentCrossReferences() =
+    incidents?.map { OrganizationIncidentCrossRef(id, it) } ?: emptyList()
+
 fun Collection<NetworkIncidentOrganization>.asEntities(
     getContacts: Boolean,
     getReferences: Boolean,
@@ -33,29 +37,30 @@ fun Collection<NetworkIncidentOrganization>.asEntities(
         } else {
             emptyList()
         }
-    val organizationContactCrossRefs =
-        if (getReferences) {
-            flatMap(NetworkIncidentOrganization::primaryContactCrossReferences)
-        } else {
-            emptyList()
-        }
-    val organizationAffiliates =
-        if (getReferences) {
-            flatMap(NetworkIncidentOrganization::affiliateOrganizationCrossReferences)
-        } else {
-            emptyList()
-        }
+    val contactCrossRefs = if (getReferences) {
+        flatMap(NetworkIncidentOrganization::primaryContactCrossReferences)
+    } else {
+        emptyList()
+    }
+    val affiliateCrossRefs = if (getReferences) {
+        flatMap(NetworkIncidentOrganization::affiliateOrganizationCrossReferences)
+    } else {
+        emptyList()
+    }
+    val incidentLookup = associate { it.id to (it.incidents ?: emptyList()) }
     return OrganizationEntities(
         organizations,
         primaryContacts,
-        organizationContactCrossRefs,
-        organizationAffiliates,
+        contactCrossRefs,
+        affiliateCrossRefs,
+        incidentLookup,
     )
 }
 
 data class OrganizationEntities(
     val organizations: List<IncidentOrganizationEntity>,
     val primaryContacts: List<PersonContactEntity>,
-    val organizationContactCrossRefs: List<OrganizationPrimaryContactCrossRef>,
-    val orgAffiliates: List<OrganizationAffiliateEntity>,
+    val contactCrossRefs: List<OrganizationPrimaryContactCrossRef>,
+    val affiliates: List<OrganizationAffiliateEntity>,
+    val organizationIncidentLookup: Map<Long, Collection<Long>>,
 )

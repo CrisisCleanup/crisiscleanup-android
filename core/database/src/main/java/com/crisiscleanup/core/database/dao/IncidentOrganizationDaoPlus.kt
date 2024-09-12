@@ -4,6 +4,7 @@ import androidx.room.withTransaction
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
 import com.crisiscleanup.core.database.model.IncidentOrganizationEntity
 import com.crisiscleanup.core.database.model.OrganizationAffiliateEntity
+import com.crisiscleanup.core.database.model.OrganizationIncidentCrossRef
 import com.crisiscleanup.core.database.model.OrganizationPrimaryContactCrossRef
 import com.crisiscleanup.core.database.model.PersonContactEntity
 import javax.inject.Inject
@@ -14,9 +15,19 @@ class IncidentOrganizationDaoPlus @Inject constructor(
     suspend fun saveOrganizations(
         organizations: Collection<IncidentOrganizationEntity>,
         contacts: Collection<PersonContactEntity>,
+        organizationIncidentLookup: Map<Long, Collection<Long>>,
     ) = db.withTransaction {
-        db.incidentOrganizationDao().upsert(organizations)
+        val organizationDao = db.incidentOrganizationDao()
+        organizationDao.upsert(organizations)
         db.personContactDao().upsert(contacts)
+
+        for ((organizationId, incidentIds) in organizationIncidentLookup) {
+            organizationDao.deleteUnspecifiedOrganizationIncidents(organizationId, incidentIds)
+            val organizationIncidents = incidentIds.map {
+                OrganizationIncidentCrossRef(organizationId, it)
+            }
+            organizationDao.upsertOrganizationIncidents(organizationIncidents)
+        }
     }
 
     suspend fun saveOrganizationReferences(

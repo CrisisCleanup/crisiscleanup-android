@@ -79,10 +79,12 @@ class OfflineFirstOrganizationsRepository @Inject constructor(
             primaryContacts,
             organizationContactCrossRefs,
             organizationAffiliates,
+            organizationIncidentLookup,
         ) = networkOrganizations.asEntities(getContacts = true, getReferences = true)
         incidentOrganizationDaoPlus.saveOrganizations(
             organizations,
             primaryContacts,
+            organizationIncidentLookup,
         )
         incidentOrganizationDaoPlus.saveOrganizationReferences(
             organizations,
@@ -183,7 +185,11 @@ class OfflineFirstOrganizationsRepository @Inject constructor(
         }
 
         try {
-            incidentOrganizationDaoPlus.saveOrganizations(organizationRecords, emptyList())
+            incidentOrganizationDaoPlus.saveOrganizations(
+                organizationRecords,
+                emptyList(),
+                emptyMap(),
+            )
         } catch (e: Exception) {
             logger.logException(e)
         }

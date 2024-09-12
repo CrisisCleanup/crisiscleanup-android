@@ -191,6 +191,7 @@ class CrisisCleanupListsRepository @Inject constructor(
                             organizationEntities,
                             // TODO Save contacts and related data from network data. See IncidentOrganizationsSyncer for reference.
                             emptyList(),
+                            emptyMap(),
                         )
 
                         organizationLookup = getOrganizationLookup()

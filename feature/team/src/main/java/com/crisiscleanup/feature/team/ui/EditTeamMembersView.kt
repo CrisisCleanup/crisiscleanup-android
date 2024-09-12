@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CollapsibleIcon
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
@@ -48,6 +49,7 @@ private fun LazyListScope.sectionHeaderItem(
 internal fun EditTeamMembersView(
     members: List<PersonContact>,
     teamMemberIds: Set<Long>,
+    availableTeamMembers: List<PersonContact>,
     onAddMember: (PersonContact) -> Unit,
     isEditable: Boolean,
     profilePictureLookup: Map<Long, String>,
@@ -124,15 +126,22 @@ internal fun EditTeamMembersView(
             itemKey = "add-user-text",
         )
 
-//        TeamMemberContactCardView(
-//            person,
-//            profilePictureLookup,
-//            userRoleLookup,
-//        ) {
-//            CrisisCleanupButton(
-//                onClick = { onAddMember(person) },
-//                enabled = isEditable,
-//            )
-//        }
+        items(
+            availableTeamMembers,
+            key = { "available-member-${it.id}" },
+            contentType = { "available-member-item" },
+        ) { person ->
+            TeamMemberCardView(
+                person,
+                profilePictureLookup,
+                userRoleLookup,
+            ) {
+                CrisisCleanupButton(
+                    text = t("actions.add"),
+                    onClick = { onAddMember(person) },
+                    enabled = isEditable,
+                )
+            }
+        }
     }
 }
