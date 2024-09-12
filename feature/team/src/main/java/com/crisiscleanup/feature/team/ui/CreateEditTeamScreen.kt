@@ -223,6 +223,8 @@ private fun CreateEditTeamContent(
                 1 -> EditTeamMembersView(
                     teamMembers,
                     teamMemberIds,
+                    // TODO Query available team members for adding
+                    emptyList(),
                     onAddTeamMember,
                     isEditable,
                     profilePictureLookup,

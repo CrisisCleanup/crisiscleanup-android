@@ -35,6 +35,7 @@ class NetworkOrganizationTest {
                     mobile = "5353151368",
                 ),
             ),
+            incidents = listOf(694, 255, 254),
         )
         assertEquals(expected, organizations[0])
     }
