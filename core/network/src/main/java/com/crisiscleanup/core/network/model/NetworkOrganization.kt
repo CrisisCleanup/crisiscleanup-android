@@ -23,6 +23,7 @@ data class NetworkIncidentOrganization(
     val typeT: String?,
     @SerialName("primary_contacts")
     val primaryContacts: Collection<NetworkPersonContact>?,
+    val incidents: Collection<Long>?,
 )
 
 @Serializable
