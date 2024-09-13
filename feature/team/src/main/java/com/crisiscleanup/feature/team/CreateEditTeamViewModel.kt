@@ -20,6 +20,7 @@ import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.data.IncidentRefresher
 import com.crisiscleanup.core.data.LanguageRefresher
 import com.crisiscleanup.core.data.UserRoleRefresher
+import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.TeamChangeRepository
@@ -36,7 +37,6 @@ import com.crisiscleanup.feature.team.util.NameGenerator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
@@ -45,18 +45,19 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
-@OptIn(FlowPreview::class)
 @HiltViewModel
 class CreateEditTeamViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     accountDataRepository: AccountDataRepository,
     incidentsRepository: IncidentsRepository,
     incidentRefresher: IncidentRefresher,
+    accountDataRefresher: AccountDataRefresher,
     worksitesRepository: WorksitesRepository,
     userRoleRefresher: UserRoleRefresher,
     teamsRepository: TeamsRepository,
@@ -179,7 +180,7 @@ class CreateEditTeamViewModel @Inject constructor(
         dataLoader.viewState
             .filter {
                 it.asTeamData()?.isNetworkLoadFinished == true &&
-                        isEditableTeamOpen
+                    isEditableTeamOpen
             }
             .mapLatest {
                 editorSetInstant = Clock.System.now()
@@ -190,6 +191,10 @@ class CreateEditTeamViewModel @Inject constructor(
                 }
             }
             .launchIn(viewModelScope)
+
+        viewModelScope.launch(ioDispatcher) {
+            accountDataRefresher.updateOrganizationAndAffiliates()
+        }
     }
 
     val isLoading = dataLoader.isLoading
