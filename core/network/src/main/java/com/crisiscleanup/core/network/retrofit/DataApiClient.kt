@@ -346,7 +346,7 @@ class DataApiClient @Inject constructor(
 
     override suspend fun getProfileData() = networkApi.getProfile()
 
-    override suspend fun getOrganizations(organizations: List<Long>) =
+    override suspend fun getOrganizations(organizations: Collection<Long>) =
         if (organizations.isEmpty()) {
             emptyList()
         } else {

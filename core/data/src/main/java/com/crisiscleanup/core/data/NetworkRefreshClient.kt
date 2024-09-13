@@ -66,6 +66,7 @@ class OrganizationRefresher @Inject constructor(
 ) {
     private var incidentIdPull = EmptyIncident.id
     private var lastRefresh = Instant.fromEpochSeconds(0)
+    private var lastOrganizationAffiliatesRefresh = Instant.fromEpochSeconds(0)
 
     suspend fun pullOrganization(incidentId: Long) {
         val now = Clock.System.now()
@@ -79,6 +80,20 @@ class OrganizationRefresher @Inject constructor(
             lastRefresh = now
 
             accountDataRefresher.updateMyOrganization(true)
+        }
+    }
+
+    suspend fun pullOrganizationAndAffiliates(force: Boolean = false) {
+        val now = Clock.System.now()
+        if (networkMonitor.isOnline.first() &&
+            (
+                force ||
+                    now - lastOrganizationAffiliatesRefresh > 1.hours
+                )
+        ) {
+            lastRefresh = now
+
+            accountDataRefresher.updateOrganizationAndAffiliates()
         }
     }
 }
