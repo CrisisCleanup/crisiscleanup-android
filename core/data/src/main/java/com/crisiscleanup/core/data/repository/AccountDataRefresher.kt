@@ -74,6 +74,13 @@ class AccountDataRefresher @Inject constructor(
         }
     }
 
+    suspend fun updateOrganizationAndAffiliates() = withContext(ioDispatcher) {
+        val organizationId = accountDataRepository.accountData.first().org.id
+        if (organizationId > 0) {
+            organizationsRepository.syncOrganizationAndAffiliates(organizationId)
+        }
+    }
+
     suspend fun updateAcceptedTerms() {
         refreshAccountData("accept terms", true)
     }

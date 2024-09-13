@@ -32,7 +32,7 @@ import kotlinx.datetime.Instant
 interface CrisisCleanupNetworkDataSource {
     suspend fun getProfileData(): NetworkAccountProfileResult
 
-    suspend fun getOrganizations(organizations: List<Long>): List<NetworkIncidentOrganization>
+    suspend fun getOrganizations(organizations: Collection<Long>): List<NetworkIncidentOrganization>
 
     suspend fun getStatuses(): NetworkWorkTypeStatusResult
 

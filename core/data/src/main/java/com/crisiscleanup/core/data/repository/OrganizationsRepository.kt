@@ -39,6 +39,8 @@ interface OrganizationsRepository {
         updateLocations: Boolean = false,
     )
 
+    suspend fun syncOrganizationAndAffiliates(organizationId: Long)
+
     fun getOrganizationAffiliateIds(organizationId: Long, addOrganizationId: Boolean): Set<Long>
 
     suspend fun getNearbyClaimingOrganizations(
@@ -119,6 +121,21 @@ class OfflineFirstOrganizationsRepository @Inject constructor(
             } catch (e: Exception) {
                 logger.logException(e)
             }
+        }
+    }
+
+    override suspend fun syncOrganizationAndAffiliates(organizationId: Long) {
+        try {
+            var organizationIds = getOrganizationAffiliateIds(organizationId, true)
+            if (organizationIds.isEmpty()) {
+                syncOrganization(organizationId)
+                organizationIds = getOrganizationAffiliateIds(organizationId, true)
+            }
+
+            val networkOrganizations = networkDataSource.getOrganizations(organizationIds)
+            saveOrganizations(networkOrganizations)
+        } catch (e: Exception) {
+            logger.logException(e)
         }
     }
 
