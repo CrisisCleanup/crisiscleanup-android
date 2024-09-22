@@ -58,7 +58,7 @@ import com.crisiscleanup.feature.team.TeamsViewState
 internal fun TeamsRoute(
     openAuthentication: () -> Unit = {},
     openViewTeam: (Long, Long) -> Unit = { _, _ -> },
-    openCreateTeam: () -> Unit = {},
+    openCreateTeam: (Long) -> Unit = {},
     openTeamFilters: () -> Unit = {},
 ) {
     TeamsScreen(
@@ -75,7 +75,7 @@ private fun TeamsScreen(
     viewModel: TeamsViewModel = hiltViewModel(),
     openAuthentication: () -> Unit = {},
     openViewTeam: (Long, Long) -> Unit = { _, _ -> },
-    openCreateTeam: () -> Unit = {},
+    openCreateTeam: (Long) -> Unit = {},
     openTeamFilters: () -> Unit = {},
 ) {
     val t = LocalAppTranslator.current
@@ -111,6 +111,12 @@ private fun TeamsScreen(
 
             if (viewState is TeamsViewState.Success) {
                 val successState = viewState as TeamsViewState.Success
+                val incidentId = successState.incidentId
+                val onCreateEditTeam = remember(incidentId) {
+                    {
+                        openCreateTeam(incidentId)
+                    }
+                }
                 val incidentTeams = successState.teams
                 val listState = rememberLazyListState()
                 LazyColumn(
@@ -163,7 +169,7 @@ private fun TeamsScreen(
                         CrisisCleanupButton(
                             modifier = Modifier.listItemPadding(),
                             text = t("teams.create_new_team"),
-                            onClick = openCreateTeam,
+                            onClick = onCreateEditTeam,
                         )
                     }
 

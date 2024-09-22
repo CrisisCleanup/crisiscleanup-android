@@ -19,17 +19,17 @@ import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.data.IncidentRefresher
 import com.crisiscleanup.core.data.LanguageRefresher
+import com.crisiscleanup.core.data.OrganizationRefresher
 import com.crisiscleanup.core.data.UserRoleRefresher
-import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.TeamChangeRepository
 import com.crisiscleanup.core.data.repository.TeamsRepository
 import com.crisiscleanup.core.data.repository.UsersRepository
-import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.WorkTypeChipIconProvider
 import com.crisiscleanup.core.model.data.EmptyCleanupTeam
 import com.crisiscleanup.core.model.data.PersonContact
+import com.crisiscleanup.core.model.data.PersonOrganization
 import com.crisiscleanup.feature.team.model.TeamEditorStep
 import com.crisiscleanup.feature.team.model.stepFromLiteral
 import com.crisiscleanup.feature.team.navigation.TeamEditorArgs
@@ -37,9 +37,12 @@ import com.crisiscleanup.feature.team.util.NameGenerator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -57,8 +60,7 @@ class CreateEditTeamViewModel @Inject constructor(
     accountDataRepository: AccountDataRepository,
     incidentsRepository: IncidentsRepository,
     incidentRefresher: IncidentRefresher,
-    accountDataRefresher: AccountDataRefresher,
-    worksitesRepository: WorksitesRepository,
+    organizationRefresher: OrganizationRefresher,
     userRoleRefresher: UserRoleRefresher,
     teamsRepository: TeamsRepository,
     private val teamChangeRepository: TeamChangeRepository,
@@ -141,6 +143,51 @@ class CreateEditTeamViewModel @Inject constructor(
             started = ReplaySubscribed3,
         )
 
+    val teamMemberFilter = MutableStateFlow("")
+    private val allMembers = combine(
+        accountDataRepository.accountData,
+        teamMemberIds,
+        ::Pair,
+    )
+        .flatMapLatest { (accountData, filterIds) ->
+            usersRepository
+                .streamTeamMembers(incidentIdArg, accountData.org.id)
+                .exclude(filterIds)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = emptyList(),
+            started = ReplaySubscribed3,
+        )
+    private val filteredMembers = combine(
+        accountDataRepository.accountData,
+        teamMemberIds,
+        ::Pair,
+    )
+        .flatMapLatest { (accountData, filterIds) ->
+            usersRepository
+                .streamTeamMembers(incidentIdArg, accountData.org.id)
+                .exclude(filterIds)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = emptyList(),
+            started = ReplaySubscribed3,
+        )
+    val selectableTeamMembers = teamMemberFilter
+        .flatMapLatest {
+            if (it.isBlank()) {
+                allMembers
+            } else {
+                filteredMembers
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = emptyList(),
+            started = ReplaySubscribed3,
+        )
+
     init {
         updateHeaderTitles()
 
@@ -193,7 +240,7 @@ class CreateEditTeamViewModel @Inject constructor(
             .launchIn(viewModelScope)
 
         viewModelScope.launch(ioDispatcher) {
-            accountDataRefresher.updateOrganizationAndAffiliates()
+            organizationRefresher.pullOrganizationAndAffiliates()
         }
     }
 
@@ -224,6 +271,10 @@ class CreateEditTeamViewModel @Inject constructor(
         editingTeamName = teamNameGenerator.generateName()
     }
 
+    fun onUpdateTeamMemberFilter(filter: String) {
+        teamMemberFilter.value = filter
+    }
+
     fun onAddTeamMember(person: PersonContact) {
         if (!teamMemberIds.value.contains(person.id)) {
             editingTeamMembers.value = editingTeamMembers.value.toMutableList().also {
@@ -249,6 +300,12 @@ class CreateEditTeamViewModel @Inject constructor(
     override val translationCount = translator.translationCount
 
     override fun translate(phraseKey: String) = translator.translate(phraseKey) ?: phraseKey
+}
+
+private fun Flow<List<PersonOrganization>>.exclude(ids: Set<Long>) = map { list ->
+    list.filter {
+        !ids.contains(it.person.id)
+    }
 }
 
 data class CreateEditTeamTabState(

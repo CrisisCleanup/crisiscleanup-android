@@ -2,7 +2,6 @@ package com.crisiscleanup.core.data.model
 
 import com.crisiscleanup.core.database.model.IncidentOrganizationEntity
 import com.crisiscleanup.core.database.model.OrganizationAffiliateEntity
-import com.crisiscleanup.core.database.model.OrganizationIncidentCrossRef
 import com.crisiscleanup.core.database.model.OrganizationPrimaryContactCrossRef
 import com.crisiscleanup.core.database.model.PersonContactEntity
 import com.crisiscleanup.core.network.model.NetworkIncidentOrganization
@@ -20,9 +19,6 @@ fun NetworkIncidentOrganization.primaryContactCrossReferences() =
 
 fun NetworkIncidentOrganization.affiliateOrganizationCrossReferences() =
     affiliates.map { OrganizationAffiliateEntity(id, it) }
-
-fun NetworkIncidentOrganization.incidentCrossReferences() =
-    incidents?.map { OrganizationIncidentCrossRef(id, it) } ?: emptyList()
 
 fun Collection<NetworkIncidentOrganization>.asEntities(
     getContacts: Boolean,

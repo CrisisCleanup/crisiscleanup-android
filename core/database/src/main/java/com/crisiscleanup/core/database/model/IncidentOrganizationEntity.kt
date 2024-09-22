@@ -83,12 +83,7 @@ data class OrganizationAffiliateEntity(
             childColumns = ["id"],
             onDelete = ForeignKey.CASCADE,
         ),
-        ForeignKey(
-            entity = IncidentEntity::class,
-            parentColumns = ["id"],
-            childColumns = ["incident_id"],
-            onDelete = ForeignKey.CASCADE,
-        ),
+        // No foreign key to Incidents as older incidents may not have been cached
     ],
     indices = [
         Index(value = ["incident_id", "id"]),

@@ -21,11 +21,13 @@ import com.crisiscleanup.core.designsystem.component.CollapsibleIcon
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
+import com.crisiscleanup.core.designsystem.theme.listItemBottomPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.neutralFontColor
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.model.data.PersonContact
+import com.crisiscleanup.core.model.data.PersonOrganization
 import com.crisiscleanup.core.model.data.UserRole
 
 private fun LazyListScope.sectionHeaderItem(
@@ -49,7 +51,7 @@ private fun LazyListScope.sectionHeaderItem(
 internal fun EditTeamMembersView(
     members: List<PersonContact>,
     teamMemberIds: Set<Long>,
-    availableTeamMembers: List<PersonContact>,
+    selectableTeamMembers: List<PersonOrganization>,
     onAddMember: (PersonContact) -> Unit,
     isEditable: Boolean,
     profilePictureLookup: Map<Long, String>,
@@ -127,10 +129,11 @@ internal fun EditTeamMembersView(
         )
 
         items(
-            availableTeamMembers,
-            key = { "available-member-${it.id}" },
+            selectableTeamMembers,
+            key = { "available-member-${it.person.id}" },
             contentType = { "available-member-item" },
-        ) { person ->
+        ) { personOrg ->
+            val person = personOrg.person
             TeamMemberCardView(
                 person,
                 profilePictureLookup,
@@ -142,6 +145,10 @@ internal fun EditTeamMembersView(
                     enabled = isEditable,
                 )
             }
+        }
+
+        item {
+            Spacer(Modifier.listItemBottomPadding())
         }
     }
 }

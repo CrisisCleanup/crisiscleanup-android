@@ -12,7 +12,9 @@ import com.crisiscleanup.core.database.dao.PersonContactDaoPlus
 import com.crisiscleanup.core.database.dao.UserRoleDao
 import com.crisiscleanup.core.database.model.UserRoleEntity
 import com.crisiscleanup.core.database.model.asExternalModel
+import com.crisiscleanup.core.model.data.OrganizationIdName
 import com.crisiscleanup.core.model.data.PersonContact
+import com.crisiscleanup.core.model.data.PersonOrganization
 import com.crisiscleanup.core.model.data.UserRole
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkPersonContact
@@ -37,6 +39,8 @@ interface UsersRepository {
     ): List<PersonContact>
 
     suspend fun loadUserRoles()
+
+    fun streamTeamMembers(incidentId: Long, organizationId: Long): Flow<List<PersonOrganization>>
 }
 
 class OfflineFirstUsersRepository @Inject constructor(
@@ -127,4 +131,23 @@ class OfflineFirstUsersRepository @Inject constructor(
             logger.logException(e)
         }
     }
+
+    override fun streamTeamMembers(
+        incidentId: Long,
+        organizationId: Long,
+    ) = personContactDao.streamTeamMembersDeployedToIncident(incidentId, organizationId)
+        .mapLatest { data ->
+            data.filter { it.organization != null }
+                .map { personOrganization ->
+                    val person = personOrganization.entity.asExternalModel()
+                    val organization = with(personOrganization.organization!!) {
+                        OrganizationIdName(id, name)
+                    }
+                    PersonOrganization(
+                        person,
+                        organization,
+                    )
+                }
+                .sortedBy { it.person.fullName }
+        }
 }

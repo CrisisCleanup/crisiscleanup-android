@@ -73,7 +73,7 @@ fun NavGraphBuilder.teamsScreen(
     nestedGraphs: NavGraphBuilder.() -> Unit,
     openAuthentication: () -> Unit,
     openViewTeam: (Long, Long) -> Unit,
-    openCreateTeam: () -> Unit,
+    openCreateTeam: (Long) -> Unit,
 ) {
     composable(route = TEAM_ROUTE) {
         TeamsRoute(

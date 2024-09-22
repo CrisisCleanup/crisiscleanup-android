@@ -11,3 +11,8 @@ data class PersonContact(
 ) {
     val fullName = "$firstName $lastName".trim()
 }
+
+data class PersonOrganization(
+    val person: PersonContact,
+    val organization: OrganizationIdName,
+)

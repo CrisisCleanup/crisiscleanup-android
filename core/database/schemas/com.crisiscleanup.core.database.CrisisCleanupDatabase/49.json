@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 49,
-    "identityHash": "698ac9e0b54b96d824b746c7fc9ef1a7",
+    "identityHash": "b2849b1e202c8b474d19d75f9d0c4cbb",
     "entities": [
       {
         "tableName": "work_type_statuses",
@@ -3642,7 +3642,7 @@
       },
       {
         "tableName": "organization_to_incident",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `incident_id` INTEGER NOT NULL, PRIMARY KEY(`id`, `incident_id`), FOREIGN KEY(`id`) REFERENCES `incident_organizations`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`incident_id`) REFERENCES `incidents`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `incident_id` INTEGER NOT NULL, PRIMARY KEY(`id`, `incident_id`), FOREIGN KEY(`id`) REFERENCES `incident_organizations`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -3687,17 +3687,6 @@
             "referencedColumns": [
               "id"
             ]
-          },
-          {
-            "table": "incidents",
-            "onDelete": "CASCADE",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "incident_id"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
           }
         ]
       }
@@ -3705,7 +3694,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '698ac9e0b54b96d824b746c7fc9ef1a7')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b2849b1e202c8b474d19d75f9d0c4cbb')"
     ]
   }
 }
