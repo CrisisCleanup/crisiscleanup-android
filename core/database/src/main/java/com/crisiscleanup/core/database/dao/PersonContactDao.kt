@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
+import com.crisiscleanup.core.database.dao.fts.PopulatedPersonContactIdNameMatchInfo
 import com.crisiscleanup.core.database.model.PersonContactEntity
 import com.crisiscleanup.core.database.model.PersonEquipmentCrossRef
 import com.crisiscleanup.core.database.model.PersonOrganizationCrossRef
@@ -14,6 +15,10 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PersonContactDao {
+    @Transaction
+    @Query("SELECT COUNT(*) FROM person_contacts")
+    fun getPersonContactCount(): Int
+
     @Upsert
     fun upsert(contacts: Collection<PersonContactEntity>)
 
@@ -78,4 +83,48 @@ interface PersonContactDao {
         incidentId: Long,
         organizationId: Long,
     ): Flow<List<PopulatedPersonContactOrganization>>
+
+    @Transaction
+    @Query("SELECT COUNT(*) FROM person_contact_fts")
+    fun getPersonContactFtsCount(): Int
+
+    @Transaction
+    @Query("INSERT INTO person_contact_fts(person_contact_fts) VALUES ('rebuild')")
+    fun rebuildPersonContactFts()
+
+    // TODO Profile
+    @Transaction
+    @Query(
+        """
+        SELECT
+            p.id,
+            p.first_name,
+            p.last_name,
+            p.email,
+            p.mobile,
+            p.profilePictureUri AS profile_picture,
+            p.activeRoles AS active_roles,
+            io.id AS organization_id,
+            io.name AS organization_name,
+            matchinfo(person_contact_fts, 'pcnalx') AS match_info
+        FROM person_contact_fts f
+        INNER JOIN person_contacts p ON f.docid=p.id
+        INNER JOIN person_to_organization p2o ON p.id=p2o.id
+        INNER JOIN organization_to_incident o2i on p2o.organization_id=o2i.id
+        INNER JOIN incident_organizations io on p2o.organization_id=io.id
+        WHERE person_contact_fts MATCH :query AND
+        o2i.incident_id=:incidentId AND (
+            p2o.organization_id=:organizationId OR p2o.organization_id IN (
+                SELECT affiliate_id
+                FROM organization_to_affiliate
+                WHERE id=:organizationId
+            )
+        )
+        """,
+    )
+    fun matchIncidentOrganizationPersonContactTokens(
+        query: String,
+        incidentId: Long,
+        organizationId: Long,
+    ): List<PopulatedPersonContactIdNameMatchInfo>
 }

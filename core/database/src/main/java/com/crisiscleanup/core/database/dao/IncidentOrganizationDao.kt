@@ -19,6 +19,10 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface IncidentOrganizationDao {
+    @Transaction
+    @Query("SELECT COUNT(*) FROM incident_organizations")
+    fun getOrganizationCount(): Int
+
     @Upsert
     fun upsert(organization: Collection<IncidentOrganizationEntity>)
 
@@ -84,8 +88,8 @@ interface IncidentOrganizationDao {
     fun upsertOrganizationIncidents(organizationIncidents: Collection<OrganizationIncidentCrossRef>)
 
     @Transaction
-    @Query("SELECT name FROM incident_organizations ORDER BY RANDOM() LIMIT 1")
-    fun getRandomOrganizationName(): String?
+    @Query("SELECT COUNT(*) FROM incident_organization_fts")
+    fun getOrganizationFtsCount(): Int
 
     @Transaction
     @Query("INSERT INTO incident_organization_fts(incident_organization_fts) VALUES ('rebuild')")

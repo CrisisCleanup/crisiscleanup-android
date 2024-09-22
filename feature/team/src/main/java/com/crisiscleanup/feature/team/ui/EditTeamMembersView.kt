@@ -16,9 +16,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.input.ImeAction
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CollapsibleIcon
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
+import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemBottomPadding
@@ -27,8 +30,8 @@ import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.neutralFontColor
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.model.data.PersonContact
-import com.crisiscleanup.core.model.data.PersonOrganization
 import com.crisiscleanup.core.model.data.UserRole
+import com.crisiscleanup.feature.team.MemberFilterResult
 
 private fun LazyListScope.sectionHeaderItem(
     text: String,
@@ -50,17 +53,20 @@ private fun LazyListScope.sectionHeaderItem(
 @Composable
 internal fun EditTeamMembersView(
     members: List<PersonContact>,
-    teamMemberIds: Set<Long>,
-    selectableTeamMembers: List<PersonOrganization>,
+    membersState: MemberFilterResult,
     onAddMember: (PersonContact) -> Unit,
     isEditable: Boolean,
     profilePictureLookup: Map<Long, String>,
     userRoleLookup: Map<Int, UserRole>,
     onToggleQrCode: () -> Unit = {},
+    memberFilter: String = "",
+    onUpdateMemberFilter: (String) -> Unit = {},
 ) {
     val t = LocalAppTranslator.current
 
     var isMemberDropdownExpanded by rememberSaveable { mutableStateOf(true) }
+
+    // TODO Box layout with animated loading when filtering
 
     LazyColumn(
         Modifier.fillMaxSize(),
@@ -128,8 +134,20 @@ internal fun EditTeamMembersView(
             itemKey = "add-user-text",
         )
 
+        item {
+            OutlinedClearableTextField(
+                modifier = listItemModifier.testTag("filterMembersTextField"),
+                label = t("~~Filter users"),
+                value = memberFilter,
+                onValueChange = onUpdateMemberFilter,
+                enabled = isEditable,
+                isError = false,
+                imeAction = ImeAction.Done,
+            )
+        }
+
         items(
-            selectableTeamMembers,
+            membersState.members,
             key = { "available-member-${it.person.id}" },
             contentType = { "available-member-item" },
         ) { personOrg ->

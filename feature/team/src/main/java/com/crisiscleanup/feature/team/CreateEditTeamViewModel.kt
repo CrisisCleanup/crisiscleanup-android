@@ -17,11 +17,13 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPusher
+import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.data.IncidentRefresher
 import com.crisiscleanup.core.data.LanguageRefresher
 import com.crisiscleanup.core.data.OrganizationRefresher
 import com.crisiscleanup.core.data.UserRoleRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.AppDataManagementRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.TeamChangeRepository
 import com.crisiscleanup.core.data.repository.TeamsRepository
@@ -40,9 +42,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -57,6 +61,7 @@ import kotlin.time.Duration.Companion.seconds
 @HiltViewModel
 class CreateEditTeamViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
+    databaseManagementRepository: AppDataManagementRepository,
     accountDataRepository: AccountDataRepository,
     incidentsRepository: IncidentsRepository,
     incidentRefresher: IncidentRefresher,
@@ -133,7 +138,7 @@ class CreateEditTeamViewModel @Inject constructor(
     var editingTeamName by mutableStateOf("")
         private set
     val editingTeamMembers = MutableStateFlow(emptyList<PersonContact>())
-    val teamMemberIds = editingTeamMembers
+    private val teamMemberIds = editingTeamMembers
         .mapLatest {
             it.map(PersonContact::id).toSet()
         }
@@ -159,36 +164,57 @@ class CreateEditTeamViewModel @Inject constructor(
             initialValue = emptyList(),
             started = ReplaySubscribed3,
         )
+
+    private val teamMemberQ = teamMemberFilter
+        .mapLatest(String::trim)
+        .distinctUntilChanged()
+        .throttleLatest(150)
     private val filteredMembers = combine(
+        teamMemberQ,
         accountDataRepository.accountData,
         teamMemberIds,
-        ::Pair,
+        ::Triple,
     )
-        .flatMapLatest { (accountData, filterIds) ->
-            usersRepository
-                .streamTeamMembers(incidentIdArg, accountData.org.id)
+        .mapLatest { (q, accountData, filterIds) ->
+            // TODO Cache results for faster access (search matchingIncidents)
+            val matchingMembers = usersRepository
+                .getMatchingTeamMembers(q, incidentIdArg, accountData.org.id)
                 .exclude(filterIds)
+
+            Pair(q, matchingMembers)
         }
+        .flowOn(ioDispatcher)
         .stateIn(
             scope = viewModelScope,
-            initialValue = emptyList(),
+            initialValue = Pair("", emptyList()),
             started = ReplaySubscribed3,
         )
-    val selectableTeamMembers = teamMemberFilter
-        .flatMapLatest {
-            if (it.isBlank()) {
-                allMembers
+    val teamMembersState = teamMemberQ
+        .flatMapLatest { q ->
+            if (q.isBlank()) {
+                allMembers.mapLatest { MemberFilterResult(q, it) }
             } else {
                 filteredMembers
+                    .mapLatest { results ->
+                        if (q.trim() == results.first.trim()) {
+                            MemberFilterResult(q, results.second)
+                        } else {
+                            MemberFilterResult(q, isFiltering = true)
+                        }
+                    }
             }
         }
         .stateIn(
             scope = viewModelScope,
-            initialValue = emptyList(),
+            initialValue = MemberFilterResult(),
             started = ReplaySubscribed3,
         )
 
     init {
+        viewModelScope.launch(ioDispatcher) {
+            databaseManagementRepository.rebuildFts()
+        }
+
         updateHeaderTitles()
 
         editableTeamProvider.reset(incidentIdArg)
@@ -302,13 +328,19 @@ class CreateEditTeamViewModel @Inject constructor(
     override fun translate(phraseKey: String) = translator.translate(phraseKey) ?: phraseKey
 }
 
-private fun Flow<List<PersonOrganization>>.exclude(ids: Set<Long>) = map { list ->
-    list.filter {
-        !ids.contains(it.person.id)
-    }
+private fun List<PersonOrganization>.exclude(ids: Set<Long>) = filter {
+    !ids.contains(it.person.id)
 }
+
+private fun Flow<List<PersonOrganization>>.exclude(ids: Set<Long>) = map { it.exclude(ids) }
 
 data class CreateEditTeamTabState(
     val titles: List<String> = emptyList(),
     val startingIndex: Int = 0,
+)
+
+data class MemberFilterResult(
+    val q: String = "",
+    val members: List<PersonOrganization> = emptyList(),
+    val isFiltering: Boolean = false,
 )
