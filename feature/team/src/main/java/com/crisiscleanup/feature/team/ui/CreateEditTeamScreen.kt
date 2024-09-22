@@ -325,7 +325,7 @@ private fun EditTeamNameView(
 private fun EditTeamCasesView(
     team: CleanupTeam,
 ) {
-    Text("Edit cases ${team.caseCount}")
+    Text("Edit cases ${team.metrics.caseCount}")
 }
 
 @Composable
