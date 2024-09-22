@@ -279,10 +279,11 @@ internal fun TeamColorView(
 internal fun TeamCaseCompleteView(
     team: CleanupTeam,
 ) {
-    if (team.caseCompletePercentage > 0) {
+    val completePercentage = team.metrics.caseCompletePercentage
+    if (completePercentage > 0) {
         Text(
             LocalAppTranslator.current("teams.percent_complete_cases_completed")
-                .replace("{percent_complete}", "${team.caseCompletePercentage}"),
+                .replace("{percent_complete}", "$completePercentage"),
             color = neutralFontColor,
         )
     }
@@ -317,11 +318,12 @@ internal fun TeamView(
             }
 
             Row(horizontalArrangement = listItemSpacedBy) {
+                val caseCount = team.metrics.caseCount
                 val caseCountTranslateKey =
-                    if (team.caseCount == 1) "teams.one_case" else "teams.case_count_cases"
+                    if (caseCount == 1) "teams.one_case" else "teams.case_count_cases"
                 Text(
                     t(caseCountTranslateKey)
-                        .replace("{case_count}", "${team.caseCount}"),
+                        .replace("{case_count}", "$caseCount"),
                 )
 
                 TeamCaseCompleteView(team)

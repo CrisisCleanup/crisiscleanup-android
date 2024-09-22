@@ -5,6 +5,7 @@ import androidx.room.Junction
 import androidx.room.Relation
 import com.crisiscleanup.core.common.hexColorToIntColor
 import com.crisiscleanup.core.model.data.CleanupTeam
+import com.crisiscleanup.core.model.data.TeamMetrics
 import com.crisiscleanup.core.model.data.equipmentFromLiteral
 
 data class PopulatedTeam(
@@ -51,14 +52,16 @@ fun PopulatedTeam.asExternalModel() = with(entity) {
         name = name,
         colorInt = color.hexColorToIntColor(),
         notes = notes,
-        caseCount = caseCount,
-        caseCompleteCount = completeCount,
-        workCount = workCount,
-        workCompleteCount = workCompleteCount,
         incidentId = incidentId,
-        memberIds = memberIdRefs.map(TeamMemberCrossRef::contactId),
+        memberIds = memberIdRefs.map(TeamMemberCrossRef::contactId).toSet(),
         members = members.asExternalModelSorted(),
-        workTypeNetworkIds = workTypes.map(TeamWorkEntity::workTypeNetworkId),
         equipment = equipments.map { equipmentFromLiteral(it.nameKey) },
+        metrics = TeamMetrics(
+            caseCount = caseCount,
+            caseCompleteCount = completeCount,
+            workCount = workCount,
+            workCompleteCount = workCompleteCount,
+            worksites = emptyList(),
+        ),
     )
 }

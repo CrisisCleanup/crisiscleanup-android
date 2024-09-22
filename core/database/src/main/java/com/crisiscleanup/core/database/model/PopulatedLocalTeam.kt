@@ -9,6 +9,7 @@ import com.crisiscleanup.core.model.data.EquipmentData
 import com.crisiscleanup.core.model.data.LocalChange
 import com.crisiscleanup.core.model.data.LocalTeam
 import com.crisiscleanup.core.model.data.MemberEquipment
+import com.crisiscleanup.core.model.data.TeamMetrics
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.closedWorkTypeStatuses
 import com.crisiscleanup.core.model.data.statusFromLiteral
@@ -74,17 +75,21 @@ fun PopulatedLocalTeam.asExternalModel(
                 name = name,
                 colorInt = color.hexColorToIntColor(),
                 notes = notes,
-                caseCount = caseCount,
-                caseCompleteCount = completeCount,
-                caseOverdueCount = caseOverdueCount,
-                workCount = workCount,
-                workCompleteCount = workCompleteCount,
+
                 incidentId = incidentId,
-                memberIds = memberIdRefs.map(TeamMemberCrossRef::contactId),
+                memberIds = memberIdRefs.map(TeamMemberCrossRef::contactId).toSet(),
                 members = members.asExternalModelSorted(),
                 memberEquipment = memberEquipment,
                 worksites = worksites,
-                missingWorkTypeCount = missingWorkTypeIds.size,
+                metrics = TeamMetrics(
+                    caseCount = caseCount,
+                    caseCompleteCount = completeCount,
+                    caseOverdueCount = caseOverdueCount,
+                    workCount = workCount,
+                    workCompleteCount = workCompleteCount,
+                    missingWorkCount = missingWorkTypeIds.size,
+                    worksites = worksites,
+                ),
             ),
             LocalChange(
                 isLocalModified = root.isLocalModified,

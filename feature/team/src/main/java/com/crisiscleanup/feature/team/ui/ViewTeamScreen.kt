@@ -325,7 +325,7 @@ private fun ViewTeamContent(
             )
         }
 
-        if (team.missingWorkTypeCount > 0) {
+        if (team.metrics.missingWorkCount > 0) {
             // TODO Notify if there are missing work types and loading is done
         }
 
@@ -445,14 +445,14 @@ private fun TeamHeader(
             )
         }
 
-        val openCaseCount = team.caseOpenCount
         Row(
             horizontalArrangement = listItemSpacedByHalf,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (team.caseCount == 0) {
+            if (team.metrics.caseCount == 0) {
                 Text(t("~~0 Cases"))
             } else {
+                val openCaseCount = team.metrics.caseOpenCount
                 val caseCountTranslateKey =
                     if (openCaseCount == 1) "~~{case_count} Open Case" else "~~{case_count} Open Cases"
                 Text(
@@ -571,7 +571,7 @@ private fun TeamStatisticsView(
         ) {
             Column(Modifier.weight(1f)) {
                 Text(
-                    "${team.workCompletePercentage}%",
+                    "${team.metrics.workCompletePercentage}%",
                     style = LocalFontStyles.current.titleStatistics,
                 )
                 Text(
@@ -585,15 +585,15 @@ private fun TeamStatisticsView(
             ) {
                 Text(
                     t("~~{case_count} case(s) closed")
-                        .replace("{case_count}", "${team.caseCompleteCount}"),
+                        .replace("{case_count}", "${team.metrics.caseCompleteCount}"),
                 )
                 Text(
                     t("~~{case_count} open case(s)")
-                        .replace("{case_count}", "${team.caseOpenCount}"),
+                        .replace("{case_count}", "${team.metrics.caseOpenCount}"),
                 )
                 Text(
                     t("~~{case_count} overdue case(s)")
-                        .replace("{case_count}", "${team.caseOpenCount}"),
+                        .replace("{case_count}", "${team.metrics.caseOverdueCount}"),
                 )
             }
         }
@@ -601,41 +601,43 @@ private fun TeamStatisticsView(
 
     Spacer(Modifier.height(4.dp))
 
-    val dateStyle = LocalFontStyles.current.header3
-    CardSurface {
-        Row(
-            fillWidthPadded,
-            horizontalArrangement = listItemSpacedBy,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            team.firstActivityDate?.let { firstActivity ->
-                Column(
-                    Modifier.weight(1f),
-                    verticalArrangement = listItemSpacedByHalf,
-                ) {
-                    Text(
-                        activityDateFormatter.format(firstActivity.toJavaInstant()),
-                        style = dateStyle,
-                    )
-                    Text(
-                        t("~~First Activity"),
-                        color = neutralFontColor,
-                    )
+    if (team.metrics.hasActivity) {
+        val dateStyle = LocalFontStyles.current.header3
+        CardSurface {
+            Row(
+                fillWidthPadded,
+                horizontalArrangement = listItemSpacedBy,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                team.metrics.firstActivityDate?.let { firstActivity ->
+                    Column(
+                        Modifier.weight(1f),
+                        verticalArrangement = listItemSpacedByHalf,
+                    ) {
+                        Text(
+                            activityDateFormatter.format(firstActivity.toJavaInstant()),
+                            style = dateStyle,
+                        )
+                        Text(
+                            t("~~First Activity"),
+                            color = neutralFontColor,
+                        )
+                    }
                 }
-            }
-            team.lastActivityDate?.let { lastActivity ->
-                Column(
-                    Modifier.weight(1f),
-                    verticalArrangement = listItemSpacedByHalf,
-                ) {
-                    Text(
-                        activityDateFormatter.format(lastActivity.toJavaInstant()),
-                        style = dateStyle,
-                    )
-                    Text(
-                        t("~~Last Activity"),
-                        color = neutralFontColor,
-                    )
+                team.metrics.lastActivityDate?.let { lastActivity ->
+                    Column(
+                        Modifier.weight(1f),
+                        verticalArrangement = listItemSpacedByHalf,
+                    ) {
+                        Text(
+                            activityDateFormatter.format(lastActivity.toJavaInstant()),
+                            style = dateStyle,
+                        )
+                        Text(
+                            t("~~Last Activity"),
+                            color = neutralFontColor,
+                        )
+                    }
                 }
             }
         }
