@@ -194,14 +194,13 @@ class CreateEditTeamViewModel @Inject constructor(
             if (q.isBlank()) {
                 allMembers.mapLatest { MemberFilterResult(q, it) }
             } else {
-                filteredMembers
-                    .mapLatest { results ->
-                        if (q.trim() == results.first.trim()) {
-                            MemberFilterResult(q, results.second)
-                        } else {
-                            MemberFilterResult(q, isFiltering = true)
-                        }
+                filteredMembers.mapLatest { results ->
+                    if (q.trim() == results.first.trim()) {
+                        MemberFilterResult(q, results.second)
+                    } else {
+                        MemberFilterResult(q, isFiltering = true)
                     }
+                }
             }
         }
         .stateIn(
