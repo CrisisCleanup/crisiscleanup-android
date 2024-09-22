@@ -75,7 +75,9 @@ class OfflineFirstOrganizationsRepository @Inject constructor(
                 .associateBy(IncidentOrganization::id)
         }
 
-    private suspend fun saveOrganizations(networkOrganizations: Collection<NetworkIncidentOrganization>) {
+    private suspend fun saveOrganizations(
+        networkOrganizations: Collection<NetworkIncidentOrganization>,
+    ) {
         val (
             organizations,
             primaryContacts,
@@ -134,18 +136,24 @@ class OfflineFirstOrganizationsRepository @Inject constructor(
 
             val networkOrganizations = networkDataSource.getOrganizations(organizationIds)
             saveOrganizations(networkOrganizations)
+
+            // TODO Query users of orgs and affiliates? Likely.
         } catch (e: Exception) {
             logger.logException(e)
         }
     }
 
-    override fun getOrganizationAffiliateIds(organizationId: Long, addOrganizationId: Boolean) =
-        incidentOrganizationDao.getAffiliateOrganizationIds(organizationId).toMutableSet()
-            .apply {
-                if (addOrganizationId) {
-                    add(organizationId)
-                }
+    override fun getOrganizationAffiliateIds(
+        organizationId: Long,
+        // TODO Review if necessary/logic needs changing
+        //      Seems org is included in affiliates from backend
+        addOrganizationId: Boolean,
+    ) = incidentOrganizationDao.getAffiliateOrganizationIds(organizationId).toMutableSet()
+        .apply {
+            if (addOrganizationId) {
+                add(organizationId)
             }
+        }
 
     override suspend fun getNearbyClaimingOrganizations(
         latitude: Double,
