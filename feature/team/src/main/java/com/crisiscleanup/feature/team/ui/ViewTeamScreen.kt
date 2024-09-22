@@ -353,8 +353,8 @@ private fun ViewTeamContent(
             key = "equipment-header",
             contentType = "header-item",
         ) {
-            val sectionTitle = t("~~Assets ({asset_count})")
-                .replace("{asset_count}", "${team.memberEquipment.size}")
+            val sectionTitle = t("~~Equipment ({equipment_count})")
+                .replace("{equipment_count}", "${team.memberEquipment.size}")
             EditSectionHeader(
                 sectionTitle,
                 enabled = isEditable,
