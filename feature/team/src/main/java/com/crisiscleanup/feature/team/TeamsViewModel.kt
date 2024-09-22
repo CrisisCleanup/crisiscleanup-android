@@ -12,6 +12,7 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.svgAvatarUrl
 import com.crisiscleanup.core.common.sync.SyncPuller
+import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.EquipmentRepository
@@ -73,8 +74,9 @@ class TeamsViewModel @Inject constructor(
     val incidentsData = appTopBarDataProvider.incidentsData
     val loadSelectIncidents = appTopBarDataProvider.loadSelectIncidents
 
+    private val incidentIdStream = incidentSelector.incidentId
     private val additionalUserProfileLookup = MutableStateFlow<Map<Long, PersonContact>>(emptyMap())
-    val viewState = incidentSelector.incidentId
+    val viewState = incidentIdStream
         .flatMapLatest { incidentId ->
             if (incidentId == EmptyIncident.id) {
                 return@flatMapLatest flowOf(TeamsViewState.Loading)
@@ -138,6 +140,32 @@ class TeamsViewModel @Inject constructor(
 
     val isLoading = viewState.map { it == TeamsViewState.Loading }
 
+    val teamFilter = MutableStateFlow("")
+    private val teamFilterQ = teamFilter
+        .mapLatest(String::trim)
+        .distinctUntilChanged()
+        .throttleLatest(150)
+    val filteredOtherTeams = combine(
+        incidentIdStream,
+        teamFilterQ,
+        viewState,
+        ::Triple,
+    )
+        .flatMapLatest { (incidentId, q, state) ->
+            if (q.isBlank()) {
+                val otherTeams =
+                    (state as? TeamsViewState.Success)?.teams?.otherTeams ?: emptyList()
+                flowOf(otherTeams)
+            } else {
+                teamsRepository.streamMatchingOtherTeams(q, incidentId)
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = emptyList(),
+            started = ReplaySubscribed3,
+        )
+
     init {
         viewState
             .debounce(1.seconds)
@@ -153,7 +181,7 @@ class TeamsViewModel @Inject constructor(
             .flowOn(ioDispatcher)
             .launchIn(viewModelScope)
 
-        incidentSelector.incidentId.filter { it != EmptyIncident.id }
+        incidentIdStream.filter { it != EmptyIncident.id }
             .debounce(0.2.seconds)
             .distinctUntilChanged()
             .onEach {
@@ -174,7 +202,11 @@ class TeamsViewModel @Inject constructor(
 
     suspend fun refreshTeams() = viewModelScope.launch(ioDispatcher) {
         equipmentRepository.saveEquipment(true)
-        teamsRepository.syncTeams(incidentSelector.incidentId.value)
+        teamsRepository.syncTeams(incidentIdStream.value)
+    }
+
+    fun onUpdateTeamFilter(q: String) {
+        teamFilter.value = q
     }
 }
 

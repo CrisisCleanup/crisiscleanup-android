@@ -8,6 +8,7 @@ import com.crisiscleanup.core.data.model.asEntity
 import com.crisiscleanup.core.database.dao.TeamDao
 import com.crisiscleanup.core.database.dao.TeamDaoPlus
 import com.crisiscleanup.core.database.dao.WorksiteWorkTypeIds
+import com.crisiscleanup.core.database.dao.fts.streamMatchingTeams
 import com.crisiscleanup.core.database.model.PopulatedTeam
 import com.crisiscleanup.core.database.model.PopulatedTeamMemberEquipment
 import com.crisiscleanup.core.database.model.PopulatedWorksite
@@ -37,6 +38,8 @@ interface TeamsRepository {
     ): Boolean
 
     suspend fun syncTeams(incidentId: Long)
+
+    suspend fun streamMatchingOtherTeams(q: String, incidentId: Long): Flow<List<CleanupTeam>>
 }
 
 class CrisisCleanupTeamsRepository @Inject constructor(
@@ -183,6 +186,19 @@ class CrisisCleanupTeamsRepository @Inject constructor(
         } catch (e: Exception) {
             logger.logException(e)
         }
+    }
+
+    override suspend fun streamMatchingOtherTeams(
+        q: String,
+        incidentId: Long,
+    ): Flow<List<CleanupTeam>> {
+        val accountId = accountDataRepository.accountData.first().id
+        return teamDaoPlus.streamMatchingTeams(q, incidentId)
+            .mapLatest { teams ->
+                teams.filter {
+                    !it.memberIds.contains(accountId)
+                }
+            }
     }
 }
 

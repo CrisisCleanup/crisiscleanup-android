@@ -13,9 +13,8 @@ import com.crisiscleanup.core.database.util.ftsGlobEnds
 import com.crisiscleanup.core.database.util.ftsSanitize
 import com.crisiscleanup.core.database.util.intArray
 import com.crisiscleanup.core.database.util.okapiBm25Score
-import com.crisiscleanup.core.model.data.CleanupTeam
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.mapLatest
 
 @Entity(
     "team_fts",
@@ -75,17 +74,17 @@ suspend fun TeamDaoPlus.rebuildTeamFts(force: Boolean = false) = db.withTransact
     }
 }
 
-suspend fun TeamDaoPlus.getMatchingTeams(q: String): List<CleanupTeam> =
-    coroutineScope {
-        db.withTransaction {
-            val results = db.teamDao()
-                .matchTeamTokens(q.ftsSanitize.ftsGlobEnds)
-
-            ensureActive()
-
-            // TODO ensureActive() between (strides of) score computations
-            results
-                .sortedByDescending { it.sortScore }
+suspend fun TeamDaoPlus.streamMatchingTeams(
+    q: String,
+    incidentId: Long,
+) = coroutineScope {
+    db.teamDao()
+        .streamMatchingTeams(
+            q.ftsSanitize.ftsGlobEnds,
+            incidentId,
+        )
+        .mapLatest { matching ->
+            matching.sortedByDescending { it.sortScore }
                 .map { it.team.asExternalModel() }
         }
-    }
+}
