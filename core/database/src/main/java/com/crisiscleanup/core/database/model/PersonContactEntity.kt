@@ -23,6 +23,8 @@ data class PersonContactEntity(
     val activeRoles: String,
 )
 
+fun String.splitToInts() = split(",").mapNotNull { it.toIntOrNull() }
+
 fun PersonContactEntity.asExternalModel() = PersonContact(
     id = id,
     firstName = firstName,
@@ -30,8 +32,7 @@ fun PersonContactEntity.asExternalModel() = PersonContact(
     email = email,
     mobile = mobile,
     profilePictureUri = profilePictureUri,
-    activeRoles = activeRoles.split(",")
-        .mapNotNull { it.toIntOrNull() },
+    activeRoles = activeRoles.splitToInts(),
 )
 
 fun Collection<PersonContactEntity>.asExternalModelSorted() =

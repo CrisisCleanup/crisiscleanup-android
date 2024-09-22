@@ -22,6 +22,10 @@ import kotlinx.datetime.Instant
 @Dao
 interface WorksiteDao {
     @Transaction
+    @Query("SELECT COUNT(*) FROM worksites")
+    fun getWorksiteCount(): Int
+
+    @Transaction
     @Query("SELECT id FROM worksites_root WHERE network_id=:networkId AND local_global_uuid=''")
     fun getWorksiteId(networkId: Long): Long
 
@@ -605,8 +609,8 @@ interface WorksiteDao {
     ): List<PopulatedFilterDataWorksite>
 
     @Transaction
-    @Query("SELECT case_number FROM worksites ORDER BY RANDOM() LIMIT 1")
-    fun getRandomWorksiteCaseNumber(): String?
+    @Query("SELECT COUNT(*) FROM worksite_text_fts_b")
+    fun getWorksiteTextFtsCount(): Int
 
     @Transaction
     @Query("INSERT INTO worksite_text_fts_b(worksite_text_fts_b) VALUES ('rebuild')")

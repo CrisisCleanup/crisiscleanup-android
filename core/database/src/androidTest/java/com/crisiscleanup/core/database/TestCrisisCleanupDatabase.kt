@@ -7,6 +7,7 @@ import androidx.room.Transaction
 import androidx.room.TypeConverters
 import com.crisiscleanup.core.database.dao.fts.IncidentFtsEntity
 import com.crisiscleanup.core.database.dao.fts.IncidentOrganizationFtsEntity
+import com.crisiscleanup.core.database.dao.fts.PersonContactFtsEntity
 import com.crisiscleanup.core.database.dao.fts.TeamFtsEntity
 import com.crisiscleanup.core.database.dao.fts.WorksiteTextFtsEntity
 import com.crisiscleanup.core.database.model.CaseHistoryEventAttrEntity
@@ -105,6 +106,7 @@ import kotlinx.datetime.Instant
         UserRoleEntity::class,
         TeamWorkEntity::class,
         OrganizationIncidentCrossRef::class,
+        PersonContactFtsEntity::class,
     ],
     version = 1,
 )
