@@ -21,8 +21,8 @@ import com.crisiscleanup.core.commoncase.CaseFlagsNavigationState
 import com.crisiscleanup.core.commoncase.WorksiteProvider
 import com.crisiscleanup.core.data.IncidentRefresher
 import com.crisiscleanup.core.data.LanguageRefresher
+import com.crisiscleanup.core.data.OrganizationRefresher
 import com.crisiscleanup.core.data.UserRoleRefresher
-import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.TeamChangeRepository
@@ -57,7 +57,7 @@ class ViewTeamViewModel @Inject constructor(
     incidentRefresher: IncidentRefresher,
     worksitesRepository: WorksitesRepository,
     worksiteChangeRepository: WorksiteChangeRepository,
-    accountDataRefresher: AccountDataRefresher,
+    organizationRefresher: OrganizationRefresher,
     userRoleRefresher: UserRoleRefresher,
     teamsRepository: TeamsRepository,
     private val teamChangeRepository: TeamChangeRepository,
@@ -165,7 +165,7 @@ class ViewTeamViewModel @Inject constructor(
             .launchIn(viewModelScope)
 
         viewModelScope.launch(ioDispatcher) {
-            accountDataRefresher.updateMyOrganization(false)
+            organizationRefresher.pullOrganization(incidentIdArg)
         }
     }
 

@@ -50,6 +50,7 @@ import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
 import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.EmptyCleanupTeam
 import com.crisiscleanup.core.model.data.PersonContact
+import com.crisiscleanup.core.model.data.PersonOrganization
 import com.crisiscleanup.core.model.data.UserRole
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.feature.team.CreateEditTeamViewModel
@@ -81,6 +82,7 @@ private fun CreateEditTeamView(
     var showJoinTeamQrCode by rememberSaveable { mutableStateOf(false) }
 
     val teamMemberIds by viewModel.teamMemberIds.collectAsStateWithLifecycle()
+    val selectableTeamMembers by viewModel.selectableTeamMembers.collectAsStateWithLifecycle()
 
     Column {
         TeamEditorHeader(
@@ -99,6 +101,7 @@ private fun CreateEditTeamView(
                     teamName = viewModel.editingTeamName,
                     teamMembers = editingTeamMembers,
                     teamMemberIds = teamMemberIds,
+                    selectableTeamMembers = selectableTeamMembers,
                     onTeamNameChange = viewModel::onTeamNameChange,
                     onSuggestName = viewModel::onSuggestTeamName,
                     onAddTeamMember = viewModel::onAddTeamMember,
@@ -158,6 +161,7 @@ private fun CreateEditTeamContent(
     teamName: String,
     teamMembers: List<PersonContact>,
     teamMemberIds: Set<Long>,
+    selectableTeamMembers: List<PersonOrganization>,
     onTeamNameChange: (String) -> Unit,
     onSuggestName: () -> Unit,
     onAddTeamMember: (PersonContact) -> Unit,
@@ -223,8 +227,7 @@ private fun CreateEditTeamContent(
                 1 -> EditTeamMembersView(
                     teamMembers,
                     teamMemberIds,
-                    // TODO Query available team members for adding
-                    emptyList(),
+                    selectableTeamMembers,
                     onAddTeamMember,
                     isEditable,
                     profilePictureLookup,
