@@ -14,7 +14,6 @@ import com.crisiscleanup.core.database.util.okapiBm25Score
 import com.crisiscleanup.core.model.data.OrganizationIdName
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapLatest
 
 @Entity(
@@ -87,12 +86,11 @@ suspend fun IncidentOrganizationDaoPlus.getMatchingOrganizations(q: String): Lis
         }
     }
 
-suspend fun IncidentOrganizationDaoPlus.streamMatchingOrganizations(q: String): Flow<List<OrganizationIdName>> =
-    coroutineScope {
-        db.incidentOrganizationDao()
-            .streamMatchingOrganizations(q.ftsSanitize.ftsGlobEnds)
-            .mapLatest { matching ->
-                matching.sortedByDescending { it.sortScore }
-                    .map(PopulatedOrganizationIdNameMatchInfo::idName)
-            }
-    }
+suspend fun IncidentOrganizationDaoPlus.streamMatchingOrganizations(q: String) = coroutineScope {
+    db.incidentOrganizationDao()
+        .streamMatchingOrganizations(q.ftsSanitize.ftsGlobEnds)
+        .mapLatest { matching ->
+            matching.sortedByDescending { it.sortScore }
+                .map(PopulatedOrganizationIdNameMatchInfo::idName)
+        }
+}

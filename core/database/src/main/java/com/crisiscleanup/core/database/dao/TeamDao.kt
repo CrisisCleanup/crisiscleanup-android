@@ -223,8 +223,12 @@ interface TeamDao {
         matchinfo(team_fts, 'pcnalx') AS match_info
         FROM team_fts f
         INNER JOIN teams t ON f.docid=t.id
-        WHERE team_fts MATCH :query
+        WHERE team_fts MATCH :query AND
+        incident_id=:incidentId
         """,
     )
-    fun matchTeamTokens(query: String): List<PopulatedTeamMatchInfo>
+    fun streamMatchingTeams(
+        query: String,
+        incidentId: Long,
+    ): Flow<List<PopulatedTeamMatchInfo>>
 }

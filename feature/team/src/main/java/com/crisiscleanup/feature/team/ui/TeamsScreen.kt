@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -27,6 +28,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -37,6 +40,7 @@ import com.crisiscleanup.core.designsystem.component.AvatarIcon
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CardSurface
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
+import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemBottomPadding
@@ -72,11 +76,11 @@ internal fun TeamsRoute(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TeamsScreen(
-    viewModel: TeamsViewModel = hiltViewModel(),
     openAuthentication: () -> Unit = {},
     openViewTeam: (Long, Long) -> Unit = { _, _ -> },
     openCreateTeam: (Long) -> Unit = {},
     openTeamFilters: () -> Unit = {},
+    viewModel: TeamsViewModel = hiltViewModel(),
 ) {
     val t = LocalAppTranslator.current
 
@@ -100,6 +104,9 @@ private fun TeamsScreen(
             pullRefreshState.endRefresh()
         }
     }
+
+    val teamFilter by viewModel.teamFilter.collectAsStateWithLifecycle()
+    val otherTeams by viewModel.filteredOtherTeams.collectAsStateWithLifecycle()
 
     Box {
         Column {
@@ -198,10 +205,23 @@ private fun TeamsScreen(
                             )
                         }
 
-                        // TODO Search and filter
+                        item {
+                            OutlinedClearableTextField(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .listItemHorizontalPadding()
+                                    .testTag("filterTeamsTextField"),
+                                label = t("~~Filter teams"),
+                                value = teamFilter,
+                                onValueChange = viewModel::onUpdateTeamFilter,
+                                enabled = true,
+                                isError = false,
+                                imeAction = ImeAction.Done,
+                            )
+                        }
 
                         items(
-                            incidentTeams.otherTeams,
+                            otherTeams,
                             key = { it.id },
                             contentType = { "team-item" },
                         ) {

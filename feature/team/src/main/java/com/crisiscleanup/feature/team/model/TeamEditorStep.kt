@@ -4,7 +4,7 @@ enum class TeamEditorStep(val literal: String, val translateKey: String) {
     Name("name", "~~Team Name"),
     Members("members", "~~Members"),
     Cases("cases", "~~Cases"),
-    Equipment("equipment", "~~Assets"),
+    Equipment("equipment", "~~Equipment"),
     Review("review", "~~Review"),
 }
 
