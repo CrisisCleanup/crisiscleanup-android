@@ -92,8 +92,8 @@ interface IncidentDao {
     suspend fun upsertFormFields(formFields: Collection<IncidentFormFieldEntity>)
 
     @Transaction
-    @Query("SELECT name FROM incidents ORDER BY RANDOM() LIMIT 1")
-    fun getRandomIncidentName(): String?
+    @Query("SELECT COUNT(*) FROM incident_fts")
+    fun getIncidentFtsCount(): Int
 
     @Transaction
     @Query("INSERT INTO incident_fts(incident_fts) VALUES ('rebuild')")

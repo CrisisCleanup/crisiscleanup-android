@@ -22,6 +22,10 @@ import kotlinx.datetime.Instant
 @Dao
 interface TeamDao {
     @Transaction
+    @Query("SELECT COUNT(*) FROM teams")
+    fun getTeamCount(): Int
+
+    @Transaction
     @Query("SELECT id FROM teams_root WHERE network_id=:networkId AND local_global_uuid=''")
     fun getTeamId(networkId: Long): Long
 
@@ -205,8 +209,8 @@ interface TeamDao {
     fun insertIgnoreWork(teamWork: Collection<TeamWorkEntity>)
 
     @Transaction
-    @Query("SELECT name FROM teams ORDER BY RANDOM() LIMIT 1")
-    fun getRandomTeamName(): String?
+    @Query("SELECT COUNT(*) FROM team_fts")
+    fun getTeamFtsCount(): Int
 
     @Transaction
     @Query("INSERT INTO team_fts(team_fts) VALUES ('rebuild')")

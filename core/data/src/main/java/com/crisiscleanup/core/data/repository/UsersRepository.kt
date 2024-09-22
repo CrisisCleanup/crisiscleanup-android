@@ -10,6 +10,7 @@ import com.crisiscleanup.core.database.dao.IncidentOrganizationDaoPlus
 import com.crisiscleanup.core.database.dao.PersonContactDao
 import com.crisiscleanup.core.database.dao.PersonContactDaoPlus
 import com.crisiscleanup.core.database.dao.UserRoleDao
+import com.crisiscleanup.core.database.dao.fts.getMatchingTeamMembers
 import com.crisiscleanup.core.database.model.UserRoleEntity
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.OrganizationIdName
@@ -41,6 +42,11 @@ interface UsersRepository {
     suspend fun loadUserRoles()
 
     fun streamTeamMembers(incidentId: Long, organizationId: Long): Flow<List<PersonOrganization>>
+    suspend fun getMatchingTeamMembers(
+        q: String,
+        incidentId: Long,
+        organizationId: Long,
+    ): List<PersonOrganization>
 }
 
 class OfflineFirstUsersRepository @Inject constructor(
@@ -150,4 +156,10 @@ class OfflineFirstUsersRepository @Inject constructor(
                 }
                 .sortedBy { it.person.fullName }
         }
+
+    override suspend fun getMatchingTeamMembers(
+        q: String,
+        incidentId: Long,
+        organizationId: Long,
+    ) = personContactDaoPlus.getMatchingTeamMembers(q, incidentId, organizationId)
 }
