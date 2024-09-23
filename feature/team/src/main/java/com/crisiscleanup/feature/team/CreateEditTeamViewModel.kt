@@ -89,7 +89,7 @@ class CreateEditTeamViewModel @Inject constructor(
 
     private val stepTabOrder = MutableStateFlow(
         listOf(
-            TeamEditorStep.Name,
+            TeamEditorStep.Info,
             TeamEditorStep.Members,
             TeamEditorStep.Cases,
             TeamEditorStep.Equipment,
@@ -135,6 +135,8 @@ class CreateEditTeamViewModel @Inject constructor(
     var headerSubTitle by mutableStateOf("")
         private set
 
+    var editingTeamNotes by mutableStateOf("")
+        private set
     var editingTeamName by mutableStateOf("")
         private set
     val editingTeamMembers = MutableStateFlow(emptyList<PersonContact>())
@@ -258,8 +260,11 @@ class CreateEditTeamViewModel @Inject constructor(
                 editorSetInstant = Clock.System.now()
 
                 it.asTeamData()?.team?.let { team ->
-                    editingTeamName = team.name
-                    editingTeamMembers.value = team.members
+                    with(team) {
+                        editingTeamName = name
+                        editingTeamNotes = notes
+                        editingTeamMembers.value = members
+                    }
                 }
             }
             .launchIn(viewModelScope)
@@ -296,8 +301,20 @@ class CreateEditTeamViewModel @Inject constructor(
         editingTeamName = teamNameGenerator.generateName()
     }
 
+    fun onTeamNotesChange(notes: String) {
+        editingTeamNotes = notes
+    }
+
     fun onUpdateTeamMemberFilter(filter: String) {
         teamMemberFilter.value = filter
+    }
+
+    fun onRemoveTeamMember(person: PersonContact) {
+        if (teamMemberIds.value.contains(person.id)) {
+            editingTeamMembers.value = editingTeamMembers.value.toMutableList().also {
+                it.remove(person)
+            }
+        }
     }
 
     fun onAddTeamMember(person: PersonContact) {
