@@ -33,6 +33,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextArea
 import com.crisiscleanup.core.designsystem.component.HeaderSubTitle
 import com.crisiscleanup.core.designsystem.component.HeaderTitle
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
@@ -99,10 +100,13 @@ private fun CreateEditTeamView(
                     tabState.startingIndex,
                     isEditable = isEditable,
                     teamName = viewModel.editingTeamName,
+                    teamNotes = viewModel.editingTeamNotes,
                     teamMembers = editingTeamMembers,
                     membersState = membersState,
                     onTeamNameChange = viewModel::onTeamNameChange,
+                    onTeamNotesChange = viewModel::onTeamNotesChange,
                     onSuggestName = viewModel::onSuggestTeamName,
+                    onRemoveTeamMember = viewModel::onRemoveTeamMember,
                     onAddTeamMember = viewModel::onAddTeamMember,
                     profilePictureLookup = profilePictureLookup,
                     userRoleLookup = userRoleLookup,
@@ -160,10 +164,13 @@ private fun CreateEditTeamContent(
     initialPage: Int,
     isEditable: Boolean,
     teamName: String,
+    teamNotes: String,
     teamMembers: List<PersonContact>,
     membersState: MemberFilterResult,
     onTeamNameChange: (String) -> Unit,
     onSuggestName: () -> Unit,
+    onTeamNotesChange: (String) -> Unit,
+    onRemoveTeamMember: (PersonContact) -> Unit,
     onAddTeamMember: (PersonContact) -> Unit,
     profilePictureLookup: Map<Long, String>,
     userRoleLookup: Map<Int, UserRole>,
@@ -217,19 +224,22 @@ private fun CreateEditTeamContent(
             userScrollEnabled = enablePagerScroll,
         ) { pagerIndex ->
             when (pagerIndex) {
-                0 -> EditTeamNameView(
+                0 -> EditTeamInfoView(
                     team.colorInt,
                     teamName,
                     isEditable = isEditable,
                     hasFocus = team.id == EmptyCleanupTeam.id,
                     onTeamNameChange,
                     onSuggestName,
+                    teamNotes,
+                    onTeamNotesChange,
                 )
 
                 1 -> EditTeamMembersView(
                     teamMembers,
                     membersState,
-                    onAddTeamMember,
+                    onRemoveMember = onRemoveTeamMember,
+                    onAddMember = onAddTeamMember,
                     isEditable,
                     profilePictureLookup,
                     userRoleLookup,
@@ -257,13 +267,15 @@ private fun CreateEditTeamContent(
 }
 
 @Composable
-private fun EditTeamNameView(
+private fun EditTeamInfoView(
     teamColorInt: Int,
     name: String,
     isEditable: Boolean,
     hasFocus: Boolean,
     onTeamNameChange: (String) -> Unit,
     onSuggestName: () -> Unit,
+    notes: String,
+    onTeamNotesChange: (String) -> Unit,
 ) {
     val t = LocalAppTranslator.current
 
@@ -290,8 +302,7 @@ private fun EditTeamNameView(
             enabled = isEditable,
             isError = false,
             keyboardCapitalization = KeyboardCapitalization.Words,
-            onEnter = closeKeyboard,
-            imeAction = ImeAction.Done,
+            imeAction = ImeAction.Next,
         )
 
         val color = if (isEditable) {
@@ -316,6 +327,16 @@ private fun EditTeamNameView(
                 style = LocalFontStyles.current.header3,
             )
         }
+
+        CrisisCleanupTextArea(
+            text = notes,
+            onTextChange = onTeamNotesChange,
+            modifier = listItemModifier,
+            label = { Text(t("~~Notes")) },
+            imeAction = ImeAction.Done,
+            enabled = isEditable,
+            onDone = closeKeyboard,
+        )
 
         Modifier.weight(1f)
     }

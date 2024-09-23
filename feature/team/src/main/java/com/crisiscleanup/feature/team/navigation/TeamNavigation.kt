@@ -53,7 +53,7 @@ fun NavController.navigateToViewTeam(incidentId: Long, teamId: Long) {
 fun NavController.navigateToTeamEditor(
     incidentId: Long = EmptyIncident.id,
     teamId: Long = EmptyCleanupTeam.id,
-    editorStep: TeamEditorStep = TeamEditorStep.Name,
+    editorStep: TeamEditorStep = TeamEditorStep.Info,
 ) {
     val args = listOf(
         "$INCIDENT_ID_ARG=$incidentId",

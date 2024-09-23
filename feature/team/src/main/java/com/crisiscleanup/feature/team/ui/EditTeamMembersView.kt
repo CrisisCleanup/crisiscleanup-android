@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
@@ -19,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CollapsibleIcon
@@ -28,8 +30,8 @@ import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
-import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
 import com.crisiscleanup.core.designsystem.theme.neutralFontColor
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.model.data.PersonContact
@@ -55,7 +57,7 @@ private fun LazyListScope.sectionHeaderItem(
 
 private fun LazyListScope.contentSpacerItem() {
     item(contentType = "content-spacer") {
-        Spacer(Modifier.listItemVerticalPadding())
+        Spacer(Modifier.padding(1.dp))
     }
 }
 
@@ -63,6 +65,7 @@ private fun LazyListScope.contentSpacerItem() {
 internal fun EditTeamMembersView(
     members: List<PersonContact>,
     membersState: MemberFilterResult,
+    onRemoveMember: (PersonContact) -> Unit,
     onAddMember: (PersonContact) -> Unit,
     isEditable: Boolean,
     profilePictureLookup: Map<Long, String>,
@@ -78,7 +81,7 @@ internal fun EditTeamMembersView(
     Box {
         LazyColumn(
             Modifier.fillMaxSize(),
-            verticalArrangement = listItemSpacedByHalf,
+            verticalArrangement = listItemSpacedBy,
         ) {
             item {
                 Box(
@@ -122,13 +125,18 @@ internal fun EditTeamMembersView(
                     members,
                     key = { "member-${it.id}" },
                     contentType = { "member-contact-item" },
-                ) {
-                    TeamMemberContactCardView(
-                        it,
+                ) { person ->
+                    TeamMemberCardView(
+                        person,
                         profilePictureLookup,
                         userRoleLookup,
-                        false,
-                    )
+                    ) {
+                        CrisisCleanupButton(
+                            text = t("~~Remove"),
+                            onClick = { onRemoveMember(person) },
+                            enabled = isEditable,
+                        )
+                    }
                 }
 
                 contentSpacerItem()

@@ -109,7 +109,7 @@ private fun TeamsScreen(
     val otherTeams by viewModel.filteredOtherTeams.collectAsStateWithLifecycle()
 
     Box {
-        Column {
+        Column(Modifier.fillMaxHeight()) {
             AppTopBar(
                 dataProvider = viewModel.appTopBarDataProvider,
                 openAuthentication = openAuthentication,
