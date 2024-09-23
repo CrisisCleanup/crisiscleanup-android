@@ -186,6 +186,10 @@ class ViewTeamViewModel @Inject constructor(
         }
     }
 
+    fun onJoinLeaveTeam() {
+        // TODO Push team change (join/leave) and update loading
+    }
+
     fun onOpenCaseFlags(worksite: Worksite) = flagsNavigationState.onOpenCaseFlags(worksite)
 
     fun takeOpenWorksiteAddFlag() = flagsNavigationState.takeOpenWorksiteAddFlag()
