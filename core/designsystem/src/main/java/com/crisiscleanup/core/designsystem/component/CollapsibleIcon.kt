@@ -11,6 +11,7 @@ import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 fun CollapsibleIcon(
     isCollapsed: Boolean,
     sectionTitle: String,
+    testTagPostfix: String = "",
 ) {
     val iconVector = if (isCollapsed) {
         CrisisCleanupIcons.ExpandLess
@@ -28,6 +29,6 @@ fun CollapsibleIcon(
     Icon(
         imageVector = iconVector,
         contentDescription = description,
-        modifier = Modifier.testTag("collapsibleIcon_$sectionTitle"),
+        modifier = Modifier.testTag("collapsibleIcon$testTagPostfix"),
     )
 }

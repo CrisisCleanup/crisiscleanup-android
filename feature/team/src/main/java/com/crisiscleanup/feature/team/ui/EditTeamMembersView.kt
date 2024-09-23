@@ -33,7 +33,6 @@ import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.neutralFontColor
-import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.model.data.PersonContact
 import com.crisiscleanup.core.model.data.UserRole
 import com.crisiscleanup.feature.team.MemberFilterResult
@@ -69,7 +68,6 @@ internal fun EditTeamMembersView(
     onAddMember: (PersonContact) -> Unit,
     isEditable: Boolean,
     userRoleLookup: Map<Int, UserRole>,
-    onToggleQrCode: () -> Unit = {},
     memberFilter: String = "",
     onUpdateMemberFilter: (String) -> Unit = {},
 ) {
@@ -82,22 +80,6 @@ internal fun EditTeamMembersView(
             Modifier.fillMaxSize(),
             verticalArrangement = listItemSpacedBy,
         ) {
-            item {
-                Box(
-                    Modifier
-                        .clickable(onClick = onToggleQrCode)
-                        .then(listItemModifier)
-                        .actionHeight(),
-                    contentAlignment = Alignment.CenterStart,
-                ) {
-                    Text(
-                        t("~~Show QR code to join"),
-                        color = primaryBlueColor,
-                        style = LocalFontStyles.current.header3,
-                    )
-                }
-            }
-
             item {
                 Row(
                     Modifier.clickable { isMemberDropdownExpanded = !isMemberDropdownExpanded }
@@ -114,7 +96,7 @@ internal fun EditTeamMembersView(
 
                     Spacer(Modifier.weight(1f))
 
-                    val sectionTitle = t("~~currentTeamMembers")
+                    val sectionTitle = t("~~Current team members")
                     CollapsibleIcon(!isMemberDropdownExpanded, sectionTitle)
                 }
             }
