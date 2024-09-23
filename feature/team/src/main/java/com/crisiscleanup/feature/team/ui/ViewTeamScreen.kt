@@ -46,11 +46,13 @@ import com.crisiscleanup.core.commoncase.ui.tableItemContentPadding
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CardSurface
+import com.crisiscleanup.core.designsystem.component.CollapsibleIcon
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupOutlinedButton
 import com.crisiscleanup.core.designsystem.component.HelpDialog
 import com.crisiscleanup.core.designsystem.component.PhoneCallDialog
 import com.crisiscleanup.core.designsystem.component.TopBarBackAction
+import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
@@ -295,6 +297,10 @@ private fun ViewTeamContent(
             }
         }
 
+        item {
+            JoinByQrCodeView()
+        }
+
         item(
             key = "team-member-header",
             contentType = "header-item",
@@ -490,6 +496,37 @@ private fun TeamHeader(
 
             TeamCaseCompleteView(team)
         }
+    }
+}
+
+@Composable
+private fun JoinByQrCodeView(
+
+) {
+    val t = LocalAppTranslator.current
+
+    var showQrCode by rememberSaveable { mutableStateOf(false) }
+
+    Row(
+        Modifier.clickable { showQrCode = !showQrCode }
+            .then(listItemModifier)
+            .actionHeight(),
+        horizontalArrangement = listItemSpacedByHalf,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            t("~~Invite by QR code"),
+            style = LocalFontStyles.current.header3,
+        )
+
+        Spacer(Modifier.weight(1f))
+
+        val sectionTitle = t("~~Toggle QR code")
+        CollapsibleIcon(!showQrCode, sectionTitle)
+    }
+
+    if (showQrCode) {
+        Text("QR Code image and text")
     }
 }
 
