@@ -3,6 +3,7 @@ package com.crisiscleanup.feature.team.ui
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -44,6 +45,7 @@ import com.crisiscleanup.core.commoncase.ui.SyncStatusView
 import com.crisiscleanup.core.commoncase.ui.caseItemTopRowHorizontalContentOffset
 import com.crisiscleanup.core.commoncase.ui.tableItemContentPadding
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
+import com.crisiscleanup.core.designsystem.component.AnimatedBusyIndicator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CardSurface
 import com.crisiscleanup.core.designsystem.component.CollapsibleIcon
@@ -158,6 +160,9 @@ private fun ViewTeamScreen(
         }
     }
 
+    val scanQrCodeHelpText by viewModel.scanQrCodeHelpText.collectAsStateWithLifecycle()
+    val joinTeamQrCode by viewModel.joinTeamQrCode.collectAsStateWithLifecycle()
+
     Box {
         Column {
             // TODO Animate team name to title on scroll up when team name is defined
@@ -178,6 +183,9 @@ private fun ViewTeamScreen(
                 isPendingSync = isPendingSync,
                 scheduleSync = viewModel::scheduleSync,
                 onJoinLeaveTeam = viewModel::onJoinLeaveTeam,
+                onRefreshQrCode = viewModel::onRefreshQrCode,
+                scanQrCodeHelpText = scanQrCodeHelpText,
+                joinTeamQrCode = joinTeamQrCode,
                 onEditTeamMembers = openEditMembers,
                 onEditCases = openEditCases,
                 onEditEquipment = openEditEquipment,
@@ -260,6 +268,9 @@ private fun ViewTeamContent(
     isPendingSync: Boolean,
     scheduleSync: () -> Unit,
     onJoinLeaveTeam: () -> Unit,
+    onRefreshQrCode: () -> Unit,
+    scanQrCodeHelpText: String,
+    joinTeamQrCode: ImageBitmap?,
     onEditTeamMembers: () -> Unit = {},
     onEditCases: () -> Unit = {},
     onEditEquipment: () -> Unit = {},
@@ -298,7 +309,11 @@ private fun ViewTeamContent(
         }
 
         item {
-            JoinByQrCodeView()
+            JoinByQrCodeView(
+                onRefreshQrCode,
+                scanQrCodeHelpText,
+                joinTeamQrCode,
+            )
         }
 
         item(
@@ -501,15 +516,22 @@ private fun TeamHeader(
 
 @Composable
 private fun JoinByQrCodeView(
-
+    onRefreshQrCode: () -> Unit,
+    scanQrCodeHelpText: String,
+    joinTeamQrCode: ImageBitmap?,
 ) {
     val t = LocalAppTranslator.current
 
     var showQrCode by rememberSaveable { mutableStateOf(false) }
 
     Row(
-        Modifier.clickable { showQrCode = !showQrCode }
-            .then(listItemModifier)
+        Modifier.clickable {
+            showQrCode = !showQrCode
+            if (showQrCode) {
+                onRefreshQrCode()
+            }
+        }
+            .then(Modifier.listItemHorizontalPadding())
             .actionHeight(),
         horizontalArrangement = listItemSpacedByHalf,
         verticalAlignment = Alignment.CenterVertically,
@@ -526,7 +548,30 @@ private fun JoinByQrCodeView(
     }
 
     if (showQrCode) {
-        Text("QR Code image and text")
+        Text(
+            scanQrCodeHelpText,
+            Modifier.listItemHorizontalPadding(),
+            style = LocalFontStyles.current.header4,
+        )
+
+        if (joinTeamQrCode == null) {
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                AnimatedBusyIndicator(
+                    true,
+                    padding = 16.dp,
+                )
+            }
+        } else {
+            Row(
+                fillWidthPadded,
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                Image(bitmap = joinTeamQrCode, contentDescription = null)
+            }
+        }
     }
 }
 

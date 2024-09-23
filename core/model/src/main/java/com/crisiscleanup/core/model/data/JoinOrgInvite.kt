@@ -17,3 +17,11 @@ enum class JoinOrgResult {
     PendingAdditionalAction,
     Unknown,
 }
+
+data class JoinOrgTeamInvite(
+    val token: String,
+    val orgId: Long,
+    val teamId: Long,
+    val expiresAt: Instant,
+    val isExpired: Boolean = expiresAt.isPast,
+)

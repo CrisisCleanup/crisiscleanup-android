@@ -52,6 +52,7 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Instant
 import javax.inject.Inject
 
 @HiltViewModel
@@ -176,7 +177,7 @@ class InviteTeammateViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    private val qFlow = organizationNameQuery
+    private val organizationQuery = organizationNameQuery
         .throttleLatest(300)
         .map(String::trim)
         .shareIn(
@@ -185,7 +186,7 @@ class InviteTeammateViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val organizationsSearchResult = qFlow
+    val organizationsSearchResult = organizationQuery
         .flatMapLatest { q ->
             // TODO Indicate loading (in thread safe manner) when querying local matches
             // TODO Data layer (streamMatchingOrganizations) needs testing
@@ -227,14 +228,16 @@ class InviteTeammateViewModel @Inject constructor(
         joinMyOrgInvite,
         ::Pair,
     )
-        .map { (account, orgInvite) ->
+        .filter { (_, orgInvite) ->
+            orgInvite != null
+        }
+        .map { (account, invite) ->
+            // TODO Atomic state updates
             isGeneratingMyOrgQrCode.value = true
             try {
-                orgInvite?.let { invite ->
-                    if (!invite.isExpired) {
-                        val inviteUrl = makeInviteUrl(account.id, invite)
-                        return@map qrCodeGenerator.generate(inviteUrl, qrCodeSize)?.asImageBitmap()
-                    }
+                if (invite?.isExpired == false) {
+                    val inviteUrl = makeInviteUrl(account.id, invite)
+                    return@map qrCodeGenerator.generate(inviteUrl, qrCodeSize)?.asImageBitmap()
                 }
             } finally {
                 isGeneratingMyOrgQrCode.value = false
@@ -242,6 +245,7 @@ class InviteTeammateViewModel @Inject constructor(
 
             null
         }
+        .flowOn(ioDispatcher)
         .stateIn(
             scope = viewModelScope,
             initialValue = null,
@@ -279,7 +283,7 @@ class InviteTeammateViewModel @Inject constructor(
 
                     ensureActive()
 
-                    OrgQrCode(otherOrgId, qrCode)
+                    OrgQrCode(otherOrgId, qrCode, invite.expiresAt)
                 } finally {
                     // TODO Atomic update
                     if (generatingAffiliateOrgQrCode.value == otherOrgId) {
@@ -443,7 +447,7 @@ class InviteTeammateViewModel @Inject constructor(
                 organizationsRepository.getOrganizationAffiliateIds(orgId, false)
         }
 
-        qFlow
+        organizationQuery
             .filter { it.length > 1 }
             .onEach { q ->
                 // TODO Review loading pattern and fix as necessary
@@ -743,6 +747,7 @@ private val EmptyOrgSearch = OrgSearch("", emptyList())
 data class OrgQrCode(
     val orgId: Long,
     val qrCode: ImageBitmap?,
+    val qrCodeExpiration: Instant,
 )
 
 data class InviteOrgState(
