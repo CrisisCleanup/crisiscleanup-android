@@ -77,7 +77,6 @@ private fun CreateEditTeamView(
     val editingTeam by viewModel.editingTeam.collectAsStateWithLifecycle()
 
     val editingTeamMembers by viewModel.editingTeamMembers.collectAsStateWithLifecycle()
-    val profilePictureLookup by viewModel.profilePictureLookup.collectAsStateWithLifecycle()
     val userRoleLookup by viewModel.userRoleLookup.collectAsStateWithLifecycle()
 
     var showJoinTeamQrCode by rememberSaveable { mutableStateOf(false) }
@@ -108,7 +107,6 @@ private fun CreateEditTeamView(
                     onSuggestName = viewModel::onSuggestTeamName,
                     onRemoveTeamMember = viewModel::onRemoveTeamMember,
                     onAddTeamMember = viewModel::onAddTeamMember,
-                    profilePictureLookup = profilePictureLookup,
                     userRoleLookup = userRoleLookup,
                     onToggleJoinTeamQrCode = { showJoinTeamQrCode = !showJoinTeamQrCode },
                     memberFilter = memberFilter,
@@ -172,7 +170,6 @@ private fun CreateEditTeamContent(
     onTeamNotesChange: (String) -> Unit,
     onRemoveTeamMember: (PersonContact) -> Unit,
     onAddTeamMember: (PersonContact) -> Unit,
-    profilePictureLookup: Map<Long, String>,
     userRoleLookup: Map<Int, UserRole>,
     onToggleJoinTeamQrCode: () -> Unit = {},
     memberFilter: String = "",
@@ -241,7 +238,6 @@ private fun CreateEditTeamContent(
                     onRemoveMember = onRemoveTeamMember,
                     onAddMember = onAddTeamMember,
                     isEditable,
-                    profilePictureLookup,
                     userRoleLookup,
                     onToggleJoinTeamQrCode,
                     memberFilter,

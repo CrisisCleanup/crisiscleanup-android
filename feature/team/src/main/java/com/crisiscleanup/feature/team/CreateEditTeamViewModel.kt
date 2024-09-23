@@ -39,11 +39,9 @@ import com.crisiscleanup.feature.team.util.NameGenerator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
@@ -279,32 +277,6 @@ class CreateEditTeamViewModel @Inject constructor(
     val isLoading = dataLoader.isLoading
 
     val isPendingSync = dataLoader.isPendingSync
-
-    @OptIn(FlowPreview::class)
-    val profilePictureLookup = combine(
-        dataLoader.profilePictureLookup,
-        allMembers
-            .debounce(1.seconds.inWholeMilliseconds)
-            .mapLatest { it.map(PersonOrganization::person) },
-        ::Pair,
-    )
-        .mapLatest { (avatarLookup, allMembers) ->
-            val allLookup = allMembers.associateBy { it.id }
-            if (allLookup.isEmpty()) {
-                avatarLookup
-            } else {
-                val mergedLookup = buildProfilePicLookup(allLookup).toMutableMap()
-                for (entry in avatarLookup) {
-                    mergedLookup[entry.key] = entry.value
-                }
-                mergedLookup
-            }
-        }
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = emptyMap(),
-            started = ReplaySubscribed3,
-        )
 
     val userRoleLookup = dataLoader.userRoleLookup
 

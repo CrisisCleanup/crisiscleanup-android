@@ -7,9 +7,12 @@ data class PersonContact(
     val email: String,
     val mobile: String,
     val profilePictureUri: String,
+    private val fallbackAvatarUrl: String,
     val activeRoles: List<Int>,
+    val fullName: String = "$firstName $lastName".trim(),
 ) {
-    val fullName = "$firstName $lastName".trim()
+    val avatarUrl: String
+        get() = profilePictureUri.ifBlank { fallbackAvatarUrl }
 }
 
 data class PersonOrganization(
