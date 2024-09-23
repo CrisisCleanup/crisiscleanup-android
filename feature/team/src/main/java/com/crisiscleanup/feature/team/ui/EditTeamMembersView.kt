@@ -68,7 +68,6 @@ internal fun EditTeamMembersView(
     onRemoveMember: (PersonContact) -> Unit,
     onAddMember: (PersonContact) -> Unit,
     isEditable: Boolean,
-    profilePictureLookup: Map<Long, String>,
     userRoleLookup: Map<Int, UserRole>,
     onToggleQrCode: () -> Unit = {},
     memberFilter: String = "",
@@ -128,7 +127,7 @@ internal fun EditTeamMembersView(
                 ) { person ->
                     TeamMemberCardView(
                         person,
-                        profilePictureLookup,
+                        emptyMap(),
                         userRoleLookup,
                     ) {
                         CrisisCleanupButton(
@@ -184,7 +183,7 @@ internal fun EditTeamMembersView(
                     val person = personOrg.person
                     TeamMemberCardView(
                         person,
-                        profilePictureLookup,
+                        emptyMap(),
                         userRoleLookup,
                     ) {
                         CrisisCleanupButton(

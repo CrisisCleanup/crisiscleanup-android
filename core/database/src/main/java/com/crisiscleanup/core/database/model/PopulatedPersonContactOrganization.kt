@@ -50,6 +50,7 @@ fun PopulatedPersonContactMatch.asExternalModel() = PersonOrganization(
         email = email,
         mobile = mobile,
         profilePictureUri = profilePictureUri,
+        fallbackAvatarUrl = fallbackAvatarUrl(firstName, lastName),
         activeRoles = activeRoles.splitToInts(),
     ),
     OrganizationIdName(

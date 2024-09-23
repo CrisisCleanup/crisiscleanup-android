@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.crisiscleanup.core.common.svgAvatarUrl
 import com.crisiscleanup.core.model.data.PersonContact
 
 @Entity("person_contacts")
@@ -23,6 +24,9 @@ data class PersonContactEntity(
     val activeRoles: String,
 )
 
+fun fallbackAvatarUrl(firstName: String, lastName: String) =
+    "$firstName $lastName".trim().svgAvatarUrl
+
 fun String.splitToInts() = split(",").mapNotNull { it.toIntOrNull() }
 
 fun PersonContactEntity.asExternalModel() = PersonContact(
@@ -32,6 +36,7 @@ fun PersonContactEntity.asExternalModel() = PersonContact(
     email = email,
     mobile = mobile,
     profilePictureUri = profilePictureUri,
+    fallbackAvatarUrl = fallbackAvatarUrl(firstName, lastName),
     activeRoles = activeRoles.splitToInts(),
 )
 

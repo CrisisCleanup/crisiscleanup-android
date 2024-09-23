@@ -25,15 +25,12 @@ import com.crisiscleanup.core.mapmarker.WorkTypeChipIconProvider
 import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.EmptyCleanupTeam
 import com.crisiscleanup.core.model.data.LocalTeam
-import com.crisiscleanup.core.model.data.PersonContact
 import com.crisiscleanup.core.model.data.UserRole
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
@@ -254,24 +251,6 @@ internal class TeamEditorDataLoader(
         .stateIn(
             scope = coroutineScope,
             initialValue = false,
-            started = ReplaySubscribed3,
-        )
-
-    @OptIn(FlowPreview::class)
-    private val userProfileLookup = teamData.mapNotNull { it?.team?.memberIds }
-        .debounce(1.seconds)
-        .distinctUntilChanged()
-        .map {
-            usersRepository.getUserProfiles(it, true)
-                .associateBy(PersonContact::id)
-        }
-        .flowOn(coroutineDispatcher)
-
-    val profilePictureLookup = userProfileLookup
-        .mapLatest(::buildProfilePicLookup)
-        .stateIn(
-            scope = coroutineScope,
-            initialValue = emptyMap(),
             started = ReplaySubscribed3,
         )
 

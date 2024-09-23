@@ -126,7 +126,6 @@ private fun ViewTeamScreen(
     val accountId by viewModel.accountId.collectAsStateWithLifecycle()
     val team by viewModel.editableTeam.collectAsStateWithLifecycle()
     val worksites by viewModel.worksiteDistances.collectAsStateWithLifecycle()
-    val profilePictureLookup by viewModel.profilePictureLookup.collectAsStateWithLifecycle()
     val userRoleLookup by viewModel.userRoleLookup.collectAsStateWithLifecycle()
     val worksiteWorkTypeIconLookup by viewModel.worksiteWorkTypeIconLookup.collectAsStateWithLifecycle()
 
@@ -168,7 +167,6 @@ private fun ViewTeamScreen(
             ViewTeamContent(
                 accountId,
                 team,
-                profilePictureLookup,
                 userRoleLookup,
                 worksites,
                 worksiteWorkTypeIconLookup,
@@ -250,7 +248,6 @@ private fun EditSectionHeader(
 private fun ViewTeamContent(
     accountId: Long,
     team: CleanupTeam,
-    profilePictureLookup: Map<Long, String>,
     userRoleLookup: Map<Int, UserRole>,
     worksites: List<WorksiteDistance>,
     worksiteWorkTypeIconLookup: Map<Long, List<ImageBitmap>>,
@@ -313,7 +310,7 @@ private fun ViewTeamContent(
         ) {
             TeamMemberContactCardView(
                 it,
-                profilePictureLookup,
+                emptyMap(),
                 userRoleLookup,
                 it.id != accountId,
             ) { message ->
