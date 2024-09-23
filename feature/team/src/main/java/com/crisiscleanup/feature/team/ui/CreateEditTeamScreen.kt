@@ -21,7 +21,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -79,8 +78,6 @@ private fun CreateEditTeamView(
     val editingTeamMembers by viewModel.editingTeamMembers.collectAsStateWithLifecycle()
     val userRoleLookup by viewModel.userRoleLookup.collectAsStateWithLifecycle()
 
-    var showJoinTeamQrCode by rememberSaveable { mutableStateOf(false) }
-
     val memberFilter by viewModel.teamMemberFilter.collectAsStateWithLifecycle()
     val membersState by viewModel.teamMembersState.collectAsStateWithLifecycle()
 
@@ -108,7 +105,6 @@ private fun CreateEditTeamView(
                     onRemoveTeamMember = viewModel::onRemoveTeamMember,
                     onAddTeamMember = viewModel::onAddTeamMember,
                     userRoleLookup = userRoleLookup,
-                    onToggleJoinTeamQrCode = { showJoinTeamQrCode = !showJoinTeamQrCode },
                     memberFilter = memberFilter,
                     onUpdateMemberFilter = viewModel::onUpdateTeamMemberFilter,
                 )
@@ -116,11 +112,6 @@ private fun CreateEditTeamView(
 
             BusyIndicatorFloatingTopCenter(isLoading)
         }
-    }
-
-    if (showJoinTeamQrCode) {
-        val hideJoinTeamQrCode = { { showJoinTeamQrCode = false } }
-        // TODO QR code UI
     }
 }
 
@@ -171,7 +162,6 @@ private fun CreateEditTeamContent(
     onRemoveTeamMember: (PersonContact) -> Unit,
     onAddTeamMember: (PersonContact) -> Unit,
     userRoleLookup: Map<Int, UserRole>,
-    onToggleJoinTeamQrCode: () -> Unit = {},
     memberFilter: String = "",
     onUpdateMemberFilter: (String) -> Unit = {},
 ) {
@@ -239,7 +229,6 @@ private fun CreateEditTeamContent(
                     onAddMember = onAddTeamMember,
                     isEditable,
                     userRoleLookup,
-                    onToggleJoinTeamQrCode,
                     memberFilter,
                     onUpdateMemberFilter,
                 )
