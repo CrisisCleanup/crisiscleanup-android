@@ -172,7 +172,7 @@ class ViewTeamViewModel @Inject constructor(
     val isLoading = dataLoader.isLoading
 
     val isPendingSync = dataLoader.isPendingSync
-    val profilePictureLookup = dataLoader.profilePictureLookup
+
     val userRoleLookup = dataLoader.userRoleLookup
 
     val worksiteWorkTypeIconLookup = dataLoader.worksiteWorkTypeIconLookup

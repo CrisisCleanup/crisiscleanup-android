@@ -70,7 +70,7 @@ internal fun TeamMemberCardView(
                 contentAlignment = Alignment.Center,
             ) {
                 AvatarIcon(
-                    profilePictureLookup[person.id] ?: person.profilePictureUri,
+                    profilePictureLookup[person.id] ?: person.avatarUrl,
                     person.fullName,
                 )
             }

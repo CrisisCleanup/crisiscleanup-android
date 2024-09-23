@@ -10,7 +10,6 @@ import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
-import com.crisiscleanup.core.common.svgAvatarUrl
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.data.IncidentSelector
@@ -203,6 +202,7 @@ class TeamsViewModel @Inject constructor(
     suspend fun refreshTeams() = viewModelScope.launch(ioDispatcher) {
         equipmentRepository.saveEquipment(true)
         teamsRepository.syncTeams(incidentIdStream.value)
+        // TODO Force query user profile pictures (where not blank)
     }
 
     fun onUpdateTeamFilter(q: String) {
@@ -210,24 +210,16 @@ class TeamsViewModel @Inject constructor(
     }
 }
 
-internal fun buildProfilePicLookup(
+private fun buildProfilePicLookup(
     profileLookup: Map<Long, PersonContact>,
     additionalLookup: Map<Long, PersonContact> = emptyMap(),
 ): Map<Long, String> {
-    fun getProfilePictureUri(contact: PersonContact): String {
-        var pictureUri = contact.profilePictureUri
-        if (pictureUri.isBlank() && contact.fullName.isNotBlank()) {
-            pictureUri = contact.fullName.svgAvatarUrl
-        }
-        return pictureUri
-    }
-
     val lookup = mutableMapOf<Long, String>()
     for (entry in profileLookup) {
-        lookup[entry.key] = getProfilePictureUri(entry.value)
+        lookup[entry.key] = entry.value.avatarUrl
     }
     for (entry in additionalLookup) {
-        lookup[entry.key] = getProfilePictureUri(entry.value)
+        lookup[entry.key] = entry.value.avatarUrl
     }
     return lookup
 }

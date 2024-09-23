@@ -3,6 +3,7 @@ package com.crisiscleanup.core.data.model
 import com.crisiscleanup.core.database.model.IncidentOrganizationEntity
 import com.crisiscleanup.core.database.model.PersonContactEntity
 import com.crisiscleanup.core.database.model.PersonOrganizationCrossRef
+import com.crisiscleanup.core.database.model.fallbackAvatarUrl
 import com.crisiscleanup.core.model.data.PersonContact
 import com.crisiscleanup.core.network.model.NetworkPersonContact
 import com.crisiscleanup.core.network.model.profilePictureUrl
@@ -24,6 +25,7 @@ fun NetworkPersonContact.asExternalModel() = PersonContact(
     email = email,
     mobile = mobile,
     profilePictureUri = files?.profilePictureUrl ?: "",
+    fallbackAvatarUrl = fallbackAvatarUrl(firstName, lastName),
     activeRoles = activeRoles,
 )
 
