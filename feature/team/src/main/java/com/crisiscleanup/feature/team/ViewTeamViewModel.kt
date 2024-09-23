@@ -3,13 +3,16 @@ package com.crisiscleanup.feature.team
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AppEnv
+import com.crisiscleanup.core.common.AppSettingsProvider
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.PermissionManager
+import com.crisiscleanup.core.common.QrCodeGenerator
 import com.crisiscleanup.core.common.ReplaySubscribed3
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
@@ -32,6 +35,7 @@ import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.WorkTypeChipIconProvider
 import com.crisiscleanup.core.model.data.CleanupTeam
+import com.crisiscleanup.core.model.data.JoinOrgTeamInvite
 import com.crisiscleanup.core.model.data.TeamWorksiteIds
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.feature.team.navigation.ViewTeamArgs
@@ -39,8 +43,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -52,6 +60,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ViewTeamViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
+    settingsProvider: AppSettingsProvider,
     accountDataRepository: AccountDataRepository,
     incidentsRepository: IncidentsRepository,
     incidentRefresher: IncidentRefresher,
@@ -68,6 +77,7 @@ class ViewTeamViewModel @Inject constructor(
     permissionManager: PermissionManager,
     locationProvider: LocationProvider,
     languageRefresher: LanguageRefresher,
+    qrCodeGenerator: QrCodeGenerator,
     private val syncPusher: SyncPusher,
     private val translator: KeyResourceTranslator,
     appEnv: AppEnv,
@@ -80,6 +90,9 @@ class ViewTeamViewModel @Inject constructor(
 
     var headerTitle by mutableStateOf("")
         private set
+
+    // TODO Configure receiver in manifest and elsewhere
+    private val inviteUrl = "${settingsProvider.baseUrl}/mobile_app_user_team_invite"
 
     private val dataLoader: TeamEditorDataLoader
 
@@ -178,6 +191,46 @@ class ViewTeamViewModel @Inject constructor(
     val worksiteWorkTypeIconLookup = dataLoader.worksiteWorkTypeIconLookup
     val worksiteDistances = dataLoader.worksiteDistances
 
+    // TODO Size QR codes relative to min screen dimension
+    //      See Display#getSize or WindowMetrics#getBounds
+    private val qrCodeSize = 512 + 256
+    private val joinTeamInvite = MutableStateFlow<JoinOrgTeamInvite?>(null)
+    val scanQrCodeHelpText = joinTeamInvite
+        .filterNotNull()
+        .map {
+            // TODO Format expires at for human readability
+            val expirationDate = it.expiresAt.toString()
+            translator("~~Scan the QR code to join this team. The QR code does not work beyond {expiration}.")
+                .replace("{expiration}", expirationDate)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = "",
+            started = SharingStarted.WhileSubscribed(),
+        )
+    val joinTeamQrCode = combine(
+        accountId,
+        joinTeamInvite,
+        ::Pair,
+    )
+        .filter { (_, orgInvite) ->
+            orgInvite != null
+        }
+        .map { (accountId, invite) ->
+            if (invite?.isExpired == false) {
+                val inviteUrl = makeInviteUrl(accountId, invite)
+                return@map qrCodeGenerator.generate(inviteUrl, qrCodeSize)?.asImageBitmap()
+            }
+
+            null
+        }
+        .flowOn(ioDispatcher)
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = null,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
     private fun updateHeaderTitle(teamName: String = "") {
         headerTitle = if (teamName.isEmpty()) {
             translator.translate("nav.organization_teams") ?: "nav.organization_teams"
@@ -188,6 +241,20 @@ class ViewTeamViewModel @Inject constructor(
 
     fun onJoinLeaveTeam() {
         // TODO Push team change (join/leave) and update loading
+    }
+
+    private fun makeInviteUrl(userId: Long, invite: JoinOrgTeamInvite): String {
+        val q = listOf(
+            "org-id=${invite.orgId}",
+            "team-id=${invite.teamId}",
+            "user-id=$userId",
+            "invite-token=${invite.token}",
+        ).joinToString("&")
+        return "$inviteUrl?$q"
+    }
+
+    fun onRefreshQrCode() {
+        // TODO Refresh QR code if close to expiring
     }
 
     fun onOpenCaseFlags(worksite: Worksite) = flagsNavigationState.onOpenCaseFlags(worksite)

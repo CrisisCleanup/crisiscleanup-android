@@ -58,6 +58,7 @@ import com.crisiscleanup.core.designsystem.component.listDetailDetailMaxWidth
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
+import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.designsystem.theme.listItemBottomPadding
 import com.crisiscleanup.core.designsystem.theme.listItemDropdownMenuOffset
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
@@ -97,7 +98,7 @@ fun InviteTeammateRoute(
         )
 
         if (isLoading) {
-            Box {
+            Box(Modifier.fillMaxSize()) {
                 BusyIndicatorFloatingTopCenter(true)
             }
         } else if (isInviteSent) {
@@ -635,6 +636,7 @@ private fun QrCodeSection(
         )
 
         Text(
+            // TODO Update (or add) with true expiration time
             scanQrCodeText,
             listItemModifier,
             style = LocalFontStyles.current.header4,
@@ -674,10 +676,7 @@ private fun CenteredRowImage(
     image: ImageBitmap,
 ) {
     Row(
-        Modifier
-            .fillMaxWidth()
-            // TODO Common dimensions
-            .padding(16.dp),
+        fillWidthPadded,
         horizontalArrangement = Arrangement.Center,
     ) {
         Image(bitmap = image, contentDescription = null)
