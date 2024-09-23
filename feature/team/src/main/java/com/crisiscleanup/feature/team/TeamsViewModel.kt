@@ -41,6 +41,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
@@ -53,7 +54,7 @@ class TeamsViewModel @Inject constructor(
     accountDataRepository: AccountDataRepository,
     appPreferencesRepository: LocalAppPreferencesRepository,
     private val teamsRepository: TeamsRepository,
-    usersRepository: UsersRepository,
+    private val usersRepository: UsersRepository,
     private val equipmentRepository: EquipmentRepository,
     private val syncPuller: SyncPuller,
     translator: KeyResourceTranslator,
@@ -199,10 +200,16 @@ class TeamsViewModel @Inject constructor(
         syncPuller.pullIncidents()
     }
 
-    suspend fun refreshTeams() = viewModelScope.launch(ioDispatcher) {
+    suspend fun refreshTeams() = withContext(ioDispatcher) {
         equipmentRepository.saveEquipment(true)
         teamsRepository.syncTeams(incidentIdStream.value)
-        // TODO Force query user profile pictures (where not blank)
+
+        (viewState.value as? TeamsViewState.Success)?.let { state ->
+            val refreshUserIds = state.profileLookup.values
+                .filter { it.profilePictureUri.isNotBlank() }
+                .map { it.id }
+            usersRepository.getUserProfiles(refreshUserIds, true)
+        }
     }
 
     fun onUpdateTeamFilter(q: String) {
