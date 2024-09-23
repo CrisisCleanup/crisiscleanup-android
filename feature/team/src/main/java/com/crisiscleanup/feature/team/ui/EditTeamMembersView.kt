@@ -152,7 +152,7 @@ internal fun EditTeamMembersView(
             val isOutOfUsers = membersState.q.isEmpty() && membersState.members.isEmpty()
             if (isOutOfUsers) {
                 sectionHeaderItem(
-                    t("~~There are no active users to add"),
+                    t("~~No active users remaining"),
                     itemKey = "no-users-text",
                 )
             } else {
@@ -194,9 +194,9 @@ internal fun EditTeamMembersView(
                         )
                     }
                 }
-
-                contentSpacerItem()
             }
+
+            contentSpacerItem()
         }
 
         BusyIndicatorFloatingTopCenter(membersState.isFiltering)
