@@ -1,7 +1,7 @@
 package com.crisiscleanup.feature.team.model
 
 enum class TeamEditorStep(val literal: String, val translateKey: String) {
-    Name("name", "~~Team Name"),
+    Info("info", "~~Team Info"),
     Members("members", "~~Members"),
     Cases("cases", "~~Cases"),
     Equipment("equipment", "~~Equipment"),
@@ -9,4 +9,4 @@ enum class TeamEditorStep(val literal: String, val translateKey: String) {
 }
 
 private val literalStepLookup = TeamEditorStep.entries.associateBy(TeamEditorStep::literal)
-fun stepFromLiteral(literal: String) = literalStepLookup[literal] ?: TeamEditorStep.Name
+fun stepFromLiteral(literal: String) = literalStepLookup[literal] ?: TeamEditorStep.Info

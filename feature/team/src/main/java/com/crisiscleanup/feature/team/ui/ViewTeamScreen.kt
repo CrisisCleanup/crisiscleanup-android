@@ -55,6 +55,7 @@ import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.designsystem.theme.listItemBottomPadding
 import com.crisiscleanup.core.designsystem.theme.listItemCenterSpacedByHalf
+import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
@@ -280,6 +281,15 @@ private fun ViewTeamContent(
                 isPendingSync = isPendingSync,
                 scheduleSync = scheduleSync,
             )
+        }
+
+        if (team.notes.isNotBlank()) {
+            item {
+                Text(
+                    team.notes,
+                    Modifier.listItemHorizontalPadding(),
+                )
+            }
         }
 
         item(
