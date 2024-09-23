@@ -46,6 +46,7 @@ import com.crisiscleanup.core.commoncase.ui.tableItemContentPadding
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CardSurface
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupOutlinedButton
 import com.crisiscleanup.core.designsystem.component.HelpDialog
 import com.crisiscleanup.core.designsystem.component.PhoneCallDialog
@@ -174,6 +175,7 @@ private fun ViewTeamScreen(
                 isSyncing = isSyncing,
                 isPendingSync = isPendingSync,
                 scheduleSync = viewModel::scheduleSync,
+                onJoinLeaveTeam = viewModel::onJoinLeaveTeam,
                 onEditTeamMembers = openEditMembers,
                 onEditCases = openEditCases,
                 onEditEquipment = openEditEquipment,
@@ -255,6 +257,7 @@ private fun ViewTeamContent(
     isSyncing: Boolean,
     isPendingSync: Boolean,
     scheduleSync: () -> Unit,
+    onJoinLeaveTeam: () -> Unit,
     onEditTeamMembers: () -> Unit = {},
     onEditCases: () -> Unit = {},
     onEditEquipment: () -> Unit = {},
@@ -277,6 +280,9 @@ private fun ViewTeamContent(
                 isSyncing = isSyncing,
                 isPendingSync = isPendingSync,
                 scheduleSync = scheduleSync,
+                isEditable = isEditable,
+                isInTeam = team.memberIds.contains(accountId),
+                onJoinLeaveTeam = onJoinLeaveTeam,
             )
         }
 
@@ -415,7 +421,10 @@ private fun TeamHeader(
     team: CleanupTeam,
     isSyncing: Boolean = false,
     isPendingSync: Boolean = false,
-    scheduleSync: () -> Unit,
+    scheduleSync: () -> Unit = {},
+    isEditable: Boolean = false,
+    isInTeam: Boolean = false,
+    onJoinLeaveTeam: () -> Unit = {},
 ) {
     val t = LocalAppTranslator.current
     val modifier = if (isSyncing || !isPendingSync) {
@@ -449,6 +458,17 @@ private fun TeamHeader(
                 isSyncing = isSyncing,
                 isPendingSync = isPendingSync,
                 scheduleSync = scheduleSync,
+            )
+
+            val actionTextKey = if (isInTeam) {
+                "~~Leave"
+            } else {
+                "~~Join"
+            }
+            CrisisCleanupButton(
+                onClick = onJoinLeaveTeam,
+                enabled = isEditable,
+                text = t(actionTextKey),
             )
         }
 
