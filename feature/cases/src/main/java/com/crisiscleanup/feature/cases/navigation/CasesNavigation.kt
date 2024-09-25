@@ -8,7 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.crisiscleanup.core.appnav.RouteConstant.CASES_GRAPH_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.CASES_ROUTE
-import com.crisiscleanup.feature.cases.ui.CasesAction
+import com.crisiscleanup.core.commoncase.ui.CasesAction
 import com.crisiscleanup.feature.cases.ui.CasesRoute
 
 fun NavController.navigateToCases(navOptions: NavOptions? = null) {

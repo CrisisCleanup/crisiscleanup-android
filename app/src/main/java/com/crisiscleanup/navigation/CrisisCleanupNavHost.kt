@@ -21,6 +21,7 @@ import com.crisiscleanup.core.appnav.RouteConstant.VIEW_CASE_TRANSFER_WORK_TYPES
 import com.crisiscleanup.core.appnav.RouteConstant.VIEW_TEAM_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.WORKSITE_IMAGES_ROUTE
 import com.crisiscleanup.core.appnav.navigateToExistingCase
+import com.crisiscleanup.core.commoncase.ui.CasesAction
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
@@ -43,7 +44,6 @@ import com.crisiscleanup.feature.cases.navigation.casesGraph
 import com.crisiscleanup.feature.cases.navigation.casesSearchScreen
 import com.crisiscleanup.feature.cases.navigation.navigateToCasesFilter
 import com.crisiscleanup.feature.cases.navigation.navigateToCasesSearch
-import com.crisiscleanup.feature.cases.ui.CasesAction
 import com.crisiscleanup.feature.crisiscleanuplists.navigation.listsScreen
 import com.crisiscleanup.feature.crisiscleanuplists.navigation.navigateToLists
 import com.crisiscleanup.feature.crisiscleanuplists.navigation.navigateToViewList

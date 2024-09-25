@@ -1,4 +1,4 @@
-package com.crisiscleanup.feature.cases.ui
+package com.crisiscleanup.core.commoncase.ui
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.layout.Arrangement
@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
+import com.crisiscleanup.core.commoncase.R
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupElevatedIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
@@ -20,7 +21,6 @@ import com.crisiscleanup.core.designsystem.component.actionSmallSpace
 import com.crisiscleanup.core.designsystem.component.actionStartRoundCornerShape
 import com.crisiscleanup.core.designsystem.component.actionTopRoundCornerShape
 import com.crisiscleanup.core.designsystem.component.adjacentButtonSpace
-import com.crisiscleanup.feature.cases.R
 
 enum class CasesAction(
     val iconResId: Int,
@@ -66,7 +66,7 @@ private fun CasesActionButton(
 }
 
 @Composable
-internal fun CasesActionFlatButton(
+fun CasesActionFlatButton(
     action: CasesAction,
     onCasesAction: (CasesAction) -> Unit,
     enabled: Boolean = false,
@@ -81,7 +81,7 @@ internal fun CasesActionFlatButton(
 }
 
 @Composable
-internal fun CasesActionBar(
+internal fun CaseMapActionBar(
     modifier: Modifier = Modifier,
     onCasesAction: (CasesAction) -> Unit = {},
     filtersCount: Int = 0,
@@ -108,7 +108,7 @@ internal fun CasesActionBar(
 }
 
 @Composable
-internal fun CasesZoomBar(
+internal fun CaseMapZoomBar(
     modifier: Modifier = Modifier,
     onCasesAction: (CasesAction) -> Unit = {},
 ) {
@@ -141,12 +141,12 @@ internal fun CasesZoomBar(
 
 @Preview(uiMode = UI_MODE_NIGHT_YES, name = "Toggle to table")
 @Composable
-fun CasesActionBarPreview() {
-    CasesActionBar()
+fun CaseMapActionBarPreview() {
+    CaseMapActionBar()
 }
 
 @Preview
 @Composable
-fun CasesZoomBarPreview() {
-    CasesZoomBar()
+fun CaseMapZoomBarPreview() {
+    CaseMapZoomBar()
 }

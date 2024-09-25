@@ -15,13 +15,12 @@ secrets {
 
 dependencies {
     implementation(projects.core.commonassets)
-    implementation(projects.core.commoncase)
+    api(projects.core.commoncase)
     implementation(projects.core.mapmarker)
     implementation(projects.core.selectincident)
 
     implementation(libs.kotlinx.datetime)
 
-    implementation(libs.androidx.constraintlayout)
     implementation(libs.google.maps.compose)
     implementation(libs.playservices.maps)
 }
