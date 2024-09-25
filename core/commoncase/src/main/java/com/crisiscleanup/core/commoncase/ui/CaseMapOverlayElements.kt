@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.crisiscleanup.core.commonassets.R
@@ -24,6 +25,7 @@ import com.crisiscleanup.core.designsystem.component.actionRoundCornerShape
 import com.crisiscleanup.core.designsystem.component.actionSize
 import com.crisiscleanup.core.designsystem.component.actionSmallWidth
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContainerColor
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContentColor
 import com.crisiscleanup.core.ui.LocalAppLayout
@@ -197,5 +199,13 @@ fun CaseMapOverlayElements(
                     },
             )
         }
+    }
+}
+
+@Preview
+@Composable
+fun CaseMapOverlayActionsPreview() {
+    CrisisCleanupTheme {
+        CaseMapOverlayElements()
     }
 }
