@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.appcomponent.AppTopBarDataProvider
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.ReplaySubscribed3
+import com.crisiscleanup.core.common.event.ExternalEventBus
+import com.crisiscleanup.core.common.event.UserPersistentInvite
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -56,6 +58,7 @@ class TeamsViewModel @Inject constructor(
     private val teamsRepository: TeamsRepository,
     private val usersRepository: UsersRepository,
     private val equipmentRepository: EquipmentRepository,
+    private val externalEventBus: ExternalEventBus,
     private val syncPuller: SyncPuller,
     translator: KeyResourceTranslator,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
@@ -85,9 +88,9 @@ class TeamsViewModel @Inject constructor(
             fun parseProfiles(
                 teams: List<CleanupTeam>,
             ): Pair<
-                Map<Long, PersonContact>,
-                Collection<Long>,
-                > {
+                    Map<Long, PersonContact>,
+                    Collection<Long>,
+                    > {
                 val profileLookup = teams.flatMap(CleanupTeam::members)
                     .filter { it.profilePictureUri.isNotBlank() }
                     .associateBy(PersonContact::id)
@@ -166,6 +169,9 @@ class TeamsViewModel @Inject constructor(
             started = ReplaySubscribed3,
         )
 
+    private var joinTeamInvite = UserPersistentInvite(0, "")
+    var isJoiningTeam = MutableStateFlow(false)
+
     init {
         viewState
             .debounce(1.seconds)
@@ -194,7 +200,42 @@ class TeamsViewModel @Inject constructor(
         viewModelScope.launch(ioDispatcher) {
             equipmentRepository.saveEquipment()
         }
+
+        externalEventBus.teamPersistentInvites
+            .distinctUntilChanged()
+            .filter { it.isValidInvite }
+            .onEach {
+                joinTeamInvite = it
+                // Do not clear team invite immediately as it interferes with navigation
+                queryInviteInfo(joinTeamInvite)
+            }
+            .launchIn(viewModelScope)
     }
+
+    private fun clearTeamInvite() {
+        logger.logDebug("Clearing team invite from teams view model")
+        externalEventBus.onTeamPersistentInvite(0, "")
+    }
+
+    private fun queryInviteInfo(persistentInvite: UserPersistentInvite) =
+        viewModelScope.launch(ioDispatcher) {
+            if (persistentInvite.isValidInvite && !isJoiningTeam.value) {
+                isJoiningTeam.value = true
+                try {
+                    // TODO Accept the invitation
+                    //      Show the result (and refresh the team's information)
+
+                    // TODO Find a more elegant means to not interfere with navigation
+                    Thread.sleep(2.seconds.inWholeMilliseconds)
+                } catch (e: Exception) {
+                    logger.logException(e)
+                    // TODO Show an error message
+                } finally {
+                    externalEventBus.clearTeamPersistentInvite(persistentInvite)
+                    isJoiningTeam.value = false
+                }
+            }
+        }
 
     suspend fun refreshIncidentsAsync() {
         syncPuller.pullIncidents()

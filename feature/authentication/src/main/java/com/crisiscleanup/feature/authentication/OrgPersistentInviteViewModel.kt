@@ -27,6 +27,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -45,7 +46,7 @@ class OrgPersistentInviteViewModel @Inject constructor(
     @Logger(CrisisCleanupLoggers.Onboarding) private val logger: AppLogger,
 ) : ViewModel() {
 
-    private var invite: UserPersistentInvite = UserPersistentInvite(0, "")
+    private var invite = UserPersistentInvite(0, "")
 
     val userInfo = UserInfoInputData()
 
@@ -94,6 +95,7 @@ class OrgPersistentInviteViewModel @Inject constructor(
                 queryInviteInfo(invite)
             }
         }
+            .flowOn(ioDispatcher)
             .launchIn(viewModelScope)
 
         languageOptions
@@ -102,6 +104,7 @@ class OrgPersistentInviteViewModel @Inject constructor(
                     userInfo.language = languageRepository.getRecommendedLanguage(it)
                 }
             }
+            .flowOn(ioDispatcher)
             .launchIn(viewModelScope)
 
         viewModelScope.launch(ioDispatcher) {

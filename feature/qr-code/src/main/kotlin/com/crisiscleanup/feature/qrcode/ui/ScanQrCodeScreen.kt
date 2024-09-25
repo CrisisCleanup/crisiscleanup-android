@@ -1,4 +1,4 @@
-package com.crisiscleanup.feature.authentication.ui
+package com.crisiscleanup.feature.qrcode.ui
 
 import android.util.Size
 import androidx.camera.core.CameraSelector
@@ -31,14 +31,18 @@ import com.crisiscleanup.core.designsystem.component.OpenSettingsDialog
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
-import com.crisiscleanup.feature.authentication.ScanQrCodeViewModel
+import com.crisiscleanup.feature.qrcode.ScanQrCodeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VolunteerScanQrCodeRoute(
+fun ScanQrCodeRoute(
     onBack: () -> Unit,
     viewModel: ScanQrCodeViewModel = hiltViewModel(),
 ) {
+    if (viewModel.isTeamQrCodeScanned) {
+        onBack()
+    }
+
     val t = LocalAppTranslator.current
 
     Column {

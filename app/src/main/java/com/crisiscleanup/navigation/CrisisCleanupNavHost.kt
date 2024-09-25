@@ -16,6 +16,7 @@ import com.crisiscleanup.core.appnav.RouteConstant.CASE_EDITOR_SEARCH_ADDRESS_RO
 import com.crisiscleanup.core.appnav.RouteConstant.CASE_HISTORY_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.CASE_SHARE_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.TEAM_EDITOR_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.TEAM_SCAN_QR_CODE_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.VIEW_CASE_TRANSFER_WORK_TYPES_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.VIEW_TEAM_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.WORKSITE_IMAGES_ROUTE
@@ -55,6 +56,8 @@ import com.crisiscleanup.feature.organizationmanage.navigation.inviteTeammateScr
 import com.crisiscleanup.feature.organizationmanage.navigation.navigateToInviteTeammate
 import com.crisiscleanup.feature.organizationmanage.navigation.navigateToRequestRedeploy
 import com.crisiscleanup.feature.organizationmanage.navigation.requestRedeployScreen
+import com.crisiscleanup.feature.qrcode.navigation.navigateToTeamQrCode
+import com.crisiscleanup.feature.qrcode.navigation.navigateToTeamScanQrCode
 import com.crisiscleanup.feature.syncinsights.navigation.navigateToSyncInsights
 import com.crisiscleanup.feature.syncinsights.navigation.syncInsightsScreen
 import com.crisiscleanup.feature.team.model.TeamEditorStep
@@ -67,9 +70,17 @@ import com.crisiscleanup.feature.team.navigation.viewTeamScreen
 import com.crisiscleanup.feature.userfeedback.navigation.navigateToUserFeedback
 import com.crisiscleanup.feature.userfeedback.navigation.userFeedbackScreen
 
-private fun NavController.matchesRoute(route: String) = currentDestination?.route == route
-private fun NavController.startsWithRoute(route: String) =
-    currentDestination?.route?.startsWith(route) == true
+internal fun NavController.backOnStartingRoute(route: String) {
+    if (currentDestination?.route?.startsWith(route) == true) {
+        popBackStack()
+    }
+}
+
+internal fun NavController.backOnRoute(route: String) {
+    if (currentDestination?.route == route) {
+        popBackStack()
+    }
+}
 
 /**
  * Top-level navigation graph. Navigation is organized as explained at
@@ -86,10 +97,6 @@ fun CrisisCleanupNavHost(
     modifier: Modifier = Modifier,
     startDestination: String = CASES_GRAPH_ROUTE,
 ) {
-    val createNewCase = remember(navController) {
-        { incidentId: Long -> navController.navigateToCaseEditor(incidentId) }
-    }
-
     val viewCase = remember(navController) {
         { incidentId: Long, worksiteId: Long ->
             val isValid = incidentId != EmptyIncident.id && worksiteId != EmptyWorksite.id
@@ -135,90 +142,38 @@ fun CrisisCleanupNavHost(
     val navToTransferWorkTypeNonEditing =
         remember(navController) { { navController.navigateToTransferWorkType(false) } }
 
-    val searchCasesOnBack = remember(onBack, navController) {
+    val searchCasesOnBack =
+        remember(navController) { { navController.backOnRoute(CASES_SEARCH_ROUTE) } }
+
+    val caseEditorOnBack =
+        remember(navController) { { navController.backOnStartingRoute(CASE_EDITOR_ROUTE) } }
+
+    val searchAddressOnBack =
+        remember(navController) { { navController.backOnRoute(CASE_EDITOR_SEARCH_ADDRESS_ROUTE) } }
+    val moveLocationOnBack =
+        remember(navController) { { navController.backOnRoute(CASE_EDITOR_MAP_MOVE_LOCATION_ROUTE) } }
+
+    val transferOnBack = remember(navController) {
         {
-            if (navController.matchesRoute(CASES_SEARCH_ROUTE)) {
-                onBack()
-            }
+            navController.backOnStartingRoute(VIEW_CASE_TRANSFER_WORK_TYPES_ROUTE)
         }
     }
 
-    val caseEditorOnBack = remember(onBack, navController) {
-        {
-            if (navController.startsWithRoute(CASE_EDITOR_ROUTE)) {
-                onBack()
-            }
-        }
-    }
+    val addFlagOnBack =
+        remember(navController) { { navController.backOnStartingRoute(CASE_ADD_FLAG_ROUTE) } }
 
-    val searchAddressOnBack = remember(onBack, navController) {
-        {
-            if (navController.matchesRoute(CASE_EDITOR_SEARCH_ADDRESS_ROUTE)) {
-                onBack()
-            }
-        }
-    }
-    val moveLocationOnBack = remember(onBack, navController) {
-        {
-            if (navController.matchesRoute(CASE_EDITOR_MAP_MOVE_LOCATION_ROUTE)) {
-                onBack()
-            }
-        }
-    }
+    val shareOnBack = remember(navController) { { navController.backOnRoute(CASE_SHARE_ROUTE) } }
 
-    val transferOnBack = remember(onBack, navController) {
-        {
-            if (navController.startsWithRoute(VIEW_CASE_TRANSFER_WORK_TYPES_ROUTE)) {
-                onBack()
-            }
-        }
-    }
+    val historyOnBack =
+        remember(navController) { { navController.backOnRoute(CASE_HISTORY_ROUTE) } }
 
-    val addFlagOnBack = remember(onBack, navController) {
-        {
-            if (navController.startsWithRoute(CASE_ADD_FLAG_ROUTE)) {
-                onBack()
-            }
-        }
-    }
+    val worksiteImagesOnBack =
+        remember(navController) { { navController.backOnStartingRoute(WORKSITE_IMAGES_ROUTE) } }
 
-    val shareOnBack = remember(onBack, navController) {
-        {
-            if (navController.matchesRoute(CASE_SHARE_ROUTE)) {
-                onBack()
-            }
-        }
-    }
+    val viewTeamOnBack =
+        remember(navController) { { navController.backOnStartingRoute(VIEW_TEAM_ROUTE) } }
 
-    val historyOnBack = remember(onBack, navController) {
-        {
-            if (navController.matchesRoute(CASE_HISTORY_ROUTE)) {
-                onBack()
-            }
-        }
-    }
-
-    val worksiteImagesOnBack = remember(onBack, navController) {
-        {
-            if (navController.startsWithRoute(WORKSITE_IMAGES_ROUTE)) {
-                onBack()
-            }
-        }
-    }
-
-    val viewTeamOnBack = remember(onBack, navController) {
-        {
-            if (navController.startsWithRoute(VIEW_TEAM_ROUTE)) {
-                onBack()
-            }
-        }
-    }
-
-    val navToAssignCaseTeam = remember(navController) {
-        { worksiteId: Long ->
-            navController.navigateToAssignCaseTeam(worksiteId)
-        }
-    }
+    val navToAssignCaseTeam = navController::navigateToAssignCaseTeam
 
     val navToEditTeamMembers = remember(navController) {
         { incidentId: Long, teamId: Long ->
@@ -235,14 +190,12 @@ fun CrisisCleanupNavHost(
             navController.navigateToTeamEditor(incidentId, teamId, TeamEditorStep.Equipment)
         }
     }
+    val navToJoinTeamByQrCode = navController::navigateToTeamQrCode
 
-    val teamEditorOnBack = remember(onBack, navController) {
-        {
-            if (navController.startsWithRoute(TEAM_EDITOR_ROUTE)) {
-                onBack()
-            }
-        }
-    }
+    val teamEditorOnBack =
+        remember(navController) { { navController.backOnStartingRoute(TEAM_EDITOR_ROUTE) } }
+    val teamScanQrOnBack =
+        remember(navController) { { navController.backOnStartingRoute(TEAM_SCAN_QR_CODE_ROUTE) } }
 
     NavHost(
         navController = navController,
@@ -264,7 +217,7 @@ fun CrisisCleanupNavHost(
             },
             onCasesAction = onCasesAction,
             filterCases = openFilterCases,
-            createCase = createNewCase,
+            createCase = navController::navigateToCaseEditor,
             viewCase = viewCase,
             caseAddFlag = navToCaseAddFlagNonEditing,
             caseTransferWorkType = navToTransferWorkTypeNonEditing,
@@ -285,10 +238,12 @@ fun CrisisCleanupNavHost(
                 teamEditorScreen(
                     teamEditorOnBack,
                 )
+                navigateToTeamScanQrCode(teamScanQrOnBack)
             },
             openAuthentication = openAuthentication,
             openViewTeam = navController::navigateToViewTeam,
             openCreateTeam = navController::navigateToTeamEditor,
+            openJoinTeamByQrCode = navToJoinTeamByQrCode,
         )
         menuScreen(
             openAuthentication = openAuthentication,
@@ -300,6 +255,7 @@ fun CrisisCleanupNavHost(
         )
         viewSingleImageScreen(onBack)
         viewWorksiteImagesScreen(worksiteImagesOnBack)
+        // Invite to org not teams feature
         inviteTeammateScreen(onBack)
         requestRedeployScreen(onBack)
         userFeedbackScreen(onBack)

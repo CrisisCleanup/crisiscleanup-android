@@ -12,7 +12,6 @@ import com.crisiscleanup.core.appnav.RouteConstant.VOLUNTEER_REQUEST_ACCESS_ROUT
 import com.crisiscleanup.feature.authentication.ui.RequestOrgAccessRoute
 import com.crisiscleanup.feature.authentication.ui.VolunteerOrgRoute
 import com.crisiscleanup.feature.authentication.ui.VolunteerPasteInviteLinkRoute
-import com.crisiscleanup.feature.authentication.ui.VolunteerScanQrCodeRoute
 
 fun NavController.navigateToVolunteerOrg() {
     navigate(RouteConstant.VOLUNTEER_ORG_ROUTE)
@@ -86,16 +85,6 @@ fun NavGraphBuilder.navigateToVolunteerRequestAccess(
         RequestOrgAccessRoute(
             onBack = onBack,
             closeRequestAccess = closeRequestAccess,
-        )
-    }
-}
-
-fun NavGraphBuilder.navigateToVolunteerScanQrCode(
-    onBack: () -> Unit,
-) {
-    composable(route = RouteConstant.VOLUNTEER_SCAN_QR_CODE_ROUTE) {
-        VolunteerScanQrCodeRoute(
-            onBack = onBack,
         )
     }
 }
