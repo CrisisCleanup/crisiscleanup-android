@@ -8,12 +8,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -41,6 +43,7 @@ import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCen
 import com.crisiscleanup.core.designsystem.component.CardSurface
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
+import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemBottomPadding
@@ -64,12 +67,14 @@ internal fun TeamsRoute(
     openViewTeam: (Long, Long) -> Unit = { _, _ -> },
     openCreateTeam: (Long) -> Unit = {},
     openTeamFilters: () -> Unit = {},
+    openJoinTeamByQrCode: () -> Unit = {},
 ) {
     TeamsScreen(
         openAuthentication = openAuthentication,
         openViewTeam = openViewTeam,
         openCreateTeam = openCreateTeam,
         openTeamFilters = openTeamFilters,
+        openJoinTeamByQrCode = openJoinTeamByQrCode,
     )
 }
 
@@ -80,6 +85,7 @@ private fun TeamsScreen(
     openViewTeam: (Long, Long) -> Unit = { _, _ -> },
     openCreateTeam: (Long) -> Unit = {},
     openTeamFilters: () -> Unit = {},
+    openJoinTeamByQrCode: () -> Unit = {},
     viewModel: TeamsViewModel = hiltViewModel(),
 ) {
     val t = LocalAppTranslator.current
@@ -119,12 +125,9 @@ private fun TeamsScreen(
             if (viewState is TeamsViewState.Success) {
                 val successState = viewState as TeamsViewState.Success
                 val incidentId = successState.incidentId
-                val onCreateEditTeam = remember(incidentId) {
-                    {
-                        openCreateTeam(incidentId)
-                    }
-                }
+                val onCreateEditTeam = remember(incidentId) { { openCreateTeam(incidentId) } }
                 val incidentTeams = successState.teams
+                val isJoiningTeamByQrCode by viewModel.isJoiningTeam.collectAsStateWithLifecycle()
                 val listState = rememberLazyListState()
                 LazyColumn(
                     modifier = Modifier
@@ -197,12 +200,36 @@ private fun TeamsScreen(
                             key = "join-team",
                             contentType = "subtitle-text-item",
                         ) {
-                            Text(
-                                text = t("teams.join_team"),
-                                modifier = Modifier.listItemHorizontalPadding()
-                                    .listItemTopPadding(),
-                                style = LocalFontStyles.current.header2,
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text = t("teams.join_team"),
+                                    modifier = Modifier.listItemHorizontalPadding()
+                                        .listItemTopPadding()
+                                        .weight(1f),
+                                    style = LocalFontStyles.current.header2,
+                                )
+
+                                CrisisCleanupButton(
+                                    modifier = Modifier
+                                        .listItemHorizontalPadding()
+                                        .testTag("joinTeamScanQrCodeAction"),
+                                    onClick = openJoinTeamByQrCode,
+                                    enabled = !isJoiningTeamByQrCode,
+                                ) {
+                                    val qrCodeLabel = t("~~by QR code")
+                                    Text(
+                                        qrCodeLabel,
+                                        // TODO Common dimensions
+                                        Modifier.padding(end = 8.dp),
+                                    )
+                                    Icon(
+                                        imageVector = CrisisCleanupIcons.QrCode,
+                                        contentDescription = qrCodeLabel,
+                                    )
+                                }
+                            }
                         }
 
                         item {

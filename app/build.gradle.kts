@@ -130,6 +130,7 @@ dependencies {
     implementation(projects.feature.menu)
     implementation(projects.feature.mediamanage)
     implementation(projects.feature.organizationmanage)
+    implementation(projects.feature.qrCode)
     implementation(projects.feature.syncinsights)
     implementation(projects.feature.team)
     implementation(projects.feature.userfeedback)

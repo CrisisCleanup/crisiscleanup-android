@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -14,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
@@ -92,7 +94,11 @@ fun VolunteerOrgRoute(
                             imageVector = CrisisCleanupIcons.QrCode,
                             contentDescription = qrCodeLabel,
                         )
-                        Text(qrCodeLabel)
+                        Text(
+                            qrCodeLabel,
+                            // TODO Common dimensions
+                            Modifier.padding(start = 8.dp),
+                        )
                     }
                 },
             )

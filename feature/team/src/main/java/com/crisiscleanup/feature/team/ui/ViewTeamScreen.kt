@@ -470,10 +470,9 @@ private fun TeamHeader(
 
             Text(
                 team.name.ifBlank { t("~~(no name)") },
+                Modifier.weight(1f),
                 style = LocalFontStyles.current.header2,
             )
-
-            Spacer(Modifier.weight(1f))
 
             SyncStatusView(
                 isSyncing = isSyncing,
