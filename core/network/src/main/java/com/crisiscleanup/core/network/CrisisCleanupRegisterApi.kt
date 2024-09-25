@@ -20,8 +20,9 @@ interface CrisisCleanupRegisterApi {
     suspend fun acceptOrgInvitation(invite: CodeInviteAccept): JoinOrgResult
 
     suspend fun createPersistentInvitation(
-        organizationId: Long,
         userId: Long,
+        targetId: Long,
+        targetType: String = "organization",
     ): NetworkPersistentInvitation
 
     suspend fun acceptPersistentInvitation(invite: CodeInviteAccept): JoinOrgResult

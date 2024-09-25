@@ -8,8 +8,8 @@ import com.crisiscleanup.core.model.data.CodeInviteAccept
 import com.crisiscleanup.core.model.data.IncidentOrganizationInviteInfo
 import com.crisiscleanup.core.model.data.InvitationRequest
 import com.crisiscleanup.core.model.data.InvitationRequestResult
-import com.crisiscleanup.core.model.data.JoinOrgInvite
 import com.crisiscleanup.core.model.data.JoinOrgResult
+import com.crisiscleanup.core.model.data.JoinOrgTeamInvite
 import com.crisiscleanup.core.model.data.OrgInviteResult
 import com.crisiscleanup.core.model.data.OrgUserInviteInfo
 import com.crisiscleanup.core.network.CrisisCleanupRegisterApi
@@ -22,7 +22,8 @@ interface OrgVolunteerRepository {
     suspend fun getInvitationInfo(invite: UserPersistentInvite): OrgUserInviteInfo?
     suspend fun acceptInvitation(invite: CodeInviteAccept): JoinOrgResult
 
-    suspend fun getOrganizationInvite(organizationId: Long, inviterUserId: Long): JoinOrgInvite
+    suspend fun getOrganizationInvite(organizationId: Long, inviterUserId: Long): JoinOrgTeamInvite
+    suspend fun getTeamInvite(teamId: Long, inviterUserId: Long): JoinOrgTeamInvite
     suspend fun acceptPersistentInvitation(invite: CodeInviteAccept): JoinOrgResult
 
     suspend fun inviteToOrganization(emailAddress: String, organizationId: Long?): OrgInviteResult
@@ -75,14 +76,23 @@ class CrisisCleanupOrgVolunteerRepository @Inject constructor(
         return JoinOrgResult.Unknown
     }
 
-    override suspend fun getOrganizationInvite(
-        organizationId: Long,
+    private suspend fun createPersistentInvite(
+        targetId: Long,
         inviterUserId: Long,
-    ): JoinOrgInvite {
+        isTeamInvite: Boolean = false,
+    ): JoinOrgTeamInvite {
         try {
-            val invite =
-                registerApi.createPersistentInvitation(organizationId, userId = inviterUserId)
-            return JoinOrgInvite(
+            val inviteType = if (isTeamInvite) {
+                "team"
+            } else {
+                "organization"
+            }
+            val invite = registerApi.createPersistentInvitation(
+                inviterUserId,
+                targetId = targetId,
+                inviteType,
+            )
+            return JoinOrgTeamInvite(
                 invite.token,
                 invite.objectId,
                 invite.expiresAt,
@@ -90,8 +100,18 @@ class CrisisCleanupOrgVolunteerRepository @Inject constructor(
         } catch (e: Exception) {
             logger.logException(e)
         }
-        return JoinOrgInvite("", 0, Instant.fromEpochSeconds(0))
+        return JoinOrgTeamInvite("", 0, Instant.fromEpochSeconds(0))
     }
+
+    override suspend fun getOrganizationInvite(
+        organizationId: Long,
+        inviterUserId: Long,
+    ) = createPersistentInvite(organizationId, inviterUserId = inviterUserId)
+
+    override suspend fun getTeamInvite(
+        teamId: Long,
+        inviterUserId: Long,
+    ) = createPersistentInvite(teamId, inviterUserId = inviterUserId, true)
 
     override suspend fun acceptPersistentInvitation(invite: CodeInviteAccept): JoinOrgResult {
         try {
