@@ -1,4 +1,4 @@
-package com.crisiscleanup.feature.cases.model
+package com.crisiscleanup.core.commoncase.model
 
 import androidx.compose.ui.geometry.Offset
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider

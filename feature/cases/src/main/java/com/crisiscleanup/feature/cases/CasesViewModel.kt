@@ -31,6 +31,7 @@ import com.crisiscleanup.core.commonassets.ui.getDisasterIcon
 import com.crisiscleanup.core.commoncase.CaseFlagsNavigationState
 import com.crisiscleanup.core.commoncase.TransferWorkTypeProvider
 import com.crisiscleanup.core.commoncase.WorksiteProvider
+import com.crisiscleanup.core.commoncase.model.asWorksiteGoogleMapMark
 import com.crisiscleanup.core.commoncase.reset
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.WorksiteInteractor
@@ -62,7 +63,6 @@ import com.crisiscleanup.feature.cases.map.CasesMapTileLayerManager
 import com.crisiscleanup.feature.cases.map.CasesOverviewMapTileRenderer
 import com.crisiscleanup.feature.cases.model.CoordinateBounds
 import com.crisiscleanup.feature.cases.model.WorksiteQueryState
-import com.crisiscleanup.feature.cases.model.asWorksiteGoogleMapMark
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
