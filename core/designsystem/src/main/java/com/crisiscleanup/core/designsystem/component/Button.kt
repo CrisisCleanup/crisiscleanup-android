@@ -85,6 +85,7 @@ private val fabPlusSpaceHeight = 48.dp.plus(actionEdgeSpace.times(2))
 fun Modifier.actionHeight() = this.heightIn(min = 48.dp)
 fun Modifier.actionSize() = this.size(48.dp)
 fun Modifier.actionSmallSize() = this.size(44.dp)
+fun Modifier.actionSmallWidth() = this.size(width = 44.dp, height = 0.dp)
 fun Modifier.fabPlusSpaceHeight() = this.size(fabPlusSpaceHeight)
 
 @Composable
