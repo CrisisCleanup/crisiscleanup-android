@@ -551,7 +551,6 @@ private fun JoinByQrCodeView(
         Text(
             scanQrCodeHelpText,
             Modifier.listItemHorizontalPadding(),
-            style = LocalFontStyles.current.header4,
         )
 
         if (joinTeamQrCode == null) {
