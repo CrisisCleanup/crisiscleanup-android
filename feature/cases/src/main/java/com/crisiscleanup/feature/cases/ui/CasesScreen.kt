@@ -6,9 +6,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -17,16 +15,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,31 +34,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.commoncase.ui.CaseMapOverlayElements
+import com.crisiscleanup.core.commoncase.ui.CasesAction
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupFab
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.ExplainLocationPermissionDialog
-import com.crisiscleanup.core.designsystem.component.actionEdgeSpace
-import com.crisiscleanup.core.designsystem.component.actionInnerSpace
-import com.crisiscleanup.core.designsystem.component.actionRoundCornerShape
-import com.crisiscleanup.core.designsystem.component.actionSize
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
-import com.crisiscleanup.core.designsystem.theme.incidentDisasterContainerColor
-import com.crisiscleanup.core.designsystem.theme.incidentDisasterContentColor
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
-import com.crisiscleanup.core.designsystem.theme.navigationContainerColor
 import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
 import com.crisiscleanup.core.domain.IncidentsData
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraBounds
@@ -81,10 +64,8 @@ import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.core.selectincident.SelectIncidentDialog
-import com.crisiscleanup.core.ui.LocalAppLayout
 import com.crisiscleanup.feature.cases.CasesViewModel
 import com.crisiscleanup.feature.cases.DataProgressMetrics
-import com.crisiscleanup.feature.cases.R
 import com.crisiscleanup.feature.cases.model.WorksiteGoogleMapMark
 import com.crisiscleanup.feature.cases.zeroDataProgress
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -413,7 +394,7 @@ internal fun CasesScreen(
                 isMyLocationEnabled,
             )
         }
-        CasesOverlayElements(
+        CaseMapOverlayElements(
             Modifier,
             onSelectIncident,
             disasterResId,
@@ -427,6 +408,7 @@ internal fun CasesScreen(
             onSyncDataDelta = onSyncDataDelta,
             onSyncDataFull = onSyncDataFull,
             hasIncidents = hasIncidents,
+            showCasesMainActions = false,
         )
 
         AnimatedVisibility(
@@ -577,211 +559,11 @@ internal fun BoxScope.CasesMapView(
     )
 }
 
-@Composable
-private fun CasesOverlayElements(
-    modifier: Modifier = Modifier,
-    onSelectIncident: () -> Unit = {},
-    @DrawableRes disasterResId: Int = commonAssetsR.drawable.ic_disaster_other,
-    onCasesAction: (CasesAction) -> Unit = {},
-    centerOnMyLocation: () -> Unit = {},
-    isTableView: Boolean = false,
-    isLoadingData: Boolean = false,
-    casesCountText: String = "",
-    filtersCount: Int = 0,
-    disableTableViewActions: Boolean = false,
-    onSyncDataDelta: () -> Unit = {},
-    onSyncDataFull: () -> Unit = {},
-    hasIncidents: Boolean = false,
-) {
-    val translator = LocalAppTranslator.current
-
-    val isMapView = !isTableView
-
-    ConstraintLayout(Modifier.fillMaxSize()) {
-        val (
-            disasterAction,
-            zoomBar,
-            actionBar,
-            newCaseFab,
-            toggleTableMap,
-            myLocation,
-            countTextRef,
-        ) = createRefs()
-
-        if (isMapView) {
-            CrisisCleanupFab(
-                modifier = modifier
-                    .testTag("workIncidentSelectorFab")
-                    .constrainAs(disasterAction) {
-                        start.linkTo(parent.start, margin = actionEdgeSpace)
-                        top.linkTo(parent.top, margin = actionEdgeSpace)
-                    },
-                onClick = onSelectIncident,
-                shape = CircleShape,
-                containerColor = incidentDisasterContainerColor,
-                contentColor = incidentDisasterContentColor,
-                enabled = hasIncidents,
-            ) {
-                Icon(
-                    painter = painterResource(disasterResId),
-                    contentDescription = translator("nav.change_incident"),
-                )
-            }
-
-            CasesZoomBar(
-                modifier.constrainAs(zoomBar) {
-                    top.linkTo(disasterAction.bottom, margin = actionInnerSpace)
-                    start.linkTo(disasterAction.start)
-                    end.linkTo(disasterAction.end)
-                },
-                onCasesAction,
-            )
-
-            CasesActionBar(
-                modifier.constrainAs(actionBar) {
-                    top.linkTo(parent.top, margin = actionEdgeSpace)
-                    end.linkTo(parent.end, margin = actionEdgeSpace)
-                },
-                onCasesAction,
-                filtersCount,
-            )
-
-            CasesCountView(
-                casesCountText,
-                isLoadingData,
-                Modifier.constrainAs(countTextRef) {
-                    top.linkTo(parent.top, margin = actionEdgeSpace)
-                    start.linkTo(disasterAction.end)
-                    end.linkTo(actionBar.start)
-                },
-                onSyncDataDelta = onSyncDataDelta,
-                onSyncDataFull = onSyncDataFull,
-            )
-
-            CrisisCleanupFab(
-                modifier = modifier
-                    .actionSize()
-                    .testTag("workMyLocationFab")
-                    .constrainAs(myLocation) {
-                        end.linkTo(toggleTableMap.end)
-                        bottom.linkTo(newCaseFab.top, margin = actionEdgeSpace)
-                    },
-                onClick = centerOnMyLocation,
-                shape = actionRoundCornerShape,
-                enabled = true,
-            ) {
-                Icon(
-                    painterResource(R.drawable.ic_my_location),
-                    contentDescription = translator("actions.my_location"),
-                )
-            }
-        }
-
-        val enableLowerActions = !isTableView || !disableTableViewActions
-
-        val onNewCase = remember(onCasesAction) { { onCasesAction(CasesAction.CreateNew) } }
-        CrisisCleanupFab(
-            modifier = modifier
-                .actionSize()
-                .testTag("workNewCaseFab")
-                .constrainAs(newCaseFab) {
-                    end.linkTo(toggleTableMap.end)
-                    bottom.linkTo(toggleTableMap.top, margin = actionEdgeSpace)
-                },
-            onClick = onNewCase,
-            shape = actionRoundCornerShape,
-            enabled = enableLowerActions,
-        ) {
-            Icon(
-                imageVector = CrisisCleanupIcons.Add,
-                contentDescription = translator("nav.new_case"),
-            )
-        }
-        val appLayout = LocalAppLayout.current
-        val additionalBottomPadding by remember(appLayout.isBottomSnackbarVisible) {
-            derivedStateOf { appLayout.bottomSnackbarPadding }
-        }
-        val tableMapAction = if (isTableView) CasesAction.MapView else CasesAction.TableView
-        val toggleMapTableView = remember(tableMapAction) { { onCasesAction(tableMapAction) } }
-        val bottomPadding = actionInnerSpace.plus(additionalBottomPadding)
-        CrisisCleanupFab(
-            modifier = modifier
-                .actionSize()
-                .testTag("workToggleTableMapViewFab")
-                .constrainAs(toggleTableMap) {
-                    end.linkTo(parent.end, margin = actionEdgeSpace)
-                    bottom.linkTo(parent.bottom, margin = bottomPadding)
-                },
-            onClick = toggleMapTableView,
-            shape = actionRoundCornerShape,
-            enabled = enableLowerActions,
-        ) {
-            Icon(
-                painter = painterResource(tableMapAction.iconResId),
-                contentDescription = translator(tableMapAction.descriptionTranslateKey),
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun CasesCountView(
-    countText: String,
-    isLoadingData: Boolean,
-    modifier: Modifier = Modifier,
-    onSyncDataDelta: () -> Unit = {},
-    onSyncDataFull: () -> Unit = {},
-) {
-    // TODO Common dimensions of elements
-    Surface(
-        modifier,
-        color = navigationContainerColor,
-        contentColor = Color.White,
-        shadowElevation = 4.dp,
-        shape = RoundedCornerShape(4.dp),
-    ) {
-        Row(
-            Modifier
-                .combinedClickable(
-                    enabled = !isLoadingData,
-                    onClick = onSyncDataDelta,
-                    onLongClick = onSyncDataFull,
-                )
-                .padding(horizontal = 12.dp, vertical = 9.dp),
-            horizontalArrangement = listItemSpacedBy,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            AnimatedVisibility(
-                visible = countText.isNotBlank(),
-                enter = fadeIn(),
-                exit = fadeOut(),
-            ) {
-                Text(countText)
-            }
-
-            AnimatedVisibility(
-                visible = isLoadingData,
-                enter = fadeIn(),
-                exit = fadeOut(),
-            ) {
-                CircularProgressIndicator(
-                    Modifier
-                        .testTag("workIncidentsLoadingIndicator")
-                        .wrapContentSize()
-                        .size(24.dp),
-                    color = Color.White,
-                )
-            }
-        }
-    }
-}
-
 @Preview
 @Composable
-fun CasesOverlayActionsPreview() {
+fun CaseMapOverlayActionsPreview() {
     CrisisCleanupTheme {
-        CasesOverlayElements()
+        CaseMapOverlayElements()
     }
 }
 

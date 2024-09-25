@@ -15,5 +15,7 @@ dependencies {
     implementation(projects.core.model)
     implementation(projects.core.ui)
 
+    implementation(libs.androidx.constraintlayout)
+
     implementation(libs.kotlinx.datetime)
 }
