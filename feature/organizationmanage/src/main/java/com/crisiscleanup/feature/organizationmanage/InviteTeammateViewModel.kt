@@ -31,7 +31,7 @@ import com.crisiscleanup.core.domain.LoadSelectIncidents
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.IncidentOrganizationInviteInfo
-import com.crisiscleanup.core.model.data.JoinOrgInvite
+import com.crisiscleanup.core.model.data.JoinOrgTeamInvite
 import com.crisiscleanup.core.model.data.OrgInviteResult
 import com.crisiscleanup.core.model.data.OrganizationIdName
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -53,8 +53,10 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.minutes
 
 @HiltViewModel
 class InviteTeammateViewModel @Inject constructor(
@@ -223,15 +225,15 @@ class InviteTeammateViewModel @Inject constructor(
     private val qrCodeSize = 512 + 256
 
     private val isCreatingMyOrgPersistentInvitation = MutableStateFlow(false)
-    private val joinMyOrgInvite = MutableStateFlow<JoinOrgInvite?>(null)
+    private val joinMyOrgInvite = MutableStateFlow<JoinOrgTeamInvite?>(null)
     private val isGeneratingMyOrgQrCode = MutableStateFlow(false)
     val myOrgInviteQrCode = combine(
         accountData,
         joinMyOrgInvite,
         ::Pair,
     )
-        .filter { (_, orgInvite) ->
-            orgInvite != null
+        .filter { (_, invite) ->
+            invite != null
         }
         .map { (account, invite) ->
             // TODO Atomic state updates
@@ -484,8 +486,8 @@ class InviteTeammateViewModel @Inject constructor(
                     val orgId = data.org.id
 
                     joinMyOrgInvite.value?.let { invite ->
-                        if (invite.orgId == orgId &&
-                            !invite.isExpired
+                        if (invite.targetId == orgId &&
+                            invite.expiresAt > Clock.System.now().plus(5.minutes)
                         ) {
                             return@map invite
                         }
@@ -520,8 +522,8 @@ class InviteTeammateViewModel @Inject constructor(
         sendInviteErrorMessage.value = ""
     }
 
-    private fun makeInviteUrl(userId: Long, invite: JoinOrgInvite): String {
-        return "$inviteUrl?org-id=${invite.orgId}&user-id=$userId&invite-token=${invite.token}"
+    private fun makeInviteUrl(userId: Long, invite: JoinOrgTeamInvite): String {
+        return "$inviteUrl?org-id=${invite.targetId}&user-id=$userId&invite-token=${invite.token}"
     }
 
     fun refreshIncidents() {

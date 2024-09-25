@@ -20,6 +20,8 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPusher
+import com.crisiscleanup.core.common.throttleLatest
+import com.crisiscleanup.core.common.utcTimeZone
 import com.crisiscleanup.core.commoncase.CaseFlagsNavigationState
 import com.crisiscleanup.core.commoncase.WorksiteProvider
 import com.crisiscleanup.core.data.IncidentRefresher
@@ -28,6 +30,7 @@ import com.crisiscleanup.core.data.OrganizationRefresher
 import com.crisiscleanup.core.data.UserRoleRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
+import com.crisiscleanup.core.data.repository.OrgVolunteerRepository
 import com.crisiscleanup.core.data.repository.TeamChangeRepository
 import com.crisiscleanup.core.data.repository.TeamsRepository
 import com.crisiscleanup.core.data.repository.UsersRepository
@@ -46,6 +49,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOn
@@ -55,7 +59,15 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.toJavaInstant
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
+
+private val expirationDateFormatter =
+    DateTimeFormatter.ofPattern("h:mm a 'of' MMM d yyyy").utcTimeZone
 
 @HiltViewModel
 class ViewTeamViewModel @Inject constructor(
@@ -69,6 +81,7 @@ class ViewTeamViewModel @Inject constructor(
     organizationRefresher: OrganizationRefresher,
     userRoleRefresher: UserRoleRefresher,
     teamsRepository: TeamsRepository,
+    orgVolunteerRepository: OrgVolunteerRepository,
     private val teamChangeRepository: TeamChangeRepository,
     private val editableTeamProvider: EditableTeamProvider,
     usersRepository: UsersRepository,
@@ -141,6 +154,46 @@ class ViewTeamViewModel @Inject constructor(
             started = ReplaySubscribed3,
         )
 
+    // TODO Size QR codes relative to min screen dimension
+    //      See Display#getSize or WindowMetrics#getBounds
+    private val qrCodeSize = 512 + 256
+    private val refreshQrCodeTicker = MutableStateFlow(0L)
+    private val joinTeamInvite = MutableStateFlow<JoinOrgTeamInvite?>(null)
+    val scanQrCodeHelpText = joinTeamInvite
+        .filterNotNull()
+        .map {
+            val expirationDate = expirationDateFormatter.format(it.expiresAt.toJavaInstant())
+            translator("~~Scan the QR code to join this team. The code stops working on (or before) {expiration}.")
+                .replace("{expiration}", expirationDate)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = "",
+            started = SharingStarted.WhileSubscribed(),
+        )
+    val joinTeamQrCode = combine(
+        accountId,
+        joinTeamInvite,
+        ::Pair,
+    )
+        .filter { (_, invite) ->
+            invite != null
+        }
+        .map { (accountId, invite) ->
+            if (invite?.isExpired == false) {
+                val inviteUrl = makeInviteUrl(accountId, invite)
+                return@map qrCodeGenerator.generate(inviteUrl, qrCodeSize)?.asImageBitmap()
+            }
+
+            null
+        }
+        .flowOn(ioDispatcher)
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = null,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
     init {
         updateHeaderTitle()
 
@@ -180,6 +233,33 @@ class ViewTeamViewModel @Inject constructor(
         viewModelScope.launch(ioDispatcher) {
             organizationRefresher.pullOrganization(incidentIdArg)
         }
+
+        combine(
+            accountDataRepository.accountData,
+            refreshQrCodeTicker
+                .throttleLatest(3.seconds.inWholeMilliseconds)
+                .distinctUntilChanged(),
+            ::Pair,
+        )
+            .filter { (_, ticker) ->
+                ticker > 0
+            }
+            .map { (accountData, _) ->
+                joinTeamInvite.value?.let { invite ->
+                    if (invite.targetId == teamIdArg &&
+                        invite.expiresAt > Clock.System.now().plus(5.minutes)
+                    ) {
+                        return@map invite
+                    }
+                }
+
+                orgVolunteerRepository.getTeamInvite(teamIdArg, accountData.id)
+            }
+            .onEach {
+                joinTeamInvite.value = it
+            }
+            .flowOn(ioDispatcher)
+            .launchIn(viewModelScope)
     }
 
     val isLoading = dataLoader.isLoading
@@ -190,46 +270,6 @@ class ViewTeamViewModel @Inject constructor(
 
     val worksiteWorkTypeIconLookup = dataLoader.worksiteWorkTypeIconLookup
     val worksiteDistances = dataLoader.worksiteDistances
-
-    // TODO Size QR codes relative to min screen dimension
-    //      See Display#getSize or WindowMetrics#getBounds
-    private val qrCodeSize = 512 + 256
-    private val joinTeamInvite = MutableStateFlow<JoinOrgTeamInvite?>(null)
-    val scanQrCodeHelpText = joinTeamInvite
-        .filterNotNull()
-        .map {
-            // TODO Format expires at for human readability
-            val expirationDate = it.expiresAt.toString()
-            translator("~~Scan the QR code to join this team. The QR code does not work beyond {expiration}.")
-                .replace("{expiration}", expirationDate)
-        }
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = "",
-            started = SharingStarted.WhileSubscribed(),
-        )
-    val joinTeamQrCode = combine(
-        accountId,
-        joinTeamInvite,
-        ::Pair,
-    )
-        .filter { (_, orgInvite) ->
-            orgInvite != null
-        }
-        .map { (accountId, invite) ->
-            if (invite?.isExpired == false) {
-                val inviteUrl = makeInviteUrl(accountId, invite)
-                return@map qrCodeGenerator.generate(inviteUrl, qrCodeSize)?.asImageBitmap()
-            }
-
-            null
-        }
-        .flowOn(ioDispatcher)
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = null,
-            started = SharingStarted.WhileSubscribed(),
-        )
 
     private fun updateHeaderTitle(teamName: String = "") {
         headerTitle = if (teamName.isEmpty()) {
@@ -245,8 +285,7 @@ class ViewTeamViewModel @Inject constructor(
 
     private fun makeInviteUrl(userId: Long, invite: JoinOrgTeamInvite): String {
         val q = listOf(
-            "org-id=${invite.orgId}",
-            "team-id=${invite.teamId}",
+            "team-id=${invite.targetId}",
             "user-id=$userId",
             "invite-token=${invite.token}",
         ).joinToString("&")
@@ -254,7 +293,7 @@ class ViewTeamViewModel @Inject constructor(
     }
 
     fun onRefreshQrCode() {
-        // TODO Refresh QR code if close to expiring
+        refreshQrCodeTicker.value = Clock.System.now().epochSeconds
     }
 
     fun onOpenCaseFlags(worksite: Worksite) = flagsNavigationState.onOpenCaseFlags(worksite)

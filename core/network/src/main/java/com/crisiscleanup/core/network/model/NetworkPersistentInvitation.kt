@@ -5,12 +5,12 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class NetworkCreateOrgInvitation(
+data class NetworkCreatePersistentInvitation(
     val model: String,
     @SerialName("created_by")
     val createdBy: Long,
     @SerialName("object_id")
-    val organizationId: Long,
+    val targetId: Long,
 )
 
 @Serializable

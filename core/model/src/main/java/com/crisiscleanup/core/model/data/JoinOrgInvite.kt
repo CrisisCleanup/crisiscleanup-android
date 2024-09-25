@@ -2,9 +2,15 @@ package com.crisiscleanup.core.model.data
 
 import kotlinx.datetime.Instant
 
-data class JoinOrgInvite(
+/**
+ * Token (and data) for joining an organization or team
+ */
+data class JoinOrgTeamInvite(
     val token: String,
-    val orgId: Long,
+    /**
+     * Org ID or team ID
+     */
+    val targetId: Long,
     val expiresAt: Instant,
     val isExpired: Boolean = expiresAt.isPast,
 )
@@ -17,11 +23,3 @@ enum class JoinOrgResult {
     PendingAdditionalAction,
     Unknown,
 }
-
-data class JoinOrgTeamInvite(
-    val token: String,
-    val orgId: Long,
-    val teamId: Long,
-    val expiresAt: Instant,
-    val isExpired: Boolean = expiresAt.isPast,
-)

@@ -17,7 +17,7 @@ import com.crisiscleanup.core.network.model.NetworkAcceptPersistentInvite
 import com.crisiscleanup.core.network.model.NetworkAcceptedCodeInvitationRequest
 import com.crisiscleanup.core.network.model.NetworkAcceptedInvitationRequest
 import com.crisiscleanup.core.network.model.NetworkAcceptedPersistentInvite
-import com.crisiscleanup.core.network.model.NetworkCreateOrgInvitation
+import com.crisiscleanup.core.network.model.NetworkCreatePersistentInvitation
 import com.crisiscleanup.core.network.model.NetworkInvitationInfoResult
 import com.crisiscleanup.core.network.model.NetworkInvitationRequest
 import com.crisiscleanup.core.network.model.NetworkOrganizationContact
@@ -78,7 +78,7 @@ private interface RegisterApi {
     @WrapResponseHeader("invite")
     @POST("persistent_invitations")
     suspend fun createPersistentInvitation(
-        @Body org: NetworkCreateOrgInvitation,
+        @Body org: NetworkCreatePersistentInvitation,
     ): NetworkPersistentInvitationResult
 
     @ThrowClientErrorHeader
@@ -213,13 +213,19 @@ class RegisterApiClient @Inject constructor(
     }
 
     override suspend fun createPersistentInvitation(
-        organizationId: Long,
         userId: Long,
+        targetId: Long,
+        targetType: String,
     ): NetworkPersistentInvitation {
-        val invitation = NetworkCreateOrgInvitation(
-            model = "organization_organizations",
+        val validatedTargetType = if (targetType.lowercase() == "organization") {
+            "organization"
+        } else {
+            "team"
+        }
+        val invitation = NetworkCreatePersistentInvitation(
             createdBy = userId,
-            organizationId = organizationId,
+            targetId = targetId,
+            model = validatedTargetType,
         )
         return networkApi.createPersistentInvitation(invitation).invite
             ?: throw Exception("Persistent invite not created on the backend")
