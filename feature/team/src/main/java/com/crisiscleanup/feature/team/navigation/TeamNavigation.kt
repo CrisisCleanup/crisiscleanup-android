@@ -74,12 +74,14 @@ fun NavGraphBuilder.teamsScreen(
     openAuthentication: () -> Unit,
     openViewTeam: (Long, Long) -> Unit,
     openCreateTeam: (Long) -> Unit,
+    openJoinTeamByQrCode: () -> Unit,
 ) {
     composable(route = TEAM_ROUTE) {
         TeamsRoute(
             openAuthentication = openAuthentication,
             openViewTeam = openViewTeam,
             openCreateTeam = openCreateTeam,
+            openJoinTeamByQrCode = openJoinTeamByQrCode,
         )
     }
 

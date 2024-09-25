@@ -21,10 +21,6 @@ dependencies {
 
     implementation(libs.jwt.decode)
     implementation(libs.retrofit.core)
-    implementation(libs.androidx.camera)
-    implementation(libs.androidx.camera.lifecycle)
-    implementation(libs.androidx.camera.view)
-    implementation(libs.mlkit.barcodescanning)
 
     testImplementation(libs.mockk.android)
 }

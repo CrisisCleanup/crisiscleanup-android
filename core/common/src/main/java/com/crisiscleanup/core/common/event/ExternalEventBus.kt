@@ -22,6 +22,9 @@ interface ExternalEventBus {
     val orgPersistentInvites: Flow<UserPersistentInvite>
     val showOrgPersistentInvite: Flow<Boolean>
 
+    val teamPersistentInvites: Flow<UserPersistentInvite>
+    val showTeamPersistentInvite: Flow<Boolean>
+
     fun onResetPassword(code: String)
 
     fun onEmailLoginLink(code: String)
@@ -30,6 +33,10 @@ interface ExternalEventBus {
 
     fun onOrgPersistentInvite(inviterUserId: Long, inviteToken: String)
     fun onOrgPersistentInvite(query: Map<String, String>): Boolean
+
+    fun onTeamPersistentInvite(inviterUserId: Long, inviteToken: String)
+    fun onTeamPersistentInvite(query: Map<String, String>): Boolean
+    fun clearTeamPersistentInvite(invite: UserPersistentInvite)
 }
 
 @Singleton
@@ -46,6 +53,9 @@ class CrisisCleanupExternalEventBus @Inject constructor(
 
     override val orgPersistentInvites = MutableStateFlow(UserPersistentInvite(0, ""))
     override val showOrgPersistentInvite = orgPersistentInvites.map { it.isValidInvite }
+
+    override val teamPersistentInvites = MutableStateFlow(UserPersistentInvite(0, ""))
+    override val showTeamPersistentInvite = teamPersistentInvites.map { it.isValidInvite }
 
     override fun onResetPassword(code: String) {
         externalScope.launch {
@@ -72,18 +82,36 @@ class CrisisCleanupExternalEventBus @Inject constructor(
     }
 
     override fun onOrgPersistentInvite(query: Map<String, String>): Boolean {
-        query["user-id"]?.let { userIdString ->
-            try {
-                val userId = userIdString.toLong()
-                query["invite-token"]?.let { token ->
-                    onOrgPersistentInvite(userId, token)
-                    return true
-                }
-            } catch (e: Exception) {
-                // Unnecessary
+        query["user-id"]?.toLongOrNull()?.let { userId ->
+            query["invite-token"]?.let { token ->
+                onOrgPersistentInvite(userId, token)
+                return true
             }
         }
         return false
+    }
+
+    override fun onTeamPersistentInvite(inviterUserId: Long, inviteToken: String) {
+        externalScope.launch {
+            teamPersistentInvites.value = UserPersistentInvite(inviterUserId, inviteToken)
+        }
+    }
+
+    override fun onTeamPersistentInvite(query: Map<String, String>): Boolean {
+        query["user-id"]?.toLongOrNull()?.let { userId ->
+            query["invite-token"]?.let { token ->
+                onTeamPersistentInvite(userId, token)
+                return true
+            }
+        }
+        return false
+    }
+
+    override fun clearTeamPersistentInvite(invite: UserPersistentInvite) {
+        // TODO Atomic update
+        if (teamPersistentInvites.value == invite) {
+            teamPersistentInvites.value = UserPersistentInvite(0, "")
+        }
     }
 }
 

@@ -21,11 +21,11 @@ import com.crisiscleanup.feature.authentication.navigation.navigateToLoginWithPh
 import com.crisiscleanup.feature.authentication.navigation.navigateToVolunteerOrg
 import com.crisiscleanup.feature.authentication.navigation.navigateToVolunteerPasteInviteLink
 import com.crisiscleanup.feature.authentication.navigation.navigateToVolunteerRequestAccess
-import com.crisiscleanup.feature.authentication.navigation.navigateToVolunteerScanQrCode
 import com.crisiscleanup.feature.authentication.navigation.orgPersistentInviteScreen
 import com.crisiscleanup.feature.authentication.navigation.requestAccessScreen
 import com.crisiscleanup.feature.authentication.navigation.resetPasswordScreen
 import com.crisiscleanup.feature.authentication.navigation.volunteerOrgScreen
+import com.crisiscleanup.feature.qrcode.navigation.navigateToVolunteerScanQrCode
 
 private fun NavController.popToAuth() {
     popBackStack(AUTH_ROUTE, false, saveState = false)
