@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.data.repository
 
+import com.crisiscleanup.core.common.event.UserPersistentInvite
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -14,8 +15,12 @@ import com.crisiscleanup.core.database.model.PopulatedTeamMemberEquipment
 import com.crisiscleanup.core.database.model.PopulatedWorksite
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.CleanupTeam
+import com.crisiscleanup.core.model.data.CodeInviteAccept
+import com.crisiscleanup.core.model.data.JoinOrgResult
 import com.crisiscleanup.core.model.data.LocalTeam
+import com.crisiscleanup.core.model.data.OrgUserInviteInfo
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
+import com.crisiscleanup.core.network.CrisisCleanupRegisterApi
 import com.crisiscleanup.core.network.model.NetworkTeam
 import com.crisiscleanup.core.network.model.NetworkTeamWork
 import com.crisiscleanup.core.network.model.NetworkUserEquipment
@@ -40,6 +45,9 @@ interface TeamsRepository {
     suspend fun syncTeams(incidentId: Long)
 
     suspend fun streamMatchingOtherTeams(q: String, incidentId: Long): Flow<List<CleanupTeam>>
+
+    suspend fun acceptPersistentInvitation(invite: CodeInviteAccept): JoinOrgResult
+    suspend fun getInvitationInfo(invite: UserPersistentInvite): OrgUserInviteInfo?
 }
 
 class CrisisCleanupTeamsRepository @Inject constructor(
@@ -48,6 +56,7 @@ class CrisisCleanupTeamsRepository @Inject constructor(
     private val teamDaoPlus: TeamDaoPlus,
     private val accountDataRepository: AccountDataRepository,
     private val worksitesRepository: WorksitesRepository,
+    private val registerApi: CrisisCleanupRegisterApi,
     @Logger(CrisisCleanupLoggers.Team) private val logger: AppLogger,
 ) : TeamsRepository {
 
@@ -200,6 +209,12 @@ class CrisisCleanupTeamsRepository @Inject constructor(
                 }
             }
     }
+
+    override suspend fun acceptPersistentInvitation(invite: CodeInviteAccept) =
+        registerApi.acceptPersistentInvitation(invite)
+
+    override suspend fun getInvitationInfo(invite: UserPersistentInvite) =
+        registerApi.getInvitationInfo(invite)
 }
 
 data class IncidentTeams(

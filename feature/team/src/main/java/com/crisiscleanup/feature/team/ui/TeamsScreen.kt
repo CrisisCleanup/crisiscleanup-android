@@ -42,6 +42,7 @@ import com.crisiscleanup.core.designsystem.component.AvatarIcon
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CardSurface
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
+import com.crisiscleanup.core.designsystem.component.HelpDialog
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalDimensions
@@ -291,6 +292,15 @@ private fun TeamsScreen(
             selectedIncidentId = selectedIncidentId,
             onSelectIncident = setSelected,
             onRefreshIncidentsAsync = viewModel::refreshIncidentsAsync,
+        )
+    }
+
+    if (viewModel.joinTeamMessage.isNotBlank()) {
+        val clearTeamMessage = remember(viewModel) { { viewModel.joinTeamMessage = "" } }
+        HelpDialog(
+            title = t("~~Join team"),
+            text = viewModel.joinTeamMessage,
+            onClose = clearTeamMessage,
         )
     }
 }
