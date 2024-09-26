@@ -60,7 +60,9 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toJavaInstant
+import kotlinx.datetime.toLocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.minutes
@@ -68,6 +70,8 @@ import kotlin.time.Duration.Companion.seconds
 
 private val expirationDateFormatter =
     DateTimeFormatter.ofPattern("h:mm a 'of' MMM d yyyy").utcTimeZone
+private val expirationTimeFormatter =
+    DateTimeFormatter.ofPattern("h:mm a").utcTimeZone
 
 @HiltViewModel
 class ViewTeamViewModel @Inject constructor(
@@ -159,10 +163,18 @@ class ViewTeamViewModel @Inject constructor(
     private val qrCodeSize = 512 + 256
     private val refreshQrCodeTicker = MutableStateFlow(0L)
     private val joinTeamInvite = MutableStateFlow<JoinOrgTeamInvite?>(null)
+    private val systemTimeZone = TimeZone.currentSystemDefault()
     val scanQrCodeHelpText = joinTeamInvite
         .filterNotNull()
         .map {
-            val expirationDate = expirationDateFormatter.format(it.expiresAt.toJavaInstant())
+            val isSameDay = it.expiresAt.toLocalDateTime(systemTimeZone).dayOfMonth ==
+                    Clock.System.now().toLocalDateTime(systemTimeZone).dayOfMonth
+            val dateTimeFormatter = if (isSameDay) {
+                expirationTimeFormatter
+            } else {
+                expirationDateFormatter
+            }
+            val expirationDate = dateTimeFormatter.format(it.expiresAt.toJavaInstant())
             translator("~~Scan the QR code to join this team. The code stops working on (or before) {expiration}.")
                 .replace("{expiration}", expirationDate)
         }

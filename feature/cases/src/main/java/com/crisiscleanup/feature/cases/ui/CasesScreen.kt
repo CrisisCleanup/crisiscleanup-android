@@ -315,7 +315,7 @@ internal fun NoIncidentsScreen(
 }
 
 @Composable
-internal fun CasesScreen(
+private fun CasesScreen(
     dataProgress: DataProgressMetrics = zeroDataProgress,
     onSelectIncident: () -> Unit = {},
     @DrawableRes disasterResId: Int = commonAssetsR.drawable.ic_disaster_other,
