@@ -2,6 +2,7 @@ package com.crisiscleanup.core.network
 
 import com.crisiscleanup.core.common.event.UserPersistentInvite
 import com.crisiscleanup.core.model.data.CodeInviteAccept
+import com.crisiscleanup.core.model.data.ExistingUserCodeInviteAccept
 import com.crisiscleanup.core.model.data.IncidentOrganizationInviteInfo
 import com.crisiscleanup.core.model.data.InvitationRequest
 import com.crisiscleanup.core.model.data.InvitationRequestResult
@@ -26,6 +27,7 @@ interface CrisisCleanupRegisterApi {
     ): NetworkPersistentInvitation
 
     suspend fun acceptPersistentInvitation(invite: CodeInviteAccept): JoinOrgResult
+    suspend fun acceptPersistentInvitation(invite: ExistingUserCodeInviteAccept): JoinOrgResult
 
     suspend fun inviteToOrganization(emailAddress: String, organizationId: Long?): OrgInviteResult
 

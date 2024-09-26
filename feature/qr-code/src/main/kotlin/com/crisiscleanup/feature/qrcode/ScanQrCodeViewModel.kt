@@ -120,7 +120,6 @@ class ScanQrCodeViewModel @Inject constructor(
                         externalEventBus.onTeamPersistentInvite(url.queryParamMap)
                     }
                 } else if (orgScanAllowedPaths.contains(lastPath)) {
-                    // TODO Test join team from org scan
                     externalEventBus.onOrgPersistentInvite(url.queryParamMap)
                 }
             }

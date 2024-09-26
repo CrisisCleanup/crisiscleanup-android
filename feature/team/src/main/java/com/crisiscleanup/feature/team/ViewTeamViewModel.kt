@@ -168,7 +168,7 @@ class ViewTeamViewModel @Inject constructor(
         .filterNotNull()
         .map {
             val isSameDay = it.expiresAt.toLocalDateTime(systemTimeZone).dayOfMonth ==
-                    Clock.System.now().toLocalDateTime(systemTimeZone).dayOfMonth
+                Clock.System.now().toLocalDateTime(systemTimeZone).dayOfMonth
             val dateTimeFormatter = if (isSameDay) {
                 expirationTimeFormatter
             } else {

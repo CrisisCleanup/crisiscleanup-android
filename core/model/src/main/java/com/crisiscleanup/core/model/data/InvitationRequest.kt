@@ -39,6 +39,11 @@ data class CodeInviteAccept(
     val invitationCode: String,
 )
 
+data class ExistingUserCodeInviteAccept(
+    val emailAddress: String,
+    val invitationCode: String,
+)
+
 enum class OrgInviteResult {
     Invited,
     Redundant,
