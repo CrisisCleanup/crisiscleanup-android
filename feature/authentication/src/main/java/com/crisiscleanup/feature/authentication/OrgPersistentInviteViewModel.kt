@@ -56,7 +56,6 @@ class OrgPersistentInviteViewModel @Inject constructor(
     val languageOptions = MutableStateFlow<List<LanguageIdName>>(emptyList())
 
     val isJoiningOrg = MutableStateFlow(false)
-    val joinResultMessage = MutableStateFlow("")
 
     val isInviteAccepted = MutableStateFlow(false)
     var acceptedTitle by mutableStateOf("")

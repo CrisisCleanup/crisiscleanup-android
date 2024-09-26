@@ -3,6 +3,7 @@ package com.crisiscleanup.core.network.retrofit
 import com.crisiscleanup.core.common.event.UserPersistentInvite
 import com.crisiscleanup.core.common.isPast
 import com.crisiscleanup.core.model.data.CodeInviteAccept
+import com.crisiscleanup.core.model.data.ExistingUserCodeInviteAccept
 import com.crisiscleanup.core.model.data.ExpiredNetworkOrgInvite
 import com.crisiscleanup.core.model.data.IncidentOrganizationInviteInfo
 import com.crisiscleanup.core.model.data.InvitationRequest
@@ -18,6 +19,7 @@ import com.crisiscleanup.core.network.model.NetworkAcceptedCodeInvitationRequest
 import com.crisiscleanup.core.network.model.NetworkAcceptedInvitationRequest
 import com.crisiscleanup.core.network.model.NetworkAcceptedPersistentInvite
 import com.crisiscleanup.core.network.model.NetworkCreatePersistentInvitation
+import com.crisiscleanup.core.network.model.NetworkExistingUserAcceptPersistentInvite
 import com.crisiscleanup.core.network.model.NetworkInvitationInfoResult
 import com.crisiscleanup.core.network.model.NetworkInvitationRequest
 import com.crisiscleanup.core.network.model.NetworkOrganizationContact
@@ -85,6 +87,12 @@ private interface RegisterApi {
     @POST("persistent_invitations/accept")
     suspend fun acceptPersistentInvitation(
         @Body acceptInvite: NetworkAcceptPersistentInvite,
+    ): NetworkAcceptedPersistentInvite
+
+    @ThrowClientErrorHeader
+    @POST("persistent_invitations/accept")
+    suspend fun acceptPersistentInvitation(
+        @Body acceptInvite: NetworkExistingUserAcceptPersistentInvite,
     ): NetworkAcceptedPersistentInvite
 
     @TokenAuthenticationHeader
@@ -245,11 +253,32 @@ class RegisterApiClient @Inject constructor(
             val response = networkApi.acceptPersistentInvitation(payload)
             return when (response.detail) {
                 "You have been added to the organization." -> JoinOrgResult.Success
+                "You have been added to the team." -> JoinOrgResult.Success
                 "User already a member of this organization." -> JoinOrgResult.Redundant
                 else -> JoinOrgResult.Unknown
             }
         } catch (e: CrisisCleanupNetworkException) {
             if (e.body.contains("User already a member of this organization.")) {
+                return JoinOrgResult.Redundant
+            }
+        }
+        return JoinOrgResult.Unknown
+    }
+
+    override suspend fun acceptPersistentInvitation(invite: ExistingUserCodeInviteAccept): JoinOrgResult {
+        val payload = NetworkExistingUserAcceptPersistentInvite(
+            email = invite.emailAddress,
+            token = invite.invitationCode,
+        )
+        try {
+            val response = networkApi.acceptPersistentInvitation(payload)
+            return when (response.detail) {
+                "User added to team." -> JoinOrgResult.Success
+                "User is already a member of this team." -> JoinOrgResult.Redundant
+                else -> JoinOrgResult.Unknown
+            }
+        } catch (e: CrisisCleanupNetworkException) {
+            if (e.body.contains("User is already a member of this team.")) {
                 return JoinOrgResult.Redundant
             }
         }

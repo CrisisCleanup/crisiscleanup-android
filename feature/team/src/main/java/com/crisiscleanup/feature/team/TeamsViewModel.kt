@@ -27,8 +27,8 @@ import com.crisiscleanup.core.data.repository.TeamsRepository
 import com.crisiscleanup.core.data.repository.UsersRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.model.data.CleanupTeam
-import com.crisiscleanup.core.model.data.CodeInviteAccept
 import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.model.data.ExistingUserCodeInviteAccept
 import com.crisiscleanup.core.model.data.JoinOrgResult
 import com.crisiscleanup.core.model.data.PersonContact
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -233,15 +233,8 @@ class TeamsViewModel @Inject constructor(
                 try {
                     val emailAddress = accountDataRepository.accountData.first().emailAddress
                     val joinResult = teamsRepository.acceptPersistentInvitation(
-                        CodeInviteAccept(
-                            firstName = "",
-                            lastName = "",
+                        ExistingUserCodeInviteAccept(
                             emailAddress = emailAddress,
-                            title = "",
-                            password = "",
-                            mobile = "",
-                            // TODO Get current language or default to English
-                            languageId = 1,
                             invitationCode = invite.inviteToken,
                         ),
                     )

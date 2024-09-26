@@ -15,7 +15,7 @@ import com.crisiscleanup.core.database.model.PopulatedTeamMemberEquipment
 import com.crisiscleanup.core.database.model.PopulatedWorksite
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.CleanupTeam
-import com.crisiscleanup.core.model.data.CodeInviteAccept
+import com.crisiscleanup.core.model.data.ExistingUserCodeInviteAccept
 import com.crisiscleanup.core.model.data.JoinOrgResult
 import com.crisiscleanup.core.model.data.LocalTeam
 import com.crisiscleanup.core.model.data.OrgUserInviteInfo
@@ -46,7 +46,7 @@ interface TeamsRepository {
 
     suspend fun streamMatchingOtherTeams(q: String, incidentId: Long): Flow<List<CleanupTeam>>
 
-    suspend fun acceptPersistentInvitation(invite: CodeInviteAccept): JoinOrgResult
+    suspend fun acceptPersistentInvitation(invite: ExistingUserCodeInviteAccept): JoinOrgResult
     suspend fun getInvitationInfo(invite: UserPersistentInvite): OrgUserInviteInfo?
 }
 
@@ -210,7 +210,7 @@ class CrisisCleanupTeamsRepository @Inject constructor(
             }
     }
 
-    override suspend fun acceptPersistentInvitation(invite: CodeInviteAccept) =
+    override suspend fun acceptPersistentInvitation(invite: ExistingUserCodeInviteAccept) =
         registerApi.acceptPersistentInvitation(invite)
 
     override suspend fun getInvitationInfo(invite: UserPersistentInvite) =
