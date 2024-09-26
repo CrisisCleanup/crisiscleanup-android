@@ -65,6 +65,12 @@ data class NetworkAcceptPersistentInvite(
 )
 
 @Serializable
+data class NetworkExistingUserAcceptPersistentInvite(
+    val email: String,
+    val token: String,
+)
+
+@Serializable
 data class NetworkAcceptedPersistentInvite(
     val detail: String,
 )
