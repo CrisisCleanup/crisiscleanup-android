@@ -1,5 +1,8 @@
 package com.crisiscleanup.feature.team
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.appcomponent.AppTopBarDataProvider
@@ -24,7 +27,9 @@ import com.crisiscleanup.core.data.repository.TeamsRepository
 import com.crisiscleanup.core.data.repository.UsersRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.model.data.CleanupTeam
+import com.crisiscleanup.core.model.data.CodeInviteAccept
 import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.model.data.JoinOrgResult
 import com.crisiscleanup.core.model.data.PersonContact
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -34,6 +39,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
@@ -53,14 +59,14 @@ class TeamsViewModel @Inject constructor(
     incidentsRepository: IncidentsRepository,
     worksitesRepository: WorksitesRepository,
     val incidentSelector: IncidentSelector,
-    accountDataRepository: AccountDataRepository,
+    private val accountDataRepository: AccountDataRepository,
     appPreferencesRepository: LocalAppPreferencesRepository,
     private val teamsRepository: TeamsRepository,
     private val usersRepository: UsersRepository,
     private val equipmentRepository: EquipmentRepository,
     private val externalEventBus: ExternalEventBus,
     private val syncPuller: SyncPuller,
-    translator: KeyResourceTranslator,
+    private val translator: KeyResourceTranslator,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.Team) private val logger: AppLogger,
 ) : ViewModel() {
@@ -171,6 +177,7 @@ class TeamsViewModel @Inject constructor(
 
     private var joinTeamInvite = UserPersistentInvite(0, "")
     var isJoiningTeam = MutableStateFlow(false)
+    var joinTeamMessage by mutableStateOf("")
 
     init {
         viewState
@@ -207,7 +214,7 @@ class TeamsViewModel @Inject constructor(
             .onEach {
                 joinTeamInvite = it
                 // Do not clear team invite immediately as it interferes with navigation
-                queryInviteInfo(joinTeamInvite)
+                acceptTeamInvite(joinTeamInvite)
             }
             .launchIn(viewModelScope)
     }
@@ -217,21 +224,56 @@ class TeamsViewModel @Inject constructor(
         externalEventBus.onTeamPersistentInvite(0, "")
     }
 
-    private fun queryInviteInfo(persistentInvite: UserPersistentInvite) =
+    private fun acceptTeamInvite(invite: UserPersistentInvite) =
         viewModelScope.launch(ioDispatcher) {
-            if (persistentInvite.isValidInvite && !isJoiningTeam.value) {
+            if (invite.isValidInvite && !isJoiningTeam.value) {
                 isJoiningTeam.value = true
+
+                joinTeamMessage = ""
                 try {
-                    // TODO Accept the invitation
-                    //      Show the result (and refresh the team's information)
+                    val emailAddress = accountDataRepository.accountData.first().emailAddress
+                    val joinResult = teamsRepository.acceptPersistentInvitation(
+                        CodeInviteAccept(
+                            firstName = "",
+                            lastName = "",
+                            emailAddress = emailAddress,
+                            title = "",
+                            password = "",
+                            mobile = "",
+                            // TODO Get current language or default to English
+                            languageId = 1,
+                            invitationCode = invite.inviteToken,
+                        ),
+                    )
+
+                    if (joinResult == JoinOrgResult.Success) {
+                        joinTeamMessage = translator("~~Joined a new team")
+
+                        // TODO Refresh the team's information
+                    } else {
+                        var errorMessageTranslateKey = "~~Failed to join team"
+                        when (joinResult) {
+                            JoinOrgResult.Redundant ->
+                                errorMessageTranslateKey = "~~Already a part of the team"
+
+                            else -> {
+                                val inviteInfo = teamsRepository.getInvitationInfo(invite)
+                                if (inviteInfo?.isExpiredInvite == true) {
+                                    errorMessageTranslateKey =
+                                        "persistentInvitations.invite_expired_try_again"
+                                }
+                            }
+                        }
+                        joinTeamMessage = translator(errorMessageTranslateKey)
+                    }
 
                     // TODO Find a more elegant means to not interfere with navigation
                     Thread.sleep(2.seconds.inWholeMilliseconds)
                 } catch (e: Exception) {
                     logger.logException(e)
-                    // TODO Show an error message
+                    joinTeamMessage = translator("~~Failed to join team. Try again later.")
                 } finally {
-                    externalEventBus.clearTeamPersistentInvite(persistentInvite)
+                    externalEventBus.clearTeamPersistentInvite(invite)
                     isJoiningTeam.value = false
                 }
             }
