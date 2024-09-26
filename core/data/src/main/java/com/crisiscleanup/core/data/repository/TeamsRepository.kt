@@ -18,7 +18,7 @@ import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.ExistingUserCodeInviteAccept
 import com.crisiscleanup.core.model.data.JoinOrgResult
 import com.crisiscleanup.core.model.data.LocalTeam
-import com.crisiscleanup.core.model.data.OrgUserInviteInfo
+import com.crisiscleanup.core.model.data.TeamInviteInfo
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.CrisisCleanupRegisterApi
 import com.crisiscleanup.core.network.model.NetworkTeam
@@ -37,6 +37,7 @@ interface TeamsRepository {
 
     fun streamLocalTeam(teamId: Long): Flow<LocalTeam?>
 
+    suspend fun syncTeam(teamNetworkId: Long)
     suspend fun syncNetworkTeam(
         team: NetworkTeam,
         syncedAt: Instant = Clock.System.now(),
@@ -47,7 +48,7 @@ interface TeamsRepository {
     suspend fun streamMatchingOtherTeams(q: String, incidentId: Long): Flow<List<CleanupTeam>>
 
     suspend fun acceptPersistentInvitation(invite: ExistingUserCodeInviteAccept): JoinOrgResult
-    suspend fun getInvitationInfo(invite: UserPersistentInvite): OrgUserInviteInfo?
+    suspend fun getInvitationInfo(invite: UserPersistentInvite): TeamInviteInfo?
 }
 
 class CrisisCleanupTeamsRepository @Inject constructor(
@@ -163,6 +164,17 @@ class CrisisCleanupTeamsRepository @Inject constructor(
         }
     }
 
+    override suspend fun syncTeam(teamNetworkId: Long) {
+        try {
+            val syncedAt = Clock.System.now()
+            networkDataSource.getTeam(teamNetworkId)?.let { networkTeam ->
+                syncNetworkTeam(networkTeam, syncedAt)
+            }
+        } catch (e: Exception) {
+            logger.logException(e)
+        }
+    }
+
     override suspend fun syncNetworkTeam(
         team: NetworkTeam,
         syncedAt: Instant,
@@ -214,7 +226,7 @@ class CrisisCleanupTeamsRepository @Inject constructor(
         registerApi.acceptPersistentInvitation(invite)
 
     override suspend fun getInvitationInfo(invite: UserPersistentInvite) =
-        registerApi.getInvitationInfo(invite)
+        registerApi.getTeamInvitationInfo(invite)
 }
 
 data class IncidentTeams(

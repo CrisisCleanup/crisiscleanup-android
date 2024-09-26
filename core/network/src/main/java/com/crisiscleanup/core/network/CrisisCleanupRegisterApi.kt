@@ -9,14 +9,16 @@ import com.crisiscleanup.core.model.data.InvitationRequestResult
 import com.crisiscleanup.core.model.data.JoinOrgResult
 import com.crisiscleanup.core.model.data.OrgInviteResult
 import com.crisiscleanup.core.model.data.OrgUserInviteInfo
+import com.crisiscleanup.core.model.data.TeamInviteInfo
 import com.crisiscleanup.core.network.model.NetworkPersistentInvitation
 
 interface CrisisCleanupRegisterApi {
     suspend fun registerOrgVolunteer(invite: InvitationRequest): InvitationRequestResult?
 
-    suspend fun getInvitationInfo(invite: UserPersistentInvite): OrgUserInviteInfo?
+    suspend fun getOrgInvitationInfo(invite: UserPersistentInvite): OrgUserInviteInfo?
+    suspend fun getOrgInvitationInfo(inviteCode: String): OrgUserInviteInfo?
 
-    suspend fun getInvitationInfo(inviteCode: String): OrgUserInviteInfo?
+    suspend fun getTeamInvitationInfo(invite: UserPersistentInvite): TeamInviteInfo?
 
     suspend fun acceptOrgInvitation(invite: CodeInviteAccept): JoinOrgResult
 

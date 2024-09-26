@@ -50,7 +50,7 @@ class CrisisCleanupOrgVolunteerRepository @Inject constructor(
 
     override suspend fun getInvitationInfo(inviteCode: String): OrgUserInviteInfo? {
         try {
-            return registerApi.getInvitationInfo(inviteCode)
+            return registerApi.getOrgInvitationInfo(inviteCode)
         } catch (e: Exception) {
             logger.logException(e)
         }
@@ -59,7 +59,7 @@ class CrisisCleanupOrgVolunteerRepository @Inject constructor(
 
     override suspend fun getInvitationInfo(invite: UserPersistentInvite): OrgUserInviteInfo? {
         try {
-            return registerApi.getInvitationInfo(invite)
+            return registerApi.getOrgInvitationInfo(invite)
         } catch (e: Exception) {
             logger.logException(e)
         }

@@ -22,3 +22,15 @@ val ExpiredNetworkOrgInvite = OrgUserInviteInfo(
     expiration = Instant.fromEpochSeconds(0),
     isExpiredInvite = true,
 )
+
+data class TeamInviteInfo(
+    val teamId: Long,
+    val expiration: Instant,
+    val isExpiredInvite: Boolean,
+)
+
+val ExpiredNetworkTeamInvite = TeamInviteInfo(
+    teamId = 0,
+    expiration = Instant.fromEpochSeconds(0),
+    isExpiredInvite = true,
+)
