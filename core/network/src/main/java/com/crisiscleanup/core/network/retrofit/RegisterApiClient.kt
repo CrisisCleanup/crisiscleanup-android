@@ -5,12 +5,14 @@ import com.crisiscleanup.core.common.isPast
 import com.crisiscleanup.core.model.data.CodeInviteAccept
 import com.crisiscleanup.core.model.data.ExistingUserCodeInviteAccept
 import com.crisiscleanup.core.model.data.ExpiredNetworkOrgInvite
+import com.crisiscleanup.core.model.data.ExpiredNetworkTeamInvite
 import com.crisiscleanup.core.model.data.IncidentOrganizationInviteInfo
 import com.crisiscleanup.core.model.data.InvitationRequest
 import com.crisiscleanup.core.model.data.InvitationRequestResult
 import com.crisiscleanup.core.model.data.JoinOrgResult
 import com.crisiscleanup.core.model.data.OrgInviteResult
 import com.crisiscleanup.core.model.data.OrgUserInviteInfo
+import com.crisiscleanup.core.model.data.TeamInviteInfo
 import com.crisiscleanup.core.network.CrisisCleanupRegisterApi
 import com.crisiscleanup.core.network.model.CrisisCleanupNetworkException
 import com.crisiscleanup.core.network.model.NetworkAcceptCodeInvite
@@ -158,7 +160,7 @@ class RegisterApiClient @Inject constructor(
         )
     }
 
-    override suspend fun getInvitationInfo(invite: UserPersistentInvite): OrgUserInviteInfo? {
+    override suspend fun getOrgInvitationInfo(invite: UserPersistentInvite): OrgUserInviteInfo? {
         networkApi.persistentInvitationInfo(invite.inviteToken).invite?.let { persistentInvite ->
             if (persistentInvite.expiresAt.isPast) {
                 return ExpiredNetworkOrgInvite
@@ -179,7 +181,7 @@ class RegisterApiClient @Inject constructor(
         return null
     }
 
-    override suspend fun getInvitationInfo(inviteCode: String): OrgUserInviteInfo? {
+    override suspend fun getOrgInvitationInfo(inviteCode: String): OrgUserInviteInfo? {
         networkApi.invitationInfo(inviteCode).invite?.let { invite ->
             if (invite.expiresAt.isPast) {
                 return ExpiredNetworkOrgInvite
@@ -194,6 +196,22 @@ class RegisterApiClient @Inject constructor(
                 invitedEmail = invite.inviteeEmail,
                 orgName = userDetails.organizationName,
                 expiration = invite.expiresAt,
+                isExpiredInvite = false,
+            )
+        }
+
+        return null
+    }
+
+    override suspend fun getTeamInvitationInfo(invite: UserPersistentInvite): TeamInviteInfo? {
+        networkApi.persistentInvitationInfo(invite.inviteToken).invite?.let { persistentInvite ->
+            if (persistentInvite.expiresAt.isPast) {
+                return ExpiredNetworkTeamInvite
+            }
+
+            return TeamInviteInfo(
+                teamId = persistentInvite.objectId,
+                expiration = persistentInvite.expiresAt,
                 isExpiredInvite = false,
             )
         }

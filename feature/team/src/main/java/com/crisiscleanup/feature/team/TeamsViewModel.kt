@@ -242,7 +242,9 @@ class TeamsViewModel @Inject constructor(
                     if (joinResult == JoinOrgResult.Success) {
                         joinTeamMessage = translator("~~Joined a new team")
 
-                        // TODO Refresh the team's information
+                        teamsRepository.getInvitationInfo(invite)?.teamId?.let { teamNetworkId ->
+                            teamsRepository.syncTeam(teamNetworkId)
+                        }
                     } else {
                         var errorMessageTranslateKey = "~~Failed to join team"
                         when (joinResult) {
