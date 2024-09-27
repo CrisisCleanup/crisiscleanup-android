@@ -265,7 +265,7 @@ class ViewTeamViewModel @Inject constructor(
                     }
                 }
 
-                orgVolunteerRepository.getTeamInvite(teamIdArg, accountData.id)
+                teamsRepository.getTeamInvite(teamIdArg, accountData.id)
             }
             .onEach {
                 joinTeamInvite.value = it

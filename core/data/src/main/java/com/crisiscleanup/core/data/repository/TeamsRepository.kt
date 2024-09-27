@@ -17,6 +17,7 @@ import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.ExistingUserCodeInviteAccept
 import com.crisiscleanup.core.model.data.JoinOrgResult
+import com.crisiscleanup.core.model.data.JoinOrgTeamInvite
 import com.crisiscleanup.core.model.data.LocalTeam
 import com.crisiscleanup.core.model.data.TeamInviteInfo
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
@@ -37,7 +38,7 @@ interface TeamsRepository {
 
     fun streamLocalTeam(teamId: Long): Flow<LocalTeam?>
 
-    suspend fun syncTeam(teamNetworkId: Long)
+    suspend fun syncNetworkTeam(networkTeamId: Long)
     suspend fun syncNetworkTeam(
         team: NetworkTeam,
         syncedAt: Instant = Clock.System.now(),
@@ -47,6 +48,7 @@ interface TeamsRepository {
 
     suspend fun streamMatchingOtherTeams(q: String, incidentId: Long): Flow<List<CleanupTeam>>
 
+    suspend fun getTeamInvite(teamId: Long, inviterUserId: Long): JoinOrgTeamInvite
     suspend fun acceptPersistentInvitation(invite: ExistingUserCodeInviteAccept): JoinOrgResult
     suspend fun getInvitationInfo(invite: UserPersistentInvite): TeamInviteInfo?
 }
@@ -164,10 +166,10 @@ class CrisisCleanupTeamsRepository @Inject constructor(
         }
     }
 
-    override suspend fun syncTeam(teamNetworkId: Long) {
+    override suspend fun syncNetworkTeam(networkTeamId: Long) {
         try {
             val syncedAt = Clock.System.now()
-            networkDataSource.getTeam(teamNetworkId)?.let { networkTeam ->
+            networkDataSource.getTeam(networkTeamId)?.let { networkTeam ->
                 syncNetworkTeam(networkTeam, syncedAt)
             }
         } catch (e: Exception) {
@@ -222,6 +224,19 @@ class CrisisCleanupTeamsRepository @Inject constructor(
             }
     }
 
+    override suspend fun getTeamInvite(
+        teamId: Long,
+        inviterUserId: Long,
+    ): JoinOrgTeamInvite {
+        val networkTeamId = teamDao.getTeamNetworkId(teamId)
+        return registerApi.createPersistentInvite(
+            logger,
+            networkTeamId,
+            inviterUserId = inviterUserId,
+            true,
+        )
+    }
+
     override suspend fun acceptPersistentInvitation(invite: ExistingUserCodeInviteAccept) =
         registerApi.acceptPersistentInvitation(invite)
 
@@ -237,6 +252,6 @@ data class IncidentTeams(
 fun List<NetworkTeamWork>.mapWorkIds() = map {
     WorksiteWorkTypeIds(
         worksiteId = it.worksite,
-        workTypeNetworkId = it.id,
+        networkWorkTypeId = it.id,
     )
 }

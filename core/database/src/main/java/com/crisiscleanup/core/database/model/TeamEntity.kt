@@ -173,5 +173,5 @@ data class TeamWorkEntity(
     @ColumnInfo("worksite_id", defaultValue = "0")
     val worksiteId: Long,
     @ColumnInfo("work_type_network_id")
-    val workTypeNetworkId: Long,
+    val networkWorkTypeId: Long,
 )
