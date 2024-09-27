@@ -219,11 +219,6 @@ class TeamsViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    private fun clearTeamInvite() {
-        logger.logDebug("Clearing team invite from teams view model")
-        externalEventBus.onTeamPersistentInvite(0, "")
-    }
-
     private fun acceptTeamInvite(invite: UserPersistentInvite) =
         viewModelScope.launch(ioDispatcher) {
             if (invite.isValidInvite && !isJoiningTeam.value) {
@@ -242,8 +237,8 @@ class TeamsViewModel @Inject constructor(
                     if (joinResult == JoinOrgResult.Success) {
                         joinTeamMessage = translator("~~Joined a new team")
 
-                        teamsRepository.getInvitationInfo(invite)?.teamId?.let { teamNetworkId ->
-                            teamsRepository.syncTeam(teamNetworkId)
+                        teamsRepository.getInvitationInfo(invite)?.teamId?.let { networkTeamId ->
+                            teamsRepository.syncNetworkTeam(networkTeamId)
                         }
                     } else {
                         var errorMessageTranslateKey = "~~Failed to join team"

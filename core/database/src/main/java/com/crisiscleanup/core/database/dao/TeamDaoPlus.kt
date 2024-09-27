@@ -129,13 +129,13 @@ class TeamDaoPlus @Inject constructor(
         workIds: Collection<WorksiteWorkTypeIds>,
     ) = db.withTransaction {
         val teamDao = db.teamDao()
-        teamDao.deleteUnspecifiedWork(teamId, workIds.map(WorksiteWorkTypeIds::workTypeNetworkId))
+        teamDao.deleteUnspecifiedWork(teamId, workIds.map(WorksiteWorkTypeIds::networkWorkTypeId))
 
         val teamWork = workIds.map {
             TeamWorkEntity(
                 id = teamId,
                 worksiteId = it.worksiteId,
-                workTypeNetworkId = it.workTypeNetworkId,
+                networkWorkTypeId = it.networkWorkTypeId,
             )
         }
         teamDao.insertIgnoreWork(teamWork)
@@ -241,5 +241,5 @@ class TeamDaoPlus @Inject constructor(
 
 data class WorksiteWorkTypeIds(
     val worksiteId: Long,
-    val workTypeNetworkId: Long,
+    val networkWorkTypeId: Long,
 )

@@ -272,6 +272,7 @@ class RegisterApiClient @Inject constructor(
             return when (response.detail) {
                 "You have been added to the organization." -> JoinOrgResult.Success
                 "You have been added to the team." -> JoinOrgResult.Success
+                "User added to team." -> JoinOrgResult.Success
                 "User already a member of this organization." -> JoinOrgResult.Redundant
                 else -> JoinOrgResult.Unknown
             }
@@ -291,6 +292,7 @@ class RegisterApiClient @Inject constructor(
         try {
             val response = networkApi.acceptPersistentInvitation(payload)
             return when (response.detail) {
+                "You have been added to the team." -> JoinOrgResult.Success
                 "User added to team." -> JoinOrgResult.Success
                 "User is already a member of this team." -> JoinOrgResult.Redundant
                 else -> JoinOrgResult.Unknown
