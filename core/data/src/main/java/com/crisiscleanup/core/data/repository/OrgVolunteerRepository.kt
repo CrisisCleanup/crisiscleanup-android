@@ -23,7 +23,7 @@ interface OrgVolunteerRepository {
     suspend fun acceptInvitation(invite: CodeInviteAccept): JoinOrgResult
 
     suspend fun getOrganizationInvite(
-        networkOrganizationId: Long,
+        organizationId: Long,
         inviterUserId: Long,
     ): JoinOrgTeamInvite
 
@@ -80,11 +80,11 @@ class CrisisCleanupOrgVolunteerRepository @Inject constructor(
     }
 
     override suspend fun getOrganizationInvite(
-        networkOrganizationId: Long,
+        organizationId: Long,
         inviterUserId: Long,
     ) = registerApi.createPersistentInvite(
         logger,
-        networkOrganizationId,
+        organizationId,
         inviterUserId = inviterUserId,
     )
 
