@@ -271,13 +271,12 @@ class InviteTeammateViewModel @Inject constructor(
         }
         .map { (account, otherOrgIdName, _) ->
             withContext(ioDispatcher) {
-                // TODO Use other org network ID not local ID
-                val otherNetworkOrganizationId = otherOrgIdName.id
-                generatingAffiliateOrgQrCode.value = otherNetworkOrganizationId
+                val otherOrgId = otherOrgIdName.id
+                generatingAffiliateOrgQrCode.value = otherOrgId
                 try {
                     val userId = account.id
                     val invite = orgVolunteerRepository.getOrganizationInvite(
-                        networkOrganizationId = otherNetworkOrganizationId,
+                        organizationId = otherOrgId,
                         inviterUserId = userId,
                     )
 
@@ -288,10 +287,10 @@ class InviteTeammateViewModel @Inject constructor(
 
                     ensureActive()
 
-                    OrgQrCode(otherNetworkOrganizationId, qrCode, invite.expiresAt)
+                    OrgQrCode(otherOrgId, qrCode, invite.expiresAt)
                 } finally {
                     // TODO Atomic update
-                    if (generatingAffiliateOrgQrCode.value == otherNetworkOrganizationId) {
+                    if (generatingAffiliateOrgQrCode.value == otherOrgId) {
                         generatingAffiliateOrgQrCode.value = 0
                     }
                 }
