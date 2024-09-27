@@ -110,7 +110,8 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
 
                 _clearingAppDataStep.value = ClearAppDataStep.ClearData
                 for (i in 0..<3) {
-                    databaseOperator.clearAllTables()
+                    logger.logDebug("Clearing tables attempt $i")
+                    databaseOperator.clearBackendDataTables()
                     withContext(Dispatchers.IO) {
                         TimeUnit.SECONDS.sleep(2)
                     }
