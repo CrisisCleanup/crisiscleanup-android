@@ -3,6 +3,7 @@ package com.crisiscleanup.feature.cases
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.KeyResourceTranslator
@@ -28,6 +29,7 @@ import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.WorkTypeStatusRepository
 import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.WorksiteFlagType
+import com.crisiscleanup.feature.cases.navigation.CasesFilterArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,9 +46,12 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CasesFilterViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     workTypeStatusRepository: WorkTypeStatusRepository,
     @CasesFilterType(CasesFilterTypes.Cases)
-    private val casesFilterRepository: CasesFilterRepository,
+    casesFilterRepository: CasesFilterRepository,
+    @CasesFilterType(CasesFilterTypes.TeamCases)
+    teamCasesFilterRepository: CasesFilterRepository,
     incidentSelector: IncidentSelector,
     incidentsRepository: IncidentsRepository,
     languageRepository: LanguageTranslationsRepository,
@@ -57,10 +62,19 @@ class CasesFilterViewModel @Inject constructor(
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.Cases) private val logger: AppLogger,
 ) : ViewModel() {
+    private val casesFilterArgs = CasesFilterArgs(savedStateHandle)
+    private val useTeamFilters = casesFilterArgs.useTeamFilters
+
+    private val filterRepository = if (useTeamFilters) {
+        teamCasesFilterRepository
+    } else {
+        casesFilterRepository
+    }
+
     var showExplainPermissionLocation by mutableStateOf(false)
 
     // TODO This requires the filters were previously accessed
-    val casesFilters = MutableStateFlow(casesFilterRepository.casesFilters)
+    val casesFilters = MutableStateFlow(filterRepository.casesFilters)
 
     val hasInconsistentDistanceFilter = combine(
         permissionManager.hasLocationPermission,
@@ -181,7 +195,7 @@ class CasesFilterViewModel @Inject constructor(
     }
 
     fun applyFilters(filters: CasesFilter) {
-        casesFilterRepository.changeFilters(filters)
+        filterRepository.changeFilters(filters)
     }
 }
 

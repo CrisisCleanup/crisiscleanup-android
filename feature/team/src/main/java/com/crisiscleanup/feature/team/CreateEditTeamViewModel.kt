@@ -27,6 +27,7 @@ import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.commoncase.CasesConstant.MAP_MARKERS_ZOOM_LEVEL
 import com.crisiscleanup.core.commoncase.CasesCounter
+import com.crisiscleanup.core.commoncase.map.CaseDotsMapTileRenderer
 import com.crisiscleanup.core.commoncase.map.CasesMapBoundsManager
 import com.crisiscleanup.core.commoncase.map.CasesMapMarkerManager
 import com.crisiscleanup.core.commoncase.map.CasesMapTileLayerManager
@@ -109,7 +110,10 @@ class CreateEditTeamViewModel @Inject constructor(
     dataPullReporter: IncidentDataPullReporter,
     incidentBoundsProvider: IncidentBoundsProvider,
     worksitesRepository: WorksitesRepository,
+    @CasesFilterType(CasesFilterTypes.TeamCases)
     mapTileRenderer: CasesOverviewMapTileRenderer,
+    @CasesFilterType(CasesFilterTypes.TeamCases)
+    tileProvider: TileProvider,
     @CasesFilterType(CasesFilterTypes.TeamCases)
     filterRepository: CasesFilterRepository,
     private val mapCaseIconProvider: MapCaseIconProvider,
@@ -118,7 +122,6 @@ class CreateEditTeamViewModel @Inject constructor(
     locationProvider: LocationProvider,
     languageRefresher: LanguageRefresher,
     private val teamNameGenerator: NameGenerator,
-    tileProvider: TileProvider,
     syncPuller: SyncPuller,
     private val syncPusher: SyncPusher,
     private val translator: KeyResourceTranslator,
@@ -267,7 +270,10 @@ class CreateEditTeamViewModel @Inject constructor(
     )
 
     private val incidentWorksitesCount =
-        worksitesRepository.streamIncidentWorksitesCount(incidentSelector.incidentId)
+        worksitesRepository.streamIncidentWorksitesCount(
+            incidentSelector.incidentId,
+            useTeamFilters = true,
+        )
             .flowOn(ioDispatcher)
             .shareIn(
                 scope = viewModelScope,
@@ -304,6 +310,7 @@ class CreateEditTeamViewModel @Inject constructor(
     private val isGeneratingWorksiteMarkers = MutableStateFlow(false)
 
     private val mapMarkerManager = CasesMapMarkerManager(
+        useTeamFilters = true,
         worksitesRepository,
         appMemoryStats,
         locationProvider,

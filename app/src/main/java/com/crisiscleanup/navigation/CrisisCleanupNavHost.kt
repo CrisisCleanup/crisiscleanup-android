@@ -125,7 +125,7 @@ fun CrisisCleanupNavHost(
         }
     }
 
-    val openFilterCases = navController::navigateToCasesFilter
+    val openFilterCases = remember(navController) { { navController.navigateToCasesFilter(false) } }
 
     val openInviteTeammate = navController::navigateToInviteTeammate
 
@@ -191,6 +191,11 @@ fun CrisisCleanupNavHost(
         }
     }
     val navToJoinTeamByQrCode = navController::navigateToTeamQrCode
+    val navToTeamFilterCases = remember(navController) {
+        {
+            navController.navigateToCasesFilter(true)
+        }
+    }
 
     val teamEditorOnBack =
         remember(navController) { { navController.backOnStartingRoute(TEAM_EDITOR_ROUTE) } }
@@ -205,7 +210,6 @@ fun CrisisCleanupNavHost(
         casesGraph(
             nestedGraphs = {
                 casesSearchScreen(searchCasesOnBack, viewCase)
-                casesFilterScreen(onBack)
                 caseEditorScreen(navController, caseEditorOnBack)
                 caseEditSearchAddressScreen(navController, searchAddressOnBack)
                 caseEditMoveLocationOnMapScreen(moveLocationOnBack)
@@ -223,6 +227,8 @@ fun CrisisCleanupNavHost(
             caseTransferWorkType = navToTransferWorkTypeNonEditing,
             openAssignCaseTeam = navToAssignCaseTeam,
         )
+        // Used by teams as well
+        casesFilterScreen(onBack)
         dashboardScreen()
         teamsScreen(
             nestedGraphs = {
@@ -237,6 +243,7 @@ fun CrisisCleanupNavHost(
                 )
                 teamEditorScreen(
                     teamEditorOnBack,
+                    openFilterCases = navToTeamFilterCases,
                 )
                 navigateToTeamScanQrCode(teamScanQrOnBack)
             },

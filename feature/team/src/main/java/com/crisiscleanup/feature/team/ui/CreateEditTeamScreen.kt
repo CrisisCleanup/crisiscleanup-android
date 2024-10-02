@@ -69,13 +69,18 @@ import kotlinx.coroutines.launch
 @Composable
 fun CreateEditTeamRoute(
     onBack: () -> Unit,
+    onFilterCases: () -> Unit,
 ) {
-    CreateEditTeamView(onBack)
+    CreateEditTeamView(
+        onBack,
+        onFilterCases = onFilterCases,
+    )
 }
 
 @Composable
 private fun CreateEditTeamView(
     onBack: () -> Unit,
+    onFilterCases: () -> Unit,
     viewModel: CreateEditTeamViewModel = hiltViewModel(),
 ) {
     val tabState by viewModel.stepTabState.collectAsStateWithLifecycle()
@@ -118,6 +123,7 @@ private fun CreateEditTeamView(
                     memberFilter = memberFilter,
                     onUpdateMemberFilter = viewModel::onUpdateTeamMemberFilter,
                     caseMapManager = viewModel.caseMapManager,
+                    onFilterCases = onFilterCases,
                 )
             }
 
@@ -176,6 +182,7 @@ private fun CreateEditTeamContent(
     memberFilter: String = "",
     onUpdateMemberFilter: (String) -> Unit = {},
     caseMapManager: TeamCaseMapManager,
+    onFilterCases: () -> Unit,
 ) {
     // TODO Page does not keep across first orientation change
     val pagerState = rememberPagerState(
@@ -249,6 +256,7 @@ private fun CreateEditTeamContent(
                     team,
                     caseMapManager,
                     onPropagateTouchScroll = setEnablePagerScroll,
+                    onFilterCases = onFilterCases,
                 )
 
                 3 -> EditTeamEquipmentView(team)
@@ -350,12 +358,13 @@ private fun EditTeamCasesView(
     mapManager: TeamCaseMapManager,
     viewCase: (Long, Long) -> Boolean = { _, _ -> false },
     onPropagateTouchScroll: (Boolean) -> Unit = {},
+    onFilterCases: () -> Unit,
 ) {
     val mapModifier = remember(onPropagateTouchScroll) {
         Modifier.touchDownConsumer { onPropagateTouchScroll(false) }
     }
 
-    val onCasesAction = remember(mapManager) {
+    val onCasesAction = remember(mapManager, onFilterCases) {
         { action: CasesAction ->
             when (action) {
                 CasesAction.Layers -> mapManager.toggleLayersView()
@@ -363,6 +372,7 @@ private fun EditTeamCasesView(
                 CasesAction.ZoomToIncident -> mapManager.zoomToIncidentBounds()
                 CasesAction.ZoomIn -> mapManager.zoomIn()
                 CasesAction.ZoomOut -> mapManager.zoomOut()
+                CasesAction.Filters -> onFilterCases()
                 else -> mapManager.onCasesAction(action)
             }
         }

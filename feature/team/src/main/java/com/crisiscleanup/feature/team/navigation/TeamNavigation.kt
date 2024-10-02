@@ -124,6 +124,7 @@ fun NavGraphBuilder.viewTeamScreen(
 
 fun NavGraphBuilder.teamEditorScreen(
     onBack: () -> Unit,
+    openFilterCases: () -> Unit = {},
 ) {
     val args = listOf(
         "$INCIDENT_ID_ARG={$INCIDENT_ID_ARG}",
@@ -148,6 +149,7 @@ fun NavGraphBuilder.teamEditorScreen(
     ) {
         CreateEditTeamRoute(
             onBack,
+            onFilterCases = openFilterCases,
         )
     }
 }

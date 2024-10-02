@@ -1,4 +1,4 @@
-package com.crisiscleanup.feature.cases.map
+package com.crisiscleanup.core.commoncase.map
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -6,7 +6,6 @@ import androidx.collection.LruCache
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.commoncase.CasesConstant.MAP_DOTS_ZOOM_LEVEL
-import com.crisiscleanup.core.commoncase.map.CasesOverviewMapTileRenderer
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.MapCaseDotProvider
 import com.crisiscleanup.core.mapmarker.model.TileCoordinates
@@ -19,12 +18,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.mapLatest
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.atomic.AtomicInteger
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlin.math.roundToInt
 
-@Singleton
-class CaseDotsMapTileRenderer @Inject constructor(
+class CaseDotsMapTileRenderer(
+    val useTeamFilters: Boolean,
     resourceProvider: AndroidResourceProvider,
     private val worksitesRepository: WorksitesRepository,
     private val mapCaseDotProvider: MapCaseDotProvider,
@@ -176,6 +173,7 @@ class CaseDotsMapTileRenderer @Inject constructor(
                 limit,
                 offset,
                 locationCoordinates,
+                useTeamFilters,
             )
 
             // Incident has changed this tile is invalid

@@ -1,4 +1,4 @@
-package com.crisiscleanup.feature.cases.di
+package com.crisiscleanup.feature.team.di
 
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.AppEnv
@@ -17,8 +17,8 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object MapTileModule {
-    @CasesFilterType(CasesFilterTypes.Cases)
+object TeamMapTileModule {
+    @CasesFilterType(CasesFilterTypes.TeamCases)
     @Singleton
     @Provides
     fun providesTileRenderer(
@@ -27,18 +27,18 @@ object MapTileModule {
         mapCaseDotProvider: MapCaseDotProvider,
         appEnv: AppEnv,
     ): CasesOverviewMapTileRenderer = CaseDotsMapTileRenderer(
-        useTeamFilters = false,
+        useTeamFilters = true,
         resourceProvider,
         worksitesRepository,
         mapCaseDotProvider,
         appEnv,
     )
 
-    @CasesFilterType(CasesFilterTypes.Cases)
+    @CasesFilterType(CasesFilterTypes.TeamCases)
     @Singleton
     @Provides
     fun providesTileProvider(
-        @CasesFilterType(CasesFilterTypes.Cases)
+        @CasesFilterType(CasesFilterTypes.TeamCases)
         renderer: CasesOverviewMapTileRenderer,
     ): TileProvider = renderer as TileProvider
 }

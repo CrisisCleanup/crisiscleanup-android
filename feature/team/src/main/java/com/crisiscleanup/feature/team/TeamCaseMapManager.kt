@@ -171,7 +171,6 @@ internal class CreateEditTeamCaseMapManager(
         if (mapBoundsManager.onMapLoaded()) {
             mapBoundsManager.restoreBounds()
         }
-        logger.logDebug("Map has loaded? ${mapBoundsManager.isMapLoaded.value}")
     }
 
     override fun onMapCameraChange(
