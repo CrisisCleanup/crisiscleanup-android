@@ -1,7 +1,10 @@
 package com.crisiscleanup.core.data.util
 
+import com.crisiscleanup.core.model.data.DataProgressMetrics
 import com.crisiscleanup.core.model.data.EmptyIncident
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlin.math.roundToLong
@@ -13,6 +16,27 @@ interface IncidentDataPullReporter {
     val incidentSecondaryDataPullStats: Flow<IncidentDataPullStats>
     val onIncidentDataPullComplete: Flow<Long>
 }
+
+val IncidentDataPullReporter.dataPullProgress
+    get() = combine(
+        incidentDataPullStats,
+        incidentSecondaryDataPullStats,
+        ::Pair,
+    )
+        .map { (primary, secondary) ->
+            val isSecondary = secondary.isOngoing
+            val showProgress = primary.isOngoing || isSecondary
+            val progress = if (primary.isOngoing) {
+                primary.progress
+            } else {
+                secondary.progress
+            }
+            DataProgressMetrics(
+                isSecondaryData = isSecondary,
+                showProgress,
+                progress,
+            )
+        }
 
 data class IncidentDataPullStats(
     val isStarted: Boolean = false,

@@ -1,4 +1,4 @@
-package com.crisiscleanup.feature.cases
+package com.crisiscleanup.core.commoncase
 
 object CasesConstant {
     const val MAP_DOTS_ZOOM_LEVEL = 13

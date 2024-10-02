@@ -1,9 +1,9 @@
-package com.crisiscleanup.feature.cases.map
+package com.crisiscleanup.core.commoncase.model
 
 import com.google.android.gms.maps.model.LatLng
 
 object CoordinateUtil {
-    fun getMiddleLongitude(left: Double, right: Double): Double {
+    internal fun getMiddleLongitude(left: Double, right: Double): Double {
         var l = left
         while (l > right) {
             l -= 360
@@ -19,15 +19,20 @@ object CoordinateUtil {
         }
     }
 
-    fun getMiddleCoordinate(sw: LatLng, ne: LatLng) = LatLng(
+    internal fun getMiddleCoordinate(sw: LatLng, ne: LatLng) = LatLng(
         (sw.latitude + ne.latitude) * 0.5,
         getMiddleLongitude(sw.longitude, ne.longitude),
     )
 
-    fun lerpLatitude(from: Double, to: Double, lerp: Double) = from + (to - from) * lerp
+    internal fun lerpLatitude(from: Double, to: Double, lerp: Double) = from + (to - from) * lerp
 
     // TODO Write tests
-    fun lerpLongitude(from: Double, to: Double, lerp: Double, lerpToWest: Boolean): Double {
+    internal fun lerpLongitude(
+        from: Double,
+        to: Double,
+        lerp: Double,
+        lerpToWest: Boolean,
+    ): Double {
         if (lerpToWest) {
             if (to <= from) {
                 return from + (to - from) * lerp

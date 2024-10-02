@@ -1,29 +1,26 @@
-package com.crisiscleanup.feature.cases
+package com.crisiscleanup.feature.team
 
 import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.commoncase.model.CoordinateBoundsDefault
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.CasesFilterRepository
-import com.crisiscleanup.core.model.data.WorksiteSortBy
-import com.crisiscleanup.feature.cases.model.WorksiteQueryStateDefault
+import com.crisiscleanup.feature.team.model.WorksiteQueryStateDefault
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
-internal class CasesQueryStateManager(
+internal class TeamCasesQueryStateManager(
     incidentSelector: IncidentSelector,
     filterRepository: CasesFilterRepository,
     coroutineScope: CoroutineScope,
     mapChangeDebounceTimeout: Long = 100,
 ) {
-    val isTableView = MutableStateFlow(false)
+    val isListView = MutableStateFlow(false)
 
     val mapZoom = MutableStateFlow(0f)
 
     val mapBounds = MutableStateFlow(CoordinateBoundsDefault)
-
-    val tableViewSort = MutableStateFlow(WorksiteSortBy.None)
 
     var worksiteQueryState = MutableStateFlow(WorksiteQueryStateDefault)
 
@@ -33,8 +30,8 @@ internal class CasesQueryStateManager(
         }
             .launchIn(coroutineScope)
 
-        isTableView.onEach {
-            worksiteQueryState.value = worksiteQueryState.value.copy(isTableView = it)
+        isListView.onEach {
+            worksiteQueryState.value = worksiteQueryState.value.copy(isListView = it)
         }
             .launchIn(coroutineScope)
 
@@ -50,11 +47,6 @@ internal class CasesQueryStateManager(
             .onEach {
                 worksiteQueryState.value = worksiteQueryState.value.copy(coordinateBounds = it)
             }
-            .launchIn(coroutineScope)
-
-        tableViewSort.onEach {
-            worksiteQueryState.value = worksiteQueryState.value.copy(tableViewSort = it)
-        }
             .launchIn(coroutineScope)
 
         filterRepository.casesFiltersLocation.onEach {

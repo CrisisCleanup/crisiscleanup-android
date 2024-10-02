@@ -1,9 +1,6 @@
 package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.common.PermissionManager
-import com.crisiscleanup.core.common.di.ApplicationScope
-import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
-import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.datastore.CasesFiltersDataSource
 import com.crisiscleanup.core.model.data.CasesFilter
 import kotlinx.coroutines.CoroutineDispatcher
@@ -17,8 +14,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
-import javax.inject.Inject
-import javax.inject.Singleton
 
 interface CasesFilterRepository {
     val casesFilters: CasesFilter
@@ -30,12 +25,11 @@ interface CasesFilterRepository {
     fun reapplyFilters()
 }
 
-@Singleton
-class CrisisCleanupCasesFilterRepository @Inject constructor(
+class CrisisCleanupCasesFilterRepository(
     private val dataSource: CasesFiltersDataSource,
     permissionManager: PermissionManager,
-    @ApplicationScope private val externalScope: CoroutineScope,
-    @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
+    private val externalScope: CoroutineScope,
+    private val ioDispatcher: CoroutineDispatcher,
 ) : CasesFilterRepository {
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading

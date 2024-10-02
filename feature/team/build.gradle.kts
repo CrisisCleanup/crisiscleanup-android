@@ -16,7 +16,8 @@ dependencies {
     implementation(projects.core.mapmarker)
     implementation(projects.core.selectincident)
 
-    implementation(libs.kotlinx.datetime)
-
     implementation(libs.coil.kt.svg)
+    implementation(libs.google.maps.compose)
+    implementation(libs.kotlinx.datetime)
+    implementation(libs.playservices.maps)
 }

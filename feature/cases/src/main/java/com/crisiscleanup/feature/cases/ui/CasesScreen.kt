@@ -2,24 +2,18 @@ package com.crisiscleanup.feature.cases.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,6 +31,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.commoncase.model.WorksiteGoogleMapMark
 import com.crisiscleanup.core.commoncase.ui.CaseMapOverlayElements
 import com.crisiscleanup.core.commoncase.ui.CasesAction
+import com.crisiscleanup.core.commoncase.ui.CasesDownloadProgress
 import com.crisiscleanup.core.commoncase.ui.CasesMapView
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
@@ -45,22 +40,20 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.ExplainLocationPermissionDialog
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
-import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
-import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
 import com.crisiscleanup.core.domain.IncidentsData
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraBounds
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraBoundsDefault
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
+import com.crisiscleanup.core.model.data.DataProgressMetrics
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteMapMark
+import com.crisiscleanup.core.model.data.zeroDataProgress
 import com.crisiscleanup.core.selectincident.SelectIncidentDialog
 import com.crisiscleanup.feature.cases.CasesViewModel
-import com.crisiscleanup.feature.cases.DataProgressMetrics
-import com.crisiscleanup.feature.cases.zeroDataProgress
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -92,8 +85,8 @@ internal fun CasesRoute(
     }
 
     val incidentsData by viewModel.incidentsData.collectAsStateWithLifecycle()
-    val isIncidentLoading by viewModel.isIncidentLoading.collectAsState(true)
-    val isLoadingData by viewModel.isLoadingData.collectAsState(true)
+    val isIncidentLoading by viewModel.isIncidentLoading.collectAsStateWithLifecycle(true)
+    val isLoadingData by viewModel.isLoadingData.collectAsStateWithLifecycle(true)
     if (incidentsData is IncidentsData.Incidents) {
         val isTableView by viewModel.isTableView.collectAsStateWithLifecycle()
         BackHandler(enabled = isTableView) {
@@ -364,6 +357,7 @@ private fun CasesScreen(
             )
         } else {
             CasesMapView(
+                Modifier,
                 mapCameraBounds,
                 mapCameraZoom,
                 isMapBusy,
@@ -372,8 +366,8 @@ private fun CasesScreen(
                 clearTileLayer,
                 tileOverlayState,
                 casesDotTileProvider,
-                onMapLoadStart,
-                onMapLoaded,
+                onMapLoadStart = onMapLoadStart,
+                onMapLoaded = onMapLoaded,
                 onMapCameraChange,
                 onMarkerSelect,
                 editedWorksiteLocation,
@@ -394,26 +388,9 @@ private fun CasesScreen(
             onSyncDataDelta = onSyncDataDelta,
             onSyncDataFull = onSyncDataFull,
             hasIncidents = hasIncidents,
-            showCasesMainActions = false,
         )
 
-        AnimatedVisibility(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .fillMaxWidth(),
-            visible = dataProgress.showProgress,
-            enter = fadeIn(),
-            exit = fadeOut(),
-        ) {
-            var progressColor = primaryOrangeColor
-            if (dataProgress.isSecondaryData) {
-                progressColor = progressColor.disabledAlpha()
-            }
-            LinearProgressIndicator(
-                progress = { dataProgress.progress },
-                color = progressColor,
-            )
-        }
+        CasesDownloadProgress(dataProgress)
     }
 }
 

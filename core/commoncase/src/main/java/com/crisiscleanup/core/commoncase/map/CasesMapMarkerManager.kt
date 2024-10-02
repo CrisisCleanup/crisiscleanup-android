@@ -1,24 +1,29 @@
-package com.crisiscleanup.feature.cases.map
+package com.crisiscleanup.core.commoncase.map
 
 import com.crisiscleanup.core.common.AppMemoryStats
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.radians
+import com.crisiscleanup.core.commoncase.model.CoordinateBounds
+import com.crisiscleanup.core.commoncase.model.CoordinateUtil.getMiddleCoordinate
+import com.crisiscleanup.core.commoncase.model.CoordinateUtil.lerpLatitude
+import com.crisiscleanup.core.commoncase.model.CoordinateUtil.lerpLongitude
+import com.crisiscleanup.core.commoncase.model.asWorksiteGoogleMapMark
+import com.crisiscleanup.core.data.WorksiteInteractor
 import com.crisiscleanup.core.data.repository.WorksitesRepository
+import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.model.data.WorksiteMapMark
-import com.crisiscleanup.feature.cases.map.CoordinateUtil.getMiddleCoordinate
-import com.crisiscleanup.feature.cases.map.CoordinateUtil.lerpLatitude
-import com.crisiscleanup.feature.cases.map.CoordinateUtil.lerpLongitude
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
+import kotlinx.datetime.Clock
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sin
 
-internal class CasesMapMarkerManager(
+class CasesMapMarkerManager(
     private val worksitesRepository: WorksitesRepository,
     private val appMemoryStats: AppMemoryStats,
     private val locationProvider: LocationProvider,
@@ -211,6 +216,37 @@ internal class CasesMapMarkerManager(
             }
             markOffsets
         }
+}
+
+suspend fun CasesMapMarkerManager.generateWorksiteMarkers(
+    incidentId: Long,
+    coordinateBounds: CoordinateBounds,
+    mapZoom: Float,
+    worksiteInteractor: WorksiteInteractor,
+    mapCaseIconProvider: MapCaseIconProvider,
+) = coroutineScope {
+    val sw = coordinateBounds.southWest
+    val ne = coordinateBounds.northEast
+    val marksQuery = queryWorksitesInBounds(incidentId, sw, ne)
+    val marks = marksQuery.first
+    val markOffsets = denseMarkerOffsets(marks, mapZoom)
+
+    ensureActive()
+
+    val now = Clock.System.now()
+    marks.mapIndexed { index, mark ->
+        val offset = if (index < markOffsets.size) {
+            markOffsets[index]
+        } else {
+            zeroOffset
+        }
+        val isSelected = worksiteInteractor.wasCaseSelected(
+            incidentId,
+            mark.id,
+            reference = now,
+        )
+        mark.asWorksiteGoogleMapMark(mapCaseIconProvider, isSelected, offset)
+    }
 }
 
 private data class BoundsQueryParams(

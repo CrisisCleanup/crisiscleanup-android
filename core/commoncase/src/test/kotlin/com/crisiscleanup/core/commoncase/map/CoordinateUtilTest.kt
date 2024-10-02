@@ -1,5 +1,6 @@
-package com.crisiscleanup.feature.cases.map
+package com.crisiscleanup.core.commoncase.map
 
+import com.crisiscleanup.core.commoncase.model.CoordinateUtil
 import org.junit.Test
 import kotlin.test.assertEquals
 
