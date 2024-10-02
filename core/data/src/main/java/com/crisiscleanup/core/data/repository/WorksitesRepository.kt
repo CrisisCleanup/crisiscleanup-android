@@ -23,7 +23,10 @@ interface WorksitesRepository {
     val syncWorksitesFullIncidentId: Flow<Long>
 
     val isDeterminingWorksitesCount: Flow<Boolean>
-    fun streamIncidentWorksitesCount(incidentIdStream: Flow<Long>): Flow<IncidentIdWorksiteCount>
+    fun streamIncidentWorksitesCount(
+        incidentIdStream: Flow<Long>,
+        useTeamFilters: Boolean,
+    ): Flow<IncidentIdWorksiteCount>
 
     fun streamLocalWorksite(worksiteId: Long): Flow<LocalWorksite?>
 
@@ -40,6 +43,7 @@ interface WorksitesRepository {
         limit: Int,
         offset: Int,
         coordinates: Pair<Double, Double>?,
+        useTeamFilters: Boolean,
     ): List<WorksiteMapMark>
 
     fun getWorksitesCount(incidentId: Long): Int

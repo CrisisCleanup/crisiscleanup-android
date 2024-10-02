@@ -108,7 +108,9 @@ class CasesViewModel @Inject constructor(
     dataPullReporter: IncidentDataPullReporter,
     private val mapCaseIconProvider: MapCaseIconProvider,
     private val worksiteInteractor: WorksiteInteractor,
+    @CasesFilterType(CasesFilterTypes.Cases)
     private val mapTileRenderer: CasesOverviewMapTileRenderer,
+    @CasesFilterType(CasesFilterTypes.Cases)
     private val tileProvider: TileProvider,
     private val worksiteLocationEditor: WorksiteLocationEditor,
     private val permissionManager: PermissionManager,
@@ -258,7 +260,10 @@ class CasesViewModel @Inject constructor(
     val incidentLocationBounds = mapBoundsManager.mapCameraBounds
 
     private val incidentWorksitesCount =
-        worksitesRepository.streamIncidentWorksitesCount(incidentSelector.incidentId)
+        worksitesRepository.streamIncidentWorksitesCount(
+            incidentSelector.incidentId,
+            useTeamFilters = false,
+        )
             .flowOn(ioDispatcher)
             .shareIn(
                 scope = viewModelScope,
@@ -274,6 +279,7 @@ class CasesViewModel @Inject constructor(
     ) { b0, b1, b2 -> b0 || b1 || b2 }
 
     private val mapMarkerManager = CasesMapMarkerManager(
+        useTeamFilters = false,
         worksitesRepository,
         appMemoryStats,
         locationProvider,

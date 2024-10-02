@@ -24,6 +24,7 @@ import kotlin.math.pow
 import kotlin.math.sin
 
 class CasesMapMarkerManager(
+    private val useTeamFilters: Boolean,
     private val worksitesRepository: WorksitesRepository,
     private val appMemoryStats: AppMemoryStats,
     private val locationProvider: LocationProvider,
@@ -103,6 +104,7 @@ class CasesMapMarkerManager(
             q.queryCount.coerceAtMost(2 * maxMarkersOnMap),
             0,
             locationProvider.getLocation(),
+            useTeamFilters,
         )
 
         ensureActive()

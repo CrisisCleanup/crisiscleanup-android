@@ -75,7 +75,9 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private val workTypeTransferRequestDaoPlus: WorkTypeTransferRequestDaoPlus,
     organizationsRepository: OfflineFirstOrganizationsRepository,
     @CasesFilterType(CasesFilterTypes.Cases)
-    private val filterRepository: CasesFilterRepository,
+    private val casesFilterRepository: CasesFilterRepository,
+    @CasesFilterType(CasesFilterTypes.TeamCases)
+    private val teamCasesFilterRepository: CasesFilterRepository,
     private val locationProvider: LocationProvider,
     private val appVersionProvider: AppVersionProvider,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
@@ -104,11 +106,20 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
+    private fun getFiltersRepository(useTeamFilters: Boolean) = if (useTeamFilters) {
+        teamCasesFilterRepository
+    } else {
+        casesFilterRepository
+    }
+
     @OptIn(FlowPreview::class)
-    override fun streamIncidentWorksitesCount(incidentIdStream: Flow<Long>) = combine(
+    override fun streamIncidentWorksitesCount(
+        incidentIdStream: Flow<Long>,
+        useTeamFilters: Boolean,
+    ) = combine(
         incidentIdStream,
         incidentIdStream.flatMapLatest { worksiteDao.streamWorksitesCount(it) },
-        filterRepository.casesFiltersLocation,
+        getFiltersRepository(useTeamFilters).casesFiltersLocation,
         organizationLocationAreaBounds,
     ) { id, totalCount, filtersLocation, areaBounds ->
         Pair(
@@ -183,6 +194,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         limit: Int,
         offset: Int,
         coordinates: Pair<Double, Double>?,
+        useTeamFilters: Boolean,
     ) = worksiteDao.getWorksitesMapVisual(
         incidentId,
         latitudeSouth,
@@ -193,7 +205,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         offset,
     )
         .filter(
-            filterRepository.casesFilters,
+            getFiltersRepository(useTeamFilters).casesFilters,
             // TODO Ensure these have loaded prior to calling this method
             organizationAffiliates.value,
             organizationLocationAreaBounds.value,
