@@ -8,6 +8,8 @@ import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.data.WorksitesFullSyncer
 import com.crisiscleanup.core.data.WorksitesSyncer
+import com.crisiscleanup.core.data.di.CasesFilterType
+import com.crisiscleanup.core.data.di.CasesFilterTypes
 import com.crisiscleanup.core.data.model.asEntities
 import com.crisiscleanup.core.data.model.asEntity
 import com.crisiscleanup.core.data.model.filter
@@ -72,6 +74,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private val writeApi: CrisisCleanupWriteApi,
     private val workTypeTransferRequestDaoPlus: WorkTypeTransferRequestDaoPlus,
     organizationsRepository: OfflineFirstOrganizationsRepository,
+    @CasesFilterType(CasesFilterTypes.Cases)
     private val filterRepository: CasesFilterRepository,
     private val locationProvider: LocationProvider,
     private val appVersionProvider: AppVersionProvider,

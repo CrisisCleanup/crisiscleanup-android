@@ -5,16 +5,16 @@ import android.graphics.Canvas
 import androidx.collection.LruCache
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.common.AppEnv
+import com.crisiscleanup.core.commoncase.CasesConstant.MAP_DOTS_ZOOM_LEVEL
+import com.crisiscleanup.core.commoncase.map.CasesOverviewMapTileRenderer
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.MapCaseDotProvider
 import com.crisiscleanup.core.mapmarker.model.TileCoordinates
 import com.crisiscleanup.core.mapmarker.tiler.BorderTile
 import com.crisiscleanup.core.mapmarker.tiler.squareBitmap
-import com.crisiscleanup.feature.cases.CasesConstant.MAP_DOTS_ZOOM_LEVEL
 import com.google.android.gms.maps.model.Tile
 import com.google.android.gms.maps.model.TileProvider
 import com.google.android.gms.maps.model.TileProvider.NO_TILE
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.mapLatest
 import java.io.ByteArrayOutputStream
@@ -22,28 +22,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.roundToInt
-
-interface CasesOverviewMapTileRenderer {
-    val isBusy: Flow<Boolean>
-
-    /**
-     * Zoom level at which tiles still render
-     *
-     * Higher zooms will not render any tiles.
-     * At a zoom level of 0 there is 1 tile (1x1).
-     * At a zoom level of 8 there are 64x64 tiles.
-     */
-    var zoomThreshold: Int
-
-    /**
-     * @return true if incident is changed or false otherwise
-     */
-    fun setIncident(id: Long, worksitesCount: Int, clearCache: Boolean = true): Boolean
-
-    fun setLocation(coordinates: Pair<Double, Double>?)
-
-    fun enableTileBoundaries()
-}
 
 @Singleton
 class CaseDotsMapTileRenderer @Inject constructor(

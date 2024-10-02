@@ -37,6 +37,7 @@ import com.crisiscleanup.core.mapmarker.R as mapMarkerR
 
 @Composable
 fun BoxScope.CasesMapView(
+    modifier: Modifier = Modifier,
     mapCameraBounds: MapViewCameraBounds = MapViewCameraBoundsDefault,
     mapCameraZoom: MapViewCameraZoom = MapViewCameraZoomDefault,
     isMapBusy: Boolean = false,
@@ -74,6 +75,7 @@ fun BoxScope.CasesMapView(
     GoogleMap(
         modifier = Modifier
             .fillMaxSize()
+            .then(modifier)
             .testTag("casesMapViewContainer"),
         uiSettings = uiSettings,
         properties = mapProperties,
@@ -151,7 +153,7 @@ fun BoxScope.CasesMapView(
         }
     }
 
-    val movingCamera = remember {
+    val isMovingByGesture by remember {
         derivedStateOf {
             cameraPositionState.isMoving && cameraPositionState.cameraMoveStartedReason == CameraMoveStartedReason.GESTURE
         }
@@ -159,6 +161,6 @@ fun BoxScope.CasesMapView(
     onMapCameraChange(
         cameraPositionState.position,
         cameraPositionState.projection,
-        movingCamera.value,
+        isMovingByGesture,
     )
 }

@@ -23,10 +23,8 @@ import com.crisiscleanup.core.data.repository.AppEndOfLifeRepository
 import com.crisiscleanup.core.data.repository.AppMetricsRepository
 import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.data.repository.CaseHistoryRepository
-import com.crisiscleanup.core.data.repository.CasesFilterRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupAccountDataRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupAccountUpdateRepository
-import com.crisiscleanup.core.data.repository.CrisisCleanupCasesFilterRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupDataManagementRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupEquipmentRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupListsRepository
@@ -175,12 +173,6 @@ interface DataModule {
 
     @Binds
     fun bindsUsersRepository(repository: OfflineFirstUsersRepository): UsersRepository
-
-    @Singleton
-    @Binds
-    fun bindsCasesFiltersRepository(
-        repository: CrisisCleanupCasesFilterRepository,
-    ): CasesFilterRepository
 
     @Singleton
     @Binds

@@ -12,6 +12,7 @@ import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.PermissionStatus
+import com.crisiscleanup.core.common.ReplaySubscribed3
 import com.crisiscleanup.core.common.VisualAlertManager
 import com.crisiscleanup.core.common.WorksiteLocationEditor
 import com.crisiscleanup.core.common.event.TrimMemoryEventManager
@@ -29,12 +30,22 @@ import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.commonassets.ui.getDisasterIcon
 import com.crisiscleanup.core.commoncase.CaseFlagsNavigationState
+import com.crisiscleanup.core.commoncase.CasesConstant.MAP_MARKERS_ZOOM_LEVEL
+import com.crisiscleanup.core.commoncase.CasesCounter
 import com.crisiscleanup.core.commoncase.TransferWorkTypeProvider
 import com.crisiscleanup.core.commoncase.WorksiteProvider
-import com.crisiscleanup.core.commoncase.model.asWorksiteGoogleMapMark
+import com.crisiscleanup.core.commoncase.map.CasesMapBoundsManager
+import com.crisiscleanup.core.commoncase.map.CasesMapMarkerManager
+import com.crisiscleanup.core.commoncase.map.CasesMapTileLayerManager
+import com.crisiscleanup.core.commoncase.map.CasesOverviewMapTileRenderer
+import com.crisiscleanup.core.commoncase.map.MapTileRefresher
+import com.crisiscleanup.core.commoncase.map.generateWorksiteMarkers
+import com.crisiscleanup.core.commoncase.model.CoordinateBounds
 import com.crisiscleanup.core.commoncase.reset
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.WorksiteInteractor
+import com.crisiscleanup.core.data.di.CasesFilterType
+import com.crisiscleanup.core.data.di.CasesFilterTypes
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.CasesFilterRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
@@ -43,7 +54,7 @@ import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.data.util.IncidentDataPullReporter
-import com.crisiscleanup.core.data.util.IncidentDataPullStats
+import com.crisiscleanup.core.data.util.dataPullProgress
 import com.crisiscleanup.core.domain.LoadSelectIncidents
 import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
@@ -51,17 +62,11 @@ import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
 import com.crisiscleanup.core.mapmarker.util.toLatLng
 import com.crisiscleanup.core.model.data.EmptyIncident
-import com.crisiscleanup.core.model.data.IncidentIdWorksiteCount
 import com.crisiscleanup.core.model.data.TableDataWorksite
 import com.crisiscleanup.core.model.data.TableWorksiteClaimAction
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteSortBy
-import com.crisiscleanup.feature.cases.CasesConstant.MAP_MARKERS_ZOOM_LEVEL
-import com.crisiscleanup.feature.cases.map.CasesMapBoundsManager
-import com.crisiscleanup.feature.cases.map.CasesMapMarkerManager
-import com.crisiscleanup.feature.cases.map.CasesMapTileLayerManager
-import com.crisiscleanup.feature.cases.map.CasesOverviewMapTileRenderer
-import com.crisiscleanup.feature.cases.model.CoordinateBounds
+import com.crisiscleanup.core.model.data.zeroDataProgress
 import com.crisiscleanup.feature.cases.model.WorksiteQueryState
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.CameraPosition
@@ -74,7 +79,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -88,14 +93,12 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.seconds
 import com.crisiscleanup.core.commonassets.R as commonAssetsR
 
+@OptIn(FlowPreview::class)
 @HiltViewModel
 class CasesViewModel @Inject constructor(
     incidentsRepository: IncidentsRepository,
@@ -110,6 +113,7 @@ class CasesViewModel @Inject constructor(
     private val worksiteLocationEditor: WorksiteLocationEditor,
     private val permissionManager: PermissionManager,
     private val locationProvider: LocationProvider,
+    @CasesFilterType(CasesFilterTypes.Cases)
     filterRepository: CasesFilterRepository,
     private val appPreferencesRepository: LocalAppPreferencesRepository,
     worksiteProvider: WorksiteProvider,
@@ -224,25 +228,11 @@ class CasesViewModel @Inject constructor(
 
     val isIncidentLoading = incidentsRepository.isLoading
 
-    val dataProgress = combine(
-        dataPullReporter.incidentDataPullStats,
-        dataPullReporter.incidentSecondaryDataPullStats,
-        ::Pair,
-    )
-        .map { (primary, secondary) ->
-            val showProgress = primary.isOngoing || secondary.isOngoing
-            val isSecondary = secondary.isOngoing
-            val progress = if (primary.isOngoing) primary.progress else secondary.progress
-            DataProgressMetrics(
-                isSecondary,
-                showProgress,
-                progress,
-            )
-        }
+    val dataProgress = dataPullReporter.dataPullProgress
         .stateIn(
             scope = viewModelScope,
             initialValue = zeroDataProgress,
-            started = SharingStarted.WhileSubscribed(),
+            started = ReplaySubscribed3,
         )
 
     /**
@@ -254,8 +244,8 @@ class CasesViewModel @Inject constructor(
         worksitesRepository.isDeterminingWorksitesCount,
     ) { b0, progress, b2 -> b0 || progress.isLoadingPrimary || b2 }
 
-    private var _mapCameraZoom = MutableStateFlow(MapViewCameraZoomDefault)
-    val mapCameraZoom = _mapCameraZoom.asStateFlow()
+    private var mapCameraZoomInternal = MutableStateFlow(MapViewCameraZoomDefault)
+    val mapCameraZoom: StateFlow<MapViewCameraZoom> = mapCameraZoomInternal
 
     private val mapBoundsManager = CasesMapBoundsManager(
         viewModelScope,
@@ -273,7 +263,7 @@ class CasesViewModel @Inject constructor(
             .shareIn(
                 scope = viewModelScope,
                 replay = 1,
-                started = SharingStarted.WhileSubscribed(1_000),
+                started = ReplaySubscribed3,
             )
 
     private val isGeneratingWorksiteMarkers = MutableStateFlow(false)
@@ -292,14 +282,13 @@ class CasesViewModel @Inject constructor(
 
     @OptIn(FlowPreview::class)
     val worksitesMapMarkers = combine(
-        incidentWorksitesCount,
         qsm.worksiteQueryState,
         mapBoundsManager.isMapLoaded,
-        ::Triple,
+        ::Pair,
     )
         // TODO Make delay a parameter
         .debounce(250)
-        .mapLatest { (_, wqs, isMapLoaded) ->
+        .mapLatest { (wqs, isMapLoaded) ->
             val id = wqs.incidentId
 
             val skipMarkers = !isMapLoaded ||
@@ -310,10 +299,16 @@ class CasesViewModel @Inject constructor(
             if (skipMarkers) {
                 emptyList()
             } else {
+                // TODO Atomic update
                 isGeneratingWorksiteMarkers.value = true
                 try {
-                    val markers = generateWorksiteMarkers(wqs)
-                    markers
+                    mapMarkerManager.generateWorksiteMarkers(
+                        id,
+                        wqs.coordinateBounds,
+                        qsm.mapZoom.value,
+                        worksiteInteractor,
+                        mapCaseIconProvider,
+                    )
                 } finally {
                     isGeneratingWorksiteMarkers.value = false
                 }
@@ -347,6 +342,17 @@ class CasesViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
+    private val casesCounter = CasesCounter(
+        incidentSelector,
+        incidentWorksitesCount,
+        isLoadingData,
+        isMapVisible = qsm.isTableView.map(Boolean::not),
+        worksitesMapMarkers,
+        translator,
+        viewModelScope,
+        ioDispatcher,
+    )
+
     private val casesMapTileManager = CasesMapTileLayerManager(
         viewModelScope,
         incidentSelector,
@@ -357,32 +363,12 @@ class CasesViewModel @Inject constructor(
     val clearTileLayer: Boolean
         get() = casesMapTileManager.clearTileLayer
 
-    private val tileClearRefreshInterval = 5.seconds
-    private var tileRefreshedInstant: Instant = Instant.fromEpochSeconds(0)
-    private var tileClearWorksitesCount = 0
+    private val mapTileRefresher = MapTileRefresher(
+        mapTileRenderer,
+        casesMapTileManager,
+    )
 
-    private val totalCasesCount = combine(
-        isLoadingData,
-        incidentSelector.incidentId,
-        incidentWorksitesCount,
-    ) { isLoading, incidentId, worksitesCount ->
-        if (incidentId != worksitesCount.id) {
-            return@combine -1
-        }
-
-        val totalCount = worksitesCount.filteredCount
-        if (totalCount == 0 && isLoading) {
-            return@combine -1
-        }
-
-        totalCount
-    }
-        .flowOn(ioDispatcher)
-        .shareIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(),
-            replay = 1,
-        )
+    private val totalCasesCount = casesCounter.totalCasesCount
 
     val casesCountTableText = combine(
         totalCasesCount,
@@ -403,43 +389,7 @@ class CasesViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val casesCountMapText = combine(
-        totalCasesCount,
-        qsm.isTableView,
-        worksitesMapMarkers,
-        ::Triple,
-    )
-        .filter { (_, isTable, _) -> !isTable }
-        .map { (totalCount, _, markers) ->
-            if (totalCount < 0) {
-                return@map ""
-            }
-
-            val visibleCount = markers.filterNot { it.isFilteredOut }.size
-
-            val countText = if (visibleCount == totalCount || visibleCount == 0) {
-                if (visibleCount == 0) {
-                    translator("info.t_of_t_cases")
-                        .replace("{visible_count}", "$totalCount")
-                } else if (totalCount == 1) {
-                    translator("info.1_of_1_case")
-                } else {
-                    translator("info.t_of_t_cases")
-                        .replace("{visible_count}", "$totalCount")
-                }
-            } else {
-                translator("info.v_of_t_cases")
-                    .replace("{visible_count}", "$visibleCount")
-                    .replace("{total_count}", "$totalCount")
-            }
-
-            countText
-        }
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = "",
-            started = SharingStarted.WhileSubscribed(),
-        )
+    val casesCountMapText = casesCounter.casesCountMapText
 
     var showExplainPermissionLocation by mutableStateOf(false)
     var isMyLocationEnabled by mutableStateOf(false)
@@ -466,7 +416,7 @@ class CasesViewModel @Inject constructor(
         )
             .debounce(16)
             .throttleLatest(1_000)
-            .onEach { refreshTiles(it.first, it.second) }
+            .onEach { mapTileRefresher.refreshTiles(it.first, it.second) }
             .launchIn(viewModelScope)
 
         permissionManager.permissionChanges
@@ -518,29 +468,6 @@ class CasesViewModel @Inject constructor(
         // Do not try and be efficient here by returning null when tiling is not necessary (when used in compose).
         // Doing so will cause errors with TileOverlay and TileOverlayState#clearTileCache.
         return tileProvider
-    }
-
-    private suspend fun generateWorksiteMarkers(wqs: WorksiteQueryState) = coroutineScope {
-        val id = wqs.incidentId
-        val sw = wqs.coordinateBounds.southWest
-        val ne = wqs.coordinateBounds.northEast
-        val marksQuery = mapMarkerManager.queryWorksitesInBounds(id, sw, ne)
-        val marks = marksQuery.first
-        val markOffsets = mapMarkerManager.denseMarkerOffsets(marks, qsm.mapZoom.value)
-
-        ensureActive()
-
-        val now = Clock.System.now()
-        marks.mapIndexed { index, mark ->
-            val offset = if (index < markOffsets.size) {
-                markOffsets[index]
-            } else {
-                mapMarkerManager.zeroOffset
-            }
-            val isSelected =
-                worksiteInteractor.wasCaseSelected(incidentId, mark.id, reference = now)
-            mark.asWorksiteGoogleMapMark(mapCaseIconProvider, isSelected, offset)
-        }
     }
 
     private suspend fun fetchTableData(wqs: WorksiteQueryState) = coroutineScope {
@@ -631,7 +558,7 @@ class CasesViewModel @Inject constructor(
             return
         }
 
-        _mapCameraZoom.value = MapViewCameraZoom(
+        mapCameraZoomInternal.value = MapViewCameraZoom(
             mapBoundsManager.centerCache,
             (zoomLevel + Math.random() * 1e-3).toFloat(),
         )
@@ -641,16 +568,14 @@ class CasesViewModel @Inject constructor(
 
     fun zoomOut() = adjustMapZoom(qsm.mapZoom.value - 1)
 
-    fun zoomToIncidentBounds() {
-        mapBoundsManager.restoreIncidentBounds()
-    }
+    fun zoomToIncidentBounds() = mapBoundsManager.restoreIncidentBounds()
 
     fun zoomToInteractive() = adjustMapZoom(MAP_MARKERS_ZOOM_LEVEL + 0.5f)
 
     private fun setMapToMyCoordinates() {
         viewModelScope.launch {
             locationProvider.getLocation()?.let { myLocation ->
-                _mapCameraZoom.value = MapViewCameraZoom(
+                mapCameraZoomInternal.value = MapViewCameraZoom(
                     myLocation.toLatLng(),
                     (11f + Math.random() * 1e-3).toFloat(),
                 )
@@ -674,69 +599,6 @@ class CasesViewModel @Inject constructor(
             -> {
                 // Ignore these statuses as they're not important
             }
-        }
-    }
-
-    private suspend fun refreshTiles(
-        idCount: IncidentIdWorksiteCount,
-        pullStats: IncidentDataPullStats,
-    ) = coroutineScope {
-        var refreshTiles = true
-        var clearCache = false
-
-        pullStats.run {
-            val isIncidentChange = idCount.id != incidentId
-
-            // TODO Stale tiles will flash in certain cases.
-            //      Why does the first clear call not take?
-            //      Toggle multiple times between (one large) incidents in the same area.
-            if (isIncidentChange || idCount.totalCount == 0) {
-                tileClearWorksitesCount = 0
-                mapTileRenderer.setIncident(incidentId, 0)
-                casesMapTileManager.clearTiles()
-            }
-
-            if (!isStarted || isIncidentChange) {
-                return@run
-            }
-
-            refreshTiles = isEnded
-            clearCache = isEnded
-
-            if (this.dataCount < 3000) {
-                return@run
-            }
-
-            val now = Clock.System.now()
-            if (!refreshTiles && progress > saveStartedAmount) {
-                val sinceLastRefresh = now - tileRefreshedInstant
-                val projectedDelta = projectedFinish - now
-                refreshTiles = now - pullStart > tileClearRefreshInterval &&
-                    sinceLastRefresh > tileClearRefreshInterval &&
-                    projectedDelta > tileClearRefreshInterval
-                if (idCount.totalCount - tileClearWorksitesCount >= 6000 &&
-                    dataCount - tileClearWorksitesCount > 3000
-                ) {
-                    clearCache = true
-                    refreshTiles = true
-                }
-            }
-            if (refreshTiles) {
-                tileRefreshedInstant = now
-            }
-        }
-
-        if (refreshTiles) {
-            if (mapTileRenderer.setIncident(idCount.id, idCount.totalCount, clearCache)) {
-                clearCache = true
-            }
-        }
-
-        if (clearCache) {
-            tileClearWorksitesCount = idCount.totalCount
-            casesMapTileManager.clearTiles()
-        } else if (refreshTiles) {
-            casesMapTileManager.onTileChange()
         }
     }
 
@@ -817,12 +679,3 @@ data class WorksiteDistance(
     val worksite = data.worksite
     val claimStatus = data.claimStatus
 }
-
-data class DataProgressMetrics(
-    val isSecondaryData: Boolean = false,
-    val showProgress: Boolean = false,
-    val progress: Float = 0.0f,
-    val isLoadingPrimary: Boolean = showProgress && !isSecondaryData,
-)
-
-val zeroDataProgress = DataProgressMetrics()

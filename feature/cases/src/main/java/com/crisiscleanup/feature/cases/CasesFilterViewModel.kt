@@ -18,6 +18,8 @@ import com.crisiscleanup.core.commoncase.model.FormFieldNode
 import com.crisiscleanup.core.commoncase.model.WORK_FORM_GROUP_KEY
 import com.crisiscleanup.core.commoncase.model.flatten
 import com.crisiscleanup.core.data.IncidentSelector
+import com.crisiscleanup.core.data.di.CasesFilterType
+import com.crisiscleanup.core.data.di.CasesFilterTypes
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.CasesFilterRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
@@ -43,6 +45,7 @@ import javax.inject.Inject
 @HiltViewModel
 class CasesFilterViewModel @Inject constructor(
     workTypeStatusRepository: WorkTypeStatusRepository,
+    @CasesFilterType(CasesFilterTypes.Cases)
     private val casesFilterRepository: CasesFilterRepository,
     incidentSelector: IncidentSelector,
     incidentsRepository: IncidentsRepository,

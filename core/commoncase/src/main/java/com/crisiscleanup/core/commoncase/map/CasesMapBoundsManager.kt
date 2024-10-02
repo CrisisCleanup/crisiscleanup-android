@@ -1,4 +1,4 @@
-package com.crisiscleanup.feature.cases.map
+package com.crisiscleanup.core.commoncase.map
 
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
@@ -23,7 +23,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 
-internal class CasesMapBoundsManager(
+class CasesMapBoundsManager(
     coroutineScope: CoroutineScope,
     private val incidentSelector: IncidentSelector,
     private val incidentBoundsProvider: IncidentBoundsProvider,

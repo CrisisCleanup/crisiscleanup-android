@@ -1,4 +1,4 @@
-package com.crisiscleanup.feature.cases.map
+package com.crisiscleanup.core.commoncase.map
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableLongStateOf
@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.onEach
  *
  * The complexity stems from the variations of OS/Google map versions, limited memory, realtime changes in data and states.
  */
-internal class CasesMapTileLayerManager(
+class CasesMapTileLayerManager(
     coroutineScope: CoroutineScope,
     private val incidentSelector: IncidentSelector,
     private val mapBoundsManager: CasesMapBoundsManager,
@@ -67,7 +67,7 @@ internal class CasesMapTileLayerManager(
         onTileChange()
     }
 
-    // TODO Develop a change mechanism that guarantees uniqueness from any change
+    // TODO Develop a change mechanism guaranteeing uniqueness of changes
     fun onTileChange() = onTileChange(tileDataChangeKey.longValue + 1)
 
     private fun onTileChange(dataChangeValue: Long) {

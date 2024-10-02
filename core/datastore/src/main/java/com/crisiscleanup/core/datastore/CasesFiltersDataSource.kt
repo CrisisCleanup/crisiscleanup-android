@@ -10,9 +10,8 @@ import com.crisiscleanup.core.model.data.flagFromLiteral
 import com.crisiscleanup.core.model.data.statusFromLiteral
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Instant
-import javax.inject.Inject
 
-class CasesFiltersDataSource @Inject constructor(
+class CasesFiltersDataSource(
     private val dataStore: DataStore<LocalPersistedCasesFilters>,
 ) {
     private fun getDateRage(startSeconds: Long, endSeconds: Long) =

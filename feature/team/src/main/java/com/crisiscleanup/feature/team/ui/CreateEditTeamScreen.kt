@@ -30,6 +30,10 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.commoncase.ui.CaseMapOverlayElements
+import com.crisiscleanup.core.commoncase.ui.CasesAction
+import com.crisiscleanup.core.commoncase.ui.CasesDownloadProgress
+import com.crisiscleanup.core.commoncase.ui.CasesMapView
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextArea
@@ -51,9 +55,15 @@ import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.EmptyCleanupTeam
 import com.crisiscleanup.core.model.data.PersonContact
 import com.crisiscleanup.core.model.data.UserRole
+import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
+import com.crisiscleanup.core.ui.touchDownConsumer
 import com.crisiscleanup.feature.team.CreateEditTeamViewModel
 import com.crisiscleanup.feature.team.MemberFilterResult
+import com.crisiscleanup.feature.team.TeamCaseMapManager
+import com.google.android.gms.maps.Projection
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.maps.android.compose.rememberTileOverlayState
 import kotlinx.coroutines.launch
 
 @Composable
@@ -107,6 +117,7 @@ private fun CreateEditTeamView(
                     userRoleLookup = userRoleLookup,
                     memberFilter = memberFilter,
                     onUpdateMemberFilter = viewModel::onUpdateTeamMemberFilter,
+                    caseMapManager = viewModel.caseMapManager,
                 )
             }
 
@@ -164,6 +175,7 @@ private fun CreateEditTeamContent(
     userRoleLookup: Map<Int, UserRole>,
     memberFilter: String = "",
     onUpdateMemberFilter: (String) -> Unit = {},
+    caseMapManager: TeamCaseMapManager,
 ) {
     // TODO Page does not keep across first orientation change
     val pagerState = rememberPagerState(
@@ -233,7 +245,12 @@ private fun CreateEditTeamContent(
                     onUpdateMemberFilter,
                 )
 
-                2 -> EditTeamCasesView(team)
+                2 -> EditTeamCasesView(
+                    team,
+                    caseMapManager,
+                    onPropagateTouchScroll = setEnablePagerScroll,
+                )
+
                 3 -> EditTeamEquipmentView(team)
                 4 -> ReviewChangesView(team)
             }
@@ -330,8 +347,95 @@ private fun EditTeamInfoView(
 @Composable
 private fun EditTeamCasesView(
     team: CleanupTeam,
+    mapManager: TeamCaseMapManager,
+    viewCase: (Long, Long) -> Boolean = { _, _ -> false },
+    onPropagateTouchScroll: (Boolean) -> Unit = {},
 ) {
-    Text("Edit cases ${team.metrics.caseCount}")
+    val mapModifier = remember(onPropagateTouchScroll) {
+        Modifier.touchDownConsumer { onPropagateTouchScroll(false) }
+    }
+
+    val onCasesAction = remember(mapManager) {
+        { action: CasesAction ->
+            when (action) {
+                CasesAction.Layers -> mapManager.toggleLayersView()
+                CasesAction.ZoomToInteractive -> mapManager.zoomToInteractive()
+                CasesAction.ZoomToIncident -> mapManager.zoomToIncidentBounds()
+                CasesAction.ZoomIn -> mapManager.zoomIn()
+                CasesAction.ZoomOut -> mapManager.zoomOut()
+                else -> mapManager.onCasesAction(action)
+            }
+        }
+    }
+
+    val filtersCount by mapManager.filtersCount.collectAsStateWithLifecycle(0)
+    val isMapBusy by mapManager.isMapBusy.collectAsStateWithLifecycle(false)
+    val casesCountMapText by mapManager.casesCountMapText.collectAsStateWithLifecycle()
+    val worksitesOnMap by mapManager.worksitesMapMarkers.collectAsStateWithLifecycle()
+    val mapCameraBounds by mapManager.incidentLocationBounds.collectAsStateWithLifecycle()
+    val mapCameraZoom by mapManager.mapCameraZoom.collectAsStateWithLifecycle()
+    val tileOverlayState = rememberTileOverlayState()
+    val tileChangeValue by mapManager.overviewTileDataChange
+    val clearTileLayer = remember(mapManager) { { mapManager.clearTileLayer } }
+    val onMapCameraChange = remember(mapManager, onPropagateTouchScroll) {
+        { position: CameraPosition, projection: Projection?, isActiveMove: Boolean ->
+            if (!isActiveMove) {
+                onPropagateTouchScroll(true)
+            }
+            mapManager.onMapCameraChange(position, projection, isActiveMove)
+        }
+    }
+    val dataProgress by mapManager.dataProgress.collectAsStateWithLifecycle()
+    val isLoadingData by mapManager.isLoadingData.collectAsStateWithLifecycle(true)
+    val onMapMarkerSelect = remember(mapManager) {
+        { mark: WorksiteMapMark -> viewCase(mapManager.incidentId, mark.id) }
+    }
+    val isMyLocationEnabled by mapManager.isMyLocationEnabled.collectAsStateWithLifecycle()
+
+    val onSyncDataDelta = remember(mapManager) {
+        {
+            mapManager.syncWorksitesDelta(false)
+        }
+    }
+    val onSyncDataFull = remember(mapManager) {
+        {
+            mapManager.syncWorksitesDelta(true)
+        }
+    }
+    Box(Modifier.fillMaxSize()) {
+        CasesMapView(
+            modifier = mapModifier,
+            mapCameraBounds,
+            mapCameraZoom,
+            isMapBusy,
+            worksitesOnMap,
+            tileChangeValue,
+            clearTileLayer,
+            tileOverlayState,
+            mapManager::overviewMapTileProvider,
+            mapManager::onMapLoadStart,
+            mapManager::onMapLoaded,
+            onMapCameraChange,
+            onMapMarkerSelect,
+            null,
+            isMyLocationEnabled,
+        )
+
+        CaseMapOverlayElements(
+            Modifier,
+            onCasesAction = onCasesAction,
+            centerOnMyLocation = mapManager::grantAccessToDeviceLocation,
+            isLoadingData = isLoadingData,
+            casesCountText = casesCountMapText,
+            filtersCount = filtersCount,
+            disableTableViewActions = true,
+            onSyncDataDelta = onSyncDataDelta,
+            onSyncDataFull = onSyncDataFull,
+            showCasesMainActions = false,
+        )
+
+        CasesDownloadProgress(dataProgress)
+    }
 }
 
 @Composable
