@@ -142,7 +142,8 @@ class AuthenticationViewModel @Inject constructor(
             try {
                 val result = authApiClient.login(emailAddress, password)
                 val oauthResult = authApiClient.oauthLogin(emailAddress, password)
-                val hasError = result.errors?.isNotEmpty() == true
+                val hasError =
+                    result.errors?.isNotEmpty() == true || oauthResult.accessToken.isBlank()
                 if (hasError) {
                     errorMessage.value = translator("info.unknown_error")
 
