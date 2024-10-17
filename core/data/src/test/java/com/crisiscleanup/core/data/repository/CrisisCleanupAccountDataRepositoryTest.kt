@@ -17,9 +17,9 @@ class CrisisCleanupAccountDataRepositoryTest {
 //    private fun setupTestRepository(
 //        testScheduler: TestCoroutineScheduler,
 //        testScope: CoroutineScope
-//    ): Pair<CrisisCleanupAccountDataRepository, AuthEventBus> {
+//    ): Pair<CrisisCleanupAccountDataRepository, AccountEventBus> {
 //        val dispatcher = StandardTestDispatcher(testScheduler)
-//        val bus = CrisisCleanupAuthEventBus(testScope)
+//        val bus = CrisisCleanupAccountEventBus(testScope)
 //        val repository = CrisisCleanupAccountDataRepository(
 //            accountInfoDataSource,
 //            bus,

@@ -57,7 +57,9 @@ import com.crisiscleanup.core.designsystem.LayoutProvider
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.LocalLayoutProvider
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupBackground
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.model.data.TutorialViewId
 import com.crisiscleanup.core.ui.AppLayoutArea
@@ -90,10 +92,10 @@ fun CrisisCleanupApp(
             val isOffline by appState.isOffline.collectAsStateWithLifecycle()
 
             val translationCount by viewModel.translationCount.collectAsStateWithLifecycle()
-            val translator = viewModel.translator
+            val t = viewModel.translator
 
             LaunchedEffect(isOffline) {
-                val notConnectedMessage = translator("info.no_internet")
+                val notConnectedMessage = t("info.no_internet")
                 if (isOffline) {
                     snackbarHostState.showSnackbar(
                         message = notConnectedMessage,
@@ -103,11 +105,8 @@ fun CrisisCleanupApp(
                 }
             }
 
-            val isSwitchingToProduction by viewModel.isSwitchingToProduction.collectAsStateWithLifecycle()
             val authState by viewModel.authState.collectAsStateWithLifecycle()
-            if (isSwitchingToProduction) {
-                SwitchToProductionView()
-            } else if (authState is AuthState.Loading) {
+            if (authState is AuthState.Loading) {
                 // Splash screen should be showing
             } else {
                 val layoutBottomNav =
@@ -116,7 +115,7 @@ fun CrisisCleanupApp(
                     isBottomNav = layoutBottomNav,
                 )
                 CompositionLocalProvider(
-                    LocalAppTranslator provides translator,
+                    LocalAppTranslator provides t,
                     LocalLayoutProvider provides layoutProvider,
                 ) {
                     val endOfLife = viewModel.buildEndOfLife
@@ -238,6 +237,20 @@ private fun BoxScope.LoadedContent(
         if (showPasswordReset) {
             appState.navController.navigateToPasswordReset(true)
         }
+    }
+
+    if (viewModel.showInactiveOrganization) {
+        val t = viewModel.translator
+        CrisisCleanupAlertDialog(
+            title = t("~~Account alert"),
+            text = t("~~This account is no longer part of an active organization. Join an active organization to continue using Crisis Cleanup. You will be logged out."),
+            confirmButton = {
+                CrisisCleanupTextButton(
+                    text = t("actions.ok"),
+                    onClick = viewModel::acknowledgeInactiveOrganization,
+                )
+            },
+        )
     }
 }
 

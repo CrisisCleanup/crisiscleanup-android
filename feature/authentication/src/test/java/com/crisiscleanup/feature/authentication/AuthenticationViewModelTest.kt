@@ -5,7 +5,7 @@ import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppSettingsProvider
 import com.crisiscleanup.core.common.InputValidator
 import com.crisiscleanup.core.common.KeyResourceTranslator
-import com.crisiscleanup.core.common.event.AuthEventBus
+import com.crisiscleanup.core.common.event.AccountEventBus
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
@@ -66,7 +66,7 @@ class AuthenticationViewModelTest {
     lateinit var accessTokenDecoder: AccessTokenDecoder
 
     @MockK
-    lateinit var authEventBus: AuthEventBus
+    lateinit var accountEventBus: AccountEventBus
 
     @MockK
     lateinit var appPreferences: LocalAppPreferencesRepository
@@ -138,7 +138,7 @@ class AuthenticationViewModelTest {
         )
 
         // every {
-        //     authEventBus.passwordCredentialResults
+        //     accountEventBus.passwordCredentialResults
         // } returns passwordCredentialsStream
 
         every {
@@ -174,7 +174,7 @@ class AuthenticationViewModelTest {
         accountDataRepository,
         authApiClient,
         inputValidator,
-        authEventBus,
+        accountEventBus,
         translator,
         testAppEnv,
         settingsProvider,
@@ -294,7 +294,7 @@ class AuthenticationViewModelTest {
 
         every { inputValidator.validateEmailAddress(any()) } returns true
 
-        coEvery { authEventBus.onLogout() } returns Unit
+        coEvery { accountEventBus.onLogout() } returns Unit
 
         coEvery { authApiClient.logout() } returns Unit
 
@@ -315,7 +315,7 @@ class AuthenticationViewModelTest {
         // TODO How to test state during authentication?
         viewModel.logout()
 
-        coVerify(exactly = 1) { authEventBus.onLogout() }
+        coVerify(exactly = 1) { accountEventBus.onLogout() }
 
         assertEquals(LoginInputData(), viewModel.loginInputData)
 

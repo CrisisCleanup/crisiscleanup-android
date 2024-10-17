@@ -1,7 +1,7 @@
 package com.crisiscleanup.network
 
 import android.util.Log
-import com.crisiscleanup.core.common.event.AuthEventBus
+import com.crisiscleanup.core.common.event.AccountEventBus
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -59,7 +59,7 @@ private val Request.pathsForLog: String
 class CrisisCleanupInterceptorProvider @Inject constructor(
     private val accountDataRepository: AccountDataRepository,
     private val headerKeysLookup: RequestHeaderKeysLookup,
-    private val authEventBus: AuthEventBus,
+    private val accountEventBus: AccountEventBus,
     private val apiClient: CrisisCleanupAuthApi,
     @Logger(CrisisCleanupLoggers.Network) private val logger: AppLogger,
 ) : RetrofitInterceptorProvider {
@@ -140,7 +140,7 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
                         refreshResult.accessToken,
                         Clock.System.now().epochSeconds + refreshResult.expiresIn,
                     )
-                    authEventBus.onTokensRefreshed()
+                    accountEventBus.onTokensRefreshed()
                     return true
                 }
             } catch (e: NetworkSingleErrorException) {

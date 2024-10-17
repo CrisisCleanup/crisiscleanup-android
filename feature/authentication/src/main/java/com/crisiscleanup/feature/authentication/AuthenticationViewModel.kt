@@ -7,7 +7,7 @@ import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppSettingsProvider
 import com.crisiscleanup.core.common.InputValidator
 import com.crisiscleanup.core.common.KeyResourceTranslator
-import com.crisiscleanup.core.common.event.AuthEventBus
+import com.crisiscleanup.core.common.event.AccountEventBus
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -38,7 +38,7 @@ class AuthenticationViewModel @Inject constructor(
     private val accountDataRepository: AccountDataRepository,
     private val authApiClient: CrisisCleanupAuthApi,
     private val inputValidator: InputValidator,
-    private val authEventBus: AuthEventBus,
+    private val accountEventBus: AccountEventBus,
     private val translator: KeyResourceTranslator,
     appEnv: AppEnv,
     settingsProvider: AppSettingsProvider,
@@ -161,33 +161,37 @@ class AuthenticationViewModel @Inject constructor(
 
                     // TODO Test coverage
                     val organization = result.organizations
-                    val orgData =
-                        if (organization?.isActive == true && organization.id >= 0 && organization.name.isNotEmpty()) {
-                            OrgData(
-                                organization.id,
-                                organization.name,
-                            )
-                        } else {
-                            emptyOrgData
-                        }
+                    if (organization?.isActive == false) {
+                        accountEventBus.onAccountInactiveOrganization(claims.id)
+                    } else {
+                        val orgData =
+                            if (organization?.isActive == true && organization.id >= 0 && organization.name.isNotEmpty()) {
+                                OrgData(
+                                    organization.id,
+                                    organization.name,
+                                )
+                            } else {
+                                emptyOrgData
+                            }
 
-                    accountDataRepository.setAccount(
-                        refreshToken = refreshToken,
-                        accessToken = accessToken,
-                        id = claims.id,
-                        email = claims.email,
-                        phone = claims.mobile,
-                        firstName = claims.firstName,
-                        lastName = claims.lastName,
-                        expirySeconds = expirySeconds,
-                        profilePictureUri = profilePicUri,
-                        org = orgData,
-                        hasAcceptedTerms = claims.hasAcceptedTerms == true,
-                        approvedIncidentIds = claims.approvedIncidents,
-                        activeRoles = claims.activeRoles,
-                    )
+                        accountDataRepository.setAccount(
+                            refreshToken = refreshToken,
+                            accessToken = accessToken,
+                            id = claims.id,
+                            email = claims.email,
+                            phone = claims.mobile,
+                            firstName = claims.firstName,
+                            lastName = claims.lastName,
+                            expirySeconds = expirySeconds,
+                            profilePictureUri = profilePicUri,
+                            org = orgData,
+                            hasAcceptedTerms = claims.hasAcceptedTerms == true,
+                            approvedIncidentIds = claims.approvedIncidents,
+                            activeRoles = claims.activeRoles,
+                        )
 
-                    isAuthenticateSuccessful.value = true
+                        isAuthenticateSuccessful.value = true
+                    }
                 }
             } catch (e: Exception) {
                 var isInvalidCredentials = false
@@ -219,7 +223,7 @@ class AuthenticationViewModel @Inject constructor(
             emailAddress = ""
             password = ""
         }
-        authEventBus.onLogout()
+        accountEventBus.onLogout()
     }
 }
 

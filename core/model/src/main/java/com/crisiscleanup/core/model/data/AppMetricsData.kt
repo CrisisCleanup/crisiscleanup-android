@@ -3,10 +3,12 @@ package com.crisiscleanup.core.model.data
 import kotlinx.datetime.Instant
 
 data class AppMetricsData(
+    @Deprecated("Was for an initial release of app under different account")
     val earlybirdEndOfLife: BuildEndOfLife,
 
     val appOpen: AppOpenInstant,
 
+    @Deprecated("Was for an early release originally pointed at staging backend needing to point to production on actual release")
     val switchToProductionApiVersion: Long,
 
     val minSupportedAppVersion: MinSupportedAppVersion,

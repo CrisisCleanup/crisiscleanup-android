@@ -80,7 +80,6 @@ class AuthApiClient @Inject constructor(
         throw Exception("Failed to authenticate email and password")
     }
 
-
     override suspend fun magicLinkLogin(token: String) = networkApi.magicLinkCodeAuth(token)
 
     override suspend fun verifyPhoneCode(

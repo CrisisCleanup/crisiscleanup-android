@@ -82,6 +82,7 @@ class LocalAppMetricsDataSource @Inject constructor(
         }
     }
 
+    @Deprecated("From early development publishing a whitelisted app pointing to staging which eventually pointed to production.")
     suspend fun setProductionApiSwitch(appVersion: Long) {
         appMetrics.updateData {
             it.copy {

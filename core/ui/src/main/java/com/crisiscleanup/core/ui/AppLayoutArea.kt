@@ -8,12 +8,12 @@ import androidx.compose.ui.unit.dp
 
 @Immutable
 data class AppLayoutArea(
-    val snackbarHostState: SnackbarHostState? = null,
+    private val snackbarHostState: SnackbarHostState? = null,
 ) {
     val isBottomSnackbarVisible: Boolean
         get() = snackbarHostState?.currentSnackbarData != null
 
-    // TODO Common dimensions
+    // TODO Common dimensions or query from system
     val bottomSnackbarPadding: Dp
         get() = if (isBottomSnackbarVisible) 56.dp else 0.dp
 }

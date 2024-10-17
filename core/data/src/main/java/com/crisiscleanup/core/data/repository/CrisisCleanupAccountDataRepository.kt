@@ -1,7 +1,7 @@
 package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.common.di.ApplicationScope
-import com.crisiscleanup.core.common.event.AuthEventBus
+import com.crisiscleanup.core.common.event.AccountEventBus
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -31,7 +31,7 @@ import kotlin.time.Duration.Companion.seconds
 class CrisisCleanupAccountDataRepository @Inject constructor(
     private val dataSource: AccountInfoDataSource,
     private val authApi: CrisisCleanupAuthApi,
-    authEventBus: AuthEventBus,
+    accountEventBus: AccountEventBus,
     @Logger(CrisisCleanupLoggers.Auth) private val logger: AppLogger,
     @ApplicationScope private val externalScope: CoroutineScope,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
@@ -56,7 +56,7 @@ class CrisisCleanupAccountDataRepository @Inject constructor(
 
     init {
         val logoutsJob = externalScope.launch(ioDispatcher) {
-            authEventBus.logouts.collect { onLogout() }
+            accountEventBus.logouts.collect { onLogout() }
         }
         observeJobs = listOf(logoutsJob)
     }

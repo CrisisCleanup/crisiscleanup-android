@@ -10,6 +10,7 @@
         5120
       ],
       "url": "http://brevardfl.gov/",
+      "is_active": false,
       "primary_location": 79749,
       "secondary_location": null,
       "type_t": "orgType.government",
@@ -56,6 +57,7 @@
         828
       ],
       "url": "https://www.test.org",
+      "is_active": true,
       "primary_location": 73917,
       "secondary_location": null,
       "type_t": "orgType.survivor_client_services",

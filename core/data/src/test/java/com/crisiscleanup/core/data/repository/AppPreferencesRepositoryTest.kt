@@ -1,7 +1,7 @@
 package com.crisiscleanup.core.data.repository
 
-import com.crisiscleanup.core.common.event.AuthEventBus
-import com.crisiscleanup.core.common.event.CrisisCleanupAuthEventBus
+import com.crisiscleanup.core.common.event.AccountEventBus
+import com.crisiscleanup.core.common.event.CrisisCleanupAccountEventBus
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.core.datastore.test.testUserPreferencesDataStore
 import com.crisiscleanup.core.model.data.DarkThemeConfig
@@ -37,9 +37,9 @@ class AppPreferencesRepositoryTest {
     private fun setupTestRepository(
         testScheduler: TestCoroutineScheduler,
         testScope: CoroutineScope,
-    ): Pair<AppPreferencesRepository, AuthEventBus> {
+    ): Pair<AppPreferencesRepository, AccountEventBus> {
         val dispatcher = StandardTestDispatcher(testScheduler)
-        val bus = CrisisCleanupAuthEventBus(testScope)
+        val bus = CrisisCleanupAccountEventBus(testScope)
         val repository = AppPreferencesRepository(
             preferencesDataSource,
             bus,

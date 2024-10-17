@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.PhoneNumberPicker
+import com.crisiscleanup.core.common.event.AccountEventBus
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers.Account
 import com.crisiscleanup.core.common.log.Logger
@@ -18,7 +19,6 @@ import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AccountUpdateRepository
 import com.crisiscleanup.core.model.data.InitiatePhoneLoginResult
-import com.crisiscleanup.core.model.data.OrgData
 import com.crisiscleanup.core.network.CrisisCleanupAuthApi
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.feature.authentication.model.AuthenticationState
@@ -34,9 +34,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class LoginWithPhoneViewModel @Inject constructor(
@@ -45,6 +43,7 @@ class LoginWithPhoneViewModel @Inject constructor(
     private val accountUpdateRepository: AccountUpdateRepository,
     private val accountDataRepository: AccountDataRepository,
     private val phoneNumberPicker: PhoneNumberPicker,
+    private val accountEventBus: AccountEventBus,
     private val translator: KeyResourceTranslator,
     appEnv: AppEnv,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
@@ -295,7 +294,8 @@ class LoginWithPhoneViewModel @Inject constructor(
                             tokens.refreshToken?.isNotBlank() == true &&
                             tokens.accessToken?.isNotBlank() == true
                         ) {
-                            dataApi.getProfile(tokens.accessToken!!)?.let { accountProfile ->
+                            val accessToken = tokens.accessToken!!
+                            dataApi.getProfile(accessToken)?.let { accountProfile ->
                                 val emailAddress = accountData.emailAddress
                                 if (emailAddress.isNotBlank() &&
                                     emailAddress != accountProfile.email
@@ -303,30 +303,15 @@ class LoginWithPhoneViewModel @Inject constructor(
                                     errorMessage =
                                         translator("loginWithPhone.log_out_before_different_account")
                                     // TODO Clear account data and support logging in with different email address?
+                                } else if (accountProfile.organization.isActive == false) {
+                                    accountEventBus.onAccountInactiveOrganization(accountId)
                                 } else {
-                                    val expirySeconds =
-                                        Clock.System.now()
-                                            .plus(tokens.expiresIn!!.seconds).epochSeconds
-                                    with(accountProfile) {
-                                        accountDataRepository.setAccount(
-                                            refreshToken = tokens.refreshToken!!,
-                                            accessToken = tokens.accessToken!!,
-                                            id = id,
-                                            email = email,
-                                            phone = mobile,
-                                            firstName = firstName,
-                                            lastName = lastName,
-                                            expirySeconds = expirySeconds,
-                                            profilePictureUri = profilePicUrl ?: "",
-                                            org = OrgData(
-                                                id = organization.id,
-                                                name = organization.name,
-                                            ),
-                                            hasAcceptedTerms = hasAcceptedTerms == true,
-                                            approvedIncidentIds = approvedIncidents,
-                                            activeRoles = activeRoles,
-                                        )
-                                    }
+                                    accountDataRepository.setAccount(
+                                        accountProfile,
+                                        refreshToken = tokens.refreshToken!!,
+                                        accessToken,
+                                        tokens.expiresIn!!,
+                                    )
                                     isSuccessful = true
                                 }
                             }

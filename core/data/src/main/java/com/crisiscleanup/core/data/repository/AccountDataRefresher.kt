@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.data.repository
 
+import com.crisiscleanup.core.common.event.AccountEventBus
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -24,6 +25,7 @@ class AccountDataRefresher @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val accountDataRepository: AccountDataRepository,
     private val organizationsRepository: OrganizationsRepository,
+    private val accountEventBus: AccountEventBus,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.Auth) private val logger: AppLogger,
 ) {
@@ -44,7 +46,9 @@ class AccountDataRefresher @Inject constructor(
         logger.logCapture("Syncing $syncTag")
         try {
             val profile = networkDataSource.getProfileData()
-            if (profile.hasAcceptedTerms != null) {
+            if (profile.organization.isActive == false) {
+                accountEventBus.onAccountInactiveOrganization(dataSource.accountData.first().id)
+            } else if (profile.hasAcceptedTerms != null) {
                 dataSource.update(
                     profile.files?.profilePictureUrl,
                     profile.hasAcceptedTerms!!,

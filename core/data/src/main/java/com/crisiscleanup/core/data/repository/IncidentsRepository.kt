@@ -31,5 +31,5 @@ interface IncidentsRepository {
 
     suspend fun getMatchingIncidents(q: String): List<IncidentIdNameType>
 
-    suspend fun getTableCount(): Int
+    suspend fun getIncidentCount(): Int
 }
