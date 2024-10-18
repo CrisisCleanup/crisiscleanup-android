@@ -156,8 +156,7 @@ class AuthenticationViewModel @Inject constructor(
                     val expirySeconds = Clock.System.now().epochSeconds + oauthResult.expiresIn
 
                     val claims = result.claims!!
-                    val profilePicUri =
-                        claims.files?.profilePictureUrl ?: ""
+                    val profilePicUri = claims.files?.profilePictureUrl ?: ""
 
                     // TODO Test coverage
                     val organization = result.organizations

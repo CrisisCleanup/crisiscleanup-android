@@ -49,8 +49,6 @@ class CrisisCleanupAccountEventBus @Inject constructor(
     }
 
     override fun clearAccountInactiveOrganization() {
-        externalScope.launch {
-            inactiveOrganizations.emit(0)
-        }
+        onAccountInactiveOrganization(0)
     }
 }

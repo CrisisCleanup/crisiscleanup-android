@@ -11,6 +11,8 @@ interface IncidentsRepository {
      */
     val isLoading: Flow<Boolean>
 
+    val incidentCount: Long
+
     /**
      * Stream of [Incident]s
      */
@@ -30,6 +32,4 @@ interface IncidentsRepository {
     suspend fun pullIncidentOrganizations(incidentId: Long, force: Boolean = false)
 
     suspend fun getMatchingIncidents(q: String): List<IncidentIdNameType>
-
-    suspend fun getIncidentCount(): Int
 }

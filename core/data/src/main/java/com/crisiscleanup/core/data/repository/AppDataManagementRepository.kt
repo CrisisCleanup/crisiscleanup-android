@@ -90,7 +90,7 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
             clearAppDataError = ClearAppDataStep.None
 
             try {
-                if (incidentsRepository.getIncidentCount() == 0) {
+                if (incidentsRepository.incidentCount == 0L) {
                     return@launch
                 }
 
@@ -107,11 +107,13 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
                 _clearingAppDataStep.value = ClearAppDataStep.ClearData
                 for (i in 0..<3) {
                     databaseOperator.clearBackendDataTables()
-                    withContext(Dispatchers.IO) {
-                        TimeUnit.SECONDS.sleep(2)
-                    }
+
                     if (isAppDataCleared()) {
                         break
+                    }
+
+                    withContext(Dispatchers.IO) {
+                        TimeUnit.SECONDS.sleep(2)
                     }
                 }
 
@@ -150,9 +152,7 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
         syncPuller.stopSyncPullWorksitesFull()
     }
 
-    private suspend fun isAppDataCleared(): Boolean {
-        return incidentsRepository.getIncidentCount() == 0 &&
-            worksiteChangeRepository.getTableCount() == 0L &&
-            worksiteSyncStatDao.getTableCount() == 0L
-    }
+    private fun isAppDataCleared() = incidentsRepository.incidentCount == 0L &&
+            worksiteChangeRepository.worksiteChangeCount == 0L &&
+            worksiteSyncStatDao.getWorksiteSyncStatCount() == 0L
 }

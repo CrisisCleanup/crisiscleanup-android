@@ -22,7 +22,7 @@ interface IncidentDao {
 
     @Transaction
     @Query("SELECT COUNT(*) FROM incidents")
-    fun getIncidentCount(): Int
+    fun getIncidentCount(): Long
 
     @Transaction
     @Query(

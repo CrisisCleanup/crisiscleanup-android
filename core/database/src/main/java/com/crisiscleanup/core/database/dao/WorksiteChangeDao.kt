@@ -97,5 +97,5 @@ interface WorksiteChangeDao {
 
     @Transaction
     @Query("SELECT COUNT(id) FROM worksite_changes")
-    fun getTableCount(): Long
+    fun getWorksiteChangeCount(): Long
 }

@@ -18,6 +18,7 @@ import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AccountUpdateRepository
+import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.model.data.InitiatePhoneLoginResult
 import com.crisiscleanup.core.network.CrisisCleanupAuthApi
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
@@ -230,6 +231,47 @@ class LoginWithPhoneViewModel @Inject constructor(
         )
     }
 
+    private suspend fun attemptAuthentication(
+        accountId: Long,
+        otpId: Long,
+        accountData: AccountData,
+    ): Pair<Boolean, String> {
+        var authErrorMessage = ""
+        var isSuccessful = false
+
+        val otpAuth = authApi.oneTimePasswordLogin(accountId, otpId)
+        otpAuth?.let { tokens ->
+            if (
+                tokens.refreshToken?.isNotBlank() == true &&
+                tokens.accessToken?.isNotBlank() == true
+            ) {
+                val accessToken = tokens.accessToken!!
+                dataApi.getProfile(accessToken)?.let { accountProfile ->
+                    val emailAddress = accountData.emailAddress
+                    if (emailAddress.isBlank() ||
+                        emailAddress.lowercase() != accountProfile.email.lowercase()
+                    ) {
+                        authErrorMessage =
+                            translator("loginWithPhone.log_out_before_different_account")
+                        // TODO Clear account data and support logging in with different email address?
+                    } else if (accountProfile.organization.isActive == false) {
+                        accountEventBus.onAccountInactiveOrganization(accountId)
+                    } else {
+                        accountDataRepository.setAccount(
+                            accountProfile,
+                            refreshToken = tokens.refreshToken!!,
+                            accessToken,
+                            tokens.expiresIn!!,
+                        )
+                        isSuccessful = true
+                    }
+                }
+            }
+        }
+
+        return Pair(isSuccessful, authErrorMessage)
+    }
+
     fun authenticate(code: String) {
         val selectedUserId = selectedAccount.value.userId
         if (
@@ -281,42 +323,16 @@ class LoginWithPhoneViewModel @Inject constructor(
                     }
                 }
 
-                var isSuccessful = false
                 val accountId = selectedAccount.value.userId
-                if (
-                    accountId != 0L &&
-                    oneTimePasswordId != 0L
-                ) {
-                    val accountData = accountDataRepository.accountData.first()
-                    val otpAuth = authApi.oneTimePasswordLogin(accountId, oneTimePasswordId)
-                    otpAuth?.let { tokens ->
-                        if (
-                            tokens.refreshToken?.isNotBlank() == true &&
-                            tokens.accessToken?.isNotBlank() == true
-                        ) {
-                            val accessToken = tokens.accessToken!!
-                            dataApi.getProfile(accessToken)?.let { accountProfile ->
-                                val emailAddress = accountData.emailAddress
-                                if (emailAddress.isNotBlank() &&
-                                    emailAddress != accountProfile.email
-                                ) {
-                                    errorMessage =
-                                        translator("loginWithPhone.log_out_before_different_account")
-                                    // TODO Clear account data and support logging in with different email address?
-                                } else if (accountProfile.organization.isActive == false) {
-                                    accountEventBus.onAccountInactiveOrganization(accountId)
-                                } else {
-                                    accountDataRepository.setAccount(
-                                        accountProfile,
-                                        refreshToken = tokens.refreshToken!!,
-                                        accessToken,
-                                        tokens.expiresIn!!,
-                                    )
-                                    isSuccessful = true
-                                }
-                            }
-                        }
-                    }
+                val accountData = accountDataRepository.accountData.first()
+                val authResult = attemptAuthentication(
+                    accountId,
+                    otpId = oneTimePasswordId,
+                    accountData,
+                )
+                val (isSuccessful, authErrorMessage) = authResult
+                if (authErrorMessage.isNotBlank()) {
+                    errorMessage = authErrorMessage
                 }
 
                 if (!isSuccessful &&

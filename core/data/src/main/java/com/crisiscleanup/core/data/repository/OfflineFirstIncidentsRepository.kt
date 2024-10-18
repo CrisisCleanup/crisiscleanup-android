@@ -67,6 +67,9 @@ class OfflineFirstIncidentsRepository @Inject constructor(
 
     override val isLoading: Flow<Boolean> = isSyncing
 
+    override val incidentCount: Long
+        get() = incidentDao.getIncidentCount()
+
     override val incidents: Flow<List<Incident>> =
         incidentDao.streamIncidents().mapLatest { it.map(PopulatedIncident::asExternalModel) }
 
@@ -215,6 +218,4 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     }
 
     override suspend fun getMatchingIncidents(q: String) = incidentDaoPlus.getMatchingIncidents(q)
-
-    override suspend fun getIncidentCount() = incidentDao.getIncidentCount()
 }

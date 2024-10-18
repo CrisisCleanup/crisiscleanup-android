@@ -252,7 +252,6 @@ class MainActivityViewModel @Inject constructor(
             .filter { it > 0 }
             .onEach {
                 showInactiveOrganization = true
-                logger.logDebug("Clearing app data from main")
                 appDataRepository.clearAppData()
             }
             .flowOn(ioDispatcher)
@@ -326,6 +325,7 @@ class MainActivityViewModel @Inject constructor(
     fun acknowledgeInactiveOrganization() {
         showInactiveOrganization = false
         accountEventBus.onLogout()
+        accountEventBus.clearAccountInactiveOrganization()
     }
 }
 
