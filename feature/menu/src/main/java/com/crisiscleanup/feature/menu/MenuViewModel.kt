@@ -72,6 +72,7 @@ class MenuViewModel @Inject constructor(
     )
     val incidentsData = appTopBarDataProvider.incidentsData
     val loadSelectIncidents = appTopBarDataProvider.loadSelectIncidents
+    val isLoadingIncidents = incidentsRepository.isLoading
 
     val versionText: String
         get() {
@@ -113,6 +114,10 @@ class MenuViewModel @Inject constructor(
 
     suspend fun refreshIncidentsAsync() {
         syncPuller.pullIncidents()
+    }
+
+    fun refreshIncidents() {
+        syncPuller.appPull(true, cancelOngoing = true)
     }
 
     fun shareAnalytics(share: Boolean) {

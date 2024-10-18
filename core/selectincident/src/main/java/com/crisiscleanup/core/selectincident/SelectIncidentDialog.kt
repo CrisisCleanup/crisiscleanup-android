@@ -1,12 +1,14 @@
 package com.crisiscleanup.core.selectincident
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,6 +39,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
+import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.domain.IncidentsData
 import com.crisiscleanup.core.model.data.Incident
 import kotlinx.coroutines.launch
@@ -68,10 +71,14 @@ fun SelectIncidentDialog(
     incidentsData: IncidentsData,
     selectedIncidentId: Long,
     onSelectIncident: (Incident) -> Unit,
-    onRefreshIncidents: suspend () -> Unit = {},
+    onRefreshIncidentsAsync: suspend () -> Unit = {},
+    onRefreshIncidents: () -> Unit = {},
+    isLoadingIncidents: Boolean = false,
     padding: Dp = 16.dp,
     textPadding: Dp = 16.dp,
 ) {
+    val t = LocalAppTranslator.current
+
     WrapInDialog(onBackClick) {
         when (incidentsData) {
             IncidentsData.Loading -> {
@@ -86,7 +93,7 @@ fun SelectIncidentDialog(
                         modifier = Modifier
                             .testTag("selectIncidentHeader")
                             .padding(textPadding),
-                        text = LocalAppTranslator.current("nav.change_incident"),
+                        text = t("nav.change_incident"),
                         style = LocalFontStyles.current.header3,
                     )
 
@@ -97,17 +104,36 @@ fun SelectIncidentDialog(
                         incidents = incidents,
                         onSelectIncident = onSelectIncident,
                         onBackClick = onBackClick,
-                        onRefreshIncidents = onRefreshIncidents,
+                        onRefreshIncidents = onRefreshIncidentsAsync,
                         padding = padding,
                     )
                 }
             }
 
             else -> {
-                NoIncidentsContent(
-                    onBackClick = onBackClick,
-                    padding = padding,
-                )
+                Column(
+                    // TODO Common dimensions
+                    Modifier.sizeIn(maxWidth = 300.dp)
+                        .then(listItemModifier),
+                    verticalArrangement = Arrangement.spacedBy(
+                        padding,
+                        alignment = Alignment.CenterVertically,
+                    ),
+                ) {
+                    Text(
+                        t("info.no_incidents_to_select"),
+                        style = LocalFontStyles.current.header3,
+                    )
+
+                    Text(t("info.incident_load_error"))
+
+                    CrisisCleanupTextButton(
+                        Modifier.align(Alignment.End),
+                        enabled = !isLoadingIncidents,
+                        text = t("actions.retry"),
+                        onClick = onRefreshIncidents,
+                    )
+                }
             }
         }
     }
@@ -198,29 +224,6 @@ private fun ColumnScope.IncidentSelectContent(
                 .padding(padding),
             onClick = onBackClick,
             enabled = enableInput,
-            text = LocalAppTranslator.current("actions.close"),
-        )
-    }
-}
-
-@Composable
-private fun NoIncidentsContent(
-    modifier: Modifier = Modifier,
-    onBackClick: () -> Unit = {},
-    padding: Dp = 16.dp,
-    textPadding: Dp = 16.dp,
-) {
-    Column(modifier) {
-        Text(
-            modifier = modifier.padding(textPadding),
-            text = LocalAppTranslator.current("info.no_incidents_to_select"),
-            style = LocalFontStyles.current.header3,
-        )
-        CrisisCleanupTextButton(
-            modifier = modifier
-                .padding(padding)
-                .align(Alignment.End),
-            onClick = onBackClick,
             text = LocalAppTranslator.current("actions.close"),
         )
     }

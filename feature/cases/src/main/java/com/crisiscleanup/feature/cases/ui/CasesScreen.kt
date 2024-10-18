@@ -244,7 +244,7 @@ internal fun CasesRoute(
                 incidentsData = incidentsData,
                 selectedIncidentId = selectedIncidentId,
                 onSelectIncident = setSelected,
-                onRefreshIncidents = viewModel::refreshIncidentsAsync,
+                onRefreshIncidentsAsync = viewModel::refreshIncidentsAsync,
             )
         }
 

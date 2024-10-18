@@ -176,7 +176,7 @@ class TeamsViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    suspend fun refreshIncidents() {
+    suspend fun refreshIncidentsAsync() {
         syncPuller.pullIncidents()
     }
 

@@ -129,6 +129,8 @@ private fun MenuScreen(
         tutorialViewLookup[TutorialViewId.ProvideFeedback] = coordinates.sizePosition
     }
 
+    val isLoadingIncidents by viewModel.isLoadingIncidents.collectAsStateWithLifecycle(false)
+
     Column {
         AppTopBar(
             incidentDropdownModifier = incidentDropdownModifier,
@@ -360,7 +362,9 @@ private fun MenuScreen(
             incidentsData = incidentsData,
             selectedIncidentId = selectedIncidentId,
             onSelectIncident = setSelected,
-            onRefreshIncidents = viewModel::refreshIncidentsAsync,
+            onRefreshIncidentsAsync = viewModel::refreshIncidentsAsync,
+            onRefreshIncidents = viewModel::refreshIncidents,
+            isLoadingIncidents = isLoadingIncidents,
         )
     }
 }
