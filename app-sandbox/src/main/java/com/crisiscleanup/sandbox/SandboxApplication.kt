@@ -158,6 +158,7 @@ class AppAccountEventBus @Inject constructor() : AccountEventBus {
     override fun onTokensRefreshed() {}
 
     override fun onAccountInactiveOrganization(accountId: Long) {}
+    override fun clearAccountInactiveOrganization() {}
 }
 
 @Singleton
