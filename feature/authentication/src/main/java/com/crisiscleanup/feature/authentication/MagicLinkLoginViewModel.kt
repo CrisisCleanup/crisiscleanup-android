@@ -79,7 +79,9 @@ class MagicLinkLoginViewModel @Inject constructor(
                 dataApi.getProfile(accessToken)?.let { accountProfile ->
                     val accountData = accountDataRepository.accountData.first()
                     val emailAddress = accountData.emailAddress
-                    if (emailAddress.isBlank() || emailAddress.lowercase() != accountProfile.email.lowercase()) {
+                    if (emailAddress.isNotBlank() &&
+                        emailAddress.lowercase() != accountProfile.email.lowercase()
+                    ) {
                         authErrorMessage = translator("magicLink.log_out_before_different_account")
 
                         // TODO Clear account data and support logging in with different email address?

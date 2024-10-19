@@ -248,7 +248,7 @@ class LoginWithPhoneViewModel @Inject constructor(
                 val accessToken = tokens.accessToken!!
                 dataApi.getProfile(accessToken)?.let { accountProfile ->
                     val emailAddress = accountData.emailAddress
-                    if (emailAddress.isBlank() ||
+                    if (emailAddress.isNotBlank() &&
                         emailAddress.lowercase() != accountProfile.email.lowercase()
                     ) {
                         authErrorMessage =
