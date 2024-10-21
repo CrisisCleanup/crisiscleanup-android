@@ -16,7 +16,7 @@ data class NetworkIncidentOrganization(
     val name: String,
     val affiliates: Collection<Long>,
     @SerialName("is_active")
-    val isActive: Boolean? = false,
+    val isActive: Boolean? = null,
     @SerialName("primary_location")
     val primaryLocation: Long?,
     @SerialName("secondary_location")

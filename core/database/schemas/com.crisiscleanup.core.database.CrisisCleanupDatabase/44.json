@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 44,
-    "identityHash": "90d7cbf4f2aacd530942e905958dc0ff",
+    "identityHash": "57a6a67f6932b5c0020bbb9865b71235",
     "entities": [
       {
         "tableName": "work_type_statuses",
@@ -1609,7 +1609,7 @@
       },
       {
         "tableName": "person_contacts",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `first_name` TEXT NOT NULL, `last_name` TEXT NOT NULL, `email` TEXT NOT NULL, `mobile` TEXT NOT NULL, `profilePictureUri` TEXT NOT NULL DEFAULT '', PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `first_name` TEXT NOT NULL, `last_name` TEXT NOT NULL, `email` TEXT NOT NULL, `mobile` TEXT NOT NULL, `profilePictureUri` TEXT NOT NULL DEFAULT '', `activeRoles` TEXT NOT NULL DEFAULT '', PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -1644,6 +1644,13 @@
           {
             "fieldPath": "profilePictureUri",
             "columnName": "profilePictureUri",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "activeRoles",
+            "columnName": "activeRoles",
             "affinity": "TEXT",
             "notNull": true,
             "defaultValue": "''"
@@ -3128,7 +3135,7 @@
       },
       {
         "tableName": "teams",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `network_id` INTEGER NOT NULL DEFAULT -1, `incident_id` INTEGER NOT NULL, `name` TEXT NOT NULL, `notes` TEXT NOT NULL, `color` TEXT NOT NULL, `case_count` INTEGER NOT NULL, `case_complete_count` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`id`) REFERENCES `teams_root`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `network_id` INTEGER NOT NULL DEFAULT -1, `incident_id` INTEGER NOT NULL, `name` TEXT NOT NULL, `notes` TEXT NOT NULL, `color` TEXT NOT NULL, `case_count` INTEGER NOT NULL, `case_complete_count` INTEGER NOT NULL, `work_count` INTEGER NOT NULL DEFAULT 0, `work_complete_count` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`id`), FOREIGN KEY(`id`) REFERENCES `teams_root`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -3178,6 +3185,20 @@
             "columnName": "case_complete_count",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "workCount",
+            "columnName": "work_count",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "workCompleteCount",
+            "columnName": "work_complete_count",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
           }
         ],
         "primaryKey": {
@@ -3523,12 +3544,212 @@
         },
         "indices": [],
         "foreignKeys": []
+      },
+      {
+        "tableName": "user_roles",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `name_key` TEXT NOT NULL, `description_key` TEXT NOT NULL, `level` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nameKey",
+            "columnName": "name_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "descriptionKey",
+            "columnName": "description_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "level",
+            "columnName": "level",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "team_work",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `worksite_id` INTEGER NOT NULL DEFAULT 0, `work_type_network_id` INTEGER NOT NULL, PRIMARY KEY(`id`, `work_type_network_id`), FOREIGN KEY(`id`) REFERENCES `teams`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "worksiteId",
+            "columnName": "worksite_id",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "networkWorkTypeId",
+            "columnName": "work_type_network_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id",
+            "work_type_network_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "idx_work_to_team",
+            "unique": false,
+            "columnNames": [
+              "work_type_network_id",
+              "id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `idx_work_to_team` ON `${TABLE_NAME}` (`work_type_network_id`, `id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "teams",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "organization_to_incident",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `incident_id` INTEGER NOT NULL, PRIMARY KEY(`id`, `incident_id`), FOREIGN KEY(`id`) REFERENCES `incident_organizations`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "incidentId",
+            "columnName": "incident_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id",
+            "incident_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_organization_to_incident_incident_id_id",
+            "unique": false,
+            "columnNames": [
+              "incident_id",
+              "id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_organization_to_incident_incident_id_id` ON `${TABLE_NAME}` (`incident_id`, `id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "incident_organizations",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "ftsVersion": "FTS4",
+        "ftsOptions": {
+          "tokenizer": "simple",
+          "tokenizerArgs": [],
+          "contentTable": "person_contacts",
+          "languageIdColumnName": "",
+          "matchInfo": "FTS4",
+          "notIndexedColumns": [],
+          "prefixSizes": [],
+          "preferredOrder": "ASC"
+        },
+        "contentSyncTriggers": [
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_person_contact_fts_BEFORE_UPDATE BEFORE UPDATE ON `person_contacts` BEGIN DELETE FROM `person_contact_fts` WHERE `docid`=OLD.`rowid`; END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_person_contact_fts_BEFORE_DELETE BEFORE DELETE ON `person_contacts` BEGIN DELETE FROM `person_contact_fts` WHERE `docid`=OLD.`rowid`; END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_person_contact_fts_AFTER_UPDATE AFTER UPDATE ON `person_contacts` BEGIN INSERT INTO `person_contact_fts`(`docid`, `first_name`, `last_name`, `email`, `mobile`) VALUES (NEW.`rowid`, NEW.`first_name`, NEW.`last_name`, NEW.`email`, NEW.`mobile`); END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_person_contact_fts_AFTER_INSERT AFTER INSERT ON `person_contacts` BEGIN INSERT INTO `person_contact_fts`(`docid`, `first_name`, `last_name`, `email`, `mobile`) VALUES (NEW.`rowid`, NEW.`first_name`, NEW.`last_name`, NEW.`email`, NEW.`mobile`); END"
+        ],
+        "tableName": "person_contact_fts",
+        "createSql": "CREATE VIRTUAL TABLE IF NOT EXISTS `${TABLE_NAME}` USING FTS4(`first_name` TEXT NOT NULL DEFAULT '', `last_name` TEXT NOT NULL DEFAULT '', `email` TEXT NOT NULL, `mobile` TEXT NOT NULL, content=`person_contacts`)",
+        "fields": [
+          {
+            "fieldPath": "firstName",
+            "columnName": "first_name",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "lastName",
+            "columnName": "last_name",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "email",
+            "columnName": "email",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mobile",
+            "columnName": "mobile",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": []
+        },
+        "indices": [],
+        "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '90d7cbf4f2aacd530942e905958dc0ff')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '57a6a67f6932b5c0020bbb9865b71235')"
     ]
   }
 }
