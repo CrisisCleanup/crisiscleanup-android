@@ -9,7 +9,7 @@ import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.PermissionStatus
-import com.crisiscleanup.core.common.event.AuthEventBus
+import com.crisiscleanup.core.common.event.AccountEventBus
 import com.crisiscleanup.core.common.log.TagLogger
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.common.sync.SyncPusher
@@ -148,13 +148,17 @@ class AppSyncer @Inject constructor() : SyncPuller, SyncPusher {
 }
 
 @Singleton
-class AppAuthEventBus @Inject constructor() : AuthEventBus {
+class AppAccountEventBus @Inject constructor() : AccountEventBus {
     override val logouts = MutableStateFlow(false)
     override val refreshedTokens = MutableStateFlow(false)
+    override val inactiveOrganizations = MutableStateFlow(0L)
 
     override fun onLogout() {}
 
     override fun onTokensRefreshed() {}
+
+    override fun onAccountInactiveOrganization(accountId: Long) {}
+    override fun clearAccountInactiveOrganization() {}
 }
 
 @Singleton
@@ -206,7 +210,7 @@ interface AppModule {
     fun bindsSyncPusher(syncer: AppSyncer): SyncPusher
 
     @Binds
-    fun bindsAuthEventBus(eventBus: AppAuthEventBus): AuthEventBus
+    fun bindsAccountEventBus(eventBus: AppAccountEventBus): AccountEventBus
 
     @Binds
     fun bindsLocationProvider(provider: AppLocationProvider): LocationProvider

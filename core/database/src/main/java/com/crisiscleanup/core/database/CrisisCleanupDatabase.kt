@@ -172,7 +172,7 @@ abstract class CrisisCleanupDatabase :
     override val databaseVersion: Int
         get() = openHelper.readableDatabase.version
 
-    override fun clearAllTables() {
+    override fun clearBackendDataTables() {
         clearAllTables()
     }
 

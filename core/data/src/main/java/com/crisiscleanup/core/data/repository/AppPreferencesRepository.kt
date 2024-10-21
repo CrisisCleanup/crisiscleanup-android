@@ -1,7 +1,7 @@
 package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.common.di.ApplicationScope
-import com.crisiscleanup.core.common.event.AuthEventBus
+import com.crisiscleanup.core.common.event.AccountEventBus
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
@@ -20,7 +20,7 @@ import javax.inject.Singleton
 @Singleton
 class AppPreferencesRepository @Inject constructor(
     private val preferencesDataSource: LocalAppPreferencesDataSource,
-    authEventBus: AuthEventBus,
+    accountEventBus: AccountEventBus,
     @ApplicationScope private val externalScope: CoroutineScope,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
 ) : LocalAppPreferencesRepository {
@@ -32,7 +32,7 @@ class AppPreferencesRepository @Inject constructor(
 
     init {
         val logoutsJob = externalScope.launch(ioDispatcher) {
-            authEventBus.logouts.collect { onLogout() }
+            accountEventBus.logouts.collect { onLogout() }
         }
         observeJobs = listOf(logoutsJob)
     }

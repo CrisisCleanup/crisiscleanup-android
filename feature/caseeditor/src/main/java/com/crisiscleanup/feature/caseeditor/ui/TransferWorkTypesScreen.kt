@@ -46,8 +46,8 @@ import com.crisiscleanup.feature.caseeditor.TransferWorkTypeViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun TransferWorkTypesRoute(
-    viewModel: TransferWorkTypeViewModel = hiltViewModel(),
     onBack: () -> Unit = {},
+    viewModel: TransferWorkTypeViewModel = hiltViewModel(),
 ) {
     val isTransferred by viewModel.isTransferred.collectAsStateWithLifecycle()
     if (isTransferred) {

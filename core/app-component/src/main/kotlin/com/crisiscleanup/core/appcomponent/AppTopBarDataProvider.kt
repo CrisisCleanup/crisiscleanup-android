@@ -8,6 +8,7 @@ import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.domain.LoadSelectIncidents
+import com.crisiscleanup.core.model.data.EmptyIncident
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -45,7 +46,10 @@ class AppTopBarDataProvider(
     private val isSyncingWorksitesFull = combine(
         incidentSelector.incidentId,
         worksitesRepository.syncWorksitesFullIncidentId,
-    ) { incidentId, syncingIncidentId -> incidentId == syncingIncidentId }
+    ) { incidentId, syncingIncidentId ->
+        incidentId != EmptyIncident.id &&
+            incidentId == syncingIncidentId
+    }
 
     val showHeaderLoading = combine(
         incidentsRepository.isLoading,

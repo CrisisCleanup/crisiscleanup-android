@@ -362,8 +362,9 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         noClaimReason: String?,
     ): Boolean {
         try {
+            val networkWorksiteId = worksiteDao.getWorksiteNetworkId(worksiteId)
             writeApi.shareWorksite(
-                worksiteId,
+                networkWorksiteId,
                 emails,
                 phoneNumbers,
                 shareMessage,

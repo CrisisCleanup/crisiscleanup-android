@@ -15,6 +15,8 @@ data class NetworkIncidentOrganization(
     val id: Long,
     val name: String,
     val affiliates: Collection<Long>,
+    @SerialName("is_active")
+    val isActive: Boolean,
     @SerialName("primary_location")
     val primaryLocation: Long?,
     @SerialName("secondary_location")
@@ -29,6 +31,8 @@ data class NetworkIncidentOrganization(
 data class NetworkOrganizationShort(
     val id: Long,
     val name: String,
+    @SerialName("is_active")
+    val isActive: Boolean? = null,
 )
 
 @Serializable

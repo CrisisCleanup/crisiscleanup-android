@@ -129,6 +129,8 @@ private fun MenuScreen(
         tutorialViewLookup[TutorialViewId.ProvideFeedback] = coordinates.sizePosition
     }
 
+    val isLoadingIncidents by viewModel.isLoadingIncidents.collectAsStateWithLifecycle(false)
+
     Column {
         AppTopBar(
             incidentDropdownModifier = incidentDropdownModifier,
@@ -187,7 +189,7 @@ private fun MenuScreen(
         }
 
         LazyColumn(
-            Modifier.fillMaxSize(),
+            Modifier.weight(1f),
             state = lazyListState,
         ) {
             if (!isMenuTutorialDone) {
@@ -309,28 +311,6 @@ private fun MenuScreen(
                 }
             }
 
-            // TODO Open in WebView?
-            item {
-                val uriHandler = LocalUriHandler.current
-                Row(
-                    listItemModifier,
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-                    CrisisCleanupTextButton(
-                        Modifier.actionHeight(),
-                        text = t("publicNav.terms"),
-                    ) {
-                        uriHandler.openUri(viewModel.termsOfServiceUrl)
-                    }
-                    CrisisCleanupTextButton(
-                        Modifier.actionHeight(),
-                        text = t("nav.privacy"),
-                    ) {
-                        uriHandler.openUri(viewModel.privacyPolicyUrl)
-                    }
-                }
-            }
-
             if (viewModel.isDebuggable) {
                 item {
                     MenuScreenNonProductionView()
@@ -344,6 +324,26 @@ private fun MenuScreen(
                         text = "See sync logs",
                     )
                 }
+            }
+        }
+
+        // TODO Open in WebView?
+        val uriHandler = LocalUriHandler.current
+        Row(
+            listItemModifier,
+            horizontalArrangement = Arrangement.Center,
+        ) {
+            CrisisCleanupTextButton(
+                Modifier.actionHeight(),
+                text = t("publicNav.terms"),
+            ) {
+                uriHandler.openUri(viewModel.termsOfServiceUrl)
+            }
+            CrisisCleanupTextButton(
+                Modifier.actionHeight(),
+                text = t("nav.privacy"),
+            ) {
+                uriHandler.openUri(viewModel.privacyPolicyUrl)
             }
         }
     }
@@ -362,7 +362,9 @@ private fun MenuScreen(
             incidentsData = incidentsData,
             selectedIncidentId = selectedIncidentId,
             onSelectIncident = setSelected,
-            onRefreshIncidents = viewModel::refreshIncidentsAsync,
+            onRefreshIncidentsAsync = viewModel::refreshIncidentsAsync,
+            onRefreshIncidents = viewModel::refreshIncidents,
+            isLoadingIncidents = isLoadingIncidents,
         )
     }
 }

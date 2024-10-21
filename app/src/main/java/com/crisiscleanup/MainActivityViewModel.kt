@@ -13,7 +13,7 @@ import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.TutorialDirector
 import com.crisiscleanup.core.common.Tutorials
-import com.crisiscleanup.core.common.event.AuthEventBus
+import com.crisiscleanup.core.common.event.AccountEventBus
 import com.crisiscleanup.core.common.event.ExternalEventBus
 import com.crisiscleanup.core.common.event.UserPersistentInvite
 import com.crisiscleanup.core.common.log.AppLogger
@@ -44,7 +44,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -56,7 +55,6 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
@@ -80,7 +78,7 @@ class MainActivityViewModel @Inject constructor(
     private val appEnv: AppEnv,
     firebaseAnalytics: FirebaseAnalytics,
     externalEventBus: ExternalEventBus,
-    private val authEventBus: AuthEventBus,
+    private val accountEventBus: AccountEventBus,
     private val networkMonitor: NetworkMonitor,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
@@ -190,9 +188,8 @@ class MainActivityViewModel @Inject constructor(
             initialValue = UserPersistentInvite(0, ""),
             started = SharingStarted.WhileSubscribed(),
         )
-
-    val isSwitchingToProduction: StateFlow<Boolean>
-    val productionSwitchMessage: StateFlow<String>
+    var showInactiveOrganization by mutableStateOf(false)
+        private set
 
     val menuTutorialStep = menuTutorialDirector.tutorialStep
 
@@ -208,10 +205,11 @@ class MainActivityViewModel @Inject constructor(
                     logger.setAccountId(it.id.toString())
                 } else {
                     if (!it.hasAcceptedTerms) {
-                        authEventBus.onLogout()
+                        accountEventBus.onLogout()
                     }
                 }
             }
+            .flowOn(ioDispatcher)
             .launchIn(viewModelScope)
 
         incidentSelector.incidentId
@@ -239,29 +237,25 @@ class MainActivityViewModel @Inject constructor(
             .onEach {
                 isAcceptingTerms = false
 
-                withContext(ioDispatcher) {
-                    isFetchingTermsAcceptance.value = true
-                    try {
-                        accountDataRefresher.updateAcceptedTerms()
-                    } finally {
-                        isFetchingTermsAcceptance.value = false
-                    }
+                isFetchingTermsAcceptance.value = true
+                try {
+                    accountDataRefresher.updateAcceptedTerms()
+                } finally {
+                    isFetchingTermsAcceptance.value = false
                 }
             }
+            .flowOn(ioDispatcher)
             .launchIn(viewModelScope)
 
-        val switchProductionApiManager = SwitchProductionApiManager(
-            appMetricsRepository,
-            appDataRepository,
-            logger,
-            viewModelScope,
-        )
-        viewState
-            .filter { it is MainActivityViewState.Success }
-            .onEach { switchProductionApiManager.switchToProduction() }
+        accountEventBus.inactiveOrganizations
+            .throttleLatest(5_000)
+            .filter { it > 0 }
+            .onEach {
+                showInactiveOrganization = true
+                appDataRepository.clearAppData()
+            }
+            .flowOn(ioDispatcher)
             .launchIn(viewModelScope)
-        isSwitchingToProduction = switchProductionApiManager.isSwitchingToProduction
-        productionSwitchMessage = switchProductionApiManager.productionSwitchMessage
     }
 
     private fun sync(cancelOngoing: Boolean) {
@@ -281,15 +275,14 @@ class MainActivityViewModel @Inject constructor(
 
     fun onRejectTerms() {
         acceptTermsErrorMessage = ""
-        authEventBus.onLogout()
+        accountEventBus.onLogout()
     }
 
     fun onAcceptTerms() {
         acceptTermsErrorMessage = ""
 
         if (!isAcceptingTerms) {
-            acceptTermsErrorMessage =
-                translator("termsConditionsModal.must_check_box")
+            acceptTermsErrorMessage = translator("termsConditionsModal.must_check_box")
             return
         }
 
@@ -329,9 +322,10 @@ class MainActivityViewModel @Inject constructor(
         }
     }
 
-    fun closeMenuTutorial() {
-        menuTutorialDirector.skipTutorial()
-        setMenuTutorialDone()
+    fun acknowledgeInactiveOrganization() {
+        showInactiveOrganization = false
+        accountEventBus.onLogout()
+        accountEventBus.clearAccountInactiveOrganization()
     }
 }
 

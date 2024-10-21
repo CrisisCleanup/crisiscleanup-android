@@ -4,9 +4,19 @@ import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.crisiscleanup.core.appnav.RouteConstant.CASES_GRAPH_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.CASES_SEARCH_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.CASE_ADD_FLAG_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.CASE_EDITOR_MAP_MOVE_LOCATION_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.CASE_EDITOR_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.CASE_EDITOR_SEARCH_ADDRESS_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.CASE_HISTORY_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.CASE_SHARE_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.VIEW_CASE_TRANSFER_WORK_TYPES_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.WORKSITE_IMAGES_ROUTE
 import com.crisiscleanup.core.appnav.navigateToExistingCase
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.model.data.EmptyIncident
@@ -50,6 +60,10 @@ import com.crisiscleanup.feature.team.navigation.teamsScreen
 import com.crisiscleanup.feature.team.navigation.viewTeamScreen
 import com.crisiscleanup.feature.userfeedback.navigation.navigateToUserFeedback
 import com.crisiscleanup.feature.userfeedback.navigation.userFeedbackScreen
+
+private fun NavController.matchesRoute(route: String) = currentDestination?.route == route
+private fun NavController.startsWithRoute(route: String) =
+    currentDestination?.route?.startsWith(route) == true
 
 /**
  * Top-level navigation graph. Navigation is organized as explained at
@@ -115,6 +129,77 @@ fun CrisisCleanupNavHost(
     val navToTransferWorkTypeNonEditing =
         remember(navController) { { navController.navigateToTransferWorkType(false) } }
 
+    val searchCasesOnBack = remember(onBack, navController) {
+        {
+            if (navController.matchesRoute(CASES_SEARCH_ROUTE)) {
+                onBack()
+            }
+        }
+    }
+
+    val caseEditorOnBack = remember(onBack, navController) {
+        {
+            if (navController.startsWithRoute(CASE_EDITOR_ROUTE)) {
+                onBack()
+            }
+        }
+    }
+
+    val searchAddressOnBack = remember(onBack, navController) {
+        {
+            if (navController.matchesRoute(CASE_EDITOR_SEARCH_ADDRESS_ROUTE)) {
+                onBack()
+            }
+        }
+    }
+    val moveLocationOnBack = remember(onBack, navController) {
+        {
+            if (navController.matchesRoute(CASE_EDITOR_MAP_MOVE_LOCATION_ROUTE)) {
+                onBack()
+            }
+        }
+    }
+
+    val transferOnBack = remember(onBack, navController) {
+        {
+            if (navController.startsWithRoute(VIEW_CASE_TRANSFER_WORK_TYPES_ROUTE)) {
+                onBack()
+            }
+        }
+    }
+
+    val addFlagOnBack = remember(onBack, navController) {
+        {
+            if (navController.startsWithRoute(CASE_ADD_FLAG_ROUTE)) {
+                onBack()
+            }
+        }
+    }
+
+    val shareOnBack = remember(onBack, navController) {
+        {
+            if (navController.matchesRoute(CASE_SHARE_ROUTE)) {
+                onBack()
+            }
+        }
+    }
+
+    val historyOnBack = remember(onBack, navController) {
+        {
+            if (navController.matchesRoute(CASE_HISTORY_ROUTE)) {
+                onBack()
+            }
+        }
+    }
+
+    val worksiteImagesOnBack = remember(onBack, navController) {
+        {
+            if (navController.startsWithRoute(WORKSITE_IMAGES_ROUTE)) {
+                onBack()
+            }
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -122,16 +207,16 @@ fun CrisisCleanupNavHost(
     ) {
         casesGraph(
             nestedGraphs = {
-                casesSearchScreen(onBack, viewCase)
+                casesSearchScreen(searchCasesOnBack, viewCase)
                 casesFilterScreen(onBack)
-                caseEditorScreen(navController, onBack)
-                caseEditSearchAddressScreen(navController, onBack)
-                caseEditMoveLocationOnMapScreen(onBack)
+                caseEditorScreen(navController, caseEditorOnBack)
+                caseEditSearchAddressScreen(navController, searchAddressOnBack)
+                caseEditMoveLocationOnMapScreen(moveLocationOnBack)
                 existingCaseScreen(navController, onBack)
-                existingCaseTransferWorkTypesScreen(onBack)
-                caseAddFlagScreen(onBack, replaceRouteViewCase)
-                caseShareScreen(onBack)
-                caseHistoryScreen(onBack)
+                existingCaseTransferWorkTypesScreen(transferOnBack)
+                caseAddFlagScreen(addFlagOnBack, replaceRouteViewCase)
+                caseShareScreen(shareOnBack)
+                caseHistoryScreen(historyOnBack)
             },
             onCasesAction = onCasesAction,
             filterCases = openFilterCases,
@@ -157,7 +242,7 @@ fun CrisisCleanupNavHost(
             openSyncLogs = navController::navigateToSyncInsights,
         )
         viewSingleImageScreen(onBack)
-        viewWorksiteImagesScreen(onBack)
+        viewWorksiteImagesScreen(worksiteImagesOnBack)
         inviteTeammateScreen(onBack)
         requestRedeployScreen(onBack)
         userFeedbackScreen(onBack)

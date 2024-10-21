@@ -374,7 +374,7 @@ private fun DrawScope.menuTutorialAppNav(
     val lineEnd = if (isHorizontalBar) {
         Offset(size.width * 0.33f, sizeOffset.topLeft.y - 32)
     } else {
-        Offset(sizeOffset.size.width + 64, size.height * 0.5f)
+        Offset(sizeOffset.topLeft.x + sizeOffset.size.width + 64, size.height * 0.5f)
     }
     drawLine(
         Color.White,
@@ -487,7 +487,18 @@ private fun DrawScope.menuTutorialSelectIncident(
         overflow = TextOverflow.Visible,
     )
 
-    val lineStartX = size.width * 0.2f
+    val instructionConstraints = Constraints(
+        maxWidth = (size.width - instructionOffset.x).toInt(),
+    )
+    val textLayout = textMeasurer.measure(
+        stepInstruction,
+        instructionStyle,
+        overflow = TextOverflow.Visible,
+        constraints = instructionConstraints,
+    )
+    val textSize = textLayout.size
+
+    val lineStartX = instructionOffset.x + textSize.width * 0.3f
     val lineStartY = instructionOffset.y - 16
     val lineStart = Offset(lineStartX, lineStartY)
     val lineEnd = Offset(

@@ -17,6 +17,7 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.random.Random
 
 private interface AuthApi {
     @ThrowClientErrorHeader
@@ -52,11 +53,32 @@ class AuthApiClient @Inject constructor(
 
     private val refreshMutex = Mutex()
 
-    override suspend fun login(email: String, password: String) =
-        networkApi.login(NetworkAuthPayload(email, password))
+    private fun tryRandomSleep() {
+        val sleepMs = 1_000_000L + Random.nextLong(100_000L, 500_000L)
+        Thread.sleep(sleepMs)
+    }
 
-    override suspend fun oauthLogin(email: String, password: String) =
-        networkApi.oauthLogin(NetworkOauthPayload(email, password))
+    override suspend fun login(email: String, password: String): NetworkAuthResult {
+        for (i in 0..<3) {
+            val loginResult = networkApi.login(NetworkAuthPayload(email, password))
+            if (loginResult.claims != null) {
+                return loginResult
+            }
+            tryRandomSleep()
+        }
+        throw Exception("Failed to login with email and password")
+    }
+
+    override suspend fun oauthLogin(email: String, password: String): NetworkOauthResult {
+        for (i in 0..<3) {
+            val oauthResult = networkApi.oauthLogin(NetworkOauthPayload(email, password))
+            if (oauthResult.accessToken.isNotBlank()) {
+                return oauthResult
+            }
+            tryRandomSleep()
+        }
+        throw Exception("Failed to authenticate email and password")
+    }
 
     override suspend fun magicLinkLogin(token: String) = networkApi.magicLinkCodeAuth(token)
 

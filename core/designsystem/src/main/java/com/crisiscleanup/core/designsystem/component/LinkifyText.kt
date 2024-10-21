@@ -8,6 +8,7 @@ import android.text.style.URLSpan
 import android.text.util.Linkify
 import android.widget.TextView
 import androidx.annotation.StyleRes
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -24,21 +25,28 @@ fun LinkifyText(
     link: String,
     modifier: Modifier = Modifier,
 ) {
-    val spannableString = SpannableString(linkText).apply {
-        setSpan(
-            URLSpan(link),
-            0,
-            length,
-            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+    if (linkText.isBlank()) {
+        Text(
+            linkText,
+            modifier,
+        )
+    } else {
+        val spannableString = SpannableString(linkText).apply {
+            setSpan(
+                URLSpan(link),
+                0,
+                length,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+            )
+        }
+        LinkifyText(
+            modifier = modifier,
+            text = spannableString,
+            linkify = { textView ->
+                textView.movementMethod = LinkMovementMethod.getInstance()
+            },
         )
     }
-    LinkifyText(
-        modifier = modifier,
-        text = spannableString,
-        linkify = { textView ->
-            textView.movementMethod = LinkMovementMethod.getInstance()
-        },
-    )
 }
 
 @Composable

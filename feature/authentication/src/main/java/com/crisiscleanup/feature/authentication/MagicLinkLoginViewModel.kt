@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.KeyResourceTranslator
+import com.crisiscleanup.core.common.event.AccountEventBus
 import com.crisiscleanup.core.common.event.ExternalEventBus
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
@@ -13,7 +14,6 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
-import com.crisiscleanup.core.model.data.OrgData
 import com.crisiscleanup.core.network.CrisisCleanupAuthApi
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,15 +21,14 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class MagicLinkLoginViewModel @Inject constructor(
-    accountDataRepository: AccountDataRepository,
-    authApi: CrisisCleanupAuthApi,
-    dataApi: CrisisCleanupNetworkDataSource,
+    private val authApi: CrisisCleanupAuthApi,
+    private val dataApi: CrisisCleanupNetworkDataSource,
+    private val accountDataRepository: AccountDataRepository,
+    private val accountEventBus: AccountEventBus,
     private val translator: KeyResourceTranslator,
     private val externalEventBus: ExternalEventBus,
     @Dispatcher(CrisisCleanupDispatchers.IO) ioDispatcher: CoroutineDispatcher,
@@ -46,51 +45,11 @@ class MagicLinkLoginViewModel @Inject constructor(
             var message = ""
             try {
                 val loginCode = externalEventBus.emailLoginCodes.first()
-                if (loginCode.isNotBlank()) {
-                    val tokens = authApi.magicLinkLogin(loginCode)
-                    tokens.accessToken?.let { accessToken ->
-                        val refreshToken = tokens.refreshToken!!
-                        val expiresIn = tokens.expiresIn!!
-
-                        dataApi.getProfile(accessToken)?.let { accountProfile ->
-                            val accountData = accountDataRepository.accountData.first()
-                            val emailAddress = accountData.emailAddress
-                            if (emailAddress.isNotBlank() && emailAddress != accountProfile.email) {
-                                message =
-                                    translator(
-                                        "magicLink.log_out_before_different_account",
-                                    )
-
-                                // TODO Clear account data and support logging in with different email address?
-                            } else {
-                                val expirySeconds =
-                                    Clock.System.now().plus(expiresIn.seconds).epochSeconds
-                                with(accountProfile) {
-                                    accountDataRepository.setAccount(
-                                        refreshToken = refreshToken,
-                                        accessToken = accessToken,
-                                        id = id,
-                                        email = email,
-                                        phone = mobile,
-                                        firstName = firstName,
-                                        lastName = lastName,
-                                        expirySeconds = expirySeconds,
-                                        profilePictureUri = profilePicUrl ?: "",
-                                        org = OrgData(
-                                            id = organization.id,
-                                            name = organization.name,
-                                        ),
-                                        hasAcceptedTerms = hasAcceptedTerms == true,
-                                        approvedIncidentIds = approvedIncidents,
-                                        activeRoles = activeRoles,
-                                    )
-                                }
-
-                                isAuthenticateSuccessful.value = true
-                            }
-                        }
-                    }
+                val (isSuccessful, authErrorMessage) = attemptAuthentication(loginCode)
+                if (isSuccessful) {
+                    isAuthenticateSuccessful.value = true
                 }
+                message = authErrorMessage
             } catch (e: Exception) {
                 logger.logException(e)
             } finally {
@@ -103,6 +62,46 @@ class MagicLinkLoginViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private suspend fun attemptAuthentication(
+        loginCode: String,
+    ): Pair<Boolean, String> {
+        var isSuccessful = false
+        var authErrorMessage = ""
+
+        if (loginCode.isNotBlank()) {
+            val tokens = authApi.magicLinkLogin(loginCode)
+            tokens.accessToken?.let { accessToken ->
+                val refreshToken = tokens.refreshToken!!
+                val expiresIn = tokens.expiresIn!!
+
+                dataApi.getProfile(accessToken)?.let { accountProfile ->
+                    val accountData = accountDataRepository.accountData.first()
+                    val emailAddress = accountData.emailAddress
+                    if (emailAddress.isNotBlank() &&
+                        emailAddress.lowercase() != accountProfile.email.lowercase()
+                    ) {
+                        authErrorMessage = translator("magicLink.log_out_before_different_account")
+
+                        // TODO Clear account data and support logging in with different email address?
+                    } else if (accountProfile.organization.isActive == false) {
+                        accountEventBus.onAccountInactiveOrganization(accountProfile.id)
+                    } else {
+                        accountDataRepository.setAccount(
+                            accountProfile,
+                            refreshToken = refreshToken,
+                            accessToken,
+                            expiresIn,
+                        )
+
+                        isSuccessful = true
+                    }
+                }
+            }
+        }
+
+        return Pair(isSuccessful, authErrorMessage)
     }
 
     fun clearMagicLinkLogin() {

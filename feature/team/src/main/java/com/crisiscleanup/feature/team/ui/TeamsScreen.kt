@@ -235,7 +235,7 @@ private fun TeamsScreen(
             incidentsData = incidentsData,
             selectedIncidentId = selectedIncidentId,
             onSelectIncident = setSelected,
-            onRefreshIncidents = viewModel::refreshIncidents,
+            onRefreshIncidentsAsync = viewModel::refreshIncidentsAsync,
         )
     }
 }

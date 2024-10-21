@@ -75,7 +75,7 @@ fun NavController.navigateToCaseEditor(incidentId: Long, worksiteId: Long? = nul
 
 fun NavGraphBuilder.caseEditorScreen(
     navController: NavHostController,
-    onBackClick: () -> Unit,
+    onBack: () -> Unit,
 ) {
     composable(
         route = "$CASE_EDITOR_ROUTE?$INCIDENT_ID_ARG={$INCIDENT_ID_ARG}&$WORKSITE_ID_ARG={$WORKSITE_ID_ARG}",
@@ -96,7 +96,7 @@ fun NavGraphBuilder.caseEditorScreen(
         val onEditMoveLocationOnMap = navController::navigateToCaseEditLocationMapMove
         val navToWorksiteImages = navController::navigateToWorksiteImages
         CreateEditCaseRoute(
-            onBack = onBackClick,
+            onBack = onBack,
             changeNewIncidentCase = navToNewCase,
             changeExistingIncidentCase = navToChangedIncident,
             onOpenExistingCase = navToEditCase,
@@ -122,7 +122,7 @@ fun NavController.navigateToCaseHistory() = this.navigate(CASE_HISTORY_ROUTE)
 
 fun NavGraphBuilder.existingCaseScreen(
     navController: NavHostController,
-    onBackClick: () -> Unit,
+    onBack: () -> Unit,
 ) {
     composable(
         route = "$VIEW_CASE_ROUTE?$INCIDENT_ID_ARG={$INCIDENT_ID_ARG}&$WORKSITE_ID_ARG={$WORKSITE_ID_ARG}",
@@ -157,7 +157,7 @@ fun NavGraphBuilder.existingCaseScreen(
         val navToCaseShare = navController::navigateToCaseShare
         val navToCaseHistory = navController::navigateToCaseHistory
         EditExistingCaseRoute(
-            onBack = onBackClick,
+            onBack = onBack,
             onBackToCases = navBackToCases,
             onFullEdit = navToEditCase,
             openTransferWorkType = navToTransferWorkType,
@@ -220,10 +220,10 @@ fun NavGraphBuilder.caseEditSearchAddressScreen(
 }
 
 fun NavGraphBuilder.caseEditMoveLocationOnMapScreen(
-    onBackClick: () -> Unit,
+    onBack: () -> Unit,
 ) {
     composable(CASE_EDITOR_MAP_MOVE_LOCATION_ROUTE) {
-        EditCaseMapMoveLocationRoute(onBack = onBackClick)
+        EditCaseMapMoveLocationRoute(onBack)
     }
 }
 
@@ -239,7 +239,7 @@ fun NavGraphBuilder.existingCaseTransferWorkTypesScreen(
             },
         ),
     ) {
-        TransferWorkTypesRoute(onBack = onBack)
+        TransferWorkTypesRoute(onBack)
     }
 }
 
@@ -267,9 +267,7 @@ fun NavGraphBuilder.caseShareScreen(
     onBack: () -> Unit = {},
 ) {
     composable(route = CASE_SHARE_ROUTE) {
-        CaseEditShareCaseRoute(
-            onBack = onBack,
-        )
+        CaseEditShareCaseRoute(onBack)
     }
 }
 
@@ -277,8 +275,6 @@ fun NavGraphBuilder.caseHistoryScreen(
     onBack: () -> Unit = {},
 ) {
     composable(route = CASE_HISTORY_ROUTE) {
-        CaseEditCaseHistoryRoute(
-            onBack = onBack,
-        )
+        CaseEditCaseHistoryRoute(onBack)
     }
 }

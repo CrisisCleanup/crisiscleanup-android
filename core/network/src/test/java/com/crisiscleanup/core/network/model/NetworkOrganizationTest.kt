@@ -22,6 +22,7 @@ class NetworkOrganizationTest {
             id = 5120,
             name = "test",
             affiliates = listOf(5120),
+            isActive = false,
             primaryLocation = 79749,
             secondaryLocation = null,
             typeT = "orgType.government",

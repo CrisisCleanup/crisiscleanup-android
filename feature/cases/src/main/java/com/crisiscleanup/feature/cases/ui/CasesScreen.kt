@@ -244,7 +244,7 @@ internal fun CasesRoute(
                 incidentsData = incidentsData,
                 selectedIncidentId = selectedIncidentId,
                 onSelectIncident = setSelected,
-                onRefreshIncidents = viewModel::refreshIncidentsAsync,
+                onRefreshIncidentsAsync = viewModel::refreshIncidentsAsync,
             )
         }
 
@@ -257,10 +257,9 @@ internal fun CasesRoute(
         )
     } else {
         val isLoading = incidentsData is IncidentsData.Loading || isIncidentLoading
-        val reloadIncidents = remember(viewModel) { { viewModel.refreshIncidentsData() } }
-        NoCasesScreen(
+        NoIncidentsScreen(
             isLoading = isLoading,
-            onRetryLoad = reloadIncidents,
+            onRetryLoad = viewModel::refreshIncidentsData,
         )
     }
 
@@ -318,7 +317,7 @@ private fun NonProductionDialog(
 }
 
 @Composable
-internal fun NoCasesScreen(
+internal fun NoIncidentsScreen(
     modifier: Modifier = Modifier,
     isLoading: Boolean = false,
     onRetryLoad: () -> Unit = {},
@@ -785,11 +784,11 @@ fun CasesOverlayActionsPreview() {
 @Preview
 @Composable
 fun NoCasesLoadingPreview() {
-    NoCasesScreen(isLoading = true)
+    NoIncidentsScreen(isLoading = true)
 }
 
 @Preview
 @Composable
 fun NoCasesRetryPreview() {
-    NoCasesScreen()
+    NoIncidentsScreen()
 }

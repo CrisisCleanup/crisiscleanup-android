@@ -2,7 +2,7 @@ package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.common.DatabaseOperator
 import com.crisiscleanup.core.common.di.ApplicationScope
-import com.crisiscleanup.core.common.event.AuthEventBus
+import com.crisiscleanup.core.common.event.AccountEventBus
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -36,9 +36,7 @@ interface AppDataManagementRepository {
 
     suspend fun rebuildFts()
 
-    suspend fun clearAppData()
-
-    suspend fun isAppDataCleared(): Boolean
+    fun clearAppData()
 }
 
 enum class ClearAppDataStep {
@@ -61,10 +59,9 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
     private val incidentsRepository: IncidentsRepository,
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val worksiteSyncStatDao: WorksiteSyncStatDao,
-    private val appMetricsRepository: AppMetricsRepository,
     private val languageTranslationsRepository: LanguageTranslationsRepository,
     private val workTypeStatusRepository: WorkTypeStatusRepository,
-    private val authEventBus: AuthEventBus,
+    private val accountEventBus: AccountEventBus,
     @ApplicationScope private val externalScope: CoroutineScope,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
@@ -84,8 +81,8 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
         worksiteDaoPlus.rebuildWorksiteTextFts()
     }
 
-    override suspend fun clearAppData() {
-        if (isClearingAppData.getAndSet(true)) {
+    override fun clearAppData() {
+        if (!isClearingAppData.compareAndSet(false, true)) {
             return
         }
 
@@ -93,8 +90,7 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
             clearAppDataError = ClearAppDataStep.None
 
             try {
-                if (incidentsRepository.getTableCount() == 0) {
-                    appMetricsRepository.setProductionApiSwitch()
+                if (incidentsRepository.incidentCount == 0L) {
                     return@launch
                 }
 
@@ -110,12 +106,14 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
 
                 _clearingAppDataStep.value = ClearAppDataStep.ClearData
                 for (i in 0..<3) {
-                    databaseOperator.clearAllTables()
-                    withContext(Dispatchers.IO) {
-                        TimeUnit.SECONDS.sleep(2)
-                    }
+                    databaseOperator.clearBackendDataTables()
+
                     if (isAppDataCleared()) {
                         break
+                    }
+
+                    withContext(Dispatchers.IO) {
+                        TimeUnit.SECONDS.sleep(2)
                     }
                 }
 
@@ -129,17 +127,18 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
 
                 if (!isAppDataCleared()) {
                     clearAppDataError = ClearAppDataStep.DatabaseNotCleared
+                    logger.logCapture("Unable to clear app data")
                     return@launch
                 }
 
-                appMetricsRepository.setProductionApiSwitch()
-
-                authEventBus.onLogout()
+                accountEventBus.onLogout()
 
                 _clearingAppDataStep.value = ClearAppDataStep.Cleared
 
                 languageTranslationsRepository.loadLanguages(true)
                 workTypeStatusRepository.loadStatuses(true)
+            } catch (e: Exception) {
+                logger.logException(e)
             } finally {
                 _clearingAppDataStep.value = ClearAppDataStep.None
                 isClearingAppData.getAndSet(false)
@@ -153,9 +152,7 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
         syncPuller.stopSyncPullWorksitesFull()
     }
 
-    override suspend fun isAppDataCleared(): Boolean {
-        return incidentsRepository.getTableCount() == 0 &&
-            worksiteChangeRepository.getTableCount() == 0L &&
-            worksiteSyncStatDao.getTableCount() == 0L
-    }
+    private fun isAppDataCleared() = incidentsRepository.incidentCount == 0L &&
+            worksiteChangeRepository.worksiteChangeCount == 0L &&
+            worksiteSyncStatDao.getWorksiteSyncStatCount() == 0L
 }

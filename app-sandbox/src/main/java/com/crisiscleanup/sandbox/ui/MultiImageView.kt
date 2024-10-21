@@ -28,14 +28,14 @@ import com.crisiscleanup.sandbox.MultiImageViewModel
 fun MultiImageRoute(
     onBack: () -> Unit = {},
 ) {
-    MultiImageView(onBack = onBack)
+    MultiImageView(onBack)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MultiImageView(
-    viewModel: MultiImageViewModel = hiltViewModel(),
     onBack: () -> Unit = {},
+    viewModel: MultiImageViewModel = hiltViewModel(),
 ) {
     var showPhotosGrid by remember { mutableStateOf(false) }
     val hidePhotosGridOnBack = remember(viewModel) {

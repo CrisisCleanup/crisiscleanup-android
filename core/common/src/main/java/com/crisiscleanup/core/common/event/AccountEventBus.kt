@@ -8,21 +8,27 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
-interface AuthEventBus {
+interface AccountEventBus {
     val logouts: Flow<Boolean>
     val refreshedTokens: Flow<Boolean>
+    val inactiveOrganizations: Flow<Long>
 
     fun onLogout()
 
     fun onTokensRefreshed()
+
+    fun onAccountInactiveOrganization(accountId: Long)
+    fun clearAccountInactiveOrganization()
 }
 
 @Singleton
-class CrisisCleanupAuthEventBus @Inject constructor(
+class CrisisCleanupAccountEventBus @Inject constructor(
     @ApplicationScope private val externalScope: CoroutineScope,
-) : AuthEventBus {
+) : AccountEventBus {
     override val logouts = MutableSharedFlow<Boolean>(0)
     override val refreshedTokens = MutableSharedFlow<Boolean>(0)
+
+    override val inactiveOrganizations = MutableSharedFlow<Long>(0)
 
     override fun onLogout() {
         externalScope.launch {
@@ -34,5 +40,15 @@ class CrisisCleanupAuthEventBus @Inject constructor(
         externalScope.launch {
             refreshedTokens.emit(true)
         }
+    }
+
+    override fun onAccountInactiveOrganization(accountId: Long) {
+        externalScope.launch {
+            inactiveOrganizations.emit(accountId)
+        }
+    }
+
+    override fun clearAccountInactiveOrganization() {
+        onAccountInactiveOrganization(0)
     }
 }

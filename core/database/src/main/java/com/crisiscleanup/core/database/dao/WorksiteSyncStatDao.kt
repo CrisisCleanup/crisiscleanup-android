@@ -71,7 +71,7 @@ interface WorksiteSyncStatDao {
 
     @Transaction
     @Query("SELECT COUNT(*) FROM worksite_sync_stats")
-    fun getTableCount(): Long
+    fun getWorksiteSyncStatCount(): Long
 
     @Transaction
     @Query("UPDATE incident_worksites_full_sync_stats SET synced_at=NULL WHERE incident_id=:incidentId")

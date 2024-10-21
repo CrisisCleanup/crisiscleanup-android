@@ -74,11 +74,20 @@ internal fun AcceptTermsView(
             )
 
             if (errorMessage.isNotBlank()) {
-                Text(
-                    errorMessage,
-                    listItemModifier.testTag("acceptTermsErrorMessage"),
-                    color = MaterialTheme.colorScheme.error,
-                )
+                if (errorMessage.contains("/>")) {
+                    LinkifyHtmlText(
+                        errorMessage,
+                        listItemModifier.testTag("acceptTermsErrorMessage"),
+                        // TODO Apply color to text view
+                        // color = MaterialTheme.colorScheme.error,
+                    )
+                } else {
+                    Text(
+                        errorMessage,
+                        listItemModifier.testTag("acceptTermsErrorMessage"),
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
             }
 
             Row(
