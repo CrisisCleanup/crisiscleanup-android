@@ -17,6 +17,7 @@ import com.crisiscleanup.core.common.log.CrisisCleanupLoggers.Onboarding
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.data.IncidentSelectManager
 import com.crisiscleanup.core.data.IncidentSelector
@@ -65,6 +66,7 @@ class InviteTeammateViewModel @Inject constructor(
     private val inputValidator: InputValidator,
     qrCodeGenerator: QrCodeGenerator,
     incidentSelectManager: IncidentSelectManager,
+    private val syncPuller: SyncPuller,
     private val translator: KeyResourceTranslator,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(Onboarding) private val logger: AppLogger,
@@ -353,14 +355,19 @@ class InviteTeammateViewModel @Inject constructor(
 
     val sendInviteErrorMessage = MutableStateFlow("")
 
+    val isLoadingIncidents = incidentsRepository.isLoading
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
+            started = SharingStarted.WhileSubscribed(),
+        )
     val isLoading = combine(
         isValidatingAccount,
         affiliateOrganizationIds,
-        incidentsData,
-        ::Triple,
+        ::Pair,
     )
-        .map { (b0, affiliateIds, incidents) ->
-            b0 || affiliateIds == null || incidents is IncidentsData.Loading
+        .map { (b0, affiliateIds) ->
+            b0 || affiliateIds == null
         }
         .stateIn(
             scope = viewModelScope,
@@ -513,6 +520,10 @@ class InviteTeammateViewModel @Inject constructor(
 
     private fun makeInviteUrl(userId: Long, invite: JoinOrgInvite): String {
         return "$inviteUrl?org-id=${invite.orgId}&user-id=$userId&invite-token=${invite.token}"
+    }
+
+    fun refreshIncidents() {
+        syncPuller.appPull(true, cancelOngoing = false)
     }
 
     fun onSelectOrganization(organization: OrganizationIdName) {

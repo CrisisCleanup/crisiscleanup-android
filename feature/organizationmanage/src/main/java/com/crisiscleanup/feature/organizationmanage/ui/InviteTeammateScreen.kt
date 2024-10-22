@@ -72,6 +72,7 @@ import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.OrganizationIdName
+import com.crisiscleanup.core.selectincident.RefreshIncidentsView
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.organizationmanage.InviteOrgState
@@ -487,8 +488,8 @@ private fun DropdownOrganizationItems(
 @Composable
 private fun NewOrganizationInput(
     isEditable: Boolean,
-    viewModel: InviteTeammateViewModel = hiltViewModel(),
     onEndOfInput: () -> Unit = {},
+    viewModel: InviteTeammateViewModel = hiltViewModel(),
 ) {
     val t = LocalAppTranslator.current
 
@@ -580,6 +581,13 @@ private fun NewOrganizationInput(
                 }
             }
         }
+    } else {
+        val isLoadingIncidents by viewModel.isLoadingIncidents.collectAsStateWithLifecycle()
+        RefreshIncidentsView(
+            isLoadingIncidents,
+            viewModel::refreshIncidents,
+            listItemModifier,
+        )
     }
 }
 
