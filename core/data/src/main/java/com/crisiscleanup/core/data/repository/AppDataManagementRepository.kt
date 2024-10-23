@@ -153,6 +153,6 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
     }
 
     private fun isAppDataCleared() = incidentsRepository.incidentCount == 0L &&
-            worksiteChangeRepository.worksiteChangeCount == 0L &&
-            worksiteSyncStatDao.getWorksiteSyncStatCount() == 0L
+        worksiteChangeRepository.worksiteChangeCount == 0L &&
+        worksiteSyncStatDao.getWorksiteSyncStatCount() == 0L
 }

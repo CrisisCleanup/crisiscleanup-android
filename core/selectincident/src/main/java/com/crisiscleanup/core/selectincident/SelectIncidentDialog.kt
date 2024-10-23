@@ -111,29 +111,14 @@ fun SelectIncidentDialog(
             }
 
             else -> {
-                Column(
+                RefreshIncidentsView(
+                    isLoadingIncidents,
+                    onRefreshIncidents,
                     // TODO Common dimensions
                     Modifier.sizeIn(maxWidth = 300.dp)
                         .then(listItemModifier),
-                    verticalArrangement = Arrangement.spacedBy(
-                        padding,
-                        alignment = Alignment.CenterVertically,
-                    ),
-                ) {
-                    Text(
-                        t("info.no_incidents_to_select"),
-                        style = LocalFontStyles.current.header3,
-                    )
-
-                    Text(t("info.incident_load_error"))
-
-                    CrisisCleanupTextButton(
-                        Modifier.align(Alignment.End),
-                        enabled = !isLoadingIncidents,
-                        text = t("actions.retry"),
-                        onClick = onRefreshIncidents,
-                    )
-                }
+                    padding,
+                )
             }
         }
     }
@@ -225,6 +210,35 @@ private fun ColumnScope.IncidentSelectContent(
             onClick = onBackClick,
             enabled = enableInput,
             text = LocalAppTranslator.current("actions.close"),
+        )
+    }
+}
+
+@Composable
+fun RefreshIncidentsView(
+    isLoadingIncidents: Boolean,
+    onRefreshIncidents: () -> Unit,
+    modifier: Modifier = Modifier,
+    padding: Dp = 16.dp,
+) {
+    val t = LocalAppTranslator.current
+
+    Column(
+        modifier,
+        verticalArrangement = Arrangement.spacedBy(padding, Alignment.CenterVertically),
+    ) {
+        Text(
+            t("info.no_incidents_to_select"),
+            style = LocalFontStyles.current.header3,
+        )
+
+        Text(t("info.incident_load_error"))
+
+        CrisisCleanupTextButton(
+            Modifier.align(Alignment.End),
+            enabled = !isLoadingIncidents,
+            text = t("actions.retry"),
+            onClick = onRefreshIncidents,
         )
     }
 }
