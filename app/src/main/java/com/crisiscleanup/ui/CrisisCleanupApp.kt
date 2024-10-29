@@ -91,7 +91,6 @@ fun CrisisCleanupApp(
 
             val isOffline by appState.isOffline.collectAsStateWithLifecycle()
 
-            val translationCount by viewModel.translationCount.collectAsStateWithLifecycle()
             val t = viewModel.translator
 
             LaunchedEffect(isOffline) {
@@ -132,7 +131,6 @@ fun CrisisCleanupApp(
                             appState,
                             viewModel,
                             authState,
-                            translationCount,
                         )
                     }
                 }
@@ -147,7 +145,6 @@ private fun BoxScope.LoadedContent(
     appState: CrisisCleanupAppState,
     viewModel: MainActivityViewModel,
     authState: AuthState,
-    translationCount: Int = 0,
 ) {
     val isAccountExpired = viewModel.isAccountExpired
     val hasAcceptedTerms = viewModel.hasAcceptedTerms
@@ -229,7 +226,7 @@ private fun BoxScope.LoadedContent(
             isAccountExpired &&
             !appState.hideLoginAlert
         ) {
-            ExpiredAccountAlert(snackbarHostState, translationCount) {
+            ExpiredAccountAlert(snackbarHostState) {
                 openAuthentication = true
             }
         }
@@ -451,12 +448,12 @@ private fun NavigableContent(
 @Composable
 private fun ExpiredAccountAlert(
     snackbarHostState: SnackbarHostState,
-    translationCount: Int,
     openAuthentication: () -> Unit,
 ) {
-    val translator = LocalAppTranslator.current
-    val message = translator("info.log_in_for_updates")
-    val loginText = translator("actions.login", authenticationR.string.login)
+    val t = LocalAppTranslator.current
+    val translationCount by t.translationCount.collectAsStateWithLifecycle()
+    val message = t("info.log_in_for_updates")
+    val loginText = t("actions.login", authenticationR.string.login)
     LaunchedEffect(translationCount) {
         val result = snackbarHostState.showSnackbar(
             message,

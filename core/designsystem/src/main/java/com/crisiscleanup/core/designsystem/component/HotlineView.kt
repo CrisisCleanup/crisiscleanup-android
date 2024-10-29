@@ -6,7 +6,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.common.combineTrimText
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
@@ -18,7 +21,11 @@ fun HotlineHeaderView(
     isExpanded: Boolean,
     toggleExpandHotline: () -> Unit,
 ) {
-    val hotlineText = LocalAppTranslator.current("disasters.hotline")
+    val translator = LocalAppTranslator.current
+    val translationCount by translator.translationCount.collectAsStateWithLifecycle()
+    val hotlineText = remember(translationCount) {
+        translator("disasters.hotline")
+    }
     Row(
         Modifier.background(MaterialTheme.colorScheme.primaryContainer)
             .clickable(onClick = toggleExpandHotline)

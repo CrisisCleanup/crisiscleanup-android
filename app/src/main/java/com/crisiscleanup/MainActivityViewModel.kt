@@ -151,8 +151,6 @@ class MainActivityViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val translationCount = translator.translationCount
-
     val buildEndOfLife: BuildEndOfLife?
         get() {
             if (appEnv.isEarlybird) {

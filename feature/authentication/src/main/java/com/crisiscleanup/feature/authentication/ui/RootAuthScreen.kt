@@ -185,6 +185,7 @@ private fun NotAuthenticatedScreen(
     hotlineIncidents: List<Incident> = emptyList(),
 ) {
     val t = LocalAppTranslator.current
+    val translationCount by t.translationCount.collectAsStateWithLifecycle()
     val uriHandler = LocalUriHandler.current
     val iNeedHelpCleaningLink = "https://crisiscleanup.org/survivor"
     val closeKeyboard = rememberCloseKeyboard(openLoginWithEmail)
@@ -263,9 +264,12 @@ private fun NotAuthenticatedScreen(
                     R.string.reliefOrgAndGovOnly,
                 ),
             )
+            val registerText = remember(translationCount) {
+                t("actions.register")
+            }
             LinkifyText(
                 modifier = Modifier.testTag("rootAuthRegisterAction"),
-                linkText = t("actions.register"),
+                linkText = registerText,
                 link = ORG_REGISTER_URL,
             )
         }
