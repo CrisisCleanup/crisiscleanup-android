@@ -199,6 +199,22 @@ class OfflineFirstIncidentsRepository @Inject constructor(
         }
     }
 
+    override suspend fun pullHotlineIncidents() {
+        try {
+            val hotlineIncidents = networkDataSource
+                .getIncidentsNoAuth(
+                    incidentsQueryFields,
+                    after = Clock.System.now() - 120.days,
+                )
+                .filter { it.activePhoneNumber?.isNotEmpty() == true }
+            if (hotlineIncidents.isNotEmpty()) {
+                saveIncidentsPrimaryData(hotlineIncidents)
+            }
+        } catch (e: Exception) {
+            logger.logDebug(e)
+        }
+    }
+
     override suspend fun pullIncident(id: Long) {
         val networkIncident = networkDataSource.getIncident(id, fullIncidentQueryFields)
         networkIncident?.let { incident ->

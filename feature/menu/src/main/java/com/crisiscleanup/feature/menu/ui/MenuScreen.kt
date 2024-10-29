@@ -138,13 +138,22 @@ private fun MenuScreen(
 
     val isLoadingIncidents by viewModel.isLoadingIncidents.collectAsStateWithLifecycle(false)
 
+    var expandHotline by remember { mutableStateOf(false) }
+    val toggleExpandHotline = { expandHotline = !expandHotline }
+
     val hotlineIncidents by viewModel.hotlineIncidents.collectAsStateWithLifecycle()
-    val tutorialItemOffset = remember(hotlineIncidents) {
-        hotlineIncidents.size + if (hotlineIncidents.isEmpty()) {
+    val tutorialItemOffset = remember(hotlineIncidents, expandHotline) {
+        val incidentRows = if (expandHotline) {
+            hotlineIncidents.size
+        } else {
+            0
+        }
+        val headerSpacerCount = if (hotlineIncidents.isEmpty()) {
             0
         } else {
-            3 // header + spacer x2
+            3
         }
+        incidentRows + headerSpacerCount
     }
 
     Column {
@@ -179,26 +188,21 @@ private fun MenuScreen(
                 }
                 return listItemIndex
             }
+
+            suspend fun scrollToListItem(itemIndex: Int) {
+                val listItemIndex = getListItemIndex(itemIndex)
+                if (firstVisibleItemIndex > listItemIndex - 2 ||
+                    lastVisibleItemIndex < listItemIndex + 2
+                ) {
+                    lazyListState.scrollToItem(listItemIndex, focusItemScrollOffset)
+                }
+            }
             when (tutorialStep) {
                 TutorialStep.MenuStart,
                 TutorialStep.InviteTeammates,
-                -> {
-                    val listItemIndex = getListItemIndex(2)
-                    if (firstVisibleItemIndex > listItemIndex - 2 ||
-                        lastVisibleItemIndex < listItemIndex + 2
-                    ) {
-                        lazyListState.scrollToItem(listItemIndex, focusItemScrollOffset)
-                    }
-                }
+                -> scrollToListItem(2)
 
-                TutorialStep.ProvideAppFeedback -> {
-                    val listItemIndex = getListItemIndex(4)
-                    if (firstVisibleItemIndex > listItemIndex - 2 ||
-                        lastVisibleItemIndex < listItemIndex + 2
-                    ) {
-                        lazyListState.scrollToItem(listItemIndex, focusItemScrollOffset)
-                    }
-                }
+                TutorialStep.ProvideAppFeedback -> scrollToListItem(4)
 
                 else -> {}
             }
@@ -208,7 +212,11 @@ private fun MenuScreen(
             Modifier.weight(1f),
             state = lazyListState,
         ) {
-            hotlineItems(hotlineIncidents)
+            hotlineItems(
+                hotlineIncidents,
+                expandHotline,
+                toggleExpandHotline,
+            )
 
             if (!isMenuTutorialDone) {
                 item {
@@ -387,20 +395,27 @@ private fun LazyListScope.hotlineSpacerItem() {
 
 private fun LazyListScope.hotlineItems(
     incidents: List<Incident>,
+    expandHotline: Boolean,
+    toggleExpandHotline: () -> Unit,
 ) {
     if (incidents.isNotEmpty()) {
         hotlineSpacerItem()
 
         item {
-            HotlineHeaderView()
+            HotlineHeaderView(
+                expandHotline,
+                toggleExpandHotline,
+            )
         }
 
-        items(
-            incidents,
-            key = { "hotline-incident-${it.id}" },
-            contentType = { "hotline-incident" },
-        ) {
-            HotlineIncidentView(it.shortName, it.activePhoneNumbers)
+        if (expandHotline) {
+            items(
+                incidents,
+                key = { "hotline-incident-${it.id}" },
+                contentType = { "hotline-incident" },
+            ) {
+                HotlineIncidentView(it.shortName, it.activePhoneNumbers)
+            }
         }
 
         hotlineSpacerItem()
