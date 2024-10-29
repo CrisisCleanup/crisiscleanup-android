@@ -152,6 +152,7 @@ class GooglePlaceAddressSearchRepository @Inject constructor(
                 .build()
             val response = placesClient().fetchPlace(request).await()
             val addressTypeKeys = setOf(
+                "subpremise",
                 "street_number",
                 "route",
                 "locality",
@@ -178,8 +179,9 @@ class GooglePlaceAddressSearchRepository @Inject constructor(
                             latitude = coordinates.latitude,
                             longitude = coordinates.longitude,
                             address = listOf(
-                                addressComponentLookup["street_number"] ?: "",
-                                addressComponentLookup["route"] ?: "",
+                                addressComponentLookup["street_number"],
+                                addressComponentLookup["route"],
+                                addressComponentLookup["subpremise"],
                             ).combineTrimText(),
                             city = addressComponentLookup["locality"] ?: "",
                             county = addressComponentLookup["administrative_area_level_2"] ?: "",
