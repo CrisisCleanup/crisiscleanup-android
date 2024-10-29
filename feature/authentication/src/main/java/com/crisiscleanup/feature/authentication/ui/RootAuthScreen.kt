@@ -302,12 +302,14 @@ private fun HotlineIncidentsView(
                 expandHotline,
                 toggleExpandHotline,
             )
-            for (incident in incidents) {
-                HotlineIncidentView(
-                    incident.shortName,
-                    incident.activePhoneNumbers,
-                    linkifyNumbers = true,
-                )
+            if (expandHotline) {
+                for (incident in incidents) {
+                    HotlineIncidentView(
+                        incident.shortName,
+                        incident.activePhoneNumbers,
+                        linkifyNumbers = true,
+                    )
+                }
             }
         }
     }
