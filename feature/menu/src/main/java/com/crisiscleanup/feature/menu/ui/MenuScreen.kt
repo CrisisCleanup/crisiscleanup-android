@@ -109,11 +109,8 @@ private fun MenuScreen(
     }
 
     val isSharingAnalytics by viewModel.isSharingAnalytics.collectAsStateWithLifecycle(false)
-    val shareAnalytics = remember(viewModel) {
-        { b: Boolean ->
-            viewModel.shareAnalytics(b)
-        }
-    }
+
+    val isSharingLocation by viewModel.isSharingLocation.collectAsStateWithLifecycle(false)
 
     val menuItemVisibility by viewModel.menuItemVisibility.collectAsStateWithLifecycle()
     val isMenuTutorialDone by viewModel.isMenuTutorialDone.collectAsStateWithLifecycle(true)
@@ -317,25 +314,17 @@ private fun MenuScreen(
                 )
             }
 
-            item {
-                Row(
-                    Modifier
-                        .clickable(
-                            onClick = { shareAnalytics(!isSharingAnalytics) },
-                        )
-                        .then(listItemModifier),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        t("actions.share_analytics"),
-                        Modifier.weight(1f),
-                    )
-                    Switch(
-                        checked = isSharingAnalytics,
-                        onCheckedChange = shareAnalytics,
-                    )
-                }
-            }
+            toggleItem(
+                "actions.share_analytics",
+                isSharingAnalytics,
+                viewModel::shareAnalytics,
+            )
+
+            toggleItem(
+                "~~Share location with organization",
+                isSharingLocation,
+                viewModel::shareLocationWithOrg,
+            )
 
             item {
                 TermsPrivacyView(
@@ -379,6 +368,36 @@ private fun MenuScreen(
             onRefreshIncidents = viewModel::refreshIncidents,
             isLoadingIncidents = isLoadingIncidents,
         )
+    }
+}
+
+private fun LazyListScope.toggleItem(
+    translateKey: String,
+    isToggledOn: Boolean,
+    onToggle: (Boolean) -> Unit,
+) {
+
+    item(
+        key = "toggle-$translateKey",
+        contentType = "toggle-item",
+    ) {
+        Row(
+            Modifier
+                .clickable(
+                    onClick = { onToggle(!isToggledOn) },
+                )
+                .then(listItemModifier),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                LocalAppTranslator.current(translateKey),
+                Modifier.weight(1f),
+            )
+            Switch(
+                checked = isToggledOn,
+                onCheckedChange = onToggle,
+            )
+        }
     }
 }
 

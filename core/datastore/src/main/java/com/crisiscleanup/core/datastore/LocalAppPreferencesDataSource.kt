@@ -52,6 +52,8 @@ class LocalAppPreferencesDataSource @Inject constructor(
                 hideGettingStartedVideo = it.hideGettingStartedVideo,
 
                 isMenuTutorialDone = it.isMenuTutorialDone,
+
+                shareLocationWithOrg = it.shareLocationWithOrg,
             )
         }
 
@@ -155,6 +157,13 @@ class LocalAppPreferencesDataSource @Inject constructor(
     suspend fun setMenuTutorialDone(isDone: Boolean) {
         userPreferences.updateData {
             it.copy { isMenuTutorialDone = isDone }
+        }
+    }
+
+
+    suspend fun setShareLocationWithOrg(share: Boolean) {
+        userPreferences.updateData {
+            it.copy { shareLocationWithOrg = share }
         }
     }
 }

@@ -94,6 +94,10 @@ class MenuViewModel @Inject constructor(
         it.allowAllAnalytics
     }
 
+    val isSharingLocation = appPreferencesRepository.userPreferences.map {
+        it.shareLocationWithOrg
+    }
+
     val menuItemVisibility = appPreferencesRepository.userPreferences
         .map {
             MenuItemVisibility(
@@ -128,8 +132,14 @@ class MenuViewModel @Inject constructor(
     }
 
     fun shareAnalytics(share: Boolean) {
-        viewModelScope.launch {
+        viewModelScope.launch(ioDispatcher) {
             appPreferencesRepository.setAnalytics(share)
+        }
+    }
+
+    fun shareLocationWithOrg(share: Boolean) {
+        viewModelScope.launch(ioDispatcher) {
+            appPreferencesRepository.setShareLocationWithOrg(share)
         }
     }
 
