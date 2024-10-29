@@ -1,6 +1,7 @@
 package com.crisiscleanup.feature.menu.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,15 +10,19 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -46,6 +51,8 @@ import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupOutlinedButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
+import com.crisiscleanup.core.designsystem.component.HotlineHeaderView
+import com.crisiscleanup.core.designsystem.component.HotlineIncidentView
 import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.component.actionRoundCornerShape
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
@@ -131,6 +138,15 @@ private fun MenuScreen(
 
     val isLoadingIncidents by viewModel.isLoadingIncidents.collectAsStateWithLifecycle(false)
 
+    val hotlineIncidents by viewModel.hotlineIncidents.collectAsStateWithLifecycle()
+    val tutorialItemOffset = remember(hotlineIncidents) {
+        hotlineIncidents.size + if (hotlineIncidents.isEmpty()) {
+            0
+        } else {
+            3 // header + spacer x2
+        }
+    }
+
     Column {
         AppTopBar(
             incidentDropdownModifier = incidentDropdownModifier,
@@ -154,7 +170,7 @@ private fun MenuScreen(
         val focusItemScrollOffset = (-72 * LocalDensity.current.density).toInt()
         LaunchedEffect(tutorialStep) {
             fun getListItemIndex(itemIndex: Int): Int {
-                var listItemIndex = itemIndex
+                var listItemIndex = itemIndex + tutorialItemOffset
                 if (!isMenuTutorialDone) {
                     listItemIndex += 1
                 }
@@ -192,6 +208,8 @@ private fun MenuScreen(
             Modifier.weight(1f),
             state = lazyListState,
         ) {
+            hotlineItems(hotlineIncidents)
+
             if (!isMenuTutorialDone) {
                 item {
                     MenuTutorial(
@@ -311,6 +329,13 @@ private fun MenuScreen(
                 }
             }
 
+            item {
+                TermsPrivacyView(
+                    termsOfServiceUrl = viewModel.termsOfServiceUrl,
+                    privacyPolicyUrl = viewModel.privacyPolicyUrl,
+                )
+            }
+
             if (viewModel.isDebuggable) {
                 item {
                     MenuScreenNonProductionView()
@@ -324,26 +349,6 @@ private fun MenuScreen(
                         text = "See sync logs",
                     )
                 }
-            }
-        }
-
-        // TODO Open in WebView?
-        val uriHandler = LocalUriHandler.current
-        Row(
-            listItemModifier,
-            horizontalArrangement = Arrangement.Center,
-        ) {
-            CrisisCleanupTextButton(
-                Modifier.actionHeight(),
-                text = t("publicNav.terms"),
-            ) {
-                uriHandler.openUri(viewModel.termsOfServiceUrl)
-            }
-            CrisisCleanupTextButton(
-                Modifier.actionHeight(),
-                text = t("nav.privacy"),
-            ) {
-                uriHandler.openUri(viewModel.privacyPolicyUrl)
             }
         }
     }
@@ -366,6 +371,39 @@ private fun MenuScreen(
             onRefreshIncidents = viewModel::refreshIncidents,
             isLoadingIncidents = isLoadingIncidents,
         )
+    }
+}
+
+private fun LazyListScope.hotlineSpacerItem() {
+    item(contentType = "hotline-spacer") {
+        Box(
+            Modifier.background(MaterialTheme.colorScheme.primaryContainer)
+                .fillMaxWidth()
+                // TODO Common dimensions
+                .height(8.dp),
+        )
+    }
+}
+
+private fun LazyListScope.hotlineItems(
+    incidents: List<Incident>,
+) {
+    if (incidents.isNotEmpty()) {
+        hotlineSpacerItem()
+
+        item {
+            HotlineHeaderView()
+        }
+
+        items(
+            incidents,
+            key = { "hotline-incident-${it.id}" },
+            contentType = { "hotline-incident" },
+        ) {
+            HotlineIncidentView(it.shortName, it.activePhoneNumbers)
+        }
+
+        hotlineSpacerItem()
     }
 }
 
@@ -521,4 +559,30 @@ internal fun MenuScreenNonProductionView(
         onClick = { viewModel.syncWorksitesFull() },
         text = "Sync full",
     )
+}
+
+@Composable
+private fun TermsPrivacyView(
+    termsOfServiceUrl: String,
+    privacyPolicyUrl: String,
+) {
+    val t = LocalAppTranslator.current
+    val uriHandler = LocalUriHandler.current
+    Row(
+        listItemModifier,
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        CrisisCleanupTextButton(
+            Modifier.actionHeight(),
+            text = t("publicNav.terms"),
+        ) {
+            uriHandler.openUri(termsOfServiceUrl)
+        }
+        CrisisCleanupTextButton(
+            Modifier.actionHeight(),
+            text = t("nav.privacy"),
+        ) {
+            uriHandler.openUri(privacyPolicyUrl)
+        }
+    }
 }

@@ -67,11 +67,11 @@ fun RootAuthRoute(
 
 @Composable
 internal fun RootAuthScreen(
-    viewModel: RootAuthViewModel = hiltViewModel(),
     openLoginWithEmail: () -> Unit = {},
     openLoginWithPhone: () -> Unit = {},
     openVolunteerOrg: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
+    viewModel: RootAuthViewModel = hiltViewModel(),
 ) {
     val authState by viewModel.authState.collectAsStateWithLifecycle()
     when (authState) {

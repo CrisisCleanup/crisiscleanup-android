@@ -74,6 +74,13 @@ class MenuViewModel @Inject constructor(
     val loadSelectIncidents = appTopBarDataProvider.loadSelectIncidents
     val isLoadingIncidents = incidentsRepository.isLoading
 
+    val hotlineIncidents = incidentsRepository.hotlineIncidents
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = emptyList(),
+            started = SharingStarted.WhileSubscribed(),
+        )
+
     val versionText: String
         get() {
             val version = appVersionProvider.version
