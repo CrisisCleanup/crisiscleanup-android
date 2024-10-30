@@ -242,8 +242,8 @@ private fun BoxScope.LoadedContent(
     if (viewModel.showInactiveOrganization) {
         val t = viewModel.translator
         CrisisCleanupAlertDialog(
-            title = t("~~Account alert"),
-            text = t("~~This account is no longer part of an active organization. Join an active organization to continue using Crisis Cleanup. You will be logged out."),
+            title = t("info.account_inactive"),
+            text = t("info.account_inactive_no_organization"),
             confirmButton = {
                 CrisisCleanupTextButton(
                     text = t("actions.ok"),
