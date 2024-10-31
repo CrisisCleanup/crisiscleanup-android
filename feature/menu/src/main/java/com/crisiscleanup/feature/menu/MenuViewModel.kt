@@ -74,6 +74,13 @@ class MenuViewModel @Inject constructor(
     val loadSelectIncidents = appTopBarDataProvider.loadSelectIncidents
     val isLoadingIncidents = incidentsRepository.isLoading
 
+    val hotlineIncidents = incidentsRepository.hotlineIncidents
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = emptyList(),
+            started = SharingStarted.WhileSubscribed(),
+        )
+
     val versionText: String
         get() {
             val version = appVersionProvider.version
@@ -85,6 +92,10 @@ class MenuViewModel @Inject constructor(
 
     val isSharingAnalytics = appPreferencesRepository.userPreferences.map {
         it.allowAllAnalytics
+    }
+
+    val isSharingLocation = appPreferencesRepository.userPreferences.map {
+        it.shareLocationWithOrg
     }
 
     val menuItemVisibility = appPreferencesRepository.userPreferences
@@ -121,8 +132,14 @@ class MenuViewModel @Inject constructor(
     }
 
     fun shareAnalytics(share: Boolean) {
-        viewModelScope.launch {
+        viewModelScope.launch(ioDispatcher) {
             appPreferencesRepository.setAnalytics(share)
+        }
+    }
+
+    fun shareLocationWithOrg(share: Boolean) {
+        viewModelScope.launch(ioDispatcher) {
+            appPreferencesRepository.setShareLocationWithOrg(share)
         }
     }
 

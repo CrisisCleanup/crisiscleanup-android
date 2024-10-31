@@ -47,6 +47,7 @@ import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.WorkTypeRequest
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteFlag
+import com.crisiscleanup.core.model.data.WorksiteFormValue
 import com.crisiscleanup.core.model.data.WorksiteNote
 import com.crisiscleanup.feature.caseeditor.model.coordinates
 import com.crisiscleanup.feature.caseeditor.navigation.ExistingCaseArgs
@@ -420,17 +421,29 @@ class ViewCaseViewModel @Inject constructor(
                     name = translate(workTypeLiteral)
                 }
                 val workTypeLookup = stateData.incident.workTypeLookup
-                val summaryJobTypes = worksite.formData
-                    ?.asSequence()
-                    ?.filter { formValue -> workTypeLookup[formValue.key] == workTypeLiteral }
-                    ?.filter { formValue -> formValue.value.isBooleanTrue }
-                    ?.map { formValue -> translate("formLabels.${formValue.key}") }
-                    ?.filter { jobName -> jobName != name }
-                    ?.filter(String::isNotBlank)
-                    ?.toList()
-                    ?: emptyList()
+                val workTypeValues = worksite.formData?.let { formData ->
+                    formData.asSequence()
+                        .filter { formValue -> workTypeLookup[formValue.key] == workTypeLiteral }
+                } ?: emptyMap<String, WorksiteFormValue>().entries.asSequence()
+                val summaryJobTypes = workTypeValues
+                    .filter { formValue -> formValue.value.isBooleanTrue }
+                    .map { formValue -> translate("formLabels.${formValue.key}") }
+                    .filter { jobName -> jobName != name }
+                    .filter(String::isNotBlank)
+                    .toList()
+                val summaryJobDetails = workTypeValues
+                    .filterNot { formValue -> formValue.value.isBooleanTrue }
+                    .map { formValue ->
+                        val title = translate("formLabels.${formValue.key}")
+                        val description = translate(formValue.value.valueString)
+                        listOf(title, description).combineTrimText(": ")
+                    }
+                    .filter(String::isNotBlank)
+                    .toList()
+
                 val summary = listOf(
                     summaryJobTypes.combineTrimText(),
+                    summaryJobDetails.combineTrimText("\n"),
                     workType.recur?.let { rRuleString ->
                         try {
                             return@let RRule(rRuleString).toHumanReadableText(translator)

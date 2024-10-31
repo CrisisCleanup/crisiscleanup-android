@@ -20,4 +20,6 @@ data class UserData(
 
     val hideGettingStartedVideo: Boolean,
     val isMenuTutorialDone: Boolean,
+
+    val shareLocationWithOrg: Boolean,
 )

@@ -4,10 +4,9 @@ import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
-fun Collection<String?>.filterNotBlankTrim(): List<String> {
-    val notBlank = filter { it?.isNotBlank() == true }.filterNotNull()
-    return notBlank.map(String::trim)
-}
+fun Collection<String?>.filterNotBlankTrim() = filter { it?.isNotBlank() == true }
+    .filterNotNull()
+    .map(String::trim)
 
 fun Collection<String?>.combineTrimText(separator: String = ", ") =
     filterNotBlankTrim().joinToString(separator)

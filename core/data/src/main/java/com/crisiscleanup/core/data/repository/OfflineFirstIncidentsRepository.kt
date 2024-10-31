@@ -73,6 +73,12 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     override val incidents: Flow<List<Incident>> =
         incidentDao.streamIncidents().mapLatest { it.map(PopulatedIncident::asExternalModel) }
 
+    override val hotlineIncidents = incidents.mapLatest {
+        it.filter { incident ->
+            incident.activePhoneNumbers.isNotEmpty()
+        }
+    }
+
     override suspend fun getIncident(id: Long, loadFormFields: Boolean) =
         withContext(ioDispatcher) {
             if (loadFormFields) {
@@ -190,6 +196,22 @@ class OfflineFirstIncidentsRepository @Inject constructor(
         } finally {
             // Treat coroutine cancellation as unsuccessful for now
             appPreferences.setSyncAttempt(isSuccessful)
+        }
+    }
+
+    override suspend fun pullHotlineIncidents() {
+        try {
+            val hotlineIncidents = networkDataSource
+                .getIncidentsNoAuth(
+                    incidentsQueryFields,
+                    after = Clock.System.now() - 120.days,
+                )
+                .filter { it.activePhoneNumber?.isNotEmpty() == true }
+            if (hotlineIncidents.isNotEmpty()) {
+                saveIncidentsPrimaryData(hotlineIncidents)
+            }
+        } catch (e: Exception) {
+            logger.logDebug(e)
         }
     }
 

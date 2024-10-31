@@ -40,6 +40,13 @@ interface CrisisCleanupNetworkDataSource {
         after: Instant? = null,
     ): List<NetworkIncident>
 
+    suspend fun getIncidentsNoAuth(
+        fields: List<String>,
+        limit: Int = 250,
+        ordering: String = "-start_at",
+        after: Instant? = null,
+    ): List<NetworkIncident>
+
     suspend fun getIncidentsList(
         fields: List<String> = listOf("id", "name", "short_name", "incident_type"),
         limit: Int = 250,

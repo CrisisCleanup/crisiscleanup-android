@@ -77,6 +77,22 @@ private interface DataSourceApi {
         after: Instant?,
     ): NetworkIncidentsResult
 
+    @GET("incidents")
+    suspend fun getIncidentsNoAuth(
+        @Query("fields")
+        fields: String,
+        @Query("limit")
+        limit: Int,
+        @Query("sort")
+        ordering: String,
+        @Query("start_at__gt")
+        after: Instant?,
+        // Differentiates this endpoint call from getIncidents above
+        // when determining header keys (locally)
+        @Query("_ignore")
+        callerTag: String = "_no-auth",
+    ): NetworkIncidentsResult
+
     @GET("incidents_list")
     suspend fun getIncidentsList(
         @Query("fields")
@@ -336,6 +352,17 @@ class DataApiClient @Inject constructor(
         ordering: String,
         after: Instant?,
     ) = networkApi.getIncidents(fields.joinToString(","), limit, ordering, after)
+        .let {
+            it.errors?.tryThrowException()
+            it.results ?: emptyList()
+        }
+
+    override suspend fun getIncidentsNoAuth(
+        fields: List<String>,
+        limit: Int,
+        ordering: String,
+        after: Instant?,
+    ) = networkApi.getIncidentsNoAuth(fields.joinToString(","), limit, ordering, after)
         .let {
             it.errors?.tryThrowException()
             it.results ?: emptyList()

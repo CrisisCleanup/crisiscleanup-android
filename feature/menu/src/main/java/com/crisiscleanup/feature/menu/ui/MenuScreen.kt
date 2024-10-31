@@ -1,6 +1,8 @@
 package com.crisiscleanup.feature.menu.ui
 
+import android.Manifest.permission.ACCESS_COARSE_LOCATION
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,15 +11,19 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -46,6 +52,9 @@ import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupOutlinedButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
+import com.crisiscleanup.core.designsystem.component.HotlineHeaderView
+import com.crisiscleanup.core.designsystem.component.HotlineIncidentView
+import com.crisiscleanup.core.designsystem.component.OpenSettingsDialog
 import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.component.actionRoundCornerShape
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
@@ -62,6 +71,10 @@ import com.crisiscleanup.core.selectincident.SelectIncidentDialog
 import com.crisiscleanup.core.ui.sizePosition
 import com.crisiscleanup.feature.menu.MenuViewModel
 import com.crisiscleanup.feature.menu.R
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.shouldShowRationale
 
 @Composable
 internal fun MenuRoute(
@@ -82,6 +95,7 @@ internal fun MenuRoute(
     )
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 private fun MenuScreen(
     openAuthentication: () -> Unit = {},
@@ -102,9 +116,23 @@ private fun MenuScreen(
     }
 
     val isSharingAnalytics by viewModel.isSharingAnalytics.collectAsStateWithLifecycle(false)
-    val shareAnalytics = remember(viewModel) {
+
+    val isSharingLocation by viewModel.isSharingLocation.collectAsStateWithLifecycle(false)
+    val locationPermission = rememberPermissionState(ACCESS_COARSE_LOCATION)
+    var explainLocationRequest by remember { mutableStateOf(false) }
+    val onShareLocation = remember(locationPermission) {
         { b: Boolean ->
-            viewModel.shareAnalytics(b)
+            if (b && !locationPermission.status.isGranted) {
+                with(locationPermission.status) {
+                    if (shouldShowRationale) {
+                        explainLocationRequest = true
+                    } else {
+                        locationPermission.launchPermissionRequest()
+                    }
+                }
+            } else {
+                viewModel.shareLocationWithOrg(b)
+            }
         }
     }
 
@@ -131,6 +159,24 @@ private fun MenuScreen(
 
     val isLoadingIncidents by viewModel.isLoadingIncidents.collectAsStateWithLifecycle(false)
 
+    var expandHotline by remember { mutableStateOf(false) }
+    val toggleExpandHotline = { expandHotline = !expandHotline }
+
+    val hotlineIncidents by viewModel.hotlineIncidents.collectAsStateWithLifecycle()
+    val tutorialItemOffset = remember(hotlineIncidents, expandHotline) {
+        val incidentRows = if (expandHotline) {
+            hotlineIncidents.size
+        } else {
+            0
+        }
+        val headerSpacerCount = if (hotlineIncidents.isEmpty()) {
+            0
+        } else {
+            3
+        }
+        incidentRows + headerSpacerCount
+    }
+
     Column {
         AppTopBar(
             incidentDropdownModifier = incidentDropdownModifier,
@@ -154,7 +200,7 @@ private fun MenuScreen(
         val focusItemScrollOffset = (-72 * LocalDensity.current.density).toInt()
         LaunchedEffect(tutorialStep) {
             fun getListItemIndex(itemIndex: Int): Int {
-                var listItemIndex = itemIndex
+                var listItemIndex = itemIndex + tutorialItemOffset
                 if (!isMenuTutorialDone) {
                     listItemIndex += 1
                 }
@@ -163,26 +209,21 @@ private fun MenuScreen(
                 }
                 return listItemIndex
             }
+
+            suspend fun scrollToListItem(itemIndex: Int) {
+                val listItemIndex = getListItemIndex(itemIndex)
+                if (firstVisibleItemIndex > listItemIndex - 2 ||
+                    lastVisibleItemIndex < listItemIndex + 2
+                ) {
+                    lazyListState.scrollToItem(listItemIndex, focusItemScrollOffset)
+                }
+            }
             when (tutorialStep) {
                 TutorialStep.MenuStart,
                 TutorialStep.InviteTeammates,
-                -> {
-                    val listItemIndex = getListItemIndex(2)
-                    if (firstVisibleItemIndex > listItemIndex - 2 ||
-                        lastVisibleItemIndex < listItemIndex + 2
-                    ) {
-                        lazyListState.scrollToItem(listItemIndex, focusItemScrollOffset)
-                    }
-                }
+                -> scrollToListItem(2)
 
-                TutorialStep.ProvideAppFeedback -> {
-                    val listItemIndex = getListItemIndex(4)
-                    if (firstVisibleItemIndex > listItemIndex - 2 ||
-                        lastVisibleItemIndex < listItemIndex + 2
-                    ) {
-                        lazyListState.scrollToItem(listItemIndex, focusItemScrollOffset)
-                    }
-                }
+                TutorialStep.ProvideAppFeedback -> scrollToListItem(4)
 
                 else -> {}
             }
@@ -192,6 +233,12 @@ private fun MenuScreen(
             Modifier.weight(1f),
             state = lazyListState,
         ) {
+            hotlineItems(
+                hotlineIncidents,
+                expandHotline,
+                toggleExpandHotline,
+            )
+
             if (!isMenuTutorialDone) {
                 item {
                     MenuTutorial(
@@ -291,24 +338,23 @@ private fun MenuScreen(
                 )
             }
 
+            toggleItem(
+                "actions.share_analytics",
+                isSharingAnalytics,
+                viewModel::shareAnalytics,
+            )
+
+            toggleItem(
+                "~~Share location with organization",
+                isSharingLocation,
+                onShareLocation,
+            )
+
             item {
-                Row(
-                    Modifier
-                        .clickable(
-                            onClick = { shareAnalytics(!isSharingAnalytics) },
-                        )
-                        .then(listItemModifier),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        t("actions.share_analytics"),
-                        Modifier.weight(1f),
-                    )
-                    Switch(
-                        checked = isSharingAnalytics,
-                        onCheckedChange = shareAnalytics,
-                    )
-                }
+                TermsPrivacyView(
+                    termsOfServiceUrl = viewModel.termsOfServiceUrl,
+                    privacyPolicyUrl = viewModel.privacyPolicyUrl,
+                )
             }
 
             if (viewModel.isDebuggable) {
@@ -324,26 +370,6 @@ private fun MenuScreen(
                         text = "See sync logs",
                     )
                 }
-            }
-        }
-
-        // TODO Open in WebView?
-        val uriHandler = LocalUriHandler.current
-        Row(
-            listItemModifier,
-            horizontalArrangement = Arrangement.Center,
-        ) {
-            CrisisCleanupTextButton(
-                Modifier.actionHeight(),
-                text = t("publicNav.terms"),
-            ) {
-                uriHandler.openUri(viewModel.termsOfServiceUrl)
-            }
-            CrisisCleanupTextButton(
-                Modifier.actionHeight(),
-                text = t("nav.privacy"),
-            ) {
-                uriHandler.openUri(viewModel.privacyPolicyUrl)
             }
         }
     }
@@ -366,6 +392,89 @@ private fun MenuScreen(
             onRefreshIncidents = viewModel::refreshIncidents,
             isLoadingIncidents = isLoadingIncidents,
         )
+    }
+
+    if (explainLocationRequest) {
+        val permissionExplanation =
+            t("~~Location access is needed for sharing your location with your organization. Grant access to location in Settings.")
+        OpenSettingsDialog(
+            t("info.allow_access_to_location"),
+            permissionExplanation,
+            confirmText = t("info.app_settings"),
+            dismissText = t("actions.close"),
+        ) {
+            explainLocationRequest = false
+        }
+    }
+}
+
+private fun LazyListScope.toggleItem(
+    translateKey: String,
+    isToggledOn: Boolean,
+    onToggle: (Boolean) -> Unit,
+) {
+
+    item(
+        key = "toggle-$translateKey",
+        contentType = "toggle-item",
+    ) {
+        Row(
+            Modifier
+                .clickable(
+                    onClick = { onToggle(!isToggledOn) },
+                )
+                .then(listItemModifier),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                LocalAppTranslator.current(translateKey),
+                Modifier.weight(1f),
+            )
+            Switch(
+                checked = isToggledOn,
+                onCheckedChange = onToggle,
+            )
+        }
+    }
+}
+
+private fun LazyListScope.hotlineSpacerItem() {
+    item(contentType = "hotline-spacer") {
+        Box(
+            Modifier.background(MaterialTheme.colorScheme.primaryContainer)
+                .fillMaxWidth()
+                // TODO Common dimensions
+                .height(8.dp),
+        )
+    }
+}
+
+private fun LazyListScope.hotlineItems(
+    incidents: List<Incident>,
+    expandHotline: Boolean,
+    toggleExpandHotline: () -> Unit,
+) {
+    if (incidents.isNotEmpty()) {
+        hotlineSpacerItem()
+
+        item {
+            HotlineHeaderView(
+                expandHotline,
+                toggleExpandHotline,
+            )
+        }
+
+        if (expandHotline) {
+            items(
+                incidents,
+                key = { "hotline-incident-${it.id}" },
+                contentType = { "hotline-incident" },
+            ) {
+                HotlineIncidentView(it.shortName, it.activePhoneNumbers)
+            }
+        }
+
+        hotlineSpacerItem()
     }
 }
 
@@ -521,4 +630,30 @@ internal fun MenuScreenNonProductionView(
         onClick = { viewModel.syncWorksitesFull() },
         text = "Sync full",
     )
+}
+
+@Composable
+private fun TermsPrivacyView(
+    termsOfServiceUrl: String,
+    privacyPolicyUrl: String,
+) {
+    val t = LocalAppTranslator.current
+    val uriHandler = LocalUriHandler.current
+    Row(
+        listItemModifier,
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        CrisisCleanupTextButton(
+            Modifier.actionHeight(),
+            text = t("publicNav.terms"),
+        ) {
+            uriHandler.openUri(termsOfServiceUrl)
+        }
+        CrisisCleanupTextButton(
+            Modifier.actionHeight(),
+            text = t("nav.privacy"),
+        ) {
+            uriHandler.openUri(privacyPolicyUrl)
+        }
+    }
 }

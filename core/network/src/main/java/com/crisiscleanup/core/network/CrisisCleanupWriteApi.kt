@@ -76,4 +76,6 @@ interface CrisisCleanupWriteApi {
     )
 
     suspend fun requestRedeploy(organizationId: Long, incidentId: Long): Boolean
+
+    suspend fun shareLocation(latitude: Double, longitude: Double)
 }

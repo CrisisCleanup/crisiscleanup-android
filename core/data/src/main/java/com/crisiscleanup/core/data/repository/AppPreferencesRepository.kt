@@ -64,4 +64,8 @@ class AppPreferencesRepository @Inject constructor(
     override suspend fun setAnalytics(allowAll: Boolean) {
         preferencesDataSource.setAnalytics(allowAll)
     }
+
+    override suspend fun setShareLocationWithOrg(share: Boolean) {
+        preferencesDataSource.setShareLocationWithOrg(share)
+    }
 }

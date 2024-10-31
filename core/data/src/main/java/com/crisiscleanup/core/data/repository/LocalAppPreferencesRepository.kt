@@ -32,4 +32,6 @@ interface LocalAppPreferencesRepository {
     suspend fun setTableViewSortBy(sortBy: WorksiteSortBy)
 
     suspend fun setAnalytics(allowAll: Boolean)
+
+    suspend fun setShareLocationWithOrg(share: Boolean)
 }

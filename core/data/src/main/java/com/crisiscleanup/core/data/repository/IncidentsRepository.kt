@@ -18,6 +18,11 @@ interface IncidentsRepository {
      */
     val incidents: Flow<List<Incident>>
 
+    /**
+     * Stream of [Incident]s with active phone numbers
+     */
+    val hotlineIncidents: Flow<List<Incident>>
+
     suspend fun getIncident(id: Long, loadFormFields: Boolean = false): Incident?
     suspend fun getIncidents(startAt: Instant): List<Incident>
     suspend fun getIncidentsList(): List<IncidentIdNameType>
@@ -25,6 +30,7 @@ interface IncidentsRepository {
     fun streamIncident(id: Long): Flow<Incident?>
 
     suspend fun pullIncidents()
+    suspend fun pullHotlineIncidents()
 
     suspend fun pullIncident(id: Long)
 

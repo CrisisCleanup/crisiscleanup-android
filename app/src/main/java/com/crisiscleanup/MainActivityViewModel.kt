@@ -30,6 +30,7 @@ import com.crisiscleanup.core.data.repository.AccountUpdateRepository
 import com.crisiscleanup.core.data.repository.AppDataManagementRepository
 import com.crisiscleanup.core.data.repository.LocalAppMetricsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
+import com.crisiscleanup.core.data.repository.ShareLocationRepository
 import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.model.data.AppMetricsData
 import com.crisiscleanup.core.model.data.AppOpenInstant
@@ -80,6 +81,7 @@ class MainActivityViewModel @Inject constructor(
     externalEventBus: ExternalEventBus,
     private val accountEventBus: AccountEventBus,
     private val networkMonitor: NetworkMonitor,
+    private val shareLocationRepository: ShareLocationRepository,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : ViewModel() {
@@ -150,8 +152,6 @@ class MainActivityViewModel @Inject constructor(
             initialValue = AuthState.Loading,
             started = SharingStarted.WhileSubscribed(),
         )
-
-    val translationCount = translator.translationCount
 
     val buildEndOfLife: BuildEndOfLife?
         get() {
@@ -224,7 +224,10 @@ class MainActivityViewModel @Inject constructor(
 
         appPreferencesRepository.userPreferences.onEach {
             firebaseAnalytics.setAnalyticsCollectionEnabled(it.allowAllAnalytics)
+
+            shareLocationWithOrganization()
         }
+            .flowOn(ioDispatcher)
             .launchIn(viewModelScope)
 
         syncPuller.appPullLanguage()
@@ -270,6 +273,10 @@ class MainActivityViewModel @Inject constructor(
                     appMetricsRepository.setAppOpen(appVersionProvider.versionCode)
                 }
             }
+        }
+
+        viewModelScope.launch(ioDispatcher) {
+            shareLocationWithOrganization()
         }
     }
 
@@ -326,6 +333,10 @@ class MainActivityViewModel @Inject constructor(
         showInactiveOrganization = false
         accountEventBus.onLogout()
         accountEventBus.clearAccountInactiveOrganization()
+    }
+
+    private suspend fun shareLocationWithOrganization() {
+        shareLocationRepository.shareLocation()
     }
 }
 

@@ -2,18 +2,24 @@ package com.crisiscleanup.feature.authentication.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
@@ -25,6 +31,8 @@ import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupLogoRow
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupOutlinedButton
+import com.crisiscleanup.core.designsystem.component.HotlineHeaderView
+import com.crisiscleanup.core.designsystem.component.HotlineIncidentView
 import com.crisiscleanup.core.designsystem.component.LinkifyText
 import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
@@ -35,6 +43,7 @@ import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.model.data.AccountData
+import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.rememberIsKeyboardOpen
 import com.crisiscleanup.core.ui.scrollFlingListener
@@ -67,11 +76,11 @@ fun RootAuthRoute(
 
 @Composable
 internal fun RootAuthScreen(
-    viewModel: RootAuthViewModel = hiltViewModel(),
     openLoginWithEmail: () -> Unit = {},
     openLoginWithPhone: () -> Unit = {},
     openVolunteerOrg: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
+    viewModel: RootAuthViewModel = hiltViewModel(),
 ) {
     val authState by viewModel.authState.collectAsStateWithLifecycle()
     when (authState) {
@@ -114,12 +123,14 @@ internal fun RootAuthScreen(
 
         is AuthState.NotAuthenticated -> {
             val hasAuthenticated = (authState as AuthState.NotAuthenticated).hasAuthenticated
+            val hotlineIncidents by viewModel.hotlineIncidents.collectAsStateWithLifecycle()
             NotAuthenticatedScreen(
                 openLoginWithEmail = openLoginWithEmail,
                 openLoginWithPhone = openLoginWithPhone,
                 openVolunteerOrg = openVolunteerOrg,
                 closeAuthentication = closeAuthentication,
                 hasAuthenticated = hasAuthenticated,
+                hotlineIncidents = hotlineIncidents,
             )
         }
     }
@@ -171,8 +182,10 @@ private fun NotAuthenticatedScreen(
     openVolunteerOrg: () -> Unit = {},
     closeAuthentication: () -> Unit = {},
     hasAuthenticated: Boolean = false,
+    hotlineIncidents: List<Incident> = emptyList(),
 ) {
     val t = LocalAppTranslator.current
+    val translationCount by t.translationCount.collectAsStateWithLifecycle()
     val uriHandler = LocalUriHandler.current
     val iNeedHelpCleaningLink = "https://crisiscleanup.org/survivor"
     val closeKeyboard = rememberCloseKeyboard(openLoginWithEmail)
@@ -184,6 +197,8 @@ private fun NotAuthenticatedScreen(
             .verticalScroll(rememberScrollState()),
     ) {
         CrisisCleanupLogoRow()
+
+        HotlineIncidentsView(hotlineIncidents)
 
         Text(
             modifier = listItemModifier.testTag("rootAuthLoginText"),
@@ -249,9 +264,12 @@ private fun NotAuthenticatedScreen(
                     R.string.reliefOrgAndGovOnly,
                 ),
             )
+            val registerText = remember(translationCount) {
+                t("actions.register")
+            }
             LinkifyText(
                 modifier = Modifier.testTag("rootAuthRegisterAction"),
-                linkText = t("actions.register"),
+                linkText = registerText,
                 link = ORG_REGISTER_URL,
             )
         }
@@ -266,6 +284,37 @@ private fun NotAuthenticatedScreen(
                 enabled = true,
                 action = closeAuthentication,
             )
+        }
+    }
+}
+
+@Composable
+private fun HotlineIncidentsView(
+    incidents: List<Incident>,
+) {
+    if (incidents.isNotEmpty()) {
+        var expandHotline by remember { mutableStateOf(true) }
+        val toggleExpandHotline = { expandHotline = !expandHotline }
+
+        // TODO Common dimensions
+        Column(
+            Modifier
+                .background(MaterialTheme.colorScheme.primaryContainer)
+                .padding(vertical = 8.dp),
+        ) {
+            HotlineHeaderView(
+                expandHotline,
+                toggleExpandHotline,
+            )
+            if (expandHotline) {
+                for (incident in incidents) {
+                    HotlineIncidentView(
+                        incident.shortName,
+                        incident.activePhoneNumbers,
+                        linkifyNumbers = true,
+                    )
+                }
+            }
         }
     }
 }

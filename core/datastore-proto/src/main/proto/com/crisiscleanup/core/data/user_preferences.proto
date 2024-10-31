@@ -34,4 +34,6 @@ message UserPreferences {
 
   bool hide_getting_started_video = 10;
   bool is_menu_tutorial_done = 11;
+
+  bool share_location_with_org = 12;
 }

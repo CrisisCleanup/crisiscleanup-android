@@ -9,11 +9,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
@@ -67,8 +70,12 @@ private fun NavItems(
         @Composable () -> Unit,
     ) -> Unit,
 ) {
+    val t = LocalAppTranslator.current
+    val translationCount by t.translationCount.collectAsStateWithLifecycle()
     destinations.forEachIndexed { i, destination ->
-        val title = LocalAppTranslator.current(destination.titleTranslateKey)
+        val title = remember(translationCount) {
+            t(destination.titleTranslateKey)
+        }
         val selected = currentDestination.isTopLevelDestinationInHierarchy(destination)
         itemContent(
             selected,
