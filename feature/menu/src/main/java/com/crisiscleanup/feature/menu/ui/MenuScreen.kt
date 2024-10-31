@@ -1,5 +1,6 @@
 package com.crisiscleanup.feature.menu.ui
 
+import android.Manifest.permission.ACCESS_COARSE_LOCATION
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -53,6 +54,7 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupOutlinedButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.HotlineHeaderView
 import com.crisiscleanup.core.designsystem.component.HotlineIncidentView
+import com.crisiscleanup.core.designsystem.component.OpenSettingsDialog
 import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.component.actionRoundCornerShape
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
@@ -69,6 +71,10 @@ import com.crisiscleanup.core.selectincident.SelectIncidentDialog
 import com.crisiscleanup.core.ui.sizePosition
 import com.crisiscleanup.feature.menu.MenuViewModel
 import com.crisiscleanup.feature.menu.R
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.shouldShowRationale
 
 @Composable
 internal fun MenuRoute(
@@ -89,6 +95,7 @@ internal fun MenuRoute(
     )
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 private fun MenuScreen(
     openAuthentication: () -> Unit = {},
@@ -111,6 +118,23 @@ private fun MenuScreen(
     val isSharingAnalytics by viewModel.isSharingAnalytics.collectAsStateWithLifecycle(false)
 
     val isSharingLocation by viewModel.isSharingLocation.collectAsStateWithLifecycle(false)
+    val locationPermission = rememberPermissionState(ACCESS_COARSE_LOCATION)
+    var explainLocationRequest by remember { mutableStateOf(false) }
+    val onShareLocation = remember(locationPermission) {
+        { b: Boolean ->
+            if (b && !locationPermission.status.isGranted) {
+                with(locationPermission.status) {
+                    if (shouldShowRationale) {
+                        explainLocationRequest = true
+                    } else {
+                        locationPermission.launchPermissionRequest()
+                    }
+                }
+            } else {
+                viewModel.shareLocationWithOrg(b)
+            }
+        }
+    }
 
     val menuItemVisibility by viewModel.menuItemVisibility.collectAsStateWithLifecycle()
     val isMenuTutorialDone by viewModel.isMenuTutorialDone.collectAsStateWithLifecycle(true)
@@ -323,7 +347,7 @@ private fun MenuScreen(
             toggleItem(
                 "~~Share location with organization",
                 isSharingLocation,
-                viewModel::shareLocationWithOrg,
+                onShareLocation,
             )
 
             item {
@@ -368,6 +392,19 @@ private fun MenuScreen(
             onRefreshIncidents = viewModel::refreshIncidents,
             isLoadingIncidents = isLoadingIncidents,
         )
+    }
+
+    if (explainLocationRequest) {
+        val permissionExplanation =
+            t("~~Location access is needed for sharing your location with your organization. Grant access to location in Settings.")
+        OpenSettingsDialog(
+            t("info.allow_access_to_location"),
+            permissionExplanation,
+            confirmText = t("info.app_settings"),
+            dismissText = t("actions.close"),
+        ) {
+            explainLocationRequest = false
+        }
     }
 }
 
