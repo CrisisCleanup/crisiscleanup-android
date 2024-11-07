@@ -10,6 +10,7 @@ import com.crisiscleanup.core.network.model.NetworkFlag
 import com.crisiscleanup.core.network.model.NetworkFlagId
 import com.crisiscleanup.core.network.model.NetworkIncidentRedeployRequest
 import com.crisiscleanup.core.network.model.NetworkLocationCoordinates
+import com.crisiscleanup.core.network.model.NetworkLocationUpdate
 import com.crisiscleanup.core.network.model.NetworkNote
 import com.crisiscleanup.core.network.model.NetworkNoteNote
 import com.crisiscleanup.core.network.model.NetworkPointLocation
@@ -187,7 +188,7 @@ private interface DataChangeApi {
     @POST("user_geo_locations")
     suspend fun shareLocation(
         @Body pointLocation: NetworkPointLocation,
-    ): Response<Unit>
+    ): NetworkLocationUpdate
 }
 
 interface FileUploadApi {
@@ -338,7 +339,7 @@ class WriteApiClient @Inject constructor(
     override suspend fun shareLocation(latitude: Double, longitude: Double) {
         writeApi.shareLocation(
             NetworkPointLocation(
-                NetworkLocationCoordinates(listOf(latitude, longitude)),
+                NetworkLocationCoordinates(listOf(longitude, latitude), "Point"),
             ),
         )
     }
