@@ -20,6 +20,7 @@ private val emptyUserData = UserData(
     allowAllAnalytics = false,
     hideGettingStartedVideo = false,
     isMenuTutorialDone = false,
+    shareLocationWithOrg = false,
 )
 
 class TestLocalAppPreferencesRepository : LocalAppPreferencesRepository {
@@ -75,6 +76,12 @@ class TestLocalAppPreferencesRepository : LocalAppPreferencesRepository {
     override suspend fun setAnalytics(allowAll: Boolean) {
         currentUserData.let { current ->
             userDataInternal.tryEmit(current.copy(allowAllAnalytics = allowAll))
+        }
+    }
+
+    override suspend fun setShareLocationWithOrg(share: Boolean) {
+        currentUserData.let { current ->
+            userDataInternal.tryEmit(current.copy(shareLocationWithOrg = share))
         }
     }
 }
