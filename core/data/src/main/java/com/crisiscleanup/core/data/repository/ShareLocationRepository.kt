@@ -11,6 +11,7 @@ import kotlinx.datetime.Instant
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
 interface ShareLocationRepository {
@@ -22,6 +23,7 @@ class CrisisCleanupShareLocationRepository @Inject
 constructor(
     private val accountDataRepository: AccountDataRepository,
     private val appPreferencesRepository: LocalAppPreferencesRepository,
+    private val appMetricsRepository: AppMetricsRepository,
     private val locationProvider: LocationProvider,
     private val writeApiClient: CrisisCleanupWriteApi,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
@@ -30,16 +32,21 @@ constructor(
     private var shareTimestamp = AtomicReference(Instant.fromEpochSeconds(0))
     private val shareInterval = 1.minutes
 
+    // TODO Remote config
+    private val activeInterval = 4.hours
+
     override suspend fun shareLocation() {
         val shareLocationWithOrg =
             appPreferencesRepository.userPreferences.first().shareLocationWithOrg
         val areTokensValid = accountDataRepository.accountData.first().areTokensValid
+        val lastAppOpen = appMetricsRepository.metrics.first().appOpen.date
+        val now = Clock.System.now()
         if (shareLocationWithOrg &&
-            areTokensValid
+            areTokensValid &&
+            lastAppOpen + activeInterval > now
         ) {
             locationProvider.getLocation()?.let { location ->
                 synchronized(shareTimestamp) {
-                    val now = Clock.System.now()
                     if (shareTimestamp.get() + shareInterval > now) {
                         return
                     }
