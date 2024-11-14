@@ -3,6 +3,7 @@ package com.crisiscleanup.log
 import android.util.Log
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.log.TagLogger
+import com.crisiscleanup.core.network.model.ExpiredTokenException
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.CancellationException
 import javax.inject.Inject
@@ -23,7 +24,9 @@ class CrisisCleanupAppLogger @Inject constructor(
     }
 
     override fun logException(e: Exception) {
-        if (e is CancellationException) {
+        if (e is CancellationException ||
+            e is ExpiredTokenException
+        ) {
             return
         }
 
