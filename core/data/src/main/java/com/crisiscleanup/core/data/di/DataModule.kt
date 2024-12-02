@@ -22,6 +22,7 @@ import com.crisiscleanup.core.data.repository.AppDataManagementRepository
 import com.crisiscleanup.core.data.repository.AppEndOfLifeRepository
 import com.crisiscleanup.core.data.repository.AppMetricsRepository
 import com.crisiscleanup.core.data.repository.AppMetricsRepositoryImpl
+import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.data.repository.AppPreferencesRepositoryImpl
 import com.crisiscleanup.core.data.repository.CaseHistoryRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupAccountDataRepository
@@ -42,7 +43,6 @@ import com.crisiscleanup.core.data.repository.EquipmentRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
 import com.crisiscleanup.core.data.repository.ListsRepository
-import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.data.repository.LocalImageRepository
 import com.crisiscleanup.core.data.repository.LocationsRepository
 import com.crisiscleanup.core.data.repository.MemoryCacheSearchWorksitesRepository

@@ -16,9 +16,9 @@ import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
 import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.ListsRepository
-import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.domain.LoadSelectIncidents
 import com.crisiscleanup.core.model.data.CrisisCleanupList
 import com.crisiscleanup.core.model.data.EmptyIncident
