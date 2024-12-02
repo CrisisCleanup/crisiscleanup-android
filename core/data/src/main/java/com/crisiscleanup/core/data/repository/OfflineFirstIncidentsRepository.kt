@@ -210,6 +210,13 @@ class OfflineFirstIncidentsRepository @Inject constructor(
             if (hotlineIncidents.isNotEmpty()) {
                 saveIncidentsPrimaryData(hotlineIncidents)
             }
+
+            val recentActiveIncidents = hotlineIncidents.map(NetworkIncident::id).toSet()
+            val localActiveIncidents = incidentDao.getActiveIncidentIds()
+                .filter { !recentActiveIncidents.contains(it) }
+            for (incidentId in localActiveIncidents) {
+                pullIncident(incidentId)
+            }
         } catch (e: Exception) {
             logger.logDebug(e)
         }

@@ -121,6 +121,10 @@ class MenuViewModel @Inject constructor(
 
             accountDataRefresher.updateProfilePicture()
         }
+
+        viewModelScope.launch(ioDispatcher) {
+            incidentsRepository.pullHotlineIncidents()
+        }
     }
 
     suspend fun refreshIncidentsAsync() {
