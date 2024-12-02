@@ -91,6 +91,7 @@ import kotlinx.datetime.Instant
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
+@OptIn(FlowPreview::class)
 @HiltViewModel
 class CreateEditTeamViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -499,6 +500,7 @@ class CreateEditTeamViewModel @Inject constructor(
 
         viewModelScope.launch(ioDispatcher) {
             organizationRefresher.pullOrganizationAndAffiliates()
+            organizationRefresher.pullOrganizationUsers()
         }
     }
 

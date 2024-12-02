@@ -34,7 +34,6 @@ import com.crisiscleanup.core.network.model.NetworkPersistentInvitationResult
 import com.crisiscleanup.core.network.model.NetworkRegisterOrganizationResult
 import com.crisiscleanup.core.network.model.NetworkUser
 import com.crisiscleanup.core.network.model.condenseMessages
-import com.crisiscleanup.core.network.model.profilePictureUrl
 import retrofit2.Retrofit
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -151,7 +150,7 @@ class RegisterApiClient @Inject constructor(
     private suspend fun getUserDetails(userId: Long): UserDetails {
         val userInfo = networkApi.noAuthUser(userId)
         val displayName = "${userInfo.firstName} ${userInfo.lastName}"
-        val avatarUrl = userInfo.files.profilePictureUrl?.let { URL(it) }
+        val avatarUrl = userInfo.profilePictureUrl?.let { URL(it) }
         val orgName = networkApi.noAuthOrganization(userInfo.organization).name
         return UserDetails(
             displayName = displayName,

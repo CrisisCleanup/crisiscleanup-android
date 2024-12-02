@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.database.dao
 
+import com.crisiscleanup.core.common.epochZero
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
 import com.crisiscleanup.core.database.TestUtil
 import com.crisiscleanup.core.database.model.LanguageTranslationEntity
@@ -74,7 +75,7 @@ class LanguageDaoTest {
                 LanguageTranslations(
                     Language(it.key, it.name),
                     translations = emptyMap(),
-                    syncedAt = Instant.fromEpochSeconds(0),
+                    syncedAt = Instant.epochZero,
                 )
             }
             assertEquals(expected, translations!!.asExternalModel())

@@ -16,6 +16,7 @@ import com.crisiscleanup.core.network.model.NetworkList
 import com.crisiscleanup.core.network.model.NetworkListResult
 import com.crisiscleanup.core.network.model.NetworkListsResult
 import com.crisiscleanup.core.network.model.NetworkLocationsResult
+import com.crisiscleanup.core.network.model.NetworkOrganizationUsersResult
 import com.crisiscleanup.core.network.model.NetworkOrganizationsResult
 import com.crisiscleanup.core.network.model.NetworkOrganizationsSearchResult
 import com.crisiscleanup.core.network.model.NetworkRedeployRequestsResult
@@ -78,6 +79,7 @@ private interface DataSourceApi {
         ordering: String,
         @Query("start_at__gt")
         after: Instant?,
+        @Tag endpointId: EndpointRequestId = EndpointRequestId.Incidents,
     ): NetworkIncidentsResult
 
     @GET("incidents")
@@ -90,10 +92,7 @@ private interface DataSourceApi {
         ordering: String,
         @Query("start_at__gt")
         after: Instant?,
-        // Differentiates this endpoint call from getIncidents above
-        // when determining header keys (locally)
-        @Query("_ignore")
-        callerTag: String = "_no-auth",
+        @Tag endpointId: EndpointRequestId = EndpointRequestId.IncidentsNoAuth,
     ): NetworkIncidentsResult
 
     @GET("incidents_list")
@@ -325,6 +324,17 @@ private interface DataSourceApi {
     @TokenAuthenticationHeader
     @GET("roles")
     suspend fun getUserRoles(): NetworkUserRolesResult
+
+    @TokenAuthenticationHeader
+    @GET("users")
+    suspend fun getOrganizationUsers(
+        @Query("organization")
+        orgId: Long,
+        @Query("fields")
+        fields: String,
+        @Query("limit")
+        limit: Int,
+    ): NetworkOrganizationUsersResult
 }
 
 private val worksiteCoreDataFields = listOf(
@@ -612,6 +622,18 @@ class DataApiClient @Inject constructor(
         .team
 
     override suspend fun getNetworkUserRoles() = networkApi.getUserRoles()
+        .also { it.errors?.tryThrowException() }
+        .results ?: emptyList()
+
+    override suspend fun getNetworkOrganizationUsers(
+        organizationId: Long,
+        fields: List<String>,
+        limit: Int,
+    ) = networkApi.getOrganizationUsers(
+        organizationId,
+        fields.joinToString(","),
+        limit,
+    )
         .also { it.errors?.tryThrowException() }
         .results ?: emptyList()
 }

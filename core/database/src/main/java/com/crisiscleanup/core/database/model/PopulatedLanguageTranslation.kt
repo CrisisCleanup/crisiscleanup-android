@@ -1,10 +1,10 @@
 package com.crisiscleanup.core.database.model
 
 import androidx.room.Embedded
+import com.crisiscleanup.core.common.epochZero
 import com.crisiscleanup.core.model.data.Language
 import com.crisiscleanup.core.model.data.LanguageTranslations
 import kotlinx.datetime.Instant
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 data class PopulatedLanguage(
@@ -27,6 +27,6 @@ fun PopulatedLanguageTranslation.asExternalModel(): LanguageTranslations {
     return LanguageTranslations(
         language = Language(key = entity.key, displayName = entity.name),
         translations = translations,
-        syncedAt = entity.syncedAt ?: Instant.fromEpochSeconds(0),
+        syncedAt = entity.syncedAt ?: Instant.epochZero,
     )
 }

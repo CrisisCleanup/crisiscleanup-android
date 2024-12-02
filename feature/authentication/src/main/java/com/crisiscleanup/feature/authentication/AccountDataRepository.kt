@@ -21,7 +21,7 @@ suspend fun AccountDataRepository.setAccount(
         firstName = firstName,
         lastName = lastName,
         expirySeconds = Clock.System.now().plus(expiresIn.seconds).epochSeconds,
-        profilePictureUri = profilePicUrl ?: "",
+        profilePictureUri = profilePictureUrl ?: "",
         org = OrgData(
             id = organization.id,
             name = organization.name,

@@ -3,6 +3,7 @@ package com.crisiscleanup.core.database.dao
 import androidx.room.withTransaction
 import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.UuidGenerator
+import com.crisiscleanup.core.common.epochZero
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -102,7 +103,7 @@ class WorksiteChangeDaoPlus @Inject constructor(
                         id = 0,
                         syncUuid = uuidGenerator.uuid(),
                         localModifiedAt = localModifiedAt,
-                        syncedAt = Instant.fromEpochSeconds(0),
+                        syncedAt = Instant.epochZero,
                         localGlobalUuid = uuidGenerator.uuid(),
                         isLocalModified = true,
                         syncAttempt = 0,

@@ -68,3 +68,10 @@ data class NetworkOrganizationContact(
     val title: String?,
     val organization: Long?,
 )
+
+@Serializable
+data class NetworkOrganizationUsersResult(
+    val errors: List<NetworkCrisisCleanupApiError>? = null,
+    val count: Int? = null,
+    val results: List<NetworkOrganizationUser>? = null,
+)

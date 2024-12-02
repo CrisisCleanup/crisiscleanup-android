@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.database.dao
 
+import com.crisiscleanup.core.common.epochZero
 import com.crisiscleanup.core.database.TestCrisisCleanupDatabase
 import com.crisiscleanup.core.database.TestUtil
 import com.crisiscleanup.core.database.TestUtil.testAppLogger
@@ -395,7 +396,7 @@ class WorksiteChangeDaoTest {
             id = 1,
             syncUuid = "uuid-5",
             localModifiedAt = now,
-            syncedAt = Instant.fromEpochSeconds(0),
+            syncedAt = Instant.epochZero,
             localGlobalUuid = "uuid-6",
             isLocalModified = true,
             syncAttempt = 0,

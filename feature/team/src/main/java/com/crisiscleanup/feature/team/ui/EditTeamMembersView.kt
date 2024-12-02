@@ -128,6 +128,8 @@ internal fun EditTeamMembersView(
                 itemKey = "invite-user-text",
             )
 
+            // TODO Input and send invites for users to join team
+
             contentSpacerItem()
 
             val isOutOfUsers = membersState.q.isEmpty() && membersState.members.isEmpty()

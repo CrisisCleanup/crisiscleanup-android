@@ -13,7 +13,29 @@ data class NetworkUser(
     val lastName: String,
     val organization: Long,
     val files: List<NetworkFile>,
-)
+) {
+    val profilePictureUrl by lazy {
+        files.profilePictureUrl
+    }
+}
+
+@Serializable
+data class NetworkOrganizationUser(
+    val id: Long,
+    val email: String,
+    val mobile: String,
+    @SerialName("first_name")
+    val firstName: String,
+    @SerialName("last_name")
+    val lastName: String,
+    val files: List<NetworkFile>,
+    @SerialName("active_roles")
+    val activeRoles: List<Int>?,
+) {
+    val profilePictureUrl by lazy {
+        files.profilePictureUrl
+    }
+}
 
 @Serializable
 data class NetworkUserProfile(
@@ -35,6 +57,7 @@ data class NetworkUserProfile(
     @SerialName("active_roles")
     val activeRoles: Set<Int>,
 ) {
-    val profilePicUrl: String?
-        get() = files?.profilePictureUrl
+    val profilePictureUrl by lazy {
+        files?.profilePictureUrl
+    }
 }

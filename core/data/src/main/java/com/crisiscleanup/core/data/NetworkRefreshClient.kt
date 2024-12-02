@@ -1,6 +1,7 @@
 package com.crisiscleanup.core.data
 
 import com.crisiscleanup.core.common.NetworkMonitor
+import com.crisiscleanup.core.common.epochZero
 import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
@@ -62,22 +63,24 @@ class LanguageRefresher @Inject constructor(
 @Singleton
 class OrganizationRefresher @Inject constructor(
     private val accountDataRefresher: AccountDataRefresher,
+    private val usersRepository: UsersRepository,
     private val networkMonitor: NetworkMonitor,
 ) {
     private var incidentIdPull = EmptyIncident.id
-    private var lastRefresh = Instant.fromEpochSeconds(0)
-    private var lastOrganizationAffiliatesRefresh = Instant.fromEpochSeconds(0)
+    private var lastOrganizationRefresh = Instant.epochZero
+    private var lastOrganizationAffiliatesRefresh = Instant.epochZero
+    private var lastOrganizationUsersRefresh = Instant.epochZero
 
     suspend fun pullOrganization(incidentId: Long) {
         val now = Clock.System.now()
         if (networkMonitor.isOnline.first() &&
             (
                 incidentIdPull != incidentId ||
-                    now - lastRefresh > 1.hours
+                    now - lastOrganizationRefresh > 1.hours
                 )
         ) {
             incidentIdPull = incidentId
-            lastRefresh = now
+            lastOrganizationRefresh = now
 
             accountDataRefresher.updateMyOrganization(true)
         }
@@ -91,9 +94,23 @@ class OrganizationRefresher @Inject constructor(
                     now - lastOrganizationAffiliatesRefresh > 1.hours
                 )
         ) {
-            lastRefresh = now
+            lastOrganizationAffiliatesRefresh = now
 
             accountDataRefresher.updateOrganizationAndAffiliates()
+        }
+    }
+
+    suspend fun pullOrganizationUsers(force: Boolean = false) {
+        val now = Clock.System.now()
+        if (networkMonitor.isOnline.first() &&
+            (
+                force ||
+                    now - lastOrganizationUsersRefresh > 3.hours
+                )
+        ) {
+            lastOrganizationUsersRefresh = now
+
+            usersRepository.queryOrganizationTeamMembers()
         }
     }
 }

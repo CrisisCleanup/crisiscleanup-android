@@ -14,6 +14,7 @@ import com.crisiscleanup.core.network.model.NetworkList
 import com.crisiscleanup.core.network.model.NetworkListsResult
 import com.crisiscleanup.core.network.model.NetworkLocation
 import com.crisiscleanup.core.network.model.NetworkOrganizationShort
+import com.crisiscleanup.core.network.model.NetworkOrganizationUser
 import com.crisiscleanup.core.network.model.NetworkOrganizationsResult
 import com.crisiscleanup.core.network.model.NetworkPersonContact
 import com.crisiscleanup.core.network.model.NetworkTeam
@@ -165,4 +166,10 @@ interface CrisisCleanupNetworkDataSource {
     suspend fun getTeam(id: Long): NetworkTeam?
 
     suspend fun getNetworkUserRoles(): List<NetworkUserRole>
+
+    suspend fun getNetworkOrganizationUsers(
+        organizationId: Long,
+        fields: List<String>,
+        limit: Int = 600,
+    ): List<NetworkOrganizationUser>
 }

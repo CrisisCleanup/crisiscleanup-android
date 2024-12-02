@@ -69,7 +69,7 @@ interface PersonContactDao {
         SELECT pc.*
         FROM person_contacts pc
         INNER JOIN person_to_organization p2o ON pc.id=p2o.id
-        INNER JOIN organization_to_incident o2i on p2o.organization_id=o2i.id
+        INNER JOIN organization_to_incident o2i ON p2o.organization_id=o2i.id
         WHERE o2i.incident_id=:incidentId AND (
             p2o.organization_id=:organizationId OR p2o.organization_id IN (
                 SELECT affiliate_id

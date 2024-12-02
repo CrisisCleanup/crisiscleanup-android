@@ -27,3 +27,6 @@ val DateTimeFormatter.utcTimeZone: DateTimeFormatter
     get() {
         return withZone(ZoneId.of("UTC"))
     }
+
+val Instant.Companion.epochZero: Instant
+    get() = fromEpochSeconds(0)

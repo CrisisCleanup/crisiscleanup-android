@@ -5,12 +5,14 @@ import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.data.model.PersonContactEntities
 import com.crisiscleanup.core.data.model.asEntities
+import com.crisiscleanup.core.data.model.asEntity
 import com.crisiscleanup.core.data.model.asExternalModel
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDaoPlus
 import com.crisiscleanup.core.database.dao.PersonContactDao
 import com.crisiscleanup.core.database.dao.PersonContactDaoPlus
 import com.crisiscleanup.core.database.dao.UserRoleDao
 import com.crisiscleanup.core.database.dao.fts.getMatchingTeamMembers
+import com.crisiscleanup.core.database.model.PersonOrganizationCrossRef
 import com.crisiscleanup.core.database.model.UserRoleEntity
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.OrganizationIdName
@@ -18,8 +20,10 @@ import com.crisiscleanup.core.model.data.PersonContact
 import com.crisiscleanup.core.model.data.PersonOrganization
 import com.crisiscleanup.core.model.data.UserRole
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
+import com.crisiscleanup.core.network.model.NetworkOrganizationUser
 import com.crisiscleanup.core.network.model.NetworkPersonContact
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapLatest
 import javax.inject.Inject
 
@@ -41,6 +45,8 @@ interface UsersRepository {
 
     suspend fun loadUserRoles()
 
+    suspend fun queryOrganizationTeamMembers()
+
     fun streamTeamMembers(incidentId: Long, organizationId: Long): Flow<List<PersonOrganization>>
     suspend fun getMatchingTeamMembers(
         q: String,
@@ -50,6 +56,7 @@ interface UsersRepository {
 }
 
 class OfflineFirstUsersRepository @Inject constructor(
+    private val accountDataRepository: AccountDataRepository,
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val personContactDao: PersonContactDao,
     private val personContactDaoPlus: PersonContactDaoPlus,
@@ -57,6 +64,16 @@ class OfflineFirstUsersRepository @Inject constructor(
     private val userRoleDao: UserRoleDao,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : UsersRepository {
+    private val organizationUsersQueryFields = listOf(
+        "id",
+        "first_name",
+        "last_name",
+        "files",
+        "email",
+        "mobile",
+        "active_roles",
+    )
+
     override val streamUserRoleLookup = userRoleDao.streamUserRoles()
         .mapLatest { roles ->
             roles.associate {
@@ -133,6 +150,26 @@ class OfflineFirstUsersRepository @Inject constructor(
                 }
             }
             userRoleDao.upsertRoles(entities)
+        } catch (e: Exception) {
+            logger.logException(e)
+        }
+    }
+
+    override suspend fun queryOrganizationTeamMembers() {
+        try {
+            val orgId = accountDataRepository.accountData.first().org.id
+            val networkUsers =
+                networkDataSource.getNetworkOrganizationUsers(orgId, organizationUsersQueryFields)
+            val entities = networkUsers.map(NetworkOrganizationUser::asEntity)
+            personContactDao.upsert(entities)
+
+            val personOrganizationEntities = entities.map {
+                PersonOrganizationCrossRef(
+                    it.id,
+                    orgId,
+                )
+            }
+            personContactDao.upsertPersonOrganizations(personOrganizationEntities)
         } catch (e: Exception) {
             logger.logException(e)
         }

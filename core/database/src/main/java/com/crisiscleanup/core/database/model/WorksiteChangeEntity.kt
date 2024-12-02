@@ -6,6 +6,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.Index.Order
 import androidx.room.PrimaryKey
+import com.crisiscleanup.core.common.epochZero
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
@@ -54,5 +55,5 @@ data class WorksiteChangeEntity(
     @ColumnInfo("archive_action")
     val archiveAction: String = "",
     @ColumnInfo("save_attempt_at", defaultValue = "0")
-    val saveAttemptAt: Instant = Instant.fromEpochSeconds(0),
+    val saveAttemptAt: Instant = Instant.epochZero,
 )

@@ -12,9 +12,17 @@ enum class RequestHeaderKey {
     ThrowClientError,
 }
 
+/**
+ * IDs for endpoints with the exact same method and URL but must be treated as distinct endpoints
+ *
+ * For retrieving cached data.
+ * Primarily for endpoints serving different data when authenticated vs not authenticated.
+ */
 enum class EndpointRequestId {
     MyProfile,
     MyProfileNoAuth,
+    Incidents,
+    IncidentsNoAuth,
 }
 
 class RequestHeaderKeysLookup(
