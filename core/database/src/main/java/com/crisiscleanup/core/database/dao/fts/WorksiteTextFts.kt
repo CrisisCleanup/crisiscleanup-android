@@ -9,6 +9,7 @@ import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
 import com.crisiscleanup.core.database.model.WorksiteEntity
 import com.crisiscleanup.core.database.util.ftsGlobEnds
 import com.crisiscleanup.core.database.util.ftsSanitize
+import com.crisiscleanup.core.database.util.ftsSanitizeAsToken
 import com.crisiscleanup.core.database.util.intArray
 import com.crisiscleanup.core.database.util.okapiBm25Score
 import com.crisiscleanup.core.model.data.WorkType
@@ -77,9 +78,9 @@ suspend fun WorksiteDaoPlus.rebuildWorksiteTextFts(force: Boolean = false) =
         with(db.worksiteDao()) {
             var rebuild = force
             if (!force) {
-                val sourceCount = getWorksiteCount()
-                if (sourceCount > 0 && getWorksiteTextFtsCount() < sourceCount) {
-                    rebuild = true
+                getRandomWorksiteCaseNumber()?.let { caseNumber ->
+                    val ftsMatch = matchSingleWorksiteTextFts(caseNumber.ftsSanitizeAsToken)
+                    rebuild = ftsMatch.isEmpty()
                 }
             }
             if (rebuild) {

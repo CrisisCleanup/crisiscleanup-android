@@ -11,6 +11,7 @@ import com.crisiscleanup.core.database.model.PopulatedIncidentMatch
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.database.util.ftsGlobEnds
 import com.crisiscleanup.core.database.util.ftsSanitize
+import com.crisiscleanup.core.database.util.ftsSanitizeAsToken
 import com.crisiscleanup.core.database.util.intArray
 import com.crisiscleanup.core.database.util.okapiBm25Score
 import com.crisiscleanup.core.model.data.IncidentIdNameType
@@ -66,9 +67,9 @@ suspend fun IncidentDaoPlus.rebuildIncidentFts(force: Boolean = false) = db.with
     with(db.incidentDao()) {
         var rebuild = force
         if (!force) {
-            val sourceCount = getIncidentCount()
-            if (sourceCount > 0 && getIncidentFtsCount() < sourceCount) {
-                rebuild = true
+            getRandomIncidentName()?.let { incidentName ->
+                val ftsMatch = matchSingleIncidentFts(incidentName.ftsSanitizeAsToken)
+                rebuild = ftsMatch.isEmpty()
             }
         }
         if (rebuild) {

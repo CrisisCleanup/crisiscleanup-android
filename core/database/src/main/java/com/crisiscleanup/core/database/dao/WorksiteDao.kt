@@ -609,8 +609,19 @@ interface WorksiteDao {
     ): List<PopulatedFilterDataWorksite>
 
     @Transaction
-    @Query("SELECT COUNT(*) FROM worksite_text_fts_b")
-    fun getWorksiteTextFtsCount(): Int
+    @Query("SELECT case_number FROM worksites ORDER BY RANDOM() LIMIT 1")
+    fun getRandomWorksiteCaseNumber(): String?
+
+    @Transaction
+    @Query(
+        """
+        SELECT docid
+        FROM worksite_text_fts_b
+        WHERE worksite_text_fts_b MATCH :query
+        LIMIT 1
+        """,
+    )
+    fun matchSingleWorksiteTextFts(query: String): List<Long>
 
     @Transaction
     @Query("INSERT INTO worksite_text_fts_b(worksite_text_fts_b) VALUES ('rebuild')")
@@ -632,16 +643,4 @@ interface WorksiteDao {
         query: String,
         limit: Int = 250,
     ): List<PopulatedWorksiteTextMatchInfo>
-
-    @Transaction
-    @Query(
-        """
-        SELECT w.id
-        FROM worksite_text_fts_b f
-        INNER JOIN worksites w ON f.docid=w.id
-        WHERE worksite_text_fts_b MATCH :query
-        LIMIT 1
-        """,
-    )
-    fun matchSingleWorksiteTextTokens(query: String): List<Long>
 }

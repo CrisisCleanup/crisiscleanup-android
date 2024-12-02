@@ -209,8 +209,19 @@ interface TeamDao {
     fun insertIgnoreWork(teamWork: Collection<TeamWorkEntity>)
 
     @Transaction
-    @Query("SELECT COUNT(*) FROM team_fts")
-    fun getTeamFtsCount(): Int
+    @Query("SELECT name FROM teams ORDER BY RANDOM() LIMIT 1")
+    fun getRandomTeamName(): String?
+
+    @Transaction
+    @Query(
+        """
+        SELECT docid
+        FROM team_fts
+        WHERE team_fts MATCH :query
+        LIMIT 1
+        """,
+    )
+    fun matchSingleTeamFts(query: String): List<Long>
 
     @Transaction
     @Query("INSERT INTO team_fts(team_fts) VALUES ('rebuild')")

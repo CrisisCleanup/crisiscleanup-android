@@ -9,6 +9,7 @@ import com.crisiscleanup.core.database.dao.IncidentOrganizationDaoPlus
 import com.crisiscleanup.core.database.model.IncidentOrganizationEntity
 import com.crisiscleanup.core.database.util.ftsGlobEnds
 import com.crisiscleanup.core.database.util.ftsSanitize
+import com.crisiscleanup.core.database.util.ftsSanitizeAsToken
 import com.crisiscleanup.core.database.util.intArray
 import com.crisiscleanup.core.database.util.okapiBm25Score
 import com.crisiscleanup.core.model.data.OrganizationIdName
@@ -60,9 +61,9 @@ suspend fun IncidentOrganizationDaoPlus.rebuildOrganizationFts(force: Boolean = 
         with(db.incidentOrganizationDao()) {
             var rebuild = force
             if (!force) {
-                val sourceCount = getOrganizationCount()
-                if (sourceCount > 0 && getOrganizationFtsCount() < sourceCount) {
-                    rebuild = true
+                getRandomOrganizationName()?.let { orgName ->
+                    val ftsMatch = matchSingleOrganizationFts(orgName.ftsSanitizeAsToken)
+                    rebuild = ftsMatch.isEmpty()
                 }
             }
             if (rebuild) {

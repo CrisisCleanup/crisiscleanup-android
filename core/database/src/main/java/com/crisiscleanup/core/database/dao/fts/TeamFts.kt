@@ -11,6 +11,7 @@ import com.crisiscleanup.core.database.model.TeamEntity
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.database.util.ftsGlobEnds
 import com.crisiscleanup.core.database.util.ftsSanitize
+import com.crisiscleanup.core.database.util.ftsSanitizeAsToken
 import com.crisiscleanup.core.database.util.intArray
 import com.crisiscleanup.core.database.util.okapiBm25Score
 import kotlinx.coroutines.coroutineScope
@@ -63,9 +64,9 @@ suspend fun TeamDaoPlus.rebuildTeamFts(force: Boolean = false) = db.withTransact
     with(db.teamDao()) {
         var rebuild = force
         if (!force) {
-            val sourceCount = getTeamCount()
-            if (sourceCount > 0 && getTeamFtsCount() < sourceCount) {
-                rebuild = true
+            getRandomTeamName()?.let { teamName ->
+                val ftsMatch = matchSingleTeamFts(teamName.ftsSanitizeAsToken)
+                rebuild = ftsMatch.isEmpty()
             }
         }
         if (rebuild) {

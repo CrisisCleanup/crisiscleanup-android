@@ -27,7 +27,6 @@ import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.commoncase.CasesConstant.MAP_MARKERS_ZOOM_LEVEL
 import com.crisiscleanup.core.commoncase.CasesCounter
-import com.crisiscleanup.core.commoncase.map.CaseDotsMapTileRenderer
 import com.crisiscleanup.core.commoncase.map.CasesMapBoundsManager
 import com.crisiscleanup.core.commoncase.map.CasesMapMarkerManager
 import com.crisiscleanup.core.commoncase.map.CasesMapTileLayerManager

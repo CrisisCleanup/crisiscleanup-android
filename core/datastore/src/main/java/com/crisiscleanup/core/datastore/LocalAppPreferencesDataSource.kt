@@ -160,7 +160,6 @@ class LocalAppPreferencesDataSource @Inject constructor(
         }
     }
 
-
     suspend fun setShareLocationWithOrg(share: Boolean) {
         userPreferences.updateData {
             it.copy { shareLocationWithOrg = share }

@@ -413,7 +413,6 @@ private fun LazyListScope.toggleItem(
     isToggledOn: Boolean,
     onToggle: (Boolean) -> Unit,
 ) {
-
     item(
         key = "toggle-$translateKey",
         contentType = "toggle-item",
