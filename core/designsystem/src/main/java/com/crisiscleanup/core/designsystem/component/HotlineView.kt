@@ -47,7 +47,7 @@ fun HotlineIncidentView(
     activePhoneNumbers: List<String>,
     linkifyNumbers: Boolean = false,
 ) {
-    val phoneNumbers = activePhoneNumbers.combineTrimText(", ")
+    val phoneNumbers = activePhoneNumbers.combineTrimText()
     val text = "$name: $phoneNumbers"
     val modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer)
         .then(listItemModifier)
