@@ -21,8 +21,7 @@ import kotlinx.datetime.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
 
-// TODO Rename to AppInfoRepository
-interface LocalAppMetricsRepository {
+interface AppMetricsRepository {
     val metrics: Flow<AppMetricsData>
 
     suspend fun setEarlybirdEnd(end: BuildEndOfLife)
@@ -35,16 +34,15 @@ interface LocalAppMetricsRepository {
     fun saveAppSupportInfo()
 }
 
-// TODO Rename to AppInfoRepositoryImpl
 @Singleton
-class AppMetricsRepository @Inject constructor(
+class AppMetricsRepositoryImpl @Inject constructor(
     private val dataSource: LocalAppMetricsDataSource,
     private val appSupportNetworkDataSource: AppSupportClient,
     private val appEnv: AppEnv,
     @ApplicationScope private val externalScope: CoroutineScope,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
-) : LocalAppMetricsRepository {
+) : AppMetricsRepository {
     override val metrics: Flow<AppMetricsData> = dataSource.metrics
 
     override suspend fun setEarlybirdEnd(end: BuildEndOfLife) {

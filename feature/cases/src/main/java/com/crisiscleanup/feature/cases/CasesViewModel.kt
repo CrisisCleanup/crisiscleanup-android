@@ -49,7 +49,7 @@ import com.crisiscleanup.core.data.di.CasesFilterTypes
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.CasesFilterRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
-import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
+import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
@@ -117,7 +117,7 @@ class CasesViewModel @Inject constructor(
     private val locationProvider: LocationProvider,
     @CasesFilterType(CasesFilterTypes.Cases)
     filterRepository: CasesFilterRepository,
-    private val appPreferencesRepository: LocalAppPreferencesRepository,
+    private val appPreferencesRepository: AppPreferencesRepository,
     worksiteProvider: WorksiteProvider,
     worksiteChangeRepository: WorksiteChangeRepository,
     accountDataRepository: AccountDataRepository,
@@ -163,7 +163,7 @@ class CasesViewModel @Inject constructor(
 
     private val tableDataDistanceSortSearchRadius = 100.0f
 
-    val tableViewSort = appPreferencesRepository.userPreferences
+    val tableViewSort = appPreferencesRepository.preferences
         .map { it.tableViewSortBy }
         .distinctUntilChanged()
         .stateIn(
@@ -610,7 +610,7 @@ class CasesViewModel @Inject constructor(
 
     private fun setSortBy(sortBy: WorksiteSortBy) {
         viewModelScope.launch(ioDispatcher) {
-            if (sortBy != appPreferencesRepository.userPreferences.first().tableViewSortBy) {
+            if (sortBy != appPreferencesRepository.preferences.first().tableViewSortBy) {
                 tableViewSortChange.set(true)
                 appPreferencesRepository.setTableViewSortBy(sortBy)
             }

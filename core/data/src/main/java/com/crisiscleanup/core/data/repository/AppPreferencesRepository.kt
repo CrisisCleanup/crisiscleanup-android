@@ -17,15 +17,46 @@ import org.jetbrains.annotations.VisibleForTesting
 import javax.inject.Inject
 import javax.inject.Singleton
 
+interface AppPreferencesRepository {
+    val preferences: Flow<UserData>
+
+    /**
+     * Sets the desired dark theme config.
+     */
+    suspend fun setDarkThemeConfig(darkThemeConfig: DarkThemeConfig)
+
+    /**
+     * Sets whether the user has completed the onboarding process.
+     */
+    suspend fun setShouldHideOnboarding(shouldHideOnboarding: Boolean)
+
+    suspend fun setHideGettingStartedVideo(hide: Boolean)
+
+    suspend fun setMenuTutorialDone(isDone: Boolean)
+
+    /**
+     * Caches ID of selected incident.
+     */
+    suspend fun setSelectedIncident(id: Long)
+
+    suspend fun setLanguageKey(key: String)
+
+    suspend fun setTableViewSortBy(sortBy: WorksiteSortBy)
+
+    suspend fun setAnalytics(allowAll: Boolean)
+
+    suspend fun setShareLocationWithOrg(share: Boolean)
+}
+
 @Singleton
-class AppPreferencesRepository @Inject constructor(
+class AppPreferencesRepositoryImpl @Inject constructor(
     private val preferencesDataSource: LocalAppPreferencesDataSource,
     accountEventBus: AccountEventBus,
     @ApplicationScope private val externalScope: CoroutineScope,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
-) : LocalAppPreferencesRepository {
+) : AppPreferencesRepository {
 
-    override val userPreferences: Flow<UserData> = preferencesDataSource.userData
+    override val preferences: Flow<UserData> = preferencesDataSource.userData
 
     @VisibleForTesting
     internal val observeJobs: List<Job>

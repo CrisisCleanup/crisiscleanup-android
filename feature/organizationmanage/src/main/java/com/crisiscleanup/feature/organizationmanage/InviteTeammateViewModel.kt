@@ -23,7 +23,7 @@ import com.crisiscleanup.core.data.IncidentSelectManager
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
-import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
+import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.data.repository.OrgVolunteerRepository
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.domain.IncidentsData
@@ -64,7 +64,7 @@ class InviteTeammateViewModel @Inject constructor(
     accountDataRepository: AccountDataRepository,
     incidentsRepository: IncidentsRepository,
     incidentSelector: IncidentSelector,
-    appPreferencesRepository: LocalAppPreferencesRepository,
+    appPreferencesRepository: AppPreferencesRepository,
     organizationsRepository: OrganizationsRepository,
     private val orgVolunteerRepository: OrgVolunteerRepository,
     private val inputValidator: InputValidator,

@@ -34,9 +34,9 @@ import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.sync.SyncPuller
+import com.crisiscleanup.core.data.repository.AppMetricsRepository
 import com.crisiscleanup.core.data.repository.EndOfLifeRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
-import com.crisiscleanup.core.data.repository.LocalAppMetricsRepository
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.navigationContainerColor
 import com.crisiscleanup.core.model.data.DarkThemeConfig
@@ -90,7 +90,7 @@ class MainActivity : ComponentActivity() {
     internal lateinit var endOfLifeRepository: EndOfLifeRepository
 
     @Inject
-    internal lateinit var appMetricsRepository: LocalAppMetricsRepository
+    internal lateinit var appMetricsRepository: AppMetricsRepository
 
     @Inject
     internal lateinit var languageTranslationsRepository: LanguageTranslationsRepository

@@ -17,7 +17,7 @@ interface EndOfLifeRepository {
 
 class AppEndOfLifeRepository @Inject constructor(
     private val endOfLifeClient: EndOfLifeClient,
-    private val appMetricsRepository: LocalAppMetricsRepository,
+    private val appMetricsRepository: AppMetricsRepository,
     private val appEnv: AppEnv,
     @ApplicationScope private val externalScope: CoroutineScope,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,

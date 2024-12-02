@@ -1,6 +1,6 @@
 package com.crisiscleanup.core.testing.repository
 
-import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
+import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.model.data.DarkThemeConfig
 import com.crisiscleanup.core.model.data.SyncAttempt
 import com.crisiscleanup.core.model.data.UserData
@@ -23,13 +23,13 @@ private val emptyUserData = UserData(
     shareLocationWithOrg = false,
 )
 
-class TestLocalAppPreferencesRepository : LocalAppPreferencesRepository {
+class TestLocalAppPreferencesRepository : AppPreferencesRepository {
     private val userDataInternal =
         MutableSharedFlow<UserData>(replay = 1, onBufferOverflow = DROP_OLDEST)
 
     private val currentUserData get() = userDataInternal.replayCache.firstOrNull() ?: emptyUserData
 
-    override val userPreferences: Flow<UserData> = userDataInternal.filterNotNull()
+    override val preferences: Flow<UserData> = userDataInternal.filterNotNull()
 
     override suspend fun setDarkThemeConfig(darkThemeConfig: DarkThemeConfig) {
         currentUserData.let { current ->

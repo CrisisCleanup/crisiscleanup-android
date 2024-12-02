@@ -8,7 +8,7 @@ import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.event.AccountEventBus
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.data.repository.AccountDataRepository
-import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
+import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.model.data.DarkThemeConfig
 import com.crisiscleanup.core.model.data.EnglishLanguage
@@ -69,7 +69,7 @@ class AuthenticationViewModelTest {
     lateinit var accountEventBus: AccountEventBus
 
     @MockK
-    lateinit var appPreferences: LocalAppPreferencesRepository
+    lateinit var appPreferences: AppPreferencesRepository
 
     @MockK
     lateinit var translator: KeyResourceTranslator
@@ -122,7 +122,7 @@ class AuthenticationViewModelTest {
 
         // TODO How to mock SaveCredentialsManager with coroutineScope=viewModelScope
         coEvery {
-            appPreferences.userPreferences
+            appPreferences.preferences
         } returns flowOf(
             UserData(
                 darkThemeConfig = DarkThemeConfig.FOLLOW_SYSTEM,

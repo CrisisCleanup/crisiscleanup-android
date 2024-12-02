@@ -22,7 +22,7 @@ interface ShareLocationRepository {
 class CrisisCleanupShareLocationRepository @Inject
 constructor(
     private val accountDataRepository: AccountDataRepository,
-    private val appPreferencesRepository: LocalAppPreferencesRepository,
+    private val appPreferencesRepository: AppPreferencesRepository,
     private val appMetricsRepository: AppMetricsRepository,
     private val locationProvider: LocationProvider,
     private val writeApiClient: CrisisCleanupWriteApi,
@@ -37,7 +37,7 @@ constructor(
 
     override suspend fun shareLocation() {
         val shareLocationWithOrg =
-            appPreferencesRepository.userPreferences.first().shareLocationWithOrg
+            appPreferencesRepository.preferences.first().shareLocationWithOrg
         val areTokensValid = accountDataRepository.accountData.first().areTokensValid
         val lastAppOpen = appMetricsRepository.metrics.first().appOpen.date
         val now = Clock.System.now()

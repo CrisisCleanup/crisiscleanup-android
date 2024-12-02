@@ -21,7 +21,8 @@ import com.crisiscleanup.core.data.repository.AccountUpdateRepository
 import com.crisiscleanup.core.data.repository.AppDataManagementRepository
 import com.crisiscleanup.core.data.repository.AppEndOfLifeRepository
 import com.crisiscleanup.core.data.repository.AppMetricsRepository
-import com.crisiscleanup.core.data.repository.AppPreferencesRepository
+import com.crisiscleanup.core.data.repository.AppMetricsRepositoryImpl
+import com.crisiscleanup.core.data.repository.AppPreferencesRepositoryImpl
 import com.crisiscleanup.core.data.repository.CaseHistoryRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupAccountDataRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupAccountUpdateRepository
@@ -41,8 +42,7 @@ import com.crisiscleanup.core.data.repository.EquipmentRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
 import com.crisiscleanup.core.data.repository.ListsRepository
-import com.crisiscleanup.core.data.repository.LocalAppMetricsRepository
-import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
+import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.data.repository.LocalImageRepository
 import com.crisiscleanup.core.data.repository.LocationsRepository
 import com.crisiscleanup.core.data.repository.MemoryCacheSearchWorksitesRepository
@@ -86,14 +86,14 @@ interface DataModule {
     @Singleton
     @Binds
     fun bindsLocalAppPreferencesRepository(
-        repository: AppPreferencesRepository,
-    ): LocalAppPreferencesRepository
+        repository: AppPreferencesRepositoryImpl,
+    ): AppPreferencesRepository
 
     @Singleton
     @Binds
     fun bindsLocalAppMetricsRepository(
-        repository: AppMetricsRepository,
-    ): LocalAppMetricsRepository
+        repository: AppMetricsRepositoryImpl,
+    ): AppMetricsRepository
 
     @Singleton
     @Binds

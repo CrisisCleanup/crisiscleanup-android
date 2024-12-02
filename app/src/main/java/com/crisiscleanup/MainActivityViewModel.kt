@@ -29,8 +29,8 @@ import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AccountUpdateRepository
 import com.crisiscleanup.core.data.repository.AppDataManagementRepository
-import com.crisiscleanup.core.data.repository.LocalAppMetricsRepository
-import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
+import com.crisiscleanup.core.data.repository.AppMetricsRepository
+import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.data.repository.ShareLocationRepository
 import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.model.data.AppMetricsData
@@ -63,8 +63,8 @@ import kotlin.time.Duration.Companion.hours
 
 @HiltViewModel
 class MainActivityViewModel @Inject constructor(
-    private val appPreferencesRepository: LocalAppPreferencesRepository,
-    private val appMetricsRepository: LocalAppMetricsRepository,
+    private val appPreferencesRepository: AppPreferencesRepository,
+    private val appMetricsRepository: AppMetricsRepository,
     accountDataRepository: AccountDataRepository,
     incidentSelector: IncidentSelector,
     appDataRepository: AppDataManagementRepository,
@@ -93,7 +93,7 @@ class MainActivityViewModel @Inject constructor(
     private val initialAppOpen = AtomicReference<AppOpenInstant>(null)
 
     val viewState = combine(
-        appPreferencesRepository.userPreferences,
+        appPreferencesRepository.preferences,
         appMetricsRepository.metrics.distinctUntilChanged(),
         ::Pair,
     )
@@ -222,7 +222,7 @@ class MainActivityViewModel @Inject constructor(
             .flowOn(ioDispatcher)
             .launchIn(viewModelScope)
 
-        appPreferencesRepository.userPreferences.onEach {
+        appPreferencesRepository.preferences.onEach {
             firebaseAnalytics.setAnalyticsCollectionEnabled(it.allowAllAnalytics)
 
             shareLocationWithOrganization()

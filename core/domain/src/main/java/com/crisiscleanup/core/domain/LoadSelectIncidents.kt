@@ -3,7 +3,7 @@ package com.crisiscleanup.core.domain
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
-import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
+import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.Incident
 import kotlinx.coroutines.CoroutineScope
@@ -19,7 +19,7 @@ class LoadSelectIncidents(
     incidentsRepository: IncidentsRepository,
     accountDataRepository: AccountDataRepository,
     private val incidentSelector: IncidentSelector,
-    private val appPreferencesRepository: LocalAppPreferencesRepository,
+    private val appPreferencesRepository: AppPreferencesRepository,
     private val coroutineScope: CoroutineScope,
 ) {
     val data = combine(
@@ -37,7 +37,7 @@ class LoadSelectIncidents(
         .map { incidents ->
             var selectedId = incidentSelector.incidentId.first()
             if (selectedId == EmptyIncident.id) {
-                selectedId = appPreferencesRepository.userPreferences.first().selectedIncidentId
+                selectedId = appPreferencesRepository.preferences.first().selectedIncidentId
             }
 
             // Update incident data or select first if current incident (ID) not found

@@ -58,7 +58,7 @@ interface LanguageTranslationsRepository : KeyTranslator {
 
 @Singleton
 class OfflineFirstLanguageTranslationsRepository @Inject constructor(
-    private val appPreferences: LocalAppPreferencesRepository,
+    private val appPreferences: AppPreferencesRepository,
     private val dataSource: CrisisCleanupNetworkDataSource,
     private val languageDao: LanguageDao,
     private val languageDaoPlus: LanguageDaoPlus,
@@ -85,7 +85,7 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000),
         )
 
-    private val languageTranslations = appPreferences.userPreferences.flatMapLatest {
+    private val languageTranslations = appPreferences.preferences.flatMapLatest {
         val key = it.languageKey.ifBlank { EnglishLanguage.key }
         languageDao.streamLanguageTranslations(key)
             .mapLatest { translation -> translation?.asExternalModel() }

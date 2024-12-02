@@ -37,10 +37,10 @@ class AppPreferencesRepositoryTest {
     private fun setupTestRepository(
         testScheduler: TestCoroutineScheduler,
         testScope: CoroutineScope,
-    ): Pair<AppPreferencesRepository, AccountEventBus> {
+    ): Pair<AppPreferencesRepositoryImpl, AccountEventBus> {
         val dispatcher = StandardTestDispatcher(testScheduler)
         val bus = CrisisCleanupAccountEventBus(testScope)
-        val repository = AppPreferencesRepository(
+        val repository = AppPreferencesRepositoryImpl(
             preferencesDataSource,
             bus,
             testScope,
@@ -64,8 +64,9 @@ class AppPreferencesRepositoryTest {
                 allowAllAnalytics = false,
                 hideGettingStartedVideo = false,
                 isMenuTutorialDone = false,
+                shareLocationWithOrg = false,
             ),
-            repository.userPreferences.first(),
+            repository.preferences.first(),
         )
 
         repository.observeJobs.forEach(Job::cancel)
@@ -79,7 +80,7 @@ class AppPreferencesRepositoryTest {
 
         assertEquals(
             DarkThemeConfig.DARK,
-            repository.userPreferences
+            repository.preferences
                 .map { it.darkThemeConfig }
                 .first(),
         )

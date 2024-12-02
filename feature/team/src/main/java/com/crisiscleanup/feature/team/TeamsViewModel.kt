@@ -22,7 +22,7 @@ import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.EquipmentRepository
 import com.crisiscleanup.core.data.repository.IncidentTeams
 import com.crisiscleanup.core.data.repository.IncidentsRepository
-import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
+import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.data.repository.TeamsRepository
 import com.crisiscleanup.core.data.repository.UsersRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
@@ -60,7 +60,7 @@ class TeamsViewModel @Inject constructor(
     worksitesRepository: WorksitesRepository,
     val incidentSelector: IncidentSelector,
     private val accountDataRepository: AccountDataRepository,
-    appPreferencesRepository: LocalAppPreferencesRepository,
+    appPreferencesRepository: AppPreferencesRepository,
     private val teamsRepository: TeamsRepository,
     private val usersRepository: UsersRepository,
     private val equipmentRepository: EquipmentRepository,

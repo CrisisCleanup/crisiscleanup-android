@@ -4,7 +4,7 @@ import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.data.di.DataModule
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AppPreferencesRepository
-import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
+import com.crisiscleanup.core.data.repository.AppPreferencesRepositoryImpl
 import com.crisiscleanup.core.data.repository.fake.FakeAccountRepository
 import dagger.Binds
 import dagger.Module
@@ -19,8 +19,8 @@ import dagger.hilt.testing.TestInstallIn
 interface TestDataModule {
     @Binds
     fun bindsLocalAppPreferencesRepository(
-        localAppPreferencesRepository: AppPreferencesRepository,
-    ): LocalAppPreferencesRepository
+        repository: AppPreferencesRepositoryImpl,
+    ): AppPreferencesRepository
 
     @Binds
     fun bindsAccountDataRepository(

@@ -18,7 +18,7 @@ import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.ListsRepository
-import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
+import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.domain.LoadSelectIncidents
 import com.crisiscleanup.core.model.data.CrisisCleanupList
 import com.crisiscleanup.core.model.data.EmptyIncident
@@ -44,7 +44,7 @@ class ViewListViewModel @Inject constructor(
     private val incidentsRepository: IncidentsRepository,
     accountDataRepository: AccountDataRepository,
     private val incidentSelector: IncidentSelector,
-    appPreferencesRepository: LocalAppPreferencesRepository,
+    appPreferencesRepository: AppPreferencesRepository,
     private val translator: KeyResourceTranslator,
     @Logger(CrisisCleanupLoggers.Lists) private val logger: AppLogger,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,

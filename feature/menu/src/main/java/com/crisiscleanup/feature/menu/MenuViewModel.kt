@@ -21,7 +21,7 @@ import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupAccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
-import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
+import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.data.repository.SyncLogRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.ui.TutorialViewTracker
@@ -42,7 +42,7 @@ class MenuViewModel @Inject constructor(
     private val accountDataRepository: AccountDataRepository,
     private val accountDataRefresher: AccountDataRefresher,
     private val appVersionProvider: AppVersionProvider,
-    private val appPreferencesRepository: LocalAppPreferencesRepository,
+    private val appPreferencesRepository: AppPreferencesRepository,
     appSettingsProvider: AppSettingsProvider,
     private val appEnv: AppEnv,
     private val syncPuller: SyncPuller,
@@ -90,15 +90,15 @@ class MenuViewModel @Inject constructor(
     val databaseVersionText: String
         get() = if (isNotProduction) "DB ${databaseVersionProvider.databaseVersion}" else ""
 
-    val isSharingAnalytics = appPreferencesRepository.userPreferences.map {
+    val isSharingAnalytics = appPreferencesRepository.preferences.map {
         it.allowAllAnalytics
     }
 
-    val isSharingLocation = appPreferencesRepository.userPreferences.map {
+    val isSharingLocation = appPreferencesRepository.preferences.map {
         it.shareLocationWithOrg
     }
 
-    val menuItemVisibility = appPreferencesRepository.userPreferences
+    val menuItemVisibility = appPreferencesRepository.preferences
         .map {
             MenuItemVisibility(
                 showOnboarding = !it.shouldHideOnboarding,
@@ -111,7 +111,7 @@ class MenuViewModel @Inject constructor(
             started = ReplaySubscribed3,
         )
 
-    val isMenuTutorialDone = appPreferencesRepository.userPreferences.map {
+    val isMenuTutorialDone = appPreferencesRepository.preferences.map {
         it.isMenuTutorialDone
     }
 
