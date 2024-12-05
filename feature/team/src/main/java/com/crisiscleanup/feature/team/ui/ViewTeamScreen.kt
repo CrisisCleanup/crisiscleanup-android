@@ -670,6 +670,14 @@ private fun TeamStatisticsView(
 ) {
     val t = LocalAppTranslator.current
 
+    val completionPercentage = team.metrics.workCompletePercentage
+    // TODO style only needs changing when screen is thin
+    val statisticsStyle = if (completionPercentage > 99.9) {
+        LocalFontStyles.current.titleStatistics100
+    } else {
+        LocalFontStyles.current.titleStatistics
+    }
+
     CardSurface {
         Row(
             fillWidthPadded,
@@ -678,8 +686,8 @@ private fun TeamStatisticsView(
         ) {
             Column(Modifier.weight(1f)) {
                 Text(
-                    "${team.metrics.workCompletePercentage}%",
-                    style = LocalFontStyles.current.titleStatistics,
+                    "$completionPercentage%",
+                    style = statisticsStyle,
                 )
                 Text(
                     t("~~Completion rate"),
