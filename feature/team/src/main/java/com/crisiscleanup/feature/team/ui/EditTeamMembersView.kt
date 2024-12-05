@@ -101,36 +101,38 @@ internal fun EditTeamMembersView(
                 }
             }
 
-            if (isMemberDropdownExpanded && members.isNotEmpty()) {
-                items(
-                    members,
-                    key = { "member-${it.id}" },
-                    contentType = { "member-contact-item" },
-                ) { person ->
-                    TeamMemberCardView(
-                        person,
-                        emptyMap(),
-                        userRoleLookup,
-                    ) {
-                        CrisisCleanupButton(
-                            text = t("~~Remove"),
-                            onClick = { onRemoveMember(person) },
-                            enabled = isEditable,
+            if (isMemberDropdownExpanded) {
+                if (members.isNotEmpty()) {
+                    items(
+                        members,
+                        key = { "member-${it.id}" },
+                        contentType = { "member-contact-item" },
+                    ) { person ->
+                        TeamMemberCardView(
+                            person,
+                            emptyMap(),
+                            userRoleLookup,
+                        ) {
+                            CrisisCleanupButton(
+                                text = t("~~Remove"),
+                                onClick = { onRemoveMember(person) },
+                                enabled = isEditable,
+                            )
+                        }
+                    }
+                } else {
+                    item {
+                        Text(
+                            "~~Add team members listed below.",
+                            listItemModifier
+                                // TODO Common dimensions
+                                .padding(start = 16.dp),
                         )
                     }
                 }
 
                 contentSpacerItem()
             }
-
-            sectionHeaderItem(
-                t("~~Invite users to join"),
-                itemKey = "invite-user-text",
-            )
-
-            // TODO Input and send invites for users to join team
-
-            contentSpacerItem()
 
             val isOutOfUsers = membersState.q.isEmpty() && membersState.members.isEmpty()
             if (isOutOfUsers) {
