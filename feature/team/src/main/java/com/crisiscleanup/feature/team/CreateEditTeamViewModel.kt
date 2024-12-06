@@ -41,6 +41,8 @@ import com.crisiscleanup.core.data.UserRoleRefresher
 import com.crisiscleanup.core.data.WorksiteInteractor
 import com.crisiscleanup.core.data.di.CasesFilterType
 import com.crisiscleanup.core.data.di.CasesFilterTypes
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AppDataManagementRepository
 import com.crisiscleanup.core.data.repository.CasesFilterRepository
@@ -138,6 +140,8 @@ class CreateEditTeamViewModel @Inject constructor(
     private val incidentIdArg = teamEditorArgs.incidentId
     private val teamIdArg = teamEditorArgs.teamId
     private val startingEditorStepArg = stepFromLiteral(teamEditorArgs.editorStep)
+    private val searchIncidentId = teamEditorArgs.selectedIncidentId
+    private val searchWorksiteId = teamEditorArgs.selectedWorksiteId
 
     private val stepTabOrder = MutableStateFlow(
         listOf(
@@ -556,6 +560,13 @@ class CreateEditTeamViewModel @Inject constructor(
     }
 
     private suspend fun setTileRendererLocation() = caseMapManager.setTileRendererLocation()
+
+    fun onAssignCase(existingWorksite: ExistingWorksiteIdentifier) {
+        if (existingWorksite != ExistingWorksiteIdentifierNone) {
+            // TODO Assign only if not already assigned
+            logger.logDebug("Assign Case to team $existingWorksite")
+        }
+    }
 
     fun saveChanges(
         claimUnclaimed: Boolean,

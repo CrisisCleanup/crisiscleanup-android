@@ -293,6 +293,7 @@ class ViewTeamViewModel @Inject constructor(
 
     fun onJoinLeaveTeam() {
         // TODO Push team change (join/leave) and update loading
+        logger.logDebug("Join/leave team ${editableTeamProvider.editableTeam.value}")
     }
 
     private fun makeInviteUrl(userId: Long, invite: JoinOrgTeamInvite): String {

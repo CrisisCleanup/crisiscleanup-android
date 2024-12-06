@@ -1,7 +1,10 @@
 package com.crisiscleanup.feature.team.navigation
 
 import android.util.Log
+import androidx.compose.runtime.remember
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
@@ -11,8 +14,11 @@ import androidx.navigation.navArgument
 import com.crisiscleanup.core.appnav.RouteConstant.TEAM_EDITOR_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.TEAM_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.VIEW_TEAM_ROUTE
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
 import com.crisiscleanup.core.model.data.EmptyCleanupTeam
 import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.feature.team.model.TeamEditorStep
 import com.crisiscleanup.feature.team.ui.CreateEditTeamRoute
 import com.crisiscleanup.feature.team.ui.TeamsRoute
@@ -21,6 +27,8 @@ import com.crisiscleanup.feature.team.ui.ViewTeamRoute
 private const val INCIDENT_ID_ARG = "incidentId"
 private const val TEAM_ID_ARG = "teamId"
 private const val TEAM_EDITOR_STEP = "teamEditorStep"
+private const val TEAM_CASE_SEARCH_INCIDENT_ID = "searchIncidentId"
+private const val TEAM_CASE_SEARCH_WORKSITE_ID = "searchWorksiteId"
 
 internal class ViewTeamArgs(val incidentId: Long, val teamId: Long) {
     constructor(savedStateHandle: SavedStateHandle) : this(
@@ -33,11 +41,15 @@ internal class TeamEditorArgs(
     val incidentId: Long,
     val teamId: Long,
     val editorStep: String,
+    val selectedIncidentId: Long?,
+    val selectedWorksiteId: Long?,
 ) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         checkNotNull(savedStateHandle[INCIDENT_ID_ARG]),
         checkNotNull(savedStateHandle[TEAM_ID_ARG]),
         checkNotNull(savedStateHandle[TEAM_EDITOR_STEP]),
+        savedStateHandle[TEAM_CASE_SEARCH_INCIDENT_ID],
+        savedStateHandle[TEAM_CASE_SEARCH_WORKSITE_ID],
     )
 }
 
@@ -122,8 +134,17 @@ fun NavGraphBuilder.viewTeamScreen(
     }
 }
 
+fun NavBackStackEntry.setCaseSearchResult(incidentId: Long, worksiteId: Long) {
+    savedStateHandle.apply {
+        set(TEAM_CASE_SEARCH_INCIDENT_ID, incidentId)
+        set(TEAM_CASE_SEARCH_WORKSITE_ID, worksiteId)
+    }
+}
+
 fun NavGraphBuilder.teamEditorScreen(
+    navController: NavController,
     onBack: () -> Unit,
+    openSearchCases: () -> Unit = {},
     openFilterCases: () -> Unit = {},
 ) {
     val args = listOf(
@@ -147,8 +168,40 @@ fun NavGraphBuilder.teamEditorScreen(
             },
         ),
     ) {
+        val searchWorksiteId =
+            navController.currentBackStackEntry?.savedStateHandle?.getStateFlow<Long?>(
+                TEAM_CASE_SEARCH_WORKSITE_ID,
+                EmptyWorksite.id,
+            )?.collectAsStateWithLifecycle()?.value ?: EmptyWorksite.id
+        val hasCaseSearchResult = searchWorksiteId != EmptyWorksite.id
+        val takeExistingWorksiteState =
+            remember(navController) {
+                {
+                    var existingWorksite = ExistingWorksiteIdentifierNone
+
+                    navController.currentBackStackEntry?.savedStateHandle?.let { state ->
+                        state.get<Long>(TEAM_CASE_SEARCH_INCIDENT_ID)?.let { incidentId ->
+                            state.get<Long>(TEAM_CASE_SEARCH_WORKSITE_ID)?.let { worksiteId ->
+                                existingWorksite = ExistingWorksiteIdentifier(
+                                    incidentId = incidentId,
+                                    worksiteId = worksiteId,
+                                )
+
+                                state[TEAM_CASE_SEARCH_INCIDENT_ID] = EmptyIncident.id
+                                state[TEAM_CASE_SEARCH_WORKSITE_ID] = EmptyWorksite.id
+                            }
+                        }
+                    }
+
+                    existingWorksite
+                }
+            }
+
         CreateEditTeamRoute(
             onBack,
+            hasCaseSearchResult,
+            takeSearchResult = takeExistingWorksiteState,
+            onSearchCases = openSearchCases,
             onFilterCases = openFilterCases,
         )
     }

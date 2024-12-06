@@ -68,7 +68,7 @@ fun CrisisCleanupIconTextButton(
 }
 
 @Preview
-@Composable()
+@Composable
 private fun CrisisCleanupIconTextButtonPreview() {
     CrisisCleanupIconTextButton(
         modifier = listItemModifier,

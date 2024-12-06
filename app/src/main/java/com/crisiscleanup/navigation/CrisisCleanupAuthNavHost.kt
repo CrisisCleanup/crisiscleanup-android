@@ -19,13 +19,13 @@ import com.crisiscleanup.feature.authentication.navigation.navigateToForgotPassw
 import com.crisiscleanup.feature.authentication.navigation.navigateToLoginWithEmail
 import com.crisiscleanup.feature.authentication.navigation.navigateToLoginWithPhone
 import com.crisiscleanup.feature.authentication.navigation.navigateToVolunteerOrg
-import com.crisiscleanup.feature.authentication.navigation.navigateToVolunteerPasteInviteLink
-import com.crisiscleanup.feature.authentication.navigation.navigateToVolunteerRequestAccess
 import com.crisiscleanup.feature.authentication.navigation.orgPersistentInviteScreen
 import com.crisiscleanup.feature.authentication.navigation.requestAccessScreen
 import com.crisiscleanup.feature.authentication.navigation.resetPasswordScreen
 import com.crisiscleanup.feature.authentication.navigation.volunteerOrgScreen
-import com.crisiscleanup.feature.qrcode.navigation.navigateToVolunteerScanQrCode
+import com.crisiscleanup.feature.authentication.navigation.volunteerPasteInviteLinkScreen
+import com.crisiscleanup.feature.authentication.navigation.volunteerRequestAccessScreen
+import com.crisiscleanup.feature.qrcode.navigation.volunteerScanQrCode
 
 private fun NavController.popToAuth() {
     popBackStack(AUTH_ROUTE, false, saveState = false)
@@ -90,12 +90,12 @@ fun CrisisCleanupAuthNavHost(
                 volunteerOrgScreen(
                     navController = navController,
                     nestedGraphs = {
-                        navigateToVolunteerPasteInviteLink(navController, onBack)
-                        navigateToVolunteerRequestAccess(
+                        volunteerPasteInviteLinkScreen(navController, onBack)
+                        volunteerRequestAccessScreen(
                             onBack,
                             closeRequestAccess = navToLoginWithEmail,
                         )
-                        navigateToVolunteerScanQrCode(onBack)
+                        volunteerScanQrCode(onBack)
                     },
                     onBack = onBack,
                 )

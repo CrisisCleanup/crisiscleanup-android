@@ -51,7 +51,7 @@ fun NavGraphBuilder.volunteerOrgScreen(
     nestedGraphs()
 }
 
-fun NavGraphBuilder.navigateToVolunteerPasteInviteLink(
+fun NavGraphBuilder.volunteerPasteInviteLinkScreen(
     navController: NavHostController,
     onBack: () -> Unit,
 ) {
@@ -70,7 +70,7 @@ fun NavGraphBuilder.navigateToVolunteerPasteInviteLink(
     }
 }
 
-fun NavGraphBuilder.navigateToVolunteerRequestAccess(
+fun NavGraphBuilder.volunteerRequestAccessScreen(
     onBack: () -> Unit,
     closeRequestAccess: () -> Unit,
 ) {

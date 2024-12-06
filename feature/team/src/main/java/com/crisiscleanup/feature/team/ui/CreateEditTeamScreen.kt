@@ -34,6 +34,8 @@ import com.crisiscleanup.core.commoncase.ui.CaseMapOverlayElements
 import com.crisiscleanup.core.commoncase.ui.CasesAction
 import com.crisiscleanup.core.commoncase.ui.CasesDownloadProgress
 import com.crisiscleanup.core.commoncase.ui.CasesMapView
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextArea
@@ -69,10 +71,22 @@ import kotlinx.coroutines.launch
 @Composable
 fun CreateEditTeamRoute(
     onBack: () -> Unit,
+    hasCaseSearchResult: Boolean,
+    takeSearchResult: () -> ExistingWorksiteIdentifier,
+    onSearchCases: () -> Unit,
     onFilterCases: () -> Unit,
+    viewModel: CreateEditTeamViewModel = hiltViewModel(),
 ) {
+    LaunchedEffect(hasCaseSearchResult) {
+        val caseSearchResult = takeSearchResult()
+        if (caseSearchResult != ExistingWorksiteIdentifierNone) {
+            viewModel.onAssignCase(caseSearchResult)
+        }
+    }
+
     CreateEditTeamView(
         onBack,
+        onSearchCases = onSearchCases,
         onFilterCases = onFilterCases,
     )
 }
@@ -80,6 +94,7 @@ fun CreateEditTeamRoute(
 @Composable
 private fun CreateEditTeamView(
     onBack: () -> Unit,
+    onSearchCases: () -> Unit,
     onFilterCases: () -> Unit,
     viewModel: CreateEditTeamViewModel = hiltViewModel(),
 ) {
@@ -124,6 +139,7 @@ private fun CreateEditTeamView(
                     onUpdateMemberFilter = viewModel::onUpdateTeamMemberFilter,
                     caseMapManager = viewModel.caseMapManager,
                     onFilterCases = onFilterCases,
+                    onSearchCases = onSearchCases,
                 )
             }
 
@@ -179,10 +195,11 @@ private fun CreateEditTeamContent(
     onRemoveTeamMember: (PersonContact) -> Unit,
     onAddTeamMember: (PersonContact) -> Unit,
     userRoleLookup: Map<Int, UserRole>,
-    memberFilter: String = "",
-    onUpdateMemberFilter: (String) -> Unit = {},
+    memberFilter: String,
+    onUpdateMemberFilter: (String) -> Unit,
     caseMapManager: TeamCaseMapManager,
-    onFilterCases: () -> Unit,
+    onSearchCases: () -> Unit = {},
+    onFilterCases: () -> Unit = {},
 ) {
     // TODO Page does not keep across first orientation change
     val pagerState = rememberPagerState(
@@ -256,6 +273,7 @@ private fun CreateEditTeamContent(
                     team,
                     caseMapManager,
                     onPropagateTouchScroll = setEnablePagerScroll,
+                    onSearchCases = onSearchCases,
                     onFilterCases = onFilterCases,
                 )
 
@@ -358,7 +376,8 @@ private fun EditTeamCasesView(
     mapManager: TeamCaseMapManager,
     viewCase: (Long, Long) -> Boolean = { _, _ -> false },
     onPropagateTouchScroll: (Boolean) -> Unit = {},
-    onFilterCases: () -> Unit,
+    onSearchCases: () -> Unit = {},
+    onFilterCases: () -> Unit = {},
 ) {
     val mapModifier = remember(onPropagateTouchScroll) {
         Modifier.touchDownConsumer { onPropagateTouchScroll(false) }
@@ -372,6 +391,7 @@ private fun EditTeamCasesView(
                 CasesAction.ZoomToIncident -> mapManager.zoomToIncidentBounds()
                 CasesAction.ZoomIn -> mapManager.zoomIn()
                 CasesAction.ZoomOut -> mapManager.zoomOut()
+                CasesAction.Search -> onSearchCases()
                 CasesAction.Filters -> onFilterCases()
                 else -> mapManager.onCasesAction(action)
             }

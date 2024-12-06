@@ -22,7 +22,7 @@ fun NavController.navigateToTeamQrCode() {
     navigate("$TEAM_SCAN_QR_CODE_ROUTE?$IS_JOIN_TEAM_ARG=true")
 }
 
-fun NavGraphBuilder.navigateToVolunteerScanQrCode(
+fun NavGraphBuilder.volunteerScanQrCode(
     onBack: () -> Unit,
 ) {
     composable(
@@ -40,7 +40,7 @@ fun NavGraphBuilder.navigateToVolunteerScanQrCode(
     }
 }
 
-fun NavGraphBuilder.navigateToTeamScanQrCode(
+fun NavGraphBuilder.teamScanQrCode(
     onBack: () -> Unit,
 ) {
     composable(

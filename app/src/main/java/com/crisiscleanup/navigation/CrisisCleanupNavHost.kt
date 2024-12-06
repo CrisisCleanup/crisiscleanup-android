@@ -15,6 +15,7 @@ import com.crisiscleanup.core.appnav.RouteConstant.CASE_EDITOR_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.CASE_EDITOR_SEARCH_ADDRESS_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.CASE_HISTORY_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.CASE_SHARE_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.TEAM_CASES_SEARCH_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.TEAM_EDITOR_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.TEAM_SCAN_QR_CODE_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.VIEW_CASE_TRANSFER_WORK_TYPES_ROUTE
@@ -44,6 +45,7 @@ import com.crisiscleanup.feature.cases.navigation.casesGraph
 import com.crisiscleanup.feature.cases.navigation.casesSearchScreen
 import com.crisiscleanup.feature.cases.navigation.navigateToCasesFilter
 import com.crisiscleanup.feature.cases.navigation.navigateToCasesSearch
+import com.crisiscleanup.feature.cases.navigation.teamCasesSearchScreen
 import com.crisiscleanup.feature.crisiscleanuplists.navigation.listsScreen
 import com.crisiscleanup.feature.crisiscleanuplists.navigation.navigateToLists
 import com.crisiscleanup.feature.crisiscleanuplists.navigation.navigateToViewList
@@ -57,13 +59,14 @@ import com.crisiscleanup.feature.organizationmanage.navigation.navigateToInviteT
 import com.crisiscleanup.feature.organizationmanage.navigation.navigateToRequestRedeploy
 import com.crisiscleanup.feature.organizationmanage.navigation.requestRedeployScreen
 import com.crisiscleanup.feature.qrcode.navigation.navigateToTeamQrCode
-import com.crisiscleanup.feature.qrcode.navigation.navigateToTeamScanQrCode
+import com.crisiscleanup.feature.qrcode.navigation.teamScanQrCode
 import com.crisiscleanup.feature.syncinsights.navigation.navigateToSyncInsights
 import com.crisiscleanup.feature.syncinsights.navigation.syncInsightsScreen
 import com.crisiscleanup.feature.team.model.TeamEditorStep
 import com.crisiscleanup.feature.team.navigation.navigateToAssignCaseTeam
 import com.crisiscleanup.feature.team.navigation.navigateToTeamEditor
 import com.crisiscleanup.feature.team.navigation.navigateToViewTeam
+import com.crisiscleanup.feature.team.navigation.setCaseSearchResult
 import com.crisiscleanup.feature.team.navigation.teamEditorScreen
 import com.crisiscleanup.feature.team.navigation.teamsScreen
 import com.crisiscleanup.feature.team.navigation.viewTeamScreen
@@ -104,6 +107,12 @@ fun CrisisCleanupNavHost(
                 navController.navigateToExistingCase(incidentId, worksiteId)
             }
             isValid
+        }
+    }
+    val viewCaseUnit = remember(viewCase) {
+        { incidentId: Long, worksiteId: Long ->
+            viewCase(incidentId, worksiteId)
+            Unit
         }
     }
 
@@ -191,6 +200,11 @@ fun CrisisCleanupNavHost(
         }
     }
     val navToJoinTeamByQrCode = navController::navigateToTeamQrCode
+    val navToTeamSearchCases = remember(navController) {
+        {
+            navController.navigateToCasesSearch(true)
+        }
+    }
     val navToTeamFilterCases = remember(navController) {
         {
             navController.navigateToCasesFilter(true)
@@ -201,6 +215,24 @@ fun CrisisCleanupNavHost(
         remember(navController) { { navController.backOnStartingRoute(TEAM_EDITOR_ROUTE) } }
     val teamScanQrOnBack =
         remember(navController) { { navController.backOnStartingRoute(TEAM_SCAN_QR_CODE_ROUTE) } }
+    val teamSearchCasesOnBack =
+        remember(navController) { { navController.backOnRoute(TEAM_CASES_SEARCH_ROUTE) } }
+    val onAssignCaseToTeam = remember(navController) {
+        { incidentId: Long, worksiteId: Long ->
+            if (navController.currentBackStackEntry?.destination?.route == TEAM_CASES_SEARCH_ROUTE) {
+                navController.previousBackStackEntry?.let { entry ->
+                    if (entry.destination.route?.startsWith(TEAM_EDITOR_ROUTE) == true) {
+                        entry.setCaseSearchResult(
+                            incidentId = incidentId,
+                            worksiteId = worksiteId,
+                        )
+                    }
+                }
+                navController.popBackStack()
+            }
+            Unit
+        }
+    }
 
     NavHost(
         navController = navController,
@@ -209,7 +241,7 @@ fun CrisisCleanupNavHost(
     ) {
         casesGraph(
             nestedGraphs = {
-                casesSearchScreen(searchCasesOnBack, viewCase)
+                casesSearchScreen(searchCasesOnBack, viewCaseUnit)
                 caseEditorScreen(navController, caseEditorOnBack)
                 caseEditSearchAddressScreen(navController, searchAddressOnBack)
                 caseEditMoveLocationOnMapScreen(moveLocationOnBack)
@@ -242,10 +274,16 @@ fun CrisisCleanupNavHost(
                     openAssignCaseTeam = navToAssignCaseTeam,
                 )
                 teamEditorScreen(
+                    navController,
                     teamEditorOnBack,
+                    openSearchCases = navToTeamSearchCases,
                     openFilterCases = navToTeamFilterCases,
                 )
-                navigateToTeamScanQrCode(teamScanQrOnBack)
+                teamScanQrCode(teamScanQrOnBack)
+                teamCasesSearchScreen(
+                    teamSearchCasesOnBack,
+                    onAssignCaseToTeam,
+                )
             },
             openAuthentication = openAuthentication,
             openViewTeam = navController::navigateToViewTeam,

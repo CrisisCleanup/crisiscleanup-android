@@ -16,17 +16,25 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.testTag
 import com.crisiscleanup.core.common.combineTrimText
 import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
+import com.crisiscleanup.core.designsystem.LocalAppTranslator
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.theme.listItemOptionPadding
-import com.crisiscleanup.core.designsystem.theme.listRowItemStartPadding
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.optionItemPadding
 
 @Composable
 private fun CaseView(
+    isTeamCasesSearch: Boolean,
     caseSummary: CaseSummaryResult,
     modifier: Modifier,
+    isAssignEnabled: Boolean = false,
+    onAssignCaseToTeam: () -> Unit = {},
 ) {
+    val t = LocalAppTranslator.current
+
     Row(
         modifier,
+        horizontalArrangement = listItemSpacedByHalf,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         with(caseSummary) {
@@ -37,21 +45,26 @@ private fun CaseView(
                     contentDescription = summary.workType?.workTypeLiteral,
                 )
             }
-            Column(
-                Modifier
-                    .weight(1f)
-                    .listRowItemStartPadding(),
-            ) {
+            Column(Modifier.weight(1f)) {
                 with(summary) {
                     Text(listOf(name, caseNumber).combineTrimText())
                     Text(listOf(address, city, state).combineTrimText())
                 }
+            }
+
+            if (isTeamCasesSearch) {
+                CrisisCleanupButton(
+                    enabled = isAssignEnabled,
+                    text = t("actions.assign"),
+                    onClick = onAssignCaseToTeam,
+                )
             }
         }
     }
 }
 
 fun LazyListScope.listCaseResults(
+    isTeamCasesSearch: Boolean,
     worksites: List<CaseSummaryResult>,
     onCaseSelect: (CaseSummaryResult) -> Unit = {},
     itemKey: (CaseSummaryResult) -> Any = { it.listItemKey },
@@ -63,15 +76,21 @@ fun LazyListScope.listCaseResults(
         contentType = { "item-worksite" },
     ) {
         CaseView(
+            isTeamCasesSearch = isTeamCasesSearch,
             it,
             Modifier
                 .testTag("workSearchResultItem_${it.listItemKey}")
                 .clickable(
-                    enabled = isEditable,
+                    enabled = isEditable && !isTeamCasesSearch,
                     onClick = { onCaseSelect(it) },
                 )
                 .listItemOptionPadding(),
-        )
+            isAssignEnabled = isEditable,
+        ) {
+            if (isTeamCasesSearch) {
+                onCaseSelect(it)
+            }
+        }
     }
 }
 
@@ -84,6 +103,7 @@ fun ExistingCaseLocationsDropdownItems(
         DropdownMenuItem(
             text = {
                 CaseView(
+                    isTeamCasesSearch = false,
                     caseLocation,
                     Modifier
                         .fillMaxWidth()

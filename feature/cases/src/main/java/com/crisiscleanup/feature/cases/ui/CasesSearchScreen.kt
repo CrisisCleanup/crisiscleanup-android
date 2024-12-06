@@ -24,6 +24,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.commoncase.ui.listCaseResults
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.ClearableTextField
@@ -36,7 +37,6 @@ import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
-import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.cases.CasesSearchResults
@@ -44,13 +44,14 @@ import com.crisiscleanup.feature.cases.CasesSearchViewModel
 
 @Composable
 internal fun CasesSearchRoute(
+    isTeamCasesSearch: Boolean = false,
     onBack: () -> Unit = {},
-    openCase: (Long, Long) -> Boolean = { _, _ -> false },
+    openCase: (Long, Long) -> Unit = { _, _ -> },
     viewModel: CasesSearchViewModel = hiltViewModel(),
 ) {
     val selectedWorksite by viewModel.selectedWorksite.collectAsStateWithLifecycle()
-    if (selectedWorksite.second != EmptyWorksite.id) {
-        openCase(selectedWorksite.first, selectedWorksite.second)
+    if (selectedWorksite != ExistingWorksiteIdentifierNone) {
+        openCase(selectedWorksite.incidentId, selectedWorksite.worksiteId)
         viewModel.clearSelection()
     } else {
         val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
@@ -88,7 +89,8 @@ internal fun CasesSearchRoute(
                     onBack,
                     q,
                     updateQuery,
-                    isEditable,
+                    isTeamCasesSearch = isTeamCasesSearch,
+                    isEditable = isEditable,
                     hasFocus = focusOnSearchInput,
                     closeKeyboard,
                     onCaseSelect,
@@ -122,7 +124,8 @@ internal fun CasesSearchRoute(
                 onBack,
                 q,
                 updateQuery,
-                isEditable,
+                isTeamCasesSearch = isTeamCasesSearch,
+                isEditable = isEditable,
                 hasFocus = focusOnSearchInput,
                 closeKeyboard,
                 onCaseSelect,
@@ -141,6 +144,7 @@ private fun SearchCasesView(
     onBack: () -> Unit,
     q: String,
     updateQuery: (String) -> Unit,
+    isTeamCasesSearch: Boolean,
     isEditable: Boolean,
     hasFocus: Boolean,
     closeKeyboard: () -> Unit,
@@ -164,7 +168,8 @@ private fun SearchCasesView(
             )
 
             ListCases(
-                isRecentsVisible,
+                isTeamCasesSearch = isTeamCasesSearch,
+                showRecents = isRecentsVisible,
                 onCaseSelect,
                 recentCases,
                 searchResults,
@@ -224,6 +229,7 @@ private fun SearchBar(
 
 @Composable
 private fun ListCases(
+    isTeamCasesSearch: Boolean,
     showRecents: Boolean,
     onCaseSelect: (CaseSummaryResult) -> Unit,
     recentCases: List<CaseSummaryResult>,
@@ -250,7 +256,12 @@ private fun ListCases(
         } else {
             with(searchResults) {
                 if (options.isNotEmpty()) {
-                    listCaseResults(options, onCaseSelect, isEditable = isEditable)
+                    listCaseResults(
+                        isTeamCasesSearch,
+                        options,
+                        onCaseSelect,
+                        isEditable = isEditable,
+                    )
                 } else if (q.isNotBlank()) {
                     item {
                         if (!isSearching) {
@@ -287,5 +298,10 @@ private fun LazyListScope.recentCases(
         }
     }
 
-    listCaseResults(cases, onSelect, isEditable = isEditable)
+    listCaseResults(
+        isTeamCasesSearch = false,
+        cases,
+        onCaseSelect = onSelect,
+        isEditable = isEditable,
+    )
 }

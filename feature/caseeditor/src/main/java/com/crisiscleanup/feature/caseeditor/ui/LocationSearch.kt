@@ -127,6 +127,7 @@ private fun ListSearchResults(
             )
 
             listCaseResults(
+                isTeamCasesSearch = false,
                 results.worksites,
                 onCaseSelect,
                 isEditable = isEditable,

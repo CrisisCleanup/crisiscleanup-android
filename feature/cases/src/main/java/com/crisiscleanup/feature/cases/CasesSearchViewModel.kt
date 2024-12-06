@@ -15,12 +15,13 @@ import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.data.IncidentSelector
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
+import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
 import com.crisiscleanup.core.data.repository.AppDataManagementRepository
 import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.model.data.EmptyIncident
-import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.WorksiteSummary
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -85,7 +86,7 @@ class CasesSearchViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val selectedWorksite = MutableStateFlow(Pair(EmptyIncident.id, EmptyWorksite.id))
+    val selectedWorksite = MutableStateFlow(ExistingWorksiteIdentifierNone)
 
     val recentWorksites = incidentSelector.incidentId
         .flatMapLatest { incidentId ->
@@ -358,7 +359,10 @@ class CasesSearchViewModel @Inject constructor(
                 }
 
                 if (worksiteId > 0) {
-                    selectedWorksite.value = Pair(incidentId, worksiteId)
+                    selectedWorksite.value = ExistingWorksiteIdentifier(
+                        incidentId = incidentId,
+                        worksiteId = worksiteId,
+                    )
                 } else {
                     // TODO Inform wait for data to cache
                 }
@@ -371,7 +375,7 @@ class CasesSearchViewModel @Inject constructor(
     }
 
     fun clearSelection() {
-        selectedWorksite.value = Pair(EmptyIncident.id, EmptyWorksite.id)
+        selectedWorksite.value = ExistingWorksiteIdentifierNone
     }
 }
 

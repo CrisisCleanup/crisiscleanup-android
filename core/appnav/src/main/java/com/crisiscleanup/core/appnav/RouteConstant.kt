@@ -56,4 +56,5 @@ object RouteConstant {
     const val VIEW_TEAM_ROUTE = "view_team"
     const val TEAM_EDITOR_ROUTE = "team_editor"
     const val TEAM_SCAN_QR_CODE_ROUTE = "$VIEW_TEAM_ROUTE/scan_qr_code"
+    const val TEAM_CASES_SEARCH_ROUTE = "team_cases_search"
 }
