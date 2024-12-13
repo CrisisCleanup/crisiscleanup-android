@@ -58,6 +58,7 @@ import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.mapmarker.WorkTypeChipIconProvider
 import com.crisiscleanup.core.model.data.EmptyCleanupTeam
 import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.PersonContact
 import com.crisiscleanup.core.model.data.PersonOrganization
 import com.crisiscleanup.core.model.data.zeroDataProgress
@@ -111,14 +112,14 @@ class CreateEditTeamViewModel @Inject constructor(
     incidentSelector: IncidentSelector,
     dataPullReporter: IncidentDataPullReporter,
     incidentBoundsProvider: IncidentBoundsProvider,
-    worksitesRepository: WorksitesRepository,
+    private val worksitesRepository: WorksitesRepository,
     @CasesFilterType(CasesFilterTypes.TeamCases)
     mapTileRenderer: CasesOverviewMapTileRenderer,
     @CasesFilterType(CasesFilterTypes.TeamCases)
     tileProvider: TileProvider,
     @CasesFilterType(CasesFilterTypes.TeamCases)
     filterRepository: CasesFilterRepository,
-    private val mapCaseIconProvider: MapCaseIconProvider,
+    val mapCaseIconProvider: MapCaseIconProvider,
     private val worksiteInteractor: WorksiteInteractor,
     permissionManager: PermissionManager,
     locationProvider: LocationProvider,
@@ -407,6 +408,24 @@ class CreateEditTeamViewModel @Inject constructor(
         logger,
     )
 
+    private val loadingSelectedMapWorksiteId = MutableStateFlow(EmptyWorksite.id)
+    val selectedMapWorksite = MutableStateFlow(EmptyWorksite)
+    val isLoadingMapMarkerWorksite = combine(
+        loadingSelectedMapWorksiteId,
+        selectedMapWorksite,
+        ::Pair,
+    )
+        .map { (id, worksite) ->
+            worksite != EmptyWorksite &&
+                id != worksite.id
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
+            started = SharingStarted.WhileSubscribed(),
+        )
+    val isAssigningMapWorksite = MutableStateFlow(false)
+
     init {
         trimMemoryEventManager.addListener(this)
 
@@ -561,14 +580,47 @@ class CreateEditTeamViewModel @Inject constructor(
 
     private suspend fun setTileRendererLocation() = caseMapManager.setTileRendererLocation()
 
-    fun onAssignCase(existingWorksite: ExistingWorksiteIdentifier) {
-        if (existingWorksite != ExistingWorksiteIdentifierNone) {
-            // TODO Assign only if
-            //      Not already assigned
-            //      Has claimed work types
-            //      Has unclaimed work types
-            logger.logDebug("Assign Case to team $existingWorksite")
+    fun onMapCaseMarkerSelect(worksiteId: Long) {
+        if (loadingSelectedMapWorksiteId.value == worksiteId) {
+            return
         }
+        loadingSelectedMapWorksiteId.value = worksiteId
+
+        viewModelScope.launch(ioDispatcher) {
+            try {
+                selectedMapWorksite.value = worksitesRepository.getWorksite(worksiteId)
+            } catch (e: Exception) {
+                logger.logException(e)
+                // TODO Alert
+                loadingSelectedMapWorksiteId.compareAndSet(worksiteId, EmptyWorksite.id)
+            }
+        }
+    }
+
+    fun onAssignCase(existingWorksite: ExistingWorksiteIdentifier) {
+        if (!isAssigningMapWorksite.compareAndSet(false, true)) {
+            return
+        }
+
+        if (existingWorksite != ExistingWorksiteIdentifierNone) {
+            viewModelScope.launch(ioDispatcher) {
+                try {
+                    // TODO Assign only if
+                    //      Not already assigned
+                    //      Has claimed work types
+                    //      Has unclaimed work types
+                    //      Alert when unassignable
+                    Thread.sleep(1.seconds.inWholeMilliseconds)
+                    logger.logDebug("Assign Case to team $existingWorksite")
+                } finally {
+                    isAssigningMapWorksite.value = false
+                }
+            }
+        }
+    }
+
+    fun clearSelectedMapCase() {
+        selectedMapWorksite.value = EmptyWorksite
     }
 
     fun saveChanges(

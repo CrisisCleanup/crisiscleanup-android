@@ -1,6 +1,5 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,8 +21,12 @@ import com.crisiscleanup.core.designsystem.component.CardSurface
 import com.crisiscleanup.core.designsystem.component.WorkTypeAction
 import com.crisiscleanup.core.designsystem.component.WorkTypePrimaryAction
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
+import com.crisiscleanup.core.designsystem.theme.LocalDimensions
+import com.crisiscleanup.core.designsystem.theme.listItemBottomPadding
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
+import com.crisiscleanup.core.designsystem.theme.listItemTopPadding
 import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.WorkTypeStatus
@@ -40,7 +43,7 @@ private fun ClaimingOrganization(
         Row(
             modifier,
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(edgeSpacingHalf),
+            horizontalArrangement = listItemSpacedByHalf,
         ) {
             Text(name)
             val myOrganizationLabel =
@@ -68,10 +71,8 @@ private fun WorkTypeOrgClaims(
         style = MaterialTheme.typography.bodySmall,
     )
     Column(
-        Modifier.padding(bottom = edgeSpacing),
-        verticalArrangement = Arrangement.spacedBy(
-            edgeSpacingHalf,
-        ),
+        Modifier.padding(bottom = LocalDimensions.current.edgePadding),
+        verticalArrangement = listItemSpacedByHalf,
     ) {
         if (isMyOrgClaim) {
             ClaimingOrganization(myOrgName, true, modifier)
@@ -99,16 +100,16 @@ private fun WorkTypeSummaryView(
             Text(
                 name,
                 modifier
-                    .testTag("workTypeSummaryHeaderText")
-                    .padding(top = edgeSpacing),
+                    .padding(top = LocalDimensions.current.edgePadding)
+                    .testTag("workTypeSummaryHeaderText"),
                 style = MaterialTheme.typography.bodyLarge,
             )
             if (jobSummary.isNotBlank()) {
                 Text(
                     jobSummary,
                     modifier
-                        .testTag("workTypeSummarySubHeaderText")
-                        .padding(top = edgeSpacingHalf),
+                        .listItemTopPadding()
+                        .testTag("workTypeSummarySubHeaderText"),
                     style = MaterialTheme.typography.bodySmall,
                 )
             }

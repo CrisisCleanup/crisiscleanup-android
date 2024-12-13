@@ -144,6 +144,7 @@ fun NavBackStackEntry.setCaseSearchResult(incidentId: Long, worksiteId: Long) {
 fun NavGraphBuilder.teamEditorScreen(
     navController: NavController,
     onBack: () -> Unit,
+    openCase: (Long, Long) -> Unit = { _, _ -> },
     openSearchCases: () -> Unit = {},
     openFilterCases: () -> Unit = {},
 ) {
@@ -201,6 +202,7 @@ fun NavGraphBuilder.teamEditorScreen(
             onBack,
             hasCaseSearchResult,
             takeSearchResult = takeExistingWorksiteState,
+            onViewCase = openCase,
             onSearchCases = openSearchCases,
             onFilterCases = openFilterCases,
         )

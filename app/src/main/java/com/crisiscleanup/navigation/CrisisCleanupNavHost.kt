@@ -229,7 +229,7 @@ fun CrisisCleanupNavHost(
         remember(navController) { { navController.backOnStartingRoute(TEAM_SCAN_QR_CODE_ROUTE) } }
     val teamSearchCasesOnBack =
         remember(navController) { { navController.backOnRoute(TEAM_CASES_SEARCH_ROUTE) } }
-    val onTeamCasesSearchViewCase = remember(navController) {
+    val navToViewCaseFromTeams = remember(navController) {
         { incidentId: Long, worksiteId: Long ->
             navController.navigateToViewCase(
                 incidentId = incidentId,
@@ -298,13 +298,14 @@ fun CrisisCleanupNavHost(
                 teamEditorScreen(
                     navController,
                     teamEditorOnBack,
+                    openCase = navToViewCaseFromTeams,
                     openSearchCases = navToTeamSearchCases,
                     openFilterCases = navToTeamFilterCases,
                 )
                 teamScanQrCode(teamScanQrOnBack)
                 teamCasesSearchScreen(
                     teamSearchCasesOnBack,
-                    openCase = onTeamCasesSearchViewCase,
+                    openCase = navToViewCaseFromTeams,
                     onAssignToTeam = onAssignCaseToTeam,
                 )
             },

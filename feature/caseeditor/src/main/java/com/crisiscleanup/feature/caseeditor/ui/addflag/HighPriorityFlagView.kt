@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.commoncase.ui.PropertyInfoRow
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextArea
@@ -27,6 +28,7 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
 import com.crisiscleanup.core.designsystem.component.SmallBusyIndicator
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.designsystem.theme.listCheckboxAlignStartOffset
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
@@ -36,8 +38,6 @@ import com.crisiscleanup.core.model.data.PersonContact
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseAddFlagViewModel
-import com.crisiscleanup.feature.caseeditor.ui.PropertyInfoRow
-import com.crisiscleanup.feature.caseeditor.ui.edgeSpacingHalf
 import com.crisiscleanup.feature.caseeditor.util.labelTextItem
 import com.crisiscleanup.feature.caseeditor.util.listTextItem
 
@@ -156,6 +156,7 @@ private fun ContactsDialog(
             )
         },
     ) {
+        val edgeSpacingHalf = LocalDimensions.current.edgePadding.div(2)
         val spacingModifier = Modifier
             .padding(vertical = edgeSpacingHalf)
             .padding(bottom = edgeSpacingHalf)

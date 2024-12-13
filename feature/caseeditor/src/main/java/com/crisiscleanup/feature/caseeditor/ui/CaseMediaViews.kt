@@ -60,6 +60,7 @@ import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.OpenSettingsDialog
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
@@ -505,7 +506,7 @@ internal fun TakePhotoSelectImage(
                     )
                 },
             )
-            Spacer(listItemModifier.padding(top = edgeSpacing))
+            Spacer(listItemModifier.padding(top = LocalDimensions.current.edgePadding))
         }
     }
 

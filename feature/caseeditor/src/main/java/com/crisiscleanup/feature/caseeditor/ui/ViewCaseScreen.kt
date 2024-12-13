@@ -10,7 +10,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -59,9 +58,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.appnav.ViewImageArgs
 import com.crisiscleanup.core.appnav.WorksiteImagesArgs
-import com.crisiscleanup.core.common.filterNotBlankTrim
-import com.crisiscleanup.core.commoncase.model.addressQuery
-import com.crisiscleanup.core.commoncase.ui.ExplainWrongLocationDialog
+import com.crisiscleanup.core.commoncase.ui.CaseAddressInfoView
+import com.crisiscleanup.core.commoncase.ui.CasePhoneInfoView
+import com.crisiscleanup.core.commoncase.ui.PropertyInfoRow
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.LocalLayoutProvider
@@ -74,9 +73,6 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextArea
 import com.crisiscleanup.core.designsystem.component.LIST_DETAIL_DETAIL_WEIGHT
 import com.crisiscleanup.core.designsystem.component.LIST_DETAIL_LIST_WEIGHT
 import com.crisiscleanup.core.designsystem.component.LeadingIconChip
-import com.crisiscleanup.core.designsystem.component.LinkifyEmailText
-import com.crisiscleanup.core.designsystem.component.LinkifyLocationText
-import com.crisiscleanup.core.designsystem.component.LinkifyPhoneText
 import com.crisiscleanup.core.designsystem.component.TemporaryDialog
 import com.crisiscleanup.core.designsystem.component.WorkTypeAction
 import com.crisiscleanup.core.designsystem.component.WorkTypePrimaryAction
@@ -90,7 +86,8 @@ import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
-import com.crisiscleanup.core.designsystem.theme.neutralIconColor
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
+import com.crisiscleanup.core.designsystem.theme.listRowItemStartPadding
 import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
 import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
 import com.crisiscleanup.core.mapmarker.ui.rememberMapUiSettings
@@ -117,10 +114,6 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 import kotlinx.coroutines.launch
-
-// TODO Use/move common dimensions
-internal val edgeSpacing = 16.dp
-internal val edgeSpacingHalf = edgeSpacing.times(0.5f)
 
 private val flagColorFallback = Color(0xFF000000)
 private val flagColors = mapOf(
@@ -532,48 +525,6 @@ private fun ColumnScope.ExistingCaseContent(
 }
 
 @Composable
-internal fun PropertyInfoRow(
-    image: ImageVector,
-    text: String,
-    modifier: Modifier = Modifier,
-    isPhone: Boolean = false,
-    isEmail: Boolean = false,
-    isLocation: Boolean = false,
-    locationQuery: String = "",
-    trailingContent: (@Composable () -> Unit)? = null,
-) {
-    Row(
-        modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = listItemSpacedBy,
-    ) {
-        Icon(
-            imageVector = image,
-            contentDescription = text,
-            tint = neutralIconColor,
-        )
-
-        val style = MaterialTheme.typography.bodyLarge
-        val innerModifier = if (trailingContent == null) {
-            Modifier
-        } else {
-            Modifier.weight(1f)
-        }
-        if (isPhone) {
-            LinkifyPhoneText(text, innerModifier)
-        } else if (isEmail) {
-            LinkifyEmailText(text, innerModifier)
-        } else if (isLocation) {
-            LinkifyLocationText(text, locationQuery, innerModifier)
-        } else {
-            Text(text, innerModifier, style = style)
-        }
-
-        trailingContent?.invoke()
-    }
-}
-
-@Composable
 private fun CaseInfoView(
     isFullEditMode: Boolean,
     worksite: Worksite,
@@ -643,7 +594,7 @@ private fun CaseInfoView(
             Spacer(
                 Modifier
                     .fillMaxWidth()
-                    .height(edgeSpacing),
+                    .height(LocalDimensions.current.edgePadding),
             )
         }
     }
@@ -657,8 +608,9 @@ private fun LazyListScope.itemInfoSectionHeader(
     "section-header-$sectionIndex",
     "content-header-$sectionIndex",
 ) {
+    val topPadding = if (sectionIndex > 0) LocalDimensions.current.edgePadding else 0.dp
     SectionHeader(
-        Modifier.padding(top = if (sectionIndex > 0) edgeSpacing else 0.dp),
+        Modifier.padding(top = topPadding),
         sectionIndex,
         LocalAppTranslator.current(titleTranslateKey),
         trailingContent,
@@ -727,34 +679,26 @@ private fun LazyListScope.propertyInfoItems(
     itemInfoSectionHeader(0, "caseForm.property_information")
 
     item(key = "section-content-property") {
+        val edgeSpacing = LocalDimensions.current.edgePadding
+        val edgeSpacingHalf = edgeSpacing.div(2)
         CardSurface {
             Column(Modifier.padding(top = edgeSpacingHalf)) {
                 PropertyInfoRow(
                     CrisisCleanupIcons.Person,
                     worksite.name,
                     Modifier
-                        .testTag("editCasePropertyInfoWorksiteNameRow")
                         .combinedClickable(
                             onClick = {},
                             onLongClick = { copyToClipboard(worksite.name) },
                         )
-                        .fillMaxWidth()
-                        .padding(horizontal = edgeSpacing, vertical = edgeSpacingHalf),
+                        .then(listItemModifier)
+                        .testTag("caseNameInfo"),
                 )
-                val phoneNumbers =
-                    listOf(worksite.phone1, worksite.phone2).filterNotBlankTrim().joinToString("; ")
-                PropertyInfoRow(
-                    CrisisCleanupIcons.Phone,
-                    phoneNumbers,
-                    Modifier
-                        .testTag("editCasePropertyInfoPhoneRow")
-                        .combinedClickable(
-                            onClick = {},
-                            onLongClick = { copyToClipboard(phoneNumbers) },
-                        )
-                        .fillMaxWidth()
-                        .padding(horizontal = edgeSpacing, vertical = edgeSpacingHalf),
-                    isPhone = true,
+                CasePhoneInfoView(
+                    worksite,
+                    true,
+                    listItemModifier,
+                    copyToClipboard,
                 )
                 worksite.email?.let {
                     if (it.isNotBlank()) {
@@ -762,55 +706,42 @@ private fun LazyListScope.propertyInfoItems(
                             CrisisCleanupIcons.Mail,
                             it,
                             Modifier
-                                .testTag("editCasePropertyInfoEmailRow")
                                 .combinedClickable(
                                     onClick = {},
                                     onLongClick = { copyToClipboard(worksite.email) },
                                 )
-                                .fillMaxWidth()
-                                .padding(horizontal = edgeSpacing, vertical = edgeSpacingHalf),
+                                .then(listItemModifier)
+                                .testTag("caseEmailInfo"),
                             isEmail = true,
                         )
                     }
                 }
-                // TODO Show alert if wrong address is checked. Providing additional context.
-                val (fullAddress, geoQuery, locationQuery) = worksite.addressQuery
-                PropertyInfoRow(
-                    CrisisCleanupIcons.Location,
-                    fullAddress,
-                    Modifier
-                        .testTag("editCasePropertyInfoLocationRow")
-                        .combinedClickable(
-                            onClick = {},
-                            onLongClick = { copyToClipboard(fullAddress) },
-                        )
-                        .fillMaxWidth()
-                        .padding(horizontal = edgeSpacing, vertical = edgeSpacingHalf),
-                    isLocation = true,
-                    locationQuery = geoQuery.ifBlank { locationQuery },
-                ) {
-                    if (worksite.hasWrongLocationFlag) {
-                        ExplainWrongLocationDialog(worksite)
-                    }
-                }
+                CaseAddressInfoView(
+                    worksite,
+                    true,
+                    listItemModifier,
+                    copyToClipboard,
+                )
 
+                val t = LocalAppTranslator.current
                 Row(
                     Modifier
-                        .testTag("editCasePropertyInfoJumpToCaseOnMap")
                         .clickable(onClick = onJumpToCaseOnMap)
-                        .fillMaxWidth()
-                        .padding(horizontal = edgeSpacing, vertical = edgeSpacingHalf),
+                        .then(listItemModifier)
+                        .testTag("jumpToCaseOnMap"),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = listItemSpacedBy,
                 ) {
                     Image(
                         modifier = Modifier.size(24.dp),
                         painter = painterResource(R.drawable.ic_jump_to_case_on_map),
-                        contentDescription = LocalAppTranslator.current.translate("actions.jump_to_case"),
+                        contentDescription = t("actions.jump_to_case"),
                     )
 
                     if (distanceAwayText.isNotBlank()) {
                         Text(distanceAwayText, style = MaterialTheme.typography.bodyLarge)
+                    } else {
+                        Text("~~Back to map, centered on this Case.")
                     }
                 }
 
@@ -841,9 +772,9 @@ private fun LazyListScope.workItems(
     workTypeProfile?.let { profile ->
         itemInfoSectionHeader(2, "caseForm.work") {
             Column(
-                Modifier.padding(start = edgeSpacing),
+                Modifier.listRowItemStartPadding(),
                 horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.spacedBy(edgeSpacingHalf),
+                verticalArrangement = listItemSpacedByHalf,
             ) {
                 val t = LocalAppTranslator.current
                 val isEditable = LocalCaseEditor.current.isEditable
@@ -866,7 +797,8 @@ private fun LazyListScope.workItems(
             }
         }
 
-        val rowItemModifier = Modifier.padding(horizontal = edgeSpacing)
+        // TODO Common dimensions outside of Composable scope
+        val rowItemModifier = Modifier.padding(horizontal = 16.dp)
 
         if (profile.otherOrgClaims.isNotEmpty()) {
             profile.otherOrgClaims.forEach { otherOrgClaim ->
