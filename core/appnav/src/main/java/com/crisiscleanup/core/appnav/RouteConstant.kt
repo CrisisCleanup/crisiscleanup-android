@@ -40,6 +40,7 @@ object RouteConstant {
     const val CASE_EDITOR_MAP_MOVE_LOCATION_ROUTE = "$CASE_EDITOR_ROUTE/edit_map_move_location"
 
     const val VIEW_CASE_ROUTE = "view_case"
+    const val VIEW_CASE_ROUTE_RESTRICTED = "view_case/restricted"
     const val VIEW_CASE_TRANSFER_WORK_TYPES_ROUTE = "$VIEW_CASE_ROUTE/transfer_work_types"
     const val CASE_ADD_FLAG_ROUTE = "$VIEW_CASE_ROUTE/add_flag"
     const val CASE_SHARE_ROUTE = "$VIEW_CASE_ROUTE/share_case"

@@ -87,6 +87,7 @@ class CasesSearchViewModel @Inject constructor(
         )
 
     val selectedWorksite = MutableStateFlow(ExistingWorksiteIdentifierNone)
+    val assigningWorksite = MutableStateFlow(ExistingWorksiteIdentifierNone)
 
     val recentWorksites = incidentSelector.incidentId
         .flatMapLatest { incidentId ->
@@ -335,12 +336,16 @@ class CasesSearchViewModel @Inject constructor(
         return true
     }
 
-    fun onSelectWorksite(result: CaseSummaryResult) {
+    private fun onSelectWorksite(
+        result: CaseSummaryResult,
+        onWorksite: (ExistingWorksiteIdentifier) -> Unit,
+    ) {
+        if (isSelectingResult.value) {
+            return
+        }
+        isSelectingResult.value = true
+
         viewModelScope.launch(ioDispatcher) {
-            if (isSelectingResult.value) {
-                return@launch
-            }
-            isSelectingResult.value = true
             try {
                 val incidentId = incidentSelector.incidentId.value
                 var worksiteId = with(result) {
@@ -359,9 +364,11 @@ class CasesSearchViewModel @Inject constructor(
                 }
 
                 if (worksiteId > 0) {
-                    selectedWorksite.value = ExistingWorksiteIdentifier(
-                        incidentId = incidentId,
-                        worksiteId = worksiteId,
+                    onWorksite(
+                        ExistingWorksiteIdentifier(
+                            incidentId = incidentId,
+                            worksiteId = worksiteId,
+                        ),
                     )
                 } else {
                     // TODO Inform wait for data to cache
@@ -374,8 +381,22 @@ class CasesSearchViewModel @Inject constructor(
         }
     }
 
+    fun onSelectWorksite(result: CaseSummaryResult) {
+        onSelectWorksite(result) {
+            selectedWorksite.value = it
+        }
+    }
+
+    fun onAssignToTeam(result: CaseSummaryResult) {
+        onSelectWorksite(result) {
+            // TODO Determine if Case can be assigned to team and if not alert
+            assigningWorksite.value = it
+        }
+    }
+
     fun clearSelection() {
         selectedWorksite.value = ExistingWorksiteIdentifierNone
+        assigningWorksite.value = ExistingWorksiteIdentifierNone
     }
 }
 

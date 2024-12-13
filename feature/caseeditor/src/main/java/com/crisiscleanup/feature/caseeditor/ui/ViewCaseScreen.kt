@@ -133,6 +133,7 @@ private val flagColors = mapOf(
 
 @Composable
 internal fun EditExistingCaseRoute(
+    isEditingRestricted: Boolean,
     viewModel: ViewCaseViewModel = hiltViewModel(),
     onBack: () -> Unit = {},
     onBackToCases: () -> Unit = {},
@@ -172,6 +173,7 @@ internal fun EditExistingCaseRoute(
     val onCaseLongPress =
         remember(viewModel) { { copyToClipboard(viewModel.editableWorksite.value.caseNumber) } }
 
+    val isFullEditMode = !isEditingRestricted
     val isRailNav = !LocalLayoutProvider.current.isBottomNav
     Box {
         val worksite by viewModel.editableWorksite.collectAsStateWithLifecycle()
@@ -181,15 +183,17 @@ internal fun EditExistingCaseRoute(
             }
         }
         Row {
-            if (isRailNav) {
-                ViewCaseNav(
-                    worksite,
-                    isEditable,
-                    onFullEdit = onFullEdit,
-                    onCaseFlags = openAddFlag,
-                    onCaseShare = openShareCase,
-                    onCaseHistory = openCaseHistory,
-                )
+            if (isFullEditMode) {
+                if (isRailNav) {
+                    ViewCaseNav(
+                        worksite,
+                        isEditable,
+                        onFullEdit = onFullEdit,
+                        onCaseFlags = openAddFlag,
+                        onCaseShare = openShareCase,
+                        onCaseHistory = openCaseHistory,
+                    )
+                }
             }
 
             val title by viewModel.headerTitle.collectAsStateWithLifecycle()
@@ -201,6 +205,7 @@ internal fun EditExistingCaseRoute(
 
             if (isRailNav) {
                 ListDetailContent(
+                    isFullEditMode,
                     worksite = worksite,
                     title = title,
                     subTitle = subTitle,
@@ -218,6 +223,7 @@ internal fun EditExistingCaseRoute(
                 )
             } else {
                 PortraitContent(
+                    isFullEditMode = isFullEditMode,
                     worksite = worksite,
                     title = title,
                     subTitle = subTitle,
@@ -263,6 +269,7 @@ private fun NonWorksiteView(showEmpty: Boolean) {
 
 @Composable
 fun ColumnScope.CaseContent(
+    isFullEditMode: Boolean,
     worksite: Worksite,
     isEditable: Boolean,
     tabTitles: List<String>,
@@ -283,6 +290,7 @@ fun ColumnScope.CaseContent(
         LocalAppTranslator provides viewModel,
     ) {
         ExistingCaseContent(
+            isFullEditMode,
             tabTitles,
             worksite,
             isBusy,
@@ -309,6 +317,7 @@ internal fun ViewCaseUpdatedAtView(
 
 @Composable
 private fun PortraitContent(
+    isFullEditMode: Boolean,
     worksite: Worksite,
     title: String,
     subTitle: String,
@@ -356,6 +365,7 @@ private fun PortraitContent(
             NonWorksiteView(viewModel.worksiteIdArg == EmptyWorksite.id)
         } else if (tabTitles.isNotEmpty()) {
             CaseContent(
+                isFullEditMode = isFullEditMode,
                 worksite = worksite,
                 isEditable = isEditable,
                 tabTitles = tabTitles,
@@ -363,17 +373,19 @@ private fun PortraitContent(
                 copyToClipboard = copyToClipboard,
                 openPhoto = openPhoto,
             ) {
-                val isKeyboardOpen = rememberIsKeyboardOpen()
-                if (!isKeyboardOpen) {
-                    ViewCaseNav(
-                        worksite,
-                        isEditable,
-                        onFullEdit = onFullEdit,
-                        onCaseFlags = openAddFlag,
-                        onCaseShare = openShareCase,
-                        onCaseHistory = openCaseHistory,
-                        isBottomNav = true,
-                    )
+                if (isFullEditMode) {
+                    val isKeyboardOpen = rememberIsKeyboardOpen()
+                    if (!isKeyboardOpen) {
+                        ViewCaseNav(
+                            worksite,
+                            isEditable,
+                            onFullEdit = onFullEdit,
+                            onCaseFlags = openAddFlag,
+                            onCaseShare = openShareCase,
+                            onCaseHistory = openCaseHistory,
+                            isBottomNav = true,
+                        )
+                    }
                 }
             }
         }
@@ -382,6 +394,7 @@ private fun PortraitContent(
 
 @Composable
 private fun ListDetailContent(
+    isFullEditMode: Boolean,
     worksite: Worksite,
     title: String,
     subTitle: String,
@@ -423,6 +436,7 @@ private fun ListDetailContent(
                 NonWorksiteView(viewModel.worksiteIdArg == EmptyWorksite.id)
             } else if (tabTitles.isNotEmpty()) {
                 CaseContent(
+                    isFullEditMode = isFullEditMode,
                     worksite = worksite,
                     isEditable = isEditable,
                     tabTitles = tabTitles,
@@ -435,9 +449,9 @@ private fun ListDetailContent(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ColumnScope.ExistingCaseContent(
+    isFullEditMode: Boolean,
     tabTitles: List<String>,
     worksite: Worksite,
     isLoading: Boolean = false,
@@ -490,6 +504,7 @@ private fun ColumnScope.ExistingCaseContent(
         ) { pagerIndex ->
             when (pagerIndex) {
                 0 -> CaseInfoView(
+                    isFullEditMode,
                     worksite,
                     copyToClipboard = copyToClipboard,
                 )
@@ -560,6 +575,7 @@ internal fun PropertyInfoRow(
 
 @Composable
 private fun CaseInfoView(
+    isFullEditMode: Boolean,
     worksite: Worksite,
     viewModel: ViewCaseViewModel = hiltViewModel(),
     copyToClipboard: (String?) -> Unit = {},
@@ -613,6 +629,7 @@ private fun CaseInfoView(
             viewModel::jumpToCaseOnMap,
         )
         workItems(
+            isFullEditMode,
             workTypeProfile,
             claimAll = claimAll,
             requestAll = requestAll,
@@ -812,6 +829,7 @@ private fun LazyListScope.propertyInfoItems(
 }
 
 private fun LazyListScope.workItems(
+    isFullEditMode: Boolean,
     workTypeProfile: WorkTypeProfile? = null,
     claimAll: () -> Unit = {},
     releaseAll: () -> Unit = {},
@@ -833,9 +851,17 @@ private fun LazyListScope.workItems(
                     WorkTypePrimaryAction(t("actions.claim_all_alt"), isEditable, claimAll)
                 }
                 if (profile.releasableCount > 0) {
-                    WorkTypeAction(t("actions.release_all"), isEditable, releaseAll)
+                    WorkTypeAction(
+                        t("actions.release_all"),
+                        isEditable && isFullEditMode,
+                        releaseAll,
+                    )
                 } else if (profile.requestableCount > 0) {
-                    WorkTypeAction(t("actions.request_all"), isEditable, requestAll)
+                    WorkTypeAction(
+                        t("actions.request_all"),
+                        isEditable && isFullEditMode,
+                        requestAll,
+                    )
                 }
             }
         }
@@ -847,6 +873,7 @@ private fun LazyListScope.workItems(
                 organizationWorkClaims(
                     otherOrgClaim,
                     rowItemModifier,
+                    isFullEditMode,
                     updateWorkType,
                     requestWorkType,
                     releaseWorkType,
@@ -858,6 +885,7 @@ private fun LazyListScope.workItems(
             organizationWorkClaims(
                 profile.orgClaims,
                 rowItemModifier,
+                isFullEditMode,
                 updateWorkType,
                 requestWorkType,
                 releaseWorkType,
@@ -870,6 +898,7 @@ private fun LazyListScope.workItems(
                 "unclaimed",
                 profile.unclaimed,
                 rowItemModifier,
+                isFullEditMode,
                 updateWorkType,
                 requestWorkType,
                 releaseWorkType,

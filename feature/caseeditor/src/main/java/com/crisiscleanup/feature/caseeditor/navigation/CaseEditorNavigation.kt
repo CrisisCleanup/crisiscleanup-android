@@ -17,10 +17,12 @@ import com.crisiscleanup.core.appnav.RouteConstant.CASE_EDITOR_SEARCH_ADDRESS_RO
 import com.crisiscleanup.core.appnav.RouteConstant.CASE_HISTORY_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.CASE_SHARE_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.VIEW_CASE_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.VIEW_CASE_ROUTE_RESTRICTED
 import com.crisiscleanup.core.appnav.RouteConstant.VIEW_CASE_TRANSFER_WORK_TYPES_ROUTE
 import com.crisiscleanup.core.appnav.WORKSITE_ID_ARG
-import com.crisiscleanup.core.appnav.navigateToExistingCase
+import com.crisiscleanup.core.appnav.navigateToViewCase
 import com.crisiscleanup.core.appnav.navigateToWorksiteImages
+import com.crisiscleanup.core.appnav.toRouteQuery
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
@@ -59,11 +61,6 @@ internal class TransferWorkTypeArgs(val isFromCaseEdit: Boolean) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         checkNotNull(savedStateHandle.get<Boolean>(IS_FROM_CASE_EDIT_ARG)),
     )
-}
-
-fun NavController.navigateToViewCase(incidentId: Long, worksiteId: Long) {
-    val route = "$VIEW_CASE_ROUTE?$INCIDENT_ID_ARG=$incidentId&$WORKSITE_ID_ARG=$worksiteId"
-    navigate(route)
 }
 
 fun NavController.navigateToCaseEditor(incidentId: Long, worksiteId: Long? = null) {
@@ -120,22 +117,34 @@ fun NavController.navigateToCaseAddFlag(isFromCaseEdit: Boolean) {
 fun NavController.navigateToCaseShare() = navigate(CASE_SHARE_ROUTE)
 fun NavController.navigateToCaseHistory() = navigate(CASE_HISTORY_ROUTE)
 
+private fun viewCaseRoute(isRestricted: Boolean = false): String {
+    val route = if (isRestricted) VIEW_CASE_ROUTE_RESTRICTED else VIEW_CASE_ROUTE
+    val viewCaseRouteQuery = listOf(
+        INCIDENT_ID_ARG,
+        WORKSITE_ID_ARG,
+    )
+        .toRouteQuery()
+    return "$route$viewCaseRouteQuery"
+}
+
+private val viewCaseArguments = listOf(
+    navArgument(INCIDENT_ID_ARG) {
+        type = NavType.LongType
+        defaultValue = EmptyIncident.id
+    },
+    navArgument(WORKSITE_ID_ARG) {
+        type = NavType.LongType
+        defaultValue = EmptyWorksite.id
+    },
+)
+
 fun NavGraphBuilder.existingCaseScreen(
     navController: NavHostController,
     onBack: () -> Unit,
 ) {
     composable(
-        route = "$VIEW_CASE_ROUTE?$INCIDENT_ID_ARG={$INCIDENT_ID_ARG}&$WORKSITE_ID_ARG={$WORKSITE_ID_ARG}",
-        arguments = listOf(
-            navArgument(INCIDENT_ID_ARG) {
-                type = NavType.LongType
-                defaultValue = EmptyIncident.id
-            },
-            navArgument(WORKSITE_ID_ARG) {
-                type = NavType.LongType
-                defaultValue = EmptyWorksite.id
-            },
-        ),
+        route = viewCaseRoute(),
+        arguments = viewCaseArguments,
     ) {
         val navBackToCases = navController::popToWork
         val navToEditCase = remember(navController) {
@@ -157,6 +166,7 @@ fun NavGraphBuilder.existingCaseScreen(
         val navToCaseShare = navController::navigateToCaseShare
         val navToCaseHistory = navController::navigateToCaseHistory
         EditExistingCaseRoute(
+            isEditingRestricted = false,
             onBack = onBack,
             onBackToCases = navBackToCases,
             onFullEdit = navToEditCase,
@@ -164,6 +174,25 @@ fun NavGraphBuilder.existingCaseScreen(
             openPhoto = navToWorksiteImages,
             openAddFlag = navToCaseAddFlag,
             openShareCase = navToCaseShare,
+            openCaseHistory = navToCaseHistory,
+        )
+    }
+}
+
+fun NavGraphBuilder.restrictedViewCaseScreen(
+    navController: NavHostController,
+    onBack: () -> Unit,
+) {
+    composable(
+        route = viewCaseRoute(true),
+        arguments = viewCaseArguments,
+    ) {
+        val navToWorksiteImages = navController::navigateToWorksiteImages
+        val navToCaseHistory = navController::navigateToCaseHistory
+        EditExistingCaseRoute(
+            isEditingRestricted = true,
+            onBack = onBack,
+            openPhoto = navToWorksiteImages,
             openCaseHistory = navToCaseHistory,
         )
     }
@@ -190,7 +219,7 @@ fun NavController.rerouteToNewCase(incidentId: Long) {
 
 fun NavController.rerouteToCaseEdit(ids: ExistingWorksiteIdentifier) {
     popToWork()
-    navigateToExistingCase(ids.incidentId, ids.worksiteId)
+    navigateToViewCase(ids.incidentId, ids.worksiteId)
     navigateToCaseEditor(ids.incidentId, ids.worksiteId)
 }
 

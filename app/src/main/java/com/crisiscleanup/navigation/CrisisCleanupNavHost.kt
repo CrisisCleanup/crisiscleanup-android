@@ -18,10 +18,12 @@ import com.crisiscleanup.core.appnav.RouteConstant.CASE_SHARE_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.TEAM_CASES_SEARCH_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.TEAM_EDITOR_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.TEAM_SCAN_QR_CODE_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.VIEW_CASE_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.VIEW_CASE_ROUTE_RESTRICTED
 import com.crisiscleanup.core.appnav.RouteConstant.VIEW_CASE_TRANSFER_WORK_TYPES_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.VIEW_TEAM_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.WORKSITE_IMAGES_ROUTE
-import com.crisiscleanup.core.appnav.navigateToExistingCase
+import com.crisiscleanup.core.appnav.navigateToViewCase
 import com.crisiscleanup.core.commoncase.ui.CasesAction
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.model.data.EmptyIncident
@@ -38,8 +40,8 @@ import com.crisiscleanup.feature.caseeditor.navigation.existingCaseTransferWorkT
 import com.crisiscleanup.feature.caseeditor.navigation.navigateToCaseAddFlag
 import com.crisiscleanup.feature.caseeditor.navigation.navigateToCaseEditor
 import com.crisiscleanup.feature.caseeditor.navigation.navigateToTransferWorkType
-import com.crisiscleanup.feature.caseeditor.navigation.navigateToViewCase
 import com.crisiscleanup.feature.caseeditor.navigation.rerouteToCaseChange
+import com.crisiscleanup.feature.caseeditor.navigation.restrictedViewCaseScreen
 import com.crisiscleanup.feature.cases.navigation.casesFilterScreen
 import com.crisiscleanup.feature.cases.navigation.casesGraph
 import com.crisiscleanup.feature.cases.navigation.casesSearchScreen
@@ -104,7 +106,7 @@ fun CrisisCleanupNavHost(
         { incidentId: Long, worksiteId: Long ->
             val isValid = incidentId != EmptyIncident.id && worksiteId != EmptyWorksite.id
             if (isValid) {
-                navController.navigateToExistingCase(incidentId, worksiteId)
+                navController.navigateToViewCase(incidentId, worksiteId)
             }
             isValid
         }
@@ -131,6 +133,16 @@ fun CrisisCleanupNavHost(
     val openViewCase = remember(navController) {
         { ids: ExistingWorksiteIdentifier ->
             navController.navigateToViewCase(ids.incidentId, ids.worksiteId)
+        }
+    }
+    val viewCaseOnBack = remember(navController) {
+        {
+            navController.backOnStartingRoute(VIEW_CASE_ROUTE)
+        }
+    }
+    val viewCaseRestrictedOnBack = remember(navController) {
+        {
+            navController.backOnStartingRoute(VIEW_CASE_ROUTE_RESTRICTED)
         }
     }
 
@@ -217,6 +229,15 @@ fun CrisisCleanupNavHost(
         remember(navController) { { navController.backOnStartingRoute(TEAM_SCAN_QR_CODE_ROUTE) } }
     val teamSearchCasesOnBack =
         remember(navController) { { navController.backOnRoute(TEAM_CASES_SEARCH_ROUTE) } }
+    val onTeamCasesSearchViewCase = remember(navController) {
+        { incidentId: Long, worksiteId: Long ->
+            navController.navigateToViewCase(
+                incidentId = incidentId,
+                worksiteId = worksiteId,
+                isRestricted = true,
+            )
+        }
+    }
     val onAssignCaseToTeam = remember(navController) {
         { incidentId: Long, worksiteId: Long ->
             if (navController.currentBackStackEntry?.destination?.route == TEAM_CASES_SEARCH_ROUTE) {
@@ -245,11 +266,12 @@ fun CrisisCleanupNavHost(
                 caseEditorScreen(navController, caseEditorOnBack)
                 caseEditSearchAddressScreen(navController, searchAddressOnBack)
                 caseEditMoveLocationOnMapScreen(moveLocationOnBack)
-                existingCaseScreen(navController, onBack)
+                existingCaseScreen(navController, viewCaseOnBack)
                 existingCaseTransferWorkTypesScreen(transferOnBack)
                 caseAddFlagScreen(addFlagOnBack, replaceRouteViewCase)
                 caseShareScreen(shareOnBack)
                 caseHistoryScreen(historyOnBack)
+                restrictedViewCaseScreen(navController, viewCaseRestrictedOnBack)
             },
             onCasesAction = onCasesAction,
             filterCases = openFilterCases,
@@ -282,7 +304,8 @@ fun CrisisCleanupNavHost(
                 teamScanQrCode(teamScanQrOnBack)
                 teamCasesSearchScreen(
                     teamSearchCasesOnBack,
-                    onAssignCaseToTeam,
+                    openCase = onTeamCasesSearchViewCase,
+                    onAssignToTeam = onAssignCaseToTeam,
                 )
             },
             openAuthentication = openAuthentication,

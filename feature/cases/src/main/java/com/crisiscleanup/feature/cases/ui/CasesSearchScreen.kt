@@ -47,11 +47,16 @@ internal fun CasesSearchRoute(
     isTeamCasesSearch: Boolean = false,
     onBack: () -> Unit = {},
     openCase: (Long, Long) -> Unit = { _, _ -> },
+    onAssignToTeam: (Long, Long) -> Unit = { _, _ -> },
     viewModel: CasesSearchViewModel = hiltViewModel(),
 ) {
     val selectedWorksite by viewModel.selectedWorksite.collectAsStateWithLifecycle()
+    val assigningWorksite by viewModel.assigningWorksite.collectAsStateWithLifecycle()
     if (selectedWorksite != ExistingWorksiteIdentifierNone) {
         openCase(selectedWorksite.incidentId, selectedWorksite.worksiteId)
+        viewModel.clearSelection()
+    } else if (assigningWorksite != ExistingWorksiteIdentifierNone) {
+        onAssignToTeam(assigningWorksite.incidentId, assigningWorksite.worksiteId)
         viewModel.clearSelection()
     } else {
         val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
@@ -73,9 +78,8 @@ internal fun CasesSearchRoute(
         val updateQuery =
             remember(viewModel) { { text: String -> viewModel.searchQuery.value = text } }
 
-        val onCaseSelect = remember(viewModel) {
-            { result: CaseSummaryResult -> viewModel.onSelectWorksite(result) }
-        }
+        val onCaseSelect = viewModel::onSelectWorksite
+        val onCaseAssign = viewModel::onAssignToTeam
         val recentCases by viewModel.recentWorksites.collectAsStateWithLifecycle()
         val searchResults by viewModel.searchResults.collectAsStateWithLifecycle()
 
@@ -93,7 +97,8 @@ internal fun CasesSearchRoute(
                     isEditable = isEditable,
                     hasFocus = focusOnSearchInput,
                     closeKeyboard,
-                    onCaseSelect,
+                    onCaseSelect = onCaseSelect,
+                    onCaseAssign = onCaseAssign,
                     emptyList(),
                     searchResults,
                     isLoading = isLoading,
@@ -111,8 +116,10 @@ internal fun CasesSearchRoute(
                     state = rememberLazyListState(),
                 ) {
                     recentCases(
+                        isTeamCasesSearch,
                         recentCases,
-                        onCaseSelect,
+                        onSelect = onCaseSelect,
+                        onAssignToTeam = onCaseAssign,
                         isEditable = isEditable,
                         alwaysShowTitle = true,
                         fillWidthPadded,
@@ -128,7 +135,8 @@ internal fun CasesSearchRoute(
                 isEditable = isEditable,
                 hasFocus = focusOnSearchInput,
                 closeKeyboard,
-                onCaseSelect,
+                onCaseSelect = onCaseSelect,
+                onCaseAssign = onCaseAssign,
                 recentCases,
                 searchResults,
                 isLoading = isLoading,
@@ -149,6 +157,7 @@ private fun SearchCasesView(
     hasFocus: Boolean,
     closeKeyboard: () -> Unit,
     onCaseSelect: (CaseSummaryResult) -> Unit,
+    onCaseAssign: (CaseSummaryResult) -> Unit,
     recentCases: List<CaseSummaryResult>,
     searchResults: CasesSearchResults,
     isLoading: Boolean,
@@ -170,7 +179,8 @@ private fun SearchCasesView(
             ListCases(
                 isTeamCasesSearch = isTeamCasesSearch,
                 showRecents = isRecentsVisible,
-                onCaseSelect,
+                onCaseSelect = onCaseSelect,
+                onCaseAssign = onCaseAssign,
                 recentCases,
                 searchResults,
                 closeKeyboard = closeKeyboard,
@@ -232,6 +242,7 @@ private fun ListCases(
     isTeamCasesSearch: Boolean,
     showRecents: Boolean,
     onCaseSelect: (CaseSummaryResult) -> Unit,
+    onCaseAssign: (CaseSummaryResult) -> Unit,
     recentCases: List<CaseSummaryResult>,
     searchResults: CasesSearchResults,
     closeKeyboard: () -> Unit = {},
@@ -247,8 +258,10 @@ private fun ListCases(
     ) {
         if (showRecents) {
             recentCases(
+                isTeamCasesSearch,
                 recentCases,
                 onCaseSelect,
+                onCaseAssign,
                 isEditable = isEditable,
                 alwaysShowTitle = false,
                 Modifier.listItemPadding(),
@@ -260,6 +273,7 @@ private fun ListCases(
                         isTeamCasesSearch,
                         options,
                         onCaseSelect,
+                        onCaseAssign,
                         isEditable = isEditable,
                     )
                 } else if (q.isNotBlank()) {
@@ -282,8 +296,10 @@ private fun ListCases(
 }
 
 private fun LazyListScope.recentCases(
+    isTeamCasesSearch: Boolean,
     cases: List<CaseSummaryResult>,
     onSelect: (CaseSummaryResult) -> Unit = {},
+    onAssignToTeam: (CaseSummaryResult) -> Unit = {},
     isEditable: Boolean,
     alwaysShowTitle: Boolean,
     modifier: Modifier = Modifier,
@@ -299,9 +315,10 @@ private fun LazyListScope.recentCases(
     }
 
     listCaseResults(
-        isTeamCasesSearch = false,
+        isTeamCasesSearch = isTeamCasesSearch,
         cases,
         onCaseSelect = onSelect,
+        onCaseAssign = onAssignToTeam,
         isEditable = isEditable,
     )
 }

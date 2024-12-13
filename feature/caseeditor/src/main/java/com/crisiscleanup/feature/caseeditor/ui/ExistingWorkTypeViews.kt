@@ -86,6 +86,7 @@ private fun WorkTypeOrgClaims(
 private fun WorkTypeSummaryView(
     summary: WorkTypeSummary,
     modifier: Modifier = Modifier,
+    isTransferEnabled: Boolean = false,
     updateWorkType: (WorkType, Boolean) -> Unit = { _, _ -> },
     requestWorkType: (WorkType) -> Unit = {},
     releaseWorkType: (WorkType) -> Unit = {},
@@ -127,17 +128,26 @@ private fun WorkTypeSummaryView(
                 val isEditable = LocalCaseEditor.current.isEditable
                 if (workType.isClaimed) {
                     if (isClaimedByMyOrg) {
-                        WorkTypeAction(t("actions.unclaim"), isEditable) {
+                        WorkTypeAction(
+                            t("actions.unclaim"),
+                            isEditable,
+                        ) {
                             updateWorkType(workType.copy(orgClaim = null), false)
                         }
                     } else if (isReleasable) {
-                        WorkTypeAction(t("actions.release"), isEditable) {
+                        WorkTypeAction(
+                            t("actions.release"),
+                            isEditable && isTransferEnabled,
+                        ) {
                             releaseWorkType(workType)
                         }
                     } else if (isRequested) {
                         Text(t("caseView.requested"))
                     } else {
-                        WorkTypeAction(t("actions.request"), isEditable) {
+                        WorkTypeAction(
+                            t("actions.request"),
+                            isEditable && isTransferEnabled,
+                        ) {
                             requestWorkType(workType)
                         }
                     }
@@ -155,6 +165,7 @@ internal fun LazyListScope.existingWorkTypeItems(
     sectionKey: String,
     summaries: List<WorkTypeSummary>,
     rowItemModifier: Modifier = Modifier,
+    isTransferEnabled: Boolean = false,
     updateWorkType: (WorkType, Boolean) -> Unit = { _, _ -> },
     requestWorkType: (WorkType) -> Unit = {},
     releaseWorkType: (WorkType) -> Unit = {},
@@ -183,6 +194,7 @@ internal fun LazyListScope.existingWorkTypeItems(
             WorkTypeSummaryView(
                 workTypeSummary,
                 rowItemModifier,
+                isTransferEnabled,
                 updateWorkType,
                 requestWorkType,
                 releaseWorkType,
@@ -215,6 +227,7 @@ internal fun LazyListScope.workTypeSectionTitle(
 internal fun LazyListScope.organizationWorkClaims(
     orgClaimWorkType: OrgClaimWorkType,
     rowItemModifier: Modifier = Modifier,
+    isTransferEnabled: Boolean = false,
     updateWorkType: (WorkType, Boolean) -> Unit = { _, _ -> },
     requestWorkType: (WorkType) -> Unit = {},
     releaseWorkType: (WorkType) -> Unit = {},
@@ -243,6 +256,7 @@ internal fun LazyListScope.organizationWorkClaims(
         "org-$orgId",
         workTypes,
         rowItemModifier,
+        isTransferEnabled,
         updateWorkType,
         requestWorkType,
         releaseWorkType,

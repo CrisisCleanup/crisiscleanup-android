@@ -67,6 +67,7 @@ fun LazyListScope.listCaseResults(
     isTeamCasesSearch: Boolean,
     worksites: List<CaseSummaryResult>,
     onCaseSelect: (CaseSummaryResult) -> Unit = {},
+    onCaseAssign: (CaseSummaryResult) -> Unit = {},
     itemKey: (CaseSummaryResult) -> Any = { it.listItemKey },
     isEditable: Boolean = false,
 ) {
@@ -81,14 +82,14 @@ fun LazyListScope.listCaseResults(
             Modifier
                 .testTag("workSearchResultItem_${it.listItemKey}")
                 .clickable(
-                    enabled = isEditable && !isTeamCasesSearch,
+                    enabled = isEditable,
                     onClick = { onCaseSelect(it) },
                 )
                 .listItemOptionPadding(),
             isAssignEnabled = isEditable,
         ) {
             if (isTeamCasesSearch) {
-                onCaseSelect(it)
+                onCaseAssign(it)
             }
         }
     }

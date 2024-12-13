@@ -563,7 +563,10 @@ class CreateEditTeamViewModel @Inject constructor(
 
     fun onAssignCase(existingWorksite: ExistingWorksiteIdentifier) {
         if (existingWorksite != ExistingWorksiteIdentifierNone) {
-            // TODO Assign only if not already assigned
+            // TODO Assign only if
+            //      Not already assigned
+            //      Has claimed work types
+            //      Has unclaimed work types
             logger.logDebug("Assign Case to team $existingWorksite")
         }
     }

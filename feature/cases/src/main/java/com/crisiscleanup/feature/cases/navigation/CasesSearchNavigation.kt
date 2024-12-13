@@ -31,12 +31,14 @@ fun NavGraphBuilder.casesSearchScreen(
 fun NavGraphBuilder.teamCasesSearchScreen(
     onBack: () -> Unit,
     openCase: (Long, Long) -> Unit = { _, _ -> },
+    onAssignToTeam: (Long, Long) -> Unit = { _, _ -> },
 ) {
     composable(TEAM_CASES_SEARCH_ROUTE) {
         CasesSearchRoute(
             true,
             onBack = onBack,
             openCase = openCase,
+            onAssignToTeam = onAssignToTeam,
         )
     }
 }
