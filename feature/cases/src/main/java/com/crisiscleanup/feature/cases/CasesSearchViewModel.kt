@@ -17,11 +17,13 @@ import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
+import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AppDataManagementRepository
 import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.WorksiteSummary
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,6 +34,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
@@ -52,6 +55,7 @@ class CasesSearchViewModel @Inject constructor(
     private val incidentSelector: IncidentSelector,
     private val worksitesRepository: WorksitesRepository,
     private val searchWorksitesRepository: SearchWorksitesRepository,
+    private val accountDataRepository: AccountDataRepository,
     databaseManagementRepository: AppDataManagementRepository,
     private val mapCaseIconProvider: MapCaseIconProvider,
     @Logger(CrisisCleanupLoggers.Cases) private val logger: AppLogger,
@@ -309,6 +313,8 @@ class CasesSearchViewModel @Inject constructor(
     var focusOnSearchInput by mutableStateOf(false)
         private set
 
+    var unassignableWorksite by mutableStateOf(EmptyWorksite)
+
     init {
         viewModelScope.launch(ioDispatcher) {
             databaseManagementRepository.rebuildFts()
@@ -338,7 +344,8 @@ class CasesSearchViewModel @Inject constructor(
 
     private fun onSelectWorksite(
         result: CaseSummaryResult,
-        onWorksite: (ExistingWorksiteIdentifier) -> Unit,
+        syncWorksite: Boolean,
+        onWorksite: suspend (ExistingWorksiteIdentifier) -> Unit,
     ) {
         if (isSelectingResult.value) {
             return
@@ -347,20 +354,21 @@ class CasesSearchViewModel @Inject constructor(
 
         viewModelScope.launch(ioDispatcher) {
             try {
-                val incidentId = incidentSelector.incidentId.value
-                var worksiteId = with(result) {
-                    if (summary.id > 0) {
-                        summary.id
-                    } else {
-                        worksitesRepository.getLocalId(networkWorksiteId)
-                    }
+                val networkWorksiteId = result.networkWorksiteId
+                if (syncWorksite) {
+                    worksitesRepository.syncNetworkWorksite(networkWorksiteId)
                 }
 
-                if (worksiteId <= 0) {
-                    with(result) {
-                        worksitesRepository.syncNetworkWorksite(networkWorksiteId)
-                        worksiteId = worksitesRepository.getLocalId(networkWorksiteId)
-                    }
+                val incidentId = incidentSelector.incidentId.value
+                var worksiteId = if (result.summary.id > 0) {
+                    result.summary.id
+                } else {
+                    worksitesRepository.getLocalId(networkWorksiteId)
+                }
+
+                if (worksiteId <= 0 && !syncWorksite) {
+                    worksitesRepository.syncNetworkWorksite(networkWorksiteId)
+                    worksiteId = worksitesRepository.getLocalId(networkWorksiteId)
                 }
 
                 if (worksiteId > 0) {
@@ -382,15 +390,24 @@ class CasesSearchViewModel @Inject constructor(
     }
 
     fun onSelectWorksite(result: CaseSummaryResult) {
-        onSelectWorksite(result) {
-            selectedWorksite.value = it
+        onSelectWorksite(result, false) { selected ->
+            selectedWorksite.value = selected
         }
     }
 
     fun onAssignToTeam(result: CaseSummaryResult) {
-        onSelectWorksite(result) {
-            // TODO Determine if Case can be assigned to team and if not alert
-            assigningWorksite.value = it
+        onSelectWorksite(result, true) { selected ->
+            val worksite = worksitesRepository.getWorksite(selected.worksiteId)
+            val orgId = accountDataRepository.accountData.first().org.id
+            val isAssignable = worksite.workTypes.any { workType ->
+                !workType.isClaimed ||
+                    workType.orgClaim == orgId
+            }
+            if (isAssignable) {
+                assigningWorksite.value = selected
+            } else {
+                unassignableWorksite = worksite
+            }
         }
     }
 

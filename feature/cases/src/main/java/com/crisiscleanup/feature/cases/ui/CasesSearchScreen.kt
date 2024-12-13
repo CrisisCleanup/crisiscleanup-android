@@ -29,6 +29,7 @@ import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.ClearableTextField
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
+import com.crisiscleanup.core.designsystem.component.HelpDialog
 import com.crisiscleanup.core.designsystem.component.listDetailDetailMaxWidth
 import com.crisiscleanup.core.designsystem.component.roundedOutline
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
@@ -37,6 +38,8 @@ import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
+import com.crisiscleanup.core.model.data.EmptyWorksite
+import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.cases.CasesSearchResults
@@ -87,6 +90,12 @@ internal fun CasesSearchRoute(
 
         val closeKeyboard = rememberCloseKeyboard(viewModel)
         val isEditable = !isSelectingResult
+
+        val onClearUnassignableWorksite = remember(viewModel) {
+            {
+                viewModel.unassignableWorksite = EmptyWorksite
+            }
+        }
         if (isListDetailLayout) {
             Row {
                 SearchCasesView(
@@ -104,6 +113,8 @@ internal fun CasesSearchRoute(
                     isLoading = isLoading,
                     isSearching = isSearching,
                     isRecentsVisible = false,
+                    unassignableWorksite = viewModel.unassignableWorksite,
+                    onClearUnassignableWorksite = onClearUnassignableWorksite,
                     Modifier
                         .weight(0.5f)
                         .sizeIn(maxWidth = listDetailDetailMaxWidth),
@@ -142,6 +153,8 @@ internal fun CasesSearchRoute(
                 isLoading = isLoading,
                 isSearching = isSearching,
                 isRecentsVisible = recentCases.isNotEmpty() && searchResults.q.isBlank(),
+                unassignableWorksite = viewModel.unassignableWorksite,
+                onClearUnassignableWorksite = onClearUnassignableWorksite,
             )
         }
     }
@@ -163,6 +176,8 @@ private fun SearchCasesView(
     isLoading: Boolean,
     isSearching: Boolean,
     isRecentsVisible: Boolean,
+    unassignableWorksite: Worksite,
+    onClearUnassignableWorksite: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier) {
@@ -190,6 +205,8 @@ private fun SearchCasesView(
         }
 
         BusyIndicatorFloatingTopCenter(isLoading)
+
+        UnassignableCaseDialog(unassignableWorksite, onClearUnassignableWorksite)
     }
 }
 
@@ -321,4 +338,23 @@ private fun LazyListScope.recentCases(
         onCaseAssign = onAssignToTeam,
         isEditable = isEditable,
     )
+}
+
+@Composable
+private fun UnassignableCaseDialog(
+    worksite: Worksite,
+    onClose: () -> Unit,
+) {
+    if (worksite != EmptyWorksite) {
+        val t = LocalAppTranslator.current
+        val title = t("~~Unable to assign")
+        val message =
+            t("~~{case_number} cannot be reassigned as your organization has not claimed or cannot claim any work from this Case.")
+                .replace("{case_number}", worksite.caseNumber)
+        HelpDialog(
+            title = title,
+            text = message,
+            onClose = onClose,
+        )
+    }
 }
