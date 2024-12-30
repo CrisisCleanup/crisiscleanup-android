@@ -345,7 +345,7 @@ private fun MenuScreen(
             )
 
             toggleItem(
-                "~~Share location with organization",
+                "appMenu.share_location_with_organization",
                 isSharingLocation,
                 onShareLocation,
             )
@@ -396,7 +396,7 @@ private fun MenuScreen(
 
     if (explainLocationRequest) {
         val permissionExplanation =
-            t("~~Location access is needed for sharing your location with your organization. Grant access to location in Settings.")
+            t("info.allow_access_to_location_explanation")
         OpenSettingsDialog(
             t("info.allow_access_to_location"),
             permissionExplanation,
