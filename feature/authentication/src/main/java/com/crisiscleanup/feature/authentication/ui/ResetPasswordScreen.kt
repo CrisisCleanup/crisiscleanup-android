@@ -59,7 +59,7 @@ fun ResetPasswordRoute(
 
     val t = LocalAppTranslator.current
 
-    val closeKeyboard = rememberCloseKeyboard(viewModel)
+    val closeKeyboard = rememberCloseKeyboard()
 
     val emailAddress by viewModel.emailAddress.collectAsStateWithLifecycle()
     val isEmailDefined = emailAddress != null

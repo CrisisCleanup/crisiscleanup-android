@@ -156,7 +156,7 @@ fun InviteTeammateContent(
     showQrCode: Boolean = false,
 ) {
     val t = LocalAppTranslator.current
-    val closeKeyboard = rememberCloseKeyboard(viewModel)
+    val closeKeyboard = rememberCloseKeyboard()
 
     val isEditable by viewModel.isEditable.collectAsStateWithLifecycle()
 

@@ -92,7 +92,7 @@ internal fun RootAuthScreen(
 
         is AuthState.Authenticated -> {
             val isKeyboardOpen = rememberIsKeyboardOpen()
-            val closeKeyboard = rememberCloseKeyboard(viewModel)
+            val closeKeyboard = rememberCloseKeyboard()
             val accountData = (authState as AuthState.Authenticated).accountData
             val contentModifier = Modifier
                 .fillMaxSize()
@@ -188,7 +188,7 @@ private fun NotAuthenticatedScreen(
     val translationCount by t.translationCount.collectAsStateWithLifecycle()
     val uriHandler = LocalUriHandler.current
     val iNeedHelpCleaningLink = "https://crisiscleanup.org/survivor"
-    val closeKeyboard = rememberCloseKeyboard(openLoginWithEmail)
+    val closeKeyboard = rememberCloseKeyboard()
 
     Column(
         Modifier

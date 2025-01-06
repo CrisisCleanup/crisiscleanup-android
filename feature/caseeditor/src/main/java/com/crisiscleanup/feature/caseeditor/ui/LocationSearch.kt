@@ -71,7 +71,7 @@ internal fun ColumnScope.SearchContents(
                     editor.onGeocodeAddressSelected(address)
                 }
             }
-            val closeKeyboard = rememberCloseKeyboard(viewModel)
+            val closeKeyboard = rememberCloseKeyboard()
             ListSearchResults(
                 locationSearchResults,
                 onCaseSelect = onCaseSelect,

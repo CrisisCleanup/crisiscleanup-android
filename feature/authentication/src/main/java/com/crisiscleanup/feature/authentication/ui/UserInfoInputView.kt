@@ -63,7 +63,7 @@ internal fun UserInfoInputView(
     onEndOfInput: () -> Unit = {},
 ) {
     val t = LocalAppTranslator.current
-    val closeKeyboard = rememberCloseKeyboard(Unit)
+    val closeKeyboard = rememberCloseKeyboard()
 
     Column {
         // TODO Focus on top most error

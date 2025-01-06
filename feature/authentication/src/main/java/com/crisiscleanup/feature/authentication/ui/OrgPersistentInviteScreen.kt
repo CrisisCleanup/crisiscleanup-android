@@ -113,7 +113,7 @@ private fun PersistentInviteInfoInputView(
     viewModel: OrgPersistentInviteViewModel = hiltViewModel(),
 ) {
     val t = LocalAppTranslator.current
-    val closeKeyboard = rememberCloseKeyboard(viewModel)
+    val closeKeyboard = rememberCloseKeyboard()
 
     val isEditable by viewModel.isEditable.collectAsStateWithLifecycle()
     val isJoiningOrg by viewModel.isJoiningOrg.collectAsStateWithLifecycle()

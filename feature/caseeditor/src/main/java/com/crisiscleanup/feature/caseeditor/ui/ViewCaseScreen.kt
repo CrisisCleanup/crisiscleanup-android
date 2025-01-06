@@ -513,7 +513,7 @@ private fun ColumnScope.ExistingCaseContent(
         BusyIndicatorFloatingTopCenter(isLoading)
     }
 
-    val closeKeyboard = rememberCloseKeyboard(pagerState)
+    val closeKeyboard = rememberCloseKeyboard()
     val pagerPage by remember(pagerState) {
         derivedStateOf {
             pagerState.currentPage
@@ -886,7 +886,7 @@ private fun CaseNotesView(
     var hideOtherNotes by remember { mutableStateOf(false) }
 
     val coroutineScope = rememberCoroutineScope()
-    val closeKeyboard = rememberCloseKeyboard(viewModel)
+    val closeKeyboard = rememberCloseKeyboard()
 
     val listState = rememberLazyListState()
     val isScrolledDown by remember {

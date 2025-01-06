@@ -33,7 +33,7 @@ internal fun ColumnScope.ReportAbuseFlagView(
 ) {
     val translator = LocalAppTranslator.current
 
-    val closeKeyboard = rememberCloseKeyboard(viewModel)
+    val closeKeyboard = rememberCloseKeyboard()
 
     val otherOrgQuery by viewModel.otherOrgQ.collectAsStateWithLifecycle()
     val onOtherOrgQueryChange = remember(viewModel) {

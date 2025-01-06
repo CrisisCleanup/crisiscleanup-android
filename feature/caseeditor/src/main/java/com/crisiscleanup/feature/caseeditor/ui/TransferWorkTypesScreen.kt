@@ -65,7 +65,7 @@ internal fun TransferWorkTypesRoute(
     }
 
     if (viewModel.isTransferable) {
-        val closeKeyboard = rememberCloseKeyboard(viewModel)
+        val closeKeyboard = rememberCloseKeyboard()
         val onTransfer = remember(viewModel) {
             {
                 if (viewModel.commitTransfer()) {

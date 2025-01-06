@@ -247,7 +247,7 @@ internal fun OrganizationsSearch(
     isEditable: Boolean = false,
 ) {
     val translator = LocalAppTranslator.current
-    val closeKeyboard = rememberCloseKeyboard(rememberKey)
+    val closeKeyboard = rememberCloseKeyboard()
 
     var dismissSuggestionsQuery by remember { mutableStateOf("") }
 

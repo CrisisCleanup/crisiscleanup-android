@@ -88,7 +88,7 @@ internal fun CasesSearchRoute(
 
         val focusOnSearchInput = viewModel.focusOnSearchInput
 
-        val closeKeyboard = rememberCloseKeyboard(viewModel)
+        val closeKeyboard = rememberCloseKeyboard()
         val isEditable = !isSelectingResult
 
         val onClearUnassignableWorksite = remember(viewModel) {

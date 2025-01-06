@@ -357,7 +357,7 @@ private fun CreateEditTeamContent(
         }
     }
 
-    val closeKeyboard = rememberCloseKeyboard(pagerState)
+    val closeKeyboard = rememberCloseKeyboard()
     val pagerPage by remember(pagerState) {
         derivedStateOf {
             pagerState.currentPage
@@ -381,7 +381,7 @@ private fun EditTeamInfoView(
 ) {
     val t = LocalAppTranslator.current
 
-    val closeKeyboard = rememberCloseKeyboard(onTeamNameChange)
+    val closeKeyboard = rememberCloseKeyboard()
 
     Column(
         Modifier.fillMaxSize(),

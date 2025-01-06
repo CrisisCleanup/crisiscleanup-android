@@ -317,7 +317,7 @@ private fun ColumnScope.FullEditView(
     }
 
     Box(Modifier.weight(1f)) {
-        val closeKeyboard = rememberCloseKeyboard(viewModel)
+        val closeKeyboard = rememberCloseKeyboard()
         val onScrollFling = remember(viewModel) {
             {
                 closeKeyboard()

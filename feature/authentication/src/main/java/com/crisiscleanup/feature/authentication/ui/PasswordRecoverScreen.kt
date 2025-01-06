@@ -62,7 +62,7 @@ fun PasswordRecoverRoute(
         clearStateOnBack()
     }
 
-    val closeKeyboard = rememberCloseKeyboard(viewModel)
+    val closeKeyboard = rememberCloseKeyboard()
 
     Column(
         Modifier

@@ -64,7 +64,7 @@ internal fun ColumnScope.HighPriorityFlagView(
     var flagNotes by remember { mutableStateOf("") }
     var selectedContacts by remember { mutableStateOf(emptyList<PersonContact>()) }
 
-    val closeKeyboard = rememberCloseKeyboard(viewModel)
+    val closeKeyboard = rememberCloseKeyboard()
 
     LazyColumn(
         Modifier

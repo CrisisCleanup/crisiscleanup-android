@@ -41,7 +41,7 @@ internal fun ColumnScope.WrongLocationFlagView(
     val onWrongLocationTextChange =
         remember(viewModel) { { s: String -> viewModel.onWrongLocationTextChange(s) } }
 
-    val closeKeyboard = rememberCloseKeyboard(viewModel)
+    val closeKeyboard = rememberCloseKeyboard()
 
     val stepTranslateKeys = listOf(
         "flag.find_correct_google_maps",

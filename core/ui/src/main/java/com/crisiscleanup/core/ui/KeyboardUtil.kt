@@ -7,21 +7,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
 @Composable
-fun rememberCloseKeyboard(rememberKey: Any): () -> Unit {
-    val focusManager = LocalFocusManager.current
-    // val isKeyboardOpen by rememberUpdatedState(WindowInsets.isImeVisible)
-    return remember(rememberKey) {
+fun rememberCloseKeyboard(): () -> Unit {
+    val keyboard = LocalSoftwareKeyboardController.current
+    return remember(keyboard) {
         {
-            // TODO Only clear when keyboard is open
-            //      Currently state does not reflect visibility when inside remember
-            // Log.w("keyboard", "Is open? $isKeyboardOpen")
-            focusManager.clearFocus(true)
+            keyboard?.hide()
         }
     }
 }

@@ -151,7 +151,7 @@ private fun ColumnScope.CaseShareContent(
     viewModel: CaseShareViewModel = hiltViewModel(),
 ) {
     val translator = LocalAppTranslator.current
-    val closeKeyboard = rememberCloseKeyboard(viewModel)
+    val closeKeyboard = rememberCloseKeyboard()
 
     val isShareEnabled by viewModel.isShareEnabled.collectAsStateWithLifecycle(true)
     val hasClaimedWorkType by viewModel.hasClaimedWorkType.collectAsStateWithLifecycle()

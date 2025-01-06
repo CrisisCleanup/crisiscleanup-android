@@ -22,7 +22,6 @@ import com.crisiscleanup.core.designsystem.component.WorkTypeAction
 import com.crisiscleanup.core.designsystem.component.WorkTypePrimaryAction
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.LocalDimensions
-import com.crisiscleanup.core.designsystem.theme.listItemBottomPadding
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf

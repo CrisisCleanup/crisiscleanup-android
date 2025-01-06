@@ -53,7 +53,7 @@ internal fun ColumnScope.WrongIncidentFlagView(
 ) {
     val translator = LocalAppTranslator.current
 
-    val closeKeyboard = rememberCloseKeyboard(viewModel)
+    val closeKeyboard = rememberCloseKeyboard()
 
     val isLoadingIncidents by viewModel.isLoadingIncidents.collectAsStateWithLifecycle(true)
 

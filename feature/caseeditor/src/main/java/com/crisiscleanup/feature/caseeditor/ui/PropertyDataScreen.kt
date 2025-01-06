@@ -95,7 +95,7 @@ internal fun PropertyFormView(
     val clearEmailError = remember(inputData) { { inputData.emailError = "" } }
     val isEmailError = inputData.emailError.isNotEmpty()
     val focusEmail = isEmailError
-    val closeKeyboard = rememberCloseKeyboard(editor)
+    val closeKeyboard = rememberCloseKeyboard()
     ErrorText(inputData.emailError)
     OutlinedClearableTextField(
         modifier = listItemModifier.testTag("propertyEmailTextField"),

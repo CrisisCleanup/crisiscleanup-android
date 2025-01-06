@@ -77,7 +77,7 @@ fun LoginWithEmailRoute(
 
         is AuthenticateScreenViewState.Ready -> {
             val isKeyboardOpen = rememberIsKeyboardOpen()
-            val closeKeyboard = rememberCloseKeyboard(viewModel)
+            val closeKeyboard = rememberCloseKeyboard()
 
             val readyState = viewState as AuthenticateScreenViewState.Ready
             val authState = readyState.authenticationState

@@ -113,7 +113,7 @@ private fun RequestOrgUserInfoInputView(
     viewModel: RequestOrgAccessViewModel = hiltViewModel(),
 ) {
     val t = LocalAppTranslator.current
-    val closeKeyboard = rememberCloseKeyboard(viewModel)
+    val closeKeyboard = rememberCloseKeyboard()
 
     val displayInfo by viewModel.inviteDisplay.collectAsStateWithLifecycle()
 

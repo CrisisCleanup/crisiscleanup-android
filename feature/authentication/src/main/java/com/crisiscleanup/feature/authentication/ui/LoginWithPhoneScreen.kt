@@ -100,7 +100,7 @@ fun LoginWithPhoneRoute(
 
         is AuthenticateScreenViewState.Ready -> {
             val isKeyboardOpen = rememberIsKeyboardOpen()
-            val closeKeyboard = rememberCloseKeyboard(viewModel)
+            val closeKeyboard = rememberCloseKeyboard()
 
             val readyState = viewState as AuthenticateScreenViewState.Ready
             val authState = readyState.authenticationState
@@ -229,7 +229,7 @@ private fun ColumnScope.VerifyPhoneCodeScreen(
 
     val isNotSelectAccount = !viewModel.isSelectAccount
 
-    val closeKeyboard = rememberCloseKeyboard(viewModel)
+    val closeKeyboard = rememberCloseKeyboard()
 
     TopAppBarCancelAction(
         title = t("actions.login"),

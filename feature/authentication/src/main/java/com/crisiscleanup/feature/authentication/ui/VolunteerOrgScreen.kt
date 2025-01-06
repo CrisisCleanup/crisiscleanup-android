@@ -40,7 +40,7 @@ fun VolunteerOrgRoute(
     openScanOrgQrCode: () -> Unit = {},
 ) {
     val t = LocalAppTranslator.current
-    val closeKeyboard = rememberCloseKeyboard(onBack)
+    val closeKeyboard = rememberCloseKeyboard()
 
     Column {
         TopAppBarBackAction(

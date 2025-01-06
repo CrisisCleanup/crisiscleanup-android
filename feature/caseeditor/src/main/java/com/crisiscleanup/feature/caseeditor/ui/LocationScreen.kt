@@ -197,7 +197,7 @@ internal fun LocationFormView(
 
     val inputData = editor.locationInputData
 
-    val closeKeyboard = rememberCloseKeyboard(inputData)
+    val closeKeyboard = rememberCloseKeyboard()
 
     inputData.run {
         val showAddressForm by remember(

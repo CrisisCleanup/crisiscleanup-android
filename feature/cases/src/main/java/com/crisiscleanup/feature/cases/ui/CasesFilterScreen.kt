@@ -243,7 +243,7 @@ private fun ColumnScope.FilterContent(
     val toggleWorkSection = remember(viewModel) { { toggleSectionCollapse(4) } }
     val toggleDatesSection = remember(viewModel) { { toggleSectionCollapse(5) } }
 
-    val closeKeyboard = rememberCloseKeyboard(viewModel)
+    val closeKeyboard = rememberCloseKeyboard()
 
     val updatedDaysDisplay = remember(viewModel) {
         { n: Float ->
