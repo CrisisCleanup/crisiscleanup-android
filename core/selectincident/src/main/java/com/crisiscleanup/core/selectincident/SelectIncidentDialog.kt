@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,8 +16,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -29,7 +27,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -148,21 +145,27 @@ private fun ColumnScope.IncidentSelectContent(
     }
 
     val listState = rememberLazyListState()
-    val pullRefreshState = rememberPullToRefreshState()
     val coroutineScope = rememberCoroutineScope()
-    if (pullRefreshState.isRefreshing) {
-        LaunchedEffect(true) {
-            onRefreshIncidents()
-            pullRefreshState.endRefresh()
+    var isRefreshingIncidents by remember { mutableStateOf(false) }
+    val refreshIncidents = remember(onRefreshIncidents, listState) {
+        {
             coroutineScope.launch {
-                listState.animateScrollToItem(0)
+                isRefreshingIncidents = true
+                try {
+                    onRefreshIncidents()
+                    listState.animateScrollToItem(0)
+                } finally {
+                    isRefreshingIncidents = false
+                }
             }
+            Unit
         }
     }
-    Box(
-        Modifier
-            .weight(weight = 1f, fill = false)
-            .nestedScroll(pullRefreshState.nestedScrollConnection),
+    PullToRefreshBox(
+        modifier = Modifier
+            .weight(weight = 1f, fill = false),
+        isRefreshing = isRefreshingIncidents,
+        onRefresh = refreshIncidents,
     ) {
         LazyColumn(
             state = listState,
@@ -190,12 +193,6 @@ private fun ColumnScope.IncidentSelectContent(
                 )
             }
         }
-        PullToRefreshContainer(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .offset(y = (-64).dp),
-            state = pullRefreshState,
-        )
         LaunchedEffect(Unit) {
             val selectedIndex = incidents.indexOfFirst { it.id == selectedIncidentId }
             if (selectedIndex > 0) {

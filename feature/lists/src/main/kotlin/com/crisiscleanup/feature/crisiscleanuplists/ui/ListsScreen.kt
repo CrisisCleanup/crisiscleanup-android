@@ -1,8 +1,6 @@
 package com.crisiscleanup.feature.crisiscleanuplists.ui
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,8 +16,7 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -27,10 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -65,11 +59,9 @@ import com.crisiscleanup.core.model.data.ListModel
 import com.crisiscleanup.feature.crisiscleanuplists.ListsViewModel
 import com.crisiscleanup.feature.crisiscleanuplists.model.ListIcon
 import kotlinx.coroutines.launch
-import kotlin.math.min
 
 @OptIn(
     ExperimentalMaterial3Api::class,
-    ExperimentalFoundationApi::class,
 )
 @Composable
 internal fun ListsRoute(
@@ -113,11 +105,19 @@ internal fun ListsRoute(
             },
         )
 
-        val pullRefreshState = rememberPullToRefreshState()
-        if (pullRefreshState.isRefreshing) {
-            LaunchedEffect(true) {
-                viewModel.refreshLists(true)
-                pullRefreshState.endRefresh()
+        val coroutineScope = rememberCoroutineScope()
+        var isRefreshingLists by remember { mutableStateOf(false) }
+        val refreshLists = remember(viewModel) {
+            {
+                coroutineScope.launch {
+                    isRefreshingLists = true
+                    try {
+                        viewModel.refreshLists(true)
+                    } finally {
+                        isRefreshingLists = false
+                    }
+                }
+                Unit
             }
         }
 
@@ -179,10 +179,11 @@ internal fun ListsRoute(
             }
         }
 
-        Box(
-            Modifier
-                .weight(1f)
-                .nestedScroll(pullRefreshState.nestedScrollConnection),
+        PullToRefreshBox(
+            modifier = Modifier
+                .weight(1f),
+            isRefreshing = isRefreshingLists,
+            onRefresh = refreshLists,
         ) {
             HorizontalPager(state = pagerState) { pagerIndex ->
                 when (pagerIndex) {
@@ -200,14 +201,6 @@ internal fun ListsRoute(
             }
 
             BusyIndicatorFloatingTopCenter(isLoading)
-
-            val pullProgress = min(pullRefreshState.progress * 1.5f, 1.0f)
-            PullToRefreshContainer(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .alpha(pullProgress),
-                state = pullRefreshState,
-            )
         }
 
         if (explainSupportList != EmptyList) {
@@ -382,9 +375,9 @@ internal fun ListItemSummaryView(
 
             Text(
                 "${list.name} (${list.objectIds.size})",
+                Modifier.weight(1f),
                 style = LocalFontStyles.current.header3,
             )
-            Spacer(Modifier.weight(1f))
             Text(list.updatedAt.relativeTime)
         }
 

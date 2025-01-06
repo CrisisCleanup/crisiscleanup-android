@@ -37,7 +37,7 @@ class AndroidAppVersionProvider @Inject constructor(
 
     override val version: Pair<Long, String> by lazy {
         val code = packageInfo.longVersionCode
-        val name = packageInfo.versionName
+        val name = packageInfo.versionName ?: ""
         Pair(code, name)
     }
 

@@ -17,19 +17,17 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -61,6 +59,7 @@ import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.selectincident.SelectIncidentDialog
 import com.crisiscleanup.feature.team.TeamsViewModel
 import com.crisiscleanup.feature.team.TeamsViewState
+import kotlinx.coroutines.launch
 
 @Composable
 internal fun TeamsRoute(
@@ -104,18 +103,29 @@ private fun TeamsScreen(
 
     val profilePictureLookup by viewModel.profilePictureLookup.collectAsStateWithLifecycle()
 
-    val pullRefreshState = rememberPullToRefreshState()
-    if (pullRefreshState.isRefreshing) {
-        LaunchedEffect(true) {
-            viewModel.refreshTeams()
-            pullRefreshState.endRefresh()
+    val coroutineScope = rememberCoroutineScope()
+    var isRefreshingTeams by remember { mutableStateOf(false) }
+    val refreshTeams = remember(viewModel) {
+        {
+            coroutineScope.launch {
+                isRefreshingTeams = true
+                try {
+                    viewModel.refreshTeams()
+                } finally {
+                    isRefreshingTeams = false
+                }
+            }
+            Unit
         }
     }
 
     val teamFilter by viewModel.teamFilter.collectAsStateWithLifecycle()
     val otherTeams by viewModel.filteredOtherTeams.collectAsStateWithLifecycle()
 
-    Box {
+    PullToRefreshBox(
+        isRefreshing = isRefreshingTeams,
+        onRefresh = refreshTeams,
+    ) {
         Column(Modifier.fillMaxHeight()) {
             AppTopBar(
                 dataProvider = viewModel.appTopBarDataProvider,
@@ -132,7 +142,6 @@ private fun TeamsScreen(
                 val listState = rememberLazyListState()
                 LazyColumn(
                     modifier = Modifier
-                        .nestedScroll(pullRefreshState.nestedScrollConnection)
                         .fillMaxHeight(),
                     state = listState,
                     verticalArrangement = listItemSpacedBy,
@@ -269,12 +278,6 @@ private fun TeamsScreen(
         }
 
         BusyIndicatorFloatingTopCenter(isLoading)
-
-        PullToRefreshContainer(
-            modifier = Modifier
-                .align(Alignment.TopCenter),
-            state = pullRefreshState,
-        )
     }
 
     if (showIncidentPicker) {

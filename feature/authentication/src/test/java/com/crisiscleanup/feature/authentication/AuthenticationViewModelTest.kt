@@ -134,6 +134,7 @@ class AuthenticationViewModelTest {
                 allowAllAnalytics = false,
                 hideGettingStartedVideo = false,
                 isMenuTutorialDone = false,
+                shareLocationWithOrg = false,
             ),
         )
 

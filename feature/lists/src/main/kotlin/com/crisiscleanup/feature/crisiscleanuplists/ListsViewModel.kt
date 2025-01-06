@@ -69,23 +69,22 @@ class ListsViewModel @Inject constructor(
         .flowOn(ioDispatcher)
 
     init {
-        refreshLists()
+        viewModelScope.launch(ioDispatcher) {
+            refreshLists()
+        }
     }
 
-    fun refreshLists(force: Boolean = false) {
-        if (isRefreshingData.value) {
+    suspend fun refreshLists(force: Boolean = false) {
+        if (!isRefreshingData.compareAndSet(expect = false, update = true)) {
             return
         }
-        isRefreshingData.value = true
 
-        viewModelScope.launch(ioDispatcher) {
-            try {
-                listDataRefresher.refreshListData(force)
+        try {
+            listDataRefresher.refreshListData(force)
 
-                isListsRefreshed.value = true
-            } finally {
-                isRefreshingData.value = false
-            }
+            isListsRefreshed.value = true
+        } finally {
+            isRefreshingData.value = false
         }
     }
 }
