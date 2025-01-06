@@ -22,7 +22,7 @@ internal class TeamCasesQueryStateManager(
 
     val mapBounds = MutableStateFlow(CoordinateBoundsDefault)
 
-    var worksiteQueryState = MutableStateFlow(WorksiteQueryStateDefault)
+    val worksiteQueryState = MutableStateFlow(WorksiteQueryStateDefault)
 
     init {
         incidentSelector.incident.onEach {

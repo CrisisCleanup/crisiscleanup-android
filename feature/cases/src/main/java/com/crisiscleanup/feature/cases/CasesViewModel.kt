@@ -39,7 +39,6 @@ import com.crisiscleanup.core.commoncase.map.CasesMapMarkerManager
 import com.crisiscleanup.core.commoncase.map.CasesMapTileLayerManager
 import com.crisiscleanup.core.commoncase.map.CasesOverviewMapTileRenderer
 import com.crisiscleanup.core.commoncase.map.MapTileRefresher
-import com.crisiscleanup.core.commoncase.map.generateWorksiteMarkers
 import com.crisiscleanup.core.commoncase.model.CoordinateBounds
 import com.crisiscleanup.core.commoncase.reset
 import com.crisiscleanup.core.data.IncidentSelector
@@ -61,7 +60,6 @@ import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
 import com.crisiscleanup.core.mapmarker.util.toLatLng
-import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.TableDataWorksite
 import com.crisiscleanup.core.model.data.TableWorksiteClaimAction
 import com.crisiscleanup.core.model.data.Worksite
@@ -106,8 +104,8 @@ class CasesViewModel @Inject constructor(
     private val worksitesRepository: WorksitesRepository,
     val incidentSelector: IncidentSelector,
     dataPullReporter: IncidentDataPullReporter,
-    private val mapCaseIconProvider: MapCaseIconProvider,
-    private val worksiteInteractor: WorksiteInteractor,
+    mapCaseIconProvider: MapCaseIconProvider,
+    worksiteInteractor: WorksiteInteractor,
     @CasesFilterType(CasesFilterTypes.Cases)
     private val mapTileRenderer: CasesOverviewMapTileRenderer,
     @CasesFilterType(CasesFilterTypes.Cases)
@@ -271,61 +269,24 @@ class CasesViewModel @Inject constructor(
                 started = ReplaySubscribed3,
             )
 
-    private val isGeneratingWorksiteMarkers = MutableStateFlow(false)
-    val isMapBusy = combine(
-        mapBoundsManager.isDeterminingBounds,
-        mapTileRenderer.isBusy,
-        isGeneratingWorksiteMarkers,
-    ) { b0, b1, b2 -> b0 || b1 || b2 }
-
     private val mapMarkerManager = CasesMapMarkerManager(
         useTeamFilters = false,
         worksitesRepository,
+        qsm.worksiteQueryState,
+        mapBoundsManager,
+        worksiteInteractor,
+        mapCaseIconProvider,
         appMemoryStats,
         locationProvider,
-        logger,
+        viewModelScope,
+        ioDispatcher,
     )
-
-    @OptIn(FlowPreview::class)
-    val worksitesMapMarkers = combine(
-        qsm.worksiteQueryState,
-        mapBoundsManager.isMapLoaded,
-        ::Pair,
-    )
-        // TODO Make delay a parameter
-        .debounce(250)
-        .mapLatest { (wqs, isMapLoaded) ->
-            val id = wqs.incidentId
-
-            val skipMarkers = !isMapLoaded ||
-                wqs.isTableView ||
-                id == EmptyIncident.id ||
-                wqs.zoom < MAP_MARKERS_ZOOM_LEVEL
-
-            if (skipMarkers) {
-                emptyList()
-            } else {
-                // TODO Atomic update
-                isGeneratingWorksiteMarkers.value = true
-                try {
-                    mapMarkerManager.generateWorksiteMarkers(
-                        id,
-                        wqs.coordinateBounds,
-                        qsm.mapZoom.value,
-                        worksiteInteractor,
-                        mapCaseIconProvider,
-                    )
-                } finally {
-                    isGeneratingWorksiteMarkers.value = false
-                }
-            }
-        }
-        .flowOn(ioDispatcher)
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = emptyList(),
-            started = SharingStarted.WhileSubscribed(),
-        )
+    val worksitesMapMarkers = mapMarkerManager.worksitesMapMarkers
+    val isMapBusy = combine(
+        mapBoundsManager.isDeterminingBounds,
+        mapTileRenderer.isBusy,
+        mapMarkerManager.isGeneratingWorksiteMarkers,
+    ) { b0, b1, b2 -> b0 || b1 || b2 }
 
     val tableData = combine(
         incidentWorksitesCount,
@@ -352,7 +313,7 @@ class CasesViewModel @Inject constructor(
         incidentSelector,
         incidentWorksitesCount,
         isLoadingData,
-        isMapVisible = qsm.isTableView.map(Boolean::not),
+        isMapVisible = qsm.worksiteQueryState.map { it.isMapView },
         worksitesMapMarkers,
         translator,
         viewModelScope,
@@ -378,7 +339,7 @@ class CasesViewModel @Inject constructor(
 
     val casesCountTableText = combine(
         totalCasesCount,
-        qsm.isTableView,
+        qsm.worksiteQueryState.map { it.isTableView },
         ::Pair,
     )
         .filter { (_, isTable) -> isTable }
@@ -602,7 +563,7 @@ class CasesViewModel @Inject constructor(
             PermissionStatus.Requesting,
             PermissionStatus.Denied,
             PermissionStatus.Undefined,
-            -> {
+                -> {
                 // Ignore these statuses as they're not important
             }
         }
@@ -637,7 +598,7 @@ class CasesViewModel @Inject constructor(
 
                 PermissionStatus.Denied,
                 PermissionStatus.Undefined,
-                -> {
+                    -> {
                     // Ignorable
                 }
             }

@@ -25,7 +25,7 @@ internal class CasesQueryStateManager(
 
     val tableViewSort = MutableStateFlow(WorksiteSortBy.None)
 
-    var worksiteQueryState = MutableStateFlow(WorksiteQueryStateDefault)
+    val worksiteQueryState = MutableStateFlow(WorksiteQueryStateDefault)
 
     init {
         incidentSelector.incident.onEach {

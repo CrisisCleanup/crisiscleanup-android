@@ -80,6 +80,7 @@ internal class CreateEditTeamCaseMapManager(
     private val qsm: TeamCasesQueryStateManager,
     override val dataProgress: StateFlow<DataProgressMetrics>,
     override val isLoadingData: Flow<Boolean>,
+    isGeneratingWorksiteMarkers: StateFlow<Boolean>,
     override val worksitesMapMarkers: StateFlow<List<WorksiteGoogleMapMark>>,
     override val isMyLocationEnabled: StateFlow<Boolean>,
     private val incidentSelector: IncidentSelector,
@@ -108,7 +109,6 @@ internal class CreateEditTeamCaseMapManager(
 
     override val filtersCount = filterRepository.filtersCount
 
-    private val isGeneratingWorksiteMarkers = MutableStateFlow(false)
     override val isMapBusy = combine(
         mapBoundsManager.isDeterminingBounds,
         mapTileRenderer.isBusy,

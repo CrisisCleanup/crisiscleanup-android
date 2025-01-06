@@ -2,8 +2,8 @@ package com.crisiscleanup.core.commoncase.map
 
 import com.crisiscleanup.core.common.AppMemoryStats
 import com.crisiscleanup.core.common.LocationProvider
-import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.radians
+import com.crisiscleanup.core.commoncase.CasesConstant.MAP_MARKERS_ZOOM_LEVEL
 import com.crisiscleanup.core.commoncase.model.CoordinateBounds
 import com.crisiscleanup.core.commoncase.model.CoordinateUtil.getMiddleCoordinate
 import com.crisiscleanup.core.commoncase.model.CoordinateUtil.lerpLatitude
@@ -12,10 +12,22 @@ import com.crisiscleanup.core.commoncase.model.asWorksiteGoogleMapMark
 import com.crisiscleanup.core.data.WorksiteInteractor
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
+import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.datetime.Clock
 import kotlin.math.PI
 import kotlin.math.abs
@@ -26,10 +38,59 @@ import kotlin.math.sin
 class CasesMapMarkerManager(
     private val useTeamFilters: Boolean,
     private val worksitesRepository: WorksitesRepository,
+    worksiteQueryState: StateFlow<CasesQueryState>,
+    mapBoundsManager: CasesMapBoundsManager,
+    worksiteInteractor: WorksiteInteractor,
+    mapCaseIconProvider: MapCaseIconProvider,
     private val appMemoryStats: AppMemoryStats,
     private val locationProvider: LocationProvider,
-    private val logger: AppLogger,
+    coroutineScope: CoroutineScope,
+    coroutineDispatcher: CoroutineDispatcher,
 ) {
+    private val isGeneratingWorksiteMarkersInternal = MutableStateFlow(false)
+    val isGeneratingWorksiteMarkers: StateFlow<Boolean> = isGeneratingWorksiteMarkersInternal
+
+    @OptIn(FlowPreview::class)
+    val worksitesMapMarkers = combine(
+        worksiteQueryState,
+        mapBoundsManager.isMapLoaded,
+        ::Pair,
+    )
+        // TODO Make delay a parameter
+        .debounce(250)
+        .mapLatest { (wqs, isMapLoaded) ->
+            val id = wqs.incidentId
+
+            val skipMarkers = !isMapLoaded ||
+                wqs.isNotMapView ||
+                id == EmptyIncident.id ||
+                wqs.zoom < MAP_MARKERS_ZOOM_LEVEL
+
+            if (skipMarkers) {
+                emptyList()
+            } else {
+                // TODO Atomic update
+                isGeneratingWorksiteMarkersInternal.value = true
+                try {
+                    generateWorksiteMarkers(
+                        id,
+                        wqs.coordinateBounds,
+                        wqs.zoom,
+                        worksiteInteractor,
+                        mapCaseIconProvider,
+                    )
+                } finally {
+                    isGeneratingWorksiteMarkersInternal.value = false
+                }
+            }
+        }
+        .flowOn(coroutineDispatcher)
+        .stateIn(
+            scope = coroutineScope,
+            initialValue = emptyList(),
+            started = SharingStarted.WhileSubscribed(),
+        )
+
     private fun getWorksitesCount(id: Long, sw: LatLng, ne: LatLng) =
         worksitesRepository.getWorksitesCount(
             id,
@@ -218,36 +279,36 @@ class CasesMapMarkerManager(
             }
             markOffsets
         }
-}
 
-suspend fun CasesMapMarkerManager.generateWorksiteMarkers(
-    incidentId: Long,
-    coordinateBounds: CoordinateBounds,
-    mapZoom: Float,
-    worksiteInteractor: WorksiteInteractor,
-    mapCaseIconProvider: MapCaseIconProvider,
-) = coroutineScope {
-    val sw = coordinateBounds.southWest
-    val ne = coordinateBounds.northEast
-    val marksQuery = queryWorksitesInBounds(incidentId, sw, ne)
-    val marks = marksQuery.first
-    val markOffsets = denseMarkerOffsets(marks, mapZoom)
+    private suspend fun CasesMapMarkerManager.generateWorksiteMarkers(
+        incidentId: Long,
+        coordinateBounds: CoordinateBounds,
+        mapZoom: Float,
+        worksiteInteractor: WorksiteInteractor,
+        mapCaseIconProvider: MapCaseIconProvider,
+    ) = coroutineScope {
+        val sw = coordinateBounds.southWest
+        val ne = coordinateBounds.northEast
+        val marksQuery = queryWorksitesInBounds(incidentId, sw, ne)
+        val marks = marksQuery.first
+        val markOffsets = denseMarkerOffsets(marks, mapZoom)
 
-    ensureActive()
+        ensureActive()
 
-    val now = Clock.System.now()
-    marks.mapIndexed { index, mark ->
-        val offset = if (index < markOffsets.size) {
-            markOffsets[index]
-        } else {
-            zeroOffset
+        val now = Clock.System.now()
+        marks.mapIndexed { index, mark ->
+            val offset = if (index < markOffsets.size) {
+                markOffsets[index]
+            } else {
+                zeroOffset
+            }
+            val isSelected = worksiteInteractor.wasCaseSelected(
+                incidentId,
+                mark.id,
+                reference = now,
+            )
+            mark.asWorksiteGoogleMapMark(mapCaseIconProvider, isSelected, offset)
         }
-        val isSelected = worksiteInteractor.wasCaseSelected(
-            incidentId,
-            mark.id,
-            reference = now,
-        )
-        mark.asWorksiteGoogleMapMark(mapCaseIconProvider, isSelected, offset)
     }
 }
 

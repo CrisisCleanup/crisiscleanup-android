@@ -25,14 +25,12 @@ import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.common.throttleLatest
-import com.crisiscleanup.core.commoncase.CasesConstant.MAP_MARKERS_ZOOM_LEVEL
 import com.crisiscleanup.core.commoncase.CasesCounter
 import com.crisiscleanup.core.commoncase.map.CasesMapBoundsManager
 import com.crisiscleanup.core.commoncase.map.CasesMapMarkerManager
 import com.crisiscleanup.core.commoncase.map.CasesMapTileLayerManager
 import com.crisiscleanup.core.commoncase.map.CasesOverviewMapTileRenderer
 import com.crisiscleanup.core.commoncase.map.MapTileRefresher
-import com.crisiscleanup.core.commoncase.map.generateWorksiteMarkers
 import com.crisiscleanup.core.data.IncidentRefresher
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.LanguageRefresher
@@ -57,7 +55,6 @@ import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.mapmarker.WorkTypeChipIconProvider
 import com.crisiscleanup.core.model.data.EmptyCleanupTeam
-import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.PersonContact
 import com.crisiscleanup.core.model.data.PersonOrganization
@@ -120,7 +117,7 @@ class CreateEditTeamViewModel @Inject constructor(
     @CasesFilterType(CasesFilterTypes.TeamCases)
     filterRepository: CasesFilterRepository,
     val mapCaseIconProvider: MapCaseIconProvider,
-    private val worksiteInteractor: WorksiteInteractor,
+    worksiteInteractor: WorksiteInteractor,
     permissionManager: PermissionManager,
     locationProvider: LocationProvider,
     languageRefresher: LanguageRefresher,
@@ -312,56 +309,19 @@ class CreateEditTeamViewModel @Inject constructor(
         logger,
     )
 
-    private val isGeneratingWorksiteMarkers = MutableStateFlow(false)
-
     private val mapMarkerManager = CasesMapMarkerManager(
         useTeamFilters = true,
         worksitesRepository,
+        qsm.worksiteQueryState,
+        mapBoundsManager,
+        worksiteInteractor,
+        mapCaseIconProvider,
         appMemoryStats,
         locationProvider,
-        logger,
+        viewModelScope,
+        ioDispatcher,
     )
-
-    @OptIn(FlowPreview::class)
-    val worksitesMapMarkers = combine(
-        qsm.worksiteQueryState,
-        mapBoundsManager.isMapLoaded,
-        ::Pair,
-    )
-        // TODO Make delay a parameter
-        .debounce(250)
-        .mapLatest { (wqs, isMapLoaded) ->
-            val id = wqs.incidentId
-
-            val skipMarkers = !isMapLoaded ||
-                wqs.isListView ||
-                id == EmptyIncident.id ||
-                wqs.zoom < MAP_MARKERS_ZOOM_LEVEL
-
-            if (skipMarkers) {
-                emptyList()
-            } else {
-                // TODO Atomic update
-                isGeneratingWorksiteMarkers.value = true
-                try {
-                    mapMarkerManager.generateWorksiteMarkers(
-                        id,
-                        wqs.coordinateBounds,
-                        qsm.mapZoom.value,
-                        worksiteInteractor,
-                        mapCaseIconProvider,
-                    )
-                } finally {
-                    isGeneratingWorksiteMarkers.value = false
-                }
-            }
-        }
-        .flowOn(ioDispatcher)
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = emptyList(),
-            started = SharingStarted.WhileSubscribed(),
-        )
+    private val worksitesMapMarkers = mapMarkerManager.worksitesMapMarkers
 
     private val casesCounter = CasesCounter(
         incidentSelector,
@@ -393,6 +353,7 @@ class CreateEditTeamViewModel @Inject constructor(
         qsm,
         dataProgress,
         isLoadingData,
+        mapMarkerManager.isGeneratingWorksiteMarkers,
         worksitesMapMarkers,
         isMyLocationEnabled,
         incidentSelector,
@@ -450,7 +411,7 @@ class CreateEditTeamViewModel @Inject constructor(
                 if (it == locationPermissionGranted) {
                     setTileRendererLocation()
 
-                    if (!qsm.isListView.value) {
+                    if (qsm.worksiteQueryState.value.isMapView) {
                         caseMapManager.setMapToMyCoordinates()
                     }
                 }
@@ -620,6 +581,7 @@ class CreateEditTeamViewModel @Inject constructor(
     }
 
     fun clearSelectedMapCase() {
+        loadingSelectedMapWorksiteId.value = EmptyWorksite.id
         selectedMapWorksite.value = EmptyWorksite
     }
 
