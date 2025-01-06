@@ -93,6 +93,7 @@ internal fun ColumnScope.ViewCaseHeader(
     updatedAtText: String,
     isFavorite: Boolean = false,
     isHighPriority: Boolean = false,
+    hideHeaderActions: Boolean = false,
     onBack: () -> Unit = {},
     isLoading: Boolean = false,
     toggleFavorite: () -> Unit = {},
@@ -105,12 +106,13 @@ internal fun ColumnScope.ViewCaseHeader(
         TopBarHeader(
             title,
             subTitle,
-            isFavorite,
-            isHighPriority,
+            isFavorite = isFavorite,
+            isHighPriority = isHighPriority,
+            hideHeaderActions = hideHeaderActions,
             onBack,
             isLoading,
-            toggleFavorite,
-            toggleHighPriority,
+            toggleFavorite = toggleFavorite,
+            toggleHighPriority = toggleHighPriority,
             isEditable,
             onCaseLongPress,
         )
@@ -119,12 +121,13 @@ internal fun ColumnScope.ViewCaseHeader(
             title,
             subTitle,
             updatedAtText,
-            isFavorite,
-            isHighPriority,
+            isFavorite = isFavorite,
+            isHighPriority = isHighPriority,
+            hideHeaderActions = hideHeaderActions,
             onBack,
             isLoading,
-            toggleFavorite,
-            toggleHighPriority,
+            toggleFavorite = toggleFavorite,
+            toggleHighPriority = toggleHighPriority,
             isEditable,
             onCaseLongPress,
         )
@@ -141,6 +144,7 @@ private fun TopBarHeader(
     subTitle: String = "",
     isFavorite: Boolean = false,
     isHighPriority: Boolean = false,
+    hideHeaderActions: Boolean = false,
     onBack: () -> Unit = {},
     isLoading: Boolean = false,
     toggleFavorite: () -> Unit = {},
@@ -169,7 +173,7 @@ private fun TopBarHeader(
 
     val navigationContent = @Composable { TopBarBackAction(onBack) }
 
-    val actionsContent: (@Composable (RowScope.() -> Unit)) = if (isLoading) {
+    val actionsContent: (@Composable (RowScope.() -> Unit)) = if (isLoading || hideHeaderActions) {
         @Composable {}
     } else {
         @Composable {
@@ -201,6 +205,7 @@ private fun ColumnScope.SideHeader(
     updatedAtText: String,
     isFavorite: Boolean = false,
     isHighPriority: Boolean = false,
+    hideHeaderActions: Boolean = false,
     onBack: () -> Unit = {},
     isLoading: Boolean = false,
     toggleFavorite: () -> Unit = {},
@@ -235,7 +240,7 @@ private fun ColumnScope.SideHeader(
 
     ViewCaseUpdatedAtView(updatedAtText, listItemModifier)
 
-    if (!isLoading) {
+    if (!(isLoading || hideHeaderActions)) {
         Spacer(Modifier.weight(1f))
         Row(
             listItemModifier,

@@ -338,6 +338,7 @@ private fun PortraitContent(
             updatedAtText,
             isFavorite = worksite.isLocalFavorite,
             isHighPriority = worksite.hasHighPriorityFlag,
+            hideHeaderActions = !isFullEditMode,
             onBack,
             isEmptyWorksite,
             toggleFavorite,
@@ -412,6 +413,7 @@ private fun ListDetailContent(
                 updatedAtText,
                 isFavorite = worksite.isLocalFavorite,
                 isHighPriority = worksite.hasHighPriorityFlag,
+                hideHeaderActions = !isFullEditMode,
                 onBack,
                 isEmptyWorksite,
                 toggleFavorite,
@@ -577,6 +579,7 @@ private fun CaseInfoView(
             mapMarkerIcon,
             copyToClipboard,
             distanceAwayText,
+            showJumpToCaseOnMap = isFullEditMode,
             viewModel::jumpToCaseOnMap,
         )
         workItems(
@@ -674,6 +677,7 @@ private fun LazyListScope.propertyInfoItems(
     mapMarkerIcon: BitmapDescriptor? = null,
     copyToClipboard: (String?) -> Unit = {},
     distanceAwayText: String = "",
+    showJumpToCaseOnMap: Boolean = false,
     onJumpToCaseOnMap: () -> Unit = {},
 ) {
     itemInfoSectionHeader(0, "caseForm.property_information")
@@ -723,25 +727,27 @@ private fun LazyListScope.propertyInfoItems(
                     copyToClipboard,
                 )
 
-                val t = LocalAppTranslator.current
-                Row(
-                    Modifier
-                        .clickable(onClick = onJumpToCaseOnMap)
-                        .then(listItemModifier)
-                        .testTag("jumpToCaseOnMap"),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = listItemSpacedBy,
-                ) {
-                    Image(
-                        modifier = Modifier.size(24.dp),
-                        painter = painterResource(R.drawable.ic_jump_to_case_on_map),
-                        contentDescription = t("actions.jump_to_case"),
-                    )
+                if (showJumpToCaseOnMap) {
+                    val t = LocalAppTranslator.current
+                    Row(
+                        Modifier
+                            .clickable(onClick = onJumpToCaseOnMap)
+                            .then(listItemModifier)
+                            .testTag("jumpToCaseOnMap"),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = listItemSpacedBy,
+                    ) {
+                        Image(
+                            modifier = Modifier.size(24.dp),
+                            painter = painterResource(R.drawable.ic_jump_to_case_on_map),
+                            contentDescription = t("actions.jump_to_case"),
+                        )
 
-                    if (distanceAwayText.isNotBlank()) {
-                        Text(distanceAwayText, style = MaterialTheme.typography.bodyLarge)
-                    } else {
-                        Text("~~Back to map, centered on this Case.")
+                        if (distanceAwayText.isNotBlank()) {
+                            Text(distanceAwayText, style = MaterialTheme.typography.bodyLarge)
+                        } else {
+                            Text("~~Back to map, centered on this Case.")
+                        }
                     }
                 }
 

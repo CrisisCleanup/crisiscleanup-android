@@ -580,6 +580,7 @@ private fun EditTeamSelectMapCase(
     if (selectedWorksite != EmptyWorksite) {
         ModalBottomSheet(
             onDismissRequest = onClearSelection,
+            tonalElevation = 0.dp,
         ) {
             Column(verticalArrangement = listItemSpacedByHalf) {
                 Row(
