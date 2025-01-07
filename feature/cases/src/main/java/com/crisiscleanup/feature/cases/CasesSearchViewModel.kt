@@ -19,6 +19,7 @@ import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AppDataManagementRepository
+import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
@@ -56,6 +57,7 @@ class CasesSearchViewModel @Inject constructor(
     private val worksitesRepository: WorksitesRepository,
     private val searchWorksitesRepository: SearchWorksitesRepository,
     private val accountDataRepository: AccountDataRepository,
+    private val organizationsRepository: OrganizationsRepository,
     databaseManagementRepository: AppDataManagementRepository,
     private val mapCaseIconProvider: MapCaseIconProvider,
     @Logger(CrisisCleanupLoggers.Cases) private val logger: AppLogger,
@@ -399,11 +401,8 @@ class CasesSearchViewModel @Inject constructor(
         onSelectWorksite(result, true) { selected ->
             val worksite = worksitesRepository.getWorksite(selected.worksiteId)
             val orgId = accountDataRepository.accountData.first().org.id
-            val isAssignable = worksite.workTypes.any { workType ->
-                !workType.isClaimed ||
-                    workType.orgClaim == orgId
-            }
-            if (isAssignable) {
+            val orgIds = organizationsRepository.getOrganizationAffiliateIds(orgId, true)
+            if (worksite.isAssignable(orgIds)) {
                 assigningWorksite.value = selected
             } else {
                 unassignableWorksite = worksite
