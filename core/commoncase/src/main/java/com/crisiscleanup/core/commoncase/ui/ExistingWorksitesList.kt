@@ -42,7 +42,7 @@ private fun CaseView(
                 Image(
                     // TODO Cache image bitmap, prepareToDraw() as well
                     bitmap = it.asImageBitmap(),
-                    contentDescription = summary.workType?.workTypeLiteral,
+                    contentDescription = t(summary.workType?.workTypeLiteral ?: ""),
                 )
             }
             Column(Modifier.weight(1f)) {

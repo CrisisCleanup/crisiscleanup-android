@@ -45,6 +45,7 @@ import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AppDataManagementRepository
 import com.crisiscleanup.core.data.repository.CasesFilterRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
+import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.TeamChangeRepository
 import com.crisiscleanup.core.data.repository.TeamsRepository
 import com.crisiscleanup.core.data.repository.UsersRepository
@@ -58,6 +59,8 @@ import com.crisiscleanup.core.model.data.EmptyCleanupTeam
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.PersonContact
 import com.crisiscleanup.core.model.data.PersonOrganization
+import com.crisiscleanup.core.model.data.Worksite
+import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.core.model.data.zeroDataProgress
 import com.crisiscleanup.feature.team.model.TeamEditorStep
 import com.crisiscleanup.feature.team.model.stepFromLiteral
@@ -76,6 +79,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
@@ -96,7 +100,8 @@ import kotlin.time.Duration.Companion.seconds
 class CreateEditTeamViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     databaseManagementRepository: AppDataManagementRepository,
-    accountDataRepository: AccountDataRepository,
+    private val accountDataRepository: AccountDataRepository,
+    private val organizationsRepository: OrganizationsRepository,
     incidentsRepository: IncidentsRepository,
     incidentRefresher: IncidentRefresher,
     organizationRefresher: OrganizationRefresher,
@@ -310,7 +315,7 @@ class CreateEditTeamViewModel @Inject constructor(
     )
 
     private val mapMarkerManager = CasesMapMarkerManager(
-        useTeamFilters = true,
+        isTeamCasesMap = true,
         worksitesRepository,
         qsm.worksiteQueryState,
         mapBoundsManager,
@@ -370,15 +375,15 @@ class CreateEditTeamViewModel @Inject constructor(
     )
 
     private val loadingSelectedMapWorksiteId = MutableStateFlow(EmptyWorksite.id)
-    val selectedMapWorksite = MutableStateFlow(EmptyWorksite)
+    val selectedMapWorksite = MutableStateFlow(EmptyTeamAssignableWorksite)
     val isLoadingMapMarkerWorksite = combine(
         loadingSelectedMapWorksiteId,
         selectedMapWorksite,
         ::Pair,
     )
-        .map { (id, worksite) ->
-            worksite != EmptyWorksite &&
-                id != worksite.id
+        .map { (id, assignable) ->
+            assignable != EmptyTeamAssignableWorksite &&
+                id != assignable.worksite.id
         }
         .stateIn(
             scope = viewModelScope,
@@ -541,7 +546,8 @@ class CreateEditTeamViewModel @Inject constructor(
 
     private suspend fun setTileRendererLocation() = caseMapManager.setTileRendererLocation()
 
-    fun onMapCaseMarkerSelect(worksiteId: Long) {
+    fun onMapCaseMarkerSelect(mapCase: WorksiteMapMark) {
+        val worksiteId = mapCase.id
         if (loadingSelectedMapWorksiteId.value == worksiteId) {
             return
         }
@@ -549,7 +555,13 @@ class CreateEditTeamViewModel @Inject constructor(
 
         viewModelScope.launch(ioDispatcher) {
             try {
-                selectedMapWorksite.value = worksitesRepository.getWorksite(worksiteId)
+                val worksite = worksitesRepository.getWorksite(worksiteId)
+                val orgId = accountDataRepository.accountData.first().org.id
+                val orgIds = organizationsRepository.getOrganizationAffiliateIds(orgId, true)
+                selectedMapWorksite.value = TeamAssignableWorksite(
+                    worksite,
+                    worksite.isAssignable(orgIds),
+                )
             } catch (e: Exception) {
                 logger.logException(e)
                 // TODO Alert
@@ -582,7 +594,7 @@ class CreateEditTeamViewModel @Inject constructor(
 
     fun clearSelectedMapCase() {
         loadingSelectedMapWorksiteId.value = EmptyWorksite.id
-        selectedMapWorksite.value = EmptyWorksite
+        selectedMapWorksite.value = EmptyTeamAssignableWorksite
     }
 
     fun saveChanges(
@@ -629,4 +641,14 @@ data class MemberFilterResult(
     val q: String = "",
     val members: List<PersonOrganization> = emptyList(),
     val isFiltering: Boolean = false,
+)
+
+data class TeamAssignableWorksite(
+    val worksite: Worksite,
+    val isAssignable: Boolean,
+)
+
+val EmptyTeamAssignableWorksite = TeamAssignableWorksite(
+    EmptyWorksite,
+    false,
 )

@@ -73,15 +73,15 @@ import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.EmptyCleanupTeam
-import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.PersonContact
 import com.crisiscleanup.core.model.data.UserRole
-import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.touchDownConsumer
 import com.crisiscleanup.feature.team.CreateEditTeamViewModel
+import com.crisiscleanup.feature.team.EmptyTeamAssignableWorksite
 import com.crisiscleanup.feature.team.MemberFilterResult
+import com.crisiscleanup.feature.team.TeamAssignableWorksite
 import com.crisiscleanup.feature.team.TeamCaseMapManager
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.CameraPosition
@@ -233,10 +233,10 @@ private fun CreateEditTeamContent(
     memberFilter: String,
     onUpdateMemberFilter: (String) -> Unit,
     caseMapManager: TeamCaseMapManager,
-    onMapCaseSelect: (Long) -> Unit = {},
+    onMapCaseSelect: (WorksiteMapMark) -> Unit = {},
     isLoadingSelectedMapCase: Boolean = false,
     isAssigningMapCase: Boolean = false,
-    selectedMapCase: Worksite = EmptyWorksite,
+    selectedMapCase: TeamAssignableWorksite = EmptyTeamAssignableWorksite,
     iconProvider: MapCaseIconProvider,
     onViewCase: (Long, Long) -> Unit = { _, _ -> },
     onAssignCase: (ExistingWorksiteIdentifier) -> Unit = {},
@@ -315,16 +315,20 @@ private fun CreateEditTeamContent(
                 2 -> {
                     val openCase = remember(selectedMapCase, onViewCase) {
                         {
-                            onViewCase(selectedMapCase.incidentId, selectedMapCase.id)
+                            with(selectedMapCase.worksite) {
+                                onViewCase(incidentId, id)
+                            }
                         }
                     }
                     val assignCase = remember(selectedMapCase, onAssignCase) {
                         {
                             onAssignCase(
-                                ExistingWorksiteIdentifier(
-                                    incidentId = selectedMapCase.incidentId,
-                                    worksiteId = selectedMapCase.id,
-                                ),
+                                with(selectedMapCase.worksite) {
+                                    ExistingWorksiteIdentifier(
+                                        incidentId = incidentId,
+                                        worksiteId = id,
+                                    )
+                                },
                             )
                         }
                     }
@@ -448,7 +452,7 @@ private fun EditTeamInfoView(
 private fun EditTeamCasesView(
     mapManager: TeamCaseMapManager,
     modifier: Modifier = Modifier,
-    onMapCaseSelect: (Long) -> Unit = { },
+    onMapCaseSelect: (WorksiteMapMark) -> Unit = { },
     onPropagateTouchScroll: (Boolean) -> Unit = {},
     onSearchCases: () -> Unit = {},
     onFilterCases: () -> Unit = {},
@@ -493,7 +497,7 @@ private fun EditTeamCasesView(
     val isLoadingData by mapManager.isLoadingData.collectAsStateWithLifecycle(true)
     val onMapMarkerSelect = remember(mapManager) {
         { mark: WorksiteMapMark ->
-            onMapCaseSelect(mark.id)
+            onMapCaseSelect(mark)
             true
         }
     }
@@ -550,7 +554,7 @@ private fun EditTeamCasesView(
 private fun EditTeamSelectMapCase(
     isLoadingSelectedMapCase: Boolean,
     isAssigningCase: Boolean,
-    selectedWorksite: Worksite,
+    selectedWorksite: TeamAssignableWorksite,
     iconProvider: MapCaseIconProvider,
     onViewDetails: () -> Unit = {},
     onAssignCase: () -> Unit = {},
@@ -577,7 +581,7 @@ private fun EditTeamSelectMapCase(
         }
     }
 
-    if (selectedWorksite != EmptyWorksite) {
+    if (selectedWorksite != EmptyTeamAssignableWorksite) {
         ModalBottomSheet(
             onDismissRequest = onClearSelection,
             tonalElevation = 0.dp,
@@ -588,20 +592,23 @@ private fun EditTeamSelectMapCase(
                     horizontalArrangement = listItemSpacedBy,
                     verticalAlignment = Alignment.Top,
                 ) {
-                    selectedWorksite.keyWorkType?.let { keyWorkType ->
+                    selectedWorksite.worksite.keyWorkType?.let { keyWorkType ->
                         iconProvider.getIconBitmap(
                             keyWorkType.statusClaim,
                             keyWorkType.workType,
-                            hasMultipleWorkTypes = selectedWorksite.workTypes.size > 1,
+                            hasMultipleWorkTypes = selectedWorksite.worksite.workTypes.size > 1,
                         )?.let { bitmap ->
+                            // TODO Review if this produces the intended description
+                            val workTypeLiteral =
+                                t(selectedWorksite.worksite.keyWorkType?.workTypeLiteral ?: "")
                             Image(
                                 bitmap.asImageBitmap(),
-                                contentDescription = null,
+                                contentDescription = workTypeLiteral,
                             )
                         }
                     }
 
-                    with(selectedWorksite) {
+                    with(selectedWorksite.worksite) {
                         Column(verticalArrangement = listItemSpacedByHalf) {
                             Text(
                                 "$name, $caseNumber",
@@ -610,13 +617,13 @@ private fun EditTeamSelectMapCase(
                             )
 
                             CaseAddressInfoView(
-                                selectedWorksite,
+                                this@with,
                                 false,
                                 Modifier.listItemVerticalPadding(),
                             )
 
                             CasePhoneInfoView(
-                                selectedWorksite,
+                                this@with,
                                 false,
                                 Modifier.listItemVerticalPadding(),
                             )
@@ -639,7 +646,7 @@ private fun EditTeamSelectMapCase(
 
                     BusyButton(
                         modifier = Modifier.weight(1f),
-                        enabled = !isAssigningCase,
+                        enabled = !isAssigningCase && selectedWorksite.isAssignable,
                         text = t("~~Assign Case"),
                         indicateBusy = isAssigningCase,
                         onClick = onAssignCase,

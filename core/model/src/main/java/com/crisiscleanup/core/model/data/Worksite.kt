@@ -88,6 +88,16 @@ data class Worksite(
     val isReleaseEligible = createdAt?.let {
         Clock.System.now().minus(it) > WorkTypeReleaseDaysThreshold
     } ?: false
+
+    fun isAssignable(orgIds: Collection<Long>): Boolean {
+        if (workTypes.any { it.orgClaim == null }) {
+            return true
+        }
+        if (orgIds.isNotEmpty()) {
+            return false
+        }
+        return workTypes.map(WorkType::orgClaim).any { orgIds.contains(it) }
+    }
 }
 
 val EmptyWorksite = Worksite(

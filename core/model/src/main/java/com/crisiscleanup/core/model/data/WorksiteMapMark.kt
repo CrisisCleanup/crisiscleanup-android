@@ -18,3 +18,12 @@ data class WorksiteMapMark(
      */
     val isFilteredOut: Boolean = false,
 )
+
+val EmptyWorksiteMapMark = WorksiteMapMark(
+    EmptyWorksite.id,
+    0.0,
+    0.0,
+    WorkTypeStatusClaim(WorkTypeStatus.Unknown, false),
+    WorkTypeType.Unknown,
+    0,
+)

@@ -68,7 +68,8 @@ interface WorksiteDao {
         """
         SELECT w.id,
                latitude, longitude,
-               key_work_type_type, key_work_type_org, key_work_type_status, COUNT(wt.id) as work_type_count,
+               key_work_type_type, key_work_type_org, key_work_type_status,
+               COUNT(wt.id) AS work_type_count,
                favorite_id,
                w.created_at, is_local_favorite, reported_by, svi, updated_at
         FROM worksites w LEFT JOIN work_types wt ON w.id=wt.worksite_id

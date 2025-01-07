@@ -36,7 +36,7 @@ import kotlin.math.pow
 import kotlin.math.sin
 
 class CasesMapMarkerManager(
-    private val useTeamFilters: Boolean,
+    private val isTeamCasesMap: Boolean,
     private val worksitesRepository: WorksitesRepository,
     worksiteQueryState: StateFlow<CasesQueryState>,
     mapBoundsManager: CasesMapBoundsManager,
@@ -165,7 +165,7 @@ class CasesMapMarkerManager(
             q.queryCount.coerceAtMost(2 * maxMarkersOnMap),
             0,
             locationProvider.getLocation(),
-            useTeamFilters,
+            useTeamFilters = isTeamCasesMap,
         )
 
         ensureActive()
@@ -209,7 +209,7 @@ class CasesMapMarkerManager(
         Pair(marks, q.fullCount)
     }
 
-    val zeroOffset = Pair(0f, 0f)
+    private val zeroOffset = Pair(0f, 0f)
 
     private val denseMarkCountThreshold = 15
     private val denseMarkZoomThreshold = 14
