@@ -28,6 +28,7 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
             pluginManager.apply {
                 apply("nowinandroid.android.library")
                 apply("nowinandroid.hilt")
+                apply("org.jetbrains.kotlin.plugin.serialization")
             }
             extensions.configure<LibraryExtension> {
                 testOptions.animationsDisabled = true
@@ -35,24 +36,26 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
             }
 
             dependencies {
-                add("implementation", project(":core:appnav"))
-                add("implementation", project(":core:common"))
-                add("implementation", project(":core:data"))
-                add("implementation", project(":core:designsystem"))
-                add("implementation", project(":core:domain"))
-                add("implementation", project(":core:model"))
-                add("implementation", project(":core:ui"))
+                "implementation"(project(":core:appnav"))
+                "implementation"(project(":core:common"))
+                "implementation"(project(":core:data"))
+                "implementation"(project(":core:designsystem"))
+                "implementation"(project(":core:domain"))
+                "implementation"(project(":core:model"))
+                "implementation"(project(":core:ui"))
 
-                add("implementation", libs.findLibrary("coil.kt").get())
-                add("implementation", libs.findLibrary("coil.kt.compose").get())
+                "implementation"(libs.findLibrary("coil.kt").get())
+                "implementation"(libs.findLibrary("coil.kt.compose").get())
 
-                add("implementation", libs.findLibrary("androidx.hilt.navigation.compose").get())
-                add("implementation", libs.findLibrary("androidx.lifecycle.runtimeCompose").get())
-                add("implementation", libs.findLibrary("androidx.lifecycle.viewModelCompose").get())
-                add("implementation", libs.findLibrary("androidx.tracing.ktx").get())
+                "implementation"(libs.findLibrary("androidx.hilt.navigation.compose").get())
+                "implementation"(libs.findLibrary("androidx.lifecycle.runtimeCompose").get())
+                "implementation"(libs.findLibrary("androidx.lifecycle.viewModelCompose").get())
+                "implementation"(libs.findLibrary("androidx.navigation.compose").get())
+                "implementation"(libs.findLibrary("androidx.tracing.ktx").get())
+                "implementation"(libs.findLibrary("kotlinx.serialization.json").get())
 
-                add(
-                    "androidTestImplementation",
+                "testImplementation"(libs.findLibrary("androidx.navigation.testing").get())
+                "androidTestImplementation"(
                     libs.findLibrary("androidx.lifecycle.runtimeTesting").get(),
                 )
             }

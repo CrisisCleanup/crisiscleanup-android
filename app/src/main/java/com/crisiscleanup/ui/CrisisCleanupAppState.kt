@@ -24,6 +24,7 @@ import com.crisiscleanup.core.appnav.RouteConstant.VIEW_IMAGE_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.WORKSITE_IMAGES_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.topLevelRoutes
 import com.crisiscleanup.core.common.NetworkMonitor
+import com.crisiscleanup.core.data.util.TimeZoneMonitor
 import com.crisiscleanup.core.ui.TrackDisposableJank
 import com.crisiscleanup.feature.cases.navigation.navigateToCases
 import com.crisiscleanup.feature.dashboard.navigation.navigateToDashboard
@@ -38,17 +39,31 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.datetime.TimeZone
 
 @Composable
 fun rememberCrisisCleanupAppState(
     windowSizeClass: WindowSizeClass,
     networkMonitor: NetworkMonitor,
+    timeZoneMonitor: TimeZoneMonitor,
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
     navController: NavHostController = rememberNavController(),
 ): CrisisCleanupAppState {
     NavigationTrackingSideEffect(navController)
-    return remember(navController, coroutineScope, windowSizeClass, networkMonitor) {
-        CrisisCleanupAppState(navController, coroutineScope, windowSizeClass, networkMonitor)
+    return remember(
+        navController,
+        coroutineScope,
+        windowSizeClass,
+        networkMonitor,
+        timeZoneMonitor,
+    ) {
+        CrisisCleanupAppState(
+            navController,
+            coroutineScope,
+            windowSizeClass,
+            networkMonitor,
+            timeZoneMonitor,
+        )
     }
 }
 
@@ -58,6 +73,7 @@ class CrisisCleanupAppState(
     val coroutineScope: CoroutineScope,
     val windowSizeClass: WindowSizeClass,
     networkMonitor: NetworkMonitor,
+    timeZoneMonitor: TimeZoneMonitor,
 ) {
     val currentDestination: NavDestination?
         @Composable get() = navController
@@ -121,6 +137,13 @@ class CrisisCleanupAppState(
     )
 
     private var priorTopLevelDestination: TopLevelDestination? = null
+
+    val currentTimeZone = timeZoneMonitor.currentTimeZone
+        .stateIn(
+            coroutineScope,
+            SharingStarted.WhileSubscribed(5_000),
+            TimeZone.currentSystemDefault(),
+        )
 
     @Composable
     fun lastTopLevelRoute(isOnboarding: Boolean): String {

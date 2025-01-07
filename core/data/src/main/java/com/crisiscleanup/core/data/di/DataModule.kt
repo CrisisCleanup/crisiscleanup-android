@@ -68,6 +68,8 @@ import com.crisiscleanup.core.data.repository.WorksiteImageRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.data.util.ConnectivityManagerNetworkMonitor
 import com.crisiscleanup.core.data.util.IncidentDataPullReporter
+import com.crisiscleanup.core.data.util.TimeZoneBroadcastMonitor
+import com.crisiscleanup.core.data.util.TimeZoneMonitor
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -82,6 +84,9 @@ interface DataModule {
     fun bindsNetworkMonitor(
         networkMonitor: ConnectivityManagerNetworkMonitor,
     ): NetworkMonitor
+
+    @Binds
+    fun bindsTimeZoneMonitor(monitor: TimeZoneBroadcastMonitor): TimeZoneMonitor
 
     @Singleton
     @Binds

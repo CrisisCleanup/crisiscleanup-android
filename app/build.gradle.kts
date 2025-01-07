@@ -144,19 +144,8 @@ dependencies {
 
     implementation(projects.sync.work)
 
-    androidTestImplementation(projects.core.testing)
-    androidTestImplementation(projects.core.dataTest)
-    androidTestImplementation(projects.core.datastoreTest)
-    androidTestImplementation(projects.core.network)
-    androidTestImplementation(libs.androidx.navigation.testing)
-    androidTestImplementation(libs.accompanist.testharness)
-    androidTestImplementation(kotlin("test"))
-    debugImplementation(libs.androidx.compose.ui.testManifest)
-    debugImplementation(projects.uiTestHiltManifest)
-
     implementation(libs.kotlinx.serialization.json)
 
-    implementation(libs.accompanist.systemuicontroller)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
@@ -184,6 +173,30 @@ dependencies {
 
     implementation(libs.kotlinx.coroutines.playservices)
     implementation(libs.playservices.maps)
+
+    ksp(libs.hilt.compiler)
+
+    debugImplementation(libs.androidx.compose.ui.testManifest)
+    debugImplementation(projects.uiTestHiltManifest)
+
+    kspTest(libs.hilt.compiler)
+
+    testImplementation(projects.core.dataTest)
+    testImplementation(projects.core.datastoreTest)
+    testImplementation(libs.hilt.android.testing)
+    testImplementation(projects.sync.syncTest)
+    testImplementation(libs.kotlin.test)
+
+    testDemoImplementation(libs.androidx.navigation.testing)
+    testDemoImplementation(projects.core.testing)
+
+    androidTestImplementation(projects.core.testing)
+    androidTestImplementation(projects.core.dataTest)
+    androidTestImplementation(projects.core.datastoreTest)
+    androidTestImplementation(libs.androidx.test.espresso.core)
+    androidTestImplementation(libs.androidx.compose.ui.test)
+    androidTestImplementation(libs.hilt.android.testing)
+    androidTestImplementation(libs.kotlin.test)
 }
 
 dependencyGuard {

@@ -3,6 +3,7 @@ package com.crisiscleanup
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -10,15 +11,16 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.metrics.performance.JankStats
@@ -37,12 +39,14 @@ import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.data.repository.AppMetricsRepository
 import com.crisiscleanup.core.data.repository.EndOfLifeRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
+import com.crisiscleanup.core.data.util.TimeZoneMonitor
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.navigationContainerColor
 import com.crisiscleanup.core.model.data.DarkThemeConfig
+import com.crisiscleanup.core.ui.LocalTimeZone
 import com.crisiscleanup.sync.initializers.scheduleSyncWorksites
 import com.crisiscleanup.ui.CrisisCleanupApp
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.crisiscleanup.ui.rememberCrisisCleanupAppState
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.MapsInitializer.Renderer
 import dagger.hilt.android.AndroidEntryPoint
@@ -61,6 +65,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     internal lateinit var networkMonitor: NetworkMonitor
+
+    @Inject
+    lateinit var timeZoneMonitor: TimeZoneMonitor
 
     @Inject
     internal lateinit var trimMemoryEventManager: TrimMemoryEventManager
@@ -101,7 +108,6 @@ class MainActivity : ComponentActivity() {
     private val lifecycleObservers = mutableListOf<LifecycleObserver>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         MapsInitializer.initialize(this, Renderer.LATEST) {}
@@ -122,28 +128,31 @@ class MainActivity : ComponentActivity() {
             viewState is Loading || authState is AuthState.Loading
         }
 
-        // Turn off the decor fitting system windows, which allows us to handle insets,
-        // including IME animations
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-
         setContent {
-            val systemUiController = rememberSystemUiController()
             val darkTheme = shouldUseDarkTheme(viewState)
 
-            // Update the dark content of the system bars to match the theme
-            DisposableEffect(systemUiController, darkTheme) {
-                systemUiController.systemBarsDarkContentEnabled = !darkTheme
-                systemUiController.setSystemBarsColor(navigationContainerColor)
-                onDispose {}
-            }
+            val windowSizeClass = calculateWindowSizeClass(this)
+            val appState = rememberCrisisCleanupAppState(
+                networkMonitor = networkMonitor,
+                windowSizeClass = windowSizeClass,
+                timeZoneMonitor = timeZoneMonitor,
+            )
+            val currentTimeZone by appState.currentTimeZone.collectAsStateWithLifecycle()
 
-            CrisisCleanupTheme(
-                darkTheme = darkTheme,
+            val barColor = navigationContainerColor.toArgb()
+            enableEdgeToEdge(
+                statusBarStyle = SystemBarStyle.dark(barColor),
+                navigationBarStyle = SystemBarStyle.dark(barColor),
+            )
+
+            CompositionLocalProvider(
+                LocalTimeZone provides currentTimeZone,
             ) {
-                CrisisCleanupApp(
-                    windowSizeClass = calculateWindowSizeClass(this),
-                    networkMonitor = networkMonitor,
-                )
+                CrisisCleanupTheme(
+                    darkTheme = darkTheme,
+                ) {
+                    CrisisCleanupApp(appState)
+                }
             }
         }
 
