@@ -57,6 +57,7 @@ import com.crisiscleanup.core.designsystem.component.TopBarBackAction
 import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
+import com.crisiscleanup.core.designsystem.theme.edgePadding
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.designsystem.theme.listItemBottomPadding
 import com.crisiscleanup.core.designsystem.theme.listItemCenterSpacedByHalf
@@ -246,8 +247,7 @@ private fun EditSectionHeader(
             ) {
                 Text(
                     LocalAppTranslator.current("actions.edit"),
-                    // TODO Common dimensions
-                    Modifier.padding(16.dp),
+                    Modifier.edgePadding(),
                     style = LocalFontStyles.current.header4,
                     color = if (enabled) color else color.disabledAlpha(),
                 )

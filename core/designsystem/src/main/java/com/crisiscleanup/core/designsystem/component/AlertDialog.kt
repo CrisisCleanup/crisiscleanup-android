@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
+import com.crisiscleanup.core.designsystem.theme.edgePadding
 import com.crisiscleanup.core.designsystem.theme.navigationContainerColor
 import kotlinx.coroutines.delay
 
@@ -116,8 +117,7 @@ fun BoxScope.TemporaryDialog(
         ) {
             Text(
                 text = message,
-                // TODO Common dimensions
-                Modifier.padding(16.dp),
+                Modifier.edgePadding(),
                 style = MaterialTheme.typography.bodyLarge,
             )
         }

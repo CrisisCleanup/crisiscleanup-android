@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalTextStyle
@@ -20,7 +19,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
@@ -33,6 +31,7 @@ import com.crisiscleanup.core.designsystem.component.cancelButtonColors
 import com.crisiscleanup.core.designsystem.component.listDetailDetailMaxWidth
 import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
+import com.crisiscleanup.core.designsystem.theme.edgePadding
 import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
@@ -329,9 +328,7 @@ private fun SaveActionBar(
     }
     val rowMaxItemCount = if (horizontalLayout) Int.MAX_VALUE else 1
     FlowRow(
-        modifier = Modifier
-            // TODO Common dimensions
-            .padding(16.dp),
+        modifier = Modifier.edgePadding(),
         horizontalArrangement = listItemSpacedBy,
         verticalArrangement = listItemSpacedBy,
         maxItemsInEachRow = rowMaxItemCount,

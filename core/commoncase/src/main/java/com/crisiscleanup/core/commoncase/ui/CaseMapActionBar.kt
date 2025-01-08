@@ -45,6 +45,7 @@ enum class CasesAction(
     ),
     ZoomIn(R.drawable.ic_plus, "actions.zoom_in", "workZoomInBtn"),
     ZoomOut(R.drawable.ic_minus, "actions.zoom_out", "workZoomOutBtn"),
+    ListView(R.drawable.ic_list, "~~See Cases assigned to Team", "teamListViewToggleBtn"),
 }
 
 @Composable

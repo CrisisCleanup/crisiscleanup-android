@@ -380,7 +380,7 @@ private fun CasesScreen(
             disasterResId,
             onCasesAction,
             centerOnMyLocation,
-            isTableView,
+            isMapView = !isTableView,
             isLoadingData,
             casesCountMapText,
             filtersCount,

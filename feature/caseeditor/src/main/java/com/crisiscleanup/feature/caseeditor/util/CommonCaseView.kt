@@ -1,16 +1,15 @@
 package com.crisiscleanup.feature.caseeditor.util
 
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
+import com.crisiscleanup.core.designsystem.theme.edgePadding
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
@@ -71,9 +70,7 @@ internal fun TwoActionBar(
 ) {
     val translator = LocalAppTranslator.current
     Row(
-        modifier = Modifier
-            // TODO Common dimensions
-            .padding(16.dp),
+        modifier = Modifier.edgePadding(),
         horizontalArrangement = listItemSpacedBy,
     ) {
         BusyButton(

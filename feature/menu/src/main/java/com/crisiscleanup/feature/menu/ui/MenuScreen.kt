@@ -60,6 +60,7 @@ import com.crisiscleanup.core.designsystem.component.actionRoundCornerShape
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.cardContainerColor
+import com.crisiscleanup.core.designsystem.theme.edgePadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
@@ -583,8 +584,7 @@ private fun GettingStartedSection(
             }
             Text(
                 t("appMenu.quick_app_intro"),
-                // TODO Common dimensions
-                Modifier.padding(16.dp),
+                Modifier.edgePadding(),
                 style = LocalFontStyles.current.header3,
             )
         }

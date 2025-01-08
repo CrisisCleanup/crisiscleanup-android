@@ -57,6 +57,7 @@ import com.crisiscleanup.core.designsystem.component.WorkTypeAction
 import com.crisiscleanup.core.designsystem.component.WorkTypePrimaryAction
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
+import com.crisiscleanup.core.designsystem.theme.edgePadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
@@ -339,8 +340,7 @@ private fun TableViewItem(
     CaseTableItem(
         worksite,
         distance,
-        // TODO Common dimensions
-        Modifier.padding(16.dp),
+        Modifier.edgePadding(),
         onViewCase = onViewCase,
         onOpenFlags = onOpenFlags,
         isEditable = isEditable,

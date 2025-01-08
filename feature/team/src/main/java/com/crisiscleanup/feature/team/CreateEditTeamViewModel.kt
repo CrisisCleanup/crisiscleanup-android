@@ -2,6 +2,7 @@ package com.crisiscleanup.feature.team
 
 import android.content.ComponentCallbacks2
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
@@ -143,8 +144,6 @@ class CreateEditTeamViewModel @Inject constructor(
     private val incidentIdArg = teamEditorArgs.incidentId
     private val teamIdArg = teamEditorArgs.teamId
     private val startingEditorStepArg = stepFromLiteral(teamEditorArgs.editorStep)
-    private val searchIncidentId = teamEditorArgs.selectedIncidentId
-    private val searchWorksiteId = teamEditorArgs.selectedWorksiteId
 
     private val stepTabOrder = MutableStateFlow(
         listOf(
@@ -275,6 +274,7 @@ class CreateEditTeamViewModel @Inject constructor(
         filterRepository,
         viewModelScope,
     )
+    val isCaseListView = qsm.isListView
 
     private val incidentWorksitesCount =
         worksitesRepository.streamIncidentWorksitesCount(
@@ -390,7 +390,9 @@ class CreateEditTeamViewModel @Inject constructor(
             initialValue = false,
             started = SharingStarted.WhileSubscribed(),
         )
-    val isAssigningMapWorksite = MutableStateFlow(false)
+    val isAssigningWorksite = MutableStateFlow(false)
+    val assignedWorksites = mutableStateListOf<Worksite>()
+    private val assignedWorksiteIds = mutableSetOf<Long>()
 
     init {
         trimMemoryEventManager.addListener(this)
@@ -482,6 +484,14 @@ class CreateEditTeamViewModel @Inject constructor(
                         editingTeamName = name
                         editingTeamNotes = notes
                         editingTeamMembers.value = members
+                        synchronized(assignedWorksites) {
+                            assignedWorksites.addAll(
+                                worksites.filter { worksite ->
+                                    !assignedWorksiteIds.contains(worksite.id)
+                                },
+                            )
+                            assignedWorksiteIds.addAll(worksites.map(Worksite::id))
+                        }
                     }
                 }
             }
@@ -546,8 +556,22 @@ class CreateEditTeamViewModel @Inject constructor(
 
     private suspend fun setTileRendererLocation() = caseMapManager.setTileRendererLocation()
 
+    private suspend fun getAssignableWorksite(worksiteId: Long): TeamAssignableWorksite {
+        val worksite = worksitesRepository.getWorksite(worksiteId)
+        val orgId = accountDataRepository.accountData.first().org.id
+        val orgIds = organizationsRepository.getOrganizationAffiliateIds(orgId, true)
+        val isAssignable = worksite.isAssignable(orgIds)
+        val isAssigned = assignedWorksiteIds.contains(worksiteId)
+        return TeamAssignableWorksite(
+            worksite,
+            isAssignable,
+            isAssigned = isAssigned,
+        )
+    }
+
     fun onMapCaseMarkerSelect(mapCase: WorksiteMapMark) {
         val worksiteId = mapCase.id
+
         if (loadingSelectedMapWorksiteId.value == worksiteId) {
             return
         }
@@ -555,13 +579,7 @@ class CreateEditTeamViewModel @Inject constructor(
 
         viewModelScope.launch(ioDispatcher) {
             try {
-                val worksite = worksitesRepository.getWorksite(worksiteId)
-                val orgId = accountDataRepository.accountData.first().org.id
-                val orgIds = organizationsRepository.getOrganizationAffiliateIds(orgId, true)
-                selectedMapWorksite.value = TeamAssignableWorksite(
-                    worksite,
-                    worksite.isAssignable(orgIds),
-                )
+                selectedMapWorksite.value = getAssignableWorksite(worksiteId)
             } catch (e: Exception) {
                 logger.logException(e)
                 // TODO Alert
@@ -571,23 +589,32 @@ class CreateEditTeamViewModel @Inject constructor(
     }
 
     fun onAssignCase(existingWorksite: ExistingWorksiteIdentifier) {
-        if (!isAssigningMapWorksite.compareAndSet(false, true)) {
+        if (existingWorksite == ExistingWorksiteIdentifierNone ||
+            existingWorksite.incidentId != incidentIdArg
+        ) {
             return
         }
 
-        if (existingWorksite != ExistingWorksiteIdentifierNone) {
-            viewModelScope.launch(ioDispatcher) {
-                try {
-                    // TODO Assign only if
-                    //      Not already assigned
-                    //      Has claimed work types
-                    //      Has unclaimed work types
-                    //      Alert when unassignable
-                    Thread.sleep(1.seconds.inWholeMilliseconds)
-                    logger.logDebug("Assign Case to team $existingWorksite")
-                } finally {
-                    isAssigningMapWorksite.value = false
+        if (!isAssigningWorksite.compareAndSet(expect = false, update = true)) {
+            return
+        }
+        viewModelScope.launch(ioDispatcher) {
+            val worksiteId = existingWorksite.worksiteId
+            try {
+                val assignableWorksite = getAssignableWorksite(worksiteId)
+                if (assignableWorksite.isAssignable) {
+                    synchronized(assignedWorksites) {
+                        val isAssigned = assignedWorksiteIds.contains(worksiteId)
+                        if (!isAssigned) {
+                            assignedWorksiteIds.add(worksiteId)
+                            assignedWorksites.add(assignableWorksite.worksite)
+                        }
+                    }
+                } else {
+                    // TODO Alert Case is not assignable
                 }
+            } finally {
+                isAssigningWorksite.value = false
             }
         }
     }
@@ -595,6 +622,18 @@ class CreateEditTeamViewModel @Inject constructor(
     fun clearSelectedMapCase() {
         loadingSelectedMapWorksiteId.value = EmptyWorksite.id
         selectedMapWorksite.value = EmptyTeamAssignableWorksite
+    }
+
+    private fun setContentViewType(isListView: Boolean) {
+        isCaseListView.value = isListView
+
+        if (!isListView) {
+            mapBoundsManager.restoreBounds()
+        }
+    }
+
+    fun toggleMapListView() {
+        setContentViewType(!isCaseListView.value)
     }
 
     fun saveChanges(
@@ -646,9 +685,11 @@ data class MemberFilterResult(
 data class TeamAssignableWorksite(
     val worksite: Worksite,
     val isAssignable: Boolean,
+    val isAssigned: Boolean,
 )
 
 val EmptyTeamAssignableWorksite = TeamAssignableWorksite(
     EmptyWorksite,
-    false,
+    isAssignable = false,
+    isAssigned = false,
 )

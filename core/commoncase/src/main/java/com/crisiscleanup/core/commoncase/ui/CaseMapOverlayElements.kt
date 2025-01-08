@@ -37,7 +37,7 @@ fun CaseMapOverlayElements(
     @DrawableRes disasterResId: Int = R.drawable.ic_disaster_other,
     onCasesAction: (CasesAction) -> Unit = {},
     centerOnMyLocation: () -> Unit = {},
-    isTableView: Boolean = false,
+    isMapView: Boolean = true,
     isLoadingData: Boolean = false,
     casesCountText: String = "",
     filtersCount: Int = 0,
@@ -46,10 +46,9 @@ fun CaseMapOverlayElements(
     onSyncDataFull: () -> Unit = {},
     hasIncidents: Boolean = false,
     showCasesMainActions: Boolean = true,
+    assignedCaseCount: Int = 0,
 ) {
     val translator = LocalAppTranslator.current
-
-    val isMapView = !isTableView
 
     ConstraintLayout(Modifier.fillMaxSize()) {
         val (
@@ -149,7 +148,7 @@ fun CaseMapOverlayElements(
         val bottomPadding = actionInnerSpace.plus(additionalBottomPadding)
 
         if (showCasesMainActions) {
-            val enableLowerActions = !isTableView || !disableTableViewActions
+            val enableLowerActions = isMapView || !disableTableViewActions
 
             val onNewCase = remember(onCasesAction) { { onCasesAction(CasesAction.CreateNew) } }
             CrisisCleanupFab(
@@ -169,25 +168,18 @@ fun CaseMapOverlayElements(
                     contentDescription = translator("nav.new_case"),
                 )
             }
-            val tableMapAction = if (isTableView) CasesAction.MapView else CasesAction.TableView
-            val toggleMapTableView = remember(tableMapAction) { { onCasesAction(tableMapAction) } }
+            val tableMapAction = if (isMapView) CasesAction.TableView else CasesAction.MapView
             CrisisCleanupFab(
-                modifier = modifier
+                tableMapAction,
+                enableLowerActions,
+                modifier
                     .actionSize()
-                    .testTag("workToggleTableMapViewFab")
+                    .testTag("workToggleMapTableViewFab")
                     .constrainAs(toggleTableMap) {
                         end.linkTo(parent.end, margin = actionEdgeSpace)
                         bottom.linkTo(parent.bottom, margin = bottomPadding)
                     },
-                onClick = toggleMapTableView,
-                shape = actionRoundCornerShape,
-                enabled = enableLowerActions,
-            ) {
-                Icon(
-                    painter = painterResource(tableMapAction.iconResId),
-                    contentDescription = translator(tableMapAction.descriptionTranslateKey),
-                )
-            }
+            ) { onCasesAction(tableMapAction) }
         } else {
             Box(
                 Modifier
@@ -198,7 +190,50 @@ fun CaseMapOverlayElements(
                         bottom.linkTo(parent.bottom, margin = 0.dp)
                     },
             )
+
+            val listMapAction = if (isMapView) CasesAction.ListView else CasesAction.MapView
+            val overlayCount = if (isMapView) assignedCaseCount else 0
+            Box(
+                Modifier.constrainAs(toggleTableMap) {
+                    end.linkTo(parent.end, margin = actionEdgeSpace)
+                    bottom.linkTo(parent.bottom, margin = bottomPadding)
+                },
+            ) {
+                OverlayBadge(
+                    count = overlayCount,
+                ) {
+                    CrisisCleanupFab(
+                        listMapAction,
+                        enabled = true,
+                        modifier
+                            .actionSize()
+                            .testTag("workToggleMapListViewFab"),
+                    ) {
+                        onCasesAction(listMapAction)
+                    }
+                }
+            }
         }
+    }
+}
+
+@Composable
+fun CrisisCleanupFab(
+    casesAction: CasesAction,
+    enabled: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {},
+) {
+    CrisisCleanupFab(
+        onClick,
+        enabled,
+        modifier,
+        actionRoundCornerShape,
+    ) {
+        Icon(
+            painter = painterResource(casesAction.iconResId),
+            contentDescription = LocalAppTranslator.current(casesAction.descriptionTranslateKey),
+        )
     }
 }
 

@@ -1,17 +1,22 @@
 package com.crisiscleanup.feature.team.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
@@ -30,6 +35,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -45,6 +52,7 @@ import com.crisiscleanup.core.commoncase.ui.CasePhoneInfoView
 import com.crisiscleanup.core.commoncase.ui.CasesAction
 import com.crisiscleanup.core.commoncase.ui.CasesDownloadProgress
 import com.crisiscleanup.core.commoncase.ui.CasesMapView
+import com.crisiscleanup.core.commoncase.ui.CrisisCleanupFab
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
@@ -58,9 +66,11 @@ import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.SmallBusyIndicator
 import com.crisiscleanup.core.designsystem.component.TopBarBackAction
 import com.crisiscleanup.core.designsystem.component.actionHeight
+import com.crisiscleanup.core.designsystem.component.actionSize
 import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
+import com.crisiscleanup.core.designsystem.theme.edgePadding
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
@@ -75,6 +85,7 @@ import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.EmptyCleanupTeam
 import com.crisiscleanup.core.model.data.PersonContact
 import com.crisiscleanup.core.model.data.UserRole
+import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.touchDownConsumer
@@ -135,9 +146,12 @@ private fun CreateEditTeamView(
     val membersState by viewModel.teamMembersState.collectAsStateWithLifecycle()
 
     val isLoadingSelectedMapCase by viewModel.isLoadingMapMarkerWorksite.collectAsStateWithLifecycle()
-    val isAssigningMapCase by viewModel.isAssigningMapWorksite.collectAsStateWithLifecycle()
+    val isAssigningCase by viewModel.isAssigningWorksite.collectAsStateWithLifecycle()
     val selectedMapCase by viewModel.selectedMapWorksite.collectAsStateWithLifecycle()
     val onMapCaseSelect = viewModel::onMapCaseMarkerSelect
+    val assignedCases = viewModel.assignedWorksites
+
+    val isCaseListView by viewModel.isCaseListView.collectAsStateWithLifecycle()
 
     Column {
         TeamEditorHeader(
@@ -168,14 +182,17 @@ private fun CreateEditTeamView(
                     caseMapManager = viewModel.caseMapManager,
                     onMapCaseSelect = onMapCaseSelect,
                     isLoadingSelectedMapCase = isLoadingSelectedMapCase,
-                    isAssigningMapCase = isAssigningMapCase,
+                    isAssigningCase = isAssigningCase,
                     selectedMapCase = selectedMapCase,
                     onViewCase = onViewCase,
                     onAssignCase = viewModel::onAssignCase,
                     onClearSelectedMapCase = viewModel::clearSelectedMapCase,
+                    assignedCases = assignedCases,
                     onFilterCases = onFilterCases,
                     onSearchCases = onSearchCases,
                     iconProvider = viewModel.mapCaseIconProvider,
+                    isCasesListView = isCaseListView,
+                    onToggleCaseListView = viewModel::toggleMapListView,
                 )
             }
 
@@ -235,14 +252,17 @@ private fun CreateEditTeamContent(
     caseMapManager: TeamCaseMapManager,
     onMapCaseSelect: (WorksiteMapMark) -> Unit = {},
     isLoadingSelectedMapCase: Boolean = false,
-    isAssigningMapCase: Boolean = false,
+    isAssigningCase: Boolean = false,
     selectedMapCase: TeamAssignableWorksite = EmptyTeamAssignableWorksite,
     iconProvider: MapCaseIconProvider,
     onViewCase: (Long, Long) -> Unit = { _, _ -> },
     onAssignCase: (ExistingWorksiteIdentifier) -> Unit = {},
+    assignedCases: List<Worksite> = emptyList(),
     onClearSelectedMapCase: () -> Unit = {},
     onSearchCases: () -> Unit = {},
     onFilterCases: () -> Unit = {},
+    isCasesListView: Boolean = false,
+    onToggleCaseListView: () -> Unit = {},
 ) {
     // TODO Page does not keep across first orientation change
     val pagerState = rememberPagerState(
@@ -335,17 +355,21 @@ private fun CreateEditTeamContent(
 
                     Column(Modifier.animateContentSize()) {
                         EditTeamCasesView(
+                            assignedCases,
+                            isLoadingSelectedMapCase = isLoadingSelectedMapCase,
+                            isListView = isCasesListView,
+                            isAssigningCase = isAssigningCase,
                             caseMapManager,
                             Modifier.weight(1f),
                             onMapCaseSelect = onMapCaseSelect,
                             onPropagateTouchScroll = setEnablePagerScroll,
                             onSearchCases = onSearchCases,
                             onFilterCases = onFilterCases,
+                            toggleMapListView = onToggleCaseListView,
                         )
 
                         EditTeamSelectMapCase(
-                            isLoadingSelectedMapCase,
-                            isAssigningMapCase,
+                            isAssigningCase,
                             selectedMapCase,
                             onViewDetails = openCase,
                             onAssignCase = assignCase,
@@ -450,18 +474,23 @@ private fun EditTeamInfoView(
 
 @Composable
 private fun EditTeamCasesView(
+    assignedCases: List<Worksite>,
+    isLoadingSelectedMapCase: Boolean,
+    isListView: Boolean,
+    isAssigningCase: Boolean,
     mapManager: TeamCaseMapManager,
     modifier: Modifier = Modifier,
     onMapCaseSelect: (WorksiteMapMark) -> Unit = { },
     onPropagateTouchScroll: (Boolean) -> Unit = {},
     onSearchCases: () -> Unit = {},
     onFilterCases: () -> Unit = {},
+    toggleMapListView: () -> Unit = {},
 ) {
     val mapModifier = remember(onPropagateTouchScroll) {
         Modifier.touchDownConsumer { onPropagateTouchScroll(false) }
     }
 
-    val onCasesAction = remember(mapManager, onFilterCases) {
+    val onCasesAction = remember(mapManager, onFilterCases, toggleMapListView) {
         { action: CasesAction ->
             when (action) {
                 CasesAction.Layers -> mapManager.toggleLayersView()
@@ -471,6 +500,7 @@ private fun EditTeamCasesView(
                 CasesAction.ZoomOut -> mapManager.zoomOut()
                 CasesAction.Search -> onSearchCases()
                 CasesAction.Filters -> onFilterCases()
+                CasesAction.ListView -> toggleMapListView()
                 else -> mapManager.onCasesAction(action)
             }
         }
@@ -513,46 +543,94 @@ private fun EditTeamCasesView(
             mapManager.syncWorksitesDelta(true)
         }
     }
-    Box(modifier) {
-        CasesMapView(
-            modifier = mapModifier,
-            mapCameraBounds,
-            mapCameraZoom,
-            isMapBusy,
-            worksitesOnMap,
-            tileChangeValue,
-            clearTileLayer,
-            tileOverlayState,
-            mapManager::overviewMapTileProvider,
-            mapManager::onMapLoadStart,
-            mapManager::onMapLoaded,
-            onMapCameraChange,
-            onMapMarkerSelect,
-            null,
-            isMyLocationEnabled,
-        )
 
-        CaseMapOverlayElements(
-            Modifier,
-            onCasesAction = onCasesAction,
-            centerOnMyLocation = mapManager::grantAccessToDeviceLocation,
-            isLoadingData = isLoadingData,
-            casesCountText = casesCountMapText,
-            filtersCount = filtersCount,
-            disableTableViewActions = true,
-            onSyncDataDelta = onSyncDataDelta,
-            onSyncDataFull = onSyncDataFull,
-            showCasesMainActions = false,
-        )
+    if (isListView) {
+        BackHandler {
+            toggleMapListView()
+        }
 
-        CasesDownloadProgress(dataProgress)
+        Box(modifier) {
+            AssignedCasesView(
+                assignedCases,
+                Modifier.fillMaxSize(),
+            )
+
+            CrisisCleanupFab(
+                CasesAction.MapView,
+                enabled = true,
+                Modifier.align(Alignment.BottomEnd)
+                    .actionSize()
+                    .edgePadding(),
+                onClick = toggleMapListView,
+            )
+        }
+    } else {
+        Box(modifier) {
+            CasesMapView(
+                modifier = mapModifier,
+                mapCameraBounds,
+                mapCameraZoom,
+                isMapBusy,
+                worksitesOnMap,
+                tileChangeValue,
+                clearTileLayer,
+                tileOverlayState,
+                mapManager::overviewMapTileProvider,
+                mapManager::onMapLoadStart,
+                mapManager::onMapLoaded,
+                onMapCameraChange,
+                onMapMarkerSelect,
+                null,
+                isMyLocationEnabled,
+            )
+
+            Row(
+                Modifier
+                    .align(Alignment.BottomStart)
+                    .offset(y = (-24).dp)
+                    .padding(LocalDimensions.current.edgePadding)
+                    // TODO Common dimensions
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color.White.disabledAlpha())
+                    .padding(8.dp),
+                horizontalArrangement = listItemSpacedByHalf,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    LocalAppTranslator.current("~~Select Cases to assign to team"),
+                )
+
+                AnimatedVisibility(
+                    isLoadingSelectedMapCase || isAssigningCase,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                ) {
+                    SmallBusyIndicator(padding = 0.dp)
+                }
+            }
+
+            CaseMapOverlayElements(
+                Modifier,
+                onCasesAction = onCasesAction,
+                centerOnMyLocation = mapManager::grantAccessToDeviceLocation,
+                isLoadingData = isLoadingData,
+                casesCountText = casesCountMapText,
+                filtersCount = filtersCount,
+                disableTableViewActions = true,
+                onSyncDataDelta = onSyncDataDelta,
+                onSyncDataFull = onSyncDataFull,
+                showCasesMainActions = false,
+                assignedCaseCount = assignedCases.size,
+            )
+
+            CasesDownloadProgress(dataProgress)
+        }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EditTeamSelectMapCase(
-    isLoadingSelectedMapCase: Boolean,
     isAssigningCase: Boolean,
     selectedWorksite: TeamAssignableWorksite,
     iconProvider: MapCaseIconProvider,
@@ -561,25 +639,6 @@ private fun EditTeamSelectMapCase(
     onClearSelection: () -> Unit = {},
 ) {
     val t = LocalAppTranslator.current
-
-    Row(
-        fillWidthPadded,
-        horizontalArrangement = listItemSpacedByHalf,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            t("~~Select Cases to assign to team"),
-            Modifier.weight(1f),
-        )
-
-        AnimatedVisibility(
-            isLoadingSelectedMapCase || isAssigningCase,
-            enter = fadeIn(),
-            exit = fadeOut(),
-        ) {
-            SmallBusyIndicator(padding = 0.dp)
-        }
-    }
 
     if (selectedWorksite != EmptyTeamAssignableWorksite) {
         ModalBottomSheet(
@@ -644,13 +703,28 @@ private fun EditTeamSelectMapCase(
                         enabled = !isAssigningCase,
                     )
 
-                    BusyButton(
-                        modifier = Modifier.weight(1f),
-                        enabled = !isAssigningCase && selectedWorksite.isAssignable,
-                        text = t("~~Assign Case"),
-                        indicateBusy = isAssigningCase,
-                        onClick = onAssignCase,
-                    )
+                    if (selectedWorksite.isAssigned) {
+                        // TODO Finish
+                        BusyButton(
+                            modifier = Modifier.weight(1f),
+                            // TODO isUnassigningCase
+                            enabled = !isAssigningCase,
+                            text = t("~~Unassign Case"),
+                            // TODO isUnassigningCase
+                            indicateBusy = isAssigningCase,
+                            onClick = {
+                                // TODO
+                            },
+                        )
+                    } else {
+                        BusyButton(
+                            modifier = Modifier.weight(1f),
+                            enabled = !isAssigningCase && selectedWorksite.isAssignable,
+                            text = t("~~Assign Case"),
+                            indicateBusy = isAssigningCase,
+                            onClick = onAssignCase,
+                        )
+                    }
                 }
             }
         }

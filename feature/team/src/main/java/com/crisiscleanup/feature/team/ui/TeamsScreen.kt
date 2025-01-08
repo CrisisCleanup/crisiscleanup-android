@@ -389,12 +389,15 @@ internal fun TeamView(
                 TeamCaseCompleteView(team)
             }
 
+            val maxItemCount = 3
+            val maxItemIndex = maxItemCount - 1
+
             val memberCount = team.members.size
             val equipmentCount = team.equipment.size
             if (memberCount > 0 || equipmentCount > 0) {
                 Row(horizontalArrangement = listItemSpacedByHalf) {
                     team.members.forEachIndexed { i, contact ->
-                        if (i > 2) {
+                        if (i > maxItemIndex) {
                             return@forEachIndexed
                         }
 
@@ -411,14 +414,14 @@ internal fun TeamView(
                         }
                     }
 
-                    if (memberCount > 2) {
-                        CirclePlusNumber(memberCount - 3)
+                    if (memberCount > maxItemCount) {
+                        CirclePlusNumber(memberCount - maxItemCount)
                     }
 
                     Spacer(Modifier.weight(1f))
 
                     team.equipment.forEachIndexed { i, equipment ->
-                        if (i > 2) {
+                        if (i > maxItemIndex) {
                             return@forEachIndexed
                         }
 
@@ -432,8 +435,8 @@ internal fun TeamView(
                         }
                     }
 
-                    if (equipmentCount > 2) {
-                        CirclePlusNumber(equipmentCount - 3)
+                    if (equipmentCount > maxItemCount) {
+                        CirclePlusNumber(equipmentCount - maxItemCount)
                     }
                 }
             }

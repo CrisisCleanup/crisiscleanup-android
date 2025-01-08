@@ -83,6 +83,7 @@ import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
+import com.crisiscleanup.core.designsystem.theme.edgePadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
@@ -979,10 +980,9 @@ private fun CaseNotesView(
             staticNoteItems(
                 notes,
                 notes.size,
-                // TODO Common dimensions
                 Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .edgePadding(),
                 true,
             )
             item {

@@ -58,6 +58,7 @@ import com.crisiscleanup.core.designsystem.component.listDetailDetailMaxWidth
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
+import com.crisiscleanup.core.designsystem.theme.edgePadding
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
 import com.crisiscleanup.core.designsystem.theme.listItemBottomPadding
 import com.crisiscleanup.core.designsystem.theme.listItemDropdownMenuOffset
@@ -626,9 +627,8 @@ private fun QrCodeSection(
         val orText = t("inviteTeammates.or")
         Text(
             orText,
-            // TODO Common dimensions
             Modifier
-                .padding(16.dp)
+                .edgePadding()
                 .fillMaxWidth(),
             style = LocalFontStyles.current.header4,
             textAlign = TextAlign.Center,

@@ -30,6 +30,7 @@ import com.crisiscleanup.core.designsystem.component.LinkifyPhoneText
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
+import com.crisiscleanup.core.designsystem.theme.edgePadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.neutralBackgroundColor
@@ -112,8 +113,7 @@ private fun HistoryUser(
     Column(
         Modifier
             .background(Color.White)
-            // TODO Common dimensions
-            .padding(16.dp),
+            .edgePadding(),
     ) {
         val isLongPhone = userInfo.userPhone.length > 20
         val isLongEmail = userInfo.userEmail.length > 20
@@ -150,8 +150,7 @@ private fun HistoryEvents(
     Column(
         Modifier
             .background(neutralBackgroundColor)
-            // TODO Common dimensions
-            .padding(16.dp),
+            .edgePadding(),
         verticalArrangement = listItemSpacedBy,
     ) {
         for (event in events) {
