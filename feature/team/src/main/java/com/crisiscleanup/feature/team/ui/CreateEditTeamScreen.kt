@@ -163,6 +163,7 @@ private fun CreateEditTeamView(
         Box(Modifier.fillMaxSize()) {
             if (tabState.titles.isNotEmpty()) {
                 CreateEditTeamContent(
+                    isLoading,
                     tabState.titles,
                     editingTeam,
                     tabState.startingIndex,
@@ -193,6 +194,7 @@ private fun CreateEditTeamView(
                     iconProvider = viewModel.mapCaseIconProvider,
                     isCasesListView = isCaseListView,
                     onToggleCaseListView = viewModel::toggleMapListView,
+                    onUnassignCase = viewModel::onUnassignCase,
                 )
             }
 
@@ -233,6 +235,7 @@ internal fun TeamEditorHeader(
 
 @Composable
 private fun CreateEditTeamContent(
+    isLoading: Boolean,
     tabTitles: List<String>,
     team: CleanupTeam,
     initialPage: Int,
@@ -263,6 +266,7 @@ private fun CreateEditTeamContent(
     onFilterCases: () -> Unit = {},
     isCasesListView: Boolean = false,
     onToggleCaseListView: () -> Unit = {},
+    onUnassignCase: (Worksite) -> Unit = {},
 ) {
     // TODO Page does not keep across first orientation change
     val pagerState = rememberPagerState(
@@ -352,20 +356,31 @@ private fun CreateEditTeamContent(
                             )
                         }
                     }
+                    val onViewCase = remember(onViewCase) {
+                        { worksite: Worksite ->
+                            with(worksite) {
+                                onViewCase(incidentId, id)
+                            }
+                        }
+                    }
 
                     Column(Modifier.animateContentSize()) {
                         EditTeamCasesView(
+                            isLoading,
                             assignedCases,
                             isLoadingSelectedMapCase = isLoadingSelectedMapCase,
                             isListView = isCasesListView,
                             isAssigningCase = isAssigningCase,
                             caseMapManager,
+                            iconProvider,
                             Modifier.weight(1f),
                             onMapCaseSelect = onMapCaseSelect,
                             onPropagateTouchScroll = setEnablePagerScroll,
                             onSearchCases = onSearchCases,
                             onFilterCases = onFilterCases,
                             toggleMapListView = onToggleCaseListView,
+                            onViewCase = onViewCase,
+                            onUnassignCase = onUnassignCase,
                         )
 
                         EditTeamSelectMapCase(
@@ -474,17 +489,21 @@ private fun EditTeamInfoView(
 
 @Composable
 private fun EditTeamCasesView(
+    isLoading: Boolean,
     assignedCases: List<Worksite>,
     isLoadingSelectedMapCase: Boolean,
     isListView: Boolean,
     isAssigningCase: Boolean,
     mapManager: TeamCaseMapManager,
+    iconProvider: MapCaseIconProvider,
     modifier: Modifier = Modifier,
     onMapCaseSelect: (WorksiteMapMark) -> Unit = { },
     onPropagateTouchScroll: (Boolean) -> Unit = {},
     onSearchCases: () -> Unit = {},
     onFilterCases: () -> Unit = {},
     toggleMapListView: () -> Unit = {},
+    onViewCase: (Worksite) -> Unit = {},
+    onUnassignCase: (Worksite) -> Unit = {},
 ) {
     val mapModifier = remember(onPropagateTouchScroll) {
         Modifier.touchDownConsumer { onPropagateTouchScroll(false) }
@@ -551,16 +570,21 @@ private fun EditTeamCasesView(
 
         Box(modifier) {
             AssignedCasesView(
+                isLoadingCases = isLoading,
                 assignedCases,
+                iconProvider,
                 Modifier.fillMaxSize(),
+                onSearchCases = onSearchCases,
+                onViewCase = onViewCase,
+                onUnassignCase = onUnassignCase,
             )
 
             CrisisCleanupFab(
                 CasesAction.MapView,
                 enabled = true,
                 Modifier.align(Alignment.BottomEnd)
-                    .actionSize()
-                    .edgePadding(),
+                    .edgePadding()
+                    .actionSize(),
                 onClick = toggleMapListView,
             )
         }
@@ -584,13 +608,14 @@ private fun EditTeamCasesView(
                 isMyLocationEnabled,
             )
 
+            // TODO Use MapOverlayMessage
             Row(
                 Modifier
                     .align(Alignment.BottomStart)
                     .offset(y = (-24).dp)
                     .padding(LocalDimensions.current.edgePadding)
                     // TODO Common dimensions
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(4.dp))
                     .background(Color.White.disabledAlpha())
                     .padding(8.dp),
                 horizontalArrangement = listItemSpacedByHalf,

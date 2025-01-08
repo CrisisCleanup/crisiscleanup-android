@@ -19,7 +19,7 @@ val listItemModifier = Modifier
     .fillMaxWidth()
     .listItemPadding()
 
-fun Modifier.edgePadding() = Modifier.padding(16.dp)
+fun Modifier.edgePadding() = padding(16.dp)
 
 val listItemHorizontalPadding = PaddingValues(horizontal = 16.dp)
 val listItemSpacedBy = Arrangement.spacedBy(16.dp)

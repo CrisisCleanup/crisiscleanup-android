@@ -619,6 +619,15 @@ class CreateEditTeamViewModel @Inject constructor(
         }
     }
 
+    fun onUnassignCase(worksite: Worksite) {
+        if (assignedWorksiteIds.contains(worksite.id)) {
+            synchronized(assignedWorksites) {
+                assignedWorksites.remove(worksite)
+                assignedWorksiteIds.remove(worksite.id)
+            }
+        }
+    }
+
     fun clearSelectedMapCase() {
         loadingSelectedMapWorksiteId.value = EmptyWorksite.id
         selectedMapWorksite.value = EmptyTeamAssignableWorksite

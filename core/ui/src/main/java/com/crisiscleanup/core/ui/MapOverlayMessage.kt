@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -29,6 +30,8 @@ fun BoxScope.MapOverlayMessage(
                 horizontal = 16.dp,
                 vertical = 48.dp,
             ),
+            // Common dimensions
+            RoundedCornerShape(4.dp),
         ) {
             Text(
                 text = message,

@@ -87,7 +87,6 @@ internal fun PropertyLocationView(
                 onValueChange = {},
                 enabled = false,
                 isError = false,
-                hasFocus = false,
                 readOnly = true,
             )
         }

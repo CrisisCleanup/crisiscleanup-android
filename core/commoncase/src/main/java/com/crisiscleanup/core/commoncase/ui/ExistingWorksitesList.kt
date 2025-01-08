@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.commoncase.ui
 
+import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -21,6 +22,42 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.theme.listItemOptionPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.optionItemPadding
+import com.crisiscleanup.core.model.data.WorkType
+
+@Composable
+fun CaseView(
+    workIcon: Bitmap?,
+    workType: WorkType?,
+    name: String,
+    caseNumber: String,
+    address: String,
+    city: String,
+    state: String,
+    modifier: Modifier = Modifier,
+    postContent: @Composable () -> Unit = {},
+) {
+    val t = LocalAppTranslator.current
+
+    Row(
+        modifier,
+        horizontalArrangement = listItemSpacedByHalf,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        workIcon?.let {
+            Image(
+                // TODO Cache image bitmap, prepareToDraw() as well
+                bitmap = it.asImageBitmap(),
+                contentDescription = t(workType?.workTypeLiteral ?: ""),
+            )
+        }
+        Column(Modifier.weight(1f)) {
+            Text(listOf(name, caseNumber).combineTrimText())
+            Text(listOf(address, city, state).combineTrimText())
+        }
+
+        postContent()
+    }
+}
 
 @Composable
 private fun CaseView(
@@ -31,27 +68,17 @@ private fun CaseView(
     onAssignCaseToTeam: () -> Unit = {},
 ) {
     val t = LocalAppTranslator.current
-
-    Row(
-        modifier,
-        horizontalArrangement = listItemSpacedByHalf,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        with(caseSummary) {
-            icon?.let {
-                Image(
-                    // TODO Cache image bitmap, prepareToDraw() as well
-                    bitmap = it.asImageBitmap(),
-                    contentDescription = t(summary.workType?.workTypeLiteral ?: ""),
-                )
-            }
-            Column(Modifier.weight(1f)) {
-                with(summary) {
-                    Text(listOf(name, caseNumber).combineTrimText())
-                    Text(listOf(address, city, state).combineTrimText())
-                }
-            }
-
+    with(caseSummary) {
+        CaseView(
+            icon,
+            summary.workType,
+            name = summary.name,
+            caseNumber = summary.caseNumber,
+            address = summary.address,
+            city = summary.city,
+            state = summary.state,
+            modifier,
+        ) {
             if (isTeamCasesSearch) {
                 CrisisCleanupButton(
                     enabled = isAssignEnabled,
