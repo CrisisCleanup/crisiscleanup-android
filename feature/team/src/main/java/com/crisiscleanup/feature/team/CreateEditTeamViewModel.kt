@@ -588,6 +588,16 @@ class CreateEditTeamViewModel @Inject constructor(
         }
     }
 
+    private fun updateSelectedMapWorksite(worksite: Worksite) {
+        val selectedWorksite = selectedMapWorksite.value
+        if (selectedWorksite.worksite == worksite) {
+            val updatedWorksite = selectedWorksite.copy(
+                isAssigned = assignedWorksiteIds.contains(worksite.id),
+            )
+            selectedMapWorksite.compareAndSet(selectedWorksite, updatedWorksite)
+        }
+    }
+
     fun onAssignCase(existingWorksite: ExistingWorksiteIdentifier) {
         if (existingWorksite == ExistingWorksiteIdentifierNone ||
             existingWorksite.incidentId != incidentIdArg
@@ -610,6 +620,7 @@ class CreateEditTeamViewModel @Inject constructor(
                             assignedWorksites.add(assignableWorksite.worksite)
                         }
                     }
+                    updateSelectedMapWorksite(assignableWorksite.worksite)
                 } else {
                     // TODO Alert Case is not assignable
                 }
@@ -625,6 +636,7 @@ class CreateEditTeamViewModel @Inject constructor(
                 assignedWorksites.remove(worksite)
                 assignedWorksiteIds.remove(worksite.id)
             }
+            updateSelectedMapWorksite(worksite)
         }
     }
 
@@ -683,6 +695,7 @@ private fun Flow<List<PersonOrganization>>.exclude(ids: Set<Long>) = map { it.ex
 data class CreateEditTeamTabState(
     val titles: List<String> = emptyList(),
     val startingIndex: Int = 0,
+    val casesTabIndex: Int = 2,
 )
 
 data class MemberFilterResult(
