@@ -78,6 +78,7 @@ class CasesMapMarkerManager(
                         wqs.zoom,
                         worksiteInteractor,
                         mapCaseIconProvider,
+                        wqs.teamCaseIds,
                     )
                 } finally {
                     isGeneratingWorksiteMarkersInternal.value = false
@@ -286,6 +287,7 @@ class CasesMapMarkerManager(
         mapZoom: Float,
         worksiteInteractor: WorksiteInteractor,
         mapCaseIconProvider: MapCaseIconProvider,
+        teamCaseIds: Set<Long>,
     ) = coroutineScope {
         val sw = coordinateBounds.southWest
         val ne = coordinateBounds.northEast
@@ -304,10 +306,16 @@ class CasesMapMarkerManager(
             }
             val isSelected = worksiteInteractor.wasCaseSelected(
                 incidentId,
-                mark.id,
+                worksiteId = mark.id,
                 reference = now,
             )
-            mark.asWorksiteGoogleMapMark(mapCaseIconProvider, isSelected, offset)
+            val isAssignedTeam = teamCaseIds.contains(mark.id)
+            mark.asWorksiteGoogleMapMark(
+                mapCaseIconProvider,
+                isVisited = isSelected,
+                isAssignedTeam = isAssignedTeam,
+                offset,
+            )
         }
     }
 }

@@ -13,4 +13,5 @@ interface CasesQueryState {
         get() = !isMapView
     val isZoomInteractive: Boolean
     val filters: CasesFilter
+    val teamCaseIds: Set<Long>
 }

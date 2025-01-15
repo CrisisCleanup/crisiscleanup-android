@@ -18,6 +18,7 @@ internal data class WorksiteQueryState(
     override val filters: CasesFilter,
 ) : CasesQueryState {
     override val isMapView = !isTableView
+    override val teamCaseIds = emptySet<Long>()
 }
 
 internal val WorksiteQueryStateDefault = WorksiteQueryState(

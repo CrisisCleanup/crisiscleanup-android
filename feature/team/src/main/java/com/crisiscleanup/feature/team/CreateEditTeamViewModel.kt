@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -82,7 +83,6 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -332,8 +332,7 @@ class CreateEditTeamViewModel @Inject constructor(
         incidentSelector,
         incidentWorksitesCount,
         isLoadingData,
-        // TODO Use list view visibility not
-        flowOf(true),
+        isMapVisible = qsm.isListView.map(Boolean::not),
         worksitesMapMarkers,
         translator,
         viewModelScope,
@@ -501,6 +500,12 @@ class CreateEditTeamViewModel @Inject constructor(
             organizationRefresher.pullOrganizationAndAffiliates()
             organizationRefresher.pullOrganizationUsers()
         }
+
+        snapshotFlow { assignedWorksites.map { it.id }.toSet() }
+            .onEach {
+                qsm.teamWorksiteIds.value = it
+            }
+            .launchIn(viewModelScope)
     }
 
     val isLoading = dataLoader.isLoading

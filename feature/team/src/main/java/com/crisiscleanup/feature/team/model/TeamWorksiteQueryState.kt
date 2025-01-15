@@ -14,6 +14,7 @@ internal data class TeamWorksiteQueryState(
     val isListView: Boolean,
     override val isZoomInteractive: Boolean,
     override val filters: CasesFilter,
+    override val teamCaseIds: Set<Long>,
 ) : CasesQueryState {
     override val isMapView = !isListView
 }
@@ -26,4 +27,5 @@ internal val WorksiteQueryStateDefault = TeamWorksiteQueryState(
     isListView = false,
     isZoomInteractive = false,
     filters = CasesFilter(),
+    teamCaseIds = emptySet(),
 )

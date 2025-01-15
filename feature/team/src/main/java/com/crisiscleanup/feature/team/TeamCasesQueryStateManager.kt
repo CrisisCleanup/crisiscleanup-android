@@ -22,17 +22,21 @@ internal class TeamCasesQueryStateManager(
 
     val mapBounds = MutableStateFlow(CoordinateBoundsDefault)
 
+    val teamWorksiteIds = MutableStateFlow<Set<Long>>(emptySet())
+
     val worksiteQueryState = MutableStateFlow(WorksiteQueryStateDefault)
 
     init {
-        incidentSelector.incident.onEach {
-            worksiteQueryState.value = worksiteQueryState.value.copy(incidentId = it.id)
-        }
+        incidentSelector.incident
+            .onEach {
+                worksiteQueryState.value = worksiteQueryState.value.copy(incidentId = it.id)
+            }
             .launchIn(coroutineScope)
 
-        isListView.onEach {
-            worksiteQueryState.value = worksiteQueryState.value.copy(isListView = it)
-        }
+        isListView
+            .onEach {
+                worksiteQueryState.value = worksiteQueryState.value.copy(isListView = it)
+            }
             .launchIn(coroutineScope)
 
         mapZoom
@@ -49,9 +53,16 @@ internal class TeamCasesQueryStateManager(
             }
             .launchIn(coroutineScope)
 
-        filterRepository.casesFiltersLocation.onEach {
-            worksiteQueryState.value = worksiteQueryState.value.copy(filters = it.first)
-        }
+        filterRepository.casesFiltersLocation
+            .onEach {
+                worksiteQueryState.value = worksiteQueryState.value.copy(filters = it.first)
+            }
+            .launchIn(coroutineScope)
+
+        teamWorksiteIds
+            .onEach {
+                worksiteQueryState.value = worksiteQueryState.value.copy(teamCaseIds = it)
+            }
             .launchIn(coroutineScope)
     }
 }
