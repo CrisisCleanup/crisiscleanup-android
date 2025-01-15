@@ -2,10 +2,12 @@ package com.crisiscleanup.core.mapmarker
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
+import android.graphics.RectF
 import android.graphics.drawable.Drawable
 import androidx.collection.LruCache
 import androidx.compose.ui.geometry.Offset
@@ -36,27 +38,55 @@ class WorkTypeIconProvider @Inject constructor(
     private val shadowRadius: Int
     private val shadowColor = (0xFF666666).toInt()
 
-    private val bitmapSizeDp = 36f + 2 * shadowRadiusDp
-    private val bitmapSize: Int
-    private var bitmapCenterOffset = Offset(0f, 0f)
+    private val contentPaddingDp = 4f
+    private val bitmapSizeDp = 36f + (contentPaddingDp + shadowRadiusDp) * 2
+    private val bitmapSize = resourceProvider.dpToPx(bitmapSizeDp).toInt()
+    private val contentRadius: Float
+    private val bitmapCenterPx: Float
 
-    override val iconOffset: Offset
-        get() = bitmapCenterOffset
+    override val mapTileIconOffset = Offset.Zero
 
     private val plusDrawable: Drawable
     private val plusDrawableTransparent: Drawable
 
-    init {
-        bitmapSize = resourceProvider.dpToPx(bitmapSizeDp).toInt()
-        val centerOffset = bitmapSizeDp * 0.5f
-        bitmapCenterOffset = Offset(centerOffset, centerOffset)
+    private val whiteCircle: Bitmap
+    private val centerCircleBounds: RectF
 
+    init {
+        val centerOffsetDp = bitmapSizeDp * 0.5f
         shadowRadius = resourceProvider.dpToPx(shadowRadiusDp).toInt()
+        val contentHalfSize = (bitmapSizeDp - 2 * shadowRadiusDp) * 0.5f
+        contentRadius = resourceProvider.dpToPx(contentHalfSize)
+        bitmapCenterPx = resourceProvider.dpToPx(centerOffsetDp)
 
         plusDrawable = resourceProvider.getDrawable(R.drawable.ic_work_type_plus)
         plusDrawableTransparent = resourceProvider.getDrawable(R.drawable.ic_work_type_plus).also {
             it.alpha = (255 * FILTERED_OUT_MARKER_ALPHA).toInt()
         }
+
+        val whitePaint = getAntiAliasPaint(Color.WHITE)
+        val flatCircle = Bitmap.createBitmap(
+            bitmapSize,
+            bitmapSize,
+            Bitmap.Config.ARGB_8888,
+        )
+        Canvas(flatCircle).apply {
+            drawCircle(bitmapCenterPx, bitmapCenterPx, contentRadius, whitePaint)
+        }
+        val blurCircle = flatCircle.blur(shadowRadius)
+        Canvas(blurCircle).apply {
+            drawBitmap(flatCircle, 0f, 0f, null)
+        }
+        whiteCircle = blurCircle
+
+        val bitmapSizeStart = bitmapSize * 0.17f
+        val bitmapSizeEnd = bitmapSize - bitmapSizeStart
+        centerCircleBounds = RectF(
+            bitmapSizeStart,
+            bitmapSizeStart,
+            bitmapSizeEnd,
+            bitmapSizeEnd,
+        )
     }
 
     private fun cacheIconBitmap(cacheKey: CacheKey): BitmapDescriptor {
@@ -78,16 +108,18 @@ class WorkTypeIconProvider @Inject constructor(
         isDuplicate: Boolean,
         isFilteredOut: Boolean,
         isVisited: Boolean,
+        isAssignedTeam: Boolean,
     ): BitmapDescriptor {
         val cacheKey = CacheKey(
             statusClaim,
             workType,
-            hasMultipleWorkTypes,
+            hasMultipleWorkTypes = hasMultipleWorkTypes,
             isFavorite = isFavorite,
             isImportant = isImportant,
             isDuplicate = isDuplicate,
             isFilteredOut = isFilteredOut,
             isVisited = isVisited,
+            isAssignedTeam = isAssignedTeam,
         )
         synchronized(cache) {
             cache[cacheKey]?.let {
@@ -105,14 +137,16 @@ class WorkTypeIconProvider @Inject constructor(
         isDuplicate: Boolean,
         isFilteredOut: Boolean,
         isVisited: Boolean,
+        isAssignedTeam: Boolean,
     ): Bitmap? {
         val cacheKey = CacheKey(
             statusClaim,
             workType,
-            hasMultipleWorkTypes,
-            isDuplicate,
-            isFilteredOut,
-            isVisited,
+            hasMultipleWorkTypes = hasMultipleWorkTypes,
+            isDuplicate = isDuplicate,
+            isFilteredOut = isFilteredOut,
+            isVisited = isVisited,
+            isAssignedTeam = isAssignedTeam,
         )
         synchronized(cache) {
             bitmapCache[cacheKey]?.let {
@@ -127,6 +161,22 @@ class WorkTypeIconProvider @Inject constructor(
             }
             return null
         }
+    }
+
+    private fun getAntiAliasPaint(color: Int) = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        colorFilter = PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN)
+    }
+
+    private fun Bitmap.blur(radius: Int): Bitmap {
+        val paint = getAntiAliasPaint(shadowColor)
+        val flatShadow = Bitmap.createBitmap(
+            bitmapSize,
+            bitmapSize,
+            Bitmap.Config.ARGB_8888,
+        )
+        val canvas = Canvas(flatShadow)
+        canvas.drawBitmap(this, Matrix(), paint)
+        return Toolkit.blur(flatShadow, radius)
     }
 
     private fun drawIcon(cacheKey: CacheKey): Bitmap {
@@ -166,21 +216,8 @@ class WorkTypeIconProvider @Inject constructor(
             argbEvaluator,
         )
 
-        var blurred = output
-        if (!cacheKey.isFilteredOut) {
-            val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                colorFilter = PorterDuffColorFilter(shadowColor, PorterDuff.Mode.SRC_IN)
-            }
-            val flatShadow = Bitmap.createBitmap(
-                bitmapSize,
-                bitmapSize,
-                Bitmap.Config.ARGB_8888,
-            )
-            Canvas(flatShadow).apply {
-                drawBitmap(output, Matrix(), paint)
-            }
-            blurred = Toolkit.blur(flatShadow, shadowRadius)
-        }
+        val isBlurred = !cacheKey.isFilteredOut
+        val blurred = if (isBlurred) output.blur(shadowRadius) else output
 
         if (cacheKey.hasMultipleWorkTypes) {
             synchronized(plusDrawable) {
@@ -195,11 +232,27 @@ class WorkTypeIconProvider @Inject constructor(
             }
         }
 
-        Canvas(blurred).apply {
-            drawBitmap(output, 0f, 0f, null)
+        if (isBlurred) {
+            Canvas(blurred).apply {
+                drawBitmap(output, 0f, 0f, null)
+            }
         }
 
-        return blurred
+        var teamAssigned = blurred
+        if (cacheKey.isAssignedTeam) {
+            val composite = Bitmap.createBitmap(
+                bitmapSize,
+                bitmapSize,
+                Bitmap.Config.ARGB_8888,
+            )
+            Canvas(composite).apply {
+                drawBitmap(whiteCircle, Matrix(), null)
+                drawBitmap(teamAssigned, null, centerCircleBounds, null)
+            }
+            teamAssigned = composite
+        }
+
+        return teamAssigned
     }
 
     private data class CacheKey(
@@ -211,5 +264,6 @@ class WorkTypeIconProvider @Inject constructor(
         val isDuplicate: Boolean = false,
         val isFilteredOut: Boolean = false,
         val isVisited: Boolean = false,
+        val isAssignedTeam: Boolean = false,
     )
 }

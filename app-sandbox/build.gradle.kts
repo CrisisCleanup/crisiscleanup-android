@@ -42,12 +42,12 @@ dependencies {
     implementation(projects.core.commoncase)
     implementation(projects.core.data)
     implementation(projects.core.designsystem)
+    implementation(projects.core.mapmarker)
     implementation(projects.core.network)
     implementation(projects.core.ui)
 
     implementation(libs.kotlinx.serialization.json)
 
-    implementation(libs.accompanist.systemuicontroller)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)

@@ -9,6 +9,7 @@ import com.crisiscleanup.sandbox.RootRoute
 import com.crisiscleanup.sandbox.ui.BottomNavRoute
 import com.crisiscleanup.sandbox.ui.CheckboxesRoute
 import com.crisiscleanup.sandbox.ui.ChipsRoute
+import com.crisiscleanup.sandbox.ui.MapMarkersView
 import com.crisiscleanup.sandbox.ui.MultiImageRoute
 import com.crisiscleanup.sandbox.ui.SingleImageRoute
 
@@ -18,6 +19,7 @@ private const val CHIPS_ROUTE = "chips"
 private const val BOTTOM_NAV_ROUTE = "bottom-nav"
 const val SINGLE_IMAGE_ROUTE = "single-image"
 const val MULTI_IMAGE_ROUTE = "multi-image"
+const val MAP_MARKERS_ROUTE = "map-markers"
 
 fun NavController.navigateToBottomNav() {
     navigate(BOTTOM_NAV_ROUTE)
@@ -37,6 +39,10 @@ fun NavController.navigateToSingleImage() {
 
 fun NavController.navigateToMultiImage() {
     navigate(MULTI_IMAGE_ROUTE)
+}
+
+fun NavController.navigateToMapMarkers() {
+    navigate(MAP_MARKERS_ROUTE)
 }
 
 @Composable
@@ -71,6 +77,10 @@ fun SandboxNavHost(
 
         composable(MULTI_IMAGE_ROUTE) {
             MultiImageRoute(onBack)
+        }
+
+        composable(MAP_MARKERS_ROUTE) {
+            MapMarkersView()
         }
     }
 }

@@ -27,7 +27,7 @@ class InMemoryDotProvider @Inject constructor(
     private var cacheDotDrawProperties: DotDrawProperties
     private var dotOffsetPx = Offset(0f, 0f)
 
-    override val iconOffset: Offset
+    override val mapTileIconOffset: Offset
         get() = dotOffsetPx
 
     init {
@@ -84,10 +84,11 @@ class InMemoryDotProvider @Inject constructor(
         isDuplicate: Boolean,
         isFilteredOut: Boolean,
         isVisited: Boolean,
+        isAssignedTeam: Boolean,
     ): BitmapDescriptor? {
-        val cacheKey = DotCacheKey(statusClaim, isDuplicate, isFilteredOut)
+        val cacheKey = DotCacheKey(statusClaim, isDuplicate, isFilteredOut, isAssignedTeam)
         synchronized(cache) {
-            cache.get(cacheKey)?.let {
+            cache[cacheKey]?.let {
                 return it
             }
         }
@@ -102,10 +103,11 @@ class InMemoryDotProvider @Inject constructor(
         isDuplicate: Boolean,
         isFilteredOut: Boolean,
         isVisited: Boolean,
+        isAssignedTeam: Boolean,
     ): Bitmap? {
-        val cacheKey = DotCacheKey(statusClaim, isDuplicate, isFilteredOut)
+        val cacheKey = DotCacheKey(statusClaim, isDuplicate, isFilteredOut, isAssignedTeam)
         synchronized(cache) {
-            bitmapCache.get(cacheKey)?.let {
+            bitmapCache[cacheKey]?.let {
                 return it
             }
         }
@@ -114,7 +116,7 @@ class InMemoryDotProvider @Inject constructor(
         cacheDotBitmap(cacheKey, dotDrawProperties)
         synchronized(cache) {
             if (cacheDotDrawProperties == dotDrawProperties) {
-                bitmapCache.get(cacheKey)?.let {
+                bitmapCache[cacheKey]?.let {
                     return it
                 }
             }
@@ -174,4 +176,5 @@ private data class DotCacheKey(
     val statusClaim: WorkTypeStatusClaim,
     val isDuplicate: Boolean = false,
     val isFilteredOut: Boolean = false,
+    val isAssignedTeam: Boolean = false,
 )

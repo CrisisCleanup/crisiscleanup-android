@@ -153,7 +153,7 @@ class CaseDotsMapTileRenderer(
     ): Pair<Int, Bitmap?> {
         val limit = 2000
         var offset = 0
-        val centerDotOffset = -mapCaseDotProvider.iconOffset.x
+        val centerDotOffset = -mapCaseDotProvider.mapTileIconOffset.x
 
         val sw = coordinates.querySouthwest
         val ne = coordinates.queryNortheast

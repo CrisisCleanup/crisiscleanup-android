@@ -10,7 +10,7 @@ interface MapCaseIconProvider {
     /**
      * Offset to the center of the icon (in pixels)
      */
-    val iconOffset: Offset
+    val mapTileIconOffset: Offset
 
     fun getIcon(
         statusClaim: WorkTypeStatusClaim,
@@ -21,6 +21,7 @@ interface MapCaseIconProvider {
         isDuplicate: Boolean = false,
         isFilteredOut: Boolean = false,
         isVisited: Boolean = false,
+        isAssignedTeam: Boolean = false,
     ): BitmapDescriptor?
 
     fun getIconBitmap(
@@ -30,5 +31,6 @@ interface MapCaseIconProvider {
         isDuplicate: Boolean = false,
         isFilteredOut: Boolean = false,
         isVisited: Boolean = false,
+        isAssignedTeam: Boolean = false,
     ): Bitmap?
 }

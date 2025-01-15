@@ -415,7 +415,7 @@ private fun CreateEditTeamPager(
                             onUnassignCase = onUnassignCase,
                         )
 
-                        EditTeamSelectMapCase(
+                        EditTeamMapCaseOverview(
                             isAssigningCase,
                             selectedMapCase,
                             iconProvider,
@@ -684,7 +684,7 @@ private fun EditTeamCasesView(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun EditTeamSelectMapCase(
+private fun EditTeamMapCaseOverview(
     isAssigningCase: Boolean,
     selectedWorksite: TeamAssignableWorksite,
     iconProvider: MapCaseIconProvider,
