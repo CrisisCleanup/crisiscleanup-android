@@ -24,8 +24,10 @@ import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
 import com.crisiscleanup.core.mapmarker.util.toLatLng
 import com.crisiscleanup.core.model.data.DataProgressMetrics
+import com.crisiscleanup.core.model.data.Worksite
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.TileProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -95,7 +97,6 @@ internal class CreateEditTeamCaseMapManager(
     private val coroutineScope: CoroutineScope,
     private val logger: AppLogger,
 ) : TeamCaseMapManager {
-
     var showExplainPermissionLocation by mutableStateOf(false)
 
     private val casesMapTileManager = CasesMapTileLayerManager(
@@ -220,6 +221,16 @@ internal class CreateEditTeamCaseMapManager(
                 // Ignore these statuses as they're not important
             }
         }
+    }
+
+    fun centerMapOnWorksite(worksite: Worksite, zoomLevel: Float) {
+        mapCameraZoomInternal.value = MapViewCameraZoom(
+            LatLng(
+                worksite.latitude,
+                worksite.longitude,
+            ),
+            (zoomLevel + Math.random() * 1e-3).toFloat(),
+        )
     }
 
     override fun syncWorksitesDelta(forceRefreshAll: Boolean) {

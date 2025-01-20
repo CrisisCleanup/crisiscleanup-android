@@ -15,7 +15,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
@@ -35,8 +35,8 @@ class CasesMapBoundsManager(
     val centerCache: LatLng
         get() = mapBoundsCache.center
 
-    private var _mapCameraBounds = MutableStateFlow(MapViewCameraBoundsDefault)
-    val mapCameraBounds = _mapCameraBounds.asStateFlow()
+    private var mapCameraBoundsInternal = MutableStateFlow(MapViewCameraBoundsDefault)
+    val mapCameraBounds: StateFlow<MapViewCameraBounds> = mapCameraBoundsInternal
 
     private val mappingBoundsIncidentIds = incidentBoundsProvider.mappingBoundsIncidentIds
     private val isMappingLocationBounds = combine(
@@ -64,7 +64,7 @@ class CasesMapBoundsManager(
                 if (incidentBounds.locations.isNotEmpty()) {
                     val bounds = incidentBounds.bounds
                     if (isMapLoaded.value) {
-                        _mapCameraBounds.value = MapViewCameraBounds(bounds)
+                        mapCameraBoundsInternal.value = MapViewCameraBounds(bounds)
                     }
                     cacheBounds(bounds)
                 }
@@ -96,7 +96,7 @@ class CasesMapBoundsManager(
     }
 
     fun restoreBounds() {
-        _mapCameraBounds.value = MapViewCameraBounds(mapBoundsCache, 0)
+        mapCameraBoundsInternal.value = MapViewCameraBounds(mapBoundsCache, 0)
     }
 
     fun restoreIncidentBounds() {
@@ -106,7 +106,7 @@ class CasesMapBoundsManager(
             val ne = bounds.northeast.smallOffset(1e-9)
             val latLngBounds = LatLngBounds(bounds.southwest, ne)
 
-            _mapCameraBounds.value = MapViewCameraBounds(latLngBounds)
+            mapCameraBoundsInternal.value = MapViewCameraBounds(latLngBounds)
             mapBoundsCache = latLngBounds
         }
     }

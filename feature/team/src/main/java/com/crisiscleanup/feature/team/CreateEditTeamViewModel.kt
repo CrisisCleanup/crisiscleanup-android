@@ -588,6 +588,7 @@ class CreateEditTeamViewModel @Inject constructor(
             } catch (e: Exception) {
                 logger.logException(e)
                 // TODO Alert
+            } finally {
                 loadingSelectedMapWorksiteId.compareAndSet(worksiteId, EmptyWorksite.id)
             }
         }
@@ -600,6 +601,12 @@ class CreateEditTeamViewModel @Inject constructor(
                 isAssigned = assignedWorksiteIds.contains(worksite.id),
             )
             selectedMapWorksite.compareAndSet(selectedWorksite, updatedWorksite)
+
+            (caseMapManager as CreateEditTeamCaseMapManager).centerMapOnWorksite(
+                worksite,
+                qsm.mapZoom.value,
+            )
+            selectedMapWorksite.value = EmptyTeamAssignableWorksite
         }
     }
 
