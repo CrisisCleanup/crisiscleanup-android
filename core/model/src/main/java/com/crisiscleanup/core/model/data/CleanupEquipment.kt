@@ -28,6 +28,13 @@ data class EquipmentData(
     val selectedCount: Int,
 )
 
+val EmptyEquipment = EquipmentData(
+    -1,
+    "",
+    listOrder = null,
+    selectedCount = 0,
+)
+
 data class MemberEquipment(
     val userId: Long,
     val userName: String,

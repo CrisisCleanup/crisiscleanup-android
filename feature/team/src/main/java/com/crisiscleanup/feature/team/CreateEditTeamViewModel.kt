@@ -47,6 +47,7 @@ import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AppDataManagementRepository
 import com.crisiscleanup.core.data.repository.CasesFilterRepository
+import com.crisiscleanup.core.data.repository.EquipmentRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.TeamChangeRepository
@@ -126,6 +127,7 @@ class CreateEditTeamViewModel @Inject constructor(
     filterRepository: CasesFilterRepository,
     val mapCaseIconProvider: MapCaseIconProvider,
     worksiteInteractor: WorksiteInteractor,
+    equipmentRepository: EquipmentRepository,
     permissionManager: PermissionManager,
     locationProvider: LocationProvider,
     languageRefresher: LanguageRefresher,
@@ -210,6 +212,15 @@ class CreateEditTeamViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = emptySet(),
+            started = ReplaySubscribed3,
+        )
+    val memberOptions = editingTeamMembers
+        .map { members ->
+            members.sortedBy { it.fullName }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = emptyList(),
             started = ReplaySubscribed3,
         )
 
@@ -398,8 +409,16 @@ class CreateEditTeamViewModel @Inject constructor(
     val assignedWorksites = mutableStateListOf<Worksite>()
     private val assignedWorksiteIds = mutableSetOf<Long>()
 
-    var equipmentOptions by mutableStateOf(emptyList<EquipmentData>())
-        private set
+    val equipmentOptions = equipmentRepository.streamEquipmentLookup
+        .map {
+            val equipment = it.values
+            equipment.sortedBy { e -> translate(e.nameKey) }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = emptyList(),
+            started = SharingStarted.WhileSubscribed(),
+        )
     private val editingTeamEquipment = MutableStateFlow<Map<Long, MutableSet<EquipmentData>>>(
         emptyMap(),
     )

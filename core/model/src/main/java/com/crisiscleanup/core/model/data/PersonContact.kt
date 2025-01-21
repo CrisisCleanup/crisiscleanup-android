@@ -15,6 +15,17 @@ data class PersonContact(
         get() = profilePictureUri.ifBlank { fallbackAvatarUrl }
 }
 
+val EmptyPersonContact = PersonContact(
+    -1,
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    emptyList(),
+)
+
 data class PersonOrganization(
     val person: PersonContact,
     val organization: OrganizationIdName,
