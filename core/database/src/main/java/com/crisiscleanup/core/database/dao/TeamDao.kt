@@ -56,7 +56,7 @@ interface TeamDao {
     @Query(
         """
         SELECT p.id as userId, p.first_name as userFirstName, p.last_name as userLastName,
-        e.id as equipmentId, e.name_t as equipmentKey
+        e.id as equipmentEnumId, e.name_t as equipmentKey
         FROM person_contacts p INNER JOIN team_to_primary_contact t2p ON t2p.contact_id=p.id
         INNER JOIN person_to_equipment p2e ON p.id=p2e.id
         INNER JOIN cleanup_equipment e on p2e.equipment_id=e.id

@@ -55,7 +55,6 @@ data class CleanupTeam(
     val members: List<PersonContact>,
     val equipment: List<CleanupEquipment> = emptyList(),
     val memberEquipment: List<MemberEquipment> = emptyList(),
-    // TODO Work type IDs
     val worksites: List<Worksite> = emptyList(),
     val metrics: TeamMetrics,
 )

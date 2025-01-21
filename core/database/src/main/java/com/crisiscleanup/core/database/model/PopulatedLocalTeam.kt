@@ -104,7 +104,7 @@ data class PopulatedTeamMemberEquipment(
     val userId: Long,
     val userFirstName: String,
     val userLastName: String,
-    val equipmentId: Long,
+    val equipmentEnumId: Int,
     val equipmentKey: String,
 )
 
@@ -112,7 +112,7 @@ fun PopulatedTeamMemberEquipment.asExternalModel() = MemberEquipment(
     userId = userId,
     userName = "$userFirstName $userLastName".trim(),
     equipmentData = EquipmentData(
-        id = equipmentId,
+        id = equipmentEnumId,
         nameKey = equipmentKey,
         listOrder = null,
         selectedCount = 0,

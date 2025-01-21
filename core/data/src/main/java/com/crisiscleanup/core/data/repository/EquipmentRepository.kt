@@ -23,7 +23,7 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 
 interface EquipmentRepository {
-    val streamEquipmentLookup: Flow<Map<Long, EquipmentData>>
+    val streamEquipmentLookup: Flow<Map<Int, EquipmentData>>
 
     suspend fun saveEquipment(force: Boolean = false)
 

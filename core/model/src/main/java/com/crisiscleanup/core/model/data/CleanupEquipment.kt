@@ -21,10 +21,10 @@ fun equipmentFromLiteral(literal: String) =
     literalEquipmentLookup[literal] ?: CleanupEquipment.Unknown
 
 data class EquipmentData(
-    val id: Long,
+    val id: Int,
     val nameKey: String,
     val equipment: CleanupEquipment = equipmentFromLiteral(nameKey),
-    val listOrder: Long?,
+    val listOrder: Int?,
     val selectedCount: Int,
 )
 

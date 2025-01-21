@@ -12,13 +12,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
@@ -86,6 +90,7 @@ import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.EmptyCleanupTeam
+import com.crisiscleanup.core.model.data.EquipmentData
 import com.crisiscleanup.core.model.data.PersonContact
 import com.crisiscleanup.core.model.data.UserRole
 import com.crisiscleanup.core.model.data.Worksite
@@ -95,6 +100,7 @@ import com.crisiscleanup.core.ui.touchDownConsumer
 import com.crisiscleanup.feature.team.CreateEditTeamViewModel
 import com.crisiscleanup.feature.team.EmptyTeamAssignableWorksite
 import com.crisiscleanup.feature.team.MemberFilterResult
+import com.crisiscleanup.feature.team.SinglePersonEquipment
 import com.crisiscleanup.feature.team.TeamAssignableWorksite
 import com.crisiscleanup.feature.team.TeamCaseMapManager
 import com.google.android.gms.maps.Projection
@@ -173,6 +179,8 @@ private fun CreateEditTeamView(
         caseListOnBack()
     }
 
+    val teamEquipment by viewModel.teamEquipment.collectAsStateWithLifecycle()
+
     Column {
         TeamEditorHeader(
             title = viewModel.headerTitle,
@@ -216,6 +224,8 @@ private fun CreateEditTeamView(
                     isCaseListView = isCaseListView,
                     onToggleCaseListView = viewModel::toggleMapListView,
                     onUnassignCase = viewModel::onUnassignCase,
+                    equipmentOptions = viewModel.equipmentOptions,
+                    teamEquipment = teamEquipment,
                 )
             }
 
@@ -289,6 +299,8 @@ private fun CreateEditTeamPager(
     isCaseListView: Boolean = false,
     onToggleCaseListView: () -> Unit = {},
     onUnassignCase: (Worksite) -> Unit = {},
+    equipmentOptions: List<EquipmentData> = emptyList(),
+    teamEquipment: List<SinglePersonEquipment> = emptyList(),
 ) {
     // TODO Page does not keep across first orientation change
     val pagerState = rememberPagerState(
@@ -427,7 +439,12 @@ private fun CreateEditTeamPager(
                     }
                 }
 
-                3 -> EditTeamEquipmentView(team)
+                3 -> EditTeamEquipmentView(
+                    team,
+                    equipmentOptions,
+                    teamEquipment,
+                )
+
                 4 -> ReviewChangesView(team)
             }
         }
@@ -782,8 +799,72 @@ private fun EditTeamMapCaseOverview(
 @Composable
 private fun EditTeamEquipmentView(
     team: CleanupTeam,
+    equipments: List<EquipmentData>,
+    teamEquipment: List<SinglePersonEquipment>,
 ) {
-    Text("Edit equipment ${team.equipment.size}")
+    val t = LocalAppTranslator.current
+
+    Column {
+        Row(
+            listItemModifier,
+            horizontalArrangement = listItemSpacedByHalf,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                "Asset select",
+                Modifier.weight(1f),
+            )
+
+            Text(
+                "Member select",
+                Modifier.weight(1f),
+            )
+
+            CrisisCleanupButton(
+                onClick = {
+                    // TODO
+                },
+                text = "~Add",
+            )
+        }
+
+        LazyColumn(Modifier.weight(1f)) {
+            for (personEquipments in teamEquipment) {
+                if (personEquipments.equipment.isNotEmpty()) {
+                    val person = personEquipments.person
+                    item(
+                        key = "person-${person.id}",
+                        contentType = "item-person",
+                    ) {
+                        Text(
+                            person.fullName,
+                            listItemModifier,
+                            style = MaterialTheme.typography.headlineMedium,
+                        )
+                    }
+
+                    items(
+                        personEquipments.equipment,
+                        key = { "equipment-${person.id}-${it.id}" },
+                        contentType = { "item-equipment" },
+                    ) {
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = listItemSpacedByHalf,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                t(it.nameKey),
+                                listItemModifier,
+                            )
+
+                            // TODO Remove equipment from user
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable

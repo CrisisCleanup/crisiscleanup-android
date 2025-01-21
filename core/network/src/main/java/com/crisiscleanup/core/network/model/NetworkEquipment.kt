@@ -12,9 +12,9 @@ data class NetworkEquipmentListResult(
 
 @Serializable
 data class NetworkEquipment(
-    val id: Long,
+    val id: Int,
     @SerialName("list_order")
-    val listOrder: Long?,
+    val listOrder: Int?,
     @SerialName("is_common")
     val isCommon: Boolean,
     @SerialName("selected_count")

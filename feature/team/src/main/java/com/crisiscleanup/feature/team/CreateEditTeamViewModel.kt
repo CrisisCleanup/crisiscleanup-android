@@ -60,6 +60,7 @@ import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.mapmarker.WorkTypeChipIconProvider
 import com.crisiscleanup.core.model.data.EmptyCleanupTeam
 import com.crisiscleanup.core.model.data.EmptyWorksite
+import com.crisiscleanup.core.model.data.EquipmentData
 import com.crisiscleanup.core.model.data.PersonContact
 import com.crisiscleanup.core.model.data.PersonOrganization
 import com.crisiscleanup.core.model.data.Worksite
@@ -397,6 +398,38 @@ class CreateEditTeamViewModel @Inject constructor(
     val assignedWorksites = mutableStateListOf<Worksite>()
     private val assignedWorksiteIds = mutableSetOf<Long>()
 
+    var equipmentOptions by mutableStateOf(emptyList<EquipmentData>())
+        private set
+    private val editingTeamEquipment = MutableStateFlow<Map<Long, MutableSet<EquipmentData>>>(
+        emptyMap(),
+    )
+    val teamEquipment = editingTeamEquipment
+        .mapLatest { equipmentLookup ->
+            val teamEquipment = mutableListOf<SinglePersonEquipment>()
+            for ((userId, equipment) in equipmentLookup) {
+                if (equipment.isNotEmpty()) {
+                    editingTeamMembers.value
+                        .firstOrNull { member ->
+                            member.id == userId
+                        }
+                        ?.let { person ->
+                            val sortedEquipment = equipment.toMutableList().sortedBy { e ->
+                                translate(e.nameKey)
+                            }
+                            teamEquipment.add(
+                                SinglePersonEquipment(person, sortedEquipment),
+                            )
+                        }
+                }
+            }
+            teamEquipment.sortedBy { te -> te.person.fullName }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = emptyList(),
+            started = SharingStarted.WhileSubscribed(),
+        )
+
     init {
         trimMemoryEventManager.addListener(this)
 
@@ -495,6 +528,15 @@ class CreateEditTeamViewModel @Inject constructor(
                             )
                             assignedWorksiteIds.addAll(worksites.map(Worksite::id))
                         }
+                        val initialUserEquipment = mutableMapOf<Long, MutableSet<EquipmentData>>()
+                        for (equipmentEntry in memberEquipment) {
+                            val userId = equipmentEntry.userId
+                            if (!initialUserEquipment.contains(userId)) {
+                                initialUserEquipment[userId] = mutableSetOf()
+                            }
+                            initialUserEquipment[userId]!!.add(equipmentEntry.equipmentData)
+                        }
+                        editingTeamEquipment.value = initialUserEquipment
                     }
                 }
             }
@@ -730,4 +772,9 @@ val EmptyTeamAssignableWorksite = TeamAssignableWorksite(
     EmptyWorksite,
     isAssignable = false,
     isAssigned = false,
+)
+
+data class SinglePersonEquipment(
+    val person: PersonContact,
+    val equipment: List<EquipmentData>,
 )

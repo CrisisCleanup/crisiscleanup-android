@@ -19,9 +19,9 @@ import androidx.room.PrimaryKey
 )
 data class EquipmentEntity(
     @PrimaryKey
-    val id: Long,
+    val id: Int,
     @ColumnInfo("list_order")
-    val listOrder: Long?,
+    val listOrder: Int?,
     @ColumnInfo("is_common")
     val isCommon: Boolean,
     @ColumnInfo("selected_count")
