@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.data.repository
 
+import com.crisiscleanup.core.common.epochZero
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -16,7 +17,7 @@ class ListDataRefresher @Inject constructor(
     private val listsSyncer: ListsSyncer,
     @Logger(CrisisCleanupLoggers.Lists) private val logger: AppLogger,
 ) {
-    private var dataUpdateTime = Instant.fromEpochSeconds(0)
+    private var dataUpdateTime = Instant.epochZero
 
     suspend fun refreshListData(
         force: Boolean = false,

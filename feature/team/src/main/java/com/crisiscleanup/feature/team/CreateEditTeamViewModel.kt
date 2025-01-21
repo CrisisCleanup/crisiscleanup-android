@@ -14,6 +14,7 @@ import com.crisiscleanup.core.common.AppMemoryStats
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.LocationProvider
+import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.ReplaySubscribed3
 import com.crisiscleanup.core.common.event.TrimMemoryEventManager
@@ -130,6 +131,7 @@ class CreateEditTeamViewModel @Inject constructor(
     private val teamNameGenerator: NameGenerator,
     syncPuller: SyncPuller,
     private val syncPusher: SyncPusher,
+    networkMonitor: NetworkMonitor,
     private val translator: KeyResourceTranslator,
     appMemoryStats: AppMemoryStats,
     trimMemoryEventManager: TrimMemoryEventManager,
@@ -168,6 +170,8 @@ class CreateEditTeamViewModel @Inject constructor(
             initialValue = CreateEditTeamTabState(),
             started = ReplaySubscribed3,
         )
+
+    val isNotOnline = networkMonitor.isNotOnline
 
     val editingTeam = editableTeamProvider.editableTeam
 

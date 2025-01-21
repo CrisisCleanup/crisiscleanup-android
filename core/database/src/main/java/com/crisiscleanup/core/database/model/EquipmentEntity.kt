@@ -2,6 +2,7 @@ package com.crisiscleanup.core.database.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.Index.Order
 import androidx.room.PrimaryKey
@@ -27,4 +28,30 @@ data class EquipmentEntity(
     val selectedCount: Int,
     @ColumnInfo("name_t")
     val nameKey: String,
+)
+
+@Entity(
+    "user_equipment",
+    foreignKeys = [
+        // No FK to users as caching order is not guaranteed
+        ForeignKey(
+            entity = EquipmentEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["equipment_id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+    indices = [
+        Index(value = ["user_id", "equipment_id"]),
+        Index(value = ["equipment_id", "user_id"]),
+    ],
+)
+data class UserEquipmentEntity(
+    @PrimaryKey
+    val id: Long,
+    @ColumnInfo("user_id")
+    val userId: Long,
+    @ColumnInfo("equipment_id")
+    val equipmentId: Int,
+    val quantity: Int,
 )

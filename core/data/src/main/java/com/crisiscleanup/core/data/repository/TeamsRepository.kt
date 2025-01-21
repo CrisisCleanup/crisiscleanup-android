@@ -24,7 +24,7 @@ import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.CrisisCleanupRegisterApi
 import com.crisiscleanup.core.network.model.NetworkTeam
 import com.crisiscleanup.core.network.model.NetworkTeamWork
-import com.crisiscleanup.core.network.model.NetworkUserEquipment
+import com.crisiscleanup.core.network.model.NetworkUsersEquipment
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
@@ -119,11 +119,11 @@ class CrisisCleanupTeamsRepository @Inject constructor(
             teamMemberLookup[teamId] = networkTeam.users ?: emptyList()
 
             teamEquipmentLookup[teamId] =
-                networkTeam.userEquipment.flatMap(NetworkUserEquipment::equipmentIds).toSet()
+                networkTeam.userEquipments.flatMap(NetworkUsersEquipment::equipmentIds).toSet()
 
             teamWorkLookup[teamId] = networkTeam.assignedWork?.mapWorkIds() ?: emptyList()
 
-            networkTeam.userEquipment.forEach { userEquipment ->
+            networkTeam.userEquipments.forEach { userEquipment ->
                 if (!memberEquipmentLookup.contains(userEquipment.userId)) {
                     memberEquipmentLookup[userEquipment.userId] = mutableSetOf()
                 }
@@ -182,9 +182,10 @@ class CrisisCleanupTeamsRepository @Inject constructor(
         syncedAt: Instant,
     ): Boolean {
         val teamMembers = team.users ?: emptyList()
-        val teamEquipment = team.userEquipment.flatMap(NetworkUserEquipment::equipmentIds).toSet()
+        val teamEquipment =
+            team.userEquipments.flatMap(NetworkUsersEquipment::equipmentIds).toSet()
         val teamWork = team.assignedWork?.mapWorkIds() ?: emptyList()
-        val memberEquipmentLookup = team.userEquipment.associate { userEquipment ->
+        val memberEquipmentLookup = team.userEquipments.associate { userEquipment ->
             userEquipment.userId to userEquipment.equipmentIds
         }
 

@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.data.repository
 
+import com.crisiscleanup.core.common.epochZero
 import com.crisiscleanup.core.common.event.AccountEventBus
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
@@ -29,7 +30,7 @@ class AccountDataRefresher @Inject constructor(
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.Auth) private val logger: AppLogger,
 ) {
-    private var accountDataUpdateTime = Instant.fromEpochSeconds(0)
+    private var accountDataUpdateTime = Instant.epochZero
 
     private suspend fun refreshAccountData(
         syncTag: String,

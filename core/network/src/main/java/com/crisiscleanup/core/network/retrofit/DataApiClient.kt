@@ -22,6 +22,7 @@ import com.crisiscleanup.core.network.model.NetworkOrganizationsSearchResult
 import com.crisiscleanup.core.network.model.NetworkRedeployRequestsResult
 import com.crisiscleanup.core.network.model.NetworkTeamResult
 import com.crisiscleanup.core.network.model.NetworkTeamsResult
+import com.crisiscleanup.core.network.model.NetworkUserEquipmentListResult
 import com.crisiscleanup.core.network.model.NetworkUserProfile
 import com.crisiscleanup.core.network.model.NetworkUserRolesResult
 import com.crisiscleanup.core.network.model.NetworkUsersResult
@@ -335,6 +336,15 @@ private interface DataSourceApi {
         @Query("limit")
         limit: Int,
     ): NetworkOrganizationUsersResult
+
+    @TokenAuthenticationHeader
+    @GET("user_equipment")
+    suspend fun getUserEquipment(
+        @Query("limit")
+        limit: Int,
+        @Query("offset")
+        offset: Int,
+    ): NetworkUserEquipmentListResult
 }
 
 private val worksiteCoreDataFields = listOf(
@@ -636,4 +646,8 @@ class DataApiClient @Inject constructor(
     )
         .also { it.errors?.tryThrowException() }
         .results ?: emptyList()
+
+    override suspend fun getUserEquipment(limit: Int, offset: Int) =
+        networkApi.getUserEquipment(limit, offset)
+            .apply { errors?.tryThrowException() }
 }

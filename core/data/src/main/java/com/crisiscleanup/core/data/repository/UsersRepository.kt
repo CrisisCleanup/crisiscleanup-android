@@ -45,7 +45,7 @@ interface UsersRepository {
 
     suspend fun loadUserRoles()
 
-    suspend fun queryOrganizationTeamMembers()
+    suspend fun queryOrganizationTeamMembers(): Boolean
 
     fun streamTeamMembers(incidentId: Long, organizationId: Long): Flow<List<PersonOrganization>>
     suspend fun getMatchingTeamMembers(
@@ -155,7 +155,7 @@ class OfflineFirstUsersRepository @Inject constructor(
         }
     }
 
-    override suspend fun queryOrganizationTeamMembers() {
+    override suspend fun queryOrganizationTeamMembers(): Boolean {
         try {
             val orgId = accountDataRepository.accountData.first().org.id
             val networkUsers =
@@ -170,9 +170,13 @@ class OfflineFirstUsersRepository @Inject constructor(
                 )
             }
             personContactDao.upsertPersonOrganizations(personOrganizationEntities)
+
+            return true
         } catch (e: Exception) {
             logger.logException(e)
         }
+
+        return false
     }
 
     override fun streamTeamMembers(

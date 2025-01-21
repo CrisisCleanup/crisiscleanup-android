@@ -1,7 +1,9 @@
 package com.crisiscleanup.core.data.model
 
 import com.crisiscleanup.core.database.model.EquipmentEntity
+import com.crisiscleanup.core.database.model.UserEquipmentEntity
 import com.crisiscleanup.core.network.model.NetworkEquipment
+import com.crisiscleanup.core.network.model.NetworkUserEquipment
 
 fun NetworkEquipment.asEntity() = EquipmentEntity(
     id = id,
@@ -9,4 +11,11 @@ fun NetworkEquipment.asEntity() = EquipmentEntity(
     isCommon = isCommon,
     selectedCount = selectedCount,
     nameKey = nameKey,
+)
+
+fun NetworkUserEquipment.asEntity() = UserEquipmentEntity(
+    id = id,
+    userId = user,
+    equipmentId = equipment,
+    quantity = quantity,
 )

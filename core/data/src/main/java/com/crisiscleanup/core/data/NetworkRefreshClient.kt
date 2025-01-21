@@ -46,7 +46,7 @@ class LanguageRefresher @Inject constructor(
     private val languageRepository: LanguageTranslationsRepository,
     private val networkMonitor: NetworkMonitor,
 ) {
-    private var lastRefresh = Instant.fromEpochSeconds(0)
+    private var lastRefresh = Instant.epochZero
 
     suspend fun pullLanguages() {
         val now = Clock.System.now()
@@ -110,7 +110,9 @@ class OrganizationRefresher @Inject constructor(
         ) {
             lastOrganizationUsersRefresh = now
 
-            usersRepository.queryOrganizationTeamMembers()
+            if (!usersRepository.queryOrganizationTeamMembers()) {
+                lastOrganizationUsersRefresh = Instant.epochZero
+            }
         }
     }
 }
@@ -120,7 +122,7 @@ class UserRoleRefresher @Inject constructor(
     private val usersRepository: UsersRepository,
     private val networkMonitor: NetworkMonitor,
 ) {
-    private var lastRefresh = Instant.fromEpochSeconds(0)
+    private var lastRefresh = Instant.epochZero
 
     suspend fun pullRoles() {
         val now = Clock.System.now()

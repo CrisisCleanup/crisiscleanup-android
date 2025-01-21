@@ -42,6 +42,7 @@ import com.crisiscleanup.core.database.model.TeamEquipmentCrossRef
 import com.crisiscleanup.core.database.model.TeamMemberCrossRef
 import com.crisiscleanup.core.database.model.TeamRootEntity
 import com.crisiscleanup.core.database.model.TeamWorkEntity
+import com.crisiscleanup.core.database.model.UserEquipmentEntity
 import com.crisiscleanup.core.database.model.UserRoleEntity
 import com.crisiscleanup.core.database.model.WorkTypeEntity
 import com.crisiscleanup.core.database.model.WorkTypeStatusEntity
@@ -107,6 +108,7 @@ import kotlinx.datetime.Instant
         TeamWorkEntity::class,
         OrganizationIncidentCrossRef::class,
         PersonContactFtsEntity::class,
+        UserEquipmentEntity::class,
     ],
     version = 1,
 )

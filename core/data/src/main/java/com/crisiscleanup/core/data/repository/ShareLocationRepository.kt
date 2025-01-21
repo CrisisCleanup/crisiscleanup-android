@@ -1,6 +1,7 @@
 package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.common.LocationProvider
+import com.crisiscleanup.core.common.epochZero
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -28,8 +29,7 @@ constructor(
     private val writeApiClient: CrisisCleanupWriteApi,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : ShareLocationRepository {
-
-    private var shareTimestamp = AtomicReference(Instant.fromEpochSeconds(0))
+    private var shareTimestamp = AtomicReference(Instant.epochZero)
     private val shareInterval = 1.minutes
 
     // TODO Remote config

@@ -206,6 +206,7 @@ class TeamsViewModel @Inject constructor(
 
         viewModelScope.launch(ioDispatcher) {
             equipmentRepository.saveEquipment()
+            equipmentRepository.saveUserEquipment()
         }
 
         externalEventBus.teamPersistentInvites
@@ -275,6 +276,7 @@ class TeamsViewModel @Inject constructor(
 
     suspend fun refreshTeams() = withContext(ioDispatcher) {
         equipmentRepository.saveEquipment(true)
+        equipmentRepository.saveUserEquipment(true)
         teamsRepository.syncTeams(incidentIdStream.value)
 
         (viewState.value as? TeamsViewState.Success)?.let { state ->

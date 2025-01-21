@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.data.repository
 
+import com.crisiscleanup.core.common.epochZero
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers.Cases
 import com.crisiscleanup.core.common.log.Logger
@@ -65,7 +66,6 @@ class OfflineFirstCaseHistoryRepository @Inject constructor(
     private suspend fun loadEvents(
         events: List<PopulatedCaseHistoryEvent>,
     ) = coroutineScope {
-        val epoch0 = Instant.fromEpochSeconds(0)
         val userEventMap = mutableMapOf<Long, MutableList<CaseHistoryEvent>>()
         val userNewestCreatedAtMap = mutableMapOf<Long, Instant>()
         events.map { it.asExternalModel(translator) }
@@ -73,7 +73,7 @@ class OfflineFirstCaseHistoryRepository @Inject constructor(
                 val userId = event.createdBy
                 if (!userEventMap.contains(userId)) {
                     userEventMap[userId] = mutableListOf()
-                    userNewestCreatedAtMap[userId] = epoch0
+                    userNewestCreatedAtMap[userId] = Instant.epochZero
                 }
                 userEventMap[userId]?.add(event)
                 if (event.createdAt > userNewestCreatedAtMap[userId]!!) {
@@ -103,7 +103,7 @@ class OfflineFirstCaseHistoryRepository @Inject constructor(
                         userEmail = person?.email ?: "",
                         events = userEvents,
                     ),
-                    userNewestCreatedAtMap[userId] ?: epoch0,
+                    userNewestCreatedAtMap[userId] ?: Instant.epochZero,
                 ),
             )
         }

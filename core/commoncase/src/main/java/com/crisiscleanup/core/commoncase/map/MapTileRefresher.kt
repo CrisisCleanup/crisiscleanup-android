@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.commoncase.map
 
+import com.crisiscleanup.core.common.epochZero
 import com.crisiscleanup.core.data.util.IncidentDataPullStats
 import com.crisiscleanup.core.model.data.IncidentIdWorksiteCount
 import kotlinx.coroutines.coroutineScope
@@ -13,7 +14,7 @@ class MapTileRefresher(
     private val casesMapTileManager: CasesMapTileLayerManager,
     private val tileClearRefreshInterval: Duration = 5.seconds,
 ) {
-    private var tileRefreshedInstant: Instant = Instant.fromEpochSeconds(0)
+    private var tileRefreshedInstant: Instant = Instant.epochZero
     private var tileClearWorksitesCount = 0
 
     // Attempts to clear/refresh map tiles minimally during data loads and incident changes

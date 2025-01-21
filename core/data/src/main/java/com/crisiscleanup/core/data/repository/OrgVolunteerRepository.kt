@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.data.repository
 
+import com.crisiscleanup.core.common.epochZero
 import com.crisiscleanup.core.common.event.UserPersistentInvite
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers.Onboarding
@@ -147,5 +148,5 @@ internal suspend fun CrisisCleanupRegisterApi.createPersistentInvite(
     } catch (e: Exception) {
         logger.logException(e)
     }
-    return JoinOrgTeamInvite("", 0, Instant.fromEpochSeconds(0))
+    return JoinOrgTeamInvite("", 0, Instant.epochZero)
 }

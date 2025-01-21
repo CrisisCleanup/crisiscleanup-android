@@ -20,7 +20,7 @@ data class NetworkTeam(
     @SerialName("assigned_work_types")
     val assignedWork: List<NetworkTeamWork>?,
     @SerialName("user_equipment_map")
-    val userEquipment: List<NetworkUserEquipment>,
+    val userEquipments: List<NetworkUsersEquipment>,
     val color: String,
 )
 
@@ -34,7 +34,7 @@ data class NetworkTeamWork(
 )
 
 @Serializable
-data class NetworkUserEquipment(
+data class NetworkUsersEquipment(
     @SerialName("user_id")
     val userId: Long,
     @SerialName("equipment_ids")
