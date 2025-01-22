@@ -1,6 +1,8 @@
 package com.crisiscleanup.core.database.dao
 
 import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
@@ -24,14 +26,35 @@ interface EquipmentDao {
     @Upsert
     fun upsertEquipment(equipments: List<EquipmentEntity>)
 
-    @Upsert
-    fun upsertUserEquipment(equipments: List<UserEquipmentEntity>)
+    @Transaction
+    @Query("SELECT * FROM user_equipments WHERE is_local_modified<>0 AND network_id>0")
+    fun getLocallyModifiedEquipment(): List<UserEquipmentEntity>
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insertIgnoreUserEquipment(entity: UserEquipmentEntity): Long
 
     @Transaction
     @Query(
         """
-        DELETE FROM user_equipment
-        WHERE user_id=:userId AND equipment_id NOT IN(:equipmentIds)
+        UPDATE user_equipments
+        SET user_id         =:userId,
+            equipment_id    =:equipmentId,
+            quantity        =:quantity
+        WHERE network_id=:networkId AND local_global_uuid=''
+        """,
+    )
+    fun syncUpdateEquipment(
+        networkId: Long,
+        userId: Long,
+        equipmentId: Int,
+        quantity: Int,
+    )
+
+    @Transaction
+    @Query(
+        """
+        DELETE FROM user_equipments
+        WHERE user_id=:userId AND equipment_id NOT IN(:equipmentIds) AND is_local_modified=0
         """,
     )
     fun deleteUnspecifiedUserEquipment(userId: Long, equipmentIds: Collection<Int>)

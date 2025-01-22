@@ -25,6 +25,7 @@ enum class CrisisCleanupLoggers {
     App,
     Auth,
     Cases,
+    Equipment,
     Incidents,
     Language,
     Lists,

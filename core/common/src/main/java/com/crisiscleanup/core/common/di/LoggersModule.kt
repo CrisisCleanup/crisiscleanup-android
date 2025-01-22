@@ -34,6 +34,10 @@ object LoggersModule {
     fun providesCasesLogger(logger: TagLogger) = logger.applyTag("cases")
 
     @Provides
+    @Logger(CrisisCleanupLoggers.Equipment)
+    fun providesEquipmentLogger(logger: TagLogger) = logger.applyTag("equipment")
+
+    @Provides
     @Logger(CrisisCleanupLoggers.Incidents)
     fun providesIncidentsLogger(logger: TagLogger) = logger.applyTag("incidents")
 

@@ -31,7 +31,7 @@ data class EquipmentEntity(
 )
 
 @Entity(
-    "user_equipment",
+    "user_equipments",
     foreignKeys = [
         // No FK to users as caching order is not guaranteed
         ForeignKey(
@@ -42,13 +42,24 @@ data class EquipmentEntity(
         ),
     ],
     indices = [
-        Index(value = ["user_id", "equipment_id"]),
+        // Locally created unsynced user equipment will have a network_id=-1.
+        // The local/global UUID keeps these worksites unique within the table.
+        Index(value = ["network_id", "local_global_uuid"], unique = true),
+        Index(value = ["user_id", "equipment_id", "is_local_modified"]),
         Index(value = ["equipment_id", "user_id"]),
+        Index(value = ["is_local_modified", "network_id"]),
     ],
 )
 data class UserEquipmentEntity(
-    @PrimaryKey
+    @PrimaryKey(true)
     val id: Long,
+    @ColumnInfo("local_global_uuid", defaultValue = "")
+    val localGlobalUuid: String,
+    @ColumnInfo("network_id", defaultValue = "-1")
+    val networkId: Long,
+    @ColumnInfo("is_local_modified", defaultValue = "0")
+    val isLocalModified: Boolean,
+
     @ColumnInfo("user_id")
     val userId: Long,
     @ColumnInfo("equipment_id")

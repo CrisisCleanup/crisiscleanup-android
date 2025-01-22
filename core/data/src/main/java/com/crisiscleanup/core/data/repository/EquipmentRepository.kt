@@ -6,6 +6,7 @@ import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.data.model.asEntity
 import com.crisiscleanup.core.database.dao.EquipmentDao
+import com.crisiscleanup.core.database.dao.EquipmentDaoPlus
 import com.crisiscleanup.core.database.model.PopulatedEquipment
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.EquipmentData
@@ -27,13 +28,14 @@ interface EquipmentRepository {
 
     suspend fun saveEquipment(force: Boolean = false)
 
-    suspend fun saveUserEquipment(force: Boolean = false)
+    suspend fun syncUserEquipment(force: Boolean = false)
 }
 
 @Singleton
 class CrisisCleanupEquipmentRepository @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val equipmentDao: EquipmentDao,
+    private val equipmentDaoPlus: EquipmentDaoPlus,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : EquipmentRepository {
     private var equipmentQueryTimestamp = Instant.epochZero
@@ -83,7 +85,7 @@ class CrisisCleanupEquipmentRepository @Inject constructor(
         }
     }
 
-    override suspend fun saveUserEquipment(force: Boolean) {
+    override suspend fun syncUserEquipment(force: Boolean) {
         if (!isUpdatingUserEquipment.compareAndSet(expect = false, update = true)) {
             return
         }
@@ -118,7 +120,7 @@ class CrisisCleanupEquipmentRepository @Inject constructor(
                         }
                         userEquipmentLookup[userId]!!.add(equipment.equipmentId)
                     }
-                    equipmentDao.upsertUserEquipment(equipments)
+                    equipmentDaoPlus.syncEquipment(equipments)
 
                     val totalCount = equipmentList.count ?: 0
                     offset += equipments.size

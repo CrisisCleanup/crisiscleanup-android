@@ -25,7 +25,9 @@ import com.crisiscleanup.core.designsystem.component.roundedOutline
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
+import com.crisiscleanup.core.designsystem.theme.listItemVerticalPadding
 import com.crisiscleanup.core.designsystem.theme.optionItemHeight
 import com.crisiscleanup.core.model.data.EmptyEquipment
 import com.crisiscleanup.core.model.data.EmptyPersonContact
@@ -54,6 +56,7 @@ private fun AddEquipmentDropdown(
             .then(modifier),
     ) {
         Row(
+            Modifier.listItemVerticalPadding(),
             horizontalArrangement = listItemSpacedByHalf,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -103,16 +106,16 @@ internal fun EditTeamEquipmentView(
     }
 
     Column {
-        Row(
+        Column(
             listItemModifier,
-            horizontalArrangement = listItemSpacedByHalf,
-            verticalAlignment = Alignment.CenterVertically,
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = listItemSpacedBy,
         ) {
             AddEquipmentDropdown(
                 selectedEquipmentText,
                 contentDescription = t("~~Select equipment"),
                 enabled = enableAddEquipment,
-                Modifier.weight(1f),
+                Modifier.fillMaxWidth(),
             ) { closeOptions: () -> Unit ->
                 for (option in equipmentOptions) {
                     DropdownMenuItem(
@@ -132,7 +135,7 @@ internal fun EditTeamEquipmentView(
                 selectedTeamMemberText,
                 contentDescription = t("~~Select team member"),
                 enabled = enableAddEquipment,
-                Modifier.weight(1f),
+                Modifier.fillMaxWidth(),
             ) { closeOptions: () -> Unit ->
                 for (option in memberOptions) {
                     DropdownMenuItem(
@@ -147,6 +150,8 @@ internal fun EditTeamEquipmentView(
                     )
                 }
             }
+
+            // TODO Numeric scroller default to 1
 
             CrisisCleanupButton(
                 onClick = {

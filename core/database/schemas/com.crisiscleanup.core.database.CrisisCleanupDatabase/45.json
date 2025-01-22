@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 45,
-    "identityHash": "c2cc75cc2bf1236d705f36e8d5b609a4",
+    "identityHash": "5be28d4f92fe888a72391190eb666ed9",
     "entities": [
       {
         "tableName": "work_type_statuses",
@@ -3746,14 +3746,35 @@
         "foreignKeys": []
       },
       {
-        "tableName": "user_equipment",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `user_id` INTEGER NOT NULL, `equipment_id` INTEGER NOT NULL, `quantity` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`equipment_id`) REFERENCES `cleanup_equipment`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "tableName": "user_equipments",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `local_global_uuid` TEXT NOT NULL DEFAULT '', `network_id` INTEGER NOT NULL DEFAULT -1, `is_local_modified` INTEGER NOT NULL DEFAULT 0, `user_id` INTEGER NOT NULL, `equipment_id` INTEGER NOT NULL, `quantity` INTEGER NOT NULL, FOREIGN KEY(`equipment_id`) REFERENCES `cleanup_equipment`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
             "columnName": "id",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "localGlobalUuid",
+            "columnName": "local_global_uuid",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "networkId",
+            "columnName": "network_id",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "-1"
+          },
+          {
+            "fieldPath": "isLocalModified",
+            "columnName": "is_local_modified",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
           },
           {
             "fieldPath": "userId",
@@ -3775,31 +3796,52 @@
           }
         ],
         "primaryKey": {
-          "autoGenerate": false,
+          "autoGenerate": true,
           "columnNames": [
             "id"
           ]
         },
         "indices": [
           {
-            "name": "index_user_equipment_user_id_equipment_id",
+            "name": "index_user_equipments_network_id_local_global_uuid",
+            "unique": true,
+            "columnNames": [
+              "network_id",
+              "local_global_uuid"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_user_equipments_network_id_local_global_uuid` ON `${TABLE_NAME}` (`network_id`, `local_global_uuid`)"
+          },
+          {
+            "name": "index_user_equipments_user_id_equipment_id_is_local_modified",
             "unique": false,
             "columnNames": [
               "user_id",
-              "equipment_id"
+              "equipment_id",
+              "is_local_modified"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_user_equipment_user_id_equipment_id` ON `${TABLE_NAME}` (`user_id`, `equipment_id`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_user_equipments_user_id_equipment_id_is_local_modified` ON `${TABLE_NAME}` (`user_id`, `equipment_id`, `is_local_modified`)"
           },
           {
-            "name": "index_user_equipment_equipment_id_user_id",
+            "name": "index_user_equipments_equipment_id_user_id",
             "unique": false,
             "columnNames": [
               "equipment_id",
               "user_id"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_user_equipment_equipment_id_user_id` ON `${TABLE_NAME}` (`equipment_id`, `user_id`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_user_equipments_equipment_id_user_id` ON `${TABLE_NAME}` (`equipment_id`, `user_id`)"
+          },
+          {
+            "name": "index_user_equipments_is_local_modified_network_id",
+            "unique": false,
+            "columnNames": [
+              "is_local_modified",
+              "network_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_user_equipments_is_local_modified_network_id` ON `${TABLE_NAME}` (`is_local_modified`, `network_id`)"
           }
         ],
         "foreignKeys": [
@@ -3820,7 +3862,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c2cc75cc2bf1236d705f36e8d5b609a4')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5be28d4f92fe888a72391190eb666ed9')"
     ]
   }
 }

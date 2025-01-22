@@ -14,7 +14,10 @@ fun NetworkEquipment.asEntity() = EquipmentEntity(
 )
 
 fun NetworkUserEquipment.asEntity() = UserEquipmentEntity(
-    id = id,
+    id = 0,
+    localGlobalUuid = "",
+    networkId = id,
+    isLocalModified = false,
     userId = user,
     equipmentId = equipment,
     quantity = quantity,
