@@ -26,6 +26,7 @@ data class EquipmentData(
     val equipment: CleanupEquipment = equipmentFromLiteral(nameKey),
     val listOrder: Int?,
     val selectedCount: Int,
+    val quantity: Int,
 )
 
 val EmptyEquipment = EquipmentData(
@@ -33,6 +34,7 @@ val EmptyEquipment = EquipmentData(
     "",
     listOrder = null,
     selectedCount = 0,
+    quantity = 0,
 )
 
 data class MemberEquipment(

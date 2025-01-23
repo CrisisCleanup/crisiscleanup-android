@@ -19,6 +19,7 @@ import com.crisiscleanup.core.model.data.ExistingUserCodeInviteAccept
 import com.crisiscleanup.core.model.data.JoinOrgResult
 import com.crisiscleanup.core.model.data.JoinOrgTeamInvite
 import com.crisiscleanup.core.model.data.LocalTeam
+import com.crisiscleanup.core.model.data.MemberEquipment
 import com.crisiscleanup.core.model.data.TeamInviteInfo
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.CrisisCleanupRegisterApi
@@ -83,17 +84,32 @@ class CrisisCleanupTeamsRepository @Inject constructor(
         ::Triple,
     )
         .mapLatest { (team, teamMemberEquipment, teamWorksites) ->
-            val memberEquipment =
-                teamMemberEquipment.map(PopulatedTeamMemberEquipment::asExternalModel)
-                    .sortedWith { a, b ->
-                        val nameCompare = a.userName.compareTo(b.userName, true)
-                        if (nameCompare == 0) {
-                            val equipmentCompare =
-                                a.equipmentData.equipment.compareTo(b.equipmentData.equipment)
-                            return@sortedWith equipmentCompare
-                        }
-                        nameCompare
+            val personEquipmentLookup = mutableMapOf<UserEquipmentIds, MemberEquipment>()
+            teamMemberEquipment.map(PopulatedTeamMemberEquipment::asExternalModel)
+                .forEach { memberEquipment ->
+                    with(memberEquipment) {
+                        val ids = UserEquipmentIds(userId, equipmentData.id)
+                        val value = personEquipmentLookup[ids]?.let { existing ->
+                            if (existing.equipmentData.quantity < equipmentData.quantity) {
+                                this
+                            } else {
+                                existing
+                            }
+                        } ?: this
+                        personEquipmentLookup[ids] = value
                     }
+                }
+            val memberEquipment = personEquipmentLookup.values
+                .filter { it.equipmentData.quantity > 0 }
+                .sortedWith { a, b ->
+                    val nameCompare = a.userName.compareTo(b.userName, true)
+                    if (nameCompare == 0) {
+                        val equipmentCompare =
+                            a.equipmentData.equipment.compareTo(b.equipmentData.equipment)
+                        return@sortedWith equipmentCompare
+                    }
+                    nameCompare
+                }
             val worksites = teamWorksites.map(PopulatedWorksite::asExternalModel)
             val workIdLookup = worksites
                 .flatMap { worksite ->
@@ -256,3 +272,8 @@ fun List<NetworkTeamWork>.mapWorkIds() = map {
         networkWorkTypeId = it.id,
     )
 }
+
+private data class UserEquipmentIds(
+    val userId: Long,
+    val equipmentId: Int,
+)

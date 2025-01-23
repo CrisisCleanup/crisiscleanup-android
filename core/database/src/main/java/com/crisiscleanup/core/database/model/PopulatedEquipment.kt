@@ -14,5 +14,6 @@ fun PopulatedEquipment.asExternalModel() = with(entity) {
         nameKey = nameKey,
         listOrder = listOrder,
         selectedCount = selectedCount,
+        quantity = 0,
     )
 }

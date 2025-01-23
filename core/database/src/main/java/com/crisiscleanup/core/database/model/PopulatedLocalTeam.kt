@@ -106,6 +106,7 @@ data class PopulatedTeamMemberEquipment(
     val userLastName: String,
     val equipmentEnumId: Int,
     val equipmentKey: String,
+    val equipmentQuantity: Int?,
 )
 
 fun PopulatedTeamMemberEquipment.asExternalModel() = MemberEquipment(
@@ -116,5 +117,6 @@ fun PopulatedTeamMemberEquipment.asExternalModel() = MemberEquipment(
         nameKey = equipmentKey,
         listOrder = null,
         selectedCount = 0,
+        quantity = equipmentQuantity ?: 0,
     ),
 )

@@ -55,11 +55,12 @@ interface TeamDao {
     @Transaction
     @Query(
         """
-        SELECT p.id as userId, p.first_name as userFirstName, p.last_name as userLastName,
-        e.id as equipmentEnumId, e.name_t as equipmentKey
+        SELECT p.id AS userId, p.first_name AS userFirstName, p.last_name AS userLastName,
+        e.id AS equipmentEnumId, e.name_t AS equipmentKey, ue.quantity AS equipmentQuantity
         FROM person_contacts p INNER JOIN team_to_primary_contact t2p ON t2p.contact_id=p.id
         INNER JOIN person_to_equipment p2e ON p.id=p2e.id
-        INNER JOIN cleanup_equipment e on p2e.equipment_id=e.id
+        INNER JOIN cleanup_equipment e ON p2e.equipment_id=e.id
+        LEFT JOIN user_equipments ue ON ue.user_id=p.id AND ue.equipment_id=e.id
         WHERE t2p.team_id=:id
         """,
     )
