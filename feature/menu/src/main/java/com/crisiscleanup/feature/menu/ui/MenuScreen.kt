@@ -107,6 +107,7 @@ private fun MenuScreen(
     viewModel: MenuViewModel = hiltViewModel(),
 ) {
     val t = LocalAppTranslator.current
+    val translationCount by t.translationCount.collectAsStateWithLifecycle()
 
     val incidentsData by viewModel.incidentsData.collectAsStateWithLifecycle()
 
@@ -281,11 +282,14 @@ private fun MenuScreen(
                 key = "invite-teammate-item",
                 contentType = "primary-button",
             ) {
+                val inviteUserText = remember(translationCount) {
+                    t("usersVue.invite_new_user")
+                }
                 CrisisCleanupButton(
                     modifier = inviteTeammateModifier
                         .fillMaxWidth()
                         .listItemPadding(),
-                    text = t("usersVue.invite_new_user"),
+                    text = inviteUserText,
                     onClick = openInviteTeammate,
                 )
             }
@@ -413,7 +417,6 @@ private fun LazyListScope.toggleItem(
     isToggledOn: Boolean,
     onToggle: (Boolean) -> Unit,
 ) {
-
     item(
         key = "toggle-$translateKey",
         contentType = "toggle-item",
