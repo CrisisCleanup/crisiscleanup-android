@@ -22,4 +22,7 @@ data class UserData(
     val isMenuTutorialDone: Boolean,
 
     val shareLocationWithOrg: Boolean,
+
+    val casesMapBounds: IncidentCoordinateBounds,
+    val teamMapBounds: IncidentCoordinateBounds,
 )

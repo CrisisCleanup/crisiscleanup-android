@@ -94,6 +94,7 @@ import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 import com.crisiscleanup.core.commonassets.R as commonAssetsR
 
+@OptIn(FlowPreview::class)
 @HiltViewModel
 class CasesViewModel @Inject constructor(
     incidentsRepository: IncidentsRepository,
@@ -244,9 +245,10 @@ class CasesViewModel @Inject constructor(
     val mapCameraZoom = _mapCameraZoom.asStateFlow()
 
     private val mapBoundsManager = CasesMapBoundsManager(
-        viewModelScope,
         incidentSelector,
         incidentBoundsProvider,
+        appPreferencesRepository,
+        viewModelScope,
         ioDispatcher,
         logger,
     )

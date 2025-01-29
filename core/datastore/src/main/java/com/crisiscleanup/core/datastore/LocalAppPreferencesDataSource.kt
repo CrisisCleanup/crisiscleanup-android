@@ -3,6 +3,7 @@ package com.crisiscleanup.core.datastore
 import androidx.datastore.core.DataStore
 import com.crisiscleanup.core.model.data.DarkThemeConfig
 import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.model.data.IncidentCoordinateBounds
 import com.crisiscleanup.core.model.data.SyncAttempt
 import com.crisiscleanup.core.model.data.UserData
 import com.crisiscleanup.core.model.data.WorksiteSortBy
@@ -54,6 +55,9 @@ class LocalAppPreferencesDataSource @Inject constructor(
                 isMenuTutorialDone = it.isMenuTutorialDone,
 
                 shareLocationWithOrg = it.shareLocationWithOrg,
+
+                casesMapBounds = it.casesMapBounds.asExternalModel(),
+                teamMapBounds = it.teamMapBounds.asExternalModel(),
             )
         }
 
@@ -160,10 +164,39 @@ class LocalAppPreferencesDataSource @Inject constructor(
         }
     }
 
-
     suspend fun setShareLocationWithOrg(share: Boolean) {
         userPreferences.updateData {
             it.copy { shareLocationWithOrg = share }
         }
     }
+
+    suspend fun saveCasesMapBounds(bounds: IncidentCoordinateBounds) {
+        userPreferences.updateData {
+            it.copy { casesMapBounds = bounds.asProto() }
+        }
+    }
+
+    suspend fun saveTeamMapBounds(bounds: IncidentCoordinateBounds) {
+        userPreferences.updateData {
+            it.copy { teamMapBounds = bounds.asProto() }
+        }
+    }
 }
+
+private fun IncidentMapBoundsProto.asExternalModel() = IncidentCoordinateBounds(
+    incidentId,
+    south = south,
+    west = west,
+    north = north,
+    east = east,
+)
+
+private fun IncidentCoordinateBounds.asProto() = IncidentMapBoundsProto.newBuilder()
+    .also {
+        it.incidentId = incidentId
+        it.north = north
+        it.east = east
+        it.south = south
+        it.west = west
+    }
+    .build()

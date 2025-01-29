@@ -5,9 +5,7 @@ import com.crisiscleanup.core.common.event.CrisisCleanupAccountEventBus
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.core.datastore.test.testUserPreferencesDataStore
 import com.crisiscleanup.core.model.data.DarkThemeConfig
-import com.crisiscleanup.core.model.data.SyncAttempt
-import com.crisiscleanup.core.model.data.UserData
-import com.crisiscleanup.core.model.data.WorksiteSortBy
+import com.crisiscleanup.core.testing.model.UserDataNone
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
@@ -54,17 +52,7 @@ class AppPreferencesRepositoryTest {
         val (repository, _) = setupTestRepository(testScheduler, this)
 
         assertEquals(
-            UserData(
-                darkThemeConfig = DarkThemeConfig.FOLLOW_SYSTEM,
-                shouldHideOnboarding = false,
-                syncAttempt = SyncAttempt(0, 0, 0),
-                selectedIncidentId = 0,
-                languageKey = "",
-                tableViewSortBy = WorksiteSortBy.None,
-                allowAllAnalytics = false,
-                hideGettingStartedVideo = false,
-                isMenuTutorialDone = false,
-            ),
+            UserDataNone,
             repository.userPreferences.first(),
         )
 

@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+option java_package = "com.crisiscleanup.core.datastore";
+option java_multiple_files = true;
+
+message IncidentMapBoundsProto {
+  int64 incident_id = 1;
+  double south = 2;
+  double west = 3;
+  double north = 4;
+  double east = 5;
+}

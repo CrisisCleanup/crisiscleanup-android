@@ -6,6 +6,7 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.core.model.data.DarkThemeConfig
+import com.crisiscleanup.core.model.data.IncidentCoordinateBounds
 import com.crisiscleanup.core.model.data.UserData
 import com.crisiscleanup.core.model.data.WorksiteSortBy
 import kotlinx.coroutines.CoroutineDispatcher
@@ -67,5 +68,13 @@ class AppPreferencesRepository @Inject constructor(
 
     override suspend fun setShareLocationWithOrg(share: Boolean) {
         preferencesDataSource.setShareLocationWithOrg(share)
+    }
+
+    override suspend fun setCasesMapBounds(bounds: IncidentCoordinateBounds) {
+        preferencesDataSource.saveCasesMapBounds(bounds)
+    }
+
+    override suspend fun setTeamMapBounds(bounds: IncidentCoordinateBounds) {
+        preferencesDataSource.saveTeamMapBounds(bounds)
     }
 }
