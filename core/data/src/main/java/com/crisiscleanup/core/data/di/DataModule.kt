@@ -23,6 +23,8 @@ import com.crisiscleanup.core.data.repository.CrisisCleanupTeamsRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupWorkTypeStatusRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupWorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.EndOfLifeRepository
+import com.crisiscleanup.core.data.repository.IncidentCacheRepository
+import com.crisiscleanup.core.data.repository.IncidentWorksitesCacheRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
 import com.crisiscleanup.core.data.repository.ListsRepository
@@ -203,4 +205,9 @@ interface DataModule {
     fun bindsShareLocationRepository(
         repository: CrisisCleanupShareLocationRepository,
     ): ShareLocationRepository
+
+    @Binds
+    fun bindsIncidentCacheRepository(
+        repository: IncidentWorksitesCacheRepository,
+    ): IncidentCacheRepository
 }

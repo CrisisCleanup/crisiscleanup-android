@@ -18,6 +18,7 @@ import com.crisiscleanup.core.database.model.IncidentOrganizationEntity
 import com.crisiscleanup.core.database.model.IncidentOrganizationSyncStatsEntity
 import com.crisiscleanup.core.database.model.IncidentWorksitesFullSyncStatsEntity
 import com.crisiscleanup.core.database.model.IncidentWorksitesSecondarySyncStatsEntity
+import com.crisiscleanup.core.database.model.IncidentWorksitesSyncStatsEntity
 import com.crisiscleanup.core.database.model.LanguageTranslationEntity
 import com.crisiscleanup.core.database.model.ListEntity
 import com.crisiscleanup.core.database.model.LocationEntity
@@ -91,6 +92,7 @@ import kotlinx.datetime.Instant
         TeamRootEntity::class,
         TeamEntity::class,
         TeamMemberCrossRef::class,
+        IncidentWorksitesSyncStatsEntity::class,
     ],
     version = 1,
 )

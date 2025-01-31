@@ -8,7 +8,6 @@ import com.crisiscleanup.core.model.data.IncidentDataSyncStats
 import com.crisiscleanup.core.model.data.SyncAttempt
 import kotlinx.datetime.Instant
 
-// Should have been named incident_worksites_sync_stats
 @Entity(
     "worksite_sync_stats",
 )

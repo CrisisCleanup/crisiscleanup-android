@@ -6,13 +6,13 @@ import org.junit.Test
 import java.io.ByteArrayInputStream
 import kotlin.test.assertEquals
 
-class UserPreferencesSerializerTest {
-    private val serializer = UserPreferencesSerializer()
+class IncidentCachePreferencesSerializerTest {
+    private val serializer = IncidentCachePreferencesSerializer()
 
     @Test
-    fun defaultUserPreferences_isEmpty() {
+    fun defaultCachePreferences_isEmpty() {
         assertEquals(
-            userPreferences {
+            incidentCachePreferences {
                 // Default value
             },
             serializer.defaultValue,
@@ -20,7 +20,7 @@ class UserPreferencesSerializerTest {
     }
 
     @Test(expected = CorruptionException::class)
-    fun readingInvalidUserPreferences_throwsCorruptionException() = runTest {
+    fun readingInvalidCachePreferences_throwsCorruptionException() = runTest {
         serializer.readFrom(ByteArrayInputStream(byteArrayOf(0)))
     }
 }

@@ -45,6 +45,7 @@ import com.crisiscleanup.core.database.model.IncidentOrganizationEntity
 import com.crisiscleanup.core.database.model.IncidentOrganizationSyncStatsEntity
 import com.crisiscleanup.core.database.model.IncidentWorksitesFullSyncStatsEntity
 import com.crisiscleanup.core.database.model.IncidentWorksitesSecondarySyncStatsEntity
+import com.crisiscleanup.core.database.model.IncidentWorksitesSyncStatsEntity
 import com.crisiscleanup.core.database.model.LanguageTranslationEntity
 import com.crisiscleanup.core.database.model.ListEntity
 import com.crisiscleanup.core.database.model.LocationEntity
@@ -114,8 +115,9 @@ import com.crisiscleanup.core.database.util.InstantConverter
         TeamRootEntity::class,
         TeamEntity::class,
         TeamMemberCrossRef::class,
+        IncidentWorksitesSyncStatsEntity::class,
     ],
-    version = 43,
+    version = 44,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
@@ -159,6 +161,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         AutoMigration(from = 40, to = 41),
         AutoMigration(from = 41, to = 42),
         AutoMigration(from = 42, to = 43),
+        AutoMigration(from = 43, to = 44),
     ],
     exportSchema = true,
 )
