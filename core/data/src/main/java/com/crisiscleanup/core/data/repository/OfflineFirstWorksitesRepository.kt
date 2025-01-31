@@ -7,7 +7,7 @@ import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.data.WorksitesFullSyncer
-import com.crisiscleanup.core.data.WorksitesSyncer
+import com.crisiscleanup.core.data.incidentcache.WorksitesSyncer
 import com.crisiscleanup.core.data.model.asEntities
 import com.crisiscleanup.core.data.model.asEntity
 import com.crisiscleanup.core.data.model.filter

@@ -4,8 +4,10 @@ import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers.Worksites
 import com.crisiscleanup.core.common.log.Logger
+import com.crisiscleanup.core.data.incidentcache.SyncCacheDeviceInspector
+import com.crisiscleanup.core.data.incidentcache.WorksitesSyncer
+import com.crisiscleanup.core.data.model.IncidentDataPullStats
 import com.crisiscleanup.core.data.model.asEntity
-import com.crisiscleanup.core.data.util.IncidentDataPullStats
 import com.crisiscleanup.core.data.util.IncidentDataPullStatsUpdater
 import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
 import com.crisiscleanup.core.database.dao.WorksiteSyncStatDao
@@ -18,24 +20,9 @@ import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.datetime.Instant
 import javax.inject.Inject
-
-interface WorksitesSyncer {
-    val dataPullStats: Flow<IncidentDataPullStats>
-
-    suspend fun networkWorksitesCount(
-        incidentId: Long,
-        updatedAfter: Instant? = null,
-    ): Int
-
-    suspend fun sync(
-        incidentId: Long,
-        syncStats: IncidentDataSyncStats,
-    )
-}
 
 // TODO Test coverage
 

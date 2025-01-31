@@ -20,9 +20,11 @@ interface WorksiteSyncStatDao {
         WHERE incident_id==:incidentId
         """,
     )
+    @Deprecated("Rewriting")
     fun getSyncStats(incidentId: Long): WorksiteSyncStatsEntity?
 
     @Upsert
+    @Deprecated("Rewriting")
     fun upsertStats(stats: WorksiteSyncStatsEntity)
 
     @Transaction
@@ -33,6 +35,7 @@ interface WorksiteSyncStatDao {
         WHERE incident_id=:incidentId AND sync_start=:syncStart
         """,
     )
+    @Deprecated("Rewriting")
     fun updateStatsPaged(
         incidentId: Long,
         syncStart: Instant,
@@ -52,6 +55,7 @@ interface WorksiteSyncStatDao {
         WHERE incident_id=:incidentId AND sync_start=:syncStart
         """,
     )
+    @Deprecated("Rewriting")
     fun updateStatsSuccessful(
         incidentId: Long,
         syncStart: Instant,
@@ -64,50 +68,20 @@ interface WorksiteSyncStatDao {
 
     @Transaction
     @Query("SELECT * FROM worksite_sync_stats WHERE incident_id=:incidentId")
+    @Deprecated("Rewriting")
     fun getIncidentSyncStats(incidentId: Long): PopulatedIncidentSyncStats?
 
     @Upsert
+    @Deprecated("Rewriting")
     fun upsert(stats: IncidentWorksitesFullSyncStatsEntity)
 
     @Transaction
     @Query("SELECT COUNT(*) FROM worksite_sync_stats")
+    @Deprecated("Rewriting")
     fun getWorksiteSyncStatCount(): Long
 
-    @Transaction
-    @Query("UPDATE incident_worksites_full_sync_stats SET synced_at=NULL WHERE incident_id=:incidentId")
-    fun resetFullSync(incidentId: Long)
-
-    @Transaction
-    @Query(
-        """
-        UPDATE incident_worksites_full_sync_stats
-        SET center_my_location  =:isMyLocation,
-            center_latitude     =:latitude,
-            center_longitude    =:longitude
-        WHERE incident_id=:incidentId
-        """,
-    )
-    fun setFullSyncCenter(
-        incidentId: Long,
-        isMyLocation: Boolean,
-        latitude: Double,
-        longitude: Double,
-    )
-
-    @Transaction
-    @Query(
-        """
-        UPDATE incident_worksites_full_sync_stats
-        SET query_area_radius=:radius
-        WHERE incident_id=:incidentId
-        """,
-    )
-    fun setFullSyncRadius(
-        incidentId: Long,
-        radius: Double,
-    )
-
     @Upsert
+    @Deprecated("Rewriting")
     fun upsertSecondaryStats(stats: IncidentWorksitesSecondarySyncStatsEntity)
 
     @Transaction
@@ -118,6 +92,7 @@ interface WorksiteSyncStatDao {
         WHERE incident_id=:incidentId AND sync_start=:syncStart
         """,
     )
+    @Deprecated("Rewriting")
     fun updateSecondaryStatsPaged(
         incidentId: Long,
         syncStart: Instant,
@@ -137,6 +112,7 @@ interface WorksiteSyncStatDao {
         WHERE incident_id=:incidentId AND sync_start=:syncStart
         """,
     )
+    @Deprecated("Rewriting")
     fun updateSecondaryStatsSuccessful(
         incidentId: Long,
         syncStart: Instant,

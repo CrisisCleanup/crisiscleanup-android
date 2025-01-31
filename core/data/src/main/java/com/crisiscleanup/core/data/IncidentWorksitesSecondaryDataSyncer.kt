@@ -4,8 +4,9 @@ import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
+import com.crisiscleanup.core.data.incidentcache.SyncCacheDeviceInspector
+import com.crisiscleanup.core.data.model.IncidentDataPullStats
 import com.crisiscleanup.core.data.model.asWorksiteEntity
-import com.crisiscleanup.core.data.util.IncidentDataPullStats
 import com.crisiscleanup.core.data.util.IncidentDataPullStatsUpdater
 import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
 import com.crisiscleanup.core.database.dao.WorksiteSyncStatDao

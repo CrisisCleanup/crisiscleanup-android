@@ -1,4 +1,4 @@
-package com.crisiscleanup.core.data
+package com.crisiscleanup.core.data.incidentcache
 
 import com.crisiscleanup.core.common.AppMemoryStats
 import javax.inject.Inject
