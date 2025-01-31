@@ -46,6 +46,7 @@ import com.crisiscleanup.feature.crisiscleanuplists.navigation.navigateToLists
 import com.crisiscleanup.feature.crisiscleanuplists.navigation.navigateToViewList
 import com.crisiscleanup.feature.crisiscleanuplists.navigation.viewListScreen
 import com.crisiscleanup.feature.dashboard.navigation.dashboardScreen
+import com.crisiscleanup.feature.incidentcache.navigation.incidentWorksitesCache
 import com.crisiscleanup.feature.mediamanage.navigation.viewSingleImageScreen
 import com.crisiscleanup.feature.mediamanage.navigation.viewWorksiteImagesScreen
 import com.crisiscleanup.feature.menu.navigation.menuScreen
@@ -241,6 +242,7 @@ fun CrisisCleanupNavHost(
             openUserFeedback = openUserFeedback,
             openSyncLogs = navController::navigateToSyncInsights,
         )
+        incidentWorksitesCache(onBack)
         viewSingleImageScreen(onBack)
         viewWorksiteImagesScreen(worksiteImagesOnBack)
         inviteTeammateScreen(onBack)
