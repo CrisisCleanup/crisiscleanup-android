@@ -71,4 +71,8 @@ object DaoModule {
 
     @Provides
     fun teamDao(db: CrisisCleanupDatabase) = db.teamDao()
+
+    @Provides
+    fun incidentWorksitesSyncStatsDao(db: CrisisCleanupDatabase) =
+        db.incidentWorksitesSyncStatsDao()
 }

@@ -5,6 +5,8 @@ import kotlinx.datetime.Instant
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
 
+private val epochZero = Instant.fromEpochSeconds(0)
+
 data class IncidentWorksitesSyncStats(
     val incidentId: Long,
     val syncTimestamps: SyncTimestamps,
@@ -13,6 +15,27 @@ data class IncidentWorksitesSyncStats(
     val boundedSyncTimestamps: SyncTimestamps,
     val appBuildVersionCode: Long,
 ) {
+    val lastUpdated by lazy {
+        var latest = epochZero
+        listOf(
+            syncTimestamps,
+            fullSyncTimestamps,
+            boundedSyncTimestamps,
+        ).forEach {
+            with(it) {
+                if (isDeltaSync) {
+                    latest = after.coerceAtLeast(latest)
+                }
+            }
+        }
+
+        if (latest - epochZero < 1.days) {
+            null
+        } else {
+            latest
+        }
+    }
+
     data class SyncTimestamps(
         val before: Instant,
         val after: Instant,
@@ -25,7 +48,7 @@ data class IncidentWorksitesSyncStats(
         }
 
         val isDeltaSync: Boolean
-            get() = before - Instant.fromEpochSeconds(0) < 1.days
+            get() = before - epochZero < 1.days
     }
 
     data class SyncBoundedParameters(
