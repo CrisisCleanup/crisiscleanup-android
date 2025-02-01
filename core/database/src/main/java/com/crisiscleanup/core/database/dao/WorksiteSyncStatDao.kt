@@ -23,10 +23,6 @@ interface WorksiteSyncStatDao {
     @Deprecated("Rewriting")
     fun getSyncStats(incidentId: Long): WorksiteSyncStatsEntity?
 
-    @Upsert
-    @Deprecated("Rewriting")
-    fun upsertStats(stats: WorksiteSyncStatsEntity)
-
     @Transaction
     @Query(
         """

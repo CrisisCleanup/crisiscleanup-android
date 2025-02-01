@@ -14,6 +14,7 @@ import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.common.sync.SyncResult
 import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.IncidentWorksitesCacheRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
 import com.crisiscleanup.core.data.repository.WorkTypeStatusRepository
@@ -46,6 +47,7 @@ class AppSyncer @Inject constructor(
     private val accountDataRefresher: AccountDataRefresher,
     private val incidentsRepository: IncidentsRepository,
     private val worksitesRepository: WorksitesRepository,
+    private val worksitesCacheRepository: IncidentWorksitesCacheRepository,
     private val languageRepository: LanguageTranslationsRepository,
     private val statusRepository: WorkTypeStatusRepository,
     private val worksiteChangeRepository: WorksiteChangeRepository,
@@ -104,7 +106,6 @@ class AppSyncer @Inject constructor(
     private suspend fun pull(force: Boolean): SyncResult {
         val unforcedPlan = determineSyncSteps(
             incidentsRepository,
-            worksitesRepository,
             appPreferences,
         )
         val plan = if (force) {
@@ -151,24 +152,19 @@ class AppSyncer @Inject constructor(
         incidentDeltaJob = applicationScope.launch(ioDispatcher) {
             val incidentId = appPreferences.userData.first().selectedIncidentId
             incidentsRepository.getIncident(incidentId)?.let {
-                worksitesRepository.getWorksiteSyncStats(incidentId)?.let { syncStats ->
-                    if (syncStats.isDeltaPull) {
-                        syncLogger.log("App pull $incidentId delta")
-                        try {
-                            worksitesRepository.refreshWorksites(
-                                incidentId,
-                                forceQueryDeltas = !forceRefreshAll,
-                                forceRefreshAll = forceRefreshAll,
-                            )
-                        } catch (e: Exception) {
-                            if (e !is CancellationException) {
-                                syncLogger.log("$incidentId delta fail ${e.message}")
-                            }
-                        } finally {
-                            syncLogger.log("App pull $incidentId delta end")
-                                .flush()
-                        }
+                syncLogger.log("App pull $incidentId delta")
+                try {
+                    worksitesRepository.refreshWorksites(
+                        incidentId,
+                        forceRefreshAll = forceRefreshAll,
+                    )
+                } catch (e: Exception) {
+                    if (e !is CancellationException) {
+                        syncLogger.log("$incidentId delta fail ${e.message}")
                     }
+                } finally {
+                    syncLogger.log("App pull $incidentId delta end")
+                        .flush()
                 }
             }
         }
@@ -305,14 +301,14 @@ class AppSyncer @Inject constructor(
                 val incidentId = appPreferences.userData.first().selectedIncidentId
                 return@async if (incidentId > 0) {
                     val isSynced = try {
-                        worksitesRepository.syncWorksitesFull(incidentId)
+                        worksitesCacheRepository.sync(incidentId)
                     } catch (e: CancellationException) {
                         true
                     }
                     if (isSynced) {
-                        SyncResult.Success("Incident $incidentId worksites full")
+                        SyncResult.Success("Incident $incidentId worksites")
                     } else {
-                        SyncResult.Partial("$incidentId full sync did not finish")
+                        SyncResult.Partial("Incident $incidentId worksites sync did not finish")
                     }
                 } else {
                     SyncResult.NotAttempted("Incident not selected")

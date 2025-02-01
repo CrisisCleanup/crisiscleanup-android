@@ -14,7 +14,7 @@ import com.crisiscleanup.core.database.DatabaseMigrations.Schema3to4
 import com.crisiscleanup.core.database.dao.CaseHistoryDao
 import com.crisiscleanup.core.database.dao.IncidentDao
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDao
-import com.crisiscleanup.core.database.dao.IncidentWorksitesSyncStatsDao
+import com.crisiscleanup.core.database.dao.IncidentWorksitesSyncStatDao
 import com.crisiscleanup.core.database.dao.LanguageDao
 import com.crisiscleanup.core.database.dao.ListDao
 import com.crisiscleanup.core.database.dao.LocalImageDao
@@ -201,5 +201,5 @@ abstract class CrisisCleanupDatabase :
     abstract fun caseHistoryDao(): CaseHistoryDao
     abstract fun listDao(): ListDao
     abstract fun teamDao(): TeamDao
-    abstract fun incidentWorksitesSyncStatsDao(): IncidentWorksitesSyncStatsDao
+    abstract fun incidentWorksitesSyncStatsDao(): IncidentWorksitesSyncStatDao
 }

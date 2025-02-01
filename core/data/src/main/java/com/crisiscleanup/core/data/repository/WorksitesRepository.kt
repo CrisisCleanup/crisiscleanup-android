@@ -54,11 +54,8 @@ interface WorksitesRepository {
 
     suspend fun refreshWorksites(
         incidentId: Long,
-        forceQueryDeltas: Boolean = false,
         forceRefreshAll: Boolean = false,
     )
-
-    suspend fun syncWorksitesFull(incidentId: Long): Boolean
 
     fun getWorksiteSyncStats(incidentId: Long): IncidentDataSyncStats?
 

@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.first
 internal object SyncPull {
     suspend fun determineSyncSteps(
         incidentsRepository: IncidentsRepository,
-        worksitesRepository: WorksitesRepository,
         appPreferences: LocalAppPreferencesDataSource,
     ): SyncPlan {
         val stepsBuilder = SyncPlan.Builder()
@@ -28,16 +27,8 @@ internal object SyncPull {
         }
 
         val incidentId = appPreferences.userData.first().selectedIncidentId
-        if (incidentId > 0) {
-            incidentsRepository.getIncident(incidentId)?.let {
-                val syncStats = worksitesRepository.getWorksiteSyncStats(incidentId)
-                val syncedSeconds = syncStats?.syncAttempt?.successfulSeconds ?: 0
-                if (syncStats?.shouldSync != false ||
-                    worksitesRepository.getNetworkWorksiteCount(incidentId, syncedSeconds) > 0
-                ) {
-                    stepsBuilder.setPullIncidentIdWorksites(incidentId)
-                }
-            }
+        incidentsRepository.getIncident(incidentId)?.let {
+            stepsBuilder.setPullIncidentIdWorksites(incidentId)
         }
 
         return stepsBuilder.build()
@@ -60,11 +51,9 @@ internal object SyncPull {
         ensureActive()
 
         plan.pullIncidentIdWorksites?.let { incidentId ->
-            incidentsRepository.getIncident(incidentId)?.let {
-                worksitesRepository.refreshWorksites(incidentId)
+            worksitesRepository.refreshWorksites(incidentId)
 
-                syncLogger.log("Incident $incidentId worksites pulled")
-            }
+            syncLogger.log("Incident $incidentId worksites pulled")
         }
 
         return@coroutineScope true

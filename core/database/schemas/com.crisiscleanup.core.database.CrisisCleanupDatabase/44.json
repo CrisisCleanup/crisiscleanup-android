@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 44,
-    "identityHash": "a55d60bd90c96f46de0ca6d5653ac8f9",
+    "identityHash": "bf072054a022710c82bcf6dfd865fc30",
     "entities": [
       {
         "tableName": "work_type_statuses",
@@ -3294,7 +3294,7 @@
       },
       {
         "tableName": "incident_worksites_sync_stats",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `updated_before` INTEGER NOT NULL, `updated_after` INTEGER NOT NULL, `full_updated_before` INTEGER NOT NULL, `full_updated_after` INTEGER NOT NULL, `bounded_parameters` TEXT NOT NULL, `bounded_updated_before` INTEGER NOT NULL, `bounded_updated_after` INTEGER NOT NULL, `app_build_version_code` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`id`), FOREIGN KEY(`id`) REFERENCES `incidents`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `updated_before` INTEGER NOT NULL, `updated_after` INTEGER NOT NULL, `full_updated_before` INTEGER NOT NULL, `full_updated_after` INTEGER NOT NULL, `bounded_parameters` TEXT NOT NULL, `bounded_updated_before` INTEGER NOT NULL, `bounded_updated_after` INTEGER NOT NULL, `bounded_full_updated_before` INTEGER NOT NULL, `bounded_full_updated_after` INTEGER NOT NULL, `app_build_version_code` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`id`), FOREIGN KEY(`id`) REFERENCES `incidents`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -3345,6 +3345,18 @@
             "notNull": true
           },
           {
+            "fieldPath": "boundedFullUpdatedBefore",
+            "columnName": "bounded_full_updated_before",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "boundedFullUpdatedAfter",
+            "columnName": "bounded_full_updated_after",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
             "fieldPath": "appBuildVersionCode",
             "columnName": "app_build_version_code",
             "affinity": "INTEGER",
@@ -3377,7 +3389,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a55d60bd90c96f46de0ca6d5653ac8f9')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'bf072054a022710c82bcf6dfd865fc30')"
     ]
   }
 }
