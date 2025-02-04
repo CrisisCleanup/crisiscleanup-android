@@ -12,6 +12,7 @@ class IncidentCachePreferencesDataSource @Inject constructor(
         IncidentWorksitesCachePreferences(
             isPaused = it.isPaused,
             isRegionBounded = it.isRegionBounded,
+            isRegionMyLocation = it.isRegionMyLocation,
             regionLatitude = it.regionLatitude,
             regionLongitude = it.regionLongitude,
             regionRadiusMiles = it.regionRadiusMiles,
@@ -23,6 +24,7 @@ class IncidentCachePreferencesDataSource @Inject constructor(
             it.copy {
                 isPaused = preferences.isPaused
                 isRegionBounded = preferences.isRegionBounded
+                isRegionMyLocation = preferences.isRegionMyLocation
                 regionLatitude = preferences.regionLatitude
                 regionLongitude = preferences.regionLongitude
                 regionRadiusMiles = preferences.regionRadiusMiles

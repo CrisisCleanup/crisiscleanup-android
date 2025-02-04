@@ -14,20 +14,22 @@ import com.crisiscleanup.core.common.Tutorials
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.common.subscribedReplay
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupAccountDataRepository
+import com.crisiscleanup.core.data.repository.IncidentWorksitesCacheRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.SyncLogRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
+import com.crisiscleanup.core.model.data.InitialIncidentWorksitesCachePreferences
 import com.crisiscleanup.core.ui.TutorialViewTracker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -38,6 +40,7 @@ class MenuViewModel @Inject constructor(
     incidentsRepository: IncidentsRepository,
     worksitesRepository: WorksitesRepository,
     val incidentSelector: IncidentSelector,
+    incidentCacheRepository: IncidentWorksitesCacheRepository,
     syncLogRepository: SyncLogRepository,
     private val accountDataRepository: AccountDataRepository,
     private val accountDataRefresher: AccountDataRefresher,
@@ -78,7 +81,7 @@ class MenuViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = emptyList(),
-            started = SharingStarted.WhileSubscribed(),
+            started = subscribedReplay(),
         )
 
     val versionText: String
@@ -108,12 +111,19 @@ class MenuViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = MenuItemVisibility(),
-            started = SharingStarted.WhileSubscribed(),
+            started = subscribedReplay(),
         )
 
     val isMenuTutorialDone = appPreferencesRepository.userPreferences.map {
         it.isMenuTutorialDone
     }
+
+    val incidentCachePreferences = incidentCacheRepository.cachePreferences
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = InitialIncidentWorksitesCachePreferences,
+            started = subscribedReplay(),
+        )
 
     init {
         externalScope.launch(ioDispatcher) {

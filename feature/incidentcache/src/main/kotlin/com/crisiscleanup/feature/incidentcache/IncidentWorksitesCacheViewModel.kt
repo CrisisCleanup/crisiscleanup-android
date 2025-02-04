@@ -6,17 +6,17 @@ import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.relativeTime
+import com.crisiscleanup.core.common.subscribedReplay
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.IncidentCacheRepository
+import com.crisiscleanup.core.model.data.InitialIncidentWorksitesCachePreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class IncidentWorksitesCacheViewModel @Inject constructor(
@@ -29,6 +29,13 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
 
     val incident = incidentSelector.incident
 
+    val isSyncing = incidentCacheRepository.isSyncingActiveIncident
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
+            started = subscribedReplay(),
+        )
+
     val lastSynced = incident
         .flatMapLatest { incident ->
             incidentCacheRepository.streamSyncStats(incident.id)
@@ -39,7 +46,14 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = null,
-            started = SharingStarted.WhileSubscribed(3.seconds.inWholeMilliseconds),
+            started = subscribedReplay(),
+        )
+
+    val syncingParameters = incidentCacheRepository.cachePreferences
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = InitialIncidentWorksitesCachePreferences,
+            started = subscribedReplay(3),
         )
 
     fun resetCaching() {

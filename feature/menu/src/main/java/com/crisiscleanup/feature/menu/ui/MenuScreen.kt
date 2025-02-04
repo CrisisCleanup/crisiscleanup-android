@@ -66,6 +66,7 @@ import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.neutralFontColor
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.model.data.Incident
+import com.crisiscleanup.core.model.data.IncidentWorksitesCachePreferences
 import com.crisiscleanup.core.model.data.TutorialViewId
 import com.crisiscleanup.core.selectincident.SelectIncidentDialog
 import com.crisiscleanup.core.ui.sizePosition
@@ -83,6 +84,7 @@ internal fun MenuRoute(
     openRequestRedeploy: () -> Unit = {},
     openUserFeedback: () -> Unit = {},
     openLists: () -> Unit = {},
+    openIncidentCache: () -> Unit = {},
     openSyncLogs: () -> Unit = {},
 ) {
     MenuScreen(
@@ -91,6 +93,7 @@ internal fun MenuRoute(
         openRequestRedeploy = openRequestRedeploy,
         openUserFeedback = openUserFeedback,
         openLists = openLists,
+        openIncidentCache = openIncidentCache,
         openSyncLogs = openSyncLogs,
     )
 }
@@ -103,6 +106,7 @@ private fun MenuScreen(
     openRequestRedeploy: () -> Unit = {},
     openUserFeedback: () -> Unit = {},
     openLists: () -> Unit = {},
+    openIncidentCache: () -> Unit = {},
     openSyncLogs: () -> Unit = {},
     viewModel: MenuViewModel = hiltViewModel(),
 ) {
@@ -177,6 +181,8 @@ private fun MenuScreen(
         }
         incidentRows + headerSpacerCount
     }
+
+    val incidentCachePreferences by viewModel.incidentCachePreferences.collectAsStateWithLifecycle()
 
     Column {
         AppTopBar(
@@ -264,6 +270,14 @@ private fun MenuScreen(
                         toggleGettingStartedSection = viewModel::showGettingStartedVideo,
                     )
                 }
+            }
+
+            item {
+                IncidentCacheView(
+                    incidentCachePreferences,
+                    openIncidentCache,
+                    listItemModifier,
+                )
             }
 
             item(
@@ -658,5 +672,43 @@ private fun TermsPrivacyView(
         ) {
             uriHandler.openUri(privacyPolicyUrl)
         }
+    }
+}
+
+@Composable
+private fun IncidentCacheView(
+    incidentCachePreferences: IncidentWorksitesCachePreferences,
+    onOpenIncidentCache: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val t = LocalAppTranslator.current
+
+    Row(
+        modifier,
+        horizontalArrangement = listItemSpacedBy,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        val syncingPolicy = if (incidentCachePreferences.isPaused) {
+            t("~~Pause downloading Cases")
+        } else if (incidentCachePreferences.isRegionBounded) {
+            t("~~Downloading Cases within specified region")
+        } else {
+            t("~~Auto download Cases")
+        }
+        Text(
+            syncingPolicy,
+            Modifier.weight(1f),
+        )
+
+        Text(
+            text = t("~~Change"),
+            modifier = Modifier
+                .clickable(
+                    onClick = onOpenIncidentCache,
+                )
+                .listItemPadding(),
+            style = LocalFontStyles.current.header4,
+            color = primaryBlueColor,
+        )
     }
 }

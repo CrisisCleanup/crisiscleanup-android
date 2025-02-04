@@ -2,9 +2,14 @@ package com.crisiscleanup.core.common
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.transform
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.flow.combine as kCombine
+
+fun subscribedReplay(seconds: Int = 3) =
+    SharingStarted.WhileSubscribed(seconds.seconds.inWholeMilliseconds)
 
 fun <T> Flow<T>.throttleLatest(delayMillis: Long): Flow<T> = this
     .conflate()
