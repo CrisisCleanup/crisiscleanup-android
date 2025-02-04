@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 44,
-    "identityHash": "bf072054a022710c82bcf6dfd865fc30",
+    "identityHash": "50b0b18be32a441f7542c3d5ade3147d",
     "entities": [
       {
         "tableName": "work_type_statuses",
@@ -3294,7 +3294,7 @@
       },
       {
         "tableName": "incident_worksites_sync_stats",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `updated_before` INTEGER NOT NULL, `updated_after` INTEGER NOT NULL, `full_updated_before` INTEGER NOT NULL, `full_updated_after` INTEGER NOT NULL, `bounded_parameters` TEXT NOT NULL, `bounded_updated_before` INTEGER NOT NULL, `bounded_updated_after` INTEGER NOT NULL, `bounded_full_updated_before` INTEGER NOT NULL, `bounded_full_updated_after` INTEGER NOT NULL, `app_build_version_code` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`id`), FOREIGN KEY(`id`) REFERENCES `incidents`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `updated_before` INTEGER NOT NULL, `updated_after` INTEGER NOT NULL, `full_updated_before` INTEGER NOT NULL, `full_updated_after` INTEGER NOT NULL, `bounded_region` TEXT NOT NULL, `bounded_synced_at` INTEGER NOT NULL, `app_build_version_code` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`id`), FOREIGN KEY(`id`) REFERENCES `incidents`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -3327,32 +3327,14 @@
             "notNull": true
           },
           {
-            "fieldPath": "boundedParameters",
-            "columnName": "bounded_parameters",
+            "fieldPath": "boundedRegion",
+            "columnName": "bounded_region",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "boundedUpdatedBefore",
-            "columnName": "bounded_updated_before",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "boundedUpdatedAfter",
-            "columnName": "bounded_updated_after",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "boundedFullUpdatedBefore",
-            "columnName": "bounded_full_updated_before",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "boundedFullUpdatedAfter",
-            "columnName": "bounded_full_updated_after",
+            "fieldPath": "boundedSyncedAt",
+            "columnName": "bounded_synced_at",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -3389,7 +3371,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'bf072054a022710c82bcf6dfd865fc30')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '50b0b18be32a441f7542c3d5ade3147d')"
     ]
   }
 }

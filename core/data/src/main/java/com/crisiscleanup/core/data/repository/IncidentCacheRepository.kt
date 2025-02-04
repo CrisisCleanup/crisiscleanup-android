@@ -11,6 +11,7 @@ import com.crisiscleanup.core.database.dao.IncidentWorksitesSyncStatDao
 import com.crisiscleanup.core.datastore.IncidentCachePreferencesDataSource
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.IncidentWorksitesSyncStats
+import com.crisiscleanup.core.model.data.IncidentWorksitesSyncStats.SyncStepTimestamps
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.datetime.Clock
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.cancellation.CancellationException
@@ -79,17 +81,19 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             }
 
             val syncStatsEntity = worksitesSyncStatsDao.getSyncStats(incidentId)
-            val boundedParameters = IncidentWorksitesSyncStats.SyncBoundedParameters(
+            val boundedRegion = IncidentWorksitesSyncStats.BoundedRegion(
                 latitude = preferences.regionLatitude,
                 longitude = preferences.regionLongitude,
                 radius = preferences.regionRadiusMiles,
             )
             val syncStats = syncStatsEntity?.asExternalModel(logger)?.copy(
-                boundedParameters = boundedParameters,
-            ) ?: IncidentWorksitesSyncStats.startingStats(
+                boundedRegion = boundedRegion,
+            ) ?: IncidentWorksitesSyncStats(
                 incidentId,
-                boundedParameters = boundedParameters,
-                appBuildVersionCode = appVersionProvider.versionCode,
+                syncSteps = SyncStepTimestamps.relative(),
+                boundedRegion,
+                Clock.System.now(),
+                appVersionProvider.versionCode,
             )
             if (syncStatsEntity == null) {
                 worksitesSyncStatsDao.insertSyncStats(syncStats.asEntity(logger))

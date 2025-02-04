@@ -10,32 +10,15 @@ private val epochZero = Instant.fromEpochSeconds(0)
 data class IncidentWorksitesSyncStats(
     val incidentId: Long,
     val syncSteps: SyncStepTimestamps,
-    val boundedParameters: SyncBoundedParameters?,
-    val boundedSyncSteps: SyncStepTimestamps,
+    val boundedRegion: BoundedRegion?,
+    val boundedSyncedAt: Instant,
     val appBuildVersionCode: Long,
 ) {
-    companion object {
-        fun startingStats(
-            incidentId: Long,
-            boundedParameters: SyncBoundedParameters?,
-            appBuildVersionCode: Long,
-            reference: Instant = Clock.System.now(),
-        ) = IncidentWorksitesSyncStats(
-            incidentId,
-            syncSteps = SyncStepTimestamps.relative(reference),
-            boundedParameters,
-            boundedSyncSteps = SyncStepTimestamps.relative(reference),
-            appBuildVersionCode,
-        )
-    }
-
     val lastUpdated by lazy {
         var latest = epochZero
         listOf(
             syncSteps.short,
             syncSteps.full,
-            boundedSyncSteps.short,
-            boundedSyncSteps.full,
         ).forEach {
             with(it) {
                 if (isDeltaSync) {
@@ -78,7 +61,7 @@ data class IncidentWorksitesSyncStats(
             get() = before - epochZero < 1.days
     }
 
-    data class SyncBoundedParameters(
+    data class BoundedRegion(
         val latitude: Double,
         val longitude: Double,
         val radius: Float,

@@ -28,16 +28,10 @@ data class IncidentWorksitesSyncStatsEntity(
     val fullUpdatedBefore: Instant,
     @ColumnInfo("full_updated_after")
     val fullUpdatedAfter: Instant,
-    @ColumnInfo("bounded_parameters")
-    val boundedParameters: String,
-    @ColumnInfo("bounded_updated_before")
-    val boundedUpdatedBefore: Instant,
-    @ColumnInfo("bounded_updated_after")
-    val boundedUpdatedAfter: Instant,
-    @ColumnInfo("bounded_full_updated_before")
-    val boundedFullUpdatedBefore: Instant,
-    @ColumnInfo("bounded_full_updated_after")
-    val boundedFullUpdatedAfter: Instant,
+    @ColumnInfo("bounded_region")
+    val boundedRegion: String,
+    @ColumnInfo("bounded_synced_at")
+    val boundedSyncedAt: Instant,
     @ColumnInfo("app_build_version_code", defaultValue = "0")
     val appBuildVersionCode: Long,
 )

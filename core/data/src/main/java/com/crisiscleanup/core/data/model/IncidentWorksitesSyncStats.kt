@@ -7,8 +7,8 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 fun IncidentWorksitesSyncStatsEntity.asExternalModel(logger: AppLogger): IncidentWorksitesSyncStats {
-    val boundedParameters = try {
-        Json.decodeFromString<IncidentWorksitesSyncStats.SyncBoundedParameters>(boundedParameters)
+    val boundedRegion = try {
+        Json.decodeFromString<IncidentWorksitesSyncStats.BoundedRegion>(boundedRegion)
     } catch (e: Exception) {
         logger.logException(e)
         null
@@ -25,23 +25,14 @@ fun IncidentWorksitesSyncStatsEntity.asExternalModel(logger: AppLogger): Inciden
                 after = fullUpdatedAfter,
             ),
         ),
-        boundedParameters = boundedParameters,
-        boundedSyncSteps = IncidentWorksitesSyncStats.SyncStepTimestamps(
-            short = IncidentWorksitesSyncStats.SyncTimestamps(
-                before = boundedUpdatedBefore,
-                after = boundedUpdatedAfter,
-            ),
-            full = IncidentWorksitesSyncStats.SyncTimestamps(
-                before = boundedFullUpdatedBefore,
-                after = boundedFullUpdatedAfter,
-            ),
-        ),
+        boundedRegion = boundedRegion,
+        boundedSyncedAt = boundedSyncedAt,
         appBuildVersionCode = appBuildVersionCode,
     )
 }
 
 fun IncidentWorksitesSyncStats.asEntity(logger: AppLogger): IncidentWorksitesSyncStatsEntity {
-    val boundedParameters = boundedParameters?.let {
+    val boundedRegion = boundedRegion?.let {
         try {
             Json.encodeToString(it)
         } catch (e: Exception) {
@@ -55,11 +46,8 @@ fun IncidentWorksitesSyncStats.asEntity(logger: AppLogger): IncidentWorksitesSyn
         updatedAfter = syncSteps.short.after,
         fullUpdatedBefore = syncSteps.full.before,
         fullUpdatedAfter = syncSteps.full.after,
-        boundedParameters = boundedParameters,
-        boundedUpdatedBefore = boundedSyncSteps.short.before,
-        boundedUpdatedAfter = boundedSyncSteps.short.after,
-        boundedFullUpdatedBefore = boundedSyncSteps.full.before,
-        boundedFullUpdatedAfter = boundedSyncSteps.full.after,
+        boundedRegion = boundedRegion,
+        boundedSyncedAt = boundedSyncedAt,
         appBuildVersionCode = appBuildVersionCode,
     )
 }
