@@ -19,7 +19,7 @@ interface SyncLogDao {
     fun streamLogCount(): Flow<Int>
 
     @Transaction
-    @Query("SELECT * FROM sync_logs ORDER BY log_time DESC")
+    @Query("SELECT * FROM sync_logs ORDER BY log_time DESC, id DESC")
     fun pageSyncLogs(): PagingSource<Int, PopulatedSyncLog>
 
     @Insert

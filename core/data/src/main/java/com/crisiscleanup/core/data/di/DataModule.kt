@@ -53,7 +53,6 @@ import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksiteImageRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.data.util.ConnectivityManagerNetworkMonitor
-import com.crisiscleanup.core.data.util.IncidentDataPullReporter
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -110,12 +109,6 @@ interface DataModule {
     fun bindsWorksiteRepository(
         worksitesRepository: OfflineFirstWorksitesRepository,
     ): WorksitesRepository
-
-    @Singleton
-    @Binds
-    fun bindsWorksitesDataPullReporter(
-        reporter: OfflineFirstWorksitesRepository,
-    ): IncidentDataPullReporter
 
     @Singleton
     @Binds

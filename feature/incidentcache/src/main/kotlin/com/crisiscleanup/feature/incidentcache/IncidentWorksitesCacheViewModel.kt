@@ -9,7 +9,6 @@ import com.crisiscleanup.core.common.relativeTime
 import com.crisiscleanup.core.common.subscribedReplay
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.IncidentCacheRepository
-import com.crisiscleanup.core.model.data.InitialIncidentWorksitesCachePreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.flatMapLatest
@@ -52,9 +51,43 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
     val syncingParameters = incidentCacheRepository.cachePreferences
         .stateIn(
             scope = viewModelScope,
-            initialValue = InitialIncidentWorksitesCachePreferences,
+            initialValue = null,
             started = subscribedReplay(3),
         )
+
+    private fun updatePreferences(
+        isPaused: Boolean,
+        isRegionBounded: Boolean,
+    ) {
+        syncingParameters.value?.let {
+            val preferences = it.copy(
+                isPaused = isPaused,
+                isRegionBounded = isRegionBounded,
+            )
+            viewModelScope.launch(ioDispatcher) {
+                incidentCacheRepository.updateCachePreferences(preferences)
+            }
+        }
+    }
+
+    fun resumeCachingCases() {
+        updatePreferences(isPaused = false, isRegionBounded = false)
+
+        // TODO Restart caching
+    }
+
+    fun pauseCachingCases() {
+        updatePreferences(isPaused = true, isRegionBounded = false)
+
+        // TODO Cancel ongoing
+    }
+
+    fun boundCachingCases() {
+        // TODO Region parameters
+        updatePreferences(isPaused = false, isRegionBounded = true)
+
+        // TODO Restart caching if region parameters are defined
+    }
 
     fun resetCaching() {
         viewModelScope.launch(ioDispatcher) {

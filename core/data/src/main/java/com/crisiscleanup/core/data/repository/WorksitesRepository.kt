@@ -1,7 +1,6 @@
 package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.model.data.CasesFilter
-import com.crisiscleanup.core.model.data.IncidentDataSyncStats
 import com.crisiscleanup.core.model.data.IncidentIdWorksiteCount
 import com.crisiscleanup.core.model.data.LocalWorksite
 import com.crisiscleanup.core.model.data.TableDataWorksite
@@ -15,13 +14,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
 interface WorksitesRepository {
-    /**
-     * Is loading incidents data
-     */
-    val isLoading: Flow<Boolean>
-
-    val syncWorksitesFullIncidentId: Flow<Long>
-
+    // Filtering sometimes requires scanning
     val isDeterminingWorksitesCount: Flow<Boolean>
     fun streamIncidentWorksitesCount(incidentIdStream: Flow<Long>): Flow<IncidentIdWorksiteCount>
 
@@ -51,15 +44,6 @@ interface WorksitesRepository {
         longitudeLeft: Double,
         longitudeRight: Double,
     ): Int
-
-    suspend fun refreshWorksites(
-        incidentId: Long,
-        forceRefreshAll: Boolean = false,
-    )
-
-    fun getWorksiteSyncStats(incidentId: Long): IncidentDataSyncStats?
-
-    suspend fun getNetworkWorksiteCount(incidentId: Long, secondsSince: Long = 0): Int
 
     fun getLocalId(networkWorksiteId: Long): Long
 

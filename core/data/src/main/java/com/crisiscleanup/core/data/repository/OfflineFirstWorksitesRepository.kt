@@ -5,23 +5,18 @@ import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
-import com.crisiscleanup.core.data.WorksitesFullSyncer
-import com.crisiscleanup.core.data.incidentcache.WorksitesSyncer
 import com.crisiscleanup.core.data.model.asEntities
 import com.crisiscleanup.core.data.model.asEntity
 import com.crisiscleanup.core.data.model.filter
-import com.crisiscleanup.core.data.util.IncidentDataPullReporter
 import com.crisiscleanup.core.database.dao.RecentWorksiteDao
 import com.crisiscleanup.core.database.dao.WorkTypeTransferRequestDaoPlus
 import com.crisiscleanup.core.database.dao.WorksiteDao
 import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
-import com.crisiscleanup.core.database.dao.WorksiteSyncStatDao
 import com.crisiscleanup.core.database.model.PopulatedRecentWorksite
 import com.crisiscleanup.core.database.model.RecentWorksiteEntity
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.database.model.asSummary
 import com.crisiscleanup.core.model.data.CasesFilter
-import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.IncidentIdWorksiteCount
 import com.crisiscleanup.core.model.data.OrganizationLocationAreaBounds
 import com.crisiscleanup.core.model.data.TableDataWorksite
@@ -50,16 +45,9 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.coroutines.cancellation.CancellationException
-
-// TODO Clear sync stats on logout? Or is it more efficient to keep? Are there differences in data when different accounts request data?
 
 @Singleton
 class OfflineFirstWorksitesRepository @Inject constructor(
-    private val worksitesSyncer: WorksitesSyncer,
-    worksitesFullSyncer: WorksitesFullSyncer,
-    private val worksiteSyncStatDao: WorksiteSyncStatDao,
-    private val worksitesCacheRepository: IncidentWorksitesCacheRepository,
     private val worksiteDao: WorksiteDao,
     private val worksiteDaoPlus: WorksiteDaoPlus,
     accountDataRepository: AccountDataRepository,
@@ -73,15 +61,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     private val locationProvider: LocationProvider,
     @Logger(CrisisCleanupLoggers.Worksites) private val logger: AppLogger,
     @ApplicationScope externalScope: CoroutineScope,
-) : WorksitesRepository, IncidentDataPullReporter {
-    override val isLoading = worksitesCacheRepository.syncingIncidentsIds.map { it.isNotEmpty() }
-
-    override val syncWorksitesFullIncidentId = MutableStateFlow(EmptyIncident.id)
-
-    override val incidentDataPullStats = worksitesSyncer.dataPullStats
-    override val incidentSecondaryDataPullStats = worksitesFullSyncer.secondaryDataPullStats
-    override val onIncidentDataPullComplete = worksitesFullSyncer.onFullDataPullComplete
-
+) : WorksitesRepository {
     override val isDeterminingWorksitesCount = MutableStateFlow(false)
 
     private val orgId = accountDataRepository.accountData.map { it.org.id }
@@ -210,30 +190,6 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     )
 
     override fun getLocalId(networkWorksiteId: Long) = worksiteDao.getWorksiteId(networkWorksiteId)
-
-    override fun getWorksiteSyncStats(incidentId: Long) =
-        worksiteSyncStatDao.getSyncStats(incidentId)?.asExternalModel()
-
-    override suspend fun getNetworkWorksiteCount(incidentId: Long, secondsSince: Long) =
-        worksitesSyncer.networkWorksitesCount(incidentId, Instant.fromEpochSeconds(secondsSince))
-
-    // TODO Write tests
-    override suspend fun refreshWorksites(
-        incidentId: Long,
-        forceRefreshAll: Boolean,
-    ) = coroutineScope {
-        if (incidentId == EmptyIncident.id) {
-            return@coroutineScope
-        }
-
-        try {
-            worksitesCacheRepository.sync(incidentId, forceRefreshAll)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            logger.logException(e)
-        }
-    }
 
     override suspend fun syncNetworkWorksite(
         worksite: NetworkWorksiteFull,

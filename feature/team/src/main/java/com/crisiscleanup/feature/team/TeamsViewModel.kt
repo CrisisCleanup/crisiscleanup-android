@@ -13,12 +13,12 @@ import com.crisiscleanup.core.common.svgAvatarUrl
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.IncidentCacheRepository
 import com.crisiscleanup.core.data.repository.IncidentTeams
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.TeamsRepository
 import com.crisiscleanup.core.data.repository.UsersRepository
-import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.model.data.CleanupTeam
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.PersonContact
@@ -46,7 +46,7 @@ import kotlin.time.Duration.Companion.seconds
 @HiltViewModel
 class TeamsViewModel @Inject constructor(
     incidentsRepository: IncidentsRepository,
-    worksitesRepository: WorksitesRepository,
+    incidentCacheRepository: IncidentCacheRepository,
     val incidentSelector: IncidentSelector,
     accountDataRepository: AccountDataRepository,
     appPreferencesRepository: LocalAppPreferencesRepository,
@@ -60,7 +60,7 @@ class TeamsViewModel @Inject constructor(
     val appTopBarDataProvider = AppTopBarDataProvider(
         "nav.organization_teams",
         incidentsRepository,
-        worksitesRepository,
+        incidentCacheRepository,
         incidentSelector,
         translator,
         accountDataRepository,
@@ -177,7 +177,7 @@ class TeamsViewModel @Inject constructor(
     }
 
     suspend fun refreshIncidentsAsync() {
-        syncPuller.pullIncidents()
+        syncPuller.syncPullIncidents()
     }
 
     suspend fun refreshTeams() {

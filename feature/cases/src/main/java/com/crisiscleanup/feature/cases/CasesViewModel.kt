@@ -32,7 +32,9 @@ import com.crisiscleanup.core.commoncase.TransferWorkTypeProvider
 import com.crisiscleanup.core.commoncase.WorksiteProvider
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.WorksiteInteractor
+import com.crisiscleanup.core.data.incidentcache.IncidentDataPullReporter
 import com.crisiscleanup.core.data.model.IncidentDataPullStats
+import com.crisiscleanup.core.data.model.IncidentPullDataType
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.CasesFilterRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
@@ -40,7 +42,6 @@ import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
-import com.crisiscleanup.core.data.util.IncidentDataPullReporter
 import com.crisiscleanup.core.domain.LoadSelectIncidents
 import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
@@ -211,15 +212,11 @@ class CasesViewModel @Inject constructor(
 
     val isIncidentLoading = incidentsRepository.isLoading
 
-    val dataProgress = combine(
-        dataPullReporter.incidentDataPullStats,
-        dataPullReporter.incidentSecondaryDataPullStats,
-        ::Pair,
-    )
-        .map { (primary, secondary) ->
-            val showProgress = primary.isOngoing || secondary.isOngoing
-            val isSecondary = secondary.isOngoing
-            val progress = if (primary.isOngoing) primary.progress else secondary.progress
+    val dataProgress = dataPullReporter.incidentDataPullStats
+        .map {
+            val showProgress = it.isOngoing && it.isPullingWorksites
+            val isSecondary = it.pullType == IncidentPullDataType.FullWorksites
+            val progress = it.progress
             DataProgressMetrics(
                 isSecondary,
                 showProgress,
@@ -446,8 +443,7 @@ class CasesViewModel @Inject constructor(
             filterRepository.casesFiltersLocation,
             ::Triple,
         )
-            .debounce(16)
-            .throttleLatest(1_000)
+            .throttleLatest(600)
             .onEach { refreshTiles(it.first, it.second) }
             .launchIn(viewModelScope)
 
@@ -474,6 +470,7 @@ class CasesViewModel @Inject constructor(
             .launchIn(viewModelScope)
 
         dataPullReporter.onIncidentDataPullComplete
+            .throttleLatest(600)
             .onEach {
                 filterRepository.reapplyFilters()
             }
@@ -481,7 +478,10 @@ class CasesViewModel @Inject constructor(
     }
 
     fun syncWorksitesDelta(forceRefreshAll: Boolean = false) {
-        syncPuller.appPullIncidentWorksitesDelta(forceRefreshAll)
+        syncPuller.appPullIncidentData(
+            cacheFullWorksites = true,
+            restartCacheCheckpoint = forceRefreshAll,
+        )
     }
 
     private suspend fun setTileRendererLocation() {
@@ -489,11 +489,11 @@ class CasesViewModel @Inject constructor(
     }
 
     fun refreshIncidentsData() {
-        syncPuller.appPull(true, cancelOngoing = true)
+        syncPuller.appPullIncidents()
     }
 
     suspend fun refreshIncidentsAsync() {
-        syncPuller.pullIncidents()
+        syncPuller.syncPullIncidents()
     }
 
     fun overviewMapTileProvider(): TileProvider {
@@ -666,6 +666,7 @@ class CasesViewModel @Inject constructor(
         var refreshTiles = true
         var clearCache = false
 
+        // TODO Change run to apply
         pullStats.run {
             val isIncidentChange = idCount.id != incidentId
 
@@ -693,7 +694,7 @@ class CasesViewModel @Inject constructor(
             if (!refreshTiles && progress > saveStartedAmount) {
                 val sinceLastRefresh = now - tileRefreshedInstant
                 val projectedDelta = projectedFinish - now
-                refreshTiles = now - pullStart > tileClearRefreshInterval &&
+                refreshTiles = now - startTime > tileClearRefreshInterval &&
                     sinceLastRefresh > tileClearRefreshInterval &&
                     projectedDelta > tileClearRefreshInterval
                 if (idCount.totalCount - tileClearWorksitesCount >= 6000 &&

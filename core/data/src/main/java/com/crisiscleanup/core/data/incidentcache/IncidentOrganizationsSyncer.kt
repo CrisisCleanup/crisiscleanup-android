@@ -1,12 +1,10 @@
-package com.crisiscleanup.core.data
+package com.crisiscleanup.core.data.incidentcache
 
 import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
-import com.crisiscleanup.core.data.model.IncidentDataPullStats
 import com.crisiscleanup.core.data.model.asEntities
-import com.crisiscleanup.core.data.util.IncidentDataPullStatsUpdater
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDao
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDaoPlus
 import com.crisiscleanup.core.database.dao.PersonContactDao
@@ -15,7 +13,6 @@ import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.datetime.Clock
 import javax.inject.Inject
 
@@ -34,30 +31,15 @@ class IncidentOrganizationsSyncer @Inject constructor(
     private val appVersionProvider: AppVersionProvider,
     @Logger(CrisisCleanupLoggers.Incidents) private val logger: AppLogger,
 ) : OrganizationsSyncer {
-    val dataPullStats = MutableStateFlow(IncidentDataPullStats())
-
     override suspend fun sync(incidentId: Long) {
-        val statsUpdater = IncidentDataPullStatsUpdater(
-            updatePullStats = { stats -> dataPullStats.value = stats },
-        ).also {
-            it.beginPull(incidentId)
-        }
-        try {
-            saveOrganizationsData(incidentId, statsUpdater)
-        } finally {
-            statsUpdater.endPull()
-        }
+        // TODO Update stats during pull
+        saveOrganizationsData(incidentId)
     }
 
     private suspend fun saveOrganizationsData(
         incidentId: Long,
-        statsUpdater: IncidentDataPullStatsUpdater,
     ) = coroutineScope {
         var syncCount = 100
-        statsUpdater.updateDataCount(syncCount)
-
-        statsUpdater.setPagingRequest()
-
         val syncStart = Clock.System.now()
 
         var requestedCount = 0
@@ -72,7 +54,6 @@ class IncidentOrganizationsSyncer @Inject constructor(
                 )
 
                 syncCount = worksitesRequest.count ?: 0
-                statsUpdater.updateDataCount(syncCount)
 
                 worksitesRequest.results?.let {
                     networkDataCache.saveOrganizations(
@@ -88,7 +69,6 @@ class IncidentOrganizationsSyncer @Inject constructor(
                 ensureActive()
 
                 requestedCount = networkDataOffset.coerceAtMost(syncCount)
-                statsUpdater.updateRequestedCount(requestedCount)
             }
         } catch (e: Exception) {
             if (e is CancellationException) {
@@ -115,8 +95,6 @@ class IncidentOrganizationsSyncer @Inject constructor(
                 primaryContacts,
             )
 
-            statsUpdater.addSavedCount((organizations.size * 0.5).toInt())
-
             dbSaveCount += pageDataCount
         }
 
@@ -138,8 +116,6 @@ class IncidentOrganizationsSyncer @Inject constructor(
                 organizationContactCrossRefs,
                 organizationAffiliates,
             )
-
-            statsUpdater.addSavedCount((organizations.size * 0.5).toInt())
         }
 
         if (dbSaveCount >= syncCount) {

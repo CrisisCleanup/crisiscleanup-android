@@ -7,22 +7,10 @@ import androidx.room.Upsert
 import com.crisiscleanup.core.database.model.IncidentWorksitesFullSyncStatsEntity
 import com.crisiscleanup.core.database.model.IncidentWorksitesSecondarySyncStatsEntity
 import com.crisiscleanup.core.database.model.PopulatedIncidentSyncStats
-import com.crisiscleanup.core.database.model.WorksiteSyncStatsEntity
 import kotlinx.datetime.Instant
 
 @Dao
 interface WorksiteSyncStatDao {
-    @Transaction
-    @Query(
-        """
-        SELECT *
-        FROM worksite_sync_stats
-        WHERE incident_id==:incidentId
-        """,
-    )
-    @Deprecated("Rewriting")
-    fun getSyncStats(incidentId: Long): WorksiteSyncStatsEntity?
-
     @Transaction
     @Query(
         """

@@ -183,7 +183,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
-        syncPuller.appPullIncidentWorksitesDelta()
+        syncPuller.appPullIncidentData()
         visualAlertManager.setNonProductionAppAlert(true)
         viewModel.onAppOpen()
 

@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 import kotlinx.datetime.Instant
 
 @Entity(
-    "incident_worksites_sync_stats",
+    "incident_data_sync_parameters",
     foreignKeys = [
         ForeignKey(
             entity = IncidentEntity::class,
@@ -17,7 +17,7 @@ import kotlinx.datetime.Instant
         ),
     ],
 )
-data class IncidentWorksitesSyncStatsEntity(
+data class IncidentDataSyncParametersEntity(
     @PrimaryKey
     val id: Long,
     @ColumnInfo("updated_before")
@@ -32,6 +32,4 @@ data class IncidentWorksitesSyncStatsEntity(
     val boundedRegion: String,
     @ColumnInfo("bounded_synced_at")
     val boundedSyncedAt: Instant,
-    @ColumnInfo("app_build_version_code", defaultValue = "0")
-    val appBuildVersionCode: Long,
 )

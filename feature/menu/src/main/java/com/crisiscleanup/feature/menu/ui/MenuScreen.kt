@@ -642,11 +642,6 @@ internal fun MenuScreenNonProductionView(
             text = "Expire token",
         )
     }
-
-    CrisisCleanupTextButton(
-        onClick = { viewModel.syncWorksitesFull() },
-        text = "Sync full",
-    )
 }
 
 @Composable

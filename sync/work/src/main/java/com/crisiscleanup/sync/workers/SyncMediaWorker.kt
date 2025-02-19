@@ -44,10 +44,16 @@ internal class SyncMediaWorker @AssistedInject constructor(
             val isSyncSuccess = awaitAll(
                 async {
                     val result = syncPusher.syncPushMedia()
+                    val isSuccess = result is SyncResult.Success
+
                     if (result !is SyncResult.Success) {
-                        syncLogger.log("Result $result")
+                        syncLogger.log("Sync media result $result")
+                        if (result is SyncResult.InvalidAccountTokens) {
+                            // TODO Notify invalid tokens is preventing sync
+                        }
                     }
-                    result !is SyncResult.Error
+
+                    isSuccess
                 },
             ).all { it }
 

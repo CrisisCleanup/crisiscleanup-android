@@ -24,6 +24,7 @@ import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import com.crisiscleanup.core.network.model.NetworkWorksiteLocationSearch
 import com.crisiscleanup.core.network.model.NetworkWorksitePage
 import com.crisiscleanup.core.network.model.NetworkWorksiteShort
+import com.crisiscleanup.core.network.model.NetworkWorksitesPageResult
 import kotlinx.datetime.Instant
 
 interface CrisisCleanupNetworkDataSource {
@@ -94,6 +95,13 @@ interface CrisisCleanupNetworkDataSource {
         updatedAtAfter: Instant? = null,
     ): List<NetworkWorksitePage>
 
+    suspend fun getWorksitesPageUpdatedAt(
+        incidentId: Long,
+        pageCount: Int,
+        updatedAt: Instant,
+        isPagingBackwards: Boolean,
+    ): NetworkWorksitesPageResult
+
     suspend fun getWorksitesFlagsFormDataPage(
         incidentId: Long,
         pageCount: Int,
@@ -156,4 +164,26 @@ interface CrisisCleanupNetworkDataSource {
         limit: Int = 0,
         offset: Int = 0,
     ): NetworkTeamResult
+
+    suspend fun getWorksitesPageBefore(
+        incidentId: Long,
+        pageCount: Int,
+        updatedBefore: Instant,
+    ): NetworkWorksitesPageResult = getWorksitesPageUpdatedAt(
+        incidentId,
+        pageCount,
+        updatedBefore,
+        true,
+    )
+
+    suspend fun getWorksitesPageAfter(
+        incidentId: Long,
+        pageCount: Int,
+        updatedAfter: Instant,
+    ): NetworkWorksitesPageResult = getWorksitesPageUpdatedAt(
+        incidentId,
+        pageCount,
+        updatedAfter,
+        false,
+    )
 }

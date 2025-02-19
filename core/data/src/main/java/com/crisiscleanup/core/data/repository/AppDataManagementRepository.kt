@@ -100,6 +100,7 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
                 externalScope.launch(ioDispatcher) {
                     stopSyncPull()
                 }
+                // TODO Wait for at least as long as timeout, looping as necessary
                 withContext(Dispatchers.IO) {
                     TimeUnit.SECONDS.sleep(5)
                 }
@@ -147,12 +148,15 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
     }
 
     private fun stopSyncPull() {
-        syncPuller.stopPullIncident()
-        syncPuller.stopPull()
-        syncPuller.stopSyncPullWorksitesFull()
+        // TODO Stop all including
+        //      - incident
+        //      - organizations
+        //      - teams
+        syncPuller.stopPullWorksites()
     }
 
     private fun isAppDataCleared() = incidentsRepository.incidentCount == 0L &&
         worksiteChangeRepository.worksiteChangeCount == 0L &&
+        // TODO Use updated tables
         worksiteSyncStatDao.getWorksiteSyncStatCount() == 0L
 }

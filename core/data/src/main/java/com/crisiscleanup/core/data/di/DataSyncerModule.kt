@@ -1,9 +1,9 @@
 package com.crisiscleanup.core.data.di
 
-import com.crisiscleanup.core.data.AccountListsSyncer
-import com.crisiscleanup.core.data.IncidentOrganizationsDataCache
-import com.crisiscleanup.core.data.IncidentOrganizationsDataFileCache
-import com.crisiscleanup.core.data.ListsSyncer
+import com.crisiscleanup.core.data.AccountListsDataSyncer
+import com.crisiscleanup.core.data.ListsDataSyncer
+import com.crisiscleanup.core.data.incidentcache.IncidentOrganizationsDataCache
+import com.crisiscleanup.core.data.incidentcache.IncidentOrganizationsDataFileCache
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -18,5 +18,5 @@ interface DataSyncerModule {
     ): IncidentOrganizationsDataCache
 
     @Binds
-    fun bindsListsSyncer(syncer: AccountListsSyncer): ListsSyncer
+    fun bindsListsSyncer(syncer: AccountListsDataSyncer): ListsDataSyncer
 }

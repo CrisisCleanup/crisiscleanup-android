@@ -1,4 +1,4 @@
-package com.crisiscleanup.core.data
+package com.crisiscleanup.core.data.incidentcache
 
 import android.content.Context
 import com.crisiscleanup.core.common.log.AppLogger

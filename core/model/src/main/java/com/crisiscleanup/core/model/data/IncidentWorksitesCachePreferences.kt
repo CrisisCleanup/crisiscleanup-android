@@ -7,7 +7,11 @@ data class IncidentWorksitesCachePreferences(
     val regionLatitude: Double,
     val regionLongitude: Double,
     val regionRadiusMiles: Float,
-)
+) {
+    val isAutoCache by lazy {
+        !(isPaused || isRegionBounded)
+    }
+}
 
 val InitialIncidentWorksitesCachePreferences = IncidentWorksitesCachePreferences(
     isPaused = false,

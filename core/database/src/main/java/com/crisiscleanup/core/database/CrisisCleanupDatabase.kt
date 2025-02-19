@@ -13,8 +13,8 @@ import com.crisiscleanup.core.database.DatabaseMigrations.Schema35To36
 import com.crisiscleanup.core.database.DatabaseMigrations.Schema3to4
 import com.crisiscleanup.core.database.dao.CaseHistoryDao
 import com.crisiscleanup.core.database.dao.IncidentDao
+import com.crisiscleanup.core.database.dao.IncidentDataSyncParameterDao
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDao
-import com.crisiscleanup.core.database.dao.IncidentWorksitesSyncStatDao
 import com.crisiscleanup.core.database.dao.LanguageDao
 import com.crisiscleanup.core.database.dao.ListDao
 import com.crisiscleanup.core.database.dao.LocalImageDao
@@ -38,6 +38,7 @@ import com.crisiscleanup.core.database.dao.fts.IncidentOrganizationFtsEntity
 import com.crisiscleanup.core.database.dao.fts.WorksiteTextFtsEntity
 import com.crisiscleanup.core.database.model.CaseHistoryEventAttrEntity
 import com.crisiscleanup.core.database.model.CaseHistoryEventEntity
+import com.crisiscleanup.core.database.model.IncidentDataSyncParametersEntity
 import com.crisiscleanup.core.database.model.IncidentEntity
 import com.crisiscleanup.core.database.model.IncidentFormFieldEntity
 import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
@@ -46,7 +47,6 @@ import com.crisiscleanup.core.database.model.IncidentOrganizationEntity
 import com.crisiscleanup.core.database.model.IncidentOrganizationSyncStatsEntity
 import com.crisiscleanup.core.database.model.IncidentWorksitesFullSyncStatsEntity
 import com.crisiscleanup.core.database.model.IncidentWorksitesSecondarySyncStatsEntity
-import com.crisiscleanup.core.database.model.IncidentWorksitesSyncStatsEntity
 import com.crisiscleanup.core.database.model.LanguageTranslationEntity
 import com.crisiscleanup.core.database.model.ListEntity
 import com.crisiscleanup.core.database.model.LocationEntity
@@ -116,7 +116,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         TeamRootEntity::class,
         TeamEntity::class,
         TeamMemberCrossRef::class,
-        IncidentWorksitesSyncStatsEntity::class,
+        IncidentDataSyncParametersEntity::class,
     ],
     version = 44,
     autoMigrations = [
@@ -201,5 +201,5 @@ abstract class CrisisCleanupDatabase :
     abstract fun caseHistoryDao(): CaseHistoryDao
     abstract fun listDao(): ListDao
     abstract fun teamDao(): TeamDao
-    abstract fun incidentWorksitesSyncStatsDao(): IncidentWorksitesSyncStatDao
+    abstract fun incidentDataSyncParametersDao(): IncidentDataSyncParameterDao
 }

@@ -12,7 +12,6 @@ import androidx.work.WorkManager
 import com.crisiscleanup.sync.R
 import com.crisiscleanup.sync.workers.SyncMediaWorker
 import com.crisiscleanup.sync.workers.SyncWorker
-import com.crisiscleanup.sync.workers.SyncWorksitesFullWorker
 import com.crisiscleanup.sync.workers.SyncWorksitesWorker
 import com.crisiscleanup.core.common.R as commonR
 
@@ -26,14 +25,16 @@ private const val SYNC_NOTIFICATION_CHANNEL_ID = "SyncNotificationChannel"
 // These names should not be changed otherwise the app may have concurrent sync requests running
 internal const val SYNC_WORK_NAME = "SyncWorkName"
 internal const val SYNC_MEDIA_WORK_NAME = "SyncMediaWorkName"
-internal const val SYNC_WORKSITES_WORK_NAME = "SyncWorksitesWorkName"
-internal const val SYNC_WORKSITES_FULL_WORK_NAME = "SyncWorksitesFullWorkName"
+private const val SYNC_WORKSITES_WORK_NAME = "SyncWorksitesWorkName"
+
+@Deprecated("Obsolete")
+private const val SYNC_WORKSITES_FULL_WORK_NAME = "SyncWorksitesFullWorkName"
 
 fun scheduleSync(context: Context) {
     WorkManager.getInstance(context).apply {
         enqueueUniqueWork(
             SYNC_WORK_NAME,
-            ExistingWorkPolicy.APPEND_OR_REPLACE,
+            ExistingWorkPolicy.APPEND,
             SyncWorker.oneTimeSyncWork(),
         )
     }
@@ -55,16 +56,6 @@ fun scheduleSyncWorksites(context: Context) {
             SYNC_WORKSITES_WORK_NAME,
             ExistingWorkPolicy.KEEP,
             SyncWorksitesWorker.oneTimeSyncWork(),
-        )
-    }
-}
-
-fun scheduleSyncWorksitesFull(context: Context) {
-    WorkManager.getInstance(context).apply {
-        enqueueUniqueWork(
-            SYNC_WORKSITES_FULL_WORK_NAME,
-            ExistingWorkPolicy.REPLACE,
-            SyncWorksitesFullWorker.oneTimeSyncWork(),
         )
     }
 }
