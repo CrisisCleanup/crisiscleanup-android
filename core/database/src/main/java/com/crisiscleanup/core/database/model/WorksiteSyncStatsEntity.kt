@@ -6,7 +6,10 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import kotlinx.datetime.Instant
 
-@Deprecated("Newer stats are available")
+// These entities are obsolete
+// Not removing for database consistency
+// Not marking as deprecated because warnings will issue when building
+
 @Entity(
     "worksite_sync_stats",
 )
@@ -30,7 +33,6 @@ data class WorksiteSyncStatsEntity(
     val appBuildVersionCode: Long,
 )
 
-@Deprecated("Newer stats are available")
 @Entity(
     "incident_worksites_full_sync_stats",
     foreignKeys = [
@@ -61,7 +63,6 @@ data class IncidentWorksitesFullSyncStatsEntity(
     val radius: Double,
 )
 
-@Deprecated("Newer stats are available")
 @Entity(
     "incident_worksites_secondary_sync_stats",
     foreignKeys = [
