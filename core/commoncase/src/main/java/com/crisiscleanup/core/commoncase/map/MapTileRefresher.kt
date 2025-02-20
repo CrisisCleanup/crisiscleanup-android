@@ -1,7 +1,7 @@
 package com.crisiscleanup.core.commoncase.map
 
 import com.crisiscleanup.core.common.epochZero
-import com.crisiscleanup.core.data.util.IncidentDataPullStats
+import com.crisiscleanup.core.data.model.IncidentDataPullStats
 import com.crisiscleanup.core.model.data.IncidentIdWorksiteCount
 import kotlinx.coroutines.coroutineScope
 import kotlinx.datetime.Clock
@@ -53,7 +53,7 @@ class MapTileRefresher(
             if (!refreshTiles && progress > saveStartedAmount) {
                 val sinceLastRefresh = now - tileRefreshedInstant
                 val projectedDelta = projectedFinish - now
-                refreshTiles = now - pullStart > tileClearRefreshInterval &&
+                refreshTiles = now - startTime > tileClearRefreshInterval &&
                     sinceLastRefresh > tileClearRefreshInterval &&
                     projectedDelta > tileClearRefreshInterval
                 if (idCount.totalCount - tileClearWorksitesCount >= 6000 &&

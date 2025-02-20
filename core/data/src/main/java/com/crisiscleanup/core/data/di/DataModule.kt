@@ -2,20 +2,6 @@ package com.crisiscleanup.core.data.di
 
 import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.NetworkMonitor
-import com.crisiscleanup.core.data.AccountListsSyncer
-import com.crisiscleanup.core.data.IncidentOrganizationsDataCache
-import com.crisiscleanup.core.data.IncidentOrganizationsDataFileCache
-import com.crisiscleanup.core.data.IncidentWorksitesFullSyncer
-import com.crisiscleanup.core.data.IncidentWorksitesSecondaryDataSyncer
-import com.crisiscleanup.core.data.IncidentWorksitesSyncer
-import com.crisiscleanup.core.data.ListsSyncer
-import com.crisiscleanup.core.data.SyncCacheDeviceInspector
-import com.crisiscleanup.core.data.WorksitesFullSyncer
-import com.crisiscleanup.core.data.WorksitesNetworkDataCache
-import com.crisiscleanup.core.data.WorksitesNetworkDataFileCache
-import com.crisiscleanup.core.data.WorksitesSecondaryDataSyncer
-import com.crisiscleanup.core.data.WorksitesSyncCacheDeviceInspector
-import com.crisiscleanup.core.data.WorksitesSyncer
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AccountUpdateRepository
 import com.crisiscleanup.core.data.repository.AppDataManagementRepository
@@ -40,6 +26,8 @@ import com.crisiscleanup.core.data.repository.CrisisCleanupWorkTypeStatusReposit
 import com.crisiscleanup.core.data.repository.CrisisCleanupWorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.EndOfLifeRepository
 import com.crisiscleanup.core.data.repository.EquipmentRepository
+import com.crisiscleanup.core.data.repository.IncidentCacheRepository
+import com.crisiscleanup.core.data.repository.IncidentWorksitesCacheRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
 import com.crisiscleanup.core.data.repository.ListsRepository
@@ -67,7 +55,6 @@ import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksiteImageRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.data.util.ConnectivityManagerNetworkMonitor
-import com.crisiscleanup.core.data.util.IncidentDataPullReporter
 import com.crisiscleanup.core.data.util.TimeZoneBroadcastMonitor
 import com.crisiscleanup.core.data.util.TimeZoneMonitor
 import dagger.Binds
@@ -129,12 +116,6 @@ interface DataModule {
     fun bindsWorksiteRepository(
         worksitesRepository: OfflineFirstWorksitesRepository,
     ): WorksitesRepository
-
-    @Singleton
-    @Binds
-    fun bindsWorksitesDataPullReporter(
-        reporter: OfflineFirstWorksitesRepository,
-    ): IncidentDataPullReporter
 
     @Singleton
     @Binds
@@ -220,6 +201,11 @@ interface DataModule {
     ): ShareLocationRepository
 
     @Binds
+    fun bindsIncidentCacheRepository(
+        repository: IncidentWorksitesCacheRepository,
+    ): IncidentCacheRepository
+
+    @Binds
     fun bindsEquipmentRepository(
         repository: CrisisCleanupEquipmentRepository,
     ): EquipmentRepository
@@ -229,31 +215,4 @@ interface DataModule {
     fun bindsTeamChangeRepository(
         repository: CrisisCleanupTeamChangeRepository,
     ): TeamChangeRepository
-}
-
-@Module
-@InstallIn(SingletonComponent::class)
-interface DataInternalModule {
-    @Binds
-    fun bindsSyncCacheDeviceInspector(inspector: WorksitesSyncCacheDeviceInspector): SyncCacheDeviceInspector
-
-    @Binds
-    fun bindsWorksitesNetworkDataCache(cache: WorksitesNetworkDataFileCache): WorksitesNetworkDataCache
-
-    @Binds
-    fun bindsWorksitesSyncer(syncer: IncidentWorksitesSyncer): WorksitesSyncer
-
-    @Binds
-    fun bindsWorksitesFullSyncer(syncer: IncidentWorksitesFullSyncer): WorksitesFullSyncer
-
-    @Binds
-    fun bindsWorksitesSecondaryDataSyncer(syncer: IncidentWorksitesSecondaryDataSyncer): WorksitesSecondaryDataSyncer
-
-    @Binds
-    fun providesIncidentOrganizationsNetworkDataCache(
-        cache: IncidentOrganizationsDataFileCache,
-    ): IncidentOrganizationsDataCache
-
-    @Binds
-    fun bindsListsSyncer(syncer: AccountListsSyncer): ListsSyncer
 }

@@ -32,7 +32,7 @@ private fun getClientBuilder(isDebuggable: Boolean = false): OkHttpClient.Builde
     val clientBuilder = OkHttpClient.Builder()
         // TODO Allow user configuration? Or adjust dynamically according to device and network conditions?
         .connectTimeout(15, TimeUnit.SECONDS)
-        .readTimeout(60, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(60, TimeUnit.SECONDS)
 
     if (isDebuggable) {

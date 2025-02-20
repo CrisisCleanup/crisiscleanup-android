@@ -29,7 +29,7 @@ interface IncidentsRepository {
 
     fun streamIncident(id: Long): Flow<Incident?>
 
-    suspend fun pullIncidents()
+    suspend fun pullIncidents(force: Boolean)
     suspend fun pullHotlineIncidents()
 
     suspend fun pullIncident(id: Long)

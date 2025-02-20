@@ -7,7 +7,7 @@ import java.io.ByteArrayInputStream
 import kotlin.test.assertEquals
 
 class UserPreferencesSerializerTest {
-    private val userPreferencesSerializer = UserPreferencesSerializer()
+    private val serializer = UserPreferencesSerializer()
 
     @Test
     fun defaultUserPreferences_isEmpty() {
@@ -15,12 +15,12 @@ class UserPreferencesSerializerTest {
             userPreferences {
                 // Default value
             },
-            userPreferencesSerializer.defaultValue,
+            serializer.defaultValue,
         )
     }
 
     @Test(expected = CorruptionException::class)
     fun readingInvalidUserPreferences_throwsCorruptionException() = runTest {
-        userPreferencesSerializer.readFrom(ByteArrayInputStream(byteArrayOf(0)))
+        serializer.readFrom(ByteArrayInputStream(byteArrayOf(0)))
     }
 }

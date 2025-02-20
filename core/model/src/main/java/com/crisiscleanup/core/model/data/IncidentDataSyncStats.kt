@@ -54,6 +54,4 @@ data class IncidentDataSyncStats(
     val shouldSync = isInitialPull ||
         isDataVersionOutdated ||
         syncAttempt.shouldSyncPassively(600)
-
-    val isDeltaPull = !isInitialPull
 }

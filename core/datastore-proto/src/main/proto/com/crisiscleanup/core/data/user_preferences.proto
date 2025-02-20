@@ -2,6 +2,7 @@ syntax = "proto3";
 
 import "com/crisiscleanup/core/data/dark_theme_config.proto";
 import "com/crisiscleanup/core/data/sync_attempt.proto";
+import "com/crisiscleanup/core/data/incident_map_bounds.proto";
 
 option java_package = "com.crisiscleanup.core.datastore";
 option java_multiple_files = true;
@@ -36,4 +37,7 @@ message UserPreferences {
   bool is_menu_tutorial_done = 11;
 
   bool share_location_with_org = 12;
+
+  IncidentMapBoundsProto cases_map_bounds = 13;
+  IncidentMapBoundsProto team_map_bounds = 14;
 }

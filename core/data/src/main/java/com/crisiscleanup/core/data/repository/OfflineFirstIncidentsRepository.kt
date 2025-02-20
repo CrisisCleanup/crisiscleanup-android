@@ -5,7 +5,7 @@ import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
-import com.crisiscleanup.core.data.IncidentOrganizationsSyncer
+import com.crisiscleanup.core.data.incidentcache.IncidentOrganizationsSyncer
 import com.crisiscleanup.core.data.model.asEntity
 import com.crisiscleanup.core.data.model.asEntitySource
 import com.crisiscleanup.core.data.model.incidentLocationCrossReferences
@@ -188,10 +188,10 @@ class OfflineFirstIncidentsRepository @Inject constructor(
         }
     }
 
-    override suspend fun pullIncidents() = coroutineScope {
+    override suspend fun pullIncidents(force: Boolean) = coroutineScope {
         var isSuccessful = false
         try {
-            syncInternal()
+            syncInternal(force)
             isSuccessful = true
         } finally {
             // Treat coroutine cancellation as unsuccessful for now
@@ -218,7 +218,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
                 pullIncident(incidentId)
             }
         } catch (e: Exception) {
-            logger.logDebug(e)
+            logger.logException(e)
         }
     }
 

@@ -99,30 +99,26 @@ class AppAuthInterceptProvider @Inject constructor() : AuthInterceptorProvider {
 
 @Singleton
 class AppSyncer @Inject constructor() : SyncPuller, SyncPusher {
-    override fun appPull(force: Boolean, cancelOngoing: Boolean) {}
+    override fun appPullIncidentData(
+        cancelOngoing: Boolean,
+        forcePullIncidents: Boolean,
+        cacheSelectedIncident: Boolean,
+        cacheActiveIncidentWorksites: Boolean,
+        cacheFullWorksites: Boolean,
+        restartCacheCheckpoint: Boolean,
+    ) {
+    }
 
-    override suspend fun syncPullAsync() =
-        CompletableDeferred(SyncResult.NotAttempted(""))
+    override suspend fun syncPullIncidentData(
+        cancelOngoing: Boolean,
+        forcePullIncidents: Boolean,
+        cacheSelectedIncident: Boolean,
+        cacheActiveIncidentWorksites: Boolean,
+        cacheFullWorksites: Boolean,
+        restartCacheCheckpoint: Boolean,
+    ) = SyncResult.NotAttempted("")
 
-    override fun stopPull() {}
-
-    override suspend fun syncPullWorksitesFullAsync() =
-        CompletableDeferred(SyncResult.NotAttempted(""))
-
-    override fun stopSyncPullWorksitesFull() {}
-
-    override fun scheduleSyncWorksitesFull() {}
-
-    override suspend fun pullIncidents() {}
-
-    override fun appPullIncident(id: Long) {}
-
-    override suspend fun syncPullIncidentAsync(id: Long) =
-        CompletableDeferred(SyncResult.NotAttempted(""))
-
-    override fun stopPullIncident() {}
-
-    override fun appPullIncidentWorksitesDelta(forceRefreshAll: Boolean) {}
+    override fun stopPullWorksites() {}
 
     override fun appPullLanguage() {}
 

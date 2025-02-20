@@ -23,11 +23,11 @@ dependencies {
 
     implementation(projects.core.common)
 
-    testImplementation(projects.core.testing)
-    testImplementation(projects.core.datastoreTest)
-
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.datetime)
 
     implementation(libs.androidx.security.crypto)
+
+    testImplementation(projects.core.testing)
+    testImplementation(projects.core.datastoreTest)
 }

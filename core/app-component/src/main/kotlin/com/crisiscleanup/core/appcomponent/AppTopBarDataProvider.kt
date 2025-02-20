@@ -5,13 +5,11 @@ import com.crisiscleanup.core.commonassets.ui.getDisasterIcon
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AppPreferencesRepository
+import com.crisiscleanup.core.data.repository.IncidentCacheRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
-import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.domain.LoadSelectIncidents
-import com.crisiscleanup.core.model.data.EmptyIncident
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import com.crisiscleanup.core.commonassets.R as commonAssetsR
@@ -19,7 +17,7 @@ import com.crisiscleanup.core.commonassets.R as commonAssetsR
 class AppTopBarDataProvider(
     screenTitleKey: String,
     incidentsRepository: IncidentsRepository,
-    worksitesRepository: WorksitesRepository,
+    incidentCacheRepository: IncidentCacheRepository,
     incidentSelector: IncidentSelector,
     private val translator: KeyResourceTranslator,
     accountDataRepository: AccountDataRepository,
@@ -43,19 +41,7 @@ class AppTopBarDataProvider(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    private val isSyncingWorksitesFull = combine(
-        incidentSelector.incidentId,
-        worksitesRepository.syncWorksitesFullIncidentId,
-    ) { incidentId, syncingIncidentId ->
-        incidentId != EmptyIncident.id &&
-            incidentId == syncingIncidentId
-    }
-
-    val showHeaderLoading = combine(
-        incidentsRepository.isLoading,
-        worksitesRepository.isLoading,
-        isSyncingWorksitesFull,
-    ) { b0, b1, b2 -> b0 || b1 || b2 }
+    val showHeaderLoading = incidentCacheRepository.isSyncingActiveIncident
 
     val screenTitle = incidentSelector.incident
         .map { it.shortName.ifBlank { translator(screenTitleKey) } }

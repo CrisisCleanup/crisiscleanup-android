@@ -10,17 +10,13 @@ import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.model.data.AccountData
-import com.crisiscleanup.core.model.data.DarkThemeConfig
-import com.crisiscleanup.core.model.data.EnglishLanguage
 import com.crisiscleanup.core.model.data.OrgData
-import com.crisiscleanup.core.model.data.SyncAttempt
-import com.crisiscleanup.core.model.data.UserData
-import com.crisiscleanup.core.model.data.WorksiteSortBy
 import com.crisiscleanup.core.model.data.emptyAccountData
 import com.crisiscleanup.core.network.model.NetworkAuthOrganization
 import com.crisiscleanup.core.network.model.NetworkAuthResult
 import com.crisiscleanup.core.network.model.NetworkAuthUserClaims
 import com.crisiscleanup.core.network.retrofit.AuthApiClient
+import com.crisiscleanup.core.testing.model.UserDataNone
 import com.crisiscleanup.core.testing.util.MainDispatcherRule
 import com.crisiscleanup.feature.authentication.AuthenticateScreenViewState.Loading
 import com.crisiscleanup.feature.authentication.AuthenticateScreenViewState.Ready
@@ -123,20 +119,7 @@ class AuthenticationViewModelTest {
         // TODO How to mock SaveCredentialsManager with coroutineScope=viewModelScope
         coEvery {
             appPreferences.preferences
-        } returns flowOf(
-            UserData(
-                darkThemeConfig = DarkThemeConfig.FOLLOW_SYSTEM,
-                shouldHideOnboarding = false,
-                syncAttempt = SyncAttempt(0, 0, 0),
-                selectedIncidentId = 0,
-                languageKey = EnglishLanguage.key,
-                tableViewSortBy = WorksiteSortBy.None,
-                allowAllAnalytics = false,
-                hideGettingStartedVideo = false,
-                isMenuTutorialDone = false,
-                shareLocationWithOrg = false,
-            ),
-        )
+        } returns flowOf(UserDataNone)
 
         // every {
         //     accountEventBus.passwordCredentialResults

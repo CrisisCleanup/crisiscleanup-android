@@ -8,8 +8,11 @@ import kotlinx.coroutines.flow.transform
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.flow.combine as kCombine
 
+fun subscribedReplay(seconds: Int = 3) =
+    SharingStarted.WhileSubscribed(seconds.seconds.inWholeMilliseconds)
+
 val ReplaySubscribed3: SharingStarted
-    get() = SharingStarted.WhileSubscribed(3.seconds.inWholeMilliseconds)
+    get() = subscribedReplay()
 
 fun <T> Flow<T>.throttleLatest(delayMillis: Long): Flow<T> = this
     .conflate()

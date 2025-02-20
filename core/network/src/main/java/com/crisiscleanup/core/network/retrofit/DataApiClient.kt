@@ -204,6 +204,32 @@ private interface DataSourceApi {
         updatedAtAfter: Instant?,
     ): NetworkWorksitesPageResult
 
+    @TokenAuthenticationHeader
+    @GET("worksites_page")
+    suspend fun getWorksitesPageUpdatedBefore(
+        @Query("incident")
+        incidentId: Long,
+        @Query("limit")
+        pageCount: Int,
+        @Query("updated_at__lt")
+        updatedBefore: Instant,
+        @Query("sort")
+        sort: String,
+    ): NetworkWorksitesPageResult
+
+    @TokenAuthenticationHeader
+    @GET("worksites_page")
+    suspend fun getWorksitesPageUpdatedAfter(
+        @Query("incident")
+        incidentId: Long,
+        @Query("limit")
+        pageCount: Int,
+        @Query("updated_at__gt")
+        updatedAfter: Instant,
+        @Query("sort")
+        sort: String,
+    ): NetworkWorksitesPageResult
+
     @GET("languages")
     suspend fun getLanguages(): NetworkLanguagesResult
 
@@ -492,6 +518,31 @@ class DataApiClient @Inject constructor(
         )
         result.errors?.tryThrowException()
         return result.results ?: emptyList()
+    }
+
+    override suspend fun getWorksitesPageUpdatedAt(
+        incidentId: Long,
+        pageCount: Int,
+        updatedAt: Instant,
+        isPagingBackwards: Boolean,
+    ): NetworkWorksitesPageResult {
+        val result = if (isPagingBackwards) {
+            networkApi.getWorksitesPageUpdatedBefore(
+                incidentId,
+                pageCount,
+                updatedAt,
+                "-updated_at",
+            )
+        } else {
+            networkApi.getWorksitesPageUpdatedAfter(
+                incidentId,
+                pageCount,
+                updatedAt,
+                "updated_at",
+            )
+        }
+        result.errors?.tryThrowException()
+        return result
     }
 
     override suspend fun getWorksitesFlagsFormDataPage(

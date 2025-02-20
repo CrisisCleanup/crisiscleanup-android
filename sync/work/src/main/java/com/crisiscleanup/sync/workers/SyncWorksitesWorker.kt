@@ -39,21 +39,28 @@ internal class SyncWorksitesWorker @AssistedInject constructor(
     override suspend fun doWork() = withContext(ioDispatcher) {
         traceAsync("WorksitesSync", 0) {
             syncLogger.type = "background-sync-worksites"
-            syncLogger.log("Worksites sync start")
+            syncLogger.log("Worksites push start")
 
             val isSyncSuccess = awaitAll(
                 async {
                     val result = syncPusher.syncPushWorksites()
-                    val isSuccess = result !is SyncResult.Error
+                    val isSuccess = result is SyncResult.Success
+
                     if (isSuccess) {
                         syncPusher.scheduleSyncMedia()
+                    } else {
+                        syncLogger.log("Sync worksites result $result")
+                        if (result is SyncResult.InvalidAccountTokens) {
+                            // TODO Notify invalid tokens is preventing sync
+                        }
                     }
+
                     isSuccess
                 },
             ).all { it }
 
             syncLogger
-                .log("Worksites sync end. success=$isSyncSuccess")
+                .log("Worksites push end. success=$isSyncSuccess")
                 .flush()
 
             appContext.channelNotificationManager()?.cancel(SYNC_WORKSITES_NOTIFICATION_ID)

@@ -45,6 +45,8 @@ import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.WorksiteInteractor
 import com.crisiscleanup.core.data.di.CasesFilterType
 import com.crisiscleanup.core.data.di.CasesFilterTypes
+import com.crisiscleanup.core.data.incidentcache.IncidentDataPullReporter
+import com.crisiscleanup.core.data.model.IncidentPullDataType
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.data.repository.CasesFilterRepository
@@ -52,14 +54,13 @@ import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
-import com.crisiscleanup.core.data.util.IncidentDataPullReporter
-import com.crisiscleanup.core.data.util.dataPullProgress
 import com.crisiscleanup.core.domain.LoadSelectIncidents
 import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
 import com.crisiscleanup.core.mapmarker.util.toLatLng
+import com.crisiscleanup.core.model.data.DataProgressMetrics
 import com.crisiscleanup.core.model.data.TableDataWorksite
 import com.crisiscleanup.core.model.data.TableWorksiteClaimAction
 import com.crisiscleanup.core.model.data.Worksite
@@ -79,7 +80,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
@@ -228,7 +228,17 @@ class CasesViewModel @Inject constructor(
 
     val isIncidentLoading = incidentsRepository.isLoading
 
-    val dataProgress = dataPullReporter.dataPullProgress
+    val dataProgress = dataPullReporter.incidentDataPullStats
+        .map {
+            val showProgress = it.isOngoing && it.isPullingWorksites
+            val isSecondary = it.pullType == IncidentPullDataType.FullWorksites
+            val progress = it.progress
+            DataProgressMetrics(
+                isSecondary,
+                showProgress,
+                progress,
+            )
+        }
         .stateIn(
             scope = viewModelScope,
             initialValue = zeroDataProgress,
@@ -248,9 +258,10 @@ class CasesViewModel @Inject constructor(
     val mapCameraZoom: StateFlow<MapViewCameraZoom> = mapCameraZoomInternal
 
     private val mapBoundsManager = CasesMapBoundsManager(
-        viewModelScope,
         incidentSelector,
         incidentBoundsProvider,
+        appPreferencesRepository,
+        viewModelScope,
         ioDispatcher,
         logger,
     )
@@ -381,8 +392,7 @@ class CasesViewModel @Inject constructor(
             filterRepository.casesFiltersLocation,
             ::Triple,
         )
-            .debounce(16)
-            .throttleLatest(1_000)
+            .throttleLatest(600)
             .onEach { mapTileRefresher.refreshTiles(it.first, it.second) }
             .launchIn(viewModelScope)
 
@@ -409,6 +419,7 @@ class CasesViewModel @Inject constructor(
             .launchIn(viewModelScope)
 
         dataPullReporter.onIncidentDataPullComplete
+            .throttleLatest(600)
             .onEach {
                 filterRepository.reapplyFilters()
             }
@@ -416,7 +427,10 @@ class CasesViewModel @Inject constructor(
     }
 
     fun syncWorksitesDelta(forceRefreshAll: Boolean = false) {
-        syncPuller.appPullIncidentWorksitesDelta(forceRefreshAll)
+        syncPuller.appPullIncidentData(
+            cacheFullWorksites = true,
+            restartCacheCheckpoint = forceRefreshAll,
+        )
     }
 
     private suspend fun setTileRendererLocation() {
@@ -424,11 +438,11 @@ class CasesViewModel @Inject constructor(
     }
 
     fun refreshIncidentsData() {
-        syncPuller.appPull(true, cancelOngoing = true)
+        syncPuller.appPullIncidents()
     }
 
     suspend fun refreshIncidentsAsync() {
-        syncPuller.pullIncidents()
+        syncPuller.syncPullIncidents()
     }
 
     fun overviewMapTileProvider(): TileProvider {

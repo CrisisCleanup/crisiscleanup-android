@@ -67,6 +67,7 @@ import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.neutralFontColor
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.model.data.Incident
+import com.crisiscleanup.core.model.data.IncidentWorksitesCachePreferences
 import com.crisiscleanup.core.model.data.TutorialViewId
 import com.crisiscleanup.core.selectincident.SelectIncidentDialog
 import com.crisiscleanup.core.ui.sizePosition
@@ -84,6 +85,7 @@ internal fun MenuRoute(
     openRequestRedeploy: () -> Unit = {},
     openUserFeedback: () -> Unit = {},
     openLists: () -> Unit = {},
+    openIncidentCache: () -> Unit = {},
     openSyncLogs: () -> Unit = {},
 ) {
     MenuScreen(
@@ -92,6 +94,7 @@ internal fun MenuRoute(
         openRequestRedeploy = openRequestRedeploy,
         openUserFeedback = openUserFeedback,
         openLists = openLists,
+        openIncidentCache = openIncidentCache,
         openSyncLogs = openSyncLogs,
     )
 }
@@ -104,10 +107,12 @@ private fun MenuScreen(
     openRequestRedeploy: () -> Unit = {},
     openUserFeedback: () -> Unit = {},
     openLists: () -> Unit = {},
+    openIncidentCache: () -> Unit = {},
     openSyncLogs: () -> Unit = {},
     viewModel: MenuViewModel = hiltViewModel(),
 ) {
     val t = LocalAppTranslator.current
+    val translationCount by t.translationCount.collectAsStateWithLifecycle()
 
     val incidentsData by viewModel.incidentsData.collectAsStateWithLifecycle()
 
@@ -177,6 +182,8 @@ private fun MenuScreen(
         }
         incidentRows + headerSpacerCount
     }
+
+    val incidentCachePreferences by viewModel.incidentCachePreferences.collectAsStateWithLifecycle()
 
     Column {
         AppTopBar(
@@ -266,6 +273,14 @@ private fun MenuScreen(
                 }
             }
 
+            item {
+                IncidentCacheView(
+                    incidentCachePreferences,
+                    openIncidentCache,
+                    listItemModifier,
+                )
+            }
+
             item(
                 key = "lists-item",
                 contentType = "outline-button",
@@ -282,11 +297,14 @@ private fun MenuScreen(
                 key = "invite-teammate-item",
                 contentType = "primary-button",
             ) {
+                val inviteUserText = remember(translationCount) {
+                    t("usersVue.invite_new_user")
+                }
                 CrisisCleanupButton(
                     modifier = inviteTeammateModifier
                         .fillMaxWidth()
                         .listItemPadding(),
-                    text = t("usersVue.invite_new_user"),
+                    text = inviteUserText,
                     onClick = openInviteTeammate,
                 )
             }
@@ -346,7 +364,7 @@ private fun MenuScreen(
             )
 
             toggleItem(
-                "~~Share location with organization",
+                "appMenu.share_location_with_organization",
                 isSharingLocation,
                 onShareLocation,
             )
@@ -397,7 +415,7 @@ private fun MenuScreen(
 
     if (explainLocationRequest) {
         val permissionExplanation =
-            t("~~Location access is needed for sharing your location with your organization. Grant access to location in Settings.")
+            t("info.allow_access_to_location_explanation")
         OpenSettingsDialog(
             t("info.allow_access_to_location"),
             permissionExplanation,
@@ -624,11 +642,6 @@ internal fun MenuScreenNonProductionView(
             text = "Expire token",
         )
     }
-
-    CrisisCleanupTextButton(
-        onClick = { viewModel.syncWorksitesFull() },
-        text = "Sync full",
-    )
 }
 
 @Composable
@@ -654,5 +667,43 @@ private fun TermsPrivacyView(
         ) {
             uriHandler.openUri(privacyPolicyUrl)
         }
+    }
+}
+
+@Composable
+private fun IncidentCacheView(
+    incidentCachePreferences: IncidentWorksitesCachePreferences,
+    onOpenIncidentCache: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val t = LocalAppTranslator.current
+
+    Row(
+        modifier,
+        horizontalArrangement = listItemSpacedBy,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        val syncingPolicy = if (incidentCachePreferences.isPaused) {
+            t("~~Pause downloading Cases")
+        } else if (incidentCachePreferences.isRegionBounded) {
+            t("~~Downloading Cases within specified region")
+        } else {
+            t("~~Auto download Cases")
+        }
+        Text(
+            syncingPolicy,
+            Modifier.weight(1f),
+        )
+
+        Text(
+            text = t("~~Change"),
+            modifier = Modifier
+                .clickable(
+                    onClick = onOpenIncidentCache,
+                )
+                .listItemPadding(),
+            style = LocalFontStyles.current.header4,
+            color = primaryBlueColor,
+        )
     }
 }

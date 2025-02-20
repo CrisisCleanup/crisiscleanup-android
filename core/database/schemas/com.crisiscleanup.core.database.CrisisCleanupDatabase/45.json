@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 45,
-    "identityHash": "5be28d4f92fe888a72391190eb666ed9",
+    "identityHash": "811c1db44f66c6a3e309bf3885e7ab1b",
     "entities": [
       {
         "tableName": "work_type_statuses",
@@ -3020,6 +3020,74 @@
         ]
       },
       {
+        "tableName": "incident_data_sync_parameters",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `updated_before` INTEGER NOT NULL, `updated_after` INTEGER NOT NULL, `full_updated_before` INTEGER NOT NULL, `full_updated_after` INTEGER NOT NULL, `bounded_region` TEXT NOT NULL, `bounded_synced_at` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`id`) REFERENCES `incidents`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedBefore",
+            "columnName": "updated_before",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAfter",
+            "columnName": "updated_after",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fullUpdatedBefore",
+            "columnName": "full_updated_before",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fullUpdatedAfter",
+            "columnName": "full_updated_after",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "boundedRegion",
+            "columnName": "bounded_region",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "boundedSyncedAt",
+            "columnName": "bounded_synced_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": [
+          {
+            "table": "incidents",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
         "tableName": "teams_root",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `local_modified_at` INTEGER NOT NULL DEFAULT 0, `synced_at` INTEGER NOT NULL DEFAULT 0, `local_global_uuid` TEXT NOT NULL DEFAULT '', `is_local_modified` INTEGER NOT NULL DEFAULT 0, `sync_attempt` INTEGER NOT NULL DEFAULT 0, `network_id` INTEGER NOT NULL DEFAULT -1, `incident_id` INTEGER NOT NULL, FOREIGN KEY(`incident_id`) REFERENCES `incidents`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
@@ -3862,7 +3930,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5be28d4f92fe888a72391190eb666ed9')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '811c1db44f66c6a3e309bf3885e7ab1b')"
     ]
   }
 }

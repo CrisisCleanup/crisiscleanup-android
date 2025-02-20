@@ -197,8 +197,10 @@ class MainActivityViewModel @Inject constructor(
         accountDataRepository.accountData
             .onEach {
                 if (it.areTokensValid) {
-                    sync(false)
-                    syncPuller.appPullIncident(incidentSelector.incidentId.first())
+                    sync(
+                        forcePullIncidents = true,
+                        syncFullWorksites = false,
+                    )
                     accountDataRefresher.updateMyOrganization(true)
                     accountDataRefresher.updateApprovedIncidents()
 
@@ -215,9 +217,10 @@ class MainActivityViewModel @Inject constructor(
         incidentSelector.incidentId
             .filter { it != EmptyIncident.id }
             .onEach {
-                syncPuller.stopSyncPullWorksitesFull()
-                sync(true)
-                syncPuller.appPullIncident(it)
+                sync(
+                    forcePullIncidents = false,
+                    syncFullWorksites = true,
+                )
             }
             .flowOn(ioDispatcher)
             .launchIn(viewModelScope)
@@ -262,8 +265,15 @@ class MainActivityViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    private fun sync(cancelOngoing: Boolean) {
-        syncPuller.appPull(false, cancelOngoing)
+    private fun sync(
+        forcePullIncidents: Boolean,
+        syncFullWorksites: Boolean,
+    ) {
+        syncPuller.appPullIncidentData(
+            forcePullIncidents = forcePullIncidents,
+            cacheSelectedIncident = true,
+            cacheFullWorksites = syncFullWorksites,
+        )
     }
 
     fun onAppOpen() {

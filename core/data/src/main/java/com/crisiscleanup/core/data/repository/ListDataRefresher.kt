@@ -4,7 +4,7 @@ import com.crisiscleanup.core.common.epochZero
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
-import com.crisiscleanup.core.data.ListsSyncer
+import com.crisiscleanup.core.data.ListsDataSyncer
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
@@ -14,7 +14,7 @@ import kotlin.time.Duration.Companion.hours
 
 @Singleton
 class ListDataRefresher @Inject constructor(
-    private val listsSyncer: ListsSyncer,
+    private val listsSyncer: ListsDataSyncer,
     @Logger(CrisisCleanupLoggers.Lists) private val logger: AppLogger,
 ) {
     private var dataUpdateTime = Instant.epochZero

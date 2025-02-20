@@ -8,6 +8,7 @@
     <string name="sync_worksites_full_notification_text">Syncing incident Cases</string>
     <string name="syncing_text">Syncing %s</string>
     <string name="saved_cases_out_of">Saved %d/%d Cases.</string>
-    <string name="saved_cases_approximate_out_of">Saved %d/~%d Cases.</string>
+    <string name="saved_full_cases_out_of">Saved %d/%d offline Cases.</string>
+    <string name="saving_indeterminate_data">Saving data…</string>
     <string name="stop_syncing">Stop syncing</string>
 </resources>

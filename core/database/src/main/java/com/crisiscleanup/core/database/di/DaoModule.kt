@@ -70,6 +70,10 @@ object DaoModule {
     fun listDao(db: CrisisCleanupDatabase) = db.listDao()
 
     @Provides
+    fun incidentDataSyncParametersDao(db: CrisisCleanupDatabase) =
+        db.incidentDataSyncParametersDao()
+
+    @Provides
     fun teamDao(db: CrisisCleanupDatabase) = db.teamDao()
 
     @Provides
