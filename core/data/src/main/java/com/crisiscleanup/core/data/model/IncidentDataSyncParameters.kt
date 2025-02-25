@@ -76,18 +76,18 @@ data class IncidentDataSyncParameters(
                 longitude >= -180 && longitude <= 180
         }
 
-        fun isSimilar(
+        fun isSignificantChange(
             other: BoundedRegion,
             thresholdMiles: Float = 0.5f,
         ): Boolean {
-            if (abs(radius - other.radius) > thresholdMiles) {
-                return false
-            }
-
-            // 1/69 ~= 0.145
+            // ~69 miles in 1 degree. 1/69 ~= 0.0145 (degrees).
             val thresholdDegrees = 0.0145 * thresholdMiles
-            return abs(latitude - other.latitude) < thresholdDegrees &&
-                abs(longitude - other.longitude) < thresholdDegrees
+            return abs(radius - other.radius) > thresholdMiles ||
+                abs(latitude - other.latitude) > thresholdDegrees ||
+                abs(longitude.cap360 - other.longitude.cap360) > thresholdDegrees
         }
     }
 }
+
+private val Double.cap360: Double
+    get() = (this + 360.0) % 360.0

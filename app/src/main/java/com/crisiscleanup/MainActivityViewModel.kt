@@ -34,8 +34,6 @@ import com.crisiscleanup.core.data.repository.ShareLocationRepository
 import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.model.data.AppMetricsData
 import com.crisiscleanup.core.model.data.AppOpenInstant
-import com.crisiscleanup.core.model.data.BuildEndOfLife
-import com.crisiscleanup.core.model.data.EarlybirdEndOfLifeFallback
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.MinSupportedAppVersion
 import com.crisiscleanup.core.model.data.UserData
@@ -152,22 +150,6 @@ class MainActivityViewModel @Inject constructor(
             initialValue = AuthState.Loading,
             started = SharingStarted.WhileSubscribed(),
         )
-
-    val buildEndOfLife: BuildEndOfLife?
-        get() {
-            if (appEnv.isEarlybird) {
-                (viewState.value as? MainActivityViewState.Success)?.let {
-                    var eol = it.appMetrics.earlybirdEndOfLife
-                    if (!eol.isEndOfLife) {
-                        eol = EarlybirdEndOfLifeFallback
-                    }
-                    if (eol.isEndOfLife) {
-                        return eol
-                    }
-                }
-            }
-            return null
-        }
 
     val supportedApp: MinSupportedAppVersion?
         get() {

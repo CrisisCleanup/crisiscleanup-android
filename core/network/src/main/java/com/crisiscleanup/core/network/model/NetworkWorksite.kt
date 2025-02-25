@@ -253,17 +253,29 @@ data class NetworkWorksiteShort(
     }
 }
 
+interface WorksiteDataResult<T> {
+    val count: Int?
+    val data: List<T>?
+}
+
+interface WorksiteDataSubset {
+    val id: Long
+    val updatedAt: Instant
+}
+
 @Serializable
 data class NetworkWorksitesPageResult(
     val errors: List<NetworkCrisisCleanupApiError>? = null,
-    val count: Int? = null,
+    override val count: Int? = null,
     val results: List<NetworkWorksitePage>? = null,
-)
+) : WorksiteDataResult<NetworkWorksitePage> {
+    override val data: List<NetworkWorksitePage>? = results
+}
 
 // Copy similar changes from [NetworkWorksiteShort] above
 @Serializable
 data class NetworkWorksitePage(
-    val id: Long,
+    override val id: Long,
     val address: String,
     @SerialName("auto_contact_frequency_t")
     val autoContactFrequencyT: String,
@@ -297,12 +309,12 @@ data class NetworkWorksitePage(
     val svi: Float?,
     @Serializable(InstantSerializer::class)
     @SerialName("updated_at")
-    val updatedAt: Instant,
+    override val updatedAt: Instant,
     @SerialName("what3words")
     val what3words: String? = null,
     @SerialName("work_types")
     private val workTypes: List<NetworkWorksiteFull.WorkTypeShort>,
-) {
+) : WorksiteDataSubset {
     @Transient
     var newestWorkTypes: List<NetworkWorksiteFull.WorkTypeShort> = emptyList()
         private set
