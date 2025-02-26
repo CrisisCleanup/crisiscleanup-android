@@ -678,6 +678,9 @@ private fun IncidentCacheView(
 ) {
     val t = LocalAppTranslator.current
 
+    // TODO Show warning when
+    //      - Paused and speed is fast
+    //      - Not paused and speed is slow
     Row(
         modifier,
         horizontalArrangement = listItemSpacedBy,

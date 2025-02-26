@@ -159,7 +159,7 @@ private fun PortraitLayout(
 
         if (locationQuery.isBlank()) {
             Box(Modifier.weight(1f)) {
-                MoveMapUnderLocation(viewModel, editor, isEditable)
+                MoveMapUnderLocation(editor, isEditable)
             }
 
             UseMyLocationAction(
@@ -220,7 +220,7 @@ private fun ListDetailLayout(
         ) {
             if (locationQuery.isBlank()) {
                 Box(Modifier.weight(1f)) {
-                    MoveMapUnderLocation(viewModel, editor, isEditable)
+                    MoveMapUnderLocation(editor, isEditable)
                 }
             } else {
                 editor.isMapLoaded = false
@@ -232,13 +232,11 @@ private fun ListDetailLayout(
 
 @Composable
 private fun BoxScope.MoveMapUnderLocation(
-    viewModel: EditCaseBaseViewModel,
     editor: CaseLocationDataEditor,
     isEditable: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val onMapLoaded = remember(viewModel) { { editor.onMapLoaded() } }
-    val onMapCameraChange = remember(viewModel) {
+    val onMapCameraChange = remember(editor) {
         {
                 position: CameraPosition,
                 projection: Projection?,
@@ -272,7 +270,7 @@ private fun BoxScope.MoveMapUnderLocation(
         uiSettings = uiSettings,
         properties = mapProperties,
         cameraPositionState = cameraPositionState,
-        onMapLoaded = onMapLoaded,
+        onMapLoaded = editor::onMapLoaded,
     ) {
         Marker(
             markerState,
